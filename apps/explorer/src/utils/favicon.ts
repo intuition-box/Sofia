@@ -12,7 +12,9 @@ for (const p of PLATFORM_CATALOG) {
   domainToSlug.set(`${p.id}.com`, p.id)
 
   if (p.website) {
-    try { domainToSlug.set(normalize(new URL(p.website).hostname), p.id) } catch {}
+    try {
+      domainToSlug.set(normalize(new URL(p.website).hostname), p.id)
+    } catch {}
   }
   if (p.apiBaseUrl) {
     try {

@@ -31,8 +31,12 @@ export function useSidebarState(): UseSidebarStateResult {
 
   useEffect(() => {
     const mqMobile = window.matchMedia('(max-width: 767px)')
-    const mqTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)')
-    const mqLaptop = window.matchMedia('(min-width: 1024px) and (max-width: 1279px)')
+    const mqTablet = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1023px)',
+    )
+    const mqLaptop = window.matchMedia(
+      '(min-width: 1024px) and (max-width: 1279px)',
+    )
 
     const update = () => {
       const bp = getBreakpoint()

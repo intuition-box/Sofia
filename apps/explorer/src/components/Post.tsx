@@ -1,39 +1,44 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Heart, MessageCircle, Share, MoreHorizontal, Play } from "lucide-react";
-import { Card } from "./ui/card";
+import { useState } from 'react'
+import { Button } from './ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Badge } from './ui/badge'
+import { Heart, MessageCircle, Share, MoreHorizontal, Play } from 'lucide-react'
+import { Card } from './ui/card'
 
 interface PostData {
-  id: string;
+  id: string
   author: {
-    name: string;
-    username: string;
-    avatar: string;
-  };
+    name: string
+    username: string
+    avatar: string
+  }
   content: {
-    type: 'photo' | 'video';
-    url: string;
-  };
-  space: string;
-  timestamp: string;
-  likes: number;
-  hamstrings: number; // reply count
-  isLiked: boolean;
-  description?: string;
-  chain?: PostData[]; // hamstring chain
+    type: 'photo' | 'video'
+    url: string
+  }
+  space: string
+  timestamp: string
+  likes: number
+  hamstrings: number // reply count
+  isLiked: boolean
+  description?: string
+  chain?: PostData[] // hamstring chain
 }
 
 interface PostProps {
-  post: PostData;
-  onLike: (postId: string) => void;
-  onHamstring: (postId: string) => void;
-  showChain?: boolean;
+  post: PostData
+  onLike: (postId: string) => void
+  onHamstring: (postId: string) => void
+  showChain?: boolean
 }
 
-export function Post({ post, onLike, onHamstring, showChain = true }: PostProps) {
-  const [showFullChain, setShowFullChain] = useState(false);
+export function Post({
+  post,
+  onLike,
+  onHamstring,
+  showChain = true,
+}: PostProps) {
+  const [showFullChain, setShowFullChain] = useState(false)
 
   const spaceEmojis: Record<string, string> = {
     shoes: '👟',
@@ -43,8 +48,8 @@ export function Post({ post, onLike, onHamstring, showChain = true }: PostProps)
     music: '🎵',
     art: '🎨',
     tech: '📱',
-    all: '🌟'
-  };
+    all: '🌟',
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -76,28 +81,29 @@ export function Post({ post, onLike, onHamstring, showChain = true }: PostProps)
         </div>
 
         {/* Post description */}
-        {post.description && (
-          <p className="mb-3 text-sm">{post.description}</p>
-        )}
+        {post.description && <p className="mb-3 text-sm">{post.description}</p>}
       </div>
 
       {/* Post content */}
       <div className="relative aspect-[4/5] bg-muted">
         {post.content.type === 'photo' ? (
-          <img 
-            src={post.content.url} 
-            alt="Post content" 
+          <img
+            src={post.content.url}
+            alt="Post content"
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="relative w-full h-full bg-gray-900 flex items-center justify-center">
-            <img 
-              src={post.content.url} 
-              alt="Video thumbnail" 
+            <img
+              src={post.content.url}
+              alt="Video thumbnail"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Button size="lg" className="rounded-full bg-black/70 hover:bg-black/80">
+              <Button
+                size="lg"
+                className="rounded-full bg-black/70 hover:bg-black/80"
+              >
                 <Play className="h-6 w-6 text-white" />
               </Button>
             </div>
@@ -113,9 +119,11 @@ export function Post({ post, onLike, onHamstring, showChain = true }: PostProps)
               variant="ghost"
               size="sm"
               onClick={() => onLike(post.id)}
-              className={post.isLiked ? "text-red-500" : ""}
+              className={post.isLiked ? 'text-red-500' : ''}
             >
-              <Heart className={`h-5 w-5 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
+              <Heart
+                className={`h-5 w-5 mr-1 ${post.isLiked ? 'fill-current' : ''}`}
+              />
               {post.likes}
             </Button>
             <Button
@@ -139,30 +147,32 @@ export function Post({ post, onLike, onHamstring, showChain = true }: PostProps)
               <p className="text-sm text-muted-foreground">
                 Hamstring chain ({post.chain.length} replies)
               </p>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowFullChain(!showFullChain)}
               >
                 {showFullChain ? 'Hide' : 'Show all'}
               </Button>
             </div>
-            
+
             <div className="space-y-2 pl-4 border-l-2 border-muted">
-              {(showFullChain ? post.chain : post.chain.slice(0, 2)).map((chainPost) => (
-                <Post 
-                  key={chainPost.id} 
-                  post={chainPost} 
-                  onLike={onLike} 
-                  onHamstring={onHamstring}
-                  showChain={false}
-                />
-              ))}
-              
+              {(showFullChain ? post.chain : post.chain.slice(0, 2)).map(
+                (chainPost) => (
+                  <Post
+                    key={chainPost.id}
+                    post={chainPost}
+                    onLike={onLike}
+                    onHamstring={onHamstring}
+                    showChain={false}
+                  />
+                ),
+              )}
+
               {!showFullChain && post.chain.length > 2 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-muted-foreground"
                   onClick={() => setShowFullChain(true)}
                 >
@@ -174,5 +184,5 @@ export function Post({ post, onLike, onHamstring, showChain = true }: PostProps)
         )}
       </div>
     </Card>
-  );
+  )
 }

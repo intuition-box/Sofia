@@ -33,7 +33,9 @@ export default function Hero() {
           <span>{pad(timeLeft.minutes)}m</span>
           <span>{pad(timeLeft.seconds)}s</span>
         </div>
-        <p className="text-sm text-muted-foreground mt-2">remaining — Alpha Reward Program is live</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          remaining — Alpha Reward Program is live
+        </p>
         <p className="text-sm text-muted-foreground mt-3">
           The top spots are being claimed right now.
         </p>

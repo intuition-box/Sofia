@@ -12,14 +12,16 @@ export default function OAuthCallbackPage() {
     if (window.opener) {
       window.opener.postMessage(
         { type: 'oauth_callback', code, state, error },
-        window.location.origin
+        window.location.origin,
       )
     }
   }, [searchParams])
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <p className="text-muted-foreground">Connecting... you can close this window.</p>
+      <p className="text-muted-foreground">
+        Connecting... you can close this window.
+      </p>
     </div>
   )
 }

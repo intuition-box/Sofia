@@ -8,7 +8,8 @@ const MAX_TOPICS = 4
 
 export default function DomainSelectionPage() {
   const navigate = useNavigate()
-  const { selectedTopics, toggleTopic, removeTopic, hasPosition, isPending } = useTopicSync()
+  const { selectedTopics, toggleTopic, removeTopic, hasPosition, isPending } =
+    useTopicSync()
 
   const handleToggle = (topicId: string) => {
     const isSelected = selectedTopics.includes(topicId)
@@ -25,7 +26,10 @@ export default function DomainSelectionPage() {
         onBack={() => navigate('/profile')}
         backLabel="Back to Profile"
         crumbs={[{ label: 'Profile' }, { label: 'Select Topics' }]}
-        rightPill={{ label: 'Selected', value: `${selectedTopics.length} / ${MAX_TOPICS}` }}
+        rightPill={{
+          label: 'Selected',
+          value: `${selectedTopics.length} / ${MAX_TOPICS}`,
+        }}
         description="Pick the topics that anchor your knowledge graph."
       />
       <DomainSelector

@@ -14,9 +14,13 @@ export function useFeeEstimate() {
   useEffect(() => {
     let cancelled = false
     getFeeParams()
-      .then((params) => { if (!cancelled) setFeeParams(params) })
+      .then((params) => {
+        if (!cancelled) setFeeParams(params)
+      })
       .catch(() => {})
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const estimate = useCallback(

@@ -16,8 +16,10 @@ import { useGetAccountLabelsQuery } from '@0xsofia/graphql'
 
 describe('vi.mock sanity (pattern validator)', () => {
   it('exposes a mocked fetcher that resolves with fixture data', async () => {
-    ;(useGetAccountLabelsQuery.fetcher as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-      () => Promise.resolve({ accounts: [{ id: '0xabc', label: 'alice.eth' }] }),
+    ;(
+      useGetAccountLabelsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+    ).mockReturnValue(() =>
+      Promise.resolve({ accounts: [{ id: '0xabc', label: 'alice.eth' }] }),
     )
 
     const run = useGetAccountLabelsQuery.fetcher({ ids: ['0xabc'] })
@@ -26,13 +28,19 @@ describe('vi.mock sanity (pattern validator)', () => {
     expect(result).toEqual({
       accounts: [{ id: '0xabc', label: 'alice.eth' }],
     })
-    expect(useGetAccountLabelsQuery.fetcher).toHaveBeenCalledWith({ ids: ['0xabc'] })
+    expect(useGetAccountLabelsQuery.fetcher).toHaveBeenCalledWith({
+      ids: ['0xabc'],
+    })
   })
 
   it('can be overridden per test via mockReturnValueOnce', async () => {
     ;(useGetAccountLabelsQuery.fetcher as unknown as ReturnType<typeof vi.fn>)
-      .mockReturnValueOnce(() => Promise.resolve({ accounts: [{ id: '0xone' }] }))
-      .mockReturnValueOnce(() => Promise.resolve({ accounts: [{ id: '0xtwo' }] }))
+      .mockReturnValueOnce(() =>
+        Promise.resolve({ accounts: [{ id: '0xone' }] }),
+      )
+      .mockReturnValueOnce(() =>
+        Promise.resolve({ accounts: [{ id: '0xtwo' }] }),
+      )
 
     const first = await useGetAccountLabelsQuery.fetcher({ ids: [] })()
     const second = await useGetAccountLabelsQuery.fetcher({ ids: [] })()

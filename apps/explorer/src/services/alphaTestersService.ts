@@ -1,6 +1,10 @@
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
-import type { TransactionForwardedEvent, AlphaTester, AlphaTestersData } from '@/types'
+import type {
+  TransactionForwardedEvent,
+  AlphaTester,
+  AlphaTestersData,
+} from '@/types'
 
 interface WalletEntry {
   address: Address
@@ -10,7 +14,9 @@ interface WalletEntry {
   trustVolume: bigint
 }
 
-export function aggregateEvents(events: TransactionForwardedEvent[]): AlphaTestersData {
+export function aggregateEvents(
+  events: TransactionForwardedEvent[],
+): AlphaTestersData {
   const wallets = new Map<string, WalletEntry>()
 
   let totalTx = 0
@@ -22,7 +28,13 @@ export function aggregateEvents(events: TransactionForwardedEvent[]): AlphaTeste
     const addr = evt.user.toLowerCase()
     let entry = wallets.get(addr)
     if (!entry) {
-      entry = { address: evt.user, tx: 0, intentions: 0, pioneer: 0, trustVolume: 0n }
+      entry = {
+        address: evt.user,
+        tx: 0,
+        intentions: 0,
+        pioneer: 0,
+        trustVolume: 0n,
+      }
       wallets.set(addr, entry)
     }
 

@@ -3,13 +3,13 @@
  * Fetches market cap, share price, position count, and user PnL for platform atoms.
  */
 
-import { useQuery } from "@tanstack/react-query"
-import { usePrivy } from "@privy-io/react-auth"
+import { useQuery } from '@tanstack/react-query'
+import { usePrivy } from '@privy-io/react-auth'
 import {
   fetchPlatformVaultStats,
   type PlatformVaultData,
-} from "@/services/platformMarketService"
-import { PLATFORM_ATOM_IDS } from "@/config/atomIds"
+} from '@/services/platformMarketService'
+import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 
 // All platform term IDs
 const ALL_PLATFORM_TERM_IDS = Object.values(PLATFORM_ATOM_IDS)
@@ -38,7 +38,7 @@ export function usePlatformMarket() {
   const walletAddress = user?.wallet?.address
 
   const { data, isLoading, error } = useQuery<PlatformVaultData[]>({
-    queryKey: ["platformMarket", walletAddress],
+    queryKey: ['platformMarket', walletAddress],
     queryFn: () => fetchAllPlatformMarkets(walletAddress),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -50,8 +50,8 @@ export function usePlatformMarket() {
   const marketByTermId = new Map(markets.map((m) => [m.termId, m]))
 
   // Sort by market cap descending
-  const ranked = [...markets].sort(
-    (a, b) => Number(BigInt(b.marketCap) - BigInt(a.marketCap)),
+  const ranked = [...markets].sort((a, b) =>
+    Number(BigInt(b.marketCap) - BigInt(a.marketCap)),
   )
 
   return {
@@ -76,8 +76,9 @@ export function useSinglePlatformMarket(platformSlug: string) {
   const termId = PLATFORM_ATOM_IDS[platformSlug]
 
   const { data, isLoading, error } = useQuery<PlatformVaultData[]>({
-    queryKey: ["platformMarket", termId, walletAddress],
-    queryFn: () => fetchPlatformVaultStats(termId ? [termId] : [], walletAddress),
+    queryKey: ['platformMarket', termId, walletAddress],
+    queryFn: () =>
+      fetchPlatformVaultStats(termId ? [termId] : [], walletAddress),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,

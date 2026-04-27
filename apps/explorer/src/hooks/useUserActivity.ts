@@ -21,8 +21,11 @@ export function useUserActivity(addresses: string[] | undefined) {
   const cacheKey = normalized.join(',') || undefined
 
   const { data, isLoading, error, refetch } = useQuery<CircleItem[]>({
-    queryKey: cacheKey ? ['user-activity', cacheKey] : ['user-activity', undefined],
-    queryFn: () => fetchWithRetry(() => fetchUserActivity(addresses!, BATCH_SIZE, 0)),
+    queryKey: cacheKey
+      ? ['user-activity', cacheKey]
+      : ['user-activity', undefined],
+    queryFn: () =>
+      fetchWithRetry(() => fetchUserActivity(addresses!, BATCH_SIZE, 0)),
     enabled: !!addresses && addresses.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -34,8 +37,14 @@ export function useUserActivity(addresses: string[] | undefined) {
   return {
     items,
     loading: isLoading && items.length === 0,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
     hasMore: items.length >= BATCH_SIZE,
-    refresh: () => { refetch() },
+    refresh: () => {
+      refetch()
+    },
   }
 }

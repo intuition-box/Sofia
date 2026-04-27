@@ -20,11 +20,15 @@
 }
 
 .sofia-loader-container .path-1 {
-  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-intense 4s ease-in-out infinite;
+  animation:
+    sofia-draw-loop 5s ease-in-out infinite,
+    sofia-glow-intense 4s ease-in-out infinite;
 }
 
 .sofia-loader-container .path-2 {
-  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-intense 4s ease-in-out infinite;
+  animation:
+    sofia-draw-loop 5s ease-in-out infinite,
+    sofia-glow-intense 4s ease-in-out infinite;
 }
 
 @keyframes sofia-draw-loop {
@@ -49,7 +53,8 @@
 }
 
 @keyframes sofia-zoom-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -58,9 +63,10 @@
 }
 
 @keyframes sofia-glow-intense {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 12px currentColor)
-            drop-shadow(0 0 25px currentColor);
+      drop-shadow(0 0 25px currentColor);
   }
   50% {
     filter: drop-shadow(0 0 6px currentColor);

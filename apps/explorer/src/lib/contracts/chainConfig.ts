@@ -7,7 +7,9 @@ export const intuitionChain = defineChain({
   name: 'Intuition',
   nativeCurrency: { name: 'TRUST', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: ['https://rpc.intuition.systems'] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 })
 
 export const INTUITION_RPC_URL = 'https://rpc.intuition.systems'

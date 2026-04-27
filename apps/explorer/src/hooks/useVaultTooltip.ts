@@ -17,34 +17,37 @@ export function useVaultTooltip() {
   const activeTermId = useRef<string | null>(null)
   const { addresses } = useLinkedWallets()
 
-  const fetchStats = useCallback(async (termId: string) => {
-    if (!termId) return
+  const fetchStats = useCallback(
+    async (termId: string) => {
+      if (!termId) return
 
-    // Check cache
-    const cached = statsCache.get(cacheKey(termId, addresses))
-    if (cached) {
-      setStats(cached)
-      return
-    }
-
-    activeTermId.current = termId
-    setLoading(true)
-
-    try {
-      const result = await fetchVaultStats(termId, addresses)
-
-      // Only update if still the active request
-      if (activeTermId.current === termId) {
-        setStats(result)
+      // Check cache
+      const cached = statsCache.get(cacheKey(termId, addresses))
+      if (cached) {
+        setStats(cached)
+        return
       }
-    } catch (err) {
-      console.warn('[useVaultTooltip] Failed to fetch stats:', err)
-    } finally {
-      if (activeTermId.current === termId) {
-        setLoading(false)
+
+      activeTermId.current = termId
+      setLoading(true)
+
+      try {
+        const result = await fetchVaultStats(termId, addresses)
+
+        // Only update if still the active request
+        if (activeTermId.current === termId) {
+          setStats(result)
+        }
+      } catch (err) {
+        console.warn('[useVaultTooltip] Failed to fetch stats:', err)
+      } finally {
+        if (activeTermId.current === termId) {
+          setLoading(false)
+        }
       }
-    }
-  }, [addresses])
+    },
+    [addresses],
+  )
 
   const clear = useCallback(() => {
     activeTermId.current = null

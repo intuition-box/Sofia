@@ -32,8 +32,14 @@
 }
 
 @keyframes wm-appear {
-  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Body */
@@ -58,7 +64,7 @@
 }
 
 .wm-triplet-card {
-  background: var(--muted)/30;
+  background: var(--muted) / 30;
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 16px;
@@ -96,7 +102,9 @@
   font-size: 14px;
   text-align: center;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   width: 100%;
   -moz-appearance: textfield;
 }
@@ -278,7 +286,12 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--primary) 50%,
+    transparent 100%
+  );
   opacity: 0.8;
 }
 

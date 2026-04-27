@@ -8,7 +8,11 @@ import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { isValidTriple, tripleToItem } from './trendingService'
 import { INTENTION_COLORS } from '@/config/intentions'
-import type { IntentCategory, TrendingItemLive, TrendingPlatform } from '@/types'
+import type {
+  IntentCategory,
+  TrendingItemLive,
+  TrendingPlatform,
+} from '@/types'
 
 type TrendingTripleRaw = GetTrendingByPredicateQuery['triples'][number]
 
@@ -54,16 +58,21 @@ const TRENDING_BY_LABEL_QUERY = `
   }
 `
 
-async function fetchByLabel(label: string, limit: number): Promise<TrendingTripleRaw[]> {
+async function fetchByLabel(
+  label: string,
+  limit: number,
+): Promise<TrendingTripleRaw[]> {
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: TRENDING_BY_LABEL_QUERY, variables: { label, limit } }),
+    body: JSON.stringify({
+      query: TRENDING_BY_LABEL_QUERY,
+      variables: { label, limit },
+    }),
   })
   const json = await res.json()
   return json.data?.triples ?? []
 }
-
 
 /** Known aliases: apiBaseUrl hostname → real website domain */
 const DOMAIN_ALIASES: Record<string, string> = {
@@ -78,7 +87,11 @@ function rootDomain(host: string): string {
   const alias = DOMAIN_ALIASES[host]
   if (alias) return alias
   const parts = host.split('.')
-  if (parts.length >= 3 && parts[parts.length - 2].length <= 3 && parts[parts.length - 1].length <= 2) {
+  if (
+    parts.length >= 3 &&
+    parts[parts.length - 2].length <= 3 &&
+    parts[parts.length - 1].length <= 2
+  ) {
     return parts.slice(-3).join('.')
   }
   return parts.slice(-2).join('.')
@@ -88,10 +101,14 @@ function normalizeDomain(host: string): string {
   return rootDomain(host.replace(/^www\./, ''))
 }
 
-function matchesDomain(triple: TrendingTripleRaw, domainDomains: Set<string>): boolean {
+function matchesDomain(
+  triple: TrendingTripleRaw,
+  domainDomains: Set<string>,
+): boolean {
   const label = triple.object?.label || ''
   const thingUrl = triple.object?.value?.thing?.url
-  const url = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
+  const url =
+    thingUrl || (label.startsWith('http') ? label : `https://${label}`)
   const domain = normalizeDomain(extractDomain(url))
   return domainDomains.has(domain)
 }
@@ -99,7 +116,8 @@ function matchesDomain(triple: TrendingTripleRaw, domainDomains: Set<string>): b
 function getDomainFromTriple(triple: TrendingTripleRaw): string {
   const label = triple.object?.label || ''
   const thingUrl = triple.object?.value?.thing?.url
-  const url = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
+  const url =
+    thingUrl || (label.startsWith('http') ? label : `https://${label}`)
   return normalizeDomain(extractDomain(url))
 }
 
@@ -112,12 +130,16 @@ function buildPlatformDomains(topicId: string) {
   for (const p of platforms) {
     const hosts: string[] = [normalizeDomain(`${p.id}.com`)]
     if (p.website) {
-      try { hosts.push(normalizeDomain(new URL(p.website).hostname)) } catch {}
+      try {
+        hosts.push(normalizeDomain(new URL(p.website).hostname))
+      } catch {}
     }
     if (p.apiBaseUrl) {
       const extracted = normalizeDomain(extractDomain(p.apiBaseUrl))
       if (extracted) hosts.push(extracted)
-      try { hosts.push(normalizeDomain(new URL(p.apiBaseUrl).hostname)) } catch {}
+      try {
+        hosts.push(normalizeDomain(new URL(p.apiBaseUrl).hostname))
+      } catch {}
     }
     for (const h of hosts) {
       platformDomains.add(h)
@@ -132,8 +154,11 @@ function buildPlatformDomains(topicId: string) {
 /**
  * Fetch trending platforms aggregated by domain
  */
-export async function fetchTrendingByDomain(topicId: string): Promise<TrendingPlatform[]> {
-  const { platformDomains, domainToName, domainToSlug } = buildPlatformDomains(topicId)
+export async function fetchTrendingByDomain(
+  topicId: string,
+): Promise<TrendingPlatform[]> {
+  const { platformDomains, domainToName, domainToSlug } =
+    buildPlatformDomains(topicId)
 
   // Fetch all categories in parallel using label-based query
   const promises = ALL_CATEGORIES.map(async ({ type, label }) => {
@@ -149,17 +174,26 @@ export async function fetchTrendingByDomain(topicId: string): Promise<TrendingPl
 
   const results = await Promise.allSettled(promises)
   const allMatches = results
-    .filter((r): r is PromiseFulfilledResult<{ item: TrendingItemLive; host: string }[]> => r.status === 'fulfilled')
+    .filter(
+      (
+        r,
+      ): r is PromiseFulfilledResult<
+        { item: TrendingItemLive; host: string }[]
+      > => r.status === 'fulfilled',
+    )
     .flatMap((r) => r.value)
 
   // Aggregate by platform host
-  const platformMap = new Map<string, {
-    name: string
-    totalCertifiers: number
-    intentionCounts: Map<IntentCategory, number>
-    termId?: string
-    counterTermId?: string
-  }>()
+  const platformMap = new Map<
+    string,
+    {
+      name: string
+      totalCertifiers: number
+      intentionCounts: Map<IntentCategory, number>
+      termId?: string
+      counterTermId?: string
+    }
+  >()
 
   for (const { item, host } of allMatches) {
     let entry = platformMap.get(host)

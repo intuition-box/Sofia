@@ -63,7 +63,10 @@ function toQueryString(doc: unknown): string {
 
 /** Stable cache identifier derived from the addresses set (order-independent). */
 function walletsKeyFor(addresses: string[]): string {
-  return [...addresses].map((a) => a.toLowerCase()).sort().join(',')
+  return [...addresses]
+    .map((a) => a.toLowerCase())
+    .sort()
+    .join(',')
 }
 
 /** Grace period before we assume a disconnect is persistent. */
@@ -103,7 +106,11 @@ export class SubscriptionManager {
 
   disconnect() {
     for (const unsub of this.subscriptions.values()) {
-      try { unsub() } catch { /* ignore */ }
+      try {
+        unsub()
+      } catch {
+        /* ignore */
+      }
     }
     this.subscriptions.clear()
     this.detachStatusListeners()
@@ -131,14 +138,16 @@ export class SubscriptionManager {
         this.stopHttpFallback()
       }),
       client.on('closed', (ev) => {
-        const reason = typeof ev === 'object' && ev && 'reason' in ev
-          ? String((ev as { reason?: unknown }).reason ?? '')
-          : undefined
+        const reason =
+          typeof ev === 'object' && ev && 'reason' in ev
+            ? String((ev as { reason?: unknown }).reason ?? '')
+            : undefined
         markOffline(reason)
         this.scheduleHttpFallback()
       }),
       client.on('error', (err) => {
-        const reason = err instanceof Error ? err.message : String(err ?? 'unknown')
+        const reason =
+          err instanceof Error ? err.message : String(err ?? 'unknown')
         markError(reason)
         this.scheduleHttpFallback()
       }),
@@ -147,7 +156,11 @@ export class SubscriptionManager {
 
   private detachStatusListeners() {
     for (const unsub of this.statusListenerUnsubs) {
-      try { unsub() } catch { /* ignore */ }
+      try {
+        unsub()
+      } catch {
+        /* ignore */
+      }
     }
     this.statusListenerUnsubs = []
   }
@@ -163,7 +176,11 @@ export class SubscriptionManager {
       if (!this.walletsKey) return
 
       if (import.meta.env.DEV) {
-        console.warn('[WS] offline for', FALLBACK_DELAY_MS, 'ms — starting HTTP fallback')
+        console.warn(
+          '[WS] offline for',
+          FALLBACK_DELAY_MS,
+          'ms — starting HTTP fallback',
+        )
       }
 
       void this.httpFetch()
@@ -187,9 +204,13 @@ export class SubscriptionManager {
   private async httpFetch() {
     if (this.addresses.length === 0) return
     try {
-      const data = await useGetUserPositionsQuery.fetcher({ accountIds: this.addresses })()
+      const data = await useGetUserPositionsQuery.fetcher({
+        accountIds: this.addresses,
+      })()
       // Same shape as the subscription payload (same fragment).
-      this.onPositionsUpdate({ positions: data.positions } as unknown as WatchUserPositionsSubscription)
+      this.onPositionsUpdate({
+        positions: data.positions,
+      } as unknown as WatchUserPositionsSubscription)
     } catch (err) {
       if (import.meta.env.DEV) {
         console.warn('[WS fallback] HTTP fetch failed', err)
@@ -244,24 +265,25 @@ export class SubscriptionManager {
       termIds: TRACKED_TERM_IDS,
     }
 
-    const unsub = getWsClient().subscribe<WatchUserTrackedPositionsSubscription>(
-      {
-        query: toQueryString(WatchUserTrackedPositionsDocument),
-        variables,
-      },
-      {
-        next: ({ data }) => {
-          if (!data) return
-          this.onTrackedPositionsUpdate(data)
+    const unsub =
+      getWsClient().subscribe<WatchUserTrackedPositionsSubscription>(
+        {
+          query: toQueryString(WatchUserTrackedPositionsDocument),
+          variables,
         },
-        error: (err) => {
-          console.error('[WS tracked] error', err)
+        {
+          next: ({ data }) => {
+            if (!data) return
+            this.onTrackedPositionsUpdate(data)
+          },
+          error: (err) => {
+            console.error('[WS tracked] error', err)
+          },
+          complete: () => {
+            console.log('[WS tracked] complete')
+          },
         },
-        complete: () => {
-          console.log('[WS tracked] complete')
-        },
-      },
-    )
+      )
 
     this.subscriptions.set('tracked-positions', unsub)
   }
@@ -291,8 +313,14 @@ export class SubscriptionManager {
     // with >100 verified platforms is vanishingly rare).
     try {
       qc.setQueryData(realtimeKeys.positions(key), positions)
-      qc.setQueryData(realtimeKeys.verifiedPlatforms(key), deriveVerifiedPlatforms(positions))
-      qc.setQueryData(realtimeKeys.userProfileDerived(key), deriveUserProfile(positions))
+      qc.setQueryData(
+        realtimeKeys.verifiedPlatforms(key),
+        deriveVerifiedPlatforms(positions),
+      )
+      qc.setQueryData(
+        realtimeKeys.userProfileDerived(key),
+        deriveUserProfile(positions),
+      )
       qc.setQueryData(realtimeKeys.userStats(key), deriveUserStats(positions))
     } catch (err) {
       console.error('[WS positions] derivation/setQueryData failed', err)
@@ -309,7 +337,9 @@ export class SubscriptionManager {
    * anonymous-role cap. Derivations here are authoritative for the per-
    * slug maps regardless of the user's total portfolio size.
    */
-  private onTrackedPositionsUpdate(data: WatchUserTrackedPositionsSubscription) {
+  private onTrackedPositionsUpdate(
+    data: WatchUserTrackedPositionsSubscription,
+  ) {
     const positions = data.positions ?? []
     const key = this.walletsKey
     if (!key) return
@@ -318,22 +348,34 @@ export class SubscriptionManager {
     try {
       qc.setQueryData(
         realtimeKeys.topicPositionsMap(key),
-        derivePositionsByTopic(positions as unknown as Parameters<typeof derivePositionsByTopic>[0]),
+        derivePositionsByTopic(
+          positions as unknown as Parameters<typeof derivePositionsByTopic>[0],
+        ),
       )
       qc.setQueryData(
         realtimeKeys.categoryPositionsMap(key),
-        derivePositionsByCategory(positions as unknown as Parameters<typeof derivePositionsByCategory>[0]),
+        derivePositionsByCategory(
+          positions as unknown as Parameters<
+            typeof derivePositionsByCategory
+          >[0],
+        ),
       )
       qc.setQueryData(
         ['platform-positions-map', key],
-        derivePositionsByPlatform(positions as unknown as Parameters<typeof derivePositionsByPlatform>[0]),
+        derivePositionsByPlatform(
+          positions as unknown as Parameters<
+            typeof derivePositionsByPlatform
+          >[0],
+        ),
       )
     } catch (err) {
       console.error('[WS tracked] derivation/setQueryData failed', err)
     }
 
     if (import.meta.env.DEV) {
-      console.log(`[WS tracked] ${positions.length} tracked positions for ${key.slice(0, 8)}…`)
+      console.log(
+        `[WS tracked] ${positions.length} tracked positions for ${key.slice(0, 8)}…`,
+      )
     }
   }
 }

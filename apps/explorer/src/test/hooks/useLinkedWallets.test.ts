@@ -42,7 +42,9 @@ describe('useLinkedWallets', () => {
     const { result } = renderHook(() => useLinkedWallets())
     expect(result.current.addresses).toHaveLength(1)
     // EIP-55 checksum of the lowercased input above
-    expect(result.current.addresses[0]).toBe('0x8ba1f109551bD432803012645Ac136ddd64DBA72')
+    expect(result.current.addresses[0]).toBe(
+      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+    )
     expect(result.current.primary).toBe(result.current.addresses[0])
   })
 
@@ -54,7 +56,9 @@ describe('useLinkedWallets', () => {
     const { result } = renderHook(() => useLinkedWallets())
     expect(result.current.addresses).toHaveLength(2)
     expect(result.current.primary).toBe(result.current.addresses[0])
-    expect(result.current.addresses[1]).toBe('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
+    expect(result.current.addresses[1]).toBe(
+      '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    )
   })
 
   it('silently skips invalid addresses without throwing', () => {
@@ -64,6 +68,8 @@ describe('useLinkedWallets', () => {
     ]
     const { result } = renderHook(() => useLinkedWallets())
     expect(result.current.addresses).toHaveLength(1)
-    expect(result.current.addresses[0]).toBe('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
+    expect(result.current.addresses[0]).toBe(
+      '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    )
   })
 })

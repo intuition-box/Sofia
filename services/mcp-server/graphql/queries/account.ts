@@ -1,6 +1,6 @@
-import { gql } from 'graphql-request';
-import { AccountMetadata } from '../fragments/account';
-import { AtomValue } from '../fragments/atom';
+import { gql } from 'graphql-request'
+import { AccountMetadata } from '../fragments/account'
+import { AtomValue } from '../fragments/atom'
 
 export const GET_ACCOUNT_INFO = gql`
   ${AccountMetadata}
@@ -198,4 +198,4 @@ export const GET_ACCOUNT_INFO = gql`
       }
     }
   }
-`;
+`

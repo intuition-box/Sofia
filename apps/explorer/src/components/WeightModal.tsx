@@ -17,7 +17,12 @@ interface WeightModalProps {
   onSuccess: () => void
 }
 
-export default function WeightModal({ isOpen, items, onClose, onSuccess }: WeightModalProps) {
+export default function WeightModal({
+  isOpen,
+  items,
+  onClose,
+  onSuccess,
+}: WeightModalProps) {
   const [weights, setWeights] = useState<number[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [balance, setBalance] = useState<string | null>(null)
@@ -35,7 +40,7 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
 
   const getAmount = (index: number) => {
     const cv = customValues[index]
-    return cv?.trim() ? (parseFloat(cv) || 0) : (weights[index] ?? 0.5)
+    return cv?.trim() ? parseFloat(cv) || 0 : (weights[index] ?? 0.5)
   }
 
   const totalDeposit = useMemo(() => {
@@ -56,12 +61,24 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
   }, [totalDeposit, estimate])
 
   const handleWeightSelect = (index: number, value: number) => {
-    setWeights(prev => { const n = [...prev]; n[index] = value; return n })
-    setCustomValues(prev => { const n = [...prev]; n[index] = ''; return n })
+    setWeights((prev) => {
+      const n = [...prev]
+      n[index] = value
+      return n
+    })
+    setCustomValues((prev) => {
+      const n = [...prev]
+      n[index] = ''
+      return n
+    })
   }
 
   const handleCustomChange = (index: number, value: string) => {
-    setCustomValues(prev => { const n = [...prev]; n[index] = value; return n })
+    setCustomValues((prev) => {
+      const n = [...prev]
+      n[index] = value
+      return n
+    })
   }
 
   const handleSubmit = async () => {
@@ -90,13 +107,17 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
   return createPortal(
     <div
       className={`wm-overlay ${processing ? 'wm-processing' : ''}`}
-      onClick={(e) => { if (e.target === e.currentTarget && !processing) handleClose() }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !processing) handleClose()
+      }}
     >
       <div className="wm-content">
         <div className="wm-body">
           {/* Description — form state only */}
           {isFormState && (
-            <p className="wm-description">Set your deposit amount and confirm.</p>
+            <p className="wm-description">
+              Set your deposit amount and confirm.
+            </p>
           )}
 
           {/* Triplet cards — always visible except on success */}
@@ -106,7 +127,7 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
                 const color = item.intentionColor || '#888'
                 const isCustom = !!customValues[index]?.trim()
                 const currentValue = isCustom
-                  ? (customValues[index] || '')
+                  ? customValues[index] || ''
                   : (weights[index] ?? 0.5)
 
                 return (
@@ -117,8 +138,16 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
                         <img
                           src={item.favicon}
                           alt=""
-                          style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0 }}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: 4,
+                            flexShrink: 0,
+                          }}
+                          onError={(e) => {
+                            ;(e.target as HTMLImageElement).style.display =
+                              'none'
+                          }}
                         />
                       )}
                       <span style={{ fontWeight: 500 }}>{item.title}</span>
@@ -180,25 +209,38 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
             <div className="wm-cost-summary">
               <div className="wm-cost-row">
                 <span>Deposit</span>
-                <span style={{ fontWeight: 500 }}>{formatTrust(breakdown.deposit)} TRUST</span>
+                <span style={{ fontWeight: 500 }}>
+                  {formatTrust(breakdown.deposit)} TRUST
+                </span>
               </div>
               {breakdown.totalFees > 0 && (
                 <>
                   <div className="wm-cost-divider" />
-                  <div className="wm-cost-row" style={{ fontSize: 11, fontWeight: 600 }}>
+                  <div
+                    className="wm-cost-row"
+                    style={{ fontSize: 11, fontWeight: 600 }}
+                  >
                     <span>Fees</span>
                     <span>{formatTrust(breakdown.totalFees)} TRUST</span>
                   </div>
                   {breakdown.sofiaFixedFee > 0 && (
-                    <div className="wm-cost-row" style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}>
+                    <div
+                      className="wm-cost-row"
+                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
+                    >
                       <span>Sofia fixed fee</span>
                       <span>{formatTrust(breakdown.sofiaFixedFee)} TRUST</span>
                     </div>
                   )}
                   {breakdown.sofiaPercentFee > 0 && (
-                    <div className="wm-cost-row" style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}>
+                    <div
+                      className="wm-cost-row"
+                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
+                    >
                       <span>Sofia % fee</span>
-                      <span>{formatTrust(breakdown.sofiaPercentFee)} TRUST</span>
+                      <span>
+                        {formatTrust(breakdown.sofiaPercentFee)} TRUST
+                      </span>
                     </div>
                   )}
                   <div className="wm-cost-divider" />
@@ -208,9 +250,15 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
                   </div>
                 </>
               )}
-              <div className={`wm-cost-row wm-cost-balance ${balNum < breakdown.totalEstimate ? 'wm-cost-insufficient' : ''}`}>
+              <div
+                className={`wm-cost-row wm-cost-balance ${balNum < breakdown.totalEstimate ? 'wm-cost-insufficient' : ''}`}
+              >
                 <span>Balance</span>
-                <span>{balance ? `${formatTrust(parseFloat(balance))} TRUST` : '...'}</span>
+                <span>
+                  {balance
+                    ? `${formatTrust(parseFloat(balance))} TRUST`
+                    : '...'}
+                </span>
               </div>
               <p className="wm-cost-note">* Estimated — actual may vary</p>
             </div>
@@ -221,11 +269,24 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
             <div className="wm-success-card">
               <div className="wm-success-glow" />
               <div className="wm-success-inner">
-                <p style={{ fontSize: 22, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
-                  Transaction<br />Validated
+                <p
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    margin: 0,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Transaction
+                  <br />
+                  Validated
                 </p>
-                <p className="text-sm text-muted-foreground" style={{ margin: 0 }}>
-                  {items.length} deposit{items.length > 1 ? 's' : ''} submitted successfully
+                <p
+                  className="text-sm text-muted-foreground"
+                  style={{ margin: 0 }}
+                >
+                  {items.length} deposit{items.length > 1 ? 's' : ''} submitted
+                  successfully
                 </p>
                 {txResult.txHash && (
                   <a
@@ -247,8 +308,15 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
             <div className="wm-error-section">
               <span style={{ fontSize: 18 }}>❌</span>
               <div>
-                <p className="text-sm font-semibold" style={{ margin: '0 0 4px' }}>Transaction Failed</p>
-                <p className="text-xs text-destructive" style={{ margin: 0 }}>{txResult.error}</p>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ margin: '0 0 4px' }}
+                >
+                  Transaction Failed
+                </p>
+                <p className="text-xs text-destructive" style={{ margin: 0 }}>
+                  {txResult.error}
+                </p>
               </div>
             </div>
           )}
@@ -258,9 +326,16 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
             <div className="wm-processing-section">
               <SofiaLoader size={56} />
               <div className="wm-processing-text">
-                <p className="text-sm font-medium" style={{ margin: 0 }}>Creating</p>
-                <p className="text-xs text-muted-foreground" style={{ margin: 0 }}>
-                  {items.length > 1 ? 'Batch deposit in progress...' : 'Deposit in progress...'}
+                <p className="text-sm font-medium" style={{ margin: 0 }}>
+                  Creating
+                </p>
+                <p
+                  className="text-xs text-muted-foreground"
+                  style={{ margin: 0 }}
+                >
+                  {items.length > 1
+                    ? 'Batch deposit in progress...'
+                    : 'Deposit in progress...'}
                 </p>
               </div>
             </div>
@@ -268,25 +343,31 @@ export default function WeightModal({ isOpen, items, onClose, onSuccess }: Weigh
 
           {/* Action buttons */}
           <div className="wm-actions">
-            <button
-              className="wm-btn wm-btn-cancel"
-              onClick={handleClose}
-            >
+            <button className="wm-btn wm-btn-cancel" onClick={handleClose}>
               {txResult ? 'Close' : 'Cancel'}
             </button>
             {!txResult && (
               <button
                 className="wm-btn wm-btn-submit"
                 onClick={handleSubmit}
-                disabled={processing || totalDeposit <= 0 || balNum < breakdown.totalEstimate}
+                disabled={
+                  processing ||
+                  totalDeposit <= 0 ||
+                  balNum < breakdown.totalEstimate
+                }
               >
-                {processing ? 'Submitting...' : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
+                {processing
+                  ? 'Submitting...'
+                  : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
               </button>
             )}
             {txResult && !txResult.success && !processing && (
               <button
                 className="wm-btn wm-btn-submit"
-                onClick={() => { reset(); handleSubmit() }}
+                onClick={() => {
+                  reset()
+                  handleSubmit()
+                }}
               >
                 Retry
               </button>

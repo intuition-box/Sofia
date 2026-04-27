@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useCallback, createElement } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  createElement,
+} from 'react'
 import type { ReactNode } from 'react'
 
 export interface CartItem {
@@ -27,7 +33,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((item: CartItem) => {
     setItems((prev) => {
-      if (prev.some((p) => p.termId === item.termId && p.side === item.side)) return prev
+      if (prev.some((p) => p.termId === item.termId && p.side === item.side))
+        return prev
       return [...prev, item]
     })
   }, [])
@@ -36,7 +43,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const merged = [...prev]
       for (const item of newItems) {
-        if (!merged.some((p) => p.termId === item.termId && p.side === item.side)) {
+        if (
+          !merged.some((p) => p.termId === item.termId && p.side === item.side)
+        ) {
           merged.push(item)
         }
       }
@@ -50,7 +59,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setItems([]), [])
 
-  return createElement(CartContext.Provider, { value: { items, count: items.length, addItem, addItems, removeItem, clear } }, children)
+  return createElement(
+    CartContext.Provider,
+    {
+      value: {
+        items,
+        count: items.length,
+        addItem,
+        addItems,
+        removeItem,
+        clear,
+      },
+    },
+    children,
+  )
 }
 
 export function useCart() {

@@ -13,7 +13,9 @@ import { fetchTrustCircle } from '@/services/trustCircleService'
 // eslint-disable-next-line import/first
 import { SUBJECT_IDS, PREDICATE_IDS } from '@/config'
 
-const mockedFetcher = useGetMyTrustCircleQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher = useGetMyTrustCircleQuery.fetcher as unknown as ReturnType<
+  typeof vi.fn
+>
 
 // Minimal triple fixture with one vault holding a >0 position.
 function tripleFixture(opts: {
@@ -88,7 +90,9 @@ describe('trustCircleService.fetchTrustCircle', () => {
       }),
     )
 
-    const accounts = await fetchTrustCircle(['0x1111111111111111111111111111111111111111'])
+    const accounts = await fetchTrustCircle([
+      '0x1111111111111111111111111111111111111111',
+    ])
     expect(accounts).toHaveLength(1)
     expect(accounts[0].id).toBe('t-with-shares')
   })
@@ -103,7 +107,9 @@ describe('trustCircleService.fetchTrustCircle', () => {
       }),
     )
 
-    const accounts = await fetchTrustCircle(['0x2222222222222222222222222222222222222222'])
+    const accounts = await fetchTrustCircle([
+      '0x2222222222222222222222222222222222222222',
+    ])
     expect(accounts[0].id).toBe('t-high')
     expect(accounts[1].id).toBe('t-low')
     expect(accounts[0].trustAmount).toBeGreaterThan(accounts[1].trustAmount)
@@ -126,7 +132,11 @@ describe('trustCircleService.fetchTrustCircle', () => {
       }),
     )
 
-    const accounts = await fetchTrustCircle(['0x3333333333333333333333333333333333333333'])
-    expect(accounts[0].walletAddress).toBe('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    const accounts = await fetchTrustCircle([
+      '0x3333333333333333333333333333333333333333',
+    ])
+    expect(accounts[0].walletAddress).toBe(
+      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    )
   })
 })

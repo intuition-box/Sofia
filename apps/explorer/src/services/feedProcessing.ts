@@ -1,4 +1,8 @@
-import { PREDICATE_TO_INTENTION, LABEL_TO_INTENTION, QUEST_BADGES } from '../config/intentions'
+import {
+  PREDICATE_TO_INTENTION,
+  LABEL_TO_INTENTION,
+  QUEST_BADGES,
+} from '../config/intentions'
 import { GRAPHQL_URL } from '../config'
 import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
 import { extractDomain, cleanLabel } from '../utils/formatting'
@@ -13,15 +17,21 @@ interface FeedEvent {
     counter_term_id?: string | null
     object?: {
       label?: string | null
-      value?: { thing?: { url?: string | null; name?: string | null } | null } | null
+      value?: {
+        thing?: { url?: string | null; name?: string | null } | null
+      } | null
     } | null
     predicate?: {
       term_id?: string | null
       label?: string | null
     } | null
   } | null
-  deposit?: { receiver?: { id?: string | null; label?: string | null } | null } | null
-  redemption?: { sender?: { id?: string | null; label?: string | null } | null } | null
+  deposit?: {
+    receiver?: { id?: string | null; label?: string | null } | null
+  } | null
+  redemption?: {
+    sender?: { id?: string | null; label?: string | null } | null
+  } | null
 }
 
 interface CertifierInfo {
@@ -108,8 +118,15 @@ export function processEvents(
 
     const objectLabel = triple.object?.label || ''
     const thingUrl = triple.object?.value?.thing?.url
-    const hasRealUrl = thingUrl || objectLabel.startsWith('http') || objectLabel.includes('.')
-    const url = thingUrl || (objectLabel.startsWith('http') ? objectLabel : hasRealUrl ? `https://${objectLabel}` : '')
+    const hasRealUrl =
+      thingUrl || objectLabel.startsWith('http') || objectLabel.includes('.')
+    const url =
+      thingUrl ||
+      (objectLabel.startsWith('http')
+        ? objectLabel
+        : hasRealUrl
+          ? `https://${objectLabel}`
+          : '')
     const domain = url ? extractDomain(url) : ''
 
     const predicateId = triple.predicate?.term_id || ''
@@ -171,7 +188,10 @@ export function processEvents(
         existing.intentionVaults[intention] = { termId, counterTermId }
       }
     } else {
-      const intentionVaults: Record<string, { termId: string; counterTermId: string }> = {}
+      const intentionVaults: Record<
+        string,
+        { termId: string; counterTermId: string }
+      > = {}
       if (intention) intentionVaults[intention] = { termId, counterTermId }
       groupedMap.set(key, {
         id: evt.id,
@@ -196,7 +216,9 @@ export function processEvents(
  * Enrich CircleItems with topic contexts from "in context of" nested triples.
  * Call after processEvents — does a secondary GraphQL query.
  */
-export async function enrichWithTopicContexts(items: CircleItem[]): Promise<void> {
+export async function enrichWithTopicContexts(
+  items: CircleItem[],
+): Promise<void> {
   // Collect all cert triple termIds from intentionVaults
   const termIdToItems = new Map<string, CircleItem[]>()
   for (const item of items) {

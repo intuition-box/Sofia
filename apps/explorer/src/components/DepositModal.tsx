@@ -17,7 +17,13 @@ interface DepositModalProps {
   onClose: () => void
 }
 
-export default function DepositModal({ isOpen, side, termId, title, onClose }: DepositModalProps) {
+export default function DepositModal({
+  isOpen,
+  side,
+  termId,
+  title,
+  onClose,
+}: DepositModalProps) {
   const [selected, setSelected] = useState(0.1)
   const [custom, setCustom] = useState('')
   const [balance, setBalance] = useState<string | null>(null)
@@ -54,9 +60,14 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget && !processing) handleClose() }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !processing) handleClose()
+      }}
     >
-      <Card className="w-full max-w-sm mx-4 p-0 overflow-hidden" style={{ borderTop: `3px solid ${accentColor}` }}>
+      <Card
+        className="w-full max-w-sm mx-4 p-0 overflow-hidden"
+        style={{ borderTop: `3px solid ${accentColor}` }}
+      >
         {/* Header */}
         <div className="px-5 pt-5 pb-3">
           <div className="flex items-center justify-between">
@@ -64,7 +75,12 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
               {isSupport ? 'Support' : 'Oppose'}
             </h3>
             {!processing && (
-              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground text-lg leading-none">&times;</button>
+              <button
+                onClick={handleClose}
+                className="text-muted-foreground hover:text-foreground text-lg leading-none"
+              >
+                &times;
+              </button>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1 truncate">{title}</p>
@@ -86,7 +102,9 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
                   View on Explorer →
                 </a>
               )}
-              <Button className="w-full mt-2" onClick={handleClose}>Close</Button>
+              <Button className="w-full mt-2" onClick={handleClose}>
+                Close
+              </Button>
             </div>
           )}
 
@@ -97,8 +115,22 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
                 <p className="text-xs text-destructive">{txResult.error}</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={handleClose}>Cancel</Button>
-                <Button className="flex-1" onClick={() => { reset(); handleSubmit() }}>Retry</Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    reset()
+                    handleSubmit()
+                  }}
+                >
+                  Retry
+                </Button>
               </div>
             </div>
           )}
@@ -107,7 +139,9 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
           {processing && (
             <div className="flex flex-col items-center gap-3 py-4">
               <SofiaLoader size={48} />
-              <p className="text-sm text-muted-foreground">Confirming transaction...</p>
+              <p className="text-sm text-muted-foreground">
+                Confirming transaction...
+              </p>
             </div>
           )}
 
@@ -116,17 +150,31 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
             <>
               {/* Amount pills */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground font-medium">Amount (TRUST)</label>
+                <label className="text-xs text-muted-foreground font-medium">
+                  Amount (TRUST)
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {AMOUNTS.map((amt) => (
                     <button
                       key={amt}
-                      onClick={() => { setSelected(amt); setCustom('') }}
+                      onClick={() => {
+                        setSelected(amt)
+                        setCustom('')
+                      }}
                       className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                       style={{
-                        borderColor: !custom.trim() && selected === amt ? accentColor : 'var(--border)',
-                        backgroundColor: !custom.trim() && selected === amt ? `${accentColor}15` : 'transparent',
-                        color: !custom.trim() && selected === amt ? accentColor : 'var(--foreground)',
+                        borderColor:
+                          !custom.trim() && selected === amt
+                            ? accentColor
+                            : 'var(--border)',
+                        backgroundColor:
+                          !custom.trim() && selected === amt
+                            ? `${accentColor}15`
+                            : 'transparent',
+                        color:
+                          !custom.trim() && selected === amt
+                            ? accentColor
+                            : 'var(--foreground)',
                       }}
                     >
                       {amt}
@@ -148,7 +196,13 @@ export default function DepositModal({ isOpen, side, termId, title, onClose }: D
               {/* Balance */}
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Balance</span>
-                <span className={balNum < amount ? 'text-destructive font-medium' : 'text-muted-foreground'}>
+                <span
+                  className={
+                    balNum < amount
+                      ? 'text-destructive font-medium'
+                      : 'text-muted-foreground'
+                  }
+                >
                   {balance ? `${parseFloat(balance).toFixed(4)} TRUST` : '...'}
                 </span>
               </div>

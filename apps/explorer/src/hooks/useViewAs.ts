@@ -3,7 +3,13 @@
  * When a viewAs address is set, hooks should use it instead of the connected wallet.
  */
 
-import { createContext, useContext, useState, useCallback, createElement } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  createElement,
+} from 'react'
 import type { ReactNode } from 'react'
 
 interface ViewAsContextValue {
@@ -16,7 +22,9 @@ interface ViewAsContextValue {
   /** Exit view-as mode */
   clearViewAs: () => void
   /** Get the effective address: viewAs address if set, otherwise connected wallet */
-  getEffectiveAddress: (connectedAddress: string | undefined) => string | undefined
+  getEffectiveAddress: (
+    connectedAddress: string | undefined,
+  ) => string | undefined
 }
 
 const ViewAsContext = createContext<ViewAsContextValue | null>(null)

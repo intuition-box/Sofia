@@ -15,9 +15,15 @@ export function useCircleFeed(addresses: string[] | undefined) {
   const cacheKey = normalized.join(',') || undefined
   const enabled = !!addresses && addresses.length > 0
 
-  const { data: initial, isLoading, error, refetch } = useQuery<CircleItem[]>({
+  const {
+    data: initial,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<CircleItem[]>({
     queryKey: cacheKey ? ['circle-feed', cacheKey] : ['circle-feed', undefined],
-    queryFn: () => fetchWithRetry(() => fetchCircleFeed(addresses!, BATCH_SIZE, 0)),
+    queryFn: () =>
+      fetchWithRetry(() => fetchCircleFeed(addresses!, BATCH_SIZE, 0)),
     enabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -39,7 +45,11 @@ export function useCircleFeed(addresses: string[] | undefined) {
     if (!enabled || loadingMore || !hasMore) return
     setLoadingMore(true)
     try {
-      const newItems = await fetchCircleFeed(addresses!, BATCH_SIZE, offsetRef.current)
+      const newItems = await fetchCircleFeed(
+        addresses!,
+        BATCH_SIZE,
+        offsetRef.current,
+      )
       if (newItems.length === 0) {
         setHasMore(false)
       } else {
@@ -65,9 +75,15 @@ export function useCircleFeed(addresses: string[] | undefined) {
     items,
     loading: isLoading && items.length === 0,
     loadingMore,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
     hasMore,
     loadMore,
-    refresh: () => { refetch() },
+    refresh: () => {
+      refetch()
+    },
   }
 }

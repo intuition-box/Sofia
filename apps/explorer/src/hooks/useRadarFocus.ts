@@ -13,7 +13,13 @@
  * is wired from `useUserActivity` / `useTopicCertifications`.
  */
 import { useMemo, useState } from 'react'
-import { RADAR_VERBS, syntheticCount, type RadarAxis, type RadarSeries, type SeriesFilter } from '@/lib/radar'
+import {
+  RADAR_VERBS,
+  syntheticCount,
+  type RadarAxis,
+  type RadarSeries,
+  type SeriesFilter,
+} from '@/lib/radar'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import type { OnChainTopic } from '@/services/taxonomyService'

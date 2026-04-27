@@ -36,7 +36,9 @@ export const MultiVaultAbi = [
       { internalType: 'uint256[]', name: 'minAssets', type: 'uint256[]' },
     ],
     name: 'redeemBatch',
-    outputs: [{ internalType: 'uint256[]', name: 'received', type: 'uint256[]' }],
+    outputs: [
+      { internalType: 'uint256[]', name: 'received', type: 'uint256[]' },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },

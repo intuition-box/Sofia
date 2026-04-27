@@ -79,14 +79,23 @@ export default function PersonalStats({
         </div>
         <div className="ps-empty">
           <div className="ps-empty-title">Not in the Alpha Tester Program</div>
-          <div className="ps-empty-sub">Start using Sofia to claim your spot on the leaderboard.</div>
+          <div className="ps-empty-sub">
+            Start using Sofia to claim your spot on the leaderboard.
+          </div>
         </div>
       </section>
     )
   }
 
   const rank = alphaRank!
-  const rankClass = rank === 1 ? 'ps-rank ps-rank--1' : rank === 2 ? 'ps-rank ps-rank--2' : rank === 3 ? 'ps-rank ps-rank--3' : 'ps-rank'
+  const rankClass =
+    rank === 1
+      ? 'ps-rank ps-rank--1'
+      : rank === 2
+        ? 'ps-rank ps-rank--2'
+        : rank === 3
+          ? 'ps-rank ps-rank--3'
+          : 'ps-rank'
 
   const alphaRows: StatRow[] = [
     { label: 'Transactions', value: alphaData!.tx.toLocaleString() },
@@ -122,8 +131,12 @@ export default function PersonalStats({
           disabled={sharing}
           aria-label="Share on X"
         >
-          <svg viewBox="0 0 1200 1227" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            <path d="M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z"/>
+          <svg
+            viewBox="0 0 1200 1227"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden
+          >
+            <path d="M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z" />
           </svg>
           {sharing ? 'Sharing…' : 'Share on X'}
         </button>
@@ -137,14 +150,18 @@ export default function PersonalStats({
               <span className="ps-rank-hash">#</span>
               <span>{rank}</span>
             </div>
-            <span className="ps-rank-of">of {totalAlphaTesters.toLocaleString()}</span>
+            <span className="ps-rank-of">
+              of {totalAlphaTesters.toLocaleString()}
+            </span>
           </div>
 
           <div className="ps-divider" />
 
           <div className="ps-identity">
             <img src={getAvatar(walletAddress)} alt="" className="ps-avatar" />
-            <span className="ps-name">{getDisplay(walletAddress) || displayName}</span>
+            <span className="ps-name">
+              {getDisplay(walletAddress) || displayName}
+            </span>
             <span className="ps-pill">
               <span className="ps-pill-dot" /> Alpha Tester
             </span>
@@ -152,7 +169,11 @@ export default function PersonalStats({
         </div>
 
         {/* Stats zone */}
-        <div className={'ps-stats' + (poolRows.length > 0 ? ' ps-stats--split' : '')}>
+        <div
+          className={
+            'ps-stats' + (poolRows.length > 0 ? ' ps-stats--split' : '')
+          }
+        >
           <div className="ps-stats-col">
             <div className="ps-section-title">Season Performance</div>
             <div className="ps-stat-list">
@@ -175,8 +196,12 @@ export default function PersonalStats({
                     <span
                       className={
                         'ps-stat-value' +
-                        (r.variant === 'positive' ? ' ps-stat-value--positive' : '') +
-                        (r.variant === 'negative' ? ' ps-stat-value--negative' : '')
+                        (r.variant === 'positive'
+                          ? ' ps-stat-value--positive'
+                          : '') +
+                        (r.variant === 'negative'
+                          ? ' ps-stat-value--negative'
+                          : '')
                       }
                     >
                       {r.value}

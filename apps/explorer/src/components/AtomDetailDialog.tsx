@@ -1,3 +1,4 @@
+
 /**
  * AtomDetailDialog — detail view for a platform atom vault.
  * Shows: Market Cap, Share Price, Total Shares, Holders leaderboard,

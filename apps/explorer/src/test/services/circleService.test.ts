@@ -28,9 +28,12 @@ import {
 // eslint-disable-next-line import/first
 import { PREDICATE_IDS, SUBJECT_IDS } from '@/config'
 
-const mockedTrustFetcher = useGetTrustCircleAccountsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
-const mockedActivityFetcher = useGetSofiaTrustedActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
-const mockedFollowingFetcher = useGetFollowingCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedTrustFetcher =
+  useGetTrustCircleAccountsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedActivityFetcher =
+  useGetSofiaTrustedActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFollowingFetcher =
+  useGetFollowingCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 const mockedProcess = processEvents as unknown as ReturnType<typeof vi.fn>
 
 describe('circleService.fetchCircleFeed', () => {
@@ -71,8 +74,16 @@ describe('circleService.fetchCircleFeed', () => {
     mockedTrustFetcher.mockReturnValue(() =>
       Promise.resolve({
         triples: [
-          { object: { accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }] } },
-          { object: { accounts: [{ id: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }] } },
+          {
+            object: {
+              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
+            },
+          },
+          {
+            object: {
+              accounts: [{ id: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }],
+            },
+          },
         ],
       }),
     )
@@ -91,7 +102,13 @@ describe('circleService.fetchCircleFeed', () => {
   it('caches trusted wallets per address set and skips the first fetcher on reuse', async () => {
     mockedTrustFetcher.mockReturnValue(() =>
       Promise.resolve({
-        triples: [{ object: { accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }] } }],
+        triples: [
+          {
+            object: {
+              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
+            },
+          },
+        ],
       }),
     )
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
@@ -106,7 +123,13 @@ describe('circleService.fetchCircleFeed', () => {
   it('re-fetches trust circle when the address set changes', async () => {
     mockedTrustFetcher.mockReturnValue(() =>
       Promise.resolve({
-        triples: [{ object: { accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }] } }],
+        triples: [
+          {
+            object: {
+              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
+            },
+          },
+        ],
       }),
     )
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
@@ -130,12 +153,16 @@ describe('circleService.fetchFollowingCount', () => {
 
     const count = await fetchFollowingCount('0xAaAaAAaA')
 
-    expect(mockedFollowingFetcher).toHaveBeenCalledWith({ address: '0xaaaaaaaa' })
+    expect(mockedFollowingFetcher).toHaveBeenCalledWith({
+      address: '0xaaaaaaaa',
+    })
     expect(count).toBe(17)
   })
 
   it('returns 0 on fetcher rejection', async () => {
-    mockedFollowingFetcher.mockReturnValue(() => Promise.reject(new Error('boom')))
+    mockedFollowingFetcher.mockReturnValue(() =>
+      Promise.reject(new Error('boom')),
+    )
     const count = await fetchFollowingCount('0xAAA')
     expect(count).toBe(0)
   })

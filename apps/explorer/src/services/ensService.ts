@@ -99,7 +99,9 @@ export async function resolveEnsAvatar(address: string): Promise<void> {
  * Resolve an ENS name to a wallet address.
  * Returns null if resolution fails.
  */
-export async function resolveEnsToAddress(ensName: string): Promise<string | null> {
+export async function resolveEnsToAddress(
+  ensName: string,
+): Promise<string | null> {
   try {
     const res = await fetch(`https://api.ensdata.net/${ensName}`)
     if (res.ok) {
@@ -115,7 +117,7 @@ async function resolveAvatars(
   onUpdate: () => void,
 ): Promise<void> {
   const needAvatar = addresses.filter(
-    (a) => labelCache.get(a) && !avatarCache.has(a)
+    (a) => labelCache.get(a) && !avatarCache.has(a),
   )
   if (needAvatar.length === 0) return
 
@@ -144,7 +146,9 @@ export async function batchResolve(
 
   // Step 2: ENS reverse lookup ONLY for addresses with no label at all
   // Skip if GraphQL already returned any label (ENS or not)
-  const needsEns = uncached.filter((a) => !labelCache.has(a) || labelCache.get(a) === null)
+  const needsEns = uncached.filter(
+    (a) => !labelCache.has(a) || labelCache.get(a) === null,
+  )
   if (needsEns.length > 0) {
     await Promise.allSettled(needsEns.map(resolveViaEns))
     onUpdate()

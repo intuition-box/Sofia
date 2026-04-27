@@ -31,7 +31,8 @@ import {
   fetchTrendingItems,
 } from '@/services/trendingService'
 
-const mockedFetcher = useGetTrendingByPredicateQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher =
+  useGetTrendingByPredicateQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 
 const sampleValidTriple = {
   term_id: 't-1',
@@ -48,7 +49,10 @@ describe('trendingService — pure helpers', () => {
     expect(
       isValidTriple({
         ...sampleValidTriple,
-        object: { label: 'alice.eth', value: { thing: { url: 'https://alice.eth' } } },
+        object: {
+          label: 'alice.eth',
+          value: { thing: { url: 'https://alice.eth' } },
+        },
       } as never),
     ).toBe(false)
   })
@@ -63,7 +67,9 @@ describe('trendingService — pure helpers', () => {
   })
 
   it('isValidTriple: rejects triples with zero certifiers', () => {
-    expect(isValidTriple({ ...sampleValidTriple, all_positions: [] } as never)).toBe(false)
+    expect(
+      isValidTriple({ ...sampleValidTriple, all_positions: [] } as never),
+    ).toBe(false)
   })
 
   it('isValidTriple: accepts a legitimate URL triple', () => {

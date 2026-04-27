@@ -10,32 +10,41 @@
 import type { AnchorHTMLAttributes } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { FaviconWrapper } from '@0xsofia/design-system'
-import { INTENTION_CONFIG, LABEL_TO_INTENTION, type IntentionType } from '@/config/intentions'
+import {
+  INTENTION_CONFIG,
+  LABEL_TO_INTENTION,
+  type IntentionType,
+} from '@/config/intentions'
 
 export type ClaimPosition = 'support' | 'oppose' | 'certify'
 export type ClaimBadge = 'early' | 'pioneer' | 'viral' | 'contrarian'
 
-const POSITION_META: Record<ClaimPosition, { label: string; color: string; arrow: string }> = {
+const POSITION_META: Record<
+  ClaimPosition,
+  { label: string; color: string; arrow: string }
+> = {
   support: { label: 'Supported', color: '#6dd4a0', arrow: '▲' },
-  oppose:  { label: 'Opposed',   color: '#e87c7c', arrow: '▼' },
+  oppose: { label: 'Opposed', color: '#e87c7c', arrow: '▼' },
   certify: { label: 'Certified', color: '#a78bdb', arrow: '✓' },
 }
 
 const BADGE_META: Record<ClaimBadge, { label: string; color: string }> = {
-  early:      { label: 'Early',      color: '#6dd4a0' },
-  pioneer:    { label: 'Pioneer',    color: '#ffc6b0' },
-  viral:      { label: 'Viral',      color: '#e0896a' },
+  early: { label: 'Early', color: '#6dd4a0' },
+  pioneer: { label: 'Pioneer', color: '#ffc6b0' },
+  viral: { label: 'Viral', color: '#e0896a' },
   contrarian: { label: 'Contrarian', color: '#e87c7c' },
 }
 
 const BADGE_ICON: Partial<Record<ClaimBadge, string>> = {
   pioneer: '/badges/pioneer.png',
-  early:   '/badges/explorer.png',
-  viral:   '/badges/contributor.png',
+  early: '/badges/explorer.png',
+  viral: '/badges/contributor.png',
 }
 
-export interface ProfileClaimCardProps
-  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'title'> {
+export interface ProfileClaimCardProps extends Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  'title'
+> {
   /** Claim title (page title). Rendered in Fraunces 15px. */
   title: string
   /** Root host shown under the title in JetBrains Mono. */
@@ -78,14 +87,16 @@ export default function ProfileClaimCard({
   const pos = POSITION_META[position]
   const badgeMeta = badge ? BADGE_META[badge] : null
   const badgeIcon = badge ? BADGE_ICON[badge] : undefined
-  const intent = (LABEL_TO_INTENTION[predicateLabel.trim().toLowerCase()] ?? '') as string
+  const intent = (LABEL_TO_INTENTION[predicateLabel.trim().toLowerCase()] ??
+    '') as string
   const intentSlug = (Object.keys(INTENTION_CONFIG) as IntentionType[]).find(
     (k) => INTENTION_CONFIG[k].label === intent,
   )
   const verbLabel = intent || predicateLabel
 
   const totalVotes = supportCount + opposeCount
-  const supportPct = totalVotes > 0 ? Math.round((supportCount / totalVotes) * 100) : 50
+  const supportPct =
+    totalVotes > 0 ? Math.round((supportCount / totalVotes) * 100) : 50
 
   const cls = className ? `pf-claim-card ${className}` : 'pf-claim-card'
   const style = {
@@ -96,7 +107,12 @@ export default function ProfileClaimCard({
   return (
     <a className={cls} style={style} {...rest}>
       <div className="pf-claim-head">
-        <FaviconWrapper className="pf-claim-fav" size={28} src={faviconSrc} alt={host} />
+        <FaviconWrapper
+          className="pf-claim-fav"
+          size={28}
+          src={faviconSrc}
+          alt={host}
+        />
         <div className="pf-claim-meta">
           <span className="pf-claim-title">{title}</span>
           <span className="pf-claim-host">{host}</span>
@@ -119,17 +135,25 @@ export default function ProfileClaimCard({
             <span className={`fc-verb-tag ${intentSlug}`}>{verbLabel}</span>
           )}
           {topicChips.slice(0, 2).map((t) => (
-            <span key={t.id} className="fc-tag">{t.label}</span>
+            <span key={t.id} className="fc-tag">
+              {t.label}
+            </span>
           ))}
         </div>
       )}
 
       <div className="pf-claim-pnl">
-        <span className="pf-claim-pnl-pct">{pnlPct >= 0 ? '+' : ''}{pnlPct}%</span>
+        <span className="pf-claim-pnl-pct">
+          {pnlPct >= 0 ? '+' : ''}
+          {pnlPct}%
+        </span>
       </div>
 
       <div className="pf-claim-bar">
-        <span className="pf-claim-bar-sup" style={{ width: `${supportPct}%` }} />
+        <span
+          className="pf-claim-bar-sup"
+          style={{ width: `${supportPct}%` }}
+        />
       </div>
       <div className="pf-claim-stats">
         <span className="pf-claim-stat support">

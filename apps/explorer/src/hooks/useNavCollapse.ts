@@ -20,7 +20,10 @@ export function useNavCollapse() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, collapsed ? 'collapsed' : 'expanded')
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        collapsed ? 'collapsed' : 'expanded',
+      )
     } catch {
       // ignore — private mode / storage full
     }

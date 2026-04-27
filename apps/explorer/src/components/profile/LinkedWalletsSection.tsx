@@ -24,11 +24,15 @@ export default function LinkedWalletsSection() {
       <ul className="lws-list">
         {addresses.map((addr, idx) => {
           const isPrimary = idx === 0
-          const label = isPrimary && primary ? getDisplay(primary) : shortAddress(addr)
-          const display = label && !label.startsWith('0x') ? label : shortAddress(addr)
+          const label =
+            isPrimary && primary ? getDisplay(primary) : shortAddress(addr)
+          const display =
+            label && !label.startsWith('0x') ? label : shortAddress(addr)
           return (
             <li key={addr} className="lws-item">
-              <span className="lws-address" title={addr}>{display}</span>
+              <span className="lws-address" title={addr}>
+                {display}
+              </span>
               {isPrimary && <span className="lws-primary-tag">primary</span>}
             </li>
           )

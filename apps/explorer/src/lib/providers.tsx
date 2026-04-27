@@ -55,7 +55,11 @@ function replacer(_key: string, value: unknown): unknown {
 
 function reviver(_key: string, value: unknown): unknown {
   if (typeof value === 'string' && value.startsWith(BIGINT_TAG)) {
-    try { return BigInt(value.slice(BIGINT_TAG.length)) } catch { return value }
+    try {
+      return BigInt(value.slice(BIGINT_TAG.length))
+    } catch {
+      return value
+    }
   }
   return value
 }
@@ -89,9 +93,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <CartProvider>
           <ViewAsProvider>
-            <BrowserRouter>
-              {children}
-            </BrowserRouter>
+            <BrowserRouter>{children}</BrowserRouter>
           </ViewAsProvider>
         </CartProvider>
       </PersistQueryClientProvider>

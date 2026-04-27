@@ -33,7 +33,8 @@ import { useGetClaimsByTermIdsQuery } from '@0xsofia/graphql'
 // eslint-disable-next-line import/first
 import { fetchDebateClaims } from '@/services/debateService'
 
-const mockedFetcher = useGetClaimsByTermIdsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher =
+  useGetClaimsByTermIdsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 
 describe('debateService.fetchDebateClaims', () => {
   beforeEach(() => {
@@ -126,7 +127,8 @@ describe('debateService.fetchDebateClaims', () => {
     }))
     vi.resetModules()
 
-    const { fetchDebateClaims: freshFetch } = await import('@/services/debateService')
+    const { fetchDebateClaims: freshFetch } =
+      await import('@/services/debateService')
     const claims = await freshFetch()
     expect(claims).toEqual([])
     expect(mockedFetcher).not.toHaveBeenCalled()

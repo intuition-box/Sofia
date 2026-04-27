@@ -33,12 +33,42 @@ export type VerbFilter = SeriesFilter
 
 /** Six-verb ordering used by the proto radar chart (trust + distrust excluded). */
 export const RADAR_VERBS: readonly RadarAxis[] = [
-  { id: 'work',        label: INTENTION_CONFIG.work.label,        emoji: '💼', color: INTENTION_CONFIG.work.color },
-  { id: 'learning',    label: INTENTION_CONFIG.learning.label,    emoji: '📚', color: INTENTION_CONFIG.learning.color },
-  { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨', color: INTENTION_CONFIG.inspiration.color },
-  { id: 'fun',         label: INTENTION_CONFIG.fun.label,         emoji: '🎮', color: INTENTION_CONFIG.fun.color },
-  { id: 'buying',      label: INTENTION_CONFIG.buying.label,      emoji: '🛍️', color: INTENTION_CONFIG.buying.color },
-  { id: 'music',       label: INTENTION_CONFIG.music.label,       emoji: '🎵', color: INTENTION_CONFIG.music.color },
+  {
+    id: 'work',
+    label: INTENTION_CONFIG.work.label,
+    emoji: '💼',
+    color: INTENTION_CONFIG.work.color,
+  },
+  {
+    id: 'learning',
+    label: INTENTION_CONFIG.learning.label,
+    emoji: '📚',
+    color: INTENTION_CONFIG.learning.color,
+  },
+  {
+    id: 'inspiration',
+    label: INTENTION_CONFIG.inspiration.label,
+    emoji: '✨',
+    color: INTENTION_CONFIG.inspiration.color,
+  },
+  {
+    id: 'fun',
+    label: INTENTION_CONFIG.fun.label,
+    emoji: '🎮',
+    color: INTENTION_CONFIG.fun.color,
+  },
+  {
+    id: 'buying',
+    label: INTENTION_CONFIG.buying.label,
+    emoji: '🛍️',
+    color: INTENTION_CONFIG.buying.color,
+  },
+  {
+    id: 'music',
+    label: INTENTION_CONFIG.music.label,
+    emoji: '🎵',
+    color: INTENTION_CONFIG.music.color,
+  },
 ]
 
 /** Deterministic synthetic count for a (seriesKey, axisKey) pair — 0..12. */
@@ -76,8 +106,14 @@ export function positionAxes(
   bottomAxes: readonly RadarAxis[],
 ): PositionedAxis[] {
   return [
-    ...topAxes.map((a, i) => ({ ...a, angle: angleInHalf(i, topAxes.length, 'top') })),
-    ...bottomAxes.map((a, i) => ({ ...a, angle: angleInHalf(i, bottomAxes.length, 'bottom') })),
+    ...topAxes.map((a, i) => ({
+      ...a,
+      angle: angleInHalf(i, topAxes.length, 'top'),
+    })),
+    ...bottomAxes.map((a, i) => ({
+      ...a,
+      angle: angleInHalf(i, bottomAxes.length, 'bottom'),
+    })),
   ]
 }
 
