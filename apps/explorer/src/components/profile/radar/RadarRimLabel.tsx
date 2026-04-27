@@ -11,6 +11,7 @@ interface RadarRimLabelProps {
   outerR: number
   isActive: boolean
   onClick: () => void
+  onHover?: (id: string | null, e: React.MouseEvent<SVGGElement>) => void
 }
 
 export default function RadarRimLabel({
@@ -20,6 +21,7 @@ export default function RadarRimLabel({
   outerR,
   isActive,
   onClick,
+  onHover,
 }: RadarRimLabelProps) {
   const lx = cx + Math.cos(axis.angle) * (outerR + 26)
   const ly = cy + Math.sin(axis.angle) * (outerR + 26)
@@ -30,6 +32,8 @@ export default function RadarRimLabel({
       style={{ ['--topic-color' as string]: axis.color, cursor: 'pointer' }}
       transform={`translate(${lx.toFixed(1)}, ${ly.toFixed(1)})`}
       onClick={onClick}
+      onMouseEnter={(e) => onHover?.(axis.id, e)}
+      onMouseLeave={(e) => onHover?.(null, e)}
     >
       <circle r="15" className="pc-radar-label-bg" />
       <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="14">

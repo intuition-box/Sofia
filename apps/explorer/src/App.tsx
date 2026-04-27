@@ -11,6 +11,7 @@ import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
+import { RightRailProvider } from './contexts/RightRailContext'
 import WsStatusBadge from './components/WsStatusBadge'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import LandingPage from './pages/LandingPage'
@@ -25,6 +26,8 @@ import DomainNicheSelectionPage from './pages/DomainNicheSelectionPage'
 import AllPlatformsPage from './pages/AllPlatformsPage'
 import ScoresPage from './pages/ScoresPage'
 import CirclesPage from './pages/CirclesPage'
+import ComposePage from './pages/ComposePage'
+import PerspectivePage from './pages/PerspectivePage'
 import StreaksPage from './pages/StreaksPage'
 import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
@@ -56,6 +59,15 @@ export default function App() {
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
     location.pathname.startsWith('/profile') || location.pathname === '/scores'
+  // Routes that run full-width — no ProfileDrawer, no RightSidebar.
+  const isFullWidthPage =
+    location.pathname.startsWith('/circles') ||
+    location.pathname.startsWith('/feed') ||
+    location.pathname.startsWith('/compose') ||
+    location.pathname.startsWith('/perspective') ||
+    location.pathname.startsWith('/vote') ||
+    location.pathname.startsWith('/streaks') ||
+    location.pathname.startsWith('/leaderboard')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -88,6 +100,7 @@ export default function App() {
   }
 
   return (
+    <RightRailProvider>
     <div className={`min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}>
       {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
@@ -100,7 +113,7 @@ export default function App() {
         collapsed={navCollapsed}
         onToggleCollapse={toggleNavCollapsed}
       />
-      <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
+      <RightSidebar hidden={isProfilePage || isFullWidthPage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
         items={cart.items}
@@ -123,7 +136,16 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
+      <main
+        className={[
+          'main-content',
+          isProfilePage && sidebar.isDesktop ? 'main-content--profile' : '',
+          isFullWidthPage && sidebar.isDesktop ? 'main-content--no-right' : '',
+          !sidebar.isDesktop ? 'main-content--no-sidebar' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}
@@ -143,11 +165,14 @@ export default function App() {
           <Route path="/scores" element={<ProtectedRoute><ScoresPage /></ProtectedRoute>} />
           <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
           <Route path="/circles/:id" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+          <Route path="/compose" element={<ProtectedRoute><ComposePage /></ProtectedRoute>} />
+          <Route path="/perspective/:mode" element={<ProtectedRoute><PerspectivePage /></ProtectedRoute>} />
           <Route path="/streaks" element={<ProtectedRoute><StreaksPage /></ProtectedRoute>} />
           <Route path="/vote" element={<ProtectedRoute><VotePage /></ProtectedRoute>} />
         </Routes>
         </RouteErrorBoundary>
       </main>
     </div>
+    </RightRailProvider>
   )
 }

@@ -9,6 +9,7 @@
  * rim emojis via the two onChange callbacks (callers typically point
  * them at the same setter).
  */
+import { useRef, useState } from 'react'
 import { positionAxes, type RadarAxis, type RadarSeries, type SeriesFilter } from '@/lib/radar'
 import RadarPills from './radar/RadarPills'
 import RadarHalfLabels from './radar/RadarHalfLabels'
@@ -56,6 +57,36 @@ export default function RadarChart({
   const positioned = positionAxes(topAxes, bottomAxes)
   const maxCount = Math.max(1, ...series.flatMap((s) => Object.values(s.counts)))
   const pillList = pillItems ?? series
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const [hoveredAxisId, setHoveredAxisId] = useState<string | null>(null)
+  const [tipPos, setTipPos] = useState<{ x: number; y: number } | null>(null)
+  const hoveredAxis = hoveredAxisId
+    ? positioned.find((a) => a.id === hoveredAxisId)
+    : null
+
+  /** Map a mouse event to coordinates relative to the wrap container so
+   *  we can position the HTML tooltip absolutely over the SVG. */
+  const eventToWrapPos = (
+    e: React.MouseEvent<Element>,
+  ): { x: number; y: number } | null => {
+    const wrap = wrapRef.current
+    if (!wrap) return null
+    const rect = wrap.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const handleAxisHover = (
+    id: string | null,
+    e: React.MouseEvent<SVGElement>,
+  ) => {
+    setHoveredAxisId(id)
+    if (id === null) {
+      setTipPos(null)
+    } else {
+      const pos = eventToWrapPos(e)
+      if (pos) setTipPos(pos)
+    }
+  }
 
   /** Pill click, rim click and centre reset all converge on a single id. */
   const setFocus = (id: SeriesFilter) => {
@@ -71,19 +102,44 @@ export default function RadarChart({
   )
 
   return (
-    <div className="pc-radar-wrap">
+    <div
+      className="pc-radar-wrap"
+      ref={wrapRef}
+      onMouseMove={(e) => {
+        if (!hoveredAxisId) return
+        const pos = eventToWrapPos(e)
+        if (pos) setTipPos(pos)
+      }}
+      onMouseLeave={() => {
+        setHoveredAxisId(null)
+        setTipPos(null)
+      }}
+    >
       {pillsPosition === 'top' ? pills : null}
 
-      <svg className="pc-radar" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+      <svg
+        className="pc-radar"
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+      >
         <defs>
           <filter id="radar-glow" x="-25%" y="-25%" width="150%" height="150%">
             <feGaussianBlur stdDeviation="3.5" />
           </filter>
+          {/* Sofia mark: solid black fill + 1.2px green outline. The
+              hover glow in CSS adds drop-shadows *outside* this shape
+              so the interior stays black — only the ring lights up. */}
           <filter id="radar-logo-outline">
             <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="dilated" />
             <feComposite in="dilated" in2="SourceAlpha" operator="out" result="edge" />
-            <feFlood floodColor="#6dd4a0" />
-            <feComposite operator="in" in2="edge" />
+            <feFlood floodColor="#02000e" result="blackFlood" />
+            <feComposite in="blackFlood" in2="SourceAlpha" operator="in" result="blackFill" />
+            <feFlood floodColor="#6dd4a0" result="greenFlood" />
+            <feComposite in="greenFlood" in2="edge" operator="in" result="greenRing" />
+            <feMerge>
+              <feMergeNode in="blackFill" />
+              <feMergeNode in="greenRing" />
+            </feMerge>
           </filter>
           {series.map((s) => (
             <radialGradient
@@ -123,11 +179,12 @@ export default function RadarChart({
           bottomLabel={bottomLabel}
         />
 
-        {/* Spokes — one per axis */}
+        {/* Spokes — one per axis, always at the same faint opacity so the
+            focused axis doesn't draw a bright line from centre to rim
+            (it was adding visual noise over the polygons). */}
         {positioned.map((d) => {
           const ex = CX + Math.cos(d.angle) * OUTER_R
           const ey = CY + Math.sin(d.angle) * OUTER_R
-          const isActive = axisFilter === d.id
           return (
             <line
               key={d.id}
@@ -135,9 +192,9 @@ export default function RadarChart({
               y1={CY}
               x2={ex.toFixed(1)}
               y2={ey.toFixed(1)}
-              stroke={isActive ? d.color : 'currentColor'}
-              strokeOpacity={isActive ? 0.5 : 0.08}
-              strokeWidth={isActive ? 2 : 1}
+              stroke="currentColor"
+              strokeOpacity={0.08}
+              strokeWidth={1}
             />
           )
         })}
@@ -165,8 +222,10 @@ export default function RadarChart({
             outerR={OUTER_R}
             isActive={axisFilter === d.id}
             onClick={() => onAxisClick(d.id)}
+            onHover={handleAxisHover}
           />
         ))}
+
 
         {/* Centre Sofia logo — click to clear both filters */}
         <g
@@ -195,6 +254,22 @@ export default function RadarChart({
           <title>Clear filter</title>
         </g>
       </svg>
+
+      {/* HTML tooltip — follows the cursor over the radar. Positioned
+          in pixel coords relative to `.pc-radar-wrap`. */}
+      {hoveredAxis && tipPos ? (
+        <div
+          className="pc-radar-tip"
+          style={{
+            left: tipPos.x + 14,
+            top: tipPos.y - 28,
+            background: hoveredAxis.color,
+            color: '#02000e',
+          }}
+        >
+          {hoveredAxis.label}
+        </div>
+      ) : null}
 
       {pillsPosition === 'bottom' ? pills : null}
     </div>

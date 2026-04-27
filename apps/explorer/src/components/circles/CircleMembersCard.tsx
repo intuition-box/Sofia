@@ -1,10 +1,11 @@
 /**
  * CircleMembersCard — stack of member avatars + "View all" button. Real
- * data from `useTrustCircle`. Uses the shared `avatarColor` util so
- * fallback tiles are coloured consistently with the nav sidebar.
+ * data from `useTrustCircle`. Delegates avatar rendering to
+ * `<MemberAvatar />` so ENS images + coloured initials fallback are
+ * handled uniformly.
  */
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import { avatarColor } from '@/utils/avatarColor'
+import MemberAvatar from './MemberAvatar'
 
 interface CircleMembersCardProps {
   members: TrustCircleAccount[]
@@ -24,18 +25,11 @@ export default function CircleMembersCard({ members, onViewAll }: CircleMembersC
       <div className="crd-members-row">
         <div className="crd-members-stack">
           {visible.map((m) => (
-            <span
-              key={m.termId}
-              className="mav"
-              style={{ background: avatarColor(m.termId || m.label) }}
-              title={m.label}
-            >
-              {m.label.slice(0, 2).toUpperCase()}
-            </span>
+            <MemberAvatar key={m.termId} member={m} />
           ))}
         </div>
         {extra > 0 && (
-          <button type="button" className="crd-members-more">
+          <button type="button" className="crd-members-more" onClick={onViewAll}>
             +{extra}
           </button>
         )}

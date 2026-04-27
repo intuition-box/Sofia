@@ -98,6 +98,32 @@ export default function ProfileCharts({
     ? 'your best picks'
     : topicById(focus)?.label ?? focus
 
+  // Resolve the focused axis (topic OR verb) into meta for the
+  // details panel — the panel needs label + colour to render the
+  // title, whether a topic or an intent is currently focused.
+  const focusMeta = useMemo(() => {
+    if (focus === 'all') return undefined
+    const topic = topicAxes.find((a) => a.id === focus)
+    if (topic) {
+      return {
+        kind: 'topic' as const,
+        label: topic.label,
+        emoji: topic.emoji,
+        color: topic.color,
+      }
+    }
+    const verb = verbAxes.find((a) => a.id === focus)
+    if (verb) {
+      return {
+        kind: 'verb' as const,
+        label: verb.label,
+        emoji: verb.emoji,
+        color: verb.color,
+      }
+    }
+    return undefined
+  }, [focus, topicAxes, verbAxes])
+
   return (
     <section className="pc-section">
       <div className="pc-grid">
@@ -119,6 +145,7 @@ export default function ProfileCharts({
             <ProfileDetailsPanel
               topics={topicStats}
               topicFilter={focus === 'all' ? 'all' : focus}
+              focusMeta={focusMeta}
               onClearFilter={() => setFocus('all')}
             />
             <div className="pc-main-cal">

@@ -141,8 +141,7 @@ export default function ScoresPage() {
         <div className="pf-ts-header-title-block">
           <h1 className="pf-ts-header-title">Score</h1>
           <p className="pf-ts-header-desc">
-            Your score across the topics you anchor in, the URLs that made it, and how the network
-            reacted to your signals.
+            Break down your reputation score across topics, intents, URLs and engagement.
           </p>
         </div>
         <div className="pf-ts-header-stat">

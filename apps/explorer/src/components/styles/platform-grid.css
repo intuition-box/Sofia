@@ -1,23 +1,299 @@
-/* ── PlatformGrid ── */
-.pg-domain-header { padding-top: 8px; margin-bottom: 8px; }
-.pg-domain-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.pg-domain-count { font-size: 10px; font-weight: 400; }
-.pg-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-.pg-card { padding: 12px; display: flex; flex-direction: column; gap: 10px; justify-content: space-between; }
-.pg-identity { display: flex; align-items: center; gap: 8px; flex: 1; }
-.pg-icon { width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0; }
-.pg-name-wrap { flex: 1; min-width: 0; }
-.pg-name { font-size: 0.8rem; display: block; }
-.pg-card--connected { border-color: #10B981; border-width: 1.5px; }
-.pg-card--suggested { background: color-mix(in oklab, var(--primary) 5%, transparent); border-color: color-mix(in oklab, var(--primary) 40%, transparent); box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 15%, transparent); }
-.pg-actions { display: flex; gap: 6px; }
-.pg-action-btn { flex: 1; font-size: 10px; height: 24px; padding: 0 8px; }
-.pg-certify-link { flex: 1; }
-.pg-certify-btn { width: 100%; font-size: 10px; height: 24px; padding: 0 8px; }
-.pg-badge { margin-top: 4px; }
-.pg-username-row { display: flex; gap: 6px; }
-.pg-username-input { height: 28px; font-size: 11px; flex: 1; }
-.pg-username-submit { height: 28px; width: 28px; padding: 0; flex-shrink: 0; }
-.pg-verify-row { display: flex; align-items: center; gap: 8px; }
-.pg-verify-label { font-size: 11px; color: var(--muted-foreground); }
-.pg-verify-btn { height: 24px; font-size: 11px; }
+/**
+ * Platform connect grid — shared by `/profile/interest/:topicId/platforms`
+ * (PlatformConnectionPage) and `/platforms` Connect tab (AllPlatformsPage).
+ *
+ * Proto-aligned cards on `--ds-*` tokens. No shadcn Card / Tailwind
+ * utilities — the pre-compiled Tailwind doesn't surface half the
+ * classes the shadcn primitives relied on.
+ */
+
+.pg-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Search bar ──────────────────────────────────────────────── */
+.pg-search {
+  position: relative;
+  max-width: 420px;
+}
+.pg-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.pg-search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pg-search-input::placeholder {
+  color: var(--ds-muted);
+}
+.pg-search-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+
+/* ── Grid of cards ───────────────────────────────────────────── */
+.pg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.pg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  transition: all 0.18s ease;
+}
+.pg-card:hover {
+  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -18px color-mix(in srgb, var(--ds-ink) 35%, transparent);
+}
+.pg-card--connected {
+  border-color: #6dd4a0;
+  box-shadow: 0 0 0 1px #6dd4a0 inset;
+}
+.pg-card--suggested {
+  background: color-mix(in srgb, var(--ds-accent) 8%, var(--ds-card));
+}
+
+/* Identity (favicon + name). */
+.pg-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.pg-favicon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  /* Neutral light grey so neither a white-on-transparent nor a
+     black-on-transparent favicon disappears into the container. */
+  background: #f2f2f2;
+  border: 1px solid var(--ds-border);
+  padding: 6px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.pg-favicon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Subtle outline so thin white logos still read against #f2f2f2. */
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.25));
+}
+.pg-name-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pg-name {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+.pg-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+
+/* Inline username row — shown only for public/oauth-less platforms. */
+.pg-username-row {
+  display: flex;
+  gap: 6px;
+}
+.pg-username-input {
+  flex: 1;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pg-username-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+.pg-username-submit {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pg-username-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pg-username-submit:not(:disabled):hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+/* Pending-verification row — "Code in bio?" + Verify pill. */
+.pg-verify-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ds-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, var(--ds-border));
+}
+.pg-verify-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.pg-verify-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: "Geist", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pg-verify-btn:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+/* Actions: Connect / Certify. */
+.pg-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+.pg-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.pg-btn--primary {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+.pg-btn--primary:hover:not(:disabled) {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  transform: translateY(-1px);
+}
+.pg-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+.pg-btn--ghost {
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border-color: var(--ds-border);
+}
+.pg-btn--ghost:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  transform: translateY(-1px);
+}
+.pg-btn--connected {
+  background: color-mix(in srgb, #6dd4a0 16%, transparent);
+  color: #3d8c6a;
+  border-color: color-mix(in srgb, #6dd4a0 40%, var(--ds-border));
+}
+[data-theme="dark"] .pg-btn--connected,
+.dark .pg-btn--connected {
+  color: #6dd4a0;
+}
+.pg-btn--connected:hover {
+  background: color-mix(in srgb, #6dd4a0 28%, transparent);
+  border-color: #6dd4a0;
+}
+
+.pg-btn-spinner {
+  animation: pg-spin 0.8s linear infinite;
+}
+@keyframes pg-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pg-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 14px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
+}

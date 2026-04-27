@@ -5,6 +5,12 @@
   padding: 0 24px 80px;
 }
 
+/* ProfilePage drops the 1040px cap — runs full-width like the
+   leaderboard. Padding from .pf-view is kept for edge breathing room. */
+.pf-view.pf-home {
+  max-width: none;
+}
+
 /* ── Wallet banner ── */
 .pp-wallet-banner {
   display: flex;

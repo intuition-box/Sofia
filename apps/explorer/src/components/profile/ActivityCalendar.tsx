@@ -5,9 +5,15 @@
  * Pure view: callers compute the per-topic series and pass it in. The
  * helpers in `@/lib/activityCalendar` provide CAL_DAYS/CAL_WEEKS, a
  * synthetic series builder, and the month-label layout.
+ *
+ * The hover tooltip (`.pc-area-tooltip`) is ported 1:1 from the proto:
+ * dark panel anchored above the cell, date kicker + total, per-topic
+ * rows with coloured dots. Dimmed rows mean that topic had 0 signals
+ * that day but stays in the list for layout stability.
  */
 
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   CAL_DAYS,
   CAL_WEEKS,
@@ -24,8 +30,18 @@ interface ActivityCalendarProps {
   accent?: string
 }
 
+interface CalTooltipState {
+  top: number
+  left: number
+  daysAgo: number
+  totalDay: number
+  rows: { id: string; label: string; color: string; count: number }[]
+}
+
 export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accent)' }: ActivityCalendarProps) {
   const months = useMemo(() => computeCalendarMonthLabels(), [])
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const [tip, setTip] = useState<CalTooltipState | null>(null)
 
   // Fallback series so the grid renders when the caller passes an empty list.
   const series: CalendarTopicSeries[] = topicSeries.length > 0
@@ -43,7 +59,11 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
   const totalSignals = dailyTotals.reduce((a, b) => a + b, 0)
 
   return (
-    <div className="pc-chart-wrap pc-cal-wrap" style={{ ['--cal-base' as string]: accent }}>
+    <div
+      ref={wrapRef}
+      className="pc-chart-wrap pc-cal-wrap"
+      style={{ ['--cal-base' as string]: accent }}
+    >
       <div className="pc-chart-meta">
         <span>{totalSignals} signal{totalSignals === 1 ? '' : 's'} in the last {CAL_WEEKS} weeks</span>
         <span className="pc-chart-hint">hover to inspect</span>
@@ -89,13 +109,19 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
               classes.push(totalDay > 0 ? 'has-data' : 'l0')
               if (activeCount > 1) classes.push('multi')
 
-              const tooltipLines = perTopic
-                .filter((t) => t.count > 0)
-                .map((t) => `${t.label}: ${t.count}`)
-                .join(', ')
-              const tooltip = totalDay > 0
-                ? `${dateStringForDaysAgo(daysAgo)} — ${dayLabel(daysAgo)}\n${tooltipLines} (total ${totalDay})`
-                : `${dateStringForDaysAgo(daysAgo)} — no activity`
+              const handleEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+                // Viewport coords — the tooltip renders fixed so it's not
+                // clipped by any ancestor `overflow: hidden` (the `.pc-card`
+                // wrapper has one; the Radar layer too).
+                const cellRect = e.currentTarget.getBoundingClientRect()
+                setTip({
+                  left: cellRect.left + cellRect.width / 2,
+                  top: cellRect.top,
+                  daysAgo,
+                  totalDay,
+                  rows: perTopic,
+                })
+              }
 
               return (
                 <div
@@ -104,12 +130,46 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
                   style={cellStyle}
                   data-day={daysAgo}
                   data-count={totalDay}
-                  title={tooltip}
+                  onMouseEnter={handleEnter}
+                  onMouseLeave={() => setTip(null)}
                 />
               )
             })}
           </div>
         </div>
+
+        {/* Tooltip is portalled to <body> so it escapes any ancestor
+            `transform` / `filter` / `overflow: hidden` that would
+            clip it or trap `position: fixed` under. */}
+        {tip &&
+          typeof document !== 'undefined' &&
+          createPortal(
+            <div
+              className="pc-area-tooltip"
+              style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
+              role="tooltip"
+            >
+              <div className="pc-tt-head">
+                <span className="pc-tt-day">
+                  {dateStringForDaysAgo(tip.daysAgo)} · {dayLabel(tip.daysAgo)}
+                </span>
+                <span className="pc-tt-total">
+                  {tip.totalDay} signal{tip.totalDay === 1 ? '' : 's'}
+                </span>
+              </div>
+              <div className="pc-tt-rows">
+                {tip.rows.map((r) => (
+                  <div key={r.id} className={`pc-tt-row${r.count === 0 ? ' dim' : ''}`}>
+                    <span className="pc-tt-dot" style={{ background: r.color }} />
+                    <span className="pc-tt-label">{r.label}</span>
+                    <span className="pc-tt-val">{r.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>,
+            document.body,
+          )}
+
         <div className="pc-cal-legend">
           {series.map((td) => (
             <span

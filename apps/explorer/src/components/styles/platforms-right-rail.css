@@ -1,0 +1,182 @@
+/* ── Platform Market — right rail ────────────────────────────────
+ * Page-local styles for PlatformsRightRail. Uses DS tokens only. */
+
+.prr-card {
+  padding: 16px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prr-card-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin: 0;
+}
+
+.prr-empty {
+  font-size: 12px;
+  color: var(--ds-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Pulse grid (2×2) ───────────────────────────────────────────── */
+
+.prr-pulse-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.prr-pulse-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ds-bg-subtle);
+  min-width: 0;
+}
+
+.prr-pulse-value {
+  font-family: "Fraunces", serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prr-pulse-value--up {
+  color: var(--trusted, #6dd4a0);
+}
+
+.prr-pulse-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Most-held list ─────────────────────────────────────────────── */
+
+.prr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.prr-row:hover,
+.prr-row:focus-visible {
+  background: var(--ds-bg-subtle);
+  outline: none;
+}
+
+.prr-row-rank {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 14px;
+}
+
+.prr-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prr-row-stat {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Best / Worst rows ──────────────────────────────────────────── */
+
+.prr-mover {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--ds-bg-subtle);
+}
+
+.prr-mover-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+.prr-mover-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prr-mover-pct {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.prr-mover-pct--up {
+  color: var(--trusted, #6dd4a0);
+}
+
+.prr-mover-pct--down {
+  color: var(--distrusted, #e87c7c);
+}

@@ -1,9 +1,11 @@
+import { useMemo, useState } from 'react'
 import { SOFIA_TOPICS } from '../../config/taxonomy'
 import { Button } from '../ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Search, X } from 'lucide-react'
 import { TopicPicker, TopicCard } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
+import '@/components/styles/topic-search.css'
 
 const MAX_TOPICS = 3
 
@@ -26,10 +28,41 @@ export default function DomainSelector({
   hasPosition,
   isPending,
 }: TopicSelectorProps) {
+  const [query, setQuery] = useState('')
+  const filteredTopics = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return SOFIA_TOPICS
+    return SOFIA_TOPICS.filter((t) => t.label.toLowerCase().includes(q))
+  }, [query])
+
   return (
     <div className="flex flex-col gap-5">
+      <div className="ts-search">
+        <Search className="ts-search-icon h-3.5 w-3.5" aria-hidden="true" />
+        <input
+          type="search"
+          className="ts-search-input"
+          placeholder="Search topics…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search topics"
+        />
+        {query && (
+          <button
+            type="button"
+            className="ts-search-clear"
+            onClick={() => setQuery('')}
+            aria-label="Clear search"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      {filteredTopics.length === 0 && (
+        <p className="text-sm text-muted-foreground py-2">No topics match “{query}”.</p>
+      )}
       <TopicPicker>
-        {SOFIA_TOPICS.map((topic) => {
+        {filteredTopics.map((topic) => {
           const isSelected = selectedTopics.includes(topic.id)
           const atLimit = selectedTopics.length >= MAX_TOPICS && !isSelected
           const confirmed = hasPosition?.(topic.id) ?? false
