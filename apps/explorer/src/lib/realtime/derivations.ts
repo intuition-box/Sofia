@@ -58,20 +58,28 @@ function addShares(a: string | undefined, b: unknown): string {
 }
 
 // ── Topic / category positions (atom-direct) ────────────────────────────────
+//
+// Reverse lookup maps are built once at module load. Building them per call
+// turned the WS push pipeline into O(topics + positions) for what should be
+// O(positions), and the atom id sets never change at runtime.
+
+const TOPIC_TERM_TO_SLUG: ReadonlyMap<string, string> = new Map(
+  Object.entries(TOPIC_ATOM_IDS).map(([slug, termId]) => [termId, slug]),
+)
+
+const CATEGORY_TERM_TO_SLUG: ReadonlyMap<string, string> = new Map(
+  Object.entries(CATEGORY_ATOM_IDS).map(([slug, termId]) => [termId, slug]),
+)
 
 /**
  * Group shares by topic slug. Positions that target a topic atom directly
  * (not a triple) contribute to their slug's total.
  */
 export function derivePositionsByTopic(positions: Position[]): Record<string, string> {
-  const termIdToSlug = new Map<string, string>()
-  for (const [slug, termId] of Object.entries(TOPIC_ATOM_IDS)) {
-    termIdToSlug.set(termId, slug)
-  }
   const byTopic: Record<string, string> = {}
   for (const p of positions) {
     if (!p.vault?.term?.atom) continue
-    const slug = termIdToSlug.get(p.term_id)
+    const slug = TOPIC_TERM_TO_SLUG.get(p.term_id)
     if (!slug) continue
     byTopic[slug] = addShares(byTopic[slug], p.shares)
   }
@@ -82,14 +90,10 @@ export function derivePositionsByTopic(positions: Position[]): Record<string, st
  * Group shares by category slug. Same logic as topics, different atom set.
  */
 export function derivePositionsByCategory(positions: Position[]): Record<string, string> {
-  const termIdToSlug = new Map<string, string>()
-  for (const [slug, termId] of Object.entries(CATEGORY_ATOM_IDS)) {
-    termIdToSlug.set(termId, slug)
-  }
   const byCategory: Record<string, string> = {}
   for (const p of positions) {
     if (!p.vault?.term?.atom) continue
-    const slug = termIdToSlug.get(p.term_id)
+    const slug = CATEGORY_TERM_TO_SLUG.get(p.term_id)
     if (!slug) continue
     byCategory[slug] = addShares(byCategory[slug], p.shares)
   }

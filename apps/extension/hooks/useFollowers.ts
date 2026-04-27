@@ -37,7 +37,7 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
 
       // Step 1: Find my Account atom
       const myAccountResponse = await useGetAccountAtomByWalletQuery.fetcher({
-        address: `%${lowercaseAddress}%`
+        addresses: `%${lowercaseAddress}%`
       })()
 
       if (!myAccountResponse.atoms || myAccountResponse.atoms.length === 0) {

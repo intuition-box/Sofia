@@ -21,24 +21,19 @@ import { getFollowingOperation } from './operations/get-following.js';
 import { getFollowersOperation } from './operations/get-followers.js';
 import { searchAccountIdsOperation } from './operations/search-account-ids.js';
 import { getAccountActivityOperation } from './operations/get-account-activity.js';
+import { log, httpLogger } from './lib/logger.js';
 
 // Configure global error handlers with detailed logging
 process.on('uncaughtException', (error) => {
-  console.error('\n=== Uncaught Exception ===');
-  console.error('Error:', error);
-  console.error('Stack:', error.stack);
+  log.fatal({ err: error }, 'Uncaught exception');
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('\n=== Unhandled Rejection ===');
-  console.error('Promise:', promise);
-  console.error('Reason:', reason);
+  log.fatal({ reason, promise }, 'Unhandled promise rejection');
 });
 
-// Add debug logging
 const debug = (...args: any[]) => {
-  console.error('\n=== MCP Server Debug ===');
-  console.error(...args);
+  log.debug(...args);
 };
 
 // Define available tools once
@@ -174,7 +169,7 @@ const tracingMiddleware = (req: Request, res: Response, next: Function) => {
     startTime: Date.now(),
   };
 
-  console.log(
+  log.info(
     `[Request Start] ID: ${requestId} CF-Ray: ${cfRay} Session: ${req.headers['mcp-session-id']}`
   );
   next();
@@ -215,7 +210,7 @@ server.setRequestHandler(
   CallToolRequestSchema,
   async (request: CallToolRequest) => {
     const startTime = performance.now();
-    console.log(
+    log.info(
       `[Tool Call Start] Tool: ${request.params.name} Args:`,
       JSON.stringify(request.params.arguments, null, 2)
     );
@@ -278,7 +273,7 @@ server.setRequestHandler(
       }
 
       const duration = performance.now() - startTime;
-      console.log(
+      log.info(
         `[Tool Call Success] Tool: ${
           request.params.name
         } Duration: ${duration.toFixed(2)}ms`
@@ -289,13 +284,13 @@ server.setRequestHandler(
       return result;
     } catch (error) {
       const duration = performance.now() - startTime;
-      console.error(
+      log.error(
         `[Tool Call Error] Tool: ${
           request.params.name
         } Duration: ${duration.toFixed(2)}ms`
       );
-      console.error('Error details:', error);
-      console.error(
+      log.error('Error details:', error);
+      log.error(
         'Error stack:',
         error instanceof Error ? error.stack : 'No stack trace'
       );
@@ -331,11 +326,10 @@ async function runHttpServer() {
   // Trust proxy for load balancer
   app.set('trust proxy', true);
 
-  // Basic request logging
-  app.use((req: Request, res: Response, next) => {
-    debug(`${req.method} ${req.path}`);
-    next();
-  });
+  // Structured per-request logging with auto-correlation IDs (x-request-id).
+  // Replaces ad-hoc debug() calls — req.log is a child logger pre-tagged with
+  // the request id, so downstream `req.log.info(...)` lines correlate.
+  app.use(httpLogger);
 
   // Health check endpoint
   app.get('/health', (_req: Request, res: Response) => {
@@ -352,14 +346,14 @@ async function runHttpServer() {
   // Debug endpoint to test tool execution
   app.post('/debug/test-tools', async (_req: Request, res: Response) => {
     try {
-      console.log('[Debug] Testing tool execution...');
+      log.info('[Debug] Testing tool execution...');
 
       // Test search_atoms
       const testResult = await atomSearchOperation.execute({
         queries: ['ethereum'],
       });
 
-      console.log('[Debug] Tool test successful:', {
+      log.info('[Debug] Tool test successful:', {
         hasContent: !!testResult.content,
         contentLength: testResult.content?.length,
         contentTypes: testResult.content?.map((c) => c.type),
@@ -374,7 +368,7 @@ async function runHttpServer() {
         },
       });
     } catch (error) {
-      console.error('[Debug] Tool test failed:', error);
+      log.error('[Debug] Tool test failed:', error);
       res.status(500).json({
         status: 'error',
         error: error instanceof Error ? error.message : String(error),
@@ -390,7 +384,7 @@ async function runHttpServer() {
 
     try {
       // Enhanced request logging
-      console.log(
+      log.info(
         `[MCP Request]`,
         `Method: ${req.method}`,
         `Session: ${sessionId}`,
@@ -401,12 +395,12 @@ async function runHttpServer() {
       );
 
       if (!sessionId) {
-        console.log('[New Session Request] Initializing new session');
+        log.info('[New Session Request] Initializing new session');
         // New initialization request
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (sessionId) => {
-            console.log(
+            log.info(
               `[Session Init] ID: ${sessionId} RequestID: ${requestId} CF-Ray: ${cfRay}`
             );
             transports[sessionId] = {
@@ -421,7 +415,7 @@ async function runHttpServer() {
           await server.connect(transport);
           await transport.handleRequest(req, res, req.body);
         } catch (error) {
-          console.error(
+          log.error(
             '[Session Init Error] Failed to initialize transport:',
             {
               error: error instanceof Error ? error.message : String(error),
@@ -436,7 +430,7 @@ async function runHttpServer() {
           try {
             await transport.close();
           } catch (closeError) {
-            console.error(
+            log.error(
               '[Session Init Error] Error closing failed transport:',
               closeError
             );
@@ -475,7 +469,7 @@ async function runHttpServer() {
         return;
       }
 
-      console.log(
+      log.info(
         `[Existing Session] ID: ${sessionId} Age: ${
           Date.now() - session.createdAt
         }ms`
@@ -487,7 +481,7 @@ async function runHttpServer() {
       try {
         await session.transport.handleRequest(req, res, req.body);
       } catch (error) {
-        console.error('[Transport Error] Critical transport failure:', {
+        log.error('[Transport Error] Critical transport failure:', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
           sessionId,
@@ -505,16 +499,16 @@ async function runHttpServer() {
             error.message.includes('transport'));
 
         if (shouldReconnect) {
-          console.log(
+          log.info(
             '[Transport Recovery] Attempting to reconnect transport...'
           );
           try {
             await handleTransportError(session.transport, error);
-            console.log(
+            log.info(
               '[Transport Recovery] Successfully recovered transport'
             );
           } catch (recoveryError) {
-            console.error(
+            log.error(
               '[Transport Recovery] Failed to recover transport:',
               recoveryError
             );
@@ -540,7 +534,7 @@ async function runHttpServer() {
         }
       }
     } catch (error) {
-      console.error('[MCP Request Error] Unhandled error in MCP endpoint:', {
+      log.error('[MCP Request Error] Unhandled error in MCP endpoint:', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         sessionId,
@@ -641,12 +635,12 @@ const serverMode = process.env.SERVER_MODE || 'stdio';
 
 if (serverMode === 'http') {
   runHttpServer().catch((error) => {
-    console.error('Fatal HTTP server error:', error);
+    log.error('Fatal HTTP server error:', error);
     process.exit(1);
   });
 } else {
   runStdioServer().catch((error) => {
-    console.error('Fatal stdio server error:', error);
+    log.error('Fatal stdio server error:', error);
     process.exit(1);
   });
 }

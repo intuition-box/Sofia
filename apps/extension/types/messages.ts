@@ -118,6 +118,9 @@ export interface SofiaMessage {
   type?: 'raw_message' | 'parsed_message'
 }
 
+/** Legacy alias kept for storage layer (storeMessage accepts the SofiaMessage shape). */
+export type Message = SofiaMessage
+
 export interface SofiaRecord {
   messageId: string
   content: ParsedSofiaMessage | { text: string }

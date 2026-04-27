@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { fetchAllActivity } from '../services/activityService'
 import { fetchWithRetry } from '../utils/fetchRetry'
 import type { CircleItem } from '../services/circleService'
@@ -7,65 +7,56 @@ import type { CircleItem } from '../services/circleService'
 const BATCH_SIZE = 200
 
 /**
- * The initial BATCH_SIZE items are persisted via React Query so reloads
- * paint instantly. loadMore() appends subsequent pages to local state
- * only — those aren't persisted (cost vs benefit: initial page is the
- * fold-above-fold view; deeper scroll is a re-scroll action anyway).
+ * Infinite-scrolling activity feed. The first page is persisted by React Query
+ * so reloads paint instantly; subsequent pages live in the same cache and are
+ * fetched on demand via loadMore().
  */
 export function useAllActivity() {
-  const { data: initial, isLoading, error, refetch } = useQuery<CircleItem[]>({
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useInfiniteQuery<CircleItem[]>({
     queryKey: ['all-activity'],
-    queryFn: () => fetchWithRetry(() => fetchAllActivity(BATCH_SIZE, 0)),
+    queryFn: ({ pageParam }) =>
+      fetchWithRetry(() => fetchAllActivity(BATCH_SIZE, pageParam as number)),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === BATCH_SIZE ? allPages.length * BATCH_SIZE : undefined,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 
-  const [extra, setExtra] = useState<CircleItem[]>([])
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const offsetRef = useRef(BATCH_SIZE)
-
-  // Reset pagination whenever the initial batch changes (refetch or first load).
-  useEffect(() => {
-    setExtra([])
-    offsetRef.current = BATCH_SIZE
-    setHasMore((initial?.length ?? 0) >= BATCH_SIZE)
-  }, [initial])
-
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return
-    setLoadingMore(true)
-    try {
-      const newItems = await fetchAllActivity(BATCH_SIZE, offsetRef.current)
-      if (newItems.length === 0) {
-        setHasMore(false)
-      } else {
-        setExtra((prev) => {
-          const seen = new Set<string>([
-            ...(initial ?? []).map((i) => i.id),
-            ...prev.map((i) => i.id),
-          ])
-          return [...prev, ...newItems.filter((i) => !seen.has(i.id))]
-        })
-        offsetRef.current += BATCH_SIZE
+  // Flatten + dedup. Indexer pagination is offset-based, so on edge cases
+  // (a new event landing between two page fetches) the same id can appear
+  // in two consecutive pages — drop those.
+  const items = useMemo(() => {
+    const seen = new Set<string>()
+    const out: CircleItem[] = []
+    for (const page of data?.pages ?? []) {
+      for (const item of page) {
+        if (seen.has(item.id)) continue
+        seen.add(item.id)
+        out.push(item)
       }
-    } catch (err) {
-      console.error('[useAllActivity] loadMore', err)
-    } finally {
-      setLoadingMore(false)
     }
-  }, [loadingMore, hasMore, initial])
-
-  const items = [...(initial ?? []), ...extra]
+    return out
+  }, [data])
 
   return {
     items,
     loading: isLoading && items.length === 0,
-    loadingMore,
+    loadingMore: isFetchingNextPage,
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
-    hasMore,
-    loadMore,
+    hasMore: !!hasNextPage,
+    loadMore: () => {
+      if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+    },
     refresh: () => { refetch() },
   }
 }

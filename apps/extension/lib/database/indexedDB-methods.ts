@@ -21,15 +21,19 @@ export class TripletsDataService {
    * Store a message - only store if parsing succeeds
    */
   static async storeMessage(message: Message, messageId?: string): Promise<number> {
-    // Try to parse the message first
+    // content is a discriminated union: raw `{ text }` envelope OR an already
+    // parsed message. In the parsed branch there's nothing to do — store as-is.
+    if (!('text' in message.content)) {
+      return await this.storeParsedMessage(message.content, messageId)
+    }
+    // Raw text — parse first, only store if parsing yields triplets.
     const parsed = parseSofiaMessage(message.content.text, message.created_at)
     if (parsed && parsed.triplets.length > 0) {
       logger.debug(`Parsed message with ${parsed.triplets.length} triplets - storing only parsed version`)
       return await this.storeParsedMessage(parsed, messageId)
-    } else {
-      logger.warn('Message could not be parsed or has no triplets - skipping storage')
-      return 0
     }
+    logger.warn('Message could not be parsed or has no triplets - skipping storage')
+    return 0
   }
 
 

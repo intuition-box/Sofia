@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { NavSidebar } from './components/NavSidebar'
@@ -13,22 +13,24 @@ import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
 import WsStatusBadge from './components/WsStatusBadge'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
+// Critical path — eager-loaded to avoid first-paint flicker on entry routes.
 import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
-import LeaderboardPage from './pages/LeaderboardPage'
-import ProfilePage from './pages/ProfilePage'
-import InterestPage from './pages/InterestPage'
-import DomainSelectionPage from './pages/DomainSelectionPage'
-import NicheSelectionPage from './pages/NicheSelectionPage'
-import PlatformConnectionPage from './pages/PlatformConnectionPage'
-import DomainNicheSelectionPage from './pages/DomainNicheSelectionPage'
-import AllPlatformsPage from './pages/AllPlatformsPage'
-import ScoresPage from './pages/ScoresPage'
-import CirclesPage from './pages/CirclesPage'
-import StreaksPage from './pages/StreaksPage'
-import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
-import PublicProfilePage from './pages/PublicProfilePage'
+// Secondary routes — code-split, fetched on demand.
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const InterestPage = lazy(() => import('./pages/InterestPage'))
+const DomainSelectionPage = lazy(() => import('./pages/DomainSelectionPage'))
+const NicheSelectionPage = lazy(() => import('./pages/NicheSelectionPage'))
+const PlatformConnectionPage = lazy(() => import('./pages/PlatformConnectionPage'))
+const DomainNicheSelectionPage = lazy(() => import('./pages/DomainNicheSelectionPage'))
+const AllPlatformsPage = lazy(() => import('./pages/AllPlatformsPage'))
+const ScoresPage = lazy(() => import('./pages/ScoresPage'))
+const CirclesPage = lazy(() => import('./pages/CirclesPage'))
+const StreaksPage = lazy(() => import('./pages/StreaksPage'))
+const VotePage = lazy(() => import('./pages/VotePage'))
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
@@ -36,6 +38,10 @@ import './components/styles/layout.css'
 function InterestsHydrationBoundary() {
   useInterestsHydration()
   return null
+}
+
+function RouteFallback() {
+  return <div className="route-fallback" aria-busy="true" aria-live="polite" />
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -125,6 +131,7 @@ export default function App() {
 
       <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
         <RouteErrorBoundary key={location.pathname}>
+        <Suspense fallback={<RouteFallback />}>
         <Routes>
           {/* Public routes */}
           <Route path="/feed" element={<DashboardPage />} />
@@ -146,6 +153,7 @@ export default function App() {
           <Route path="/streaks" element={<ProtectedRoute><StreaksPage /></ProtectedRoute>} />
           <Route path="/vote" element={<ProtectedRoute><VotePage /></ProtectedRoute>} />
         </Routes>
+        </Suspense>
         </RouteErrorBoundary>
       </main>
     </div>

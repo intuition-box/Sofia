@@ -130,7 +130,7 @@ export default function DecryptedText({
           if (sequential) {
             if (prevRevealed.size < text.length) {
               const nextIndex = getNextIndex(prevRevealed);
-              const newRevealed = new Set(prevRevealed);
+              const newRevealed = new Set<number>(prevRevealed);
               newRevealed.add(nextIndex);
               setDisplayText(shuffleText(text, newRevealed));
               return newRevealed;

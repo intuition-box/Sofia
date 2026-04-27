@@ -168,7 +168,7 @@ export class SubscriptionManager {
     if (!this.walletAddress) return
 
     const variables: WatchUserPositionsSubscriptionVariables = {
-      accountId: this.walletAddress
+      accountIds: this.walletAddress
     }
 
     const unsub = getWsClient().subscribe<WatchUserPositionsSubscription>(
@@ -206,7 +206,7 @@ export class SubscriptionManager {
     if (!this.walletAddress) return
 
     const variables: WatchUserTrackedPositionsSubscriptionVariables = {
-      accountId: this.walletAddress,
+      accountIds: this.walletAddress,
       termIds: TRACKED_TERM_IDS
     }
 

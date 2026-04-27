@@ -1,4 +1,10 @@
-import type { AnchorHTMLAttributes, HTMLAttributes, MouseEvent, ReactNode } from 'react'
+import type {
+  AnchorHTMLAttributes,
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactNode,
+} from 'react'
 
 /** Inline X icon — keeps the package free of any icon library peerDep. */
 function XIcon({ size = 12 }: { size?: number }) {
@@ -22,7 +28,7 @@ function XIcon({ size = 12 }: { size?: number }) {
 }
 
 type CardRootProps =
-  | ({ as?: 'button' } & HTMLAttributes<HTMLButtonElement>)
+  | ({ as?: 'button' } & HTMLAttributes<HTMLDivElement>)
   | ({ as: 'a'; href: string } & AnchorHTMLAttributes<HTMLAnchorElement>)
 
 export type InterestCardProps = {
@@ -141,11 +147,30 @@ export function InterestCard(props: InterestCardProps) {
       </a>
     )
   }
-  const { as: _as, ...buttonRest } = rest
+  // Root is a div with role="button" rather than a real <button>: the card
+  // hosts a nested remove <button>, and HTML forbids button-in-button. Native
+  // keyboard activation (Enter/Space → click) is restored manually below.
+  const { as: _as, onClick, onKeyDown, ...divRest } = rest
   void _as
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e)
+    if (e.defaultPrevented) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      e.currentTarget.click()
+    }
+  }
   return (
-    <button type="button" className={rootClass} style={style} {...buttonRest}>
+    <div
+      role="button"
+      tabIndex={0}
+      className={rootClass}
+      style={style}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      {...divRest}
+    >
       {body}
-    </button>
+    </div>
   )
 }

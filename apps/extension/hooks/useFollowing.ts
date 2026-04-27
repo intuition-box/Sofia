@@ -38,7 +38,7 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
       const response = await useGetFollowingPositionsQuery.fetcher({
         subjectId: SUBJECT_IDS.I,
         predicateId: PREDICATE_IDS.FOLLOW,
-        address: checksumAddress,
+        addresses: checksumAddress,
         limit: 100,
         offset: 0,
         positionsOrderBy: [{ created_at: 'desc' as const }]

@@ -25,8 +25,15 @@ export interface CircleItem {
 // Cache trusted wallets keyed by the sorted set of linked wallets that asked.
 // Multi-wallet users have the same cache entry regardless of which wallet
 // triggered the fetch, so this is effectively a per-user cache.
+//
+// TTL prevents serving stale graphs forever — the trust circle changes slowly
+// but it does change (new trusts, untrusts), and a 60s window keeps the
+// feed responsive without re-fetching on every interaction.
+const TRUSTED_WALLETS_TTL_MS = 60_000
+
 let cachedTrustedWallets: string[] | null = null
 let cachedForKey: string | null = null
+let cachedAt = 0
 
 function cacheKeyFor(addresses: string[]): string {
   return [...addresses].sort().join(',')
@@ -35,7 +42,8 @@ function cacheKeyFor(addresses: string[]): string {
 /** Step 1: union of wallets trusted by any of the user's linked wallets */
 async function fetchTrustedWallets(addresses: string[]): Promise<string[]> {
   const key = cacheKeyFor(addresses)
-  if (cachedForKey === key && cachedTrustedWallets) {
+  const fresh = Date.now() - cachedAt < TRUSTED_WALLETS_TTL_MS
+  if (cachedForKey === key && cachedTrustedWallets && fresh) {
     return cachedTrustedWallets
   }
 
@@ -55,7 +63,15 @@ async function fetchTrustedWallets(addresses: string[]): Promise<string[]> {
 
   cachedTrustedWallets = wallets
   cachedForKey = key
+  cachedAt = Date.now()
   return wallets
+}
+
+/** Invalidate the trusted-wallets cache (e.g. after a trust/untrust action). */
+export function invalidateTrustedWalletsCache() {
+  cachedTrustedWallets = null
+  cachedForKey = null
+  cachedAt = 0
 }
 
 /** Step 2: activity from trusted wallets, unioned across the user's linked wallets */
@@ -107,6 +123,5 @@ export async function fetchFollowingCount(walletAddress: string): Promise<number
 
 /** Escape hatch for tests that need to reset the module-level cache. */
 export function __clearTrustedWalletsCacheForTests() {
-  cachedTrustedWallets = null
-  cachedForKey = null
+  invalidateTrustedWalletsCache()
 }

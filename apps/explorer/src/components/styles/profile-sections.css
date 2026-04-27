@@ -1,7 +1,9 @@
 /* ── Profile view wrapper (ported from proto `.pf-view`) ── */
+/* The earlier max-width:1040px existed to prevent content from sliding under
+   the right rail on wide screens. That role is now owned at the layout level
+   by .main-content--profile { margin-right: 290px }, so .pf-view can stretch
+   to fill whatever main-content gives it — same behaviour as LeaderboardPage. */
 .pf-view {
-  max-width: 1040px;
-  margin: 0 auto;
   padding: 0 24px 80px;
 }
 

@@ -43,7 +43,7 @@ export function useBondingCurveData(
     {
       tripleId,
       curveId,
-      walletAddress: walletAddress || ''
+      walletAddresses: walletAddress || ''
     },
     {
       enabled: !!tripleId && !!curveId,

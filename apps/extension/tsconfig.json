@@ -6,6 +6,7 @@
     },
     "types": [
       "chrome",
+      "node",
       "react",
       "react-dom"
     ],
@@ -13,13 +14,14 @@
     "jsxImportSource": "react",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "module": "ES2020",
+    "module": "ES2022",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "target": "ES2020",
+    "target": "ES2022",
     "lib": [
-      "ES2020",
-      "DOM"
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
     ],
     "strict": false,
     "skipLibCheck": true,
