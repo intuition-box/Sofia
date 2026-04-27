@@ -255,13 +255,13 @@
 }
 
 .gm-group-row.selected {
-  background: rgba(199, 134, 108, 0.08);
+  background: rgba(255, 198, 176, 0.08);
 }
 
 .gm-checkbox {
   width: 16px;
   height: 16px;
-  accent-color: var(--color-primary, #C7866C);
+  accent-color: var(--color-primary, var(--ds-accent));
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -494,14 +494,14 @@
 /* Manage button in toolbar */
 .gm-manage-btn {
   margin-left: auto;
-  background: rgba(199, 134, 108, 0.12) !important;
-  color: #C7866C !important;
-  border: 1px solid rgba(199, 134, 108, 0.2) !important;
+  background: rgba(255, 198, 176, 0.12) !important;
+  color: var(--ds-accent) !important;
+  border: 1px solid rgba(255, 198, 176, 0.20) !important;
   border-radius: 4px;
 }
 
 .gm-manage-btn:hover {
-  background: rgba(199, 134, 108, 0.25) !important;
+  background: rgba(255, 198, 176, 0.25) !important;
 }
 
 /* Cleanup banner */

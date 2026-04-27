@@ -146,38 +146,15 @@
   min-width: 2px;
 }
 
-/* Intention progress colors — semantic brand colors per intention type */
-.progress-fill.work {
-  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-}
-
-.progress-fill.learning {
-  background: linear-gradient(90deg, #06B6D4 0%, #22D3EE 100%);
-}
-
-.progress-fill.fun {
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
-}
-
-.progress-fill.inspiration {
-  background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
-}
-
-.progress-fill.buying {
-  background: linear-gradient(90deg, #EC4899 0%, #F472B6 100%);
-}
-
-.progress-fill.music {
-  background: linear-gradient(90deg, #FF5722 0%, #FF8A65 100%);
-}
-
-.progress-fill.trusted {
-  background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
-}
-
-.progress-fill.distrusted {
-  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
-}
+/* Intention progress colors — DS palette tokens */
+.progress-fill.work       { background: var(--work); }
+.progress-fill.learning   { background: var(--learning); }
+.progress-fill.fun        { background: var(--fun); }
+.progress-fill.inspiration { background: var(--inspiration); }
+.progress-fill.buying     { background: var(--buying); }
+.progress-fill.music      { background: var(--music); }
+.progress-fill.trusted    { background: var(--trusted); }
+.progress-fill.distrusted { background: var(--distrusted); }
 
 .intention-count {
   min-width: 24px;

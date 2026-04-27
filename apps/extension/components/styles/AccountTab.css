@@ -2092,7 +2092,7 @@
   display: flex;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 32px #ec489966;
+  box-shadow: 0 8px 32px rgba(255, 198, 176, 0.40);
   width: 100%;
   max-width: 608px;
 }
@@ -2116,7 +2116,7 @@
 }
 
 .interest-analyze-btn:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.60);
   transform: translateY(-2px);
 }
 

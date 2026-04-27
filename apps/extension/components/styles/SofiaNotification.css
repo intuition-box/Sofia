@@ -81,8 +81,8 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  color: white;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: var(--btn-primary-fg);
+  background: var(--btn-primary-bg);
   transition: all 0.2s;
 }
 

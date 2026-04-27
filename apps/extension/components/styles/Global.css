@@ -66,14 +66,14 @@ body {
   --claims-oppose: var(--color-hover);
 
   /* Couleurs principales */
-  --color-primary: #C7866C;
-  --color-primary-dark: #372118;
-  --color-primary-light: #F2DED6;
-  --color-secondary: #945941;
-  --color-accent: #A6AF6B;
-  --color-hover: #cea2fd;
-  --color-hover-light: #F59E0B;
-  --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
+  --color-primary: var(--ds-accent);
+  --color-primary-dark: var(--ds-bg);
+  --color-primary-light: var(--ds-accent-soft);
+  --color-secondary: var(--ds-accent);
+  --color-accent: var(--ds-muted);
+  --color-hover: var(--ds-ink-soft);
+  --color-hover-light: var(--ds-accent);
+  --color-gradient-button: var(--btn-primary-bg);
 
   /* ── Primary button tokens (aligned with DS dark-mode) ── */
   --btn-primary-bg: var(--ds-ink);
@@ -82,15 +82,6 @@ body {
   --btn-primary-radius: 8px;
   --btn-primary-shadow: none;
   
-
-.figma-colors{
-  color : #372118, 50;
-  color : #945941, 700;
-  color : #C7866C, 500;
-  color : #F2DED6, 200;
-  color : #FBF7F5, 50;
-  color : #0E0E0E;
-  }
 
   /* ── Text — mapped to DS tokens ── */
   --color-text-primary: var(--ds-ink);
@@ -132,9 +123,9 @@ body {
   --shadow-glass: 0 4px 24px rgba(0, 0, 0, 0.2);
   --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.3);
   --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-primary: 0 4px 16px rgba(219, 107, 62, 0.3);
-  --shadow-button: 0 4px 12px rgba(212, 165, 116, 0.3);
-  --shadow-button-hover: 0 6px 16px rgba(212, 165, 116, 0.4);
+  --shadow-primary: var(--ds-shadow-card);
+  --shadow-button: none;
+  --shadow-button-hover: none;
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --shadow-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   
@@ -279,7 +270,7 @@ body {
 .input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 .input.disabled {
@@ -308,7 +299,7 @@ body {
 .textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 .select {
@@ -326,7 +317,7 @@ body {
 .select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 /* Boutons */

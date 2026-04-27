@@ -60,7 +60,7 @@
 }
 
 .position-board__item.position-board__item--current-user {
-  background: rgba(199, 134, 108, 0.08);
+  background: rgba(255, 198, 176, 0.08);
   border-left: 2px solid var(--color-primary);
 }
 

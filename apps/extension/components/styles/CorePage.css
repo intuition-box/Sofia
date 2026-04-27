@@ -91,7 +91,7 @@
 }
 
 .tab.active {
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-weight: 500;
   font-family: 'Fraunces', serif;
 }

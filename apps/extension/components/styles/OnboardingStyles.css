@@ -133,13 +133,13 @@
 }
 
 .tutorial-dot.active {
-  background: var(--color-primary, #ec4899);
-  box-shadow: 0 0 8px rgba(236, 72, 153, 0.5);
+  background: var(--ds-accent);
+  box-shadow: 0 0 8px rgba(255, 198, 176, 0.50);
   transform: scale(1.4);
 }
 
 .tutorial-dot.completed {
-  background: var(--color-primary, #ec4899);
+  background: var(--ds-accent);
   opacity: 0.6;
 }
 
@@ -198,7 +198,7 @@
 .bookmark-select-link {
   background: none;
   border: none;
-  color: var(--color-primary, #ec4899);
+  color: var(--ds-accent);
   font-size: 12px;
   cursor: pointer;
   padding: 4px 8px;
@@ -207,7 +207,7 @@
 }
 
 .bookmark-select-link:hover {
-  background: rgba(236, 72, 153, 0.1);
+  background: rgba(255, 198, 176, 0.10);
 }
 
 .bookmark-select-list {
@@ -272,7 +272,7 @@
 }
 
 .bookmark-checkbox {
-  accent-color: var(--color-primary, #ec4899);
+  accent-color: var(--ds-accent);
   width: 14px;
   height: 14px;
   flex-shrink: 0;

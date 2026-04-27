@@ -60,7 +60,7 @@
 
 .blockchain-card__notice-retry:hover {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  border-color: var(--color-primary, #C7866C);
+  border-color: var(--color-primary, var(--ds-accent));
   transform: translateY(-1px);
 }
 
@@ -115,7 +115,7 @@
 }
 
 .trust-page-button:hover:not(:disabled) {
-  box-shadow: var(--shadow-button, 0 4px 12px rgba(212, 165, 116, 0.3));
+  box-shadow: var(--shadow-button, 0 4px 12px rgba(255, 198, 176, 0.30));
   transform: translateY(-1px);
 }
 

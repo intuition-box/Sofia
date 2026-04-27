@@ -173,7 +173,7 @@
 .trending-card-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #F2DED6);
+  color: var(--color-text-primary, var(--ds-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -354,7 +354,7 @@
 .trending-item-title {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-primary, #F2DED6);
+  color: var(--color-text-primary, var(--ds-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -111,7 +111,7 @@
 }
 
 .feed-details-link:hover {
-  color: #c7866c;
+  color: var(--ds-accent);
 }
 
 .feed-details-text {
@@ -315,7 +315,7 @@
 
 .retry-button {
   padding: 10px 20px;
-  background: #c7866c;
+  background: var(--ds-accent);
   color: #fff;
   border: none;
   border-radius: 8px;

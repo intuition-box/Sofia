@@ -20,7 +20,7 @@
 }
 
 .cart-drawer {
-  background: linear-gradient(to bottom, #0a0908, #101010);
+  background: var(--ds-card);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom: none;
   border-radius: 24px 24px 0 0;
@@ -228,8 +228,8 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  color: white;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: var(--btn-primary-fg);
+  background: var(--btn-primary-bg);
   transition: all 0.2s;
 }
 
@@ -274,13 +274,13 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--ds-border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  box-shadow: none;
   transition: all 0.2s;
   animation: cartFabAppear 0.2s ease-out;
 }
@@ -298,11 +298,11 @@
 
 .cart-fab:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  box-shadow: none;
 }
 
 .cart-fab__icon {
-  color: white;
+  color: var(--btn-primary-fg);
   display: flex;
   align-items: center;
 }
@@ -322,7 +322,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid #0a0908;
+  border: 2px solid var(--ds-bg);
 }
 
 /* Toast notification */

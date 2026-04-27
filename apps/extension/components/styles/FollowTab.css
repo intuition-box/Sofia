@@ -153,7 +153,7 @@
 .sort-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.20);
 }
 
 .sort-select option {

@@ -13,7 +13,7 @@
 .back-button {
   background-color: transparent;
   border: none;
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-size: 12px;
   cursor: pointer;
   margin-bottom: 20px;
@@ -126,7 +126,7 @@
 }
 
 .photo-upload-button {
-  background-color: rgba(199, 134, 108, 0.8);
+  background-color: var(--btn-primary-bg);
   color: #FBF7F5;
   padding: 8px 16px;
   border-radius: 8px;
@@ -138,7 +138,7 @@
 }
 
 .photo-upload-button:hover {
-  background-color: rgba(199, 134, 108, 1);
+  background-color: var(--btn-primary-hover-bg);
 }
 
 .bio-section {
@@ -151,7 +151,7 @@
 }
 
 .bio-text {
-  color: #F2DED6;
+  color: var(--ds-ink);
   line-height: 1.5;
   margin-bottom: 15px;
   font-size: 14px;
@@ -168,7 +168,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 12px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   resize: vertical;
   min-height: 100px;
   font-family: inherit;
@@ -178,7 +178,7 @@
 
 .bio-textarea:focus {
   outline: none;
-  border-color: rgba(199, 134, 108, 0.5);
+  border-color: var(--ds-accent);
 }
 
 .bio-actions {
@@ -190,7 +190,7 @@
 .edit-button,
 .save-button,
 .cancel-button {
-  background-color: rgba(199, 134, 108, 0.8);
+  background-color: var(--btn-primary-bg);
   color: #FBF7F5;
   padding: 8px 16px;
   border-radius: 8px;
@@ -207,7 +207,7 @@
 
 .edit-button:hover,
 .save-button:hover {
-  background-color: rgba(199, 134, 108, 1);
+  background-color: var(--btn-primary-hover-bg);
 }
 
 .cancel-button:hover {
@@ -452,7 +452,7 @@
 
 .session-wallet-description {
   font-size: 14px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   margin-bottom: 20px;
   line-height: 1.4;
 }
@@ -495,7 +495,7 @@
 
 .wallet-details {
   font-size: 12px;
-  color: #F2DED6;
+  color: var(--ds-ink);
 }
 
 .wallet-address-text {
@@ -532,7 +532,7 @@
 }
 
 .wallet-action-button {
-  background-color: rgba(199, 134, 108, 0.8);
+  background-color: var(--btn-primary-bg);
   color: #FBF7F5;
   padding: 6px 12px;
   border-radius: 6px;
@@ -588,7 +588,7 @@
 
 .wallet-warning-text {
   font-size: 13px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   line-height: 1.4;
 }
 
@@ -616,7 +616,7 @@
 .settings-range {
   width: 80px;
   height: 4px;
-  accent-color: var(--color-primary, #C7866C);
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
@@ -624,7 +624,7 @@
 .wallet-address-display {
   font-family: monospace;
   font-size: 14px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   background-color: rgba(255, 255, 255, 0.05);
   padding: 8px 16px;
   border-radius: 6px;

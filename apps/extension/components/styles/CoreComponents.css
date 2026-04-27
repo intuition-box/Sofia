@@ -86,16 +86,16 @@
 }
 
 .triplet-item.selected {
-  border-color: #c7866c99;
+  border-color: var(--ds-accent)99;
   transform: translateY(-2px);
 }
 
 /* Selection state for the entire card */
 .echo-card.selected {
-  background: rgba(199, 134, 108, 0.15);
-  border-color: rgba(199, 134, 108, 0.6);
+  background: rgba(255, 198, 176, 0.15);
+  border-color: rgba(255, 198, 176, 0.60);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(199, 134, 108, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(255, 198, 176, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* ========== TRIPLET HEADERS ========== */
@@ -112,7 +112,7 @@
 /* ========== TRIPLET TEXT ========== */
 
 .triplet-text {
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
@@ -206,7 +206,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 400;
-  color: #F2DED6;
+  color: var(--ds-ink);
   margin: 0 0 8px 0;
   line-height: 1.5;
   opacity: 0.9;
@@ -216,7 +216,7 @@
 .triplet-detail-url {
   font-family: 'Montserrat', sans-serif;
   font-size: 12px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   text-decoration: underline;
   transition: all 0.3s ease;
   word-break: break-all;
@@ -227,7 +227,7 @@
 }
 
 .triplet-detail-url:hover {
-  color: #C7866C;
+  color: var(--ds-accent);
   text-decoration: none;
   transform: translateX(2px);
 }
@@ -273,7 +273,7 @@
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid #C7866C;
+  border: 2px solid var(--ds-accent);
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
@@ -282,8 +282,8 @@
 }
 
 .select-all-checkbox:checked {
-  background: #C7866C;
-  border-color: #C7866C;
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 
 .select-all-checkbox:checked::after {
@@ -313,8 +313,8 @@
 }
 
 .echo-checkbox:checked {
-  background: #C7866C;
-  border-color: #C7866C;
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 
 .echo-checkbox:checked::after {
@@ -329,7 +329,7 @@
 }
 
 .echo-checkbox:hover {
-  border-color: #C7866C;
+  border-color: var(--ds-accent);
   transform: scale(1.1);
 }
 
@@ -637,16 +637,16 @@
 
 .empty-subtext {
   font-size: 14px;
-  color: #C7866C;
+  color: var(--ds-accent);
   font-style: normal;
   margin-top: 10px;
   line-height: 0px;
 }
 
 .refresh-button {
-  background: rgba(199, 134, 108, 0.2);
-  color: #C7866C;
-  border: 1px solid rgba(199, 134, 108, 0.3);
+  background: rgba(255, 198, 176, 0.20);
+  color: var(--ds-accent);
+  border: 1px solid rgba(255, 198, 176, 0.30);
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
@@ -658,7 +658,7 @@
 }
 
 .refresh-button:hover {
-  background: rgba(199, 134, 108, 0.3);
+  background: rgba(255, 198, 176, 0.30);
   color: #FBF7F5;
   transform: translateY(-1px);
 }
@@ -733,7 +733,7 @@
 
 /* Headers d'analyse de session */
 .analysis-header h4 {
-  color: #F2DED6 !important;
+  color: var(--ds-ink) !important;
   font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 600;
@@ -749,7 +749,7 @@
 
 .analysis-time,
 .themes-count {
-  color: #F2DED6 !important;
+  color: var(--ds-ink) !important;
   font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -909,7 +909,7 @@
 }
 
 .recommendations-title {
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 600;
@@ -922,7 +922,7 @@
 }
 
 .loading-indicator{
-  color : #F2DED6;
+  color : var(--ds-ink);
   text-align : center;
   display: flex;
   justify-content: center;
@@ -953,7 +953,7 @@
 
 .recommendation-card:hover {
   background-color: rgba(0, 0, 0, 0.3);
-  border-color: rgba(199, 134, 108, 0.3);
+  border-color: rgba(255, 198, 176, 0.30);
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -965,12 +965,12 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #C7866C, #8B5A3C);
+  background: var(--btn-primary-bg);
   border-radius: 16px 16px 0 0;
 }
 
 .recommendation-category {
-  color: #C7866C;
+  color: var(--ds-accent);
   font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;
@@ -979,7 +979,7 @@
 }
 
 .recommendation-reason {
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   line-height: 1.6;
@@ -1001,7 +1001,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: #F2DED6;
+  color: var(--ds-ink);
   text-decoration: none;
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
@@ -1012,8 +1012,8 @@
 }
 
 .suggestion-link:hover {
-  background: rgba(199, 134, 108, 0.1);
-  border-color: rgba(199, 134, 108, 0.3);
+  background: rgba(255, 198, 176, 0.10);
+  border-color: rgba(255, 198, 176, 0.30);
   color: #FBF7F5;
   transform: translateX(4px);
   text-decoration: none;
@@ -1026,7 +1026,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #C7866C;
+  background: var(--ds-accent);
   transform: scaleY(0);
   transition: transform 0.3s ease;
 }
