@@ -52,4 +52,10 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
     subtitle: 'Spot the next trending platforms early and invest before the crowd does.',
     glow: 'rgba(181,206,170,0.4)',
   },
+  '/profile/topics': {
+    color: '#A8D8EA',
+    title: 'Select Topics',
+    subtitle: 'Pick the topics that anchor your knowledge graph.',
+    glow: 'rgba(168,216,234,0.4)',
+  },
 }

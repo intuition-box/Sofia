@@ -72,6 +72,19 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  background: transparent !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pd-share-btn:hover {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+}
+.pd-share-btn svg {
+  fill: currentColor;
 }
 
 /* ── Section scaffolding ─────────────────────────────────────────── */

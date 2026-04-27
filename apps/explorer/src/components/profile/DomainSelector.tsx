@@ -36,7 +36,7 @@ export default function DomainSelector({
   }, [query])
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6" style={{ marginTop: 8 }}>
       <div className="ts-search">
         <Search className="ts-search-icon h-3.5 w-3.5" aria-hidden="true" />
         <input

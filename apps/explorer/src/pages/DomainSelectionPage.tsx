@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useTopicSync } from '@/hooks/useTopicSync'
 import DomainSelector from '@/components/profile/DomainSelector'
-import { SubHeader } from '@0xsofia/design-system'
+import { PageHero } from '@0xsofia/design-system'
+import { PAGE_COLORS } from '@/config/pageColors'
+import { ArrowLeft } from 'lucide-react'
 import '@/components/styles/pages.css'
 
 const MAX_TOPICS = 4
@@ -9,6 +11,7 @@ const MAX_TOPICS = 4
 export default function DomainSelectionPage() {
   const navigate = useNavigate()
   const { selectedTopics, toggleTopic, removeTopic, hasPosition, isPending } = useTopicSync()
+  const pc = PAGE_COLORS['/profile/topics']
 
   const handleToggle = (topicId: string) => {
     const isSelected = selectedTopics.includes(topicId)
@@ -21,12 +24,19 @@ export default function DomainSelectionPage() {
 
   return (
     <div className="pf-view page-enter">
-      <SubHeader
-        onBack={() => navigate('/profile')}
-        backLabel="Back to Profile"
-        crumbs={[{ label: 'Profile' }, { label: 'Select Topics' }]}
-        rightPill={{ label: 'Selected', value: `${selectedTopics.length} / ${MAX_TOPICS}` }}
-        description="Pick the topics that anchor your knowledge graph."
+      <button
+        type="button"
+        className="pf-btn"
+        onClick={() => navigate('/profile')}
+        style={{ marginBottom: 16 }}
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to my profile
+      </button>
+      <PageHero
+        title={pc.title}
+        description={pc.subtitle}
+        background={pc.color}
       />
       <DomainSelector
         selectedTopics={selectedTopics}
