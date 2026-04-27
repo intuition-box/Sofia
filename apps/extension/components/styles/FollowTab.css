@@ -40,13 +40,12 @@
 }
 
 .filter-btn.trustactive {
-  background: var(--color-gradient-button);
-  animation: orb-gradient 20s ease infinite;
-  background-size: 200% 200%;
+  background: var(--btn-primary-bg);
+  
   padding: var(--spacing-sm) var(--spacing-xl);
   color: var(--color-text-dark);
   border-color: #ffb01c;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  
   position: relative;
   overflow: hidden;
 }

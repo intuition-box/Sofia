@@ -16,6 +16,7 @@
     "test:all": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts && tsx background/__test__/test-message-reception.ts"
   },
   "dependencies": {
+    "@0xsofia/design-system": "workspace:*",
     "@0xintuition/1ui": "^0.4.1",
     "@0xintuition/graphql": "1.0.0-alpha.0",
     "@0xintuition/protocol": "1.0.0-alpha.3",

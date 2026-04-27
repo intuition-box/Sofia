@@ -17,12 +17,10 @@
 }
 
 .follow-button.salmon-gradient-button {
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
-  color: #000000;
-  font-family: 'Gotu', cursive;
+  background: var(--btn-primary-bg);
+  
+  color: var(--btn-primary-fg);
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   transition: all 1s ease;
 }
@@ -45,11 +43,6 @@
   z-index: 1;
 }
 
-@keyframes orb-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 .follow-button.salmon-gradient-button:hover:not(:disabled) {
   box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);

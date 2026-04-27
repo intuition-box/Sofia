@@ -191,7 +191,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.5s ease;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
 }
 
 .trust-page-button.join-button-css::before {
@@ -233,7 +233,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.5s ease;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
 }
 
 .feed-decline-button::before {

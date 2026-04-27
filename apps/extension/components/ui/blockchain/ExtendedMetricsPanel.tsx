@@ -10,6 +10,7 @@ import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS } from "~/types/intentionCategories"
+import { VerbTag } from "@0xsofia/design-system"
 
 const formatTrust = (value: number): string =>
   value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
@@ -150,7 +151,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
           <div className="intentions-progress-list">
             {/* Trust / Distrust rows first */}
             <div className="intention-progress-item">
-              <span className="intention-label">trusted</span>
+              <VerbTag intent="trusted" label="trusted" />
               <div className="progress-track">
                 <div
                   className="progress-fill trusted"
@@ -162,7 +163,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
               <span className="intention-count">{activeTrust}</span>
             </div>
             <div className="intention-progress-item">
-              <span className="intention-label">distrusted</span>
+              <VerbTag intent="distrusted" label="distrusted" />
               <div className="progress-track">
                 <div
                   className="progress-fill distrusted"
@@ -176,7 +177,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
             {/* 6 intention types */}
             {INTENTION_ITEMS.map(({ key, label }) => (
               <div key={key} className="intention-progress-item">
-                <span className="intention-label">{label}</span>
+                <VerbTag intent={key} label={label} />
                 <div className="progress-track">
                   <div
                     className={`progress-fill ${label}`}

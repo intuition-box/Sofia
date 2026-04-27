@@ -10,8 +10,10 @@ import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
 import explorerBadge from "../img/badges/explorer.png"
 import contributorBadge from "../img/badges/contributor.png"
+import { UserBadge, USER_BADGE_COLORS } from "@0xsofia/design-system"
+import type { UserBadgeTier } from "@0xsofia/design-system"
 
-const badgeImages: Record<string, string> = {
+const badgeImages: Record<UserBadgeTier, string> = {
   pioneer: pioneerBadge,
   explorer: explorerBadge,
   contributor: contributorBadge
@@ -29,16 +31,10 @@ interface PageBlockchainHeaderProps {
   onNavigateDiscovery: () => void
 }
 
-const getPotentialBadgeType = (total: number) => {
+const getPotentialBadgeType = (total: number): UserBadgeTier => {
   if (total === 0) return "pioneer"
   if (total < 10) return "explorer"
   return "contributor"
-}
-
-const BADGE_COLORS: Record<string, string> = {
-  pioneer: "#FFD700",
-  explorer: "#3B82F6",
-  contributor: "#8B5CF6"
 }
 
 const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
@@ -58,7 +54,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
     <>
       <StarBorder
         as="div"
-        color={BADGE_COLORS[badgeType] ?? "#FFD700"}
+        color={USER_BADGE_COLORS[badgeType]}
         speed="10s"
         thickness={5}
       >
@@ -136,11 +132,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
             onClick={onNavigateDiscovery}
             title="View discovery stats"
           >
-            <img
-              src={badgeImages[badgeType]}
-              alt={badgeType}
-              className="discovery-badge-img"
-            />
+            <UserBadge tier={badgeType} iconUrl={badgeImages[badgeType]} size={22} />
             {totalCertifications > 0 ? (
               <span className="discovery-badge-rank">
                 #{totalCertifications + 1}

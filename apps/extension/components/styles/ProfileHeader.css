@@ -83,7 +83,7 @@
 }
 
 .profile-name {
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;
   color: #FBF7F5;
@@ -216,7 +216,7 @@
   color: #e5e7eb;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
-  font-family: Gotu, cursive;
+  font-family: 'Fraunces', serif;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;

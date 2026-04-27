@@ -1,7 +1,13 @@
 /* Styles globaux et communs à toute l'application */
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&family=Rubik+Mono+One&display=block');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600&display=block');
+
+/* Design System tokens */
+@import "@0xsofia/design-system/theme.css";
+@import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/user-badge.css";
+@import "@0xsofia/design-system/styles/bento.css";
 
 /* Reset CSS global */
 * {
@@ -47,6 +53,13 @@ body {
   --color-hover: #cea2fd;
   --color-hover-light: #F59E0B;
   --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
+
+  /* ── Primary button tokens (aligned with DS dark-mode) ── */
+  --btn-primary-bg: var(--ds-ink);
+  --btn-primary-fg: var(--ds-bg);
+  --btn-primary-hover-bg: var(--ds-ink-soft);
+  --btn-primary-radius: 8px;
+  --btn-primary-shadow: none;
   
 
 .figma-colors{
@@ -58,29 +71,29 @@ body {
   color : #0E0E0E;
   }
 
-  /* Couleurs de texte */
-  --color-text-primary: #F2DED6;
-  --color-text-secondary: #FBF7F5;
-  --color-text-dark: #050505;
-  --color-text-muted: rgba(255, 255, 255, 0.8);
-  --color-text-very-muted: rgba(255, 255, 255, 0.6);
-  --color-text-placeholder: rgba(255, 255, 255, 0.5);
-  
-  /* Couleurs de fond */
-  --color-bg-glass: rgba(0, 0, 0, 0.8);
-  --color-bg-glass-light: rgba(255, 255, 255, 0.05);
-  --color-bg-glass-lighter: rgba(255, 255, 255, 0.1);
-  --color-bg-dark: rgba(14, 14, 14, 0.15);
-  --color-bg-darker: rgba(10, 10, 10, 0.15);
-  --color-bg-black: rgba(0, 0, 0, 0.8);
-  --color-bg-overlay: rgba(26, 26, 26, 0.95);
-  
-  /* Bordures */
-  --color-border-glass: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.1);
-  --color-border-lighter: rgba(255, 255, 255, 0.125);
-  --color-border-very-light: rgba(255, 255, 255, 0.05);
-  --color-border-muted: rgba(242, 222, 214, 0.2);
+  /* ── Text — mapped to DS tokens ── */
+  --color-text-primary: var(--ds-ink);
+  --color-text-secondary: var(--ds-ink);
+  --color-text-dark: var(--ds-bg);
+  --color-text-muted: var(--ds-muted);
+  --color-text-very-muted: var(--ds-muted-soft);
+  --color-text-placeholder: var(--ds-muted-soft);
+
+  /* ── Surfaces — mapped to DS tokens ── */
+  --color-bg-glass: var(--ds-card);
+  --color-bg-glass-light: var(--ds-bg-subtle);
+  --color-bg-glass-lighter: var(--ds-card);
+  --color-bg-dark: var(--ds-bg-subtle);
+  --color-bg-darker: var(--ds-bg-subtle);
+  --color-bg-black: var(--ds-card);
+  --color-bg-overlay: rgba(11, 10, 18, 0.95);
+
+  /* ── Borders — mapped to DS tokens ── */
+  --color-border-glass: var(--ds-border-soft);
+  --color-border-light: var(--ds-border);
+  --color-border-lighter: var(--ds-border);
+  --color-border-very-light: var(--ds-border-soft);
+  --color-border-muted: var(--ds-border-soft);
   
   /* Couleurs d'état */
   --color-success: #22c55e;
@@ -136,7 +149,8 @@ body {
   
   /* Typographie */
   --font-family-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Gotu', cursive;
+  --font-family-display: 'Fraunces', serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
   --font-size-xs: 10px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -324,15 +338,18 @@ body {
   transform: none;
 }
 
-.btn.primary:not(.iridescence-btn) {
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
-  border-color: var(--color-primary);
+.btn.primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border-color: var(--btn-primary-bg);
+  border-radius: var(--btn-primary-radius);
+  box-shadow: var(--btn-primary-shadow);
 }
 
-.btn.primary:hover:not(:disabled):not(.iridescence-btn) {
-  background: var(--color-primary-dark);
-  box-shadow: var(--shadow-button-hover);
+.btn.primary:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
+  box-shadow: var(--btn-primary-shadow);
 }
 
 .btn.secondary {

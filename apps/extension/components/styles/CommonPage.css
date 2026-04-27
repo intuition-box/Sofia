@@ -534,8 +534,7 @@
   padding: 16px;
   margin: 4px 0;
   background: linear-gradient(135deg, rgba(215, 144, 199, 0.12) 0%, rgba(211, 124, 191, 0.10) 20%, rgba(255, 198, 176, 0.10) 50%, rgba(255, 167, 177, 0.10) 80%, rgba(206, 162, 253, 0.12) 100%);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
+  
   border-radius: 12px;
   border: 1px solid rgba(215, 144, 199, 0.2);
 }
@@ -564,16 +563,15 @@
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
-  color: #000000;
-  font-family: 'Gotu', cursive;
+  background: var(--btn-primary-bg);
+  
+  color: var(--btn-primary-fg);
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  
   cursor: pointer;
-  transition: all 1s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1008,19 +1006,18 @@
 .oauth-predicate-btn {
   display: inline-block;
   padding: 8px 16px;
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
+  background: var(--btn-primary-bg);
+  
   border: none;
   border-radius: 28px;
-  color: #000000;
-  font-family: 'Gotu', cursive;
+  color: var(--btn-primary-fg);
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 700;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  
   cursor: pointer;
   text-transform: lowercase;
-  transition: all 1s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .oauth-predicate-btn:hover:not(:disabled) {

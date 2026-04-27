@@ -16,6 +16,7 @@ import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
 import type { IntentionType } from '~/types/intentionCategories'
 import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intentionCategories'
+import { VerbTag } from '@0xsofia/design-system'
 
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
@@ -601,16 +602,11 @@ const CircleFeedTab = () => {
                   />
                   <div className="circle-intention-badges">
                     {group.intentions.map(intention => (
-                      <span
+                      <VerbTag
                         key={intention.intentionType}
-                        className="circle-intention-badge"
-                        style={{
-                          backgroundColor: `${INTENTION_CONFIG[intention.intentionType].color}20`,
-                          color: INTENTION_CONFIG[intention.intentionType].color
-                        }}
-                      >
-                        {INTENTION_CONFIG[intention.intentionType].label}
-                      </span>
+                        intent={intention.intentionType}
+                        label={INTENTION_CONFIG[intention.intentionType].label}
+                      />
                     ))}
                   </div>
                 </div>

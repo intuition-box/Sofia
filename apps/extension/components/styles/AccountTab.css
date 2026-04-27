@@ -19,7 +19,7 @@
 }
 
 .stat-value {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: #FBF7F5;
@@ -32,7 +32,7 @@
 }
 
 .stat-label {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 400;
@@ -141,7 +141,7 @@
 }
 
 .connect-button.twitter.connected {
-  background-color: #000000;
+  background-color: var(--btn-primary-fg);
   border-color: #33333350;
 }
 
@@ -944,7 +944,7 @@
 }
 
 .badge-count {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: #FBF7F5;
@@ -1023,7 +1023,7 @@
 }
 
 .xp-signals-value {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #FBF7F5;
@@ -1032,7 +1032,7 @@
 }
 
 .xp-signals-label {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 400;
@@ -1306,7 +1306,7 @@
 }
 
 .streak-hub-days {
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: #FBF7F5;
@@ -2075,10 +2075,10 @@
 /* ===== Shared Analyze Button (used by SocialsTab) ===== */
 
 .interest-analyze-btn {
-  background: var(--color-gradient-button);
+  background: var(--btn-primary-bg);
   color: #000;
   cursor: pointer;
-  background-size: 200% 200%;
+  
   border: none;
   border-radius: 7px;
   justify-content: center;
@@ -2089,7 +2089,6 @@
   font-size: 14px;
   font-weight: 700;
   transition: all 1s;
-  animation: 20s infinite orb-gradient;
   display: flex;
   position: relative;
   overflow: hidden;

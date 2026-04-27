@@ -180,7 +180,7 @@
   margin: 1px;
 }
 .triplet-detail-title {
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 600;
   color: #e7b586;
@@ -363,59 +363,34 @@
   transform: translateY(-1px);
 }
 
-/* Iridescence button styles */
+/* Primary CTA button — aligned with DS */
 .iridescence-btn {
   padding: 12px 24px;
-  border-radius: 12px;
+  border-radius: var(--btn-primary-radius);
   border: none;
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
-  color: #000000;
-  font-family: 'Gotu', cursive;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  box-shadow: var(--btn-primary-shadow);
   cursor: pointer;
-  transition: all 1s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.iridescence-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.iridescence-btn > * {
-  position: relative;
-  z-index: 1;
 }
 
 .iridescence-btn:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
+  transform: translateY(-1px);
 }
 
-@keyframes orb-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.iridescence-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-
-/* Removed .iridescence-btn-background and .iridescence-btn-content - no longer needed */
 
 .delete-selected {
   color: #bbbbbb;
@@ -759,7 +734,7 @@
 /* Headers d'analyse de session */
 .analysis-header h4 {
   color: #F2DED6 !important;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 600;
   margin: 0;
@@ -935,7 +910,7 @@
 
 .recommendations-title {
   color: #F2DED6;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 600;
   margin: 0 0 24px 0;
@@ -996,7 +971,7 @@
 
 .recommendation-category {
   color: #C7866C;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 12px 0;

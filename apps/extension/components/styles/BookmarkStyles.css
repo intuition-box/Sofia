@@ -249,9 +249,8 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-muted);
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
+  background: var(--btn-primary-bg);
+  
   color: black;
   cursor: pointer;
   font-size: var(--font-size-base);
@@ -360,7 +359,7 @@
 .bookmark-list-title {
   margin: 16px 0 8px 0;
   padding: 0;
-  font-family: 'Gotu', cursive;
+  font-family: 'Montserrat', sans-serif;
   font-size: 24px;
   font-weight: 800;
   color: rgb(255, 255, 255);

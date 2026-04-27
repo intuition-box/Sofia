@@ -62,20 +62,19 @@
 }
 
 .onboarding-btn-primary {
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: onboarding-gradient 20s ease infinite;
-  color: #000;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  box-shadow: var(--btn-primary-shadow);
+  border-radius: var(--btn-primary-radius);
 }
 
 .onboarding-btn-primary:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
+  transform: translateY(-1px);
 }
 
 .onboarding-btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -91,11 +90,6 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-@keyframes onboarding-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 /* Skip message */
 .onboarding-skip-message {

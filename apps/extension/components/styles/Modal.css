@@ -999,42 +999,19 @@
 }
 
 .modal-btn.primary {
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
+  background: var(--btn-primary-bg);
   border: none;
-  color: #000000;
+  color: var(--btn-primary-fg);
   font-weight: 700;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
-  font-family: 'Gotu', cursive;
-  position: relative;
-  overflow: hidden;
-  transition: all 1s ease;
+  font-family: 'Montserrat', sans-serif;
+  box-shadow: var(--btn-primary-shadow);
+  border-radius: var(--btn-primary-radius);
+  transition: background 0.15s ease, transform 0.15s ease;
 }
-
-.modal-btn.primary::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.modal-btn.primary > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Removed .modal-btn-background and .modal-btn-content - no longer needed */
 
 .modal-btn.primary:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
+  transform: translateY(-1px);
 }
 
 .modal-btn.primary.blue {
@@ -1877,56 +1854,28 @@
 }
 
 .stake-btn-submit {
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
-  color: #000000;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
   font-weight: 700;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
-  position: relative;
-  overflow: hidden;
-  transition: all 1s ease;
+  box-shadow: var(--btn-primary-shadow);
+  border-radius: var(--btn-primary-radius);
+  transition: background 0.15s ease, transform 0.15s ease;
   padding: 11px 24px;
 }
 
-.stake-btn-submit::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.stake-btn-submit > * {
-  position: relative;
-  z-index: 1;
-}
-
 .stake-btn-submit:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
+  transform: translateY(-1px);
 }
 
 .stake-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .stake-btn-submit:disabled {
-  background: rgba(236, 72, 153, 0.3);
-  box-shadow: none;
-  animation: none;
-}
-
-@keyframes orb-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ========== REWARD CLAIMED OVERLAY ========== */
