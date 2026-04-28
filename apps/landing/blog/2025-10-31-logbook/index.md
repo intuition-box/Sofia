@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-31-10
 
 title: Logbook 31/10
 
 authors: [Samuel, Maxime]
-
 ---
 
 This week was filled with significant progress across multiple fronts — from UI/UX refinements and feature implementations to infrastructure milestones and team methodology improvements. We're also navigating some technical challenges that are teaching us valuable lessons about building complex systems.
@@ -61,6 +59,7 @@ These changes are already improving our collaboration and helping us tackle comp
 ## Documentation Efforts
 
 We've begun **building Sofia's documentation**:
+
 - Lots more to write, but the foundation is being laid
 - Goal: Help users and developers understand, use, and contribute to Sofia
 
@@ -77,5 +76,3 @@ If you'd like to be part of the first Alpha testers, please **submit your reques
 Sofia continues to evolve with every iteration — from infrastructure to interaction.
 The journey has its challenges, but each one makes us stronger and Sofia better.
 Thanks to everyone building, testing, and trusting with us.
-
-

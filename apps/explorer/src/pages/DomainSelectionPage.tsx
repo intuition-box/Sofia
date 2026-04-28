@@ -10,7 +10,8 @@ const MAX_TOPICS = 4
 
 export default function DomainSelectionPage() {
   const navigate = useNavigate()
-  const { selectedTopics, toggleTopic, removeTopic, hasPosition, isPending } = useTopicSync()
+  const { selectedTopics, toggleTopic, removeTopic, hasPosition, isPending } =
+    useTopicSync()
   const pc = PAGE_COLORS['/profile/topics']
 
   const handleToggle = (topicId: string) => {

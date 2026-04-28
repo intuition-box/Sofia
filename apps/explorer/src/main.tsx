@@ -6,5 +6,5 @@ import './index.css'
 createRoot(document.getElementById('root')!).render(
   <Providers>
     <App />
-  </Providers>
+  </Providers>,
 )

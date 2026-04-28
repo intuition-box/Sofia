@@ -38,7 +38,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'name', label: 'A–Z' },
 ]
 
-function compareMarkets(a: PlatformVaultData, b: PlatformVaultData, sort: SortKey): number {
+function compareMarkets(
+  a: PlatformVaultData,
+  b: PlatformVaultData,
+  sort: SortKey,
+): number {
   switch (sort) {
     case 'mcap':
       return Number(BigInt(b.marketCap) - BigInt(a.marketCap))
@@ -82,7 +86,8 @@ export default function AllPlatformsPage() {
   const pc = PAGE_COLORS['/profile/platforms']
   const [tab, setTab] = useState<TabKey>('list')
   const [sortBy, setSortBy] = useState<SortKey>('mcap')
-  const [selectedMarket, setSelectedMarket] = useState<PlatformVaultData | null>(null)
+  const [selectedMarket, setSelectedMarket] =
+    useState<PlatformVaultData | null>(null)
   const [query, setQuery] = useState('')
 
   // Stable element — avoids re-registering the slot on every page render.
@@ -99,12 +104,20 @@ export default function AllPlatformsPage() {
 
   return (
     <div className="page-content page-enter">
-      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
+      <PageHero
+        background={pc.color}
+        title={pc.title}
+        description={pc.subtitle}
+      />
 
       <div className="pm-filters">
         <div className="pm-filter-group">
           <span className="pm-filter-label">View</span>
-          <div className="pm-view-switcher" role="tablist" aria-label="View mode">
+          <div
+            className="pm-view-switcher"
+            role="tablist"
+            aria-label="View mode"
+          >
             <button
               type="button"
               role="tab"
@@ -131,7 +144,10 @@ export default function AllPlatformsPage() {
         {tab === 'list' ? (
           <>
             <div className="pm-filter-group pm-filter-search">
-              <Search className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+              <Search
+                className="pm-search-icon h-3.5 w-3.5"
+                aria-hidden="true"
+              />
               <input
                 type="search"
                 className="pm-search-input"
@@ -172,7 +188,9 @@ export default function AllPlatformsPage() {
 
       {tab === 'list' ? (
         marketsLoading ? (
-          <div className="pm-loader"><SofiaLoader size={48} /></div>
+          <div className="pm-loader">
+            <SofiaLoader size={48} />
+          </div>
         ) : rows.length === 0 ? (
           <div className="pm-empty">No platforms match your search.</div>
         ) : (
@@ -223,7 +241,9 @@ export default function AllPlatformsPage() {
                   onClick={() => setSelectedMarket(market)}
                   style={{ ['--topic-color' as string]: topicColor }}
                 >
-                  <span className="pm-dex-rank" role="cell">{i + 1}</span>
+                  <span className="pm-dex-rank" role="cell">
+                    {i + 1}
+                  </span>
 
                   <span className="pm-dex-name" role="cell">
                     <span className="pm-dex-favicon">
@@ -231,7 +251,10 @@ export default function AllPlatformsPage() {
                         <img
                           src={`/favicons/${slug}.png`}
                           alt=""
-                          onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).style.display =
+                              'none')
+                          }
                         />
                       ) : null}
                     </span>
@@ -242,13 +265,19 @@ export default function AllPlatformsPage() {
                   </span>
 
                   <span className="pm-dex-mcap" role="cell">
-                    <span className="pm-dex-num-big">{formatMCap(market.marketCap)}</span>
+                    <span className="pm-dex-num-big">
+                      {formatMCap(market.marketCap)}
+                    </span>
                     <span className="pm-dex-num-unit">T</span>
                   </span>
 
-                  <span className="pm-dex-price" role="cell">{formatShare(market.sharePrice)}</span>
+                  <span className="pm-dex-price" role="cell">
+                    {formatShare(market.sharePrice)}
+                  </span>
 
-                  <span className="pm-dex-holders" role="cell">{market.positionCount}</span>
+                  <span className="pm-dex-holders" role="cell">
+                    {market.positionCount}
+                  </span>
 
                   <span className={`pm-dex-pnl ${pnlClass}`} role="cell">
                     {pnl == null ? '—' : `${pnl >= 0 ? '+' : ''}${pnl}%`}
@@ -292,7 +321,9 @@ export default function AllPlatformsPage() {
       {selectedMarket && (
         <AtomDetailDialog
           open={!!selectedMarket}
-          onOpenChange={(open) => { if (!open) setSelectedMarket(null) }}
+          onOpenChange={(open) => {
+            if (!open) setSelectedMarket(null)
+          }}
           market={selectedMarket}
           platformName={selectedMarket.label}
           favicon={`/favicons/${ATOM_ID_TO_PLATFORM.get(selectedMarket.termId) || ''}.png`}

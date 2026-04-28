@@ -13,7 +13,13 @@
  *   --skip-pin    Skip IPFS pinning (use cached pins)
  */
 
-import { createPublicClient, createWalletClient, http, stringToHex, formatEther } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  stringToHex,
+  formatEther,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
@@ -108,7 +114,9 @@ const intuitionChain = {
   network: 'intuition-mainnet',
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 }
 
 // ── ABI ──
@@ -172,7 +180,8 @@ async function pinThing({ name, description }) {
   })
 
   const json = await res.json()
-  if (json.errors) throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
+  if (json.errors)
+    throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
   const uri = json.data?.pinThing?.uri
   if (!uri) throw new Error(`No URI returned for ${name}`)
   return uri
@@ -289,13 +298,19 @@ async function main() {
   })
 
   console.log(`\n── Cost Estimate ──`)
-  console.log(`  Atoms: ${TOPICS.length} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`)
+  console.log(
+    `  Atoms: ${TOPICS.length} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`,
+  )
   console.log(`  Balance: ${formatEther(balance)} TRUST`)
 
   if (balance < atomsTotalCost) {
-    console.error(`\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`)
+    console.error(
+      `\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`,
+    )
   } else {
-    console.log(`  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`)
+    console.log(
+      `  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`,
+    )
   }
 
   if (estimateOnly) {
@@ -307,13 +322,19 @@ async function main() {
 
   console.log('\n── Step 2: Create Topic Atoms ──\n')
 
-  const toCreate = TOPICS.filter((t) => cache.pins[`topic:${t.id}`] && !cache.atomIds[t.id])
-  console.log(`To create: ${toCreate.length} atoms (${TOPICS.length - toCreate.length} already done)`)
+  const toCreate = TOPICS.filter(
+    (t) => cache.pins[`topic:${t.id}`] && !cache.atomIds[t.id],
+  )
+  console.log(
+    `To create: ${toCreate.length} atoms (${TOPICS.length - toCreate.length} already done)`,
+  )
 
   // All 14 topics in one batch
   if (toCreate.length > 0) {
     const batch = toCreate
-    const encodedDataArray = batch.map((t) => stringToHex(cache.pins[`topic:${t.id}`]))
+    const encodedDataArray = batch.map((t) =>
+      stringToHex(cache.pins[`topic:${t.id}`]),
+    )
     const depositsArray = batch.map(() => 0n)
 
     const multiVaultCost = atomCost * BigInt(batch.length)
@@ -324,7 +345,9 @@ async function main() {
       args: [0n, 0n, multiVaultCost],
     })
 
-    console.log(`\n  Batch: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`)
+    console.log(
+      `\n  Batch: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`,
+    )
     batch.forEach((t) => console.log(`    - ${t.label}`))
 
     try {
@@ -348,7 +371,9 @@ async function main() {
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status !== 'success') {
         console.error(`  TX FAILED: ${receipt.status}`)
@@ -362,7 +387,9 @@ async function main() {
     } catch (e) {
       const msg = e.message || ''
       if (msg.includes('AtomExists')) {
-        console.log(`  Some atoms exist, falling back to individual creation...`)
+        console.log(
+          `  Some atoms exist, falling back to individual creation...`,
+        )
         for (const topic of batch) {
           if (cache.atomIds[topic.id]) continue
           const encoded = stringToHex(cache.pins[`topic:${topic.id}`])

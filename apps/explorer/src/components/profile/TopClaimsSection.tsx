@@ -29,8 +29,16 @@ interface TopClaimsSectionProps {
   hideplatformPositions?: boolean
 }
 
-function TopClaimCard({ claim, walletAddress }: { claim: TopClaim; walletAddress?: string }) {
-  const intention = LABEL_TO_INTENTION[claim.predicateLabel.trim().toLowerCase()] ?? claim.predicateLabel
+function TopClaimCard({
+  claim,
+  walletAddress,
+}: {
+  claim: TopClaim
+  walletAddress?: string
+}) {
+  const intention =
+    LABEL_TO_INTENTION[claim.predicateLabel.trim().toLowerCase()] ??
+    claim.predicateLabel
   const color = INTENTION_COLORS_BY_LABEL[intention] ?? '#888888'
   const totalMcap = formatEth(String(claim.totalMarketCap))
   const posCount = claim.stats.supportCount + claim.stats.opposeCount
@@ -40,7 +48,11 @@ function TopClaimCard({ claim, walletAddress }: { claim: TopClaim; walletAddress
 
   return (
     <>
-      <Card className="tc-card" style={{ cursor: 'pointer' }} onClick={() => setBoardOpen(true)}>
+      <Card
+        className="tc-card"
+        style={{ cursor: 'pointer' }}
+        onClick={() => setBoardOpen(true)}
+      >
         <div className="tc-header">
           {favicon && <FaviconWrapper size={20} src={favicon} alt={domain} />}
           <span className="tc-title">{claim.objectLabel}</span>
@@ -55,12 +67,17 @@ function TopClaimCard({ claim, walletAddress }: { claim: TopClaim; walletAddress
             <span className="tc-stat-value">{posCount}</span>
           </div>
           {claim.stats.userPnlPct !== null && (
-            <div className={`tc-pnl ${claim.stats.userPnlPct >= 0 ? 'tc-pnl--up' : 'tc-pnl--down'}`}>
-              {claim.stats.userPnlPct >= 0
-                ? <TrendingUp className="h-3 w-3" />
-                : <TrendingDown className="h-3 w-3" />}
+            <div
+              className={`tc-pnl ${claim.stats.userPnlPct >= 0 ? 'tc-pnl--up' : 'tc-pnl--down'}`}
+            >
+              {claim.stats.userPnlPct >= 0 ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
               <span className="tc-pnl-value">
-                {claim.stats.userPnlPct >= 0 ? '+' : ''}{claim.stats.userPnlPct}%
+                {claim.stats.userPnlPct >= 0 ? '+' : ''}
+                {claim.stats.userPnlPct}%
               </span>
             </div>
           )}
@@ -110,33 +127,54 @@ function formatMCap(raw: string): string {
   return '0 T'
 }
 
-function PlatformPositionCard({ market, walletAddress }: { market: PlatformVaultData; walletAddress?: string }) {
+function PlatformPositionCard({
+  market,
+  walletAddress,
+}: {
+  market: PlatformVaultData
+  walletAddress?: string
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const slug = ATOM_ID_TO_PLATFORM.get(market.termId) || ''
 
   return (
     <>
-      <Card className="tc-card" style={{ cursor: 'pointer' }} onClick={() => setDialogOpen(true)}>
+      <Card
+        className="tc-card"
+        style={{ cursor: 'pointer' }}
+        onClick={() => setDialogOpen(true)}
+      >
         <div className="tc-header">
-          <FaviconWrapper size={20} src={`/favicons/${slug}.png`} alt={market.label} />
+          <FaviconWrapper
+            size={20}
+            src={`/favicons/${slug}.png`}
+            alt={market.label}
+          />
           <span className="tc-title">{market.label}</span>
         </div>
 
         <div className="tc-stats-row">
           <div className="tc-stat-block">
-            <span className="tc-stat-value">{formatMCap(market.marketCap)}</span>
+            <span className="tc-stat-value">
+              {formatMCap(market.marketCap)}
+            </span>
           </div>
           <div className="tc-stat-block">
             <Users className="h-3 w-3" />
             <span className="tc-stat-value">{market.positionCount}</span>
           </div>
           {market.userPnlPct !== null && (
-            <div className={`tc-pnl ${market.userPnlPct >= 0 ? 'tc-pnl--up' : 'tc-pnl--down'}`}>
-              {market.userPnlPct >= 0
-                ? <TrendingUp className="h-3 w-3" />
-                : <TrendingDown className="h-3 w-3" />}
+            <div
+              className={`tc-pnl ${market.userPnlPct >= 0 ? 'tc-pnl--up' : 'tc-pnl--down'}`}
+            >
+              {market.userPnlPct >= 0 ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
               <span className="tc-pnl-value">
-                {market.userPnlPct >= 0 ? '+' : ''}{market.userPnlPct}%
+                {market.userPnlPct >= 0 ? '+' : ''}
+                {market.userPnlPct}%
               </span>
             </div>
           )}
@@ -161,20 +199,29 @@ function PlatformPositionCard({ market, walletAddress }: { market: PlatformVault
   )
 }
 
-export default function TopClaimsSection({ claims, loading, walletAddress, hideplatformPositions }: TopClaimsSectionProps) {
+export default function TopClaimsSection({
+  claims,
+  loading,
+  walletAddress,
+  hideplatformPositions,
+}: TopClaimsSectionProps) {
   const { markets } = usePlatformMarket()
 
   // Get platforms where user has a position, sorted by PnL desc
   // Only shown for own profile (not public profiles)
-  const topPlatforms = hideplatformPositions ? [] : markets
-    .filter((m) => m.userPnlPct !== null)
-    .sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0))
-    .slice(0, 4)
+  const topPlatforms = hideplatformPositions
+    ? []
+    : markets
+        .filter((m) => m.userPnlPct !== null)
+        .sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0))
+        .slice(0, 4)
 
   if (loading) {
     return (
       <div className="tc-grid">
-        {Array.from({ length: 4 }).map((_, i) => <TopClaimSkeleton key={i} />)}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <TopClaimSkeleton key={i} />
+        ))}
       </div>
     )
   }
@@ -185,10 +232,18 @@ export default function TopClaimsSection({ claims, loading, walletAddress, hidep
   return (
     <div className="tc-grid">
       {topPlatforms.map((market) => (
-        <PlatformPositionCard key={market.termId} market={market} walletAddress={walletAddress} />
+        <PlatformPositionCard
+          key={market.termId}
+          market={market}
+          walletAddress={walletAddress}
+        />
       ))}
       {claims.map((claim) => (
-        <TopClaimCard key={claim.termId} claim={claim} walletAddress={walletAddress} />
+        <TopClaimCard
+          key={claim.termId}
+          claim={claim}
+          walletAddress={walletAddress}
+        />
       ))}
     </div>
   )

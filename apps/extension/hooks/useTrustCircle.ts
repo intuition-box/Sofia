@@ -38,7 +38,7 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
       const response = await useGetMyTrustCircleQuery.fetcher({
         subjectId: SUBJECT_IDS.I,
         predicateId: PREDICATE_IDS.TRUSTS,
-        walletAddress: checksumAddress
+        walletAddresses: checksumAddress
       })()
 
       if (!response?.triples) {

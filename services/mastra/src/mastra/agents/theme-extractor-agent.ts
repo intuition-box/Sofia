@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
+import { Agent } from '@mastra/core/agent'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
 
 export const themeExtractorAgent = new Agent({
   name: 'ThemeExtractor Agent',
@@ -53,4 +53,4 @@ CRITICAL REQUIREMENTS:
 REMINDER: Output ONLY the JSON object. Single braces { }. No text. No explanation. MINIMUM 15 triplets!
 `,
   model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
-});
+})

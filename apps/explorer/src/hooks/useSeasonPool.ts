@@ -34,6 +34,10 @@ export function useSeasonPool(enabled: boolean) {
     data: data?.positions ?? null,
     vaultStats: data?.vaultStats ?? null,
     loading: isLoading && !data,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
   }
 }

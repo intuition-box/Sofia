@@ -1,4 +1,4 @@
-import { gql } from 'graphql-request';
+import { gql } from 'graphql-request'
 
 export const AccountMetadata = gql`
   fragment AccountMetadata on accounts {
@@ -8,4 +8,4 @@ export const AccountMetadata = gql`
     atom_id
     type
   }
-`;
+`

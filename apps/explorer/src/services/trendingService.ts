@@ -23,18 +23,23 @@ const WALLET_RE = /^0x[0-9a-f]{4,}$/i
 
 export function isValidTriple(triple: TrendingTripleRaw): boolean {
   const label = (triple.object?.label || '').toLowerCase()
-  if (ENS_SUFFIXES.some(s => label.endsWith(s))) return false
+  if (ENS_SUFFIXES.some((s) => label.endsWith(s))) return false
   if (WALLET_RE.test(label.replace(/[\u2026.]+/g, ''))) return false
   if ((triple.all_positions || []).length === 0) return false
   const thingUrl = triple.object?.value?.thing?.url
-  if (!thingUrl && !label.startsWith('http') && !/[\w-]+\.[\w.-]+/.test(label)) return false
+  if (!thingUrl && !label.startsWith('http') && !/[\w-]+\.[\w.-]+/.test(label))
+    return false
   return true
 }
 
-export function tripleToItem(triple: TrendingTripleRaw, category: IntentCategory): TrendingItemLive {
+export function tripleToItem(
+  triple: TrendingTripleRaw,
+  category: IntentCategory,
+): TrendingItemLive {
   const label = triple.object?.label || ''
   const thingUrl = triple.object?.value?.thing?.url
-  const url = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
+  const url =
+    thingUrl || (label.startsWith('http') ? label : `https://${label}`)
   const domain = extractDomain(url)
   return {
     category,
@@ -60,7 +65,10 @@ export async function fetchTrendingItems(): Promise<TrendingItemLive[]> {
 
   const results = await Promise.allSettled(promises)
   return results
-    .filter((r): r is PromiseFulfilledResult<TrendingItemLive | null> => r.status === 'fulfilled')
-    .map(r => r.value)
+    .filter(
+      (r): r is PromiseFulfilledResult<TrendingItemLive | null> =>
+        r.status === 'fulfilled',
+    )
+    .map((r) => r.value)
     .filter((item): item is TrendingItemLive => item !== null)
 }

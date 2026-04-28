@@ -8,11 +8,11 @@
  * Configure the WS URL via configureClient({ apiUrl, wsUrl }) from client.ts.
  */
 
-import { createClient, type Client } from "graphql-ws"
+import { createClient, type Client } from 'graphql-ws'
 
-const API_WS_LOCAL = "ws://localhost:8080/v1/graphql"
-const API_WS_DEV = "wss://testnet.intuition.sh/v1/graphql"
-const API_WS_PROD = "wss://mainnet.intuition.sh/v1/graphql"
+const API_WS_LOCAL = 'ws://localhost:8080/v1/graphql'
+const API_WS_DEV = 'wss://testnet.intuition.sh/v1/graphql'
+const API_WS_PROD = 'wss://mainnet.intuition.sh/v1/graphql'
 
 export { API_WS_LOCAL, API_WS_DEV, API_WS_PROD }
 

@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-24-10
 
 title: Logbook 24/10
 
 authors: [Samuel, Maxime]
-
 ---
 
 This week we completed managed hosting, opened the first round of public testing, and introduced several key improvements to the Trust system and account experience.
@@ -24,8 +22,8 @@ Altogether, these updates bring Sofia closer to a dynamic, user-driven ecosystem
 
 ## Managed Hosting & Deployment
 
-- Sofia’s hosting is now **fully managed** and production-ready  
-- Secure infrastructure with **Dockerized agents** and **automated releases**  
+- Sofia’s hosting is now **fully managed** and production-ready
+- Secure infrastructure with **Dockerized agents** and **automated releases**
 - Environment optimized for **continuous testing and iteration**
 
 We’re officially **ready for user testing!**  
@@ -38,21 +36,22 @@ If you’d like to be part of the first Alpha testers, please **submit your requ
 
 We’ve reimagined the **Account page** to make it more intuitive and social:
 
-- New **Follow / Trust** actions directly on profiles  
-- Improved **metrics visualization** for your activity and reputation  
-- Added a **Level Progress Design** to visualize your growth and engagement  
+- New **Follow / Trust** actions directly on profiles
+- Improved **metrics visualization** for your activity and reputation
+- Added a **Level Progress Design** to visualize your growth and engagement
 - Refined interactions and improved UI consistency  
-![Account Page](./2.png)
-![Activity Page](./3.png)
+  ![Account Page](./2.png)
+  ![Activity Page](./3.png)
+
 ---
 
 ## Trust System Expansion
 
 A new **“Trust this site”** component has been added to the homepage:
 
-- Instantly **trust any webpage on the fly**  
-- See which **triples** and **atoms** are present on the page  
-- Strengthens the link between web browsing and the semantic Trust graph  
+- Instantly **trust any webpage on the fly**
+- See which **triples** and **atoms** are present on the page
+- Strengthens the link between web browsing and the semantic Trust graph
 
 This brings trust creation directly into your browsing experience — seamlessly integrated with Sofia.
 
@@ -62,21 +61,19 @@ This brings trust creation directly into your browsing experience — seamlessly
 
 ## Component & Design Updates
 
-- **Amplify button redesigned** for better readability and balance  
-- **Connect Wallet button updated** with new hover and feedback states  
-- Improved consistency and micro-animations across key components  
+- **Amplify button redesigned** for better readability and balance
+- **Connect Wallet button updated** with new hover and feedback states
+- Improved consistency and micro-animations across key components
 
 ---
 
 ## What’s Next
 
-- Collecting and analyzing **feedback from early testers**  
-- Expanding **Trust Circle** interactions within the Account view  
-- Adding real **analytics and insights** to the metrics dashboard  
+- Collecting and analyzing **feedback from early testers**
+- Expanding **Trust Circle** interactions within the Account view
+- Adding real **analytics and insights** to the metrics dashboard
 
 ---
 
 Sofia continues to evolve with every iteration — from infrastructure to interaction.  
 Thanks to everyone building, testing, and trusting with us.
-
-

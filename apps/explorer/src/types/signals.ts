@@ -10,8 +10,4 @@ export interface SignalResult {
   error?: SignalError
 }
 
-export type SignalError =
-  | 'no_token'
-  | 'no_fetcher'
-  | 'token_expired'
-  | string
+export type SignalError = 'no_token' | 'no_fetcher' | 'token_expired' | string

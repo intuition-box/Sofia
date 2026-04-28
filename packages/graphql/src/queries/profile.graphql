@@ -1,7 +1,5 @@
 query GetUserPositions($accountIds: [String!]!) {
-  total: positions_aggregate(
-    where: { account_id: { _in: $accountIds } }
-  ) {
+  total: positions_aggregate(where: { account_id: { _in: $accountIds } }) {
     aggregate {
       count
     }
@@ -16,9 +14,7 @@ query GetUserPositions($accountIds: [String!]!) {
 }
 
 query GetUserPositionsCount($accountIds: [String!]!) {
-  positions_aggregate(
-    where: { account_id: { _in: $accountIds } }
-  ) {
+  positions_aggregate(where: { account_id: { _in: $accountIds } }) {
     aggregate {
       count
     }
@@ -41,16 +37,15 @@ query GetUserSignalsCount($accountIds: [String!]!, $subjectId: String!) {
   }
 }
 
-query GetUserCertifications($accountIds: [String!]!, $predicateIds: [String!]!) {
+query GetUserCertifications(
+  $accountIds: [String!]!
+  $predicateIds: [String!]!
+) {
   positions(
     where: {
       account_id: { _in: $accountIds }
       vault: {
-        term: {
-          triple: {
-            predicate: { term_id: { _in: $predicateIds } }
-          }
-        }
+        term: { triple: { predicate: { term_id: { _in: $predicateIds } } } }
       }
     }
     order_by: { shares: desc }

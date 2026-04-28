@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { client } from '../graphql/client.js';
-import { gql } from 'graphql-request';
+import { z } from 'zod'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { client } from '../graphql/client.js'
+import { gql } from 'graphql-request'
 import {
   createErrorResponse,
   executeWithErrorHandling,
   ErrorContext,
-} from '../lib/response.js';
+} from '../lib/response.js'
 
 // Define the parameters schema
 const parameters = z.object({
@@ -14,15 +14,15 @@ const parameters = z.object({
     .string()
     .min(1)
     .describe(
-      'The account identifier to search the id for, typically an ens address. Example: intuitionbilly.eth'
+      'The account identifier to search the id for, typically an ens address. Example: intuitionbilly.eth',
     ),
-});
+})
 
 // Define the operation interface
 interface SearchAccountIdsOperation {
-  description: string;
-  parameters: typeof parameters;
-  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>;
+  description: string
+  parameters: typeof parameters
+  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>
 }
 
 const searchAccountIdsQuery = gql`
@@ -31,7 +31,7 @@ const searchAccountIdsQuery = gql`
       id
     }
   }
-`;
+`
 
 export const searchAccountIdsOperation: SearchAccountIdsOperation = {
   description: `Search for account addresses by ENS name or identifier. Returns the wallet address for the given identifier.`,
@@ -41,18 +41,18 @@ export const searchAccountIdsOperation: SearchAccountIdsOperation = {
       operation: 'search_account_ids',
       args,
       requestId: Math.random().toString(36).substring(7),
-    };
+    }
 
     try {
       // Validate input parameters
-      const validatedArgs = parameters.parse(args);
-      context.phase = 'validation_complete';
+      const validatedArgs = parameters.parse(args)
+      context.phase = 'validation_complete'
 
       return await executeWithErrorHandling(async () => {
-        context.phase = 'graphql_query';
-        console.log('\n=== Calling GraphQL Search ===');
+        context.phase = 'graphql_query'
+        console.log('\n=== Calling GraphQL Search ===')
 
-        const identifier = validatedArgs.identifier;
+        const identifier = validatedArgs.identifier
 
         const result = (await client.request(searchAccountIdsQuery, {
           where: {
@@ -60,18 +60,18 @@ export const searchAccountIdsOperation: SearchAccountIdsOperation = {
               _ilike: `%${identifier}%`,
             },
           },
-        })) as { accounts: { id: string }[] };
+        })) as { accounts: { id: string }[] }
 
-        context.phase = 'response_formatting';
+        context.phase = 'response_formatting'
 
         // Validate results
         if (!result || !result.accounts) {
           throw new Error(
-            'Invalid response from GraphQL API - missing accounts field'
-          );
+            'Invalid response from GraphQL API - missing accounts field',
+          )
         }
 
-        const accounts = Array.isArray(result.accounts) ? result.accounts : [];
+        const accounts = Array.isArray(result.accounts) ? result.accounts : []
 
         // Return in MCP format with essential data for UI
         const response: CallToolResult = {
@@ -105,23 +105,23 @@ ${
   accounts.length === 0
     ? 'No accounts found matching this identifier. Try a different search term or check the spelling.'
     : accounts.length > 10
-    ? `\n...and ${
-        accounts.length - 10
-      } more results. Use specific account IDs with other tools for detailed information.`
-    : 'Use these account IDs with other tools to get detailed information about each account.'
+      ? `\n...and ${
+          accounts.length - 10
+        } more results. Use specific account IDs with other tools for detailed information.`
+      : 'Use these account IDs with other tools to get detailed information about each account.'
 }`,
             },
           ],
-        };
+        }
 
-        console.log('\n=== Response Format ===');
+        console.log('\n=== Response Format ===')
         console.log(
-          `Response size: ${JSON.stringify(response).length} characters`
-        );
-        return response;
-      }, context);
+          `Response size: ${JSON.stringify(response).length} characters`,
+        )
+        return response
+      }, context)
     } catch (error) {
-      return createErrorResponse(error, context);
+      return createErrorResponse(error, context)
     }
   },
-};
+}

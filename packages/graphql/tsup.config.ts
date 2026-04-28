@@ -16,7 +16,7 @@ export default defineConfig({
     'react',
     'graphql',
     '@tanstack/react-query',
-    '@tanstack/query-core'
+    '@tanstack/query-core',
   ],
   treeshake: true,
   noExternal: ['./src/generated/**'],

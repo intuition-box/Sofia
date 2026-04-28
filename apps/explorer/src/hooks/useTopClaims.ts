@@ -4,7 +4,11 @@ import {
   useGetBatchTripleVaultStatsQuery,
 } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '@/config'
-import { extractSide, type VaultStats, statsCache } from '@/services/vaultTooltipService'
+import {
+  extractSide,
+  type VaultStats,
+  statsCache,
+} from '@/services/vaultTooltipService'
 import { INTUITION_FEATURED_CLAIMS, SOFIA_CLAIMS } from '@/config/debateConfig'
 
 /** term_ids of debate claims — exclude from Top Claims */

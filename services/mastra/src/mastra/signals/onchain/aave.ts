@@ -1,6 +1,6 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { querySubgraph } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { querySubgraph } from './utils'
 
 /**
  * Aave v3 Ethereum mainnet subgraph.
@@ -9,7 +9,7 @@ import { querySubgraph } from "./utils"
  *
  * Requires GRAPH_API_KEY env var.
  */
-const AAVE_V3_SUBGRAPH = "JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk"
+const AAVE_V3_SUBGRAPH = 'JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk'
 
 const USER_QUERY = `
   query AaveUser($id: String!) {
@@ -28,7 +28,7 @@ const USER_QUERY = `
 export const fetchAaveSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const addr = walletAddress.toLowerCase()
 
@@ -55,13 +55,14 @@ export const fetchAaveSignals: SignalFetcher = async (
   }
 
   const activeDeposits = user.reserves.filter(
-    (r) => BigInt(r.currentATokenBalance || "0") > 0n
+    (r) => BigInt(r.currentATokenBalance || '0') > 0n,
   ).length
 
   const activeBorrows = user.reserves.filter(
     (r) =>
-      BigInt(r.currentVariableDebt || "0") + BigInt(r.currentStableDebt || "0") >
-      0n
+      BigInt(r.currentVariableDebt || '0') +
+        BigInt(r.currentStableDebt || '0') >
+      0n,
   ).length
 
   return {

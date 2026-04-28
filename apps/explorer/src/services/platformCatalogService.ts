@@ -4,15 +4,15 @@
  * Replaces the static platformCatalog.ts data.
  */
 
-import { GRAPHQL_URL } from "@/config"
+import { GRAPHQL_URL } from '@/config'
 import {
   PLATFORM_ATOM_IDS,
   CATEGORY_ATOM_IDS,
   HAS_TAG_PREDICATE_ID,
   ATOM_ID_TO_PLATFORM,
   ATOM_ID_TO_CATEGORY,
-} from "@/config/atomIds"
-import { TOPIC_META } from "@/config/topicMeta"
+} from '@/config/atomIds'
+import { TOPIC_META } from '@/config/topicMeta'
 
 // ── Types ──
 
@@ -86,8 +86,8 @@ export async function fetchPlatformCatalog(
   const categoryTermIds = Object.values(CATEGORY_ATOM_IDS)
 
   const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query: GET_PLATFORM_TRIPLES,
       variables: {
@@ -108,7 +108,7 @@ export async function fetchPlatformCatalog(
     const object = triple.object
 
     const platformSlug = resolveSlug(subject.term_id)
-    const categorySlug = ATOM_ID_TO_CATEGORY.get(object.term_id) || ""
+    const categorySlug = ATOM_ID_TO_CATEGORY.get(object.term_id) || ''
 
     if (!platformSlug || !categorySlug) continue
 
@@ -165,6 +165,7 @@ export async function fetchPlatformCatalog(
     platforms,
     platformById: byId,
     getPlatformsByTopic: (topicId: string) => byTopic.get(topicId) || [],
-    getPlatformsByCategory: (categoryId: string) => byCategory.get(categoryId) || [],
+    getPlatformsByCategory: (categoryId: string) =>
+      byCategory.get(categoryId) || [],
   }
 }

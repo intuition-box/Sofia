@@ -5,13 +5,13 @@
 .ps-card {
   position: relative;
   border: 1px solid var(--ds-border);
-  border-top: 4px solid #F5D58A;
+  border-top: 4px solid #f5d58a;
   border-radius: 14px;
   background: var(--ds-card);
   overflow: hidden;
   box-shadow:
-    0 1px 0 0 color-mix(in oklab, #F5D58A 30%, transparent) inset,
-    0 24px 60px -28px color-mix(in oklab, #F5D58A 22%, transparent);
+    0 1px 0 0 color-mix(in oklab, #f5d58a 30%, transparent) inset,
+    0 24px 60px -28px color-mix(in oklab, #f5d58a 22%, transparent);
 }
 
 .ps-card::before {
@@ -19,12 +19,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      color-mix(in oklab, #F5D58A 4%, transparent) 0 1px,
-      transparent 1px 14px
-    );
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in oklab, #f5d58a 4%, transparent) 0 1px,
+    transparent 1px 14px
+  );
   mix-blend-mode: screen;
   opacity: 0.6;
 }
@@ -36,7 +35,7 @@
   justify-content: space-between;
   padding: 12px 22px;
   border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -56,7 +55,7 @@
   display: inline-block;
   width: 4px;
   height: 14px;
-  background: #F5D58A;
+  background: #f5d58a;
   border-radius: 2px;
 }
 .ps-share-btn {
@@ -68,32 +67,46 @@
   border: 1px solid var(--ds-ink);
   background: var(--ds-ink);
   color: var(--ds-bg);
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: none;
   cursor: pointer;
   transition: all 0.18s;
-  box-shadow: 0 2px 0 0 color-mix(in oklab, #F5D58A 60%, transparent);
+  box-shadow: 0 2px 0 0 color-mix(in oklab, #f5d58a 60%, transparent);
 }
 .ps-share-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 0 #F5D58A, 0 6px 16px -6px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 4px 0 0 #f5d58a,
+    0 6px 16px -6px rgba(0, 0, 0, 0.4);
 }
 .ps-share-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 0 0 #F5D58A;
+  box-shadow: 0 1px 0 0 #f5d58a;
 }
-.ps-share-btn:disabled { opacity: 0.5; cursor: wait; }
-.ps-share-btn svg { width: 14px; height: 14px; fill: currentColor; }
+.ps-share-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.ps-share-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
 /* Light-mode-friendly inverse: in dark mode the black-on-dark loses contrast against the card,
    add a subtle outline glow */
 .dark .ps-share-btn {
-  box-shadow: 0 0 0 1px color-mix(in oklab, #F5D58A 40%, transparent), 0 2px 0 0 color-mix(in oklab, #F5D58A 60%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, #f5d58a 40%, transparent),
+    0 2px 0 0 color-mix(in oklab, #f5d58a 60%, transparent);
 }
 .dark .ps-share-btn:hover:not(:disabled) {
-  box-shadow: 0 0 0 1px #F5D58A, 0 4px 0 0 #F5D58A, 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 0 1px #f5d58a,
+    0 4px 0 0 #f5d58a,
+    0 6px 16px -6px rgba(0, 0, 0, 0.6);
 }
 
 /* ── Body ── */
@@ -122,7 +135,7 @@
   gap: 4px;
 }
 .ps-rank {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 900;
   font-size: 76px;
   line-height: 0.85;
@@ -136,11 +149,11 @@
 .ps-rank-hash {
   font-size: 0.42em;
   font-weight: 500;
-  color: #F5D58A;
+  color: #f5d58a;
   margin-top: 0.18em;
 }
 .ps-rank-of {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -148,14 +161,21 @@
   color: var(--ds-muted);
 }
 /* Top 3 special tints */
-.ps-rank--1 { color: #F5D58A; text-shadow: 0 0 28px color-mix(in oklab, #F5D58A 50%, transparent); }
-.ps-rank--2 { color: #D4D4D8; }
-.ps-rank--3 { color: #D08C5C; }
+.ps-rank--1 {
+  color: #f5d58a;
+  text-shadow: 0 0 28px color-mix(in oklab, #f5d58a 50%, transparent);
+}
+.ps-rank--2 {
+  color: #d4d4d8;
+}
+.ps-rank--3 {
+  color: #d08c5c;
+}
 
 .ps-divider {
   width: 38px;
   height: 1px;
-  background: color-mix(in oklab, #F5D58A 50%, transparent);
+  background: color-mix(in oklab, #f5d58a 50%, transparent);
 }
 
 .ps-identity {
@@ -169,11 +189,13 @@
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid color-mix(in oklab, #F5D58A 50%, transparent);
-  box-shadow: 0 0 0 4px var(--ds-card), 0 0 16px -4px color-mix(in oklab, #F5D58A 60%, transparent);
+  border: 2px solid color-mix(in oklab, #f5d58a 50%, transparent);
+  box-shadow:
+    0 0 0 4px var(--ds-card),
+    0 0 16px -4px color-mix(in oklab, #f5d58a 60%, transparent);
 }
 .ps-name {
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -185,10 +207,10 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid color-mix(in oklab, #F5D58A 60%, transparent);
-  background: color-mix(in oklab, #F5D58A 10%, transparent);
-  color: #F5D58A;
-  font-family: "JetBrains Mono", monospace;
+  border: 1px solid color-mix(in oklab, #f5d58a 60%, transparent);
+  background: color-mix(in oklab, #f5d58a 10%, transparent);
+  color: #f5d58a;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -198,7 +220,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #F5D58A;
+  background: #f5d58a;
 }
 
 /* ── Stats zone (right) ── */
@@ -221,12 +243,12 @@
   flex-direction: column;
 }
 .ps-section-title {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #F5D58A;
+  color: #f5d58a;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -237,7 +259,7 @@
   display: inline-block;
   width: 18px;
   height: 2px;
-  background: #F5D58A;
+  background: #f5d58a;
 }
 .ps-section-title::after {
   content: '';
@@ -257,9 +279,12 @@
   padding: 12px 0;
   border-bottom: 1px dashed color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
-.ps-stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ps-stat-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
 .ps-stat-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -267,7 +292,7 @@
   color: var(--ds-muted);
 }
 .ps-stat-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 900;
   font-size: 26px;
   line-height: 1;
@@ -275,9 +300,12 @@
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
-.ps-stat-value--positive { color: #22c55e; }
-.ps-stat-value--negative { color: #ef4444; }
-
+.ps-stat-value--positive {
+  color: #22c55e;
+}
+.ps-stat-value--negative {
+  color: #ef4444;
+}
 
 /* ── Not alpha state ── */
 .ps-empty {
@@ -287,7 +315,7 @@
   text-align: center;
 }
 .ps-empty-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -301,10 +329,14 @@
 
 /* ── Responsive ── */
 @media (max-width: 820px) {
-  .ps-body { grid-template-columns: 1fr; }
+  .ps-body {
+    grid-template-columns: 1fr;
+  }
   .ps-player {
     border-right: none;
     border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 10%, transparent);
   }
-  .ps-rank { font-size: 64px; }
+  .ps-rank {
+    font-size: 64px;
+  }
 }

@@ -34,15 +34,15 @@ TEE allows anyone to verify that computations were performed correctly without a
 You can find the link to the verifiable attestation reports by clicking on this link :
 [**Sofia Trust Center Link**](https://trust.phala.com/app/1c7e47af64a3446a360e8fceb253f38991cff023/2d402bdb-5867-4a6f-b841-57210a9fe3cc)
 
-**That's why we choose Phala. Provide a high level of transparency to our customers.** 
+**That's why we choose Phala. Provide a high level of transparency to our customers.**
 
 ## Phala Infrastructure
 
 Phala provides the infrastructure for our TEE implementation, offering a decentralized network of secure processors that execute Sofia's intelligence layer.
 
 The network ensures:
+
 - **Hardware-based security** through Intel SGX and ARM TrustZone
 - **Decentralized computation** across multiple nodes
 - **Verifiable execution** with cryptographic proofs
-- **Economic incentives** for node operators to maintain security 
-
+- **Economic incentives** for node operators to maintain security

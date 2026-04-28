@@ -13,13 +13,20 @@ export function extractDomain(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
   } catch {
-    return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0]
+    return url
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0]
   }
 }
 
 /** Decode %20 and normalize tag labels */
 export function cleanLabel(raw: string): string {
-  try { return decodeURIComponent(raw) } catch { return raw.replace(/%20/g, ' ') }
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw.replace(/%20/g, ' ')
+  }
 }
 
 /** Relative time string from an ISO timestamp */

@@ -20,10 +20,14 @@ while ((match = regex.exec(content)) !== null) {
 
   let domain
   if (websiteMatch) {
-    try { domain = new URL(websiteMatch[1]).hostname } catch {}
+    try {
+      domain = new URL(websiteMatch[1]).hostname
+    } catch {}
   }
   if (!domain && apiMatch) {
-    try { domain = new URL(apiMatch[1]).hostname } catch {}
+    try {
+      domain = new URL(apiMatch[1]).hostname
+    } catch {}
   }
   if (!domain) {
     domain = `${id}.com`
@@ -40,26 +44,39 @@ mkdirSync(outDir, { recursive: true })
 function download(url, dest) {
   return new Promise((resolve, reject) => {
     const file = []
-    const req = get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-      // Follow redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return download(res.headers.location, dest).then(resolve).catch(reject)
-      }
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode} for ${url}`))
-      }
-      res.on('data', (chunk) => file.push(chunk))
-      res.on('end', () => {
-        const buffer = Buffer.concat(file)
-        if (buffer.length < 100) {
-          return reject(new Error(`Too small (${buffer.length}b) for ${url}`))
+    const req = get(
+      url,
+      { headers: { 'User-Agent': 'Mozilla/5.0' } },
+      (res) => {
+        // Follow redirects
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          return download(res.headers.location, dest)
+            .then(resolve)
+            .catch(reject)
         }
-        writeFileSync(dest, buffer)
-        resolve(buffer.length)
-      })
-    })
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode} for ${url}`))
+        }
+        res.on('data', (chunk) => file.push(chunk))
+        res.on('end', () => {
+          const buffer = Buffer.concat(file)
+          if (buffer.length < 100) {
+            return reject(new Error(`Too small (${buffer.length}b) for ${url}`))
+          }
+          writeFileSync(dest, buffer)
+          resolve(buffer.length)
+        })
+      },
+    )
     req.on('error', reject)
-    req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout')) })
+    req.setTimeout(10000, () => {
+      req.destroy()
+      reject(new Error('Timeout'))
+    })
   })
 }
 

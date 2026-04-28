@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchStreakLeaderboard, DAILY_CERTIFICATION_ATOM_ID, type StreakEntry } from '../services/streakService'
+import {
+  fetchStreakLeaderboard,
+  DAILY_CERTIFICATION_ATOM_ID,
+  type StreakEntry,
+} from '../services/streakService'
 
-export function useStreakLeaderboard(atomId: string = DAILY_CERTIFICATION_ATOM_ID) {
+export function useStreakLeaderboard(
+  atomId: string = DAILY_CERTIFICATION_ATOM_ID,
+) {
   const [entries, setEntries] = useState<StreakEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

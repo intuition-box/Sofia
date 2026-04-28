@@ -5,14 +5,19 @@ import type { PoolPosition, VaultStats } from '@/types'
 
 type VaultRaw = GetSeasonPoolPositionsQuery['vaults'][number]
 
-export function processPositions(vault: VaultRaw): { positions: PoolPosition[]; vaultStats: VaultStats } {
+export function processPositions(vault: VaultRaw): {
+  positions: PoolPosition[]
+  vaultStats: VaultStats
+} {
   const sharePrice = BigInt(vault.current_share_price || '0')
 
   const positions: PoolPosition[] = (vault.positions || [])
     .filter((p) => BigInt(p.shares || '0') > 0n)
     .map((p) => {
       const shares = BigInt(p.shares || '0')
-      const totalDeposited = BigInt(p.total_deposit_assets_after_total_fees || '0')
+      const totalDeposited = BigInt(
+        p.total_deposit_assets_after_total_fees || '0',
+      )
       const totalRedeemed = BigInt(p.total_redeem_assets_for_receiver || '0')
       const currentValue = (shares * sharePrice) / 10n ** 18n
       const netDeposited = totalDeposited - totalRedeemed
@@ -33,7 +38,13 @@ export function processPositions(vault: VaultRaw): { positions: PoolPosition[]; 
       }
     })
 
-  positions.sort((a, b) => b.currentValue > a.currentValue ? -1 : b.currentValue < a.currentValue ? 1 : 0)
+  positions.sort((a, b) =>
+    b.currentValue > a.currentValue
+      ? -1
+      : b.currentValue < a.currentValue
+        ? 1
+        : 0,
+  )
 
   return {
     positions,

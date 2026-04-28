@@ -15,15 +15,14 @@ import {
   useGetUserSignalsCountQuery,
 } from '@0xsofia/graphql'
 // eslint-disable-next-line import/first
-import {
-  fetchUserProfile,
-  fetchSignalsCount,
-} from '@/services/profileService'
+import { fetchUserProfile, fetchSignalsCount } from '@/services/profileService'
 // eslint-disable-next-line import/first
 import { SUBJECT_IDS } from '@/config'
 
-const mockedPositions = useGetUserPositionsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
-const mockedSignals = useGetUserSignalsCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedPositions =
+  useGetUserPositionsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedSignals =
+  useGetUserSignalsCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 
 const emptyPositionsData = {
   positions: [],
@@ -108,7 +107,10 @@ describe('profileService.fetchUserProfile', () => {
             shares: '100',
             vault: {
               current_share_price: '1',
-              term: { atom: { term_id: 'atom-1', label: 'github.com' }, triple: null },
+              term: {
+                atom: { term_id: 'atom-1', label: 'github.com' },
+                triple: null,
+              },
             },
           },
           {
@@ -120,7 +122,11 @@ describe('profileService.fetchUserProfile', () => {
                 triple: {
                   term_id: 'triple-1',
                   predicate: { label: 'visits for work' },
-                  object: { term_id: 'obj-1', label: 'example.com', value: null },
+                  object: {
+                    term_id: 'obj-1',
+                    label: 'example.com',
+                    value: null,
+                  },
                   subject: { term_id: 'subj-1' },
                 },
               },

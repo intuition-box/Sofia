@@ -3,7 +3,11 @@
  * fill. Only iterates axes that the series has a count for, so curves
  * never dip back through the centre on irrelevant spokes.
  */
-import { type PositionedAxis, type RadarSeries, smoothClosedPath } from '@/lib/radar'
+import {
+  type PositionedAxis,
+  type RadarSeries,
+  smoothClosedPath,
+} from '@/lib/radar'
 
 interface RadarPolygonProps {
   series: RadarSeries
@@ -38,7 +42,8 @@ export default function RadarPolygon({
   const allMode = seriesFilter === 'all'
   // When an axis is focused, dim any polygon with no count on that axis
   // so the chart actually reduces to relevant curves.
-  const axisRelevant = axisFilter === 'all' || (series.counts[axisFilter] ?? 0) > 0
+  const axisRelevant =
+    axisFilter === 'all' || (series.counts[axisFilter] ?? 0) > 0
   const baseOpacity = allMode ? 0.75 : isActive ? 1 : 0.08
   const opacity = axisRelevant ? baseOpacity : 0.05
   const strokeW = isActive ? 4 : allMode ? 3 : 2

@@ -6,20 +6,17 @@
  * and global scoring principles/constants.
  */
 
-import type {
-  SignalFormula,
-  TopicScoringModel,
-} from "../types/reputation"
+import type { SignalFormula, TopicScoringModel } from '../types/reputation'
 
 // === SIGNAL FORMULAS PER PLATFORM ===
 
 export const SIGNAL_FORMULAS: SignalFormula[] = [
   // === DEVELOPPEMENT ===
   {
-    platformId: "github",
+    platformId: 'github',
     formula:
-      "(streak_jours * 1.5) + (commits_moy_quotidien * 3)"
-      + " + (repos_actifs * 2) - burst_malus",
+      '(streak_jours * 1.5) + (commits_moy_quotidien * 3)' +
+      ' + (repos_actifs * 2) - burst_malus',
     weights: {
       creation: 3,
       regularity: 1.5,
@@ -30,10 +27,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "gitlab",
-    formula:
-      "github_logic + (pipeline_ci * 2)"
-      + " - burst_malus",
+    platformId: 'gitlab',
+    formula: 'github_logic + (pipeline_ci * 2)' + ' - burst_malus',
     weights: {
       creation: 3,
       regularity: 1.5,
@@ -44,10 +39,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "stackoverflow",
+    platformId: 'stackoverflow',
     formula:
-      "(reputation / 100) + (reponses_acceptees * 5)"
-      + " - ratio_ask_answer_faible",
+      '(reputation / 100) + (reponses_acceptees * 5)' +
+      ' - ratio_ask_answer_faible',
     weights: {
       creation: 5,
       regularity: 1,
@@ -58,10 +53,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "npm",
+    platformId: 'npm',
     formula:
-      "(nb_packages * 10) + log(telechargements_hebdo)"
-      + " - packages_inactifs",
+      '(nb_packages * 10) + log(telechargements_hebdo)' +
+      ' - packages_inactifs',
     weights: {
       creation: 10,
       regularity: 1,
@@ -72,10 +67,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "pypi",
+    platformId: 'pypi',
     formula:
-      "(nb_packages * 10) + log(telechargements_hebdo)"
-      + " - packages_inactifs",
+      '(nb_packages * 10) + log(telechargements_hebdo)' +
+      ' - packages_inactifs',
     weights: {
       creation: 10,
       regularity: 1,
@@ -86,9 +81,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "replit",
-    formula:
-      "(projets_actifs * 2) + (forks_recus * 3)",
+    platformId: 'replit',
+    formula: '(projets_actifs * 2) + (forks_recus * 3)',
     weights: {
       creation: 2,
       regularity: 1,
@@ -99,10 +93,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "huggingface",
-    formula:
-      "(modeles * 8) + (likes_recus / 10)"
-      + " + (spaces_actifs * 5)",
+    platformId: 'huggingface',
+    formula: '(modeles * 8) + (likes_recus / 10)' + ' + (spaces_actifs * 5)',
     weights: {
       creation: 8,
       regularity: 1,
@@ -113,9 +105,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "vercel",
-    formula:
-      "(deploiements_mois * 2) + (projets_actifs * 3)",
+    platformId: 'vercel',
+    formula: '(deploiements_mois * 2) + (projets_actifs * 3)',
     weights: {
       creation: 3,
       regularity: 2,
@@ -126,9 +117,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "netlify",
-    formula:
-      "(deploiements_mois * 2) + (projets_actifs * 3)",
+    platformId: 'netlify',
+    formula: '(deploiements_mois * 2) + (projets_actifs * 3)',
     weights: {
       creation: 3,
       regularity: 2,
@@ -139,10 +129,9 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "kaggle",
+    platformId: 'kaggle',
     formula:
-      "(medailles_or * 20) + (notebooks_votes * 3)"
-      + " + (top_pct_inverse)",
+      '(medailles_or * 20) + (notebooks_votes * 3)' + ' + (top_pct_inverse)',
     weights: {
       creation: 8,
       regularity: 1.5,
@@ -153,10 +142,9 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "leetcode",
+    platformId: 'leetcode',
     formula:
-      "(hard_resolus * 5) + (medium * 2)"
-      + " + (easy * 0.5) + (streak * 1.5)",
+      '(hard_resolus * 5) + (medium * 2)' + ' + (easy * 0.5) + (streak * 1.5)',
     weights: {
       creation: 5,
       regularity: 1.5,
@@ -167,10 +155,9 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "hackerrank",
+    platformId: 'hackerrank',
     formula:
-      "(hard_resolus * 5) + (medium * 2)"
-      + " + (easy * 0.5) + (streak * 1.5)",
+      '(hard_resolus * 5) + (medium * 2)' + ' + (easy * 0.5) + (streak * 1.5)',
     weights: {
       creation: 5,
       regularity: 1.5,
@@ -183,10 +170,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === DESIGN / CREATIF ===
   {
-    platformId: "figma",
+    platformId: 'figma',
     formula:
-      "(fichiers_actifs * 3) + (collaborateurs * 2)"
-      + " + (commentaires * 0.5) - activite_recente * 1.5",
+      '(fichiers_actifs * 3) + (collaborateurs * 2)' +
+      ' + (commentaires * 0.5) - activite_recente * 1.5',
     weights: {
       creation: 3,
       regularity: 1.3,
@@ -197,10 +184,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "behance",
-    formula:
-      "(projets * 5) + (appreciations / 20)"
-      + " + (featured * 20)",
+    platformId: 'behance',
+    formula: '(projets * 5) + (appreciations / 20)' + ' + (featured * 20)',
     weights: {
       creation: 5,
       regularity: 1.3,
@@ -211,10 +196,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "dribbble",
-    formula:
-      "(shots * 4) + (likes_recus / 30)"
-      + " + (followers / 50)",
+    platformId: 'dribbble',
+    formula: '(shots * 4) + (likes_recus / 30)' + ' + (followers / 50)',
     weights: {
       creation: 4,
       regularity: 1.3,
@@ -225,10 +208,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "unsplash",
-    formula:
-      "(photos * 5) + (telechargements / 100)"
-      + " + (vues / 1000)",
+    platformId: 'unsplash',
+    formula: '(photos * 5) + (telechargements / 100)' + ' + (vues / 1000)',
     weights: {
       creation: 5,
       regularity: 1.3,
@@ -239,9 +220,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "500px",
-    formula:
-      "(pulse_moyen * 2) + (affections / 20)",
+    platformId: '500px',
+    formula: '(pulse_moyen * 2) + (affections / 20)',
     weights: {
       creation: 3,
       regularity: 1.3,
@@ -252,10 +232,9 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "deviantart",
+    platformId: 'deviantart',
     formula:
-      "(deviations * 4) + (favourites_recus / 30)"
-      + " + (watchers / 50)",
+      '(deviations * 4) + (favourites_recus / 30)' + ' + (watchers / 50)',
     weights: {
       creation: 4,
       regularity: 1.3,
@@ -268,10 +247,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === MUSIQUE / AUDIO ===
   {
-    platformId: "spotify",
+    platformId: 'spotify',
     formula:
-      "(diversite_genres * 2) + (playlists_creees * 3)"
-      + " + (heures_semaine * 1)",
+      '(diversite_genres * 2) + (playlists_creees * 3)' +
+      ' + (heures_semaine * 1)',
     weights: {
       creation: 1,
       regularity: 1.2,
@@ -282,10 +261,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "soundcloud",
-    formula:
-      "(tracks * 8) + (plays_recus / 100)"
-      + " + (reposts * 2)",
+    platformId: 'soundcloud',
+    formula: '(tracks * 8) + (plays_recus / 100)' + ' + (reposts * 2)',
     weights: {
       creation: 8,
       regularity: 1.5,
@@ -296,10 +273,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "mixcloud",
-    formula:
-      "(mixes * 6) + (ecoutes / 200)"
-      + " + (followers / 30)",
+    platformId: 'mixcloud',
+    formula: '(mixes * 6) + (ecoutes / 200)' + ' + (followers / 30)',
     weights: {
       creation: 6,
       regularity: 1.5,
@@ -310,9 +285,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "bandcamp",
-    formula:
-      "(albums * 10) + (ventes * 5)",
+    platformId: 'bandcamp',
+    formula: '(albums * 10) + (ventes * 5)',
     weights: {
       creation: 10,
       regularity: 1,
@@ -323,10 +297,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "lastfm",
+    platformId: 'lastfm',
     formula:
-      "(scrobbles_total / 1000) + (diversite_tags * 2)"
-      + " + (anciennete_bonus)",
+      '(scrobbles_total / 1000) + (diversite_tags * 2)' +
+      ' + (anciennete_bonus)',
     weights: {
       creation: 0,
       regularity: 1.5,
@@ -337,10 +311,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "deezer",
+    platformId: 'deezer',
     formula:
-      "(playlists_creees * 3) + (heures_semaine * 1)"
-      + " + (diversite_genres * 2)",
+      '(playlists_creees * 3) + (heures_semaine * 1)' +
+      ' + (diversite_genres * 2)',
     weights: {
       creation: 1,
       regularity: 1.2,
@@ -353,10 +327,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === VIDEO / STREAMING ===
   {
-    platformId: "youtube",
+    platformId: 'youtube',
     formula:
-      "(videos_postees * 10) + (vues_totales / 1000)"
-      + " + (commentaires_pertinents * 2)",
+      '(videos_postees * 10) + (vues_totales / 1000)' +
+      ' + (commentaires_pertinents * 2)',
     weights: {
       creation: 10,
       regularity: 1.5,
@@ -367,10 +341,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "twitch",
-    formula:
-      "(heures_stream_mois * 2) + (followers / 100)"
-      + " + (subs * 10)",
+    platformId: 'twitch',
+    formula: '(heures_stream_mois * 2) + (followers / 100)' + ' + (subs * 10)',
     weights: {
       creation: 5,
       regularity: 2,
@@ -381,9 +353,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "vimeo",
-    formula:
-      "(videos * 5) + (vues / 500)",
+    platformId: 'vimeo',
+    formula: '(videos * 5) + (vues / 500)',
     weights: {
       creation: 5,
       regularity: 1.3,
@@ -396,10 +367,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === WEB3 / CRYPTO ===
   {
-    platformId: "wallet-siwe",
+    platformId: 'wallet-siwe',
     formula:
-      "(tx_uniques * 1) + (protocoles_distincts * 5)"
-      + " + (anciennete_mois * 0.5) + (ens_possede * 15)",
+      '(tx_uniques * 1) + (protocoles_distincts * 5)' +
+      ' + (anciennete_mois * 0.5) + (ens_possede * 15)',
     weights: {
       creation: 3,
       regularity: 1.4,
@@ -410,10 +381,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "lens",
-    formula:
-      "(posts * 3) + (collects * 5)"
-      + " + (follows * 0.2)",
+    platformId: 'lens',
+    formula: '(posts * 3) + (collects * 5)' + ' + (follows * 0.2)',
     weights: {
       creation: 3,
       regularity: 1.4,
@@ -424,10 +393,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "farcaster",
-    formula:
-      "(casts * 2) + (followers / 20)"
-      + " + (anciennete_mois * 0.5)",
+    platformId: 'farcaster',
+    formula: '(casts * 2) + (followers / 20)' + ' + (anciennete_mois * 0.5)',
     weights: {
       creation: 2,
       regularity: 1.4,
@@ -438,10 +405,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "coinbase",
-    formula:
-      "(earn_quizzes * 3) + (assets_distincts * 2)"
-      + " + (staking * 5)",
+    platformId: 'coinbase',
+    formula: '(earn_quizzes * 3) + (assets_distincts * 2)' + ' + (staking * 5)',
     weights: {
       creation: 2,
       regularity: 1.4,
@@ -452,9 +417,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "opensea",
-    formula:
-      "(nfts_mintes * 10) + (volume_vendu_eth * 5)",
+    platformId: 'opensea',
+    formula: '(nfts_mintes * 10) + (volume_vendu_eth * 5)',
     weights: {
       creation: 10,
       regularity: 1,
@@ -465,10 +429,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "the-graph",
-    formula:
-      "(protocoles_utilises * 8)"
-      + " + log(volume_total_usd)",
+    platformId: 'the-graph',
+    formula: '(protocoles_utilises * 8)' + ' + log(volume_total_usd)',
     weights: {
       creation: 3,
       regularity: 1.4,
@@ -479,10 +441,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "snapshot",
-    formula:
-      "(votes * 2) + (proposals * 10)"
-      + " + (daos_actifs * 3)",
+    platformId: 'snapshot',
+    formula: '(votes * 2) + (proposals * 10)' + ' + (daos_actifs * 3)',
     weights: {
       creation: 5,
       regularity: 1.4,
@@ -493,10 +453,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "ens",
+    platformId: 'ens',
     formula:
-      "(has_primary_ens * 20) + (domains_owned * 5)"
-      + " + (wrapped_domains * 3)",
+      '(has_primary_ens * 20) + (domains_owned * 5)' +
+      ' + (wrapped_domains * 3)',
     weights: {
       creation: 2,
       regularity: 1,
@@ -507,10 +467,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.05,
   },
   {
-    platformId: "lido",
-    formula:
-      "log(1 + total_staked_eth) * 10"
-      + " + (is_staker * 15)",
+    platformId: 'lido',
+    formula: 'log(1 + total_staked_eth) * 10' + ' + (is_staker * 15)',
     weights: {
       creation: 1,
       regularity: 1.2,
@@ -521,10 +479,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.05,
   },
   {
-    platformId: "aave",
+    platformId: 'aave',
     formula:
-      "(active_deposits * 5) + (active_borrows * 8)"
-      + " + (positions_count * 2)",
+      '(active_deposits * 5) + (active_borrows * 8)' +
+      ' + (positions_count * 2)',
     weights: {
       creation: 2,
       regularity: 1.3,
@@ -535,10 +493,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "uniswap",
+    platformId: 'uniswap',
     formula:
-      "(positions_active * 10) + log(1 + swap_volume_usd)"
-      + " + (swaps_30d * 1)",
+      '(positions_active * 10) + log(1 + swap_volume_usd)' +
+      ' + (swaps_30d * 1)',
     weights: {
       creation: 3,
       regularity: 1.5,
@@ -551,9 +509,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === RESEAUX SOCIAUX ===
   {
-    platformId: "reddit",
-    formula:
-      "(comment_karma / 100) + (subreddits_actifs * 3)",
+    platformId: 'reddit',
+    formula: '(comment_karma / 100) + (subreddits_actifs * 3)',
     weights: {
       creation: 2,
       regularity: 1.5,
@@ -564,10 +521,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "discord",
-    formula:
-      "(serveurs_specialises * 3)"
-      + " + (roles_obtenus * 5)",
+    platformId: 'discord',
+    formula: '(serveurs_specialises * 3)' + ' + (roles_obtenus * 5)',
     weights: {
       creation: 1,
       regularity: 1.5,
@@ -578,10 +533,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "mastodon",
-    formula:
-      "(posts * 2) + (followers / 20)"
-      + " + (boosts_recus * 1)",
+    platformId: 'mastodon',
+    formula: '(posts * 2) + (followers / 20)' + ' + (boosts_recus * 1)',
     weights: {
       creation: 2,
       regularity: 1.5,
@@ -592,10 +545,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "bluesky",
-    formula:
-      "(posts * 2) + (followers / 20)"
-      + " + (likes_recus * 0.5)",
+    platformId: 'bluesky',
+    formula: '(posts * 2) + (followers / 20)' + ' + (likes_recus * 0.5)',
     weights: {
       creation: 2,
       regularity: 1.5,
@@ -608,10 +559,10 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === GAMING ===
   {
-    platformId: "steam",
+    platformId: 'steam',
     formula:
-      "(heures_top_jeu * 2) + (achievements_rare * 3)"
-      + " + (reviews_ecrites * 4)",
+      '(heures_top_jeu * 2) + (achievements_rare * 3)' +
+      ' + (reviews_ecrites * 4)',
     weights: {
       creation: 4,
       regularity: 1.2,
@@ -622,10 +573,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "chess-com",
-    formula:
-      "(elo * 0.1) + (parties_mois * 1)"
-      + " + (streak_jours * 2)",
+    platformId: 'chess-com',
+    formula: '(elo * 0.1) + (parties_mois * 1)' + ' + (streak_jours * 2)',
     weights: {
       creation: 1,
       regularity: 2,
@@ -636,10 +585,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "lichess",
-    formula:
-      "(elo * 0.1) + (parties_mois * 1)"
-      + " + (streak_jours * 2)",
+    platformId: 'lichess',
+    formula: '(elo * 0.1) + (parties_mois * 1)' + ' + (streak_jours * 2)',
     weights: {
       creation: 1,
       regularity: 2,
@@ -652,10 +599,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === EDUCATION / SAVOIR ===
   {
-    platformId: "duolingo",
-    formula:
-      "(streak * 2) + (xp / 100)"
-      + " + (langues_actives * 5)",
+    platformId: 'duolingo',
+    formula: '(streak * 2) + (xp / 100)' + ' + (langues_actives * 5)',
     weights: {
       creation: 1,
       regularity: 2,
@@ -666,10 +611,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.15,
   },
   {
-    platformId: "khan-academy",
-    formula:
-      "(cours_completes * 3) + (badges * 2)"
-      + " + (streak * 1.5)",
+    platformId: 'khan-academy',
+    formula: '(cours_completes * 3) + (badges * 2)' + ' + (streak * 1.5)',
     weights: {
       creation: 2,
       regularity: 1.5,
@@ -682,10 +625,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === SCIENCE / RECHERCHE ===
   {
-    platformId: "orcid",
-    formula:
-      "(publications * 10) + (citations / 10)"
-      + " + (peer_reviews * 5)",
+    platformId: 'orcid',
+    formula: '(publications * 10) + (citations / 10)' + ' + (peer_reviews * 5)',
     weights: {
       creation: 10,
       regularity: 2,
@@ -696,10 +637,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "semantic-scholar",
-    formula:
-      "(publications * 8) + (citations / 10)"
-      + " + (h_index * 5)",
+    platformId: 'semantic-scholar',
+    formula: '(publications * 8) + (citations / 10)' + ' + (h_index * 5)',
     weights: {
       creation: 8,
       regularity: 2,
@@ -710,9 +649,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.1,
   },
   {
-    platformId: "arxiv",
-    formula:
-      "(preprints * 8) + (categories_actives * 3)",
+    platformId: 'arxiv',
+    formula: '(preprints * 8) + (categories_actives * 3)',
     weights: {
       creation: 8,
       regularity: 2,
@@ -725,10 +663,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === ENTREPRENEURIAT ===
   {
-    platformId: "producthunt",
-    formula:
-      "(produits * 10) + (upvotes_total / 20)"
-      + " + (featured * 30)",
+    platformId: 'producthunt',
+    formula: '(produits * 10) + (upvotes_total / 20)' + ' + (featured * 30)',
     weights: {
       creation: 10,
       regularity: 1.5,
@@ -741,10 +677,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 
   // === SPORT / FITNESS ===
   {
-    platformId: "strava",
-    formula:
-      "(activites_mois * 2) + (km_mois * 0.1)"
-      + " + (defis_finis * 3)",
+    platformId: 'strava',
+    formula: '(activites_mois * 2) + (km_mois * 0.1)' + ' + (defis_finis * 3)',
     weights: {
       creation: 2,
       regularity: 1.8,
@@ -755,9 +689,8 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
     burstPenalty: -0.2,
   },
   {
-    platformId: "garmin",
-    formula:
-      "(jours_actifs / 30) * 10 + (vo2max * 1)",
+    platformId: 'garmin',
+    formula: '(jours_actifs / 30) * 10 + (vo2max * 1)',
     weights: {
       creation: 1,
       regularity: 1.8,
@@ -772,85 +705,85 @@ export const SIGNAL_FORMULAS: SignalFormula[] = [
 // === TOPIC SCORING MODELS ===
 
 export const TOPIC_SCORING_MODELS: Record<string, TopicScoringModel> = {
-  "tech-dev": {
+  'tech-dev': {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 3.0,
   },
-  "design-creative": {
+  'design-creative': {
     maxScore: 100,
     regularityMultiplier: 1.3,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 3.0,
   },
-  "music-audio": {
+  'music-audio': {
     maxScore: 100,
     regularityMultiplier: 1.2,
     qualityMultiplier: 2.5,
     monetizationMultiplier: 4.0,
   },
-  "video-cinema": {
+  'video-cinema': {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 3.0,
   },
-  "web3-crypto": {
+  'web3-crypto': {
     maxScore: 100,
     regularityMultiplier: 1.4,
     qualityMultiplier: 3.0,
     monetizationMultiplier: 4.0,
   },
-  "gaming": {
+  gaming: {
     maxScore: 100,
     regularityMultiplier: 1.2,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 3.0,
   },
-  "science": {
+  science: {
     maxScore: 100,
     regularityMultiplier: 2.0,
     qualityMultiplier: 3.0,
     monetizationMultiplier: 4.0,
   },
-  "entrepreneurship": {
+  entrepreneurship: {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 5.0,
   },
-  "sport-health": {
+  'sport-health': {
     maxScore: 100,
     regularityMultiplier: 1.8,
     qualityMultiplier: 1.5,
     monetizationMultiplier: 3.0,
   },
-  "performing-arts": {
+  'performing-arts': {
     maxScore: 100,
     regularityMultiplier: 1.3,
     qualityMultiplier: 2.5,
     monetizationMultiplier: 3.5,
   },
-  "nature-environment": {
+  'nature-environment': {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 2.0,
   },
-  "food-lifestyle": {
+  'food-lifestyle': {
     maxScore: 100,
     regularityMultiplier: 1.3,
     qualityMultiplier: 2.0,
     monetizationMultiplier: 3.0,
   },
-  "literature": {
+  literature: {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.5,
     monetizationMultiplier: 3.0,
   },
-  "personal-dev": {
+  'personal-dev': {
     maxScore: 100,
     regularityMultiplier: 1.5,
     qualityMultiplier: 2.0,
@@ -887,68 +820,53 @@ export const SCORING_PRINCIPLES = {
 
 const INTEGRATION_PHASES = {
   0: {
-    label: "Existant",
-    platforms: [
-      "youtube",
-      "discord",
-      "spotify",
-      "twitch",
-    ],
+    label: 'Existant',
+    platforms: ['youtube', 'discord', 'spotify', 'twitch'],
   },
   1: {
-    label: "Quick Wins",
+    label: 'Quick Wins',
     platforms: [
-      "github",
-      "reddit",
-      "soundcloud",
-      "chess-com",
-      "strava",
-      "orcid",
-      "lastfm",
-      "mixcloud",
-      "producthunt",
+      'github',
+      'reddit',
+      'soundcloud',
+      'chess-com',
+      'strava',
+      'orcid',
+      'lastfm',
+      'mixcloud',
+      'producthunt',
     ],
   },
   2: {
-    label: "Domaines cles",
+    label: 'Domaines cles',
     platforms: [
-      "figma",
-      "huggingface",
-      "kaggle",
-      "steam",
-      "duolingo",
-      "vercel",
-      "npm",
-      "unsplash",
+      'figma',
+      'huggingface',
+      'kaggle',
+      'steam',
+      'duolingo',
+      'vercel',
+      'npm',
+      'unsplash',
     ],
   },
   3: {
-    label: "Web3 natif",
+    label: 'Web3 natif',
     platforms: [
-      "wallet-siwe",
-      "lens",
-      "farcaster",
-      "opensea",
-      "coinbase",
-      "the-graph",
+      'wallet-siwe',
+      'lens',
+      'farcaster',
+      'opensea',
+      'coinbase',
+      'the-graph',
     ],
   },
   4: {
-    label: "Difficile mais fort",
-    platforms: [
-      "behance",
-      "500px",
-      "leetcode",
-      "kaggle",
-      "bandcamp",
-    ],
+    label: 'Difficile mais fort',
+    platforms: ['behance', '500px', 'leetcode', 'kaggle', 'bandcamp'],
   },
   5: {
-    label: "Partenariats requis",
-    platforms: [
-      "blizzard",
-      "riot-games",
-    ],
+    label: 'Partenariats requis',
+    platforms: ['blizzard', 'riot-games'],
   },
 } as const
-

@@ -1,6 +1,9 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
 
-export interface TopicCardProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+export interface TopicCardProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'children'
+> {
   /** Topic emoji (use `getTopicEmoji(slug)` to resolve). */
   emoji: string
   /** Topic display label. */
@@ -44,11 +47,22 @@ export function TopicCard({
       style={resolvedStyle}
       {...rest}
     >
-      <span className="pf-topic-emoji" aria-hidden="true">{emoji}</span>
+      <span className="pf-topic-emoji" aria-hidden="true">
+        {emoji}
+      </span>
       <span className="pf-topic-label">{label}</span>
       {active ? (
         <span className="pf-topic-check" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </span>
@@ -68,7 +82,11 @@ export interface TopicPickerProps extends HTMLAttributes<HTMLDivElement> {
  * Requires the stylesheet:
  *   `@import "@0xsofia/design-system/styles/topic-picker.css";`
  */
-export function TopicPicker({ children, className, ...rest }: TopicPickerProps) {
+export function TopicPicker({
+  children,
+  className,
+  ...rest
+}: TopicPickerProps) {
   const cls = className ? `pf-topics-grid ${className}` : 'pf-topics-grid'
   return (
     <div className={cls} {...rest}>

@@ -1,4 +1,4 @@
-import { gql } from 'graphql-request';
+import { gql } from 'graphql-request'
 
 export const AtomValue = gql`
   fragment AtomValue on atom_values {
@@ -26,4 +26,4 @@ export const AtomValue = gql`
       image
     }
   }
-`;
+`

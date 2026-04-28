@@ -83,7 +83,7 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
       // Using document from @0xsofia/graphql
       const response = await intuitionGraphqlClient.request(GetUserIntentionPositionsDocument, {
         predicateIds: ALL_PREDICATE_IDS,
-        userAddress: `%${walletAddress.toLowerCase()}%`
+        userAddresses: `%${walletAddress.toLowerCase()}%`
       })
 
       const triples = response?.triples || []

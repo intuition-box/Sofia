@@ -12,7 +12,10 @@
  */
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { displayLabelToIntentionType, INTENTION_CONFIG } from '@/config/intentions'
+import {
+  displayLabelToIntentionType,
+  INTENTION_CONFIG,
+} from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
@@ -54,7 +57,10 @@ function starLabel(stars: number): string {
   return 'New'
 }
 
-export default function CircleFeedCard({ item, certifierName }: CircleFeedCardProps) {
+export default function CircleFeedCard({
+  item,
+  certifierName,
+}: CircleFeedCardProps) {
   const { topicById } = useTaxonomy()
   const host = item.domain || (item.url ? extractDomain(item.url) : '')
   const favicon = item.favicon || (host ? getFaviconUrl(host) : '')
@@ -95,7 +101,12 @@ export default function CircleFeedCard({ item, certifierName }: CircleFeedCardPr
       <div className="fc-head">
         <div className="fc-favicon">
           {favicon ? (
-            <img className="fc-favicon-img" src={favicon} alt="" loading="lazy" />
+            <img
+              className="fc-favicon-img"
+              src={favicon}
+              alt=""
+              loading="lazy"
+            />
           ) : (
             (host || item.title).slice(0, 1).toUpperCase()
           )}

@@ -34,22 +34,25 @@ export async function fetchTrustCircle(
   if (!response?.triples) return []
 
   // Filter: only triples where user has positions with shares > 0
-  const triplesWithPositions = response.triples.filter(
-    (triple) => triple.term?.vaults?.some(
-      (vault) => vault.positions.some((pos) => BigInt(pos.shares || '0') > 0n)
-    )
+  const triplesWithPositions = response.triples.filter((triple) =>
+    triple.term?.vaults?.some((vault) =>
+      vault.positions.some((pos) => BigInt(pos.shares || '0') > 0n),
+    ),
   )
 
   const accounts: TrustCircleAccount[] = triplesWithPositions.map((triple) => {
     const atom = triple.object
 
     // Calculate trust amount from ALL vaults (curves) — same as extension
-    const trustAmountWei = (triple.term?.vaults ?? []).reduce((vaultSum, vault) => {
-      const vaultTotal = vault.positions.reduce((posSum, pos) => {
-        return posSum + BigInt(pos.shares || '0')
-      }, 0n)
-      return vaultSum + vaultTotal
-    }, 0n)
+    const trustAmountWei = (triple.term?.vaults ?? []).reduce(
+      (vaultSum, vault) => {
+        const vaultTotal = vault.positions.reduce((posSum, pos) => {
+          return posSum + BigInt(pos.shares || '0')
+        }, 0n)
+        return vaultSum + vaultTotal
+      },
+      0n,
+    )
 
     const trustAmount = Number(trustAmountWei) / 1e18
 
@@ -80,7 +83,9 @@ export async function fetchTrustCircle(
   accounts.sort((a, b) => b.trustAmount - a.trustAmount)
 
   // Resolve missing avatars for ENS/box names
-  const needsAvatar = accounts.filter((a) => !a.image && (a.label.endsWith('.eth') || a.label.endsWith('.box')))
+  const needsAvatar = accounts.filter(
+    (a) => !a.image && (a.label.endsWith('.eth') || a.label.endsWith('.box')),
+  )
   if (needsAvatar.length > 0) {
     await Promise.allSettled(
       needsAvatar.map(async (a) => {

@@ -101,7 +101,7 @@ export class RpcQueue {
     const jitter = capped * (0.8 + Math.random() * 0.4)
     this.backoffUntil = Date.now() + jitter
     console.warn(
-      `[RpcQueue] 429 detected (×${this.consecutiveRateLimits}). Backoff: ${Math.round(jitter)}ms`
+      `[RpcQueue] 429 detected (×${this.consecutiveRateLimits}). Backoff: ${Math.round(jitter)}ms`,
     )
   }
 

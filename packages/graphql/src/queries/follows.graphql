@@ -49,7 +49,7 @@ query GetFollowingPositions(
                 count
               }
             }
-            vaults(order_by: {curve_id: asc}) {
+            vaults(order_by: { curve_id: asc }) {
               current_share_price
               total_shares
               position_count
@@ -276,7 +276,12 @@ query GetMyFollowing(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } } }
+        {
+          positions: {
+            account_id: { _in: $walletAddresses }
+            shares: { _gt: "0" }
+          }
+        }
       ]
     }
   ) {
@@ -293,7 +298,9 @@ query GetMyFollowing(
     }
     term {
       vaults(where: { curve_id: { _eq: "1" } }, order_by: { curve_id: asc }) {
-        positions(where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }) {
+        positions(
+          where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }
+        ) {
           account_id
           shares
           created_at
@@ -316,7 +323,12 @@ query GetMyTrustCircle(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } } }
+        {
+          positions: {
+            account_id: { _in: $walletAddresses }
+            shares: { _gt: "0" }
+          }
+        }
       ]
     }
   ) {
@@ -334,7 +346,9 @@ query GetMyTrustCircle(
     term {
       vaults(order_by: { curve_id: asc }) {
         curve_id
-        positions(where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }) {
+        positions(
+          where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }
+        ) {
           account_id
           shares
           created_at
@@ -348,10 +362,7 @@ query GetMyTrustCircle(
 query GetAccountAtomByWallet($addresses: [String!]!) {
   atoms(
     where: {
-      _and: [
-        { data: { _in: $addresses } }
-        { type: { _eq: "Account" } }
-      ]
+      _and: [{ data: { _in: $addresses } }, { type: { _eq: "Account" } }]
     }
     limit: 1
   ) {
@@ -422,5 +433,3 @@ query GetAtomDataByLabels($labels: [String!]!) {
     image
   }
 }
-
-

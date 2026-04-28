@@ -28,7 +28,9 @@ interface CompileActionButtonProps {
 const CANVAS_SIZE = { w: 260, h: 200 }
 
 function cssVar(name: string, fallback: string): string {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim()
   return v || fallback
 }
 
@@ -55,7 +57,11 @@ export default function CompileActionButton({
     stage.insertBefore(canvas, stage.firstChild)
     canvasRef.current = canvas
 
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+    })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(CANVAS_SIZE.w, CANVAS_SIZE.h, false)
 
@@ -80,9 +86,18 @@ export default function CompileActionButton({
     const rippleGeoA = new THREE.BufferGeometry()
     rippleGeoA.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     const rippleGeoB = new THREE.BufferGeometry()
-    rippleGeoB.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
-    const rippleMatA = new THREE.LineBasicMaterial({ color: ink, transparent: true })
-    const rippleMatB = new THREE.LineBasicMaterial({ color: ink, transparent: true })
+    rippleGeoB.setAttribute(
+      'position',
+      new THREE.BufferAttribute(positions.slice(), 3),
+    )
+    const rippleMatA = new THREE.LineBasicMaterial({
+      color: ink,
+      transparent: true,
+    })
+    const rippleMatB = new THREE.LineBasicMaterial({
+      color: ink,
+      transparent: true,
+    })
     const rippleA = new THREE.LineLoop(rippleGeoA, rippleMatA)
     const rippleB = new THREE.LineLoop(rippleGeoB, rippleMatB)
     rippleA.visible = false
@@ -131,7 +146,10 @@ export default function CompileActionButton({
       scene.traverse((obj) => {
         const mesh = obj as THREE.Mesh
         if (mesh.geometry) mesh.geometry.dispose()
-        const mat = mesh.material as THREE.Material | THREE.Material[] | undefined
+        const mat = mesh.material as
+          | THREE.Material
+          | THREE.Material[]
+          | undefined
         if (Array.isArray(mat)) mat.forEach((m) => m.dispose())
         else if (mat) mat.dispose()
       })
@@ -150,7 +168,10 @@ export default function CompileActionButton({
       const canvas = canvasRef.current
       if (canvas) canvas.dataset.themeTick = String(Date.now())
     })
-    ro.observe(html, { attributes: true, attributeFilter: ['class', 'data-theme'] })
+    ro.observe(html, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme'],
+    })
     return () => ro.disconnect()
   }, [])
 

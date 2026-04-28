@@ -35,7 +35,10 @@ const FORMULA_BY_PLATFORM = new Map<string, SignalFormula>(
 // Maps each metric key to the scoring component it contributes to.
 // Platforms not listed here use a weighted average fallback.
 
-const METRIC_COMPONENTS: Record<string, Record<string, keyof SignalFormula['weights']>> = {
+const METRIC_COMPONENTS: Record<
+  string,
+  Record<string, keyof SignalFormula['weights']>
+> = {
   github: {
     streak_jours: 'regularity',
     commits_moy_quotidien: 'creation',
@@ -248,8 +251,8 @@ export function computeReputationProfile(
     return null
   }
 
-  const topicScores: TopicScore[] = SOFIA_TOPICS.filter(
-    (d) => selectedTopics.includes(d.id),
+  const topicScores: TopicScore[] = SOFIA_TOPICS.filter((d) =>
+    selectedTopics.includes(d.id),
   ).map((topic) => {
     const model = TOPIC_SCORING_MODELS[topic.id]
     const topicPlatforms = connectedPlatforms.filter((p) =>
@@ -266,8 +269,11 @@ export function computeReputationProfile(
       const signal = signals?.[platform.id]
 
       if (signal?.success && signal.metrics && formula) {
-        const { score: platformScore, breakdown, topMetrics } =
-          computePlatformScoreDetailed(formula, signal.metrics, model)
+        const {
+          score: platformScore,
+          breakdown,
+          topMetrics,
+        } = computePlatformScoreDetailed(formula, signal.metrics, model)
         totalScore += platformScore
         platformsWithSignals++
         contributions.push({
@@ -293,11 +299,13 @@ export function computeReputationProfile(
     if (platformsWithSignals === 0) {
       totalScore = Math.min(totalScore, 15)
       multiSourceMultiplier = 0
-      multiSourceReason = 'No platform connected — trust-only score capped at 15.'
+      multiSourceReason =
+        'No platform connected — trust-only score capped at 15.'
     } else if (platformsWithSignals === 1) {
       multiSourceMultiplier = SCORING_PRINCIPLES.SINGLE_SOURCE_PENALTY
       totalScore *= multiSourceMultiplier
-      multiSourceReason = 'Only 1 platform connected — single-source penalty (×0.5).'
+      multiSourceReason =
+        'Only 1 platform connected — single-source penalty (×0.5).'
     } else if (platformsWithSignals === 2) {
       multiSourceMultiplier = SCORING_PRINCIPLES.TWO_SOURCE_BONUS
       totalScore *= multiSourceMultiplier
@@ -313,9 +321,14 @@ export function computeReputationProfile(
     // shape the curve; the ceiling is just whatever the user earns.
     const finalScore = Math.round(totalScore)
 
-    const confidence = platformsWithSignals > 0
-      ? Math.min(1, platformsWithSignals * SCORING_PRINCIPLES.CROSS_PLATFORM_MIN_CONFIDENCE)
-      : 0
+    const confidence =
+      platformsWithSignals > 0
+        ? Math.min(
+            1,
+            platformsWithSignals *
+              SCORING_PRINCIPLES.CROSS_PLATFORM_MIN_CONFIDENCE,
+          )
+        : 0
 
     const explanation: TopicScoreExplanation = {
       topicId: topic.id,
@@ -345,9 +358,10 @@ export function computeReputationProfile(
   return {
     walletAddress: '',
     topics: topicScores,
-    globalConfidence: connectedPlatforms.length > 0
-      ? Math.min(1, connectedPlatforms.length * 0.1)
-      : 0,
+    globalConfidence:
+      connectedPlatforms.length > 0
+        ? Math.min(1, connectedPlatforms.length * 0.1)
+        : 0,
     totalPlatforms: connectedPlatforms.length,
     ensName: undefined,
     lastUpdated: Date.now(),
@@ -368,7 +382,11 @@ function computePlatformScoreDetailed(
 ): {
   score: number
   breakdown: ScoreBreakdown
-  topMetrics: Array<{ key: string; value: number; component: keyof ScoreBreakdown }>
+  topMetrics: Array<{
+    key: string
+    value: number
+    component: keyof ScoreBreakdown
+  }>
 } {
   const w = formula.weights
   const componentMap = METRIC_COMPONENTS[formula.platformId]
@@ -381,7 +399,11 @@ function computePlatformScoreDetailed(
     monetization: 0,
     anciennete: 0,
   }
-  const metricRows: Array<{ key: string; value: number; component: keyof ScoreBreakdown }> = []
+  const metricRows: Array<{
+    key: string
+    value: number
+    component: keyof ScoreBreakdown
+  }> = []
 
   if (componentMap) {
     for (const [key, value] of Object.entries(metrics)) {
@@ -389,16 +411,18 @@ function computePlatformScoreDetailed(
       if (ignore?.has(key)) continue
       const component = componentMap[key]
       if (component) {
-        const added = component === 'anciennete'
-          ? Math.log(1 + value) * w.anciennete
-          : value
+        const added =
+          component === 'anciennete'
+            ? Math.log(1 + value) * w.anciennete
+            : value
         components[component] += added
         metricRows.push({ key, value, component })
       }
     }
   } else {
     const values = Object.values(metrics).filter(Number.isFinite)
-    const avg = values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : 0
+    const avg =
+      values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : 0
     components.creation = avg
     components.regularity = avg
     components.community = avg

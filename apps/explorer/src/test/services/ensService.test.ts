@@ -19,7 +19,9 @@ import {
   formatEth,
 } from '@/services/ensService'
 
-const mockedFetcher = useGetAccountLabelsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher = useGetAccountLabelsQuery.fetcher as unknown as ReturnType<
+  typeof vi.fn
+>
 
 describe('ensService — pure helpers', () => {
   it('isRealLabel: rejects addresses and truncated placeholders', () => {
@@ -38,8 +40,9 @@ describe('ensService — pure helpers', () => {
   })
 
   it('formatEth: truncates to 0xXXXX...YYYY shape', () => {
-    expect(formatEth('0x8ba1f109551bd432803012645ac136ddd64dba72'))
-      .toBe('0x8ba1...ba72')
+    expect(formatEth('0x8ba1f109551bd432803012645ac136ddd64dba72')).toBe(
+      '0x8ba1...ba72',
+    )
   })
 })
 
@@ -72,9 +75,7 @@ describe('ensService.resolveViaGraphQL', () => {
     const addr = '0x1111111111111111111111111111111111111111'
     mockedFetcher.mockReturnValue(() =>
       Promise.resolve({
-        accounts: [
-          { id: addr, label: 'alice.eth', image: null, atom: null },
-        ],
+        accounts: [{ id: addr, label: 'alice.eth', image: null, atom: null }],
       }),
     )
 
@@ -106,7 +107,9 @@ describe('ensService.resolveViaGraphQL', () => {
     const addr = '0x3333333333333333333333333333333333333333'
     mockedFetcher.mockReturnValue(() =>
       Promise.resolve({
-        accounts: [{ id: addr, label: '0xabc...d551', image: null, atom: null }],
+        accounts: [
+          { id: addr, label: '0xabc...d551', image: null, atom: null },
+        ],
       }),
     )
 

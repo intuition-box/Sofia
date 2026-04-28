@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
+import { Agent } from '@mastra/core/agent'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
 
 export const pulseAgent = new Agent({
   name: 'Pulse Agent',
@@ -24,4 +24,4 @@ EXACT FORMAT:
 REMINDER: Output ONLY the JSON object. No text. No explanation. Just JSON.
 `,
   model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
-});
+})

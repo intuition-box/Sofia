@@ -1,12 +1,12 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { queryPublicGraphQL } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { queryPublicGraphQL } from './utils'
 
 /**
  * Snapshot Hub public GraphQL API.
  * No API key required.
  */
-const SNAPSHOT_GRAPHQL = "https://hub.snapshot.org/graphql"
+const SNAPSHOT_GRAPHQL = 'https://hub.snapshot.org/graphql'
 
 const USER_QUERY = `
   query SnapshotUser($voter: String!) {
@@ -36,7 +36,7 @@ const USER_QUERY = `
 export const fetchSnapshotSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const addr = walletAddress.toLowerCase()
 
@@ -54,11 +54,11 @@ export const fetchSnapshotSignals: SignalFetcher = async (
 
   // Activity in the last 90 days
   const ninetyDaysAgo = Math.floor(
-    (Date.now() - 90 * 24 * 60 * 60 * 1000) / 1000
+    (Date.now() - 90 * 24 * 60 * 60 * 1000) / 1000,
   )
   const recentVotes = votes.filter((v) => v.created > ninetyDaysAgo).length
   const recentProposals = proposals.filter(
-    (p) => p.created > ninetyDaysAgo
+    (p) => p.created > ninetyDaysAgo,
   ).length
 
   return {

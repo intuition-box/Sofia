@@ -26,7 +26,9 @@ async function getProfileData(id: string): Promise<ProfileData | null> {
   return kv.get<ProfileData>(`profile:${id}`)
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params
   const data = await getProfileData(id)
   if (!data) return { title: 'Profile not found' }
@@ -105,7 +107,8 @@ export default async function ShortProfilePage({ params }: PageProps) {
         style={{
           width: '100%',
           maxWidth: '420px',
-          background: 'linear-gradient(165deg, #0f1018 0%, #0a0a0f 50%, #08080c 100%)',
+          background:
+            'linear-gradient(165deg, #0f1018 0%, #0a0a0f 50%, #08080c 100%)',
           border: '1px solid #1a1a2e',
           borderRadius: '24px',
           padding: '32px 28px',
@@ -114,49 +117,139 @@ export default async function ShortProfilePage({ params }: PageProps) {
         }}
       >
         {/* Sofia watermark logo */}
-        <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.03, pointerEvents: 'none' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            opacity: 0.03,
+            pointerEvents: 'none',
+          }}
+        >
           <img src="/sofia-logo.png" alt="" width={200} height={200} />
         </div>
 
         {/* Header: Sofia branding + wallet */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-          <img src="/sofia-logo.png" alt="Sofia" width={40} height={40} style={{ borderRadius: '50%' }} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '24px',
+          }}
+        >
+          <img
+            src="/sofia-logo.png"
+            alt="Sofia"
+            width={40}
+            height={40}
+            style={{ borderRadius: '50%' }}
+          />
           <div>
-            <p style={{ fontSize: '12px', color: '#555568', margin: '0 0 2px 0', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <p
+              style={{
+                fontSize: '12px',
+                color: '#555568',
+                margin: '0 0 2px 0',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Sofia Wallet Address Stats
             </p>
-            <p style={{ fontSize: '16px', color: '#a0a0b8', margin: 0, fontFamily: 'monospace' }}>
+            <p
+              style={{
+                fontSize: '16px',
+                color: '#a0a0b8',
+                margin: 0,
+                fontFamily: 'monospace',
+              }}
+            >
               {displayName}
             </p>
           </div>
         </div>
 
         {/* Level + Signals circle */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '20px',
-          marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #14141e',
-        }}>
-          <p style={{ fontSize: '40px', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '20px',
+            marginBottom: '20px',
+            paddingBottom: '20px',
+            borderBottom: '1px solid #14141e',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '40px',
+              fontWeight: 700,
+              color: '#fff',
+              margin: 0,
+              lineHeight: 1,
+            }}
+          >
             Level {data.level}
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <div style={{
-              width: '56px', height: '56px', borderRadius: '50%',
-              border: '3px solid #6366f1',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{signalsCount}</span>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                border: '3px solid #6366f1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <span
+                style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}
+              >
+                {signalsCount}
+              </span>
             </div>
-            <span style={{ fontSize: '9px', color: '#555568', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Signals</span>
+            <span
+              style={{
+                fontSize: '9px',
+                color: '#555568',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Signals
+            </span>
           </div>
         </div>
 
         {/* Trusted By */}
-        <div style={{
-          display: 'flex', alignItems: 'baseline', gap: '8px',
-          marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #14141e',
-        }}>
-          <p style={{ fontSize: '40px', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '8px',
+            marginBottom: '20px',
+            paddingBottom: '20px',
+            borderBottom: '1px solid #14141e',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '40px',
+              fontWeight: 700,
+              color: '#fff',
+              margin: 0,
+              lineHeight: 1,
+            }}
+          >
             {data.trustCircle}
           </p>
           <p style={{ fontSize: '16px', color: '#a0a0b8', margin: 0 }}>
@@ -166,27 +259,82 @@ export default async function ShortProfilePage({ params }: PageProps) {
 
         {/* Discovery Score */}
         <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#555568', margin: '0 0 12px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <h3
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#555568',
+              margin: '0 0 12px 0',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+            }}
+          >
             Discovery Score
           </h3>
           <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{
-              flex: 1, padding: '14px 16px',
-              background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px',
-            }}>
-              <p style={{ fontSize: '11px', color: '#D4A843', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>
+            <div
+              style={{
+                flex: 1,
+                padding: '14px 16px',
+                background: '#0e0e16',
+                border: '1px solid #1a1a2e',
+                borderRadius: '14px',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '11px',
+                  color: '#D4A843',
+                  margin: '0 0 4px 0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  fontWeight: 600,
+                }}
+              >
                 Pioneer
               </p>
-              <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.pioneer}</p>
+              <p
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  margin: 0,
+                }}
+              >
+                {data.pioneer}
+              </p>
             </div>
-            <div style={{
-              flex: 1, padding: '14px 16px',
-              background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px',
-            }}>
-              <p style={{ fontSize: '11px', color: '#6366f1', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>
+            <div
+              style={{
+                flex: 1,
+                padding: '14px 16px',
+                background: '#0e0e16',
+                border: '1px solid #1a1a2e',
+                borderRadius: '14px',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '11px',
+                  color: '#6366f1',
+                  margin: '0 0 4px 0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  fontWeight: 600,
+                }}
+              >
                 Explorer
               </p>
-              <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.explorer}</p>
+              <p
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  margin: 0,
+                }}
+              >
+                {data.explorer}
+              </p>
             </div>
           </div>
         </div>
@@ -194,7 +342,16 @@ export default async function ShortProfilePage({ params }: PageProps) {
         {/* Interests */}
         {interestList.length > 0 && (
           <div style={{ marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#555568', margin: '0 0 12px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <h3
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#555568',
+                margin: '0 0 12px 0',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+              }}
+            >
               Interests
             </h3>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -230,7 +387,8 @@ export default async function ShortProfilePage({ params }: PageProps) {
           id="sofia-cta"
           href="https://chromewebstore.google.com"
           style={{
-            display: 'block', textAlign: 'center',
+            display: 'block',
+            textAlign: 'center',
             padding: '14px 24px',
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
             color: '#fff',

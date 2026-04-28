@@ -53,7 +53,7 @@ export default function ProfileDetailsPanel({
   // listed in `topicStats`.
   const selectedTopic =
     !isAll && focusMeta?.kind === 'topic'
-      ? topics.find((t) => t.id === topicFilter) ?? null
+      ? (topics.find((t) => t.id === topicFilter) ?? null)
       : null
 
   const label = isAll
@@ -68,19 +68,19 @@ export default function ProfileDetailsPanel({
 
   const categoriesCount = useAggregate
     ? topics.reduce((a, s) => a + s.categoriesCount, 0)
-    : selectedTopic?.categoriesCount ?? 0
+    : (selectedTopic?.categoriesCount ?? 0)
   const platformsCount = useAggregate
     ? topics.reduce((a, s) => a + s.platformsCount, 0)
-    : selectedTopic?.platformsCount ?? 0
+    : (selectedTopic?.platformsCount ?? 0)
   const signals = useAggregate
     ? topics.reduce((a, s) => a + s.signals, 0)
-    : selectedTopic?.signals ?? 0
+    : (selectedTopic?.signals ?? 0)
   const score = useAggregate
     ? topics.reduce((a, s) => a + s.score, 0)
-    : selectedTopic?.score ?? 0
+    : (selectedTopic?.score ?? 0)
   const pnl = useAggregate
     ? topics.reduce((a, s) => a + s.pnl, 0)
-    : selectedTopic?.pnl ?? 0
+    : (selectedTopic?.pnl ?? 0)
 
   // Mock weekly trend — identical to the proto (8.2% focused / 12.4% overview).
   const scoreDelta = isAll ? 12.4 : 8.2
@@ -110,7 +110,10 @@ export default function ProfileDetailsPanel({
       <div className="pc-details-hero">
         <span className="pc-details-score">{score}</span>
         <span className="pc-details-score-label">{scoreLabel}</span>
-        <span className="pc-details-delta" style={{ color: 'var(--trusted, #6dd4a0)' }}>
+        <span
+          className="pc-details-delta"
+          style={{ color: 'var(--trusted, #6dd4a0)' }}
+        >
           ▲ {scoreDelta.toFixed(1)}%
         </span>
       </div>

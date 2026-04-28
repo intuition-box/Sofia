@@ -1,14 +1,14 @@
-import { z } from "zod";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { client } from "../graphql/client.js";
-import { SearchAtomsQuery } from "../graphql/generated/graphql.js";
-import { gql } from "graphql-request";
-import { removeEmptyFields, createErrorResponse } from "../lib/response.js";
+import { z } from 'zod'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { client } from '../graphql/client.js'
+import { SearchAtomsQuery } from '../graphql/generated/graphql.js'
+import { gql } from 'graphql-request'
+import { removeEmptyFields, createErrorResponse } from '../lib/response.js'
 import {
   processPositionWithOpposition,
   filterZeroSharePositions,
   formatShares,
-} from "../lib/position-utils.js";
+} from '../lib/position-utils.js'
 
 // Define the parameters schema
 const parameters = z.object({
@@ -16,7 +16,7 @@ const parameters = z.object({
     .string()
     .min(1)
     .describe(
-      "The account id of the account to find the inbound relations for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b",
+      'The account id of the account to find the inbound relations for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b',
     ),
   relations_predicate: z
     .string()
@@ -34,68 +34,68 @@ Example: recommend, follow, like, dislike`,
 Example: recommend, follow, like, dislike`,
     )
     .optional(),
-});
+})
 
 // Define the operation interface
 interface GetInboundRelationsOperation {
-  description: string;
-  parameters: typeof parameters;
-  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>;
+  description: string
+  parameters: typeof parameters
+  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>
 }
 
 interface GetInboundRelationsQueryResponse {
   positions: Array<{
-    id: string;
-    shares: string;
+    id: string
+    shares: string
     account: {
-      id: string;
-      label: string;
-      image?: string;
-    };
+      id: string
+      label: string
+      image?: string
+    }
     term: {
       triple: {
-        term_id: string;
-        counter_term_id?: string;
+        term_id: string
+        counter_term_id?: string
         subject: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
+          term_id: string
+          label: string
+          value: any
+        }
         predicate: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
+          term_id: string
+          label: string
+          value: any
+        }
         object: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
+          term_id: string
+          label: string
+          value: any
+        }
         term: {
           vaults: Array<{
-            term_id: string;
-            position_count: number;
-            total_shares: string;
-            current_share_price: string;
-          }>;
-        };
+            term_id: string
+            position_count: number
+            total_shares: string
+            current_share_price: string
+          }>
+        }
         counter_term: {
           vaults: Array<{
-            term_id: string;
-            position_count: number;
-            total_shares: string;
-            current_share_price: string;
-          }>;
-        };
-      };
+            term_id: string
+            position_count: number
+            total_shares: string
+            current_share_price: string
+          }>
+        }
+      }
       vaults: Array<{
-        term_id: string;
-        position_count: number;
-        total_shares: string;
-        current_share_price: string;
-      }>;
-    };
-  }>;
+        term_id: string
+        position_count: number
+        total_shares: string
+        current_share_price: string
+      }>
+    }
+  }>
 }
 
 const getInboundRelationsQuery = gql`
@@ -225,23 +225,23 @@ const getInboundRelationsQuery = gql`
       }
     }
   }
-`;
+`
 
 interface FormattedInboundRelationsQueryResponse {
   inbound_relations: {
-    id: string;
-    label: string;
-    image?: string;
-    shares: string;
+    id: string
+    label: string
+    image?: string
+    shares: string
     relationship: {
-      subject: string;
-      predicate: string;
-      object: string;
-    };
-    position_type: string;
-    opposition_metrics?: any;
-    vault_info?: any;
-  }[];
+      subject: string
+      predicate: string
+      object: string
+    }
+    position_type: string
+    opposition_metrics?: any
+    vault_info?: any
+  }[]
 }
 
 function formatResponse(
@@ -249,16 +249,16 @@ function formatResponse(
 ): FormattedInboundRelationsQueryResponse {
   const formattedResult: FormattedInboundRelationsQueryResponse = {
     inbound_relations: [],
-  };
+  }
 
   for (const position of result.positions) {
     const processedPosition = processPositionWithOpposition(
       position,
       position.account.id,
-    );
+    )
     if (
       processedPosition &&
-      processedPosition.type === "relationship_position"
+      processedPosition.type === 'relationship_position'
     ) {
       const relation = {
         id: position.account.id,
@@ -269,12 +269,12 @@ function formatResponse(
         position_type: processedPosition.positionType,
         opposition_metrics: processedPosition.oppositionMetrics,
         vault_info: processedPosition.vault_info,
-      };
-      formattedResult.inbound_relations.push(relation);
+      }
+      formattedResult.inbound_relations.push(relation)
     }
   }
 
-  return formattedResult;
+  return formattedResult
 }
 
 export const getInboundRelationsOperation: GetInboundRelationsOperation = {
@@ -294,10 +294,10 @@ export const getInboundRelationsOperation: GetInboundRelationsOperation = {
   parameters,
   async execute(args) {
     try {
-      console.log("\n=== Getting Inbound Relations ===");
+      console.log('\n=== Getting Inbound Relations ===')
 
-      const address = args.account_id;
-      const relationsPredicate = args.relations_predicate || "follow";
+      const address = args.account_id
+      const relationsPredicate = args.relations_predicate || 'follow'
 
       // Get positions where the object is this account (inbound relations)
       const result = (await client.request(getInboundRelationsQuery, {
@@ -321,29 +321,29 @@ export const getInboundRelationsOperation: GetInboundRelationsOperation = {
             },
           },
           shares: {
-            _gt: "0",
+            _gt: '0',
           },
         },
         orderBy: [
           {
-            shares: "desc",
+            shares: 'desc',
           },
         ],
         limit: 100,
-      })) as GetInboundRelationsQueryResponse;
+      })) as GetInboundRelationsQueryResponse
 
       // Filter out zero share positions
-      const filteredPositions = filterZeroSharePositions(result.positions);
+      const filteredPositions = filterZeroSharePositions(result.positions)
 
-      const formattedResult = formatResponse({ positions: filteredPositions });
+      const formattedResult = formatResponse({ positions: filteredPositions })
 
       // Return in MCP format
       const response: CallToolResult = {
         content: [
           {
-            type: "resource",
+            type: 'resource',
             resource: {
-              uri: "get-inbound-relations-result",
+              uri: 'get-inbound-relations-result',
               text: JSON.stringify({
                 target_account: address,
                 predicate_filter: relationsPredicate,
@@ -353,11 +353,11 @@ export const getInboundRelationsOperation: GetInboundRelationsOperation = {
                 ),
                 total_count: formattedResult.inbound_relations.length,
               }),
-              mimeType: "application/json",
+              mimeType: 'application/json',
             },
           },
           {
-            type: "text",
+            type: 'text',
             text: `Inbound Relations for ${address}:
 
 **INBOUND ${relationsPredicate.toUpperCase()} RELATIONS** (${formattedResult.inbound_relations.length} total, top 10 shown):
@@ -367,26 +367,26 @@ ${formattedResult.inbound_relations
     (relation, i) =>
       `${i + 1}. **${relation.label}** (${formatShares(relation.shares)} shares)
    🔗 ${relation.relationship.subject} ${relation.relationship.predicate} ${relation.relationship.object}
-   📊 Position: ${relation.position_type}${relation.opposition_metrics ? ` (${Math.round(relation.opposition_metrics.oppositionRatio * 100)}% contested)` : ""}`,
+   📊 Position: ${relation.position_type}${relation.opposition_metrics ? ` (${Math.round(relation.opposition_metrics.oppositionRatio * 100)}% contested)` : ''}`,
   )
-  .join("\n\n")}
+  .join('\n\n')}
 
 📈 **Summary**: ${formattedResult.inbound_relations.length} accounts have ${relationsPredicate} relationships pointing to this account.`,
           },
         ],
-      };
+      }
 
-      console.log("\n=== Inbound Relations Response ===");
+      console.log('\n=== Inbound Relations Response ===')
       console.log(
         `Response size: ${JSON.stringify(response).length} characters`,
-      );
-      return response;
+      )
+      return response
     } catch (error) {
       return createErrorResponse(error, {
-        operation: "get_inbound_relations",
+        operation: 'get_inbound_relations',
         args,
-        phase: "execution",
-      });
+        phase: 'execution',
+      })
     }
   },
-};
+}

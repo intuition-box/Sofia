@@ -26,7 +26,7 @@
   box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
   color: #f5f3ff;
 }
-[data-theme="dark"] .pf-ts-header,
+[data-theme='dark'] .pf-ts-header,
 .dark .pf-ts-header {
   background: #ffffff;
   border-color: #ececf0;
@@ -40,16 +40,18 @@
   gap: 4px;
 }
 .pf-ts-header-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 4px 0 6px;
   color: #f5f3ff;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
-[data-theme="dark"] .pf-ts-header-title,
+[data-theme='dark'] .pf-ts-header-title,
 .dark .pf-ts-header-title {
   color: #02000e;
 }
@@ -61,7 +63,7 @@
   max-width: 560px;
   line-height: 1.5;
 }
-[data-theme="dark"] .pf-ts-header-desc,
+[data-theme='dark'] .pf-ts-header-desc,
 .dark .pf-ts-header-desc {
   color: #6b6880;
 }
@@ -74,13 +76,13 @@
   padding-left: 16px;
   border-left: 1px dashed rgba(245, 243, 255, 0.22);
 }
-[data-theme="dark"] .pf-ts-header-stat,
+[data-theme='dark'] .pf-ts-header-stat,
 .dark .pf-ts-header-stat {
   border-left-color: #f3f2f5;
 }
 
 .pf-ts-header-stat-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -89,14 +91,14 @@
 }
 
 .pf-ts-header-stat-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(245, 243, 255, 0.7);
 }
-[data-theme="dark"] .pf-ts-header-stat-label,
+[data-theme='dark'] .pf-ts-header-stat-label,
 .dark .pf-ts-header-stat-label {
   color: #6b6880;
 }
@@ -134,7 +136,7 @@
 }
 .pf-trust-topic-label {
   flex: 1;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -144,7 +146,7 @@
   white-space: nowrap;
 }
 .pf-trust-topic-score {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -160,10 +162,13 @@
 .pf-trust-topic-bar > span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     color-mix(in srgb, var(--topic-color, var(--ds-muted)) 70%, transparent),
-    var(--topic-color, var(--ds-muted)));
-  box-shadow: 0 0 10px color-mix(in srgb, var(--topic-color, var(--ds-muted)) 40%, transparent);
+    var(--topic-color, var(--ds-muted))
+  );
+  box-shadow: 0 0 10px
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 40%, transparent);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -208,7 +213,7 @@
   gap: 2px;
 }
 .pf-badge-head-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -268,7 +273,7 @@
   white-space: nowrap;
 }
 .pf-ts-url-host {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--ds-muted);
 }
@@ -317,7 +322,7 @@
   white-space: nowrap;
 }
 .pf-engage-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
 }
@@ -336,7 +341,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

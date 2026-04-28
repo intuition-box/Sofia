@@ -39,6 +39,10 @@ export function useAlphaTesters() {
   return {
     ...data,
     loading: isLoading && data === INITIAL_DATA,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
   }
 }

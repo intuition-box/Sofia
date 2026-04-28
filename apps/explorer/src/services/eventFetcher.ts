@@ -1,11 +1,16 @@
 import { parseAbiItem } from 'viem'
 import type { Address } from 'viem'
 import { rpcClient } from './rpcClient'
-import { SOFIA_PROXY_ADDRESS, BLOCK_CHUNK, SEASON_START, SEASON_START_BLOCK } from '../config'
+import {
+  SOFIA_PROXY_ADDRESS,
+  BLOCK_CHUNK,
+  SEASON_START,
+  SEASON_START_BLOCK,
+} from '../config'
 import type { TransactionForwardedEvent } from '../types'
 
 const TX_FORWARDED_EVENT = parseAbiItem(
-  'event TransactionForwarded(string operation, address indexed user, uint256 sofiaFee, uint256 multiVaultValue, uint256 totalReceived)'
+  'event TransactionForwarded(string operation, address indexed user, uint256 sofiaFee, uint256 multiVaultValue, uint256 totalReceived)',
 )
 
 export class EventFetcher {
@@ -72,7 +77,9 @@ export class EventFetcher {
   }
 
   private async _getLogsInChunks(fromBlock: bigint, toBlock: bigint) {
-    const allLogs: Awaited<ReturnType<typeof rpcClient.getLogs<typeof TX_FORWARDED_EVENT>>>= []
+    const allLogs: Awaited<
+      ReturnType<typeof rpcClient.getLogs<typeof TX_FORWARDED_EVENT>>
+    > = []
     let cursor = fromBlock
 
     while (cursor <= toBlock) {

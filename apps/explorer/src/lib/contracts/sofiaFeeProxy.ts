@@ -40,7 +40,9 @@ export const SofiaFeeProxyAbi = [
   },
   // getTotalDepositCost(depositAmount) view → totalCost
   {
-    inputs: [{ internalType: 'uint256', name: 'depositAmount', type: 'uint256' }],
+    inputs: [
+      { internalType: 'uint256', name: 'depositAmount', type: 'uint256' },
+    ],
     name: 'getTotalDepositCost',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',

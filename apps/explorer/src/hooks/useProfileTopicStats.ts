@@ -41,7 +41,9 @@ export function useProfileTopicStats({
           selectedCategories.includes(c.id),
         ).length
         const platforms = getPlatformsByTopic(id) ?? []
-        const platformsCount = platforms.filter((p) => getStatus(p.id) === 'connected').length
+        const platformsCount = platforms.filter(
+          (p) => getStatus(p.id) === 'connected',
+        ).length
         const score = scoreMap.get(id)
         return {
           id,
@@ -52,7 +54,9 @@ export function useProfileTopicStats({
           platformsCount,
           signals: 0,
           pnl: 0,
-          score: Math.round(score?.score ?? categoriesCount * 5 + platformsCount * 10),
+          score: Math.round(
+            score?.score ?? categoriesCount * 5 + platformsCount * 10,
+          ),
         }
       })
       .filter((x): x is ProfileTopicStats => x !== null)

@@ -1,7 +1,7 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { asAddress, getMainnetClient } from "./utils"
-import { formatEther } from "viem"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { asAddress, getMainnetClient } from './utils'
+import { formatEther } from 'viem'
 
 /**
  * wallet-siwe — generic wallet reputation from on-chain Ethereum mainnet.
@@ -17,11 +17,17 @@ import { formatEther } from "viem"
 export const fetchWalletSiweSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const client = getMainnetClient()
   const addr = asAddress(walletAddress.toLowerCase())
@@ -30,12 +36,12 @@ export const fetchWalletSiweSignals: SignalFetcher = async (
     safe(
       async () => await client.getBalance({ address: addr }),
       0n,
-      "wallet_siwe_balance"
+      'wallet_siwe_balance',
     ),
     safe(
       async () => await client.getTransactionCount({ address: addr }),
       0,
-      "wallet_siwe_nonce"
+      'wallet_siwe_nonce',
     ),
   ])
 

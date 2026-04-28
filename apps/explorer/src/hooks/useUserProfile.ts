@@ -35,7 +35,9 @@ async function seedProfileDerived(addresses: string[]) {
   return derived
 }
 
-export function useUserProfile(addresses: string[] | undefined): UseUserProfileResult {
+export function useUserProfile(
+  addresses: string[] | undefined,
+): UseUserProfileResult {
   const normalized = addresses ? [...addresses].sort() : []
   const walletsKey = normalized.join(',') || undefined
   const enabled = !!addresses && addresses.length > 0
@@ -51,7 +53,9 @@ export function useUserProfile(addresses: string[] | undefined): UseUserProfileR
   })
 
   const signalsQ = useQuery({
-    queryKey: walletsKey ? ['user-signals-count', walletsKey] : ['user-signals-count', undefined],
+    queryKey: walletsKey
+      ? ['user-signals-count', walletsKey]
+      : ['user-signals-count', undefined],
     queryFn: () => fetchSignalsCount(addresses!),
     enabled,
     staleTime: 10 * 60 * 1000,

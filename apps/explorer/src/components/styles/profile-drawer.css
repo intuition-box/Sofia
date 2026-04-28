@@ -8,11 +8,17 @@
   height: 100vh;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);
-  background: linear-gradient(170deg, color-mix(in oklab, var(--ds-accent) 6%, var(--ds-bg)) 0%, var(--ds-bg) 60%);
+  background: linear-gradient(
+    170deg,
+    color-mix(in oklab, var(--ds-accent) 6%, var(--ds-bg)) 0%,
+    var(--ds-bg) 60%
+  );
   backdrop-filter: blur(20px);
   transform: translateX(100%);
   opacity: 0;
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  transition:
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s ease;
   pointer-events: none;
 }
 .pd-aside.pd-open {
@@ -38,7 +44,12 @@
   left: 24px;
   right: 24px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--ds-border), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ds-border),
+    transparent
+  );
 }
 
 .pd-avatar {
@@ -53,7 +64,7 @@
   gap: 2px;
 }
 .pd-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -61,7 +72,7 @@
   color: var(--ds-ink);
 }
 .pd-address {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
@@ -97,7 +108,7 @@
   min-height: 0;
 }
 .pd-section-title {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -142,7 +153,9 @@
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent));
+  filter: drop-shadow(
+    0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent)
+  );
 }
 .pd-ts-pie-center {
   position: absolute;
@@ -154,16 +167,18 @@
   gap: 2px;
 }
 .pd-ts-pie-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .pd-ts-pie-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -190,7 +205,8 @@
   height: 8px;
   border-radius: 50%;
   background: var(--slice-color, var(--ds-muted));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--slice-color, var(--ds-muted)) 50%, transparent);
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--slice-color, var(--ds-muted)) 50%, transparent);
 }
 .pd-ts-legend-label {
   color: var(--ds-ink);
@@ -200,7 +216,7 @@
   white-space: nowrap;
 }
 .pd-ts-legend-val {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   color: var(--slice-color, var(--ds-ink));
@@ -220,7 +236,7 @@
   background: var(--ds-card);
   color: var(--ds-ink);
   text-decoration: none;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -229,7 +245,11 @@
   transition: all 0.18s ease;
 }
 .pd-ts-view-btn:hover {
-  border-color: color-mix(in srgb, var(--trusted, #6dd4a0) 40%, var(--ds-border));
+  border-color: color-mix(
+    in srgb,
+    var(--trusted, #6dd4a0) 40%,
+    var(--ds-border)
+  );
   color: #2f9c6a;
   transform: translateX(2px);
 }
@@ -256,8 +276,13 @@
   flex: 1;
   padding: 12px 4px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--badge-color, var(--ds-accent)) 8%, var(--ds-card));
-  border: 1px solid color-mix(in srgb, var(--badge-color, var(--ds-accent)) 22%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--badge-color, var(--ds-accent)) 8%,
+    var(--ds-card)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--badge-color, var(--ds-accent)) 22%, transparent);
 }
 .pd-badge-icon {
   width: 40px;
@@ -265,7 +290,7 @@
   object-fit: contain;
 }
 .pd-badge-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -273,7 +298,7 @@
   color: var(--ds-muted);
 }
 .pd-badge-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 20px;
   font-weight: 800;
   line-height: 1;
@@ -335,7 +360,7 @@
   background: color-mix(in oklab, var(--ds-bg-subtle) 80%, transparent);
 }
 .pd-circle-rank {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   color: var(--ds-muted);
@@ -363,7 +388,7 @@
   white-space: nowrap;
 }
 .pd-circle-trust {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
@@ -394,15 +419,19 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--ds-accent) 65%, transparent);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 4px 14px -6px
+    color-mix(in srgb, var(--ds-accent) 65%, transparent);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .pd-journey-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--ds-accent) 80%, transparent);
+  box-shadow: 0 8px 18px -6px
+    color-mix(in srgb, var(--ds-accent) 80%, transparent);
 }
 .pd-journey-arrow {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
   transition: transform 0.18s ease;
@@ -514,7 +543,7 @@ a.pd-la-row:hover {
   color: var(--ds-ink);
 }
 .pd-la-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;

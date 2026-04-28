@@ -17,15 +17,22 @@ vi.mock('@/services/feedProcessing', () => ({
 // eslint-disable-next-line import/first
 import { useGetAllActivityQuery } from '@0xsofia/graphql'
 // eslint-disable-next-line import/first
-import { processEvents, enrichWithTopicContexts } from '@/services/feedProcessing'
+import {
+  processEvents,
+  enrichWithTopicContexts,
+} from '@/services/feedProcessing'
 // eslint-disable-next-line import/first
 import { fetchAllActivity } from '@/services/activityService'
 // eslint-disable-next-line import/first
 import { SOFIA_PROXY_ADDRESS } from '@/config'
 
-const mockedFetcher = useGetAllActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher = useGetAllActivityQuery.fetcher as unknown as ReturnType<
+  typeof vi.fn
+>
 const mockedProcess = processEvents as unknown as ReturnType<typeof vi.fn>
-const mockedEnrich = enrichWithTopicContexts as unknown as ReturnType<typeof vi.fn>
+const mockedEnrich = enrichWithTopicContexts as unknown as ReturnType<
+  typeof vi.fn
+>
 
 describe('activityService.fetchAllActivity', () => {
   beforeEach(() => {
@@ -61,7 +68,10 @@ describe('activityService.fetchAllActivity', () => {
 
   it('returns the processed items and enriches them before resolving', async () => {
     const fakeEvents = [{ id: 'evt-1' }, { id: 'evt-2' }]
-    const processed = [{ termId: 't1' }, { termId: 't2' }] as unknown as ReturnType<typeof processEvents>
+    const processed = [
+      { termId: 't1' },
+      { termId: 't2' },
+    ] as unknown as ReturnType<typeof processEvents>
 
     mockedFetcher.mockReturnValue(() => Promise.resolve({ events: fakeEvents }))
     mockedProcess.mockReturnValue(processed)

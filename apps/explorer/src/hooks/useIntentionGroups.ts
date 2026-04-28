@@ -52,8 +52,13 @@ export function buildIntentionGroups(
 
   const groups = new Map<string, IntentionGroupWithStats>()
   for (const a of activities) {
-    if (topicFilter !== 'all' && (!a.tags || !a.tags.includes(topicFilter))) continue
-    if (verbFilter !== 'all' && !a.intents.includes(verbFilter as IntentionType)) continue
+    if (topicFilter !== 'all' && (!a.tags || !a.tags.includes(topicFilter)))
+      continue
+    if (
+      verbFilter !== 'all' &&
+      !a.intents.includes(verbFilter as IntentionType)
+    )
+      continue
 
     const key = a.domain
     let g = groups.get(key)
@@ -85,7 +90,9 @@ export function buildIntentionGroups(
   }
 
   for (const g of groups.values()) {
-    g.level = calculateLevel(g.certifiedCount + Math.floor(g.activeUrlCount / 2))
+    g.level = calculateLevel(
+      g.certifiedCount + Math.floor(g.activeUrlCount / 2),
+    )
     const dominant = pickDominantIntent(g)
     if (dominant) {
       g.currentPredicate = INTENTION_CONFIG[dominant]?.predicateLabel ?? null
@@ -100,11 +107,18 @@ export function buildIntentionGroups(
     case 'verb': {
       const verbKey = (g: IntentionGroupWithStats): string =>
         (pickDominantIntent(g) as string | undefined) ?? 'zz'
-      out.sort((a, b) => verbKey(a).localeCompare(verbKey(b)) || b.activeUrlCount - a.activeUrlCount)
+      out.sort(
+        (a, b) =>
+          verbKey(a).localeCompare(verbKey(b)) ||
+          b.activeUrlCount - a.activeUrlCount,
+      )
       break
     }
     case 'topic': {
-      const topicKey = (g: IntentionGroupWithStats, lookup: Map<string, string[]>): string => {
+      const topicKey = (
+        g: IntentionGroupWithStats,
+        lookup: Map<string, string[]>,
+      ): string => {
         const tagCounts = new Map<string, number>()
         for (const u of g.urls) {
           for (const t of lookup.get(u.url) ?? []) {
@@ -118,7 +132,11 @@ export function buildIntentionGroups(
       for (const a of activities) {
         if (a.tags && a.tags.length > 0) lookup.set(a.domain, a.tags)
       }
-      out.sort((a, b) => topicKey(a, lookup).localeCompare(topicKey(b, lookup)) || b.activeUrlCount - a.activeUrlCount)
+      out.sort(
+        (a, b) =>
+          topicKey(a, lookup).localeCompare(topicKey(b, lookup)) ||
+          b.activeUrlCount - a.activeUrlCount,
+      )
       break
     }
   }
@@ -145,7 +163,10 @@ export function pickDominantIntent(
   g: Pick<IntentionGroupWithStats, 'certificationBreakdown'>,
 ): IntentionType | null {
   let best: [IntentionType, number] | null = null
-  for (const [k, v] of Object.entries(g.certificationBreakdown) as [IntentionType, number][]) {
+  for (const [k, v] of Object.entries(g.certificationBreakdown) as [
+    IntentionType,
+    number,
+  ][]) {
     if (v === undefined) continue
     if (!best || v > best[1]) best = [k, v]
   }

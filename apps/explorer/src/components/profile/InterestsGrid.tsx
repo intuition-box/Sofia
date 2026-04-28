@@ -63,7 +63,9 @@ export default function InterestsGrid({
             aria-label={topic.label}
             topicColor={topic.color}
             topicLabel={topic.label}
-            visual={emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined}
+            visual={
+              emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined
+            }
             stats={stats}
             onClick={() => navigate(`/profile/interest/${topicId}`)}
             onRemove={onRemoveTopic ? () => onRemoveTopic(topicId) : undefined}

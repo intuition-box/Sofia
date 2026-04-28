@@ -30,7 +30,9 @@ async function getCertData(id: string): Promise<CertificationData | null> {
   return kv.get<CertificationData>(`cert:${id}`)
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params
   const data = await getCertData(id)
   if (!data) return { title: 'Certification not found' }

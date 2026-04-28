@@ -56,10 +56,13 @@ function parseSSE(raw: string): unknown {
   return JSON.parse(raw)
 }
 
-async function mcpPost(method: string, params: Record<string, unknown> = {}): Promise<{ json: any; res: Response }> {
+async function mcpPost(
+  method: string,
+  params: Record<string, unknown> = {},
+): Promise<{ json: any; res: Response }> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json, text/event-stream',
+    Accept: 'application/json, text/event-stream',
   }
   if (sessionId) headers['mcp-session-id'] = sessionId
 
@@ -90,15 +93,23 @@ async function ensureSession(): Promise<void> {
     protocolVersion: '2025-03-26',
     capabilities: {},
     clientInfo: { name: 'sofia-explorer', version: '1.0.0' },
-  }).then(() => { initPromise = null })
+  }).then(() => {
+    initPromise = null
+  })
 
   return initPromise
 }
 
-async function mcpCall<T>(toolName: string, args: Record<string, unknown> = {}): Promise<T> {
+async function mcpCall<T>(
+  toolName: string,
+  args: Record<string, unknown> = {},
+): Promise<T> {
   await ensureSession()
 
-  const { json } = await mcpPost('tools/call', { name: toolName, arguments: args })
+  const { json } = await mcpPost('tools/call', {
+    name: toolName,
+    arguments: args,
+  })
 
   const text = json.result?.content?.[0]?.text
   if (!text) throw new Error(`MCP ${toolName}: empty response`)
@@ -121,7 +132,9 @@ export async function fetchCompositeScore(
   }
 }
 
-export async function fetchEigentrustRanking(topN = 50): Promise<EigentrustEntry[]> {
+export async function fetchEigentrustRanking(
+  topN = 50,
+): Promise<EigentrustEntry[]> {
   try {
     const result = await mcpCall<EigentrustResult>('compute_eigentrust')
     return result.top20.slice(0, topN)
@@ -135,10 +148,13 @@ export async function fetchPersonalizedTrust(
   toAddress: string,
 ): Promise<PersonalizedTrustResult | null> {
   try {
-    return await mcpCall<PersonalizedTrustResult>('compute_personalized_trust', {
-      fromAddress,
-      toAddress,
-    })
+    return await mcpCall<PersonalizedTrustResult>(
+      'compute_personalized_trust',
+      {
+        fromAddress,
+        toAddress,
+      },
+    )
   } catch {
     return null
   }

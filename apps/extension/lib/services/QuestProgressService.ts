@@ -115,7 +115,7 @@ export class QuestProgressService {
     // Query 1: Get signals created (paginated)
     const allSignals = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
       GetUserSignalsDocument,
-      { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+      { accountIds: checksumAddress, subjectId: SUBJECT_IDS.I },
       'triples',
       100,
       1000
@@ -124,7 +124,7 @@ export class QuestProgressService {
 
     // Query 2: Get followed users count
     const followResponse = await intuitionGraphqlClient.request(GetFollowCountDocument, {
-      accountId: checksumAddress,
+      accountIds: checksumAddress,
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.FOLLOW
     }) as { triples: Array<{ term_id: string }> }
@@ -132,7 +132,7 @@ export class QuestProgressService {
 
     // Query 3: Get trusted users count
     const trustResponse = await intuitionGraphqlClient.request(GetFollowCountDocument, {
-      accountId: checksumAddress,
+      accountIds: checksumAddress,
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS
     }) as { triples: Array<{ term_id: string }> }

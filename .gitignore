@@ -18,9 +18,10 @@ out/
 .env.local
 .env.*.local
 
-# OAuth configuration (contains secrets)
-extension/background/oauth/config/oauth-config.ts
-oauth-config.ts
+# OAuth client IDs are checked in (apps/extension/background/oauth/config/oauth-config.ts).
+# They're public by nature — every OAuth request sends them in the URL. The secrets
+# live on the landing page handlers (apps/landing/src/pages/auth/{platform}/callback.tsx)
+# and never ship in the extension bundle.
 
 # OS files
 .DS_Store
@@ -54,7 +55,6 @@ task
 
 /docs
 .claude
-.github
 
 # Docker build artifacts (keep start-agents.sh)
 /docker-build/agent/

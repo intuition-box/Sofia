@@ -52,8 +52,12 @@ export default function TrendingPages() {
                 <div className="tp-link-content">
                   <img src={item.favicon} alt="" className="tp-favicon" />
                   <div className="tp-text">
-                    <p className="text-sm font-medium tp-domain">{item.domain}</p>
-                    <p className="text-xs text-muted-foreground">{item.certifiers} certifiers</p>
+                    <p className="text-sm font-medium tp-domain">
+                      {item.domain}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.certifiers} certifiers
+                    </p>
                   </div>
                 </div>
                 <Badge variant="secondary" className="text-xs tp-badge">

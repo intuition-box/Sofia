@@ -5,7 +5,7 @@
 
 /* Ported 1:1 from proto-explorer/src/styles/profile.css:19-27 (.pf-section-title). */
 .ds-section-title {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;

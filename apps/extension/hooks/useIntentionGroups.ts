@@ -116,12 +116,17 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       setIsLoading(true)
       setError(null)
 
-      const response = await messageBus.sendMessageWithRetry({ type: 'GET_INTENTION_GROUPS' })
+      // GET_INTENTION_GROUPS returns a `groups` payload that isn't part of the
+      // shared MessageResponse contract (it's specific to this handler). Cast
+      // through unknown to a narrower local shape.
+      const response = (await messageBus.sendMessageWithRetry({
+        type: 'GET_INTENTION_GROUPS',
+      })) as unknown as { success: boolean; groups?: IntentionGroupRecord[]; error?: string }
 
       if (response.success && response.groups) {
         // Filter out excluded domains (auth pages, system pages, etc.)
         const filteredGroups = response.groups.filter(
-          (g: IntentionGroupRecord) => !shouldExcludeDomain(g.domain)
+          (g: IntentionGroupRecord) => !shouldExcludeDomain(g.domain),
         )
         const groupsWithStats = filteredGroups.map(calculateGroupStats)
         setLocalGroups(groupsWithStats)

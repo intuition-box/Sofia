@@ -19,7 +19,9 @@ import { fetchUserActivity } from '@/services/domainActivityService'
 // eslint-disable-next-line import/first
 import { SOFIA_PROXY_ADDRESS } from '@/config'
 
-const mockedFetcher = useGetUserActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher = useGetUserActivityQuery.fetcher as unknown as ReturnType<
+  typeof vi.fn
+>
 const mockedProcess = processEvents as unknown as ReturnType<typeof vi.fn>
 
 describe('domainActivityService.fetchUserActivity', () => {
@@ -59,7 +61,9 @@ describe('domainActivityService.fetchUserActivity', () => {
 
   it('delegates event processing and returns its output', async () => {
     const fakeEvents = [{ id: 'evt-1' }]
-    const processed = [{ termId: 't1' }] as unknown as ReturnType<typeof processEvents>
+    const processed = [{ termId: 't1' }] as unknown as ReturnType<
+      typeof processEvents
+    >
     mockedFetcher.mockReturnValue(() => Promise.resolve({ events: fakeEvents }))
     mockedProcess.mockReturnValue(processed)
 

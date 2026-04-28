@@ -13,9 +13,16 @@ query GetClaimsByTermIds($termIds: [String!]!, $addresses: [String!]) {
         url
       }
       value {
-        thing { image url }
-        person { image }
-        organization { image }
+        thing {
+          image
+          url
+        }
+        person {
+          image
+        }
+        organization {
+          image
+        }
       }
     }
     predicate {
@@ -30,9 +37,16 @@ query GetClaimsByTermIds($termIds: [String!]!, $addresses: [String!]) {
         url
       }
       value {
-        thing { image url }
-        person { image }
-        organization { image }
+        thing {
+          image
+          url
+        }
+        person {
+          image
+        }
+        organization {
+          image
+        }
       }
     }
     term {
@@ -84,15 +98,19 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
         url
       }
       value {
-        thing { image url }
-        person { image }
-        organization { image }
+        thing {
+          image
+          url
+        }
+        person {
+          image
+        }
+        organization {
+          image
+        }
       }
     }
-    triples(
-      limit: 5
-      order_by: [{ triple_term: { total_market_cap: desc } }]
-    ) {
+    triples(limit: 5, order_by: [{ triple_term: { total_market_cap: desc } }]) {
       subject {
         term_id
         label
@@ -101,16 +119,27 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
           url
         }
         value {
-          thing { image url }
-          person { image }
-          organization { image }
+          thing {
+            image
+            url
+          }
+          person {
+            image
+          }
+          organization {
+            image
+          }
         }
       }
     }
   }
 }
 
-query GetListEntries($predicateId: String!, $objectId: String!, $addresses: [String!]) {
+query GetListEntries(
+  $predicateId: String!
+  $objectId: String!
+  $addresses: [String!]
+) {
   triples(
     where: {
       predicate_id: { _eq: $predicateId }
@@ -128,9 +157,16 @@ query GetListEntries($predicateId: String!, $objectId: String!, $addresses: [Str
         url
       }
       value {
-        thing { image url }
-        person { image }
-        organization { image }
+        thing {
+          image
+          url
+        }
+        person {
+          image
+        }
+        organization {
+          image
+        }
       }
     }
     predicate {
@@ -145,9 +181,16 @@ query GetListEntries($predicateId: String!, $objectId: String!, $addresses: [Str
         url
       }
       value {
-        thing { image url }
-        person { image }
-        organization { image }
+        thing {
+          image
+          url
+        }
+        person {
+          image
+        }
+        organization {
+          image
+        }
       }
     }
     term {

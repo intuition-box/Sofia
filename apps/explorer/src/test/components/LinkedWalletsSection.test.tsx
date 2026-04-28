@@ -16,7 +16,9 @@ vi.mock('@/hooks/useLinkedWallets', () => ({
 vi.mock('@/hooks/useEnsNames', () => ({
   useEnsNames: () => ({
     getDisplay: (addr: string) =>
-      addr === mockPrimary ? 'primary.eth' : `${addr.slice(0, 6)}...${addr.slice(-4)}`,
+      addr === mockPrimary
+        ? 'primary.eth'
+        : `${addr.slice(0, 6)}...${addr.slice(-4)}`,
     getAvatar: () => '',
   }),
 }))
@@ -61,5 +63,4 @@ describe('<LinkedWalletsSection />', () => {
     expect(items[1].textContent).toMatch(/^0xd8dA/)
     expect(items[1].textContent).not.toContain('primary')
   })
-
 })

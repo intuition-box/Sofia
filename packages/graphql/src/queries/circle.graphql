@@ -99,10 +99,7 @@ query GetTrustCircleAccounts(
       }
     }
     term {
-      vaults(
-        where: { curve_id: { _eq: "2" } }
-        order_by: { curve_id: asc }
-      ) {
+      vaults(where: { curve_id: { _eq: "2" } }, order_by: { curve_id: asc }) {
         positions(where: { account_id: { _in: $walletAddresses } }) {
           account_id
           shares
@@ -176,7 +173,6 @@ query GetSofiaTrustedActivity(
     where: {
       _and: [
         { type: { _neq: "FeesTransfered" } }
-
         {
           _or: [
             {
@@ -187,7 +183,6 @@ query GetSofiaTrustedActivity(
                 { deposit: { assets_after_fees: { _neq: "0" } } }
               ]
             }
-
             {
               _and: [
                 { type: { _eq: "Redeemed" } }
@@ -224,36 +219,62 @@ query GetSofiaTrustedActivity(
       sender_id
       assets_after_fees
       shares
-      sender { id label image }
-      receiver { id label image }
+      sender {
+        id
+        label
+        image
+      }
+      receiver {
+        id
+        label
+        image
+      }
     }
 
     redemption {
       sender_id
       assets
       shares
-      sender { id label image }
+      sender {
+        id
+        label
+        image
+      }
     }
 
     atom {
       term_id
       label
       type
-      creator { id label image }
+      creator {
+        id
+        label
+        image
+      }
     }
 
     triple {
       term_id
       counter_term_id
-      creator { id label image }
-      subject { label term_id }
-      predicate { label term_id }
+      creator {
+        id
+        label
+        image
+      }
+      subject {
+        label
+        term_id
+      }
+      predicate {
+        label
+        term_id
+      }
       object {
         label
         term_id
         value {
           thing {
-              url
+            url
           }
         }
       }

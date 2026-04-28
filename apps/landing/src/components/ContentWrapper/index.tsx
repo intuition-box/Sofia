@@ -1,10 +1,10 @@
-import React from 'react';
-import './ContentWrapper.css';
+import React from 'react'
+import './ContentWrapper.css'
 
 interface ContentWrapperProps {
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
 }
 
 /**
@@ -14,11 +14,11 @@ interface ContentWrapperProps {
 export default function ContentWrapper({
   children,
   className = '',
-  style = {}
+  style = {},
 }: ContentWrapperProps): JSX.Element {
   return (
     <div className={`content-wrapper ${className}`} style={style}>
       {children}
     </div>
-  );
+  )
 }

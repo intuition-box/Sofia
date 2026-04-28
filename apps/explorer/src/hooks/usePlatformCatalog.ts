@@ -4,29 +4,29 @@
  * Falls back to static platformCatalog.ts during loading.
  */
 
-import { useMemo } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   fetchPlatformCatalog,
   type PlatformCatalogData,
   type OnChainPlatform,
   type CategoryToTopicMap,
-} from "@/services/platformCatalogService"
-import { useTaxonomy } from "@/hooks/useTaxonomy"
-import { PLATFORM_CATALOG } from "@/config/platformCatalog"
-import { PLATFORM_ATOM_IDS } from "@/config/atomIds"
-import { TOPIC_META } from "@/config/topicMeta"
+} from '@/services/platformCatalogService'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
+import { PLATFORM_CATALOG } from '@/config/platformCatalog'
+import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
+import { TOPIC_META } from '@/config/topicMeta'
 
 // Build static fallback that matches OnChainPlatform shape
 function buildStaticFallback(): PlatformCatalogData {
   const platforms: OnChainPlatform[] = PLATFORM_CATALOG.map((p) => ({
     id: p.id,
-    termId: PLATFORM_ATOM_IDS[p.id] || "",
+    termId: PLATFORM_ATOM_IDS[p.id] || '',
     name: p.name,
     website: p.website,
     image: undefined,
     description: undefined,
-    color: TOPIC_META[p.targetTopics[0]]?.color ?? "#888888",
+    color: TOPIC_META[p.targetTopics[0]]?.color ?? '#888888',
     categoryIds: p.targetCategories,
     topicIds: p.targetTopics,
   }))
@@ -51,7 +51,8 @@ function buildStaticFallback(): PlatformCatalogData {
     platforms,
     platformById,
     getPlatformsByTopic: (topicId: string) => byTopic.get(topicId) || [],
-    getPlatformsByCategory: (categoryId: string) => byCategory.get(categoryId) || [],
+    getPlatformsByCategory: (categoryId: string) =>
+      byCategory.get(categoryId) || [],
   }
 }
 
@@ -62,11 +63,11 @@ export function usePlatformCatalog() {
 
   // Build category→topic map from taxonomy
   const categoryToTopic: CategoryToTopicMap = new Map(
-    allCategories.map((c) => [c.id, c.topicId])
+    allCategories.map((c) => [c.id, c.topicId]),
   )
 
   const { data, isLoading, error } = useQuery<PlatformCatalogData>({
-    queryKey: ["platformCatalog", taxonomyReady],
+    queryKey: ['platformCatalog', taxonomyReady],
     queryFn: () => fetchPlatformCatalog(categoryToTopic),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -104,7 +105,8 @@ export function usePlatformCatalog() {
   return {
     platforms: catalog.platforms,
     platformById: (id: string) => lookups.byId.get(id),
-    getPlatformsByTopic: (topicId: string) => lookups.byTopic.get(topicId) ?? [],
+    getPlatformsByTopic: (topicId: string) =>
+      lookups.byTopic.get(topicId) ?? [],
     getPlatformsByCategory: (categoryId: string) =>
       lookups.byCategory.get(categoryId) ?? [],
     isLoading,

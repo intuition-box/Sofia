@@ -10,7 +10,11 @@ interface RadarPillsProps {
   onFocus: (id: SeriesFilter) => void
 }
 
-export default function RadarPills({ items, seriesFilter, onFocus }: RadarPillsProps) {
+export default function RadarPills({
+  items,
+  seriesFilter,
+  onFocus,
+}: RadarPillsProps) {
   return (
     <div className="pc-radar-verbs">
       <button

@@ -1,6 +1,6 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { queryPublicGraphQL } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { queryPublicGraphQL } from './utils'
 
 /**
  * The Graph network subgraph (on mainnet).
@@ -9,7 +9,7 @@ import { queryPublicGraphQL } from "./utils"
  * Uses the public network subgraph (hosted service, no API key).
  */
 const THE_GRAPH_NETWORK_SUBGRAPH =
-  "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
+  'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet'
 
 const USER_QUERY = `
   query GraphUser($id: String!) {
@@ -35,7 +35,7 @@ const USER_QUERY = `
 export const fetchTheGraphSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const addr = walletAddress.toLowerCase()
 

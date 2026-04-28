@@ -45,7 +45,8 @@ const merge: CompileAnimBuilder = ({ scene, accent }) => {
   const matB = new THREE.LineBasicMaterial({ color: accent, transparent: true })
   const c1 = new THREE.LineLoop(makeLoopGeometry(48, 0.45), matA)
   const c2 = new THREE.LineLoop(makeLoopGeometry(48, 0.45), matB)
-  group.add(c1); group.add(c2)
+  group.add(c1)
+  group.add(c2)
   group.visible = false
   scene.add(group)
   return (_t, pulseT) => {
@@ -70,10 +71,16 @@ const intersect: CompileAnimBuilder = ({ scene, accent }) => {
   const c2 = new THREE.LineLoop(makeLoopGeometry(64, 0.5), matB)
   c1.position.x = -0.3
   c2.position.x = 0.3
-  const lensMat = new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0 })
+  const lensMat = new THREE.MeshBasicMaterial({
+    color: accent,
+    transparent: true,
+    opacity: 0,
+  })
   const lens = new THREE.Mesh(new THREE.CircleGeometry(0.2, 48), lensMat)
   lens.scale.set(0.6, 1.3, 1)
-  group.add(c1); group.add(c2); group.add(lens)
+  group.add(c1)
+  group.add(c2)
+  group.add(lens)
   group.visible = false
   scene.add(group)
   return (_t, pulseT) => {
@@ -97,7 +104,8 @@ const subtract: CompileAnimBuilder = ({ scene, accent }) => {
   const c2 = new THREE.LineLoop(makeLoopGeometry(64, 0.5), matB)
   c1.position.x = -0.3
   c2.position.x = 0.3
-  group.add(c1); group.add(c2)
+  group.add(c1)
+  group.add(c2)
   group.visible = false
   scene.add(group)
   return (_t, pulseT) => {
@@ -118,7 +126,8 @@ const contrast: CompileAnimBuilder = ({ scene, accent }) => {
   const matB = new THREE.LineBasicMaterial({ color: accent, transparent: true })
   const c1 = new THREE.LineLoop(makeLoopGeometry(48, 0.42), matA)
   const c2 = new THREE.LineLoop(makeLoopGeometry(48, 0.42), matB)
-  group.add(c1); group.add(c2)
+  group.add(c1)
+  group.add(c2)
   group.visible = false
   scene.add(group)
   return (_t, pulseT) => {
@@ -138,9 +147,13 @@ const contrast: CompileAnimBuilder = ({ scene, accent }) => {
   }
 }
 
-export const COMPILE_ACTION_BUILDERS: Record<CompareMode, CompileAnimBuilder> = {
-  merge, intersect, subtract, contrast,
-}
+export const COMPILE_ACTION_BUILDERS: Record<CompareMode, CompileAnimBuilder> =
+  {
+    merge,
+    intersect,
+    subtract,
+    contrast,
+  }
 
 /** Duration (ms) of the compile animation — keep in sync with `DURATION` above. */
 export const COMPILE_ANIM_MS = 1000

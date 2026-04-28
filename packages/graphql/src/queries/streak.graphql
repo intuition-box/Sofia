@@ -12,7 +12,11 @@ query GetProxyDepositDays($senderId: String!, $termId: String!) {
   }
 }
 
-query GetStreakVaultPositions($termId: String!, $curveId: numeric!, $limit: Int!) {
+query GetStreakVaultPositions(
+  $termId: String!
+  $curveId: numeric!
+  $limit: Int!
+) {
   positions(
     where: {
       vault: { term_id: { _ilike: $termId }, curve_id: { _eq: $curveId } }

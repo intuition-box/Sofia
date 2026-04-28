@@ -2,9 +2,16 @@ import type { HTMLAttributes } from 'react'
 
 export type EchoesSortKey = 'platform' | 'verb' | 'topic'
 
-export const ECHOES_SORT_KEYS: readonly EchoesSortKey[] = ['platform', 'verb', 'topic']
+export const ECHOES_SORT_KEYS: readonly EchoesSortKey[] = [
+  'platform',
+  'verb',
+  'topic',
+]
 
-export interface EchoesSortTabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface EchoesSortTabsProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   /** Currently-selected sort key. */
   value: EchoesSortKey
   /** Fired when the user picks a different key. */

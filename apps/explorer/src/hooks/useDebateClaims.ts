@@ -13,7 +13,13 @@ export function useDebateClaims() {
   return {
     claims: data ?? [],
     loading: isLoading && !data,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
-    refresh: () => { refetch() },
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
+    refresh: () => {
+      refetch()
+    },
   }
 }

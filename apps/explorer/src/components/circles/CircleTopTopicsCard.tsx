@@ -12,7 +12,10 @@ interface CircleTopTopicsCardProps {
   circleColor: string
 }
 
-export default function CircleTopTopicsCard({ topicIds, circleColor }: CircleTopTopicsCardProps) {
+export default function CircleTopTopicsCard({
+  topicIds,
+  circleColor,
+}: CircleTopTopicsCardProps) {
   const { topicById } = useTaxonomy()
   const rows = topicIds
     .map((id, i) => {
@@ -22,7 +25,9 @@ export default function CircleTopTopicsCard({ topicIds, circleColor }: CircleTop
       const count = Math.max(20, Math.round(200 - i * 60))
       return { id, label: topic.label, count }
     })
-    .filter((x): x is { id: string; label: string; count: number } => x !== null)
+    .filter(
+      (x): x is { id: string; label: string; count: number } => x !== null,
+    )
 
   return (
     <div className="crd-topics-section">

@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Skeleton } from '../ui/skeleton'
 import { Copy, Check, ExternalLink } from 'lucide-react'
@@ -51,16 +46,20 @@ export default function ShareProfileModal({
             </div>
           )}
 
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           {shareUrl && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 rounded-lg border p-2 text-sm">
-                <span className="flex-1 truncate text-muted-foreground">{shareUrl}</span>
+                <span className="flex-1 truncate text-muted-foreground">
+                  {shareUrl}
+                </span>
                 <Button size="sm" variant="ghost" onClick={onCopyLink}>
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
               <Button className="w-full" onClick={onShareOnX}>

@@ -22,7 +22,9 @@ function truncateWallet(wallet: string): string {
   return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`
 }
 
-export async function generateMetadata({ searchParams }: BoardPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: BoardPageProps): Promise<Metadata> {
   const params = await searchParams
   const wallet = params.wallet || '0x0000...0000'
   const displayName = params.name || truncateWallet(wallet)
@@ -95,27 +97,99 @@ export default async function BoardPage({ searchParams }: BoardPageProps) {
       }}
     >
       {/* Sofia branding */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <img src="/sofia-logo.png" alt="Sofia" width={56} height={56} style={{ borderRadius: '50%' }} />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '24px',
+        }}
+      >
+        <img
+          src="/sofia-logo.png"
+          alt="Sofia"
+          width={56}
+          height={56}
+          style={{ borderRadius: '50%' }}
+        />
         <span style={{ fontSize: '32px', fontWeight: 700 }}>Sofia Board</span>
       </div>
 
       <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>{displayName}</h1>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: '24px', color: '#6b7280', marginBottom: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <span>Alpha Rank <strong style={{ color: '#C7866C' }}>#{params.alphaRank || '0'}</strong> of {params.totalAlpha || '0'}</span>
-        <span><strong style={{ color: '#fff' }}>{params.tx || '0'}</strong> TX</span>
-        <span><strong style={{ color: '#fff' }}>{params.intentions || '0'}</strong> Intentions</span>
-        <span style={{ color: '#D4A843' }}>Pioneer <strong>{params.pioneer || '0'}</strong></span>
-        <span>Trust Volume <strong style={{ color: '#fff' }}>{params.trustVolume || '0 T'}</strong></span>
+      <div
+        style={{
+          display: 'flex',
+          gap: '24px',
+          color: '#6b7280',
+          marginBottom: '32px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
+        <span>
+          Alpha Rank{' '}
+          <strong style={{ color: '#C7866C' }}>
+            #{params.alphaRank || '0'}
+          </strong>{' '}
+          of {params.totalAlpha || '0'}
+        </span>
+        <span>
+          <strong style={{ color: '#fff' }}>{params.tx || '0'}</strong> TX
+        </span>
+        <span>
+          <strong style={{ color: '#fff' }}>{params.intentions || '0'}</strong>{' '}
+          Intentions
+        </span>
+        <span style={{ color: '#D4A843' }}>
+          Pioneer <strong>{params.pioneer || '0'}</strong>
+        </span>
+        <span>
+          Trust Volume{' '}
+          <strong style={{ color: '#fff' }}>
+            {params.trustVolume || '0 T'}
+          </strong>
+        </span>
       </div>
 
       {hasPool && (
-        <div style={{ display: 'flex', gap: '24px', color: '#6b7280', marginBottom: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <span>Pool Rank <strong style={{ color: '#fff' }}>#{params.poolRank}</strong></span>
-          <span>P&L <strong style={{ color: params.pnl!.startsWith('+') ? '#22c55e' : '#ef4444' }}>{params.pnl}</strong></span>
-          <span>P&L % <strong style={{ color: params.pnlPercent!.startsWith('+') ? '#22c55e' : '#ef4444' }}>{params.pnlPercent}</strong></span>
+        <div
+          style={{
+            display: 'flex',
+            gap: '24px',
+            color: '#6b7280',
+            marginBottom: '32px',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
+          <span>
+            Pool Rank{' '}
+            <strong style={{ color: '#fff' }}>#{params.poolRank}</strong>
+          </span>
+          <span>
+            P&L{' '}
+            <strong
+              style={{
+                color: params.pnl!.startsWith('+') ? '#22c55e' : '#ef4444',
+              }}
+            >
+              {params.pnl}
+            </strong>
+          </span>
+          <span>
+            P&L %{' '}
+            <strong
+              style={{
+                color: params.pnlPercent!.startsWith('+')
+                  ? '#22c55e'
+                  : '#ef4444',
+              }}
+            >
+              {params.pnlPercent}
+            </strong>
+          </span>
         </div>
       )}
 

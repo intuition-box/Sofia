@@ -21,7 +21,7 @@
   margin: 8px 0 24px;
 }
 .hm-head h2 {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 28px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -33,7 +33,7 @@
   color: var(--ds-accent);
 }
 .hm-sub {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   color: var(--ds-muted);
   font-style: italic;
@@ -63,11 +63,13 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-card);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .hm-search-input::placeholder {
   color: var(--ds-muted);
@@ -95,7 +97,9 @@
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 .hm-search-clear:hover {
   color: var(--ds-ink);
@@ -106,7 +110,7 @@
   padding: 32px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -121,10 +125,14 @@
   column-gap: 14px;
 }
 @media (max-width: 1200px) {
-  .hm-grid { column-count: 2; }
+  .hm-grid {
+    column-count: 2;
+  }
 }
 @media (max-width: 700px) {
-  .hm-grid { column-count: 1; }
+  .hm-grid {
+    column-count: 1;
+  }
 }
 .hm-grid > .hm-tile {
   break-inside: avoid;
@@ -161,7 +169,7 @@
 }
 
 .hm-tile-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 20px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -204,7 +212,9 @@
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .hm-tile:hover .hm-url-row {
   border-color: color-mix(in oklab, var(--ds-ink) 25%, transparent);
@@ -212,7 +222,7 @@
 .hm-url-host {
   flex: 1;
   min-width: 0;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-weight: 400;
@@ -223,8 +233,12 @@
 }
 
 /* Hero tile — bigger favicon + host. */
-.hm-tile.hm-hero .hm-url-row { padding: 10px 12px; }
-.hm-tile.hm-hero .hm-url-host { font-size: 12px; }
+.hm-tile.hm-hero .hm-url-row {
+  padding: 10px 12px;
+}
+.hm-tile.hm-hero .hm-url-host {
+  font-size: 12px;
+}
 
 /* ── Drill-down header ──────────────────────────────────────────── */
 
@@ -259,7 +273,7 @@
   border: 1px solid var(--ds-border);
   border-radius: 999px;
   background: var(--ds-bg);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ds-ink-soft);
@@ -279,7 +293,7 @@
   border: 1px solid var(--ds-border);
   border-radius: 999px;
   background: var(--ds-bg);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ds-muted);
@@ -291,7 +305,7 @@
   color: var(--distrusted, #e87c7c);
 }
 .hm-drill-kind {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -299,7 +313,7 @@
   color: var(--ds-muted);
 }
 .hm-drill-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -308,7 +322,7 @@
 }
 .hm-drill-count {
   margin-left: auto;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
@@ -321,7 +335,9 @@
   column-gap: 16px;
 }
 @media (max-width: 900px) {
-  .hm-drill-grid { column-count: 1; }
+  .hm-drill-grid {
+    column-count: 1;
+  }
 }
 .hm-drill-grid > * {
   break-inside: avoid;
@@ -343,7 +359,9 @@
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
   cursor: pointer;
-  transition: border-color 0.18s ease, transform 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
   position: relative;
   overflow: visible;
 }
@@ -369,7 +387,7 @@
   min-width: 0;
 }
 .fc-title {
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--ds-ink);
@@ -381,7 +399,7 @@
   letter-spacing: -0.005em;
 }
 .fc-host {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   margin-top: 4px;
@@ -406,7 +424,7 @@
   flex-shrink: 0;
 }
 .fc-actor-ens {
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 600;
   color: var(--ds-ink);
   max-width: 160px;
@@ -415,7 +433,7 @@
   white-space: nowrap;
 }
 .fc-actor-ago {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
 }
@@ -436,7 +454,7 @@
   gap: 5px;
 }
 .fc-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -450,7 +468,7 @@
   white-space: nowrap;
 }
 .fc-verb-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: #02000e;

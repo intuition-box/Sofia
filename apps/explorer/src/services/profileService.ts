@@ -79,21 +79,29 @@ export async function fetchUserProfile(
   })()
 
   const positions: UserPosition[] = data.positions.map((p: PositionRaw) => ({
-    termId: p.vault?.term?.atom?.term_id ?? p.vault?.term?.triple?.term_id ?? '',
+    termId:
+      p.vault?.term?.atom?.term_id ?? p.vault?.term?.triple?.term_id ?? '',
     shares: p.shares,
     currentSharePrice: p.vault?.current_share_price,
     isTriple: !!p.vault?.term?.triple,
     predicateLabel: p.vault?.term?.triple?.predicate?.label,
-    objectLabel: p.vault?.term?.triple?.object?.label ?? p.vault?.term?.atom?.label,
-    objectUrl: p.vault?.term?.triple?.object?.value?.thing?.url ?? p.vault?.term?.atom?.value?.thing?.url,
+    objectLabel:
+      p.vault?.term?.triple?.object?.label ?? p.vault?.term?.atom?.label,
+    objectUrl:
+      p.vault?.term?.triple?.object?.value?.thing?.url ??
+      p.vault?.term?.atom?.value?.thing?.url,
     tripleSubjectId: p.vault?.term?.triple?.subject?.term_id,
     tripleObjectId: p.vault?.term?.triple?.object?.term_id,
     atomLabel: p.vault?.term?.atom?.label,
     atomUrl: p.vault?.term?.atom?.value?.thing?.url,
   }))
 
-  const triplePositions = data.positions.filter((p: PositionRaw) => p.vault?.term?.triple)
-  const atomPositions = data.positions.filter((p: PositionRaw) => p.vault?.term?.atom && !p.vault?.term?.triple)
+  const triplePositions = data.positions.filter(
+    (p: PositionRaw) => p.vault?.term?.triple,
+  )
+  const atomPositions = data.positions.filter(
+    (p: PositionRaw) => p.vault?.term?.atom && !p.vault?.term?.triple,
+  )
 
   // Certifications = triple positions with "visits for" predicates
   const certifications = triplePositions.filter((p: PositionRaw) =>
@@ -104,7 +112,8 @@ export async function fetchUserProfile(
   const socialPredRegex = /has verified (\w+) id/i
   const verifiedPlatforms = triplePositions
     .map((p: PositionRaw) => {
-      const match = p.vault?.term?.triple?.predicate?.label?.match(socialPredRegex)
+      const match =
+        p.vault?.term?.triple?.predicate?.label?.match(socialPredRegex)
       return match?.[1]?.toLowerCase()
     })
     .filter((v: string | undefined): v is string => !!v)

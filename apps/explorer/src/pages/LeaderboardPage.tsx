@@ -19,8 +19,18 @@ export default function LeaderboardPage() {
     ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4)
     : ''
 
-  const { leaderboard: alphaData, totals, loading: alphaLoading, error: alphaError } = useAlphaTesters()
-  const { data: poolData, vaultStats, loading: poolLoading, error: poolError } = useSeasonPool(true)
+  const {
+    leaderboard: alphaData,
+    totals,
+    loading: alphaLoading,
+    error: alphaError,
+  } = useAlphaTesters()
+  const {
+    data: poolData,
+    vaultStats,
+    loading: poolLoading,
+    error: poolError,
+  } = useSeasonPool(true)
   const userStats = useUserStats(walletAddress || null, alphaData, poolData)
 
   const stats = [
@@ -30,9 +40,10 @@ export default function LeaderboardPage() {
     { label: 'Pioneers', value: String(totals.pioneers) },
     {
       label: 'Trust Volume',
-      value: totals.trustVolume > 0n
-        ? `${parseFloat(formatEther(totals.trustVolume)).toFixed(2)} T`
-        : '0',
+      value:
+        totals.trustVolume > 0n
+          ? `${parseFloat(formatEther(totals.trustVolume)).toFixed(2)} T`
+          : '0',
     },
   ]
 
@@ -40,31 +51,35 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
-      <div className="space-y-6 page-content page-enter">
-      <StatsRibbon stats={alphaLoading ? [] : stats} />
-
-      {authenticated && walletAddress && userStats && (
-        <PersonalStats
-          userStats={userStats}
-          totalAlphaTesters={totals.wallets}
-          totalPoolStakers={vaultStats?.totalStakers ?? null}
-          walletAddress={walletAddress}
-          displayName={displayName}
-        />
-      )}
-
-      <Leaderboard
-        alphaData={alphaData}
-        alphaLoading={alphaLoading}
-        alphaError={alphaError}
-        poolData={poolData}
-        poolLoading={poolLoading}
-        poolError={poolError}
-        connectedAddress={walletAddress ?? null}
+      <PageHero
+        background={pc.color}
+        title={pc.title}
+        description={pc.subtitle}
       />
+      <div className="space-y-6 page-content page-enter">
+        <StatsRibbon stats={alphaLoading ? [] : stats} />
 
-      <FooterCTA />
+        {authenticated && walletAddress && userStats && (
+          <PersonalStats
+            userStats={userStats}
+            totalAlphaTesters={totals.wallets}
+            totalPoolStakers={vaultStats?.totalStakers ?? null}
+            walletAddress={walletAddress}
+            displayName={displayName}
+          />
+        )}
+
+        <Leaderboard
+          alphaData={alphaData}
+          alphaLoading={alphaLoading}
+          alphaError={alphaError}
+          poolData={poolData}
+          poolLoading={poolLoading}
+          poolError={poolError}
+          connectedAddress={walletAddress ?? null}
+        />
+
+        <FooterCTA />
       </div>
     </div>
   )

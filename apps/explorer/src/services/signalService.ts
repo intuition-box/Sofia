@@ -27,13 +27,21 @@ export async function fetchPlatformSignals(
     )
 
     if (!res.ok) {
-      return { success: false, platformId: platform, error: `http_${res.status}` }
+      return {
+        success: false,
+        platformId: platform,
+        error: `http_${res.status}`,
+      }
     }
 
     const data = await res.json()
     const output = data?.result
     if (output?.success !== undefined) return output
-    return { success: false, platformId: platform, error: 'unexpected_response' }
+    return {
+      success: false,
+      platformId: platform,
+      error: 'unexpected_response',
+    }
   } catch (err) {
     console.error(`[signalService] ${platform}:`, err)
     return { success: false, platformId: platform, error: 'network_error' }

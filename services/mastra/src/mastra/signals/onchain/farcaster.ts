@@ -1,5 +1,5 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
 
 /**
  * Farcaster — lookup via Neynar's /user/bulk-by-address endpoint.
@@ -8,16 +8,16 @@ import { safeNumber } from "../utils"
  * Lookup maps a custody address OR verified address to a Farcaster FID.
  * If no account is linked to this wallet, returns zero metrics (not an error).
  */
-const NEYNAR_BASE = "https://api.neynar.com/v2/farcaster"
+const NEYNAR_BASE = 'https://api.neynar.com/v2/farcaster'
 
 export const fetchFarcasterSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const apiKey = process.env.NEYNAR_API_KEY
   if (!apiKey) {
-    throw new Error("missing_neynar_api_key")
+    throw new Error('missing_neynar_api_key')
   }
 
   const addr = walletAddress.toLowerCase()
@@ -27,10 +27,10 @@ export const fetchFarcasterSignals: SignalFetcher = async (
     `${NEYNAR_BASE}/user/bulk-by-address?addresses=${addr}`,
     {
       headers: {
-        "x-api-key": apiKey,
-        Accept: "application/json",
+        'x-api-key': apiKey,
+        Accept: 'application/json',
       },
-    }
+    },
   )
 
   if (res.status === 404) {
@@ -65,7 +65,7 @@ export const fetchFarcasterSignals: SignalFetcher = async (
   const user = users.reduce(
     (top: any, u: any) =>
       safeNumber(u.follower_count) > safeNumber(top.follower_count) ? u : top,
-    users[0]
+    users[0],
   )
 
   return {
@@ -74,7 +74,7 @@ export const fetchFarcasterSignals: SignalFetcher = async (
     followers: safeNumber(user.follower_count),
     following: safeNumber(user.following_count),
     verified_addresses: safeNumber(
-      user.verified_addresses?.eth_addresses?.length
+      user.verified_addresses?.eth_addresses?.length,
     ),
     is_power_badge: user.power_badge ? 1 : 0,
   }

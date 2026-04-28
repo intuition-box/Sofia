@@ -16,7 +16,13 @@
  *   --limit=N       Only process first N platforms (for testing)
  */
 
-import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  parseEther,
+  formatEther,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync, existsSync } from 'fs'
 
@@ -30,7 +36,10 @@ function loadEnv() {
     const eqIdx = trimmed.indexOf('=')
     if (eqIdx === -1) continue
     const key = trimmed.slice(0, eqIdx).trim()
-    const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '')
+    const val = trimmed
+      .slice(eqIdx + 1)
+      .trim()
+      .replace(/^["']|["']$/g, '')
     if (!process.env[key]) process.env[key] = val
   }
 }
@@ -105,9 +114,15 @@ const PROXY_ABI = [
 async function main() {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
-  const amountTrust = parseFloat(args.find((a) => a.startsWith('--amount='))?.split('=')[1] || '2')
-  const batchSize = parseInt(args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '10')
-  const limit = parseInt(args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0')
+  const amountTrust = parseFloat(
+    args.find((a) => a.startsWith('--amount='))?.split('=')[1] || '2',
+  )
+  const batchSize = parseInt(
+    args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '10',
+  )
+  const limit = parseInt(
+    args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0',
+  )
 
   const privateKey = process.env.PRIVATE_KEY
   if (!privateKey && !dryRun) {
@@ -117,16 +132,19 @@ async function main() {
 
   // Load platform atom IDs from cache
   if (!existsSync(CACHE_FILE)) {
-    console.error('ERROR: Platform cache not found. Run create-platform-atoms.mjs first.')
+    console.error(
+      'ERROR: Platform cache not found. Run create-platform-atoms.mjs first.',
+    )
     process.exit(1)
   }
 
   const cache = JSON.parse(readFileSync(CACHE_FILE, 'utf8'))
-  let platformEntries = Object.entries(cache.atomIds || {})
-    .map(([key, termId]) => ({
+  let platformEntries = Object.entries(cache.atomIds || {}).map(
+    ([key, termId]) => ({
       slug: key.replace('platform:', ''),
       termId,
-    }))
+    }),
+  )
 
   if (limit > 0) platformEntries = platformEntries.slice(0, limit)
 
@@ -181,11 +199,15 @@ async function main() {
   console.log(`Total cost: ${formatEther(totalCost)} TRUST`)
 
   if (balance < totalCost) {
-    console.error(`\n  NOT ENOUGH TRUST! Need ${formatEther(totalCost - balance)} more`)
+    console.error(
+      `\n  NOT ENOUGH TRUST! Need ${formatEther(totalCost - balance)} more`,
+    )
     process.exit(1)
   }
 
-  console.log(`  Enough TRUST (${formatEther(balance - totalCost)} will remain)\n`)
+  console.log(
+    `  Enough TRUST (${formatEther(balance - totalCost)} will remain)\n`,
+  )
 
   // Use single deposit (more reliable) then try batch
   let deposited = 0
@@ -216,7 +238,9 @@ async function main() {
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status === 'success') {
         deposited++

@@ -38,15 +38,26 @@ interface CalTooltipState {
   rows: { id: string; label: string; color: string; count: number }[]
 }
 
-export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accent)' }: ActivityCalendarProps) {
+export default function ActivityCalendar({
+  topicSeries,
+  accent = 'var(--ds-accent)',
+}: ActivityCalendarProps) {
   const months = useMemo(() => computeCalendarMonthLabels(), [])
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<CalTooltipState | null>(null)
 
   // Fallback series so the grid renders when the caller passes an empty list.
-  const series: CalendarTopicSeries[] = topicSeries.length > 0
-    ? topicSeries
-    : [{ id: 'all', label: 'Activity', color: 'var(--ds-accent)', counts: new Array(CAL_DAYS).fill(0) }]
+  const series: CalendarTopicSeries[] =
+    topicSeries.length > 0
+      ? topicSeries
+      : [
+          {
+            id: 'all',
+            label: 'Activity',
+            color: 'var(--ds-accent)',
+            counts: new Array(CAL_DAYS).fill(0),
+          },
+        ]
 
   const dailyTotals = useMemo(
     () =>
@@ -65,7 +76,10 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
       style={{ ['--cal-base' as string]: accent }}
     >
       <div className="pc-chart-meta">
-        <span>{totalSignals} signal{totalSignals === 1 ? '' : 's'} in the last {CAL_WEEKS} weeks</span>
+        <span>
+          {totalSignals} signal{totalSignals === 1 ? '' : 's'} in the last{' '}
+          {CAL_WEEKS} weeks
+        </span>
         <span className="pc-chart-hint">hover to inspect</span>
       </div>
       <div className="pc-cal">
@@ -73,13 +87,23 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
           <div className="pc-cal-corner" />
           <div className="pc-cal-months">
             {months.map((m) => (
-              <span key={`${m.label}-${m.weekIdx}`} className="pc-cal-month" style={{ gridColumn: m.weekIdx }}>
+              <span
+                key={`${m.label}-${m.weekIdx}`}
+                className="pc-cal-month"
+                style={{ gridColumn: m.weekIdx }}
+              >
                 {m.label}
               </span>
             ))}
           </div>
           <div className="pc-cal-days">
-            <span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span>
+            <span>Mon</span>
+            <span></span>
+            <span>Wed</span>
+            <span></span>
+            <span>Fri</span>
+            <span></span>
+            <span></span>
           </div>
           <div className="pc-cal-grid">
             {Array.from({ length: CAL_DAYS }, (_, idx) => {
@@ -93,7 +117,8 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
               const totalDay = perTopic.reduce((a, t) => a + t.count, 0)
 
               let dominant = perTopic[0]
-              for (const t of perTopic) if (t.count > dominant.count) dominant = t
+              for (const t of perTopic)
+                if (t.count > dominant.count) dominant = t
 
               const activeCount = perTopic.filter((t) => t.count > 0).length
               const intensity = Math.min(1, totalDay / maxDailyTotal)
@@ -159,8 +184,14 @@ export default function ActivityCalendar({ topicSeries, accent = 'var(--ds-accen
               </div>
               <div className="pc-tt-rows">
                 {tip.rows.map((r) => (
-                  <div key={r.id} className={`pc-tt-row${r.count === 0 ? ' dim' : ''}`}>
-                    <span className="pc-tt-dot" style={{ background: r.color }} />
+                  <div
+                    key={r.id}
+                    className={`pc-tt-row${r.count === 0 ? ' dim' : ''}`}
+                  >
+                    <span
+                      className="pc-tt-dot"
+                      style={{ background: r.color }}
+                    />
                     <span className="pc-tt-label">{r.label}</span>
                     <span className="pc-tt-val">{r.count}</span>
                   </div>

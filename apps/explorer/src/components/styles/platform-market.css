@@ -23,7 +23,7 @@
   flex-wrap: nowrap;
 }
 .pm-filter-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -41,7 +41,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -57,7 +57,7 @@
   border-color: var(--ds-ink);
 }
 
-[data-theme="dark"] .pm-chip.active,
+[data-theme='dark'] .pm-chip.active,
 .dark .pm-chip.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent);
@@ -86,7 +86,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   outline: none;
@@ -118,7 +118,9 @@
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 .pm-search-clear:hover {
   color: var(--ds-ink);
@@ -141,14 +143,13 @@
   padding: 40px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
   border-radius: 12px;
   background: var(--ds-bg-subtle);
 }
-
 
 /* ── View switcher (Grid / List / Connect) ─────────────────────── */
 .pm-view-switcher {
@@ -164,7 +165,7 @@
   align-items: center;
   gap: 5px;
   padding: 5px 11px;
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--ds-ink-soft);
@@ -182,12 +183,11 @@
   color: var(--ds-bg);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ds-ink) 18%, transparent);
 }
-[data-theme="dark"] .pm-view-btn.active,
+[data-theme='dark'] .pm-view-btn.active,
 .dark .pm-view-btn.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent);
 }
-
 
 /* ── DEX-style list ──────────────────────────────────────────────
  * Pinterest / CoinGecko-ish rows: favicon + ticker, big Fraunces
@@ -213,22 +213,30 @@
 .pm-dex-head {
   background: var(--ds-bg-subtle);
   border-bottom: 1px solid var(--ds-border-soft);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
 }
-.pm-dex-head > span:first-child { text-align: center; }
-.pm-dex-head > span:nth-child(n+3) { text-align: right; }
+.pm-dex-head > span:first-child {
+  text-align: center;
+}
+.pm-dex-head > span:nth-child(n + 3) {
+  text-align: right;
+}
 .pm-dex-sortable {
   cursor: pointer;
   user-select: none;
   transition: color 0.12s ease;
 }
-.pm-dex-sortable:hover { color: var(--ds-ink); }
-.pm-dex-sortable.sorted { color: var(--ds-ink); }
+.pm-dex-sortable:hover {
+  color: var(--ds-ink);
+}
+.pm-dex-sortable.sorted {
+  color: var(--ds-ink);
+}
 
 .pm-dex-row {
   border-bottom: 1px solid var(--ds-border-soft);
@@ -247,14 +255,20 @@
   background: var(--topic-color, var(--ds-accent));
   opacity: 0.75;
 }
-.pm-dex-row:last-child { border-bottom: none; }
+.pm-dex-row:last-child {
+  border-bottom: none;
+}
 .pm-dex-row:hover {
-  background: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 6%, var(--ds-bg-subtle));
+  background: color-mix(
+    in srgb,
+    var(--topic-color, var(--ds-accent)) 6%,
+    var(--ds-bg-subtle)
+  );
 }
 
 /* Rank */
 .pm-dex-rank {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
   color: var(--ds-muted);
@@ -299,30 +313,36 @@
   gap: 8px;
 }
 .pm-dex-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.015em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .pm-dex-ticker {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   padding: 2px 7px;
   border-radius: 5px;
-  background: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 18%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--topic-color, var(--ds-accent)) 18%,
+    transparent
+  );
   flex-shrink: 0;
   line-height: 1;
 }
 .pm-dex-host {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   overflow: hidden;
@@ -346,35 +366,41 @@
   white-space: nowrap;
 }
 .pm-dex-num-big {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 800;
   color: var(--ds-ink);
   letter-spacing: -0.015em;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   line-height: 1;
 }
 .pm-dex-num-unit {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   color: var(--ds-muted);
 }
 .pm-dex-price,
 .pm-dex-holders {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 600;
   color: var(--ds-ink);
 }
 .pm-dex-pnl {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
   color: var(--ds-muted);
 }
-.pm-dex-pnl.up   { color: #22c55e; }
-.pm-dex-pnl.down { color: #ef4444; }
+.pm-dex-pnl.up {
+  color: #22c55e;
+}
+.pm-dex-pnl.down {
+  color: #ef4444;
+}
 
 /* Invest CTA */
 .pm-dex-action {
@@ -389,12 +415,14 @@
   border-radius: 999px;
   border: none;
   color: #02000e;
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.01em;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 .pm-dex-invest:hover {
   transform: translateY(-1px);

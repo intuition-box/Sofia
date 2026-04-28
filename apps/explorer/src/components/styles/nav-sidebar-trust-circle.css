@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.005em;
@@ -65,7 +65,7 @@
 
 .ns-circle-count {
   margin-left: auto;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--ds-muted);
   font-weight: 500;
@@ -88,7 +88,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: #02000e;
@@ -105,7 +105,7 @@
   color: var(--ds-muted);
   font-size: 10px;
 }
-[data-theme="dark"] .ns-mav-more,
+[data-theme='dark'] .ns-mav-more,
 .dark .ns-mav-more {
   background: var(--ds-border);
 }

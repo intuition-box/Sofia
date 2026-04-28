@@ -16,7 +16,14 @@ export default function PlatformConnectionPage() {
   const { getPlatformsByTopic } = usePlatformCatalog()
   const topic = topicId ? topicById(topicId) : undefined
   const { selectedCategories } = useTopicSelection()
-  const { getStatus, getConnection, connect, disconnect, startChallenge, verifyChallengeCode } = usePlatformConnections()
+  const {
+    getStatus,
+    getConnection,
+    connect,
+    disconnect,
+    startChallenge,
+    verifyChallengeCode,
+  } = usePlatformConnections()
 
   const rawPlatforms = topicId ? getPlatformsByTopic(topicId) : []
   const platforms = rawPlatforms.map((p) => ({
@@ -33,7 +40,9 @@ export default function PlatformConnectionPage() {
     )
   }
 
-  const connectedCount = platforms.filter((p) => getStatus(p.id) === 'connected').length
+  const connectedCount = platforms.filter(
+    (p) => getStatus(p.id) === 'connected',
+  ).length
 
   return (
     <div className="pf-view page-enter">
@@ -53,7 +62,10 @@ export default function PlatformConnectionPage() {
         title={`${topic.label} platforms`}
         description={`Certify your presence on the platforms that matter for ${topic.label}. Connect once, earn reputation forever.`}
         topicColor={topic.color}
-        stat={{ value: `${connectedCount} / ${platforms.length}`, label: 'Connected' }}
+        stat={{
+          value: `${connectedCount} / ${platforms.length}`,
+          label: 'Connected',
+        }}
       />
 
       <PlatformGrid

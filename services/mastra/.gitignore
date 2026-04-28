@@ -6,4 +6,3 @@ dist
 .env
 *.db
 *.db-*
-/docs

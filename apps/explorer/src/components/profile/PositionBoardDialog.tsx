@@ -39,8 +39,10 @@ export default function PositionBoardDialog({
   walletAddress,
 }: PositionBoardDialogProps) {
   // Prefetch data on mount — no need to wait for open
-  const { positions: supportPositions, loading: supportPosLoading } = useClaimPositions(termId, 100)
-  const { positions: opposePositions, loading: opposePosLoading } = useClaimPositions(counterTermId, 100)
+  const { positions: supportPositions, loading: supportPosLoading } =
+    useClaimPositions(termId, 100)
+  const { positions: opposePositions, loading: opposePosLoading } =
+    useClaimPositions(counterTermId, 100)
   const { stats, loading: statsLoading, fetchStats } = useVaultTooltip()
 
   useEffect(() => {
@@ -50,19 +52,29 @@ export default function PositionBoardDialog({
   const cart = useCart()
 
   const userRank = walletAddress
-    ? supportPositions.findIndex((p) => p.accountId.toLowerCase() === walletAddress.toLowerCase()) + 1
+    ? supportPositions.findIndex(
+        (p) => p.accountId.toLowerCase() === walletAddress.toLowerCase(),
+      ) + 1
     : 0
 
   // On-chain position
   const hasOnChainSupport = userRank > 0
   // In cart
-  const inCartSupport = cart.items.some((c) => c.termId === termId && c.side === 'support')
-  const inCartOppose = !!(counterTermId && cart.items.some((c) => c.termId === counterTermId && c.side === 'oppose'))
+  const inCartSupport = cart.items.some(
+    (c) => c.termId === termId && c.side === 'support',
+  )
+  const inCartOppose = !!(
+    counterTermId &&
+    cart.items.some((c) => c.termId === counterTermId && c.side === 'oppose')
+  )
 
   // Determine which side the user is on (on-chain or cart)
-  const userSide = (hasOnChainSupport || inCartSupport) ? 'support' as const
-    : inCartOppose ? 'oppose' as const
-    : null
+  const userSide =
+    hasOnChainSupport || inCartSupport
+      ? ('support' as const)
+      : inCartOppose
+        ? ('oppose' as const)
+        : null
 
   const handleDeposit = (side: 'support' | 'oppose') => {
     const id = side === 'support' ? termId : counterTermId
@@ -79,7 +91,8 @@ export default function PositionBoardDialog({
     cart.addItem(item)
   }
 
-  const isLoading = supportPosLoading || opposePosLoading || (statsLoading && !stats)
+  const isLoading =
+    supportPosLoading || opposePosLoading || (statsLoading && !stats)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -90,14 +103,21 @@ export default function PositionBoardDialog({
               src={favicon}
               alt=""
               className="pbd-favicon"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+              }}
             />
             {title}
-            <span className="pbd-badge" style={intentionBadgeStyle(intentionColor)}>
+            <span
+              className="pbd-badge"
+              style={intentionBadgeStyle(intentionColor)}
+            >
               {intention}
             </span>
           </DialogTitle>
-          <DialogDescription className="sr-only">Position leaderboard for {title}</DialogDescription>
+          <DialogDescription className="sr-only">
+            Position leaderboard for {title}
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -133,7 +153,9 @@ export default function PositionBoardDialog({
                   <span className="pbd-metric-value">
                     <Users className="h-3 w-3" /> {stats.supportCount}
                   </span>
-                  <span className="pbd-metric-value">{formatEth(stats.supportMarketCap)} T</span>
+                  <span className="pbd-metric-value">
+                    {formatEth(stats.supportMarketCap)} T
+                  </span>
                 </div>
                 <div className="pbd-metric">
                   <TrendingDown className="h-3.5 w-3.5 text-red-500" />
@@ -141,16 +163,21 @@ export default function PositionBoardDialog({
                   <span className="pbd-metric-value">
                     <Users className="h-3 w-3" /> {stats.opposeCount}
                   </span>
-                  <span className="pbd-metric-value">{formatEth(stats.opposeMarketCap)} T</span>
+                  <span className="pbd-metric-value">
+                    {formatEth(stats.opposeMarketCap)} T
+                  </span>
                 </div>
                 {stats.userPnlPct !== null && (
                   <div className="pbd-metric pbd-metric--pnl">
                     <span className="pbd-metric-label">Your P&L</span>
                     <span
                       className="pbd-pnl-value"
-                      style={{ color: stats.userPnlPct >= 0 ? '#22C55E' : '#EF4444' }}
+                      style={{
+                        color: stats.userPnlPct >= 0 ? '#22C55E' : '#EF4444',
+                      }}
                     >
-                      {stats.userPnlPct >= 0 ? '+' : ''}{stats.userPnlPct}%
+                      {stats.userPnlPct >= 0 ? '+' : ''}
+                      {stats.userPnlPct}%
                     </span>
                   </div>
                 )}
@@ -167,7 +194,10 @@ export default function PositionBoardDialog({
             <div className="pbd-dual-boards">
               {/* Support leaderboard */}
               <div className="pbd-leaderboard">
-                <div className="pbd-lb-section-title" style={{ color: '#86EFAC' }}>
+                <div
+                  className="pbd-lb-section-title"
+                  style={{ color: '#86EFAC' }}
+                >
                   <TrendingUp className="h-3.5 w-3.5" /> Support
                 </div>
                 <div className="pbd-lb-header">
@@ -180,17 +210,31 @@ export default function PositionBoardDialog({
                 ) : (
                   <div className="pbd-lb-rows">
                     {supportPositions.map((pos, i) => {
-                      const isYou = walletAddress && pos.accountId.toLowerCase() === walletAddress.toLowerCase()
+                      const isYou =
+                        walletAddress &&
+                        pos.accountId.toLowerCase() ===
+                          walletAddress.toLowerCase()
                       return (
-                        <div key={`${pos.accountId}-${pos.curveId}`} className={`pbd-lb-row ${isYou ? 'pbd-lb-row--you' : ''}`}>
-                          <span className={`pbd-lb-col-rank ${i === 0 ? 'pbd-lb-rank-gold' : ''}`}>{i + 1}</span>
+                        <div
+                          key={`${pos.accountId}-${pos.curveId}`}
+                          className={`pbd-lb-row ${isYou ? 'pbd-lb-row--you' : ''}`}
+                        >
+                          <span
+                            className={`pbd-lb-col-rank ${i === 0 ? 'pbd-lb-rank-gold' : ''}`}
+                          >
+                            {i + 1}
+                          </span>
                           <span className="pbd-lb-col-user">
                             {pos.label}
-                                                        <span className={`pbd-curve-badge ${pos.curveId === 2 ? 'pbd-curve-badge--exp' : ''}`}>
+                            <span
+                              className={`pbd-curve-badge ${pos.curveId === 2 ? 'pbd-curve-badge--exp' : ''}`}
+                            >
                               {pos.curveId === 1 ? 'Linear' : 'Expo'}
                             </span>
                           </span>
-                          <span className="pbd-lb-col-shares">{formatEth(pos.shares)}</span>
+                          <span className="pbd-lb-col-shares">
+                            {formatEth(pos.shares)}
+                          </span>
                         </div>
                       )
                     })}
@@ -200,7 +244,10 @@ export default function PositionBoardDialog({
 
               {/* Oppose leaderboard */}
               <div className="pbd-leaderboard">
-                <div className="pbd-lb-section-title" style={{ color: '#FCA5A5' }}>
+                <div
+                  className="pbd-lb-section-title"
+                  style={{ color: '#FCA5A5' }}
+                >
                   <TrendingDown className="h-3.5 w-3.5" /> Oppose
                 </div>
                 <div className="pbd-lb-header">
@@ -213,17 +260,31 @@ export default function PositionBoardDialog({
                 ) : (
                   <div className="pbd-lb-rows">
                     {opposePositions.map((pos, i) => {
-                      const isYou = walletAddress && pos.accountId.toLowerCase() === walletAddress.toLowerCase()
+                      const isYou =
+                        walletAddress &&
+                        pos.accountId.toLowerCase() ===
+                          walletAddress.toLowerCase()
                       return (
-                        <div key={`${pos.accountId}-${pos.curveId}`} className={`pbd-lb-row ${isYou ? 'pbd-lb-row--you' : ''}`}>
-                          <span className={`pbd-lb-col-rank ${i === 0 ? 'pbd-lb-rank-gold' : ''}`}>{i + 1}</span>
+                        <div
+                          key={`${pos.accountId}-${pos.curveId}`}
+                          className={`pbd-lb-row ${isYou ? 'pbd-lb-row--you' : ''}`}
+                        >
+                          <span
+                            className={`pbd-lb-col-rank ${i === 0 ? 'pbd-lb-rank-gold' : ''}`}
+                          >
+                            {i + 1}
+                          </span>
                           <span className="pbd-lb-col-user">
                             {pos.label}
-                                                        <span className={`pbd-curve-badge ${pos.curveId === 2 ? 'pbd-curve-badge--exp' : ''}`}>
+                            <span
+                              className={`pbd-curve-badge ${pos.curveId === 2 ? 'pbd-curve-badge--exp' : ''}`}
+                            >
                               {pos.curveId === 1 ? 'Linear' : 'Expo'}
                             </span>
                           </span>
-                          <span className="pbd-lb-col-shares">{formatEth(pos.shares)}</span>
+                          <span className="pbd-lb-col-shares">
+                            {formatEth(pos.shares)}
+                          </span>
                         </div>
                       )
                     })}
@@ -235,7 +296,9 @@ export default function PositionBoardDialog({
             {/* Support / Oppose actions */}
             <div className="pbd-actions">
               {!walletAddress ? (
-                <div className="pbd-no-wallet">Connect a wallet to interact</div>
+                <div className="pbd-no-wallet">
+                  Connect a wallet to interact
+                </div>
               ) : (
                 <>
                   <Button
@@ -244,7 +307,11 @@ export default function PositionBoardDialog({
                     onClick={() => handleDeposit('support')}
                   >
                     <TrendingUp className="h-4 w-4" />
-                    {inCartSupport ? 'Support added' : hasOnChainSupport ? 'Supported' : 'Support'}
+                    {inCartSupport
+                      ? 'Support added'
+                      : hasOnChainSupport
+                        ? 'Supported'
+                        : 'Support'}
                   </Button>
                   <Button
                     className="pbd-btn-oppose"

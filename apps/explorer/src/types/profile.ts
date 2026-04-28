@@ -2,7 +2,7 @@ import type {
   UserReputationProfile,
   UserInterestSelection,
   PlatformConnection,
-} from "./reputation"
+} from './reputation'
 
 export interface DashboardProfile {
   walletAddress: string
@@ -19,13 +19,9 @@ export interface DashboardProfile {
   reputation: UserReputationProfile | null
 }
 
-export type ProfileTab =
-  | "overview"
-  | "domains"
-  | "platforms"
-  | "scores"
+export type ProfileTab = 'overview' | 'domains' | 'platforms' | 'scores'
 
 export interface OnboardingStep {
-  step: "domains" | "niches" | "platforms" | "complete"
+  step: 'domains' | 'niches' | 'platforms' | 'complete'
   progress: number
 }

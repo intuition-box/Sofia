@@ -44,16 +44,14 @@ function loadFromStorage(): Map<string, PlatformConnection> {
 }
 
 function saveToStorage(connections: Map<string, PlatformConnection>) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify([...connections.values()])
-  )
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...connections.values()]))
 }
 
 export function usePlatformConnections() {
   const { user } = usePrivy()
   const { wallets } = useWallets()
-  const [connections, setConnections] = useState<Map<string, PlatformConnection>>(loadFromStorage)
+  const [connections, setConnections] =
+    useState<Map<string, PlatformConnection>>(loadFromStorage)
 
   useEffect(() => {
     saveToStorage(connections)
@@ -108,7 +106,10 @@ export function usePlatformConnections() {
       }
 
       // ── Web3 public (Analyze) — auto-connect via wallet address ──
-      if (strategy === 'username' && platform?.targetTopics.includes('web3-crypto')) {
+      if (
+        strategy === 'username' &&
+        platform?.targetTopics.includes('web3-crypto')
+      ) {
         const walletAddress = user?.wallet?.address
         if (!walletAddress) return
         updateConnection(platformId, {
@@ -139,7 +140,12 @@ export function usePlatformConnections() {
             method: 'personal_sign',
             params: [message, wallet.address],
           })
-          const result = await connectWithSIWE(platformId, wallet.address, signature as string, message)
+          const result = await connectWithSIWE(
+            platformId,
+            wallet.address,
+            signature as string,
+            message,
+          )
           if (result.success) {
             updateConnection(platformId, {
               status: 'connected',
@@ -148,11 +154,17 @@ export function usePlatformConnections() {
               username: result.username ?? wallet.address,
             })
           } else {
-            updateConnection(platformId, { status: 'error', error: result.error || 'SIWE failed' })
+            updateConnection(platformId, {
+              status: 'error',
+              error: result.error || 'SIWE failed',
+            })
           }
         } catch (err) {
           const msg = err instanceof Error ? err.message : 'SIWE failed'
-          updateConnection(platformId, { status: msg.includes('reject') ? 'disconnected' : 'error', error: msg.includes('reject') ? undefined : msg })
+          updateConnection(platformId, {
+            status: msg.includes('reject') ? 'disconnected' : 'error',
+            error: msg.includes('reject') ? undefined : msg,
+          })
         }
         return
       }
@@ -170,7 +182,12 @@ export function usePlatformConnections() {
             method: 'personal_sign',
             params: [message, wallet.address],
           })
-          const result = await connectWithSIWE(platformId, wallet.address, signature as string, message)
+          const result = await connectWithSIWE(
+            platformId,
+            wallet.address,
+            signature as string,
+            message,
+          )
           if (result.success) {
             updateConnection(platformId, {
               status: 'connected',
@@ -179,11 +196,17 @@ export function usePlatformConnections() {
               username: result.username,
             })
           } else {
-            updateConnection(platformId, { status: 'error', error: result.error || 'SIWF failed' })
+            updateConnection(platformId, {
+              status: 'error',
+              error: result.error || 'SIWF failed',
+            })
           }
         } catch (err) {
           const msg = err instanceof Error ? err.message : 'SIWF failed'
-          updateConnection(platformId, { status: msg.includes('reject') ? 'disconnected' : 'error', error: msg.includes('reject') ? undefined : msg })
+          updateConnection(platformId, {
+            status: msg.includes('reject') ? 'disconnected' : 'error',
+            error: msg.includes('reject') ? undefined : msg,
+          })
         }
         return
       }
@@ -205,9 +228,16 @@ export function usePlatformConnections() {
           const walletAddress = user?.wallet?.address
           if (walletAddress && result.accessToken) {
             try {
-              await linkPlatformToWallet(walletAddress, platformId, result.accessToken)
+              await linkPlatformToWallet(
+                walletAddress,
+                platformId,
+                result.accessToken,
+              )
             } catch (linkErr) {
-              console.error(`[usePlatformConnections] linkPlatformToWallet failed for ${platformId}`, linkErr)
+              console.error(
+                `[usePlatformConnections] linkPlatformToWallet failed for ${platformId}`,
+                linkErr,
+              )
               // Continue: user is still "connected" in UI, but signals won't be fetchable
             }
           }
@@ -261,7 +291,8 @@ export function usePlatformConnections() {
       } catch (err) {
         updateConnection(platformId, {
           status: 'error',
-          error: err instanceof Error ? err.message : 'Challenge request failed',
+          error:
+            err instanceof Error ? err.message : 'Challenge request failed',
         })
       }
     },
@@ -323,19 +354,20 @@ export function usePlatformConnections() {
     (platformId: string): ConnectionStatus => {
       return connections.get(platformId)?.status ?? 'disconnected'
     },
-    [connections]
+    [connections],
   )
 
   const getConnection = useCallback(
     (platformId: string): PlatformConnection | undefined => {
       return connections.get(platformId)
     },
-    [connections]
+    [connections],
   )
 
   const connectedCount = useMemo(
-    () => [...connections.values()].filter((c) => c.status === 'connected').length,
-    [connections]
+    () =>
+      [...connections.values()].filter((c) => c.status === 'connected').length,
+    [connections],
   )
 
   return {

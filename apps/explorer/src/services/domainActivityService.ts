@@ -1,6 +1,4 @@
-import {
-  useGetUserActivityQuery,
-} from '@0xsofia/graphql'
+import { useGetUserActivityQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../config'
 import { processEvents } from './feedProcessing'
 import type { CircleItem } from './circleService'

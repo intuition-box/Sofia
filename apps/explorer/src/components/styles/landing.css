@@ -16,7 +16,7 @@
   padding: 2.1vw;
   position: relative;
   overflow: hidden;
-  background: #02000E;
+  background: #02000e;
 }
 
 /* Logo as background texture */
@@ -72,8 +72,10 @@
   border: none;
   cursor: pointer;
   background: #ffffff;
-  color: #02000E;
-  transition: opacity 0.15s, transform 0.15s;
+  color: #02000e;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
 }
 .lp-btn-connect:hover {
   opacity: 0.9;
@@ -115,7 +117,10 @@
   background: transparent;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .lp-btn-google:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -140,7 +145,10 @@
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .lp-btn-explore:hover {
   background: rgba(255, 255, 255, 0.08);
@@ -261,7 +269,9 @@
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 .lp-right-feature:hover {
   transform: translateY(-2px);

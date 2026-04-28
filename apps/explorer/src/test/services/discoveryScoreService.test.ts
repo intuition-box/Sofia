@@ -13,7 +13,8 @@ import { fetchDiscoveryStats } from '@/services/discoveryScoreService'
 // eslint-disable-next-line import/first
 import { SUBJECT_IDS, PREDICATE_IDS } from '@/config'
 
-const mockedSignals = useGetUserSignalsCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedSignals =
+  useGetUserSignalsCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 
 /**
  * Build a fetch mock that matches on the query body's query string and returns
@@ -109,7 +110,9 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
       Promise.resolve({ signalsCount: { aggregate: { count: 13 } } }),
     )
 
-    const stats = await fetchDiscoveryStats(['0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa'])
+    const stats = await fetchDiscoveryStats([
+      '0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa',
+    ])
 
     expect(mockedSignals).toHaveBeenCalledWith({
       accountIds: ['0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa'],
@@ -124,11 +127,23 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
         match: 'UserTriplesWithCounts',
         response: {
           triples: [
-            { object: { term_id: 'p-1' }, positions_aggregate: { aggregate: { count: 1 } } },
-            { object: { term_id: 'p-2' }, positions_aggregate: { aggregate: { count: 5 } } },
-            { object: { term_id: 'p-3' }, positions_aggregate: { aggregate: { count: 20 } } },
+            {
+              object: { term_id: 'p-1' },
+              positions_aggregate: { aggregate: { count: 1 } },
+            },
+            {
+              object: { term_id: 'p-2' },
+              positions_aggregate: { aggregate: { count: 5 } },
+            },
+            {
+              object: { term_id: 'p-3' },
+              positions_aggregate: { aggregate: { count: 20 } },
+            },
             // duplicate object_id → counted once
-            { object: { term_id: 'p-1' }, positions_aggregate: { aggregate: { count: 1 } } },
+            {
+              object: { term_id: 'p-1' },
+              positions_aggregate: { aggregate: { count: 1 } },
+            },
           ],
         },
       },
@@ -167,7 +182,9 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
             },
           ],
         },
-        captureVariables: (v) => { capturedTrustedVars = v },
+        captureVariables: (v) => {
+          capturedTrustedVars = v
+        },
       },
     ])
     mockedSignals.mockReturnValue(() =>

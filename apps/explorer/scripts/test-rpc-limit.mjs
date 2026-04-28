@@ -11,7 +11,12 @@ async function rpcCall(id) {
   const res = await fetch(RPC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id }),
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'eth_blockNumber',
+      params: [],
+      id,
+    }),
   })
   return { id, status: res.status, ok: res.ok }
 }
@@ -26,7 +31,9 @@ async function testBurst(count, label) {
   const failed = results.filter((r) => !r.ok).length
   const statuses = [...new Set(results.map((r) => r.status))]
 
-  console.log(`  ${label}: ${count} calls in ${elapsed}ms → ${ok} ok, ${failed} failed (statuses: ${statuses.join(', ')})`)
+  console.log(
+    `  ${label}: ${count} calls in ${elapsed}ms → ${ok} ok, ${failed} failed (statuses: ${statuses.join(', ')})`,
+  )
   return { ok, failed, elapsed }
 }
 
@@ -38,7 +45,10 @@ async function main() {
   const bursts = [1, 5, 10, 20, 30, 50, 75, 100]
 
   for (const count of bursts) {
-    const { failed } = await testBurst(count, `Burst ${String(count).padStart(3)}`)
+    const { failed } = await testBurst(
+      count,
+      `Burst ${String(count).padStart(3)}`,
+    )
 
     if (failed > 0) {
       console.log(`\n  ⚠ Rate limit hit at ${count} concurrent calls`)
@@ -51,7 +61,8 @@ async function main() {
         let fail = 0
         for (let i = 0; i < 20; i++) {
           const res = await rpcCall(i)
-          if (res.ok) ok++; else fail++
+          if (res.ok) ok++
+          else fail++
           await new Promise((r) => setTimeout(r, delay))
         }
         console.log(`  20 calls @ ${delay}ms delay → ${ok} ok, ${fail} failed`)

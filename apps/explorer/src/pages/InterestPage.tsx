@@ -9,9 +9,21 @@ import { useSignals } from '@/hooks/useSignals'
 import { useTopicCertifications } from '@/hooks/useTopicCertifications'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
-import { InterestHero, SectionTitle, PlatformsGrid, PlatformCard, PlatformAddCard, PlatformSkeleton, FaviconWrapper } from '@0xsofia/design-system'
+import {
+  InterestHero,
+  SectionTitle,
+  PlatformsGrid,
+  PlatformCard,
+  PlatformAddCard,
+  PlatformSkeleton,
+  FaviconWrapper,
+} from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import { INTENTION_COLORS_BY_LABEL, LABEL_TO_INTENTION, displayLabelToIntentionType } from '@/config/intentions'
+import {
+  INTENTION_COLORS_BY_LABEL,
+  LABEL_TO_INTENTION,
+  displayLabelToIntentionType,
+} from '@/config/intentions'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
 
@@ -26,11 +38,18 @@ export default function InterestPage() {
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
   const { signals } = useSignals(user?.wallet?.address)
-  const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, undefined, signals)
+  const scores = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    undefined,
+    signals,
+  )
   const topicScore = scores?.topics.find((d) => d.topicId === topicId)
 
   const walletAddress = user?.wallet?.address
-  const { certifications: allCertifications, loading: certsLoading } = useTopicCertifications(topicId, walletAddress)
+  const { certifications: allCertifications, loading: certsLoading } =
+    useTopicCertifications(topicId, walletAddress)
 
   // Only show certifications the user personally made: the service query
   // filters positions to the wallet address via _ilike, so a non-empty
@@ -40,13 +59,19 @@ export default function InterestPage() {
     : []
 
   const platforms = topicId ? getPlatformsByTopic(topicId) : []
-  const connectedPlatforms = platforms.filter((p) => getStatus(p.id) === 'connected')
+  const connectedPlatforms = platforms.filter(
+    (p) => getStatus(p.id) === 'connected',
+  )
 
   if (!topic) {
     return (
       <div className="pf-view page-enter">
         <p className="text-sm text-muted-foreground">Topic not found.</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate('/profile')}>
+        <Button
+          variant="ghost"
+          className="mt-4"
+          onClick={() => navigate('/profile')}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
         </Button>
       </div>
@@ -58,7 +83,11 @@ export default function InterestPage() {
   return (
     <div className="pf-view page-enter">
       <div className="pf-ts-back-row">
-        <button type="button" className="pf-btn" onClick={() => navigate('/profile')}>
+        <button
+          type="button"
+          className="pf-btn"
+          onClick={() => navigate('/profile')}
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to Profile
         </button>
@@ -72,10 +101,11 @@ export default function InterestPage() {
         stat={{ value: topicScore?.score ?? 0, label: 'Topic score' }}
       />
       <div className="ip-sections">
-
         {/* Platforms */}
         <section className="ip-section">
-          <SectionTitle>Platforms ({connectedPlatforms.length}/{platforms.length})</SectionTitle>
+          <SectionTitle>
+            Platforms ({connectedPlatforms.length}/{platforms.length})
+          </SectionTitle>
           <PlatformsGrid>
             {connectedPlatforms.map((p) => (
               <PlatformCard
@@ -86,10 +116,15 @@ export default function InterestPage() {
                 connected
               />
             ))}
-            <PlatformAddCard onClick={() => navigate(`/profile/interest/${topicId}/platforms`)} />
-            {Array.from({ length: Math.max(0, 11 - connectedPlatforms.length) }, (_, i) => (
-              <PlatformSkeleton key={`skel-${i}`} label="Connect platform" />
-            ))}
+            <PlatformAddCard
+              onClick={() => navigate(`/profile/interest/${topicId}/platforms`)}
+            />
+            {Array.from(
+              { length: Math.max(0, 11 - connectedPlatforms.length) },
+              (_, i) => (
+                <PlatformSkeleton key={`skel-${i}`} label="Connect platform" />
+              ),
+            )}
           </PlatformsGrid>
         </section>
 
@@ -97,14 +132,19 @@ export default function InterestPage() {
         <section className="ip-section">
           <SectionTitle>Certified in {topic.label}</SectionTitle>
           {certsLoading ? (
-            <div className="ip-loader"><SofiaLoader size={48} /></div>
+            <div className="ip-loader">
+              <SofiaLoader size={48} />
+            </div>
           ) : certifications.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You haven't certified any URL in this topic yet.</p>
+            <p className="text-sm text-muted-foreground">
+              You haven't certified any URL in this topic yet.
+            </p>
           ) : (
             <div className="ip-certs-grid">
               {certifications.map((cert) => {
                 const intentLabel =
-                  LABEL_TO_INTENTION[cert.intention.trim().toLowerCase()] ?? cert.intention
+                  LABEL_TO_INTENTION[cert.intention.trim().toLowerCase()] ??
+                  cert.intention
                 const intentColor =
                   INTENTION_COLORS_BY_LABEL[intentLabel] ?? 'var(--ds-muted)'
                 const intentSlug = displayLabelToIntentionType(intentLabel)
@@ -124,15 +164,25 @@ export default function InterestPage() {
                       className="ip-cert-fav"
                     />
                     <div className="ip-cert-meta">
-                      <span className="ip-cert-title">{cert.domain || cert.platformLabel}</span>
+                      <span className="ip-cert-title">
+                        {cert.domain || cert.platformLabel}
+                      </span>
                       {intentSlug ? (
-                        <span className={`fc-verb-tag ${intentSlug} ip-cert-verb`}>{intentLabel}</span>
+                        <span
+                          className={`fc-verb-tag ${intentSlug} ip-cert-verb`}
+                        >
+                          {intentLabel}
+                        </span>
                       ) : (
-                        <span className="ip-cert-verb-plain">{intentLabel}</span>
+                        <span className="ip-cert-verb-plain">
+                          {intentLabel}
+                        </span>
                       )}
                     </div>
                     <div className="ip-cert-right">
-                      <span className="ip-cert-holders">{cert.positionCount}</span>
+                      <span className="ip-cert-holders">
+                        {cert.positionCount}
+                      </span>
                       <span className="ip-cert-holders-label">holders</span>
                     </div>
                     <span className="ip-cert-link" aria-hidden="true">
@@ -144,7 +194,6 @@ export default function InterestPage() {
             </div>
           )}
         </section>
-
       </div>
     </div>
   )

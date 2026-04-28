@@ -19,7 +19,9 @@ export function useDiscoveryScore(addresses: string[] | undefined) {
   const enabled = !!addresses && addresses.length > 0
 
   const { data, isLoading } = useQuery({
-    queryKey: cacheKey ? ['discovery-score', cacheKey] : ['discovery-score', undefined],
+    queryKey: cacheKey
+      ? ['discovery-score', cacheKey]
+      : ['discovery-score', undefined],
     queryFn: () => fetchDiscoveryStats(addresses!),
     enabled,
     staleTime: 10 * 60 * 1000,

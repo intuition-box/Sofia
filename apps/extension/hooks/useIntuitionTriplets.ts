@@ -204,8 +204,12 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
                 }
               : undefined
 
-          // Curve 2 total market cap (total_shares)
-          const totalMarketCap = curve2Vault?.total_shares || '0'
+          // Curve 2 total market cap. `total_shares` exists on the indexer
+          // payload but the GraphQL fragment used by codegen doesn't declare
+          // it — cast through unknown until the fragment is widened.
+          const totalMarketCap =
+            (curve2Vault as unknown as { total_shares?: string } | undefined)
+              ?.total_shares || '0'
 
           return {
             id: triple.term_id,

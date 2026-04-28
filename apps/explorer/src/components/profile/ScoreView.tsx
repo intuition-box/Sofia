@@ -18,7 +18,11 @@ interface BadgeCounts {
 const BADGE_CONFIG = [
   { key: 'pioneer' as const, label: 'Pioneer', icon: '/badges/pioneer.png' },
   { key: 'explorer' as const, label: 'Explorer', icon: '/badges/explorer.png' },
-  { key: 'contributor' as const, label: 'Contributor', icon: '/badges/contributor.png' },
+  {
+    key: 'contributor' as const,
+    label: 'Contributor',
+    icon: '/badges/contributor.png',
+  },
   { key: 'trusted' as const, label: 'Trusted', icon: '/badges/trust.png' },
 ]
 
@@ -39,7 +43,13 @@ export default function ScoreView({
 }: ScoreViewProps) {
   const { user } = usePrivy()
   const { signals } = useSignals(user?.wallet?.address)
-  const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, undefined, signals)
+  const scores = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    undefined,
+    signals,
+  )
 
   return (
     <div className="space-y-6">
@@ -52,7 +62,9 @@ export default function ScoreView({
 
       {badges && (
         <Card className="p-6">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">Discovery Badges</h3>
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
+            Discovery Badges
+          </h3>
           <div className="flex items-center justify-center gap-12">
             {BADGE_CONFIG.map(({ key, label, icon }) => (
               <div key={key} className="flex flex-col items-center gap-2">
@@ -72,20 +84,30 @@ export default function ScoreView({
       )}
 
       {scores && scores.topics.length > 0 && (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}>
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+          }}
+        >
           {scores.topics.map((ds) => {
             const topic = TOPIC_BY_ID.get(ds.topicId)
             return (
               <Card key={ds.topicId} className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium text-sm">{topic?.label ?? ds.topicId}</span>
+                  <span className="font-medium text-sm">
+                    {topic?.label ?? ds.topicId}
+                  </span>
                   <span className="text-lg font-bold">{ds.score}</span>
                 </div>
                 <Progress value={ds.score} className="h-2" />
                 {ds.topNiches.length > 0 && (
                   <div className="mt-3 space-y-1">
                     {ds.topNiches.slice(0, 3).map((ns) => (
-                      <div key={ns.nicheId} className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div
+                        key={ns.nicheId}
+                        className="flex items-center justify-between text-xs text-muted-foreground"
+                      >
                         <span>{ns.nicheId}</span>
                         <span>{ns.score}</span>
                       </div>

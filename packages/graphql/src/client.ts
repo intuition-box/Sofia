@@ -14,10 +14,7 @@ let globalConfig: { apiUrl?: string } = {
   apiUrl: DEFAULT_API_URL,
 }
 
-export function configureClient(config: {
-  apiUrl: string
-  wsUrl?: string
-}) {
+export function configureClient(config: { apiUrl: string; wsUrl?: string }) {
   globalConfig = { ...globalConfig, apiUrl: config.apiUrl }
   if (config.wsUrl) {
     configureWsClient({ wsUrl: config.wsUrl })

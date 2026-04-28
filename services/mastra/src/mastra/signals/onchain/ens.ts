@@ -1,6 +1,6 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { asAddress, getMainnetClient, queryPublicGraphQL } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { asAddress, getMainnetClient, queryPublicGraphQL } from './utils'
 
 /**
  * ENS fetcher — the "token" arg is a wallet address.
@@ -11,8 +11,7 @@ import { asAddress, getMainnetClient, queryPublicGraphQL } from "./utils"
  *   - subdomain count via the ENS subgraph (public hosted service)
  */
 
-const ENS_SUBGRAPH =
-  "https://api.thegraph.com/subgraphs/name/ensdomains/ens"
+const ENS_SUBGRAPH = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
 
 const SUBGRAPH_QUERY = `
   query EnsAccount($id: String!) {
@@ -34,11 +33,17 @@ const SUBGRAPH_QUERY = `
 export const fetchEnsSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const client = getMainnetClient()
   const addr = asAddress(walletAddress.toLowerCase())
@@ -47,7 +52,7 @@ export const fetchEnsSignals: SignalFetcher = async (
   const ensName = await safe(
     async () => await client.getEnsName({ address: addr }),
     null,
-    "ens_reverse_lookup"
+    'ens_reverse_lookup',
   )
 
   // Secondary — subgraph for domain + subdomain count
@@ -62,7 +67,7 @@ export const fetchEnsSignals: SignalFetcher = async (
       return data?.account
     },
     null,
-    "ens_subgraph"
+    'ens_subgraph',
   )
 
   const domainsOwned = safeNumber(subgraphData?.domains?.length)

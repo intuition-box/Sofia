@@ -22,7 +22,9 @@ export default function DomainNicheSelectionPage() {
   }
 
   const topicCategoryCount = topic.categories.length
-  const selectedInTopic = topic.categories.filter((c) => selectedCategories.includes(c.id)).length
+  const selectedInTopic = topic.categories.filter((c) =>
+    selectedCategories.includes(c.id),
+  ).length
 
   return (
     <div className="pf-view page-enter">
@@ -31,10 +33,17 @@ export default function DomainNicheSelectionPage() {
         backLabel={`Back to ${topic.label}`}
         crumbs={[
           { label: 'Profile' },
-          { label: `${getTopicEmoji(topicId!)} ${topic.label}`, topicColor: topic.color },
+          {
+            label: `${getTopicEmoji(topicId!)} ${topic.label}`,
+            topicColor: topic.color,
+          },
           { label: 'Categories' },
         ]}
-        rightPill={{ label: 'Selected', value: `${selectedInTopic} / ${topicCategoryCount}`, color: topic.color }}
+        rightPill={{
+          label: 'Selected',
+          value: `${selectedInTopic} / ${topicCategoryCount}`,
+          color: topic.color,
+        }}
         description={`Refine your expertise in ${topic.label}.`}
       />
       <NicheSelector
