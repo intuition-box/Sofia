@@ -80,17 +80,24 @@ export function InterestCard(props: InterestCardProps) {
   const rootClass = className ? `ig-card ${className}` : 'ig-card'
   const style = { ['--topic-color' as string]: topicColor }
 
-  const visualNode =
-    visual ??
-    (
-      <span
-        className="ig-card-emoji"
-        style={{ background: `${topicColor}20`, color: topicColor, width: 40, height: 40, borderRadius: 10, fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}
-        aria-hidden="true"
-      >
-        {topicLabel.slice(0, 2).toUpperCase()}
-      </span>
-    )
+  const visualNode = visual ?? (
+    <span
+      className="ig-card-emoji"
+      style={{
+        background: `${topicColor}20`,
+        color: topicColor,
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        fontSize: 14,
+        fontWeight: 700,
+        fontFamily: 'JetBrains Mono, monospace',
+      }}
+      aria-hidden="true"
+    >
+      {topicLabel.slice(0, 2).toUpperCase()}
+    </span>
+  )
 
   const handleRemoveClick = (e: MouseEvent) => {
     e.stopPropagation()

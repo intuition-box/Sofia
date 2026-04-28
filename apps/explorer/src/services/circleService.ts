@@ -96,8 +96,10 @@ export async function fetchCircleFeed(
   })()
 
   const items = processEvents(data.events ?? [], (evt) => {
-    const address = evt.deposit?.receiver?.id || evt.redemption?.sender?.id || ''
-    const label = evt.deposit?.receiver?.label || evt.redemption?.sender?.label || address
+    const address =
+      evt.deposit?.receiver?.id || evt.redemption?.sender?.id || ''
+    const label =
+      evt.deposit?.receiver?.label || evt.redemption?.sender?.label || address
     return { address, label }
   })
   await enrichWithTopicContexts(items)
@@ -110,7 +112,9 @@ export async function fetchCircleFeed(
  * pass the primary wallet. In a multi-wallet world the embedded wallet
  * typically has no social graph, so primary-only is the practical signal.
  */
-export async function fetchFollowingCount(walletAddress: string): Promise<number> {
+export async function fetchFollowingCount(
+  walletAddress: string,
+): Promise<number> {
   try {
     const data = await useGetFollowingCountQuery.fetcher({
       address: walletAddress.toLowerCase(),

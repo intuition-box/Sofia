@@ -1,4 +1,4 @@
-import { createClient, type Client } from "@libsql/client"
+import { createClient, type Client } from '@libsql/client'
 
 const IV_LENGTH = 12 // 96 bits for AES-GCM
 
@@ -9,7 +9,7 @@ let cachedKey: CryptoKey | null = null
 function getDb(): Client {
   if (!db) {
     db = createClient({
-      url: process.env.DATABASE_URL || "file:./data/mastra.db",
+      url: process.env.DATABASE_URL || 'file:./data/mastra.db',
     })
   }
   return db
@@ -18,7 +18,8 @@ function getDb(): Client {
 async function ensureTable(): Promise<void> {
   if (!tableReady) {
     tableReady = getDb()
-      .execute(`
+      .execute(
+        `
         CREATE TABLE IF NOT EXISTS oauth_tokens (
           wallet_address TEXT NOT NULL,
           platform TEXT NOT NULL,
@@ -31,9 +32,10 @@ async function ensureTable(): Promise<void> {
           updated_at INTEGER DEFAULT (unixepoch()),
           PRIMARY KEY (wallet_address, platform)
         )
-      `)
+      `,
+      )
       .then(() => {
-        console.log("[TokenDB] Table oauth_tokens ready")
+        console.log('[TokenDB] Table oauth_tokens ready')
       })
   }
   return tableReady
@@ -53,8 +55,8 @@ function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 async function getKey(): Promise<CryptoKey> {
@@ -62,15 +64,15 @@ async function getKey(): Promise<CryptoKey> {
   const hex = process.env.TOKEN_ENCRYPTION_KEY
   if (!hex || hex.length !== 64) {
     throw new Error(
-      "[TokenDB] TOKEN_ENCRYPTION_KEY must be a 64-char hex string (32 bytes)"
+      '[TokenDB] TOKEN_ENCRYPTION_KEY must be a 64-char hex string (32 bytes)',
     )
   }
   cachedKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     hexToBytes(hex),
-    { name: "AES-GCM" },
+    { name: 'AES-GCM' },
     false,
-    ["encrypt", "decrypt"]
+    ['encrypt', 'decrypt'],
   )
   return cachedKey
 }
@@ -80,21 +82,21 @@ async function encrypt(plaintext: string): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
   const ciphertext = new Uint8Array(
     await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv },
+      { name: 'AES-GCM', iv },
       key,
-      new TextEncoder().encode(plaintext)
-    )
+      new TextEncoder().encode(plaintext),
+    ),
   )
   return `${bytesToHex(iv)}:${bytesToHex(ciphertext)}`
 }
 
 async function decrypt(encoded: string): Promise<string> {
   const key = await getKey()
-  const [ivHex, ciphertextHex] = encoded.split(":")
+  const [ivHex, ciphertextHex] = encoded.split(':')
   const plaintext = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: hexToBytes(ivHex) },
+    { name: 'AES-GCM', iv: hexToBytes(ivHex) },
     key,
-    hexToBytes(ciphertextHex)
+    hexToBytes(ciphertextHex),
   )
   return new TextDecoder().decode(plaintext)
 }
@@ -125,7 +127,7 @@ export interface TokenRecord {
 export async function initTokenTable(): Promise<void> {
   if (!process.env.TOKEN_ENCRYPTION_KEY) {
     console.warn(
-      "[TokenDB] TOKEN_ENCRYPTION_KEY not set — token storage disabled"
+      '[TokenDB] TOKEN_ENCRYPTION_KEY not set — token storage disabled',
     )
     return
   }
@@ -139,7 +141,7 @@ export async function storeToken(
   refreshToken?: string,
   userId?: string,
   username?: string,
-  expiresAt?: number
+  expiresAt?: number,
 ): Promise<void> {
   await ensureTable()
   const client = getDb()
@@ -171,13 +173,13 @@ export async function storeToken(
     ],
   })
   console.log(
-    `[TokenDB] Token stored for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`
+    `[TokenDB] Token stored for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`,
   )
 }
 
 export async function getToken(
   walletAddress: string,
-  platform: string
+  platform: string,
 ): Promise<TokenRecord | null> {
   await ensureTable()
   const client = getDb()
@@ -203,7 +205,7 @@ export async function getToken(
 }
 
 export async function getAllTokens(
-  walletAddress: string
+  walletAddress: string,
 ): Promise<TokenRecord[]> {
   await ensureTable()
   const client = getDb()
@@ -231,7 +233,7 @@ export async function getAllTokens(
 
 export async function deleteToken(
   walletAddress: string,
-  platform: string
+  platform: string,
 ): Promise<void> {
   await ensureTable()
   const client = getDb()
@@ -240,6 +242,6 @@ export async function deleteToken(
     args: [walletAddress.toLowerCase(), platform],
   })
   console.log(
-    `[TokenDB] Token deleted for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`
+    `[TokenDB] Token deleted for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`,
   )
 }

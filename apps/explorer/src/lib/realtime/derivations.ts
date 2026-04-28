@@ -21,16 +21,22 @@ import {
   ATOM_ID_TO_CATEGORY,
 } from '@/config/atomIds'
 
-export type Position = NonNullable<WatchUserPositionsSubscription['positions']>[number]
+export type Position = NonNullable<
+  WatchUserPositionsSubscription['positions']
+>[number]
 
 // ── Query key builders (single source of truth) ─────────────────────────────
 
 export const realtimeKeys = {
   positions: (wallet: string) => ['positions', wallet] as const,
-  topicPositionsMap: (wallet: string) => ['topic-positions-map', wallet] as const,
-  categoryPositionsMap: (wallet: string) => ['category-positions-map', wallet] as const,
-  verifiedPlatforms: (wallet: string) => ['verified-platforms', wallet] as const,
-  userProfileDerived: (wallet: string) => ['user-profile-derived', wallet] as const,
+  topicPositionsMap: (wallet: string) =>
+    ['topic-positions-map', wallet] as const,
+  categoryPositionsMap: (wallet: string) =>
+    ['category-positions-map', wallet] as const,
+  verifiedPlatforms: (wallet: string) =>
+    ['verified-platforms', wallet] as const,
+  userProfileDerived: (wallet: string) =>
+    ['user-profile-derived', wallet] as const,
   userStats: (wallet: string) => ['user-stats', wallet] as const,
 }
 
@@ -44,7 +50,11 @@ function toBigInt(v: unknown): bigint {
   if (typeof v === 'bigint') return v
   if (typeof v === 'number') return BigInt(Math.trunc(v))
   if (typeof v === 'string' && v.length > 0) {
-    try { return BigInt(v) } catch { return 0n }
+    try {
+      return BigInt(v)
+    } catch {
+      return 0n
+    }
   }
   return 0n
 }
@@ -75,7 +85,9 @@ const CATEGORY_TERM_TO_SLUG: ReadonlyMap<string, string> = new Map(
  * Group shares by topic slug. Positions that target a topic atom directly
  * (not a triple) contribute to their slug's total.
  */
-export function derivePositionsByTopic(positions: Position[]): Record<string, string> {
+export function derivePositionsByTopic(
+  positions: Position[],
+): Record<string, string> {
   const byTopic: Record<string, string> = {}
   for (const p of positions) {
     if (!p.vault?.term?.atom) continue
@@ -89,7 +101,9 @@ export function derivePositionsByTopic(positions: Position[]): Record<string, st
 /**
  * Group shares by category slug. Same logic as topics, different atom set.
  */
-export function derivePositionsByCategory(positions: Position[]): Record<string, string> {
+export function derivePositionsByCategory(
+  positions: Position[],
+): Record<string, string> {
   const byCategory: Record<string, string> = {}
   for (const p of positions) {
     if (!p.vault?.term?.atom) continue
@@ -123,7 +137,9 @@ export function deriveVerifiedPlatforms(positions: Position[]): string[] {
  * Platform-atom direct positions (e.g. a deposit on the "github" atom).
  * Keyed by platform slug from ATOM_ID_TO_PLATFORM.
  */
-export function derivePositionsByPlatform(positions: Position[]): Record<string, string> {
+export function derivePositionsByPlatform(
+  positions: Position[],
+): Record<string, string> {
   const byPlatform: Record<string, string> = {}
   for (const p of positions) {
     if (!p.vault?.term?.atom) continue
@@ -197,7 +213,8 @@ export function deriveUserProfile(positions: Position[]): UserProfileDerived {
     Math.round(
       positions.reduce((sum, p) => {
         const shares = parseFloat(String(p.shares ?? '0')) || 0
-        const price = parseFloat(String(p.vault?.current_share_price ?? '0')) || 0
+        const price =
+          parseFloat(String(p.vault?.current_share_price ?? '0')) || 0
         return sum + (shares * price) / 1e18
       }, 0) * 100,
     ) / 100
@@ -228,7 +245,9 @@ function bumpMap(
   slug: string,
   delta: bigint,
 ): void {
-  const current = (qc.getQueryData(key as unknown[]) as Record<string, string> | undefined) ?? {}
+  const current =
+    (qc.getQueryData(key as unknown[]) as Record<string, string> | undefined) ??
+    {}
   const next = { ...current }
   const updated = toBigInt(next[slug]) + delta
   if (updated > 0n) next[slug] = updated.toString()
@@ -288,7 +307,8 @@ export function deriveUserStats(positions: Position[]): UserStats {
     Math.round(
       positions.reduce((sum, p) => {
         const shares = parseFloat(String(p.shares ?? '0')) || 0
-        const price = parseFloat(String(p.vault?.current_share_price ?? '0')) || 0
+        const price =
+          parseFloat(String(p.vault?.current_share_price ?? '0')) || 0
         return sum + (shares * price) / 1e18
       }, 0) * 100,
     ) / 100

@@ -144,7 +144,9 @@
   cursor: pointer;
   padding: 16px;
   height: 100%;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 .ig-card:hover {
   transform: translateY(-2px);
@@ -170,7 +172,10 @@
   color: var(--muted-foreground);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
 }
 .ig-card:hover .ig-card-remove {
   opacity: 1;
@@ -246,7 +251,9 @@
   min-height: 100px;
   border: 2px dashed color-mix(in oklab, var(--border) 60%, transparent);
   background: transparent;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .ig-add-card:hover {
   border-color: var(--border);
@@ -305,7 +312,7 @@
 }
 
 .ac-pos-row:first-child .ac-pos-rank {
-  color: #D4A843;
+  color: #d4a843;
 }
 
 .ac-pos-label {
@@ -354,7 +361,9 @@
   gap: 8px;
   height: 100%;
   min-width: 0;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .tc-card:hover {
   transform: scale(1.03);
@@ -417,13 +426,13 @@
 }
 
 .tc-pnl--up {
-  color: #22C55E;
-  background: color-mix(in oklab, #22C55E 10%, transparent);
+  color: #22c55e;
+  background: color-mix(in oklab, #22c55e 10%, transparent);
 }
 
 .tc-pnl--down {
-  color: #EF4444;
-  background: color-mix(in oklab, #EF4444 10%, transparent);
+  color: #ef4444;
+  background: color-mix(in oklab, #ef4444 10%, transparent);
 }
 
 .tc-pnl-value {
@@ -509,23 +518,61 @@
   animation: sk-pulse 1.5s ease-in-out infinite;
 }
 
-.sk-favicon { width: 28px; height: 28px; }
-.sk-share { width: 28px; height: 28px; margin-left: auto; }
-.sk-icon { width: 40px; height: 40px; border-radius: 10px; }
-.sk-divider { height: 1px; background: var(--muted); margin: 4px 0; }
+.sk-favicon {
+  width: 28px;
+  height: 28px;
+}
+.sk-share {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+}
+.sk-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.sk-divider {
+  height: 1px;
+  background: var(--muted);
+  margin: 4px 0;
+}
 
-.sk-w20 { width: 20%; }
-.sk-w30 { width: 30%; }
-.sk-w40 { width: 40%; }
-.sk-w50 { width: 50%; }
-.sk-w60 { width: 60%; }
-.sk-ml-auto { margin-left: auto; }
-.sk-big { height: 18px; }
+.sk-w20 {
+  width: 20%;
+}
+.sk-w30 {
+  width: 30%;
+}
+.sk-w40 {
+  width: 40%;
+}
+.sk-w50 {
+  width: 50%;
+}
+.sk-w60 {
+  width: 60%;
+}
+.sk-ml-auto {
+  margin-left: auto;
+}
+.sk-big {
+  height: 18px;
+}
 
-.sk-claim { min-height: 80px; }
-.sk-interest { min-height: 100px; }
+.sk-claim {
+  min-height: 80px;
+}
+.sk-interest {
+  min-height: 100px;
+}
 
 @keyframes sk-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }

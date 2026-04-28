@@ -52,11 +52,17 @@ export function useAllActivity() {
     items,
     loading: isLoading && items.length === 0,
     loadingMore: isFetchingNextPage,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
     hasMore: !!hasNextPage,
     loadMore: () => {
       if (hasNextPage && !isFetchingNextPage) fetchNextPage()
     },
-    refresh: () => { refetch() },
+    refresh: () => {
+      refetch()
+    },
   }
 }
