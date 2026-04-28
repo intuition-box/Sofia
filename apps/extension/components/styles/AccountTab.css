@@ -2,47 +2,58 @@
 
 /* ========== STATS SECTION ========== */
 .stats-section {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: nowrap;
-  gap: 12px;
-  margin-bottom: 20px;
-  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 12px;
+  padding: 16px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
 }
 
-.stat-item {
+.stats-section .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  flex: 1;
+  gap: 6px;
+  padding: 4px;
+  border-right: 1px solid var(--ds-border-soft);
 }
 
-.stat-value {
-  font-family: 'Geist', sans-serif;
+.stats-section .stat-item:last-child {
+  border-right: none;
+}
+
+.stats-section .stat-value {
+  font-family: 'Fraunces', serif;
   font-size: 28px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
   line-height: 1;
-  margin-bottom: 4px;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
 }
 
-.stat-label {
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 400;
+.stats-section .stat-label {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
+  font-weight: 600;
 }
 
-.stat-sublabel {
+.stats-section .stat-sublabel {
   font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-top: 2px;
 }
 
 .stat-icons-with-value {

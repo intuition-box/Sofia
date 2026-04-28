@@ -84,19 +84,26 @@
   align-items: center;
 }
 
+/* Clear all — outlined secondary button (visible but de-emphasized vs submit) */
 .cart-drawer__clear-btn {
-  background: none;
-  border: none;
-  color: var(--ds-muted);
-  font-size: 12px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .cart-drawer__clear-btn:hover {
+  border-color: var(--color-error);
   color: var(--color-error);
   background: rgba(239, 68, 68, 0.08);
 }
@@ -128,14 +135,12 @@
   gap: 4px;
 }
 
-/* Each row: stable height, consistent grid layout regardless of pill text. */
+/* Each row: card with two stacked sub-rows (main + pills). */
 .cart-drawer__item {
-  display: grid;
-  grid-template-columns: 36px 1fr auto 28px;
-  align-items: center;
-  column-gap: 12px;
-  min-height: 60px;
-  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
   border-radius: 12px;
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border-soft);
@@ -145,6 +150,22 @@
 .cart-drawer__item:hover {
   border-color: var(--ds-ink-soft);
   background: var(--ds-card);
+}
+
+/* Top row inside item: favicon | title+url | remove button */
+.cart-drawer__item-main {
+  display: grid;
+  grid-template-columns: 36px 1fr 28px;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Bottom row: pills aligned with text (offset by favicon width + gap) */
+.cart-drawer__item-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 48px;
 }
 
 .cart-drawer__item-favicon,
@@ -198,14 +219,22 @@
   margin-top: 2px;
 }
 
+/* Custom pills (vote + context) match DS fc-verb-tag shape (6px radius,
+   Mono 10px / 700 / uppercase / 0.08em letterspacing). Intention pills
+   themselves use the DS <VerbTag> component directly. */
 .cart-drawer__item-pill {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  line-height: 1;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 999px;
+  padding: 5px 11px;
+  border: none;
+  border-radius: 6px;
+  color: #000;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -223,25 +252,29 @@
 }
 
 .cart-drawer__item-pill--context {
-  font-size: 8px;
-  padding: 3px 6px;
+  font-size: 9px;
+  padding: 4px 9px;
 }
 
+/* Remove (trash) — small icon button, hover reveals red accent */
 .cart-drawer__item-remove {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.25);
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--ds-border-soft);
+  color: var(--ds-muted);
   cursor: pointer;
-  padding: 4px;
   display: flex;
   align-items: center;
-  border-radius: 6px;
+  justify-content: center;
+  border-radius: 8px;
   flex-shrink: 0;
-  transition: all 0.15s;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .cart-drawer__item-remove:hover {
-  color: #EF4444;
+  color: var(--color-error);
+  border-color: var(--color-error);
   background: rgba(239, 68, 68, 0.1);
 }
 
