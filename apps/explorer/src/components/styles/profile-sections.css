@@ -121,9 +121,16 @@
 }
 
 /* ── InterestsGrid ── */
+/* auto-fit (not auto-fill) so the 4 interest cards stretch to fill all
+   available width on wide screens. With auto-fill, empty grid tracks were
+   created on the right whenever there were fewer cards than the container
+   could fit at min 200px → 4 cards pinned at 200px with a big void to the
+   right. The design-system uses repeat(4, 1fr) which would be even simpler;
+   keep auto-fit here to allow ig-grid in other contexts (e.g. PublicProfile
+   with N interests) to keep flowing. */
 .ig-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-auto-rows: 1fr;
   gap: 12px;
 }
