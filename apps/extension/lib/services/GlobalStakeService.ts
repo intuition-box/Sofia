@@ -136,7 +136,7 @@ class GlobalStakeServiceClass {
         {
           globalTermId: config.termId,
           curveId: Number(config.curveId),
-          walletAddress: wallet.toLowerCase()
+          walletAddresses: wallet.toLowerCase()
         }
       )
 
