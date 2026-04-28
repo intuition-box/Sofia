@@ -160,6 +160,40 @@ query GetFollowingCount($address: String!) {
   }
 }
 
+# Step 1 of the alltime per-topic count for a circle: every cert triple
+# whose subject is one of the circle's wallets. We only need the term_id
+# — step 2 filters those down to topic-tagged ones.
+query GetCircleCerts($trustedWallets: [String!]!, $limit: Int = 50000) {
+  triples(
+    where: {
+      subject: { value: { account: { id: { _in: $trustedWallets } } } }
+    }
+    limit: $limit
+  ) {
+    term_id
+  }
+}
+
+# Step 2: "in context of" links from those cert term_ids to topic atoms.
+# One row per (cert, topic); callers bucket by `object_id` to get the
+# per-topic count.
+query GetCertTopicLinks(
+  $certTermIds: [String!]!
+  $topicAtomIds: [String!]!
+  $limit: Int = 50000
+) {
+  triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      subject_id: { _in: $certTermIds }
+      object_id: { _in: $topicAtomIds }
+    }
+    limit: $limit
+  ) {
+    object_id
+  }
+}
+
 query GetSofiaTrustedActivity(
   $trustedWallets: [String!]!
   $proxy: String!

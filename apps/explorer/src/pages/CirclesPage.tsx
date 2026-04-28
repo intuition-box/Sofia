@@ -6,13 +6,15 @@
  * leave, top-topics aggregation, sponsor budget) are rendered as UI
  * scaffolding with mock values — marked with TODOs.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
+import { useCircleFeed } from '@/hooks/useCircleFeed'
+import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
 import CirclesFilters from '@/components/circles/CirclesFilters'
 import TrustCircleCard from '@/components/circles/TrustCircleCard'
 import CreateCircleCard from '@/components/circles/CreateCircleCard'
@@ -45,6 +47,27 @@ export default function CirclesPage() {
   const { addresses } = useLinkedWallets()
   const { accounts: members, loading } = useTrustCircle(addresses)
   const { selectedTopics } = useTopicSelection()
+  // React Query dedupes by key, so calling useCircleFeed here only mounts a
+  // second consumer of the same cache entry CircleFeedSection already reads.
+  const { items: feedItems } = useCircleFeed(addresses)
+  // Resolved circle members → wallet addresses, for the alltime topic count
+  // query. Self is included so the user's own certs show up under their topics.
+  const circleWallets = useMemo(() => {
+    const set = new Set<string>()
+    for (const a of addresses) set.add(a)
+    for (const m of members) {
+      if (m.walletAddress) set.add(m.walletAddress)
+    }
+    return Array.from(set)
+  }, [addresses, members])
+  const topTopicSlugs = useMemo(
+    () => selectedTopics.slice(0, 4),
+    [selectedTopics],
+  )
+  const { counts: topicCounts } = useCircleTopicCounts(
+    circleWallets,
+    topTopicSlugs,
+  )
   const [allMembersOpen, setAllMembersOpen] = useState(false)
   const [trustColor, setTrustColor] = useState<string>(() => {
     if (typeof window === 'undefined') return TRUST_CIRCLE_META.color
@@ -93,8 +116,10 @@ export default function CirclesPage() {
             onViewAll={() => setAllMembersOpen(true)}
           />
           <CircleTopTopicsCard
-            topicIds={selectedTopics.slice(0, 4)}
+            topicIds={topTopicSlugs}
             circleColor={trustColor}
+            counts={topicCounts}
+            items={feedItems}
           />
         </div>
 
