@@ -2419,38 +2419,46 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
-  border: 1px solid;
-  border-radius: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
 }
 
 .weight-modal-cert-dot {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--ds-muted);
   font-size: 14px;
   font-style: normal;
 }
 
 .weight-modal-intention-badge {
-  font-size: 11px;
-  font-weight: 600;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   font-style: normal;
   white-space: nowrap;
 }
 
 .weight-modal-context-badge {
-  font-size: 10px;
-  font-weight: 500;
-  font-style: italic;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-style: normal;
   white-space: nowrap;
   opacity: 0.85;
 }
 
 .weight-modal-url-hint {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  color: var(--ds-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .weight-modal-amount-row {

@@ -9,16 +9,20 @@
 }
 
 .feed-header h2 {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: 'Fraunces', serif;
+  color: var(--ds-ink);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   margin-bottom: 8px;
 }
 
 .feed-subtitle {
-  color: #9ca3af;
-  font-size: 14px;
+  font-family: 'Geist', sans-serif;
+  color: var(--ds-muted);
+  font-size: 13px;
   margin: 0;
+  line-height: 1.4;
 }
 
 /* Feed Items */
@@ -48,15 +52,20 @@
 }
 
 .feed-item-container {
-  background: #00020841 !important;
-  border-bottom: 1px solid #ffffff14;
+  background: var(--ds-bg-subtle) !important;
+  border: 1px solid var(--ds-border-soft);
   align-items: flex-start;
-  gap: 22px;
-  padding: 16px 20px;
-  transition: all .2s;
+  gap: 16px;
+  padding: 14px 16px;
+  transition: border-color 0.15s ease, background 0.15s ease;
   display: flex;
-  margin-bottom: 18px;
-  border-radius: 10px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.feed-item-container:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-card) !important;
 }
 
 /* Avatar */

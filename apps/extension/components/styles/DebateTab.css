@@ -30,17 +30,20 @@
 }
 
 .debate-section-title {
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-  letter-spacing: -0.3px;
+  color: var(--ds-ink);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.015em;
 }
 
 .debate-section-subtitle {
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
-  color: var(--color-text-very-muted);
+  color: var(--ds-muted);
   margin: 0;
+  line-height: 1.4;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -129,12 +132,10 @@
 /* ── Claim Card ────────────────────────────────────────────────── */
 
 .claim-card {
-  background: rgba(14, 14, 22, 0.95);
-  backdrop-filter: var(--backdrop-blur-light);
-  -webkit-backdrop-filter: var(--backdrop-blur-light);
-  border: 1px solid var(--color-border-glass);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  padding: 14px 16px;
 }
 
 /* ── Claim Title (always visible) ─────────────────────────────── */
@@ -463,14 +464,15 @@
 .list-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: 99px;
-  background: var(--color-bg-glass-lighter);
-  border: 1px solid var(--color-border-very-light);
-  font-size: var(--font-size-xs);
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: var(--ds-ink-soft);
   white-space: nowrap;
 }
 

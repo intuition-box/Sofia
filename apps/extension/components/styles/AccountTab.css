@@ -279,18 +279,17 @@
 .quest-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
+  gap: 14px;
+  padding: 14px;
+  background: var(--ds-bg-subtle);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  border: 1px solid var(--ds-border-soft);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .quest-item:hover {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
 }
 
 .quest-progress {
@@ -306,19 +305,20 @@
 }
 
 .quest-badge-name {
-  font-family: 'Geist', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ds-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
   margin: 0 0 2px 0;
 }
 
 .quest-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 14px;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ds-ink);
   margin: 0;
 }
@@ -326,35 +326,34 @@
 .quest-progress-text {
   font-family: 'Geist', sans-serif;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
   margin: 0;
 }
 
 .quest-status {
   font-family: 'Geist', sans-serif;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 2px;
 }
 
 .quest-action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: rgba(111, 68, 220, 0.2);
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--ds-accent);
   border: none;
-  color: #9f7aea;
+  color: var(--ds-on-accent, #1a0a04);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease;
   flex-shrink: 0;
 }
 
 .quest-action-btn:hover {
-  background: rgba(111, 68, 220, 0.3);
-  transform: translateX(2px);
+  background: var(--btn-primary-hover-bg);
 }
 
 .search-icon {

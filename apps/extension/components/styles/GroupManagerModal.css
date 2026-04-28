@@ -519,14 +519,16 @@
 .gm-cleanup-banner {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  margin: 0 0 8px;
-  border-radius: var(--radius-md, 8px);
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 0 0 10px;
+  border-radius: 12px;
   background: var(--fun);
   color: #000;
   border: none;
-  font-size: 12px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .gm-cleanup-banner > span {
