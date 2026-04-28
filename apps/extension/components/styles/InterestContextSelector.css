@@ -46,13 +46,15 @@
 .interest-context__btn--selected,
 .interest-context__btn--certified {
   background: var(--topic-color);
-  border-color: var(--topic-color);
   color: #000;
 }
 
+/* Preselected (certified/selected) — same border treatment as intention-pill.certified
+   (rgba(0,0,0,0.4) stroke around the colored pill). */
 .interest-context__btn--selected,
 .interest-context__btn--certified {
   font-weight: 700;
+  border-color: rgba(0, 0, 0, 0.4);
 }
 
 .interest-context__btn:disabled {

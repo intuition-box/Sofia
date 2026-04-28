@@ -91,14 +91,17 @@
   margin-top: 16px;
 }
 
+/* Identical to ExtendedMetricsPanel .section-title */
 .cert-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  color: var(--ds-ink);
   text-transform: uppercase;
-  color: var(--ds-muted);
-  padding: 0 2px;
+  letter-spacing: 0.06em;
 }
 
 /* Breathing space before the metrics panel below */

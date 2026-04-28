@@ -1831,27 +1831,35 @@
 }
 
 /* New Buttons - Screenshot Style */
+/* Modal action buttons — same shape (border-radius 8px) and typo (Geist 13/700)
+   as .amplify-btn-inline. */
 .stake-btn {
-  border-radius: 24px;
-  font-family: 'Fraunces', serif;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
+  border-radius: 8px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 11px 44px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  padding: 10px 20px;
 }
 
 .stake-btn-cancel {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+  color: var(--ds-ink);
 }
 
 .stake-btn-cancel:hover:not(:disabled) {
-  background: rgba(255, 0, 0, 0.068);
-  border-color: rgba(255, 0, 0, 0.226);
-  color: rgb(252, 106, 106);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
+}
+
+/* When the action is "Close" (post tx success/error), span full width */
+.modal-actions:has(.stake-btn-cancel:only-child) .stake-btn-cancel,
+.stake-btn-cancel.full-width {
+  flex: 1;
+  width: 100%;
 }
 
 .stake-btn-submit {

@@ -133,19 +133,25 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Same DS pf-btn pattern as GroupDetailView .back-btn */
 .category-back-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--ds-border);
   border-radius: 8px;
-  padding: 8px 12px;
+  background: var(--ds-card);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--ds-ink);
   cursor: pointer;
-  font-size: 12px;
-  transition: background 0.2s;
+  transition: border-color 0.15s ease;
 }
 
 .category-back-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--ds-ink);
 }
 
 .category-detail-dot {

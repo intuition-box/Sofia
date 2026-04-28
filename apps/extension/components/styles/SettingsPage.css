@@ -934,8 +934,8 @@
     0 0.0625em 0 0 #202020;
 }
 
-/* Default settings action button — neutral filled (Import / Tutorial).
-   Color goes ON THE BACKGROUND, never on border + typo. */
+/* Default settings action button — outlined neutral pill.
+   Color goes ON THE BACKGROUND on hover, never on border + typo. */
 .delete-button-3d {
   display: inline-flex;
   align-items: center;
@@ -944,18 +944,19 @@
   font-size: 12px;
   font-weight: 600;
   background: var(--ds-bg-subtle);
-  border: 1px solid transparent;
+  border: 1px solid var(--ds-border);
   color: var(--ds-ink);
   border-radius: 8px;
   padding: 8px 14px;
   cursor: pointer;
   min-width: 100px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .delete-button-3d:hover:not(:disabled) {
   background: var(--ds-accent);
   color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
 }
 
 .delete-button-3d:active:not(:disabled) {
@@ -971,10 +972,10 @@
 .delete-button-3d.destructive:hover:not(:disabled) {
   background: var(--color-error);
   color: #fff;
+  border-color: var(--color-error);
 }
 
-/* Disconnect Button — destructive filled background (red on hover).
-   Same shape as .delete-button-3d but always destructive. */
+/* Disconnect Button — outlined neutral default, red filled on hover */
 .disconnect-button-3d {
   display: inline-flex;
   align-items: center;
@@ -983,18 +984,19 @@
   font-size: 12px;
   font-weight: 600;
   background: var(--ds-bg-subtle);
-  border: 1px solid transparent;
+  border: 1px solid var(--ds-border);
   color: var(--ds-ink);
   border-radius: 8px;
   padding: 8px 14px;
   cursor: pointer;
   min-width: 100px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .disconnect-button-3d:hover:not(:disabled) {
   background: var(--color-error);
   color: #fff;
+  border-color: var(--color-error);
 }
 
 .disconnect-button-3d:active:not(:disabled) {

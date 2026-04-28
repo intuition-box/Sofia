@@ -400,29 +400,35 @@
   font-family: 'Fraunces', serif;
 }
 
-/* Share-on-X button — primary CTA, parity with Claim All sizing */
+/* Share on X — same pattern as explorer .pd-share-btn (ProfileDrawer).
+   Transparent / white text / muted border default → inverts on hover. */
 .batch-receipt__share-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   min-height: 44px;
   padding: 12px 20px;
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
   color: #fff;
   font-family: 'Geist', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .batch-receipt__share-btn:hover {
-  background: #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.4);
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.batch-receipt__share-btn svg {
+  fill: currentColor;
 }
 
 .batch-receipt__share-btn:disabled {

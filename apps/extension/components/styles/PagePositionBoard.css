@@ -139,32 +139,30 @@
 
 /* ── Badge ── */
 
+/* Tier pills — solid filled bg (DS verb-tag shape) */
 .position-board__badge {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px var(--spacing-xs);
-  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: none;
   white-space: nowrap;
+  color: #000;
 }
 
 .position-board__badge--pioneer {
-  color: var(--ds-ink);
-  background: rgba(212, 168, 67, 0.12);
-  border: 1px solid rgba(212, 168, 67, 0.2);
+  background: var(--fun);
 }
 
 .position-board__badge--explorer {
-  color: var(--ds-ink);
-  background: rgba(107, 138, 255, 0.1);
-  border: 1px solid rgba(107, 138, 255, 0.15);
+  background: var(--work);
 }
 
 .position-board__badge--contributor {
-  color: var(--color-text-very-muted);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--inspiration);
 }
 
 /* ── You Tag ── */
