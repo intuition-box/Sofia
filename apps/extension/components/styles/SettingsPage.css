@@ -31,22 +31,22 @@
 }
 
 .settings-section {
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border-lighter);
-  box-shadow: var(--shadow-heavy), var(--shadow-inset);
+  background: var(--ds-card);
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
   margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-xl);
+  padding: 8px 18px;
   transition: var(--transition-normal);
 }
 
 .settings-section-title {
   font-family: 'Fraunces', serif;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--ds-ink);
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   margin-top: 0;
 }
 
@@ -54,9 +54,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg) 0;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-light);
+  gap: 12px;
+  padding: 14px 0;
+  color: var(--ds-ink-soft);
+  border-bottom: 1px solid var(--ds-border-soft);
   transition: var(--transition-normal);
 }
 

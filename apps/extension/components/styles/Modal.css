@@ -21,9 +21,9 @@
 }
 
 .modal-content {
-  background: linear-gradient(to bottom, #060504, #101010);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
@@ -50,14 +50,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 0 24px;
-  margin-bottom: 16px;
+  padding: 22px 24px 0 24px;
+  margin-bottom: 18px;
 }
 
 .modal-title {
-  font-size: 18px;
-  font-weight: 500;
-  color: white;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
   display: flex;
   align-items: center;
   gap: 8px;

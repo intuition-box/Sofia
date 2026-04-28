@@ -19,8 +19,8 @@
   gap: 0.5rem;
   border-radius: 0;
   backdrop-filter: blur(11px);
-  background-color: #00000054;
-  border-top: 1px solid #222;
+  background-color: rgba(11, 10, 18, 0.85);
+  border-top: 1px solid var(--ds-border-soft);
   padding: 0.75rem 1rem;
   pointer-events: auto;
   box-sizing: border-box;
@@ -33,14 +33,18 @@
   justify-content: center;
   border-radius: 10px;
   backdrop-filter: blur(11px);
-  border: 1px solid #222;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ds-border-soft);
+  box-shadow: none;
   cursor: pointer;
   outline: none;
   flex-shrink: 0;
   box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dock-item:hover {
+  border-color: var(--ds-ink-soft);
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .dock-icon {

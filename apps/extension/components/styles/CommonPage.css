@@ -267,10 +267,18 @@
   backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
-  padding: 12px;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  min-height: 120px;
+  padding: 14px;
+  gap: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  min-height: 130px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.group-bento-card:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
 }
 
 /* Subtle glow effect for cards ready to level up */
@@ -306,9 +314,11 @@
 }
 
 .group-bento-title {
+  font-family: 'Fraunces', serif;
   color: var(--ds-ink);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -316,11 +326,11 @@
 }
 
 .group-bento-predicate {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
   font-size: 11px;
   font-style: italic;
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .group-bento-level {
@@ -452,8 +462,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--ds-border-soft);
 }
 
 /* Back button — mirrors explorer .pf-btn (apps/explorer/.../pages.css).
@@ -488,17 +499,22 @@
 }
 
 .group-detail-domain {
+  font-family: 'Fraunces', serif;
   color: var(--ds-ink);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 
 .group-detail-level {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* Level colors for detail view */
