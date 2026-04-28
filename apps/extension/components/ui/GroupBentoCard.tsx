@@ -94,7 +94,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
           )}
           <span
             className="level-badge"
-            style={{ color: getLevelColor(displayLevel), background: getLevelColorAlpha(displayLevel) }}
+            style={{ background: getLevelColor(displayLevel), color: '#000' }}
           >LVL {displayLevel}</span>
         </div>
       </div>

@@ -315,7 +315,7 @@
 }
 
 .triplet-text .predicate {
-  color: var(--color-success);
+  color: var(--ds-ink);
   font-weight: 500;
   margin: 0 4px;
 }

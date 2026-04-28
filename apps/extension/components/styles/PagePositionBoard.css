@@ -79,7 +79,7 @@
 }
 
 .position-board__item:first-child .position-board__rank {
-  color: var(--fun);
+  color: var(--ds-ink);
 }
 
 /* ── Avatar ── */
@@ -128,13 +128,13 @@
 }
 
 .position-board__badge--pioneer {
-  color: var(--fun);
+  color: var(--ds-ink);
   background: rgba(212, 168, 67, 0.12);
   border: 1px solid rgba(212, 168, 67, 0.2);
 }
 
 .position-board__badge--explorer {
-  color: var(--work);
+  color: var(--ds-ink);
   background: rgba(107, 138, 255, 0.1);
   border: 1px solid rgba(107, 138, 255, 0.15);
 }

@@ -227,7 +227,7 @@
 }
 
 .triplet-detail-url:hover {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   text-decoration: none;
   transform: translateX(2px);
 }
@@ -636,7 +636,7 @@
 
 .empty-subtext {
   font-size: 14px;
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-style: normal;
   margin-top: 10px;
   line-height: 0px;
@@ -644,7 +644,7 @@
 
 .refresh-button {
   background: rgba(255, 198, 176, 0.20);
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   border: 1px solid rgba(255, 198, 176, 0.30);
   border-radius: 8px;
   padding: 8px 16px;
@@ -969,7 +969,7 @@
 }
 
 .recommendation-category {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;

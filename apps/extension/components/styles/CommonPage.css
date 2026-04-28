@@ -483,16 +483,16 @@
 }
 
 /* Level colors for detail view */
-.group-detail-level.level-1 { color: var(--ds-muted); background: rgba(143, 140, 168, 0.2); }
-.group-detail-level.level-2 { color: #22C55E; background: rgba(34, 197, 94, 0.3); }
-.group-detail-level.level-3 { color: var(--work); background: rgba(123, 173, 224, 0.2); }
-.group-detail-level.level-4 { color: var(--inspiration); background: rgba(167, 139, 219, 0.2); }
-.group-detail-level.level-5 { color: var(--fun); background: rgba(228, 185, 90, 0.2); }
-.group-detail-level.level-6 { color: #EF4444; background: rgba(239, 68, 68, 0.3); }
-.group-detail-level.level-7 { color: var(--ds-accent); background: rgba(255, 198, 176, 0.30); }
-.group-detail-level.level-8 { color: var(--learning); background: rgba(92, 196, 214, 0.2); }
-.group-detail-level.level-9 { color: var(--music); background: rgba(224, 137, 106, 0.2); }
-.group-detail-level.level-10 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }
+.group-detail-level.level-1  { background: var(--ds-muted);     color: #000; }
+.group-detail-level.level-2  { background: var(--trusted);      color: #000; }
+.group-detail-level.level-3  { background: var(--work);         color: #000; }
+.group-detail-level.level-4  { background: var(--inspiration);  color: #000; }
+.group-detail-level.level-5  { background: var(--fun);          color: #000; }
+.group-detail-level.level-6  { background: var(--distrusted);   color: #000; }
+.group-detail-level.level-7  { background: var(--ds-accent);    color: #000; }
+.group-detail-level.level-8  { background: var(--learning);     color: #000; }
+.group-detail-level.level-9  { background: var(--music);        color: #000; }
+.group-detail-level.level-10 { background: #FFD700;             color: #000; }
 
 .group-detail-stats {
   display: flex;
@@ -551,7 +551,7 @@
 }
 
 .identity-predicate {
-  color: var(--buying);
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
@@ -601,7 +601,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--trusted);
+  color: var(--ds-ink);
   font-size: 12px;
 }
 
@@ -614,7 +614,7 @@
 }
 
 .tx-link-inline {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   text-decoration: none;
   font-size: 11px;
 }
@@ -720,7 +720,7 @@
 }
 
 .url-title:hover {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
 }
 
 .url-meta {
@@ -744,7 +744,7 @@
 .cert-btn {
   background: rgba(255, 198, 176, 0.20);
   border: 1px solid rgba(255, 198, 176, 0.40);
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -840,12 +840,12 @@
 }
 
 .xp-hint {
-  text-align: center;
-  padding: 12px;
-  background: rgba(255, 198, 176, 0.10);
+  background: var(--ds-accent);
+  color: #000;
   border-radius: 8px;
-  color: var(--ds-accent);
+  padding: 12px;
   font-size: 13px;
+  text-align: center;
 }
 
 /* ========== ECHOES GROUPS SECTION ========== */
@@ -875,7 +875,7 @@
 
 .groups-gold-badge {
   font-size: 12px;
-  color: var(--fun);
+  color: var(--ds-ink);
   border-radius: 12px;
   padding: 2px 8px;
   font-weight: 600;
@@ -1047,7 +1047,7 @@
 }
 
 .level-label {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-size: 14px;
   font-weight: 600;
 }
@@ -1175,7 +1175,7 @@
 
 .group-gold-balance {
   text-align: center;
-  color: var(--fun);
+  color: var(--ds-ink);
   font-size: 12px;
   margin-top: 8px;
   opacity: 0.8;
@@ -1204,7 +1204,7 @@
 }
 
 .level-up-success .success-title {
-  color: var(--trusted);
+  color: var(--ds-ink);
   font-weight: 600;
   font-size: 14px;
 }
@@ -1278,7 +1278,7 @@
 }
 
 .amplify-title {
-  color: var(--inspiration);
+  color: var(--ds-ink);
   font-size: 14px;
   font-weight: 600;
 }
@@ -1294,7 +1294,7 @@
 }
 
 .amplify-triple strong {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
 }
 
 .amplify-btn {
@@ -1346,7 +1346,7 @@
 }
 
 .amplify-success .success-icon {
-  color: var(--trusted);
+  color: var(--ds-ink);
   font-size: 18px;
 }
 
@@ -1357,7 +1357,7 @@
 }
 
 .amplify-success .tx-link {
-  color: var(--trusted);
+  color: var(--ds-ink);
   font-size: 12px;
   text-decoration: none;
   padding: 4px 8px;

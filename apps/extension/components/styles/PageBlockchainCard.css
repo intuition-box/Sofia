@@ -60,8 +60,7 @@
 
 .blockchain-card__notice-retry:hover {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  border-color: var(--color-primary, var(--ds-accent));
-  transform: translateY(-1px);
+  border-color: var(--ds-accent);
 }
 
 /* ── Layout sections ── */
@@ -115,13 +114,7 @@
 }
 
 .trust-page-button:hover:not(:disabled) {
-  box-shadow: var(--shadow-button, 0 4px 12px rgba(255, 198, 176, 0.30));
-  transform: translateY(-1px);
-}
-
-.trust-page-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--shadow-light, 0 2px 6px rgba(0, 0, 0, 0.2));
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .trust-page-button:disabled {
@@ -168,22 +161,21 @@
 }
 
 .trust-btn:hover:not(:disabled) {
-  box-shadow: none;
-  transform: translateY(-2px);
-  color: var(--color-success, #22c55e);
-  border-color: var(--color-success, #22c55e);
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #000;
 }
 
 .trust-btn.success {
-  color: var(--color-success, #22c55e);
-  border-color: var(--color-success, #22c55e);
-  background: rgba(34, 197, 94, 0.12);
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #000;
 }
 
 .trust-btn.in-cart {
-  color: rgba(212, 175, 55, 0.8);
-  border-color: rgba(212, 175, 55, 0.4);
-  background: rgba(212, 175, 55, 0.08);
+  background: var(--fun);
+  border-color: var(--fun);
+  color: #000;
 }
 
 /* Distrust button — outline with red hover */
@@ -210,26 +202,25 @@
 }
 
 .distrust-btn:hover:not(:disabled) {
-  box-shadow: none;
-  transform: translateY(-2px);
-  color: var(--color-error, #ef4444);
-  border-color: var(--color-error, #ef4444);
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #000;
 }
 
 .distrust-btn.success {
-  color: var(--color-error, #ef4444);
-  border-color: var(--color-error, #ef4444);
-  background: rgba(239, 68, 68, 0.12);
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #000;
 }
 
 .distrust-btn.in-cart {
-  color: rgba(212, 175, 55, 0.8);
-  border-color: rgba(212, 175, 55, 0.4);
-  background: rgba(212, 175, 55, 0.08);
+  background: var(--fun);
+  border-color: var(--fun);
+  color: #000;
 }
 
 .distrust-btn .button-spinner {
-  border-top: 2px solid var(--color-error, #ef4444);
+  border-top: 2px solid #000;
 }
 
 /* ── Button spinner ── */
@@ -253,7 +244,7 @@
 }
 
 .trust-error small {
-  color: var(--color-error, #ef4444);
+  color: var(--ds-ink);
   font-size: var(--font-size-xs, 10px);
 }
 

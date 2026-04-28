@@ -197,7 +197,7 @@
 .bookmark-select-link {
   background: none;
   border: none;
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-size: 12px;
   cursor: pointer;
   padding: 4px 8px;

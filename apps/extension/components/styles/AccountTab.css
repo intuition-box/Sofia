@@ -987,7 +987,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #000;
   font-family: 'Montserrat', sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -1073,17 +1073,17 @@
 }
 
 .highlight-pioneer {
-  color: var(--fun);
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
 .highlight-explorer {
-  color: var(--work);
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
 .highlight-contributor {
-  color: var(--inspiration);
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
@@ -1217,7 +1217,7 @@
 .streak-vault-badge {
   font-size: 11px;
   font-weight: 600;
-  color: var(--fun);
+  color: var(--ds-ink);
   background: rgba(234, 182, 122, 0.15);
   padding: 2px 8px;
   border-radius: 10px;
@@ -1233,7 +1233,7 @@
 .streak-vault-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--fun);
+  color: var(--ds-ink);
 }
 
 .streak-vault-participants {
@@ -1267,7 +1267,7 @@
 }
 
 .streak-vault-value.positive {
-  color: var(--trusted);
+  color: var(--ds-ink);
 }
 
 .streak-vault-value.negative {
@@ -1484,7 +1484,7 @@
 
 .streak-bubble.validated {
   background: rgba(106, 204, 147, 0.2);
-  color: var(--trusted);
+  color: var(--ds-ink);
 }
 
 /* Streak Section (Daily & Streak quests) */

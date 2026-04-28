@@ -488,7 +488,7 @@
 }
 
 .bookmark-triplet-details a:hover {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   text-decoration: underline;
 }
 

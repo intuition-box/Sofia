@@ -82,18 +82,20 @@
 
 /* Colored pills (when --chip-color is set inline from INTENTION_CONFIG) */
 .circle-chip[style*="--chip-color"] {
-  background: color-mix(in srgb, var(--chip-color) 18%, var(--ds-card));
-  color: var(--ds-ink);
+  background: var(--chip-color);
+  color: #000000;
+  border-color: transparent;
 }
 
 .circle-chip[style*="--chip-color"]:hover {
-  background: color-mix(in srgb, var(--chip-color) 35%, var(--ds-card));
-  color: var(--ds-ink);
+  background: var(--chip-color);
+  color: #000000;
+  filter: brightness(1.1);
 }
 
 .circle-chip[style*="--chip-color"].active {
   background: var(--chip-color);
-  color: var(--ds-bg);
+  color: #000000;
 }
 
 /* Grid Layout */
@@ -220,7 +222,7 @@
 }
 
 .circle-support-btn:hover {
-  color: var(--color-success);
+  color: var(--ds-ink);
   border-color: rgba(34, 197, 94, 0.4);
   background: rgba(34, 197, 94, 0.1);
 }
@@ -232,7 +234,7 @@
 }
 
 .circle-support-btn.voted {
-  color: var(--color-success);
+  color: var(--ds-ink);
   border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
 }

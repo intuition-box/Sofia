@@ -771,7 +771,7 @@
 
 .modal-success-icon {
   font-size: 20px;
-  color: var(--color-success);
+  color: var(--ds-ink);
 }
 
 .modal-error-icon {

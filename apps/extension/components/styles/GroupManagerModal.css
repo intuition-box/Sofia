@@ -383,7 +383,7 @@
   padding: 1px 5px;
   border-radius: 6px;
   background: rgba(34, 197, 94, 0.15);
-  color: var(--trusted);
+  color: var(--ds-ink);
   font-size: 9px;
   font-weight: 600;
 }
@@ -433,7 +433,7 @@
 
 .gm-action-btn.remove {
   background: rgba(234, 179, 8, 0.2);
-  color: var(--fun);
+  color: var(--ds-ink);
 }
 
 .gm-action-btn.remove:hover {
@@ -495,7 +495,7 @@
 .gm-manage-btn {
   margin-left: auto;
   background: rgba(255, 198, 176, 0.12) !important;
-  color: var(--ds-accent) !important;
+  color: var(--ds-ink) !important;
   border: 1px solid rgba(255, 198, 176, 0.20) !important;
   border-radius: 4px;
 }
@@ -512,22 +512,23 @@
   padding: 8px 12px;
   margin: 0 0 8px;
   border-radius: var(--radius-md, 8px);
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.2);
+  background: var(--fun);
+  color: #000;
+  border: none;
   font-size: 12px;
-  color: var(--fun);
 }
 
 .gm-cleanup-banner > span {
   flex: 1;
+  color: #000;
 }
 
 .gm-cleanup-review {
   padding: 3px 10px;
   border-radius: 6px;
   border: none;
-  background: rgba(234, 179, 8, 0.2);
-  color: var(--fun);
+  background: rgba(0, 0, 0, 0.15);
+  color: #000;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -535,13 +536,13 @@
 }
 
 .gm-cleanup-review:hover {
-  background: rgba(234, 179, 8, 0.35);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .gm-cleanup-dismiss {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(0, 0, 0, 0.5);
   font-size: 16px;
   cursor: pointer;
   padding: 0 4px;
@@ -549,7 +550,7 @@
 }
 
 .gm-cleanup-dismiss:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.85);
 }
 
 /* Animations */

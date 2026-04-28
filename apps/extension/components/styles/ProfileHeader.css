@@ -157,7 +157,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--fun);
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
@@ -259,7 +259,7 @@
 .streak-count {
   font-size: 13px;
   font-weight: 700;
-  color: var(--fun);
+  color: var(--ds-ink);
 }
 
 .streak-label {
