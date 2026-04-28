@@ -7,7 +7,7 @@
     "dev": "mastra dev",
     "build": "mastra build",
     "start": "mastra start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bash scripts/typecheck.sh"
   },
   "keywords": [],
   "author": "",

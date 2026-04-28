@@ -29,8 +29,7 @@
     "noImplicitAny": false,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "ignoreDeprecations": "6.0"
+    "noUnusedParameters": false
   },
   "include": [
     ".plasmo/index.d.ts",
