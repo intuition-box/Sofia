@@ -2381,8 +2381,8 @@
 
 .weight-modal-triplet-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
@@ -2391,25 +2391,28 @@
 }
 
 .weight-modal-triplet-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
   line-height: 1.4;
   text-align: center;
 }
 
 .weight-modal-triplet-text .subject {
-  color: #ffb659;
-  font-weight: 600;
+  color: var(--ds-accent);
+  font-weight: 700;
 }
 
 .weight-modal-triplet-text .action {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
   font-style: italic;
 }
 
 .weight-modal-triplet-text .object {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
+  color: var(--ds-ink);
+  font-weight: 600;
 }
 
 .weight-modal-cert-target {

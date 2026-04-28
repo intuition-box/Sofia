@@ -225,29 +225,32 @@ const EchoesTab = () => {
         )}
 
         {/* Certification filter chips — vf-chip pattern from explorer */}
-        <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setCertFilter('all')}
-          >
-            All
-          </button>
-          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-            ([type, config]) => (
-              <button
-                key={type}
-                className={`circle-chip ${certFilter === type ? 'active' : ''}`}
-                onClick={() => setCertFilter(type)}
-              >
-                <span
-                  className="circle-chip-dot"
-                  aria-hidden="true"
-                  style={{ background: config.color }}
-                />
-                {config.label}
-              </button>
-            )
-          )}
+        <div className="circle-filter-group">
+          <span className="circle-filter-label">Filter</span>
+          <div className="circle-category-chips">
+            <button
+              className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setCertFilter('all')}
+            >
+              All
+            </button>
+            {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+              ([type, config]) => (
+                <button
+                  key={type}
+                  className={`circle-chip ${certFilter === type ? 'active' : ''}`}
+                  onClick={() => setCertFilter(type)}
+                >
+                  <span
+                    className="circle-chip-dot"
+                    aria-hidden="true"
+                    style={{ background: config.color }}
+                  />
+                  {config.label}
+                </button>
+              )
+            )}
+          </div>
         </div>
 
         {filteredGroups.length === 0 ? (

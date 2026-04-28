@@ -338,8 +338,8 @@
 }
 
 .cart-drawer__empty-icon {
-  font-size: 40px;
-  opacity: 0.35;
+  color: var(--ds-muted);
+  opacity: 0.6;
 }
 
 .cart-drawer__empty-text {

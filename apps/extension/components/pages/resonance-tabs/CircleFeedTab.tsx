@@ -517,36 +517,57 @@ const CircleFeedTab = () => {
     <div className="circle-feed-tab">
       {/* Category filter chips + Go to Circle link */}
       <div className="circle-top-bar">
-        <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All
-          </button>
-          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-            ([type, config]) => (
-              <button
-                key={type}
-                className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-                onClick={() => setActiveFilter(type)}
-              >
-                <span
-                  className="circle-chip-dot"
-                  aria-hidden="true"
-                  style={{ background: config.color }}
-                />
-                {config.label}
-              </button>
-            )
-          )}
+        <div className="circle-filter-group">
+          <span className="circle-filter-label">Filter</span>
+          <div className="circle-category-chips">
+            <button
+              className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('all')}
+            >
+              All
+            </button>
+            {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+              ([type, config]) => (
+                <button
+                  key={type}
+                  className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(type)}
+                >
+                  <span
+                    className="circle-chip-dot"
+                    aria-hidden="true"
+                    style={{ background: config.color }}
+                  />
+                  {config.label}
+                </button>
+              )
+            )}
+          </div>
         </div>
         <button
           className="circle-go-btn"
           onClick={handleRefresh}
           disabled={refreshing}
+          title="Refresh feed"
+          aria-label="Refresh feed"
         >
-          {refreshing ? '...' : '↻'}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            style={refreshing ? { animation: 'spin 0.8s linear infinite' } : undefined}
+          >
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            <path d="M3 21v-5h5" />
+          </svg>
         </button>
         <button
           className="circle-go-btn"
@@ -555,6 +576,21 @@ const CircleFeedTab = () => {
             navigateTo('profile')
           }}
         >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="9" cy="7" r="4" />
+            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+            <path d="m17 11 2 2 4-4" />
+          </svg>
           My Circle
         </button>
       </div>
@@ -653,9 +689,11 @@ const CircleFeedTab = () => {
                           onClick={(e) => handleSupport(e, group)}
                           disabled={supportDisabled}
                           title={inCartSupport ? "In cart" : "Support this certification"}
+                          aria-label="Support"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M7 10v12" />
+                            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L15 2c1.1 0 2 .9 2 2v1.88Z" />
                           </svg>
                         </button>
                         <button
@@ -663,9 +701,11 @@ const CircleFeedTab = () => {
                           onClick={(e) => handleOppose(e, group)}
                           disabled={opposeDisabled}
                           title={inCartOppose ? "In cart" : "Oppose this certification"}
+                          aria-label="Oppose"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 20l8-8h-5V4H9v8H4z" />
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M17 14V2" />
+                            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L9 22c-1.1 0-2-.9-2-2v-1.88Z" />
                           </svg>
                         </button>
                       </div>

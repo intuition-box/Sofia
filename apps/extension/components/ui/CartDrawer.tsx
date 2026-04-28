@@ -1,8 +1,7 @@
 import { useState, useRef } from "react"
-import { X, Trash2 } from "lucide-react"
+import { X, Trash2, ShoppingCart } from "lucide-react"
 import { VerbTag } from "@0xsofia/design-system"
 import type { IntentionSlug } from "@0xsofia/design-system"
-import sofiaIcon from "data-base64:~assets/icon-light-32.png"
 import { useCart, useCartSubmit } from "~/hooks"
 import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
@@ -112,13 +111,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             {/* Items */}
             {count === 0 ? (
               <div className="cart-drawer__empty">
-                <img
-                  src={sofiaIcon}
-                  width={32}
-                  height={32}
-                  className="cart-drawer__empty-icon"
-                  alt="Sofia"
-                />
+                <ShoppingCart size={40} className="cart-drawer__empty-icon" strokeWidth={1.5} />
                 <span className="cart-drawer__empty-text">
                   Click intentions to add them here
                 </span>
@@ -285,8 +278,8 @@ export const CartFab = ({
   if (count === 0) return null
 
   return (
-    <button className="cart-fab" onClick={onClick}>
-      <img src={sofiaIcon} width={20} height={20} className="cart-fab__icon" alt="Sofia" />
+    <button className="cart-fab" onClick={onClick} aria-label="Open cart">
+      <ShoppingCart size={20} className="cart-fab__icon" strokeWidth={2} />
       <span className="cart-fab__badge">{count}</span>
     </button>
   )

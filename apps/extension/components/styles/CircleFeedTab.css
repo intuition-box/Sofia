@@ -6,33 +6,56 @@
   background: transparent;
 }
 
-/* Top Bar: chips + go button */
+/* Top Bar: filter group + go buttons */
 .circle-top-bar {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 8px;
   padding-bottom: var(--spacing-sm);
 }
 
-/* Go to Circle button */
+/* Filter group — label "Filter" above the chip row */
+.circle-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.circle-filter-label {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  padding: 0 2px;
+}
+
+/* Refresh / Go to Circle buttons — DS pf-btn pattern (same as
+   GroupDetailView "Back" button). Outlined card-toned pill. */
 .circle-go-btn {
   flex-shrink: 0;
-  padding: 5px 10px;
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--transition-fast);
-  border: 1px solid rgba(255, 198, 176, 0.40);
-  background: rgba(255, 198, 176, 0.10);
-  color: var(--color-primary);
+  transition: border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
 
 .circle-go-btn:hover:not(:disabled) {
-  background: rgba(255, 198, 176, 0.20);
-  border-color: rgba(255, 198, 176, 0.60);
-  color: var(--color-text-primary);
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
 }
 
 .circle-go-btn:disabled {
@@ -202,49 +225,47 @@
   margin-left: auto;
 }
 
+/* Vote buttons — DS .fc-pos pattern from explorer (FeedCard).
+   Square outlined button, lucide thumbs icon, color reveals on hover/voted.
+   Default: ds-bg + ds-border + ds-muted; support hover/voted = green
+   (--trusted), oppose hover/voted = red (--distrusted). */
 .circle-action-btn {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border-light);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-muted);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   padding: 0;
   flex-shrink: 0;
 }
 
-.circle-support-btn:hover {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: #000;
+.circle-action-btn:hover:not(:disabled) {
+  transform: scale(1.05);
 }
 
-.circle-oppose-btn:hover:not(:disabled) {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: #000;
-}
-
+.circle-support-btn:hover:not(:disabled),
 .circle-support-btn.voted {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: #000;
+  color: var(--trusted);
+  border-color: var(--trusted);
 }
 
+.circle-oppose-btn:hover:not(:disabled),
 .circle-oppose-btn.voted {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: #000;
+  color: var(--distrusted);
+  border-color: var(--distrusted);
 }
 
 .circle-action-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Card Footer */
