@@ -49,12 +49,19 @@
   color: #000;
 }
 
-/* Preselected (certified/selected) — same border treatment as intention-pill.certified
-   (rgba(0,0,0,0.4) stroke around the colored pill). */
-.interest-context__btn--selected,
+/* Certified — solid stroke (already committed on-chain) */
 .interest-context__btn--certified {
   font-weight: 700;
   border-color: rgba(0, 0, 0, 0.4);
+}
+
+/* In-cart (selected but not yet certified) — dashed border + bold,
+   identical to .intention-pill.in-cart. The "+ label" prefix is added
+   in the TSX. */
+.interest-context__btn--in-cart {
+  font-weight: 600;
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.5);
 }
 
 .interest-context__btn:disabled {

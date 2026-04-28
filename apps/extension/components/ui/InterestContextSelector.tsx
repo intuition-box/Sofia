@@ -31,15 +31,16 @@ export const InterestContextSelector = memo(({
         {interests.map(({ topicSlug, label, color }) => {
           const isSelected = selectedContext === topicSlug
           const isCertified = certifiedContexts.includes(topicSlug)
+          const isInCart = isSelected && !isCertified
           return (
             <button
               key={topicSlug}
-              className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""} ${isCertified ? "interest-context__btn--certified" : ""}`}
+              className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""} ${isCertified ? "interest-context__btn--certified" : ""} ${isInCart ? "interest-context__btn--in-cart" : ""}`}
               onClick={() => handleClick(topicSlug)}
               disabled={disabled}
               style={{ '--topic-color': color } as React.CSSProperties}
             >
-              {label}
+              {isInCart ? `+ ${label}` : label}
             </button>
           )
         })}
