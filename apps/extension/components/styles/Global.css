@@ -75,10 +75,11 @@ body {
   --color-hover-light: var(--ds-accent);
   --color-gradient-button: var(--btn-primary-bg);
 
-  /* ── Primary button tokens (aligned with DS dark-mode) ── */
+  /* ── Primary button tokens (mirrors shadcn `bg-primary` / `hover:bg-primary/90`
+        used by DS Button default variant — opacity-based hover, no shadow) ── */
   --btn-primary-bg: var(--ds-ink);
   --btn-primary-fg: var(--ds-bg);
-  --btn-primary-hover-bg: var(--ds-ink-soft);
+  --btn-primary-hover-bg: rgba(245, 243, 255, 0.9);
   --btn-primary-radius: 8px;
   --btn-primary-shadow: none;
   

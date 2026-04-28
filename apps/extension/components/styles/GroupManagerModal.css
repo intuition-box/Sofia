@@ -44,7 +44,7 @@
 .gm-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-text, #FBF7F5);
+  color: var(--color-text, var(--ds-ink));
   margin: 0;
 }
 
@@ -70,7 +70,7 @@
 
 .gm-close-btn:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 /* Toolbar */
@@ -92,7 +92,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md, 8px);
   background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text, #FBF7F5);
+  color: var(--color-text, var(--ds-ink));
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s ease;
@@ -154,7 +154,7 @@
 .gm-filter-btn.active {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 .gm-badge {
@@ -195,7 +195,7 @@
 
 .gm-sort-btn.active {
   background: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 /* Select bar */
@@ -217,7 +217,7 @@
 
 .gm-select-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 /* Group list */
@@ -284,7 +284,7 @@
 .gm-domain {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text, #FBF7F5);
+  color: var(--color-text, var(--ds-ink));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -383,7 +383,7 @@
   padding: 1px 5px;
   border-radius: 6px;
   background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
+  color: var(--trusted);
   font-size: 9px;
   font-weight: 600;
 }
@@ -433,7 +433,7 @@
 
 .gm-action-btn.remove {
   background: rgba(234, 179, 8, 0.2);
-  color: #fbbf24;
+  color: var(--fun);
 }
 
 .gm-action-btn.remove:hover {
@@ -515,7 +515,7 @@
   background: rgba(234, 179, 8, 0.1);
   border: 1px solid rgba(234, 179, 8, 0.2);
   font-size: 12px;
-  color: #fbbf24;
+  color: var(--fun);
 }
 
 .gm-cleanup-banner > span {
@@ -527,7 +527,7 @@
   border-radius: 6px;
   border: none;
   background: rgba(234, 179, 8, 0.2);
-  color: #fbbf24;
+  color: var(--fun);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;

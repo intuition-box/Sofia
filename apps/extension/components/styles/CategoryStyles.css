@@ -18,7 +18,7 @@
 .categories-section .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #faf7f3;
+  color: var(--ds-ink);
 }
 
 .categories-section .section-count {
@@ -90,7 +90,7 @@
 .category-name {
   font-size: 13px;
   font-weight: 500;
-  color: #faf7f3;
+  color: var(--ds-ink);
   white-space: nowrap;
 }
 
@@ -134,7 +134,7 @@
   border: none;
   border-radius: 8px;
   padding: 8px 12px;
-  color: #faf7f3;
+  color: var(--ds-ink);
   cursor: pointer;
   font-size: 12px;
   transition: background 0.2s;
@@ -162,7 +162,7 @@
 .category-detail-name {
   font-size: 18px;
   font-weight: 600;
-  color: #faf7f3;
+  color: var(--ds-ink);
   margin: 0;
 }
 
@@ -208,7 +208,7 @@
 
 .category-url-label {
   font-size: 13px;
-  color: #faf7f3;
+  color: var(--ds-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -262,7 +262,7 @@
 .lists-section .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #faf7f3;
+  color: var(--ds-ink);
 }
 
 /* ========== CATEGORY TOOLBAR (search + sort) ========== */

@@ -86,7 +86,7 @@
   font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -157,7 +157,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: #EAB67A;
+  color: var(--fun);
   font-weight: 600;
 }
 
@@ -259,7 +259,7 @@
 .streak-count {
   font-size: 13px;
   font-weight: 700;
-  color: #EAB67A;
+  color: var(--fun);
 }
 
 .streak-label {

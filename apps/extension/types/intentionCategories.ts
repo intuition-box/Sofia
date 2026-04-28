@@ -24,15 +24,18 @@ export interface IntentionConfigEntry {
 
 // ── Central Config ──
 
+// Colors mirror @0xsofia/design-system INTENTION_PASTEL — kept here as
+// hardcoded values so the extension can use them in JS-injected inline styles
+// (the DS only exposes them as CSS vars). Keep in sync with palette.ts.
 export const INTENTION_CONFIG: Record<IntentionType, IntentionConfigEntry> = {
-  trusted:     { label: "Trusted",     color: "#22C55E", gradientEnd: "#4ADE80", cssClass: "trusted",     intentionPurpose: null,               predicateLabel: "trusts" },
-  distrusted:  { label: "Distrusted",  color: "#EF4444", gradientEnd: "#F87171", cssClass: "distrusted",  intentionPurpose: null,               predicateLabel: "distrust" },
-  work:        { label: "Work",        color: "#3B82F6", gradientEnd: "#60A5FA", cssClass: "work",        intentionPurpose: "for_work",         predicateLabel: "visits for work" },
-  learning:    { label: "Learning",    color: "#06B6D4", gradientEnd: "#22D3EE", cssClass: "learning",    intentionPurpose: "for_learning",     predicateLabel: "visits for learning" },
-  fun:         { label: "Fun",         color: "#F59E0B", gradientEnd: "#FBBF24", cssClass: "fun",         intentionPurpose: "for_fun",          predicateLabel: "visits for fun" },
-  inspiration: { label: "Inspiration", color: "#8B5CF6", gradientEnd: "#A78BFA", cssClass: "inspiration", intentionPurpose: "for_inspiration",  predicateLabel: "visits for inspiration" },
-  buying:      { label: "Buying",      color: "#EC4899", gradientEnd: "#F472B6", cssClass: "buying",      intentionPurpose: "for_buying",       predicateLabel: "visits for buying" },
-  music:       { label: "Music",       color: "#FF5722", gradientEnd: "#FF8A65", cssClass: "music",       intentionPurpose: "for_music",        predicateLabel: "visits for music" }
+  trusted:     { label: "Trusted",     color: "#6dd4a0", gradientEnd: "#8ce0b6", cssClass: "trusted",     intentionPurpose: null,               predicateLabel: "trusts" },
+  distrusted:  { label: "Distrusted",  color: "#e87c7c", gradientEnd: "#f09b9b", cssClass: "distrusted",  intentionPurpose: null,               predicateLabel: "distrust" },
+  work:        { label: "Work",        color: "#7bade0", gradientEnd: "#9bc3eb", cssClass: "work",        intentionPurpose: "for_work",         predicateLabel: "visits for work" },
+  learning:    { label: "Learning",    color: "#5cc4d6", gradientEnd: "#7fd2e0", cssClass: "learning",    intentionPurpose: "for_learning",     predicateLabel: "visits for learning" },
+  fun:         { label: "Fun",         color: "#e4b95a", gradientEnd: "#ecc97f", cssClass: "fun",         intentionPurpose: "for_fun",          predicateLabel: "visits for fun" },
+  inspiration: { label: "Inspiration", color: "#a78bdb", gradientEnd: "#bfa9e6", cssClass: "inspiration", intentionPurpose: "for_inspiration",  predicateLabel: "visits for inspiration" },
+  buying:      { label: "Buying",      color: "#d98cb3", gradientEnd: "#e3a8c4", cssClass: "buying",      intentionPurpose: "for_buying",       predicateLabel: "visits for buying" },
+  music:       { label: "Music",       color: "#e0896a", gradientEnd: "#e9a589", cssClass: "music",       intentionPurpose: "for_music",        predicateLabel: "visits for music" }
 }
 
 // ── Derived Helpers (computed from INTENTION_CONFIG) ──

@@ -60,7 +60,7 @@
 }
 
 .portal-link:hover {
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }
 
 .section-subheader {
@@ -98,7 +98,7 @@
 
 .scope-btn.active {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }
 
 .intentions-loading {
@@ -209,7 +209,7 @@
 .collapsible-toggle.active {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.08));
   border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }
 
 .collapsible-toggle .toggle-arrow {
@@ -270,7 +270,7 @@
 }
 
 .atom-label {
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   font-weight: 600;
   font-size: var(--font-size-sm, 12px);
 }
@@ -346,7 +346,7 @@
 }
 
 .triplets-section .triplet-text .predicate {
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 .sort-toggle {
@@ -374,5 +374,5 @@
 
 .sort-toggle .sort-btn.active {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }

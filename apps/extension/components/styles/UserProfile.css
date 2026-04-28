@@ -12,7 +12,7 @@
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   transition: all 0.3s ease;

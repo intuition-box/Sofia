@@ -55,40 +55,45 @@
   display: none;
 }
 
+/* Filled pill — solid pastel background, dark ink text for contrast.
+   Default = subtle muted fill; hover = full pastel; active = full pastel. */
 .circle-chip {
   flex-shrink: 0;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-xl);
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: transparent;
-  color: var(--color-text-very-muted);
+  border: 1px solid transparent;
+  background: var(--ds-card);
+  color: var(--ds-muted);
 }
 
 .circle-chip:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
 }
 
 .circle-chip.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--color-text-secondary);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
 }
 
-/* Colored chips when they have --chip-color */
+/* Colored pills (when --chip-color is set inline from INTENTION_CONFIG) */
+.circle-chip[style*="--chip-color"] {
+  background: color-mix(in srgb, var(--chip-color) 18%, var(--ds-card));
+  color: var(--ds-ink);
+}
+
 .circle-chip[style*="--chip-color"]:hover {
-  border-color: var(--chip-color);
-  color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 35%, var(--ds-card));
+  color: var(--ds-ink);
 }
 
 .circle-chip[style*="--chip-color"].active {
-  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-  border-color: var(--chip-color);
-  color: var(--chip-color);
+  background: var(--chip-color);
+  color: var(--ds-bg);
 }
 
 /* Grid Layout */

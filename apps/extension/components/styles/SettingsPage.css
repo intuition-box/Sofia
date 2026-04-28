@@ -45,7 +45,7 @@
   font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 500;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin-bottom: 15px;
   margin-top: 0;
 }
@@ -74,7 +74,7 @@
   border: 1px solid rgba(255, 255, 255, 0.125);
   padding: 8px 12px;
   border-radius: 8px;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   backdrop-filter: blur(10px) saturate(100%);
   -webkit-backdrop-filter: blur(10px) saturate(100%);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -127,7 +127,7 @@
 
 .photo-upload-button {
   background-color: var(--btn-primary-bg);
-  color: #FBF7F5;
+  color: var(--ds-ink);
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
@@ -191,7 +191,7 @@
 .save-button,
 .cancel-button {
   background-color: var(--btn-primary-bg);
-  color: #FBF7F5;
+  color: var(--ds-ink);
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
@@ -221,7 +221,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  background: #e62222;
+  background: var(--color-error);
   border: none;
   border-radius: 5px;
   box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
@@ -242,7 +242,7 @@
 
 .delete-button .icon {
   position: absolute;
-  border-left: 1px solid #c41b1b;
+  border-left: 1px solid rgba(239, 68, 68, 0.7);
   right: 0;
   height: 28px;
   width: 28px;
@@ -257,7 +257,7 @@
 }
 
 .delete-button:hover {
-  background: #ff3636;
+  background: var(--color-error);
 }
 
 .delete-button:hover .text {
@@ -285,7 +285,7 @@
 }
 
 .delete-button:disabled:hover {
-  background: #e62222;
+  background: var(--color-error);
 }
 
 .delete-button:disabled:hover .text {
@@ -294,7 +294,7 @@
 
 .delete-button:disabled:hover .icon {
   width: 28px;
-  border-left: 1px solid #c41b1b;
+  border-left: 1px solid rgba(239, 68, 68, 0.7);
   left: auto;
   right: 0;
 }
@@ -445,7 +445,7 @@
   font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 500;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin-bottom: 10px;
   margin-top: 0;
 }
@@ -462,7 +462,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 0;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
@@ -485,12 +485,12 @@
 .wallet-label {
   font-size: 14px;
   font-weight: 500;
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 .wallet-active-indicator {
   font-size: 12px;
-  color: #28a745;
+  color: var(--color-success);
 }
 
 .wallet-details {
@@ -526,14 +526,14 @@
   border: 1px solid rgba(255, 255, 255, 0.125);
   padding: 6px 8px;
   border-radius: 6px;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   width: 80px;
   font-size: 12px;
 }
 
 .wallet-action-button {
   background-color: var(--btn-primary-bg);
-  color: #FBF7F5;
+  color: var(--ds-ink);
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
@@ -550,7 +550,7 @@
 
 .wallet-refresh-button {
   background-color: rgba(255, 255, 255, 0.2);
-  color: #FBF7F5;
+  color: var(--ds-ink);
   padding: 6px 10px;
   border-radius: 6px;
   border: none;
@@ -561,7 +561,7 @@
 
 .wallet-destroy-button {
   background-color: rgba(220, 53, 69, 0.8);
-  color: #FBF7F5;
+  color: var(--ds-ink);
   padding: 6px 10px;
   border-radius: 6px;
   border: none;
@@ -960,10 +960,10 @@
 }
 
 .delete-button-3d:hover:not(:disabled) {
-  background-color: #e62222;
+  background-color: var(--color-error);
   box-shadow:
-    inset 0 0.0625em 0 0 #ff3636,
-    0 0.0625em 0 0 #c41b1b,
+    inset 0 0.0625em 0 0 var(--color-error),
+    0 0.0625em 0 0 rgba(239, 68, 68, 0.7),
     0 0.125em 0 0 #b01818,
     0 0.25em 0 0 #9c1515,
     0 0.3125em 0 0 #881212,
@@ -975,8 +975,8 @@
 .delete-button-3d:active:not(:disabled) {
   translate: 0 0.225em;
   box-shadow:
-    inset 0 0.03em 0 0 #ff3636,
-    0 0.03em 0 0 #c41b1b,
+    inset 0 0.03em 0 0 var(--color-error),
+    0 0.03em 0 0 rgba(239, 68, 68, 0.7),
     0 0.0625em 0 0 #b01818,
     0 0.125em 0 0 #9c1515,
     0 0.125em 0 0 #881212,
@@ -1017,10 +1017,10 @@
 }
 
 .disconnect-button-3d:hover:not(:disabled) {
-  background-color: #e62222;
+  background-color: var(--color-error);
   box-shadow:
-    inset 0 0.0625em 0 0 #ff3636,
-    0 0.0625em 0 0 #c41b1b,
+    inset 0 0.0625em 0 0 var(--color-error),
+    0 0.0625em 0 0 rgba(239, 68, 68, 0.7),
     0 0.125em 0 0 #b01818,
     0 0.25em 0 0 #9c1515,
     0 0.3125em 0 0 #881212,
@@ -1032,8 +1032,8 @@
 .disconnect-button-3d:active:not(:disabled) {
   translate: 0 0.225em;
   box-shadow:
-    inset 0 0.03em 0 0 #ff3636,
-    0 0.03em 0 0 #c41b1b,
+    inset 0 0.03em 0 0 var(--color-error),
+    0 0.03em 0 0 rgba(239, 68, 68, 0.7),
     0 0.0625em 0 0 #b01818,
     0 0.125em 0 0 #9c1515,
     0 0.125em 0 0 #881212,

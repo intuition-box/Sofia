@@ -46,7 +46,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
     .filter(([_, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)[0]
 
-  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as IntentionType] : '#C7866C'
+  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as IntentionType] : null
 
   // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
   const highestPredicateLevel = group.predicateHistory?.length > 0
@@ -59,7 +59,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
       className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}`}
       onClick={onClick}
       style={{
-        borderColor: dominantCert ? `${dominantColor}40` : undefined
+        borderColor: dominantColor ? `${dominantColor}40` : undefined
       }}
     >
       {/* Header with domain info */}

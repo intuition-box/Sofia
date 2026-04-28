@@ -69,14 +69,6 @@
 
 .wallet-connect-button:hover:not(:disabled) {
   background: var(--btn-primary-hover-bg);
-  transform: translateY(-1px);
-}
-
-/* Removed .wallet-button-background and .wallet-button-content - no longer needed */
-
-.wallet-connect-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(255, 110, 64, 0.3);
 }
 
 .wallet-connect-button:disabled {

@@ -45,8 +45,7 @@
 
 
 .follow-button.salmon-gradient-button:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(255, 198, 176, 0.30);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
 }
 
 .follow-button:disabled {

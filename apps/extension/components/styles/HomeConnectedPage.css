@@ -115,7 +115,7 @@
   left: -1px;
   right: -1px;
   bottom: -1px;
-  background-color: #0f0f23;
+  background-color: var(--ds-bg);
   border-radius: 0;
   border: 8px solid;
   border-image: linear-gradient(
@@ -315,7 +315,7 @@
 }
 
 .triplet-text .predicate {
-  color: #34d399;
+  color: var(--color-success);
   font-weight: 500;
   margin: 0 4px;
 }

@@ -119,19 +119,19 @@
 
 .batch-reward__tier-pill--pioneer {
   background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
+  color: var(--fun);
   border: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 .batch-reward__tier-pill--explorer {
   background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
+  color: var(--work);
   border: 1px solid rgba(96, 165, 250, 0.2);
 }
 
 .batch-reward__tier-pill--contributor {
   background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
+  color: var(--inspiration);
   border: 1px solid rgba(167, 139, 250, 0.2);
 }
 
@@ -202,19 +202,19 @@
 
 .batch-reward__item-tier--pioneer {
   background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
+  color: var(--fun);
   border: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 .batch-reward__item-tier--explorer {
   background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
+  color: var(--work);
   border: 1px solid rgba(96, 165, 250, 0.2);
 }
 
 .batch-reward__item-tier--contributor {
   background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
+  color: var(--inspiration);
   border: 1px solid rgba(167, 139, 250, 0.2);
 }
 
@@ -358,19 +358,19 @@
 
 .batch-receipt__tier--pioneer {
   background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
+  color: var(--fun);
   border: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 .batch-receipt__tier--explorer {
   background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
+  color: var(--work);
   border: 1px solid rgba(96, 165, 250, 0.2);
 }
 
 .batch-receipt__tier--contributor {
   background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
+  color: var(--inspiration);
   border: 1px solid rgba(167, 139, 250, 0.2);
 }
 

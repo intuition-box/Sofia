@@ -771,7 +771,7 @@
 
 .modal-success-icon {
   font-size: 20px;
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .modal-error-icon {
@@ -1011,7 +1011,6 @@
 
 .modal-btn.primary:hover:not(:disabled) {
   background: var(--btn-primary-hover-bg);
-  transform: translateY(-1px);
 }
 
 .modal-btn.primary.blue {
@@ -1865,7 +1864,6 @@
 
 .stake-btn-submit:hover:not(:disabled) {
   background: var(--btn-primary-hover-bg);
-  transform: translateY(-1px);
 }
 
 .stake-btn:disabled {

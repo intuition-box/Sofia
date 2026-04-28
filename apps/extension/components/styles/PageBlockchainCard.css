@@ -71,7 +71,7 @@
 }
 
 .credibility-content {
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }
 
 .credibility-analysis {
@@ -104,7 +104,7 @@
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: transparent;
   border-radius: var(--radius-lg, 12px);
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   font-family: var(--font-family-primary);
   font-size: var(--font-size-base, 14px);
   font-weight: 600;
@@ -142,7 +142,7 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: none;
   box-shadow: none;
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   font-weight: 700;
   position: relative;
   overflow: hidden;
@@ -190,7 +190,7 @@
 .distrust-btn {
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: none;
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   font-weight: 700;
   overflow: hidden;
   transition: var(--transition-slow, all 0.5s ease);
@@ -238,7 +238,7 @@
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid var(--color-text-secondary, #FBF7F5);
+  border-top: 2px solid var(--color-text-secondary, var(--ds-ink));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

@@ -22,7 +22,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 28px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   line-height: 1;
   margin-bottom: 4px;
   user-select: none;
@@ -308,7 +308,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin: 0;
 }
 
@@ -781,7 +781,7 @@
 
 .sub-tab.active {
   background: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 .sub-tab.has-claimable {
@@ -947,7 +947,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 28px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   line-height: 1;
 }
 
@@ -1026,7 +1026,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   line-height: 1;
   margin-right: 5px;
 }
@@ -1051,7 +1051,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin: 0 0 10px 0;
   text-align: left;
 }
@@ -1073,17 +1073,17 @@
 }
 
 .highlight-pioneer {
-  color: #FCD34D;
+  color: var(--fun);
   font-weight: 600;
 }
 
 .highlight-explorer {
-  color: #93C5FD;
+  color: var(--work);
   font-weight: 600;
 }
 
 .highlight-contributor {
-  color: #C4B5FD;
+  color: var(--inspiration);
   font-weight: 600;
 }
 
@@ -1217,7 +1217,7 @@
 .streak-vault-badge {
   font-size: 11px;
   font-weight: 600;
-  color: #EAB67A;
+  color: var(--fun);
   background: rgba(234, 182, 122, 0.15);
   padding: 2px 8px;
   border-radius: 10px;
@@ -1233,7 +1233,7 @@
 .streak-vault-title {
   font-size: 14px;
   font-weight: 600;
-  color: #EAB67A;
+  color: var(--fun);
 }
 
 .streak-vault-participants {
@@ -1267,7 +1267,7 @@
 }
 
 .streak-vault-value.positive {
-  color: #6ACC93;
+  color: var(--trusted);
 }
 
 .streak-vault-value.negative {
@@ -1309,7 +1309,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 22px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   line-height: 1;
   text-align: center;
 }
@@ -1484,7 +1484,7 @@
 
 .streak-bubble.validated {
   background: rgba(106, 204, 147, 0.2);
-  color: #6ACC93;
+  color: var(--trusted);
 }
 
 /* Streak Section (Daily & Streak quests) */
@@ -1605,7 +1605,7 @@
 
 .streak-card-bar-fill {
   height: 100%;
-  background: #EAB67A;
+  background: var(--fun);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -1982,7 +1982,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin: 0 0 12px 0;
   text-align: center;
 }

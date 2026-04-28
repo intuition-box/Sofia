@@ -37,7 +37,7 @@
 .website-icon {
   width: var(--size-icon-lg, 24px);
   height: var(--size-icon-lg, 24px);
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   opacity: 0.9;
 }
 
@@ -58,7 +58,7 @@
 .website-url-text {
   font-size: var(--font-size-base, 14px);
   font-weight: 600;
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

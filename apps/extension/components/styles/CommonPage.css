@@ -81,7 +81,7 @@
 }
 
 .trending-section .section-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 18px;
   font-weight: 600;
   text-align: left;
@@ -91,11 +91,11 @@
 
 /* Blue border for trending triplets */
 .border-blue {
-  border-left: 4px solid #4A90E2;
+  border-left: 4px solid var(--work);
 }
 
 .border-blue:hover {
-  border-left-color: #357ABD;
+  border-left-color: var(--work);
   box-shadow: 0 4px 20px rgba(74, 144, 226, 0.15);
 }
 
@@ -134,7 +134,7 @@
 }
 
 .bento-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 8px 0;
@@ -172,7 +172,7 @@
 }
 
 .bento-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 4px 0;
@@ -306,7 +306,7 @@
 }
 
 .group-bento-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 14px;
   font-weight: 600;
   margin: 0;
@@ -381,7 +381,7 @@
 }
 
 .group-bento-stats .stat-value {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 14px;
   font-weight: 600;
 }
@@ -449,7 +449,7 @@
 .back-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #faf7f3;
+  color: var(--ds-ink);
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -469,7 +469,7 @@
 }
 
 .group-detail-domain {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 18px;
   font-weight: 600;
   margin: 0;
@@ -483,15 +483,15 @@
 }
 
 /* Level colors for detail view */
-.group-detail-level.level-1 { color: #9CA3AF; background: rgba(156, 163, 175, 0.3); }
+.group-detail-level.level-1 { color: var(--ds-muted); background: rgba(143, 140, 168, 0.2); }
 .group-detail-level.level-2 { color: #22C55E; background: rgba(34, 197, 94, 0.3); }
-.group-detail-level.level-3 { color: #3B82F6; background: rgba(59, 130, 246, 0.3); }
-.group-detail-level.level-4 { color: #8B5CF6; background: rgba(139, 92, 246, 0.3); }
-.group-detail-level.level-5 { color: #F59E0B; background: rgba(245, 158, 11, 0.3); }
+.group-detail-level.level-3 { color: var(--work); background: rgba(123, 173, 224, 0.2); }
+.group-detail-level.level-4 { color: var(--inspiration); background: rgba(167, 139, 219, 0.2); }
+.group-detail-level.level-5 { color: var(--fun); background: rgba(228, 185, 90, 0.2); }
 .group-detail-level.level-6 { color: #EF4444; background: rgba(239, 68, 68, 0.3); }
 .group-detail-level.level-7 { color: var(--ds-accent); background: rgba(255, 198, 176, 0.30); }
-.group-detail-level.level-8 { color: #06B6D4; background: rgba(6, 182, 212, 0.3); }
-.group-detail-level.level-9 { color: #F97316; background: rgba(249, 115, 22, 0.3); }
+.group-detail-level.level-8 { color: var(--learning); background: rgba(92, 196, 214, 0.2); }
+.group-detail-level.level-9 { color: var(--music); background: rgba(224, 137, 106, 0.2); }
 .group-detail-level.level-10 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }
 
 .group-detail-stats {
@@ -515,7 +515,7 @@
 
 .stat-number {
   display: block;
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 20px;
   font-weight: 700;
 }
@@ -551,12 +551,12 @@
 }
 
 .identity-predicate {
-  color: #d79cc7;
+  color: var(--buying);
   font-weight: 600;
 }
 
 .identity-object {
-  color: #faf7f3;
+  color: var(--ds-ink);
 }
 
 .amplify-btn-inline {
@@ -601,7 +601,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #10B981;
+  color: var(--trusted);
   font-size: 12px;
 }
 
@@ -655,13 +655,13 @@
 
 .filter-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #faf7f3;
+  color: var(--ds-ink);
 }
 
 .filter-btn.active {
   background: rgba(255, 198, 176, 0.20);
   border-color: rgba(255, 198, 176, 0.50);
-  color: #faf7f3;
+  color: var(--ds-ink);
 }
 
 .url-list {
@@ -688,7 +688,7 @@
 }
 
 .url-row.on-chain {
-  border: 1px solid #d8ffcb6b;
+  border: 1px solid var(--ds-border-soft);
 }
 
 .url-row-main {
@@ -710,7 +710,7 @@
 }
 
 .url-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 13px;
   text-decoration: none;
   display: block;
@@ -812,7 +812,7 @@
 .cert-option {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #faf7f3;
+  color: var(--ds-ink);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 11px;
@@ -862,7 +862,7 @@
 }
 
 .groups-title {
-  color: #faf7f3;
+  color: var(--ds-ink);
   font-size: 16px;
   font-weight: 600;
   margin: 0;
@@ -875,7 +875,7 @@
 
 .groups-gold-badge {
   font-size: 12px;
-  color: #FBBF24;
+  color: var(--fun);
   border-radius: 12px;
   padding: 2px 8px;
   font-weight: 600;
@@ -907,7 +907,7 @@
 
 .sort-btn.active {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
 }
 
 .groups-loading,
@@ -1175,7 +1175,7 @@
 
 .group-gold-balance {
   text-align: center;
-  color: #FBBF24;
+  color: var(--fun);
   font-size: 12px;
   margin-top: 8px;
   opacity: 0.8;
@@ -1204,7 +1204,7 @@
 }
 
 .level-up-success .success-title {
-  color: #10B981;
+  color: var(--trusted);
   font-weight: 600;
   font-size: 14px;
 }
@@ -1267,7 +1267,7 @@
   padding: 16px;
   background: var(--ds-card);
   border-radius: 12px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(167, 139, 219, 0.2);
 }
 
 .amplify-header {
@@ -1278,7 +1278,7 @@
 }
 
 .amplify-title {
-  color: #8B5CF6;
+  color: var(--inspiration);
   font-size: 14px;
   font-weight: 600;
 }
@@ -1310,13 +1310,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  background: var(--inspiration);
   color: #fff;
 }
 
 .amplify-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(167, 139, 219, 0.4);
 }
 
 .amplify-btn:disabled {
@@ -1346,7 +1346,7 @@
 }
 
 .amplify-success .success-icon {
-  color: #10B981;
+  color: var(--trusted);
   font-size: 18px;
 }
 
@@ -1357,7 +1357,7 @@
 }
 
 .amplify-success .tx-link {
-  color: #10B981;
+  color: var(--trusted);
   font-size: 12px;
   text-decoration: none;
   padding: 4px 8px;

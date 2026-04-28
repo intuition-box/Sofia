@@ -235,8 +235,8 @@
 .podium-streak {
   font-size: 17px;
   font-weight: 600;
-  color: #eab67a;
-  background: #eab67a1f;
+  color: var(--fun);
+  background: rgba(228, 185, 90, 0.12);
   padding: 1px 6px;
   border-radius: 6px;
   white-space: nowrap;
@@ -319,8 +319,8 @@
 .leaderboard-streak {
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #eab67a;
-  background: rgba(234, 182, 122, 0.1);
+  color: var(--fun);
+  background: rgba(228, 185, 90, 0.12);
   padding: 2px var(--spacing-sm);
   border-radius: 10px;
   flex-shrink: 0;
@@ -339,7 +339,7 @@
 .leaderboard-shares {
   font-size: 14px;
   font-weight: 700;
-  color: #eab67a;
+  color: var(--fun);
 }
 
 .leaderboard-value {
@@ -377,7 +377,7 @@
   background: rgba(106, 204, 147, 0.15);
   border: 1px solid rgba(106, 204, 147, 0.3);
   border-radius: 8px;
-  color: #6acc93;
+  color: var(--trusted);
   font-size: 13px;
   cursor: pointer;
   transition: var(--transition-fast);

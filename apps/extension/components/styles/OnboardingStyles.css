@@ -70,7 +70,6 @@
 
 .onboarding-btn-primary:hover:not(:disabled) {
   background: var(--btn-primary-hover-bg);
-  transform: translateY(-1px);
 }
 
 .onboarding-btn-primary:disabled {

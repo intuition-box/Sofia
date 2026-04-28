@@ -258,7 +258,7 @@
   border: none;
   border-radius: 8px;
   padding: 6px 10px;
-  color: var(--color-text-secondary, #faf7f3);
+  color: var(--color-text-secondary, var(--ds-ink));
   cursor: pointer;
   font-size: 12px;
   transition: var(--transition-fast, background 0.2s);
@@ -272,7 +272,7 @@
 .trending-detail-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--category-color, var(--color-text-secondary, #faf7f3));
+  color: var(--category-color, var(--color-text-secondary, var(--ds-ink)));
 }
 
 .trending-detail-count {

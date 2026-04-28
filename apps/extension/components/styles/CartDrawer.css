@@ -234,8 +234,7 @@
 }
 
 .cart-drawer__submit-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: var(--btn-primary-hover-bg);
 }
 
 .cart-drawer__submit-btn:disabled {
@@ -297,8 +296,7 @@
 }
 
 .cart-fab:hover {
-  transform: scale(1.05);
-  box-shadow: none;
+  background: var(--btn-primary-hover-bg);
 }
 
 .cart-fab__icon {
