@@ -28,15 +28,16 @@
 }
 
 /* ─── Intentions Stats ─── */
+/* Primary section: takes more vertical space + stronger title */
 .intentions-stats-section {
-  margin-bottom: var(--spacing-lg, 16px);
+  margin-bottom: 24px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-sm, 8px);
+  margin-bottom: 12px;
 }
 
 .section-title {
@@ -44,11 +45,11 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-family-mono, "JetBrains Mono", monospace);
-  font-size: var(--font-size-sm, 12px);
-  font-weight: 600;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-ink);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 }
 
 /* ─── Portal Link ─── */
@@ -166,18 +167,21 @@
 }
 
 /* ─── Related Signals Section ─── */
+/* Secondary section — demoted: smaller title, more breathing room above */
 .signals-section {
   border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
-  padding-top: var(--spacing-md, 12px);
+  padding-top: 20px;
+  margin-top: 8px;
 }
 
 .signals-section-title {
-  font-size: var(--font-size-sm, 12px);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  color: var(--ds-muted);
   margin-bottom: var(--spacing-sm, 8px);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 }
 
 /* ─── Accordion Toggles ─── */

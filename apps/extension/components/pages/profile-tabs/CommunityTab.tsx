@@ -34,29 +34,37 @@ const CommunityTab = (props: CommunityTabProps) => {
 
   return (
     <div className="community-tab">
-      {/* Filter buttons / Tabs */}
-      <div className="filter-buttons">
+      {/* Filter buttons — DS pf-echoes-sort segmented control */}
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Community filter">
         <button
-          className={`filter-btn ${filterType === 'trust-circle' ? 'trustactive' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
+          aria-pressed={filterType === 'trust-circle'}
           onClick={() => setFilterType('trust-circle')}
         >
           Trust Circle
         </button>
         <button
-          className={`filter-btn ${filterType === 'following' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${filterType === 'following' ? 'active' : ''}`}
+          aria-pressed={filterType === 'following'}
           onClick={() => setFilterType('following')}
         >
           Following
         </button>
         <button
-          className={`filter-btn ${filterType === 'followers' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${filterType === 'followers' ? 'active' : ''}`}
+          aria-pressed={filterType === 'followers'}
           onClick={() => setFilterType('followers')}
         >
           Followers
         </button>
         {!isExternalProfile && (
           <button
-            className={`filter-btn ${filterType === 'explorer' ? 'active' : ''}`}
+            type="button"
+            className={`pf-sort-btn ${filterType === 'explorer' ? 'active' : ''}`}
+            aria-pressed={filterType === 'explorer'}
             onClick={() => setFilterType('explorer')}
           >
             Explore

@@ -101,11 +101,12 @@
 }
 
 .discovery-badge-rank {
-  font-size: var(--font-size-xs, 10px);
-  font-weight: 700;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.55));
   margin-top: 2px;
   line-height: 1;
+  letter-spacing: 0.04em;
 }
 
 /* Badge rank glow — semantic colors per discovery tier */

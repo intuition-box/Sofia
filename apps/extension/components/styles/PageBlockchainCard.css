@@ -78,7 +78,16 @@
 }
 
 .discovery-section {
-  margin-top: var(--spacing-md, 12px);
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
+/* Subtle separator between primary discovery actions (intentions) and
+   secondary context filter — gives breathing room without a hard divider. */
+.discovery-section + .interest-context {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ds-border-soft);
 }
 
 

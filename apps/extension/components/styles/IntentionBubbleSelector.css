@@ -91,10 +91,11 @@
 
 .intention-pills__separator {
   width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 24px;
+  background: rgba(255, 255, 255, 0.18);
   align-self: center;
   flex-shrink: 0;
+  margin: 0 4px;
 }
 
 .intention-pill:disabled {

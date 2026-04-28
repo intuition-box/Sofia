@@ -395,7 +395,7 @@
 .group-bento-progress {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .progress-bar-container {
@@ -415,6 +415,16 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 9px;
   text-align: right;
+  letter-spacing: 0.02em;
+}
+
+/* When the bento card is ready to level up, hoist the call-to-action label */
+.group-bento-card.can-level-up .progress-label {
+  color: var(--ds-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .certification-dots {
@@ -505,16 +515,18 @@
 
 .group-detail-stats {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  align-items: stretch;
 }
 
 /* Filled stat pills — solid intention bg + black text.
    3 sequential cards in group-detail-stats: URLs / On-chain / To certify.
-   Use :nth-child to differentiate semantically without TSX changes. */
+   Secondary cards (URLs / On-chain) are smaller; the .highlight (To certify)
+   is the action prompt and dominates the row. */
 .stat-card {
   flex: 1;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   text-align: center;
   border: none;
   color: #000;
@@ -528,8 +540,23 @@
   background: var(--trusted);
 }
 
+/* Highlight (To certify) — primary action prompt: 1.5x flex weight,
+   larger number, slightly rounder corners. */
 .stat-card.highlight {
+  flex: 1.5;
   background: var(--ds-accent);
+  border-radius: 16px;
+  padding: 14px 12px;
+}
+
+.stat-card.highlight .stat-number {
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.stat-card.highlight .stat-text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .stat-number {
@@ -537,6 +564,7 @@
   color: #000;
   font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .stat-text {
@@ -1448,11 +1476,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 16px 18px;
   background: linear-gradient(135deg, #B8860B 0%, #DAA520 25%, #FFD700 50%, #DAA520 75%, #B8860B 100%);
   background-size: 200% 100%;
   border: 1px solid rgba(255, 215, 0, 0.5);
-  border-radius: 10px;
+  border-radius: 12px;
   color: #1a1a1a;
   font-size: 14px;
   font-weight: 600;
@@ -1486,17 +1515,22 @@
 }
 
 .level-up-integrated-btn .level-up-text {
-  font-size: 15px;
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: -0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .level-up-integrated-btn .level-up-cost {
   padding: 4px 10px;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .level-up-integrated-btn .loading-text {
