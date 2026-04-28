@@ -63,19 +63,14 @@
   cursor: not-allowed;
 }
 
-/* Category Filter Chips */
+/* Category Filter Chips — wrap to next line instead of horizontal scroll */
 .circle-category-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
   padding: var(--spacing-sm) 0;
-  scrollbar-width: none;
   flex: 1;
   min-width: 0;
-}
-
-.circle-category-chips::-webkit-scrollbar {
-  display: none;
 }
 
 /* Verb filter chip — ported from explorer .vf-chip (feed-card.css).

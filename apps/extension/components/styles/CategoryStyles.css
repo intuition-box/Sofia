@@ -277,19 +277,21 @@
   margin-bottom: var(--spacing-md);
 }
 
+/* Search input — DS .cmp-search-input pattern from explorer ComposePage */
 .category-search-container {
   display: flex;
   align-items: center;
-  background: var(--color-bg-glass-light);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  transition: var(--transition-fast);
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  gap: 10px;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .category-search-container:focus-within {
-  border-color: var(--color-border-lighter);
-  background: var(--color-bg-glass-lighter);
+  border-color: var(--ds-ink);
+  background: var(--ds-card);
 }
 
 .category-search-input {
@@ -297,13 +299,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
 }
 
 .category-search-input::placeholder {
-  color: var(--color-text-placeholder);
+  color: var(--ds-muted);
 }
 
 .category-search-clear {

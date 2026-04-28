@@ -934,60 +934,37 @@
     0 0.0625em 0 0 #202020;
 }
 
-/* Delete Button 3D Style (Black with red hover) */
+/* Settings action button — DS pf-btn outlined style with destructive hover.
+   Replaces the old 3D button with heavy nested shadows (off-DS). */
 .delete-button-3d {
-  font: inherit;
-  background-color: #2a2a2a;
-  border: 0;
-  color: #e0e0e0;
-  border-radius: 0.5em;
-  font-size: 14px;
-  padding: 0.375em 1em;
-  font-weight: 600;
-  text-shadow: 0 0.0625em 0 #000;
-  box-shadow:
-    inset 0 0.0625em 0 0 #3a3a3a,
-    0 0.0625em 0 0 #252525,
-    0 0.125em 0 0 #202020,
-    0 0.25em 0 0 #1c1c1c,
-    0 0.3125em 0 0 #181818,
-    0 0.375em 0 0 #141414,
-    0 0.425em 0 0 #101010,
-    0 0.425em 0.5em 0 #0a0a0a;
-  transition: 0.15s ease;
-  cursor: pointer;
-  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  min-width: 100px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .delete-button-3d:hover:not(:disabled) {
-  background-color: var(--color-error);
-  box-shadow:
-    inset 0 0.0625em 0 0 var(--color-error),
-    0 0.0625em 0 0 rgba(239, 68, 68, 0.7),
-    0 0.125em 0 0 #b01818,
-    0 0.25em 0 0 #9c1515,
-    0 0.3125em 0 0 #881212,
-    0 0.375em 0 0 #741010,
-    0 0.425em 0 0 #600d0d,
-    0 0.425em 0.5em 0 #4c0a0a;
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .delete-button-3d:active:not(:disabled) {
-  translate: 0 0.225em;
-  box-shadow:
-    inset 0 0.03em 0 0 var(--color-error),
-    0 0.03em 0 0 rgba(239, 68, 68, 0.7),
-    0 0.0625em 0 0 #b01818,
-    0 0.125em 0 0 #9c1515,
-    0 0.125em 0 0 #881212,
-    0 0.2em 0 0 #741010,
-    0 0.225em 0 0 #600d0d,
-    0 0.225em 0.375em 0 #4c0a0a;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .delete-button-3d:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

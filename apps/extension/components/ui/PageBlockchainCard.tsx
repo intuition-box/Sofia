@@ -183,7 +183,7 @@ const PageBlockchainCard = () => {
   }, [cartToast])
 
   // UI toggle
-  const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
+  const [showExtendedMetrics, setShowExtendedMetrics] = useState(true)
 
   const isReady = status === "ready" || status === "refreshing"
   const isRefreshing = status === "refreshing"

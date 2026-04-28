@@ -4,17 +4,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  margin-top: 8px;
+  gap: 6px;
+  padding: 0;
+  margin-top: 0;
 }
 
 .interest-context__label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  font-family: 'Fraunces', serif;
-  letter-spacing: 0.5px;
-  text-transform: lowercase;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .interest-context__buttons {
@@ -24,39 +25,37 @@
   width: 100%;
 }
 
-/* --topic-color is injected per-button via inline style.
-   Hover / selected / certified = solid topic-color bg + black text
-   (matches DS topic-card pattern, aligned with extension's pill principle). */
+/* DS vf-chip pattern (matches the intention pills above) — neutral pill,
+   hover/selected/certified reveals topic color. */
 .interest-context__btn {
-  flex: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
-  background: var(--ds-card);
+  padding: 5px 10px;
+  background: var(--ds-bg);
   border: 1px solid var(--ds-border);
-  border-radius: var(--radius-lg, 12px);
-  color: var(--ds-ink);
-  font-family: var(--font-family-primary, "Geist", sans-serif);
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 999px;
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
   position: relative;
   overflow: hidden;
 }
 
-.interest-context__btn:hover:not(:disabled),
+.interest-context__btn:hover:not(:disabled):not(.interest-context__btn--selected):not(.interest-context__btn--certified) {
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+
 .interest-context__btn--selected,
 .interest-context__btn--certified {
   background: var(--topic-color);
   border-color: var(--topic-color);
   color: #000;
-}
-
-.interest-context__btn--selected,
-.interest-context__btn--certified {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .interest-context__btn:disabled {

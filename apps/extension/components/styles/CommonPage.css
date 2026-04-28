@@ -531,7 +531,7 @@
 
 .group-detail-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   align-items: stretch;
 }
@@ -563,22 +563,13 @@
   background: var(--trusted);
 }
 
-/* Highlight (To certify) — primary action prompt.
-   Same height as siblings (no padding/min-height drift), wider via grid
-   column, larger number for emphasis without breaking alignment. */
+/* Highlight (To certify) — same dimensions as siblings, just different bg. */
 .stat-card.highlight {
   background: var(--ds-accent);
-  border-radius: 16px;
-}
-
-.stat-card.highlight .stat-number {
-  font-size: 30px;
-  line-height: 1;
 }
 
 .stat-card.highlight .stat-text {
   font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
 .stat-number {

@@ -9,7 +9,7 @@ import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
-import { INTENTION_ITEMS } from "~/types/intentionCategories"
+import { INTENTION_ITEMS, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { VerbTag } from "@0xsofia/design-system"
 
 const formatTrust = (value: number): string =>
@@ -298,6 +298,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
               {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
                 const shares = getTotalShares(triplet)
 
+                const intentSlug = predicateLabelToIntentionType(triplet.predicate.label)
                 return (
                   <div
                     key={triplet.term_id}
@@ -310,9 +311,17 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
                       <span className="subject">
                         {triplet.subject.label}
                       </span>
-                      <span className="predicate">
-                        {triplet.predicate.label}
-                      </span>
+                      {intentSlug ? (
+                        <VerbTag
+                          intent={intentSlug}
+                          label={triplet.predicate.label}
+                          className="triplet-predicate-tag"
+                        />
+                      ) : (
+                        <span className="predicate">
+                          {triplet.predicate.label}
+                        </span>
+                      )}
                       <span className="object">
                         {triplet.object.label}
                       </span>

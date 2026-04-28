@@ -78,16 +78,15 @@
 }
 
 .discovery-section {
-  margin-top: 20px;
-  margin-bottom: 16px;
+  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
-/* Subtle separator between primary discovery actions (intentions) and
-   secondary context filter — gives breathing room without a hard divider. */
+/* Tight spacing between intention pills and context selector — same row feel */
 .discovery-section + .interest-context {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ds-border-soft);
+  margin-top: 4px;
+  padding-top: 0;
+  border-top: none;
 }
 
 
