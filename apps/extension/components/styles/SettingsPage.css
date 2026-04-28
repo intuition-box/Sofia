@@ -623,19 +623,30 @@
 
 /* Wallet Address Display */
 .wallet-address-display {
-  font-family: monospace;
-  font-size: 14px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   color: var(--ds-ink);
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 8px 16px;
+  background: var(--ds-bg-subtle);
+  padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
+  border: 1px solid var(--ds-border);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .wallet-address-display:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
+}
+
+/* Version row value (right side) */
+.settings-version-value {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
 }
 
 /* Status Button with Animation */
@@ -935,7 +946,8 @@
 }
 
 /* Default settings action button — outlined neutral pill.
-   Color goes ON THE BACKGROUND on hover, never on border + typo. */
+   Color goes ON THE BACKGROUND on hover, never on border + typo.
+   Works for both <button> and <a> (no underline on anchor). */
 .delete-button-3d {
   display: inline-flex;
   align-items: center;
@@ -950,6 +962,7 @@
   padding: 8px 14px;
   cursor: pointer;
   min-width: 100px;
+  text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 

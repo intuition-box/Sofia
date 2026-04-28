@@ -158,10 +158,8 @@ const SettingsPage = () => {
 
       <h2 className="section-title">Settings</h2>
 
-      {/* Settings Section */}
+      {/* === Account === */}
       <div className="settings-section">
-
-        {/* Connected Wallet */}
         {account && (
           <div className="settings-item">
             <span>Connected Wallet</span>
@@ -171,7 +169,14 @@ const SettingsPage = () => {
           </div>
         )}
 
-        {/* Data Tracking */}
+        <div className="settings-item">
+          <span>Wallet Connection</span>
+          <WalletConnectionButton />
+        </div>
+      </div>
+
+      {/* === Data & Privacy === */}
+      <div className="settings-section">
         <div className="settings-item">
           <div className="settings-item-content">
             <span>Data Tracking</span>
@@ -180,58 +185,6 @@ const SettingsPage = () => {
           <SwitchButton isEnabled={isTrackingEnabled} onToggle={toggleTracking} />
         </div>
 
-        {/* Status */}
-        <div className="settings-item">
-          <span>Status</span>
-          <a
-            href="https://status.intuition.sh/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="available-for-btn"
-          >
-            <div className="circle">
-              <div className="dot"></div>
-              <div className="outline"></div>
-            </div>
-            View Mainnet Status
-          </a>
-        </div>
-
-        {/* Wallet Connection */}
-        <div className="settings-item">
-          <span>Wallet Connection</span>
-          <WalletConnectionButton />
-        </div>
-
-        {/* Import Data */}
-        <div className="settings-item">
-          <div className="settings-item-content">
-            <span>Import Data</span>
-            <span className="settings-item-description">
-              Fetch and analyze your bookmarks
-            </span>
-          </div>
-          <button
-            onClick={handleImportData}
-            disabled={isImporting}
-            className="delete-button-3d noselect"
-          >
-            {isImporting ? 'Importing...' : 'Import'}
-          </button>
-        </div>
-
-        {/* Replay Tutorial */}
-        <div className="settings-item">
-          <span>Tutorial</span>
-          <button
-            onClick={() => navigateTo('onboarding-tutorial')}
-            className="delete-button-3d noselect"
-          >
-            Tutorial
-          </button>
-        </div>
-
-        {/* Group Auto-Cleanup */}
         <div className="settings-item">
           <div className="settings-item-content">
             <span>Auto-Cleanup Suggestions</span>
@@ -260,8 +213,87 @@ const SettingsPage = () => {
             />
           </div>
         )}
+      </div>
 
-        {/* Clear All Data */}
+      {/* === Actions === */}
+      <div className="settings-section">
+        <div className="settings-item">
+          <div className="settings-item-content">
+            <span>Import Data</span>
+            <span className="settings-item-description">
+              Fetch and analyze your bookmarks
+            </span>
+          </div>
+          <button
+            onClick={handleImportData}
+            disabled={isImporting}
+            className="delete-button-3d noselect"
+          >
+            {isImporting ? 'Importing...' : 'Import'}
+          </button>
+        </div>
+
+        <div className="settings-item">
+          <span>Tutorial</span>
+          <button
+            onClick={() => navigateTo('onboarding-tutorial')}
+            className="delete-button-3d noselect"
+          >
+            Tutorial
+          </button>
+        </div>
+      </div>
+
+      {/* === About === */}
+      <div className="settings-section">
+        <div className="settings-item">
+          <span>Status</span>
+          <a
+            href="https://status.intuition.sh/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="available-for-btn"
+          >
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            View Mainnet Status
+          </a>
+        </div>
+
+        <div className="settings-item">
+          <span>Privacy Policy</span>
+          <a
+            href="https://doc.sofia.intuition.box/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="delete-button-3d noselect"
+          >
+            View
+          </a>
+        </div>
+
+        <div className="settings-item">
+          <span>Terms &amp; Conditions</span>
+          <a
+            href="https://doc.sofia.intuition.box/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="delete-button-3d noselect"
+          >
+            View
+          </a>
+        </div>
+
+        <div className="settings-item">
+          <span>Version</span>
+          <span className="settings-version-value">v{packageJson.version}</span>
+        </div>
+      </div>
+
+      {/* === Danger zone === */}
+      <div className="settings-section">
         <div className="settings-item">
           <span>Clear All Data</span>
           <button
@@ -272,15 +304,7 @@ const SettingsPage = () => {
             {isClearing ? 'Clearing...' : 'Delete'}
           </button>
         </div>
-
       </div>
-
-      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', opacity: 0.6 }}>
-        <a href="https://doc.sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a> · <a href="https://doc.sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms & Conditions</strong></a>
-      </p>
-      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '8px' }}>
-        v{packageJson.version}
-      </p>
     </div>
   )
 }
