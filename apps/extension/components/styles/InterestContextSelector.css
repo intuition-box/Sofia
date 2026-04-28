@@ -24,40 +24,37 @@
   width: 100%;
 }
 
+/* --topic-color is injected per-button via inline style.
+   Hover / selected / certified = solid topic-color bg + black text
+   (matches DS topic-card pattern, aligned with extension's pill principle). */
 .interest-context__btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-lg, 12px);
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--ds-ink);
   font-family: var(--font-family-primary, "Geist", sans-serif);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   position: relative;
   overflow: hidden;
 }
 
-.interest-context__btn:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.35);
-  color: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.interest-context__btn:hover:not(:disabled),
+.interest-context__btn--selected,
+.interest-context__btn--certified {
+  background: var(--topic-color);
+  border-color: var(--topic-color);
+  color: #000;
 }
 
-.interest-context__btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.interest-context__btn--selected {
-  font-weight: 700;
-}
-
+.interest-context__btn--selected,
 .interest-context__btn--certified {
   font-weight: 700;
 }

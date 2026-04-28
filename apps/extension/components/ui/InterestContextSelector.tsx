@@ -31,19 +31,13 @@ export const InterestContextSelector = memo(({
         {interests.map(({ topicSlug, label, color }) => {
           const isSelected = selectedContext === topicSlug
           const isCertified = certifiedContexts.includes(topicSlug)
-          const isActive = isSelected || isCertified
           return (
             <button
               key={topicSlug}
               className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""} ${isCertified ? "interest-context__btn--certified" : ""}`}
               onClick={() => handleClick(topicSlug)}
               disabled={disabled}
-              style={isActive ? {
-                borderColor: color,
-                color,
-                backgroundColor: `${color}${isCertified ? '25' : '20'}`,
-                boxShadow: isSelected ? `0 0 12px ${color}30` : undefined,
-              } : undefined}
+              style={{ '--topic-color': color } as React.CSSProperties}
             >
               {label}
             </button>
