@@ -41,6 +41,12 @@ export function useDeposit() {
           // immediately. WS will overwrite with the true indexed shares
           // within a couple of seconds.
           applyOptimisticPosition(qc, wallet.address, termId, 1n)
+          // Triples don't get a per-slug optimistic bump (no atom mapping),
+          // so re-fetch any feed that exposes a server-derived
+          // userSupported / userOpposed flag — the indexer catches up
+          // quickly enough that the refetch lands the green thumb without
+          // waiting on the WS push.
+          qc.invalidateQueries({ queryKey: ['circle-feed'] })
         }
         return result
       } catch (err: any) {
@@ -74,6 +80,7 @@ export function useDeposit() {
           for (const item of items) {
             applyOptimisticPosition(qc, wallet.address, item.termId, 1n)
           }
+          qc.invalidateQueries({ queryKey: ['circle-feed'] })
         }
         return result
       } catch (err: any) {

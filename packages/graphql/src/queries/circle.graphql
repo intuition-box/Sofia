@@ -163,6 +163,7 @@ query GetFollowingCount($address: String!) {
 query GetSofiaTrustedActivity(
   $trustedWallets: [String!]!
   $proxy: String!
+  $userAddresses: [String!]!
   $limit: Int!
   $offset: Int!
 ) {
@@ -275,6 +276,22 @@ query GetSofiaTrustedActivity(
         value {
           thing {
             url
+          }
+        }
+      }
+      term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $userAddresses } }) {
+            shares
+          }
+        }
+      }
+      counter_term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $userAddresses } }) {
+            shares
           }
         }
       }

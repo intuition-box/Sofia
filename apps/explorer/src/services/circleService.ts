@@ -17,7 +17,21 @@ export interface CircleItem {
   certifierAddress: string
   intentions: string[]
   timestamp: string
-  intentionVaults: Record<string, { termId: string; counterTermId: string }>
+  intentionVaults: Record<
+    string,
+    {
+      termId: string
+      counterTermId: string
+      /** Total position count on the cert triple summed across all curves (support side). */
+      supportCount: number
+      /** Total position count on the counter term summed across all curves (oppose side). */
+      opposeCount: number
+      /** True if any of the user's linked wallets holds shares > 0 on the support side. */
+      userSupported: boolean
+      /** True if any of the user's linked wallets holds shares > 0 on the oppose side. */
+      userOpposed: boolean
+    }
+  >
   /** Topic slugs from nested "in context of" triples (e.g. ["tech-dev", "web3-crypto"]) */
   topicContexts: string[]
 }
@@ -87,10 +101,12 @@ export async function fetchCircleFeed(
 
   // GraphQL stores addresses in checksum case
   const checksumWallets = trustedWallets.map((w) => getAddress(w))
+  const checksumUserWallets = addresses.map((w) => getAddress(w))
 
   const data = await useGetSofiaTrustedActivityQuery.fetcher({
     trustedWallets: checksumWallets,
     proxy: getAddress(SOFIA_PROXY_ADDRESS),
+    userAddresses: checksumUserWallets,
     limit,
     offset,
   })()
