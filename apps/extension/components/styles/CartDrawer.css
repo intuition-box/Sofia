@@ -103,9 +103,10 @@
 }
 
 .cart-drawer__item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
   align-items: center;
-  gap: 10px;
+  gap: 10px 12px;
   padding: 10px 8px;
   border-radius: 12px;
   transition: background 0.15s;

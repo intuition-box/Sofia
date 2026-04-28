@@ -381,33 +381,34 @@
   font-family: 'Fraunces', serif;
 }
 
+/* Share-on-X button — primary CTA, parity with Claim All sizing */
 .batch-receipt__share-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 10px 16px;
+  min-height: 44px;
+  padding: 12px 20px;
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   color: #fff;
-  font-size: 13px;
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .batch-receipt__share-btn:hover {
   background: #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .batch-receipt__share-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 .batch-receipt__share-icon {

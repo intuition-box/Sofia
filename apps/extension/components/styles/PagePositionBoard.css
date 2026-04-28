@@ -71,14 +71,36 @@
 /* ── Rank ── */
 
 .position-board__rank {
-  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-very-muted);
-  min-width: 24px;
+  color: var(--ds-muted);
+  min-width: 26px;
   text-align: center;
+  letter-spacing: 0.04em;
 }
 
-.position-board__item:first-child .position-board__rank {
+/* Top 3 — celebrate medals: bigger rank + accent left border on the row */
+.position-board__item:nth-child(1) {
+  border-left: 3px solid #FFD700; /* gold */
+}
+.position-board__item:nth-child(2) {
+  border-left: 3px solid #C0C0C0; /* silver */
+}
+.position-board__item:nth-child(3) {
+  border-left: 3px solid #CD7F32; /* bronze */
+}
+.position-board__item:nth-child(1) .position-board__rank,
+.position-board__item:nth-child(2) .position-board__rank,
+.position-board__item:nth-child(3) .position-board__rank {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.position-board__item:nth-child(1) .position-board__label,
+.position-board__item:nth-child(2) .position-board__label,
+.position-board__item:nth-child(3) .position-board__label {
+  font-weight: 700;
   color: var(--ds-ink);
 }
 

@@ -2575,15 +2575,19 @@
 
 /* ========== COST BREAKDOWN SUMMARY ========== */
 
+/* Cost summary — clear vertical rhythm:
+   - main rows (Deposit, Total): primary text color, bigger
+   - sub-rows (pool / fees breakdown): muted, indented
+   - dividers: 12px breathing space between sections (not 2px) */
 .weight-modal-cost-summary {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .weight-modal-cost-row {
@@ -2591,43 +2595,53 @@
   justify-content: space-between;
   align-items: center;
   font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  line-height: 1.4;
 }
 
 .weight-modal-cost-sub {
-  padding-left: 12px;
+  padding-left: 14px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+  color: var(--ds-muted);
 }
 
 .weight-modal-cost-fee {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+  color: var(--ds-muted);
 }
 
 .weight-modal-cost-fees-subtotal {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 2px;
+  color: var(--ds-ink-soft);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
 }
 
+/* Section divider — 12px breathing space + a hairline rule */
 .weight-modal-cost-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 2px 0;
+  height: 0;
+  border-top: 1px solid var(--ds-border-soft);
+  margin: 8px 0;
 }
 
+/* Total — final emphasized row */
 .weight-modal-cost-total {
-  font-size: 13px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 14px;
   font-weight: 700;
-  color: #ffb659;
+  color: var(--ds-accent);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
 }
 
 .weight-modal-cost-balance {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ds-muted);
 }
 
 .weight-modal-insufficient {
