@@ -794,19 +794,13 @@
   color: var(--ds-ink);
 }
 
-.sub-tab.has-claimable {
-  border: 1px solid rgba(255, 215, 0, 0.4);
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25), 0 0 16px rgba(255, 215, 0, 0.1);
-  animation: sub-tab-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes sub-tab-glow {
-  from {
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.2), 0 0 12px rgba(255, 215, 0, 0.08);
-  }
-  to {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.35), 0 0 20px rgba(255, 215, 0, 0.15);
-  }
+/* Claimable indicator — dashed border (mirrors explorer "create new circle"
+   card) instead of yellow breathing glow. */
+.sub-tab.has-claimable,
+.pf-sort-btn.has-claimable {
+  border: 1px dashed var(--ds-accent);
+  box-shadow: none;
+  animation: none;
 }
 
 /* ========== STATS TAB CONTENT ========== */

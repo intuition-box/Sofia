@@ -1,93 +1,136 @@
-/* ─── Shimmer Animation ─── */
+/* Shimmer animation — moves a soft highlight across the surface */
 @keyframes shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: 200px 0; }
+  0% { background-position: -300px 0; }
+  100% { background-position: 300px 0; }
+}
+
+/* Shared shimmer surface for all skeleton primitives */
+.skeleton-line,
+.skeleton-circle,
+.blockchain-skeleton__favicon,
+.blockchain-skeleton__badge,
+.blockchain-skeleton__pill,
+.blockchain-skeleton__sep,
+.blockchain-skeleton__bar {
+  background: linear-gradient(
+    90deg,
+    var(--ds-bg-subtle) 25%,
+    var(--ds-card) 50%,
+    var(--ds-bg-subtle) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 
 /* ─── Base Skeleton Elements ─── */
 .skeleton-line {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
 .skeleton-circle {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-/* ─── PageBlockchain Skeleton ─── */
+/* ─── PageBlockchainCard Skeleton ─── */
 .blockchain-skeleton {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px;
+  padding: 0;
 }
 
-.blockchain-skeleton__header {
+/* Website header — mirrors .website-info-container */
+.blockchain-skeleton__website {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+}
+
+.blockchain-skeleton__favicon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  border: 1px solid var(--ds-border-soft);
+}
+
+.blockchain-skeleton__website-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.blockchain-skeleton__badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Cert section — mirrors .cert-section + .cert-section-title */
+.blockchain-skeleton__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 0;
+}
+
+.blockchain-skeleton__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.blockchain-skeleton__pill {
+  height: 28px;
+  border-radius: 15px;
+  border: 1px solid var(--ds-border);
+}
+
+.blockchain-skeleton__sep {
+  width: 1px;
+  height: 24px;
+  background: var(--ds-border);
+  margin: 0 4px;
+  border: none;
+  animation: none;
+}
+
+/* Extended metrics preview — mirrors .intentions-stats-section */
+.blockchain-skeleton__metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 12px;
+}
+
+.blockchain-skeleton__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockchain-skeleton__bar-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.blockchain-skeleton__header-text {
+.blockchain-skeleton__bar {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.blockchain-skeleton__buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.blockchain-skeleton__btn {
-  flex: 1;
-  height: 40px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.blockchain-skeleton__pills {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.blockchain-skeleton__pill {
-  width: 60px;
-  height: 28px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid var(--ds-border-soft);
 }
