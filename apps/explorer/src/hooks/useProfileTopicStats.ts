@@ -2,8 +2,9 @@
  * useProfileTopicStats — per-topic stats for the ProfileDetailsPanel.
  *
  * Pulls everything the panel needs out of the taxonomy + connections +
- * score data: categories matched, connected platforms, topic score.
- * Signals / pnl stay at 0 until the real activity series is wired.
+ * score data: categories matched, connected platforms, topic score, and
+ * the count of platforms that produced signals on the topic. Per-topic
+ * P&L stays `null` until an aggregate is exposed at that grain.
  */
 import { useMemo } from 'react'
 import { getTopicEmoji } from '@/config/topicEmoji'
@@ -52,8 +53,8 @@ export function useProfileTopicStats({
           color: topic.color ?? getIntentionColor('inspiration'),
           categoriesCount,
           platformsCount,
-          signals: 0,
-          pnl: 0,
+          signals: score?.explanation?.platformCount ?? 0,
+          pnl: null,
           score: Math.round(
             score?.score ?? categoriesCount * 5 + platformsCount * 10,
           ),

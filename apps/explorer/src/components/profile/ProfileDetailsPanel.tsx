@@ -16,10 +16,10 @@ export interface ProfileTopicStats {
   color: string
   categoriesCount: number
   platformsCount: number
-  /** Activity / signal count — can be 0 until real series is wired. */
+  /** Number of connected platforms that produced signals on this topic. */
   signals: number
-  /** Mock trust P&L in TRUST units. */
-  pnl: number
+  /** Trust P&L in TRUST units. `null` while no per-topic aggregate is exposed. */
+  pnl: number | null
   /** Topic score (cats × 5 + plats × 10 convention from proto). */
   score: number
 }
@@ -78,12 +78,15 @@ export default function ProfileDetailsPanel({
   const score = useAggregate
     ? topics.reduce((a, s) => a + s.score, 0)
     : (selectedTopic?.score ?? 0)
-  const pnl = useAggregate
-    ? topics.reduce((a, s) => a + s.pnl, 0)
-    : (selectedTopic?.pnl ?? 0)
-
-  // Mock weekly trend — identical to the proto (8.2% focused / 12.4% overview).
-  const scoreDelta = isAll ? 12.4 : 8.2
+  // P&L is null whenever no contributing topic has a real per-topic aggregate.
+  // Aggregate sum across topics; if every topic reports null, the row is hidden.
+  const pnlContribs = useAggregate
+    ? topics.map((s) => s.pnl)
+    : [selectedTopic?.pnl ?? null]
+  const hasPnl = pnlContribs.some((v) => v !== null)
+  const pnl = hasPnl
+    ? pnlContribs.reduce((a: number, v) => a + (v ?? 0), 0)
+    : null
 
   const kicker = isAll ? 'Overview' : isVerb ? 'Intent' : 'Topic'
   const scoreLabel = isAll
@@ -110,12 +113,6 @@ export default function ProfileDetailsPanel({
       <div className="pc-details-hero">
         <span className="pc-details-score">{score}</span>
         <span className="pc-details-score-label">{scoreLabel}</span>
-        <span
-          className="pc-details-delta"
-          style={{ color: 'var(--trusted, #6dd4a0)' }}
-        >
-          ▲ {scoreDelta.toFixed(1)}%
-        </span>
       </div>
       <div className="pc-details-list">
         <div className="pc-details-row">
@@ -130,15 +127,23 @@ export default function ProfileDetailsPanel({
           <span className="pc-details-row-label">Signals</span>
           <span className="pc-details-row-value">{signals}</span>
         </div>
-        <div className="pc-details-row">
-          <span className="pc-details-row-label">Trust P&L</span>
-          <span
-            className="pc-details-row-value"
-            style={{ color: 'var(--trusted, #6dd4a0)' }}
-          >
-            +{pnl.toFixed(1)} T
-          </span>
-        </div>
+        {pnl !== null && (
+          <div className="pc-details-row">
+            <span className="pc-details-row-label">Trust P&L</span>
+            <span
+              className="pc-details-row-value"
+              style={{
+                color:
+                  pnl >= 0
+                    ? 'var(--trusted, #6dd4a0)'
+                    : 'var(--distrusted, #e87c7c)',
+              }}
+            >
+              {pnl >= 0 ? '+' : ''}
+              {pnl.toFixed(1)} T
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )
