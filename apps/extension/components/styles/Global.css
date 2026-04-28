@@ -75,11 +75,12 @@ body {
   --color-hover-light: var(--ds-accent);
   --color-gradient-button: var(--btn-primary-bg);
 
-  /* ── Primary button tokens (mirrors shadcn `bg-primary` / `hover:bg-primary/90`
-        used by DS Button default variant — opacity-based hover, no shadow) ── */
-  --btn-primary-bg: var(--ds-ink);
-  --btn-primary-fg: var(--ds-bg);
-  --btn-primary-hover-bg: rgba(245, 243, 255, 0.9);
+  /* ── Primary button tokens (mirrors explorer/DS shadcn — primary is the
+        peach accent, NOT white. --primary: #ffc6b0; --primary-foreground:
+        #1a0a04. Hover = bg-primary/90 (peach at 90% opacity). ) ── */
+  --btn-primary-bg: var(--ds-accent);
+  --btn-primary-fg: #1a0a04;
+  --btn-primary-hover-bg: rgba(255, 198, 176, 0.9);
   --btn-primary-radius: 8px;
   --btn-primary-shadow: none;
   
