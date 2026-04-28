@@ -2576,8 +2576,8 @@
 /* ========== APPLY TO ALL (batch weight) ========== */
 
 .weight-modal-apply-all {
-  background: rgba(255, 182, 89, 0.04);
-  border: 1px solid rgba(255, 182, 89, 0.15);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 8px;
@@ -2585,11 +2585,12 @@
 
 .weight-modal-apply-all__label {
   display: block;
-  font-size: 11px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
   font-weight: 600;
-  color: rgba(255, 182, 89, 0.7);
+  color: var(--ds-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
 }
 

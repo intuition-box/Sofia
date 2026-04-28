@@ -279,28 +279,36 @@
 }
 
 .atom-label {
-  color: var(--color-text-secondary, var(--ds-ink));
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-weight: 600;
   font-size: var(--font-size-sm, 12px);
 }
 
 .atom-type {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  color: var(--ds-muted);
   padding: 2px var(--spacing-sm, 8px);
   border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-xs, 10px);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 /* ─── TVL Badge (compact chip) ─── */
 .tvl-badge {
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ADE80;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  color: var(--trusted);
   padding: 1px 6px;
   border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 
@@ -316,18 +324,18 @@
 }
 
 .triplets-section .triplet-item {
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-md, 8px);
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   margin-bottom: 0px;
 }
 
 .triplets-section .triplet-item.clickable:hover {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
-  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
   transform: translateY(-1px);
 }
 
@@ -344,24 +352,32 @@
 .triplets-section .triplet-text .object {
   padding: 4px 8px;
   border-radius: var(--radius-md, 8px);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-xs, 10px);
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
 }
 
 .triplets-section .triplet-text .subject,
 .triplets-section .triplet-text .object {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-ink-soft);
 }
 
 .triplets-section .triplet-text .predicate {
   color: var(--ds-ink);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 9px;
 }
 
 .sort-toggle {
   display: flex;
   gap: 2px;
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   border-radius: var(--radius-sm, 4px);
   padding: 2px;
 }
@@ -369,19 +385,23 @@
 .sort-toggle .sort-btn {
   padding: 2px var(--spacing-sm, 8px);
   border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .sort-toggle .sort-btn:hover {
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  color: var(--ds-ink);
 }
 
 .sort-toggle .sort-btn.active {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, var(--ds-ink));
+  background: var(--ds-ink);
+  color: var(--ds-bg);
 }

@@ -12,7 +12,7 @@
 /* Contours des formes S avec halo */
 .sofia-loader-container .outline-path {
   fill: none;
-  stroke: #FFF8EE;
+  stroke: var(--ds-ink, #FFF8EE);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;

@@ -12,14 +12,14 @@
 
   /* Colors */
   --bookmark-text-primary: var(--ds-ink);
-  --bookmark-text-secondary: rgba(255, 255, 255, 0.79);
-  --bookmark-text-muted: rgba(255, 255, 255, 0.6);
+  --bookmark-text-secondary: var(--ds-ink-soft);
+  --bookmark-text-muted: var(--ds-muted);
   --bookmark-accent: var(--btn-primary-bg);
   --bookmark-accent-hover: var(--btn-primary-hover-bg);
   --bookmark-border: var(--ds-border);
   --bookmark-border-hover: var(--ds-accent);
-  --bookmark-bg-card: #2d2b2c;
-  --bookmark-bg-glass: rgba(0, 0, 0, 0.3);
+  --bookmark-bg-card: var(--ds-card);
+  --bookmark-bg-glass: var(--ds-bg-subtle);
 
   /* Typography */
   --bookmark-font-size-sm: 12px;
@@ -43,21 +43,19 @@
 /* ========== BOOKMARK CARD ========== */
 .bookmark-card {
   position: relative;
-  background-color: rgba(0, 0, 0, 0.377);
+  background-color: var(--ds-card);
   border-radius: var(--bookmark-radius-lg);
   padding: var(--bookmark-card-margin);
-  backdrop-filter: blur(50px) saturate(100%);
-  -webkit-backdrop-filter: blur(50px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: all 0.3s ease;
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .bookmark-card:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.486);
+  background-color: var(--ds-card);
+  border-color: var(--ds-ink-soft);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: none;
 }
 
 /* Card titles in Fraunces (DS display font) */
@@ -98,16 +96,15 @@
 
 /* Bouton New List avec couleurs inversées */
 .bookmark-header .btn.primary:not(.iridescence-btn) {
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
 }
 
 .bookmark-header .btn.primary:not(.iridescence-btn):hover:not(:disabled) {
-  backdrop-filter: blur(20px);
-  color: var(--color-text-secondary);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-button-hover);
+  color: var(--ds-ink);
+  border-color: var(--ds-accent);
+  box-shadow: none;
 }
 
 /* Modal Overlay pour les bookmarks - Positionné EN HAUT */
@@ -132,8 +129,8 @@
   border-radius: var(--radius-lg);
   max-width: 400px;
   width: 90%;
-  border: 1px solid var(--color-border-muted);
-  background: #2d2b2c;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
   max-height: calc(100vh - 80px);  /* Hauteur max ajustée pour l'espace du haut */
   z-index: var(--z-modal);
   overflow: auto;
@@ -157,9 +154,11 @@
 /* Titres dans les modals */
 .bookmark-modal-title {
   margin: 0 0 var(--spacing-lg) 0;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-xl);
-  font-weight: 600;
+  color: var(--ds-ink);
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 /* Labels */
@@ -207,19 +206,20 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
 }
 
 .bookmark-input::placeholder {
-  color: var(--color-text-placeholder);
+  color: var(--ds-muted);
 }
 
 .bookmark-input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--ds-accent);
   box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.20);
 }
 
@@ -228,21 +228,22 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
   resize: vertical;
   min-height: 60px;
 }
 
 .bookmark-textarea::placeholder {
-  color: var(--color-text-placeholder);
+  color: var(--ds-muted);
 }
 
 .bookmark-textarea:focus {
   outline: none;
-  border-color: rgba(255, 198, 176, 0.60);
+  border-color: var(--ds-accent);
   box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.20);
 }
 
@@ -251,15 +252,16 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
 }
 
 .bookmark-select:focus {
   outline: none;
-  border-color: rgba(255, 198, 176, 0.60);
+  border-color: var(--ds-accent);
   box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.20);
 }
 
@@ -267,44 +269,48 @@
 .bookmark-button {
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
   cursor: pointer;
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
   transition: var(--transition-fast);
 }
 
 .bookmark-button:hover {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(209, 96, 92, 0.6);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
 }
 
 /* Bouton primaire */
 .bookmark-button-primary {
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-muted);
+  border: 1px solid var(--ds-border);
   background: var(--btn-primary-bg);
-  
-  color: black;
+  color: var(--btn-primary-fg);
   cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  font-weight: 600;
   font-size: var(--font-size-base);
   transition: var(--transition-fast);
 }
 
 .bookmark-button-primary:hover {
-  border-color: rgb(255, 174, 142);
+  background: var(--btn-primary-hover-bg);
+  border-color: transparent;
 }
 
 /* Bouton désactivé */
 .bookmark-button-disabled {
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-muted);
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-text-placeholder);
+  border: 1px solid var(--ds-border-soft);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted-soft);
   cursor: not-allowed;
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
 }
 
@@ -317,31 +323,37 @@
 /* Preview du triplet */
 .bookmark-triplet-preview {
   padding: var(--spacing-md);
-  background: var(--color-bg-glass);
+  background: var(--ds-bg-subtle);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
-  border: 1px solid var(--color-border-muted);
+  border: 1px solid var(--ds-border);
 }
 
 .bookmark-triplet-preview-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.79);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
   margin-bottom: 4px;
 }
 
 .bookmark-triplet-preview-content {
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--ds-ink);
 }
 
 /* Message d'état vide */
 .bookmark-empty-message {
   padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
   border-radius: 8px;
   margin-bottom: 16px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.79);
+  color: var(--ds-ink-soft);
 }
 
 /* Empty state pour BookmarkTab */
@@ -351,17 +363,19 @@
 }
 
 .bookmark-empty-state p {
-  color: #9ca3af;
+  color: var(--ds-muted);
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
-  line-height: 1.6;        /* Espacement normal entre les lignes */
-  margin: 0 0 12px 0;      /* Espacement entre les paragraphes */
+  line-height: 1.6;
+  margin: 0 0 12px 0;
 }
 
 .bookmark-empty-subtext {
-  color: #6b7280;
+  color: var(--ds-muted-soft);
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   margin-top: 8px;
-  line-height: 1.6;        /* Espacement normal entre les lignes */
+  line-height: 1.6;
 }
 
 /* Conteneurs */
@@ -381,13 +395,16 @@
 
 /* Header styles pour BookmarkTab */
 .bookmark-header {
-  border-bottom: 1px solid var(--color-border-muted);
+  border-bottom: 1px solid var(--ds-border);
   margin-top: 5px;
 }
 
 .bookmark-header-title {
   margin: 0;
-  color: var(--color-text-primary);
+  color: var(--ds-ink);
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   font-size: var(--font-size-xl);
 }
 
@@ -395,31 +412,38 @@
 .bookmark-list-title {
   margin: 16px 0 8px 0;
   padding: 0;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 24px;
-  font-weight: 800;
-  color: rgb(255, 255, 255);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
 }
 
 /* Navigation des listes */
 .bookmark-nav-button {
   padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 198, 176, 0.40);
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
   background: transparent;
-  color: rgba(255, 255, 255, 0.79);
-  font-size: 12px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
 .bookmark-nav-button:hover {
-  background: rgba(255, 198, 176, 0.10);
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
 }
 
 .bookmark-nav-button.active {
-  background: rgba(255, 198, 176, 0.80);
-  color: rgba(255, 255, 255, 0.95);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
 }
 
 /* Navigation wrapper */
@@ -442,14 +466,14 @@
   padding: 4px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
   cursor: pointer;
   font-size: 12px;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .bookmark-nav-action-button:hover {
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--ds-ink);
 }
 
 /* Barre de recherche */
@@ -457,19 +481,20 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
 }
 
 .bookmark-search-input::placeholder {
-  color: var(--color-text-placeholder);
+  color: var(--ds-muted);
 }
 
 .bookmark-search-input:focus {
   outline: none;
-  border-color: rgba(255, 198, 176, 0.60);
+  border-color: var(--ds-accent);
   box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.20);
 }
 
@@ -504,8 +529,12 @@
 .bookmark-list-meta {
   display: flex;
   gap: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-very-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
 }
 
 /* Styles pour les triplets bookmarkés */
@@ -515,14 +544,15 @@
 
 .bookmark-triplet-details {
   margin-top: 12px;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  border-top: 1px solid rgba(255, 198, 176, 0.40);
+  color: var(--ds-muted);
+  border-top: 1px solid var(--ds-border-soft);
   padding-top: 8px;
 }
 
 .bookmark-triplet-details a {
-  color: rgba(255, 198, 176, 0.90);
+  color: var(--ds-accent);
   text-decoration: none;
 }
 
@@ -551,48 +581,51 @@
   border: none;
   font-size: var(--font-size-xl);
   cursor: pointer;
-  color: var(--color-text-muted);
+  color: var(--ds-muted);
   padding: var(--spacing-xs);
-  transition: var(--transition-fast);
+  transition: color 0.15s ease;
 }
 
 .bookmark-modal-close:hover {
-  color: var(--color-text-primary);
+  color: var(--ds-ink);
 }
 
 /* Boutons d'actions dans les cartes */
 .bookmark-action-button {
   padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 198, 176, 0.40);
-  background: rgba(0, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.86);
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
   cursor: pointer;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .bookmark-action-button:hover {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 198, 176, 0.60);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
 }
 
 .bookmark-action-button.primary {
-  background: rgba(255, 198, 176, 0.80);
-  color: rgba(255, 255, 255, 0.95);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border-color: transparent;
 }
 
 .bookmark-action-button.primary:hover {
-  background: rgba(255, 198, 176, 0.90);
+  background: var(--btn-primary-hover-bg);
 }
 
 .bookmark-action-button.danger {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
 }
 
 .bookmark-action-button.danger:hover {
-  background: rgba(255, 0, 0, 0.1);
-  border-color: rgba(255, 0, 0, 0.4);
+  background: rgba(255, 90, 90, 0.08);
+  border-color: var(--distrusted);
+  color: var(--distrusted);
 }
 
 /* ========== BOOKMARK CARD ITEM STRUCTURE ========== */
@@ -607,7 +640,7 @@
 }
 
 .bookmark-item.selected {
-  border-color: rgba(255, 198, 176, 0.30);
+  border-color: var(--ds-accent);
   transform: translateY(-2px);
 }
 
@@ -626,6 +659,7 @@
 
 .bookmark-text {
   color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
@@ -633,7 +667,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .bookmark-text.clickable:hover {
@@ -643,8 +677,9 @@
 /* Subject, Predicate, Object styles for bookmarks */
 .bookmark-text .subject {
   font-weight: 600;
-  color: #ffffff;
-  background: #2d2d2d;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   padding: 6px 14px;
   border-radius: 12px;
 }
@@ -652,13 +687,14 @@
 .bookmark-text .action {
   margin: 0 8px;
   font-style: italic;
-  color: #ffffff;
+  color: var(--ds-ink-soft);
 }
 
 .bookmark-text .object {
   font-weight: 500;
-  color: #fff;
-  background: #2d2d2d;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   padding: 6px 14px;
   border-radius: 12px;
   max-width: 200px;
@@ -693,9 +729,10 @@
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   transition: transform 0.15s ease;
 }
 
@@ -705,7 +742,7 @@
 
 .bookmark-favicon-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-muted);
   max-width: 56px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -720,9 +757,10 @@
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  color: var(--ds-muted);
   font-weight: 600;
 }
