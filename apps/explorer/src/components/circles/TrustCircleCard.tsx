@@ -5,7 +5,7 @@
  */
 import { useNavigate } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import { avatarColor } from '@/utils/avatarColor'
+import MemberAvatar from './MemberAvatar'
 
 interface TrustCircleCardProps {
   members: TrustCircleAccount[]
@@ -43,14 +43,7 @@ export default function TrustCircleCard({ members, loading }: TrustCircleCardPro
 
       <div className="cr-avatars">
         {visible.map((a) => (
-          <span
-            key={a.termId}
-            className="mav"
-            style={{ background: avatarColor(a.termId || a.label) }}
-            title={a.label}
-          >
-            {a.label.slice(0, 2).toUpperCase()}
-          </span>
+          <MemberAvatar key={a.termId} member={a} />
         ))}
         {extra > 0 && <span className="mav more">+{extra}</span>}
       </div>

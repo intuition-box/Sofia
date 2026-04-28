@@ -13,7 +13,6 @@ export const MAX_INTERESTS = 4
 
 interface InterestsGridProps {
   selectedTopics: string[]
-  selectedCategories: string[]
   topicScores: TopicScore[]
   onAddTopic?: () => void
   onRemoveTopic?: (topicId: string) => void
@@ -21,7 +20,6 @@ interface InterestsGridProps {
 
 export default function InterestsGrid({
   selectedTopics,
-  selectedCategories,
   topicScores,
   onAddTopic,
   onRemoveTopic,
@@ -48,16 +46,10 @@ export default function InterestsGrid({
           return <AddInterestCard key={`add-${idx}`} onClick={onAddTopic} />
         }
 
-        const categoryCount = topic.categories.filter((c) =>
-          selectedCategories.includes(c.id),
-        ).length
-        const totalCategories = topic.categories.length
         const score = scoreMap.get(topicId)
 
-        const subLabel = `${categoryCount} / ${totalCategories} categor${totalCategories !== 1 ? 'ies' : 'y'}`
         const stats = [
           { value: Math.round(score?.score ?? 0), label: 'Score' },
-          { value: categoryCount, label: 'Categories' },
           { value: score?.platformCount ?? 0, label: 'Platforms' },
         ]
 
@@ -72,7 +64,6 @@ export default function InterestsGrid({
             topicColor={topic.color}
             topicLabel={topic.label}
             visual={emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined}
-            subLabel={subLabel}
             stats={stats}
             onClick={() => navigate(`/profile/interest/${topicId}`)}
             onRemove={onRemoveTopic ? () => onRemoveTopic(topicId) : undefined}

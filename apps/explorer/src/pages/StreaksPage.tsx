@@ -1,24 +1,20 @@
+/**
+ * StreaksPage — `/streaks`. Daily certification / voting streak
+ * leaderboard. Native proto-aligned markup; all tokens via `--ds-*`.
+ * Keeps the gold/silver/bronze podium + animated entrance.
+ */
 import { useState } from 'react'
-import { formatEther } from 'viem'
-import type { Address } from 'viem'
-import { useStreakLeaderboard } from '../hooks/useStreakLeaderboard'
-import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '../services/streakService'
-import { useEnsNames } from '../hooks/useEnsNames'
-import { Card } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import SofiaLoader from '../components/ui/SofiaLoader'
-import { Avatar, AvatarFallback } from '../components/ui/avatar'
+import { formatEther, type Address } from 'viem'
 import { Flame } from 'lucide-react'
+import { useStreakLeaderboard } from '@/hooks/useStreakLeaderboard'
+import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '@/services/streakService'
+import { useEnsNames } from '@/hooks/useEnsNames'
+import SofiaLoader from '@/components/ui/SofiaLoader'
 import { PageHero } from '@0xsofia/design-system'
-import { PAGE_COLORS } from '../config/pageColors'
+import { PAGE_COLORS } from '@/config/pageColors'
+import { avatarColor } from '@/utils/avatarColor'
 import '@/components/styles/pages.css'
 import '@/components/styles/streaks-page.css'
-
-function randomColor(seed: string) {
-  let hash = 0
-  for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0
-  return `hsl(${Math.abs(hash) % 360}, 60%, 60%)`
-}
 
 function formatShares(shares: string): string {
   const num = parseFloat(formatEther(BigInt(shares)))
@@ -28,13 +24,40 @@ function formatShares(shares: string): string {
   return num.toFixed(4)
 }
 
+function shortAddress(addr: string): string {
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`
+}
+
 const PODIUM_ORDER = [1, 0, 2] as const
-const PODIUM_BADGES = ['', '#1', '#2', '#3']
-const PODIUM_CLASSES = ['', 'streak-pedestal--1st', 'streak-pedestal--2nd', 'streak-pedestal--3rd']
-const PODIUM_AVATAR_SIZES = ['', 'h-[72px] w-[72px]', 'h-14 w-14', 'h-14 w-14']
-const PODIUM_RINGS = ['', 'ring-2 ring-yellow-500/70', 'ring-2 ring-gray-400/50', 'ring-2 ring-amber-700/50']
+const PODIUM_LABELS = ['', '1ST', '2ND', '3RD']
 
 type Tab = 'signals' | 'vote'
+
+interface StreakEntry {
+  address: string
+  streakDays: number
+  shares: string
+  displayName: string
+  avatar: string
+}
+
+function PodiumAvatar({ entry, rank }: { entry: StreakEntry; rank: number }) {
+  const bg = avatarColor(entry.address)
+  return (
+    <div className={`sp-avatar sp-avatar--${rank}`} style={{ background: bg }}>
+      {entry.avatar ? (
+        <img
+          src={entry.avatar}
+          alt=""
+          onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+        />
+      ) : null}
+      <span className="sp-avatar-fallback">
+        {entry.displayName.slice(0, 2).toUpperCase()}
+      </span>
+    </div>
+  )
+}
 
 export default function StreaksPage() {
   const [tab, setTab] = useState<Tab>('signals')
@@ -42,10 +65,11 @@ export default function StreaksPage() {
   const vote = useStreakLeaderboard(DAILY_VOTE_ATOM_ID)
   const active = tab === 'signals' ? signals : vote
   const { entries, loading, error } = active
+
   const addresses = entries.map((e) => e.address as Address)
   const { getDisplay, getAvatar } = useEnsNames(addresses)
 
-  const streakData = entries.map((entry) => ({
+  const streakData: StreakEntry[] = entries.map((entry) => ({
     ...entry,
     displayName: getDisplay(entry.address as Address),
     avatar: getAvatar(entry.address as Address),
@@ -57,120 +81,135 @@ export default function StreaksPage() {
   const pc = PAGE_COLORS['/streaks']
 
   return (
-    <div>
+    <div className="page-content page-enter sp-page">
       <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
-      <div className="space-y-8 page-content page-enter">
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-muted rounded-lg p-1">
-        <Button
-          variant={tab === 'signals' ? 'default' : 'ghost'}
-          size="sm"
-          className="flex-1"
-          onClick={() => setTab('signals')}
-        >
-          Signals
-        </Button>
-        <Button
-          variant={tab === 'vote' ? 'default' : 'ghost'}
-          size="sm"
-          className="flex-1"
-          onClick={() => setTab('vote')}
-        >
-          Vote
-        </Button>
+      {/* Filter row — tabs on the left, summary pill on the right. */}
+      <div className="sp-filters">
+        <div className="sp-tabs" role="tablist" aria-label="Streak type">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'signals'}
+            className={`sp-tab${tab === 'signals' ? ' sp-tab--active' : ''}`}
+            onClick={() => setTab('signals')}
+          >
+            Signals
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'vote'}
+            className={`sp-tab${tab === 'vote' ? ' sp-tab--active' : ''}`}
+            onClick={() => setTab('vote')}
+          >
+            Vote
+          </button>
+        </div>
+
+        {!loading ? (
+          <div className="sp-summary">
+            <span className="sp-summary-icon" aria-hidden="true">
+              <Flame className="h-4 w-4" />
+            </span>
+            <span className="sp-summary-label">
+              {tab === 'signals' ? 'Daily signals' : 'Daily votes'}
+            </span>
+            <span className="sp-summary-count">
+              {streakData.length} streaker{streakData.length === 1 ? '' : 's'}
+            </span>
+          </div>
+        ) : null}
       </div>
 
-      {/* Streak count */}
-      {!loading && (
-        <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4 text-orange-500" />
-          <span className="font-semibold">{tab === 'signals' ? 'Signals' : 'Vote'}</span>
-          <span className="text-sm text-muted-foreground">{streakData.length} streakers</span>
-        </div>
-      )}
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-start justify-center page-loader">
+      {loading ? (
+        <div className="sp-loader">
           <SofiaLoader size={96} />
         </div>
-      )}
+      ) : null}
 
-      {error && (
-        <Card className="p-4 text-center text-sm text-destructive">{error}</Card>
-      )}
+      {error ? <div className="sp-error">{error}</div> : null}
 
-      {/* Podium — Top 3 */}
-      {!loading && top3.length >= 3 && (
-        <div className="streak-podium">
+      {/* Podium — rendered only once top 3 are in. */}
+      {!loading && top3.length >= 3 ? (
+        <section className="sp-podium" aria-label="Top 3 streakers">
           {PODIUM_ORDER.map((dataIdx) => {
             const rank = dataIdx + 1
             const entry = top3[dataIdx]
             return (
-              <div key={entry.address} className={`streak-pedestal ${PODIUM_CLASSES[rank]}`}>
-                {/* Avatar */}
-                <div className="streak-pedestal__avatar-wrap">
-                  <Avatar className={`${PODIUM_AVATAR_SIZES[rank]} ${PODIUM_RINGS[rank]}`}>
-                    <img src={entry.avatar} alt="" className="h-full w-full rounded-full object-cover" />
-                    <AvatarFallback className="text-sm text-white" style={{ background: randomColor(entry.address) }}>
-                      {entry.displayName.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+              <article
+                key={entry.address}
+                className={`sp-pedestal sp-pedestal--${rank}`}
+              >
+                <div className="sp-pedestal-avatar">
+                  <PodiumAvatar entry={entry} rank={rank} />
                 </div>
-
-                {/* Name + streak */}
-                <div className="streak-pedestal__info">
-                  <p className="streak-pedestal__name">{entry.displayName}</p>
-                  <div className="streak-pedestal__streak">
-                    <Flame className="h-3.5 w-3.5 text-orange-500" />
-                    <span className="streak-pedestal__streak-text">{entry.streakDays}d</span>
+                <div className="sp-pedestal-info">
+                  <p className="sp-pedestal-name">{entry.displayName}</p>
+                  <div className="sp-pedestal-streak">
+                    <Flame className="h-3.5 w-3.5" />
+                    <span>{entry.streakDays}d</span>
                   </div>
                 </div>
-
-                {/* Pedestal block with badge */}
-                <div className="streak-pedestal__block">
-                  <span className="streak-badge">{PODIUM_BADGES[rank]}</span>
+                <div className="sp-pedestal-block">
+                  <span className="sp-pedestal-rank">{PODIUM_LABELS[rank]}</span>
                 </div>
-              </div>
+              </article>
             )
           })}
-        </div>
-      )}
+        </section>
+      ) : null}
 
-      {/* Ranking list #4+ */}
-      {!loading && !error && (
-        <div className="streak-list">
-          {rest.map((entry, i) => (
-            <div key={entry.address} className="streak-row">
-              <span className="streak-rank">
-                {i + 4}
-              </span>
-              <Avatar className="h-9 w-9">
-                <img src={entry.avatar} alt="" className="h-full w-full rounded-full object-cover" />
-                <AvatarFallback className="text-[10px] text-white" style={{ background: randomColor(entry.address) }}>
-                  {entry.displayName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="streak-row__user">
-                <p className="streak-row__name">{entry.displayName}</p>
-                <p className="streak-row__address">
-                  {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                </p>
-              </div>
-              <div className={`streak-row__days ${entry.streakDays > 0 ? 'streak-row__days--active' : ''}`}>
-                <Flame className="h-3.5 w-3.5 text-orange-500" />
-                <span className="streak-row__days-num">{entry.streakDays}</span>
-              </div>
-              <div className="streak-row__trust">
-                <span className="streak-row__trust-value">{formatShares(entry.shares)}</span>
-                <span className="streak-row__trust-label">TRUST</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      </div>
+      {/* Rank #4+ list */}
+      {!loading && !error && rest.length > 0 ? (
+        <section className="sp-list">
+          <header className="sp-list-head">
+            <span className="sp-list-title">Rankings</span>
+            <span className="sp-list-count">{rest.length}</span>
+          </header>
+          <div className="sp-list-rows">
+            {rest.map((entry, i) => {
+              const bg = avatarColor(entry.address)
+              const hasStreak = entry.streakDays > 0
+              return (
+                <div key={entry.address} className="sp-row">
+                  <span className="sp-row-rank">{i + 4}</span>
+                  <span className="sp-row-avatar" style={{ background: bg }}>
+                    {entry.avatar ? (
+                      <img
+                        src={entry.avatar}
+                        alt=""
+                        onError={(e) =>
+                          ((e.target as HTMLImageElement).style.display = 'none')
+                        }
+                      />
+                    ) : null}
+                    <span className="sp-row-avatar-fallback">
+                      {entry.displayName.slice(0, 2).toUpperCase()}
+                    </span>
+                  </span>
+                  <div className="sp-row-user">
+                    <span className="sp-row-name">{entry.displayName}</span>
+                    <span className="sp-row-addr">{shortAddress(entry.address)}</span>
+                  </div>
+                  <div className={`sp-row-streak${hasStreak ? ' is-active' : ''}`}>
+                    <Flame className="h-3.5 w-3.5" />
+                    <span>{entry.streakDays}</span>
+                  </div>
+                  <div className="sp-row-trust">
+                    <span className="sp-row-trust-num">{formatShares(entry.shares)}</span>
+                    <span className="sp-row-trust-lbl">TRUST</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {!loading && !error && streakData.length === 0 ? (
+        <div className="sp-empty">No streakers yet — light the first flame.</div>
+      ) : null}
     </div>
   )
 }

@@ -14,7 +14,6 @@ import { useUserActivity } from '../hooks/useUserActivity'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
-import LinkedWalletsSection from './profile/LinkedWalletsSection'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
@@ -317,8 +316,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Linked wallets — read-only list for transparency on multi-wallet accounts */}
-          <LinkedWalletsSection />
         </div>
       </aside>
 

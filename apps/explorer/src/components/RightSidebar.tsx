@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Star, Activity } from "lucide-react";
 import TrendingPages from './TrendingPages';
+import { useRightRailContent } from '@/contexts/RightRailContext';
 import './styles/layout.css'
 
 const TOPIC_ICONS: Record<string, string> = {
@@ -12,6 +13,8 @@ const TOPIC_ICONS: Record<string, string> = {
 }
 
 export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
+  const injected = useRightRailContent()
+
   // Placeholder suggested accounts with good scores in user's topics
   const suggestedAccounts = [
     { address: '0x1a2b...3c4d', score: 87, topic: 'tech-dev' },
@@ -22,6 +25,8 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
   return (
     <aside className={`fixed right-0 top-0 overflow-y-auto z-40 rs-aside ${hidden ? 'rs-hidden' : ''}`}>
       <div className="p-4 space-y-6">
+        {injected ?? (
+          <>
         {/* Suggested Accounts */}
         <Card style={{ gap: 0 }}>
           <CardHeader className="pb-3">
@@ -69,6 +74,8 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
             </p>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </aside>
   );

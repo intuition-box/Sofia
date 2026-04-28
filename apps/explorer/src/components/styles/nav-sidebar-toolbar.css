@@ -72,6 +72,151 @@
   border: 2px solid var(--ds-card);
 }
 
+/* ── Auth dropdown menu (from the auth chip in the nav bottom) ─────
+ * Header, wallet list with a primary dot, and action rows. Frosted
+ * panel styling is global in design-system.css. */
+.ns-auth-menu {
+  /* Accounts for the nav rail inner padding (290px rail minus ~18px
+     horizontal padding), so the menu visually matches the nav items
+     underneath. `!important` because Radix' default min-width wins
+     the cascade otherwise. */
+  width: 272px !important;
+  min-width: 272px !important;
+  max-width: 272px !important;
+  padding: 6px;
+  /* Dashed contour — matches the "Create circle" card hover
+     (`.cr-card-new:hover` → `1px dashed var(--ds-ink)`).
+     `!important` overrides the global solid border set on
+     `[data-slot="dropdown-menu-content"]` in design-system.css. */
+  border: 1px dashed var(--ds-ink) !important;
+}
+
+/* User header — avatar + name/email. */
+.ns-auth-menu-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 10px;
+}
+.ns-auth-menu-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--ds-border);
+}
+.ns-auth-menu-avatar--fallback {
+  display: grid;
+  place-items: center;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+}
+.ns-auth-menu-ident {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ns-auth-menu-name {
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ns-auth-menu-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Section label ("Wallets"). */
+.ns-auth-menu-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  padding: 6px 10px 4px;
+}
+
+/* Wallet rows — dot + address + optional `primary` tag. */
+.ns-auth-menu-wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+.ns-auth-menu-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ds-muted);
+  background: transparent;
+  box-sizing: border-box;
+}
+.ns-auth-menu-dot.is-primary {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-accent) 22%, transparent);
+}
+.ns-auth-menu-wallet-addr {
+  flex: 1;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ns-auth-menu-wallet-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-accent-ink, var(--ds-ink));
+  background: color-mix(in srgb, var(--ds-accent) 22%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Action rows — "Link another wallet" / "Disconnect". */
+.ns-auth-menu-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  color: var(--ds-ink);
+}
+.ns-auth-menu-action svg {
+  color: var(--ds-muted);
+  flex-shrink: 0;
+}
+.ns-auth-menu-action--danger {
+  color: var(--distrusted, #e87c7c);
+}
+.ns-auth-menu-action--danger svg {
+  color: var(--distrusted, #e87c7c);
+}
+
 /* ── Auth: Connect button & avatar chip ─────────────────────────── */
 
 .ns-auth-connect {
@@ -103,6 +248,21 @@
 .ns-auth-chip:hover {
   border-color: var(--ds-ink-soft);
   background: var(--ds-bg-subtle);
+}
+/* No focus outline on the chip — after closing the menu the default
+   ring (and the peach `:focus-visible` previously) stayed visible and
+   made it look like the chip was still active. */
+.ns-auth-chip:focus,
+.ns-auth-chip:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* While the dropdown is open OR closed, keep the chip border neutral
+   — no darker "pressed" look after closing. */
+.ns-auth-chip[data-state="open"],
+.ns-auth-chip[data-state="closed"] {
+  border-color: var(--ds-border);
+  background: var(--ds-card);
 }
 
 .ns-auth-avatar {

@@ -6,9 +6,10 @@
  * leave, top-topics aggregation, sponsor budget) are rendered as UI
  * scaffolding with mock values — marked with TODOs.
  */
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { PageHero } from '@0xsofia/design-system'
+import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
@@ -19,6 +20,7 @@ import CircleDetailHero from '@/components/circles/CircleDetailHero'
 import CircleMembersCard from '@/components/circles/CircleMembersCard'
 import CircleTopTopicsCard from '@/components/circles/CircleTopTopicsCard'
 import CircleFeedSection from '@/components/circles/CircleFeedSection'
+import AllMembersPanel from '@/components/circles/AllMembersPanel'
 import '@/components/styles/pages.css'
 import '@/components/styles/circles.css'
 
@@ -32,12 +34,29 @@ const TRUST_CIRCLE_META = {
   sponsorClaimsLeft: 3200,
 }
 
+/** Palette surfaced by the Trust Circle color picker. */
+const TRUST_CIRCLE_COLOR_OPTIONS: readonly string[] = Object.values(INTENTION_PASTEL)
+const TRUST_CIRCLE_COLOR_KEY = 'sofia-trust-circle-color'
+
 export default function CirclesPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { addresses } = useLinkedWallets()
   const { accounts: members, loading } = useTrustCircle(addresses)
   const { selectedTopics } = useTopicSelection()
+  const [allMembersOpen, setAllMembersOpen] = useState(false)
+  const [trustColor, setTrustColor] = useState<string>(() => {
+    if (typeof window === 'undefined') return TRUST_CIRCLE_META.color
+    return window.localStorage.getItem(TRUST_CIRCLE_COLOR_KEY) || TRUST_CIRCLE_META.color
+  })
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(TRUST_CIRCLE_COLOR_KEY, trustColor)
+    } catch {
+      // ignore — private mode / storage full
+    }
+  }, [trustColor])
 
   if (id === 'trust') {
     return (
@@ -53,21 +72,34 @@ export default function CirclesPage() {
           name={TRUST_CIRCLE_META.name}
           description={TRUST_CIRCLE_META.description}
           createdAgo={TRUST_CIRCLE_META.createdAgo}
-          circleColor={TRUST_CIRCLE_META.color}
+          circleColor={trustColor}
           sponsorClaimsLeft={TRUST_CIRCLE_META.sponsorClaimsLeft}
           memberCount={Math.max(1, members.length)}
+          onColorChange={setTrustColor}
+          colorOptions={TRUST_CIRCLE_COLOR_OPTIONS}
         />
 
         <div className="crd-info-row">
-          <CircleMembersCard members={members} />
+          <CircleMembersCard
+            members={members}
+            onViewAll={() => setAllMembersOpen(true)}
+          />
           <CircleTopTopicsCard
             topicIds={selectedTopics.slice(0, 4)}
-            circleColor={TRUST_CIRCLE_META.color}
+            circleColor={trustColor}
           />
         </div>
 
         <CircleFeedSection
           addresses={addresses}
+          circleName={TRUST_CIRCLE_META.name}
+          members={members}
+        />
+
+        <AllMembersPanel
+          open={allMembersOpen}
+          onClose={() => setAllMembersOpen(false)}
+          members={members}
           circleName={TRUST_CIRCLE_META.name}
         />
       </div>
@@ -78,7 +110,7 @@ export default function CirclesPage() {
     <div className="pf-view cr-page">
       <PageHero
         title="Circles"
-        description="People whose taste you value — their signals shape your feed."
+        description="Explore the circles whose signals shape your feed and dive into yours."
       />
 
       <CirclesFilters />

@@ -312,6 +312,95 @@
   box-shadow: 0 0 8px color-mix(in srgb, var(--leg-color, var(--ds-muted)) 50%, transparent);
 }
 
+/* ── Calendar hover tooltip — ported 1:1 from proto `.pc-area-tooltip`
+ * (proto profile-charts.css:671-766). Dark panel anchored above the
+ * cell with a date kicker + total + per-topic rows. `.pc-cal-wrap`
+ * must be `position: relative` so the absolute positioning works. */
+
+.pc-area-tooltip {
+  /* Fixed to the viewport — React passes cell-rect coords from
+     getBoundingClientRect(). Avoids clipping by `.pc-card`'s
+     `overflow: hidden`. */
+  position: fixed;
+  transform: translate(-50%, -100%) translateY(-12px);
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  pointer-events: none;
+  box-shadow: 0 10px 28px -10px color-mix(in srgb, var(--ds-ink) 65%, transparent);
+  /* Above the ProfileDrawer rail (z-index 9999) and card shadows. */
+  z-index: 10000;
+}
+.pc-area-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--ds-ink);
+}
+
+.pc-tt-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ds-bg) 18%, transparent);
+}
+.pc-tt-day {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.pc-tt-total {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.pc-tt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.pc-tt-row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+}
+.pc-tt-row.dim {
+  opacity: 0.35;
+}
+.pc-tt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.pc-tt-label {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-tt-val {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Radar verb chips ────────────────────────────────────────────── */
 /* Ported from proto profile-charts.css:150-191. */
 
@@ -385,21 +474,16 @@
 .pc-radar-label:hover {
   transform-origin: center;
 }
-.pc-radar-clear {
+/* Hover halo sits *outside* the black-filled mark: the SVG filter
+   already paints the green ring, CSS adds outer green drop-shadows. */
+.pc-radar-clear image {
   transition: filter 0.25s ease;
 }
-.pc-radar-clear:hover {
+.pc-radar-clear:hover image {
   filter:
-    drop-shadow(0 0 8px #6dd4a0)
-    drop-shadow(0 0 18px color-mix(in srgb, #6dd4a0 65%, transparent))
-    drop-shadow(0 0 30px color-mix(in srgb, #6dd4a0 35%, transparent));
-}
-.pc-radar-clear circle {
-  transition: stroke 0.25s ease, stroke-width 0.25s ease;
-}
-.pc-radar-clear:hover circle {
-  stroke: #6dd4a0;
-  stroke-width: 2;
+    url(#radar-logo-outline)
+    drop-shadow(0 0 3px color-mix(in srgb, #6dd4a0 60%, transparent))
+    drop-shadow(0 0 10px color-mix(in srgb, #6dd4a0 25%, transparent));
 }
 .pc-radar-label-bg {
   fill: var(--ds-card);
@@ -422,6 +506,28 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   pointer-events: none;
+}
+
+/* Rim emoji hover tooltip — HTML pill anchored absolutely over the
+   radar wrap, follows the mouse cursor. Background tinted with the
+   hovered axis colour. */
+.pc-radar-tip {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--ds-ink) 35%, transparent);
+  animation: pc-radar-tip-in 0.12s ease both;
+}
+@keyframes pc-radar-tip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Top platforms list ─────────────────────────────────────────── */

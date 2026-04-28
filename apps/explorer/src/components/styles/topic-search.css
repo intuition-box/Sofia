@@ -1,0 +1,63 @@
+/* ── Topic search bar — reusable pill input with leading icon + clear.
+ * Used today on DomainSelector (profile/topics flow). Styled with DS
+ * tokens only so it reads the same on light / dark. */
+
+.ts-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ts-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.ts-search-input {
+  width: 100%;
+  padding: 10px 36px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ts-search-input::placeholder {
+  color: var(--ds-muted);
+}
+.ts-search-input:focus {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-card);
+}
+.ts-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ts-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.ts-search-clear:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
