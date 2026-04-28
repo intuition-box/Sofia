@@ -45,5 +45,5 @@
     "@graphql-codegen/typescript-operations": "^4.2.0",
     "shx": "^0.3.4",
     "typescript": "^5.9.3"
-  },
+  }
 }

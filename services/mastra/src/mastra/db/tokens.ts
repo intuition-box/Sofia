@@ -1,11 +1,13 @@
-const ALGORITHM = "aes-256-gcm"
-const IV_LENGTH = 12 // 96 bits for GCM
+import { createClient, type Client } from "@libsql/client"
 
-let db: any = null
+const IV_LENGTH = 12 // 96 bits for AES-GCM
 
-async function getDb() {
+let db: Client | null = null
+let tableReady: Promise<void> | null = null
+let cachedKey: CryptoKey | null = null
+
+function getDb(): Client {
   if (!db) {
-    const { createClient } = await import("@libsql/client")
     db = createClient({
       url: process.env.DATABASE_URL || "file:./data/mastra.db",
     })
@@ -13,44 +15,84 @@ async function getDb() {
   return db
 }
 
-async function getCrypto() {
-  return await import("node:crypto")
+async function ensureTable(): Promise<void> {
+  if (!tableReady) {
+    tableReady = getDb()
+      .execute(`
+        CREATE TABLE IF NOT EXISTS oauth_tokens (
+          wallet_address TEXT NOT NULL,
+          platform TEXT NOT NULL,
+          access_token_encrypted TEXT NOT NULL,
+          refresh_token_encrypted TEXT,
+          user_id TEXT,
+          username TEXT,
+          expires_at INTEGER,
+          created_at INTEGER DEFAULT (unixepoch()),
+          updated_at INTEGER DEFAULT (unixepoch()),
+          PRIMARY KEY (wallet_address, platform)
+        )
+      `)
+      .then(() => {
+        console.log("[TokenDB] Table oauth_tokens ready")
+      })
+  }
+  return tableReady
 }
 
-function getEncryptionKey(): Buffer {
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16)
+  }
+  return bytes
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+async function getKey(): Promise<CryptoKey> {
+  if (cachedKey) return cachedKey
   const hex = process.env.TOKEN_ENCRYPTION_KEY
   if (!hex || hex.length !== 64) {
     throw new Error(
       "[TokenDB] TOKEN_ENCRYPTION_KEY must be a 64-char hex string (32 bytes)"
     )
   }
-  return Buffer.from(hex, "hex")
+  cachedKey = await crypto.subtle.importKey(
+    "raw",
+    hexToBytes(hex),
+    { name: "AES-GCM" },
+    false,
+    ["encrypt", "decrypt"]
+  )
+  return cachedKey
 }
 
 async function encrypt(plaintext: string): Promise<string> {
-  const crypto = await getCrypto()
-  const key = getEncryptionKey()
-  const iv = crypto.randomBytes(IV_LENGTH)
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
-  const encrypted = Buffer.concat([
-    cipher.update(plaintext, "utf8"),
-    cipher.final(),
-  ])
-  const authTag = cipher.getAuthTag()
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`
+  const key = await getKey()
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  const ciphertext = new Uint8Array(
+    await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv },
+      key,
+      new TextEncoder().encode(plaintext)
+    )
+  )
+  return `${bytesToHex(iv)}:${bytesToHex(ciphertext)}`
 }
 
 async function decrypt(encoded: string): Promise<string> {
-  const crypto = await getCrypto()
-  const [ivHex, authTagHex, ciphertextHex] = encoded.split(":")
-  const key = getEncryptionKey()
-  const decipher = crypto.createDecipheriv(
-    ALGORITHM,
+  const key = await getKey()
+  const [ivHex, ciphertextHex] = encoded.split(":")
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: hexToBytes(ivHex) },
     key,
-    Buffer.from(ivHex, "hex")
+    hexToBytes(ciphertextHex)
   )
-  decipher.setAuthTag(Buffer.from(authTagHex, "hex"))
-  return decipher.update(ciphertextHex, "hex", "utf8") + decipher.final("utf8")
+  return new TextDecoder().decode(plaintext)
 }
 
 // --- Public API ---
@@ -65,31 +107,6 @@ export interface TokenRecord {
   expires_at?: number
 }
 
-export async function initTokenTable(): Promise<void> {
-  if (!process.env.TOKEN_ENCRYPTION_KEY) {
-    console.warn(
-      "[TokenDB] TOKEN_ENCRYPTION_KEY not set — token storage disabled"
-    )
-    return
-  }
-  const client = await getDb()
-  await client.execute(`
-    CREATE TABLE IF NOT EXISTS oauth_tokens (
-      wallet_address TEXT NOT NULL,
-      platform TEXT NOT NULL,
-      access_token_encrypted TEXT NOT NULL,
-      refresh_token_encrypted TEXT,
-      user_id TEXT,
-      username TEXT,
-      expires_at INTEGER,
-      created_at INTEGER DEFAULT (unixepoch()),
-      updated_at INTEGER DEFAULT (unixepoch()),
-      PRIMARY KEY (wallet_address, platform)
-    )
-  `)
-  console.log("[TokenDB] Table oauth_tokens ready")
-}
-
 export async function storeToken(
   walletAddress: string,
   platform: string,
@@ -99,7 +116,8 @@ export async function storeToken(
   username?: string,
   expiresAt?: number
 ): Promise<void> {
-  const client = await getDb()
+  await ensureTable()
+  const client = getDb()
   const accessEncrypted = await encrypt(accessToken)
   const refreshEncrypted = refreshToken ? await encrypt(refreshToken) : null
 
@@ -136,7 +154,8 @@ export async function getToken(
   walletAddress: string,
   platform: string
 ): Promise<TokenRecord | null> {
-  const client = await getDb()
+  await ensureTable()
+  const client = getDb()
   const result = await client.execute({
     sql: `SELECT * FROM oauth_tokens WHERE wallet_address = ? AND platform = ?`,
     args: [walletAddress.toLowerCase(), platform],
@@ -161,7 +180,8 @@ export async function getToken(
 export async function getAllTokens(
   walletAddress: string
 ): Promise<TokenRecord[]> {
-  const client = await getDb()
+  await ensureTable()
+  const client = getDb()
   const result = await client.execute({
     sql: `SELECT * FROM oauth_tokens WHERE wallet_address = ?`,
     args: [walletAddress.toLowerCase()],
@@ -188,7 +208,8 @@ export async function deleteToken(
   walletAddress: string,
   platform: string
 ): Promise<void> {
-  const client = await getDb()
+  await ensureTable()
+  const client = getDb()
   await client.execute({
     sql: `DELETE FROM oauth_tokens WHERE wallet_address = ? AND platform = ?`,
     args: [walletAddress.toLowerCase(), platform],
