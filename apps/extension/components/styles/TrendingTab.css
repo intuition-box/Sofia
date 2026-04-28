@@ -1,12 +1,14 @@
-/* Shared tab description */
+/* Shared tab description — subtle helper text under the tab title */
 .tab-description {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  padding: var(--spacing-sm) var(--spacing-md);
-  margin-bottom: var(--spacing-xs);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  line-height: 1.4;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: var(--ds-muted);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  line-height: 1.5;
 }
 
 /* TrendingTab - Global trending certifications */
@@ -51,20 +53,20 @@
 .trending-section-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: "Geist", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  gap: 10px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-ink);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 
 .trending-section-badge::before {
   content: "";
   display: block;
   width: 4px;
-  height: 14px;
+  height: 16px;
   border-radius: 2px;
   background: linear-gradient(180deg, var(--category-color), var(--category-gradient-end));
   flex-shrink: 0;
@@ -100,20 +102,17 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 10px;
   padding: 14px;
   flex: 1 1 0;
   min-width: 0;
   min-height: 140px;
-  background-color: rgba(0, 0, 0, 0.14);
+  background: var(--ds-card);
   border-radius: 12px;
-  backdrop-filter: blur(50px) saturate(100%);
-  -webkit-backdrop-filter: blur(50px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
 }
 
 .trending-card:hover {
