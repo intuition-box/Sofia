@@ -14,12 +14,14 @@ const CorePage = () => {
 
   return (
     <div className="page">
-      <div className="tabs">
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
         {['Echoes', 'Bookmarks'].map(tab => (
           <button
             key={tab}
+            type="button"
             onClick={() => startTransition(() => setActiveGraphTab(tab as typeof activeGraphTab))}
-            className={`tab ${activeGraphTab === tab ? 'active' : ''}`}
+            className={`pf-sort-btn ${activeGraphTab === tab ? 'active' : ''}`}
+            aria-pressed={activeGraphTab === tab}
           >
             {tab}
           </button>

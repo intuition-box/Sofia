@@ -132,7 +132,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
             onClick={onNavigateDiscovery}
             title="View discovery stats"
           >
-            <UserBadge tier={badgeType} iconUrl={badgeImages[badgeType]} size={22} />
+            <UserBadge tier={badgeType} iconUrl={badgeImages[badgeType]} size={56} />
             {totalCertifications > 0 ? (
               <span className="discovery-badge-rank">
                 #{totalCertifications + 1}

@@ -60,6 +60,42 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+/* Card titles in Fraunces (DS display font) */
+.bookmark-card h4 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Colored variant — solid intention bg (--cat-color injected via inline style),
+   black text, Fraunces title. Glass/blur effects removed since bg is opaque. */
+.bookmark-card--colored {
+  background-color: var(--cat-color, var(--ds-accent));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  color: #000;
+}
+
+.bookmark-card--colored:hover {
+  background-color: var(--cat-color, var(--ds-accent));
+  border: none;
+  box-shadow: none;
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+}
+
+.bookmark-card--colored h4,
+.bookmark-card--colored .bookmark-list-meta,
+.bookmark-card--colored .bookmark-list-meta span {
+  color: #000;
+}
+
+.bookmark-card--colored .bookmark-list-meta {
+  opacity: 0.72;
+}
+
 /* Bouton New List avec couleurs inversées */
 .bookmark-header .btn.primary:not(.iridescence-btn) {
   background: rgba(0, 0, 0, 0.3);
@@ -452,14 +488,17 @@
 
 .bookmark-list-info h4 {
   margin: 0 0 var(--spacing-sm) 0;
-  color: var(--color-text-primary);
+  color: #000;
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
   font-size: var(--font-size-lg);
+  letter-spacing: -0.01em;
 }
 
 .bookmark-list-info p {
   margin: 0 0 var(--spacing-sm) 0;
   font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  color: rgba(0, 0, 0, 0.72);
 }
 
 .bookmark-list-meta {

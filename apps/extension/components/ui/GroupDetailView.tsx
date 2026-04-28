@@ -169,27 +169,16 @@ const UrlRow = ({
             {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
               const isAlreadyCertified = allCertLabels.includes(type)
               const isInCart = cartPredicates.includes(predicateLabel)
-              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
-              const color = certInfo?.color
               return (
                 <button
                   key={type}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
                     if (!isInCart && !isAlreadyCertified) {
                       onAddTrustToCart(predicateLabel, urlRecord.title)
                     }
                   }}
                   disabled={isProcessing || isInCart || isAlreadyCertified}
-                  style={isAlreadyCertified ? {
-                    backgroundColor: color,
-                    borderColor: color,
-                    color: '#fff'
-                  } : (isInCart && color) ? {
-                    backgroundColor: `${color}15`,
-                    borderColor: color,
-                    color
-                  } : undefined}
                 >
                   {isInCart ? `${label} ✓` : label}
                 </button>
@@ -199,27 +188,16 @@ const UrlRow = ({
               const isAlreadyCertified = allCertLabels.includes(type)
               const predicateName = INTENTION_PREDICATES[key]
               const isInCart = cartPredicates.includes(predicateName)
-              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
-              const color = certInfo?.color
               return (
                 <button
                   key={key}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
                     if (!isInCart && !isAlreadyCertified) {
                       onAddToCart(key, urlRecord.title)
                     }
                   }}
                   disabled={isProcessing || isInCart || isAlreadyCertified}
-                  style={isAlreadyCertified ? {
-                    backgroundColor: color,
-                    borderColor: color,
-                    color: '#fff'
-                  } : (isInCart && color) ? {
-                    backgroundColor: `${color}15`,
-                    borderColor: color,
-                    color
-                  } : undefined}
                 >
                   {isInCart ? `${label} ✓` : label}
                 </button>
@@ -632,7 +610,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     <div className="group-detail-view">
       {/* Header */}
       <div className="group-detail-header">
-        <button className="back-btn" onClick={onBack}>
+        <button className="pf-btn back-btn" onClick={onBack}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
           Back
         </button>
         <div className="group-detail-title-section">
@@ -730,11 +711,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={cert.type}
               className={`filter-btn ${filter === cert.type ? 'active' : ''}`}
               onClick={() => setFilter(cert.type)}
-              style={{
-                borderColor: cert.color,
-                color: filter === cert.type ? cert.color : undefined
-              }}
             >
+              <span
+                className="filter-btn-dot"
+                aria-hidden="true"
+                style={{ background: cert.color }}
+              />
               {cert.label} ({count})
             </button>
           )

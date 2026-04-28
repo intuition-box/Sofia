@@ -64,21 +64,27 @@ const ProfilePage = () => {
 
   return (
     <div className="page profile-page">
-      <div className="tabs">
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
         <button
-          className={`tab ${activeTab === 'account' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'account' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'account'}
           onClick={() => handleTabChange('account')}
         >
           Account
         </button>
         <button
-          className={`tab ${activeTab === 'community' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'community' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'community'}
           onClick={() => handleTabChange('community')}
         >
           Community
         </button>
         <button
-          className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'history' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'history'}
           onClick={() => handleTabChange('history')}
         >
           History

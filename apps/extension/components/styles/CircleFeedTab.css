@@ -55,47 +55,44 @@
   display: none;
 }
 
-/* Filled pill — solid pastel background, dark ink text for contrast.
-   Default = subtle muted fill; hover = full pastel; active = full pastel. */
+/* Verb filter chip — ported from explorer .vf-chip (feed-card.css).
+   Dark/neutral pill with a small colored dot inside that surfaces the
+   intent's color. Active state = peach (ds-accent) bg + dark text. */
 .circle-chip {
   flex-shrink: 0;
-  padding: 4px 10px;
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: var(--transition-fast);
-  border: 1px solid transparent;
-  background: var(--ds-card);
-  color: var(--ds-muted);
+  transition: all 0.15s ease;
 }
 
-.circle-chip:hover {
-  background: var(--ds-bg-subtle);
-  color: var(--ds-ink);
+.circle-chip:hover:not(.active) {
+  border-color: var(--ds-ink-soft);
 }
 
 .circle-chip.active {
-  background: var(--ds-ink);
-  color: var(--ds-bg);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
 }
 
-/* Colored pills (when --chip-color is set inline from INTENTION_CONFIG) */
-.circle-chip[style*="--chip-color"] {
-  background: var(--chip-color);
-  color: #000000;
-  border-color: transparent;
-}
-
-.circle-chip[style*="--chip-color"]:hover {
-  background: var(--chip-color);
-  color: #000000;
-  filter: brightness(1.1);
-}
-
-.circle-chip[style*="--chip-color"].active {
-  background: var(--chip-color);
-  color: #000000;
+/* Small intent-color dot (mirrors .vf-chip-dot) — bg set inline. */
+.circle-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
 
 /* Grid Layout */

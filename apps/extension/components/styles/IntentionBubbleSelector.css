@@ -28,42 +28,65 @@
   gap: 8px;
 }
 
+/* Default = neutral muted pill. Intention pastel revealed on hover only.
+   Certified/in-cart states reveal the color too (since the action is
+   already committed/queued). One class per intention slug; pastel CSS vars
+   come from DS theme.css. */
 .intention-pill {
   padding: 6px 16px;
   border-radius: 15px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid transparent;
+  background: var(--ds-card);
+  color: var(--ds-muted);
   font-size: 14px;
-  font-weight: 200;
+  font-weight: 500;
   font-family: 'Geist', sans-serif;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   text-transform: lowercase;
 }
 
-.intention-pill:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-}
+/* Hover: solid intention pastel + black text */
+.intention-pill--trusted:hover:not(:disabled),
+.intention-pill--trusted.certified,
+.intention-pill--trusted.in-cart           { background: var(--trusted);     color: #000; }
+.intention-pill--distrusted:hover:not(:disabled),
+.intention-pill--distrusted.certified,
+.intention-pill--distrusted.in-cart        { background: var(--distrusted);  color: #000; }
+.intention-pill--work:hover:not(:disabled),
+.intention-pill--work.certified,
+.intention-pill--work.in-cart              { background: var(--work);        color: #000; }
+.intention-pill--learning:hover:not(:disabled),
+.intention-pill--learning.certified,
+.intention-pill--learning.in-cart          { background: var(--learning);    color: #000; }
+.intention-pill--fun:hover:not(:disabled),
+.intention-pill--fun.certified,
+.intention-pill--fun.in-cart               { background: var(--fun);         color: #000; }
+.intention-pill--inspiration:hover:not(:disabled),
+.intention-pill--inspiration.certified,
+.intention-pill--inspiration.in-cart       { background: var(--inspiration); color: #000; }
+.intention-pill--buying:hover:not(:disabled),
+.intention-pill--buying.certified,
+.intention-pill--buying.in-cart            { background: var(--buying);      color: #000; }
+.intention-pill--music:hover:not(:disabled),
+.intention-pill--music.certified,
+.intention-pill--music.in-cart             { background: var(--music);       color: #000; }
 
 .intention-pill.certified {
-  font-weight: 600;
+  font-weight: 700;
+  border-color: rgba(0, 0, 0, 0.4);
 }
 
 .intention-pill.in-cart {
   border-style: dashed;
-  border-color: rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.08);
-  color: rgba(212, 175, 55, 0.85);
-  font-weight: 400;
-  opacity: 1;
+  border-color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
 }
 
-.intention-pill--trust {
+/* Trust/distrust variants — capitalized label */
+.intention-pill--trusted,
+.intention-pill--distrusted {
   text-transform: capitalize;
-  font-weight: 400;
 }
 
 .intention-pills__separator {
@@ -76,10 +99,11 @@
 
 .intention-pill:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
-.intention-pill.in-cart:disabled {
+.intention-pill.in-cart:disabled,
+.intention-pill.certified:disabled {
   opacity: 0.85;
 }
 

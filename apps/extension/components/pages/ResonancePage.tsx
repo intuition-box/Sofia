@@ -19,27 +19,35 @@ const ResonancePage = () => {
 
   return (
     <div className="page">
-      <div className="tabs">
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
         <button
-          className={`tab ${activeTab === 'circle' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'circle' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'circle'}
           onClick={() => startTransition(() => setActiveTab('circle'))}
         >
           Circle
         </button>
         <button
-          className={`tab ${activeTab === 'trending' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'trending' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'trending'}
           onClick={() => startTransition(() => setActiveTab('trending'))}
         >
           Trending
         </button>
         <button
-          className={`tab ${activeTab === 'debate' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'debate' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'debate'}
           onClick={() => startTransition(() => setActiveTab('debate'))}
         >
           Vote
         </button>
         <button
-          className={`tab ${activeTab === 'streak' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'streak' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'streak'}
           onClick={() => startTransition(() => setActiveTab('streak'))}
         >
           Streak

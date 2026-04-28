@@ -61,16 +61,20 @@
   min-width: fit-content;
 }
 
-.category-card:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.486);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+/* Hover/active reveal --cat-color (injected from JS via inline style).
+   Falls back to subtle ds-accent if no cat-color set. */
+.category-card:hover,
+.category-card.active {
+  background: var(--cat-color, var(--ds-accent));
+  border-color: var(--cat-color, var(--ds-accent));
+  color: #000;
 }
 
-.category-card.active {
-  border: 1px solid rgba(255, 198, 176, 0.60);
-  background: rgba(255, 198, 176, 0.10);
+.category-card:hover .category-name,
+.category-card.active .category-name,
+.category-card:hover .category-count-value,
+.category-card.active .category-count-value {
+  color: #000;
 }
 
 .category-card-header {

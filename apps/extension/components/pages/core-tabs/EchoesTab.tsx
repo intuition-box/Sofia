@@ -224,7 +224,7 @@ const EchoesTab = () => {
           </div>
         )}
 
-        {/* Certification filter chips */}
+        {/* Certification filter chips — vf-chip pattern from explorer */}
         <div className="circle-category-chips">
           <button
             className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
@@ -237,11 +237,13 @@ const EchoesTab = () => {
               <button
                 key={type}
                 className={`circle-chip ${certFilter === type ? 'active' : ''}`}
-                style={{
-                  '--chip-color': config.color
-                } as React.CSSProperties}
                 onClick={() => setCertFilter(type)}
               >
+                <span
+                  className="circle-chip-dot"
+                  aria-hidden="true"
+                  style={{ background: config.color }}
+                />
                 {config.label}
               </button>
             )

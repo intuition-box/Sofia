@@ -529,11 +529,13 @@ const CircleFeedTab = () => {
               <button
                 key={type}
                 className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-                style={{
-                  '--chip-color': config.color
-                } as React.CSSProperties}
                 onClick={() => setActiveFilter(type)}
               >
+                <span
+                  className="circle-chip-dot"
+                  aria-hidden="true"
+                  style={{ background: config.color }}
+                />
                 {config.label}
               </button>
             )

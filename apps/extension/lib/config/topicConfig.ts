@@ -43,22 +43,24 @@ export const TOPIC_LABELS: Record<string, string> = {
   "personal-dev": "Growth",
 }
 
-// Topic colors (from sofia-explorer taxonomy)
+// Topic colors — pulled 1:1 from sofia-explorer SOFIA_TOPICS taxonomy
+// (apps/explorer/src/config/taxonomy.ts). Pastel palette used for topic
+// pills, badges and hover states. Keep in sync with the explorer.
 export const TOPIC_COLORS: Record<string, string> = {
-  "tech-dev": "#4472C4",
-  "design-creative": "#E06C75",
-  "music-audio": "#61AFEF",
-  "gaming": "#C678DD",
-  "web3-crypto": "#627EEA",
-  "science": "#98C379",
-  "sport-health": "#E5C07B",
-  "video-cinema": "#E06C75",
-  "entrepreneurship": "#D19A66",
-  "performing-arts": "#E06C75",
-  "nature-environment": "#98C379",
-  "food-lifestyle": "#E5C07B",
-  "literature": "#ABB2BF",
-  "personal-dev": "#C678DD",
+  "tech-dev":           "#7bade0",
+  "design-creative":    "#d98cb3",
+  "music-audio":        "#e0896a",
+  "gaming":             "#a78bdb",
+  "web3-crypto":        "#6dd4a0",
+  "science":            "#5cc4d6",
+  "sport-health":       "#e4b95a",
+  "video-cinema":       "#ff9aa2",
+  "entrepreneurship":   "#ffc6b0",
+  "performing-arts":    "#c890d9",
+  "nature-environment": "#8ed1a8",
+  "food-lifestyle":     "#f2c36b",
+  "literature":         "#9fb6e2",
+  "personal-dev":       "#b5d68f",
 }
 
 // Reverse lookup: atom term_id → topic slug

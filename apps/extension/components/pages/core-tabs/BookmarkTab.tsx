@@ -238,7 +238,7 @@ const BookmarkTab = () => {
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
-              className="bookmark-card"
+              className="bookmark-card bookmark-card--colored"
               style={{ cursor: 'pointer' }}
             >
               <div className="bookmark-item">
@@ -302,16 +302,15 @@ const BookmarkTab = () => {
                     <div
                       key={category.id}
                       onClick={() => selectCategory(category.id)}
-                      className="bookmark-card"
-                      style={{ cursor: 'pointer' }}
+                      className="bookmark-card bookmark-card--colored"
+                      style={{
+                        cursor: 'pointer',
+                        '--cat-color': category.color
+                      } as React.CSSProperties}
                     >
                       <div className="bookmark-item">
                         <div className="bookmark-header-content">
                           <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              className="category-color-dot"
-                              style={{ backgroundColor: category.color }}
-                            />
                             <h4 style={{ margin: 0 }}>{category.label}</h4>
                           </div>
                           <div className="bookmark-list-meta">
@@ -514,7 +513,7 @@ const BookmarkTab = () => {
                 return (
                   <div
                     key={list.id}
-                    className="bookmark-card"
+                    className="bookmark-card bookmark-card--colored"
                     onClick={() => selectList(list.id)}
                     style={{ cursor: 'pointer' }}
                   >

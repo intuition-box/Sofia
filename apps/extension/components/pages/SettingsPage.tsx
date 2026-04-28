@@ -4,6 +4,7 @@ import { useTracking } from '../../hooks'
 import { useWalletFromStorage, disconnectWallet } from '../../hooks'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
+import FullScreenLoader from '../ui/FullScreenLoader'
 import { Storage } from '@plasmohq/storage'
 import { cleanupProvider } from '../../lib/services/walletProvider'
 import { tripletsDataService, userSettingsService } from '../../lib/database'
@@ -17,12 +18,13 @@ import packageJson from '~/package.json'
 const logger = createHookLogger('SettingsPage')
 
 const SettingsPage = () => {
-  const { navigateTo } = useRouter()
+  const { navigateTo, setOnboardingBookmarks } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
   const { walletAddress: account, authenticated } = useWalletFromStorage()
 
   // Local UI states
   const [isClearing, setIsClearing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
 
   // Auto-cleanup settings
   const [autoCleanup, setAutoCleanup] = useState(true)
@@ -34,6 +36,32 @@ const SettingsPage = () => {
       setAutoCleanupDays(settings.autoCleanupInactiveDays ?? 30)
     })
   }, [])
+
+  // Listen for theme extraction completion (post-import) → redirect to Echoes
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.type === 'THEME_EXTRACTION_COMPLETE') {
+        logger.info('Theme extraction completed, redirecting to Echoes')
+        setIsImporting(false)
+        localStorage.setItem('targetTab', 'Echoes')
+        navigateTo('Sofia')
+      }
+    }
+    chrome.runtime.onMessage.addListener(handleMessage)
+    return () => chrome.runtime.onMessage.removeListener(handleMessage)
+  }, [navigateTo])
+
+  const handleImportData = () => {
+    setIsImporting(true)
+    chrome.runtime.sendMessage({ type: 'FETCH_BOOKMARKS' }, (response) => {
+      if (response?.success && response.bookmarks?.length > 0) {
+        setOnboardingBookmarks(response.bookmarks)
+        navigateTo('onboarding-select')
+      } else {
+        setIsImporting(false)
+      }
+    })
+  }
 
   const handleToggleAutoCleanup = async () => {
     const newValue = !autoCleanup
@@ -123,6 +151,10 @@ const SettingsPage = () => {
 
   return (
     <div className="page settings-page">
+      <FullScreenLoader
+        isVisible={isImporting}
+        message="Importing and analyzing your bookmarks..."
+      />
 
       <h2 className="section-title">Settings</h2>
 
@@ -169,6 +201,23 @@ const SettingsPage = () => {
         <div className="settings-item">
           <span>Wallet Connection</span>
           <WalletConnectionButton />
+        </div>
+
+        {/* Import Data */}
+        <div className="settings-item">
+          <div className="settings-item-content">
+            <span>Import Data</span>
+            <span className="settings-item-description">
+              Fetch and analyze your bookmarks
+            </span>
+          </div>
+          <button
+            onClick={handleImportData}
+            disabled={isImporting}
+            className="delete-button-3d noselect"
+          >
+            {isImporting ? 'Importing...' : 'Import'}
+          </button>
         </div>
 
         {/* Replay Tutorial */}

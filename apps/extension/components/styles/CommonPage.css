@@ -446,19 +446,28 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Back button — mirrors explorer .pf-btn (apps/explorer/.../pages.css).
+   Bordered card-toned pill with icon + label. */
+.pf-btn,
 .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: var(--ds-ink);
-  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--ds-border);
   border-radius: 8px;
+  background: var(--ds-card);
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
   cursor: pointer;
-  font-size: 13px;
-  transition: background 0.2s;
+  transition: all 0.15s ease;
 }
 
+.pf-btn:hover,
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--ds-ink);
 }
 
 .group-detail-title-section {
@@ -646,32 +655,48 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* Filter chips — ported from explorer .vf-chip (feed-card.css).
+   Neutral pill + small intent-color dot inside; active = peach (ds-accent). */
 .filter-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .filter-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--ds-ink);
+.filter-btn:hover:not(.active) {
+  border-color: var(--ds-ink-soft);
 }
 
 .filter-btn.active {
-  background: rgba(255, 198, 176, 0.20);
-  border-color: rgba(255, 198, 176, 0.50);
-  color: var(--ds-ink);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
+}
+
+/* Intent-color dot inside cert buttons (mirrors .circle-chip-dot). */
+.filter-btn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
 
 .url-list {
@@ -891,33 +916,42 @@
   font-weight: 600;
 }
 
+/* Sort chips — ported from explorer .cr-chip (circles.css).
+   Pill segmented filters above the Echoes grid. */
 .sort-buttons {
   display: flex;
-  width: fit-content;
-  gap: 2px;
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border-radius: var(--radius-sm, 4px);
-  padding: 2px;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: transparent;
+  padding: 0;
 }
 
 .sort-btn {
-  padding: 2px var(--spacing-sm, 8px);
-  font-size: var(--font-size-xs, 10px);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm, 4px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: all 0.15s ease;
 }
 
-.sort-btn:hover {
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+.sort-btn:hover:not(.active) {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
 
 .sort-btn.active {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, var(--ds-ink));
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
 }
 
 .groups-loading,

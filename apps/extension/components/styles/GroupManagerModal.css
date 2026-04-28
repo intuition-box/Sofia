@@ -491,17 +491,20 @@
   cursor: not-allowed;
 }
 
-/* Manage button in toolbar */
+/* Manage button — primary CTA in toolbar.
+   Overrides .sort-btn (cr-chip) styles to use the DS primary tokens. */
 .gm-manage-btn {
   margin-left: auto;
-  background: rgba(255, 198, 176, 0.12) !important;
-  color: var(--ds-ink) !important;
-  border: 1px solid rgba(255, 198, 176, 0.20) !important;
-  border-radius: 4px;
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-fg) !important;
+  border: 1px solid var(--btn-primary-bg) !important;
+  border-radius: var(--btn-primary-radius, 8px) !important;
+  font-weight: 600 !important;
 }
 
-.gm-manage-btn:hover {
-  background: rgba(255, 198, 176, 0.25) !important;
+.gm-manage-btn:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg) !important;
+  border-color: var(--btn-primary-hover-bg) !important;
 }
 
 /* Cleanup banner */

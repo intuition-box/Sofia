@@ -175,12 +175,12 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
               <span className="intention-count">{activeDistrust}</span>
             </div>
             {/* 6 intention types */}
-            {INTENTION_ITEMS.map(({ key, label }) => (
+            {INTENTION_ITEMS.map(({ key, label, type }) => (
               <div key={key} className="intention-progress-item">
-                <VerbTag intent={key} label={label} />
+                <VerbTag intent={type} label={label} />
                 <div className="progress-track">
                   <div
-                    className={`progress-fill ${label}`}
+                    className={`progress-fill ${type}`}
                     style={{
                       width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
                     }}

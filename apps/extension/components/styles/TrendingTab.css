@@ -85,7 +85,7 @@
 }
 
 .trending-more-btn:hover {
-  color: var(--category-color, rgba(255, 255, 255, 0.7));
+  color: var(--ds-ink);
 }
 
 /* Card grid — 3 cards fill the row */
@@ -117,9 +117,15 @@
 }
 
 .trending-card:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+  background-color: var(--category-color, rgba(255, 255, 255, 0.06));
+  border-color: var(--category-color, rgba(255, 255, 255, 0.15));
+  color: #000;
+}
+
+.trending-card:hover .trending-card-title,
+.trending-card:hover .trending-card-url,
+.trending-card:hover .trending-certifier-count {
+  color: #000;
 }
 
 /* Card header: favicon + rank */
@@ -272,7 +278,7 @@
 .trending-detail-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--category-color, var(--color-text-secondary, var(--ds-ink)));
+  color: var(--ds-ink);
 }
 
 .trending-detail-count {

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { X, Trash2 } from "lucide-react"
-import sofiaIcon from "data-base64:~assets/icon-dark-32.png"
+import sofiaIcon from "data-base64:~assets/icon-light-32.png"
 import { useCart, useCartSubmit } from "~/hooks"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"

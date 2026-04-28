@@ -59,22 +59,28 @@ const AccountTab = () => {
       />
 
 
-      {/* Sub-tabs Navigation */}
-      <div className="sub-tabs">
+      {/* Sub-tabs Navigation — DS pf-echoes-sort segmented control */}
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Account sections">
         <button
-          className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'stats' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'stats'}
           onClick={() => setActiveTab('stats')}
         >
           Stats
         </button>
         <button
-          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
+          aria-pressed={activeTab === 'achievements'}
           onClick={() => setActiveTab('achievements')}
         >
           Quests
         </button>
         <button
-          className={`sub-tab ${activeTab === 'socials' ? 'active' : ''}`}
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'socials' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'socials'}
           onClick={() => setActiveTab('socials')}
         >
           Socials

@@ -241,17 +241,6 @@ const PageBlockchainCard = () => {
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
-          {/* Interest Context (from Sofia Explorer) */}
-          {!isRestricted && hasInterests && (
-            <InterestContextSelector
-              interests={topInterests}
-              selectedContext={selectedContext}
-              onSelectContext={setSelectedContext}
-              disabled={modal.intentionState.loading}
-              certifiedContexts={certifiedContexts}
-            />
-          )}
-
           {/* Trust/Distrust pills + Intention pills (unified) */}
           {!isRestricted && (
             <div className="discovery-section">
@@ -271,6 +260,17 @@ const PageBlockchainCard = () => {
                 distrustInCart={distrustInCart}
               />
             </div>
+          )}
+
+          {/* Interest Context (from Sofia Explorer) — below discovery section */}
+          {!isRestricted && hasInterests && (
+            <InterestContextSelector
+              interests={topInterests}
+              selectedContext={selectedContext}
+              onSelectContext={setSelectedContext}
+              disabled={modal.intentionState.loading}
+              certifiedContexts={certifiedContexts}
+            />
           )}
 
           {/* Position Board — certifiers leaderboard */}
