@@ -499,31 +499,42 @@
   gap: 12px;
 }
 
+/* Filled stat pills — solid intention bg + black text.
+   3 sequential cards in group-detail-stats: URLs / On-chain / To certify.
+   Use :nth-child to differentiate semantically without TSX changes. */
 .stat-card {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 12px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #000;
+}
+
+.group-detail-stats .stat-card:nth-child(1) {
+  background: var(--work);
+}
+
+.group-detail-stats .stat-card:nth-child(2) {
+  background: var(--trusted);
 }
 
 .stat-card.highlight {
-  background: rgba(255, 198, 176, 0.10);
-  border-color: rgba(255, 198, 176, 0.30);
+  background: var(--ds-accent);
 }
 
 .stat-number {
   display: block;
-  color: var(--ds-ink);
+  color: #000;
   font-size: 20px;
   font-weight: 700;
 }
 
 .stat-text {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.72);
   font-size: 11px;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* Identity Hero Section - Displayed after stats */
@@ -581,8 +592,7 @@
 }
 
 .amplify-btn-inline:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.60);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
 }
 
 .amplify-btn-inline:disabled {
@@ -1311,12 +1321,11 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background: var(--inspiration);
-  color: #fff;
+  color: #000;
 }
 
 .amplify-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(167, 139, 219, 0.4);
+  filter: brightness(1.1);
 }
 
 .amplify-btn:disabled {
@@ -1426,8 +1435,7 @@
 }
 
 .level-up-integrated-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  filter: brightness(1.05);
 }
 
 .level-up-integrated-btn:disabled {

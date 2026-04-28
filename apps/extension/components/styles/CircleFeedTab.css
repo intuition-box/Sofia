@@ -222,27 +222,27 @@
 }
 
 .circle-support-btn:hover {
-  color: var(--ds-ink);
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #000;
 }
 
 .circle-oppose-btn:hover:not(:disabled) {
-  color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #000;
 }
 
 .circle-support-btn.voted {
-  color: var(--ds-ink);
-  border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
-  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #000;
 }
 
 .circle-oppose-btn.voted {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
-  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #000;
 }
 
 .circle-action-btn:disabled {
