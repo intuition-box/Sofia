@@ -39,10 +39,14 @@ async function ensureTable(): Promise<void> {
   return tableReady
 }
 
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2)
+function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
+  // Build via an explicit ArrayBuffer so the resulting Uint8Array is typed
+  // strict-ArrayBuffer (not ArrayBufferLike, which includes SharedArrayBuffer).
+  // Web Crypto APIs (importKey, encrypt, decrypt) don't accept the loose form.
+  const buffer = new ArrayBuffer(hex.length / 2)
+  const bytes = new Uint8Array(buffer)
   for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16)
+    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
   }
   return bytes
 }
@@ -105,6 +109,27 @@ export interface TokenRecord {
   user_id?: string
   username?: string
   expires_at?: number
+}
+
+/**
+ * Eager initializer for the oauth_tokens table. Called from mastra/index.ts at
+ * boot so the table exists before any storeToken/getToken request lands.
+ *
+ * Skips the work entirely when TOKEN_ENCRYPTION_KEY is unset — without a key
+ * we can't encrypt/decrypt, so the storage layer is effectively disabled and
+ * creating the table would be misleading.
+ *
+ * Internally delegates to the same lazy `ensureTable()` that public read/write
+ * helpers use, so a missed eager call still self-heals on first storeToken().
+ */
+export async function initTokenTable(): Promise<void> {
+  if (!process.env.TOKEN_ENCRYPTION_KEY) {
+    console.warn(
+      "[TokenDB] TOKEN_ENCRYPTION_KEY not set — token storage disabled"
+    )
+    return
+  }
+  await ensureTable()
 }
 
 export async function storeToken(
