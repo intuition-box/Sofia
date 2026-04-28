@@ -19,7 +19,7 @@
 }
 
 .stat-value {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -32,14 +32,14 @@
 }
 
 .stat-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 400;
 }
 
 .stat-sublabel {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 4px;
@@ -205,7 +205,7 @@
   padding: 40px 20px;
   text-align: center;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
 }
 
@@ -229,7 +229,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
@@ -295,7 +295,7 @@
 }
 
 .quest-badge-name {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 10px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -305,7 +305,7 @@
 }
 
 .quest-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--ds-ink);
@@ -313,14 +313,14 @@
 }
 
 .quest-progress-text {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
 }
 
 .quest-status {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   margin-top: 2px;
@@ -657,7 +657,7 @@
   border: none;
   border-radius: 8px;
   color: #ffffff;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -768,7 +768,7 @@
   border: none;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -866,7 +866,7 @@
 }
 
 .discovery-section-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -878,7 +878,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -937,14 +937,14 @@
 }
 
 .badge-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .badge-count {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -988,13 +988,13 @@
   align-items: center;
   justify-content: center;
   color: #000;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 700;
 }
 
 .xp-progress-text {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -1023,7 +1023,7 @@
 }
 
 .xp-signals-value {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -1032,7 +1032,7 @@
 }
 
 .xp-signals-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 400;
@@ -1048,7 +1048,7 @@
 }
 
 .mechanism-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -1057,7 +1057,7 @@
 }
 
 .mechanism-content {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
@@ -1306,7 +1306,7 @@
 }
 
 .streak-hub-days {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -1332,7 +1332,7 @@
 }
 
 .streak-hub-progress-pct {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -1356,7 +1356,7 @@
 }
 
 .streak-hub-action-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
@@ -1372,7 +1372,7 @@
   border-radius: 8px;
   background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #0f1420;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
@@ -1399,7 +1399,7 @@
 }
 
 .streak-hub-subtitle {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
   text-align: center;
@@ -1433,7 +1433,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 10px;
   font-weight: 700;
   background: transparent;
@@ -1493,7 +1493,7 @@
 }
 
 .streak-section-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
@@ -1554,7 +1554,7 @@
 }
 
 .streak-card-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: #fff;
@@ -1564,7 +1564,7 @@
 }
 
 .streak-card-progress {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
 }
@@ -1575,7 +1575,7 @@
   border-radius: 6px;
   background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #0f1420;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -1620,7 +1620,7 @@
 }
 
 .achievements-section-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -1874,7 +1874,7 @@
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 /* Claimable achievements (golden glow) */
@@ -1899,7 +1899,7 @@
   padding: 6px 10px;
   border: none;
   border-radius: 6px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -1979,7 +1979,7 @@
 }
 
 .season-pool-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -2002,7 +2002,7 @@
 }
 
 .season-pool-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -2011,14 +2011,14 @@
 }
 
 .season-pool-value {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
 
 .season-pool-pct {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
 }
@@ -2044,7 +2044,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.75);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;

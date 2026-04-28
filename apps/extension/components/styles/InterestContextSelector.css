@@ -34,7 +34,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-lg, 12px);
   color: rgba(255, 255, 255, 0.7);
-  font-family: var(--font-family-primary, "Montserrat", sans-serif);
+  font-family: var(--font-family-primary, "Geist", sans-serif);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

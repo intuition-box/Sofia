@@ -787,7 +787,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .button-3d:hover:not(:disabled) {
@@ -835,7 +835,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   position: relative;
   overflow: hidden;
   font-size: 14px;
@@ -956,7 +956,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .delete-button-3d:hover:not(:disabled) {
@@ -1013,7 +1013,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .disconnect-button-3d:hover:not(:disabled) {

@@ -1,7 +1,7 @@
 /* Styles globaux et communs à toute l'application */
 
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600&display=block');
+/* Import Google Fonts (Geist + Fraunces + JetBrains Mono — same as DS) */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=block');
 
 /* Design System tokens */
 @import "@0xsofia/design-system/theme.css";
@@ -44,7 +44,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
@@ -162,7 +162,7 @@ body {
   --size-nav-height: 60px;
   
   /* Typographie */
-  --font-family-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-primary: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-display: 'Fraunces', serif;
   --font-family-mono: 'JetBrains Mono', monospace;
   --font-size-xs: 10px;

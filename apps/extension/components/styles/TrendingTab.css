@@ -52,7 +52,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -76,7 +76,7 @@
   background: none;
   border: none;
   padding: 2px 0;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);

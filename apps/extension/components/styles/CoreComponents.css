@@ -190,7 +190,7 @@
 }
 
 .triplet-detail-name {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--ds-ink);
@@ -203,7 +203,7 @@
 }
 
 .triplet-detail-description {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: var(--ds-ink);
@@ -214,7 +214,7 @@
 
 
 .triplet-detail-url {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   color: var(--ds-ink);
   text-decoration: underline;
@@ -257,7 +257,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: #fff;
@@ -344,7 +344,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 12px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -370,7 +370,7 @@
   border: none;
   background: var(--btn-primary-bg);
   color: var(--btn-primary-fg);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 700;
   box-shadow: var(--btn-primary-shadow);
@@ -423,7 +423,7 @@
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -652,7 +652,7 @@
   cursor: pointer;
   margin-top: 16px;
   transition: all 0.3s ease;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 500;
 }
 
@@ -673,7 +673,7 @@
   font-size: 13px;
   margin-top: 8px;
   text-align: center;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   animation: pulse 2s infinite;
 }
 
@@ -749,7 +749,7 @@
 .analysis-time,
 .themes-count {
   color: var(--ds-ink) !important;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 400;
 }
@@ -979,7 +979,7 @@
 
 .recommendation-reason {
   color: var(--ds-ink);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   line-height: 1.6;
   margin: 0 0 20px 0;
@@ -1002,7 +1002,7 @@
   border-radius: 12px;
   color: var(--ds-ink);
   text-decoration: none;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   transition: all 0.3s ease;
