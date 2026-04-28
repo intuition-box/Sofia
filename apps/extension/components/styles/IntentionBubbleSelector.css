@@ -1,11 +1,11 @@
-/* Intention Selector - Compact Design */
+/* Intention Selector — sits inside .cert-section wrapper which provides title */
 .intention-selector {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
-  padding: 14px 16px;
-  margin-top: 12px;
+  padding: 0;
+  margin-top: 0;
 }
 
 .intention-selector.not-eligible {
@@ -13,12 +13,7 @@
 }
 
 .intention-selector .intention-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Fraunces', serif;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  text-align: center;
+  display: none;
 }
 
 .intention-pills {

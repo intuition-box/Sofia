@@ -82,11 +82,34 @@
   margin-bottom: 8px;
 }
 
-/* Tight spacing between intention pills and context selector — same row feel */
-.discovery-section + .interest-context {
-  margin-top: 4px;
-  padding-top: 0;
-  border-top: none;
+/* Section wrapper — same visual structure as ExtendedMetricsPanel
+   "Intentions on this page": Mono uppercase title above the controls. */
+.cert-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cert-section-title {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  padding: 0 2px;
+}
+
+/* Breathing space before the metrics panel below */
+.cert-section + .credibility-content,
+.interest-context + .credibility-content,
+.cert-section:last-child {
+  margin-top: 8px;
+}
+
+.credibility-analysis {
+  margin-top: 24px;
 }
 
 

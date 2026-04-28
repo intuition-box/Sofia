@@ -267,7 +267,7 @@ const SettingsPage = () => {
           <button
             onClick={handleClearStorage}
             disabled={isClearing}
-            className="delete-button-3d noselect"
+            className="delete-button-3d destructive noselect"
           >
             {isClearing ? 'Clearing...' : 'Delete'}
           </button>

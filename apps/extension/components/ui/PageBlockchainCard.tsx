@@ -243,7 +243,8 @@ const PageBlockchainCard = () => {
 
           {/* Trust/Distrust pills + Intention pills (unified) */}
           {!isRestricted && (
-            <div className="discovery-section">
+            <div className="cert-section">
+              <div className="cert-section-title">Intentions</div>
               <IntentionBubbleSelector
                 onBubbleClick={(intention: IntentionPurpose) => {
                   if (!currentUrl) return
@@ -262,15 +263,18 @@ const PageBlockchainCard = () => {
             </div>
           )}
 
-          {/* Interest Context (from Sofia Explorer) — below discovery section */}
+          {/* Interest Context (from Sofia Explorer) */}
           {!isRestricted && hasInterests && (
-            <InterestContextSelector
-              interests={topInterests}
-              selectedContext={selectedContext}
-              onSelectContext={setSelectedContext}
-              disabled={modal.intentionState.loading}
-              certifiedContexts={certifiedContexts}
-            />
+            <div className="cert-section">
+              <div className="cert-section-title">Context</div>
+              <InterestContextSelector
+                interests={topInterests}
+                selectedContext={selectedContext}
+                onSelectContext={setSelectedContext}
+                disabled={modal.intentionState.loading}
+                certifiedContexts={certifiedContexts}
+              />
+            </div>
           )}
 
           {/* Position Board — certifiers leaderboard */}

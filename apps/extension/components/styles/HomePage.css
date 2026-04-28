@@ -70,6 +70,7 @@
 
 .wallet-connect-button:hover:not(:disabled) {
   background: var(--btn-primary-hover-bg);
+  color: var(--btn-primary-hover-fg);
 }
 
 .wallet-connect-button:disabled {
