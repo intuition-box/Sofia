@@ -89,8 +89,12 @@ export default function AllMembersPanel({
             <p className="crd-feed-empty">No members yet.</p>
           ) : (
             members.map((m) => {
-              const ens = m.walletAddress ? getDisplay(m.walletAddress as Address) : ''
-              const shortAddr = m.walletAddress ? shortAddress(m.walletAddress) : ''
+              const ens = m.walletAddress
+                ? getDisplay(m.walletAddress as Address)
+                : ''
+              const shortAddr = m.walletAddress
+                ? shortAddress(m.walletAddress)
+                : ''
               const displayName = ens && ens !== shortAddr ? ens : m.label
               return (
                 <div key={m.termId} className="crd-member-row">

@@ -18,7 +18,7 @@ The Sofia architecture consists of several interconnected layers.
 ### Chrome Extension (User Layer)
 
 The Sofia Chrome Extension is your gateway to the system. It monitors your browsing activity, capturing URLs and context to build your personal knowledge graph. The extension runs locally in your browser, ensuring initial data capture happens on your device.
-All the data are stored into your localstorage and sent excusively to Phala TEE Machine to insure your complete privacy. 
+All the data are stored into your localstorage and sent excusively to Phala TEE Machine to insure your complete privacy.
 
 ### Phala TEE Machine (Privacy Layer)
 
@@ -34,12 +34,11 @@ Mastra framework run within the TEE, analyzing your browsing patterns and genera
 
 ### GaiaNet (AI Models)
 
-GaiaNet provides decentralized AI models that powers Sofia's intelligent features. The anonymized data come from Phala, and processed by Gaianet which ensure the scalability of our infrastucture. 
+GaiaNet provides decentralized AI models that powers Sofia's intelligent features. The anonymized data come from Phala, and processed by Gaianet which ensure the scalability of our infrastucture.
 
 ### Intuition MCP & Indexer (Knowledge Layer)
 
-The intuition MCP is executed throught the TEE. Sofia agent's are connected to the MCP server which query and filter the user knowledge graph. 
-
+The intuition MCP is executed throught the TEE. Sofia agent's are connected to the MCP server which query and filter the user knowledge graph.
 
 ## Data Flow
 

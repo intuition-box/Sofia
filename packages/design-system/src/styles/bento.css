@@ -71,16 +71,26 @@
 
 .bento-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px -14px color-mix(in srgb, var(--ds-ink) 25%, transparent);
+  box-shadow: 0 10px 28px -14px
+    color-mix(in srgb, var(--ds-ink) 25%, transparent);
 }
 
 .bento-card:active {
   transform: translateY(0);
 }
 
-.bento-small { grid-column: span 1; grid-row: span 1; }
-.bento-tall  { grid-column: span 1; grid-row: span 2; }
-.bento-mega  { grid-column: span 2; grid-row: span 3; }
+.bento-small {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+.bento-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+.bento-mega {
+  grid-column: span 2;
+  grid-row: span 3;
+}
 
 /* When the card is rendered as an anchor, strip default link styling. */
 a.bento-card {
@@ -102,8 +112,13 @@ a.bento-card {
 }
 
 @keyframes subtleGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
-  50%      { box-shadow: 0 0 10px 1px rgba(255, 215, 0, 0.18); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px 1px rgba(255, 215, 0, 0.18);
+  }
 }
 
 .group-bento-header {
@@ -130,7 +145,7 @@ a.bento-card {
 
 .group-bento-title {
   color: var(--ds-ink);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -157,7 +172,7 @@ a.bento-card {
 .level-badge {
   padding: 4px 8px;
   border-radius: 999px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -182,7 +197,7 @@ a.bento-card {
 
 .group-bento-stats .stat-value {
   color: var(--ds-ink);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
@@ -191,7 +206,7 @@ a.bento-card {
 
 .group-bento-stats .stat-label {
   color: var(--ds-muted);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 8px;
   font-weight: 600;
   text-transform: uppercase;
@@ -221,7 +236,7 @@ a.bento-card {
 
 .progress-label {
   color: var(--ds-muted);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   text-align: right;
   letter-spacing: 0.02em;

@@ -1,11 +1,17 @@
-import { createStep, createWorkflow } from '@mastra/core/workflows';
-import { z } from 'zod';
-import { createPublicClient, createWalletClient, http, stringToHex, encodeFunctionData } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { createStep, createWorkflow } from '@mastra/core/workflows'
+import { z } from 'zod'
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  stringToHex,
+  encodeFunctionData,
+} from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 
-import { storeToken } from '../db/tokens';
-import { verifyAndGetUserId, type Platform } from '../oauth/verify';
-import { intuitionMainnet, RPC_URL } from '../config/chain';
+import { storeToken } from '../db/tokens'
+import { verifyAndGetUserId, type Platform } from '../oauth/verify'
+import { intuitionMainnet, RPC_URL } from '../config/chain'
 import {
   MULTIVAULT_ADDRESS,
   TERM_ID_HAS_VERIFIED_YOUTUBE,
@@ -13,10 +19,10 @@ import {
   TERM_ID_HAS_VERIFIED_SPOTIFY,
   TERM_ID_HAS_VERIFIED_TWITCH,
   TERM_ID_HAS_VERIFIED_TWITTER,
-} from '../config/constants';
-import { MultiVaultAbi } from '../config/abi';
+} from '../config/constants'
+import { MultiVaultAbi } from '../config/abi'
 
-const INTUITION_GRAPHQL_ENDPOINT = 'https://mainnet.intuition.sh/v1/graphql';
+const INTUITION_GRAPHQL_ENDPOINT = 'https://mainnet.intuition.sh/v1/graphql'
 
 /**
  * Pin data to IPFS via Intuition's pinThing mutation.
@@ -29,7 +35,7 @@ async function pinToIPFS(name: string, description: string): Promise<string> {
         uri
       }
     }
-  `;
+  `
 
   const response = await fetch(INTUITION_GRAPHQL_ENDPOINT, {
     method: 'POST',
@@ -40,24 +46,24 @@ async function pinToIPFS(name: string, description: string): Promise<string> {
         thing: { name, description, image: '', url: '' },
       },
     }),
-  });
+  })
 
   if (!response.ok) {
-    throw new Error(`IPFS pinning failed: ${response.status}`);
+    throw new Error(`IPFS pinning failed: ${response.status}`)
   }
 
-  const result = await response.json();
+  const result = await response.json()
 
   if (result.errors) {
-    throw new Error(`IPFS pinning error: ${result.errors[0].message}`);
+    throw new Error(`IPFS pinning error: ${result.errors[0].message}`)
   }
 
-  const uri = result.data?.pinThing?.uri;
+  const uri = result.data?.pinThing?.uri
   if (!uri) {
-    throw new Error('No IPFS URI returned from pinThing');
+    throw new Error('No IPFS URI returned from pinThing')
   }
 
-  return uri;
+  return uri
 }
 
 const PREDICATE_NAMES: Record<string, string> = {
@@ -66,7 +72,7 @@ const PREDICATE_NAMES: Record<string, string> = {
   spotify: 'has verified spotify id',
   twitch: 'has verified twitch id',
   twitter: 'has verified twitter id',
-};
+}
 
 /**
  * Pre-existing predicate term IDs already on-chain. Platforms NOT listed here
@@ -83,7 +89,7 @@ const PREDICATE_TERM_IDS: Partial<Record<Platform, `0x${string}`>> = {
   spotify: TERM_ID_HAS_VERIFIED_SPOTIFY,
   twitch: TERM_ID_HAS_VERIFIED_TWITCH,
   twitter: TERM_ID_HAS_VERIFIED_TWITTER,
-};
+}
 
 const inputSchema = z.object({
   walletAddress: z.string().describe('User wallet address'),
@@ -105,7 +111,7 @@ const inputSchema = z.object({
     ])
     .describe('Social platform'),
   oauthToken: z.string().describe('OAuth access token'),
-});
+})
 
 const outputSchema = z.object({
   success: z.boolean(),
@@ -119,7 +125,7 @@ const outputSchema = z.object({
   socialAtomCreated: z.boolean().optional(),
   onchainSkipped: z.boolean().optional(),
   error: z.string().optional(),
-});
+})
 
 /**
  * Link Social Workflow
@@ -133,38 +139,41 @@ const outputSchema = z.object({
  */
 const executeLinkSocial = createStep({
   id: 'execute-link-social',
-  description: 'Verify OAuth token, store it, and link the platform on-chain when possible',
+  description:
+    'Verify OAuth token, store it, and link the platform on-chain when possible',
   inputSchema,
   outputSchema,
   execute: async ({ inputData }) => {
     if (!inputData?.walletAddress) {
-      return { success: false, error: 'walletAddress is required' };
+      return { success: false, error: 'walletAddress is required' }
     }
     if (!inputData?.platform) {
-      return { success: false, error: 'platform is required' };
+      return { success: false, error: 'platform is required' }
     }
     if (!inputData?.oauthToken) {
-      return { success: false, error: 'oauthToken is required' };
+      return { success: false, error: 'oauthToken is required' }
     }
 
-    const { walletAddress, platform, oauthToken } = inputData;
+    const { walletAddress, platform, oauthToken } = inputData
 
-    console.log(`[LinkSocialWorkflow] Starting for ${walletAddress} on ${platform}`);
+    console.log(
+      `[LinkSocialWorkflow] Starting for ${walletAddress} on ${platform}`,
+    )
 
     // Step 1: Verify OAuth token and get userId
-    const verification = await verifyAndGetUserId(platform, oauthToken);
+    const verification = await verifyAndGetUserId(platform, oauthToken)
 
     if (!verification.valid || !verification.userId) {
       return {
         success: false,
         platform,
         error: verification.error || 'OAuth verification failed',
-      };
+      }
     }
 
     console.log(
       `[LinkSocialWorkflow] Verified ${platform} user: ${verification.userId} (${verification.username})`,
-    );
+    )
 
     // Step 2: Store the OAuth token (encrypted) — non-blocking
     try {
@@ -175,27 +184,30 @@ const executeLinkSocial = createStep({
         undefined,
         verification.userId,
         verification.username,
-      );
+      )
     } catch (err) {
-      console.warn('[LinkSocialWorkflow] Token storage failed (non-blocking):', err);
+      console.warn(
+        '[LinkSocialWorkflow] Token storage failed (non-blocking):',
+        err,
+      )
     }
 
     // Step 3: Check if we have a predicate atom for on-chain link
-    const predicateAtomId = PREDICATE_TERM_IDS[platform];
+    const predicateAtomId = PREDICATE_TERM_IDS[platform]
     if (!predicateAtomId) {
       console.log(
         `[LinkSocialWorkflow] No predicate atom for ${platform} — skipping on-chain link.`,
-      );
+      )
       return {
         success: true,
         platform,
         userId: verification.userId,
         username: verification.username,
         onchainSkipped: true,
-      };
+      }
     }
 
-    const botPrivateKey = process.env.BOT_PRIVATE_KEY;
+    const botPrivateKey = process.env.BOT_PRIVATE_KEY
     if (!botPrivateKey) {
       return {
         success: false,
@@ -203,38 +215,40 @@ const executeLinkSocial = createStep({
         userId: verification.userId,
         username: verification.username,
         error: 'BOT_PRIVATE_KEY not configured on server',
-      };
+      }
     }
 
     try {
-      const account = privateKeyToAccount(botPrivateKey as `0x${string}`);
+      const account = privateKeyToAccount(botPrivateKey as `0x${string}`)
       const publicClient = createPublicClient({
         chain: intuitionMainnet,
         transport: http(RPC_URL),
-      });
+      })
       const walletClient = createWalletClient({
         account,
         chain: intuitionMainnet,
         transport: http(RPC_URL),
-      });
+      })
 
-      console.log(`[LinkSocialWorkflow] Bot address: ${account.address}`);
+      console.log(`[LinkSocialWorkflow] Bot address: ${account.address}`)
 
-      const userId = verification.userId;
-      const socialDescription = `Verified ${platform} account ID`;
+      const userId = verification.userId
+      const socialDescription = `Verified ${platform} account ID`
 
       console.log(
         `[LinkSocialWorkflow] Pinning social atom to IPFS: name=${userId}, description=${socialDescription}`,
-      );
-      const socialIpfsUri = await pinToIPFS(userId, socialDescription);
-      console.log(`[LinkSocialWorkflow] Social atom IPFS URI: ${socialIpfsUri}`);
+      )
+      const socialIpfsUri = await pinToIPFS(userId, socialDescription)
+      console.log(`[LinkSocialWorkflow] Social atom IPFS URI: ${socialIpfsUri}`)
 
-      const socialAtomDataHex = stringToHex(socialIpfsUri);
-      const predicateName = PREDICATE_NAMES[platform];
+      const socialAtomDataHex = stringToHex(socialIpfsUri)
+      const predicateName = PREDICATE_NAMES[platform]
 
-      console.log(`[LinkSocialWorkflow] Predicate: ${predicateName} (term_id: ${predicateAtomId})`);
+      console.log(
+        `[LinkSocialWorkflow] Predicate: ${predicateName} (term_id: ${predicateAtomId})`,
+      )
 
-      const walletAtomData = stringToHex(walletAddress);
+      const walletAtomData = stringToHex(walletAddress)
       const [walletAtomId, socialAtomId] = await Promise.all([
         publicClient.readContract({
           address: MULTIVAULT_ADDRESS,
@@ -248,10 +262,10 @@ const executeLinkSocial = createStep({
           functionName: 'calculateAtomId',
           args: [socialAtomDataHex],
         }),
-      ]);
+      ])
 
-      console.log(`[LinkSocialWorkflow] Wallet atom ID: ${walletAtomId}`);
-      console.log(`[LinkSocialWorkflow] Social atom ID: ${socialAtomId}`);
+      console.log(`[LinkSocialWorkflow] Wallet atom ID: ${walletAtomId}`)
+      console.log(`[LinkSocialWorkflow] Social atom ID: ${socialAtomId}`)
 
       const [walletAtomExists, socialAtomExists] = await Promise.all([
         publicClient.readContract({
@@ -266,10 +280,14 @@ const executeLinkSocial = createStep({
           functionName: 'isTermCreated',
           args: [socialAtomId],
         }),
-      ]);
+      ])
 
-      console.log(`[LinkSocialWorkflow] Wallet atom exists: ${walletAtomExists}`);
-      console.log(`[LinkSocialWorkflow] Social atom exists: ${socialAtomExists}`);
+      console.log(
+        `[LinkSocialWorkflow] Wallet atom exists: ${walletAtomExists}`,
+      )
+      console.log(
+        `[LinkSocialWorkflow] Social atom exists: ${socialAtomExists}`,
+      )
 
       const [atomCost, tripleCost] = await Promise.all([
         publicClient.readContract({
@@ -282,34 +300,38 @@ const executeLinkSocial = createStep({
           abi: MultiVaultAbi,
           functionName: 'getTripleCost',
         }) as Promise<bigint>,
-      ]);
+      ])
 
-      console.log(`[LinkSocialWorkflow] atomCost: ${atomCost}, tripleCost: ${tripleCost}`);
+      console.log(
+        `[LinkSocialWorkflow] atomCost: ${atomCost}, tripleCost: ${tripleCost}`,
+      )
 
-      const atomDeposit = 500000000000000000n; // 0.5 TRUST
-      const tripleExtraDeposit = 500000000000000000n; // 0.5 TRUST extra for fees
+      const atomDeposit = 500000000000000000n // 0.5 TRUST
+      const tripleExtraDeposit = 500000000000000000n // 0.5 TRUST extra for fees
 
-      let walletAtomCreated = false;
-      let socialAtomCreated = false;
+      let walletAtomCreated = false
+      let socialAtomCreated = false
 
       if (!walletAtomExists) {
-        console.log(`[LinkSocialWorkflow] Creating wallet atom...`);
-        const atomTotalValue = atomCost + atomDeposit;
+        console.log(`[LinkSocialWorkflow] Creating wallet atom...`)
+        const atomTotalValue = atomCost + atomDeposit
         const atomCallData = encodeFunctionData({
           abi: MultiVaultAbi,
           functionName: 'createAtoms',
           args: [[walletAtomData], [atomTotalValue]],
-        });
+        })
 
         const createAtomHash = await walletClient.sendTransaction({
           to: MULTIVAULT_ADDRESS,
           data: atomCallData,
           value: atomTotalValue,
           gas: 500000n,
-        });
+        })
 
-        console.log(`[LinkSocialWorkflow] Wallet atom TX: ${createAtomHash}`);
-        const atomReceipt = await publicClient.waitForTransactionReceipt({ hash: createAtomHash });
+        console.log(`[LinkSocialWorkflow] Wallet atom TX: ${createAtomHash}`)
+        const atomReceipt = await publicClient.waitForTransactionReceipt({
+          hash: createAtomHash,
+        })
 
         if (atomReceipt.status !== 'success') {
           return {
@@ -318,34 +340,40 @@ const executeLinkSocial = createStep({
             userId: verification.userId,
             username: verification.username,
             error: `Wallet atom creation failed. TX: ${createAtomHash}`,
-          };
+          }
         }
 
-        console.log(`[LinkSocialWorkflow] Wallet atom created in block ${atomReceipt.blockNumber}`);
-        walletAtomCreated = true;
+        console.log(
+          `[LinkSocialWorkflow] Wallet atom created in block ${atomReceipt.blockNumber}`,
+        )
+        walletAtomCreated = true
       }
 
       if (!socialAtomExists) {
-        console.log(`[LinkSocialWorkflow] Creating social atom: ${userId} (IPFS: ${socialIpfsUri})`);
-        const socialAtomTotalValue = atomCost + atomDeposit;
+        console.log(
+          `[LinkSocialWorkflow] Creating social atom: ${userId} (IPFS: ${socialIpfsUri})`,
+        )
+        const socialAtomTotalValue = atomCost + atomDeposit
 
         const socialAtomCallData = encodeFunctionData({
           abi: MultiVaultAbi,
           functionName: 'createAtoms',
           args: [[socialAtomDataHex], [socialAtomTotalValue]],
-        });
+        })
 
         const createSocialAtomHash = await walletClient.sendTransaction({
           to: MULTIVAULT_ADDRESS,
           data: socialAtomCallData,
           value: socialAtomTotalValue,
           gas: 500000n,
-        });
+        })
 
-        console.log(`[LinkSocialWorkflow] Social atom TX: ${createSocialAtomHash}`);
+        console.log(
+          `[LinkSocialWorkflow] Social atom TX: ${createSocialAtomHash}`,
+        )
         const socialAtomReceipt = await publicClient.waitForTransactionReceipt({
           hash: createSocialAtomHash,
-        });
+        })
 
         if (socialAtomReceipt.status !== 'success') {
           return {
@@ -355,20 +383,20 @@ const executeLinkSocial = createStep({
             username: verification.username,
             walletAtomCreated,
             error: `Social atom creation failed. TX: ${createSocialAtomHash}`,
-          };
+          }
         }
 
         console.log(
           `[LinkSocialWorkflow] Social atom created in block ${socialAtomReceipt.blockNumber}`,
-        );
-        socialAtomCreated = true;
+        )
+        socialAtomCreated = true
       }
 
       console.log(
         `[LinkSocialWorkflow] Creating triple: [${walletAddress}] [${predicateName}] [${userId}]`,
-      );
+      )
 
-      const tripleDepositAmount = tripleCost + tripleExtraDeposit;
+      const tripleDepositAmount = tripleCost + tripleExtraDeposit
 
       const tripleCallData = encodeFunctionData({
         abi: MultiVaultAbi,
@@ -379,17 +407,19 @@ const executeLinkSocial = createStep({
           [socialAtomId as `0x${string}`],
           [tripleDepositAmount],
         ],
-      });
+      })
 
       const tripleTxHash = await walletClient.sendTransaction({
         to: MULTIVAULT_ADDRESS,
         data: tripleCallData,
         value: tripleDepositAmount,
         gas: 800000n,
-      });
+      })
 
-      console.log(`[LinkSocialWorkflow] Triple TX: ${tripleTxHash}`);
-      const tripleReceipt = await publicClient.waitForTransactionReceipt({ hash: tripleTxHash });
+      console.log(`[LinkSocialWorkflow] Triple TX: ${tripleTxHash}`)
+      const tripleReceipt = await publicClient.waitForTransactionReceipt({
+        hash: tripleTxHash,
+      })
 
       if (tripleReceipt.status !== 'success') {
         return {
@@ -400,10 +430,12 @@ const executeLinkSocial = createStep({
           walletAtomCreated,
           socialAtomCreated,
           error: `Triple creation failed. TX: ${tripleTxHash}`,
-        };
+        }
       }
 
-      console.log(`[LinkSocialWorkflow] Triple created in block ${tripleReceipt.blockNumber}`);
+      console.log(
+        `[LinkSocialWorkflow] Triple created in block ${tripleReceipt.blockNumber}`,
+      )
 
       return {
         success: true,
@@ -415,26 +447,29 @@ const executeLinkSocial = createStep({
         walletAtomCreated,
         predicateAtomCreated: false,
         socialAtomCreated,
-      };
+      }
     } catch (error) {
-      console.error('[LinkSocialWorkflow] Blockchain error:', error);
+      console.error('[LinkSocialWorkflow] Blockchain error:', error)
       return {
         success: false,
         platform,
         userId: verification.userId,
         username: verification.username,
-        error: error instanceof Error ? error.message : 'Blockchain transaction failed',
-      };
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Blockchain transaction failed',
+      }
     }
   },
-});
+})
 
 const linkSocialWorkflow = createWorkflow({
   id: 'link-social-workflow',
   inputSchema,
   outputSchema,
-}).then(executeLinkSocial);
+}).then(executeLinkSocial)
 
-linkSocialWorkflow.commit();
+linkSocialWorkflow.commit()
 
-export { linkSocialWorkflow };
+export { linkSocialWorkflow }

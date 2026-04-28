@@ -1,17 +1,23 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, safeNumber } from './utils'
 
-const BASE = "https://api.spotify.com/v1"
+const BASE = 'https://api.spotify.com/v1'
 
 export const fetchSpotifySignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = { Authorization: `Bearer ${token}` }
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const meRes = await safeFetch(`${BASE}/me`, headers)
   const meData = await meRes.json()
@@ -22,7 +28,7 @@ export const fetchSpotifySignals: SignalFetcher = async (
     async () => {
       const res = await safeFetch(
         `${BASE}/me/top/artists?time_range=medium_term&limit=50`,
-        headers
+        headers,
       )
       const data = await res.json()
       const artists = data.items ?? []
@@ -31,14 +37,14 @@ export const fetchSpotifySignals: SignalFetcher = async (
       return { genres: set.size, topArtistsCount: artists.length }
     },
     { genres: 0, topArtistsCount: 0 },
-    "spotify_top_artists"
+    'spotify_top_artists',
   )
 
   const { topTracksCount, avgTrackPopularity } = await safe(
     async () => {
       const res = await safeFetch(
         `${BASE}/me/top/tracks?time_range=medium_term&limit=50`,
-        headers
+        headers,
       )
       const data = await res.json()
       const tracks = data.items ?? []
@@ -47,7 +53,7 @@ export const fetchSpotifySignals: SignalFetcher = async (
       }
       const totalPop = tracks.reduce(
         (sum: number, t: any) => sum + safeNumber(t.popularity),
-        0
+        0,
       )
       return {
         topTracksCount: tracks.length,
@@ -55,7 +61,7 @@ export const fetchSpotifySignals: SignalFetcher = async (
       }
     },
     { topTracksCount: 0, avgTrackPopularity: 0 },
-    "spotify_top_tracks"
+    'spotify_top_tracks',
   )
 
   const ownedPlaylists = await safe(
@@ -66,7 +72,7 @@ export const fetchSpotifySignals: SignalFetcher = async (
       return items.filter((p: any) => p.owner?.id === userId).length
     },
     0,
-    "spotify_playlists"
+    'spotify_playlists',
   )
 
   return {

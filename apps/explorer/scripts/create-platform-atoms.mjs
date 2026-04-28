@@ -21,7 +21,13 @@
  *   --batch=N     Batch size for createAtoms (default: 20)
  */
 
-import { createPublicClient, createWalletClient, http, stringToHex, formatEther } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  stringToHex,
+  formatEther,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { basename } from 'path'
@@ -46,7 +52,9 @@ const intuitionChain = {
   network: 'intuition-mainnet',
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 }
 
 // ── ABI ──
@@ -114,14 +122,17 @@ function parsePlatforms() {
 
     let website = websiteMatch?.[1]
     if (!website && apiMatch) {
-      try { website = `https://${new URL(apiMatch[1]).hostname}` } catch {}
+      try {
+        website = `https://${new URL(apiMatch[1]).hostname}`
+      } catch {}
     }
     if (!website) website = `https://${id}.com`
 
     // Extract dataPoints as clean list
-    const dataPoints = dataPointsMatch?.[1]
-      ?.match(/"([^"]+)"/g)
-      ?.map((d) => d.replace(/"/g, '').replace(/-/g, ' ')) || []
+    const dataPoints =
+      dataPointsMatch?.[1]
+        ?.match(/"([^"]+)"/g)
+        ?.map((d) => d.replace(/"/g, '').replace(/-/g, ' ')) || []
 
     // Check if local favicon exists
     const faviconPath = `${FAVICONS_DIR}/${id}.png`
@@ -186,12 +197,18 @@ async function pinThing({ name, description, image, url }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query,
-      variables: { name, description: description || '', image: image || '', url: url || '' },
+      variables: {
+        name,
+        description: description || '',
+        image: image || '',
+        url: url || '',
+      },
     }),
   })
 
   const json = await res.json()
-  if (json.errors) throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
+  if (json.errors)
+    throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
   const uri = json.data?.pinThing?.uri
   if (!uri) throw new Error(`No URI returned for ${name}`)
   return uri
@@ -218,9 +235,17 @@ async function main() {
   const estimateOnly = args.includes('--estimate')
   const skipPin = args.includes('--skip-pin')
   const repin = args.includes('--repin')
-  const batchSize = parseInt(args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '5')
-  const limit = parseInt(args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0')
-  const onlyIds = args.find((a) => a.startsWith('--only='))?.split('=')[1]?.split(',') || []
+  const batchSize = parseInt(
+    args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '5',
+  )
+  const limit = parseInt(
+    args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0',
+  )
+  const onlyIds =
+    args
+      .find((a) => a.startsWith('--only='))
+      ?.split('=')[1]
+      ?.split(',') || []
 
   const privateKey = process.env.PRIVATE_KEY
   const pinataJwt = process.env.PINATA_JWT
@@ -231,15 +256,20 @@ async function main() {
   }
 
   if (!pinataJwt && !skipPin) {
-    console.error('ERROR: Set PINATA_JWT environment variable for image pinning')
-    console.error('Get a free key at https://app.pinata.cloud/developers/api-keys')
+    console.error(
+      'ERROR: Set PINATA_JWT environment variable for image pinning',
+    )
+    console.error(
+      'Get a free key at https://app.pinata.cloud/developers/api-keys',
+    )
     console.error('Or use --skip-pin to skip image pinning (uses cached pins)')
     process.exit(1)
   }
 
   const cache = loadCache()
   let platforms = parsePlatforms()
-  if (onlyIds.length > 0) platforms = platforms.filter((p) => onlyIds.includes(p.id))
+  if (onlyIds.length > 0)
+    platforms = platforms.filter((p) => onlyIds.includes(p.id))
   else if (limit > 0) platforms = platforms.slice(0, limit)
 
   // Convert old ipfs:// image pins to gateway URLs
@@ -253,13 +283,17 @@ async function main() {
   // --repin: clear metadata pins + atom IDs (keep image pins)
   if (repin) {
     if (onlyIds.length > 0) {
-      console.log(`── Repin mode: clearing pins + atom IDs for ${onlyIds.join(', ')} ──\n`)
+      console.log(
+        `── Repin mode: clearing pins + atom IDs for ${onlyIds.join(', ')} ──\n`,
+      )
       for (const id of onlyIds) {
         delete cache.pins[`platform:${id}`]
         delete cache.atomIds[`platform:${id}`]
       }
     } else {
-      console.log('── Repin mode: clearing ALL cached metadata pins + atom IDs ──\n')
+      console.log(
+        '── Repin mode: clearing ALL cached metadata pins + atom IDs ──\n',
+      )
       cache.pins = {}
       cache.atomIds = {}
     }
@@ -290,7 +324,11 @@ async function main() {
       }
 
       try {
-        const ipfsUri = await pinImageToIPFS(p.faviconPath, `${p.id}.png`, pinataJwt)
+        const ipfsUri = await pinImageToIPFS(
+          p.faviconPath,
+          `${p.id}.png`,
+          pinataJwt,
+        )
         cache.imagePins[p.id] = ipfsUri
         console.log(`  PINNED ${p.name} → ${ipfsUri}`)
         saveCache(cache)
@@ -382,13 +420,19 @@ async function main() {
   })
 
   console.log(`\n── Cost Estimate ──`)
-  console.log(`  Atoms: ${totalAtoms} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`)
+  console.log(
+    `  Atoms: ${totalAtoms} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`,
+  )
   console.log(`  Balance: ${formatEther(balance)} TRUST`)
 
   if (balance < atomsTotalCost) {
-    console.error(`\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`)
+    console.error(
+      `\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`,
+    )
   } else {
-    console.log(`  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`)
+    console.log(
+      `  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`,
+    )
   }
 
   if (estimateOnly) {
@@ -400,17 +444,26 @@ async function main() {
 
   console.log('\n── Step 3: Create Platform Atoms ──\n')
 
-  const allItems = platforms.map((p) => ({ key: `platform:${p.id}`, name: p.name }))
-  const toCreate = allItems.filter((item) => cache.pins[item.key] && !cache.atomIds[item.key])
+  const allItems = platforms.map((p) => ({
+    key: `platform:${p.id}`,
+    name: p.name,
+  }))
+  const toCreate = allItems.filter(
+    (item) => cache.pins[item.key] && !cache.atomIds[item.key],
+  )
 
-  console.log(`To create: ${toCreate.length} atoms (${allItems.length - toCreate.length} already done)`)
+  console.log(
+    `To create: ${toCreate.length} atoms (${allItems.length - toCreate.length} already done)`,
+  )
 
   for (let i = 0; i < toCreate.length; i += batchSize) {
     // Delay between batches to avoid RPC rate limits
     if (i > 0) await new Promise((r) => setTimeout(r, 5000))
 
     const batch = toCreate.slice(i, i + batchSize)
-    const encodedDataArray = batch.map((item) => stringToHex(cache.pins[item.key]))
+    const encodedDataArray = batch.map((item) =>
+      stringToHex(cache.pins[item.key]),
+    )
     const depositsArray = batch.map(() => 0n)
 
     const multiVaultCost = atomCost * BigInt(batch.length)
@@ -421,7 +474,9 @@ async function main() {
       args: [0n, 0n, multiVaultCost],
     })
 
-    console.log(`\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`)
+    console.log(
+      `\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`,
+    )
     batch.forEach((item) => console.log(`    - ${item.name}`))
 
     try {
@@ -445,7 +500,9 @@ async function main() {
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status !== 'success') {
         console.error(`  TX FAILED: ${receipt.status}`)
@@ -460,7 +517,9 @@ async function main() {
     } catch (e) {
       const msg = e.message || ''
       if (msg.includes('AtomExists') || msg.includes('0xb4856ebc')) {
-        console.log(`  Some atoms exist, falling back to individual creation...`)
+        console.log(
+          `  Some atoms exist, falling back to individual creation...`,
+        )
         for (const item of batch) {
           if (cache.atomIds[item.key]) continue
           const encoded = stringToHex(cache.pins[item.key])
@@ -505,7 +564,10 @@ async function main() {
               cache.atomIds[item.key] = result[0]
               console.log(`    CREATED ${item.name} → ${result[0]}`)
             } catch (singleErr) {
-              if (singleErr.message?.includes('AtomExists') || singleErr.message?.includes('0xb4856ebc')) {
+              if (
+                singleErr.message?.includes('AtomExists') ||
+                singleErr.message?.includes('0xb4856ebc')
+              ) {
                 cache.atomIds[item.key] = atomId
                 console.log(`    EXISTS ${item.name} → ${atomId}`)
               } else {

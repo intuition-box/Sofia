@@ -21,8 +21,10 @@ import { readFileSync, writeFileSync, existsSync } from 'fs'
 const RPC_URL = 'https://rpc.intuition.systems'
 const GRAPHQL_URL = 'https://mainnet.intuition.sh/v1/graphql'
 const SOFIA_FEE_PROXY = '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c'
-const IS_BETTER_THAN = '0xf44a7305513ada5e0cf0c6010ef12fff8def5cf28335ce6b8191e2eccccf393b'
-const HAS_TAG_PREDICATE = '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
+const IS_BETTER_THAN =
+  '0xf44a7305513ada5e0cf0c6010ef12fff8def5cf28335ce6b8191e2eccccf393b'
+const HAS_TAG_PREDICATE =
+  '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
 const CURVE_ID = 1n
 const CACHE_FILE = 'scripts/.debate-cache.json'
 
@@ -30,33 +32,117 @@ const CACHE_FILE = 'scripts/.debate-cache.json'
 
 const DEBATE_PAIRS = [
   // ── Tech & Dev ──
-  { topic: 'tech-dev',           topicLabel: 'Tech & Dev',                a: 'GitHub',       b: 'GitLab',         category: 'tech' },
+  {
+    topic: 'tech-dev',
+    topicLabel: 'Tech & Dev',
+    a: 'GitHub',
+    b: 'GitLab',
+    category: 'tech',
+  },
   // ── Design & Visual Arts ──
-  { topic: 'design-creative',    topicLabel: 'Design & Visual Arts',      a: 'Figma',        b: 'Dribbble',       category: 'tech' },
+  {
+    topic: 'design-creative',
+    topicLabel: 'Design & Visual Arts',
+    a: 'Figma',
+    b: 'Dribbble',
+    category: 'tech',
+  },
   // ── Music & Audio ──
-  { topic: 'music-audio',        topicLabel: 'Music & Audio',             a: 'Spotify',      b: 'Apple Music',    category: 'culture' },
+  {
+    topic: 'music-audio',
+    topicLabel: 'Music & Audio',
+    a: 'Spotify',
+    b: 'Apple Music',
+    category: 'culture',
+  },
   // ── Gaming ──
-  { topic: 'gaming',             topicLabel: 'Gaming',                    a: 'Steam',        b: 'Epic Games',     category: 'culture' },
+  {
+    topic: 'gaming',
+    topicLabel: 'Gaming',
+    a: 'Steam',
+    b: 'Epic Games',
+    category: 'culture',
+  },
   // ── Web3 & Crypto ──
-  { topic: 'web3-crypto',        topicLabel: 'Web3 & Crypto',             a: 'Uniswap',      b: 'Aave',           category: 'web3' },
+  {
+    topic: 'web3-crypto',
+    topicLabel: 'Web3 & Crypto',
+    a: 'Uniswap',
+    b: 'Aave',
+    category: 'web3',
+  },
   // ── Science & Knowledge ──
-  { topic: 'science',            topicLabel: 'Science & Knowledge',       a: 'Google Scholar', b: 'Wikipedia',     category: 'tech' },
+  {
+    topic: 'science',
+    topicLabel: 'Science & Knowledge',
+    a: 'Google Scholar',
+    b: 'Wikipedia',
+    category: 'tech',
+  },
   // ── Sport & Health ──
-  { topic: 'sport-health',       topicLabel: 'Sport & Health',            a: 'Strava',       b: 'Nike Run Club',  category: 'culture' },
+  {
+    topic: 'sport-health',
+    topicLabel: 'Sport & Health',
+    a: 'Strava',
+    b: 'Nike Run Club',
+    category: 'culture',
+  },
   // ── Video & Cinema ──
-  { topic: 'video-cinema',       topicLabel: 'Video & Cinema',            a: 'Netflix',      b: 'Disney+',        category: 'culture' },
+  {
+    topic: 'video-cinema',
+    topicLabel: 'Video & Cinema',
+    a: 'Netflix',
+    b: 'Disney+',
+    category: 'culture',
+  },
   // ── Entrepreneurship & Business ──
-  { topic: 'entrepreneurship',   topicLabel: 'Entrepreneurship & Business', a: 'LinkedIn',   b: 'Product Hunt',   category: 'tech' },
+  {
+    topic: 'entrepreneurship',
+    topicLabel: 'Entrepreneurship & Business',
+    a: 'LinkedIn',
+    b: 'Product Hunt',
+    category: 'tech',
+  },
   // ── Performing Arts ──
-  { topic: 'performing-arts',    topicLabel: 'Performing Arts',           a: 'Instagram',    b: 'TikTok',         category: 'culture' },
+  {
+    topic: 'performing-arts',
+    topicLabel: 'Performing Arts',
+    a: 'Instagram',
+    b: 'TikTok',
+    category: 'culture',
+  },
   // ── Nature & Environment ──
-  { topic: 'nature-environment', topicLabel: 'Nature & Environment',      a: 'AllTrails',    b: 'iNaturalist',    category: 'energy' },
+  {
+    topic: 'nature-environment',
+    topicLabel: 'Nature & Environment',
+    a: 'AllTrails',
+    b: 'iNaturalist',
+    category: 'energy',
+  },
   // ── Food, Fashion & Lifestyle ──
-  { topic: 'food-lifestyle',     topicLabel: 'Food, Fashion & Lifestyle', a: 'Pinterest',    b: 'Yelp',           category: 'culture' },
+  {
+    topic: 'food-lifestyle',
+    topicLabel: 'Food, Fashion & Lifestyle',
+    a: 'Pinterest',
+    b: 'Yelp',
+    category: 'culture',
+  },
   // ── Literature & Writing ──
-  { topic: 'literature',         topicLabel: 'Literature & Writing',      a: 'Medium',       b: 'Goodreads',      category: 'culture' },
+  {
+    topic: 'literature',
+    topicLabel: 'Literature & Writing',
+    a: 'Medium',
+    b: 'Goodreads',
+    category: 'culture',
+  },
   // ── Personal Development ──
-  { topic: 'personal-dev',       topicLabel: 'Personal Development',      a: 'Coursera',     b: 'Udemy',          category: 'culture' },
+  {
+    topic: 'personal-dev',
+    topicLabel: 'Personal Development',
+    a: 'Coursera',
+    b: 'Udemy',
+    category: 'culture',
+  },
 ]
 
 // ── Chain definition ──
@@ -67,7 +153,9 @@ const intuitionChain = {
   network: 'intuition-mainnet',
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 }
 
 // ── ABI (only what we need) ──
@@ -151,7 +239,9 @@ async function main() {
   const privateKey = process.env.PRIVATE_KEY
   if (!privateKey && !dryRun && !estimateOnly) {
     console.error('ERROR: Set PRIVATE_KEY environment variable (0x...)')
-    console.error('Usage: PRIVATE_KEY=0x... pnpm node scripts/create-debate-triples.mjs')
+    console.error(
+      'Usage: PRIVATE_KEY=0x... pnpm node scripts/create-debate-triples.mjs',
+    )
     process.exit(1)
   }
 
@@ -250,14 +340,20 @@ async function main() {
   })
 
   console.log(`\n── Cost Estimate ──`)
-  console.log(`  Triples: ${totalTripleCount} (${DEBATE_PAIRS.length} claims + ${DEBATE_PAIRS.length} tags)`)
+  console.log(
+    `  Triples: ${totalTripleCount} (${DEBATE_PAIRS.length} claims + ${DEBATE_PAIRS.length} tags)`,
+  )
   console.log(`  Total:   ${formatEther(totalCost)} TRUST`)
   console.log(`  Balance: ${formatEther(balance)} TRUST`)
 
   if (balance < totalCost) {
-    console.error(`\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(totalCost - balance)} more`)
+    console.error(
+      `\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(totalCost - balance)} more`,
+    )
   } else {
-    console.log(`  ✓ Enough TRUST (${formatEther(balance - totalCost)} will remain)`)
+    console.log(
+      `  ✓ Enough TRUST (${formatEther(balance - totalCost)} will remain)`,
+    )
   }
 
   if (estimateOnly) {
@@ -272,7 +368,9 @@ async function main() {
   for (const pair of DEBATE_PAIRS) {
     const key = `${pair.a}:${pair.b}`
     if (cache.claimTriples[key]) {
-      console.log(`  CACHED ${pair.a} is better than ${pair.b} → ${cache.claimTriples[key]}`)
+      console.log(
+        `  CACHED ${pair.a} is better than ${pair.b} → ${cache.claimTriples[key]}`,
+      )
       continue
     }
 
@@ -296,7 +394,14 @@ async function main() {
         address: SOFIA_FEE_PROXY,
         abi: PROXY_ABI,
         functionName: 'createTriples',
-        args: [account.address, [subjectId], [IS_BETTER_THAN], [objectId], [0n], CURVE_ID],
+        args: [
+          account.address,
+          [subjectId],
+          [IS_BETTER_THAN],
+          [objectId],
+          [0n],
+          CURVE_ID,
+        ],
         value: singleCost,
         account,
       })
@@ -305,23 +410,36 @@ async function main() {
         address: SOFIA_FEE_PROXY,
         abi: PROXY_ABI,
         functionName: 'createTriples',
-        args: [account.address, [subjectId], [IS_BETTER_THAN], [objectId], [0n], CURVE_ID],
+        args: [
+          account.address,
+          [subjectId],
+          [IS_BETTER_THAN],
+          [objectId],
+          [0n],
+          CURVE_ID,
+        ],
         value: singleCost,
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status === 'success') {
         cache.claimTriples[key] = result[0]
-        console.log(`  CREATED "${pair.a} is better than ${pair.b}" → ${result[0]}`)
+        console.log(
+          `  CREATED "${pair.a} is better than ${pair.b}" → ${result[0]}`,
+        )
         saveCache(cache)
       } else {
         console.error(`  TX FAILED for ${pair.a} vs ${pair.b}`)
       }
     } catch (e) {
       if (e.message?.includes('TripleExists')) {
-        console.log(`  EXISTS "${pair.a} is better than ${pair.b}" (already on-chain)`)
+        console.log(
+          `  EXISTS "${pair.a} is better than ${pair.b}" (already on-chain)`,
+        )
         // We still need the term_id — query it
         const termId = await findTripleTermId(pair.a, pair.b)
         if (termId) {
@@ -329,7 +447,9 @@ async function main() {
           saveCache(cache)
         }
       } else {
-        console.error(`  FAIL ${pair.a} vs ${pair.b}: ${e.message?.slice(0, 200)}`)
+        console.error(
+          `  FAIL ${pair.a} vs ${pair.b}: ${e.message?.slice(0, 200)}`,
+        )
       }
     }
   }
@@ -351,7 +471,9 @@ async function main() {
     const topicAtomId = cache.atoms[pair.topicLabel]
 
     if (!claimTermId || !topicAtomId) {
-      console.log(`  SKIP tag ${pair.a}/${pair.b} → ${pair.topicLabel} (missing claim or topic atom)`)
+      console.log(
+        `  SKIP tag ${pair.a}/${pair.b} → ${pair.topicLabel} (missing claim or topic atom)`,
+      )
       continue
     }
 
@@ -367,7 +489,14 @@ async function main() {
         address: SOFIA_FEE_PROXY,
         abi: PROXY_ABI,
         functionName: 'createTriples',
-        args: [account.address, [claimTermId], [HAS_TAG_PREDICATE], [topicAtomId], [0n], CURVE_ID],
+        args: [
+          account.address,
+          [claimTermId],
+          [HAS_TAG_PREDICATE],
+          [topicAtomId],
+          [0n],
+          CURVE_ID,
+        ],
         value: singleCost,
         account,
       })
@@ -376,19 +505,30 @@ async function main() {
         address: SOFIA_FEE_PROXY,
         abi: PROXY_ABI,
         functionName: 'createTriples',
-        args: [account.address, [claimTermId], [HAS_TAG_PREDICATE], [topicAtomId], [0n], CURVE_ID],
+        args: [
+          account.address,
+          [claimTermId],
+          [HAS_TAG_PREDICATE],
+          [topicAtomId],
+          [0n],
+          CURVE_ID,
+        ],
         value: singleCost,
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status === 'success') {
         cache.tagTriples[tagKey] = result[0]
         console.log(`  TAGGED "${pair.a} vs ${pair.b}" → ${pair.topicLabel}`)
         saveCache(cache)
       } else {
-        console.error(`  TX FAILED for tag ${pair.a}/${pair.b} → ${pair.topicLabel}`)
+        console.error(
+          `  TX FAILED for tag ${pair.a}/${pair.b} → ${pair.topicLabel}`,
+        )
       }
     } catch (e) {
       if (e.message?.includes('TripleExists')) {
@@ -396,7 +536,9 @@ async function main() {
         cache.tagTriples[tagKey] = 'existing'
         saveCache(cache)
       } else {
-        console.error(`  FAIL tag ${pair.a}/${pair.b} → ${pair.topicLabel}: ${e.message?.slice(0, 200)}`)
+        console.error(
+          `  FAIL tag ${pair.a}/${pair.b} → ${pair.topicLabel}: ${e.message?.slice(0, 200)}`,
+        )
       }
     }
   }
@@ -410,7 +552,9 @@ async function main() {
     const key = `${pair.a}:${pair.b}`
     const termId = cache.claimTriples[key]
     if (termId && termId !== 'existing') {
-      console.log(`  { tripleTermId: "${termId}", subject: "${pair.a}", predicate: "is better than", object: "${pair.b}", category: "${pair.category}" },`)
+      console.log(
+        `  { tripleTermId: "${termId}", subject: "${pair.a}", predicate: "is better than", object: "${pair.b}", category: "${pair.category}" },`,
+      )
     }
   }
 
@@ -438,7 +582,10 @@ async function findTripleTermId(subjectLabel, objectLabel) {
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, variables: { subject: subjectLabel, object: objectLabel } }),
+    body: JSON.stringify({
+      query,
+      variables: { subject: subjectLabel, object: objectLabel },
+    }),
   })
 
   const json = await res.json()

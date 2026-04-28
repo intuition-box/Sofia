@@ -1,11 +1,11 @@
-import { createPublicClient, http, type Address, type PublicClient } from "viem"
-import { mainnet } from "viem/chains"
+import { createPublicClient, http, type Address, type PublicClient } from 'viem'
+import { mainnet } from 'viem/chains'
 
 /**
  * Ethereum mainnet RPC. Defaults to a public endpoint; override with
  * ETH_MAINNET_RPC in production for better reliability and rate limits.
  */
-const MAINNET_RPC = process.env.ETH_MAINNET_RPC || "https://eth.llamarpc.com"
+const MAINNET_RPC = process.env.ETH_MAINNET_RPC || 'https://eth.llamarpc.com'
 
 let _mainnetClient: PublicClient | null = null
 
@@ -36,20 +36,20 @@ export function asAddress(addr: string): Address {
 export async function querySubgraph<T = unknown>(
   subgraphId: string,
   query: string,
-  variables: Record<string, unknown> = {}
+  variables: Record<string, unknown> = {},
 ): Promise<T | null> {
   const apiKey = process.env.GRAPH_API_KEY
   if (!apiKey) {
-    throw new Error("missing_graph_api_key")
+    throw new Error('missing_graph_api_key')
   }
 
   const url = `https://gateway-arbitrum.network.thegraph.com/api/${apiKey}/subgraphs/id/${subgraphId}`
 
   const res = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
     body: JSON.stringify({ query, variables }),
   })
@@ -73,13 +73,13 @@ export async function queryPublicGraphQL<T = unknown>(
   url: string,
   query: string,
   variables: Record<string, unknown> = {},
-  extraHeaders: Record<string, string> = {}
+  extraHeaders: Record<string, string> = {},
 ): Promise<T | null> {
   const res = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
       ...extraHeaders,
     },
     body: JSON.stringify({ query, variables }),

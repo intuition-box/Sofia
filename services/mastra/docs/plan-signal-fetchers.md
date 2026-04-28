@@ -31,6 +31,7 @@ Mais AUCUN code ne fetch ces metriques depuis les APIs des plateformes.
 ### Le but final
 
 Quand un user connecte GitHub, on veut :
+
 1. Verifier son token (ca existe deja : `linkSocialWorkflow`)
 2. **NOUVEAU : Stocker son token de maniere chiffree**
 3. **NOUVEAU : Fetcher ses metriques reelles** (commits, repos, stars, streak)
@@ -77,10 +78,10 @@ SCORING (nouveau) :
 
 ### Workflows existants
 
-| Workflow | Fichier | Input | Ce qu'il fait |
-|---|---|---|---|
-| `linkSocialWorkflow` | `workflows/link-social-workflow.ts` | `{walletAddress, platform, oauthToken}` | Verifie le token OAuth, extrait userId/username, cree le triple on-chain `[wallet] [has verified {platform} id] [userId]` |
-| `socialVerifierWorkflow` | `workflows/social-verifier-workflow.ts` | `{walletAddress, tokens: {youtube?, spotify?, discord?, twitch?, twitter?}}` | Verifie 5 tokens en parallele, cree triple attestation si 4/5+ valides |
+| Workflow                 | Fichier                                 | Input                                                                        | Ce qu'il fait                                                                                                             |
+| ------------------------ | --------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `linkSocialWorkflow`     | `workflows/link-social-workflow.ts`     | `{walletAddress, platform, oauthToken}`                                      | Verifie le token OAuth, extrait userId/username, cree le triple on-chain `[wallet] [has verified {platform} id] [userId]` |
+| `socialVerifierWorkflow` | `workflows/social-verifier-workflow.ts` | `{walletAddress, tokens: {youtube?, spotify?, discord?, twitch?, twitter?}}` | Verifie 5 tokens en parallele, cree triple attestation si 4/5+ valides                                                    |
 
 ### Comment l'Explorer appelle les workflows
 
@@ -93,8 +94,8 @@ fetch(`${MASTRA_URL}/api/workflows/linkSocialWorkflow/start-async`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    inputData: { walletAddress, platform, oauthToken }
-  })
+    inputData: { walletAddress, platform, oauthToken },
+  }),
 })
 
 // Mastra retourne automatiquement :
@@ -109,11 +110,13 @@ Il appelle l'API de chaque plateforme pour valider le token et extraire le userI
 ```typescript
 // Endpoints de verification (dans link-social-workflow.ts) :
 const OAUTH_ENDPOINTS = {
-  youtube:  { url: 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true' },
-  spotify:  { url: 'https://api.spotify.com/v1/me' },
-  discord:  { url: 'https://discord.com/api/users/@me' },
-  twitch:   { url: 'https://api.twitch.tv/helix/users' },  // + TWITCH_CLIENT_ID header
-  twitter:  { url: 'https://api.twitter.com/2/users/me' },
+  youtube: {
+    url: 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
+  },
+  spotify: { url: 'https://api.spotify.com/v1/me' },
+  discord: { url: 'https://discord.com/api/users/@me' },
+  twitch: { url: 'https://api.twitch.tv/helix/users' }, // + TWITCH_CLIENT_ID header
+  twitter: { url: 'https://api.twitter.com/2/users/me' },
 }
 ```
 
@@ -149,6 +152,7 @@ Volume : /dstack/data → mastra.db (chiffre par le TEE Phala)
 ### Dockerfile (phala-deploy/Dockerfile)
 
 Build depuis le repertoire `core/` :
+
 ```bash
 docker build -f sofia-mastra/phala-deploy/Dockerfile -t sofia-mastra .
 ```
@@ -192,6 +196,7 @@ Le volume /dstack/data persiste — pas de perte de donnees au redeploy.
 est dans `TOKEN_ENCRYPTION_KEY` (env var).
 
 **Pourquoi AES-256-GCM :**
+
 - GCM fournit chiffrement + authentification (on detecte si le ciphertext a ete modifie)
 - AES-256 est le standard pour les donnees sensibles
 - Node.js `crypto` le supporte nativement (pas de dep supplementaire)
@@ -240,7 +245,10 @@ function encrypt(plaintext: string): string {
   const key = Buffer.from(process.env.TOKEN_ENCRYPTION_KEY!, 'hex') // 32 bytes
   const iv = crypto.randomBytes(12) // 96 bits pour GCM
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()])
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, 'utf8'),
+    cipher.final(),
+  ])
   const authTag = cipher.getAuthTag()
   return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`
 }
@@ -248,7 +256,11 @@ function encrypt(plaintext: string): string {
 function decrypt(encoded: string): string {
   const [ivHex, authTagHex, ciphertextHex] = encoded.split(':')
   const key = Buffer.from(process.env.TOKEN_ENCRYPTION_KEY!, 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivHex, 'hex'))
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    key,
+    Buffer.from(ivHex, 'hex'),
+  )
   decipher.setAuthTag(Buffer.from(authTagHex, 'hex'))
   return decipher.update(ciphertextHex, 'hex', 'utf8') + decipher.final('utf8')
 }
@@ -267,8 +279,8 @@ import { storeToken } from '../db/tokens'
 await storeToken(
   walletAddress,
   platform,
-  oauthToken,         // access_token
-  undefined,          // refresh_token (pas dispo dans le flow actuel)
+  oauthToken, // access_token
+  undefined, // refresh_token (pas dispo dans le flow actuel)
   verification.userId,
   verification.username,
 )
@@ -438,12 +450,15 @@ import { signalFetcherWorkflow } from './workflows/signal-fetcher-workflow'
 import { initTokenTable } from './db/tokens'
 
 // Ajouter au demarrage
-initTokenTable().catch(err => console.error('[TokenDB] Init failed:', err))
+initTokenTable().catch((err) => console.error('[TokenDB] Init failed:', err))
 
 export const mastra = new Mastra({
   workflows: {
-    sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow,
-    linkSocialWorkflow, signalFetcherWorkflow  // ← NOUVEAU
+    sofiaWorkflow,
+    chatbotWorkflow,
+    socialVerifierWorkflow,
+    linkSocialWorkflow,
+    signalFetcherWorkflow, // ← NOUVEAU
   },
   // ... reste inchange
 })
@@ -521,12 +536,14 @@ personal-dev:      regularityMultiplier=1.5, qualityMultiplier=2.0, monetization
 ## 7. Contraintes
 
 ### Securite
+
 - Les tokens sont des secrets — JAMAIS en clair dans les logs
 - Chiffrement AES-256-GCM avec cle en env var
 - Le TEE Phala chiffre aussi le volume disque au niveau hardware → double protection
 - Les scopes OAuth sont read-only (on ne modifie jamais les comptes des users)
 
 ### Rate limits des APIs
+
 - GitHub : 5000 req/h par token
 - Spotify : ~180 req/min
 - Discord : 50 req/s global
@@ -537,6 +554,7 @@ Mitigation : les metriques sont cachees cote Explorer (React Query staleTime = 1
 Un user ne fetch ses signaux qu'une fois par session.
 
 ### Tokens et expiration
+
 - GitHub : token permanent (OAuth app) → pas de refresh necessaire
 - Spotify : access_token expire apres 1h, refresh_token = permanent
 - Discord : access_token expire apres ~7 jours, refresh_token = permanent
@@ -550,6 +568,7 @@ propose au user de reconnecter la plateforme.
 Le refresh token sera implemente en V2.
 
 ### Fallback scoring
+
 Si un fetcher echoue (token expire, API down, pas de fetcher) :
 → L'Explorer affiche "score unavailable" pour cette plateforme
 → PAS de fallback a 10 pts — le score doit representer la realite
@@ -594,6 +613,7 @@ TOKEN_ENCRYPTION_KEY=<64 chars hex>    # Generer : openssl rand -hex 32
 ```
 
 A ajouter dans :
+
 - `.env` local (dev)
 - Phala Cloud dashboard (production)
 
@@ -627,20 +647,21 @@ curl -X POST https://<phala-url>/api/workflows/signalFetcherWorkflow/start-async
 
 ## 12. Planning
 
-| Jour | Tache | Livrable |
-|---|---|---|
-| J1 | `db/tokens.ts` — chiffrement AES-256-GCM + table LibSQL | Tokens stockables et lisibles |
-| J1 | Modifier `link-social-workflow.ts` — stocker le token | Token persiste apres connexion |
-| J2 | `signals/types.ts` + `signals/utils.ts` + `signals/registry.ts` | Infrastructure fetchers |
-| J2 | `signals/youtube.ts` + `signals/spotify.ts` | 2 fetchers |
-| J3 | `signals/discord.ts` + `signals/twitch.ts` | 2 fetchers |
-| J3 | `signal-fetcher-workflow.ts` + modifier `index.ts` | Workflow fonctionnel |
-| J4 | Test local complet + fix bugs | Flow end-to-end OK |
-| J5 | `signals/github.ts` + build Docker + deploy Phala | 5 fetchers en prod |
+| Jour | Tache                                                           | Livrable                       |
+| ---- | --------------------------------------------------------------- | ------------------------------ |
+| J1   | `db/tokens.ts` — chiffrement AES-256-GCM + table LibSQL         | Tokens stockables et lisibles  |
+| J1   | Modifier `link-social-workflow.ts` — stocker le token           | Token persiste apres connexion |
+| J2   | `signals/types.ts` + `signals/utils.ts` + `signals/registry.ts` | Infrastructure fetchers        |
+| J2   | `signals/youtube.ts` + `signals/spotify.ts`                     | 2 fetchers                     |
+| J3   | `signals/discord.ts` + `signals/twitch.ts`                      | 2 fetchers                     |
+| J3   | `signal-fetcher-workflow.ts` + modifier `index.ts`              | Workflow fonctionnel           |
+| J4   | Test local complet + fix bugs                                   | Flow end-to-end OK             |
+| J5   | `signals/github.ts` + build Docker + deploy Phala               | 5 fetchers en prod             |
 
 ## 13. Tests de verification
 
 ### Test 1 — Token storage
+
 ```
 1. Demarrer mastra en dev
 2. Appeler linkSocialWorkflow avec un vrai token YouTube
@@ -649,6 +670,7 @@ curl -X POST https://<phala-url>/api/workflows/signalFetcherWorkflow/start-async
 ```
 
 ### Test 2 — Signal fetcher
+
 ```
 1. Avoir un token YouTube stocke en DB (test 1)
 2. Appeler signalFetcherWorkflow avec { platform: "youtube", walletAddress: "0x..." }
@@ -656,6 +678,7 @@ curl -X POST https://<phala-url>/api/workflows/signalFetcherWorkflow/start-async
 ```
 
 ### Test 3 — Token expire
+
 ```
 1. Stocker un token expire en DB
 2. Appeler signalFetcherWorkflow
@@ -663,6 +686,7 @@ curl -X POST https://<phala-url>/api/workflows/signalFetcherWorkflow/start-async
 ```
 
 ### Test 4 — Plateforme sans fetcher
+
 ```
 1. Stocker un token pour une plateforme non supportee (ex: "figma")
 2. Appeler signalFetcherWorkflow avec { platform: "figma" }

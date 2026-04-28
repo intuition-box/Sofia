@@ -1,6 +1,6 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { monthsSince, safeNumber } from "../utils"
-import { queryPublicGraphQL } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { monthsSince, safeNumber } from '../utils'
+import { queryPublicGraphQL } from './utils'
 
 /**
  * Lens Protocol v3 (Lens Network) public GraphQL API.
@@ -12,7 +12,7 @@ import { queryPublicGraphQL } from "./utils"
  * accountStats requires forFeeds/forGraphs scope addresses — skipped here for
  * simplicity. We derive metrics from Account fields directly (presence + score).
  */
-const LENS_GRAPHQL = "https://api.lens.xyz/graphql"
+const LENS_GRAPHQL = 'https://api.lens.xyz/graphql'
 
 const ACCOUNT_QUERY = `
   query AccountByAddress($address: EvmAddress!) {
@@ -31,7 +31,7 @@ const ACCOUNT_QUERY = `
 export const fetchLensSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const data = await queryPublicGraphQL<{
     account: {

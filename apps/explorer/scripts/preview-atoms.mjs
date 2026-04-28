@@ -6,7 +6,11 @@
  */
 
 import { readFileSync, existsSync } from 'fs'
-import { TOPIC_DESCRIPTIONS, CATEGORY_DESCRIPTIONS, PLATFORM_DESCRIPTIONS } from './atom-descriptions.mjs'
+import {
+  TOPIC_DESCRIPTIONS,
+  CATEGORY_DESCRIPTIONS,
+  PLATFORM_DESCRIPTIONS,
+} from './atom-descriptions.mjs'
 
 const FAVICONS_DIR = 'public/favicons'
 
@@ -40,13 +44,18 @@ function parseCategories() {
   const topicPositions = []
 
   while ((topicMatch = topicRegex.exec(content)) !== null) {
-    topicPositions.push({ id: topicMatch[1], label: topicMatch[2], pos: topicMatch.index })
+    topicPositions.push({
+      id: topicMatch[1],
+      label: topicMatch[2],
+      pos: topicMatch.index,
+    })
   }
 
   for (let i = 0; i < topicPositions.length; i++) {
     const topic = topicPositions[i]
     const start = topic.pos
-    const end = i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
+    const end =
+      i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
     const topicBlock = content.substring(start, end)
 
     const catRegex = /{\s*\n\s*id:\s*"([^"]+)",\s*\n\s*label:\s*"([^"]+)",/g
@@ -57,14 +66,26 @@ function parseCategories() {
       const catLabel = catMatch[2]
       if (catId === topic.id) continue
 
-      const afterCat = topicBlock.substring(catMatch.index, catMatch.index + 1200)
+      const afterCat = topicBlock.substring(
+        catMatch.index,
+        catMatch.index + 1200,
+      )
       // Only match categories (have niches: property), not niches themselves
       // A niche is inside a niches array, so `]` (closing the array) appears before the next `niches:`
       const nichesPos = afterCat.indexOf('niches:')
       const closingBracket = afterCat.indexOf(']')
-      if (nichesPos === -1 || (closingBracket !== -1 && closingBracket < nichesPos)) continue
+      if (
+        nichesPos === -1 ||
+        (closingBracket !== -1 && closingBracket < nichesPos)
+      )
+        continue
 
-      categories.push({ id: catId, label: catLabel, topicId: topic.id, topicLabel: topic.label })
+      categories.push({
+        id: catId,
+        label: catLabel,
+        topicId: topic.id,
+        topicLabel: topic.label,
+      })
     }
   }
   return categories
@@ -141,14 +162,23 @@ for (const p of platforms) {
   const desc = PLATFORM_DESCRIPTIONS[p.id]
   console.log(`\n  name:    ${p.name}`)
   console.log(`  desc:    ${desc || '⚠ MISSING'}`)
-  console.log(`  image:   ${p.hasFavicon ? `public/favicons/${p.id}.png → IPFS` : '⚠ NO FAVICON'}`)
+  console.log(
+    `  image:   ${p.hasFavicon ? `public/favicons/${p.id}.png → IPFS` : '⚠ NO FAVICON'}`,
+  )
   console.log(`  url:     ${p.website}`)
   if (!desc) missingDescs.push(`platform:${p.id}`)
 }
 
 console.log(`\n  Total platforms: ${platforms.length}`)
-console.log(`  With favicon: ${platforms.filter(p => p.hasFavicon).length}`)
-console.log(`  Missing favicon: ${platforms.filter(p => !p.hasFavicon).map(p => p.id).join(', ') || '(none)'}`)
+console.log(`  With favicon: ${platforms.filter((p) => p.hasFavicon).length}`)
+console.log(
+  `  Missing favicon: ${
+    platforms
+      .filter((p) => !p.hasFavicon)
+      .map((p) => p.id)
+      .join(', ') || '(none)'
+  }`,
+)
 
 // ── Summary ──
 
@@ -156,10 +186,18 @@ console.log('\n')
 console.log('='.repeat(80))
 console.log('  SUMMARY')
 console.log('='.repeat(80))
-console.log(`  Topics:     ${TOPICS.length} (${TOPICS.length - missingDescs.filter(d => d.startsWith('topic:')).length} with desc)`)
-console.log(`  Categories: ${categories.length} (${categories.length - missingDescs.filter(d => d.startsWith('category:')).length} with desc)`)
-console.log(`  Platforms:  ${platforms.length} (${platforms.length - missingDescs.filter(d => d.startsWith('platform:')).length} with desc)`)
-console.log(`  Total:      ${TOPICS.length + categories.length + platforms.length} atoms`)
+console.log(
+  `  Topics:     ${TOPICS.length} (${TOPICS.length - missingDescs.filter((d) => d.startsWith('topic:')).length} with desc)`,
+)
+console.log(
+  `  Categories: ${categories.length} (${categories.length - missingDescs.filter((d) => d.startsWith('category:')).length} with desc)`,
+)
+console.log(
+  `  Platforms:  ${platforms.length} (${platforms.length - missingDescs.filter((d) => d.startsWith('platform:')).length} with desc)`,
+)
+console.log(
+  `  Total:      ${TOPICS.length + categories.length + platforms.length} atoms`,
+)
 
 if (missingDescs.length > 0) {
   console.log(`\n  ⚠ ${missingDescs.length} MISSING descriptions:`)

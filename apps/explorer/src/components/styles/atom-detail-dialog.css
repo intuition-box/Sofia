@@ -27,12 +27,14 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 
 .add-favicon-wrap {
@@ -54,7 +56,7 @@
   filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.25));
 }
 .add-kicker {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -69,12 +71,14 @@
   min-width: 0;
 }
 .add-title-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   line-height: 1.1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -102,7 +106,7 @@
   gap: 6px;
 }
 .add-metric-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -110,13 +114,15 @@
   font-weight: 600;
 }
 .add-metric-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 800;
   color: var(--ds-ink);
   letter-spacing: -0.015em;
   font-variant-numeric: tabular-nums;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   line-height: 1;
 }
 
@@ -134,7 +140,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -150,15 +156,19 @@
   padding: 6px 14px;
   background: var(--ds-bg-subtle);
   border-bottom: 1px solid var(--ds-border-soft);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
 }
-.add-lb-col-rank { text-align: center; }
-.add-lb-col-shares { text-align: right; }
+.add-lb-col-rank {
+  text-align: center;
+}
+.add-lb-col-shares {
+  text-align: right;
+}
 .add-lb-rows {
   overflow-y: auto;
   max-height: 240px;
@@ -174,8 +184,12 @@
   border-bottom: 1px solid var(--ds-border-soft);
   transition: background 0.12s ease;
 }
-.add-lb-row:last-child { border-bottom: none; }
-.add-lb-row:hover { background: var(--ds-bg-subtle); }
+.add-lb-row:last-child {
+  border-bottom: none;
+}
+.add-lb-row:hover {
+  background: var(--ds-bg-subtle);
+}
 .add-lb-row--you {
   background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
 }
@@ -183,14 +197,20 @@
   background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
 }
 .add-lb-col-rank {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
 }
-.add-lb-rank-gold { color: #d4a843; }
-.add-lb-rank-silver { color: #a7a7b5; }
-.add-lb-rank-bronze { color: #c08457; }
+.add-lb-rank-gold {
+  color: #d4a843;
+}
+.add-lb-rank-silver {
+  color: #a7a7b5;
+}
+.add-lb-rank-bronze {
+  color: #c08457;
+}
 .add-lb-col-user {
   display: flex;
   align-items: center;
@@ -202,9 +222,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.add-lb-row--you .add-lb-col-user { color: var(--ds-ink); font-weight: 700; }
+.add-lb-row--you .add-lb-col-user {
+  color: var(--ds-ink);
+  font-weight: 700;
+}
 .add-you-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -216,7 +239,7 @@
   flex-shrink: 0;
 }
 .add-lb-col-shares {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   text-align: right;
   font-weight: 600;
   color: var(--ds-muted);
@@ -227,7 +250,7 @@
   color: var(--ds-muted);
   font-size: 12px;
   padding: 28px 12px;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
 }
 
@@ -242,7 +265,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   padding: 12px 20px;
@@ -267,7 +290,7 @@
 .add-no-wallet {
   flex: 1;
   text-align: center;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;

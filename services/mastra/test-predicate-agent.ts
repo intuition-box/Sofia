@@ -23,8 +23,8 @@ const testCases: TestCase[] = [
       domain: 'twitch.tv',
       title: 'twitch.tv',
       certifications: { fun: 4, work: 1 },
-      level: 2
-    }
+      level: 2,
+    },
   },
   {
     name: 'Twitch - Fun majority, Level 5',
@@ -32,8 +32,8 @@ const testCases: TestCase[] = [
       domain: 'twitch.tv',
       title: 'twitch.tv',
       certifications: { fun: 8, work: 2 },
-      level: 5
-    }
+      level: 5,
+    },
   },
   {
     name: 'GitHub - Learning focus, Level 3',
@@ -41,8 +41,8 @@ const testCases: TestCase[] = [
       domain: 'github.com',
       title: 'github.com',
       certifications: { learning: 5, work: 2 },
-      level: 3
-    }
+      level: 3,
+    },
   },
   {
     name: 'React.dev - Pure learning, Level 7',
@@ -50,8 +50,8 @@ const testCases: TestCase[] = [
       domain: 'react.dev',
       title: 'react.dev',
       certifications: { learning: 10 },
-      level: 7
-    }
+      level: 7,
+    },
   },
   {
     name: 'Amazon - Buying focus, Level 4',
@@ -59,8 +59,8 @@ const testCases: TestCase[] = [
       domain: 'amazon.com',
       title: 'amazon.com',
       certifications: { buying: 6, fun: 2 },
-      level: 4
-    }
+      level: 4,
+    },
   },
   {
     name: 'Twitter - Mixed (inspiration + work), Level 3',
@@ -68,9 +68,9 @@ const testCases: TestCase[] = [
       domain: 'twitter.com',
       title: 'twitter.com',
       certifications: { inspiration: 3, work: 3, fun: 1 },
-      level: 3
-    }
-  }
+      level: 3,
+    },
+  },
 ]
 
 async function testPredicateAgent(testCase: TestCase): Promise<void> {
@@ -78,16 +78,21 @@ async function testPredicateAgent(testCase: TestCase): Promise<void> {
   console.log(`   Input: ${JSON.stringify(testCase.input)}`)
 
   try {
-    const response = await fetch(`${MASTRA_URL}/api/agents/predicateAgent/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{
-          role: 'user',
-          content: JSON.stringify(testCase.input)
-        }]
-      })
-    })
+    const response = await fetch(
+      `${MASTRA_URL}/api/agents/predicateAgent/generate`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: JSON.stringify(testCase.input),
+            },
+          ],
+        }),
+      },
+    )
 
     if (!response.ok) {
       console.log(`   ❌ Error: ${response.status} ${response.statusText}`)
@@ -131,7 +136,7 @@ async function main() {
   for (const testCase of testCases) {
     await testPredicateAgent(testCase)
     // Small delay between requests
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
   }
 
   console.log('\n============================')

@@ -87,16 +87,17 @@ export default function ProfileCharts({
 
   // Top 3 claims sorted by PnL for the showcase card.
   const showcaseClaims = useMemo(
-    () => [...topClaims].sort((a, b) => (b.stats.userPnlPct ?? 0) - (a.stats.userPnlPct ?? 0)).slice(0, 3),
+    () =>
+      [...topClaims]
+        .sort((a, b) => (b.stats.userPnlPct ?? 0) - (a.stats.userPnlPct ?? 0))
+        .slice(0, 3),
     [topClaims],
   )
 
-  const topPlatformMeta = focus === 'all'
-    ? 'all topics'
-    : topicById(focus)?.label ?? focus
-  const topClaimMeta = focus === 'all'
-    ? 'your best picks'
-    : topicById(focus)?.label ?? focus
+  const topPlatformMeta =
+    focus === 'all' ? 'all topics' : (topicById(focus)?.label ?? focus)
+  const topClaimMeta =
+    focus === 'all' ? 'your best picks' : (topicById(focus)?.label ?? focus)
 
   // Resolve the focused axis (topic OR verb) into meta for the
   // details panel — the panel needs label + colour to render the
@@ -178,7 +179,11 @@ export default function ProfileCharts({
                 {showcaseClaims.map((c) => {
                   const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
                   const topicChips: { id: string; label: string }[] = []
-                  const position = c.predicateLabel.toLowerCase().includes('distrust') ? 'oppose' : 'support'
+                  const position = c.predicateLabel
+                    .toLowerCase()
+                    .includes('distrust')
+                    ? 'oppose'
+                    : 'support'
                   const pnlPct = c.stats.userPnlPct ?? 0
                   const badge = deriveClaimBadge({
                     supportCount: c.stats.supportCount,

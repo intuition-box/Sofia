@@ -14,9 +14,7 @@ export function monthsSince(dateString: string): number {
  * Calculate the longest consecutive-day streak from a list of events.
  * Events must have a `created_at` ISO date field.
  */
-export function calculateStreak(
-  events: { created_at: string }[]
-): number {
+export function calculateStreak(events: { created_at: string }[]): number {
   if (events.length === 0) return 0
 
   const uniqueDays = [
@@ -48,13 +46,13 @@ export function calculateStreak(
  */
 export async function safeFetch(
   url: string,
-  headers: Record<string, string>
+  headers: Record<string, string>,
 ): Promise<Response> {
   const response = await fetch(url, { headers })
 
   if (response.status === 401 || response.status === 403) {
     throw new TokenExpiredError(
-      `API returned ${response.status} — token expired or revoked`
+      `API returned ${response.status} — token expired or revoked`,
     )
   }
 
@@ -68,7 +66,7 @@ export async function safeFetch(
 export class TokenExpiredError extends Error {
   constructor(message: string) {
     super(message)
-    this.name = "TokenExpiredError"
+    this.name = 'TokenExpiredError'
   }
 }
 
@@ -76,7 +74,7 @@ export class TokenExpiredError extends Error {
  * Parse a value to a finite number, fallback to 0 if invalid.
  */
 export function safeNumber(value: unknown): number {
-  const n = typeof value === "number" ? value : Number(value)
+  const n = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(n) ? n : 0
 }
 
@@ -88,7 +86,7 @@ export async function safeStep<T>(
   fn: () => Promise<T>,
   fallback: T,
   label: string,
-  warnings: string[]
+  warnings: string[],
 ): Promise<T> {
   try {
     return await fn()
@@ -110,12 +108,12 @@ export function validateMetrics(raw: unknown): {
   const metrics: Record<string, number> = {}
   const warnings: string[] = []
 
-  if (!raw || typeof raw !== "object") {
-    return { metrics, warnings: ["invalid_metrics_object"] }
+  if (!raw || typeof raw !== 'object') {
+    return { metrics, warnings: ['invalid_metrics_object'] }
   }
 
   for (const [k, v] of Object.entries(raw)) {
-    const n = typeof v === "number" ? v : Number(v)
+    const n = typeof v === 'number' ? v : Number(v)
     if (!Number.isFinite(n)) {
       warnings.push(`invalid_metric:${k}`)
       continue

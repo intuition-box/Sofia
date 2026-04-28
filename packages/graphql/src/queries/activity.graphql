@@ -14,21 +14,38 @@ query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
     id
     created_at
     deposit {
-      receiver { id label image }
+      receiver {
+        id
+        label
+        image
+      }
     }
     triple {
       term_id
       counter_term_id
-      predicate { label term_id }
+      predicate {
+        label
+        term_id
+      }
       object {
         label
-        value { thing { url name } }
+        value {
+          thing {
+            url
+            name
+          }
+        }
       }
     }
   }
 }
 
-query GetUserActivity($proxy: String!, $receivers: [String!]!, $limit: Int!, $offset: Int!) {
+query GetUserActivity(
+  $proxy: String!
+  $receivers: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
   events(
     limit: $limit
     offset: $offset
@@ -45,15 +62,27 @@ query GetUserActivity($proxy: String!, $receivers: [String!]!, $limit: Int!, $of
     id
     created_at
     deposit {
-      receiver { id label image }
+      receiver {
+        id
+        label
+        image
+      }
     }
     triple {
       term_id
       counter_term_id
-      predicate { label term_id }
+      predicate {
+        label
+        term_id
+      }
       object {
         label
-        value { thing { url name } }
+        value {
+          thing {
+            url
+            name
+          }
+        }
       }
     }
   }

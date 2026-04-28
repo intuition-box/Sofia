@@ -1,19 +1,16 @@
-Technique : 
-Viewport Detection    
-Sticky Position    
-Text Splitting 
-
+Technique :
+Viewport Detection  
+Sticky Position  
+Text Splitting
 
 Paragraph 1
-Sofia has for mission to empower people and organizations to capture, verify, share and amplify knowledge across the web. We believe that information should be organized semantically, traceable, and accessible, so that anyone can turn scattered data into meaningful insight. 
+Sofia has for mission to empower people and organizations to capture, verify, share and amplify knowledge across the web. We believe that information should be organized semantically, traceable, and accessible, so that anyone can turn scattered data into meaningful insight.
 
 Paragraph 2
-By combining AI agents, knowledge graphs, and Web3 verification, we aim to create a transparent and collaborative ecosystem where trustworthy knowledge flows freely. 
-
+By combining AI agents, knowledge graphs, and Web3 verification, we aim to create a transparent and collaborative ecosystem where trustworthy knowledge flows freely.
 
 Paragraphe 3
 Sofia is not just a tool—it’s a step toward a future where navigating the internet means building reliable, connected, and intelligent understanding together.
-
 
 Paragraphe 4
 We spend hours scrolling aimlessly through feeds—ads, Reels, random tweets—without capturing anything meaningful.

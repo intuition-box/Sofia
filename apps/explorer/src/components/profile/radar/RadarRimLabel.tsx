@@ -36,7 +36,13 @@ export default function RadarRimLabel({
       onMouseLeave={(e) => onHover?.(null, e)}
     >
       <circle r="15" className="pc-radar-label-bg" />
-      <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="14">
+      <text
+        x="0"
+        y="0"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize="14"
+      >
         {axis.emoji}
       </text>
     </g>

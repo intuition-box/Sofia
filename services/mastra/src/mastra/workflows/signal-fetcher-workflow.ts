@@ -1,16 +1,16 @@
-import { createStep, createWorkflow } from "@mastra/core/workflows"
-import { z } from "zod"
-import { getToken } from "../db/tokens"
+import { createStep, createWorkflow } from '@mastra/core/workflows'
+import { z } from 'zod'
+import { getToken } from '../db/tokens'
 import {
   SIGNAL_FETCHERS,
   WALLET_BASED_PLATFORMS,
   runFetcher,
-} from "../signals/registry"
-import { TokenExpiredError } from "../signals/utils"
+} from '../signals/registry'
+import { TokenExpiredError } from '../signals/utils'
 
 const inputSchema = z.object({
-  platform: z.string().describe("Platform to fetch signals from"),
-  walletAddress: z.string().describe("User wallet address"),
+  platform: z.string().describe('Platform to fetch signals from'),
+  walletAddress: z.string().describe('User wallet address'),
 })
 
 const outputSchema = z.object({
@@ -23,24 +23,24 @@ const outputSchema = z.object({
 })
 
 const executeSignalFetch = createStep({
-  id: "execute-signal-fetch",
+  id: 'execute-signal-fetch',
   description:
-    "Fetch platform metrics. Token-based for OAuth platforms, walletAddress-based for web3.",
+    'Fetch platform metrics. Token-based for OAuth platforms, walletAddress-based for web3.',
   inputSchema,
   outputSchema,
   execute: async ({ inputData }) => {
     const { platform, walletAddress } = inputData
 
     if (!platform || !walletAddress) {
-      return { success: false, error: "platform and walletAddress required" }
+      return { success: false, error: 'platform and walletAddress required' }
     }
 
     console.log(
-      `[SignalFetcher] Fetching ${platform} signals for ${walletAddress.slice(0, 8)}...`
+      `[SignalFetcher] Fetching ${platform} signals for ${walletAddress.slice(0, 8)}...`,
     )
 
     if (!SIGNAL_FETCHERS[platform]) {
-      return { success: false, platformId: platform, error: "no_fetcher" }
+      return { success: false, platformId: platform, error: 'no_fetcher' }
     }
 
     const isWalletBased = WALLET_BASED_PLATFORMS.has(platform)
@@ -54,7 +54,7 @@ const executeSignalFetch = createStep({
     } else {
       const tokenRecord = await getToken(walletAddress, platform)
       if (!tokenRecord) {
-        return { success: false, platformId: platform, error: "no_token" }
+        return { success: false, platformId: platform, error: 'no_token' }
       }
       credential = tokenRecord.access_token
       userIdHint = tokenRecord.user_id
@@ -64,12 +64,12 @@ const executeSignalFetch = createStep({
       const { metrics, warnings } = await runFetcher(
         platform,
         credential,
-        userIdHint
+        userIdHint,
       )
 
       console.log(
-        `[SignalFetcher] ${platform} metrics: ${Object.keys(metrics).join(", ")}` +
-          (warnings.length ? ` | warnings: ${warnings.length}` : "")
+        `[SignalFetcher] ${platform} metrics: ${Object.keys(metrics).join(', ')}` +
+          (warnings.length ? ` | warnings: ${warnings.length}` : ''),
       )
 
       return {
@@ -85,7 +85,7 @@ const executeSignalFetch = createStep({
         return {
           success: false,
           platformId: platform,
-          error: "token_expired",
+          error: 'token_expired',
         }
       }
 
@@ -93,15 +93,14 @@ const executeSignalFetch = createStep({
       return {
         success: false,
         platformId: platform,
-        error:
-          error instanceof Error ? error.message : "Unknown fetch error",
+        error: error instanceof Error ? error.message : 'Unknown fetch error',
       }
     }
   },
 })
 
 const signalFetcherWorkflow = createWorkflow({
-  id: "signal-fetcher-workflow",
+  id: 'signal-fetcher-workflow',
   inputSchema,
   outputSchema,
 }).then(executeSignalFetch)

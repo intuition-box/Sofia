@@ -43,7 +43,9 @@ export default function FeedCard({
 }: FeedCardProps) {
   const shownName = isPrivate ? 'Someone' : displayName
   const canSupport = Object.keys(item.intentionVaults).length > 0
-  const canOppose = Object.values(item.intentionVaults).some((v) => v.counterTermId)
+  const canOppose = Object.values(item.intentionVaults).some(
+    (v) => v.counterTermId,
+  )
 
   const openUrl = () => {
     if (!item.url) return

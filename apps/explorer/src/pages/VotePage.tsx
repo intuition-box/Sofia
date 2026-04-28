@@ -6,12 +6,7 @@
 import { useMemo, useState } from 'react'
 import { formatEther } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
-import {
-  ChevronLeft,
-  ChevronRight,
-  ThumbsDown,
-  ThumbsUp,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight, ThumbsDown, ThumbsUp } from 'lucide-react'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useDebateClaims } from '@/hooks/useDebateClaims'
 import { usePrefetchClaimDialogs } from '@/hooks/useClaimPositions'
@@ -59,7 +54,11 @@ export default function VotePage() {
   if (loading) {
     return (
       <div className="page-content page-enter">
-        <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
+        <PageHero
+          background={pc.color}
+          title={pc.title}
+          description={pc.subtitle}
+        />
         <div className="vp-loader">
           <SofiaLoader size={96} />
         </div>
@@ -70,7 +69,11 @@ export default function VotePage() {
   if (error || claims.length === 0) {
     return (
       <div className="page-content page-enter">
-        <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
+        <PageHero
+          background={pc.color}
+          title={pc.title}
+          description={pc.subtitle}
+        />
         <div className="vp-empty">{error || 'No claims available.'}</div>
       </div>
     )
@@ -78,18 +81,22 @@ export default function VotePage() {
 
   const claim = filtered[currentIndex]
   const totalPositions = claim ? claim.supportCount + claim.opposeCount : 0
-  const totalMarketCap = claim ? claim.supportMarketCap + claim.opposeMarketCap : 0n
+  const totalMarketCap = claim
+    ? claim.supportMarketCap + claim.opposeMarketCap
+    : 0n
   const supportPercent =
     claim && totalMarketCap > 0n
       ? Math.round(Number((claim.supportMarketCap * 100n) / totalMarketCap))
       : 50
-  const title = claim ? `${claim.subject} ${claim.predicate} ${claim.object}` : ''
+  const title = claim
+    ? `${claim.subject} ${claim.predicate} ${claim.object}`
+    : ''
   const categoryInfo = claim?.category
     ? CLAIM_CATEGORIES.find((c) => c.id === claim.category)
     : undefined
   const userVote = claim
-    ? cart.items.find((i) => i.termId === claim.termId)?.side
-      ?? cart.items.find((i) => i.termId === claim.counterTermId)?.side
+    ? (cart.items.find((i) => i.termId === claim.termId)?.side ??
+      cart.items.find((i) => i.termId === claim.counterTermId)?.side)
     : undefined
 
   const handleVote = (type: 'support' | 'oppose') => {
@@ -106,12 +113,17 @@ export default function VotePage() {
     })
   }
 
-  const next = () => setCurrentIndex((i) => Math.min(i + 1, filtered.length - 1))
+  const next = () =>
+    setCurrentIndex((i) => Math.min(i + 1, filtered.length - 1))
   const prev = () => setCurrentIndex((i) => Math.max(i - 1, 0))
 
   return (
     <div className="page-content page-enter vp-page">
-      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
+      <PageHero
+        background={pc.color}
+        title={pc.title}
+        description={pc.subtitle}
+      />
 
       <div className="vp-tabs" role="tablist" aria-label="Claim category">
         <button
@@ -135,7 +147,9 @@ export default function VotePage() {
               role="tab"
               aria-selected={active}
               className={`vp-tab${active ? ' vp-tab--active' : ''}`}
-              style={active ? { ['--tab-color' as string]: cat.color } : undefined}
+              style={
+                active ? { ['--tab-color' as string]: cat.color } : undefined
+              }
               onClick={() => handleTabChange(cat.id)}
             >
               {cat.label}
@@ -198,7 +212,9 @@ export default function VotePage() {
                     </span>
                   ) : null}
                 </div>
-                <span className="vp-mcap">{formatMarketCap(totalMarketCap)} T</span>
+                <span className="vp-mcap">
+                  {formatMarketCap(totalMarketCap)} T
+                </span>
               </header>
 
               <h2 className="vp-claim-title">{title}</h2>
@@ -213,15 +229,20 @@ export default function VotePage() {
                   </span>
                 </div>
                 <div className="vp-bar">
-                  <div className="vp-bar-fill vp-bar-fill--support" style={{ width: `${supportPercent}%` }} />
+                  <div
+                    className="vp-bar-fill vp-bar-fill--support"
+                    style={{ width: `${supportPercent}%` }}
+                  />
                   <div className="vp-bar-fill vp-bar-fill--oppose" />
                 </div>
                 <div className="vp-bar-foot">
                   <span>
-                    {formatMarketCap(claim.supportMarketCap)} T · {claim.supportCount} votes
+                    {formatMarketCap(claim.supportMarketCap)} T ·{' '}
+                    {claim.supportCount} votes
                   </span>
                   <span>
-                    {claim.opposeCount} votes · {formatMarketCap(claim.opposeMarketCap)} T
+                    {claim.opposeCount} votes ·{' '}
+                    {formatMarketCap(claim.opposeMarketCap)} T
                   </span>
                 </div>
               </div>
@@ -258,7 +279,9 @@ export default function VotePage() {
               </div>
 
               {userVote ? (
-                <p className="vp-cart-hint">Added to your cart as {userVote}.</p>
+                <p className="vp-cart-hint">
+                  Added to your cart as {userVote}.
+                </p>
               ) : null}
             </article>
           ) : null}
@@ -311,7 +334,11 @@ export default function VotePage() {
                   }
                 }}
                 className={`vp-mini${isCurrent ? ' vp-mini--current' : ''}`}
-                style={catInfo ? { ['--cat-color' as string]: catInfo.color } : undefined}
+                style={
+                  catInfo
+                    ? { ['--cat-color' as string]: catInfo.color }
+                    : undefined
+                }
               >
                 <header className="vp-mini-head">
                   {catInfo ? (
@@ -341,7 +368,9 @@ export default function VotePage() {
                   <span className="vp-mini-meta-support">
                     {supPct}% · {c.supportCount}
                   </span>
-                  <span className="vp-mini-meta-mcap">{formatMarketCap(cTotal)} T</span>
+                  <span className="vp-mini-meta-mcap">
+                    {formatMarketCap(cTotal)} T
+                  </span>
                   <span className="vp-mini-meta-oppose">
                     {c.opposeCount} · {100 - supPct}%
                   </span>

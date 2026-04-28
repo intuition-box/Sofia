@@ -8,10 +8,16 @@ query GetTrendingByPredicateLabel($predicateLabel: String!, $limit: Int!) {
     counter_term_id
     object {
       label
-      value { thing { url } }
+      value {
+        thing {
+          url
+        }
+      }
     }
     all_positions: positions(where: { shares: { _gt: "0" } }) {
-      account { id }
+      account {
+        id
+      }
     }
   }
 }

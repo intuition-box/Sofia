@@ -1,4 +1,4 @@
-import { MCPConfiguration } from "@mastra/mcp";
+import { MCPConfiguration } from '@mastra/mcp'
 
 /**
  * MCP Configuration connecting to Intuition knowledge graph server
@@ -7,11 +7,11 @@ import { MCPConfiguration } from "@mastra/mcp";
  * Note: Uses /sse endpoint for SSE transport (legacy MCP protocol)
  */
 export const intuitionMcpClient = new MCPConfiguration({
-  id: "intuition-mcp",
+  id: 'intuition-mcp',
   servers: {
     intuition: {
       // SSE mode - connect to MCP server's SSE endpoint
-      url: new URL(process.env.MCP_SERVER_URL || "http://localhost:3001/sse"),
+      url: new URL(process.env.MCP_SERVER_URL || 'http://localhost:3001/sse'),
     },
   },
-});
+})

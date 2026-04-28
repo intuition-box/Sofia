@@ -90,13 +90,23 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses } = useLinkedWallets()
-  const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
-  const { stats } = useDiscoveryScore(linkedAddresses.length > 0 ? linkedAddresses : undefined)
+  const { getDisplay, getAvatar } = useEnsNames(
+    address ? [address as Address] : [],
+  )
+  const { stats } = useDiscoveryScore(
+    linkedAddresses.length > 0 ? linkedAddresses : undefined,
+  )
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
-  const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
+  const scores = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    trustScore,
+    signals,
+  )
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
   // Activity unioned across all linked wallets — the current user's full
@@ -135,7 +145,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
   const displayName = address ? getDisplay(address as Address) : ''
   const avatar = address ? getAvatar(address as Address) : ''
-  const shortAddr = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
+  const shortAddr = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
   const pieSlices: TopicPieSlice[] = selectedTopics
@@ -154,15 +166,17 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     .filter((x): x is TopicPieSlice => x !== null)
 
   // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
-  const percentileLabel = trustScore != null
-    ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
-    : 'View details'
+  const percentileLabel =
+    trustScore != null
+      ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
+      : 'View details'
 
   return (
     <>
-      <aside className={`fixed right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}>
+      <aside
+        className={`fixed right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}
+      >
         <div className="flex flex-col h-full overflow-y-auto">
-
           {/* Banner — avatar + name + share + journey CTA */}
           <div className="pd-banner">
             <Avatar className="pd-avatar border-2 border-border shadow-lg">
@@ -181,7 +195,13 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                 disabled={shareLoading}
                 className="pd-share-btn"
               >
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="13"
+                  height="13"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 {shareLoading ? 'Sharing...' : 'Share on X'}
@@ -211,14 +231,18 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       style={{ ['--slice-color' as string]: t.color }}
                     >
                       <span className="pd-ts-legend-dot" />
-                      <span className="pd-ts-legend-label">{t.emoji} {t.label}</span>
+                      <span className="pd-ts-legend-label">
+                        {t.emoji} {t.label}
+                      </span>
                       <span className="pd-ts-legend-val">{t.score}</span>
                     </span>
                   ))}
                 </div>
               </>
             ) : (
-              <p className="pd-ts-empty">Pick topics to see your score breakdown.</p>
+              <p className="pd-ts-empty">
+                Pick topics to see your score breakdown.
+              </p>
             )}
           </div>
 
@@ -237,10 +261,30 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-section-title">Discovery</p>
               <div className="pd-badge-row">
                 {[
-                  { label: 'Pioneer', value: stats.pioneerCount, icon: '/badges/pioneer.png', color: '#e4b95a' },
-                  { label: 'Explorer', value: stats.explorerCount, icon: '/badges/explorer.png', color: '#5cc4d6' },
-                  { label: 'Contributor', value: stats.contributorCount, icon: '/badges/contributor.png', color: '#a78bdb' },
-                  { label: 'Trusted', value: stats.trustedCount, icon: '/badges/trust.png', color: '#6dd4a0' },
+                  {
+                    label: 'Pioneer',
+                    value: stats.pioneerCount,
+                    icon: '/badges/pioneer.png',
+                    color: '#e4b95a',
+                  },
+                  {
+                    label: 'Explorer',
+                    value: stats.explorerCount,
+                    icon: '/badges/explorer.png',
+                    color: '#5cc4d6',
+                  },
+                  {
+                    label: 'Contributor',
+                    value: stats.contributorCount,
+                    icon: '/badges/contributor.png',
+                    color: '#a78bdb',
+                  },
+                  {
+                    label: 'Trusted',
+                    value: stats.trustedCount,
+                    icon: '/badges/trust.png',
+                    color: '#6dd4a0',
+                  },
                 ].map((b) => (
                   <div
                     key={b.label}
@@ -274,13 +318,17 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       rel="noopener noreferrer"
                     >
                       <span className="pd-la-anchor">
-                        <span className="favicon" style={{ ['--fav-size' as string]: '32px' }}>
+                        <span
+                          className="favicon"
+                          style={{ ['--fav-size' as string]: '32px' }}
+                        >
                           {a.favicon ? (
                             <img
                               src={a.favicon}
                               alt=""
                               onError={(e) => {
-                                ;(e.target as HTMLImageElement).style.display = 'none'
+                                ;(e.target as HTMLImageElement).style.display =
+                                  'none'
                               }}
                             />
                           ) : null}
@@ -290,12 +338,30 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                           aria-hidden="true"
                         >
                           {isOppose ? (
-                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="9"
+                              height="9"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
                               <path d="M18 6 6 18" />
                               <path d="M6 6l12 12" />
                             </svg>
                           ) : (
-                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="9"
+                              height="9"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           )}
@@ -306,7 +372,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                           {actionLabel} <strong>{a.title}</strong>
                         </span>
                         <span className="pd-la-sub">
-                          {root}{root ? ' · ' : ''}{timeAgo(a.timestamp)}
+                          {root}
+                          {root ? ' · ' : ''}
+                          {timeAgo(a.timestamp)}
                         </span>
                       </span>
                     </a>
@@ -315,7 +383,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               </div>
             </div>
           )}
-
         </div>
       </aside>
 

@@ -19,7 +19,11 @@ import {
 } from 'lucide-react'
 import { PLATFORM_CATALOG } from '../../config/platformCatalog'
 import { getSuggestedPlatforms } from '../../config/taxonomy'
-import type { AuthType, ConnectionStatus, PlatformConnection } from '../../types/reputation'
+import type {
+  AuthType,
+  ConnectionStatus,
+  PlatformConnection,
+} from '../../types/reputation'
 import { getCertifyUrl } from '../../utils/sofiaDetect'
 import '../styles/platform-grid.css'
 
@@ -60,15 +64,19 @@ function getConnectInfo(
   if (authType === 'siwe') return { label: 'Link wallet', kind: 'wallet' }
   if (authType === 'siwf') return { label: 'Link Farcaster', kind: 'wallet' }
   if (authType === 'public') {
-    if (targetTopics?.includes('web3-crypto')) return { label: 'Analyze', kind: 'wallet' }
+    if (targetTopics?.includes('web3-crypto'))
+      return { label: 'Analyze', kind: 'wallet' }
     return { label: 'Add username', kind: 'username' }
   }
   return { label: 'Connect', kind: 'oauth' }
 }
 
 function certifyHref(p: PlatformEntry): string {
-  const fallback = p.website
-    ?? (p.apiBaseUrl ? `https://${new URL(p.apiBaseUrl).hostname}` : `https://${p.id}.com`)
+  const fallback =
+    p.website ??
+    (p.apiBaseUrl
+      ? `https://${new URL(p.apiBaseUrl).hostname}`
+      : `https://${p.id}.com`)
   return getCertifyUrl(fallback)
 }
 
@@ -83,7 +91,9 @@ export default function PlatformGrid({
   platforms: platformsProp,
 }: PlatformGridProps) {
   const [search, setSearch] = useState('')
-  const [usernameInputs, setUsernameInputs] = useState<Record<string, string>>({})
+  const [usernameInputs, setUsernameInputs] = useState<Record<string, string>>(
+    {},
+  )
   const [showUsernameFor, setShowUsernameFor] = useState<string | null>(null)
   const suggested = getSuggestedPlatforms(selectedCategories)
   const catalog: PlatformEntry[] = platformsProp ?? PLATFORM_CATALOG
@@ -139,11 +149,16 @@ export default function PlatformGrid({
             const isConnected = status === 'connected'
             const isConnecting = status === 'connecting'
             const isSuggested = suggested.includes(platform.id)
-            const info = getConnectInfo(platform.authType, platform.targetTopics)
+            const info = getConnectInfo(
+              platform.authType,
+              platform.targetTopics,
+            )
             const InfoIcon =
-              info?.kind === 'wallet' ? Wallet
-              : info?.kind === 'username' ? UserPlus
-              : LinkIcon
+              info?.kind === 'wallet'
+                ? Wallet
+                : info?.kind === 'username'
+                  ? UserPlus
+                  : LinkIcon
 
             return (
               <article
@@ -157,7 +172,9 @@ export default function PlatformGrid({
                     <img
                       src={`/favicons/${platform.id}.png`}
                       alt=""
-                      onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                      onError={(e) =>
+                        ((e.target as HTMLImageElement).style.display = 'none')
+                      }
                     />
                   </span>
                   <div className="pg-name-wrap">

@@ -50,8 +50,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .checkmark {
@@ -96,7 +100,7 @@
 .btn {
   margin-top: 1.5rem;
   padding: 0.875rem 2rem;
-  background: #02000B;
+  background: #02000b;
   color: #ffffff !important;
   border: 2px solid #ffffff;
   border-radius: 50px;
@@ -109,7 +113,7 @@
 
 .btn:hover {
   background: #ffffff;
-  color: #02000B !important;
+  color: #02000b !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
 }

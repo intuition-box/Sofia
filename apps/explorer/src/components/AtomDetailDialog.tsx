@@ -1,4 +1,3 @@
-
 /**
  * AtomDetailDialog — platform market detail modal opened from the
  * `/platforms` grid. Proto-aligned: kicker + Fraunces title with the
@@ -11,7 +10,15 @@ import { useClaimPositions } from '@/hooks/useClaimPositions'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import type { PlatformVaultData } from '@/services/platformMarketService'
-import { DollarSign, TrendingUp, Users, Coins, BarChart3, Hash, Trophy } from 'lucide-react'
+import {
+  DollarSign,
+  TrendingUp,
+  Users,
+  Coins,
+  BarChart3,
+  Hash,
+  Trophy,
+} from 'lucide-react'
 import { formatEther } from 'viem'
 import {
   Dialog,
@@ -63,11 +70,16 @@ export default function AtomDetailDialog({
   favicon,
   walletAddress,
 }: AtomDetailDialogProps) {
-  const { positions, loading: posLoading } = useClaimPositions(market.termId, 100)
+  const { positions, loading: posLoading } = useClaimPositions(
+    market.termId,
+    100,
+  )
   const cart = useCart()
 
   const userRank = walletAddress
-    ? positions.findIndex((p) => p.accountId.toLowerCase() === walletAddress.toLowerCase()) + 1
+    ? positions.findIndex(
+        (p) => p.accountId.toLowerCase() === walletAddress.toLowerCase(),
+      ) + 1
     : 0
 
   const inCart = cart.items.some((c) => c.termId === market.termId)
@@ -96,7 +108,9 @@ export default function AtomDetailDialog({
                   src={favicon}
                   alt=""
                   className="add-favicon"
-                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  onError={(e) =>
+                    ((e.target as HTMLImageElement).style.display = 'none')
+                  }
                 />
               </span>
               <div className="add-title-block">
@@ -114,24 +128,36 @@ export default function AtomDetailDialog({
         <div className="add-metrics">
           <div className="add-metric">
             <div className="add-metric-head">
-              <DollarSign className="h-3.5 w-3.5" style={{ color: '#10b981' }} />
+              <DollarSign
+                className="h-3.5 w-3.5"
+                style={{ color: '#10b981' }}
+              />
               <span className="add-metric-label">Market cap</span>
             </div>
-            <span className="add-metric-value">{formatMCap(market.marketCap)} T</span>
+            <span className="add-metric-value">
+              {formatMCap(market.marketCap)} T
+            </span>
           </div>
           <div className="add-metric">
             <div className="add-metric-head">
-              <TrendingUp className="h-3.5 w-3.5" style={{ color: '#3b82f6' }} />
+              <TrendingUp
+                className="h-3.5 w-3.5"
+                style={{ color: '#3b82f6' }}
+              />
               <span className="add-metric-label">Share price</span>
             </div>
-            <span className="add-metric-value">{formatEth(market.sharePrice)} T</span>
+            <span className="add-metric-value">
+              {formatEth(market.sharePrice)} T
+            </span>
           </div>
           <div className="add-metric">
             <div className="add-metric-head">
               <Coins className="h-3.5 w-3.5" style={{ color: '#f59e0b' }} />
               <span className="add-metric-label">Total shares</span>
             </div>
-            <span className="add-metric-value">{formatEth(market.totalShares)}</span>
+            <span className="add-metric-value">
+              {formatEth(market.totalShares)}
+            </span>
           </div>
           <div className="add-metric">
             <div className="add-metric-head">
@@ -145,13 +171,17 @@ export default function AtomDetailDialog({
               <div className="add-metric-head">
                 <BarChart3
                   className="h-3.5 w-3.5"
-                  style={{ color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444' }}
+                  style={{
+                    color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444',
+                  }}
                 />
                 <span className="add-metric-label">Your P&L</span>
               </div>
               <span
                 className="add-metric-value"
-                style={{ color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444' }}
+                style={{
+                  color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444',
+                }}
               >
                 {market.userPnlPct >= 0 ? '+' : ''}
                 {market.userPnlPct}%
@@ -161,7 +191,10 @@ export default function AtomDetailDialog({
           {userRank > 0 && (
             <div className="add-metric">
               <div className="add-metric-head">
-                <Hash className="h-3.5 w-3.5" style={{ color: 'var(--ds-accent)' }} />
+                <Hash
+                  className="h-3.5 w-3.5"
+                  style={{ color: 'var(--ds-accent)' }}
+                />
                 <span className="add-metric-label">Your rank</span>
               </div>
               <span className="add-metric-value">#{userRank}</span>
@@ -196,12 +229,16 @@ export default function AtomDetailDialog({
                     key={`${pos.accountId}-${pos.curveId}`}
                     className={`add-lb-row${isYou ? ' add-lb-row--you' : ''}`}
                   >
-                    <span className={`add-lb-col-rank ${rankClass(rank)}`}>{rank}</span>
+                    <span className={`add-lb-col-rank ${rankClass(rank)}`}>
+                      {rank}
+                    </span>
                     <span className="add-lb-col-user">
                       {pos.label}
                       {isYou ? <span className="add-you-tag">you</span> : null}
                     </span>
-                    <span className="add-lb-col-shares">{formatEth(pos.shares)}</span>
+                    <span className="add-lb-col-shares">
+                      {formatEth(pos.shares)}
+                    </span>
                   </div>
                 )
               })}

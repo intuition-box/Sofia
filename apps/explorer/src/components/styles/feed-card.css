@@ -44,7 +44,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -71,7 +71,7 @@
   overflow: hidden;
 }
 .fc-host {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   margin-top: 4px;
@@ -101,7 +101,7 @@
   border-radius: 8px;
 }
 .fc-cert-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.04em;
@@ -134,7 +134,7 @@
   gap: 5px;
 }
 .fc-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -148,7 +148,7 @@
   align-items: center;
   line-height: 1;
 }
-[data-theme="dark"] .fc-tag,
+[data-theme='dark'] .fc-tag,
 .dark .fc-tag {
   background: var(--ds-bg-subtle);
   color: var(--ds-ink);
@@ -156,7 +156,7 @@
 
 /* Verb tag — same shape as fc-tag, filled intent colour + black text. */
 .fc-verb-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: #02000e;
@@ -170,14 +170,30 @@
   line-height: 1;
   background: var(--ds-accent);
 }
-.fc-verb-tag.trusted     { background: #22c55e; }
-.fc-verb-tag.distrusted  { background: #ef4444; }
-.fc-verb-tag.work        { background: #3b82f6; }
-.fc-verb-tag.learning    { background: #06b6d4; }
-.fc-verb-tag.fun         { background: #f59e0b; }
-.fc-verb-tag.inspiration { background: #8b5cf6; }
-.fc-verb-tag.buying      { background: #ec4899; }
-.fc-verb-tag.music       { background: #ff5722; }
+.fc-verb-tag.trusted {
+  background: #22c55e;
+}
+.fc-verb-tag.distrusted {
+  background: #ef4444;
+}
+.fc-verb-tag.work {
+  background: #3b82f6;
+}
+.fc-verb-tag.learning {
+  background: #06b6d4;
+}
+.fc-verb-tag.fun {
+  background: #f59e0b;
+}
+.fc-verb-tag.inspiration {
+  background: #8b5cf6;
+}
+.fc-verb-tag.buying {
+  background: #ec4899;
+}
+.fc-verb-tag.music {
+  background: #ff5722;
+}
 
 /* Star badge (top-right of the card). Mock until real ratings ship. */
 .fc-star-badge {
@@ -204,7 +220,7 @@
   color: var(--ds-accent);
 }
 .fc-star-num {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -224,13 +240,15 @@
   padding: 8px 12px;
   border-radius: 8px;
   white-space: nowrap;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.02em;
   z-index: 30;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--ds-ink) 50%, transparent);
 }
 .fc-star-tip::after {
@@ -245,12 +263,12 @@
   opacity: 1;
   transform: translateY(0) scale(1);
 }
-[data-theme="dark"] .fc-star-tip,
+[data-theme='dark'] .fc-star-tip,
 .dark .fc-star-tip {
   background: var(--ds-accent);
   color: var(--ds-on-accent);
 }
-[data-theme="dark"] .fc-star-tip::after,
+[data-theme='dark'] .fc-star-tip::after,
 .dark .fc-star-tip::after {
   border-bottom-color: var(--ds-accent);
 }
@@ -295,7 +313,7 @@
   bottom: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%) scale(0);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   padding: 3px 7px;
@@ -324,10 +342,14 @@
   overflow: visible;
 }
 @media (max-width: 1200px) {
-  .masonry-grid { column-count: 2; }
+  .masonry-grid {
+    column-count: 2;
+  }
 }
 @media (max-width: 720px) {
-  .masonry-grid { column-count: 1; }
+  .masonry-grid {
+    column-count: 1;
+  }
 }
 
 /* Verb filter bar (inline variant) */
@@ -347,7 +369,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -364,7 +386,7 @@
   color: var(--ds-bg);
   border-color: var(--ds-ink);
 }
-[data-theme="dark"] .vf-chip.active,
+[data-theme='dark'] .vf-chip.active,
 .dark .vf-chip.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent);

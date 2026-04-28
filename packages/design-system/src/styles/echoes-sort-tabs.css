@@ -25,7 +25,7 @@
   border: none;
   background: transparent;
   color: var(--ds-muted);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;

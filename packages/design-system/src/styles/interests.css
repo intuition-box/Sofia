@@ -85,7 +85,7 @@
 }
 
 .ig-card-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.02em;
@@ -94,7 +94,7 @@
 }
 
 .ig-card-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   text-transform: uppercase;
@@ -115,7 +115,8 @@
   background: linear-gradient(
     180deg,
     var(--topic-color, var(--ds-muted)) 0%,
-    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 82%, var(--ds-ink)) 100%
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 82%, var(--ds-ink))
+      100%
   );
   color: var(--ds-on-accent);
   transform: translateY(-100%);
@@ -141,7 +142,7 @@
 }
 
 .ig-card-reveal-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -164,7 +165,7 @@
 }
 
 .ig-card-reveal-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -172,7 +173,7 @@
 }
 
 .ig-card-reveal-label-sm {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -181,7 +182,7 @@
 }
 
 .ig-card-reveal-cta {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -257,7 +258,7 @@
 }
 
 .ig-add-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;

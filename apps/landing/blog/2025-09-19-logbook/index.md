@@ -1,14 +1,12 @@
 ---
-
 slug: logbook-19-09
 
 title: Logbook 19/09
 
 authors: [Samuel, Maxime]
-
 ---
 
-During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTube, Spotify and Twitch and making it easier for developers to configure secrets. We improved URL handling and state management, added a complete Pulse agent with its own tab and WebSocket infrastructure, and refined our detection logic to extract  data . On top of that we streamlined background code, unified message handlers, added badge/notification logic and rolled out a new theme extraction agent with bookmark and history import.
+During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTube, Spotify and Twitch and making it easier for developers to configure secrets. We improved URL handling and state management, added a complete Pulse agent with its own tab and WebSocket infrastructure, and refined our detection logic to extract data . On top of that we streamlined background code, unified message handlers, added badge/notification logic and rolled out a new theme extraction agent with bookmark and history import.
 
 <!-- truncate -->
 
@@ -21,6 +19,7 @@ We also decided to open this "build in public" part by refactoring the landing p
 ---
 
 ## OAuth and URL Management
+
 ### OAuth Migration and Refactoring:
 
 - Complete refactoring of the OAuth service with dedicated folder organization
@@ -31,8 +30,8 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Extraction of user data and generation of triplets from OAuth APIs
 - Storing triplets in IndexedDB via elizaDataService for displaying EchoesTab
 
-
 ### URL Improvements:
+
 - Dynamic URLs during OAuth import
 - Echoes tab with clickable links
 - Priority system: official links fetched > user profile in case of errors
@@ -47,7 +46,6 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Synchronous cleanup of all storage and tokens via "clear storage" button
 - Automatic token update and verification for OAuth
 - Updated Spotify scopes: user-read-private, user-follow-read, user-top-read
-
 
 ### Data Detection:
 
@@ -68,7 +66,6 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Constants for loaded channels
 - Functional Pulse button in settings page
 
-
 ## Pulse Features:
 
 - Search analysis working properly
@@ -88,12 +85,10 @@ We also decided to open this "build in public" part by refactoring the landing p
 - messageSenders.ts: merged functions for theme extraction
 - tripletProcessor.ts: removed unused idPrefix parameter
 
-
 ### Badges and Notifications System:
 
 - Functional badge count based on storage detection (no longer relying on EchoesTab display)
 - Updated message handler
-
 
 ### Advanced Data Extraction:
 
@@ -101,4 +96,3 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Bookmark analysis
 - History import enabled
 - Improved parsing in WebSocket with message types
-

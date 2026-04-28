@@ -33,7 +33,9 @@ export function InterestHero({
   style,
   ...rest
 }: InterestHeroProps) {
-  const cls = className ? `pf-interest-header ${className}` : 'pf-interest-header'
+  const cls = className
+    ? `pf-interest-header ${className}`
+    : 'pf-interest-header'
   const resolvedStyle = {
     ...style,
     ['--topic-color' as string]: topicColor,
@@ -41,9 +43,13 @@ export function InterestHero({
   return (
     <div className={cls} style={resolvedStyle} {...rest}>
       <div className="pf-interest-header-left">
-        <span className="pf-interest-header-emoji" aria-hidden="true">{emoji}</span>
+        <span className="pf-interest-header-emoji" aria-hidden="true">
+          {emoji}
+        </span>
         <div className="pf-interest-header-text">
-          {kicker ? <span className="pf-interest-header-kicker">{kicker}</span> : null}
+          {kicker ? (
+            <span className="pf-interest-header-kicker">{kicker}</span>
+          ) : null}
           <h1 className="pf-interest-header-title">{title}</h1>
           <p className="pf-interest-header-desc">{description}</p>
         </div>

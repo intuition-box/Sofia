@@ -13,7 +13,10 @@ export interface SubHeaderPill {
   color?: string
 }
 
-export interface SubHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onClick'> {
+export interface SubHeaderProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onClick'
+> {
   /** Clicked when the circular back button is pressed. */
   onBack: () => void
   /** Accessible label for the back button (e.g. `Back to Profile`). */
@@ -42,7 +45,9 @@ export function SubHeader({
   className,
   ...rest
 }: SubHeaderProps) {
-  const cls = className ? `pf-sub-header-wrap ${className}` : 'pf-sub-header-wrap'
+  const cls = className
+    ? `pf-sub-header-wrap ${className}`
+    : 'pf-sub-header-wrap'
   return (
     <div className={cls} {...rest}>
       <div className="pf-sub-header">
@@ -53,7 +58,17 @@ export function SubHeader({
           aria-label={backLabel}
           title={backLabel}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M19 12H5" />
             <path d="M12 19l-7-7 7-7" />
           </svg>
@@ -61,12 +76,22 @@ export function SubHeader({
         <div className="pf-sub-crumbs">
           {crumbs.map((c, i) => {
             const isTopic = Boolean(c.topicColor)
-            const style = c.topicColor ? { ['--crumb-color' as string]: c.topicColor } : undefined
-            const crumbCls = isTopic ? 'pf-sub-crumb pf-sub-crumb-topic' : 'pf-sub-crumb'
+            const style = c.topicColor
+              ? { ['--crumb-color' as string]: c.topicColor }
+              : undefined
+            const crumbCls = isTopic
+              ? 'pf-sub-crumb pf-sub-crumb-topic'
+              : 'pf-sub-crumb'
             return (
               <span key={`${c.label}-${i}`} style={{ display: 'contents' }}>
-                {i > 0 ? <span className="pf-sub-sep" aria-hidden="true">›</span> : null}
-                <span className={crumbCls} style={style}>{c.label}</span>
+                {i > 0 ? (
+                  <span className="pf-sub-sep" aria-hidden="true">
+                    ›
+                  </span>
+                ) : null}
+                <span className={crumbCls} style={style}>
+                  {c.label}
+                </span>
               </span>
             )
           })}
@@ -74,7 +99,11 @@ export function SubHeader({
         {rightPill ? (
           <span
             className="pf-sub-pill"
-            style={rightPill.color ? { ['--pill-color' as string]: rightPill.color } : undefined}
+            style={
+              rightPill.color
+                ? { ['--pill-color' as string]: rightPill.color }
+                : undefined
+            }
           >
             <span className="pf-sub-pill-label">{rightPill.label}</span>
             <span className="pf-sub-pill-value">{rightPill.value}</span>

@@ -14,7 +14,10 @@ interface CircleMembersCardProps {
 
 const MAX_STACK = 5
 
-export default function CircleMembersCard({ members, onViewAll }: CircleMembersCardProps) {
+export default function CircleMembersCard({
+  members,
+  onViewAll,
+}: CircleMembersCardProps) {
   const visible = members.slice(0, MAX_STACK)
   const extra = Math.max(0, members.length - MAX_STACK)
   return (
@@ -29,7 +32,11 @@ export default function CircleMembersCard({ members, onViewAll }: CircleMembersC
           ))}
         </div>
         {extra > 0 && (
-          <button type="button" className="crd-members-more" onClick={onViewAll}>
+          <button
+            type="button"
+            className="crd-members-more"
+            onClick={onViewAll}
+          >
             +{extra}
           </button>
         )}

@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-14-11
 
 title: Logbook 14/11
 
 authors: [Samuel, Maxime]
-
 ---
 
 First of all, we apologize for being quiet over the past two weeks — we've been working hard on deploying Sofia on Phala, migrating to Intuition's mainnet, and setting up the GaiaNet node hosting. During this time, we've made significant progress across infrastructure, features, and user experience. Sofia is now running on mainnet with secure hosting, and we're testing with real users to prepare for broader Alpha release.
@@ -77,4 +75,3 @@ We're now running **live tests with real users** to measure server consumption a
 ---
 
 Sofia is now ready for Alpha testing — stronger infrastructure ready to welcome our Alpha testers and receive their feedback.
-

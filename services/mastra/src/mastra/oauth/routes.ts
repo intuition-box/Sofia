@@ -1,7 +1,7 @@
-import { registerApiRoute } from "@mastra/core/server"
-import { getOAuthProvider } from "./config"
-import { exchangeCodeForToken } from "./exchange"
-import { verifyAndGetUserId, type Platform } from "./verify"
+import { registerApiRoute } from '@mastra/core/server'
+import { getOAuthProvider } from './config'
+import { exchangeCodeForToken } from './exchange'
+import { verifyAndGetUserId, type Platform } from './verify'
 
 /**
  * OAuth routes for Sofia Explorer frontend.
@@ -17,36 +17,36 @@ import { verifyAndGetUserId, type Platform } from "./verify"
  * prefix is reserved by Mastra for auto-generated routes.
  */
 export const oauthRoutes = [
-  registerApiRoute("/oauth/:platform/authorize", {
-    method: "GET",
+  registerApiRoute('/oauth/:platform/authorize', {
+    method: 'GET',
     handler: async (c) => {
-      const platform = c.req.param("platform")
-      const redirectUri = c.req.query("redirect_uri")
-      const state = c.req.query("state")
+      const platform = c.req.param('platform')
+      const redirectUri = c.req.query('redirect_uri')
+      const state = c.req.query('state')
 
       if (!redirectUri || !state) {
-        return c.json({ error: "missing_params" }, 400)
+        return c.json({ error: 'missing_params' }, 400)
       }
 
       const provider = getOAuthProvider(platform)
       if (!provider) {
-        return c.json({ error: "unsupported_platform" }, 404)
+        return c.json({ error: 'unsupported_platform' }, 404)
       }
 
       if (!provider.clientId) {
-        return c.json({ error: "missing_credentials" }, 500)
+        return c.json({ error: 'missing_credentials' }, 500)
       }
 
-      const scopeSeparator = provider.scopeSeparator ?? " "
+      const scopeSeparator = provider.scopeSeparator ?? ' '
       const params = new URLSearchParams({
         client_id: provider.clientId,
-        response_type: "code",
+        response_type: 'code',
         redirect_uri: redirectUri,
         state,
         ...(provider.extraAuthParams ?? {}),
       })
       if (provider.scopes.length > 0) {
-        params.set("scope", provider.scopes.join(scopeSeparator))
+        params.set('scope', provider.scopes.join(scopeSeparator))
       }
 
       const authorizeUrl = `${provider.authUrl}?${params.toString()}`
@@ -54,22 +54,22 @@ export const oauthRoutes = [
     },
   }),
 
-  registerApiRoute("/oauth/:platform/callback", {
-    method: "POST",
+  registerApiRoute('/oauth/:platform/callback', {
+    method: 'POST',
     handler: async (c) => {
-      const platform = c.req.param("platform")
+      const platform = c.req.param('platform')
 
       let body: { code?: string; redirectUri?: string }
       try {
         body = await c.req.json()
       } catch {
-        return c.json({ success: false, error: "invalid_json" }, 400)
+        return c.json({ success: false, error: 'invalid_json' }, 400)
       }
 
       const { code, redirectUri } = body
 
       if (!code || !redirectUri) {
-        return c.json({ success: false, error: "missing_params" }, 400)
+        return c.json({ success: false, error: 'missing_params' }, 400)
       }
 
       try {
@@ -77,7 +77,7 @@ export const oauthRoutes = [
 
         const verification = await verifyAndGetUserId(
           platform as Platform,
-          tokens.accessToken
+          tokens.accessToken,
         )
 
         if (!verification.valid) {
@@ -85,9 +85,9 @@ export const oauthRoutes = [
             {
               success: false,
               platformId: platform,
-              error: verification.error || "verification_failed",
+              error: verification.error || 'verification_failed',
             },
-            400
+            400,
           )
         }
 
@@ -109,7 +109,7 @@ export const oauthRoutes = [
             platformId: platform,
             error: message,
           },
-          500
+          500,
         )
       }
     },

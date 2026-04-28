@@ -16,7 +16,13 @@
  *   --batch=N     Batch size (default: 20)
  */
 
-import { createPublicClient, createWalletClient, http, stringToHex, formatEther } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  stringToHex,
+  formatEther,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
@@ -36,7 +42,9 @@ const intuitionChain = {
   network: 'intuition-mainnet',
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 }
 
 // ── ABI ──
@@ -102,7 +110,8 @@ function parseCategories() {
   for (let i = 0; i < topicPositions.length; i++) {
     const topic = topicPositions[i]
     const start = topic.pos
-    const end = i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
+    const end =
+      i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
     const topicBlock = content.substring(start, end)
 
     const catRegex = /{\s*\n\s*id:\s*"([^"]+)",\s*\n\s*label:\s*"([^"]+)",/g
@@ -113,14 +122,23 @@ function parseCategories() {
       const catLabel = catMatch[2]
       if (catId === topic.id) continue
 
-      const afterCat = topicBlock.substring(catMatch.index, catMatch.index + 1200)
+      const afterCat = topicBlock.substring(
+        catMatch.index,
+        catMatch.index + 1200,
+      )
       // Only match categories (have niches: property), not niches themselves
       const nichesPos = afterCat.indexOf('niches:')
       const closingBracket = afterCat.indexOf(']')
-      if (nichesPos === -1 || (closingBracket !== -1 && closingBracket < nichesPos)) continue
+      if (
+        nichesPos === -1 ||
+        (closingBracket !== -1 && closingBracket < nichesPos)
+      )
+        continue
 
       // Extract niche labels
-      const nichesSection = afterCat.match(/niches:\s*\[([\s\S]*?)\]\s*,?\s*}/)?.[1]
+      const nichesSection = afterCat.match(
+        /niches:\s*\[([\s\S]*?)\]\s*,?\s*}/,
+      )?.[1]
       const nicheLabels = []
       if (nichesSection) {
         const labelRegex = /label:\s*"([^"]+)"/g
@@ -173,7 +191,8 @@ async function pinThing({ name, description }) {
   })
 
   const json = await res.json()
-  if (json.errors) throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
+  if (json.errors)
+    throw new Error(`Pin failed for ${name}: ${JSON.stringify(json.errors)}`)
   const uri = json.data?.pinThing?.uri
   if (!uri) throw new Error(`No URI returned for ${name}`)
   return uri
@@ -199,7 +218,9 @@ async function main() {
   const dryRun = args.includes('--dry-run')
   const estimateOnly = args.includes('--estimate')
   const skipPin = args.includes('--skip-pin')
-  const batchSize = parseInt(args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '20')
+  const batchSize = parseInt(
+    args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '20',
+  )
 
   const privateKey = process.env.PRIVATE_KEY
   if (!privateKey && !dryRun && !estimateOnly) {
@@ -306,13 +327,19 @@ async function main() {
   })
 
   console.log(`\n── Cost Estimate ──`)
-  console.log(`  Atoms: ${categories.length} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`)
+  console.log(
+    `  Atoms: ${categories.length} × ${formatEther(atomCost)} = ${formatEther(atomsTotalCost)} TRUST`,
+  )
   console.log(`  Balance: ${formatEther(balance)} TRUST`)
 
   if (balance < atomsTotalCost) {
-    console.error(`\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`)
+    console.error(
+      `\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(atomsTotalCost - balance)} more`,
+    )
   } else {
-    console.log(`  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`)
+    console.log(
+      `  ✓ Enough TRUST (${formatEther(balance - atomsTotalCost)} will remain)`,
+    )
   }
 
   if (estimateOnly) {
@@ -324,12 +351,18 @@ async function main() {
 
   console.log('\n── Step 2: Create Category Atoms ──\n')
 
-  const toCreate = categories.filter((c) => cache.pins[`cat:${c.id}`] && !cache.atomIds[c.id])
-  console.log(`To create: ${toCreate.length} atoms (${categories.length - toCreate.length} already done)`)
+  const toCreate = categories.filter(
+    (c) => cache.pins[`cat:${c.id}`] && !cache.atomIds[c.id],
+  )
+  console.log(
+    `To create: ${toCreate.length} atoms (${categories.length - toCreate.length} already done)`,
+  )
 
   for (let i = 0; i < toCreate.length; i += batchSize) {
     const batch = toCreate.slice(i, i + batchSize)
-    const encodedDataArray = batch.map((c) => stringToHex(cache.pins[`cat:${c.id}`]))
+    const encodedDataArray = batch.map((c) =>
+      stringToHex(cache.pins[`cat:${c.id}`]),
+    )
     const depositsArray = batch.map(() => 0n)
 
     const multiVaultCost = atomCost * BigInt(batch.length)
@@ -340,7 +373,9 @@ async function main() {
       args: [0n, 0n, multiVaultCost],
     })
 
-    console.log(`\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`)
+    console.log(
+      `\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} atoms, cost: ${formatEther(totalCost)} TRUST`,
+    )
     batch.forEach((c) => console.log(`    - ${c.label} (${c.topicLabel})`))
 
     try {
@@ -364,7 +399,9 @@ async function main() {
       })
 
       console.log(`  TX: ${txHash}`)
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
 
       if (receipt.status !== 'success') {
         console.error(`  TX FAILED: ${receipt.status}`)
@@ -379,7 +416,9 @@ async function main() {
     } catch (e) {
       const msg = e.message || ''
       if (msg.includes('AtomExists')) {
-        console.log(`  Some atoms exist, falling back to individual creation...`)
+        console.log(
+          `  Some atoms exist, falling back to individual creation...`,
+        )
         for (const cat of batch) {
           if (cache.atomIds[cat.id]) continue
           const encoded = stringToHex(cache.pins[`cat:${cat.id}`])

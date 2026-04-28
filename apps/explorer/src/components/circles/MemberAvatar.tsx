@@ -13,7 +13,10 @@ interface MemberAvatarProps {
   className?: string
 }
 
-export default function MemberAvatar({ member, className = 'mav' }: MemberAvatarProps) {
+export default function MemberAvatar({
+  member,
+  className = 'mav',
+}: MemberAvatarProps) {
   const [imgOk, setImgOk] = useState(true)
   const bg = avatarColor(member.termId || member.label)
   const hasImage = !!member.image && imgOk

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const rank = parseInt(searchParams.get('rank') || '0', 10)
   const totalCertifiers = parseInt(
     searchParams.get('totalCertifiers') || '0',
-    10
+    10,
   )
 
   const logoSrc = 'https://sofia-og.vercel.app/sofia-logo.png'
@@ -44,180 +44,176 @@ export async function GET(req: NextRequest) {
         : 'rgba(255, 255, 255, 0.04)'
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: '1200px',
+        height: '630px',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#050507',
+        fontFamily: 'sans-serif',
+        color: '#ffffff',
+        padding: '44px 56px',
+        position: 'relative',
+      }}
+    >
+      {/* Header: Sofia branding */}
       <div
         style={{
-          width: '1200px',
-          height: '630px',
           display: 'flex',
-          flexDirection: 'column',
-          background: '#050507',
-          fontFamily: 'sans-serif',
-          color: '#ffffff',
-          padding: '44px 56px',
-          position: 'relative',
+          alignItems: 'center',
+          gap: '14px',
+          marginBottom: '40px',
         }}
       >
-        {/* Header: Sofia branding */}
-        <div
+        <img
+          src={logoSrc}
+          alt="Sofia"
+          width={44}
+          height={44}
+          style={{ borderRadius: '50%' }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#555568',
+              letterSpacing: '0.5px',
+              display: 'flex',
+            }}
+          >
+            SOFIA CERTIFICATION
+          </span>
+          <span
+            style={{
+              fontSize: '16px',
+              color: '#a0a0b8',
+              display: 'flex',
+            }}
+          >
+            {truncateUrl(pageUrl)}
+          </span>
+        </div>
+      </div>
+
+      {/* Page title */}
+      <div
+        style={{
+          display: 'flex',
+          marginBottom: '32px',
+        }}
+      >
+        <span
           style={{
+            fontSize: '36px',
+            fontWeight: 700,
+            color: '#fff',
             display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            marginBottom: '40px',
+            lineHeight: 1.2,
           }}
         >
-          <img
-            src={logoSrc}
-            alt="Sofia"
-            width={44}
-            height={44}
-            style={{ borderRadius: '50%' }}
-          />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span
-              style={{
-                fontSize: '12px',
-                color: '#555568',
-                letterSpacing: '0.5px',
-                display: 'flex',
-              }}
-            >
-              SOFIA CERTIFICATION
-            </span>
-            <span
-              style={{
-                fontSize: '16px',
-                color: '#a0a0b8',
-                display: 'flex',
-              }}
-            >
-              {truncateUrl(pageUrl)}
-            </span>
-          </div>
-        </div>
+          {pageTitle.length > 60 ? pageTitle.slice(0, 57) + '...' : pageTitle}
+        </span>
+      </div>
 
-        {/* Page title */}
+      {/* Status + Rank */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '24px',
+          marginBottom: '32px',
+          paddingBottom: '32px',
+          borderBottom: '1px solid #14141e',
+        }}
+      >
+        {/* Status badge */}
         <div
           style={{
+            padding: '12px 28px',
+            background: statusBg,
+            border: `1px solid ${statusColor}33`,
+            borderRadius: '14px',
             display: 'flex',
-            marginBottom: '32px',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           <span
             style={{
-              fontSize: '36px',
+              fontSize: '11px',
+              color: statusColor,
+              letterSpacing: '1px',
+              fontWeight: 600,
+              marginBottom: '4px',
+              display: 'flex',
+              textTransform: 'uppercase',
+            }}
+          >
+            {status}
+          </span>
+          <span
+            style={{
+              fontSize: '42px',
               fontWeight: 700,
               color: '#fff',
               display: 'flex',
-              lineHeight: 1.2,
+              lineHeight: 1,
             }}
           >
-            {pageTitle.length > 60
-              ? pageTitle.slice(0, 57) + '...'
-              : pageTitle}
+            #{rank}
           </span>
         </div>
 
-        {/* Status + Rank */}
+        {/* Certifiers count */}
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '24px',
-            marginBottom: '32px',
-            paddingBottom: '32px',
-            borderBottom: '1px solid #14141e',
+            flexDirection: 'column',
           }}
         >
-          {/* Status badge */}
-          <div
+          <span
             style={{
-              padding: '12px 28px',
-              background: statusBg,
-              border: `1px solid ${statusColor}33`,
-              borderRadius: '14px',
+              fontSize: '48px',
+              fontWeight: 700,
+              color: '#fff',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+              lineHeight: 1,
             }}
           >
-            <span
-              style={{
-                fontSize: '11px',
-                color: statusColor,
-                letterSpacing: '1px',
-                fontWeight: 600,
-                marginBottom: '4px',
-                display: 'flex',
-                textTransform: 'uppercase',
-              }}
-            >
-              {status}
-            </span>
-            <span
-              style={{
-                fontSize: '42px',
-                fontWeight: 700,
-                color: '#fff',
-                display: 'flex',
-                lineHeight: 1,
-              }}
-            >
-              #{rank}
-            </span>
-          </div>
-
-          {/* Certifiers count */}
-          <div
+            {totalCertifiers}
+          </span>
+          <span
             style={{
+              fontSize: '16px',
+              color: '#a0a0b8',
               display: 'flex',
-              flexDirection: 'column',
             }}
           >
-            <span
-              style={{
-                fontSize: '48px',
-                fontWeight: 700,
-                color: '#fff',
-                display: 'flex',
-                lineHeight: 1,
-              }}
-            >
-              {totalCertifiers}
-            </span>
-            <span
-              style={{
-                fontSize: '16px',
-                color: '#a0a0b8',
-                display: 'flex',
-              }}
-            >
-              certifiers on this page
-            </span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '18px',
-            left: '0',
-            right: '0',
-            display: 'flex',
-            justifyContent: 'center',
-            color: '#333340',
-            fontSize: '13px',
-          }}
-        >
-          sofia.intuition.box
+            certifiers on this page
+          </span>
         </div>
       </div>
-    ),
+
+      {/* Footer */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '18px',
+          left: '0',
+          right: '0',
+          display: 'flex',
+          justifyContent: 'center',
+          color: '#333340',
+          fontSize: '13px',
+        }}
+      >
+        sofia.intuition.box
+      </div>
+    </div>,
     {
       width: 1200,
       height: 630,
-    }
+    },
   )
 }

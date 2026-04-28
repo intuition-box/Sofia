@@ -116,7 +116,9 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
         <div className="group-bento-domain-info">
           <h3 className="group-bento-title">{domain}</h3>
           {currentPredicate ? (
-            <span className="group-bento-predicate">&quot;{currentPredicate}&quot;</span>
+            <span className="group-bento-predicate">
+              &quot;{currentPredicate}&quot;
+            </span>
           ) : null}
         </div>
         <div className="group-bento-level">

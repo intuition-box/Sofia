@@ -1,7 +1,7 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { monthsSince, safeNumber, TokenExpiredError } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { monthsSince, safeNumber, TokenExpiredError } from './utils'
 
-const GRAPHQL_URL = "https://api.producthunt.com/v2/api/graphql"
+const GRAPHQL_URL = 'https://api.producthunt.com/v2/api/graphql'
 
 const VIEWER_QUERY = `
   query ViewerMetrics {
@@ -26,21 +26,21 @@ const VIEWER_QUERY = `
 export const fetchProducthuntSignals: SignalFetcher = async (
   token,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const response = await fetch(GRAPHQL_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
     body: JSON.stringify({ query: VIEWER_QUERY }),
   })
 
   if (response.status === 401 || response.status === 403) {
     throw new TokenExpiredError(
-      `API returned ${response.status} — token expired or revoked`
+      `API returned ${response.status} — token expired or revoked`,
     )
   }
 
@@ -52,7 +52,7 @@ export const fetchProducthuntSignals: SignalFetcher = async (
   const user = data?.data?.viewer?.user
 
   if (!user) {
-    throw new Error("No viewer.user in Product Hunt response")
+    throw new Error('No viewer.user in Product Hunt response')
   }
 
   return {

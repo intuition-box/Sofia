@@ -8,7 +8,9 @@
   border-left: 1px solid var(--border);
   transform: translateX(100%);
   opacity: 0;
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  transition:
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s ease;
   pointer-events: none;
 }
 .cd-aside.cd-open {

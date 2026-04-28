@@ -48,7 +48,7 @@
   gap: 8px;
 }
 .cr-filter-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -69,7 +69,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -105,7 +105,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 500;
 }
@@ -118,7 +118,7 @@
   gap: 8px;
 }
 
-[data-theme="dark"] .cr-chip.active,
+[data-theme='dark'] .cr-chip.active,
 .dark .cr-chip.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent);
@@ -151,7 +151,8 @@
 .cr-card:hover {
   border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 35%, transparent);
+  box-shadow: 0 12px 28px -18px
+    color-mix(in srgb, var(--ds-ink) 35%, transparent);
 }
 
 .cr-card-head {
@@ -168,7 +169,7 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 900;
   font-size: 16px;
   color: #ffffff;
@@ -183,26 +184,28 @@
   min-width: 0;
 }
 .cr-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .cr-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
   margin-top: 2px;
 }
 .cr-role {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 8px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -231,7 +234,7 @@
   border-radius: 50%;
   border: 2px solid var(--ds-card);
   margin-left: -8px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: #02000e;
@@ -259,7 +262,9 @@
   width: 100%;
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   pointer-events: none;
 }
 .cr-hover-actions .cr-btn-sm {
@@ -279,7 +284,7 @@
   border-radius: 8px;
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -316,14 +321,14 @@
   color: var(--ds-ink);
 }
 .cr-card-new-plus {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 44px;
   font-weight: 300;
   font-style: italic;
   line-height: 1;
 }
 .cr-card-new-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 800;
   font-style: italic;
@@ -372,7 +377,7 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 900;
   font-size: 24px;
   color: #ffffff;
@@ -447,7 +452,7 @@
 .crd-color-swatch:hover {
   transform: rotate(var(--angle, 0deg)) translateY(-56px) scale(1.15);
 }
-.crd-color-swatch[aria-checked="true"] {
+.crd-color-swatch[aria-checked='true'] {
   border-color: var(--ds-ink);
 }
 .crd-color-swatch:focus-visible {
@@ -460,16 +465,18 @@
   min-width: 0;
 }
 .crd-hero-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 32px;
   font-weight: 900;
   letter-spacing: -0.03em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   line-height: 1;
 }
 .crd-hero-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   margin-top: 4px;
@@ -477,7 +484,7 @@
 }
 .crd-hero-desc {
   margin: 0;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   line-height: 1.5;
   color: var(--ds-ink-soft);
@@ -520,7 +527,7 @@
   justify-content: space-between;
 }
 .cr-section-head {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -536,7 +543,7 @@
   border-radius: 7px;
   background: var(--ds-ink);
   color: var(--ds-bg);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -553,16 +560,18 @@
   gap: 14px;
 }
 .crd-actions-big {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 28px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .crd-actions-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.04em;
@@ -589,7 +598,7 @@
 .crd-actions-meta {
   display: flex;
   justify-content: space-between;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
@@ -625,7 +634,7 @@
   gap: 10px;
 }
 .crd-members-card-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -644,7 +653,7 @@
 .crd-members-stack .mav {
   width: 36px;
   height: 36px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   color: #02000e;
@@ -663,7 +672,7 @@
 }
 .crd-members-more {
   padding: 6px 12px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -688,7 +697,7 @@
   border-radius: 7px;
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -726,7 +735,7 @@
   color: var(--ds-ink);
 }
 .cr-topics-num {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-weight: 600;
@@ -772,7 +781,8 @@
   overflow-y: auto;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: -16px 0 48px -24px color-mix(in srgb, var(--ds-ink) 50%, transparent);
+  box-shadow: -16px 0 48px -24px
+    color-mix(in srgb, var(--ds-ink) 50%, transparent);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -789,7 +799,7 @@
   border-bottom: 1px solid var(--ds-border);
 }
 .crd-members-panel-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 20px;
   font-weight: 900;
   color: var(--ds-ink);
@@ -822,7 +832,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -874,7 +884,7 @@
   white-space: nowrap;
 }
 .crd-member-addr {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
@@ -888,19 +898,21 @@
   gap: 16px;
 }
 .crd-feed-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.025em;
   color: var(--ds-ink);
   margin: 0 0 6px;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .crd-feed-empty {
   padding: 40px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -930,7 +942,7 @@
   flex-shrink: 0;
 }
 .crd-user-filter-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -941,7 +953,7 @@
   min-width: 160px;
   height: 30px;
   padding: 0 12px;
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
   font-weight: 600;
   color: var(--ds-ink);

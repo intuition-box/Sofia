@@ -1,4 +1,4 @@
-import { getOAuthProvider } from "./config"
+import { getOAuthProvider } from './config'
 
 export interface TokenExchangeResult {
   accessToken: string
@@ -14,7 +14,7 @@ export interface TokenExchangeResult {
 export async function exchangeCodeForToken(
   platform: string,
   code: string,
-  redirectUri: string
+  redirectUri: string,
 ): Promise<TokenExchangeResult> {
   const provider = getOAuthProvider(platform)
   if (!provider) {
@@ -26,28 +26,28 @@ export async function exchangeCodeForToken(
   }
 
   const body = new URLSearchParams({
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     code,
     redirect_uri: redirectUri,
   })
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/x-www-form-urlencoded",
+    'Content-Type': 'application/x-www-form-urlencoded',
     ...(provider.tokenRequestHeaders ?? {}),
   }
 
   if (provider.useBasicAuthHeader) {
     const basic = Buffer.from(
-      `${provider.clientId}:${provider.clientSecret}`
-    ).toString("base64")
-    headers["Authorization"] = `Basic ${basic}`
+      `${provider.clientId}:${provider.clientSecret}`,
+    ).toString('base64')
+    headers['Authorization'] = `Basic ${basic}`
   } else {
-    body.append("client_id", provider.clientId)
-    body.append("client_secret", provider.clientSecret)
+    body.append('client_id', provider.clientId)
+    body.append('client_secret', provider.clientSecret)
   }
 
   const res = await fetch(provider.tokenUrl, {
-    method: "POST",
+    method: 'POST',
     headers,
     body,
   })
@@ -61,7 +61,7 @@ export async function exchangeCodeForToken(
 
   if (!data.access_token) {
     throw new Error(
-      `token_exchange_failed: no access_token in response: ${JSON.stringify(data)}`
+      `token_exchange_failed: no access_token in response: ${JSON.stringify(data)}`,
     )
   }
 

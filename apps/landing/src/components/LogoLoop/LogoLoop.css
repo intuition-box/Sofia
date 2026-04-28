@@ -59,7 +59,10 @@
   -webkit-user-drag: none;
   pointer-events: none;
   /* Links handle interaction */
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .logoloop--scale-hover .logoloop__item {

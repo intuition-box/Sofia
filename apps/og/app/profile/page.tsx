@@ -17,7 +17,9 @@ function truncateWallet(wallet: string): string {
   return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`
 }
 
-export async function generateMetadata({ searchParams }: ProfilePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: ProfilePageProps): Promise<Metadata> {
   const params = await searchParams
   const wallet = params.wallet || '0x0000...0000'
   const level = params.level || '1'
@@ -96,23 +98,62 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       }}
     >
       {/* Sofia branding */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <img src="/sofia-logo.png" alt="Sofia" width={56} height={56} style={{ borderRadius: '50%' }} />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '24px',
+        }}
+      >
+        <img
+          src="/sofia-logo.png"
+          alt="Sofia"
+          width={56}
+          height={56}
+          style={{ borderRadius: '50%' }}
+        />
         <span style={{ fontSize: '32px', fontWeight: 700 }}>Sofia</span>
       </div>
 
       <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>{displayName}</h1>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: '24px', color: '#6b7280', marginBottom: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <span>Level <strong style={{ color: '#fff' }}>{level}</strong></span>
-        <span><strong style={{ color: '#fff' }}>{trustCircle}</strong> people in my trust circle</span>
-        <span style={{ color: '#FFD700' }}>Pioneer <strong>{pioneer}</strong></span>
-        <span style={{ color: '#3B82F6' }}>Explorer <strong>{explorer}</strong></span>
+      <div
+        style={{
+          display: 'flex',
+          gap: '24px',
+          color: '#6b7280',
+          marginBottom: '32px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
+        <span>
+          Level <strong style={{ color: '#fff' }}>{level}</strong>
+        </span>
+        <span>
+          <strong style={{ color: '#fff' }}>{trustCircle}</strong> people in my
+          trust circle
+        </span>
+        <span style={{ color: '#FFD700' }}>
+          Pioneer <strong>{pioneer}</strong>
+        </span>
+        <span style={{ color: '#3B82F6' }}>
+          Explorer <strong>{explorer}</strong>
+        </span>
       </div>
 
       {interestList.length > 0 && (
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '600px' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '12px',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            maxWidth: '600px',
+          }}
+        >
           {interestList.map((interest) => (
             <span
               key={interest.name}

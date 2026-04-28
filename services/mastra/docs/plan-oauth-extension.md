@@ -2,7 +2,7 @@
 
 > Date : 17 avril 2026
 > Cible : `core/sofia-mastra/` + `sofia-explorer/`
-> Prerequis : `plan-oauth-routes.md` est implemente (routes /oauth/* fonctionnelles)
+> Prerequis : `plan-oauth-routes.md` est implemente (routes /oauth/\* fonctionnelles)
 > Etat actuel : 5 plateformes live (GitHub, Spotify, Discord, Twitch, YouTube)
 
 ---
@@ -12,6 +12,7 @@
 Le systeme OAuth marche (v1.6.0+ en prod). Il reste **79 plateformes OAuth2** et **3 plateformes OAuth1** a connecter.
 
 **Chaque nouvelle plateforme = meme schema** :
+
 1. Creer l'app OAuth sur le dashboard du provider
 2. Obtenir `CLIENT_ID` + `CLIENT_SECRET`
 3. Ajouter ces env vars sur Phala
@@ -30,58 +31,58 @@ Le travail est **repetitif mais simple**. Ce plan priorise les plateformes par p
 
 Plateformes grand public, APIs stables, impact rapide sur le scoring.
 
-| Plateforme | ID | Scopes proposes | Complexite |
-|---|---|---|---|
-| Reddit | `reddit` | `identity, read, mysubreddits` | Facile — Bearer token classique |
-| Strava | `strava` | `read, activity:read` | Facile — endpoints clairs |
-| SoundCloud | `soundcloud` | (lecture publique) | Moyen — SoundCloud restreint les nouvelles apps |
-| Last.fm | `lastfm` | (API key-based en fait — auth differente) | Moyen — pas vraiment OAuth2 standard |
-| Mixcloud | `mixcloud` | (lecture publique) | Facile |
-| Product Hunt | `producthunt` | (GraphQL API) | Moyen — GraphQL au lieu de REST |
-| ORCID | `orcid` | `/authenticate` | Facile — standard academique |
+| Plateforme   | ID            | Scopes proposes                           | Complexite                                      |
+| ------------ | ------------- | ----------------------------------------- | ----------------------------------------------- |
+| Reddit       | `reddit`      | `identity, read, mysubreddits`            | Facile — Bearer token classique                 |
+| Strava       | `strava`      | `read, activity:read`                     | Facile — endpoints clairs                       |
+| SoundCloud   | `soundcloud`  | (lecture publique)                        | Moyen — SoundCloud restreint les nouvelles apps |
+| Last.fm      | `lastfm`      | (API key-based en fait — auth differente) | Moyen — pas vraiment OAuth2 standard            |
+| Mixcloud     | `mixcloud`    | (lecture publique)                        | Facile                                          |
+| Product Hunt | `producthunt` | (GraphQL API)                             | Moyen — GraphQL au lieu de REST                 |
+| ORCID        | `orcid`       | `/authenticate`                           | Facile — standard academique                    |
 
 ### Phase 2 — Domaines cles (7 plateformes OAuth2)
 
 Plateformes tech/creative qui enrichissent le scoring dev/design.
 
-| Plateforme | ID | Scopes | Complexite |
-|---|---|---|---|
-| Figma | `figma` | `files:read` | Facile |
-| Hugging Face | `huggingface` | (lecture profil + modeles) | Facile |
-| Kaggle | `kaggle` | (API key-based historique) | Moyen |
-| Steam | `steam` | OpenID | Moyen — pas OAuth2 classique, utilise OpenID |
-| Duolingo | `duolingo` | (API non-officielle) | Difficile — pas d'OAuth officiel |
-| Vercel | `vercel` | (read) | Facile |
-| Unsplash | `unsplash` | `public read_photos` | Facile |
+| Plateforme   | ID            | Scopes                     | Complexite                                   |
+| ------------ | ------------- | -------------------------- | -------------------------------------------- |
+| Figma        | `figma`       | `files:read`               | Facile                                       |
+| Hugging Face | `huggingface` | (lecture profil + modeles) | Facile                                       |
+| Kaggle       | `kaggle`      | (API key-based historique) | Moyen                                        |
+| Steam        | `steam`       | OpenID                     | Moyen — pas OAuth2 classique, utilise OpenID |
+| Duolingo     | `duolingo`    | (API non-officielle)       | Difficile — pas d'OAuth officiel             |
+| Vercel       | `vercel`      | (read)                     | Facile                                       |
+| Unsplash     | `unsplash`    | `public read_photos`       | Facile                                       |
 
 ### Phase 3 — Web3 natif (3 OAuth2 + 1 OAuth1)
 
 Plateformes web3 avec OAuth.
 
-| Plateforme | ID | Stratégie |
-|---|---|---|
-| Coinbase | `coinbase` | OAuth2 `wallet:user:read` |
-| OpenSea | `opensea` | **api_key** — voir plan-non-oauth |
-| Lens | `lens` | **siwe** — voir plan-non-oauth |
-| Farcaster | `farcaster` | **siwf** — voir plan-non-oauth |
-| The Graph | `the-graph` | **public** on-chain — voir plan-non-oauth |
+| Plateforme | ID          | Stratégie                                 |
+| ---------- | ----------- | ----------------------------------------- |
+| Coinbase   | `coinbase`  | OAuth2 `wallet:user:read`                 |
+| OpenSea    | `opensea`   | **api_key** — voir plan-non-oauth         |
+| Lens       | `lens`      | **siwe** — voir plan-non-oauth            |
+| Farcaster  | `farcaster` | **siwf** — voir plan-non-oauth            |
+| The Graph  | `the-graph` | **public** on-chain — voir plan-non-oauth |
 
 ### Phase 4 — Difficile mais fort (4 plateformes OAuth2)
 
 APIs restrictives ou partenariats necessaires.
 
-| Plateforme | ID | Obstacle |
-|---|---|---|
-| Behance | `behance` | API deprecated, peut retourner a la connexion Adobe |
-| 500px | `500px` | API payante pour acces complet |
-| LeetCode | `leetcode` | GraphQL non-officiel stable |
-| Bandcamp | `bandcamp` | Pas d'OAuth officiel — voir plan-non-oauth |
+| Plateforme | ID         | Obstacle                                            |
+| ---------- | ---------- | --------------------------------------------------- |
+| Behance    | `behance`  | API deprecated, peut retourner a la connexion Adobe |
+| 500px      | `500px`    | API payante pour acces complet                      |
+| LeetCode   | `leetcode` | GraphQL non-officiel stable                         |
+| Bandcamp   | `bandcamp` | Pas d'OAuth officiel — voir plan-non-oauth          |
 
 ### Phase 5 — Partenariats requis (2 plateformes OAuth2)
 
-| Plateforme | Obstacle |
-|---|---|
-| Blizzard | Partenariat Blizzard + Battle.net OAuth |
+| Plateforme | Obstacle                                           |
+| ---------- | -------------------------------------------------- |
+| Blizzard   | Partenariat Blizzard + Battle.net OAuth            |
 | Riot Games | RSO (Riot Sign-On) — approbation explicite requise |
 
 ### Phase 6 — OAuth2 residuel (65 plateformes)
@@ -124,23 +125,24 @@ Si un jour on les fait, ajouter un flow separe `/oauth1/:platform/authorize` ave
 
 ### Etape 1 — Creer l'app OAuth chez le provider
 
-| Provider | Dashboard | Redirect URI a configurer |
-|---|---|---|
-| Reddit | https://www.reddit.com/prefs/apps | `https://explorer.sofia.intuition.box/auth/callback` + `http://localhost:5173/auth/callback` |
-| Strava | https://www.strava.com/settings/api | idem |
-| Figma | https://www.figma.com/developers/apps | idem |
-| Hugging Face | https://huggingface.co/settings/applications/new | idem |
-| Unsplash | https://unsplash.com/oauth/applications | idem |
-| Vercel | https://vercel.com/account/tokens → OAuth | idem |
-| Product Hunt | https://api.producthunt.com/v2/oauth/applications | idem |
-| ORCID | https://orcid.org/developer-tools | idem |
-| ... | ... | idem |
+| Provider     | Dashboard                                         | Redirect URI a configurer                                                                    |
+| ------------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Reddit       | https://www.reddit.com/prefs/apps                 | `https://explorer.sofia.intuition.box/auth/callback` + `http://localhost:5173/auth/callback` |
+| Strava       | https://www.strava.com/settings/api               | idem                                                                                         |
+| Figma        | https://www.figma.com/developers/apps             | idem                                                                                         |
+| Hugging Face | https://huggingface.co/settings/applications/new  | idem                                                                                         |
+| Unsplash     | https://unsplash.com/oauth/applications           | idem                                                                                         |
+| Vercel       | https://vercel.com/account/tokens → OAuth         | idem                                                                                         |
+| Product Hunt | https://api.producthunt.com/v2/oauth/applications | idem                                                                                         |
+| ORCID        | https://orcid.org/developer-tools                 | idem                                                                                         |
+| ...          | ...                                               | idem                                                                                         |
 
 Noter CLIENT_ID + CLIENT_SECRET (sans les coller dans le chat).
 
 ### Etape 2 — Ajouter env vars Phala
 
 Ajouter dans le dashboard Phala :
+
 ```
 REDDIT_CLIENT_ID=xxx
 REDDIT_CLIENT_SECRET=xxx
@@ -213,15 +215,21 @@ case 'strava':
 Dans `core/sofia-mastra/src/mastra/signals/reddit.ts` :
 
 ```typescript
-export async function fetchRedditSignals(token: string): Promise<Record<string, number>> {
+export async function fetchRedditSignals(
+  token: string,
+): Promise<Record<string, number>> {
   const headers = {
     Authorization: `Bearer ${token}`,
     'User-Agent': 'sofia-reputation/1.0',
   }
 
   const [me, subs] = await Promise.all([
-    fetch('https://oauth.reddit.com/api/v1/me', { headers }).then(r => r.json()),
-    fetch('https://oauth.reddit.com/subreddits/mine/subscriber?limit=100', { headers }).then(r => r.json()),
+    fetch('https://oauth.reddit.com/api/v1/me', { headers }).then((r) =>
+      r.json(),
+    ),
+    fetch('https://oauth.reddit.com/subreddits/mine/subscriber?limit=100', {
+      headers,
+    }).then((r) => r.json()),
   ])
 
   return {
@@ -293,14 +301,14 @@ Apres quelques plateformes, on peut :
 
 ## 6. Planning estime
 
-| Phase | Plateformes | Effort par plateforme | Total |
-|---|---|---|---|
-| 1 (Quick Wins) | 7 | 1-2h chacune | 1-2 jours |
-| 2 (Domaines cles) | 7 | 2-3h (API plus complexes) | 2 jours |
-| 3 (Web3) | 1 OAuth + reste non-OAuth | 1h chacune | 0.5 jour |
-| 4 (Difficile) | 4 | 3-4h | 1-2 jours |
-| 5 (Partenariats) | 2 | Variable (attente externe) | — |
-| 6 (Residuel) | 65 | 1h chacune avec script | 5-7 jours |
+| Phase             | Plateformes               | Effort par plateforme      | Total     |
+| ----------------- | ------------------------- | -------------------------- | --------- |
+| 1 (Quick Wins)    | 7                         | 1-2h chacune               | 1-2 jours |
+| 2 (Domaines cles) | 7                         | 2-3h (API plus complexes)  | 2 jours   |
+| 3 (Web3)          | 1 OAuth + reste non-OAuth | 1h chacune                 | 0.5 jour  |
+| 4 (Difficile)     | 4                         | 3-4h                       | 1-2 jours |
+| 5 (Partenariats)  | 2                         | Variable (attente externe) | —         |
+| 6 (Residuel)      | 65                        | 1h chacune avec script     | 5-7 jours |
 
 **Total MVP etendu (Phases 1-3)** : ~5 jours de travail concentre.
 
@@ -321,13 +329,13 @@ Apres quelques plateformes, on peut :
 
 ## 8. Ce qui bloque certaines plateformes
 
-| Plateforme | Blocker | Workaround |
-|---|---|---|
-| Steam | OpenID 2.0 | Implementer OpenID separement |
-| Mastodon | Instance-specific | Permettre au user de choisir son instance, ou federer via une passerelle |
-| Duolingo | Pas d'OAuth officiel | API non-officielle via `www.duolingo.com/api/1/users/show` avec sessionid |
-| Facebook/Instagram/TikTok | App review Meta | Attendre approbation ou passer via API publique limitee |
-| Blizzard, Riot | Partenariat requis | Skip pour MVP |
+| Plateforme                | Blocker              | Workaround                                                                |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------- |
+| Steam                     | OpenID 2.0           | Implementer OpenID separement                                             |
+| Mastodon                  | Instance-specific    | Permettre au user de choisir son instance, ou federer via une passerelle  |
+| Duolingo                  | Pas d'OAuth officiel | API non-officielle via `www.duolingo.com/api/1/users/show` avec sessionid |
+| Facebook/Instagram/TikTok | App review Meta      | Attendre approbation ou passer via API publique limitee                   |
+| Blizzard, Riot            | Partenariat requis   | Skip pour MVP                                                             |
 
 ---
 

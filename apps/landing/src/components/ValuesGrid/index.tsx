@@ -1,9 +1,9 @@
-import React from 'react';
-import ValueCard from '@site/src/components/ValueCard';
-import { useWalletConnection } from '@site/src/hooks/useWalletConnection';
-import { VALUES_DATA } from '@site/src/lib/config/constants';
-import { formatAddress } from '@site/src/lib/web3/utils';
-import styles from './index.module.css';
+import React from 'react'
+import ValueCard from '@site/src/components/ValueCard'
+import { useWalletConnection } from '@site/src/hooks/useWalletConnection'
+import { VALUES_DATA } from '@site/src/lib/config/constants'
+import { formatAddress } from '@site/src/lib/web3/utils'
+import styles from './index.module.css'
 
 export default function ValuesGrid(): React.ReactElement {
   const {
@@ -14,7 +14,7 @@ export default function ValuesGrid(): React.ReactElement {
     isConnecting,
     error,
     clearError,
-  } = useWalletConnection();
+  } = useWalletConnection()
 
   return (
     <div className={styles.container}>
@@ -83,5 +83,5 @@ export default function ValuesGrid(): React.ReactElement {
         </p>
       </div>
     </div>
-  );
+  )
 }

@@ -32,6 +32,7 @@ Sofia turns your browsing into personal certifications. Thanks to the Intuition 
 By subscribing to Sofia, you activate a UserWallet (ERC-4337) linked to your Metamask wallet.
 
 Your subscription funds are used to automatically cover the operational costs of the service, including:
+
 - On-chain creation and registration of your signals
 - API calls through GaiaNet
 

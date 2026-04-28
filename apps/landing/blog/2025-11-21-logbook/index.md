@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-21-11
 
 title: Logbook 21/11
 
 authors: [Samuel, Maxime]
-
 ---
 
 This week has been focused on measuring and preparing for our Alpha launch.
@@ -31,4 +29,3 @@ This week has been focused on measuring and preparing for our Alpha launch.
 ---
 
 Stay tuned for the Alpha launch in the upcoming weeks!
-

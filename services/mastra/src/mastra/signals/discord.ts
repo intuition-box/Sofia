@@ -1,7 +1,7 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, monthsSince } from './utils'
 
-const BASE = "https://discord.com/api/v10"
+const BASE = 'https://discord.com/api/v10'
 
 const ADMINISTRATOR = 0x8n
 const MANAGE_GUILD = 0x20n
@@ -23,12 +23,18 @@ function snowflakeToDate(id: string): Date | null {
 export const fetchDiscordSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = { Authorization: `Bearer ${token}` }
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const guildsRes = await safeFetch(`${BASE}/users/@me/guilds`, headers)
   const guilds: any[] = await guildsRes.json()
@@ -39,7 +45,11 @@ export const fetchDiscordSignals: SignalFetcher = async (
 
   for (const g of guilds) {
     const perms = (() => {
-      try { return BigInt(g.permissions ?? "0") } catch { return 0n }
+      try {
+        return BigInt(g.permissions ?? '0')
+      } catch {
+        return 0n
+      }
     })()
     if ((perms & ADMINISTRATOR) !== 0n) adminGuilds++
     if ((perms & MOD_MASK) !== 0n) moderatorGuilds++
@@ -55,7 +65,7 @@ export const fetchDiscordSignals: SignalFetcher = async (
       return createdAt ? monthsSince(createdAt.toISOString()) : 0
     },
     0,
-    "discord_account_age"
+    'discord_account_age',
   )
 
   return {

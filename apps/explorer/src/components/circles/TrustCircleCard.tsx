@@ -14,7 +14,10 @@ interface TrustCircleCardProps {
 
 const MAX_AVATARS = 4
 
-export default function TrustCircleCard({ members, loading }: TrustCircleCardProps) {
+export default function TrustCircleCard({
+  members,
+  loading,
+}: TrustCircleCardProps) {
   const navigate = useNavigate()
   const visible = members.slice(0, MAX_AVATARS)
   const extra = Math.max(0, members.length - MAX_AVATARS)
@@ -35,7 +38,9 @@ export default function TrustCircleCard({ members, loading }: TrustCircleCardPro
         <div className="cr-name-wrap">
           <div className="cr-name">Trust Circle</div>
           <div className="cr-sub">
-            {loading ? 'loading…' : `${members.length} member${members.length === 1 ? '' : 's'}`}
+            {loading
+              ? 'loading…'
+              : `${members.length} member${members.length === 1 ? '' : 's'}`}
           </div>
         </div>
         <span className="cr-role cr-role-owner">owner</span>

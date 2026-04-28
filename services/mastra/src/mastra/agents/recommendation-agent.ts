@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
+import { Agent } from '@mastra/core/agent'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
 
 export const recommendationAgent = new Agent({
   name: 'Recommendation Agent',
@@ -39,4 +39,4 @@ CRITICAL: Each request should generate COMPLETELY DIFFERENT recommendations. NEV
 IMPORTANT: Output ONLY the JSON object. No markdown, no explanations, just pure JSON starting with { and ending with }.
 `,
   model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
-});
+})

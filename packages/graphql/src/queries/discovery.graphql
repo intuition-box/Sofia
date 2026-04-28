@@ -11,10 +11,7 @@ query UserIntentionTriples(
   triples(
     where: {
       predicate: { label: { _in: $predicateLabels } }
-      positions: {
-        account_id: { _in: $userAddresses }
-        shares: { _gt: "0" }
-      }
+      positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
     limit: $limit
     offset: $offset
@@ -27,10 +24,9 @@ query UserIntentionTriples(
       term_id
       label
     }
-    positions(where: {
-      account_id: { _in: $userAddresses }
-      shares: { _gt: "0" }
-    }) {
+    positions(
+      where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+    ) {
       account_id
       created_at
       shares
@@ -59,10 +55,7 @@ query AllIntentionTriples(
     object {
       term_id
     }
-    positions(
-      where: { shares: { _gt: "0" } }
-      order_by: { created_at: asc }
-    ) {
+    positions(where: { shares: { _gt: "0" } }, order_by: { created_at: asc }) {
       account_id
       created_at
     }
@@ -102,10 +95,7 @@ query TriplePositionsByObjects(
 }
 
 # Get certification triples for a page (by hostname)
-query CertificationTriples(
-  $predicateIds: [String!]!
-  $hostnameLike: String!
-) {
+query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
@@ -135,10 +125,7 @@ query CertificationTriples(
 }
 
 # Get intention stats for a page
-query IntentionStats(
-  $predicateIds: [String!]!
-  $hostnameLike: String!
-) {
+query IntentionStats($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
@@ -172,10 +159,7 @@ query GetUserIntentionPositions(
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
-      positions: {
-        account_id: { _in: $userAddresses }
-        shares: { _gt: "0" }
-      }
+      positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
     limit: 1000
   ) {
@@ -193,10 +177,9 @@ query GetUserIntentionPositions(
         }
       }
     }
-    positions(where: {
-      account_id: { _in: $userAddresses }
-      shares: { _gt: "0" }
-    }) {
+    positions(
+      where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+    ) {
       account_id
       shares
       created_at
@@ -213,10 +196,7 @@ query GetUserIntentionPositions(
 
 # Unified certification data for a page (replaces CertificationTriples + IntentionStats + TrustDistrustByPage)
 # Used by: usePageBlockchainData — fetches ALL certification types for a hostname in one shot
-query PageCertificationData(
-  $predicateIds: [String!]!
-  $hostnameLike: String!
-) {
+query PageCertificationData($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
@@ -266,10 +246,7 @@ query UserAllCertifications(
         { predicate_id: { _in: $predicateIds } }
         { predicate: { label: { _in: $predicateLabels } } }
       ]
-      positions: {
-        account_id: { _in: $userAddresses }
-        shares: { _gt: "0" }
-      }
+      positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
     limit: $limit
     offset: $offset
@@ -290,10 +267,9 @@ query UserAllCertifications(
         }
       }
     }
-    positions(where: {
-      account_id: { _in: $userAddresses }
-      shares: { _gt: "0" }
-    }) {
+    positions(
+      where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+    ) {
       account_id
       shares
       created_at

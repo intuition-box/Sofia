@@ -7,7 +7,6 @@
   max-width: 1500px;
   margin: 0 auto;
   padding: 2rem 1rem;
-
 }
 
 /* Bento Grid Items - Asymmetric Layout */
@@ -15,7 +14,9 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);

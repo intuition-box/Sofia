@@ -1,6 +1,7 @@
 # Sofia — Taxonomy v2
 
 > **Changelog vs v1**
+>
 > - Performing Arts : 5 → 11 catégories
 > - Nature & Environment : 5 → 10 catégories
 > - Personal Development : 5 → 10 catégories
@@ -21,22 +22,22 @@
 
 ## TOPICS (14)
 
-| Topic | Description |
-|---|---|
-| Tech & Dev | Software engineering, web & mobile development, AI/ML, DevOps, cybersecurity, and open-source. |
-| Design & Visual Arts | UI/UX design, illustration, motion design, 3D modeling, photography, and graphic design. |
-| Music & Audio | Music production, DJing, instruments, vocals, sound design, and music culture. |
-| Gaming | Competitive gaming, RPGs, strategy, esports, indie games, MMOs, and retro gaming. |
-| Web3 & Crypto | DeFi, NFTs, trading, DAOs, smart contracts, Layer 2s, and decentralized protocols. |
-| Science & Knowledge | Mathematics, physics, biology, psychology, history, philosophy, and linguistics. |
-| Sport & Health | Team sports, fitness, running, combat sports, extreme sports, and wellness. |
-| Video & Cinema | Filmmaking, cinephilia, streaming, YouTube content creation, and animation. |
-| Entrepreneurship & Business | Startups, freelancing, e-commerce, marketing, investing, and personal branding. |
-| Performing Arts | Theater, dance, circus, comedy, street art, and live performance. |
-| Nature & Environment | Ecology, outdoor adventure, astronomy, gardening, and wildlife observation. |
-| Food, Fashion & Lifestyle | Gastronomy, beverages, streetwear, collectibles, DIY, and interior design. |
-| Literature & Writing | Fiction, non-fiction, creative writing, journalism, blogging, and literary criticism. |
-| Personal Development | Mindfulness, coaching, relationships, personal finance, and neurodiversity. |
+| Topic                       | Description                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| Tech & Dev                  | Software engineering, web & mobile development, AI/ML, DevOps, cybersecurity, and open-source. |
+| Design & Visual Arts        | UI/UX design, illustration, motion design, 3D modeling, photography, and graphic design.       |
+| Music & Audio               | Music production, DJing, instruments, vocals, sound design, and music culture.                 |
+| Gaming                      | Competitive gaming, RPGs, strategy, esports, indie games, MMOs, and retro gaming.              |
+| Web3 & Crypto               | DeFi, NFTs, trading, DAOs, smart contracts, Layer 2s, and decentralized protocols.             |
+| Science & Knowledge         | Mathematics, physics, biology, psychology, history, philosophy, and linguistics.               |
+| Sport & Health              | Team sports, fitness, running, combat sports, extreme sports, and wellness.                    |
+| Video & Cinema              | Filmmaking, cinephilia, streaming, YouTube content creation, and animation.                    |
+| Entrepreneurship & Business | Startups, freelancing, e-commerce, marketing, investing, and personal branding.                |
+| Performing Arts             | Theater, dance, circus, comedy, street art, and live performance.                              |
+| Nature & Environment        | Ecology, outdoor adventure, astronomy, gardening, and wildlife observation.                    |
+| Food, Fashion & Lifestyle   | Gastronomy, beverages, streetwear, collectibles, DIY, and interior design.                     |
+| Literature & Writing        | Fiction, non-fiction, creative writing, journalism, blogging, and literary criticism.          |
+| Personal Development        | Mindfulness, coaching, relationships, personal finance, and neurodiversity.                    |
 
 ---
 
@@ -585,36 +586,36 @@ Habit formation, behavior design, atomic habits, willpower, and lifestyle optimi
 
 > Inchangé vs v1 — seule correction : URL AllTrails (bug fix).
 
-*(Liste complète des 137 plateformes identique à v1, avec correction :)*
+_(Liste complète des 137 plateformes identique à v1, avec correction :)_
 
-**AllTrails** — `https://alltrails.com` *(était incorrectement `https://openstreetmap.org`)*
+**AllTrails** — `https://alltrails.com` _(était incorrectement `https://openstreetmap.org`)_
 
 ---
 
 ## SUMMARY
 
-| | v1 | v2 |
-|---|---|---|
-| Topics | 14 | 14 |
-| Categories | 104 | **151** |
-| Platforms | 137 | 137 |
-| **Total** | **255** | **302** |
+|            | v1      | v2      |
+| ---------- | ------- | ------- |
+| Topics     | 14      | 14      |
+| Categories | 104     | **151** |
+| Platforms  | 137     | 137     |
+| **Total**  | **255** | **302** |
 
 **Nouvelles catégories par topic :**
 
-| Topic | Avant | Après | Ajouts |
-|---|---|---|---|
-| Tech & Dev | 8 | 13 | +5 |
-| Design & Visual Arts | 7 | 11 | +4 |
-| Music & Audio | 8 | 12 | +4 |
-| Gaming | 8 | 11 | +3 |
-| Web3 & Crypto | 18 | 18 | — |
-| Science & Knowledge | 7 | 11 | +4 |
-| Sport & Health | 7 | 11 | +4 |
-| Video & Cinema | 6 | 10 | +4 |
-| Entrepreneurship & Business | 7 | 11 | +4 |
-| Performing Arts | 5 | 11 | +6 |
-| Nature & Environment | 5 | 10 | +5 |
-| Food, Fashion & Lifestyle | 6 | 11 | +5 |
-| Literature & Writing | 6 | 10 | +4 |
-| Personal Development | 5 | 10 | +5 |
+| Topic                       | Avant | Après | Ajouts |
+| --------------------------- | ----- | ----- | ------ |
+| Tech & Dev                  | 8     | 13    | +5     |
+| Design & Visual Arts        | 7     | 11    | +4     |
+| Music & Audio               | 8     | 12    | +4     |
+| Gaming                      | 8     | 11    | +3     |
+| Web3 & Crypto               | 18    | 18    | —      |
+| Science & Knowledge         | 7     | 11    | +4     |
+| Sport & Health              | 7     | 11    | +4     |
+| Video & Cinema              | 6     | 10    | +4     |
+| Entrepreneurship & Business | 7     | 11    | +4     |
+| Performing Arts             | 5     | 11    | +6     |
+| Nature & Environment        | 5     | 10    | +5     |
+| Food, Fashion & Lifestyle   | 6     | 11    | +5     |
+| Literature & Writing        | 6     | 10    | +4     |
+| Personal Development        | 5     | 10    | +5     |

@@ -63,7 +63,11 @@ export function NavItem(props: NavItemProps) {
     void _as
     if (locked) {
       return (
-        <span className={cls} aria-disabled="true" aria-label={`${label} (locked)`}>
+        <span
+          className={cls}
+          aria-disabled="true"
+          aria-label={`${label} (locked)`}
+        >
           {children}
         </span>
       )

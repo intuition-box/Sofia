@@ -1,31 +1,31 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { GoArrowUpRight } from 'react-icons/go';
-import './CardNav.css';
+import React, { useLayoutEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { GoArrowUpRight } from 'react-icons/go'
+import './CardNav.css'
 
 type CardNavLink = {
-  label: string;
-  href: string;
-  ariaLabel: string;
-};
+  label: string
+  href: string
+  ariaLabel: string
+}
 
 export type CardNavItem = {
-  label: string;
-  bgColor: string;
-  textColor: string;
-  links: CardNavLink[];
-};
+  label: string
+  bgColor: string
+  textColor: string
+  links: CardNavLink[]
+}
 
 export interface CardNavProps {
-  logo: string;
-  logoAlt?: string;
-  items: CardNavItem[];
-  className?: string;
-  ease?: string;
-  baseColor?: string;
-  menuColor?: string;
-  buttonBgColor?: string;
-  buttonTextColor?: string;
+  logo: string
+  logoAlt?: string
+  items: CardNavItem[]
+  className?: string
+  ease?: string
+  baseColor?: string
+  menuColor?: string
+  buttonBgColor?: string
+  buttonTextColor?: string
 }
 
 const CardNav: React.FC<CardNavProps> = ({
@@ -37,127 +37,135 @@ const CardNav: React.FC<CardNavProps> = ({
   baseColor = '#fff',
   menuColor,
   buttonBgColor,
-  buttonTextColor
+  buttonTextColor,
 }) => {
-  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const navRef = useRef<HTMLDivElement | null>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
-  const tlRef = useRef<gsap.core.Timeline | null>(null);
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const navRef = useRef<HTMLDivElement | null>(null)
+  const cardsRef = useRef<HTMLDivElement[]>([])
+  const tlRef = useRef<gsap.core.Timeline | null>(null)
 
   const calculateHeight = () => {
-    const navEl = navRef.current;
-    if (!navEl) return 260;
+    const navEl = navRef.current
+    if (!navEl) return 260
 
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
     if (isMobile) {
-      const contentEl = navEl.querySelector('.card-nav-content') as HTMLElement;
+      const contentEl = navEl.querySelector('.card-nav-content') as HTMLElement
       if (contentEl) {
-        const wasVisible = contentEl.style.visibility;
-        const wasPointerEvents = contentEl.style.pointerEvents;
-        const wasPosition = contentEl.style.position;
-        const wasHeight = contentEl.style.height;
+        const wasVisible = contentEl.style.visibility
+        const wasPointerEvents = contentEl.style.pointerEvents
+        const wasPosition = contentEl.style.position
+        const wasHeight = contentEl.style.height
 
-        contentEl.style.visibility = 'visible';
-        contentEl.style.pointerEvents = 'auto';
-        contentEl.style.position = 'static';
-        contentEl.style.height = 'auto';
+        contentEl.style.visibility = 'visible'
+        contentEl.style.pointerEvents = 'auto'
+        contentEl.style.position = 'static'
+        contentEl.style.height = 'auto'
 
-        contentEl.offsetHeight;
+        contentEl.offsetHeight
 
-        const topBar = 60;
-        const padding = 16;
-        const contentHeight = contentEl.scrollHeight;
+        const topBar = 60
+        const padding = 16
+        const contentHeight = contentEl.scrollHeight
 
-        contentEl.style.visibility = wasVisible;
-        contentEl.style.pointerEvents = wasPointerEvents;
-        contentEl.style.position = wasPosition;
-        contentEl.style.height = wasHeight;
+        contentEl.style.visibility = wasVisible
+        contentEl.style.pointerEvents = wasPointerEvents
+        contentEl.style.position = wasPosition
+        contentEl.style.height = wasHeight
 
-        return topBar + contentHeight + padding;
+        return topBar + contentHeight + padding
       }
     }
-    return 260;
-  };
+    return 260
+  }
 
   const createTimeline = () => {
-    const navEl = navRef.current;
-    if (!navEl) return null;
+    const navEl = navRef.current
+    if (!navEl) return null
 
-    gsap.set(navEl, { height: 60, overflow: 'hidden' });
-    gsap.set(cardsRef.current, { y: 50, opacity: 0 });
+    gsap.set(navEl, { height: 60, overflow: 'hidden' })
+    gsap.set(cardsRef.current, { y: 50, opacity: 0 })
 
-    const tl = gsap.timeline({ paused: true });
+    const tl = gsap.timeline({ paused: true })
 
     tl.to(navEl, {
       height: calculateHeight,
       duration: 0.4,
-      ease
-    });
+      ease,
+    })
 
-    tl.to(cardsRef.current, { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 }, '-=0.1');
+    tl.to(
+      cardsRef.current,
+      { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 },
+      '-=0.1',
+    )
 
-    return tl;
-  };
+    return tl
+  }
 
   useLayoutEffect(() => {
-    const tl = createTimeline();
-    tlRef.current = tl;
+    const tl = createTimeline()
+    tlRef.current = tl
 
     return () => {
-      tl?.kill();
-      tlRef.current = null;
-    };
-  }, [ease, items]);
+      tl?.kill()
+      tlRef.current = null
+    }
+  }, [ease, items])
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      if (!tlRef.current) return;
+      if (!tlRef.current) return
 
       if (isExpanded) {
-        const newHeight = calculateHeight();
-        gsap.set(navRef.current, { height: newHeight });
+        const newHeight = calculateHeight()
+        gsap.set(navRef.current, { height: newHeight })
 
-        tlRef.current.kill();
-        const newTl = createTimeline();
+        tlRef.current.kill()
+        const newTl = createTimeline()
         if (newTl) {
-          newTl.progress(1);
-          tlRef.current = newTl;
+          newTl.progress(1)
+          tlRef.current = newTl
         }
       } else {
-        tlRef.current.kill();
-        const newTl = createTimeline();
+        tlRef.current.kill()
+        const newTl = createTimeline()
         if (newTl) {
-          tlRef.current = newTl;
+          tlRef.current = newTl
         }
       }
-    };
+    }
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isExpanded]);
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isExpanded])
 
   const toggleMenu = () => {
-    const tl = tlRef.current;
-    if (!tl) return;
+    const tl = tlRef.current
+    if (!tl) return
     if (!isExpanded) {
-      setIsHamburgerOpen(true);
-      setIsExpanded(true);
-      tl.play(0);
+      setIsHamburgerOpen(true)
+      setIsExpanded(true)
+      tl.play(0)
     } else {
-      setIsHamburgerOpen(false);
-      tl.eventCallback('onReverseComplete', () => setIsExpanded(false));
-      tl.reverse();
+      setIsHamburgerOpen(false)
+      tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
+      tl.reverse()
     }
-  };
+  }
 
   const setCardRef = (i: number) => (el: HTMLDivElement | null) => {
-    if (el) cardsRef.current[i] = el;
-  };
+    if (el) cardsRef.current[i] = el
+  }
 
   return (
     <div className={`card-nav-container ${className}`}>
-      <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={{ backgroundColor: '#1a1a1a00' }}>
+      <nav
+        ref={navRef}
+        className={`card-nav ${isExpanded ? 'open' : ''}`}
+        style={{ backgroundColor: '#1a1a1a00' }}
+      >
         <div className="card-nav-top">
           <div
             className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}
@@ -187,8 +195,16 @@ const CardNav: React.FC<CardNavProps> = ({
               <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
                 {item.links?.map((lnk, i) => (
-                  <a key={`${lnk.label}-${i}`} className="nav-card-link" href={lnk.href} aria-label={lnk.ariaLabel}>
-                    <GoArrowUpRight className="nav-card-link-icon" aria-hidden="true" />
+                  <a
+                    key={`${lnk.label}-${i}`}
+                    className="nav-card-link"
+                    href={lnk.href}
+                    aria-label={lnk.ariaLabel}
+                  >
+                    <GoArrowUpRight
+                      className="nav-card-link-icon"
+                      aria-hidden="true"
+                    />
                     {lnk.label}
                   </a>
                 ))}
@@ -198,7 +214,7 @@ const CardNav: React.FC<CardNavProps> = ({
         </div>
       </nav>
     </div>
-  );
-};
+  )
+}
 
-export default CardNav;
+export default CardNav

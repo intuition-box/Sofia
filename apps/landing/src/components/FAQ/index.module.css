@@ -88,7 +88,9 @@
 .faqAnswer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    padding 0.3s ease;
 }
 
 .faqAnswer.open {
@@ -105,7 +107,7 @@
 
 .faqAnswer p .valuesLink,
 .faqAnswer .valuesLink {
-  color: #FFD700 !important;
+  color: #ffd700 !important;
   font-weight: 700;
   text-decoration: none;
   transition: all 0.3s ease;
@@ -113,7 +115,7 @@
 
 .faqAnswer p .valuesLink:hover,
 .faqAnswer .valuesLink:hover {
-  color: #FFA500 !important;
+  color: #ffa500 !important;
   text-decoration: underline;
 }
 
