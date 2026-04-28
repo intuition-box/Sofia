@@ -10,7 +10,10 @@ interface TopicSelectionState {
   selectedCategories: string[]
 }
 
-const DEFAULT_STATE: TopicSelectionState = { selectedTopics: [], selectedCategories: [] }
+const DEFAULT_STATE: TopicSelectionState = {
+  selectedTopics: [],
+  selectedCategories: [],
+}
 
 function getSnapshot(): TopicSelectionState {
   try {
@@ -62,8 +65,12 @@ export function mergeRemoteSelection(remote: {
   categories: string[]
 }) {
   const current = getSnapshot()
-  const mergedTopics = Array.from(new Set([...current.selectedTopics, ...remote.topics]))
-  const mergedCategories = Array.from(new Set([...current.selectedCategories, ...remote.categories]))
+  const mergedTopics = Array.from(
+    new Set([...current.selectedTopics, ...remote.topics]),
+  )
+  const mergedCategories = Array.from(
+    new Set([...current.selectedCategories, ...remote.categories]),
+  )
 
   const changed =
     mergedTopics.length !== current.selectedTopics.length ||

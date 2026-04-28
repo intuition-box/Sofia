@@ -7,7 +7,7 @@
  */
 
 .fc-verb-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: #02000e;
@@ -23,11 +23,27 @@
 }
 
 /* Canonical intent classes (mirror INTENTION_CONFIG). */
-.fc-verb-tag.trusted     { background: var(--trusted); }
-.fc-verb-tag.distrusted  { background: var(--distrusted); }
-.fc-verb-tag.work        { background: var(--work); }
-.fc-verb-tag.learning    { background: var(--learning); }
-.fc-verb-tag.fun         { background: var(--fun); }
-.fc-verb-tag.inspiration { background: var(--inspiration); }
-.fc-verb-tag.buying      { background: var(--buying); }
-.fc-verb-tag.music       { background: var(--music); }
+.fc-verb-tag.trusted {
+  background: var(--trusted);
+}
+.fc-verb-tag.distrusted {
+  background: var(--distrusted);
+}
+.fc-verb-tag.work {
+  background: var(--work);
+}
+.fc-verb-tag.learning {
+  background: var(--learning);
+}
+.fc-verb-tag.fun {
+  background: var(--fun);
+}
+.fc-verb-tag.inspiration {
+  background: var(--inspiration);
+}
+.fc-verb-tag.buying {
+  background: var(--buying);
+}
+.fc-verb-tag.music {
+  background: var(--music);
+}

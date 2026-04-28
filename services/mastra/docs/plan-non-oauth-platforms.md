@@ -28,18 +28,19 @@ Parmi les 24 plateformes `public`, il y a **deux sous-familles** qui necessitent
 
 Le user a deja un wallet connecte. Ces plateformes lisent des donnees blockchain — on n'a besoin de RIEN du user (ni username, ni bio challenge).
 
-| Plateforme | ID | Source on-chain |
-|---|---|---|
-| ENS | `ens` | Mainnet Ethereum — lookup `resolver.name(addr)` |
-| Lido | `lido` | Mainnet — wstETH/stETH balance |
-| Aave | `aave` | Multi-chain — Aave subgraph |
-| Uniswap | `uniswap` | The Graph subgraphs |
-| Snapshot | `snapshot` | Snapshot Hub GraphQL `/graphql` |
-| The Graph | `the-graph` | Custom subgraphs |
+| Plateforme | ID          | Source on-chain                                 |
+| ---------- | ----------- | ----------------------------------------------- |
+| ENS        | `ens`       | Mainnet Ethereum — lookup `resolver.name(addr)` |
+| Lido       | `lido`      | Mainnet — wstETH/stETH balance                  |
+| Aave       | `aave`      | Multi-chain — Aave subgraph                     |
+| Uniswap    | `uniswap`   | The Graph subgraphs                             |
+| Snapshot   | `snapshot`  | Snapshot Hub GraphQL `/graphql`                 |
+| The Graph  | `the-graph` | Custom subgraphs                                |
 
 **Stratégie** : Connexion = auto-connect (comme `authType: none`), backend va direct chercher les donnees avec `walletAddress`.
 
 **Implementation** :
+
 - Ajouter un fetcher par plateforme qui prend juste `walletAddress` au lieu d'un token
 - Ajouter ces plateformes dans `SIGNAL_FETCHERS` registry avec une signature differente : `(walletAddress: string) => Promise<Metrics>`
 - Cote Explorer : bouton "Connect" fait juste un `updateConnection(platformId, { status: 'connected' })` sans popup
@@ -51,9 +52,11 @@ Le user doit prouver qu'il est bien proprietaire du compte. Deux patterns :
 #### Pattern A — Challenge code dans la bio
 
 Pour les plateformes ou le user peut editer sa bio/profil :
+
 - chess.com, leetcode, letterboxd, duolingo, openstreetmap, etc.
 
 **Flow existant (deja dans `oauthService.ts`)** :
+
 1. User clique "Connect" + entre son username
 2. `requestChallenge(platformId, username)` → backend genere un code unique
 3. User colle le code dans sa bio sur la plateforme
@@ -64,6 +67,7 @@ Pour les plateformes ou le user peut editer sa bio/profil :
 #### Pattern B — Pas de challenge (username suffit)
 
 Pour les plateformes ou le username expose deja des donnees publiques utiles sans risque d'usurpation :
+
 - Wikipedia (`user contributions` visible publiquement)
 - HackerNews (pas d'impact si on "vole" un username — les donnees sont agregees)
 - arxiv, pubmed, google-scholar (publications liees au nom)
@@ -99,7 +103,14 @@ Le `signalFetcherWorkflow` actuel cherche un token via `getToken(wallet, platfor
 
 ```typescript
 // Dans signal-fetcher-workflow.ts
-const ONCHAIN_PLATFORMS = new Set(['ens', 'lido', 'aave', 'uniswap', 'snapshot', 'the-graph'])
+const ONCHAIN_PLATFORMS = new Set([
+  'ens',
+  'lido',
+  'aave',
+  'uniswap',
+  'snapshot',
+  'the-graph',
+])
 
 if (ONCHAIN_PLATFORMS.has(platform)) {
   // Pas de token necessaire
@@ -200,11 +211,16 @@ POST /platforms/:platform/verify
 **Exemple verify.ts pour chess.com** :
 
 ```typescript
-export async function verifyChessChallenge(username: string, code: string): Promise<boolean> {
+export async function verifyChessChallenge(
+  username: string,
+  code: string,
+): Promise<boolean> {
   const res = await fetch(`https://api.chess.com/pub/player/${username}`)
   if (!res.ok) return false
   const data = await res.json()
-  return (data.location || '').includes(code) || (data.name || '').includes(code)
+  return (
+    (data.location || '').includes(code) || (data.name || '').includes(code)
+  )
 }
 ```
 
@@ -229,8 +245,8 @@ Le code existe deja (`requestChallenge`, `verifyChallengeCode` dans `oauthServic
 
 ```typescript
 // Dans oauthService.ts
-`${MASTRA_URL}/api/platforms/${platformId}/challenge`   // ← garder /api ? non
-`${MASTRA_URL}/platforms/${platformId}/challenge`       // ← prefixe custom (comme /oauth/*)
+;`${MASTRA_URL}/api/platforms/${platformId}/challenge` // ← garder /api ? non
+`${MASTRA_URL}/platforms/${platformId}/challenge` // ← prefixe custom (comme /oauth/*)
 ```
 
 Le prefixe `/platforms/*` est dispo (pas reserve par Mastra comme `/api/*`).
@@ -242,6 +258,7 @@ Le prefixe `/platforms/*` est dispo (pas reserve par Mastra comme `/api/*`).
 **Strategie** : demander juste le username, pas de verification.
 
 **Flow** :
+
 1. User entre son username dans l'input
 2. Frontend POST vers `/platforms/:id/link-username` avec `{ walletAddress, username }`
 3. Backend stocke directement dans `platform_usernames`
@@ -264,7 +281,8 @@ Le prefixe `/platforms/*` est dispo (pas reserve par Mastra comme `/api/*`).
 export const API_KEY_PROVIDERS = {
   opensea: {
     apiKey: process.env.OPENSEA_API_KEY!,
-    profileUrl: (addr: string) => `https://api.opensea.io/api/v2/accounts/${addr}`,
+    profileUrl: (addr: string) =>
+      `https://api.opensea.io/api/v2/accounts/${addr}`,
     headers: (key: string) => ({ 'X-API-KEY': key }),
   },
   // ...
@@ -274,9 +292,13 @@ export const API_KEY_PROVIDERS = {
 **Fetcher** :
 
 ```typescript
-export async function fetchOpenSeaSignals(walletAddress: string): Promise<Metrics> {
+export async function fetchOpenSeaSignals(
+  walletAddress: string,
+): Promise<Metrics> {
   const config = API_KEY_PROVIDERS.opensea
-  const res = await fetch(config.profileUrl(walletAddress), { headers: config.headers(config.apiKey) })
+  const res = await fetch(config.profileUrl(walletAddress), {
+    headers: config.headers(config.apiKey),
+  })
   const data = await res.json()
   return {
     nfts_owned: data.owned_count || 0,
@@ -339,15 +361,15 @@ Netflix, Disney+, Crunchyroll, Amazon, Coursera, ResearchGate, PlayStation, Xbox
 
 ## 4. Resume des efforts
 
-| Categorie | Plateformes | Priorite | Effort |
-|---|---|---|---|
-| Public on-chain | 6 | **Haute** (impact web3) | 3-4 jours |
-| Public avec challenge | 12 | **Haute** (chess.com, leetcode) | 2 jours infra + 0.5j/plateforme |
-| Public sans challenge | 6 | Moyenne (edu/wiki) | 1 jour (reutilise infra challenge) |
-| API key | 5 | Moyenne (opensea = web3 crucial) | 0.5 jour/plateforme |
-| SIWE/SIWF | 3 | **Haute** (lens, farcaster = web3 social) | 2 jours infra |
-| None A (API dispo) | 5 | Basse | skip ou MVP simple |
-| None B (pas d'API) | 13 | **Retirer du catalogue** ou via extension | 0 jour (cleanup) |
+| Categorie             | Plateformes | Priorite                                  | Effort                             |
+| --------------------- | ----------- | ----------------------------------------- | ---------------------------------- |
+| Public on-chain       | 6           | **Haute** (impact web3)                   | 3-4 jours                          |
+| Public avec challenge | 12          | **Haute** (chess.com, leetcode)           | 2 jours infra + 0.5j/plateforme    |
+| Public sans challenge | 6           | Moyenne (edu/wiki)                        | 1 jour (reutilise infra challenge) |
+| API key               | 5           | Moyenne (opensea = web3 crucial)          | 0.5 jour/plateforme                |
+| SIWE/SIWF             | 3           | **Haute** (lens, farcaster = web3 social) | 2 jours infra                      |
+| None A (API dispo)    | 5           | Basse                                     | skip ou MVP simple                 |
+| None B (pas d'API)    | 13          | **Retirer du catalogue** ou via extension | 0 jour (cleanup)                   |
 
 **Total MVP non-OAuth** : ~10 jours pour couvrir 32 plateformes (on-chain + challenge + SIWE + API key).
 
@@ -392,11 +414,13 @@ src/mastra/
 ## 7. Fichiers a modifier
 
 **Mastra** :
+
 - `src/mastra/index.ts` — ajouter les nouvelles routes dans `server.apiRoutes`
 - `src/mastra/workflows/signal-fetcher-workflow.ts` — brancher les differents patterns (token vs username vs walletAddress)
 - `src/mastra/signals/registry.ts` — 3 types de fetchers : tokenBased, usernameBased, walletBased
 
 **Explorer** :
+
 - `src/services/oauthService.ts` — corriger les URLs `/api/platforms/*` → `/platforms/*` (comme on a fait pour OAuth)
 - `src/hooks/usePlatformConnections.ts` — brancher SIWE, auto-connect pour on-chain, integrer le challenge flow complet
 - `src/components/profile/PlatformGrid.tsx` — deja UI prete, juste connecter le bon `onConnect` par authType

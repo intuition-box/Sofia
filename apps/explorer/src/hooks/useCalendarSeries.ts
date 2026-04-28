@@ -4,7 +4,10 @@
  * source is wired.
  */
 import { useMemo } from 'react'
-import { buildSyntheticCalendarSeries, type CalendarTopicSeries } from '@/lib/activityCalendar'
+import {
+  buildSyntheticCalendarSeries,
+  type CalendarTopicSeries,
+} from '@/lib/activityCalendar'
 import { getIntentionColor } from '@/config/intentions'
 import type { OnChainTopic } from '@/services/taxonomyService'
 

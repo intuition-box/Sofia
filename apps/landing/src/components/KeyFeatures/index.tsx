@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import styles from './index.module.css';
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
+import styles from './index.module.css'
 
 const features = [
   { id: 1, image: '/img/sofiascreen/Workspace-Sofia/slide1.png' },
@@ -9,24 +9,24 @@ const features = [
   { id: 4, image: '/img/sofiascreen/Workspace-Sofia/slide4.png' },
   { id: 5, image: '/img/sofiascreen/Workspace-Sofia/slide5.png' },
   { id: 6, image: '/img/sofiascreen/Workspace-Sofia/slide6.png' },
-];
+]
 
 export default function KeyFeatures(): React.ReactElement {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   // Auto-rotate through images every 3 seconds
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused) return
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % features.length);
-    }, 4000);
+      setCurrentIndex((prev) => (prev + 1) % features.length)
+    }, 4000)
 
-    return () => clearInterval(interval);
-  }, [isPaused]);
+    return () => clearInterval(interval)
+  }, [isPaused])
 
-  const currentFeature = features[currentIndex];
+  const currentFeature = features[currentIndex]
 
   return (
     <section className={styles.featuresSection}>
@@ -73,5 +73,5 @@ export default function KeyFeatures(): React.ReactElement {
         </div>
       </div>
     </section>
-  );
+  )
 }

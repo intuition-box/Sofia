@@ -62,7 +62,7 @@
 }
 
 .pf-interest-header-kicker {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -71,14 +71,16 @@
 }
 
 .pf-interest-header-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 4px 0 6px;
   color: #02000e;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 
 .pf-interest-header-desc {
@@ -99,7 +101,7 @@
 }
 
 .pf-interest-header-stat-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -108,7 +110,7 @@
 }
 
 .pf-interest-header-stat-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;

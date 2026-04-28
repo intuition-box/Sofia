@@ -1,74 +1,84 @@
-import React, { useState } from 'react';
-import { useVoting } from '@site/src/hooks/useVoting';
-import { useVoteStats } from '@site/src/hooks/useVoteStats';
-import { EXPLORER_URLS } from '@site/src/lib/config/chainConfig';
-import styles from './index.module.css';
+import React, { useState } from 'react'
+import { useVoting } from '@site/src/hooks/useVoting'
+import { useVoteStats } from '@site/src/hooks/useVoteStats'
+import { EXPLORER_URLS } from '@site/src/lib/config/chainConfig'
+import styles from './index.module.css'
 
 interface Value {
-  id: number;
-  name: string;
-  description: string;
-  tripleId: `0x${string}`;
+  id: number
+  name: string
+  description: string
+  tripleId: `0x${string}`
 }
 
 interface ValueCardProps {
-  value: Value;
-  isWalletConnected: boolean;
-  onConnectWallet: () => void;
+  value: Value
+  isWalletConnected: boolean
+  onConnectWallet: () => void
 }
 
-type VoteType = 'vote' | 'downvote';
-type TxStatus = 'idle' | 'pending' | 'success' | 'error';
+type VoteType = 'vote' | 'downvote'
+type TxStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export default function ValueCard({
   value,
   isWalletConnected,
   onConnectWallet,
 }: ValueCardProps): React.ReactElement {
-  const { depositFor, depositAgainst } = useVoting();
-  const { forDisplay, againstDisplay, isLoading: statsLoading, refetch } = useVoteStats(value.tripleId);
-  const [txStatus, setTxStatus] = useState<TxStatus>('idle');
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txError, setTxError] = useState<string | null>(null);
-  const [activeVote, setActiveVote] = useState<VoteType | null>(null);
+  const { depositFor, depositAgainst } = useVoting()
+  const {
+    forDisplay,
+    againstDisplay,
+    isLoading: statsLoading,
+    refetch,
+  } = useVoteStats(value.tripleId)
+  const [txStatus, setTxStatus] = useState<TxStatus>('idle')
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const [txError, setTxError] = useState<string | null>(null)
+  const [activeVote, setActiveVote] = useState<VoteType | null>(null)
 
   const handleVote = async (voteType: VoteType) => {
-    console.log('handleVote called:', { voteType, isWalletConnected, tripleId: value.tripleId });
+    console.log('handleVote called:', {
+      voteType,
+      isWalletConnected,
+      tripleId: value.tripleId,
+    })
 
     if (!isWalletConnected) {
-      onConnectWallet();
-      return;
+      onConnectWallet()
+      return
     }
 
-    setActiveVote(voteType);
-    setTxStatus('pending');
-    setTxError(null);
-    setTxHash(null);
+    setActiveVote(voteType)
+    setTxStatus('pending')
+    setTxError(null)
+    setTxHash(null)
 
     try {
-      console.log('Calling deposit function...');
-      const hash = voteType === 'vote'
-        ? await depositFor(value.tripleId)
-        : await depositAgainst(value.tripleId);
+      console.log('Calling deposit function...')
+      const hash =
+        voteType === 'vote'
+          ? await depositFor(value.tripleId)
+          : await depositAgainst(value.tripleId)
 
-      console.log('Transaction hash:', hash);
-      setTxHash(hash);
-      setTxStatus('success');
+      console.log('Transaction hash:', hash)
+      setTxHash(hash)
+      setTxStatus('success')
       // Refresh stats after successful vote
-      refetch();
+      refetch()
     } catch (err) {
-      console.error('Vote error:', err);
-      setTxError(err instanceof Error ? err.message : 'Transaction failed');
-      setTxStatus('error');
+      console.error('Vote error:', err)
+      setTxError(err instanceof Error ? err.message : 'Transaction failed')
+      setTxStatus('error')
     }
-  };
+  }
 
   const resetState = () => {
-    setTxStatus('idle');
-    setTxHash(null);
-    setTxError(null);
-    setActiveVote(null);
-  };
+    setTxStatus('idle')
+    setTxHash(null)
+    setTxError(null)
+    setActiveVote(null)
+  }
 
   return (
     <article className={styles.card}>
@@ -107,7 +117,8 @@ export default function ValueCard({
           <div className={styles.txPending}>
             <div className={styles.spinner} />
             <p className={styles.txText}>
-              {activeVote === 'vote' ? 'Voting for' : 'Downvoting'} {value.name}...
+              {activeVote === 'vote' ? 'Voting for' : 'Downvoting'} {value.name}
+              ...
             </p>
             <p className={styles.txSubtext}>Confirm in MetaMask</p>
           </div>
@@ -142,5 +153,5 @@ export default function ValueCard({
         )}
       </div>
     </article>
-  );
+  )
 }

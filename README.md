@@ -33,15 +33,15 @@ core/
 
 ## Stack per surface
 
-| Surface | Framework | Key libs |
-|---|---|---|
-| `apps/extension` | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind |
-| `apps/explorer` | [Vite](https://vitejs.dev/) + React 18 | Privy, Viem, React Router, Radix UI |
-| `apps/og` | [Next.js](https://nextjs.org/) 14 | `@vercel/og`, `@vercel/kv` |
-| `apps/landing` | [Docusaurus](https://docusaurus.io/) 3 | Privy, Three.js, GSAP |
-| `packages/graphql` | tsup + `graphql-codegen` | `graphql-request`, `graphql-ws`, React Query |
-| `services/mastra` | [Mastra](https://mastra.ai/) | GaiaNet, `@mastra/core`, Viem |
-| `services/mcp-server` | Model Context Protocol SDK | `express`, graphql-codegen |
+| Surface               | Framework                                        | Key libs                                     |
+| --------------------- | ------------------------------------------------ | -------------------------------------------- |
+| `apps/extension`      | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
+| `apps/explorer`       | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI          |
+| `apps/og`             | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
+| `apps/landing`        | [Docusaurus](https://docusaurus.io/) 3           | Privy, Three.js, GSAP                        |
+| `packages/graphql`    | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
+| `services/mastra`     | [Mastra](https://mastra.ai/)                     | GaiaNet, `@mastra/core`, Viem                |
+| `services/mcp-server` | Model Context Protocol SDK                       | `express`, graphql-codegen                   |
 
 ## Requirements
 
@@ -61,12 +61,12 @@ bun install
 
 Copy the per-app `.env` files (they are **gitignored**):
 
-| Target | Variables |
-|---|---|
-| `apps/explorer/.env` | `VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID`, `VITE_OG_BASE_URL`, `VITE_MCP_TRUST_URL` |
-| `apps/extension/.env.development` / `.env.production` | `PLASMO_PUBLIC_*` vars (network, server URL, Privy, etc.) |
-| `apps/og/.env.local` | `@vercel/kv` connection string |
-| `services/mastra/.env` | `GAIANET_*`, `DATABASE_URL`, `MCP_SERVER_URL` |
+| Target                                                | Variables                                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `apps/explorer/.env`                                  | `VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID`, `VITE_OG_BASE_URL`, `VITE_MCP_TRUST_URL` |
+| `apps/extension/.env.development` / `.env.production` | `PLASMO_PUBLIC_*` vars (network, server URL, Privy, etc.)                             |
+| `apps/og/.env.local`                                  | `@vercel/kv` connection string                                                        |
+| `services/mastra/.env`                                | `GAIANET_*`, `DATABASE_URL`, `MCP_SERVER_URL`                                         |
 
 Build the GraphQL package once (codegen regenerates `src/generated/index.ts`):
 
@@ -76,13 +76,13 @@ bun run --filter @0xsofia/graphql codegen
 
 ## Dev commands
 
-| Command | What it runs |
-|---|---|
-| `bun run --filter explorer dev` | Vite on `localhost:5173` |
-| `bun run --filter extension dev` | Plasmo dev, output to `apps/extension/build/chrome-mv3-dev/` |
-| `bun run --filter og dev` | Next.js on `localhost:3000` |
-| `bun run --filter landing start` | Docusaurus on `localhost:3000` |
-| `bun run --filter @0xsofia/graphql codegen` | Regenerate GraphQL types |
+| Command                                     | What it runs                                                 |
+| ------------------------------------------- | ------------------------------------------------------------ |
+| `bun run --filter explorer dev`             | Vite on `localhost:5173`                                     |
+| `bun run --filter extension dev`            | Plasmo dev, output to `apps/extension/build/chrome-mv3-dev/` |
+| `bun run --filter og dev`                   | Next.js on `localhost:3000`                                  |
+| `bun run --filter landing start`            | Docusaurus on `localhost:3000`                               |
+| `bun run --filter @0xsofia/graphql codegen` | Regenerate GraphQL types                                     |
 
 **Loading the extension in Chrome**: after `bun run --filter extension dev`, open `chrome://extensions/` → enable Developer mode → "Load unpacked" → pick `apps/extension/build/chrome-mv3-dev/`.
 
@@ -95,18 +95,19 @@ The explorer consumes the same GraphQL indexer to surface a user's reputation, s
 Mastra runs AI workflows (theme extraction, recommendations, predicate classification, social verification, skills analysis) via GaiaNet LLM. The MCP server exposes the Intuition graph as tools LLMs can call.
 
 Detailed docs per surface:
+
 - [Extension architecture](apps/extension/ARCHITECTURE.md)
 - [Explorer realtime](apps/explorer/docs/plan-realtime-architecture.md)
 
 ## Intuition protocol — key concepts
 
-| Concept | Description |
-|---|---|
-| **Atom** | Basic on-chain entity (URL, account, concept). Created via IPFS pin + MultiVault. |
-| **Triple** | `Subject / Predicate / Object` relationship between atoms. |
-| **Vault** | Staking vault on each atom/triple, TRUST token bonding curve. |
-| **term_id** | Unique atom identifier (bytes32 hash). |
-| **Sofia Fee Proxy** | Smart contract wrapping MultiVault with fixed + 5% fees. |
+| Concept             | Description                                                                       |
+| ------------------- | --------------------------------------------------------------------------------- |
+| **Atom**            | Basic on-chain entity (URL, account, concept). Created via IPFS pin + MultiVault. |
+| **Triple**          | `Subject / Predicate / Object` relationship between atoms.                        |
+| **Vault**           | Staking vault on each atom/triple, TRUST token bonding curve.                     |
+| **term_id**         | Unique atom identifier (bytes32 hash).                                            |
+| **Sofia Fee Proxy** | Smart contract wrapping MultiVault with fixed + 5% fees.                          |
 
 ## Contributing
 

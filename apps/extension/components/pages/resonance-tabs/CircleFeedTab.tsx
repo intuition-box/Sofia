@@ -99,7 +99,7 @@ const CircleFeedTab = () => {
     {
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
-      address: checksumAddress,
+      addresses: checksumAddress,
       offset: 0,
       positionsOrderBy: [{ shares: 'desc' }]
     },
@@ -297,7 +297,7 @@ const CircleFeedTab = () => {
   const { data: userPositionsData } = useFindUserPositionsOnTriplesQuery(
     {
       termIds: allTripleIds,
-      address: checksumAddress,
+      addresses: checksumAddress,
       limit: 500
     },
     {
@@ -363,11 +363,17 @@ const CircleFeedTab = () => {
     const vaultId = action === 'Support' ? item.tripleTermId : item.counterTermId
     if (!vaultId) return
 
+    // addVoteToCart expects an IntentionPurpose (for_work, for_learning, …),
+    // not an IntentionType (which also covers trusted/distrusted votes that
+    // have no purpose). Map via INTENTION_CONFIG so trusted/distrusted resolve
+    // to null instead of failing the cart contract.
+    const intentionType = predicateLabelToIntentionType(item.triplePredicate)
+    const purpose = intentionType ? INTENTION_CONFIG[intentionType].intentionPurpose : null
     addVoteToCart(
       item.pageUrl,
       item.pageLabel,
       item.triplePredicate,
-      predicateLabelToIntentionType(item.triplePredicate) || null,
+      purpose,
       getFaviconUrl(item.domain, 64),
       voteAction,
       vaultId

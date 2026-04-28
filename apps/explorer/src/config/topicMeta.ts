@@ -6,7 +6,7 @@
  * moves into `@0xsofia/design-system` (see INTEGRATION.md §5) this module
  * will re-export from the package instead.
  */
-import { SOFIA_TOPICS } from "./taxonomy"
+import { SOFIA_TOPICS } from './taxonomy'
 
 export interface TopicMeta {
   icon: string

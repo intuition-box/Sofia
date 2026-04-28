@@ -1,22 +1,28 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, monthsSince, safeNumber } from './utils'
 
-const BASE = "https://api.coinbase.com/v2"
+const BASE = 'https://api.coinbase.com/v2'
 
 export const fetchCoinbaseSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = {
     Authorization: `Bearer ${token}`,
-    Accept: "application/json",
-    "CB-VERSION": "2024-01-01",
+    Accept: 'application/json',
+    'CB-VERSION': '2024-01-01',
   }
 
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const userRes = await safeFetch(`${BASE}/user`, headers)
   const userData = await userRes.json()
@@ -28,7 +34,7 @@ export const fetchCoinbaseSignals: SignalFetcher = async (
       return await res.json()
     },
     { data: [] } as any,
-    "coinbase_accounts"
+    'coinbase_accounts',
   )
 
   const accounts: any[] = accountsData.data ?? []
@@ -37,11 +43,11 @@ export const fetchCoinbaseSignals: SignalFetcher = async (
 
   for (const acc of accounts) {
     const currency = acc.balance?.currency ?? acc.currency?.code
-    const amount = safeNumber(parseFloat(acc.balance?.amount ?? "0"))
+    const amount = safeNumber(parseFloat(acc.balance?.amount ?? '0'))
     if (amount > 0 && currency) {
       assetsDistinct.add(currency)
     }
-    totalBalanceUsd += safeNumber(parseFloat(acc.native_balance?.amount ?? "0"))
+    totalBalanceUsd += safeNumber(parseFloat(acc.native_balance?.amount ?? '0'))
   }
 
   return {

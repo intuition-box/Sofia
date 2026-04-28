@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-16-01
 
 title: Logbook 16/01
 
 authors: [Samuel, Maxime]
-
 ---
 
 During this development cycle, we focused on strengthening Sofia's core mechanics and finalizing several key systems. The main effort went into improving discovery logic, intention classification, and social linking, while stabilizing authentication and agent infrastructure.
@@ -16,9 +14,9 @@ This period was less about visible features and more about ensuring reliability,
 
 ## Discovery & Intentions
 
-Discovery has become the central thread of the product. We spent a lot of time refining how visits are interpreted — not just counting them, but understanding intent. Pages can now be visited to *learn*, *work*, *get inspired*, *have fun*, or *buy*, and those nuances begin to shape how value and real use cases emerge over time.
+Discovery has become the central thread of the product. We spent a lot of time refining how visits are interpreted — not just counting them, but understanding intent. Pages can now be visited to _learn_, _work_, _get inspired_, _have fun_, or _buy_, and those nuances begin to shape how value and real use cases emerge over time.
 
-At the same time, the Trust / Distrust buttons remain part of the loop. They let users add a second layer of meaning on top of intentions — not only *why* a page was visited, but whether that intention feels legitimate or valuable. In practice, this creates a simple form of double verification: one signal for *intent*, and another for *trust*.
+At the same time, the Trust / Distrust buttons remain part of the loop. They let users add a second layer of meaning on top of intentions — not only _why_ a page was visited, but whether that intention feels legitimate or valuable. In practice, this creates a simple form of double verification: one signal for _intent_, and another for _trust_.
 
 The idea of being early also started to matter more. Discovering a page first, or being among the first few, now carries weight. This naturally led to the introduction of discovery roles — Pioneer, Explorer, Contributor — which quietly reinforce the idea that timing and curiosity become part of one's on-chain footprint.
 
@@ -30,7 +28,7 @@ We also introduced quests as a way to give this exploration loop a bit more mome
 
 ## Social Identity
 
-This cycle also marked the completion of the social verification layer. Wallets can now be linked to real social presence across **Twitter/X, YouTube, Discord, and Spotify**. The goal here was not to collect personal data, but to let users *prove* parts of their identity when they choose to.
+This cycle also marked the completion of the social verification layer. Wallets can now be linked to real social presence across **Twitter/X, YouTube, Discord, and Spotify**. The goal here was not to collect personal data, but to let users _prove_ parts of their identity when they choose to.
 
 And when users allow it, Sofia can go further by importing useful signals from the linked platforms — for example favorite artists or playlists, Discord channels they own, or roles they hold across servers. The idea is to turn optional social context into structured, user-controlled knowledge that can later power recommendations and on-chain reputation.
 

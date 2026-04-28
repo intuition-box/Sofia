@@ -23,7 +23,7 @@
 
 /* Color-only fallback when no icon is provided. */
 .fc-user-badge.has-dot::before {
-  content: "";
+  content: '';
   display: inline-block;
   width: 10px;
   height: 10px;

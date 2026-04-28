@@ -14,7 +14,11 @@ interface InterestTilesGridProps {
   query?: string
 }
 
-export default function InterestTilesGrid({ items, onPick, query }: InterestTilesGridProps) {
+export default function InterestTilesGrid({
+  items,
+  onPick,
+  query,
+}: InterestTilesGridProps) {
   const tiles = useInterestTiles(items)
   const q = (query ?? '').trim().toLowerCase()
   const visibleTiles = q

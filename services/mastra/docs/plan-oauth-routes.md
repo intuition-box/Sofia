@@ -11,6 +11,7 @@
 
 L'Explorer a des boutons "Connect" pour chaque plateforme (Spotify, YouTube, Discord, etc.).
 Le flow OAuth2 necessite un serveur pour :
+
 1. **Redirect** : construire l'URL OAuth du provider avec le `client_id`
 2. **Exchange** : echanger le `code` d'autorisation contre un `access_token` (necessite `client_secret`)
 3. **Store** : stocker le token chiffre pour les signal fetchers
@@ -51,17 +52,18 @@ routes n'existent pas encore dans mastra.
 
 **`src/config/platformCatalog.ts`** — contient deja les URLs OAuth par plateforme :
 
-| Plateforme | authUrl | tokenUrl | scopes |
-|---|---|---|---|
-| YouTube | `https://accounts.google.com/o/oauth2/v2/auth` | `https://oauth2.googleapis.com/token` | `youtube.readonly` |
-| Spotify | `https://accounts.spotify.com/authorize` | `https://accounts.spotify.com/api/token` | `user-read-private, user-top-read, user-follow-read, playlist-read-private` |
-| Discord | `https://discord.com/api/oauth2/authorize` | `https://discord.com/api/oauth2/token` | `identify, guilds` |
-| Twitch | `https://id.twitch.tv/oauth2/authorize` | `https://id.twitch.tv/oauth2/token` | `user:read:follows` |
-| GitHub | non defini (utilise les defaults GitHub) | non defini | `read:user, repo` |
+| Plateforme | authUrl                                        | tokenUrl                                 | scopes                                                                      |
+| ---------- | ---------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------- |
+| YouTube    | `https://accounts.google.com/o/oauth2/v2/auth` | `https://oauth2.googleapis.com/token`    | `youtube.readonly`                                                          |
+| Spotify    | `https://accounts.spotify.com/authorize`       | `https://accounts.spotify.com/api/token` | `user-read-private, user-top-read, user-follow-read, playlist-read-private` |
+| Discord    | `https://discord.com/api/oauth2/authorize`     | `https://discord.com/api/oauth2/token`   | `identify, guilds`                                                          |
+| Twitch     | `https://id.twitch.tv/oauth2/authorize`        | `https://id.twitch.tv/oauth2/token`      | `user:read:follows`                                                         |
+| GitHub     | non defini (utilise les defaults GitHub)       | non defini                               | `read:user, repo`                                                           |
 
 ### Cote Mastra (backend) — DEJA implemente (verifie par agent)
 
 **Token storage** :
+
 - `db/tokens.ts` : chiffrement AES-256-GCM, table `oauth_tokens`, fonctions
   `storeToken(walletAddress, platform, accessToken, refreshToken?, userId?, username?, expiresAt?)`
   et `getToken(walletAddress, platform)`
@@ -69,6 +71,7 @@ routes n'existent pas encore dans mastra.
 - `initTokenTable()` appele au demarrage dans `index.ts`
 
 **Workflows** :
+
 - `link-social-workflow.ts` : appelle deja `storeToken()` apres verification OAuth.
   Contient `verifyAndGetUserId(platform, token, clientId?)` qui appelle l'API du provider pour
   extraire `{ userId, username }`
@@ -243,6 +246,7 @@ Raison : le code de `linkSocialWorkflow` est deja deploye et teste. Il stocke le
 cree le triple. On ne duplique pas cette logique.
 
 Le flow devient :
+
 ```
 1. startOAuthFlow → GET /oauth/spotify/authorize → redirect
 2. callback → exchangeOAuthCode(POST /oauth/spotify/callback) → { accessToken, userId }
@@ -291,8 +295,8 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     tokenUrl: 'https://oauth2.googleapis.com/token',
     scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
     extraAuthParams: {
-      access_type: 'offline',      // Necessaire pour obtenir un refresh_token
-      prompt: 'consent',            // Force le consentement pour le refresh_token
+      access_type: 'offline', // Necessaire pour obtenir un refresh_token
+      prompt: 'consent', // Force le consentement pour le refresh_token
     },
   },
   spotify: {
@@ -300,8 +304,13 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
     authUrl: 'https://accounts.spotify.com/authorize',
     tokenUrl: 'https://accounts.spotify.com/api/token',
-    scopes: ['user-read-private', 'user-top-read', 'user-follow-read', 'playlist-read-private'],
-    useBasicAuthHeader: true,       // Spotify veut Authorization: Basic base64(id:secret)
+    scopes: [
+      'user-read-private',
+      'user-top-read',
+      'user-follow-read',
+      'playlist-read-private',
+    ],
+    useBasicAuthHeader: true, // Spotify veut Authorization: Basic base64(id:secret)
   },
   discord: {
     clientId: process.env.DISCORD_CLIENT_ID!,
@@ -324,7 +333,7 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     tokenUrl: 'https://github.com/login/oauth/access_token',
     scopes: ['read:user', 'repo'],
     tokenRequestHeaders: {
-      Accept: 'application/json',   // Force GitHub a retourner du JSON
+      Accept: 'application/json', // Force GitHub a retourner du JSON
     },
   },
 }
@@ -333,25 +342,30 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
 ### Quirks par provider — details critiques
 
 **YouTube (Google)** :
+
 - `access_type=offline` + `prompt=consent` → pour obtenir un `refresh_token`
 - Sans ces params, Google ne retourne QUE un access_token qui expire en 1h sans possibilite
   de refresh. Les signal fetchers ne marcheront plus apres 1h.
 
 **Spotify** :
+
 - L'exchange veut un header `Authorization: Basic base64(clientId:clientSecret)` au lieu
   d'inclure clientId/clientSecret dans le body.
 - access_token expire en 1h, refresh_token est permanent.
 
 **Discord** :
+
 - Standard, aucun quirk.
 - access_token expire en 7 jours.
 
 **Twitch** :
+
 - `TWITCH_CLIENT_ID` est deja en env var (utilise par le verifier).
 - Ajouter `TWITCH_CLIENT_SECRET`.
 - access_token expire en ~4h.
 
 **GitHub** :
+
 - Retourne du `application/x-www-form-urlencoded` par defaut.
 - Ajouter `Accept: application/json` dans le header pour avoir du JSON.
 - access_token permanent (pas d'expiration).
@@ -362,6 +376,7 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
 
 La fonction `verifyAndGetUserId()` existe deja dans `link-social-workflow.ts` (lignes ~140-220).
 Elle :
+
 1. Appelle l'API du provider avec le token
 2. Parse la reponse selon le format de chaque provider
 3. Extrait `{ userId, username }`
@@ -371,7 +386,13 @@ reutiliser depuis les routes OAuth sans duplication.
 
 ```typescript
 // src/mastra/oauth/verify.ts
-export type Platform = 'discord' | 'youtube' | 'spotify' | 'twitch' | 'twitter' | 'github'
+export type Platform =
+  | 'discord'
+  | 'youtube'
+  | 'spotify'
+  | 'twitch'
+  | 'twitter'
+  | 'github'
 
 export interface OAuthVerificationResult {
   valid: boolean
@@ -391,6 +412,7 @@ export async function verifyAndGetUserId(
 ```
 
 **Ajout GitHub** : la fonction actuelle ne supporte pas GitHub. Ajouter :
+
 ```typescript
 github: {
   url: 'https://api.github.com/user',
@@ -442,7 +464,9 @@ export async function exchangeCodeForToken(
 
   if (provider.useBasicAuthHeader) {
     // Spotify : Authorization: Basic base64(clientId:clientSecret)
-    const basic = Buffer.from(`${provider.clientId}:${provider.clientSecret}`).toString('base64')
+    const basic = Buffer.from(
+      `${provider.clientId}:${provider.clientSecret}`,
+    ).toString('base64')
     headers.Authorization = `Basic ${basic}`
   } else {
     // Standard : clientId + clientSecret dans le body
@@ -536,11 +560,14 @@ export const oauthRoutes = [
         )
 
         if (!verification.valid) {
-          return c.json({
-            success: false,
-            platformId: platform,
-            error: verification.error || 'verification_failed',
-          }, 400)
+          return c.json(
+            {
+              success: false,
+              platformId: platform,
+              error: verification.error || 'verification_failed',
+            },
+            400,
+          )
         }
 
         // 3. Return token + userId to frontend (frontend will call linkSocialWorkflow)
@@ -555,11 +582,14 @@ export const oauthRoutes = [
         })
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        return c.json({
-          success: false,
-          platformId: platform,
-          error: message,
-        }, 500)
+        return c.json(
+          {
+            success: false,
+            platformId: platform,
+            error: message,
+          },
+          500,
+        )
       }
     },
   }),
@@ -600,6 +630,7 @@ export const mastra = new Mastra({
 ```
 
 **`src/mastra/workflows/link-social-workflow.ts`** :
+
 - Extraire `verifyAndGetUserId` vers `oauth/verify.ts`
 - Importer depuis la au lieu de le redefinir
 
@@ -616,6 +647,7 @@ export const mastra = new Mastra({
 ```
 
 Mettre a jour aussi le commentaire au debut du fichier :
+
 ```diff
 - * through sofia-mastra backend at MASTRA_URL/api/oauth/*
 + * through sofia-mastra backend at MASTRA_URL/oauth/*
@@ -649,13 +681,13 @@ Ajouter les memes variables en production.
 
 ### Comment obtenir les credentials
 
-| Provider | Dashboard | Redirect URI a configurer |
-|---|---|---|
-| YouTube | https://console.cloud.google.com/apis/credentials | Les deux : `http://localhost:5173/auth/callback` ET `https://0xsofia.com/auth/callback` |
-| Spotify | https://developer.spotify.com/dashboard | Les deux |
-| Discord | https://discord.com/developers/applications | Les deux |
-| Twitch | https://dev.twitch.tv/console/apps | Les deux |
-| GitHub | https://github.com/settings/developers | Les deux |
+| Provider | Dashboard                                         | Redirect URI a configurer                                                               |
+| -------- | ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| YouTube  | https://console.cloud.google.com/apis/credentials | Les deux : `http://localhost:5173/auth/callback` ET `https://0xsofia.com/auth/callback` |
+| Spotify  | https://developer.spotify.com/dashboard           | Les deux                                                                                |
+| Discord  | https://discord.com/developers/applications       | Les deux                                                                                |
+| Twitch   | https://dev.twitch.tv/console/apps                | Les deux                                                                                |
+| GitHub   | https://github.com/settings/developers            | Les deux                                                                                |
 
 Chaque provider permet d'enregistrer plusieurs redirect URIs. Enregistrer les 2 (dev + prod).
 
@@ -663,15 +695,15 @@ Chaque provider permet d'enregistrer plusieurs redirect URIs. Enregistrer les 2 
 
 ## 13. Planning
 
-| Jour | Tache | Livrable |
-|---|---|---|
-| **J1 matin** | Creer les 5 OAuth apps + obtenir clientId/clientSecret | Credentials dans .env |
-| **J1 apres-midi** | `oauth/config.ts` + `oauth/verify.ts` (extrait de link-social-workflow) | Config testable, verify reutilisable |
-| **J2 matin** | `oauth/exchange.ts` avec gestion des quirks par provider | Exchange testable en isolation |
-| **J2 apres-midi** | `oauth/routes.ts` + modifier `index.ts` | Routes montees et accessibles |
-| **J3 matin** | Modifier Explorer `oauthService.ts` (prefixe `/oauth`) | Frontend branche sur nouveau endpoint |
-| **J3 apres-midi** | Test E2E : connecter Spotify depuis Explorer dev local | Flow complet marche |
-| **J4** | Tester les 5 plateformes + fix quirks + rebuild Docker + deploy Phala | Tout live en prod |
+| Jour              | Tache                                                                   | Livrable                              |
+| ----------------- | ----------------------------------------------------------------------- | ------------------------------------- |
+| **J1 matin**      | Creer les 5 OAuth apps + obtenir clientId/clientSecret                  | Credentials dans .env                 |
+| **J1 apres-midi** | `oauth/config.ts` + `oauth/verify.ts` (extrait de link-social-workflow) | Config testable, verify reutilisable  |
+| **J2 matin**      | `oauth/exchange.ts` avec gestion des quirks par provider                | Exchange testable en isolation        |
+| **J2 apres-midi** | `oauth/routes.ts` + modifier `index.ts`                                 | Routes montees et accessibles         |
+| **J3 matin**      | Modifier Explorer `oauthService.ts` (prefixe `/oauth`)                  | Frontend branche sur nouveau endpoint |
+| **J3 apres-midi** | Test E2E : connecter Spotify depuis Explorer dev local                  | Flow complet marche                   |
+| **J4**            | Tester les 5 plateformes + fix quirks + rebuild Docker + deploy Phala   | Tout live en prod                     |
 
 ---
 
@@ -741,14 +773,14 @@ curl -X POST http://localhost:4111/api/workflows/signalFetcherWorkflow/start-asy
 
 ## 15. Gestion des erreurs
 
-| Scenario | Comportement attendu |
-|---|---|
-| Platform inconnue dans le redirect | 404 `{ error: 'unsupported_platform' }` |
-| Credentials manquants (env var) | 500 `{ error: 'missing_credentials' }` au moment de l'exchange |
-| Code d'authorization invalide | 400 `{ error: 'token_exchange_failed', details }` |
-| Token retourne mais API provider rejette | 400 `{ error: 'verification_failed' }` |
-| Rate limit sur provider | 500 avec message du provider |
-| Refresh token manquant (pour YouTube notamment) | OK mais warning log — le user devra reconnecter dans 1h |
+| Scenario                                        | Comportement attendu                                           |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| Platform inconnue dans le redirect              | 404 `{ error: 'unsupported_platform' }`                        |
+| Credentials manquants (env var)                 | 500 `{ error: 'missing_credentials' }` au moment de l'exchange |
+| Code d'authorization invalide                   | 400 `{ error: 'token_exchange_failed', details }`              |
+| Token retourne mais API provider rejette        | 400 `{ error: 'verification_failed' }`                         |
+| Rate limit sur provider                         | 500 avec message du provider                                   |
+| Refresh token manquant (pour YouTube notamment) | OK mais warning log — le user devra reconnecter dans 1h        |
 
 ---
 
@@ -807,13 +839,13 @@ curl -I https://<phala-url>/oauth/spotify/authorize?redirect_uri=https://0xsofia
 
 ### Impact ressources Phala — **negligeable**
 
-| Metrique | Impact |
-|---|---|
-| CPU | 0 au repos, ~50ms par connexion OAuth (1 fetch HTTP) |
-| RAM | ~0 MB (handlers dans le meme process Hono) |
-| Disque | ~1 KB par token stocke en SQLite |
-| Reseau | 1 requete HTTP sortante par connexion |
-| Nouveau process | **Aucun** |
+| Metrique        | Impact                                               |
+| --------------- | ---------------------------------------------------- |
+| CPU             | 0 au repos, ~50ms par connexion OAuth (1 fetch HTTP) |
+| RAM             | ~0 MB (handlers dans le meme process Hono)           |
+| Disque          | ~1 KB par token stocke en SQLite                     |
+| Reseau          | 1 requete HTTP sortante par connexion                |
+| Nouveau process | **Aucun**                                            |
 
 Les routes OAuth sont des handlers HTTP legers dans le serveur Hono qui tourne deja.
 Pas de nouveau service, pas de nouveau port. Moins consommateur qu'un workflow Mastra.

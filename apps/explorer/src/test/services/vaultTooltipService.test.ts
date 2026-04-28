@@ -17,7 +17,8 @@ import {
   formatEth,
 } from '@/services/vaultTooltipService'
 
-const mockedFetcher = useGetTripleVaultStatsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+const mockedFetcher =
+  useGetTripleVaultStatsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 
 describe('vaultTooltipService — pure helpers', () => {
   it('cacheKey: stable regardless of addresses order', () => {
@@ -41,8 +42,16 @@ describe('vaultTooltipService — pure helpers', () => {
   })
 
   it('extractSide: returns neutral values when vaults is empty', () => {
-    expect(extractSide([])).toEqual({ marketCap: '0', count: 0, userPnlPct: null })
-    expect(extractSide(undefined)).toEqual({ marketCap: '0', count: 0, userPnlPct: null })
+    expect(extractSide([])).toEqual({
+      marketCap: '0',
+      count: 0,
+      userPnlPct: null,
+    })
+    expect(extractSide(undefined)).toEqual({
+      marketCap: '0',
+      count: 0,
+      userPnlPct: null,
+    })
   })
 
   it('formatEth: returns "0" for zero wei', () => {
@@ -99,7 +108,9 @@ describe('vaultTooltipService.fetchVaultStats', () => {
         triples: [
           {
             term_id: 't-3',
-            term: { vaults: [{ market_cap: '100', position_count: 1, positions: [] }] },
+            term: {
+              vaults: [{ market_cap: '100', position_count: 1, positions: [] }],
+            },
             counter_term: { vaults: [] },
           },
         ],
@@ -118,7 +129,9 @@ describe('vaultTooltipService.fetchVaultStats', () => {
         triples: [
           {
             term_id: 't-4',
-            term: { vaults: [{ market_cap: '100', position_count: 1, positions: [] }] },
+            term: {
+              vaults: [{ market_cap: '100', position_count: 1, positions: [] }],
+            },
             counter_term: { vaults: [] },
           },
         ],

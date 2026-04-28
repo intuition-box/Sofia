@@ -41,16 +41,26 @@ export default function PlatformsRightRail() {
 
   const pulse = useMemo(() => {
     if (markets.length === 0) {
-      return { tvl: '0', holders: 0, active: 0, topGainer: null as PlatformVaultData | null }
+      return {
+        tvl: '0',
+        holders: 0,
+        active: 0,
+        topGainer: null as PlatformVaultData | null,
+      }
     }
-    const tvlRaw = markets.reduce((acc, m) => acc + BigInt(m.marketCap || '0'), 0n)
+    const tvlRaw = markets.reduce(
+      (acc, m) => acc + BigInt(m.marketCap || '0'),
+      0n,
+    )
     const holders = markets.reduce((acc, m) => acc + m.positionCount, 0)
     const active = markets.filter((m) => m.positionCount > 0).length
     // Top gainer = highest userPnlPct (falls back to most held when no user data).
     const withPnl = markets.filter((m) => m.userPnlPct != null)
     const topGainer =
       withPnl.length > 0
-        ? [...withPnl].sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0))[0]
+        ? [...withPnl].sort(
+            (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
+          )[0]
         : null
     return {
       tvl: formatMCap(tvlRaw.toString()),
@@ -61,17 +71,31 @@ export default function PlatformsRightRail() {
   }, [markets])
 
   const mostHeld = useMemo(
-    () => [...markets].sort((a, b) => b.positionCount - a.positionCount).slice(0, 5),
+    () =>
+      [...markets]
+        .sort((a, b) => b.positionCount - a.positionCount)
+        .slice(0, 5),
     [markets],
   )
 
   const myPositions = useMemo(() => {
     if (!authenticated) return null
     const held = markets.filter((m) => BigInt(m.userShares || '0') > 0n)
-    if (held.length === 0) return { count: 0, totalInvested: '0', best: null as PlatformVaultData | null, worst: null as PlatformVaultData | null }
-    const totalRaw = held.reduce((acc, m) => acc + BigInt(m.userDeposited || '0'), 0n)
+    if (held.length === 0)
+      return {
+        count: 0,
+        totalInvested: '0',
+        best: null as PlatformVaultData | null,
+        worst: null as PlatformVaultData | null,
+      }
+    const totalRaw = held.reduce(
+      (acc, m) => acc + BigInt(m.userDeposited || '0'),
+      0n,
+    )
     const withPnl = held.filter((m) => m.userPnlPct != null)
-    const sorted = [...withPnl].sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0))
+    const sorted = [...withPnl].sort(
+      (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
+    )
     return {
       count: held.length,
       totalInvested: formatMCap(totalRaw.toString()),
@@ -87,15 +111,21 @@ export default function PlatformsRightRail() {
         <h3 className="prr-card-title">Market Pulse</h3>
         <div className="prr-pulse-grid">
           <div className="prr-pulse-stat">
-            <span className="prr-pulse-value">{isLoading ? '—' : pulse.tvl}</span>
+            <span className="prr-pulse-value">
+              {isLoading ? '—' : pulse.tvl}
+            </span>
             <span className="prr-pulse-label">TVL (T)</span>
           </div>
           <div className="prr-pulse-stat">
-            <span className="prr-pulse-value">{isLoading ? '—' : compactNumber(pulse.holders)}</span>
+            <span className="prr-pulse-value">
+              {isLoading ? '—' : compactNumber(pulse.holders)}
+            </span>
             <span className="prr-pulse-label">Holders</span>
           </div>
           <div className="prr-pulse-stat">
-            <span className="prr-pulse-value">{isLoading ? '—' : pulse.active}</span>
+            <span className="prr-pulse-value">
+              {isLoading ? '—' : pulse.active}
+            </span>
             <span className="prr-pulse-label">Active</span>
           </div>
           <div className="prr-pulse-stat">
@@ -159,9 +189,14 @@ export default function PlatformsRightRail() {
       <section className="prr-card">
         <h3 className="prr-card-title">Your Positions</h3>
         {!myPositions ? (
-          <p className="prr-empty">Connect a wallet to track your positions here.</p>
+          <p className="prr-empty">
+            Connect a wallet to track your positions here.
+          </p>
         ) : myPositions.count === 0 ? (
-          <p className="prr-empty">You don't hold any platform yet. Invest from any card to start tracking here.</p>
+          <p className="prr-empty">
+            You don't hold any platform yet. Invest from any card to start
+            tracking here.
+          </p>
         ) : (
           <>
             <div className="prr-pulse-grid">
@@ -170,7 +205,9 @@ export default function PlatformsRightRail() {
                 <span className="prr-pulse-label">Platforms</span>
               </div>
               <div className="prr-pulse-stat">
-                <span className="prr-pulse-value">{myPositions.totalInvested}</span>
+                <span className="prr-pulse-value">
+                  {myPositions.totalInvested}
+                </span>
                 <span className="prr-pulse-label">Invested (T)</span>
               </div>
             </div>
@@ -188,7 +225,9 @@ export default function PlatformsRightRail() {
               myPositions.worst.termId !== myPositions.best?.termId && (
                 <div className="prr-mover">
                   <span className="prr-mover-kicker">Worst</span>
-                  <span className="prr-mover-name">{myPositions.worst.label}</span>
+                  <span className="prr-mover-name">
+                    {myPositions.worst.label}
+                  </span>
                   <span
                     className={`prr-mover-pct ${
                       myPositions.worst.userPnlPct >= 0
@@ -208,7 +247,9 @@ export default function PlatformsRightRail() {
       {selected && (
         <AtomDetailDialog
           open={!!selected}
-          onOpenChange={(open) => { if (!open) setSelected(null) }}
+          onOpenChange={(open) => {
+            if (!open) setSelected(null)
+          }}
           market={selected}
           platformName={selected.label}
           favicon={`/favicons/${ATOM_ID_TO_PLATFORM.get(selected.termId) || ''}.png`}

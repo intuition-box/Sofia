@@ -47,7 +47,9 @@ export function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {
  * Same four-peak Gaussian sum + jittered amplitude as the proto; the hash
  * derived from the topic key shifts the rhythm per topic.
  */
-export function buildSyntheticCalendarSeries(topicId: string | 'all'): number[] {
+export function buildSyntheticCalendarSeries(
+  topicId: string | 'all',
+): number[] {
   const key = `${topicId}:all`
   let hash = 0
   for (let i = 0; i < key.length; i++) {
@@ -96,7 +98,9 @@ export interface CalendarMonthLabel {
 }
 
 /** Compute month header labels for the 18-week span ending today. */
-export function computeCalendarMonthLabels(weeks = CAL_WEEKS): CalendarMonthLabel[] {
+export function computeCalendarMonthLabels(
+  weeks = CAL_WEEKS,
+): CalendarMonthLabel[] {
   const out: CalendarMonthLabel[] = []
   let prev = ''
   const days = weeks * 7

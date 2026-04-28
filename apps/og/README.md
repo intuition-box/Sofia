@@ -25,6 +25,7 @@ Query params:
 | `name` | Display name (optional, defaults to truncated wallet) | `rchris.eth` |
 
 Example:
+
 ```
 http://localhost:3000/api/og?wallet=0x5038F568&level=4&signals=64&interests=Gaming:3,DeFi:5,NFT:2
 ```

@@ -4,13 +4,13 @@
  * Adapted from extension/hooks/useRedeemTriple.ts
  */
 
+import { createPublicClient, createWalletClient, custom, http } from 'viem'
 import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  http,
-} from 'viem'
-import { intuitionChain, INTUITION_RPC_URL, MULTI_VAULT_ADDRESS, MultiVaultAbi } from '../lib/contracts'
+  intuitionChain,
+  INTUITION_RPC_URL,
+  MULTI_VAULT_ADDRESS,
+  MultiVaultAbi,
+} from '../lib/contracts'
 import type { WalletDescriptor } from './depositService'
 
 const CURVE_ID = 1n
@@ -41,13 +41,13 @@ export async function getShares(
   account: string,
   termId: string,
 ): Promise<bigint> {
-  return await publicClient.readContract({
+  return (await publicClient.readContract({
     address: MULTI_VAULT_ADDRESS,
     abi: MultiVaultAbi,
     functionName: 'getShares',
     args: [account as `0x${string}`, termId as `0x${string}`, CURVE_ID],
     authorizationList: undefined,
-  }) as bigint
+  })) as bigint
 }
 
 /**
@@ -98,7 +98,7 @@ export async function redeemAtom(
   const address = wallet.address as `0x${string}`
 
   // Read current shares if not provided
-  const shares = sharesToRedeem ?? await getShares(address, termId)
+  const shares = sharesToRedeem ?? (await getShares(address, termId))
 
   if (shares === 0n) {
     return { success: true } // nothing to redeem

@@ -74,12 +74,17 @@ function labelFor(key: string): string {
 
 function formatMetric(key: string, value: number): string {
   const label = labelFor(key)
-  const rounded = value >= 100 ? Math.round(value) : Math.round(value * 100) / 100
+  const rounded =
+    value >= 100 ? Math.round(value) : Math.round(value * 100) / 100
   return `${label}: ${rounded}`
 }
 
 export default function ScoreExplanationDialog({
-  open, onOpenChange, topicLabel, topicColor, explanation,
+  open,
+  onOpenChange,
+  topicLabel,
+  topicColor,
+  explanation,
 }: ScoreExplanationDialogProps) {
   if (!explanation) {
     return (
@@ -88,7 +93,9 @@ export default function ScoreExplanationDialog({
           <DialogHeader>
             <DialogTitle>How {topicLabel} score is calculated</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">No breakdown available yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No breakdown available yet.
+          </p>
         </DialogContent>
       </Dialog>
     )
@@ -96,27 +103,35 @@ export default function ScoreExplanationDialog({
 
   const {
     finalScore,
-    platformSubtotal, platformContributions,
-    trustBonus, multiSourceMultiplier, multiSourceReason,
+    platformSubtotal,
+    platformContributions,
+    trustBonus,
+    multiSourceMultiplier,
+    multiSourceReason,
   } = explanation
 
-  const totalContrib = platformContributions.reduce((s, c) => s + c.rawContribution, 0) || 1
+  const totalContrib =
+    platformContributions.reduce((s, c) => s + c.rawContribution, 0) || 1
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Why is your {topicLabel} score {finalScore}?</DialogTitle>
+          <DialogTitle>
+            Why is your {topicLabel} score {finalScore}?
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 text-sm">
           {/* Platform contributions */}
           <section>
-            <h4 className="font-medium mb-2">Signals from your connected platforms</h4>
+            <h4 className="font-medium mb-2">
+              Signals from your connected platforms
+            </h4>
             {platformContributions.length === 0 ? (
               <p className="text-muted-foreground">
-                No connected platform produced signals for this topic yet. Connect
-                one to start building a score.
+                No connected platform produced signals for this topic yet.
+                Connect one to start building a score.
               </p>
             ) : (
               <div className="space-y-2">
@@ -133,12 +148,17 @@ export default function ScoreExplanationDialog({
                       <div className="h-1.5 rounded bg-muted overflow-hidden">
                         <div
                           className="h-full rounded"
-                          style={{ width: `${Math.min(100, pct)}%`, backgroundColor: topicColor }}
+                          style={{
+                            width: `${Math.min(100, pct)}%`,
+                            backgroundColor: topicColor,
+                          }}
                         />
                       </div>
                       {c.topMetrics.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          {c.topMetrics.map((m) => formatMetric(m.key, m.value)).join(' · ')}
+                          {c.topMetrics
+                            .map((m) => formatMetric(m.key, m.value))
+                            .join(' · ')}
                         </p>
                       )}
                     </div>
@@ -155,7 +175,10 @@ export default function ScoreExplanationDialog({
           {/* Trust bonus */}
           {trustBonus > 0 && (
             <section className="flex justify-between">
-              <span>Trust score bonus <span className="text-muted-foreground">(composite × 0.2)</span></span>
+              <span>
+                Trust score bonus{' '}
+                <span className="text-muted-foreground">(composite × 0.2)</span>
+              </span>
               <span className="tabular-nums">+{trustBonus}</span>
             </section>
           )}
@@ -164,25 +187,32 @@ export default function ScoreExplanationDialog({
           <section className="flex justify-between">
             <div>
               <div>Cross-platform adjustment</div>
-              <p className="text-xs text-muted-foreground">{multiSourceReason}</p>
+              <p className="text-xs text-muted-foreground">
+                {multiSourceReason}
+              </p>
             </div>
             <span className="tabular-nums">
-              {multiSourceMultiplier === 0 ? '—' : `×${multiSourceMultiplier.toFixed(2)}`}
+              {multiSourceMultiplier === 0
+                ? '—'
+                : `×${multiSourceMultiplier.toFixed(2)}`}
             </span>
           </section>
 
           {/* Final */}
           <section className="flex justify-between pt-3 border-t border-border font-semibold">
             <span>Final score</span>
-            <span className="tabular-nums text-lg" style={{ color: topicColor }}>
+            <span
+              className="tabular-nums text-lg"
+              style={{ color: topicColor }}
+            >
               {finalScore}
             </span>
           </section>
 
           <p className="text-xs text-muted-foreground pt-2">
-            Connecting more platforms removes the single-source penalty and unlocks
-            higher bonuses. Each platform contributes via creation, regularity,
-            community, monetization and seniority signals.
+            Connecting more platforms removes the single-source penalty and
+            unlocks higher bonuses. Each platform contributes via creation,
+            regularity, community, monetization and seniority signals.
           </p>
         </div>
       </DialogContent>

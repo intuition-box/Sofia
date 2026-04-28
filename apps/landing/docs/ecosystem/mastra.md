@@ -41,7 +41,6 @@ Sofia employs multiple specialized agents working together:
 
 Each agent operates independently but shares insights through a secure communication protocol, creating a comprehensive understanding of your digital activity while respecting your privacy.
 
-
 ## Why Mastra for Sofia
 
 Mastra's TypeScript-native approach aligns perfectly with Sofia's browser extension architecture, enabling:

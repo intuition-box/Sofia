@@ -6,21 +6,21 @@ Behavioral reputation dashboard for the [Sofia](https://0xsofia.com) browser ext
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 18 + TypeScript 5.7 |
-| Build | Vite 6.3 (SWC) |
-| Styling | Tailwind CSS v4 (oklch) + shadcn/ui |
-| Auth | Privy (wallet, Google OAuth) |
-| Server State | React Query v5 |
-| GraphQL | graphql-request 7.1 + graphql-codegen |
-| On-chain | Viem v2 — Intuition Mainnet (chain 1155, TRUST token) |
+| Layer        | Technology                                            |
+| ------------ | ----------------------------------------------------- |
+| Framework    | React 18 + TypeScript 5.7                             |
+| Build        | Vite 6.3 (SWC)                                        |
+| Styling      | Tailwind CSS v4 (oklch) + shadcn/ui                   |
+| Auth         | Privy (wallet, Google OAuth)                          |
+| Server State | React Query v5                                        |
+| GraphQL      | graphql-request 7.1 + graphql-codegen                 |
+| On-chain     | Viem v2 — Intuition Mainnet (chain 1155, TRUST token) |
 
 ## Getting Started
 
 ```bash
 bun install
-bun dev             # Dev server on http://localhost:5173 
+bun dev             # Dev server on http://localhost:5173
 bun run build       # tsc -b && vite build → dist/
 ```
 
@@ -81,14 +81,14 @@ PrivyProvider → QueryClientProvider → CartProvider → BrowserRouter
 
 Sofia operates on **Intuition Mainnet** (chain ID 1155), a purpose-built chain for knowledge graphs.
 
-| Parameter | Value |
-|-----------|-------|
-| RPC | `https://rpc.intuition.systems` |
-| GraphQL Indexer | `https://mainnet.intuition.sh/v1/graphql` |
-| MCP Trust Engine | `https://mcp-trust.intuition.box/mcp` |
-| Explorer | `https://explorer.intuition.systems` |
-| Native Token | TRUST |
-| SofiaFeeProxy | `0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c` |
+| Parameter        | Value                                        |
+| ---------------- | -------------------------------------------- |
+| RPC              | `https://rpc.intuition.systems`              |
+| GraphQL Indexer  | `https://mainnet.intuition.sh/v1/graphql`    |
+| MCP Trust Engine | `https://mcp-trust.intuition.box/mcp`        |
+| Explorer         | `https://explorer.intuition.systems`         |
+| Native Token     | TRUST                                        |
+| SofiaFeeProxy    | `0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c` |
 
 ### Core Concepts
 
@@ -106,58 +106,67 @@ User clicks Buy/Sell → CartDrawer → WeightModal (amount selection)
 
 ## Pages
 
-| Route | Description | Auth |
-|-------|-------------|------|
-| `/` | Live feed (All Activity / My Circle toggle) — LandingPage if not authenticated | Public |
-| `/leaderboard` | Alpha testers + season pool + trust ranking | Public |
-| `/profile` | Reputation overview: EthCC wallet, top claims, interests, last activity | Protected |
-| `/profile/interest/:topicId` | Topic deep-dive: categories, trending platforms, debate claims | Protected |
-| `/profile/interest/:topicId/platforms` | Platform connections for a topic | Protected |
-| `/profile/interest/:topicId/categories` | Category selection for a topic | Protected |
-| `/profile/topics` | Global topic selection | Protected |
-| `/platforms` | Full catalog of 140 platforms | Protected |
-| `/streaks` | Streak leaderboard by daily certifications | Protected |
-| `/vote` | Card-based voting on debate claims (support/oppose) | Protected |
-| `/scores` | Reputation scores (coming soon) | Protected |
+| Route                                   | Description                                                                    | Auth      |
+| --------------------------------------- | ------------------------------------------------------------------------------ | --------- |
+| `/`                                     | Live feed (All Activity / My Circle toggle) — LandingPage if not authenticated | Public    |
+| `/leaderboard`                          | Alpha testers + season pool + trust ranking                                    | Public    |
+| `/profile`                              | Reputation overview: EthCC wallet, top claims, interests, last activity        | Protected |
+| `/profile/interest/:topicId`            | Topic deep-dive: categories, trending platforms, debate claims                 | Protected |
+| `/profile/interest/:topicId/platforms`  | Platform connections for a topic                                               | Protected |
+| `/profile/interest/:topicId/categories` | Category selection for a topic                                                 | Protected |
+| `/profile/topics`                       | Global topic selection                                                         | Protected |
+| `/platforms`                            | Full catalog of 140 platforms                                                  | Protected |
+| `/streaks`                              | Streak leaderboard by daily certifications                                     | Protected |
+| `/vote`                                 | Card-based voting on debate claims (support/oppose)                            | Protected |
+| `/scores`                               | Reputation scores (coming soon)                                                | Protected |
 
 **Protected routes** use `usePrivy()` — redirect to `/` if not authenticated.
 
 ## Key Features
 
 ### Activity Feed
+
 Real-time feed of on-chain certifications with intention filtering (Trust, Distrust, Work, Learning, Fun, Inspiration). Toggle between global activity and trust circle (wallets you follow).
 
 ### Reputation Profile
+
 Multi-domain reputation scoring based on platform connections, niche selections, and on-chain activity. Domains include Tech & Dev, Web3 & Crypto, Gaming, Music & Audio, and 10 others.
 
 ### 140 Platform Connections
+
 Each platform has a connection strategy based on its `authType`:
 
-| authType | Button | Method |
-|----------|--------|--------|
-| `oauth2` / `oauth1` | Connect | OAuth popup flow via sofia-mastra backend |
-| `siwe` | Link Wallet | Sign-In With Ethereum |
-| `siwf` | Link Farcaster | Sign-In With Farcaster |
-| `public` (non-web3) | Add Username | Manual username input + verification |
-| `public` (web3) | Analyze | Auto-analyze with wallet address |
-| `none` | — | No connection possible |
+| authType            | Button         | Method                                    |
+| ------------------- | -------------- | ----------------------------------------- |
+| `oauth2` / `oauth1` | Connect        | OAuth popup flow via sofia-mastra backend |
+| `siwe`              | Link Wallet    | Sign-In With Ethereum                     |
+| `siwf`              | Link Farcaster | Sign-In With Farcaster                    |
+| `public` (non-web3) | Add Username   | Manual username input + verification      |
+| `public` (web3)     | Analyze        | Auto-analyze with wallet address          |
+| `none`              | —              | No connection possible                    |
 
 ### EthCC Wallet Integration
+
 Link an EthCC embedded wallet on the profile page to aggregate cross-wallet signals.
 
 ### Streak System
+
 Tracks consecutive days of on-chain deposits via the SofiaFeeProxy contract. Leaderboard ranks users by longest active streak.
 
 ### Season Pool
+
 Seasonal staking with PnL% tracking. Current season: **Beta** (Feb 21 – Apr 5, 2026).
 
 ### Debate / Vote
+
 Card-based voting interface on curated claims (SOFIA_CLAIMS + INTUITION_FEATURED_CLAIMS). Users support or oppose with TRUST deposits. Market cap and position counts displayed per claim.
 
 ### Trust Scoring (MCP)
+
 Graph-based trust scores powered by the Intuition MCP Trust Engine. Composite score combines EigenTrust (50%), AgentRank (30%), and personalized transitive trust (20%). Displayed in the ProfileDrawer and used as a boost in reputation scoring. Trust Ranking tab on the Leaderboard shows the top 50 wallets by EigenTrust score. Graceful fallback if the MCP server is unreachable.
 
 ### Profile Sharing
+
 OG image generation via `sofia-og.vercel.app` with reputation stats, plus Twitter/X share intent.
 
 ## Platform Atoms
@@ -170,6 +179,7 @@ Each platform in the catalog needs to exist as an **atom** on Intuition, linked 
 ```
 
 See [scripts/README.md](scripts/README.md) for the complete atom creation guide, including:
+
 - IPFS pinning via `pinThing` GraphQL mutation
 - Batch atom creation via `SofiaFeeProxy.createAtoms`
 - Triple creation via `SofiaFeeProxy.createTriples`
@@ -177,11 +187,11 @@ See [scripts/README.md](scripts/README.md) for the complete atom creation guide,
 
 ### Scripts
 
-| Script | Purpose |
-|--------|---------|
+| Script                              | Purpose                                                         |
+| ----------------------------------- | --------------------------------------------------------------- |
 | `scripts/create-platform-atoms.mjs` | Create platform + category atoms and "has tag" triples on-chain |
-| `scripts/check-urls.mjs` | Verify all platform website URLs resolve correctly |
-| `scripts/fix-missing-websites.mjs` | Add missing `website` fields to platforms in the catalog |
+| `scripts/check-urls.mjs`            | Verify all platform website URLs resolve correctly              |
+| `scripts/fix-missing-websites.mjs`  | Add missing `website` fields to platforms in the catalog        |
 
 ## Project Structure
 
@@ -219,20 +229,21 @@ public/
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Color system | oklch via CSS custom properties (`src/styles/globals.css`) |
-| Root font-size | **18px** (1rem = 18px, not the standard 16px) |
-| Dark mode | CSS class-based (`.dark` on `<html>`, detected before render) |
-| Font | Roboto (300, 400, 500, 700, 900) via Google Fonts |
-| Support color | `#10B981` (green) |
-| Oppose color | `#EF4444` (red) |
-| Layout transitions | 0.35–0.45s cubic-bezier on sidebar/drawer toggles |
-| Path alias | `@/` → `./src/` |
+| Property           | Value                                                         |
+| ------------------ | ------------------------------------------------------------- |
+| Color system       | oklch via CSS custom properties (`src/styles/globals.css`)    |
+| Root font-size     | **18px** (1rem = 18px, not the standard 16px)                 |
+| Dark mode          | CSS class-based (`.dark` on `<html>`, detected before render) |
+| Font               | Roboto (300, 400, 500, 700, 900) via Google Fonts             |
+| Support color      | `#10B981` (green)                                             |
+| Oppose color       | `#EF4444` (red)                                               |
+| Layout transitions | 0.35–0.45s cubic-bezier on sidebar/drawer toggles             |
+| Path alias         | `@/` → `./src/`                                               |
 
 ### Season Config
 
 Season parameters are in `src/config.ts` — update for each new season:
+
 - `SEASON_NAME`, `SEASON_START`, `SEASON_END`, `SEASON_START_BLOCK`
 - `SEASON_POOL_TERM_ID`, `SEASON_POOL_CURVE_ID`
 

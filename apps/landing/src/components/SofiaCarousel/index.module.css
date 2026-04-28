@@ -3,7 +3,7 @@
   margin: 1.8rem auto;
   position: relative;
   overflow: hidden;
- border-radius: 15px;
+  border-radius: 15px;
 }
 
 .scrollContainer {
@@ -11,7 +11,6 @@
   overflow: hidden;
   position: relative;
 }
-
 
 .scrollTrack {
   display: flex;
@@ -39,7 +38,6 @@
   border-radius: 10px;
   opacity: 92%;
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); */
-
 }
 
 @keyframes scrollRightToLeft {

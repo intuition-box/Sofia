@@ -1,4 +1,4 @@
-import { gql } from 'graphql-request';
+import { gql } from 'graphql-request'
 
 export const SEARCH_ATOMS = gql`
   query SearchAtoms($likeStr: String!) {
@@ -114,7 +114,7 @@ export const SEARCH_ATOMS = gql`
       }
     }
   }
-`;
+`
 
 export const SEARCH_LISTS = gql`
   query SearchLists($str: String!) {
@@ -168,4 +168,4 @@ export const SEARCH_LISTS = gql`
       }
     }
   }
-`;
+`

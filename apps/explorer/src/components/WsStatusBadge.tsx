@@ -12,7 +12,11 @@ import { getWsStatus, subscribeWsStatus } from '@/lib/realtime/wsStatus'
 const SHOW_AFTER_MS = 10_000
 
 export default function WsStatusBadge() {
-  const status = useSyncExternalStore(subscribeWsStatus, getWsStatus, getWsStatus)
+  const status = useSyncExternalStore(
+    subscribeWsStatus,
+    getWsStatus,
+    getWsStatus,
+  )
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -33,9 +37,11 @@ export default function WsStatusBadge() {
   if (!visible) return null
 
   const label =
-    status.status === 'error' ? 'Realtime error' :
-    status.status === 'offline' ? 'Reconnecting…' :
-    'Connecting…'
+    status.status === 'error'
+      ? 'Realtime error'
+      : status.status === 'offline'
+        ? 'Reconnecting…'
+        : 'Connecting…'
 
   return (
     <div

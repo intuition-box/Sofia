@@ -10,7 +10,11 @@ export interface ClaimPosition {
   curveId: number
 }
 
-async function fetchCurvePositions(termId: string, curveId: number, limit: number): Promise<ClaimPosition[]> {
+async function fetchCurvePositions(
+  termId: string,
+  curveId: number,
+  limit: number,
+): Promise<ClaimPosition[]> {
   const data = await useGetStreakVaultPositionsQuery.fetcher({
     termId,
     curveId,
@@ -25,7 +29,10 @@ async function fetchCurvePositions(termId: string, curveId: number, limit: numbe
   }))
 }
 
-export async function fetchPositions(termId: string, limit: number): Promise<ClaimPosition[]> {
+export async function fetchPositions(
+  termId: string,
+  limit: number,
+): Promise<ClaimPosition[]> {
   const [linear, exponential] = await Promise.all([
     fetchCurvePositions(termId, 1, limit),
     fetchCurvePositions(termId, 2, limit),
@@ -70,10 +77,12 @@ export function usePrefetchClaimDialogs(
           queryKey: ['claimPositions', c.termId, 100],
           queryFn: () => fetchPositions(c.termId, 100),
           staleTime: 10 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+          gcTime: 24 * 60 * 60 * 1000,
         })
         // Prefetch vault stats
-        fetchVaultStats(c.termId, walletAddress ? [walletAddress] : []).catch(() => {})
+        fetchVaultStats(c.termId, walletAddress ? [walletAddress] : []).catch(
+          () => {},
+        )
       }
       // Prefetch oppose positions
       if (c.counterTermId) {
@@ -81,7 +90,7 @@ export function usePrefetchClaimDialogs(
           queryKey: ['claimPositions', c.counterTermId, 100],
           queryFn: () => fetchPositions(c.counterTermId, 100),
           staleTime: 10 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+          gcTime: 24 * 60 * 60 * 1000,
         })
       }
     }

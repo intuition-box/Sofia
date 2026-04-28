@@ -1,0 +1,18 @@
+node_modules
+dist
+build
+.next
+.docusaurus
+*.tsbuildinfo
+bun.lock
+**/generated/**
+**/.mastra/**
+apps/extension/build
+apps/og/.next
+apps/landing/.docusaurus
+apps/landing/build
+
+# apps/extension has its own .prettierrc.mjs (double-quotes + custom plugin)
+# and is formatted via its local `bun run --filter extension prettier` script.
+# Excluded from root prettier so we don't need to install its plugin globally.
+apps/extension/

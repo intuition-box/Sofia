@@ -35,7 +35,11 @@ interface CircleFeedSectionProps {
 
 const MAX_SHOWN = 24
 
-export default function CircleFeedSection({ addresses, circleName, members }: CircleFeedSectionProps) {
+export default function CircleFeedSection({
+  addresses,
+  circleName,
+  members,
+}: CircleFeedSectionProps) {
   const { items, loading, error } = useCircleFeed(addresses)
   const [verb, setVerb] = useState<VerbFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
@@ -91,10 +95,7 @@ export default function CircleFeedSection({ addresses, circleName, members }: Ci
             <SelectContent>
               <SelectItem value="all">All members</SelectItem>
               {members.map((m) => (
-                <SelectItem
-                  key={m.termId}
-                  value={m.walletAddress ?? m.termId}
-                >
+                <SelectItem key={m.termId} value={m.walletAddress ?? m.termId}>
                   {m.label}
                 </SelectItem>
               ))}

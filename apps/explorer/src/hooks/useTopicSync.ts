@@ -63,8 +63,15 @@ export function useTopicSync() {
   const wallet = wallets[0]
   const qc = useQueryClient()
 
-  const { selectedTopics, selectedCategories, toggleTopic } = useTopicSelection()
-  const { positions, hasPosition, isPending, isLoading: positionsLoading, refetch } = useTopicPositions(selectedTopics)
+  const { selectedTopics, selectedCategories, toggleTopic } =
+    useTopicSelection()
+  const {
+    positions,
+    hasPosition,
+    isPending,
+    isLoading: positionsLoading,
+    refetch,
+  } = useTopicPositions(selectedTopics)
   const cart = useCart()
 
   const [redeemState, setRedeemState] = useState<RedeemState | null>(null)
@@ -152,45 +159,51 @@ export function useTopicSync() {
   }, [selectedTopics])
 
   // ── Redeem a topic position ──
-  const redeemTopic = useCallback(async (topicId: string) => {
-    if (!wallet || !authenticated) return
+  const redeemTopic = useCallback(
+    async (topicId: string) => {
+      if (!wallet || !authenticated) return
 
-    const termId = TOPIC_ATOM_IDS[topicId]
-    if (!termId) return
+      const termId = TOPIC_ATOM_IDS[topicId]
+      if (!termId) return
 
-    setRedeemState({ topicId, loading: true })
+      setRedeemState({ topicId, loading: true })
 
-    try {
-      const result = await redeemAtom(wallet, termId)
-      if (!result.success) {
-        setRedeemState({ topicId, loading: false, error: result.error })
-        return
+      try {
+        const result = await redeemAtom(wallet, termId)
+        if (!result.success) {
+          setRedeemState({ topicId, loading: false, error: result.error })
+          return
+        }
+        // Redeem succeeded → remove from local selection + clear cache
+        // optimistically so the pill flips off instantly.
+        clearOptimisticPosition(qc, wallet.address, termId)
+        toggleTopic(topicId)
+        setRedeemState(null)
+        refetch()
+      } catch (err: any) {
+        setRedeemState({
+          topicId,
+          loading: false,
+          error: err?.message || 'Redeem failed',
+        })
       }
-      // Redeem succeeded → remove from local selection + clear cache
-      // optimistically so the pill flips off instantly.
-      clearOptimisticPosition(qc, wallet.address, termId)
-      toggleTopic(topicId)
-      setRedeemState(null)
-      refetch()
-    } catch (err: any) {
-      setRedeemState({
-        topicId,
-        loading: false,
-        error: err?.message || 'Redeem failed',
-      })
-    }
-  }, [wallet, authenticated, toggleTopic, refetch, qc])
+    },
+    [wallet, authenticated, toggleTopic, refetch, qc],
+  )
 
   // ── Remove a topic (deselect + redeem if needed) ──
-  const removeTopic = useCallback((topicId: string) => {
-    if (hasPosition(topicId)) {
-      // Has on-chain position → need to redeem first
-      redeemTopic(topicId)
-    } else {
-      // No on-chain position → just remove locally + from cart
-      toggleTopic(topicId)
-    }
-  }, [hasPosition, redeemTopic, toggleTopic])
+  const removeTopic = useCallback(
+    (topicId: string) => {
+      if (hasPosition(topicId)) {
+        // Has on-chain position → need to redeem first
+        redeemTopic(topicId)
+      } else {
+        // No on-chain position → just remove locally + from cart
+        toggleTopic(topicId)
+      }
+    },
+    [hasPosition, redeemTopic, toggleTopic],
+  )
 
   return {
     selectedTopics,

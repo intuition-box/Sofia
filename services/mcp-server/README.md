@@ -275,72 +275,72 @@ The @modelcontextprotocol/sdk package includes the necessary modules for both St
 Below is an example of a Node.js client using the MCP SDK to connect to the Intuition MCP Server and interact with its tools.
 
 ```typescript
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 
 async function connectToMcpServer(url) {
-  let client;
-  const baseUrl = new URL(url);
+  let client
+  const baseUrl = new URL(url)
 
   try {
     // Attempt to connect using Streamable HTTP transport
     client = new Client({
       name: 'streamable-http-client',
       version: '1.0.0',
-    });
-    const transport = new StreamableHTTPClientTransport(baseUrl);
-    await client.connect(transport);
-    console.log('Connected using Streamable HTTP transport');
-    return client;
+    })
+    const transport = new StreamableHTTPClientTransport(baseUrl)
+    await client.connect(transport)
+    console.log('Connected using Streamable HTTP transport')
+    return client
   } catch (error) {
     console.log(
       'Streamable HTTP connection failed, falling back to SSE transport:',
-      error.message
-    );
+      error.message,
+    )
     // Fallback to SSE transport for legacy compatibility
     client = new Client({
       name: 'sse-client',
       version: '1.0.0',
-    });
-    const sseTransport = new SSEClientTransport(baseUrl);
-    await client.connect(sseTransport);
-    console.log('Connected using SSE transport');
-    return client;
+    })
+    const sseTransport = new SSEClientTransport(baseUrl)
+    await client.connect(sseTransport)
+    console.log('Connected using SSE transport')
+    return client
   }
 }
 
 async function callMcpTool(client, toolName, payload) {
   try {
     // Send a request to the specified tool
-    const response = await client.callTool(toolName, payload);
+    const response = await client.callTool(toolName, payload)
 
     // Handle streaming response
     response.on('data', (data) => {
-      console.log('Received data:', data);
-    });
+      console.log('Received data:', data)
+    })
 
     response.on('end', () => {
-      console.log('Stream ended');
-    });
+      console.log('Stream ended')
+    })
   } catch (error) {
-    console.error('Error calling MCP tool:', error.message);
+    console.error('Error calling MCP tool:', error.message)
   }
 }
 
 // Example usage
 async function main() {
-  const serverUrl = 'http://your-mcp-server'; // Replace with your server URL
-  const client = await connectToMcpServer(serverUrl);
+  const serverUrl = 'http://your-mcp-server' // Replace with your server URL
+  const client = await connectToMcpServer(serverUrl)
 
   // Example: Search for atoms related to Ethereum
-  await callMcpTool(client, 'search_atoms', { queries: ['ethereum', 'eth'] });
+  await callMcpTool(client, 'search_atoms', { queries: ['ethereum', 'eth'] })
 
   // Example: Extract triples
-  await callMcpTool(client, 'extract_triples', { input: 'Alice knows Bob' });
+  await callMcpTool(client, 'extract_triples', { input: 'Alice knows Bob' })
 }
 
-main().catch(console.error);
+main().catch(console.error)
 ```
 
 ## Making API Requests
@@ -376,7 +376,7 @@ Handle the end event to detect when the stream is complete.
 For search_atoms:
 
 ```javascript
-await client.callTool('search_atoms', { queries: ['blockchain'] });
+await client.callTool('search_atoms', { queries: ['blockchain'] })
 ```
 
 For get_account_info:
@@ -384,7 +384,7 @@ For get_account_info:
 ```javascript
 await client.callTool('get_account_info', {
   identifier: '0x1234567890123456789012345678901234567890',
-});
+})
 ```
 
 ### Notes

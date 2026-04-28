@@ -1,22 +1,28 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, monthsSince, safeNumber } from './utils'
 
-const BASE = "https://oauth.reddit.com"
-const USER_AGENT = "sofia-reputation/1.0"
+const BASE = 'https://oauth.reddit.com'
+const USER_AGENT = 'sofia-reputation/1.0'
 
 export const fetchRedditSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = {
     Authorization: `Bearer ${token}`,
-    "User-Agent": USER_AGENT,
+    'User-Agent': USER_AGENT,
   }
 
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const meRes = await safeFetch(`${BASE}/api/v1/me`, headers)
   const me = await meRes.json()
@@ -25,13 +31,13 @@ export const fetchRedditSignals: SignalFetcher = async (
     async () => {
       const res = await safeFetch(
         `${BASE}/subreddits/mine/subscriber?limit=100`,
-        headers
+        headers,
       )
       const data = await res.json()
       return Array.isArray(data.data?.children) ? data.data.children.length : 0
     },
     0,
-    "reddit_subreddits"
+    'reddit_subreddits',
   )
 
   const trophyCount = await safe(
@@ -41,7 +47,7 @@ export const fetchRedditSignals: SignalFetcher = async (
       return Array.isArray(data.data?.trophies) ? data.data.trophies.length : 0
     },
     0,
-    "reddit_trophies"
+    'reddit_trophies',
   )
 
   return {

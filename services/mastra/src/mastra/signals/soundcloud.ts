@@ -1,21 +1,27 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, safeNumber } from './utils'
 
-const BASE = "https://api.soundcloud.com"
+const BASE = 'https://api.soundcloud.com'
 
 export const fetchSoundcloudSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   // SoundCloud uses OAuth-scheme Authorization header ("OAuth <token>"), not Bearer.
   const headers = {
     Authorization: `OAuth ${token}`,
   }
 
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const meRes = await safeFetch(`${BASE}/me`, headers)
   const me = await meRes.json()
@@ -24,7 +30,7 @@ export const fetchSoundcloudSignals: SignalFetcher = async (
     async () => {
       const res = await safeFetch(
         `${BASE}/me/tracks?limit=1&linked_partitioning=1`,
-        headers
+        headers,
       )
       const data = await res.json()
       return safeNumber(data?.collection?.length) > 0
@@ -32,7 +38,7 @@ export const fetchSoundcloudSignals: SignalFetcher = async (
         : safeNumber(me.track_count)
     },
     safeNumber(me.track_count),
-    "soundcloud_tracks"
+    'soundcloud_tracks',
   )
 
   return {

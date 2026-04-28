@@ -13,7 +13,8 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/feed': {
     color: '#ffc6b0',
     title: 'Home',
-    subtitle: 'Discover URLs certified by the whole community and add your own signals.',
+    subtitle:
+      'Discover URLs certified by the whole community and add your own signals.',
     glow: 'rgba(255,198,176,0.4)',
   },
   '/leaderboard': {
@@ -25,13 +26,15 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/streaks': {
     color: '#ff9aa2',
     title: 'Streaks',
-    subtitle: 'Keep your daily certification streak alive to climb the season rankings.',
+    subtitle:
+      'Keep your daily certification streak alive to climb the season rankings.',
     glow: 'rgba(255,154,162,0.4)',
   },
   '/vote': {
     color: '#c890d9',
     title: 'Vote',
-    subtitle: 'Back or oppose live claims from the network with on-chain deposits.',
+    subtitle:
+      'Back or oppose live claims from the network with on-chain deposits.',
     glow: 'rgba(200,144,217,0.4)',
   },
   '/profile': {
@@ -43,13 +46,21 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/scores': {
     color: '#5CC4D6',
     title: 'My Stats',
-    subtitle: 'Break down your reputation score across topics, intents, URLs and engagement.',
+    subtitle:
+      'Break down your reputation score across topics, intents, URLs and engagement.',
     glow: 'rgba(92,196,214,0.4)',
   },
   '/profile/platforms': {
     color: '#B5CEAA',
     title: 'Platforms',
-    subtitle: 'Spot the next trending platforms early and invest before the crowd does.',
+    subtitle:
+      'Spot the next trending platforms early and invest before the crowd does.',
     glow: 'rgba(181,206,170,0.4)',
+  },
+  '/profile/topics': {
+    color: '#A8D8EA',
+    title: 'Select Topics',
+    subtitle: 'Pick the topics that anchor your knowledge graph.',
+    glow: 'rgba(168,216,234,0.4)',
   },
 }

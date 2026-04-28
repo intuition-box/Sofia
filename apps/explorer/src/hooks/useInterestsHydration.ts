@@ -55,7 +55,11 @@ export function useInterestsHydration() {
     queryKey: ['interests-hydration', 'categories', address],
     queryFn: async () =>
       pickOwned(
-        await getSharesBatchChunked(wallet!.address, Object.values(CATEGORY_ATOM_IDS), 25),
+        await getSharesBatchChunked(
+          wallet!.address,
+          Object.values(CATEGORY_ATOM_IDS),
+          25,
+        ),
         CATEGORY_ATOM_IDS,
       ),
     enabled: ready && authenticated && !!address && topicsQ.isSuccess,

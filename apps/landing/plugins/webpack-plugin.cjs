@@ -30,11 +30,11 @@ function webpackPlugin(context, options) {
             process: 'process/browser.js',
           },
         },
-      };
+      }
     },
-  };
+  }
 }
 
 module.exports = {
   webpackPlugin,
-};
+}

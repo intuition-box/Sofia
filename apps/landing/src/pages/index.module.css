@@ -23,10 +23,6 @@
   margin-bottom: 120px;
 }
 
-
-
-
-
 /* Gallery Section */
 .gallerySection {
   padding: 4rem 0;
@@ -140,10 +136,10 @@
 }
 
 .statBox {
-  background: #02000B;
+  background: #02000b;
   color: white;
   padding: 1rem 3rem;
-  border: 2px solid #02000B;
+  border: 2px solid #02000b;
   border-radius: 50px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(2, 0, 11, 0.2);
@@ -180,7 +176,7 @@
   background: transparent;
   color: #ffffff !important;
   padding: 1rem 3rem;
-  border: 2px solid #02000B;
+  border: 2px solid #02000b;
   border-radius: 50px;
   text-decoration: none !important;
   font-weight: 600;
@@ -190,7 +186,7 @@
 }
 
 .manifestoButton:hover {
-  background: #02000B;
+  background: #02000b;
   color: white !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(2, 0, 11, 0.3);
@@ -205,7 +201,7 @@
 .solutionSection {
   padding: 1rem 0;
   background: transparent;
-  color: #02000B;
+  color: #02000b;
   position: relative;
 }
 
@@ -226,7 +222,7 @@
   font-size: 2.18rem;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #02000B !important;
+  color: #02000b !important;
   text-align: center;
   max-width: 800px;
   margin-left: auto;
@@ -244,7 +240,7 @@
   margin-right: auto;
 }
 
-.manifestoList{
+.manifestoList {
   text-align: left;
 }
 
@@ -318,16 +314,20 @@
 
 /* Animation Classes */
 .scroll-section {
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
 }
 
 .animated-text {
-  color: #02000B !important;
+  color: #02000b !important;
 }
 
 .animated-text--split-words .split-word {
   display: inline-block;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 
 /* Parallax and Sticky Sections */
@@ -358,7 +358,9 @@
 /* Optimize animations for GPU acceleration */
 .scroll-section {
   transform: translate3d(0, 50px, 0);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
 }
 
 .scroll-section.animate-in {

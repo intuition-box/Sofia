@@ -246,7 +246,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     error: claimsError,
     refetch: refetchClaims
   } = useGetClaimsByTermIdsQuery(
-    { termIds: allTermIds, address: address || "" },
+    { termIds: allTermIds, addresses: address || "" },
     { enabled: allTermIds.length > 0 }
   )
 
@@ -541,7 +541,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         const result = await useGetListEntriesQuery.fetcher({
           predicateId: list.predicateId,
           objectId: objectTermId,
-          address: address || ""
+          addresses: address || ""
         })()
 
         if (result?.triples) {
@@ -577,7 +577,12 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
               opposeMarketCap: oppose.marketCap,
               supportCount: support.positionCount,
               opposeCount: oppose.positionCount,
-              source: "intuition" as const
+              // List-entry vault data doesn't carry the user's PnL — that's
+              // a separate per-position aggregate. Leave null and let the
+              // user-positions effect overlay it later if needed.
+              userSupportPnlPct: null,
+              userOpposePnlPct: null,
+              source: "intuition" as const,
             }
           })
           setListEntries((prev) => new Map(prev).set(objectTermId, entries))

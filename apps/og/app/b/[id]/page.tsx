@@ -30,7 +30,9 @@ async function getBoardData(id: string): Promise<BoardData | null> {
   return kv.get<BoardData>(`board:${id}`)
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params
   const data = await getBoardData(id)
   if (!data) return { title: 'Board stats not found' }
@@ -105,7 +107,8 @@ export default async function ShortBoardPage({ params }: PageProps) {
         style={{
           width: '100%',
           maxWidth: '420px',
-          background: 'linear-gradient(165deg, #0f1018 0%, #0a0a0f 50%, #08080c 100%)',
+          background:
+            'linear-gradient(165deg, #0f1018 0%, #0a0a0f 50%, #08080c 100%)',
           border: '1px solid #1a1a2e',
           borderRadius: '24px',
           padding: '32px 28px',
@@ -114,76 +117,351 @@ export default async function ShortBoardPage({ params }: PageProps) {
         }}
       >
         {/* Sofia watermark */}
-        <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.03, pointerEvents: 'none' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            opacity: 0.03,
+            pointerEvents: 'none',
+          }}
+        >
           <img src="/sofia-logo.png" alt="" width={200} height={200} />
         </div>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-          <img src="/sofia-logo.png" alt="Sofia" width={40} height={40} style={{ borderRadius: '50%' }} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '24px',
+          }}
+        >
+          <img
+            src="/sofia-logo.png"
+            alt="Sofia"
+            width={40}
+            height={40}
+            style={{ borderRadius: '50%' }}
+          />
           <div>
-            <p style={{ fontSize: '12px', color: '#555568', margin: '0 0 2px 0', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <p
+              style={{
+                fontSize: '12px',
+                color: '#555568',
+                margin: '0 0 2px 0',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Sofia Board Stats
             </p>
-            <p style={{ fontSize: '16px', color: '#a0a0b8', margin: 0, fontFamily: 'monospace' }}>
+            <p
+              style={{
+                fontSize: '16px',
+                color: '#a0a0b8',
+                margin: 0,
+                fontFamily: 'monospace',
+              }}
+            >
               {displayName}
             </p>
           </div>
         </div>
 
         {/* Alpha Rank */}
-        <div style={{
-          marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #14141e',
-        }}>
-          <p style={{ fontSize: '11px', color: '#C7866C', margin: '0 0 4px 0', letterSpacing: '1px', fontWeight: 600, textTransform: 'uppercase' }}>
+        <div
+          style={{
+            marginBottom: '20px',
+            paddingBottom: '20px',
+            borderBottom: '1px solid #14141e',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '11px',
+              color: '#C7866C',
+              margin: '0 0 4px 0',
+              letterSpacing: '1px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+            }}
+          >
             Alpha Rank
           </p>
-          <p style={{ fontSize: '40px', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1 }}>
-            #{data.alphaRank} <span style={{ fontSize: '16px', color: '#555568', fontWeight: 400 }}>of {data.totalAlpha}</span>
+          <p
+            style={{
+              fontSize: '40px',
+              fontWeight: 700,
+              color: '#fff',
+              margin: 0,
+              lineHeight: 1,
+            }}
+          >
+            #{data.alphaRank}{' '}
+            <span
+              style={{ fontSize: '16px', color: '#555568', fontWeight: 400 }}
+            >
+              of {data.totalAlpha}
+            </span>
           </p>
         </div>
 
         {/* Stats grid */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-            <p style={{ fontSize: '11px', color: '#555568', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>TX</p>
-            <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.tx}</p>
+          <div
+            style={{
+              flex: 1,
+              padding: '14px 16px',
+              background: '#0e0e16',
+              border: '1px solid #1a1a2e',
+              borderRadius: '14px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#555568',
+                margin: '0 0 4px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: 600,
+              }}
+            >
+              TX
+            </p>
+            <p
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#fff',
+                margin: 0,
+              }}
+            >
+              {data.tx}
+            </p>
           </div>
-          <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-            <p style={{ fontSize: '11px', color: '#555568', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Intentions</p>
-            <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.intentions}</p>
+          <div
+            style={{
+              flex: 1,
+              padding: '14px 16px',
+              background: '#0e0e16',
+              border: '1px solid #1a1a2e',
+              borderRadius: '14px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#555568',
+                margin: '0 0 4px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: 600,
+              }}
+            >
+              Intentions
+            </p>
+            <p
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#fff',
+                margin: 0,
+              }}
+            >
+              {data.intentions}
+            </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-            <p style={{ fontSize: '11px', color: '#D4A843', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Pioneer</p>
-            <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.pioneer}</p>
+          <div
+            style={{
+              flex: 1,
+              padding: '14px 16px',
+              background: '#0e0e16',
+              border: '1px solid #1a1a2e',
+              borderRadius: '14px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#D4A843',
+                margin: '0 0 4px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: 600,
+              }}
+            >
+              Pioneer
+            </p>
+            <p
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#fff',
+                margin: 0,
+              }}
+            >
+              {data.pioneer}
+            </p>
           </div>
-          <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-            <p style={{ fontSize: '11px', color: '#C7866C', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Trust Volume</p>
-            <p style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.trustVolume}</p>
+          <div
+            style={{
+              flex: 1,
+              padding: '14px 16px',
+              background: '#0e0e16',
+              border: '1px solid #1a1a2e',
+              borderRadius: '14px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#C7866C',
+                margin: '0 0 4px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: 600,
+              }}
+            >
+              Trust Volume
+            </p>
+            <p
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#fff',
+                margin: 0,
+              }}
+            >
+              {data.trustVolume}
+            </p>
           </div>
         </div>
 
         {/* Pool stats */}
         {hasPool && (
-          <div style={{ borderTop: '1px solid #14141e', paddingTop: '16px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '11px', color: '#555568', margin: '0 0 12px 0', letterSpacing: '1px', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div
+            style={{
+              borderTop: '1px solid #14141e',
+              paddingTop: '16px',
+              marginBottom: '16px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#555568',
+                margin: '0 0 12px 0',
+                letterSpacing: '1px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+              }}
+            >
               Season Pool
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-                <p style={{ fontSize: '11px', color: '#555568', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Rank</p>
-                <p style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>#{data.poolRank}</p>
+              <div
+                style={{
+                  flex: 1,
+                  padding: '14px 16px',
+                  background: '#0e0e16',
+                  border: '1px solid #1a1a2e',
+                  borderRadius: '14px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: '#555568',
+                    margin: '0 0 4px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Rank
+                </p>
+                <p
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    margin: 0,
+                  }}
+                >
+                  #{data.poolRank}
+                </p>
               </div>
-              <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-                <p style={{ fontSize: '11px', color: data.pnl.startsWith('+') ? '#22c55e' : '#ef4444', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>P&L</p>
-                <p style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.pnl}</p>
+              <div
+                style={{
+                  flex: 1,
+                  padding: '14px 16px',
+                  background: '#0e0e16',
+                  border: '1px solid #1a1a2e',
+                  borderRadius: '14px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: data.pnl.startsWith('+') ? '#22c55e' : '#ef4444',
+                    margin: '0 0 4px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontWeight: 600,
+                  }}
+                >
+                  P&L
+                </p>
+                <p
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    margin: 0,
+                  }}
+                >
+                  {data.pnl}
+                </p>
               </div>
-              <div style={{ flex: 1, padding: '14px 16px', background: '#0e0e16', border: '1px solid #1a1a2e', borderRadius: '14px' }}>
-                <p style={{ fontSize: '11px', color: data.pnlPercent.startsWith('+') ? '#22c55e' : '#ef4444', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>P&L %</p>
-                <p style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>{data.pnlPercent}</p>
+              <div
+                style={{
+                  flex: 1,
+                  padding: '14px 16px',
+                  background: '#0e0e16',
+                  border: '1px solid #1a1a2e',
+                  borderRadius: '14px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: data.pnlPercent.startsWith('+')
+                      ? '#22c55e'
+                      : '#ef4444',
+                    margin: '0 0 4px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontWeight: 600,
+                  }}
+                >
+                  P&L %
+                </p>
+                <p
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    margin: 0,
+                  }}
+                >
+                  {data.pnlPercent}
+                </p>
               </div>
             </div>
           </div>
@@ -193,7 +471,8 @@ export default async function ShortBoardPage({ params }: PageProps) {
         <a
           href="https://board-sofia.intuition.box"
           style={{
-            display: 'block', textAlign: 'center',
+            display: 'block',
+            textAlign: 'center',
             padding: '14px 24px',
             background: 'linear-gradient(135deg, #C7866C, #a0694f)',
             color: '#fff',

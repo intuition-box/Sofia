@@ -35,13 +35,7 @@ function uniqueByHost(samples: CircleItem[], max: number): CircleItem[] {
   return out
 }
 
-function UrlRows({
-  samples,
-  max,
-}: {
-  samples: CircleItem[]
-  max: number
-}) {
+function UrlRows({ samples, max }: { samples: CircleItem[]; max: number }) {
   const items = uniqueByHost(samples, max)
   if (items.length === 0) return null
   return (
@@ -125,7 +119,9 @@ export default function InterestTile({
     <button
       type="button"
       className={`hm-tile hm-${tier} hm-${kind}`}
-      style={kind === 'verb' ? ({ ['--verb-color' as string]: color }) : undefined}
+      style={
+        kind === 'verb' ? { ['--verb-color' as string]: color } : undefined
+      }
       onClick={handleClick}
       onKeyDown={handleKey}
     >

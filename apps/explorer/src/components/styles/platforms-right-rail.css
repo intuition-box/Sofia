@@ -12,7 +12,7 @@
 }
 
 .prr-card-title {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -47,7 +47,7 @@
 }
 
 .prr-pulse-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-weight: 900;
   font-size: 20px;
   line-height: 1;
@@ -64,7 +64,7 @@
 }
 
 .prr-pulse-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -109,7 +109,7 @@
 }
 
 .prr-row-rank {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   color: var(--ds-muted);
@@ -129,7 +129,7 @@
 }
 
 .prr-row-stat {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 600;
   color: var(--ds-muted);
@@ -149,7 +149,7 @@
 }
 
 .prr-mover-kicker {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -167,7 +167,7 @@
 }
 
 .prr-mover-pct {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

@@ -92,7 +92,7 @@ class DiscoveryScoreServiceClass {
       // Step 1: Fetch user's certifications
       const userTriples = await intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
         UserIntentionTriplesDocument,
-        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
+        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddresses: userAddress },
         "triples",
         100,
         100

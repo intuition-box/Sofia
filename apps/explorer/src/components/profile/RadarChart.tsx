@@ -10,7 +10,12 @@
  * them at the same setter).
  */
 import { useRef, useState } from 'react'
-import { positionAxes, type RadarAxis, type RadarSeries, type SeriesFilter } from '@/lib/radar'
+import {
+  positionAxes,
+  type RadarAxis,
+  type RadarSeries,
+  type SeriesFilter,
+} from '@/lib/radar'
 import RadarPills from './radar/RadarPills'
 import RadarHalfLabels from './radar/RadarHalfLabels'
 import RadarPolygon from './radar/RadarPolygon'
@@ -55,7 +60,10 @@ export default function RadarChart({
   }
 
   const positioned = positionAxes(topAxes, bottomAxes)
-  const maxCount = Math.max(1, ...series.flatMap((s) => Object.values(s.counts)))
+  const maxCount = Math.max(
+    1,
+    ...series.flatMap((s) => Object.values(s.counts)),
+  )
   const pillList = pillItems ?? series
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const [hoveredAxisId, setHoveredAxisId] = useState<string | null>(null)
@@ -98,7 +106,11 @@ export default function RadarChart({
   }
 
   const pills = (
-    <RadarPills items={pillList} seriesFilter={seriesFilter} onFocus={setFocus} />
+    <RadarPills
+      items={pillList}
+      seriesFilter={seriesFilter}
+      onFocus={setFocus}
+    />
   )
 
   return (
@@ -130,12 +142,32 @@ export default function RadarChart({
               hover glow in CSS adds drop-shadows *outside* this shape
               so the interior stays black — only the ring lights up. */}
           <filter id="radar-logo-outline">
-            <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="dilated" />
-            <feComposite in="dilated" in2="SourceAlpha" operator="out" result="edge" />
+            <feMorphology
+              in="SourceAlpha"
+              operator="dilate"
+              radius="1.2"
+              result="dilated"
+            />
+            <feComposite
+              in="dilated"
+              in2="SourceAlpha"
+              operator="out"
+              result="edge"
+            />
             <feFlood floodColor="#02000e" result="blackFlood" />
-            <feComposite in="blackFlood" in2="SourceAlpha" operator="in" result="blackFill" />
+            <feComposite
+              in="blackFlood"
+              in2="SourceAlpha"
+              operator="in"
+              result="blackFill"
+            />
             <feFlood floodColor="#6dd4a0" result="greenFlood" />
-            <feComposite in="greenFlood" in2="edge" operator="in" result="greenRing" />
+            <feComposite
+              in="greenFlood"
+              in2="edge"
+              operator="in"
+              result="greenRing"
+            />
             <feMerge>
               <feMergeNode in="blackFill" />
               <feMergeNode in="greenRing" />
@@ -225,7 +257,6 @@ export default function RadarChart({
             onHover={handleAxisHover}
           />
         ))}
-
 
         {/* Centre Sofia logo — click to clear both filters */}
         <g

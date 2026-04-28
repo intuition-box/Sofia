@@ -8,20 +8,20 @@ query GetTripleBondingCurveData(
   $walletAddresses: [String!]!
 ) {
   share_price_changes(
-    order_by: {block_timestamp: asc}
-    where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}
+    order_by: { block_timestamp: asc }
+    where: { term_id: { _eq: $tripleId }, curve_id: { _eq: $curveId } }
   ) {
     block_timestamp
     share_price
     total_assets
   }
-  vaults(where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}) {
+  vaults(where: { term_id: { _eq: $tripleId }, curve_id: { _eq: $curveId } }) {
     term {
       total_market_cap
     }
     current_share_price
     total_shares
-    positions(where: {account_id: {_in: $walletAddresses}}) {
+    positions(where: { account_id: { _in: $walletAddresses } }) {
       shares
       total_deposit_assets_after_total_fees
       total_redeem_assets_for_receiver
@@ -35,11 +35,11 @@ query GetAtomVaultData(
   $curveId: numeric!
   $walletAddresses: [String!]!
 ) {
-  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+  vaults(where: { term_id: { _eq: $atomId }, curve_id: { _eq: $curveId } }) {
     current_share_price
     total_shares
     position_count
-    positions(where: {account_id: {_in: $walletAddresses}}) {
+    positions(where: { account_id: { _in: $walletAddresses } }) {
       shares
       total_deposit_assets_after_total_fees
       total_redeem_assets_for_receiver

@@ -1,9 +1,9 @@
-import { Agent } from '@mastra/core/agent';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
-import { intuitionMcpClient } from '../mcp/mcp-client';
+import { Agent } from '@mastra/core/agent'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
+import { intuitionMcpClient } from '../mcp/mcp-client'
 
 // Get MCP tools from Intuition knowledge graph server
-const mcpTools = await intuitionMcpClient.getTools();
+const mcpTools = await intuitionMcpClient.getTools()
 
 export const chatbotAgent = new Agent({
   name: 'ChatBot Agent',
@@ -24,4 +24,4 @@ Be conversational and helpful. Provide concise responses.
   `,
   model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
   tools: { ...mcpTools },
-});
+})

@@ -1,6 +1,6 @@
-import type { PlatformMetrics, SignalFetcher } from "../types"
-import { safeNumber } from "../utils"
-import { querySubgraph } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from '../types'
+import { safeNumber } from '../utils'
+import { querySubgraph } from './utils'
 
 /**
  * Uniswap v3 Ethereum mainnet subgraph.
@@ -9,7 +9,7 @@ import { querySubgraph } from "./utils"
  *
  * Requires GRAPH_API_KEY env var.
  */
-const UNISWAP_V3_SUBGRAPH = "5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
+const UNISWAP_V3_SUBGRAPH = '5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV'
 
 const POSITIONS_QUERY = `
   query UniswapUser($id: String!) {
@@ -28,7 +28,7 @@ const POSITIONS_QUERY = `
 export const fetchUniswapSignals: SignalFetcher = async (
   walletAddress,
   _userId,
-  _ctx
+  _ctx,
 ): Promise<PlatformMetrics> => {
   const addr = walletAddress.toLowerCase()
 
@@ -41,20 +41,20 @@ export const fetchUniswapSignals: SignalFetcher = async (
   const swaps = data?.swaps ?? []
 
   const activePositions = positions.filter(
-    (p) => BigInt(p.liquidity || "0") > 0n
+    (p) => BigInt(p.liquidity || '0') > 0n,
   ).length
 
   const totalSwapVolumeUsd = swaps.reduce(
     (sum, s) => sum + safeNumber(parseFloat(s.amountUSD)),
-    0
+    0,
   )
 
   // Swaps in last 30 days
   const thirtyDaysAgo = Math.floor(
-    (Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000
+    (Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000,
   )
   const recentSwaps = swaps.filter(
-    (s) => safeNumber(parseInt(s.timestamp)) > thirtyDaysAgo
+    (s) => safeNumber(parseInt(s.timestamp)) > thirtyDaysAgo,
   ).length
 
   return {

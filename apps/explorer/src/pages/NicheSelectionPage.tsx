@@ -6,7 +6,8 @@ import '@/components/styles/pages.css'
 
 export default function NicheSelectionPage() {
   const navigate = useNavigate()
-  const { selectedTopics, selectedCategories, toggleCategory } = useTopicSelection()
+  const { selectedTopics, selectedCategories, toggleCategory } =
+    useTopicSelection()
 
   return (
     <div className="pf-view page-enter">

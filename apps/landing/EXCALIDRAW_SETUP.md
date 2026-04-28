@@ -3,6 +3,7 @@
 ## ✅ Ce qui a été fait
 
 1. **Installation du package Excalidraw**
+
    ```bash
    npm install @excalidraw/excalidraw
    ```
@@ -48,8 +49,8 @@ Le diagramme Excalidraw devrait s'afficher de manière interactive !
 Pour ajouter un nouveau diagramme Excalidraw dans n'importe quelle page docs :
 
 ```mdx
-import BrowserOnly from '@docusaurus/BrowserOnly';
-import ExcalidrawViewer from '@site/src/components/ExcalidrawViewer';
+import BrowserOnly from '@docusaurus/BrowserOnly'
+import ExcalidrawViewer from '@site/src/components/ExcalidrawViewer'
 
 <BrowserOnly fallback={<p>Loading diagram...</p>}>
   {() => <ExcalidrawViewer src="/excalidraw/votre-diagram.excalidraw.json" />}
@@ -59,6 +60,7 @@ import ExcalidrawViewer from '@site/src/components/ExcalidrawViewer';
 ## 🐛 Dépannage
 
 Si vous voyez des erreurs liées à `roughjs/bin/rough` ou modules ESM :
+
 1. Assurez-vous que le serveur a été complètement redémarré
 2. Videz le cache : `rm -rf .docusaurus`
 3. Relancez : `npm run start`

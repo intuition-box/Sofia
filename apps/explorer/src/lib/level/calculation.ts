@@ -8,7 +8,9 @@
  */
 
 /** Certification count required to reach each level (index = level - 1). */
-export const LEVEL_THRESHOLDS: readonly number[] = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
+export const LEVEL_THRESHOLDS: readonly number[] = [
+  0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75,
+]
 
 /**
  * Calculate level from on-chain certification count.
@@ -46,12 +48,15 @@ export function calculateLevelProgress(
   const level = baseLevel ?? calculateLevel(certifiedCount)
   const currentThreshold = LEVEL_THRESHOLDS[level - 1] ?? 0
   const isMaxLevel = level >= LEVEL_THRESHOLDS.length
-  const nextThreshold = isMaxLevel ? currentThreshold : LEVEL_THRESHOLDS[level] ?? currentThreshold
+  const nextThreshold = isMaxLevel
+    ? currentThreshold
+    : (LEVEL_THRESHOLDS[level] ?? currentThreshold)
   const range = nextThreshold - currentThreshold
 
-  const progress = isMaxLevel || range <= 0
-    ? 100
-    : ((certifiedCount - currentThreshold) / range) * 100
+  const progress =
+    isMaxLevel || range <= 0
+      ? 100
+      : ((certifiedCount - currentThreshold) / range) * 100
 
   const xpToNext = isMaxLevel ? 0 : Math.max(0, nextThreshold - certifiedCount)
 

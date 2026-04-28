@@ -4,23 +4,33 @@
  * Falls back to static taxonomy.ts during loading.
  */
 
-import { useQuery } from "@tanstack/react-query"
-import { fetchTaxonomy, type TaxonomyData, type OnChainTopic, type OnChainCategory } from "@/services/taxonomyService"
-import { SOFIA_TOPICS, TOPIC_BY_ID, ALL_CATEGORIES, CATEGORY_BY_ID } from "@/config/taxonomy"
-import { TOPIC_ATOM_IDS, CATEGORY_ATOM_IDS } from "@/config/atomIds"
-import { TOPIC_META } from "@/config/topicMeta"
+import { useQuery } from '@tanstack/react-query'
+import {
+  fetchTaxonomy,
+  type TaxonomyData,
+  type OnChainTopic,
+  type OnChainCategory,
+} from '@/services/taxonomyService'
+import {
+  SOFIA_TOPICS,
+  TOPIC_BY_ID,
+  ALL_CATEGORIES,
+  CATEGORY_BY_ID,
+} from '@/config/taxonomy'
+import { TOPIC_ATOM_IDS, CATEGORY_ATOM_IDS } from '@/config/atomIds'
+import { TOPIC_META } from '@/config/topicMeta'
 
 // Build static fallback that matches OnChainTopic shape
 function buildStaticFallback(): TaxonomyData {
   const topics: OnChainTopic[] = SOFIA_TOPICS.map((t) => ({
     id: t.id,
-    termId: TOPIC_ATOM_IDS[t.id] || "",
+    termId: TOPIC_ATOM_IDS[t.id] || '',
     label: t.label,
     icon: t.icon,
     color: t.color,
     categories: t.categories.map((c) => ({
       id: c.id,
-      termId: CATEGORY_ATOM_IDS[c.id] || c.termId || "",
+      termId: CATEGORY_ATOM_IDS[c.id] || c.termId || '',
       label: c.label,
       topicId: t.id,
     })),
@@ -39,7 +49,7 @@ const staticFallback = buildStaticFallback()
 
 export function useTaxonomy() {
   const { data, isLoading, error } = useQuery<TaxonomyData>({
-    queryKey: ["taxonomy"],
+    queryKey: ['taxonomy'],
     queryFn: fetchTaxonomy,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,

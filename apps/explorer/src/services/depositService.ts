@@ -5,7 +5,12 @@ import {
   http,
   formatUnits,
 } from 'viem'
-import { intuitionChain, INTUITION_RPC_URL, PROXY_ADDRESS, SofiaFeeProxyAbi } from '../lib/contracts'
+import {
+  intuitionChain,
+  INTUITION_RPC_URL,
+  PROXY_ADDRESS,
+  SofiaFeeProxyAbi,
+} from '../lib/contracts'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,9 +46,7 @@ const publicClient = createPublicClient({
 // Wallet client initialisation
 // ---------------------------------------------------------------------------
 
-export async function buildWalletClient(
-  wallet: WalletDescriptor,
-){
+export async function buildWalletClient(wallet: WalletDescriptor) {
   await wallet.switchChain(intuitionChain.id)
   const provider = await wallet.getEthereumProvider()
   const address = wallet.address as `0x${string}`
@@ -104,14 +107,34 @@ export async function getFeeParams(): Promise<FeeParams> {
   if (feeParamsCache) return feeParamsCache
 
   const [depositFixed, depositPct, feeDenom] = await Promise.all([
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositFixedFee', authorizationList: undefined }) as Promise<bigint>,
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositPercentageFee', authorizationList: undefined }) as Promise<bigint>,
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'FEE_DENOMINATOR', authorizationList: undefined }) as Promise<bigint>,
+    publicClient.readContract({
+      address: PROXY_ADDRESS,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'depositFixedFee',
+      authorizationList: undefined,
+    }) as Promise<bigint>,
+    publicClient.readContract({
+      address: PROXY_ADDRESS,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'depositPercentageFee',
+      authorizationList: undefined,
+    }) as Promise<bigint>,
+    publicClient.readContract({
+      address: PROXY_ADDRESS,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'FEE_DENOMINATOR',
+      authorizationList: undefined,
+    }) as Promise<bigint>,
   ])
 
   let creationFixed = 0n
   try {
-    creationFixed = await publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'creationFixedFee', authorizationList: undefined }) as bigint
+    creationFixed = (await publicClient.readContract({
+      address: PROXY_ADDRESS,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'creationFixedFee',
+      authorizationList: undefined,
+    })) as bigint
   } catch {
     // creationFixedFee not available on older contract deployments
   }

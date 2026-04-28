@@ -152,7 +152,7 @@ class UserCertificationsServiceClass {
           {
             predicateIds: ALL_PREDICATE_IDS,
             predicateLabels: ALL_PREDICATE_LABELS,
-            userAddress: walletAddress.toLowerCase()
+            userAddresses: walletAddress.toLowerCase()
           },
           "triples",
           100,

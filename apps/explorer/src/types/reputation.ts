@@ -32,19 +32,15 @@ export interface Topic {
 // === PLATEFORMES ===
 
 export type AuthType =
-  | "oauth2"
-  | "oauth1"
-  | "api_key"
-  | "public"
-  | "siwe"
-  | "siwf"
-  | "none"
+  | 'oauth2'
+  | 'oauth1'
+  | 'api_key'
+  | 'public'
+  | 'siwe'
+  | 'siwf'
+  | 'none'
 
-export type SignalConfidence =
-  | "very_high"
-  | "high"
-  | "medium"
-  | "low"
+export type SignalConfidence = 'very_high' | 'high' | 'medium' | 'low'
 
 export type IntegrationPhase = 0 | 1 | 2 | 3 | 4 | 5
 
@@ -73,11 +69,11 @@ export interface PlatformConfig {
 // === SIGNAUX ===
 
 export type SignalType =
-  | "creation"
-  | "regularity"
-  | "community"
-  | "monetization"
-  | "consumption"
+  | 'creation'
+  | 'regularity'
+  | 'community'
+  | 'monetization'
+  | 'consumption'
 
 export interface BehavioralSignal {
   platformId: string
@@ -129,7 +125,11 @@ export interface PlatformContribution {
   rawContribution: number
   breakdown: ScoreBreakdown
   /** Top metrics feeding the contribution (e.g. "commits_moy_quotidien: 12") */
-  topMetrics: Array<{ key: string; value: number; component: keyof ScoreBreakdown }>
+  topMetrics: Array<{
+    key: string
+    value: number
+    component: keyof ScoreBreakdown
+  }>
 }
 
 export interface TopicScoreExplanation {
@@ -193,12 +193,12 @@ export interface UserInterestSelection {
 // === PLATFORM CONNECTION ===
 
 export type ConnectionStatus =
-  | "disconnected"
-  | "connecting"
-  | "pending_verification"
-  | "connected"
-  | "error"
-  | "expired"
+  | 'disconnected'
+  | 'connecting'
+  | 'pending_verification'
+  | 'connected'
+  | 'error'
+  | 'expired'
 
 export interface PlatformConnection {
   platformId: string

@@ -26,7 +26,8 @@ import { readFileSync, writeFileSync, existsSync } from 'fs'
 const RPC_URL = 'https://rpc.intuition.systems'
 const GRAPHQL_URL = 'https://mainnet.intuition.sh/v1/graphql'
 const SOFIA_FEE_PROXY = '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c'
-const HAS_TAG_PREDICATE = '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
+const HAS_TAG_PREDICATE =
+  '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
 const CURVE_ID = 1n
 const CACHE_FILE = 'scripts/.has-tag-cache.json'
 
@@ -38,7 +39,9 @@ const intuitionChain = {
   network: 'intuition-mainnet',
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.intuition.systems' } },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
 }
 
 // ── ABI ──
@@ -101,7 +104,8 @@ function parseTaxonomy() {
   for (let i = 0; i < topicPositions.length; i++) {
     const topic = topicPositions[i]
     const start = topic.pos
-    const end = i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
+    const end =
+      i + 1 < topicPositions.length ? topicPositions[i + 1].pos : content.length
     const topicBlock = content.substring(start, end)
 
     topics.push({ id: topic.id, label: topic.label })
@@ -114,11 +118,18 @@ function parseTaxonomy() {
       const catLabel = catMatch[2]
       if (catId === topic.id) continue
 
-      const afterCat = topicBlock.substring(catMatch.index, catMatch.index + 1200)
+      const afterCat = topicBlock.substring(
+        catMatch.index,
+        catMatch.index + 1200,
+      )
       // Only match categories (have niches: property), not niches themselves
       const nichesPos = afterCat.indexOf('niches:')
       const closingBracket = afterCat.indexOf(']')
-      if (nichesPos === -1 || (closingBracket !== -1 && closingBracket < nichesPos)) continue
+      if (
+        nichesPos === -1 ||
+        (closingBracket !== -1 && closingBracket < nichesPos)
+      )
+        continue
 
       categories.push({
         id: catId,
@@ -126,7 +137,6 @@ function parseTaxonomy() {
         topicId: topic.id,
         topicLabel: topic.label,
       })
-
     }
   }
 
@@ -147,9 +157,8 @@ function parsePlatforms() {
     if (!idMatch || !nameMatch) continue
 
     const catMatch = entry.match(/targetCategories:\s*\[([^\]]*)\]/)
-    const categories = catMatch?.[1]
-      ?.match(/"([^"]+)"/g)
-      ?.map((d) => d.replace(/"/g, '')) || []
+    const categories =
+      catMatch?.[1]?.match(/"([^"]+)"/g)?.map((d) => d.replace(/"/g, '')) || []
 
     platforms.push({ id: idMatch[1], name: nameMatch[1], categories })
   }
@@ -182,7 +191,11 @@ function loadCache() {
   if (existsSync(CACHE_FILE)) {
     return JSON.parse(readFileSync(CACHE_FILE, 'utf8'))
   }
-  return { atomIds: {}, categoryToTopicTriples: {}, platformToCategoryTriples: {} }
+  return {
+    atomIds: {},
+    categoryToTopicTriples: {},
+    platformToCategoryTriples: {},
+  }
 }
 
 function saveCache(cache) {
@@ -195,13 +208,19 @@ async function main() {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
   const estimateOnly = args.includes('--estimate')
-  const batchSize = parseInt(args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '5')
-  const limitTriples = parseInt(args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0')
+  const batchSize = parseInt(
+    args.find((a) => a.startsWith('--batch='))?.split('=')[1] || '5',
+  )
+  const limitTriples = parseInt(
+    args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0',
+  )
 
   const privateKey = process.env.PRIVATE_KEY
   if (!privateKey && !dryRun && !estimateOnly) {
     console.error('ERROR: Set PRIVATE_KEY environment variable (0x...)')
-    console.error('Usage: PRIVATE_KEY=0x... node scripts/create-has-tag-triples.mjs')
+    console.error(
+      'Usage: PRIVATE_KEY=0x... node scripts/create-has-tag-triples.mjs',
+    )
     process.exit(1)
   }
 
@@ -213,18 +232,24 @@ async function main() {
   const platformToCategories = new Map()
   for (const platform of platforms) {
     if (platform.categories.length > 0) {
-      platformToCategories.set(platform.id, { name: platform.name, categories: platform.categories })
+      platformToCategories.set(platform.id, {
+        name: platform.name,
+        categories: platform.categories,
+      })
     }
   }
 
   const totalCatToTopicTriples = categories.length
   let totalPlatToCatTriples = 0
-  for (const [, v] of platformToCategories) totalPlatToCatTriples += v.categories.length
+  for (const [, v] of platformToCategories)
+    totalPlatToCatTriples += v.categories.length
 
   console.log(`\n=== Sofia "has tag" Triple Creator ===`)
   console.log(`[Category] has tag [Topic]:    ${totalCatToTopicTriples}`)
   console.log(`[Platform] has tag [Category]: ${totalPlatToCatTriples}`)
-  console.log(`Total triples:                 ${totalCatToTopicTriples + totalPlatToCatTriples}`)
+  console.log(
+    `Total triples:                 ${totalCatToTopicTriples + totalPlatToCatTriples}`,
+  )
   console.log(`Batch size: ${batchSize}`)
   console.log(`Dry run: ${dryRun}\n`)
 
@@ -251,7 +276,9 @@ async function main() {
       cache.atomIds[key] = topicCache.atomIds[sourceKey]
       console.log(`  LOADED topic "${topic.label}" → ${cache.atomIds[key]}`)
     } else if (!cache.atomIds[key]) {
-      console.error(`  NOT FOUND: topic "${topic.label}" — run create-topic-atoms.mjs first`)
+      console.error(
+        `  NOT FOUND: topic "${topic.label}" — run create-topic-atoms.mjs first`,
+      )
     }
   }
 
@@ -263,7 +290,9 @@ async function main() {
       cache.atomIds[key] = categoryCache.atomIds[sourceKey]
       console.log(`  LOADED category "${cat.label}" → ${cache.atomIds[key]}`)
     } else if (!cache.atomIds[key]) {
-      console.error(`  NOT FOUND: category "${cat.label}" — run create-category-atoms.mjs first`)
+      console.error(
+        `  NOT FOUND: category "${cat.label}" — run create-category-atoms.mjs first`,
+      )
     }
   }
 
@@ -275,7 +304,9 @@ async function main() {
       cache.atomIds[key] = platformCache.atomIds[sourceKey]
       console.log(`  LOADED platform "${mapping.name}" → ${cache.atomIds[key]}`)
     } else if (!cache.atomIds[key]) {
-      console.error(`  NOT FOUND: platform "${mapping.name}" — run create-platform-atoms.mjs first`)
+      console.error(
+        `  NOT FOUND: platform "${mapping.name}" — run create-platform-atoms.mjs first`,
+      )
     }
   }
 
@@ -284,11 +315,22 @@ async function main() {
   // Check missing
   const missingTopics = topics.filter((t) => !cache.atomIds[`topic:${t.id}`])
   const missingCats = categories.filter((c) => !cache.atomIds[`cat:${c.id}`])
-  const missingPlats = [...platformToCategories.entries()].filter(([id]) => !cache.atomIds[`platform:${id}`])
+  const missingPlats = [...platformToCategories.entries()].filter(
+    ([id]) => !cache.atomIds[`platform:${id}`],
+  )
 
-  if (missingTopics.length > 0) console.error(`\n  Missing topics: ${missingTopics.map((t) => t.label).join(', ')}`)
-  if (missingCats.length > 0) console.error(`  Missing categories: ${missingCats.map((c) => c.label).join(', ')}`)
-  if (missingPlats.length > 0) console.error(`  Missing platforms: ${missingPlats.map(([, v]) => v.name).join(', ')}`)
+  if (missingTopics.length > 0)
+    console.error(
+      `\n  Missing topics: ${missingTopics.map((t) => t.label).join(', ')}`,
+    )
+  if (missingCats.length > 0)
+    console.error(
+      `  Missing categories: ${missingCats.map((c) => c.label).join(', ')}`,
+    )
+  if (missingPlats.length > 0)
+    console.error(
+      `  Missing platforms: ${missingPlats.map(([, v]) => v.name).join(', ')}`,
+    )
 
   if (dryRun) {
     console.log('\n── Dry run — Platform → Category mapping ──\n')
@@ -344,13 +386,19 @@ async function main() {
   })
 
   console.log(`\n── Cost Estimate ──`)
-  console.log(`  Triples: ${totalTripleCount} × ${formatEther(tripleCost)} = ${formatEther(triplesTotalCost)} TRUST`)
+  console.log(
+    `  Triples: ${totalTripleCount} × ${formatEther(tripleCost)} = ${formatEther(triplesTotalCost)} TRUST`,
+  )
   console.log(`  Balance: ${formatEther(balance)} TRUST`)
 
   if (balance < triplesTotalCost) {
-    console.error(`\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(triplesTotalCost - balance)} more`)
+    console.error(
+      `\n  ⚠ NOT ENOUGH TRUST! Need ${formatEther(triplesTotalCost - balance)} more`,
+    )
   } else {
-    console.log(`  ✓ Enough TRUST (${formatEther(balance - triplesTotalCost)} will remain)`)
+    console.log(
+      `  ✓ Enough TRUST (${formatEther(balance - triplesTotalCost)} will remain)`,
+    )
   }
 
   if (estimateOnly) {
@@ -370,8 +418,14 @@ async function main() {
     const catAtomId = cache.atomIds[`cat:${cat.id}`]
     const topicAtomId = cache.atomIds[`topic:${cat.topicId}`]
 
-    if (!catAtomId) { console.log(`  SKIP ${cat.label} (no category atom)`); continue }
-    if (!topicAtomId) { console.log(`  SKIP ${cat.label} → ${cat.topicLabel} (no topic atom)`); continue }
+    if (!catAtomId) {
+      console.log(`  SKIP ${cat.label} (no category atom)`)
+      continue
+    }
+    if (!topicAtomId) {
+      console.log(`  SKIP ${cat.label} → ${cat.topicLabel} (no topic atom)`)
+      continue
+    }
 
     catToTopicTriples.push({
       key,
@@ -382,7 +436,10 @@ async function main() {
   }
 
   console.log(`Triples to create: ${catToTopicTriples.length}`)
-  const catTriplesToRun = limitTriples > 0 ? catToTopicTriples.slice(0, limitTriples) : catToTopicTriples
+  const catTriplesToRun =
+    limitTriples > 0
+      ? catToTopicTriples.slice(0, limitTriples)
+      : catToTopicTriples
   await createTriplesBatched(catTriplesToRun, cache.categoryToTopicTriples)
 
   if (limitTriples > 0 && limitTriples <= catToTopicTriples.length) {
@@ -398,14 +455,20 @@ async function main() {
   const platToCatTriples = []
   for (const [platformId, mapping] of platformToCategories) {
     const platformAtomId = cache.atomIds[`platform:${platformId}`]
-    if (!platformAtomId) { console.log(`  SKIP platform ${mapping.name} (no atom)`); continue }
+    if (!platformAtomId) {
+      console.log(`  SKIP platform ${mapping.name} (no atom)`)
+      continue
+    }
 
     for (const catId of mapping.categories) {
       const key = `${platformId}:${catId}`
       if (cache.platformToCategoryTriples[key]) continue
 
       const catAtomId = cache.atomIds[`cat:${catId}`]
-      if (!catAtomId) { console.log(`  SKIP ${mapping.name} → ${catId} (no category atom)`); continue }
+      if (!catAtomId) {
+        console.log(`  SKIP ${mapping.name} → ${catId} (no category atom)`)
+        continue
+      }
 
       const cat = categories.find((c) => c.id === catId)
       platToCatTriples.push({
@@ -423,8 +486,12 @@ async function main() {
   // ── Summary ──
 
   console.log('\n=== Summary ===')
-  console.log(`[Category] has tag [Topic]:      ${Object.keys(cache.categoryToTopicTriples).length}`)
-  console.log(`[Platform] has tag [Category]:   ${Object.keys(cache.platformToCategoryTriples).length}`)
+  console.log(
+    `[Category] has tag [Topic]:      ${Object.keys(cache.categoryToTopicTriples).length}`,
+  )
+  console.log(
+    `[Platform] has tag [Category]:   ${Object.keys(cache.platformToCategoryTriples).length}`,
+  )
   console.log(`Cache saved to: ${CACHE_FILE}`)
 
   // ── Batch triple creation helper ──
@@ -449,14 +516,23 @@ async function main() {
         args: [0n, 0n, multiVaultCost],
       })
 
-      console.log(`\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} triples, cost: ${formatEther(totalCost)} TRUST`)
+      console.log(
+        `\n  Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} triples, cost: ${formatEther(totalCost)} TRUST`,
+      )
 
       try {
         const { result } = await publicClient.simulateContract({
           address: SOFIA_FEE_PROXY,
           abi: PROXY_ABI,
           functionName: 'createTriples',
-          args: [account.address, subjectIds, predicateIds, objectIds, deposits, CURVE_ID],
+          args: [
+            account.address,
+            subjectIds,
+            predicateIds,
+            objectIds,
+            deposits,
+            CURVE_ID,
+          ],
           value: totalCost,
           account,
         })
@@ -465,12 +541,21 @@ async function main() {
           address: SOFIA_FEE_PROXY,
           abi: PROXY_ABI,
           functionName: 'createTriples',
-          args: [account.address, subjectIds, predicateIds, objectIds, deposits, CURVE_ID],
+          args: [
+            account.address,
+            subjectIds,
+            predicateIds,
+            objectIds,
+            deposits,
+            CURVE_ID,
+          ],
           value: totalCost,
         })
 
         console.log(`  TX: ${txHash}`)
-        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash: txHash,
+        })
 
         if (receipt.status !== 'success') {
           console.error(`  TX FAILED`)
@@ -500,7 +585,14 @@ async function main() {
               address: SOFIA_FEE_PROXY,
               abi: PROXY_ABI,
               functionName: 'createTriples',
-              args: [account.address, [triple.subjectId], [HAS_TAG_PREDICATE], [triple.objectId], [0n], CURVE_ID],
+              args: [
+                account.address,
+                [triple.subjectId],
+                [HAS_TAG_PREDICATE],
+                [triple.objectId],
+                [0n],
+                CURVE_ID,
+              ],
               value: singleCost,
               account,
             })
@@ -509,7 +601,14 @@ async function main() {
               address: SOFIA_FEE_PROXY,
               abi: PROXY_ABI,
               functionName: 'createTriples',
-              args: [account.address, [triple.subjectId], [HAS_TAG_PREDICATE], [triple.objectId], [0n], CURVE_ID],
+              args: [
+                account.address,
+                [triple.subjectId],
+                [HAS_TAG_PREDICATE],
+                [triple.objectId],
+                [0n],
+                CURVE_ID,
+              ],
               value: singleCost,
             })
 
@@ -518,12 +617,17 @@ async function main() {
             console.log(`    CREATED ${triple.label}`)
             saveCache(cache)
           } catch (singleErr) {
-            if (singleErr.message?.includes('TripleExists') || singleErr.message?.includes('0x4762af7d')) {
+            if (
+              singleErr.message?.includes('TripleExists') ||
+              singleErr.message?.includes('0x4762af7d')
+            ) {
               console.log(`    EXISTS ${triple.label}`)
               cacheMap[triple.key] = 'existing'
               saveCache(cache)
             } else {
-              console.error(`    FAIL ${triple.label}: ${singleErr.message?.slice(0, 100)}`)
+              console.error(
+                `    FAIL ${triple.label}: ${singleErr.message?.slice(0, 100)}`,
+              )
             }
           }
         }

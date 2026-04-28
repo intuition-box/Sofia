@@ -31,12 +31,23 @@ query GetTripleVaultStats($termId: String!, $addresses: [String!]) {
 query GetBatchTripleVaultStats($termIds: [String!]!, $addresses: [String!]) {
   triples(where: { term_id: { _in: $termIds } }) {
     term_id
-    subject { label term_id }
-    predicate { label term_id }
+    subject {
+      label
+      term_id
+    }
+    predicate {
+      label
+      term_id
+    }
     object {
       label
       term_id
-      value { thing { url name } }
+      value {
+        thing {
+          url
+          name
+        }
+      }
     }
     term {
       vaults {

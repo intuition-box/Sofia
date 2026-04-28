@@ -3,10 +3,7 @@ subscription WatchUserTrackedPositions(
   $termIds: [String!]!
 ) {
   positions(
-    where: {
-      account_id: { _in: $accountIds }
-      term_id: { _in: $termIds }
-    }
+    where: { account_id: { _in: $accountIds }, term_id: { _in: $termIds } }
     order_by: { shares: desc }
     limit: 500
   ) {

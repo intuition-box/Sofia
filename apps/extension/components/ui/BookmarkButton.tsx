@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks } from '../../hooks'
-import type { Triplet } from '~components/pages/core-tabs/types'
+import type { Triplet } from '~types/messages'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
 import BookmarkPlusIcon from './icons/bookmark-plus.svg'

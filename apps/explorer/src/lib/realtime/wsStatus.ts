@@ -8,11 +8,11 @@
  */
 
 export type WsConnectionStatus =
-  | 'idle'        // nothing mounted yet
-  | 'connecting'  // first connection attempt
-  | 'connected'   // happy path
-  | 'offline'     // closed unexpectedly, graphql-ws is retrying
-  | 'error'       // terminal error surfaced by graphql-ws
+  | 'idle' // nothing mounted yet
+  | 'connecting' // first connection attempt
+  | 'connected' // happy path
+  | 'offline' // closed unexpectedly, graphql-ws is retrying
+  | 'error' // terminal error surfaced by graphql-ws
 
 export interface WsStatusSnapshot {
   status: WsConnectionStatus

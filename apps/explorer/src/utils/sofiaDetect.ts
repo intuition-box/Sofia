@@ -11,8 +11,7 @@
  */
 
 // TODO: replace with real Chrome Web Store URL once published
-const CHROME_STORE_URL =
-  'https://chromewebstore.google.com/detail/sofia'
+const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/sofia'
 
 function isSofiaInstalled(): boolean {
   return document.documentElement.dataset.sofiaExtension === 'true'
@@ -28,4 +27,3 @@ export function getCertifyUrl(platformUrl: string): string {
     return platformUrl + '?sofia_certify=true'
   }
 }
-

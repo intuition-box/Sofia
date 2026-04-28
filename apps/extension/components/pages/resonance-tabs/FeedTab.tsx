@@ -60,7 +60,7 @@ const FeedTab = () => {
     {
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
-      address: checksumAddress,
+      addresses: checksumAddress,
       offset: 0,
       positionsOrderBy: [{ shares: 'desc' }]
     },

@@ -1,1 +1,1 @@
-export { default } from './PixelBlast';
+export { default } from './PixelBlast'

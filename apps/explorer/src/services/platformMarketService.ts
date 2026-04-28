@@ -4,7 +4,7 @@
  * Each platform atom on Intuition has a vault that users can deposit into.
  */
 
-import { GRAPHQL_URL } from "@/config"
+import { GRAPHQL_URL } from '@/config'
 
 // ── Types ──
 
@@ -54,11 +54,11 @@ export async function fetchPlatformVaultStats(
 ): Promise<PlatformVaultData[]> {
   if (termIds.length === 0) return []
 
-  const address = walletAddress || "0x0000000000000000000000000000000000000000"
+  const address = walletAddress || '0x0000000000000000000000000000000000000000'
 
   const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query: GET_ATOM_VAULT_STATS,
       variables: { termIds, address },
@@ -80,21 +80,21 @@ export async function fetchPlatformVaultStats(
     let userDeposited = 0n
 
     for (const vault of vaults) {
-      totalMarketCap += BigInt(vault.market_cap || "0")
-      totalShares += BigInt(vault.total_shares || "0")
+      totalMarketCap += BigInt(vault.market_cap || '0')
+      totalShares += BigInt(vault.total_shares || '0')
       totalPositionCount += vault.position_count || 0
-      const sp = BigInt(vault.current_share_price || "0")
+      const sp = BigInt(vault.current_share_price || '0')
       if (sp > bestSharePrice) bestSharePrice = sp
 
       for (const p of vault.positions || []) {
-        userShares += BigInt(p.shares || "0")
-        userDeposited += BigInt(p.total_deposit_assets_after_total_fees || "0")
+        userShares += BigInt(p.shares || '0')
+        userDeposited += BigInt(p.total_deposit_assets_after_total_fees || '0')
       }
     }
 
     let userPnlPct: number | null = null
     if (userShares > 0n && userDeposited > 0n) {
-      const currentValue = (userShares * bestSharePrice) / (10n ** 18n)
+      const currentValue = (userShares * bestSharePrice) / 10n ** 18n
       const pnl = Number(currentValue - userDeposited) / Number(userDeposited)
       userPnlPct = Math.round(pnl * 1000) / 10
     }

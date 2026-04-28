@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { client } from '../graphql/client.js';
-import { gql } from 'graphql-request';
-import { removeEmptyFields, createErrorResponse } from '../lib/response.js';
-import { 
-  processPositionWithOpposition, 
-  filterZeroSharePositions
-} from '../lib/position-utils.js';
+import { z } from 'zod'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { client } from '../graphql/client.js'
+import { gql } from 'graphql-request'
+import { removeEmptyFields, createErrorResponse } from '../lib/response.js'
+import {
+  processPositionWithOpposition,
+  filterZeroSharePositions,
+} from '../lib/position-utils.js'
 
 // Define the parameters schema
 const parameters = z.object({
@@ -14,23 +14,23 @@ const parameters = z.object({
     .string()
     .min(1)
     .describe(
-      'The account id of the account to find the followers for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b'
+      'The account id of the account to find the followers for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b',
     ),
   predicate: z
     .string()
     .min(1)
     .describe(
       `Optional predicate to filter followers positions on.
-Example: recommend, follow, like, dislike`
+Example: recommend, follow, like, dislike`,
     )
     .optional(),
-});
+})
 
 // Define the operation interface
 interface GetFollowersOperation {
-  description: string;
-  parameters: typeof parameters;
-  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>;
+  description: string
+  parameters: typeof parameters
+  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>
 }
 
 const getFollowersQuery = gql`
@@ -161,66 +161,66 @@ const getFollowersQuery = gql`
       }
     }
   }
-`;
+`
 
 interface GetFollowersQueryResponse {
   positions: Array<{
-    id: string;
-    shares: string;
+    id: string
+    shares: string
     account: {
-      id: string;
-      label: string;
-      image?: string;
-    };
+      id: string
+      label: string
+      image?: string
+    }
     term: {
       triple: {
-        term_id: string;
+        term_id: string
         subject: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
+          term_id: string
+          label: string
+          value: any
+        }
         predicate: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
+          term_id: string
+          label: string
+          value: any
+        }
         object: {
-          term_id: string;
-          label: string;
-          value: any;
-        };
-      };
+          term_id: string
+          label: string
+          value: any
+        }
+      }
       vaults: Array<{
-        term_id: string;
-        position_count: number;
-        total_shares: string;
-        current_share_price: string;
-      }>;
-    };
-  }>;
+        term_id: string
+        position_count: number
+        total_shares: string
+        current_share_price: string
+      }>
+    }
+  }>
 }
 
 interface FormattedFollowersQueryResponse {
   followers: {
-    id: string;
-    label: string;
-    image?: string;
-    shares: string;
+    id: string
+    label: string
+    image?: string
+    shares: string
     triple: {
-      term_id: string;
-      subject: any;
-      predicate: any;
-      object: any;
-    };
-    vault_info: any;
-  }[];
+      term_id: string
+      subject: any
+      predicate: any
+      object: any
+    }
+    vault_info: any
+  }[]
 }
 
 function formatResponse(
-  result: GetFollowersQueryResponse
+  result: GetFollowersQueryResponse,
 ): FormattedFollowersQueryResponse {
-  const formattedResult: FormattedFollowersQueryResponse = { followers: [] };
+  const formattedResult: FormattedFollowersQueryResponse = { followers: [] }
 
   for (const position of result.positions) {
     const follower = {
@@ -235,11 +235,11 @@ function formatResponse(
         object: position.term.triple.object,
       },
       vault_info: position.term.vaults[0] || null,
-    };
-    formattedResult.followers.push(follower);
+    }
+    formattedResult.followers.push(follower)
   }
 
-  return formattedResult;
+  return formattedResult
 }
 
 export const getFollowersOperation: GetFollowersOperation = {
@@ -247,10 +247,10 @@ export const getFollowersOperation: GetFollowersOperation = {
   parameters,
   async execute(args) {
     try {
-      console.log('\n=== Getting Followers and Their Relationships ===');
+      console.log('\n=== Getting Followers and Their Relationships ===')
 
-      const address = args.account_id;
-      const predicateFilter = args.predicate || 'follow';
+      const address = args.account_id
+      const predicateFilter = args.predicate || 'follow'
 
       // First get followers (people who follow this account)
       const followersResult = (await client.request(getFollowersQuery, {
@@ -283,12 +283,12 @@ export const getFollowersOperation: GetFollowersOperation = {
           },
         ],
         limit: 50,
-      })) as GetFollowersQueryResponse;
+      })) as GetFollowersQueryResponse
 
       // Now for each follower, get what they are interested in (their positions)
       const enrichedFollowers = await Promise.all(
         followersResult.positions.map(async (followerPosition) => {
-          const followerId = followerPosition.account.id;
+          const followerId = followerPosition.account.id
 
           // Get what this follower is interested in (their positions)
           const followerInterestsResult = (await client.request(
@@ -317,17 +317,25 @@ export const getFollowersOperation: GetFollowersOperation = {
                 },
               ],
               limit: 20,
-            }
-          )) as GetFollowersQueryResponse;
+            },
+          )) as GetFollowersQueryResponse
 
           // Filter out zero-share positions and process with opposition detection
-          const nonZeroPositions = filterZeroSharePositions(followerInterestsResult.positions);
-          
+          const nonZeroPositions = filterZeroSharePositions(
+            followerInterestsResult.positions,
+          )
+
           const interests = nonZeroPositions
             .map((pos) => {
-              const processedPosition = processPositionWithOpposition(pos, followerId);
-              if (!processedPosition || processedPosition.type !== 'relationship_position') {
-                return null;
+              const processedPosition = processPositionWithOpposition(
+                pos,
+                followerId,
+              )
+              if (
+                !processedPosition ||
+                processedPosition.type !== 'relationship_position'
+              ) {
+                return null
               }
 
               return {
@@ -338,13 +346,13 @@ export const getFollowersOperation: GetFollowersOperation = {
                 opposition_metrics: processedPosition.oppositionMetrics,
                 vault_info: processedPosition.vault_info,
                 human_readable: processedPosition.human_readable,
-              };
+              }
             })
-            .filter((interest) => interest !== null);
+            .filter((interest) => interest !== null)
 
           // Determine engagement level based on share amount (used internally only)
-          const shareAmount = BigInt(followerPosition.shares || '0');
-          const isHighlyEngaged = shareAmount > BigInt('1000000000000000000'); // > 1 ETH equivalent
+          const shareAmount = BigInt(followerPosition.shares || '0')
+          const isHighlyEngaged = shareAmount > BigInt('1000000000000000000') // > 1 ETH equivalent
 
           return {
             follower: {
@@ -357,39 +365,44 @@ export const getFollowersOperation: GetFollowersOperation = {
             },
             interests: interests.slice(0, 10), // Top 10 interests
             interests_count: interests.length,
-            opposition_count: interests.filter(i => i.position_type === 'oppose').length,
+            opposition_count: interests.filter(
+              (i) => i.position_type === 'oppose',
+            ).length,
             relationship_summary: interests
               .slice(0, 5)
               .map((i) => {
-                let summary = i.human_readable;
-                if (i.position_type === 'oppose') summary += ' [OPPOSING]';
-                if (i.opposition_metrics && i.opposition_metrics.oppositionRatio > 0.25) {
-                  summary += ` [${Math.round(i.opposition_metrics.oppositionRatio * 100)}% opposition]`;
+                let summary = i.human_readable
+                if (i.position_type === 'oppose') summary += ' [OPPOSING]'
+                if (
+                  i.opposition_metrics &&
+                  i.opposition_metrics.oppositionRatio > 0.25
+                ) {
+                  summary += ` [${Math.round(i.opposition_metrics.oppositionRatio * 100)}% opposition]`
                 }
-                return summary;
+                return summary
               })
               .join('; '),
-          };
-        })
-      );
+          }
+        }),
+      )
 
       const formattedResult = {
         target_account: address,
         followers_count: enrichedFollowers.length,
         followers: enrichedFollowers.sort((a, b) => {
-          const sharesA = BigInt(a.follower.follows_with_shares || '0');
-          const sharesB = BigInt(b.follower.follows_with_shares || '0');
-          return sharesA > sharesB ? -1 : sharesA < sharesB ? 1 : 0;
+          const sharesA = BigInt(a.follower.follows_with_shares || '0')
+          const sharesB = BigInt(b.follower.follows_with_shares || '0')
+          return sharesA > sharesB ? -1 : sharesA < sharesB ? 1 : 0
         }),
         summary: {
           total_followers: enrichedFollowers.length,
           total_relationships_discovered: enrichedFollowers.reduce(
             (sum, f) => sum + f.interests_count,
-            0
+            0,
           ),
           predicate_filter: predicateFilter,
         },
-      };
+      }
 
       // Return in MCP format with essential data for UI
       const response: CallToolResult = {
@@ -410,7 +423,7 @@ export const getFollowersOperation: GetFollowersOperation = {
                 total_followers: enrichedFollowers.length,
                 total_interests: enrichedFollowers.reduce(
                   (sum, f) => sum + f.interests_count,
-                  0
+                  0,
                 ),
               }),
               mimeType: 'application/json',
@@ -429,11 +442,13 @@ ${enrichedFollowers
         follower.follower.is_highly_engaged ? 'Highly engaged' : 'Active'
       } follower
    📊 ${follower.interests_count} ${predicateFilter} interests${
-        follower.opposition_count > 0 ? ` (${follower.opposition_count} opposing)` : ''
-      }
+     follower.opposition_count > 0
+       ? ` (${follower.opposition_count} opposing)`
+       : ''
+   }
    🔗 ${follower.relationship_summary.slice(0, 100)}${
-        follower.relationship_summary.length > 100 ? '...' : ''
-      }`
+     follower.relationship_summary.length > 100 ? '...' : ''
+   }`,
   )
   .join('\n\n')}
 
@@ -441,23 +456,23 @@ ${enrichedFollowers
               enrichedFollowers.length
             } followers with ${enrichedFollowers.reduce(
               (sum, f) => sum + f.interests_count,
-              0
+              0,
             )} total relationship patterns discovered.`,
           },
         ],
-      };
+      }
 
-      console.log('\n=== Followers Response ===');
+      console.log('\n=== Followers Response ===')
       console.log(
-        `Response size: ${JSON.stringify(response).length} characters`
-      );
-      return response;
+        `Response size: ${JSON.stringify(response).length} characters`,
+      )
+      return response
     } catch (error) {
       return createErrorResponse(error, {
         operation: 'get_followers',
         args,
         phase: 'execution',
-      });
+      })
     }
   },
-};
+}

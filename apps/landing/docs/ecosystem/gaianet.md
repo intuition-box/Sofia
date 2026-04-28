@@ -28,6 +28,7 @@ Decentralized infrastructure reduces costs compared to centralized AI services, 
 ## How Sofia Uses GaiaNet
 
 Sofia leverages GaiaNet for:
+
 - **Natural language processing** - Understanding the content and context of web pages
 - **Semantic analysis** - Extracting meaning and relationships from your browsing data
 - **Recommendation generation** - Suggesting relevant content and connections based on your interests

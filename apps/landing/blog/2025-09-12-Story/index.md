@@ -1,11 +1,9 @@
 ---
-
 slug: From idea to reality
 
 title: The Story of Sofia
 
 authors: [Samuel, Maxime]
-
 ---
 
 ## From Frustration to an Innovation
@@ -28,19 +26,15 @@ Sofia was born to fix this. It's a Semantic Organization Fostering Intelligence 
 
 We chose decentralization for transparency, ethics, innovation, and open-mindedness. Distributed verification and storage guarantee the portability and inviolability of your knowledge graph. We're not replicating another legacy dApp with tokens; we're creating a new way to navigate on web and how a trust information can come in your private space.
 
-
 ## What's next?
 
 Currently, we’re still working towards our MVP, and we’re excited to reach that milestone very soon. The goal is to launch in the near future and gather valuable user feedback as quickly as possible. That said, we are putting a lot of thought into the user experience, as we really want our users to feel at home with Sofia. We’re aiming to make the app both fun and intuitive, and that takes a bit more time to refine. In the meantime, we created this blog in order to share our progress with a transparency spirit.
 
 It’s been a journey, but we’re confident we’ve found a direction that works.
 
-
-
 ## Milestones Achieved
 
-
-**Technical Structure** 
+**Technical Structure**
 
 - Plasmo for extension integration into chrome (chromium type)
 - Intuition system for knowledge graph storage.
@@ -48,38 +42,31 @@ It’s been a journey, but we’re confident we’ve found a direction that work
 - ElisaOS and GaiaNet for distributed agents and AI-powered feature
 - Searching results trough MCP from intuition system
 
-
 **Features**
 
 - Analyze your navigation (url, click, duration) and send the analysis to our first AI agent.
-- Synthetize thematic and intention by our agent 
+- Synthetize thematic and intention by our agent
 - Triples creation to normalize raw data into Intuition system semantic
-- Transaction for each atom and triples the user want link to his profile 
-- Writing information into Intuition block-chain with the wallet address as a central atom (identity) 
-- Collect user data on fly from youtube Twitch and spotify with pre-authentification 
+- Transaction for each atom and triples the user want link to his profile
+- Writing information into Intuition block-chain with the wallet address as a central atom (identity)
+- Collect user data on fly from youtube Twitch and spotify with pre-authentification
 - Chat with your personal agent connected to Intuition knowledge graph
 - Collect all your opened tab and group them into a semantic analysed bookmark
 
-
-**Design** 
+**Design**
 
 - Interactive orb built with shaders in GLSL
 - Background animation created in CSS
 - Logo, animation, and branding exploration were done in Figma
 
+**Information system**
 
-**Information system** 
-
-- Meetings, workspace, workshops on Discord 
+- Meetings, workspace, workshops on Discord
 - Architecture diagram and brainstorming with Excalidraw and Whimsical
 - Backend Documentation and knowledge capitalisation with Charmverse
-
 
 ## Links
 
 - [Intuition System](https://www.intuition.systems/)
 - [Gaianet](https://www.gaianet.ai/)
 - [Mastra](https://mastra.ai/)
-
-
-

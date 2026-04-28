@@ -3,14 +3,28 @@
    banner now that the app has no fixed header. */
 /* padding-top: breathing room between the top of the viewport and the
    hero banner now that the app has no fixed header. */
-.main-content { margin-left: 290px; margin-right: 290px; padding-top: 48px; padding-bottom: 48px; padding-left: 56px; padding-right: 56px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+.main-content {
+  margin-left: 290px;
+  margin-right: 290px;
+  padding-top: 48px;
+  padding-bottom: 48px;
+  padding-left: 56px;
+  padding-right: 56px;
+  transition:
+    margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* Nav collapsed — main follows the narrower 68px rail. */
-.nav-collapsed .main-content { margin-left: 68px; }
+.nav-collapsed .main-content {
+  margin-left: 68px;
+}
 
 /* ProfileDrawer is 350px wide. When open, widen the main's right margin
    so the drawer doesn't overlap content. Padding-right stays intact. */
-body:has(.pd-aside.pd-open) .main-content { margin-right: 350px; }
+body:has(.pd-aside.pd-open) .main-content {
+  margin-right: 350px;
+}
 
 /* ── RightSidebar ── */
 .rs-aside {
@@ -19,7 +33,9 @@ body:has(.pd-aside.pd-open) .main-content { margin-right: 350px; }
   border-left: 1px solid var(--border);
   padding-top: 16px;
   top: 0;
-  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100vh;
 }
 .rs-aside.rs-hidden {

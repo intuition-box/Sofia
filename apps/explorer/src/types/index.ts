@@ -58,7 +58,15 @@ export interface VaultStats {
 
 // ── Trending ──
 
-export type IntentCategory = 'trusted' | 'distrusted' | 'work' | 'learning' | 'fun' | 'inspiration' | 'music' | 'buying'
+export type IntentCategory =
+  | 'trusted'
+  | 'distrusted'
+  | 'work'
+  | 'learning'
+  | 'fun'
+  | 'inspiration'
+  | 'music'
+  | 'buying'
 
 export interface TrendingItemLive {
   category: IntentCategory
@@ -133,4 +141,3 @@ export interface RpcQueueConfig {
   backoffMultiplier?: number
   maxRetries?: number
 }
-

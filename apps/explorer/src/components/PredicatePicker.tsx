@@ -14,7 +14,13 @@ interface PredicatePickerProps {
   onClose: () => void
 }
 
-export default function PredicatePicker({ isOpen, side, item, onConfirm, onClose }: PredicatePickerProps) {
+export default function PredicatePicker({
+  isOpen,
+  side,
+  item,
+  onConfirm,
+  onClose,
+}: PredicatePickerProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   // Only show intentions that have vault IDs for the given side
@@ -47,18 +53,30 @@ export default function PredicatePicker({ isOpen, side, item, onConfirm, onClose
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
     >
-      <Card className="w-full max-w-md mx-4 p-0 overflow-hidden rounded-2xl" style={{ borderTop: `3px solid ${accentColor}`, zoom: 1.25 }}>
+      <Card
+        className="w-full max-w-md mx-4 p-0 overflow-hidden rounded-2xl"
+        style={{ borderTop: `3px solid ${accentColor}`, zoom: 1.25 }}
+      >
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold" style={{ color: accentColor }}>
               {isSupport ? 'Support' : 'Oppose'}: Select Intentions
             </h3>
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none p-1">&times;</button>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground text-xl leading-none p-1"
+            >
+              &times;
+            </button>
           </div>
-          <p className="text-sm text-muted-foreground mt-2 truncate">{item.title}</p>
+          <p className="text-sm text-muted-foreground mt-2 truncate">
+            {item.title}
+          </p>
         </div>
 
         <div className="px-6 pb-6 space-y-5">
@@ -97,7 +115,11 @@ export default function PredicatePicker({ isOpen, side, item, onConfirm, onClose
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={onClose}>
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl"
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button

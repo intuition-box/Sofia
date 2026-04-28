@@ -27,10 +27,26 @@ import '@/components/styles/pages.css'
 import '@/components/styles/compose.css'
 
 const COMPARE_MODES: { id: CompareMode; label: string; hint: string }[] = [
-  { id: 'merge',     label: 'Merge',     hint: 'Union — everything any selection certified.' },
-  { id: 'intersect', label: 'Intersect', hint: 'Strict overlap — where selections agree.' },
-  { id: 'subtract',  label: 'Subtract',  hint: 'Difference — in one, missing from others.' },
-  { id: 'contrast',  label: 'Contrast',  hint: 'Divergence — where selections disagree most.' },
+  {
+    id: 'merge',
+    label: 'Merge',
+    hint: 'Union — everything any selection certified.',
+  },
+  {
+    id: 'intersect',
+    label: 'Intersect',
+    hint: 'Strict overlap — where selections agree.',
+  },
+  {
+    id: 'subtract',
+    label: 'Subtract',
+    hint: 'Difference — in one, missing from others.',
+  },
+  {
+    id: 'contrast',
+    label: 'Contrast',
+    hint: 'Divergence — where selections disagree most.',
+  },
 ]
 
 // The only real circle today is the user's Trust Circle. Kept in an
@@ -69,7 +85,8 @@ export default function ComposePage() {
   }
 
   const q = query.trim().toLowerCase()
-  const matchesQuery = (label: string) => q.length === 0 || label.toLowerCase().includes(q)
+  const matchesQuery = (label: string) =>
+    q.length === 0 || label.toLowerCase().includes(q)
 
   const circles = useMemo(
     () => [
@@ -96,8 +113,10 @@ export default function ComposePage() {
     // Aggregation logic lives in a follow-up wave; for now we just
     // forward the selection to `/perspective/:mode` via query string.
     const params = new URLSearchParams()
-    if (selectedCircles.size > 0) params.set('circles', Array.from(selectedCircles).join(','))
-    if (selectedTopics.size > 0) params.set('topics', Array.from(selectedTopics).join(','))
+    if (selectedCircles.size > 0)
+      params.set('circles', Array.from(selectedCircles).join(','))
+    if (selectedTopics.size > 0)
+      params.set('topics', Array.from(selectedTopics).join(','))
     const suffix = params.toString() ? `?${params.toString()}` : ''
     navigate(`/perspective/${mode}${suffix}`)
   }
@@ -166,7 +185,9 @@ export default function ComposePage() {
               <span className="compose-col-count">{visibleCircles.length}</span>
             </div>
             {visibleCircles.length === 0 ? (
-              <div className="composer-empty">No circle matches your search.</div>
+              <div className="composer-empty">
+                No circle matches your search.
+              </div>
             ) : (
               visibleCircles.map((c) => {
                 const isSelected = selectedCircles.has(c.id)
@@ -177,7 +198,9 @@ export default function ComposePage() {
                     tabIndex={0}
                     aria-pressed={isSelected}
                     className={`select-card who-card${isSelected ? ' selected' : ''}`}
-                    onClick={() => setSelectedCircles((prev) => toggle(prev, c.id))}
+                    onClick={() =>
+                      setSelectedCircles((prev) => toggle(prev, c.id))
+                    }
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
                         e.preventDefault()
@@ -221,7 +244,9 @@ export default function ComposePage() {
               <span className="compose-col-count">{visibleTopics.length}</span>
             </div>
             {visibleTopics.length === 0 ? (
-              <div className="composer-empty">No topic matches your search.</div>
+              <div className="composer-empty">
+                No topic matches your search.
+              </div>
             ) : (
               visibleTopics.map((topic) => {
                 const isSelected = selectedTopics.has(topic.id)
@@ -232,7 +257,9 @@ export default function ComposePage() {
                     tabIndex={0}
                     aria-pressed={isSelected}
                     className={`select-card what-card${isSelected ? ' selected' : ''}`}
-                    onClick={() => setSelectedTopics((prev) => toggle(prev, topic.id))}
+                    onClick={() =>
+                      setSelectedTopics((prev) => toggle(prev, topic.id))
+                    }
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
                         e.preventDefault()

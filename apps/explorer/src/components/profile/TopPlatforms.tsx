@@ -42,7 +42,9 @@ export default function TopPlatforms({
       {items.map((s, i) => {
         const pct = (s.count / max) * 100
         const up = s.delta >= 0
-        const deltaColor = up ? 'var(--trusted, #6dd4a0)' : 'var(--distrusted, #e87c7c)'
+        const deltaColor = up
+          ? 'var(--trusted, #6dd4a0)'
+          : 'var(--distrusted, #e87c7c)'
         const rank = String(i + 1).padStart(2, '0')
         return (
           <div

@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { computeReputationProfile } from '@/services/reputationScoreService'
-import type { ConnectionStatus, UserReputationProfile } from '@/types/reputation'
+import type {
+  ConnectionStatus,
+  UserReputationProfile,
+} from '@/types/reputation'
 import type { SignalResult } from '@/types/signals'
 
 export function useReputationScores(
@@ -12,7 +15,14 @@ export function useReputationScores(
   signals?: Record<string, SignalResult>,
 ): UserReputationProfile | null {
   return useMemo(
-    () => computeReputationProfile(getStatus, selectedTopics, selectedCategories, compositeScore, signals),
+    () =>
+      computeReputationProfile(
+        getStatus,
+        selectedTopics,
+        selectedCategories,
+        compositeScore,
+        signals,
+      ),
     [getStatus, selectedTopics, selectedCategories, compositeScore, signals],
   )
 }

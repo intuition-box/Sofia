@@ -14,7 +14,10 @@ interface SideResult {
   userPnlPct: number | null
 }
 
-export function extractSide(vaults: any[] | undefined, decimals = 18n): SideResult {
+export function extractSide(
+  vaults: any[] | undefined,
+  decimals = 18n,
+): SideResult {
   let totalMarketCap = 0n
   let totalCount = 0
   let userShares = 0n
@@ -37,7 +40,7 @@ export function extractSide(vaults: any[] | undefined, decimals = 18n): SideResu
 
   let userPnlPct: number | null = null
   if (userShares > 0n && userCostBasis > 0n) {
-    const currentValue = weightedSharePrice / (10n ** decimals)
+    const currentValue = weightedSharePrice / 10n ** decimals
     const pnl = Number(currentValue - userCostBasis) / Number(userCostBasis)
     userPnlPct = Math.round(pnl * 1000) / 10
   }

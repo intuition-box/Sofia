@@ -1,20 +1,26 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, monthsSince, safeNumber } from './utils'
 
-const BASE = "https://api.mixcloud.com"
+const BASE = 'https://api.mixcloud.com'
 
 export const fetchMixcloudSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = {
     Authorization: `Bearer ${token}`,
   }
 
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const meRes = await safeFetch(`${BASE}/me/`, headers)
   const me = await meRes.json()
@@ -24,17 +30,17 @@ export const fetchMixcloudSignals: SignalFetcher = async (
     async () => {
       const res = await safeFetch(
         `${BASE}/${username}/cloudcasts/?limit=50`,
-        headers
+        headers,
       )
       const data = await res.json()
       if (!Array.isArray(data?.data)) return 0
       return data.data.reduce(
         (sum: number, c: any) => sum + safeNumber(c.play_count),
-        0
+        0,
       )
     },
     0,
-    "mixcloud_listens"
+    'mixcloud_listens',
   )
 
   return {

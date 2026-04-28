@@ -113,7 +113,10 @@ const TRUSTED_BY_POSITIONS_QUERY = `
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function gqlRequest<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+async function gqlRequest<T>(
+  query: string,
+  variables: Record<string, unknown>,
+): Promise<T> {
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -141,7 +144,9 @@ const EMPTY_STATS: DiscoveryStats = {
   totalCertifications: 0,
 }
 
-export async function fetchDiscoveryStats(addresses: string[]): Promise<DiscoveryStats> {
+export async function fetchDiscoveryStats(
+  addresses: string[],
+): Promise<DiscoveryStats> {
   if (addresses.length === 0) return EMPTY_STATS
 
   const userAddresses = addresses.map((a) => a.toLowerCase())
@@ -157,10 +162,12 @@ export async function fetchDiscoveryStats(addresses: string[]): Promise<Discover
     }),
 
     // 2. Signals count (same aggregate, union via accountIds)
-    useGetUserSignalsCountQuery.fetcher({
-      accountIds: addresses,
-      subjectId: SUBJECT_IDS.I,
-    })().catch(() => null),
+    useGetUserSignalsCountQuery
+      .fetcher({
+        accountIds: addresses,
+        subjectId: SUBJECT_IDS.I,
+      })()
+      .catch(() => null),
 
     // 3. Account atoms for all linked wallets (for trusted count)
     gqlRequest<{ atoms: { term_id: string }[] }>(FIND_ACCOUNT_ATOMS_QUERY, {
@@ -191,12 +198,16 @@ export async function fetchDiscoveryStats(addresses: string[]): Promise<Discover
 
   // Trusted count — fetch trust positions on any of the user's account atoms
   let trustedCount = 0
-  const myAtomIds = (atomResult.atoms ?? []).map((a) => a.term_id).filter(Boolean)
+  const myAtomIds = (atomResult.atoms ?? [])
+    .map((a) => a.term_id)
+    .filter(Boolean)
   if (myAtomIds.length > 0) {
     try {
       const res = await gqlRequest<{
         triples: {
-          term: { vaults: { positions_aggregate: { aggregate: { count: number } } }[] }
+          term: {
+            vaults: { positions_aggregate: { aggregate: { count: number } } }[]
+          }
         }[]
       }>(TRUSTED_BY_POSITIONS_QUERY, {
         subjectId: SUBJECT_IDS.I,
@@ -213,7 +224,8 @@ export async function fetchDiscoveryStats(addresses: string[]): Promise<Discover
     }
   }
 
-  const signalsCount = signalsResult?.signalsCount?.aggregate?.count ?? processedPages.size
+  const signalsCount =
+    signalsResult?.signalsCount?.aggregate?.count ?? processedPages.size
 
   return {
     pioneerCount,

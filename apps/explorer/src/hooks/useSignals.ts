@@ -16,7 +16,9 @@ interface UseSignalsResult {
   refetch: () => void
 }
 
-export function useSignals(walletAddress: string | undefined): UseSignalsResult {
+export function useSignals(
+  walletAddress: string | undefined,
+): UseSignalsResult {
   const { connections } = usePlatformConnections()
 
   const connectedPlatforms = [...connections.values()]

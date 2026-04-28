@@ -25,14 +25,14 @@ Passer d'une architecture **pull** (chaque composant fetch ce dont il a besoin, 
 
 Benefices attendus :
 
-| Metric | Avant | Apres |
-|---|---|---|
-| Requetes HTTP par session | ~50-100 | ~5-10 (seed + actions user) |
-| Latence mise a jour apres une action | 2-10 secondes (polling) | <500ms (push WS) |
-| Risque 429 rate limit | Eleve (burst au reload) | Nul (WS maintient l'etat) |
-| UX "flash empty" au reload | 1-3s | Instantane (cache hydrate depuis le precedent WS) |
-| Bande passante | ~500KB par session | ~50KB (diffs WS) |
-| Reactivite cross-user (quelqu'un te trust) | 0 (statique) | Live |
+| Metric                                     | Avant                   | Apres                                             |
+| ------------------------------------------ | ----------------------- | ------------------------------------------------- |
+| Requetes HTTP par session                  | ~50-100                 | ~5-10 (seed + actions user)                       |
+| Latence mise a jour apres une action       | 2-10 secondes (polling) | <500ms (push WS)                                  |
+| Risque 429 rate limit                      | Eleve (burst au reload) | Nul (WS maintient l'etat)                         |
+| UX "flash empty" au reload                 | 1-3s                    | Instantane (cache hydrate depuis le precedent WS) |
+| Bande passante                             | ~500KB par session      | ~50KB (diffs WS)                                  |
+| Reactivite cross-user (quelqu'un te trust) | 0 (statique)            | Live                                              |
 
 ### 1.3 Objectifs non-fonctionnels
 
@@ -79,6 +79,7 @@ Benefices attendus :
 ### 2.2 Inventaire des queries (par frequence de changement)
 
 **Tres volatile** (change apres chaque action user ou autre user qui trust/vote) :
+
 - `positions(account_id: wallet)` — toutes les positions on-chain du user
 - `events(receiver_id: wallet, type: Deposited/Redeemed)` — activite du user
 - `trust_circle(from: wallet)` — qui le user trust
@@ -87,12 +88,14 @@ Benefices attendus :
 - `topic_certifications(wallet, topic)` — certifs par topic
 
 **Moyennement volatile** (change de temps en temps, global) :
+
 - `trending(topic)` — plateformes tendance par topic
 - `leaderboard()` — top users
 - `domain_claims(topic)` — claims par topic
 - `top_claims()` — URL les plus certifiees
 
 **Quasi-statique** (change rarement, global) :
+
 - `taxonomy()` — topics + categories
 - `platform_catalog()` — liste des plateformes
 - `atom_ids()` — mapping slug → termId
@@ -149,13 +152,13 @@ Les actions user (deposit/redeem) invalident ponctuellement.
 
 ### 3.2 Responsabilites par layer
 
-| Layer | Responsabilite |
-|---|---|
-| **SubscriptionManager** | Gerer la connection WS, les subscriptions actives, l'auth, le reconnect |
+| Layer                                                     | Responsabilite                                                                |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **SubscriptionManager**                                   | Gerer la connection WS, les subscriptions actives, l'auth, le reconnect       |
 | **Subscription hooks** (`usePositionsSubscription`, etc.) | Declarer les subscriptions a ouvrir selon le contexte (wallet connecte, etc.) |
-| **React Query cache** | Stocker l'etat unifie, persister sur localStorage, invalidation ciblee |
-| **Composants** | `useQuery` avec `staleTime: Infinity` — lecture seule du cache |
-| **Action hooks** (`useDeposit`, `useRedeem`, etc.) | Optimistic update + attente confirmation + re-sync via WS |
+| **React Query cache**                                     | Stocker l'etat unifie, persister sur localStorage, invalidation ciblee        |
+| **Composants**                                            | `useQuery` avec `staleTime: Infinity` — lecture seule du cache                |
+| **Action hooks** (`useDeposit`, `useRedeem`, etc.)        | Optimistic update + attente confirmation + re-sync via WS                     |
 
 ---
 
@@ -174,6 +177,7 @@ Toutes les donnees ne doivent pas passer par le WS. Trois categories :
 - Shares par triple
 
 **Subscription Hasura** :
+
 ```graphql
 subscription UserPositions($account: String!) {
   positions(where: { account_id: { _ilike: $account } }) {
@@ -305,6 +309,7 @@ subscription WatchUserPositions($accountId: String!) {
 ```
 
 Reutilise le fragment existant `PositionWithVaultDetails` du package. Une fois `bun run codegen` execute, genere :
+
 - `WatchUserPositionsDocument` (DocumentNode)
 - `WatchUserPositionsSubscription` (type de la reponse)
 - `WatchUserPositionsSubscriptionVariables` (type des variables)
@@ -323,7 +328,7 @@ this.client.subscribe(
     query: print(WatchUserPositionsDocument), // string derive du DocumentNode, pas d'inline
     variables: { accountId: this.walletAddress },
   },
-  { next, error, complete }
+  { next, error, complete },
 )
 ```
 
@@ -442,13 +447,13 @@ export class SubscriptionManager {
 
   private subscribeAll() {
     this.subscribe('positions', WatchUserPositionsDocument, (data) =>
-      this.onPositionsUpdate(data as WatchUserPositionsSubscription)
+      this.onPositionsUpdate(data as WatchUserPositionsSubscription),
     )
     this.subscribe('events', WatchUserEventsDocument, (data) =>
-      this.onEventsUpdate(data as WatchUserEventsSubscription)
+      this.onEventsUpdate(data as WatchUserEventsSubscription),
     )
     this.subscribe('trust', WatchUserTrustDocument, (data) =>
-      this.onTrustUpdate(data as WatchUserTrustSubscription)
+      this.onTrustUpdate(data as WatchUserTrustSubscription),
     )
   }
 
@@ -469,7 +474,7 @@ export class SubscriptionManager {
         next: ({ data }) => data && handler(data as T),
         error: (err) => console.error(`[WS ${key}]`, err),
         complete: () => console.log(`[WS ${key}] complete`),
-      }
+      },
     )
 
     this.subscriptions.set(key, unsub)
@@ -478,26 +483,23 @@ export class SubscriptionManager {
   private onPositionsUpdate(data: WatchUserPositionsSubscription) {
     const positions = data.positions ?? []
     // Stocke le state brut sous la query key "canonical"
-    this.queryClient.setQueryData(
-      ['positions', this.walletAddress],
-      positions
-    )
+    this.queryClient.setQueryData(['positions', this.walletAddress], positions)
     // Derive vers les query keys consommees par les hooks existants
     this.queryClient.setQueryData(
       ['topic-positions', this.walletAddress],
-      derivePositionsByTopic(positions)
+      derivePositionsByTopic(positions),
     )
     this.queryClient.setQueryData(
       ['platform-positions', this.walletAddress],
-      derivePositionsByPlatform(positions)
+      derivePositionsByPlatform(positions),
     )
     this.queryClient.setQueryData(
       ['user-stats', this.walletAddress],
-      deriveUserStats(positions)
+      deriveUserStats(positions),
     )
     this.queryClient.setQueryData(
       ['verified-platforms', this.walletAddress],
-      deriveVerifiedPlatforms(positions)
+      deriveVerifiedPlatforms(positions),
     )
   }
 
@@ -518,6 +520,7 @@ export class SubscriptionManager {
 ```
 
 **Points importants** :
+
 - Aucun GraphQL string inline dans le SubscriptionManager
 - Les `WatchUserPositionsDocument` sont **generes** par codegen depuis `packages/graphql/src/subscriptions/positions.graphql`
 - Si on ajoute une nouvelle subscription : creer le `.graphql` dans le package, lancer `bun run codegen && bun run build`, importer le DocumentNode dans `SubscriptionManager`
@@ -535,8 +538,8 @@ import { SubscriptionManager } from '@/lib/realtime/SubscriptionManager'
 
 let manager: SubscriptionManager | null = null
 
-const WS_URL = import.meta.env.VITE_GRAPHQL_WS_URL ||
-  'wss://mainnet.intuition.sh/v1/graphql'
+const WS_URL =
+  import.meta.env.VITE_GRAPHQL_WS_URL || 'wss://mainnet.intuition.sh/v1/graphql'
 
 export function useRealtimeSync() {
   const { ready, authenticated } = usePrivy()
@@ -596,7 +599,11 @@ Exemple pour `useTopicPositions` :
 export function useTopicPositions(topics: string[]) {
   return useQuery({
     queryKey: ['topic-positions', wallet, topics],
-    queryFn: () => getSharesBatch(wallet, topics.map(t => TOPIC_ATOM_IDS[t])),
+    queryFn: () =>
+      getSharesBatch(
+        wallet,
+        topics.map((t) => TOPIC_ATOM_IDS[t]),
+      ),
     staleTime: 2 * 60 * 1000,
     // ...
   })
@@ -605,12 +612,12 @@ export function useTopicPositions(topics: string[]) {
 // APRES : lit le cache maintenu par WS, jamais de fetch
 export function useTopicPositions(topics: string[]) {
   return useQuery({
-    queryKey: ['topic-positions', wallet],  // key simplifiee
+    queryKey: ['topic-positions', wallet], // key simplifiee
     queryFn: () => getSharesBatch(wallet, ALL_TOPIC_TERM_IDS), // seed initial
-    staleTime: Infinity,                      // jamais stale
+    staleTime: Infinity, // jamais stale
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    select: (data) => filterTopics(data, topics),  // filtre par topics demandes
+    select: (data) => filterTopics(data, topics), // filtre par topics demandes
   })
 }
 ```
@@ -626,13 +633,13 @@ Quand le user fait un deposit / redeem / vote, on a deux strategies :
 ```typescript
 export async function deposit(args: DepositArgs) {
   const tx = await executeDeposit(args)
-  
+
   // Optimistic update : on ajoute la position au cache local
   qc.setQueryData(['positions', wallet], (old) => [
     ...old,
     { term_id: args.termId, shares: args.amount, pending: true },
   ])
-  
+
   const receipt = await waitForReceipt(tx.hash)
   // WS va eventuellement pousser le vrai state indexe
   // Entre-temps, l'UI montre l'optimistic
@@ -716,6 +723,7 @@ Migrer un hook a la fois, en commencant par les plus critiques :
 6. `useUserActivity` → subscription events
 
 Chaque migration :
+
 - Feature flag `enableRealtimeFor<Hook>` si besoin de rollback
 - Test local avec network throttling
 - Deploy progressif en prod
@@ -785,27 +793,32 @@ Ajouter optimistic update sur les actions :
 ### 9.2 Tests integration (manuels en dev)
 
 **Scenario 1 — Happy path**
+
 1. Login, WS connecte, subscription active
 2. Faire un deposit depuis une autre session (ou script)
 3. Attendu : nouvelle position apparait dans la UI en <1s
 
 **Scenario 2 — Reconnection**
+
 1. Login, WS connecte
 2. Couper le reseau 10s
 3. Attendu : WS se reconnecte automatiquement, pull un snapshot recent
 4. Les donnees restent coherentes
 
 **Scenario 3 — Optimistic + confirmation**
+
 1. Faire un deposit depuis l'UI
 2. Attendu : position apparait instantanement (optimistic)
 3. 1-3s apres : le WS confirme le vrai state (no-op car deja bon)
 
 **Scenario 4 — Race condition**
+
 1. Faire un deposit
 2. Avant que la tx soit minee, faire un redeem sur une autre position
 3. Attendu : les deux mises a jour s'ordonnancent correctement, pas de state inconsistent
 
 **Scenario 5 — Fallback**
+
 1. Forcer WS a echouer (URL invalide en dev)
 2. Attendu : apres 30s de retry, fallback sur polling HTTP
 3. Badge "offline" visible
@@ -820,16 +833,16 @@ Ajouter optimistic update sur les actions :
 
 ## 10. Risques et mitigations
 
-| Risque | Probabilite | Impact | Mitigation |
-|---|---|---|---|
-| Kong ne laisse pas passer le WS upgrade | Moyenne | Bloquant | Contacter Intuition, ou endpoint alternatif, ou fallback polling |
-| Charge backend trop elevee avec N users simultanes | Basse | Moyen | Subscription par wallet, pas par topic. Hasura supporte 10k+ WS |
-| Disconnections frequentes | Moyenne | Bas | `graphql-ws` gere le reconnect, badge offline, polling fallback |
-| Race condition cache vs WS vs action | Moyenne | Moyen | Tests integration + invariants (shares >= 0, etc.) |
-| Memory leak via subscriptions jamais nettoyees | Basse | Haut | useEffect cleanup strict, tests avec React DevTools Profiler |
-| Indexer lag (WS pousse state de y a 5s) | Certaine | Bas | Afficher "syncing..." si delta observe |
-| Schema subscription != schema query | Basse | Moyen | Valider avec l'equipe Intuition les shapes des subs |
-| Browser limite les WS (IE11, Safari vieux) | Quasi-nulle | Bas | Fallback polling automatique |
+| Risque                                             | Probabilite | Impact   | Mitigation                                                       |
+| -------------------------------------------------- | ----------- | -------- | ---------------------------------------------------------------- |
+| Kong ne laisse pas passer le WS upgrade            | Moyenne     | Bloquant | Contacter Intuition, ou endpoint alternatif, ou fallback polling |
+| Charge backend trop elevee avec N users simultanes | Basse       | Moyen    | Subscription par wallet, pas par topic. Hasura supporte 10k+ WS  |
+| Disconnections frequentes                          | Moyenne     | Bas      | `graphql-ws` gere le reconnect, badge offline, polling fallback  |
+| Race condition cache vs WS vs action               | Moyenne     | Moyen    | Tests integration + invariants (shares >= 0, etc.)               |
+| Memory leak via subscriptions jamais nettoyees     | Basse       | Haut     | useEffect cleanup strict, tests avec React DevTools Profiler     |
+| Indexer lag (WS pousse state de y a 5s)            | Certaine    | Bas      | Afficher "syncing..." si delta observe                           |
+| Schema subscription != schema query                | Basse       | Moyen    | Valider avec l'equipe Intuition les shapes des subs              |
+| Browser limite les WS (IE11, Safari vieux)         | Quasi-nulle | Bas      | Fallback polling automatique                                     |
 
 ### Risque bloquant #1 : Kong + WS
 
@@ -843,13 +856,13 @@ Si impossibles a activer → **plan B** : deployer un proxy WS dedie (sur mastra
 
 ## 11. Decisions prises (ex-questions ouvertes)
 
-| Question | Decision | Raisonnement |
-|---|---|---|
-| **Auth subscriptions** | V1 sans auth | L'endpoint GraphQL existant ne demande pas d'auth pour les queries (pas de headers dans le fetcher). Le test wscat confirme qu'on se connecte en WS sans credentials. Si Intuition active un JWT plus tard, on l'ajoutera via `connectionParams` dans `wsClient.ts`. |
-| **Multi-onglets** | Un WS par onglet | BroadcastChannel ajoute complexite pour gain marginal (~5 KB memoire par WS). Hasura supporte 10k+ connexions simultanees. |
-| **Scoping des subscriptions** | Par wallet, jamais par topic | Une subscription `positions(account_id = wallet)` ramene tout. Les vues derivees (par topic, par plateforme) sont calculees client-side via les fonctions `derive*()`. |
-| **Mastra signals** | Restent en pull (V1) | signalFetcherWorkflow est un snapshot a la demande, pas un stream. Polling 1h suffit. Si real-time necessaire plus tard, mastra pourra push via SSE ou sa propre WS — separate refactor. |
-| **Cross-user (view-as)** | Reste en pull | Viewer un autre profil n'ouvre pas de WS. Seul le wallet authentifie du user courant declenche des subscriptions. |
+| Question                      | Decision                     | Raisonnement                                                                                                                                                                                                                                                         |
+| ----------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Auth subscriptions**        | V1 sans auth                 | L'endpoint GraphQL existant ne demande pas d'auth pour les queries (pas de headers dans le fetcher). Le test wscat confirme qu'on se connecte en WS sans credentials. Si Intuition active un JWT plus tard, on l'ajoutera via `connectionParams` dans `wsClient.ts`. |
+| **Multi-onglets**             | Un WS par onglet             | BroadcastChannel ajoute complexite pour gain marginal (~5 KB memoire par WS). Hasura supporte 10k+ connexions simultanees.                                                                                                                                           |
+| **Scoping des subscriptions** | Par wallet, jamais par topic | Une subscription `positions(account_id = wallet)` ramene tout. Les vues derivees (par topic, par plateforme) sont calculees client-side via les fonctions `derive*()`.                                                                                               |
+| **Mastra signals**            | Restent en pull (V1)         | signalFetcherWorkflow est un snapshot a la demande, pas un stream. Polling 1h suffit. Si real-time necessaire plus tard, mastra pourra push via SSE ou sa propre WS — separate refactor.                                                                             |
+| **Cross-user (view-as)**      | Reste en pull                | Viewer un autre profil n'ouvre pas de WS. Seul le wallet authentifie du user courant declenche des subscriptions.                                                                                                                                                    |
 
 ### Decisions complementaires
 
@@ -873,14 +886,14 @@ Apres deploy complet, on devrait observer :
 
 ## 13. Calendrier indicatif
 
-| Phase | Duree | Cumul |
-|---|---|---|
-| 1. Infrastructure | 3 j | 3 j |
-| 2. Cache foundation | 4 j | 7 j |
-| 3. Migration hooks | 7 j | 14 j |
-| 4. Optimistic updates | 3 j | 17 j |
-| 5. Polish | 2 j | 19 j |
-| 6. Nettoyage | 1 j | 20 j |
+| Phase                 | Duree | Cumul |
+| --------------------- | ----- | ----- |
+| 1. Infrastructure     | 3 j   | 3 j   |
+| 2. Cache foundation   | 4 j   | 7 j   |
+| 3. Migration hooks    | 7 j   | 14 j  |
+| 4. Optimistic updates | 3 j   | 17 j  |
+| 5. Polish             | 2 j   | 19 j  |
+| 6. Nettoyage          | 1 j   | 20 j  |
 
 **Total : ~4 semaines** en solo. Peut etre compresse a 2 semaines avec 2 devs en parallele (un sur l'infra + hooks, l'autre sur derivations + tests).
 
@@ -897,6 +910,7 @@ Apres deploy complet, on devrait observer :
 ### Preuve empirique du support WS
 
 Test effectue avec wscat :
+
 ```
 $ wscat -c wss://mainnet.intuition.sh/v1/graphql -s graphql-transport-ws
 Connected (press CTRL+C to quit)
@@ -905,6 +919,7 @@ Disconnected (code: 4408, reason: "Connection initialisation timed out")
 ```
 
 Analyse :
+
 - `Connected` → le WS upgrade passe Kong ✅
 - `{"type":"ping"}` → Hasura envoie ses keepalives du protocole graphql-transport-ws ✅
 - `Disconnected 4408` → normal, wscat n'envoie pas le `connection_init` obligatoire du protocole dans les premieres secondes → Hasura timeout. Un vrai client `graphql-ws` envoie ce message en premier.
@@ -918,6 +933,7 @@ Analyse :
 ### Avant (actuel)
 
 Un user ouvre /profile :
+
 ```
 Timeline :
 t+0ms   : Page mount. 8 composants montent leurs useQuery.
@@ -933,6 +949,7 @@ t+120s  : User clic "deposit" → tx, puis on doit attendre staleTime + refetch 
 ### Apres (realtime)
 
 Meme scenario :
+
 ```
 Timeline :
 t+0ms   : Page mount. Composants montent leurs useQuery avec staleTime=Infinity.

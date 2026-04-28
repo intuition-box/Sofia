@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
+import { Agent } from '@mastra/core/agent'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
 
 export const predicateAgent = new Agent({
   name: 'Predicate Agent',
@@ -94,4 +94,4 @@ Output: {"predicate": "dive deep into", "reason": "Pure learning, level 7 = dedi
 REMINDER: Output ONLY the JSON object. Single braces { }. No text. No explanation.
 `,
   model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
-});
+})

@@ -21,8 +21,10 @@ function PlusIcon({ size = 20 }: { size?: number }) {
   )
 }
 
-export interface AddInterestCardProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
+export interface AddInterestCardProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'type'
+> {
   /** Override the default "Add Interest" text. */
   label?: string
   /** Override the default `+` icon. */

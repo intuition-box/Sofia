@@ -33,7 +33,8 @@
 .pf-platform-card:hover {
   border-color: var(--ds-ink-soft);
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  box-shadow: 0 12px 28px -18px
+    color-mix(in srgb, var(--ds-ink) 40%, transparent);
 }
 .pf-platform-card.connected {
   border-color: var(--trusted, #22c55e);
@@ -55,7 +56,7 @@
 }
 
 .pf-platform-status {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -95,7 +96,7 @@
   display: grid;
   place-items: center;
   color: var(--ds-muted-soft);
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;

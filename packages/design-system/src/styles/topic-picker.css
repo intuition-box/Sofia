@@ -31,11 +31,16 @@
 .pf-topic-card:hover:not(.disabled) {
   border-color: var(--topic-color, var(--ds-ink-soft));
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  box-shadow: 0 12px 28px -18px
+    color-mix(in srgb, var(--ds-ink) 40%, transparent);
 }
 .pf-topic-card.active {
   border-color: var(--topic-color, var(--ds-accent));
-  background: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 8%, var(--ds-card));
+  background: color-mix(
+    in srgb,
+    var(--topic-color, var(--ds-accent)) 8%,
+    var(--ds-card)
+  );
 }
 .pf-topic-card.disabled {
   opacity: 0.35;
@@ -47,7 +52,7 @@
 }
 
 .pf-topic-label {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;

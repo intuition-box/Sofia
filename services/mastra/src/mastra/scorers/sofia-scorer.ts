@@ -1,21 +1,22 @@
-import { z } from 'zod';
-import { createScorer } from '@mastra/core/scores';
-import { createToolCallAccuracyScorerCode } from '@mastra/evals/scorers/code';
-import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
+import { z } from 'zod'
+import { createScorer } from '@mastra/core/scores'
+import { createToolCallAccuracyScorerCode } from '@mastra/evals/scorers/code'
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet'
 
 // GaiaNet model for scorers judge
-const gaianetJudgeModel = gaianet.chatModel(GAIANET_DEFAULT_MODEL);
+const gaianetJudgeModel = gaianet.chatModel(GAIANET_DEFAULT_MODEL)
 
 // Scorer: Checks if the sofia tool was called appropriately
 export const sofiaToolCallScorer = createToolCallAccuracyScorerCode({
   expectedTool: 'sofiaTool',
   strictMode: false,
-});
+})
 
 // Scorer: Validates that the response is valid JSON
 export const jsonValidityScorer = createScorer({
   name: 'JSON Validity',
-  description: 'Checks that the response is valid JSON starting with { and ending with }',
+  description:
+    'Checks that the response is valid JSON starting with { and ending with }',
   type: 'agent',
   judge: {
     model: gaianetJudgeModel,
@@ -27,8 +28,8 @@ export const jsonValidityScorer = createScorer({
   },
 })
   .preprocess(({ run }) => {
-    const assistantText = (run.output?.[0]?.content as string) || '';
-    return { assistantText };
+    const assistantText = (run.output?.[0]?.content as string) || ''
+    return { assistantText }
   })
   .analyze({
     description: 'Validate JSON structure',
@@ -65,22 +66,29 @@ export const jsonValidityScorer = createScorer({
     `,
   })
   .generateScore(({ results }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    if (r.isValidJson && r.startsWithBrace && r.endsWithBrace && !r.hasTextBefore && !r.hasTextAfter) {
-      return 1;
+    const r = (results as any)?.analyzeStepResult || {}
+    if (
+      r.isValidJson &&
+      r.startsWithBrace &&
+      r.endsWithBrace &&
+      !r.hasTextBefore &&
+      !r.hasTextAfter
+    ) {
+      return 1
     }
-    if (r.isValidJson) return 0.5;
-    return 0;
+    if (r.isValidJson) return 0.5
+    return 0
   })
   .generateReason(({ results, score }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    return `JSON validity: valid=${r.isValidJson}, startsWithBrace=${r.startsWithBrace}, endsWithBrace=${r.endsWithBrace}. Score=${score}. ${r.explanation || ''}`;
-  });
+    const r = (results as any)?.analyzeStepResult || {}
+    return `JSON validity: valid=${r.isValidJson}, startsWithBrace=${r.startsWithBrace}, endsWithBrace=${r.endsWithBrace}. Score=${score}. ${r.explanation || ''}`
+  })
 
 // Scorer: Validates triplet structure completeness
 export const tripletCompletenessScorer = createScorer({
   name: 'Triplet Completeness',
-  description: 'Checks that the triplet has all required fields: subject, predicate, object with their nested properties',
+  description:
+    'Checks that the triplet has all required fields: subject, predicate, object with their nested properties',
   type: 'agent',
   judge: {
     model: gaianetJudgeModel,
@@ -91,8 +99,8 @@ export const tripletCompletenessScorer = createScorer({
   },
 })
   .preprocess(({ run }) => {
-    const assistantText = (run.output?.[0]?.content as string) || '';
-    return { assistantText };
+    const assistantText = (run.output?.[0]?.content as string) || ''
+    return { assistantText }
   })
   .analyze({
     description: 'Validate triplet structure',
@@ -132,23 +140,24 @@ export const tripletCompletenessScorer = createScorer({
     `,
   })
   .generateScore(({ results }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    let score = 0;
-    if (r.hasTriplets) score += 0.2;
-    if (r.subjectComplete) score += 0.25;
-    if (r.predicateComplete) score += 0.3;
-    if (r.objectComplete) score += 0.25;
-    return Math.min(1, score);
+    const r = (results as any)?.analyzeStepResult || {}
+    let score = 0
+    if (r.hasTriplets) score += 0.2
+    if (r.subjectComplete) score += 0.25
+    if (r.predicateComplete) score += 0.3
+    if (r.objectComplete) score += 0.25
+    return Math.min(1, score)
   })
   .generateReason(({ results, score }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    return `Triplet completeness: triplets=${r.hasTriplets}, subject=${r.subjectComplete}, predicate=${r.predicateComplete}, object=${r.objectComplete}. Score=${score}. ${r.explanation || ''}`;
-  });
+    const r = (results as any)?.analyzeStepResult || {}
+    return `Triplet completeness: triplets=${r.hasTriplets}, subject=${r.subjectComplete}, predicate=${r.predicateComplete}, object=${r.objectComplete}. Score=${score}. ${r.explanation || ''}`
+  })
 
 // Scorer: Validates predicate accuracy based on rules
 export const predicateAccuracyScorer = createScorer({
   name: 'Predicate Accuracy',
-  description: 'Checks that the predicate matches the expected value based on attention score and visits',
+  description:
+    'Checks that the predicate matches the expected value based on attention score and visits',
   type: 'agent',
   judge: {
     model: gaianetJudgeModel,
@@ -159,9 +168,9 @@ export const predicateAccuracyScorer = createScorer({
   },
 })
   .preprocess(({ run }) => {
-    const userText = (run.input?.inputMessages?.[0]?.content as string) || '';
-    const assistantText = (run.output?.[0]?.content as string) || '';
-    return { userText, assistantText };
+    const userText = (run.input?.inputMessages?.[0]?.content as string) || ''
+    const assistantText = (run.output?.[0]?.content as string) || ''
+    return { userText, assistantText }
   })
   .analyze({
     description: 'Validate predicate selection',
@@ -209,17 +218,17 @@ export const predicateAccuracyScorer = createScorer({
     `,
   })
   .generateScore(({ results }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    return r.isCorrect ? 1 : 0;
+    const r = (results as any)?.analyzeStepResult || {}
+    return r.isCorrect ? 1 : 0
   })
   .generateReason(({ results, score }) => {
-    const r = (results as any)?.analyzeStepResult || {};
-    return `Predicate accuracy: expected="${r.expectedPredicate}", actual="${r.actualPredicate}", correct=${r.isCorrect}. Score=${score}. ${r.explanation || ''}`;
-  });
+    const r = (results as any)?.analyzeStepResult || {}
+    return `Predicate accuracy: expected="${r.expectedPredicate}", actual="${r.actualPredicate}", correct=${r.isCorrect}. Score=${score}. ${r.explanation || ''}`
+  })
 
 export const sofiaScorers = {
   sofiaToolCallScorer,
   jsonValidityScorer,
   tripletCompletenessScorer,
   predicateAccuracyScorer,
-};
+}

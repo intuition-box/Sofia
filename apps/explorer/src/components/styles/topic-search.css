@@ -22,11 +22,13 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .ts-search-input::placeholder {
   color: var(--ds-muted);
@@ -55,7 +57,9 @@
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 .ts-search-clear:hover {
   color: var(--ds-ink);

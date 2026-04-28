@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { usePrivy, useLogin, useLogout, useLinkAccount } from '@privy-io/react-auth'
+import {
+  usePrivy,
+  useLogin,
+  useLogout,
+  useLinkAccount,
+} from '@privy-io/react-auth'
 import {
   NavSidebar as DsNavSidebar,
   NavBrand,
@@ -67,14 +72,21 @@ interface NavSidebarProps {
   onToggleCollapse?: () => void
 }
 
-export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSidebarProps = {}) {
+export function NavSidebar({
+  onCartClick,
+  collapsed,
+  onToggleCollapse,
+}: NavSidebarProps = {}) {
   const location = useLocation()
   const { ready, authenticated, user } = usePrivy()
   const { login } = useLogin()
   const { logout } = useLogout()
-  const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
+  const { linkWallet } = useLinkAccount({
+    onSuccess: () => window.location.reload(),
+  })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses, primary: primaryWallet } = useLinkedWallets()
+  const { addresses: linkedAddresses, primary: primaryWallet } =
+    useLinkedWallets()
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
@@ -86,31 +98,56 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
   const { getDisplay, getAvatar } = useEnsNames(addresses)
   const ensName = address ? getDisplay(address as Address) : ''
   const ensAvatar = address ? getAvatar(address as Address) : ''
-  const displayAddr = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
-  const googleAccount = user?.google as { name?: string; profilePictureUrl?: string; email?: string } | undefined
+  const displayAddr = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : ''
+  const googleAccount = user?.google as
+    | { name?: string; profilePictureUrl?: string; email?: string }
+    | undefined
   const profileAvatar = googleAccount?.profilePictureUrl || ensAvatar || ''
-  const profileName = googleAccount?.name || ensName || googleAccount?.email || user?.email?.address || displayAddr || 'User'
+  const profileName =
+    googleAccount?.name ||
+    ensName ||
+    googleAccount?.email ||
+    user?.email?.address ||
+    displayAddr ||
+    'User'
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(getTimeLeft()), 1_000)
     return () => clearInterval(timer)
   }, [])
 
-  const navItems: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
+  const navItems: {
+    to: string
+    icon: typeof Home
+    label: string
+    public: boolean
+  }[] = [
     { to: '/feed', icon: Home, label: 'Home', public: true },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
     { to: '/circles', icon: Users, label: 'Circles', public: false },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
   ]
 
-  const quickLinks: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
+  const quickLinks: {
+    to: string
+    icon: typeof Home
+    label: string
+    public: boolean
+  }[] = [
     { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: true },
     { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
 
-  const renderItem = (item: { to: string; icon: typeof Home; label: string; public: boolean }) => {
+  const renderItem = (item: {
+    to: string
+    icon: typeof Home
+    label: string
+    public: boolean
+  }) => {
     const locked = !item.public && !authenticated
     const active = location.pathname === item.to
     const Icon = item.icon
@@ -164,7 +201,9 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
           title="Cart"
         >
           <ShoppingCart className="h-4 w-4" />
-          {cart.count > 0 && <span className="ns-tool-badge">{cart.count}</span>}
+          {cart.count > 0 && (
+            <span className="ns-tool-badge">{cart.count}</span>
+          )}
         </button>
         <button
           type="button"
@@ -178,10 +217,18 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
           type="button"
           className="ns-tool-btn"
           onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={
+            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+          }
+          title={
+            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+          }
         >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
         </button>
       </div>
 
@@ -203,7 +250,10 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                 title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
               >
                 <div className="ns-circle-head">
-                  <span className="ns-circle-dot" style={{ background: 'var(--trusted, #6dd4a0)' }} />
+                  <span
+                    className="ns-circle-dot"
+                    style={{ background: 'var(--trusted, #6dd4a0)' }}
+                  />
                   <span className="ns-circle-name">Trust Circle</span>
                   <span className="ns-circle-count">{trustCircle.length}</span>
                 </div>
@@ -211,7 +261,11 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                   {trustCircle.slice(0, 5).map((a) => {
                     const bg = avatarColor(a.termId || a.label)
                     return (
-                      <Avatar key={a.termId} className="ns-mav" style={{ background: bg }}>
+                      <Avatar
+                        key={a.termId}
+                        className="ns-mav"
+                        style={{ background: bg }}
+                      >
                         {a.image && <AvatarImage src={a.image} alt={a.label} />}
                         <AvatarFallback
                           className="text-[9px]"
@@ -223,9 +277,13 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                     )
                   })}
                   {trustCircle.length > 5 && (
-                    <span className="ns-mav ns-mav-more">+{trustCircle.length - 5}</span>
+                    <span className="ns-mav ns-mav-more">
+                      +{trustCircle.length - 5}
+                    </span>
                   )}
-                  <span className="ns-mav ns-mav-add" aria-hidden="true">+</span>
+                  <span className="ns-mav ns-mav-add" aria-hidden="true">
+                    +
+                  </span>
                 </div>
               </Link>
             </div>
@@ -239,9 +297,12 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
       <div className="ns-bottom">
         <div className="ns-countdown">
           <p className="ns-countdown-time">
-            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
+            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m{' '}
+            {pad(timeLeft.seconds)}s
           </p>
-          <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
+          <p className="ns-countdown-hint">
+            remaining — Alpha Reward Program is live
+          </p>
         </div>
 
         {ready && !authenticated && (
@@ -253,7 +314,11 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
         {ready && authenticated && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="ns-auth-chip" aria-label="Account menu">
+              <button
+                type="button"
+                className="ns-auth-chip"
+                aria-label="Account menu"
+              >
                 {profileAvatar ? (
                   <img
                     src={profileAvatar}
@@ -268,11 +333,17 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                 )}
                 <span className="ns-auth-meta">
                   <span className="ns-auth-name">{profileName}</span>
-                  {displayAddr && <span className="ns-auth-sub">{displayAddr}</span>}
+                  {displayAddr && (
+                    <span className="ns-auth-sub">{displayAddr}</span>
+                  )}
                 </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="ns-auth-menu">
+            <DropdownMenuContent
+              align="start"
+              side="top"
+              className="ns-auth-menu"
+            >
               {/* Header — who's logged in */}
               <div className="ns-auth-menu-head">
                 {profileAvatar ? (
@@ -302,7 +373,8 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                     Wallets
                   </DropdownMenuLabel>
                   {linkedAddresses.map((addr) => {
-                    const isPrimary = primaryWallet?.toLowerCase() === addr.toLowerCase()
+                    const isPrimary =
+                      primaryWallet?.toLowerCase() === addr.toLowerCase()
                     const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
                     return (
                       <DropdownMenuItem
@@ -315,9 +387,13 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                           className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
                           aria-hidden="true"
                         />
-                        <span className="ns-auth-menu-wallet-addr">{short}</span>
+                        <span className="ns-auth-menu-wallet-addr">
+                          {short}
+                        </span>
                         {isPrimary && (
-                          <span className="ns-auth-menu-wallet-tag">primary</span>
+                          <span className="ns-auth-menu-wallet-tag">
+                            primary
+                          </span>
                         )}
                       </DropdownMenuItem>
                     )

@@ -12,7 +12,11 @@ export interface InterestsGridProps extends HTMLAttributes<HTMLDivElement> {
  * Requires stylesheet:
  *   `@import "@0xsofia/design-system/styles/interests.css";`
  */
-export function InterestsGrid({ children, className, ...rest }: InterestsGridProps) {
+export function InterestsGrid({
+  children,
+  className,
+  ...rest
+}: InterestsGridProps) {
   const cls = className ? `ig-grid ${className}` : 'ig-grid'
   return (
     <div className={cls} {...rest}>

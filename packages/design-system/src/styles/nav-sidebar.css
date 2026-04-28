@@ -48,7 +48,7 @@
 }
 
 .nav-brand-name {
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 600;
   font-size: 15px;
   letter-spacing: -0.01em;
@@ -56,7 +56,7 @@
 }
 
 .nav-brand-tag {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--ds-muted);
   text-transform: uppercase;
@@ -76,7 +76,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   line-height: 1;
   flex-shrink: 0;
@@ -102,7 +102,7 @@
 }
 
 .nav-section-title {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -167,7 +167,7 @@
   opacity: 1;
 }
 
-[data-theme="dark"] .nav-item.active,
+[data-theme='dark'] .nav-item.active,
 .dark .nav-item.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent);
@@ -189,7 +189,7 @@
   opacity: 0;
 }
 
-.nav-item[aria-disabled="true"],
+.nav-item[aria-disabled='true'],
 .nav-item:disabled {
   cursor: not-allowed;
   opacity: 0.7;

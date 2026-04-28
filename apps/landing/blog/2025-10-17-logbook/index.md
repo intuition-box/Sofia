@@ -1,11 +1,9 @@
 ---
-
 slug: logbook-17-10
 
 title: Logbook 17/10
 
 authors: [Samuel, Maxime]
-
 ---
 
 This week marked a major milestone for Sofia: our first public demo at Intuition's X Space, alongside significant improvements across recommendation intelligence, UI/UX redesign, and community expansion.
@@ -18,13 +16,10 @@ Most importantly, we presented Sofia publicly for the first time during Intuitio
 
 Together, these updates represent a turning point: Sofia is evolving from an internal project into a public-facing product with a growing community behind it.
 
-
-
-
 <!-- truncate -->
 
-
 ## Public Demo & Community Launch
+
 - Launched the official Discord server
 - Opened the early access program to contributors
 - Presented Sofia publicly on Intuition's X Space community stream
@@ -35,24 +30,26 @@ Together, these updates represent a turning point: Sofia is evolving from an int
 [Watch the full stream](https://x.com/i/broadcasts/1ypJdqnZEQyxW?t=5820)
 
 ## OLLAMA Integration for Recommendations
+
 - Integrated Ollama to handle intelligent, personalized recommendations
 - Resonance page now delivers accurate website suggestions based on user behavior
-![Resonance Recommendations](./11.png)
+  ![Resonance Recommendations](./11.png)
 
 ## Community & Product Pages
+
 - Improved Follow, Trust Circle, and Account pages with better usability
-![Improved Pages](./5.png)
+  ![Improved Pages](./5.png)
 
 ## UI/UX Overhaul
+
 - Complete redesign of the website's interface and user experience
 - Updated extension UI to match the new visual identity
 - Enhanced homepage orb animation for a more dynamic presentation
 
 ## Overall Impact
+
 - First public showcase: validation from real users
 - Major design consistency across platform and extension
 - Enhanced recommendation quality with Ollama integration
 - Community foundation established with Discord and contributor access
 - A critical step toward building Sofia as a collaborative, user-driven ecosystem
-
-

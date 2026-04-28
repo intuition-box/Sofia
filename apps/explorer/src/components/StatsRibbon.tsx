@@ -13,7 +13,10 @@ function parseValue(str: string) {
 }
 
 function formatValue(current: number, suffix: string, decimals: number) {
-  const formatted = decimals > 0 ? current.toFixed(decimals) : Math.round(current).toLocaleString()
+  const formatted =
+    decimals > 0
+      ? current.toFixed(decimals)
+      : Math.round(current).toLocaleString()
   return suffix ? `${formatted} ${suffix}` : formatted
 }
 
@@ -78,7 +81,10 @@ function HeroNumber({ value }: { value: string }) {
 function CellNumber({ value }: { value: string }) {
   const { display, ref } = useAnimatedNumber(value)
   return (
-    <span ref={ref as React.RefObject<HTMLSpanElement>} className="sr-cell-value">
+    <span
+      ref={ref as React.RefObject<HTMLSpanElement>}
+      className="sr-cell-value"
+    >
       {display}
     </span>
   )
@@ -106,7 +112,9 @@ export default function StatsRibbon({ stats = [] }: StatsRibbonProps) {
       <div className="sr-bar">
         <div className="sr-bar-left">
           <span className="sr-pulse" aria-hidden />
-          <span><strong>Beta Season</strong> · Live</span>
+          <span>
+            <strong>Beta Season</strong> · Live
+          </span>
         </div>
         <div className="sr-bar-right">
           <span>Season Snapshot</span>

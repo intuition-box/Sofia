@@ -1,23 +1,23 @@
-import { createTool } from '@mastra/core/tools';
-import { z } from 'zod';
+import { createTool } from '@mastra/core/tools'
+import { z } from 'zod'
 
 interface GeocodingResponse {
   results: {
-    latitude: number;
-    longitude: number;
-    name: string;
-  }[];
+    latitude: number
+    longitude: number
+    name: string
+  }[]
 }
 interface WeatherResponse {
   current: {
-    time: string;
-    temperature_2m: number;
-    apparent_temperature: number;
-    relative_humidity_2m: number;
-    wind_speed_10m: number;
-    wind_gusts_10m: number;
-    weather_code: number;
-  };
+    time: string
+    temperature_2m: number
+    apparent_temperature: number
+    relative_humidity_2m: number
+    wind_speed_10m: number
+    wind_gusts_10m: number
+    weather_code: number
+  }
 }
 
 export const weatherTool = createTool({
@@ -36,25 +36,25 @@ export const weatherTool = createTool({
     location: z.string(),
   }),
   execute: async ({ context }) => {
-    return await getWeather(context.location);
+    return await getWeather(context.location)
   },
-});
+})
 
 const getWeather = async (location: string) => {
-  const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
-  const geocodingResponse = await fetch(geocodingUrl);
-  const geocodingData = (await geocodingResponse.json()) as GeocodingResponse;
+  const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`
+  const geocodingResponse = await fetch(geocodingUrl)
+  const geocodingData = (await geocodingResponse.json()) as GeocodingResponse
 
   if (!geocodingData.results?.[0]) {
-    throw new Error(`Location '${location}' not found`);
+    throw new Error(`Location '${location}' not found`)
   }
 
-  const { latitude, longitude, name } = geocodingData.results[0];
+  const { latitude, longitude, name } = geocodingData.results[0]
 
-  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code`;
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code`
 
-  const response = await fetch(weatherUrl);
-  const data = (await response.json()) as WeatherResponse;
+  const response = await fetch(weatherUrl)
+  const data = (await response.json()) as WeatherResponse
 
   return {
     temperature: data.current.temperature_2m,
@@ -64,8 +64,8 @@ const getWeather = async (location: string) => {
     windGust: data.current.wind_gusts_10m,
     conditions: getWeatherCondition(data.current.weather_code),
     location: name,
-  };
-};
+  }
+}
 
 function getWeatherCondition(code: number): string {
   const conditions: Record<number, string> = {
@@ -97,6 +97,6 @@ function getWeatherCondition(code: number): string {
     95: 'Thunderstorm',
     96: 'Thunderstorm with slight hail',
     99: 'Thunderstorm with heavy hail',
-  };
-  return conditions[code] || 'Unknown';
+  }
+  return conditions[code] || 'Unknown'
 }

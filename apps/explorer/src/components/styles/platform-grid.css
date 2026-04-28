@@ -33,7 +33,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   outline: none;
@@ -67,7 +67,8 @@
 .pg-card:hover {
   border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -18px color-mix(in srgb, var(--ds-ink) 35%, transparent);
+  box-shadow: 0 10px 24px -18px
+    color-mix(in srgb, var(--ds-ink) 35%, transparent);
 }
 .pg-card--connected {
   border-color: #6dd4a0;
@@ -113,19 +114,21 @@
   gap: 2px;
 }
 .pg-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.015em;
   color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.1;
 }
 .pg-sub {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -146,7 +149,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   outline: none;
   transition: border-color 0.15s ease;
@@ -191,7 +194,7 @@
   border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, var(--ds-border));
 }
 .pg-verify-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -204,7 +207,7 @@
   border: 1px solid var(--ds-ink);
   background: var(--ds-ink);
   color: var(--ds-bg);
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
@@ -230,7 +233,7 @@
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -270,7 +273,7 @@
   color: #3d8c6a;
   border-color: color-mix(in srgb, #6dd4a0 40%, var(--ds-border));
 }
-[data-theme="dark"] .pg-btn--connected,
+[data-theme='dark'] .pg-btn--connected,
 .dark .pg-btn--connected {
   color: #6dd4a0;
 }
@@ -283,14 +286,16 @@
   animation: pg-spin 0.8s linear infinite;
 }
 @keyframes pg-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .pg-empty {
   padding: 32px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);

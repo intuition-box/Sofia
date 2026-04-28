@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if (!pageUrl) {
       return NextResponse.json(
         { error: 'pageUrl is required' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400, headers: CORS_HEADERS },
       )
     }
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         rank: rank || 0,
         totalCertifiers: totalCertifiers || 0,
       },
-      { ex: 60 * 60 * 24 * 30 } // 30 days
+      { ex: 60 * 60 * 24 * 30 }, // 30 days
     )
 
     const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -51,13 +51,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { url: `${baseUrl}/c/${id}` },
-      { headers: CORS_HEADERS }
+      { headers: CORS_HEADERS },
     )
   } catch (error) {
     console.error('Failed to create certification share link:', error)
     return NextResponse.json(
       { error: 'Failed to create share link' },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500, headers: CORS_HEADERS },
     )
   }
 }

@@ -18,7 +18,10 @@ export function useLinkedWallets() {
 
   return useMemo(() => {
     if (!authenticated || wallets.length === 0) {
-      return { addresses: [] as Address[], primary: undefined as Address | undefined }
+      return {
+        addresses: [] as Address[],
+        primary: undefined as Address | undefined,
+      }
     }
 
     const addresses: Address[] = []

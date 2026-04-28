@@ -18,7 +18,9 @@ export function useTrending() {
         const resolved = await fetchWithRetry(() => fetchTrendingItems())
         setItems(resolved)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch trending')
+        setError(
+          err instanceof Error ? err.message : 'Failed to fetch trending',
+        )
       } finally {
         setLoading(false)
       }

@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { client } from '../graphql/client.js';
-import { getSdk } from '../graphql/generated/graphql.js';
+import { z } from 'zod'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { client } from '../graphql/client.js'
+import { getSdk } from '../graphql/generated/graphql.js'
 
 // Define the parameters schema
 const parameters = z.object({
@@ -9,41 +9,41 @@ const parameters = z.object({
     .string()
     .min(1)
     .describe('The search query to find lists by object label'),
-});
+})
 
 // Define the operation interface
 interface SearchListsOperation {
-  description: string;
-  parameters: typeof parameters;
-  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>;
+  description: string
+  parameters: typeof parameters
+  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>
 }
 
 export const searchListsOperation: SearchListsOperation = {
   description: `Search for curated lists of entities by name or topic. Returns lists with their items sorted by relevance.`,
   parameters,
   async execute(args) {
-    console.log('\n=== Starting Search Lists Operation ===');
-    console.log('Search string:', args.query);
+    console.log('\n=== Starting Search Lists Operation ===')
+    console.log('Search string:', args.query)
 
     try {
       // Validate input parameters
-      const validatedArgs = parameters.parse(args);
+      const validatedArgs = parameters.parse(args)
 
-      console.log('\n=== Calling GraphQL Search ===');
-      const sdk = getSdk(client);
+      console.log('\n=== Calling GraphQL Search ===')
+      const sdk = getSdk(client)
 
       const { predicate_objects } = await sdk.SearchLists({
         str: `%${validatedArgs.query}%`,
-      });
+      })
 
-      console.log('\n=== Raw Search Results ===');
-      console.log('Results type:', typeof predicate_objects);
-      console.log('Is array:', Array.isArray(predicate_objects));
+      console.log('\n=== Raw Search Results ===')
+      console.log('Results type:', typeof predicate_objects)
+      console.log('Is array:', Array.isArray(predicate_objects))
 
       // Ensure results is an array
       const validResults = Array.isArray(predicate_objects)
         ? predicate_objects
-        : [];
+        : []
 
       if (validResults.length === 0) {
         return {
@@ -54,7 +54,7 @@ export const searchListsOperation: SearchListsOperation = {
               text: 'No lists found matching your search criteria.',
             },
           ],
-        };
+        }
       }
 
       // Return in MCP format with essential data for UI
@@ -95,9 +95,9 @@ ${
 }`,
           },
         ],
-      };
+      }
     } catch (error) {
-      console.error('Error in search lists operation:', error);
+      console.error('Error in search lists operation:', error)
 
       // Handle different types of errors
       if (error instanceof z.ZodError) {
@@ -111,7 +111,7 @@ ${
                 .join(', ')}`,
             },
           ],
-        };
+        }
       }
 
       if (error instanceof Error) {
@@ -127,7 +127,7 @@ ${
               text: `Details: ${error.stack || 'No stack trace available'}`,
             },
           ],
-        };
+        }
       }
 
       return {
@@ -138,7 +138,7 @@ ${
             text: `Unknown Error: ${String(error)}`,
           },
         ],
-      };
+      }
     }
   },
-};
+}

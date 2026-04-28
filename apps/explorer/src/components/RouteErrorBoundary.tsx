@@ -38,7 +38,9 @@ export default class RouteErrorBoundary extends Component<Props, State> {
   handleClearCacheAndReload = () => {
     try {
       localStorage.removeItem('sofia-rq-cache')
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     window.location.reload()
   }
 
@@ -46,14 +48,16 @@ export default class RouteErrorBoundary extends Component<Props, State> {
     if (!this.state.error) return this.props.children
 
     return (
-      <div style={{
-        padding: 24,
-        maxWidth: 960,
-        margin: '40px auto',
-        color: '#f4f4f4',
-        fontFamily: 'ui-monospace, monospace',
-        fontSize: 13,
-      }}>
+      <div
+        style={{
+          padding: 24,
+          maxWidth: 960,
+          margin: '40px auto',
+          color: '#f4f4f4',
+          fontFamily: 'ui-monospace, monospace',
+          fontSize: 13,
+        }}
+      >
         <h2 style={{ color: '#ff6b6b', fontSize: 18, margin: 0 }}>
           Something crashed while rendering this view.
         </h2>
@@ -63,27 +67,69 @@ export default class RouteErrorBoundary extends Component<Props, State> {
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
           <button
             onClick={this.handleReset}
-            style={{ padding: '6px 12px', background: '#333', color: '#fff', border: 0, borderRadius: 4, cursor: 'pointer' }}
+            style={{
+              padding: '6px 12px',
+              background: '#333',
+              color: '#fff',
+              border: 0,
+              borderRadius: 4,
+              cursor: 'pointer',
+            }}
           >
             Retry
           </button>
           <button
             onClick={this.handleClearCacheAndReload}
-            style={{ padding: '6px 12px', background: '#f0b36e', color: '#000', border: 0, borderRadius: 4, cursor: 'pointer' }}
+            style={{
+              padding: '6px 12px',
+              background: '#f0b36e',
+              color: '#000',
+              border: 0,
+              borderRadius: 4,
+              cursor: 'pointer',
+            }}
           >
             Clear cache and reload
           </button>
         </div>
-        <details style={{ marginTop: 16, background: '#1a1a1a', padding: 12, borderRadius: 4 }}>
+        <details
+          style={{
+            marginTop: 16,
+            background: '#1a1a1a',
+            padding: 12,
+            borderRadius: 4,
+          }}
+        >
           <summary style={{ cursor: 'pointer', color: '#888' }}>Stack</summary>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <pre
+            style={{
+              margin: 0,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
             {this.state.error.stack}
           </pre>
         </details>
         {this.state.componentStack && (
-          <details style={{ marginTop: 8, background: '#1a1a1a', padding: 12, borderRadius: 4 }}>
-            <summary style={{ cursor: 'pointer', color: '#888' }}>Component stack</summary>
-            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <details
+            style={{
+              marginTop: 8,
+              background: '#1a1a1a',
+              padding: 12,
+              borderRadius: 4,
+            }}
+          >
+            <summary style={{ cursor: 'pointer', color: '#888' }}>
+              Component stack
+            </summary>
+            <pre
+              style={{
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
               {this.state.componentStack}
             </pre>
           </details>

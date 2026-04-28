@@ -55,7 +55,9 @@ const CIRCLE_NAMES: Record<string, string> = {
 }
 
 function isCompareMode(v: string | undefined): v is CompareMode {
-  return v === 'merge' || v === 'intersect' || v === 'subtract' || v === 'contrast'
+  return (
+    v === 'merge' || v === 'intersect' || v === 'subtract' || v === 'contrast'
+  )
 }
 
 export default function PerspectivePage() {
@@ -69,12 +71,18 @@ export default function PerspectivePage() {
 
   const circleIds = useMemo(() => {
     const raw = searchParams.get('circles') ?? ''
-    return raw.split(',').map((s) => s.trim()).filter(Boolean)
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
   }, [searchParams])
 
   const topicIds = useMemo(() => {
     const raw = searchParams.get('topics') ?? ''
-    return raw.split(',').map((s) => s.trim()).filter(Boolean)
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
   }, [searchParams])
 
   const meta = MODE_META[mode]
@@ -133,7 +141,11 @@ export default function PerspectivePage() {
                   <span
                     key={id}
                     className="psp-chip psp-chip--topic"
-                    style={topic ? { ['--topic-color' as string]: topic.color } : undefined}
+                    style={
+                      topic
+                        ? { ['--topic-color' as string]: topic.color }
+                        : undefined
+                    }
                   >
                     <span aria-hidden="true">{getTopicEmoji(id) || '📌'}</span>
                     {topic?.label ?? id}
@@ -149,8 +161,8 @@ export default function PerspectivePage() {
         <p className="psp-empty-title">Compiled perspective coming soon.</p>
         <p className="psp-empty-sub">
           The aggregation pipeline (union / intersection / difference /
-          divergence over circle certifications) lands in the next wave. For
-          now this page confirms the routing and the payload.
+          divergence over circle certifications) lands in the next wave. For now
+          this page confirms the routing and the payload.
         </p>
       </div>
     </div>

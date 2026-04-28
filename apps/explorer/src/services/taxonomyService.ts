@@ -4,7 +4,7 @@
  * Replaces the static taxonomy.ts data with on-chain atoms + "has tag" triples.
  */
 
-import { GRAPHQL_URL } from "@/config"
+import { GRAPHQL_URL } from '@/config'
 import {
   TOPIC_ATOM_IDS,
   CATEGORY_ATOM_IDS,
@@ -12,8 +12,8 @@ import {
   TOPIC_TERM_IDS,
   ATOM_ID_TO_TOPIC,
   ATOM_ID_TO_CATEGORY,
-} from "@/config/atomIds"
-import { TOPIC_META } from "@/config/topicMeta"
+} from '@/config/atomIds'
+import { TOPIC_META } from '@/config/topicMeta'
 
 // ── Types ──
 
@@ -114,14 +114,14 @@ function slugify(label: string): string {
   // Fallback: derive slug from label
   return label
     .toLowerCase()
-    .replace(/[&/]/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
+    .replace(/[&/]/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
 }
 
-function resolveSlug(termId: string, type: "topic" | "category"): string {
-  if (type === "topic") {
+function resolveSlug(termId: string, type: 'topic' | 'category'): string {
+  if (type === 'topic') {
     return ATOM_ID_TO_TOPIC.get(termId) || slugify(termId)
   }
   return ATOM_ID_TO_CATEGORY.get(termId) || slugify(termId)
@@ -133,16 +133,16 @@ export async function fetchTaxonomy(): Promise<TaxonomyData> {
   // Fetch topic atoms + category-has tag-topic triples in parallel
   const [topicRes, triplesRes] = await Promise.all([
     fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: GET_TOPIC_ATOMS,
         variables: { termIds: TOPIC_TERM_IDS },
       }),
     }),
     fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: GET_TAXONOMY_TRIPLES,
         variables: {
@@ -163,8 +163,8 @@ export async function fetchTaxonomy(): Promise<TaxonomyData> {
   const topicMap = new Map<string, OnChainTopic>()
 
   for (const atom of topicAtoms) {
-    const slug = resolveSlug(atom.term_id, "topic")
-    const meta = TOPIC_META[slug] || { icon: "circle", color: "#888" }
+    const slug = resolveSlug(atom.term_id, 'topic')
+    const meta = TOPIC_META[slug] || { icon: 'circle', color: '#888' }
 
     topicMap.set(atom.term_id, {
       id: slug,
@@ -186,8 +186,8 @@ export async function fetchTaxonomy(): Promise<TaxonomyData> {
     const subject = triple.subject // category atom
     const object = triple.object // topic atom
 
-    const topicSlug = resolveSlug(object.term_id, "topic")
-    const catSlug = resolveSlug(subject.term_id, "category")
+    const topicSlug = resolveSlug(object.term_id, 'topic')
+    const catSlug = resolveSlug(subject.term_id, 'category')
 
     const category: OnChainCategory = {
       id: catSlug,

@@ -12,19 +12,19 @@ Un agent externe (session Claude Code dans sofia-explorer) a implemente 10 nouve
 
 ## Perimetre — 10 plateformes web3
 
-| Plateforme | Type | Credentials | Fichier |
-|---|---|---|---|
-| ens | on-chain | aucun | `signals/onchain/ens.ts` |
-| lido | on-chain | aucun | `signals/onchain/lido.ts` |
-| aave | subgraph | GRAPH_API_KEY | `signals/onchain/aave.ts` |
-| uniswap | subgraph | GRAPH_API_KEY | `signals/onchain/uniswap.ts` |
-| snapshot | public GraphQL | aucun | `signals/onchain/snapshot.ts` |
-| the-graph | public subgraph | aucun | `signals/onchain/the-graph.ts` |
-| wallet-siwe | on-chain | aucun | `signals/onchain/wallet-siwe.ts` |
-| lens | public GraphQL | aucun | `signals/onchain/lens.ts` |
-| farcaster | API key | NEYNAR_API_KEY | `signals/onchain/farcaster.ts` |
-| opensea | API key | OPENSEA_API_KEY | `signals/onchain/opensea.ts` |
-| coinbase | OAuth2 | COINBASE_CLIENT_ID/SECRET | `signals/coinbase.ts` |
+| Plateforme  | Type            | Credentials               | Fichier                          |
+| ----------- | --------------- | ------------------------- | -------------------------------- |
+| ens         | on-chain        | aucun                     | `signals/onchain/ens.ts`         |
+| lido        | on-chain        | aucun                     | `signals/onchain/lido.ts`        |
+| aave        | subgraph        | GRAPH_API_KEY             | `signals/onchain/aave.ts`        |
+| uniswap     | subgraph        | GRAPH_API_KEY             | `signals/onchain/uniswap.ts`     |
+| snapshot    | public GraphQL  | aucun                     | `signals/onchain/snapshot.ts`    |
+| the-graph   | public subgraph | aucun                     | `signals/onchain/the-graph.ts`   |
+| wallet-siwe | on-chain        | aucun                     | `signals/onchain/wallet-siwe.ts` |
+| lens        | public GraphQL  | aucun                     | `signals/onchain/lens.ts`        |
+| farcaster   | API key         | NEYNAR_API_KEY            | `signals/onchain/farcaster.ts`   |
+| opensea     | API key         | OPENSEA_API_KEY           | `signals/onchain/opensea.ts`     |
+| coinbase    | OAuth2          | COINBASE_CLIENT_ID/SECRET | `signals/coinbase.ts`            |
 
 ## Fichiers modifies
 
@@ -91,6 +91,7 @@ done
 ```
 
 **Attendu** :
+
 - `success: true` pour chacune des 5
 - `metrics` contient des cles (pas vide)
 - `warnings` array present (peut etre vide)
@@ -112,6 +113,7 @@ done
 ```
 
 **Attendu** :
+
 - Si credentials ok → `success: true` avec metrics
 - Si credentials manquants → `error: "missing_graph_api_key"` ou `"missing_neynar_api_key"` ou `"missing_opensea_api_key"`
 
@@ -133,6 +135,7 @@ const isWalletBased = WALLET_BASED_PLATFORMS.has(platform)
 ```
 
 **Points a verifier** :
+
 - [ ] `WALLET_BASED_PLATFORMS` contient bien les 10 platforms (ens, lido, aave, uniswap, snapshot, the-graph, wallet-siwe, lens, farcaster, opensea)
 - [ ] coinbase **n'est PAS** dans WALLET_BASED_PLATFORMS (c'est OAuth classique)
 - [ ] Quand `isWalletBased === true`, le workflow skip `getToken()` et passe walletAddress comme credential
@@ -206,28 +209,36 @@ Une fois les env vars + OAuth app coinbase creees :
 ## Problemes connus / TODO
 
 ### 1. ENS subgraph deprecated (hosted service)
+
 L'endpoint `https://api.thegraph.com/subgraphs/name/ensdomains/ens` est l'ancien hosted service qui devait etre migre vers le decentralized network. A la date de l'implementation, il fonctionne encore mais peut etre deprecie. Fallback : la reverse lookup via viem reste, juste les counts de domaines passeraient a 0.
 
 **Action** : tester avec un vrai wallet qui a un ENS (ex: vitalik.eth). Si le subgraph retourne 0, investiguer.
 
 ### 2. The Graph network subgraph — meme chose
+
 `https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet` peut aussi etre migre. Verifier que l'endpoint repond.
 
 ### 3. Aave/Uniswap subgraph IDs
+
 Les subgraph IDs hardcodes dans `aave.ts` et `uniswap.ts` sont des IDs valides au moment de l'implementation. **A verifier** :
+
 - Aave v3 : `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk`
 - Uniswap v3 : `5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV`
 
 Si jamais ils changent, mettre a jour ces constantes.
 
 ### 4. OpenSea API approval
+
 L'API key OpenSea necessite une approbation manuelle (1-2 jours). **Skippable au deploy** : si pas de key, le fetcher throw `missing_opensea_api_key` → le front affiche "score unavailable" pour OpenSea. Le reste marche.
 
 ### 5. Coinbase OAuth — nouveau provider
+
 Le code Coinbase utilise les endpoints `login.coinbase.com/oauth2/*`. Il y a une ambiguite : historiquement l'API etait sur `www.coinbase.com/oauth/*`. Verifier que les endpoints sont bons (testables via une vraie creation d'app + flow).
 
 ### 6. Farcaster sans Neynar
+
 Le fetcher Farcaster depend de Neynar. Si Neynar API change ou devient trop cher, fallback potentiel :
+
 - Utiliser le Hub Farcaster directement (plus complexe)
 - Utiliser Warpcast search API (moins riche mais gratuit)
 

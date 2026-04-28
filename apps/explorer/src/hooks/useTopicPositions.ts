@@ -23,7 +23,9 @@ export interface TopicPositionMap {
 
 const ALL_TOPIC_TERM_IDS = Object.values(TOPIC_ATOM_IDS)
 
-async function seedTopicPositions(address: string): Promise<Record<string, string>> {
+async function seedTopicPositions(
+  address: string,
+): Promise<Record<string, string>> {
   const shares = await getSharesBatch(address, ALL_TOPIC_TERM_IDS)
   const result: Record<string, string> = {}
   for (const [slug, termId] of Object.entries(TOPIC_ATOM_IDS)) {
@@ -40,8 +42,12 @@ export function useTopicPositions(selectedTopics: string[]) {
   const address = wallet?.address?.toLowerCase()
   const qc = useQueryClient()
 
-  const { data, isLoading, isSuccess, refetch } = useQuery<Record<string, string>>({
-    queryKey: address ? realtimeKeys.topicPositionsMap(address) : ['topic-positions-map', undefined],
+  const { data, isLoading, isSuccess, refetch } = useQuery<
+    Record<string, string>
+  >({
+    queryKey: address
+      ? realtimeKeys.topicPositionsMap(address)
+      : ['topic-positions-map', undefined],
     queryFn: () => seedTopicPositions(wallet!.address),
     enabled: authenticated && !!address,
     // 10min is long enough to dedupe reloads in the same session; the WS
@@ -62,7 +68,9 @@ export function useTopicPositions(selectedTopics: string[]) {
   )
   const isPending = useCallback(
     (topicId: string) =>
-      isSuccess && selectedTopics.includes(topicId) && sharesToBigInt(raw[topicId]) === 0n,
+      isSuccess &&
+      selectedTopics.includes(topicId) &&
+      sharesToBigInt(raw[topicId]) === 0n,
     [isSuccess, selectedTopics, raw],
   )
 
@@ -73,7 +81,10 @@ export function useTopicPositions(selectedTopics: string[]) {
   }
 
   const wrappedRefetch = useCallback(() => {
-    if (address) qc.invalidateQueries({ queryKey: realtimeKeys.topicPositionsMap(address) })
+    if (address)
+      qc.invalidateQueries({
+        queryKey: realtimeKeys.topicPositionsMap(address),
+      })
     return refetch()
   }, [address, qc, refetch])
 

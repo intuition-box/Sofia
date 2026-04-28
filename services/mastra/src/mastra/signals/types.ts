@@ -10,5 +10,5 @@ export interface FetcherContext {
 export type SignalFetcher = (
   token: string,
   userId?: string,
-  ctx?: FetcherContext
+  ctx?: FetcherContext,
 ) => Promise<PlatformMetrics>

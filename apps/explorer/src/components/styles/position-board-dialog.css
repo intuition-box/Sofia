@@ -184,7 +184,7 @@
 }
 
 .pbd-lb-rank-gold {
-  color: #D4A843;
+  color: #d4a843;
 }
 
 .pbd-lb-col-user {
@@ -228,7 +228,8 @@
   background: color-mix(in oklab, var(--muted) 60%, transparent);
   border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
 }
-.pbd-curve-badge--exp {}
+.pbd-curve-badge--exp {
+}
 
 .pbd-lb-col-shares {
   min-width: 60px;
@@ -265,25 +266,27 @@
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s, filter 0.15s;
+  transition:
+    opacity 0.15s,
+    filter 0.15s;
 }
 
 .pbd-btn-support {
-  background: color-mix(in oklab, #86EFAC 15%, transparent);
-  color: #86EFAC;
-  border: 1px solid color-mix(in oklab, #86EFAC 35%, transparent);
+  background: color-mix(in oklab, #86efac 15%, transparent);
+  color: #86efac;
+  border: 1px solid color-mix(in oklab, #86efac 35%, transparent);
 }
 .pbd-btn-support:hover:not(:disabled) {
-  background: color-mix(in oklab, #86EFAC 28%, transparent);
+  background: color-mix(in oklab, #86efac 28%, transparent);
 }
 
 .pbd-btn-oppose {
-  background: color-mix(in oklab, #FCA5A5 15%, transparent);
-  color: #FCA5A5;
-  border: 1px solid color-mix(in oklab, #FCA5A5 35%, transparent);
+  background: color-mix(in oklab, #fca5a5 15%, transparent);
+  color: #fca5a5;
+  border: 1px solid color-mix(in oklab, #fca5a5 35%, transparent);
 }
 .pbd-btn-oppose:hover:not(:disabled) {
-  background: color-mix(in oklab, #FCA5A5 28%, transparent);
+  background: color-mix(in oklab, #fca5a5 28%, transparent);
 }
 
 .pbd-btn-support:disabled,
@@ -376,14 +379,21 @@
 }
 
 @keyframes pbd-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* ── Clickable mini position board ── */
 .ac-positions--clickable {
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .ac-positions--clickable:hover {
   background: color-mix(in oklab, var(--muted) 60%, transparent);

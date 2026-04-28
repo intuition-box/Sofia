@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
-import { GroupBentoCard, type CertificationDot, formatDuration } from '@0xsofia/design-system'
+import {
+  GroupBentoCard,
+  type CertificationDot,
+  formatDuration,
+} from '@0xsofia/design-system'
 import {
   displayLabelToIntentionType,
   CERTIFICATION_COLORS,
@@ -43,7 +47,10 @@ function toActivityInput(item: CircleItem): IntentionActivityInput | null {
 function toCardProps(g: IntentionGroupWithStats) {
   const xp = calculateLevelProgress(g.certifiedCount, g.level)
   const dots: CertificationDot[] = (
-    Object.entries(g.certificationBreakdown) as [IntentionType, number | undefined][]
+    Object.entries(g.certificationBreakdown) as [
+      IntentionType,
+      number | undefined,
+    ][]
   )
     .filter(([, c]) => (c ?? 0) > 0)
     .map(([type]) => ({
@@ -72,7 +79,11 @@ function toCardProps(g: IntentionGroupWithStats) {
   }
 }
 
-export default function LastActivitySection({ items, loading, sort = 'platform' }: LastActivitySectionProps) {
+export default function LastActivitySection({
+  items,
+  loading,
+  sort = 'platform',
+}: LastActivitySectionProps) {
   const activities = useMemo<IntentionActivityInput[]>(() => {
     const certifications = items.filter(
       (item) => !item.intentions.some((i) => i.startsWith('quest:')),

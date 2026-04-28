@@ -24,11 +24,7 @@ query AtomIdsByURL($likeStr: String!) {
 
 # Get atom details by term IDs (with vault data for position filtering)
 query AtomsByTermIds($atomIds: [String!]!) {
-  atoms(
-    where: {
-      term_id: { _in: $atomIds }
-    }
-  ) {
+  atoms(where: { term_id: { _in: $atomIds } }) {
     term_id
     label
     type
@@ -48,11 +44,13 @@ query TriplesCountByAtomIds($atomIds: [String!]!) {
   triples_aggregate(
     where: {
       _and: [
-        { _or: [
-          { subject: { term_id: { _in: $atomIds } } },
-          { predicate: { term_id: { _in: $atomIds } } },
-          { object: { term_id: { _in: $atomIds } } }
-        ]}
+        {
+          _or: [
+            { subject: { term_id: { _in: $atomIds } } }
+            { predicate: { term_id: { _in: $atomIds } } }
+            { object: { term_id: { _in: $atomIds } } }
+          ]
+        }
         { positions: { shares: { _gt: "0" } } }
       ]
     }
@@ -69,20 +67,31 @@ query TriplesByAtomIds($atomIds: [String!]!) {
     limit: 100
     where: {
       _and: [
-        { _or: [
-          { subject: { term_id: { _in: $atomIds } } },
-          { predicate: { term_id: { _in: $atomIds } } },
-          { object: { term_id: { _in: $atomIds } } }
-        ]}
+        {
+          _or: [
+            { subject: { term_id: { _in: $atomIds } } }
+            { predicate: { term_id: { _in: $atomIds } } }
+            { object: { term_id: { _in: $atomIds } } }
+          ]
+        }
         { positions: { shares: { _gt: "0" } } }
       ]
     }
   ) {
     term_id
     created_at
-    subject { term_id label }
-    predicate { term_id label }
-    object { term_id label }
+    subject {
+      term_id
+      label
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
     term {
       vaults {
         curve_id
@@ -104,7 +113,9 @@ query TrustDistrustByPage($atomIds: [String!]!) {
     }
   ) {
     term_id
-    object { term_id }
+    object {
+      term_id
+    }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
       shares
@@ -118,7 +129,9 @@ query TrustDistrustByPage($atomIds: [String!]!) {
     }
   ) {
     term_id
-    object { term_id }
+    object {
+      term_id
+    }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
       shares

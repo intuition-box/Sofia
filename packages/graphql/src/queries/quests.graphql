@@ -9,7 +9,7 @@ query GetQuestBadgesAndSocialLinks(
 ) {
   badges: triples(
     where: {
-      subject_id: { _eq: $subjectId },
+      subject_id: { _eq: $subjectId }
       predicate_id: { _eq: $hasTagPredicateId }
     }
     limit: 1000
@@ -21,16 +21,18 @@ query GetQuestBadgesAndSocialLinks(
   }
   socialLinks: triples(
     where: {
-      subject_id: { _eq: $subjectId },
-      creator_id: { _ilike: $botVerifierId },
+      subject_id: { _eq: $subjectId }
+      creator_id: { _ilike: $botVerifierId }
       predicate: {
-        label: { _in: [
-          "has verified discord id",
-          "has verified youtube id",
-          "has verified spotify id",
-          "has verified twitch id",
-          "has verified twitter id"
-        ]}
+        label: {
+          _in: [
+            "has verified discord id"
+            "has verified youtube id"
+            "has verified spotify id"
+            "has verified twitch id"
+            "has verified twitter id"
+          ]
+        }
       }
     }
     limit: 100
@@ -65,22 +67,21 @@ query CheckSocialLink(
 }
 
 # Check all social links for a user (used by useSocialVerifier)
-query CheckSocialLinks(
-  $subjectId: String!
-  $botVerifierId: String!
-) {
+query CheckSocialLinks($subjectId: String!, $botVerifierId: String!) {
   triples(
     where: {
       subject_id: { _eq: $subjectId }
       creator_id: { _ilike: $botVerifierId }
       predicate: {
-        label: { _in: [
-          "has verified discord id",
-          "has verified youtube id",
-          "has verified spotify id",
-          "has verified twitch id",
-          "has verified twitter id"
-        ]}
+        label: {
+          _in: [
+            "has verified discord id"
+            "has verified youtube id"
+            "has verified spotify id"
+            "has verified twitch id"
+            "has verified twitter id"
+          ]
+        }
       }
     }
     limit: 100
@@ -105,8 +106,8 @@ query GetUserSignals(
   triples: terms(
     where: {
       _and: [
-        { type: { _eq: Triple } },
-        { triple: { subject: { term_id: { _eq: $subjectId } } } },
+        { type: { _eq: Triple } }
+        { triple: { subject: { term_id: { _eq: $subjectId } } } }
         { positions: { account: { id: { _in: $accountIds } } } }
       ]
     }
@@ -126,9 +127,9 @@ query GetFollowCount(
   triples(
     where: {
       _and: [
-        { positions: { account: { id: { _in: $accountIds } } } },
-        { subject_id: { _eq: $subjectId } },
-        { predicate_id: { _eq: $predicateId } },
+        { positions: { account: { id: { _in: $accountIds } } } }
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
       ]
     }

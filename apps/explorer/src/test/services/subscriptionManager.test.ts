@@ -77,7 +77,10 @@ describe('SubscriptionManager', () => {
   it('disconnect() tears down subscriptions and allows a fresh connect to reopen', () => {
     const unsub1 = vi.fn()
     const unsub2 = vi.fn()
-    wsSubscribe.mockReturnValueOnce(unsub1).mockReturnValueOnce(unsub2).mockReturnValue(() => {})
+    wsSubscribe
+      .mockReturnValueOnce(unsub1)
+      .mockReturnValueOnce(unsub2)
+      .mockReturnValue(() => {})
 
     manager.connect(['0xAAA'])
     manager.disconnect()

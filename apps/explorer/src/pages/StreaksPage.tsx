@@ -7,7 +7,10 @@ import { useState } from 'react'
 import { formatEther, type Address } from 'viem'
 import { Flame } from 'lucide-react'
 import { useStreakLeaderboard } from '@/hooks/useStreakLeaderboard'
-import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '@/services/streakService'
+import {
+  DAILY_CERTIFICATION_ATOM_ID,
+  DAILY_VOTE_ATOM_ID,
+} from '@/services/streakService'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { PageHero } from '@0xsofia/design-system'
@@ -49,7 +52,9 @@ function PodiumAvatar({ entry, rank }: { entry: StreakEntry; rank: number }) {
         <img
           src={entry.avatar}
           alt=""
-          onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          onError={(e) =>
+            ((e.target as HTMLImageElement).style.display = 'none')
+          }
         />
       ) : null}
       <span className="sp-avatar-fallback">
@@ -82,7 +87,11 @@ export default function StreaksPage() {
 
   return (
     <div className="page-content page-enter sp-page">
-      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
+      <PageHero
+        background={pc.color}
+        title={pc.title}
+        description={pc.subtitle}
+      />
 
       {/* Filter row — tabs on the left, summary pill on the right. */}
       <div className="sp-filters">
@@ -152,7 +161,9 @@ export default function StreaksPage() {
                   </div>
                 </div>
                 <div className="sp-pedestal-block">
-                  <span className="sp-pedestal-rank">{PODIUM_LABELS[rank]}</span>
+                  <span className="sp-pedestal-rank">
+                    {PODIUM_LABELS[rank]}
+                  </span>
                 </div>
               </article>
             )
@@ -180,7 +191,8 @@ export default function StreaksPage() {
                         src={entry.avatar}
                         alt=""
                         onError={(e) =>
-                          ((e.target as HTMLImageElement).style.display = 'none')
+                          ((e.target as HTMLImageElement).style.display =
+                            'none')
                         }
                       />
                     ) : null}
@@ -190,14 +202,20 @@ export default function StreaksPage() {
                   </span>
                   <div className="sp-row-user">
                     <span className="sp-row-name">{entry.displayName}</span>
-                    <span className="sp-row-addr">{shortAddress(entry.address)}</span>
+                    <span className="sp-row-addr">
+                      {shortAddress(entry.address)}
+                    </span>
                   </div>
-                  <div className={`sp-row-streak${hasStreak ? ' is-active' : ''}`}>
+                  <div
+                    className={`sp-row-streak${hasStreak ? ' is-active' : ''}`}
+                  >
                     <Flame className="h-3.5 w-3.5" />
                     <span>{entry.streakDays}</span>
                   </div>
                   <div className="sp-row-trust">
-                    <span className="sp-row-trust-num">{formatShares(entry.shares)}</span>
+                    <span className="sp-row-trust-num">
+                      {formatShares(entry.shares)}
+                    </span>
                     <span className="sp-row-trust-lbl">TRUST</span>
                   </div>
                 </div>
@@ -208,7 +226,9 @@ export default function StreaksPage() {
       ) : null}
 
       {!loading && !error && streakData.length === 0 ? (
-        <div className="sp-empty">No streakers yet — light the first flame.</div>
+        <div className="sp-empty">
+          No streakers yet — light the first flame.
+        </div>
       ) : null}
     </div>
   )

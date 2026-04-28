@@ -28,27 +28,95 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useUserActivity } from '@/hooks/useUserActivity'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { deriveClaimBadge, type ClaimBadge } from '@/components/profile/ProfileClaimCard'
+import {
+  deriveClaimBadge,
+  type ClaimBadge,
+} from '@/components/profile/ProfileClaimCard'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-page.css'
 
-const VERBS: { id: IntentionType; label: string; emoji: string; color: string }[] = [
-  { id: 'trusted',     label: INTENTION_CONFIG.trusted.label,     emoji: '🤝', color: INTENTION_CONFIG.trusted.color },
-  { id: 'distrusted',  label: INTENTION_CONFIG.distrusted.label,  emoji: '⚠️', color: INTENTION_CONFIG.distrusted.color },
-  { id: 'work',        label: INTENTION_CONFIG.work.label,        emoji: '💼', color: INTENTION_CONFIG.work.color },
-  { id: 'learning',    label: INTENTION_CONFIG.learning.label,    emoji: '📚', color: INTENTION_CONFIG.learning.color },
-  { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨', color: INTENTION_CONFIG.inspiration.color },
-  { id: 'fun',         label: INTENTION_CONFIG.fun.label,         emoji: '🎮', color: INTENTION_CONFIG.fun.color },
-  { id: 'buying',      label: INTENTION_CONFIG.buying.label,      emoji: '🛍️', color: INTENTION_CONFIG.buying.color },
-  { id: 'music',       label: INTENTION_CONFIG.music.label,       emoji: '🎵', color: INTENTION_CONFIG.music.color },
+const VERBS: {
+  id: IntentionType
+  label: string
+  emoji: string
+  color: string
+}[] = [
+  {
+    id: 'trusted',
+    label: INTENTION_CONFIG.trusted.label,
+    emoji: '🤝',
+    color: INTENTION_CONFIG.trusted.color,
+  },
+  {
+    id: 'distrusted',
+    label: INTENTION_CONFIG.distrusted.label,
+    emoji: '⚠️',
+    color: INTENTION_CONFIG.distrusted.color,
+  },
+  {
+    id: 'work',
+    label: INTENTION_CONFIG.work.label,
+    emoji: '💼',
+    color: INTENTION_CONFIG.work.color,
+  },
+  {
+    id: 'learning',
+    label: INTENTION_CONFIG.learning.label,
+    emoji: '📚',
+    color: INTENTION_CONFIG.learning.color,
+  },
+  {
+    id: 'inspiration',
+    label: INTENTION_CONFIG.inspiration.label,
+    emoji: '✨',
+    color: INTENTION_CONFIG.inspiration.color,
+  },
+  {
+    id: 'fun',
+    label: INTENTION_CONFIG.fun.label,
+    emoji: '🎮',
+    color: INTENTION_CONFIG.fun.color,
+  },
+  {
+    id: 'buying',
+    label: INTENTION_CONFIG.buying.label,
+    emoji: '🛍️',
+    color: INTENTION_CONFIG.buying.color,
+  },
+  {
+    id: 'music',
+    label: INTENTION_CONFIG.music.label,
+    emoji: '🎵',
+    color: INTENTION_CONFIG.music.color,
+  },
 ]
 
-const BADGE_GROUPS: { id: ClaimBadge; label: string; description: string; icon: string }[] = [
-  { id: 'pioneer', label: 'Pioneer',     description: 'First to certify the claim.',            icon: '/badges/pioneer.png' },
-  { id: 'early',   label: 'Explorer',    description: 'Supported before consensus.',            icon: '/badges/explorer.png' },
-  { id: 'viral',   label: 'Contributor', description: 'Your signal spread across the network.', icon: '/badges/contributor.png' },
+const BADGE_GROUPS: {
+  id: ClaimBadge
+  label: string
+  description: string
+  icon: string
+}[] = [
+  {
+    id: 'pioneer',
+    label: 'Pioneer',
+    description: 'First to certify the claim.',
+    icon: '/badges/pioneer.png',
+  },
+  {
+    id: 'early',
+    label: 'Explorer',
+    description: 'Supported before consensus.',
+    icon: '/badges/explorer.png',
+  },
+  {
+    id: 'viral',
+    label: 'Contributor',
+    description: 'Your signal spread across the network.',
+    icon: '/badges/contributor.png',
+  },
 ]
 
 export default function ScoresPage() {
@@ -68,9 +136,13 @@ export default function ScoresPage() {
     .map((id) => {
       const topic = topicById(id)
       if (!topic) return null
-      const catCount = topic.categories.filter((c) => selectedCategories.includes(c.id)).length
+      const catCount = topic.categories.filter((c) =>
+        selectedCategories.includes(c.id),
+      ).length
       const platformsOfTopic = getPlatformsByTopic(id) ?? []
-      const platCount = platformsOfTopic.filter((p) => getStatus(p.id) === 'connected').length
+      const platCount = platformsOfTopic.filter(
+        (p) => getStatus(p.id) === 'connected',
+      ).length
       return {
         id,
         label: topic.label,
@@ -106,8 +178,9 @@ export default function ScoresPage() {
   const perBadgeUrls = BADGE_GROUPS.map((g) => {
     const urls = topClaims
       .filter((c) => {
-        const position =
-          c.predicateLabel.toLowerCase().includes('distrust') ? 'oppose' : 'support'
+        const position = c.predicateLabel.toLowerCase().includes('distrust')
+          ? 'oppose'
+          : 'support'
         const derived = deriveClaimBadge({
           supportCount: c.stats.supportCount,
           opposeCount: c.stats.opposeCount,
@@ -122,16 +195,22 @@ export default function ScoresPage() {
 
   // Engagement on your URLs — top 5 by total position count.
   const engagement = [...topClaims]
-    .sort((a, b) =>
-      (b.stats.supportCount + b.stats.opposeCount) -
-      (a.stats.supportCount + a.stats.opposeCount),
+    .sort(
+      (a, b) =>
+        b.stats.supportCount +
+        b.stats.opposeCount -
+        (a.stats.supportCount + a.stats.opposeCount),
     )
     .slice(0, 5)
 
   return (
     <div className="pf-view page-enter">
       <div className="pf-ts-back-row">
-        <button type="button" className="pf-btn" onClick={() => navigate('/profile')}>
+        <button
+          type="button"
+          className="pf-btn"
+          onClick={() => navigate('/profile')}
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to my profile
         </button>
@@ -141,7 +220,8 @@ export default function ScoresPage() {
         <div className="pf-ts-header-title-block">
           <h1 className="pf-ts-header-title">Score</h1>
           <p className="pf-ts-header-desc">
-            Break down your reputation score across topics, intents, URLs and engagement.
+            Break down your reputation score across topics, intents, URLs and
+            engagement.
           </p>
         </div>
         <div className="pf-ts-header-stat">
@@ -205,16 +285,24 @@ export default function ScoresPage() {
             {perBadgeUrls.map(({ group, urls }) => (
               <div key={group.id} className="pf-badge-block">
                 <div className="pf-badge-head">
-                  <img className="pf-badge-head-icon" src={group.icon} alt={group.label} />
+                  <img
+                    className="pf-badge-head-icon"
+                    src={group.icon}
+                    alt={group.label}
+                  />
                   <div className="pf-badge-head-text">
                     <span className="pf-badge-head-label">{group.label}</span>
-                    <span className="pf-badge-head-desc">{group.description}</span>
+                    <span className="pf-badge-head-desc">
+                      {group.description}
+                    </span>
                   </div>
                 </div>
                 {urls.length > 0 ? (
                   <div className="pf-badge-urls">
                     {urls.map((c) => {
-                      const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
+                      const domain = c.objectUrl
+                        ? extractDomain(c.objectUrl)
+                        : ''
                       return (
                         <a
                           key={c.termId}
@@ -230,7 +318,9 @@ export default function ScoresPage() {
                             className="pf-ts-url-fav"
                           />
                           <div className="pf-ts-url-meta">
-                            <span className="pf-ts-url-title">{c.objectLabel}</span>
+                            <span className="pf-ts-url-title">
+                              {c.objectLabel}
+                            </span>
                             <span className="pf-ts-url-host">
                               {domain}
                               {c.stats.userPnlPct != null
@@ -256,7 +346,10 @@ export default function ScoresPage() {
             <div className="pf-engage-list">
               {engagement.map((c) => {
                 const total = c.stats.supportCount + c.stats.opposeCount
-                const supPct = total > 0 ? Math.round((c.stats.supportCount / total) * 100) : 50
+                const supPct =
+                  total > 0
+                    ? Math.round((c.stats.supportCount / total) * 100)
+                    : 50
                 const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
                 return (
                   <div key={c.termId} className="pf-engage-row">
@@ -274,8 +367,12 @@ export default function ScoresPage() {
                       <span style={{ width: `${supPct}%` }} />
                     </div>
                     <div className="pf-engage-counts">
-                      <span className="pf-engage-sup">▲ {c.stats.supportCount}</span>
-                      <span className="pf-engage-opp">▼ {c.stats.opposeCount}</span>
+                      <span className="pf-engage-sup">
+                        ▲ {c.stats.supportCount}
+                      </span>
+                      <span className="pf-engage-opp">
+                        ▼ {c.stats.opposeCount}
+                      </span>
                     </div>
                   </div>
                 )

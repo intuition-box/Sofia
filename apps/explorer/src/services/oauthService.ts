@@ -28,11 +28,11 @@ const OAUTH_CALLBACK_URL =
 // ── Types ──
 
 export type ConnectionStrategy =
-  | 'oauth_popup'   // oauth2 + oauth1 — popup flow
-  | 'username'      // public + api_key — user provides username, backend verifies
-  | 'siwe'          // wallet signature
-  | 'siwf'          // farcaster signature
-  | 'auto'          // no auth needed
+  | 'oauth_popup' // oauth2 + oauth1 — popup flow
+  | 'username' // public + api_key — user provides username, backend verifies
+  | 'siwe' // wallet signature
+  | 'siwf' // farcaster signature
+  | 'auto' // no auth needed
 
 export interface ConnectResult {
   success: boolean
@@ -154,12 +154,15 @@ export function startOAuthFlow(platformId: string): Promise<string> {
 
     window.addEventListener('message', handler)
 
-    setTimeout(() => {
-      clearInterval(interval)
-      window.removeEventListener('message', handler)
-      if (!popup.closed) popup.close()
-      reject(new Error('OAuth timeout'))
-    }, 5 * 60 * 1000)
+    setTimeout(
+      () => {
+        clearInterval(interval)
+        window.removeEventListener('message', handler)
+        if (!popup.closed) popup.close()
+        reject(new Error('OAuth timeout'))
+      },
+      5 * 60 * 1000,
+    )
   })
 }
 
@@ -202,11 +205,14 @@ export async function requestChallenge(
   platformId: string,
   username: string,
 ): Promise<ChallengeResult> {
-  const response = await fetch(`${MASTRA_URL}/api/platforms/${platformId}/challenge`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
-  })
+  const response = await fetch(
+    `${MASTRA_URL}/api/platforms/${platformId}/challenge`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    },
+  )
 
   if (!response.ok) {
     const text = await response.text()
@@ -225,11 +231,14 @@ export async function verifyChallenge(
   username: string,
   challengeCode: string,
 ): Promise<ConnectResult> {
-  const response = await fetch(`${MASTRA_URL}/api/platforms/${platformId}/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, challengeCode }),
-  })
+  const response = await fetch(
+    `${MASTRA_URL}/api/platforms/${platformId}/verify`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, challengeCode }),
+    },
+  )
 
   if (!response.ok) {
     const text = await response.text()
@@ -251,11 +260,14 @@ export async function connectWithSIWE(
   signature: string,
   message: string,
 ): Promise<ConnectResult> {
-  const response = await fetch(`${MASTRA_URL}/api/platforms/${platformId}/siwe`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ walletAddress, signature, message }),
-  })
+  const response = await fetch(
+    `${MASTRA_URL}/api/platforms/${platformId}/siwe`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress, signature, message }),
+    },
+  )
 
   if (!response.ok) {
     const text = await response.text()

@@ -151,10 +151,7 @@ query FindTriples(
   }
 }
 
-query FindNestedTriples(
-  $where: triples_bool_exp = {}
-  $limit: Int = 100
-) {
+query FindNestedTriples($where: triples_bool_exp = {}, $limit: Int = 100) {
   triples(where: $where, limit: $limit) {
     term_id
     subject_id

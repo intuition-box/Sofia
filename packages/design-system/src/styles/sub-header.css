@@ -65,7 +65,7 @@
   text-overflow: ellipsis;
 }
 .pf-sub-crumb:last-child {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -86,13 +86,22 @@
   gap: 8px;
   padding: 6px 12px 6px 14px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--pill-color, var(--ds-muted)) 10%, var(--ds-card));
-  border: 1px solid color-mix(in srgb, var(--pill-color, var(--ds-border)) 28%, var(--ds-border-soft));
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-muted)) 10%,
+    var(--ds-card)
+  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--pill-color, var(--ds-border)) 28%,
+      var(--ds-border-soft)
+    );
   flex-shrink: 0;
 }
 
 .pf-sub-pill-label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
@@ -101,7 +110,7 @@
 }
 
 .pf-sub-pill-value {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;

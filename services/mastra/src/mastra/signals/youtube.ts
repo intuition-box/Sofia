@@ -1,21 +1,27 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince, safeNumber } from "./utils"
+import type { PlatformMetrics, SignalFetcher } from './types'
+import { safeFetch, monthsSince, safeNumber } from './utils'
 
-const BASE = "https://www.googleapis.com/youtube/v3"
+const BASE = 'https://www.googleapis.com/youtube/v3'
 
 export const fetchYoutubeSignals: SignalFetcher = async (
   token,
   _userId,
-  ctx
+  ctx,
 ): Promise<PlatformMetrics> => {
   const headers = { Authorization: `Bearer ${token}` }
-  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
-    try { return await fn() } catch { return fallback }
-  })
+  const safe =
+    ctx?.safeStep ??
+    (async (fn, fallback) => {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    })
 
   const channelRes = await safeFetch(
     `${BASE}/channels?part=statistics,snippet&mine=true`,
-    headers
+    headers,
   )
   const channelData = await channelRes.json()
   const channel = channelData.items?.[0]
@@ -47,7 +53,7 @@ export const fetchYoutubeSignals: SignalFetcher = async (
     async () => {
       const res = await safeFetch(
         `${BASE}/search?forMine=true&type=video&order=date&publishedAfter=${after}&maxResults=50&part=id`,
-        headers
+        headers,
       )
       const data = await res.json()
       const ids: string[] = (data.items ?? [])
@@ -59,7 +65,7 @@ export const fetchYoutubeSignals: SignalFetcher = async (
       }
     },
     { recentVideoIds: [] as string[], recentCount: 0 },
-    "youtube_recent_search"
+    'youtube_recent_search',
   )
 
   const perVideo = await safe(
@@ -67,17 +73,19 @@ export const fetchYoutubeSignals: SignalFetcher = async (
       if (recentVideoIds.length === 0) {
         return { avgViews: 0, avgLikes: 0, avgComments: 0 }
       }
-      const ids = recentVideoIds.slice(0, 50).join(",")
+      const ids = recentVideoIds.slice(0, 50).join(',')
       const res = await safeFetch(
         `${BASE}/videos?id=${ids}&part=statistics`,
-        headers
+        headers,
       )
       const data = await res.json()
       const videos = data.items ?? []
       if (videos.length === 0) {
         return { avgViews: 0, avgLikes: 0, avgComments: 0 }
       }
-      let views = 0, likes = 0, comments = 0
+      let views = 0,
+        likes = 0,
+        comments = 0
       for (const v of videos) {
         views += safeNumber(v.statistics?.viewCount)
         likes += safeNumber(v.statistics?.likeCount)
@@ -90,20 +98,20 @@ export const fetchYoutubeSignals: SignalFetcher = async (
       }
     },
     { avgViews: 0, avgLikes: 0, avgComments: 0 },
-    "youtube_per_video_stats"
+    'youtube_per_video_stats',
   )
 
   const playlistsCount = await safe(
     async () => {
       const res = await safeFetch(
         `${BASE}/playlists?mine=true&maxResults=50&part=id`,
-        headers
+        headers,
       )
       const data = await res.json()
       return safeNumber(data.pageInfo?.totalResults)
     },
     0,
-    "youtube_playlists"
+    'youtube_playlists',
   )
 
   return {

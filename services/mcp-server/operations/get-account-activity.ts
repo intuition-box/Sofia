@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { client } from "../graphql/client.js";
-import { gql } from "graphql-request";
-import { createErrorResponse } from "../lib/response.js";
+import { z } from 'zod'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { client } from '../graphql/client.js'
+import { gql } from 'graphql-request'
+import { createErrorResponse } from '../lib/response.js'
 
 // Define the parameters schema
 const parameters = z.object({
@@ -10,55 +10,55 @@ const parameters = z.object({
     .string()
     .min(1)
     .describe(
-      "The account address to analyze activity for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b"
+      'The account address to analyze activity for. Example: 0x3e2178cf851a0e5cbf84c0ff53f820ad7ead703b',
     ),
   predicate_filter: z
     .array(z.string())
     .optional()
     .describe(
-      "Optional array of predicate labels to filter by. Example: ['visits for work', 'visits for learning', 'like', 'recommend']"
+      "Optional array of predicate labels to filter by. Example: ['visits for work', 'visits for learning', 'like', 'recommend']",
     ),
   group_by: z
-    .enum(["domain", "predicate", "object"])
+    .enum(['domain', 'predicate', 'object'])
     .optional()
     .describe(
-      "How to group results: 'domain' extracts and groups by URL hostname, 'predicate' groups by predicate label, 'object' groups by object label"
+      "How to group results: 'domain' extracts and groups by URL hostname, 'predicate' groups by predicate label, 'object' groups by object label",
     ),
   limit: z
     .number()
     .optional()
-    .describe("Max number of positions to analyze. Default: 1000")
-});
+    .describe('Max number of positions to analyze. Default: 1000'),
+})
 
 // Define the operation interface
 interface GetAccountActivityOperation {
-  description: string;
-  parameters: typeof parameters;
-  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>;
+  description: string
+  parameters: typeof parameters
+  execute: (args: z.infer<typeof parameters>) => Promise<CallToolResult>
 }
 
 interface PositionResult {
-  id: string;
-  shares: string;
+  id: string
+  shares: string
   term: {
     triple?: {
       predicate?: {
-        label?: string;
-      };
+        label?: string
+      }
       object?: {
-        label?: string;
+        label?: string
         value?: {
           thing?: {
-            url?: string;
-          };
-        };
-      };
-    };
-  };
+            url?: string
+          }
+        }
+      }
+    }
+  }
 }
 
 interface QueryResponse {
-  positions: PositionResult[];
+  positions: PositionResult[]
 }
 
 const getActivityQuery = gql`
@@ -67,7 +67,12 @@ const getActivityQuery = gql`
     $limit: Int
     $offset: Int
   ) {
-    positions(where: $where, limit: $limit, offset: $offset, order_by: { shares: desc }) {
+    positions(
+      where: $where
+      limit: $limit
+      offset: $offset
+      order_by: { shares: desc }
+    ) {
       id
       shares
       term {
@@ -87,63 +92,68 @@ const getActivityQuery = gql`
       }
     }
   }
-`;
+`
 
 interface ActivityGroup {
-  key: string;
-  count: number;
-  total_shares: string;
-  predicates: Record<string, number>;
+  key: string
+  count: number
+  total_shares: string
+  predicates: Record<string, number>
 }
 
 function extractDomain(url: string): string {
   try {
-    const urlObj = new URL(url.startsWith("http") ? url : `https://${url}`);
-    return urlObj.hostname.replace(/^www\./, "");
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
+    return urlObj.hostname.replace(/^www\./, '')
   } catch {
-    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/);
-    return match ? match[1] : url;
+    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/)
+    return match ? match[1] : url
   }
 }
 
 function groupActivity(
   positions: PositionResult[],
-  groupBy: "domain" | "predicate" | "object"
+  groupBy: 'domain' | 'predicate' | 'object',
 ): ActivityGroup[] {
-  const groups: Record<string, { count: number; shares: bigint; predicates: Record<string, number> }> = {};
+  const groups: Record<
+    string,
+    { count: number; shares: bigint; predicates: Record<string, number> }
+  > = {}
 
   for (const position of positions) {
-    const triple = position.term?.triple;
-    if (!triple) continue;
+    const triple = position.term?.triple
+    if (!triple) continue
 
-    let key: string | null = null;
+    let key: string | null = null
 
     switch (groupBy) {
-      case "domain":
-        const url = triple.object?.value?.thing?.url || triple.object?.label || "";
+      case 'domain':
+        const url =
+          triple.object?.value?.thing?.url || triple.object?.label || ''
         if (url) {
-          key = extractDomain(url);
+          key = extractDomain(url)
         }
-        break;
-      case "predicate":
-        key = triple.predicate?.label || null;
-        break;
-      case "object":
-        key = triple.object?.label || null;
-        break;
+        break
+      case 'predicate':
+        key = triple.predicate?.label || null
+        break
+      case 'object':
+        key = triple.object?.label || null
+        break
     }
 
-    if (!key) continue;
+    if (!key) continue
 
     if (!groups[key]) {
-      groups[key] = { count: 0, shares: BigInt(0), predicates: {} };
+      groups[key] = { count: 0, shares: BigInt(0), predicates: {} }
     }
 
-    groups[key].count++;
-    groups[key].shares += BigInt(position.shares || "0");
+    groups[key].count++
+    groups[key].shares += BigInt(position.shares || '0')
 
-    const predicateLabel = triple.predicate?.label || "unknown";
-    groups[key].predicates[predicateLabel] = (groups[key].predicates[predicateLabel] || 0) + 1;
+    const predicateLabel = triple.predicate?.label || 'unknown'
+    groups[key].predicates[predicateLabel] =
+      (groups[key].predicates[predicateLabel] || 0) + 1
   }
 
   return Object.entries(groups)
@@ -153,23 +163,23 @@ function groupActivity(
       total_shares: data.shares.toString(),
       predicates: data.predicates,
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => b.count - a.count)
 }
 
 async function fetchPositions(
   accountId: string,
   predicateFilter?: string[],
-  maxLimit: number = 1000
+  maxLimit: number = 1000,
 ): Promise<PositionResult[]> {
-  const allPositions: PositionResult[] = [];
-  const pageSize = 100;
-  let offset = 0;
+  const allPositions: PositionResult[] = []
+  const pageSize = 100
+  let offset = 0
 
   while (allPositions.length < maxLimit) {
     const where: any = {
       account_id: { _eq: accountId },
-      shares: { _gt: "0" },
-    };
+      shares: { _gt: '0' },
+    }
 
     if (predicateFilter && predicateFilter.length > 0) {
       where.term = {
@@ -178,23 +188,23 @@ async function fetchPositions(
             label: { _in: predicateFilter },
           },
         },
-      };
+      }
     }
 
     const result = (await client.request(getActivityQuery, {
       where,
       limit: pageSize,
       offset,
-    })) as QueryResponse;
+    })) as QueryResponse
 
-    const positions = result.positions || [];
-    allPositions.push(...positions);
+    const positions = result.positions || []
+    allPositions.push(...positions)
 
-    if (positions.length < pageSize) break;
-    offset += pageSize;
+    if (positions.length < pageSize) break
+    offset += pageSize
   }
 
-  return allPositions.slice(0, maxLimit);
+  return allPositions.slice(0, maxLimit)
 }
 
 export const getAccountActivityOperation: GetAccountActivityOperation = {
@@ -224,19 +234,23 @@ export const getAccountActivityOperation: GetAccountActivityOperation = {
   parameters,
   async execute(args) {
     try {
-      console.log("\n=== Getting Account Activity ===");
-      console.log("Args:", JSON.stringify(args, null, 2));
+      console.log('\n=== Getting Account Activity ===')
+      console.log('Args:', JSON.stringify(args, null, 2))
 
-      const { account_id, predicate_filter, group_by, limit = 1000 } = args;
+      const { account_id, predicate_filter, group_by, limit = 1000 } = args
 
-      const positions = await fetchPositions(account_id, predicate_filter, limit);
-      console.log(`Fetched ${positions.length} positions`);
+      const positions = await fetchPositions(
+        account_id,
+        predicate_filter,
+        limit,
+      )
+      console.log(`Fetched ${positions.length} positions`)
 
-      let responseData: any;
-      let textSummary: string;
+      let responseData: any
+      let textSummary: string
 
       if (group_by) {
-        const grouped = groupActivity(positions, group_by);
+        const grouped = groupActivity(positions, group_by)
         responseData = {
           account_id,
           total_positions: positions.length,
@@ -244,13 +258,13 @@ export const getAccountActivityOperation: GetAccountActivityOperation = {
           predicate_filter: predicate_filter || null,
           groups: grouped.slice(0, 50),
           groups_count: grouped.length,
-        };
+        }
 
         textSummary = `**Account Activity Analysis for ${account_id.slice(0, 10)}...${account_id.slice(-6)}**
 
 📊 **Total Positions**: ${positions.length}
 📁 **Grouped by**: ${group_by}
-${predicate_filter ? `🔍 **Filtered by**: ${predicate_filter.join(", ")}` : ""}
+${predicate_filter ? `🔍 **Filtered by**: ${predicate_filter.join(', ')}` : ''}
 
 **Top ${Math.min(grouped.length, 10)} Groups** (of ${grouped.length}):
 ${grouped
@@ -258,14 +272,16 @@ ${grouped
   .map(
     (g, i) =>
       `${i + 1}. **${g.key}** — ${g.count} positions
-   └─ ${Object.entries(g.predicates).map(([p, c]) => `${p}: ${c}`).join(", ")}`
+   └─ ${Object.entries(g.predicates)
+     .map(([p, c]) => `${p}: ${c}`)
+     .join(', ')}`,
   )
-  .join("\n")}`;
+  .join('\n')}`
       } else {
-        const predicateCounts: Record<string, number> = {};
+        const predicateCounts: Record<string, number> = {}
         for (const pos of positions) {
-          const label = pos.term?.triple?.predicate?.label || "unknown";
-          predicateCounts[label] = (predicateCounts[label] || 0) + 1;
+          const label = pos.term?.triple?.predicate?.label || 'unknown'
+          predicateCounts[label] = (predicateCounts[label] || 0) + 1
         }
 
         responseData = {
@@ -273,46 +289,46 @@ ${grouped
           total_positions: positions.length,
           predicate_filter: predicate_filter || null,
           predicate_breakdown: predicateCounts,
-        };
+        }
 
         textSummary = `**Account Activity for ${account_id.slice(0, 10)}...${account_id.slice(-6)}**
 
 📊 **Total Positions**: ${positions.length}
-${predicate_filter ? `🔍 **Filtered by**: ${predicate_filter.join(", ")}` : ""}
+${predicate_filter ? `🔍 **Filtered by**: ${predicate_filter.join(', ')}` : ''}
 
 **Activity Breakdown**:
 ${Object.entries(predicateCounts)
   .sort(([, a], [, b]) => b - a)
   .slice(0, 10)
   .map(([pred, count]) => `• ${pred}: ${count}`)
-  .join("\n")}`;
+  .join('\n')}`
       }
 
       const response: CallToolResult = {
         content: [
           {
-            type: "resource",
+            type: 'resource',
             resource: {
-              uri: "get-account-activity-result",
+              uri: 'get-account-activity-result',
               text: JSON.stringify(responseData),
-              mimeType: "application/json",
+              mimeType: 'application/json',
             },
           },
           {
-            type: "text",
+            type: 'text',
             text: textSummary,
           },
         ],
-      };
+      }
 
-      console.log("\n=== Account Activity Response ===");
-      return response;
+      console.log('\n=== Account Activity Response ===')
+      return response
     } catch (error) {
       return createErrorResponse(error, {
-        operation: "get_account_activity",
+        operation: 'get_account_activity',
         args,
-        phase: "execution",
-      });
+        phase: 'execution',
+      })
     }
   },
-};
+}

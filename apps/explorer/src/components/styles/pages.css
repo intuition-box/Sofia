@@ -1,5 +1,7 @@
 /* ── Page content ── */
-.page-content { padding: 16px 8px; }
+.page-content {
+  padding: 16px 8px;
+}
 
 /* ── Generic proto-styled button (.btn from proto) ── */
 /* Bordered card-toned pill used for 'Back to X' and similar neutral
@@ -14,7 +16,7 @@
   border: 1px solid var(--ds-border);
   border-radius: 8px;
   background: var(--ds-card);
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ds-ink);
@@ -28,22 +30,55 @@
 
 /* ── Page content enter animation ── */
 @keyframes page-fade-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.page-enter { animation: page-fade-in 0.5s ease 0.10s both; }
+.page-enter {
+  animation: page-fade-in 0.5s ease 0.1s both;
+}
 
 /* ── Shared page patterns ── */
-.page-loader { min-height: calc(100vh - 200px); padding-top: 20vh; }
-.page-loader-sm { min-height: 300px; }
+.page-loader {
+  min-height: calc(100vh - 200px);
+  padding-top: 20vh;
+}
+.page-loader-sm {
+  min-height: 300px;
+}
 
 /* ── Vote page styles live in vote-page.css ── */
 
 /* ── Dashboard space filter ── */
-.dp-space-filter { display: flex; align-items: center; gap: 8px; }
-.dp-space-badge { font-size: 13px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px; }
-.dp-space-close { background: none; border: none; cursor: pointer; padding: 0; display: flex; }
-.dp-space-close-icon { width: 14px; height: 14px; color: var(--muted-foreground); }
+.dp-space-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dp-space-badge {
+  font-size: 13px;
+  padding: 4px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dp-space-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+}
+.dp-space-close-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--muted-foreground);
+}
 
 /* ── Feed intent pills ── */
 .feed-intent-pill {
@@ -52,7 +87,8 @@
   align-items: center;
   padding: 4px 12px;
   border-radius: 8px;
-  border: 1px solid color-mix(in oklab, var(--muted-foreground) 30%, transparent);
+  border: 1px solid
+    color-mix(in oklab, var(--muted-foreground) 30%, transparent);
   background: transparent;
   color: var(--foreground);
   font-size: 12px;
@@ -74,4 +110,6 @@
 }
 
 /* ── Quest card ── */
-.qc-icon { font-size: 18px; }
+.qc-icon {
+  font-size: 18px;
+}

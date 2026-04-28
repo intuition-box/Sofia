@@ -36,7 +36,7 @@ export default function DomainSelector({
   }, [query])
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6" style={{ marginTop: 8 }}>
       <div className="ts-search">
         <Search className="ts-search-icon h-3.5 w-3.5" aria-hidden="true" />
         <input
@@ -59,7 +59,9 @@ export default function DomainSelector({
         )}
       </div>
       {filteredTopics.length === 0 && (
-        <p className="text-sm text-muted-foreground py-2">No topics match “{query}”.</p>
+        <p className="text-sm text-muted-foreground py-2">
+          No topics match “{query}”.
+        </p>
       )}
       <TopicPicker>
         {filteredTopics.map((topic) => {
@@ -96,7 +98,11 @@ export default function DomainSelector({
             Back
           </Button>
         )}
-        <Button className="flex-1" onClick={onContinue} disabled={selectedTopics.length === 0}>
+        <Button
+          className="flex-1"
+          onClick={onContinue}
+          disabled={selectedTopics.length === 0}
+        >
           Continue
         </Button>
       </div>

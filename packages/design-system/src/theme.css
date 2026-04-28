@@ -12,7 +12,7 @@
  */
 
 :root,
-[data-theme="light"] {
+[data-theme='light'] {
   /* Surface */
   --ds-bg: #ffffff;
   --ds-bg-subtle: #f7f6f2;
@@ -47,7 +47,7 @@
  *   - .dark                — shadcn / next-themes class toggle (explorer uses this)
  * Both are listed so host apps using either mechanism flip the tokens
  * without any per-app configuration. */
-[data-theme="dark"],
+[data-theme='dark'],
 .dark {
   --ds-bg: #0b0a12;
   --ds-bg-subtle: #121120;
@@ -80,8 +80,8 @@
    confidently in a white bg. Mixing both is intentional — same mapping as
    the proto. */
 :root,
-[data-theme="light"],
-[data-theme="dark"],
+[data-theme='light'],
+[data-theme='dark'],
 .dark {
   --trusted: #6dd4a0;
   --distrusted: #e87c7c;

@@ -20,7 +20,9 @@ function parsePlatforms() {
     const name = nameMatch?.[1] || id
     let website = websiteMatch?.[1]
     if (!website && apiMatch) {
-      try { website = `https://${new URL(apiMatch[1]).hostname}` } catch {}
+      try {
+        website = `https://${new URL(apiMatch[1]).hostname}`
+      } catch {}
     }
     if (!website) website = `https://${id}.com`
     platforms.push({ id, name, website })
@@ -36,7 +38,10 @@ async function checkUrl(url, timeout = 10000) {
       method: 'HEAD',
       redirect: 'follow',
       signal: controller.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
     })
     clearTimeout(timer)
     return { status: res.status, finalUrl: res.url, ok: res.ok }
@@ -50,12 +55,20 @@ async function checkUrl(url, timeout = 10000) {
         method: 'GET',
         redirect: 'follow',
         signal: controller2.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
       })
       clearTimeout(timer2)
       return { status: res.status, finalUrl: res.url, ok: res.ok }
     } catch (e2) {
-      return { status: 0, finalUrl: url, ok: false, error: e2.message?.slice(0, 60) }
+      return {
+        status: 0,
+        finalUrl: url,
+        ok: false,
+        error: e2.message?.slice(0, 60),
+      }
     }
   }
 }
@@ -73,7 +86,7 @@ async function main() {
       batch.map(async (p) => {
         const result = await checkUrl(p.website)
         return { ...p, ...result }
-      })
+      }),
     )
 
     for (const c of checks) {
@@ -81,13 +94,23 @@ async function main() {
       const origHost = new URL(c.website).hostname
 
       if (c.error) {
-        console.log(`  FAIL  ${c.name.padEnd(25)} ${c.website.padEnd(40)} → ${c.error}`)
+        console.log(
+          `  FAIL  ${c.name.padEnd(25)} ${c.website.padEnd(40)} → ${c.error}`,
+        )
         results.fail.push(c)
       } else if (!c.ok) {
-        console.log(`  ${c.status}  ${c.name.padEnd(25)} ${c.website.padEnd(40)}`)
+        console.log(
+          `  ${c.status}  ${c.name.padEnd(25)} ${c.website.padEnd(40)}`,
+        )
         results.fail.push(c)
-      } else if (finalHost !== origHost && !finalHost.endsWith(origHost) && !origHost.endsWith(finalHost)) {
-        console.log(`  REDIR ${c.name.padEnd(25)} ${c.website.padEnd(40)} → ${c.finalUrl}`)
+      } else if (
+        finalHost !== origHost &&
+        !finalHost.endsWith(origHost) &&
+        !origHost.endsWith(finalHost)
+      ) {
+        console.log(
+          `  REDIR ${c.name.padEnd(25)} ${c.website.padEnd(40)} → ${c.finalUrl}`,
+        )
         results.redirect.push(c)
       } else {
         console.log(`  OK    ${c.name.padEnd(25)} ${c.website}`)
@@ -104,14 +127,18 @@ async function main() {
   if (results.redirect.length > 0) {
     console.log(`\n=== Redirects (check if correct) ===`)
     for (const r of results.redirect) {
-      console.log(`  ${r.name.padEnd(25)} ${r.website.padEnd(40)} → ${r.finalUrl}`)
+      console.log(
+        `  ${r.name.padEnd(25)} ${r.website.padEnd(40)} → ${r.finalUrl}`,
+      )
     }
   }
 
   if (results.fail.length > 0) {
     console.log(`\n=== Failures (need fixing) ===`)
     for (const f of results.fail) {
-      console.log(`  ${f.name.padEnd(25)} ${f.website.padEnd(40)} ${f.error || `HTTP ${f.status}`}`)
+      console.log(
+        `  ${f.name.padEnd(25)} ${f.website.padEnd(40)} ${f.error || `HTTP ${f.status}`}`,
+      )
     }
   }
 }

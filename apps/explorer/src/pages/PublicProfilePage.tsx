@@ -13,7 +13,11 @@ import { useUserActivity } from '@/hooks/useUserActivity'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useTrustScore } from '@/hooks/useTrustScore'
 import { resolveEnsToAddress } from '@/services/ensService'
-import { ATOM_ID_TO_TOPIC, ATOM_ID_TO_CATEGORY, ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
+import {
+  ATOM_ID_TO_TOPIC,
+  ATOM_ID_TO_CATEGORY,
+  ATOM_ID_TO_PLATFORM,
+} from '@/config/atomIds'
 import { TOPIC_META } from '@/config/topicMeta'
 import TopClaimsSection from '@/components/profile/TopClaimsSection'
 import LastActivitySection from '@/components/profile/LastActivitySection'
@@ -72,12 +76,17 @@ export default function PublicProfilePage() {
   // Fetch data
   const { profile, isLoading: profileLoading } = useUserProfile(addresses)
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(addresses)
-  const { items: activityItems, loading: activityLoading } = useUserActivity(addresses)
+  const { items: activityItems, loading: activityLoading } =
+    useUserActivity(addresses)
   const { score: trustScore } = useTrustScore(walletAddress)
 
   // Derive interests from positions
   const interests = useMemo(() => {
-    if (!profile) return { topics: new Map<string, number>(), platforms: new Map<string, number>() }
+    if (!profile)
+      return {
+        topics: new Map<string, number>(),
+        platforms: new Map<string, number>(),
+      }
 
     const topicCounts = new Map<string, number>()
     const platformCounts = new Map<string, number>()
@@ -92,26 +101,37 @@ export default function PublicProfilePage() {
       // Check if position is in a platform atom
       const platformSlug = ATOM_ID_TO_PLATFORM.get(pos.termId)
       if (platformSlug) {
-        platformCounts.set(platformSlug, (platformCounts.get(platformSlug) || 0) + 1)
+        platformCounts.set(
+          platformSlug,
+          (platformCounts.get(platformSlug) || 0) + 1,
+        )
       }
 
       // Check triple subjects/objects for topic/category references
       if (pos.tripleSubjectId) {
         const subTopic = ATOM_ID_TO_TOPIC.get(pos.tripleSubjectId)
-        if (subTopic) topicCounts.set(subTopic, (topicCounts.get(subTopic) || 0) + 1)
+        if (subTopic)
+          topicCounts.set(subTopic, (topicCounts.get(subTopic) || 0) + 1)
         const subPlatform = ATOM_ID_TO_PLATFORM.get(pos.tripleSubjectId)
-        if (subPlatform) platformCounts.set(subPlatform, (platformCounts.get(subPlatform) || 0) + 1)
+        if (subPlatform)
+          platformCounts.set(
+            subPlatform,
+            (platformCounts.get(subPlatform) || 0) + 1,
+          )
       }
       if (pos.tripleObjectId) {
         const objTopic = ATOM_ID_TO_TOPIC.get(pos.tripleObjectId)
-        if (objTopic) topicCounts.set(objTopic, (topicCounts.get(objTopic) || 0) + 1)
+        if (objTopic)
+          topicCounts.set(objTopic, (topicCounts.get(objTopic) || 0) + 1)
       }
     }
 
     return { topics: topicCounts, platforms: platformCounts }
   }, [profile])
 
-  const sortedTopics = [...interests.topics.entries()].sort((a, b) => b[1] - a[1])
+  const sortedTopics = [...interests.topics.entries()].sort(
+    (a, b) => b[1] - a[1],
+  )
 
   const displayName = walletAddress
     ? getDisplay(walletAddress as Address)
@@ -124,7 +144,9 @@ export default function PublicProfilePage() {
     return (
       <div className="pf-view page-enter" style={{ textAlign: 'center' }}>
         <SofiaLoader size={48} />
-        <p className="text-sm text-muted-foreground mt-4">Resolving {rawAddress}...</p>
+        <p className="text-sm text-muted-foreground mt-4">
+          Resolving {rawAddress}...
+        </p>
       </div>
     )
   }
@@ -142,49 +164,64 @@ export default function PublicProfilePage() {
       <PageHero
         background="#627EEA"
         title={displayName}
-        description={shortAddress !== displayName ? shortAddress : 'Public profile'}
+        description={
+          shortAddress !== displayName ? shortAddress : 'Public profile'
+        }
       />
 
       <div className="pp-sections">
-
         {/* Stats */}
         {profileLoading ? (
-          <div style={{ textAlign: 'center', padding: 20 }}><SofiaLoader size={32} /></div>
-        ) : profile && (
-          <section className="pp-section">
-            <SectionTitle>Stats</SectionTitle>
-            <div className="pub-stats-grid">
-              <Card className="pub-stat-card">
-                <Layers className="h-4 w-4 text-muted-foreground" />
-                <span className="pub-stat-value">{profile.totalPositions}</span>
-                <span className="pub-stat-label">Positions</span>
-              </Card>
-              <Card className="pub-stat-card">
-                <Award className="h-4 w-4 text-muted-foreground" />
-                <span className="pub-stat-value">{profile.totalCertifications}</span>
-                <span className="pub-stat-label">Certifications</span>
-              </Card>
-              <Card className="pub-stat-card">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                <span className="pub-stat-value">{formatStaked(profile.totalStaked)}</span>
-                <span className="pub-stat-label">Staked (T)</span>
-              </Card>
-              {trustScore != null && (
+          <div style={{ textAlign: 'center', padding: 20 }}>
+            <SofiaLoader size={32} />
+          </div>
+        ) : (
+          profile && (
+            <section className="pp-section">
+              <SectionTitle>Stats</SectionTitle>
+              <div className="pub-stats-grid">
                 <Card className="pub-stat-card">
-                  <Shield className="h-4 w-4 text-emerald-500" />
-                  <span className="pub-stat-value">{trustScore.toFixed(1)}</span>
-                  <span className="pub-stat-label">Trust Score</span>
+                  <Layers className="h-4 w-4 text-muted-foreground" />
+                  <span className="pub-stat-value">
+                    {profile.totalPositions}
+                  </span>
+                  <span className="pub-stat-label">Positions</span>
                 </Card>
-              )}
-              {trustScore == null && (
                 <Card className="pub-stat-card">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="pub-stat-value">{interests.platforms.size}</span>
-                  <span className="pub-stat-label">Platforms</span>
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <span className="pub-stat-value">
+                    {profile.totalCertifications}
+                  </span>
+                  <span className="pub-stat-label">Certifications</span>
                 </Card>
-              )}
-            </div>
-          </section>
+                <Card className="pub-stat-card">
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <span className="pub-stat-value">
+                    {formatStaked(profile.totalStaked)}
+                  </span>
+                  <span className="pub-stat-label">Staked (T)</span>
+                </Card>
+                {trustScore != null && (
+                  <Card className="pub-stat-card">
+                    <Shield className="h-4 w-4 text-emerald-500" />
+                    <span className="pub-stat-value">
+                      {trustScore.toFixed(1)}
+                    </span>
+                    <span className="pub-stat-label">Trust Score</span>
+                  </Card>
+                )}
+                {trustScore == null && (
+                  <Card className="pub-stat-card">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="pub-stat-value">
+                      {interests.platforms.size}
+                    </span>
+                    <span className="pub-stat-label">Platforms</span>
+                  </Card>
+                )}
+              </div>
+            </section>
+          )
         )}
 
         {/* Interests derived from on-chain positions */}
@@ -194,7 +231,9 @@ export default function PublicProfilePage() {
             <div className="pub-interests-grid">
               {sortedTopics.map(([slug, count]) => {
                 const meta = TOPIC_META[slug]
-                const label = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                const label = slug
+                  .replace(/-/g, ' ')
+                  .replace(/\b\w/g, (c) => c.toUpperCase())
                 return (
                   <Card
                     key={slug}
@@ -203,7 +242,9 @@ export default function PublicProfilePage() {
                     onClick={() => navigate(`/profile/interest/${slug}`)}
                   >
                     <span className="pub-interest-label">{label}</span>
-                    <span className="pub-interest-count">{count} position{count > 1 ? 's' : ''}</span>
+                    <span className="pub-interest-count">
+                      {count} position{count > 1 ? 's' : ''}
+                    </span>
                   </Card>
                 )
               })}
@@ -233,7 +274,6 @@ export default function PublicProfilePage() {
             walletAddress={walletAddress}
           />
         </section>
-
       </div>
     </div>
   )

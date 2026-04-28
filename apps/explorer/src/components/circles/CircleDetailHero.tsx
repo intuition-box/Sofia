@@ -34,8 +34,12 @@ export default function CircleDetailHero({
 }: CircleDetailHeroProps) {
   const total = sponsorClaimsLeft + 2000
   const pct = Math.min(100, Math.round((sponsorClaimsLeft / total) * 100))
-  const perMember = Math.max(1, Math.round(sponsorClaimsLeft / Math.max(1, memberCount)))
-  const pickerEnabled = Boolean(onColorChange) && (colorOptions?.length ?? 0) > 0
+  const perMember = Math.max(
+    1,
+    Math.round(sponsorClaimsLeft / Math.max(1, memberCount)),
+  )
+  const pickerEnabled =
+    Boolean(onColorChange) && (colorOptions?.length ?? 0) > 0
 
   return (
     <div
@@ -107,12 +111,17 @@ export default function CircleDetailHero({
           </div>
           <div className="crd-actions-body">
             <div>
-              <div className="crd-actions-big">{sponsorClaimsLeft.toLocaleString()}</div>
+              <div className="crd-actions-big">
+                {sponsorClaimsLeft.toLocaleString()}
+              </div>
               <div className="crd-actions-sub">actions left this month</div>
             </div>
             <div className="crd-actions-right">
               <div className="crd-actions-bar">
-                <div className="crd-actions-fill" style={{ width: `${pct}%` }} />
+                <div
+                  className="crd-actions-fill"
+                  style={{ width: `${pct}%` }}
+                />
               </div>
               <div className="crd-actions-meta">
                 <span>~{perMember} per member</span>

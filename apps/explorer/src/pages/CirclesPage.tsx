@@ -28,14 +28,15 @@ import '@/components/styles/circles.css'
 const TRUST_CIRCLE_META = {
   name: 'Trust Circle',
   description:
-    "People whose taste you value — their signals shape your feed. Today this is your personal trust circle; circles you join from the broader network will show up here too.",
+    'People whose taste you value — their signals shape your feed. Today this is your personal trust circle; circles you join from the broader network will show up here too.',
   createdAgo: 'a long time ago',
   color: 'var(--trusted, #6dd4a0)',
   sponsorClaimsLeft: 3200,
 }
 
 /** Palette surfaced by the Trust Circle color picker. */
-const TRUST_CIRCLE_COLOR_OPTIONS: readonly string[] = Object.values(INTENTION_PASTEL)
+const TRUST_CIRCLE_COLOR_OPTIONS: readonly string[] =
+  Object.values(INTENTION_PASTEL)
 const TRUST_CIRCLE_COLOR_KEY = 'sofia-trust-circle-color'
 
 export default function CirclesPage() {
@@ -47,7 +48,10 @@ export default function CirclesPage() {
   const [allMembersOpen, setAllMembersOpen] = useState(false)
   const [trustColor, setTrustColor] = useState<string>(() => {
     if (typeof window === 'undefined') return TRUST_CIRCLE_META.color
-    return window.localStorage.getItem(TRUST_CIRCLE_COLOR_KEY) || TRUST_CIRCLE_META.color
+    return (
+      window.localStorage.getItem(TRUST_CIRCLE_COLOR_KEY) ||
+      TRUST_CIRCLE_META.color
+    )
   })
 
   useEffect(() => {
@@ -62,7 +66,11 @@ export default function CirclesPage() {
     return (
       <div className="pf-view crd-detail">
         <div className="pf-ts-back-row">
-          <button type="button" className="pf-btn" onClick={() => navigate('/circles')}>
+          <button
+            type="button"
+            className="pf-btn"
+            onClick={() => navigate('/circles')}
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to circles
           </button>

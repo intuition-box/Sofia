@@ -31,43 +31,56 @@ interface TrendingCardProps {
   domainLabel: string
 }
 
-export default function TrendingCard({ platform, domainLabel }: TrendingCardProps) {
+export default function TrendingCard({
+  platform,
+  domainLabel,
+}: TrendingCardProps) {
   const [boardOpen, setBoardOpen] = useState(false)
   const { user } = usePrivy()
   const walletAddress = user?.wallet?.address ?? ''
   const { getMarketBySlug } = usePlatformMarket()
   const cart = useCart()
 
-  const market = platform.platformSlug ? getMarketBySlug(platform.platformSlug) : undefined
+  const market = platform.platformSlug
+    ? getMarketBySlug(platform.platformSlug)
+    : undefined
   const atomTermId = market?.termId
 
   // Position board for the platform ATOM vault
   const { positions } = useClaimPositions(atomTermId, 3)
 
-  const handleInvest = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (market) {
-      cart.addItem({
-        id: `invest-${market.termId}`,
-        side: 'support',
-        termId: market.termId,
-        title: platform.platformName,
-        intention: 'Invest',
-        intentionColor: '#10B981',
-        favicon: platform.favicon,
-      })
-    }
-  }, [market, cart, platform])
+  const handleInvest = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (market) {
+        cart.addItem({
+          id: `invest-${market.termId}`,
+          side: 'support',
+          termId: market.termId,
+          title: platform.platformName,
+          intention: 'Invest',
+          intentionColor: '#10B981',
+          favicon: platform.favicon,
+        })
+      }
+    },
+    [market, cart, platform],
+  )
 
   return (
     <>
-      <Card className="ip-trending-card" onClick={() => atomTermId && setBoardOpen(true)}>
+      <Card
+        className="ip-trending-card"
+        onClick={() => atomTermId && setBoardOpen(true)}
+      >
         <div className="ip-trending-header">
           <img
             src={platform.favicon}
             alt=""
             className="ip-trending-favicon"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).style.display = 'none'
+            }}
           />
           <span className="ip-trending-label">{platform.platformName}</span>
           {market?.userPnlPct != null && (
@@ -75,7 +88,8 @@ export default function TrendingCard({ platform, domainLabel }: TrendingCardProp
               className="ip-trending-pnl"
               style={{ color: market.userPnlPct >= 0 ? '#10B981' : '#EF4444' }}
             >
-              {market.userPnlPct >= 0 ? '+' : ''}{market.userPnlPct}%
+              {market.userPnlPct >= 0 ? '+' : ''}
+              {market.userPnlPct}%
             </span>
           )}
         </div>
@@ -85,21 +99,32 @@ export default function TrendingCard({ platform, domainLabel }: TrendingCardProp
               key={category}
               variant="secondary"
               className="ip-trending-badge"
-              style={{ color, backgroundColor: `${color}15`, border: `1px solid ${color}30` }}
+              style={{
+                color,
+                backgroundColor: `${color}15`,
+                border: `1px solid ${color}30`,
+              }}
             >
               {category} {count}
             </Badge>
           ))}
-          <span className="ip-trending-stat"><Users className="h-3 w-3" /> {platform.totalCertifiers}</span>
+          <span className="ip-trending-stat">
+            <Users className="h-3 w-3" /> {platform.totalCertifiers}
+          </span>
         </div>
 
         {/* Mini position board */}
         {positions.length > 0 && (
           <div className="ac-positions">
             {positions.map((pos, i) => {
-              const isYou = walletAddress && pos.accountId.toLowerCase() === walletAddress.toLowerCase()
+              const isYou =
+                walletAddress &&
+                pos.accountId.toLowerCase() === walletAddress.toLowerCase()
               return (
-                <div key={pos.accountId} className={`ac-pos-row ${isYou ? 'ac-pos-row--you' : ''}`}>
+                <div
+                  key={pos.accountId}
+                  className={`ac-pos-row ${isYou ? 'ac-pos-row--you' : ''}`}
+                >
                   <span className="ac-pos-rank">#{i + 1}</span>
                   <span className="ac-pos-label">{pos.label}</span>
                   {isYou && <span className="ac-pos-you">You</span>}
@@ -114,10 +139,12 @@ export default function TrendingCard({ platform, domainLabel }: TrendingCardProp
           <div className="ip-trending-market">
             <div className="ip-trending-market-stats">
               <span className="ip-trending-market-stat">
-                <DollarSign className="h-3 w-3" /> {formatMCap(market.marketCap)}
+                <DollarSign className="h-3 w-3" />{' '}
+                {formatMCap(market.marketCap)}
               </span>
               <span className="ip-trending-market-stat">
-                <TrendingUp className="h-3 w-3" /> {formatPrice(market.sharePrice)}
+                <TrendingUp className="h-3 w-3" />{' '}
+                {formatPrice(market.sharePrice)}
               </span>
               <span className="ip-trending-market-stat">
                 <Users className="h-3 w-3" /> {market.positionCount}

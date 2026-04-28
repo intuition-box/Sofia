@@ -34,15 +34,18 @@ export default function NicheSelector({
       <ScrollArea className="h-[60vh]">
         <div className="space-y-6 pr-4">
           {topics.map((topic) => {
-            const topicCategoryCount = topic.categories
-              .filter((c) => selectedCategories.includes(c.id)).length
+            const topicCategoryCount = topic.categories.filter((c) =>
+              selectedCategories.includes(c.id),
+            ).length
 
             return (
               <Card key={topic.id} className="ns-card">
                 <div className="ns-header">
                   <h3 className="font-semibold ns-title">{topic.label}</h3>
                   {topicCategoryCount > 0 && (
-                    <Badge variant="default" className="text-xs">{topicCategoryCount}</Badge>
+                    <Badge variant="default" className="text-xs">
+                      {topicCategoryCount}
+                    </Badge>
                   )}
                 </div>
 
