@@ -94,12 +94,6 @@
   transform: scale(0.98);
 }
 
-.discovery-badge-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
 .discovery-badge-rank {
   font-size: 9px;
   font-weight: 600;

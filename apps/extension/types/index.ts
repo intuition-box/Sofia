@@ -26,9 +26,6 @@ export * from './messages';
 // Bookmarks types
 export * from './bookmarks';
 
-// Bento grid types
-export * from './bento';
-
 // Interest analysis types
 export * from './interests';
 

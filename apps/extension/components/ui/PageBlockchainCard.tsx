@@ -136,6 +136,15 @@ const PageBlockchainCard = () => {
     async (intention: IntentionPurpose) => {
       if (!currentUrl) return
       const predicateName = INTENTION_PREDICATES[intention]
+      // Toggle: if already queued, remove instead of re-adding
+      const existing = cart.items.find(
+        item => item.url === currentUrl && item.predicateName === predicateName
+      )
+      if (existing) {
+        await cart.removeFromCart(existing.id)
+        setCartToast("Removed from cart")
+        return
+      }
       const favicon = getFaviconUrl(currentUrl, 128)
       const added = await cart.addToCart(
         currentUrl,
@@ -157,6 +166,15 @@ const PageBlockchainCard = () => {
   const handleAddTrustToCart = useCallback(
     async (predicate: "trusts" | "distrust") => {
       if (!currentUrl) return
+      // Toggle: if already queued, remove instead of re-adding
+      const existing = cart.items.find(
+        item => item.url === currentUrl && item.predicateName === predicate
+      )
+      if (existing) {
+        await cart.removeFromCart(existing.id)
+        setCartToast(`Removed ${predicate === "trusts" ? "Trust" : "Distrust"} from cart`)
+        return
+      }
       const favicon = getFaviconUrl(currentUrl, 128)
       const added = await cart.addToCart(
         currentUrl,
@@ -187,13 +205,6 @@ const PageBlockchainCard = () => {
 
   const isReady = status === "ready" || status === "refreshing"
   const isRefreshing = status === "refreshing"
-
-  const handleAtomClick = (atomId: string) => {
-    chrome.tabs.create({
-      url: `https://portal.intuition.systems/explore/atom/${atomId}`,
-      active: false
-    })
-  }
 
   const handleTripletClick = (tripletId: string) => {
     chrome.tabs.create({
@@ -241,60 +252,54 @@ const PageBlockchainCard = () => {
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
-          {/* Trust/Distrust pills + Intention pills (unified) */}
+          {/* Actions panel — Intentions + Context grouped under one section */}
           {!isRestricted && (
-            <div className="cert-section">
-              <div className="cert-section-title">Intentions</div>
-              <IntentionBubbleSelector
-                onBubbleClick={(intention: IntentionPurpose) => {
-                  if (!currentUrl) return
-                  handleAddToCart(intention)
-                }}
-                onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
-                disabled={modal.intentionState.loading}
-                isEligible={true}
-                certifiedIntentions={certifiedIntentions}
-                cartIntentions={cartIntentionsForPage}
-                alreadyTrusted={alreadyTrusted}
-                alreadyDistrusted={alreadyDistrusted}
-                trustInCart={trustInCart}
-                distrustInCart={distrustInCart}
-              />
+            <div className="actions-panel">
+              <div className="actions-panel-title">Actions on this page</div>
+              <div className="cert-section">
+                <div className="cert-section-title">Intentions</div>
+                <IntentionBubbleSelector
+                  onBubbleClick={(intention: IntentionPurpose) => {
+                    if (!currentUrl) return
+                    handleAddToCart(intention)
+                  }}
+                  onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
+                  disabled={modal.intentionState.loading}
+                  isEligible={true}
+                  certifiedIntentions={certifiedIntentions}
+                  cartIntentions={cartIntentionsForPage}
+                  alreadyTrusted={alreadyTrusted}
+                  alreadyDistrusted={alreadyDistrusted}
+                  trustInCart={trustInCart}
+                  distrustInCart={distrustInCart}
+                />
+              </div>
+              {hasInterests && (
+                <div className="cert-section">
+                  <div className="cert-section-title">In context of</div>
+                  <InterestContextSelector
+                    interests={topInterests}
+                    selectedContext={selectedContext}
+                    onSelectContext={setSelectedContext}
+                    disabled={modal.intentionState.loading}
+                    certifiedContexts={certifiedContexts}
+                  />
+                </div>
+              )}
             </div>
           )}
 
-          {/* Interest Context (from Sofia Explorer) */}
-          {!isRestricted && hasInterests && (
-            <div className="cert-section">
-              <div className="cert-section-title">Context</div>
-              <InterestContextSelector
-                interests={topInterests}
-                selectedContext={selectedContext}
-                onSelectContext={setSelectedContext}
-                disabled={modal.intentionState.loading}
-                certifiedContexts={certifiedContexts}
-              />
-            </div>
-          )}
-
-          {/* Position Board — certifiers leaderboard */}
+          {/* Share certification CTA stays here (under actions panel).
+              Position board is now rendered inside ExtendedMetricsPanel
+              as the "certifiers" scope tab. */}
           {!isRestricted && (totalPositions > 0 || isRefreshing) && (
-            <>
-              <PagePositionBoard
-                positions={positions}
-                userPosition={userPosition}
-                totalPositions={totalPositions}
-                variant="expanded"
-                loading={isRefreshing && totalPositions === 0}
-              />
-              <ShareCertificationButton
-                pageUrl={currentUrl}
-                pageTitle={pageTitle}
-                userStatus={userPosition?.status ?? null}
-                userRank={userPosition?.rank ?? null}
-                totalPositions={totalPositions}
-              />
-            </>
+            <ShareCertificationButton
+              pageUrl={currentUrl}
+              pageTitle={pageTitle}
+              userStatus={userPosition?.status ?? null}
+              userRank={userPosition?.rank ?? null}
+              totalPositions={totalPositions}
+            />
           )}
         </div>
       )}
@@ -317,7 +322,10 @@ const PageBlockchainCard = () => {
                   pageMaxIntentionCount={pageMaxIntentionCount}
                   intentionStatsLoading={false}
                   currentUrl={currentUrl}
-                  onAtomClick={handleAtomClick}
+                  positions={positions}
+                  userPosition={userPosition}
+                  totalPositions={totalPositions}
+                  positionsLoading={isRefreshing && totalPositions === 0}
                   onTripletClick={handleTripletClick}
                 />
               </>

@@ -52,19 +52,6 @@
   letter-spacing: 0.06em;
 }
 
-/* ─── Portal Link ─── */
-.portal-link {
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.4));
-  text-decoration: none;
-  font-size: var(--font-size-xs, 10px);
-  transition: color 0.2s ease;
-  line-height: 1;
-}
-
-.portal-link:hover {
-  color: var(--color-text-secondary, var(--ds-ink));
-}
-
 .section-subheader {
   margin-bottom: var(--spacing-sm, 8px);
 }
@@ -79,6 +66,7 @@
   display: flex;
   gap: 2px;
   background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-sm, 4px);
   padding: 2px;
 }
@@ -103,6 +91,53 @@
   color: var(--color-text-secondary, var(--ds-ink));
 }
 
+/* Larger / standalone variant — used as a primary segmented control,
+   not just inline next to a section title. Better contrast and touch target. */
+.scope-toggle--lg {
+  width: fit-content;
+  max-width: 100%;
+  align-self: center;
+  margin: 12px auto;
+  padding: 4px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  flex-wrap: wrap;
+}
+
+.scope-toggle--lg .scope-btn {
+  padding: 8px 16px;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  border-radius: 999px;
+  position: relative;
+}
+
+.scope-toggle--lg .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.04));
+}
+
+.scope-toggle--lg .scope-btn.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+}
+
+/* Claimable indicator on a scope-btn — small red dot top-right */
+.scope-btn.has-claimable::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px var(--ds-bg-subtle);
+}
+
 .intentions-loading {
   display: flex;
   justify-content: center;
@@ -124,13 +159,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md, 12px);
-}
-
-.intention-label {
-  width: 90px;
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
-  flex-shrink: 0;
 }
 
 .progress-track {
@@ -174,68 +202,14 @@
   margin-top: 8px;
 }
 
-.signals-section-title {
-  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ds-muted);
-  margin-bottom: var(--spacing-sm, 8px);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* ─── Accordion Toggles ─── */
-.collapsible-lists-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-}
-
-.collapsible-toggle {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border-soft);
-  border-radius: 8px;
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.collapsible-toggle:hover {
-  border-color: var(--ds-ink-soft);
-  color: var(--ds-ink);
-}
-
 .collapsible-toggle.active {
   background: var(--ds-card);
   border-color: var(--ds-ink-soft);
   color: var(--ds-ink);
 }
 
-.collapsible-toggle .toggle-arrow {
-  font-size: 8px;
-  transition: transform 0.2s ease;
-}
-
 .collapsible-toggle .toggle-arrow.expanded {
   transform: rotate(180deg);
-}
-
-/* ─── Accordion Content ─── */
-.accordion-content {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
 }
 
 .accordion-content.expanded {
@@ -244,58 +218,10 @@
   overflow-y: auto;
 }
 
-/* ─── Atoms Section ─── */
-.atoms-section {
-  padding-top: var(--spacing-xs, 4px);
-}
-
-.atoms-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm, 8px);
-}
-
-.atom-item {
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border-soft);
-  padding: 10px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
 .atom-item.clickable:hover {
   background: var(--ds-card);
   border-color: var(--ds-ink-soft);
   transform: translateY(-1px);
-}
-
-.atom-text {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm, 8px);
-  align-items: center;
-  margin-bottom: var(--spacing-xs, 4px);
-}
-
-.atom-label {
-  color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
-  font-weight: 600;
-  font-size: var(--font-size-sm, 12px);
-}
-
-.atom-type {
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border-soft);
-  color: var(--ds-muted);
-  padding: 2px var(--spacing-sm, 8px);
-  border-radius: var(--radius-sm, 4px);
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 /* ─── TVL Badge (compact chip) ─── */
@@ -371,15 +297,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 9px;
-}
-
-.sort-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border-soft);
-  border-radius: var(--radius-sm, 4px);
-  padding: 2px;
 }
 
 .sort-toggle .sort-btn {

@@ -24,25 +24,12 @@ export type {
 // Data services
 export {
   TripletsDataService,
-  NavigationDataService,
-  UserProfileService,
   UserSettingsService,
-  SearchHistoryService,
   BookmarkService,
-  RecommendationsService,
   IntentionGroupsService,
-  UserXPService,
   tripletsDataService,
-  navigationDataService,
-  userProfileService,
   userSettingsService,
-  searchHistoryService,
-  bookmarkService,
-  recommendationsService,
-  intentionGroupsService,
-  userXPService,
-  CartDataService,
-  cartDataService
+  CartDataService
 } from './indexedDB-methods'
 
 // Recommendation storage

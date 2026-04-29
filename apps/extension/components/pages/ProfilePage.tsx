@@ -1,77 +1,190 @@
-import { useState, useEffect, useTransition, Suspense, lazy } from 'react'
+import { useState, useEffect, useTransition, Suspense, lazy, useCallback } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import SofiaLoader from '../ui/SofiaLoader'
+import ProfileHeader from '../ui/ProfileHeader'
+import {
+  useWalletFromStorage,
+  useQuestSystem,
+  useTrustCircle,
+  useGoldSystem,
+  useSocialVerifier,
+  useTrustedByCount,
+  useAccountStats,
+  useDiscordProfile,
+  useIdentityResolution,
+  useDailyStreakProfit
+} from '../../hooks'
+import { DAILY_VOTE_ATOM_ID } from '../../lib/config/chainConfig'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/ProfilePage.css'
+import '../styles/AccountTab.css'
 
-// Lazy load tabs pour optimiser le chargement
-const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
+const StatsTab = lazy(() => import('./profile-tabs/StatsTab'))
+const AchievementsTab = lazy(() => import('./profile-tabs/AchievementsTab'))
 const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
-const HistoryTab = lazy(() => import('./profile-tabs/HistoryTab'))
+const SocialsTab = lazy(() => import('./profile-tabs/SocialsTab'))
+
+type ProfileTab = 'stats' | 'community' | 'socials'
+type StatsSubTab = 'stats' | 'quests'
 
 const ProfilePage = () => {
-  const { goBack, activeProfileTab, setActiveProfileTab } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'community' | 'history' | 'bookmarks' | 'signals'>(
-    (activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals') || 'account'
-  )
-
-  const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
+  const { activeProfileTab, setActiveProfileTab } = useRouter()
+  const initialTab: ProfileTab =
+    activeProfileTab === 'community' || activeProfileTab === 'socials'
+      ? activeProfileTab
+      : 'stats'
+  const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab)
+  const [statsSubTab, setStatsSubTab] = useState<StatsSubTab>('stats')
   const [, startTransition] = useTransition()
 
-  // Sync local tab state with router context
-  const handleTabChange = (tab: 'account' | 'community' | 'history' | 'bookmarks' | 'signals') => {
+  const { walletAddress } = useWalletFromStorage()
+
+  // Profile-wide data
+  const discordProfile = useDiscordProfile(walletAddress)
+  const { signalsCreated } = useAccountStats(walletAddress ?? undefined)
+  const {
+    quests,
+    claimableQuests,
+    level,
+    totalXP,
+    userProgress,
+    loading: questsLoading,
+    claimingQuestId,
+    markQuestCompleted,
+    claimQuestXP,
+    refreshQuests
+  } = useQuestSystem()
+  useTrustCircle(walletAddress)
+  const { count: trustedByCount } = useTrustedByCount(walletAddress)
+  const { totalGold } = useGoldSystem()
+  const { isSocialVerified } = useSocialVerifier()
+  const { data: streakProfitData } = useDailyStreakProfit()
+  const { data: voteProfitData } = useDailyStreakProfit(DAILY_VOTE_ATOM_ID)
+  const { displayLabel, displayAvatar } = useIdentityResolution({
+    walletAddress,
+    discordProfile,
+    enableCache: true
+  })
+
+  const handleTabChange = (tab: ProfileTab) => {
     startTransition(() => {
       setActiveTab(tab)
       setActiveProfileTab(tab)
     })
   }
 
+  const handleFullRefresh = useCallback(async () => {
+    await refreshQuests()
+  }, [refreshQuests])
+
   // Restore active tab when coming back from user profile
   useEffect(() => {
-    if (activeProfileTab) {
-      setActiveTab(activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals')
+    if (
+      activeProfileTab === 'stats' ||
+      activeProfileTab === 'community' ||
+      activeProfileTab === 'socials'
+    ) {
+      setActiveTab(activeProfileTab)
     }
   }, [activeProfileTab])
 
+  const renderStats = () => (
+    <div className="stats-panel">
+      <div className="scope-toggle scope-toggle--lg stats-subtab-row" role="group" aria-label="Stats / Quests">
+        <button
+          type="button"
+          className={`scope-btn ${statsSubTab === 'stats' ? 'active' : ''}`}
+          aria-pressed={statsSubTab === 'stats'}
+          onClick={() => setStatsSubTab('stats')}
+        >
+          Stats
+        </button>
+        <button
+          type="button"
+          className={`scope-btn ${statsSubTab === 'quests' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
+          aria-pressed={statsSubTab === 'quests'}
+          onClick={() => setStatsSubTab('quests')}
+        >
+          Quests
+        </button>
+      </div>
+
+      <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
+        {statsSubTab === 'stats' ? (
+          <StatsTab
+            walletAddress={walletAddress}
+            trustedByCount={trustedByCount}
+            level={level}
+            totalXP={totalXP}
+            signalsCreated={signalsCreated}
+          />
+        ) : (
+          <AchievementsTab
+            quests={quests}
+            loading={questsLoading}
+            claimingQuestId={claimingQuestId}
+            isSocialVerified={isSocialVerified}
+            canVerify={false}
+            isVerifying={false}
+            onClaimXP={claimQuestXP}
+            onVerifySocials={async () => ({ success: false })}
+            onMarkCompleted={markQuestCompleted}
+            onRefresh={handleFullRefresh}
+            walletAddress={walletAddress}
+            streakProfit={streakProfitData}
+            voteProfit={voteProfitData}
+            currentStreak={userProgress.currentStreak}
+            currentVoteStreak={userProgress.currentVoteStreak}
+            certActivityDates={userProgress.certActivityDates}
+            voteActivityDates={userProgress.voteActivityDates}
+          />
+        )}
+      </Suspense>
+    </div>
+  )
+
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'account':
-        return (
-          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
-            <AccountTab />
-          </Suspense>
-        )
+      case 'stats':
+        return renderStats()
       case 'community':
         return (
           <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
             <CommunityTab />
           </Suspense>
         )
-      case 'history':
+      case 'socials':
         return (
           <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
-            <HistoryTab
-              expandedTriplet={expandedHistoryTriplet}
-              setExpandedTriplet={setExpandedHistoryTriplet}
-            />
+            <SocialsTab />
           </Suspense>
         )
       default:
-        return <div className="empty-state">Coming soon...</div>
+        return null
     }
   }
 
   return (
     <div className="page profile-page">
-      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
+      <ProfileHeader
+        avatarUrl={displayAvatar}
+        displayName={displayLabel}
+        walletAddress={walletAddress}
+        verified={isSocialVerified}
+        verifiedLabel="Social Linked"
+        totalGold={totalGold}
+        signalsCreated={signalsCreated}
+      />
+
+      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Profile sections">
         <button
           type="button"
-          className={`pf-sort-btn ${activeTab === 'account' ? 'active' : ''}`}
-          aria-pressed={activeTab === 'account'}
-          onClick={() => handleTabChange('account')}
+          className={`pf-sort-btn ${activeTab === 'stats' ? 'active' : ''} ${activeTab !== 'stats' && claimableQuests.length > 0 ? 'has-claimable' : ''}`}
+          aria-pressed={activeTab === 'stats'}
+          onClick={() => handleTabChange('stats')}
         >
-          Account
+          Stats
         </button>
         <button
           type="button"
@@ -83,11 +196,11 @@ const ProfilePage = () => {
         </button>
         <button
           type="button"
-          className={`pf-sort-btn ${activeTab === 'history' ? 'active' : ''}`}
-          aria-pressed={activeTab === 'history'}
-          onClick={() => handleTabChange('history')}
+          className={`pf-sort-btn ${activeTab === 'socials' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'socials'}
+          onClick={() => handleTabChange('socials')}
         >
-          History
+          Socials
         </button>
       </div>
 

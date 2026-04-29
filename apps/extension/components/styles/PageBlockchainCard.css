@@ -86,15 +86,47 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.cert-section + .cert-section {
   margin-top: 16px;
 }
 
-/* Identical to ExtendedMetricsPanel .section-title */
+/* Same shape as .circle-filter-label */
 .cert-section-title {
   display: flex;
   align-items: center;
   gap: 6px;
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Actions panel — same surface as .extended-metrics-panel.
+   Wraps Intentions + Context under a single titled card. */
+.actions-panel {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-lg, 12px);
+}
+
+/* Title — matches .section-title in ExtendedMetricsPanel */
+.actions-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 13px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -113,14 +145,6 @@
   margin-top: 24px;
 }
 
-
-/* ── Trust & Distrust buttons row ── */
-
-.trust-buttons-row {
-  display: flex;
-  gap: var(--spacing-sm, 8px);
-  margin-top: var(--spacing-md, 12px);
-}
 
 .trust-buttons-row .trust-page-button {
   flex: 1;
@@ -162,42 +186,6 @@
   animation: successPulse 0.5s ease;
 }
 
-/* Trust button — outline with green hover */
-.trust-btn {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: none;
-  box-shadow: none;
-  color: var(--color-text-secondary, var(--ds-ink));
-  font-weight: 700;
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition-slow, all 0.5s ease);
-}
-
-.trust-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.trust-btn > * {
-  position: relative;
-  z-index: 1;
-}
-
-.trust-btn:hover:not(:disabled) {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: #000;
-}
-
 .trust-btn.success {
   background: var(--color-success);
   border-color: var(--color-success);
@@ -207,35 +195,6 @@
 .trust-btn.in-cart {
   background: var(--fun);
   border-color: var(--fun);
-  color: #000;
-}
-
-/* Distrust button — outline with red hover */
-.distrust-btn {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: none;
-  color: var(--color-text-secondary, var(--ds-ink));
-  font-weight: 700;
-  overflow: hidden;
-  transition: var(--transition-slow, all 0.5s ease);
-}
-
-.distrust-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.distrust-btn:hover:not(:disabled) {
-  background: var(--color-error);
-  border-color: var(--color-error);
   color: #000;
 }
 
@@ -264,20 +223,6 @@
   border-top: 2px solid var(--color-text-secondary, var(--ds-ink));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-
-/* ── Trust/distrust error display ── */
-
-.trust-error {
-  padding: var(--spacing-sm, 8px);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: var(--radius-md, 8px);
-}
-
-.trust-error small {
-  color: var(--ds-ink);
-  font-size: var(--font-size-xs, 10px);
 }
 
 /* ── Responsive ── */

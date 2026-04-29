@@ -311,6 +311,7 @@ const BookmarkTab = () => {
                       <div className="bookmark-item">
                         <div className="bookmark-header-content">
                           <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="bookmark-card-dot" aria-hidden="true" />
                             <h4 style={{ margin: 0 }}>{category.label}</h4>
                           </div>
                           <div className="bookmark-list-meta">

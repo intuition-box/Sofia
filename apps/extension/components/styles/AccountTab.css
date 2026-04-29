@@ -56,43 +56,6 @@
   margin-top: 2px;
 }
 
-.stat-icons-with-value {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.stat-icon {
-  width: 25px;
-  height: 25px;
-  object-fit: contain;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.stat-icon:hover {
-  opacity: 1;
-}
-
-/* ========== SEPARATOR ========== */
-.section-separator {
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-  margin: 20px 16px;
-}
-
-/* ========== PLATFORM ICONS ========== */
-.platform-icons-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  margin-top:-13px
-}
-
 .connect-button {
   backdrop-filter: blur(20px);
   border: 1px solid #ffffff1a;
@@ -156,44 +119,8 @@
   border-color: #33333350;
 }
 
-.platform-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-  font-weight: bold;
-  font-size: var(--font-size-sm);
-}
-
-.youtube-icon {
-  border-radius: 10px;
-}
-
-.spotify-icon {
-  border-radius: 10px;
-}
-
-.twitch-icon {
-  border-radius: 10px;
-}
-
-.discord-icon {
-  border-radius: 10px;
-}
-
-.twitter-icon {
-  border-radius: 10px;
-}
-
 .connect-button.twitter.connected .twitter-icon img {
   filter: invert(1);
-}
-
-.connect-button-text {
-  color: var(--color-text-secondary);
-  font-weight: 200;
 }
 
 .social-verify-section {
@@ -202,27 +129,23 @@
   padding: 12px 16px;
 }
 
-
-/* ========== QUESTS SECTION ========== */
-.quests-section {
-  padding: 0 16px 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Override DS .pf-platform-card defaults inside SocialsTab:
+   non-connected platforms use a DASHED border (mirror of .url-row vs
+   .url-row.on-chain), connected stays solid. */
+.socials-tab .pf-platform-card {
+  border-style: dashed;
+  border-color: var(--ds-ink-soft);
 }
 
-.quests-loading,
-.quests-empty {
-  padding: 40px 20px;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Geist', sans-serif;
-  font-size: 14px;
+.socials-tab .pf-platform-card:hover {
+  border-color: var(--ds-ink);
 }
 
-.quests-loading {
-  animation: pulse 2s ease-in-out infinite;
+.socials-tab .pf-platform-card.connected {
+  border-style: solid;
+  border-color: var(--trusted, #22c55e);
 }
+
 
 @keyframes pulse {
   0%, 100% {
@@ -256,19 +179,25 @@
 }
 
 .quest-refresh-btn-inline {
-  align-self: flex-end;
-  background: none;
-  border: none;
-  color: var(--color-text-placeholder);
-  font-size: var(--font-size-xl);
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0 var(--spacing-xs);
+  padding: 6px 14px;
   line-height: 1;
-  transition: var(--transition-fast);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .quest-refresh-btn-inline:hover:not(:disabled) {
-  color: var(--color-text-primary);
+  border-color: var(--ds-ink);
 }
 
 .quest-refresh-btn-inline:disabled {
@@ -276,90 +205,11 @@
   cursor: not-allowed;
 }
 
-.quest-item {
-  display: flex;
+.quest-refresh-icon {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: var(--ds-bg-subtle);
-  border-radius: 12px;
-  border: 1px solid var(--ds-border-soft);
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.quest-item:hover {
-  background: var(--ds-card);
-  border-color: var(--ds-ink-soft);
-}
-
-.quest-progress {
-  flex-shrink: 0;
-}
-
-.quest-details {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.quest-badge-name {
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--ds-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 2px 0;
-}
-
-.quest-title {
-  font-family: 'Fraunces', serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ds-ink);
-  margin: 0;
-}
-
-.quest-progress-text {
-  font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  color: var(--ds-muted);
-  margin: 0;
-}
-
-.quest-status {
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.quest-action-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--ds-accent);
-  border: none;
-  color: var(--ds-on-accent, #1a0a04);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease;
-  flex-shrink: 0;
-}
-
-.quest-action-btn:hover {
-  background: var(--btn-primary-hover-bg);
-}
-
-.search-icon {
-  width: var(--size-icon-md);
-  height: var(--size-icon-md);
-  filter: brightness(0) invert(0.6);
 }
 
 /* Search bar styles specific to AccountTab */
@@ -410,34 +260,6 @@
   width: 100%;
 }
 
-.search-loading,
-.search-error,
-.search-no-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--color-surface-primary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  z-index: 1000;
-  margin-top: 4px;
-}
-
-.search-loading {
-  color: var(--color-text-secondary);
-}
-
-.search-error {
-  color: var(--color-error);
-}
-
-.search-no-results {
-  color: var(--color-text-tertiary);
-}
-
 .search-results-dropdown {
   top: 100%;
   left: 0;
@@ -451,35 +273,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.search-result-item {
-  padding: var(--spacing-md);
-  cursor: pointer;
-  border-bottom: 1px solid var(--color-border-secondary);
-  transition: background-color 0.2s ease;
-}
-
-.search-result-item:hover {
-  background-color: var(--color-surface-secondary);
-}
-
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
 .account-info {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   border-radius: 10px;
   padding: 5px;
-}
-
-.account-header {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
 }
 
 .account-label {
@@ -490,166 +289,6 @@
   text-align: left;
 }
 
-.account-meta {
-  display: flex;
-  justify-content: space-evenly;
-  flex-flow: nowrap;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-}
-
-.account-type {
-  background: var(--color-surface-secondary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.account-date {
-  color: var(--color-text-tertiary);
-  font-family: 'Courier New', monospace;
-  font-size: var(--font-size-xs);
-}
-
-/* Tags styling */
-.account-tags {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: var(--spacing-xs);
-  text-align: left;
-}
-
-.tags-label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.tags-list {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.tag-item {
-  padding: 2px 6px;
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: #1976d2;
-  font-weight: 500;
-}
-
-.tag-more {
-  padding: 2px 6px;
-  background: var(--color-surface-secondary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-}
-
-/* Interests styling */
-.account-interests {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: var(--spacing-xs);
-  text-align: left;
-}
-
-.interests-label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.interests-list {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.interest-item {
-  padding: 2px 6px;
-  background: #f3e5f5;
-  border: 1px solid #ce93d8;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: #7b1fa2;
-  font-weight: 500;
-}
-
-.interest-more {
-  padding: 2px 6px;
-  background: var(--color-surface-secondary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-}
-
-/* Subscriptions styling */
-.account-subscriptions {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: var(--spacing-xs);
-}
-
-.subscriptions-label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-  text-align: left;
-}
-
-.subscriptions-list {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.subscription-item {
-  padding: 2px 6px;
-  background: #fff3e0;
-  border: 1px solid #ffb74d;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: #f57c00;
-  font-weight: 500;
-}
-
-.subscription-more {
-  padding: 2px 6px;
-  background: var(--color-surface-secondary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-}
-
-.account-details {
-  display: flex;
-  gap: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-top: var(--spacing-xs);
-  padding-top: var(--spacing-xs);
-  border-top: 1px solid var(--color-border-secondary);
-}
-
-.account-id,
-.account-date {
-  font-family: 'Courier New', monospace;
-}
-
 .search-results-more {
   padding: var(--spacing-sm) var(--spacing-md);
   text-align: center;
@@ -657,33 +296,6 @@
   color: var(--color-text-tertiary);
   font-style: italic;
   border-top: 1px solid var(--color-border-secondary);
-}
-
-/* ========== SOCIAL LINK BUTTON ========== */
-.social-link-button {
-  margin-top: 8px;
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-}
-
-.social-link-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
-}
-
-.social-link-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Social linked styles are in ProfileHeader.css */
@@ -705,24 +317,9 @@
   box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
-.claim-xp-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
-}
-
-.claim-xp-button:active {
-  transform: translateY(0);
-}
-
 .claim-xp-button.claiming {
   opacity: 0.7;
   cursor: not-allowed;
-}
-
-.claim-xp-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* ========== BADGES SECTION ========== */
@@ -869,31 +466,6 @@
   margin-bottom: 16px;
 }
 
-.discovery-section-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.reroll-points-btn {
-  padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.reroll-points-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.85);
-}
-
 .discovery-badges-row {
   display: flex;
   justify-content: space-around;
@@ -1017,29 +589,6 @@
   border-radius: 5px;
   transition: width 0.5s ease;
   min-width: 2px;
-}
-
-.xp-signals-count {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.xp-signals-value {
-  font-family: 'Geist', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  line-height: 1;
-  margin-right: 5px;
-}
-
-.xp-signals-label {
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 400;
 }
 
 /* ========== DISCOVERY MECHANISM PANEL ========== */
@@ -1195,79 +744,6 @@
 /* ========== ACHIEVEMENTS SECTION ========== */
 .achievements-section {
   margin-bottom: 20px;
-}
-
-/* Streak Vault Card */
-.streak-vault-card {
-  background: linear-gradient(135deg, rgba(234, 182, 122, 0.12) 0%, rgba(106, 204, 147, 0.08) 100%);
-  border: 1px solid rgba(234, 182, 122, 0.25);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-}
-
-.streak-vault-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.streak-vault-title-row {
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-.streak-vault-badge {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ds-ink);
-  background: rgba(234, 182, 122, 0.15);
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-.streak-vault-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-}
-
-.streak-vault-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ds-ink);
-}
-
-.streak-vault-participants {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.streak-vault-stats {
-  display: flex;
-  gap: 16px;
-}
-
-.streak-vault-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.streak-vault-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.streak-vault-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
 }
 
 .streak-vault-value.positive {
@@ -1464,67 +940,9 @@
   color: rgba(255, 255, 255, 0.2);
 }
 
-/* Week day bubbles inside vault cards */
-.streak-week-bubbles {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 4px;
-  gap: 4px;
-}
-
-.streak-bubble {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.4);
-  transition: all 0.2s;
-}
-
 .streak-bubble.validated {
   background: rgba(106, 204, 147, 0.2);
   color: var(--ds-ink);
-}
-
-/* Streak Section (Daily & Streak quests) */
-.streak-section {
-  margin-bottom: 16px;
-}
-
-.streak-section-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0 0 10px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.streak-section-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.streak-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s;
-}
-
-.streak-card:hover {
-  background: rgba(255, 255, 255, 0.07);
 }
 
 .streak-card.claimable_xp {
@@ -1536,82 +954,9 @@
   opacity: 0.6;
 }
 
-.streak-card-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
 .streak-card.locked .streak-card-img,
 .streak-card.completed .streak-card-img {
   filter: grayscale(80%);
-}
-
-.streak-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  flex: 1;
-  min-width: 0;
-}
-
-.streak-card-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #fff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.streak-card-progress {
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.streak-card-claim {
-  padding: 5px 14px;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #0f1420;
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-
-.streak-card-claim:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-}
-
-.streak-card-claim:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.streak-card-bar {
-  width: 40px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.streak-card-bar-fill {
-  height: 100%;
-  background: var(--fun);
-  border-radius: 2px;
-  transition: width 0.3s ease;
 }
 
 /* Section label for daily/other groups */

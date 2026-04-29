@@ -1,13 +1,3 @@
-/**
- * Category Styles
- * Styles for intention categories in BookmarkTab
- */
-
-/* Categories Section */
-.categories-section {
-  margin-bottom: 24px;
-}
-
 .categories-section .section-header {
   display: flex;
   justify-content: space-between;
@@ -19,11 +9,6 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--ds-ink);
-}
-
-.categories-section .section-count {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Categories Row - Horizontal layout */
@@ -116,7 +101,9 @@
   50% { opacity: 0.6; }
 }
 
-/* Category Detail View */
+/* Category Detail View — Bookmark detail
+   Aligned on the GroupDetailView pattern: back button on top,
+   then title + count, then toolbar + url list. */
 .category-detail {
   display: flex;
   flex-direction: column;
@@ -124,136 +111,109 @@
   padding-top: var(--spacing-sm, 8px);
 }
 
+/* Stacked header — back button row + title row */
 .category-detail-header {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.category-detail-header .back-btn {
+  align-self: flex-start;
+}
+
+.category-detail-title-section {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Same DS pf-btn pattern as GroupDetailView .back-btn */
-.category-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--ds-border);
-  border-radius: 8px;
-  background: var(--ds-card);
-  font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ds-ink);
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.category-back-btn:hover {
-  border-color: var(--ds-ink);
-}
-
-.category-detail-dot {
-  width: 16px;
-  height: 16px;
+/* Color marker — small colored dot identifying the category */
+.category-detail-marker {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--ds-bg-subtle);
 }
 
 .category-detail-info {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .category-detail-name {
-  font-size: 18px;
-  font-weight: 600;
+  font-family: 'Fraunces', serif;
   color: var(--ds-ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 0;
+  word-break: break-word;
 }
 
 .category-detail-count {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* URL List */
+/* URL list — uses the shared .url-row pattern from CommonPage.css.
+   Only need a wrapper here. */
 .category-url-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.category-url-row {
-  display: flex;
+/* Redeem button on a url-row — small secondary action,
+   becomes red on hover. */
+.url-redeem-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
-  text-decoration: none;
-}
-
-.category-url-row:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.category-url-favicon {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
   flex-shrink: 0;
+  margin-left: auto;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
-.category-url-info {
-  flex: 1;
-  min-width: 0;
+.url-redeem-btn:hover:not(:disabled) {
+  border-color: var(--color-error, #ef4444);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
 }
 
-.category-url-label {
-  font-size: 13px;
-  color: var(--ds-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
-
-.category-url-domain {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  display: block;
-}
-
-.category-url-date {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  flex-shrink: 0;
+.url-redeem-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Empty state */
 .category-empty {
   text-align: center;
   padding: 32px 16px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.category-empty-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin: 0 auto 12px;
-  opacity: 0.5;
+  color: var(--ds-muted);
 }
 
 .category-empty-text {
   font-size: 13px;
+  margin: 0;
 }
 
 /* Lists Section separator */

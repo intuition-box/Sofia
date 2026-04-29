@@ -343,7 +343,8 @@ const AchievementsTab = ({
           disabled={refreshing}
           title="Refresh quests"
         >
-          {refreshing ? "..." : "\u21BB"}
+          <span className="quest-refresh-icon" aria-hidden="true">{refreshing ? "..." : "\u21BB"}</span>
+          <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
         </button>
       )}
       {/* Streak Hub Card */}

@@ -713,7 +713,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           All ({group.activeUrlCount})
         </button>
         <button
-          className={`filter-btn ${filter === 'uncertified' ? 'active' : ''}`}
+          className={`filter-btn filter-btn--uncertified ${filter === 'uncertified' ? 'active' : ''}`}
           onClick={() => setFilter('uncertified')}
         >
           Uncertified ({uncertifiedCount})

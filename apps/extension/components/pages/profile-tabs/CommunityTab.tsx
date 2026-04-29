@@ -34,11 +34,11 @@ const CommunityTab = (props: CommunityTabProps) => {
 
   return (
     <div className="community-tab">
-      {/* Filter buttons — DS pf-echoes-sort segmented control */}
-      <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Community filter">
+      {/* Filter buttons — scope-toggle segmented control (same as Stats sub-toggle) */}
+      <div className="scope-toggle scope-toggle--lg community-filter-row" role="group" aria-label="Community filter">
         <button
           type="button"
-          className={`pf-sort-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
+          className={`scope-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
           aria-pressed={filterType === 'trust-circle'}
           onClick={() => setFilterType('trust-circle')}
         >
@@ -46,7 +46,7 @@ const CommunityTab = (props: CommunityTabProps) => {
         </button>
         <button
           type="button"
-          className={`pf-sort-btn ${filterType === 'following' ? 'active' : ''}`}
+          className={`scope-btn ${filterType === 'following' ? 'active' : ''}`}
           aria-pressed={filterType === 'following'}
           onClick={() => setFilterType('following')}
         >
@@ -54,7 +54,7 @@ const CommunityTab = (props: CommunityTabProps) => {
         </button>
         <button
           type="button"
-          className={`pf-sort-btn ${filterType === 'followers' ? 'active' : ''}`}
+          className={`scope-btn ${filterType === 'followers' ? 'active' : ''}`}
           aria-pressed={filterType === 'followers'}
           onClick={() => setFilterType('followers')}
         >
@@ -63,7 +63,7 @@ const CommunityTab = (props: CommunityTabProps) => {
         {!isExternalProfile && (
           <button
             type="button"
-            className={`pf-sort-btn ${filterType === 'explorer' ? 'active' : ''}`}
+            className={`scope-btn ${filterType === 'explorer' ? 'active' : ''}`}
             aria-pressed={filterType === 'explorer'}
             onClick={() => setFilterType('explorer')}
           >

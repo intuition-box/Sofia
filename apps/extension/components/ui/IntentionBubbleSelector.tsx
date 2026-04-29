@@ -29,8 +29,8 @@ export const IntentionBubbleSelector = memo(({
   trustInCart = false,
   distrustInCart = false,
 }: IntentionBubbleSelectorProps) => {
-  const handleClick = (intention: IntentionPurpose) => {
-    if (disabled || !isEligible) return
+  const handleClick = (intention: IntentionPurpose, isCertified: boolean) => {
+    if (disabled || !isEligible || isCertified) return
     onBubbleClick(intention)
   }
 
@@ -52,7 +52,7 @@ export const IntentionBubbleSelector = memo(({
               onClick={() => onTrustClick!(
                 predicateLabel as "trusts" | "distrust"
               )}
-              disabled={disabled || isCertified || isInCart}
+              disabled={disabled || isCertified}
             >
               {isCertified
                 ? label
@@ -77,8 +77,8 @@ export const IntentionBubbleSelector = memo(({
             <button
               key={key}
               className={`intention-pill intention-pill--${type} ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
-              onClick={() => handleClick(key)}
-              disabled={disabled || !isEligible}
+              onClick={() => handleClick(key, isCertified)}
+              disabled={disabled || !isEligible || isCertified}
             >
               {isInCart && !isCertified ? `+ ${label}` : label}
             </button>

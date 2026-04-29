@@ -45,7 +45,7 @@ export const ALL_PREDICATE_IDS = [
 
 // ── Label Groups ──
 
-export const INTENTION_PREDICATE_LABELS = [
+const INTENTION_PREDICATE_LABELS = [
   "visits for work",
   "visits for learning",
   "visits for fun",
@@ -55,7 +55,7 @@ export const INTENTION_PREDICATE_LABELS = [
 ]
 
 // Includes legacy trailing-space variant for "visits for learning "
-export const INTENTION_PREDICATE_LABELS_WITH_LEGACY = [
+const INTENTION_PREDICATE_LABELS_WITH_LEGACY = [
   ...INTENTION_PREDICATE_LABELS.slice(0, 2),
   "visits for learning ", // legacy trailing space (old on-chain data)
   ...INTENTION_PREDICATE_LABELS.slice(2)
@@ -71,7 +71,7 @@ export const OAUTH_PREDICATE_LABELS: string[] = [
   PREDICATE_NAMES.AM
 ].filter(Boolean)
 
-export const TRUST_PREDICATE_LABELS = [
+const TRUST_PREDICATE_LABELS = [
   PREDICATE_NAMES.TRUSTS,
   PREDICATE_NAMES.DISTRUST
 ].filter(Boolean)
@@ -87,12 +87,6 @@ export const CERTIFICATION_PREDICATE_LABELS = [
   ...INTENTION_PREDICATE_LABELS_WITH_LEGACY,
   ...TRUST_PREDICATE_LABELS
 ]
-
-// Web activity predicates (for MCP/interest analysis) — intentions sans "music"
-export const WEB_ACTIVITY_PREDICATES =
-  INTENTION_PREDICATE_LABELS_WITH_LEGACY.filter(
-    (l) => !l.startsWith("visits for music")
-  )
 
 // ── Mappings: Label → Type ──
 
@@ -151,18 +145,3 @@ export const PREDICATE_ID_TO_INTENTION: Record<string, IntentionPurpose> =
     [PREDICATE_IDS.VISITS_FOR_MUSIC, "for_music"]
   ])
 
-export const PREDICATE_ID_TO_LABEL: Record<string, string> = buildMap([
-  [PREDICATE_IDS.VISITS_FOR_WORK, PREDICATE_NAMES.VISITS_FOR_WORK],
-  [PREDICATE_IDS.VISITS_FOR_LEARNING, PREDICATE_NAMES.VISITS_FOR_LEARNING],
-  [PREDICATE_IDS.VISITS_FOR_FUN, PREDICATE_NAMES.VISITS_FOR_FUN],
-  [PREDICATE_IDS.VISITS_FOR_INSPIRATION, PREDICATE_NAMES.VISITS_FOR_INSPIRATION],
-  [PREDICATE_IDS.VISITS_FOR_BUYING, PREDICATE_NAMES.VISITS_FOR_BUYING],
-  [PREDICATE_IDS.VISITS_FOR_MUSIC, PREDICATE_NAMES.VISITS_FOR_MUSIC]
-])
-
-// ── Global Stake ──
-
-import { GLOBAL_STAKE } from "~/lib/config/chainConfig"
-
-export const GLOBAL_STAKE_TERM_ID = GLOBAL_STAKE.TERM_ID
-export const GLOBAL_STAKE_ENABLED = GLOBAL_STAKE.ENABLED

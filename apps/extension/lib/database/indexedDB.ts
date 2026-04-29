@@ -8,17 +8,12 @@ import { createServiceLogger } from '../utils/logger'
 // Re-export all record types from centralized types
 export type {
   TripletsRecord,
-  NavigationRecord,
-  ProfileRecord,
   SettingsRecord,
-  SearchRecord,
   BookmarkListRecord,
   BookmarkedTripletRecord,
-  RecommendationRecord,
   IntentionGroupRecord,
   GroupUrlRecord,
   PredicateChangeRecord,
-  UserXPRecord,
   CartItemRecord
 } from '../../types/database'
 
@@ -26,20 +21,25 @@ const logger = createServiceLogger('IndexedDB')
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 9  // Added CART_ITEMS store
+const DB_VERSION = 10  // v10: dropped 5 unused stores (navigation_data, user_profile, search_history, recommendations, user_xp)
+
+// Stores being removed in v10. Listed here so the migration can delete them
+// from existing user databases on first open after upgrade.
+const REMOVED_STORES_V10 = [
+  'navigation_data',
+  'user_profile',
+  'search_history',
+  'recommendations',
+  'user_xp'
+] as const
 
 // Object store names
 export const STORES = {
   TRIPLETS_DATA: 'triplets_data',
-  NAVIGATION_DATA: 'navigation_data',
-  USER_PROFILE: 'user_profile',
   USER_SETTINGS: 'user_settings',
-  SEARCH_HISTORY: 'search_history',
   BOOKMARK_LISTS: 'bookmark_lists',
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
-  RECOMMENDATIONS: 'recommendations',
   INTENTION_GROUPS: 'intention_groups',
-  USER_XP: 'user_xp',
   CART_ITEMS: 'cart_items'
 } as const
 
@@ -87,10 +87,18 @@ export class SofiaIndexedDB {
   }
 
   /**
-   * Create object stores and indexes
-   */
+   * Create object stores and indexes. Also drops stores that were removed
+   * in past migrations (idempotent: only deletes what still exists). */
   private createObjectStores(db: IDBDatabase): void {
     logger.debug('Creating IndexedDB object stores')
+
+    // Drop stores removed in v10 (no-op if they don't exist)
+    for (const name of REMOVED_STORES_V10) {
+      if (db.objectStoreNames.contains(name)) {
+        db.deleteObjectStore(name)
+        logger.info(`Dropped legacy store: ${name}`)
+      }
+    }
 
     // Triplets data store
     if (!db.objectStoreNames.contains(STORES.TRIPLETS_DATA)) {
@@ -103,41 +111,12 @@ export class SofiaIndexedDB {
       tripletsStore.createIndex('type', 'type', { unique: false })
     }
 
-    // Navigation data store
-    if (!db.objectStoreNames.contains(STORES.NAVIGATION_DATA)) {
-      const navStore = db.createObjectStore(STORES.NAVIGATION_DATA, {
-        keyPath: 'id',
-        autoIncrement: true
-      })
-      navStore.createIndex('url', 'url', { unique: false })
-      navStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
-      navStore.createIndex('visitCount', 'visitData.visitCount', { unique: false })
-    }
-
-    // User profile store
-    if (!db.objectStoreNames.contains(STORES.USER_PROFILE)) {
-      const profileStore = db.createObjectStore(STORES.USER_PROFILE, {
-        keyPath: 'id'
-      })
-      profileStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
-    }
-
     // User settings store
     if (!db.objectStoreNames.contains(STORES.USER_SETTINGS)) {
       const settingsStore = db.createObjectStore(STORES.USER_SETTINGS, {
         keyPath: 'id'
       })
       settingsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
-    }
-
-    // Search history store
-    if (!db.objectStoreNames.contains(STORES.SEARCH_HISTORY)) {
-      const searchStore = db.createObjectStore(STORES.SEARCH_HISTORY, {
-        keyPath: 'id',
-        autoIncrement: true
-      })
-      searchStore.createIndex('timestamp', 'timestamp', { unique: false })
-      searchStore.createIndex('query', 'query', { unique: false })
     }
 
     // Bookmark lists store
@@ -160,16 +139,7 @@ export class SofiaIndexedDB {
       bookmarkedTripletsStore.createIndex('addedAt', 'addedAt', { unique: false })
     }
 
-    // Recommendations store
-    if (!db.objectStoreNames.contains(STORES.RECOMMENDATIONS)) {
-      const recommendationsStore = db.createObjectStore(STORES.RECOMMENDATIONS, {
-        keyPath: 'walletAddress'
-      })
-      recommendationsStore.createIndex('timestamp', 'timestamp', { unique: false })
-      recommendationsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
-    }
-
-    // 🆕 Intention Groups store (groupes de domaines persistants)
+    // Intention Groups store (groupes de domaines persistants)
     if (!db.objectStoreNames.contains(STORES.INTENTION_GROUPS)) {
       const intentionGroupsStore = db.createObjectStore(STORES.INTENTION_GROUPS, {
         keyPath: 'id'  // = domain
@@ -178,11 +148,6 @@ export class SofiaIndexedDB {
       intentionGroupsStore.createIndex('level', 'level', { unique: false })
       intentionGroupsStore.createIndex('createdAt', 'createdAt', { unique: false })
       intentionGroupsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
-    }
-
-    // 🆕 User XP store (XP global utilisateur)
-    if (!db.objectStoreNames.contains(STORES.USER_XP)) {
-      db.createObjectStore(STORES.USER_XP, { keyPath: 'id' })
     }
 
     // Certification cart store (batch certification queue)

@@ -4,7 +4,7 @@
  */
 
 // Logging
-export { logger, blockchainLogger, apiLogger, storageLogger, createHookLogger, createServiceLogger } from './logger'
+export { logger, createHookLogger, createServiceLogger } from './logger'
 
 // URL & Content
 export { normalizeUrl } from './normalizeUrl'
@@ -14,11 +14,11 @@ export type { RestrictionInfo } from './pageRestriction'
 export { parseSofiaMessage } from './parseSofiaMessage'
 
 // Web3 & Identity
-export { getEnsAvatar, getEnsName, batchGetEnsAvatars, batchResolveEns, clearEnsAvatarCache } from './ensUtils'
-export { isValidImageUrl, isEthereumAddress, shouldShowDiceBearAvatar, generateDiceBearAvatar, escapeSvgForCss, convertIpfsToHttp, normalizeAvatarUrl, getInitials } from './avatar'
+export { getEnsAvatar, getEnsName, batchResolveEns } from './ensUtils'
+export { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, convertIpfsToHttp, normalizeAvatarUrl, getInitials } from './avatar'
 
 // IPFS
-export { batchFetchIPFS, fetchIPFSMetadata, clearIPFSCache, getIPFSCacheSize } from './ipfsCache'
+export { batchFetchIPFS } from './ipfsCache'
 
 // Quest & Storage Helpers
 export { calculateLevelFromXP, calculateXPForNextLevel, getClaimId, computeQuestStatuses } from './questStatusHelpers'
@@ -43,7 +43,7 @@ export { intentionToCertification, trustToCertification, getEffectiveCertStatus,
 export { buildPagePositionMap, calculateDiscoveryRanking, calculateDiscoveryGold, buildDiscoveryStats } from './discoveryUtils'
 
 // Streak Calculations
-export { calculateStreaks, toDateStr, extractUserActivityDates } from './streakUtils'
+export { calculateStreaks, extractUserActivityDates } from './streakUtils'
 
 // Fee Calculation
 export { estimateCertificationCost } from './feeCalculation'
@@ -53,7 +53,7 @@ export { computeDiscoveryData, computeIntentionStats, computeTrustCounts, comput
 export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResult, RankedPosition, PagePositionsResult } from './pageCertificationCompute'
 
 // Page Blockchain Reducer (pure function)
-export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, DEFAULT_COUNTS, EMPTY_INTENTIONS } from './pageBlockchainReducer'
+export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, EMPTY_INTENTIONS } from './pageBlockchainReducer'
 
 // Debate / Claim Helpers
 export { formatTrust } from './formatTrust'

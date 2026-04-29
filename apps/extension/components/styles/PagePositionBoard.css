@@ -235,15 +235,6 @@
   50% { opacity: 1; }
 }
 
-/* ── Empty state ── */
-
-.position-board__empty {
-  padding: var(--spacing-md);
-  text-align: center;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-very-muted);
-}
-
 /* ── Animation ── */
 
 @keyframes positionBoardAppear {
