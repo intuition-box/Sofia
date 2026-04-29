@@ -39,6 +39,21 @@ interface ProfileDetailsPanelProps {
   focusMeta?: ProfileDetailsFocusMeta
   /** Fired when the user clicks `Clear filter` on a focused view. */
   onClearFilter: () => void
+  /**
+   * Number of certs the user has on each radar verb (work / learning /
+   * fun / inspiration / buying / music). Used to compute the per-verb
+   * score and certification count when a verb is focused — without it
+   * the panel falls back to the aggregate score, which is wrong.
+   */
+  verbCertCounts?: Readonly<Record<string, number>>
+  /**
+   * Number of certs the user owns that have NO `in context of` topic
+   * triple. Counted into the "All Topics" total so the donut and the
+   * panel agree, and certs without context aren't silently zeroed.
+   */
+  generalCertCount?: number
+  /** Points awarded per cert (defaults to 5 to match scoring service). */
+  pointsPerCert?: number
 }
 
 export default function ProfileDetailsPanel({
@@ -46,6 +61,9 @@ export default function ProfileDetailsPanel({
   topicFilter,
   focusMeta,
   onClearFilter,
+  verbCertCounts,
+  generalCertCount = 0,
+  pointsPerCert = 5,
 }: ProfileDetailsPanelProps) {
   const isAll = topicFilter === 'all' || !focusMeta
   const isVerb = !isAll && focusMeta?.kind === 'verb'
@@ -63,8 +81,12 @@ export default function ProfileDetailsPanel({
       : '—'
   const color = focusMeta?.color ?? 'var(--ds-accent)'
 
-  // Verb focus has no per-intent breakdown yet — fall back to aggregate.
+  // Verb focus uses verbCertCounts for the score; categories, platforms
+  // and signals stay aggregate since they're profile-wide and have no
+  // verb-scoped equivalent on-chain.
   const useAggregate = isAll || isVerb
+  const verbCertCount =
+    isVerb && verbCertCounts ? (verbCertCounts[topicFilter] ?? 0) : 0
 
   const categoriesCount = useAggregate
     ? topics.reduce((a, s) => a + s.categoriesCount, 0)
@@ -75,9 +97,12 @@ export default function ProfileDetailsPanel({
   const signals = useAggregate
     ? topics.reduce((a, s) => a + s.signals, 0)
     : (selectedTopic?.signals ?? 0)
-  const score = useAggregate
-    ? topics.reduce((a, s) => a + s.score, 0)
-    : (selectedTopic?.score ?? 0)
+  const generalScore = generalCertCount * pointsPerCert
+  const score = isVerb
+    ? verbCertCount * pointsPerCert
+    : isAll
+      ? topics.reduce((a, s) => a + s.score, 0) + generalScore
+      : (selectedTopic?.score ?? 0)
   // P&L is null whenever no contributing topic has a real per-topic aggregate.
   // Aggregate sum across topics; if every topic reports null, the row is hidden.
   const pnlContribs = useAggregate

@@ -33,6 +33,9 @@ interface RadarFocusResult {
   verbAxes: RadarAxis[]
   displayedSeries: RadarSeries[]
   pillItems: RadarAxis[]
+  /** Per-verb total cert counts — fed into ProfileDetailsPanel for the
+   *  per-verb score when a verb pill is focused. */
+  verbCertCounts: Record<string, number>
 }
 
 export function useRadarFocus(
@@ -83,22 +86,55 @@ export function useRadarFocus(
     [topicAxes, verbAxes, buckets],
   )
 
+  // Symmetric: one polygon per radar verb — spike on its own verb axis
+  // (= total certs with that intention) + per-topic counts. Used as the
+  // default view in ALL mode so the chart shows how each intention
+  // distributes across the user's topics, side-by-side.
+  const verbSeries = useMemo<RadarSeries[]>(
+    () =>
+      verbAxes.map((v) => {
+        const counts: Record<string, number> = {
+          [v.id]: buckets.getVerbTotal(v.id),
+        }
+        for (const t of topicAxes) counts[t.id] = buckets.get(t.id, v.id)
+        return { ...v, counts }
+      }),
+    [topicAxes, verbAxes, buckets],
+  )
+
   const displayedSeries = useMemo<RadarSeries[]>(() => {
+    if (focus === 'all') return verbSeries
     const verbMatch = verbAxes.find((v) => v.id === focus)
-    if (!verbMatch) return topicSeries
-    // Symmetric to a topic polygon: spike on its own verb axis + counts
-    // across the topic axes.
-    const counts: Record<string, number> = {
-      [verbMatch.id]: buckets.getVerbTotal(verbMatch.id),
+    if (verbMatch) {
+      // Single verb polygon — spike on its axis + counts across topics.
+      const counts: Record<string, number> = {
+        [verbMatch.id]: buckets.getVerbTotal(verbMatch.id),
+      }
+      for (const t of topicAxes) counts[t.id] = buckets.get(t.id, verbMatch.id)
+      return [{ ...verbMatch, counts }]
     }
-    for (const t of topicAxes) counts[t.id] = buckets.get(t.id, verbMatch.id)
-    return [{ ...verbMatch, counts }]
-  }, [focus, verbAxes, topicAxes, topicSeries, buckets])
+    // Topic focus — single topic polygon.
+    return topicSeries.filter((s) => s.id === focus)
+  }, [focus, verbAxes, topicAxes, topicSeries, verbSeries, buckets])
 
   const pillItems = useMemo<RadarAxis[]>(
     () => [...topicAxes, ...verbAxes],
     [topicAxes, verbAxes],
   )
 
-  return { focus, setFocus, topicAxes, verbAxes, displayedSeries, pillItems }
+  const verbCertCounts = useMemo<Record<string, number>>(() => {
+    const out: Record<string, number> = {}
+    for (const v of verbAxes) out[v.id] = buckets.getVerbTotal(v.id)
+    return out
+  }, [verbAxes, buckets])
+
+  return {
+    focus,
+    setFocus,
+    topicAxes,
+    verbAxes,
+    displayedSeries,
+    pillItems,
+    verbCertCounts,
+  }
 }

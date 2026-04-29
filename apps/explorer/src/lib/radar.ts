@@ -11,8 +11,8 @@
  * the semantics are defined by the caller.
  */
 import {
-  displayLabelToIntentionType,
   INTENTION_CONFIG,
+  predicateLabelToIntentionType,
   type IntentionType,
 } from '@/config/intentions'
 import type { UserCert } from '@/services/userOnChainProfileService'
@@ -117,9 +117,27 @@ export function bucketProfileByTopicAndVerb(
   const verbTotals = new Map<string, number>()
 
   for (const cert of certs) {
+    const verbId = predicateLabelToIntentionType(cert.intention)
+    const isRadarVerb = !!verbId && RADAR_VERB_IDS.has(verbId)
+
+    // Verb totals count EVERY cert with this verb regardless of topic
+    // context. The user might have hundreds of `visits for work` certs
+    // without a nested topic triple — they still belong on the verb axis.
+    if (isRadarVerb) {
+      verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
+    }
+
     if (cert.topicSlugs.length === 0) continue
-    const verbId = displayLabelToIntentionType(cert.intention)
-    if (!verbId || !RADAR_VERB_IDS.has(verbId)) continue
+
+    // Topic totals count every cert with a topic context (any predicate)
+    // so the topic spoke stays populated for users whose certs are
+    // mostly trusts / distrusts.
+    for (const topicId of cert.topicSlugs) {
+      topicTotals.set(topicId, (topicTotals.get(topicId) ?? 0) + 1)
+    }
+
+    // (topic, verb) cells require both — only used inside topic polygons.
+    if (!isRadarVerb) continue
     for (const topicId of cert.topicSlugs) {
       let row = counts.get(topicId)
       if (!row) {
@@ -127,8 +145,6 @@ export function bucketProfileByTopicAndVerb(
         counts.set(topicId, row)
       }
       row.set(verbId, (row.get(verbId) ?? 0) + 1)
-      topicTotals.set(topicId, (topicTotals.get(topicId) ?? 0) + 1)
-      verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
     }
   }
 

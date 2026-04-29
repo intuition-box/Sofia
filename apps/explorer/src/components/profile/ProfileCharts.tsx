@@ -28,6 +28,8 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRadarFocus } from '@/hooks/useRadarFocus'
 import { useProfileTopicStats } from '@/hooks/useProfileTopicStats'
 import { useCalendarSeries } from '@/hooks/useCalendarSeries'
+import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
+import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import { useTopPlatformStats } from '@/hooks/useTopPlatformStats'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
@@ -71,8 +73,15 @@ export default function ProfileCharts({
   const { getStatus } = usePlatformConnections()
   const { getPlatformsByTopic } = usePlatformCatalog()
 
-  const { focus, setFocus, topicAxes, verbAxes, displayedSeries, pillItems } =
-    useRadarFocus(selectedTopics, topicById, addresses)
+  const {
+    focus,
+    setFocus,
+    topicAxes,
+    verbAxes,
+    displayedSeries,
+    pillItems,
+    verbCertCounts,
+  } = useRadarFocus(selectedTopics, topicById, addresses)
 
   const topicStats = useProfileTopicStats({
     selectedTopics,
@@ -83,7 +92,13 @@ export default function ProfileCharts({
     getStatus,
   })
 
-  const calendarSeries = useCalendarSeries(selectedTopics, topicById, addresses)
+  const calendarSeries = useCalendarSeries(
+    selectedTopics,
+    topicById,
+    addresses,
+    focus,
+  )
+  const certCounts = useUserCertCounts(addresses)
 
   const topPlatformItems = useTopPlatformStats({
     markets,
@@ -155,6 +170,9 @@ export default function ProfileCharts({
               topicFilter={focus === 'all' ? 'all' : focus}
               focusMeta={focusMeta}
               onClearFilter={() => setFocus('all')}
+              verbCertCounts={verbCertCounts}
+              generalCertCount={certCounts.general}
+              pointsPerCert={POINTS_PER_CERT}
             />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />

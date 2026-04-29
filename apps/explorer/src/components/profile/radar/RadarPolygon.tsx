@@ -31,9 +31,15 @@ export default function RadarPolygon({
   axisFilter,
 }: RadarPolygonProps) {
   const relevant = axes.filter((d) => d.id in series.counts)
+  // Square-root scaling so a topic with 15 certs doesn't visually dwarf
+  // one with 4 — sqrt compresses the high end (15→3.87) without
+  // hiding the comparison entirely (still bigger than 4→2). Linear
+  // scaling collapsed smaller polygons to ~27% of the rim, which made
+  // ALL-mode look like only the biggest topic was rendered.
+  const scaleMax = Math.sqrt(Math.max(maxCount, 1))
   const rawPoints: [number, number][] = relevant.map((d) => {
     const val = series.counts[d.id] ?? 0
-    const r = (val / maxCount) * outerR
+    const r = (Math.sqrt(Math.max(val, 0)) / scaleMax) * outerR
     return [cx + Math.cos(d.angle) * r, cy + Math.sin(d.angle) * r]
   })
   const pathD = smoothClosedPath(rawPoints, 0.03)

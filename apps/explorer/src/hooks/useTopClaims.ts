@@ -1,9 +1,12 @@
+/**
+ * useTopClaims — top-N claims the user supports, ranked by combined
+ * market cap. Sources its term_ids from `useUserOnChainProfile` so
+ * there's no 200-event window: the user's full alltime claim set is
+ * eligible. Vault stats are batch-fetched in a single round trip.
+ */
 import { useQuery } from '@tanstack/react-query'
-import { getAddress } from 'viem'
-import {
-  useGetUserActivityQuery,
-  useGetBatchTripleVaultStatsQuery,
-} from '@0xsofia/graphql'
+import { useGetBatchTripleVaultStatsQuery } from '@0xsofia/graphql'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import {
   extractSide,
   type VaultStats,
@@ -11,10 +14,13 @@ import {
 } from '@/services/vaultTooltipService'
 import { INTUITION_FEATURED_CLAIMS, SOFIA_CLAIMS } from '@/config/debateConfig'
 
-/** term_ids of debate claims — exclude from Top Claims */
+/** term_ids of debate claims — exclude from Top Claims. */
 const DEBATE_TERM_IDS = new Set(
   [...INTUITION_FEATURED_CLAIMS, ...SOFIA_CLAIMS].map((c) => c.tripleTermId),
 )
+
+const TOP_N = 4
+const STATS_CANDIDATE_CAP = 200 // safety cap on the batch stats request
 
 export interface TopClaim {
   termId: string
@@ -25,46 +31,19 @@ export interface TopClaim {
   totalMarketCap: bigint
 }
 
-async function resolveTopClaims(addresses: string[]): Promise<TopClaim[]> {
-  if (addresses.length === 0) return []
-  // 1. Fetch user's activity. Pass both checksum and lowercase casings
-  //    because the indexer is inconsistent across deposit emitters.
-  const checksum = addresses.map((a) => getAddress(a))
-  const lower = addresses.map((a) => a.toLowerCase())
-  const allCases = Array.from(new Set([...checksum, ...lower]))
-  const activityData = await useGetUserActivityQuery.fetcher({
-    receivers: allCases,
-    limit: 200,
-    offset: 0,
-  })()
+async function resolveTopClaims(
+  addresses: string[],
+  termIds: string[],
+  predicateByTerm: Map<string, string>,
+  objectByTerm: Map<string, { label: string; url?: string }>,
+): Promise<TopClaim[]> {
+  if (addresses.length === 0 || termIds.length === 0) return []
 
-  // 2. Extract unique triple term_ids from events
-  const seen = new Set<string>()
-  const tripleTermIds: string[] = []
-
-  // Predicates to exclude (has tag = quests/badges, not real claims)
-  const EXCLUDED_PREDICATES = new Set(['has tag'])
-
-  for (const event of activityData.events ?? []) {
-    const termId = event.triple?.term_id
-    if (!termId) continue
-    if (DEBATE_TERM_IDS.has(termId)) continue
-    if (EXCLUDED_PREDICATES.has(event.triple?.predicate?.label ?? '')) continue
-    if (seen.has(termId)) continue
-    seen.add(termId)
-    tripleTermIds.push(termId)
-    if (tripleTermIds.length >= 10) break
-  }
-
-  if (tripleTermIds.length === 0) return []
-
-  // 3. Batch fetch vault stats — ONE query
   const statsData = await useGetBatchTripleVaultStatsQuery.fetcher({
-    termIds: tripleTermIds,
+    termIds,
     addresses,
   })()
 
-  // 4. Process results
   const claims: TopClaim[] = []
   for (const triple of statsData.triples ?? []) {
     const support = extractSide(triple.term?.vaults)
@@ -80,18 +59,19 @@ async function resolveTopClaims(addresses: string[]): Promise<TopClaim[]> {
       userPnlPct: support.userPnlPct ?? oppose.userPnlPct,
     }
 
-    // Cache for tooltip reuse — keyed on (termId, addresses) because PnL
-    // depends on which wallets hold positions.
     statsCache.set(
       `${triple.term_id}::${[...addresses].sort().join(',')}`,
       stats,
     )
 
+    const fallbackObj = objectByTerm.get(triple.term_id ?? '')
     claims.push({
       termId: triple.term_id,
-      objectLabel: triple.object?.label ?? '',
-      objectUrl: triple.object?.value?.thing?.url ?? undefined,
-      predicateLabel: triple.predicate?.label ?? '',
+      objectLabel: triple.object?.label ?? fallbackObj?.label ?? '',
+      objectUrl:
+        triple.object?.value?.thing?.url ?? fallbackObj?.url ?? undefined,
+      predicateLabel:
+        triple.predicate?.label ?? predicateByTerm.get(triple.term_id ?? '') ?? '',
       stats,
       totalMarketCap,
     })
@@ -99,22 +79,56 @@ async function resolveTopClaims(addresses: string[]): Promise<TopClaim[]> {
 
   return claims
     .sort((a, b) => (b.totalMarketCap > a.totalMarketCap ? 1 : -1))
-    .slice(0, 4)
+    .slice(0, TOP_N)
 }
 
 export function useTopClaims(addresses: string[] | undefined) {
+  const { profile } = useUserOnChainProfile(addresses)
+
+  // Use the master profile's certs as the universe of candidate claims.
+  // We keep a small derived map per term_id so the batch stats result
+  // can fall back to it if the secondary query strips object/predicate
+  // labels. Excluded predicates ("has tag") and debate claims are
+  // dropped here too.
+  const candidates: {
+    termIds: string[]
+    predicateByTerm: Map<string, string>
+    objectByTerm: Map<string, { label: string; url?: string }>
+  } = (() => {
+    const termIds: string[] = []
+    const predicateByTerm = new Map<string, string>()
+    const objectByTerm = new Map<string, { label: string; url?: string }>()
+    for (const cert of profile.certs) {
+      if (!cert.termId) continue
+      if (DEBATE_TERM_IDS.has(cert.termId)) continue
+      if (cert.intention === 'has tag') continue
+      if (predicateByTerm.has(cert.termId)) continue // already seen
+      predicateByTerm.set(cert.termId, cert.intention)
+      objectByTerm.set(cert.termId, {
+        label: cert.objectLabel,
+        url: cert.objectUrl || undefined,
+      })
+      termIds.push(cert.termId)
+      if (termIds.length >= STATS_CANDIDATE_CAP) break
+    }
+    return { termIds, predicateByTerm, objectByTerm }
+  })()
+
   const normalized = addresses ? [...addresses].sort() : []
-  const cacheKey = normalized.join(',') || undefined
-  const enabled = !!addresses && addresses.length > 0
+  const cacheKey =
+    normalized.join(',') + '::' + candidates.termIds.slice(0, 64).join(',')
+  const enabled = !!addresses && addresses.length > 0 && candidates.termIds.length > 0
 
   const { data, isLoading } = useQuery<TopClaim[]>({
-    queryKey: cacheKey ? ['topClaims', cacheKey] : ['topClaims', undefined],
-    queryFn: () => resolveTopClaims(addresses!),
+    queryKey: ['topClaims', cacheKey],
+    queryFn: () =>
+      resolveTopClaims(
+        addresses!,
+        candidates.termIds,
+        candidates.predicateByTerm,
+        candidates.objectByTerm,
+      ),
     enabled,
-    // Trust the persister between sessions; the data moves on the
-    // order of minutes and our custom serializer handles the bigint
-    // totalMarketCap. Background refresh happens on explicit refresh
-    // calls from the UI.
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
