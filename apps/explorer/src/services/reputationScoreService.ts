@@ -24,6 +24,37 @@ import type {
   TopicScoreExplanation,
 } from '@/types/reputation'
 import type { SignalResult } from '@/types/signals'
+import type { CircleItem } from '@/services/circleService'
+
+/**
+ * Points awarded per `in context of <topic>` cert the user has authored.
+ * Tuned so a handful of certs already moves the score off zero without
+ * dwarfing the OAuth platform contribution for connected users.
+ */
+export const POINTS_PER_CERT = 5
+
+/**
+ * Tally how many of the user's certs reference each topic via a
+ * "in context of <topic>" nested triple. `quest:*` intentions are
+ * skipped — they're badge claims, not real certifications.
+ */
+export function countCertsByTopic(
+  items: readonly CircleItem[],
+): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const item of items) {
+    if (
+      item.intentions.length > 0 &&
+      item.intentions.every((l) => l.startsWith('quest:'))
+    ) {
+      continue
+    }
+    for (const topicId of item.topicContexts) {
+      counts.set(topicId, (counts.get(topicId) ?? 0) + 1)
+    }
+  }
+  return counts
+}
 
 // ── Lookup table for formulas by platformId ──
 
@@ -242,12 +273,19 @@ export function computeReputationProfile(
   selectedCategories: string[],
   compositeScore?: number | null,
   signals?: Record<string, SignalResult>,
+  certCountsByTopic?: ReadonlyMap<string, number>,
 ): UserReputationProfile | null {
   const connectedPlatforms = PLATFORM_CATALOG.filter(
     (p) => getStatus(p.id) === 'connected',
   )
 
-  if (connectedPlatforms.length === 0 && selectedTopics.length === 0) {
+  const hasCertSignal =
+    !!certCountsByTopic && certCountsByTopic.size > 0
+  if (
+    connectedPlatforms.length === 0 &&
+    selectedTopics.length === 0 &&
+    !hasCertSignal
+  ) {
     return null
   }
 
@@ -315,6 +353,14 @@ export function computeReputationProfile(
       totalScore *= multiSourceMultiplier
       multiSourceReason = `${platformsWithSignals} platforms — multi-source bonus (×1.5).`
     }
+
+    // Cert contribution — every "in context of <topic>" cert the user has
+    // owned counts for POINTS_PER_CERT. Added AFTER the multi-source
+    // multiplier so a user without OAuth signals still gets a real,
+    // un-capped score from their on-chain certifications.
+    const certCount = certCountsByTopic?.get(topic.id) ?? 0
+    const certPoints = certCount * POINTS_PER_CERT
+    totalScore += certPoints
 
     // No cap — the score grows with activity so power users stay
     // differentiated. Multi-source multiplier and platform weights still

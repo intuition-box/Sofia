@@ -6,6 +6,7 @@ import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
+import { useUserCertCountsByTopic } from '../hooks/useUserCertCountsByTopic'
 import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
@@ -100,12 +101,14 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
+  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
     selectedCategories,
     trustScore,
     signals,
+    certCountsByTopic,
   )
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()

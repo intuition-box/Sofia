@@ -5,6 +5,8 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useReputationScores } from '@/hooks/useReputationScores'
+import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useSignals } from '@/hooks/useSignals'
 import { useTopicCertifications } from '@/hooks/useTopicCertifications'
 import { Button } from '@/components/ui/button'
@@ -38,12 +40,15 @@ export default function InterestPage() {
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
   const { signals } = useSignals(user?.wallet?.address)
+  const { addresses: linkedAddresses } = useLinkedWallets()
+  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
     selectedCategories,
     undefined,
     signals,
+    certCountsByTopic,
   )
   const topicScore = scores?.topics.find((d) => d.topicId === topicId)
 

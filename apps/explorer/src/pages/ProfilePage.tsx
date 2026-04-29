@@ -6,6 +6,7 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSync } from '../hooks/useTopicSync'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
+import { useUserCertCountsByTopic } from '../hooks/useUserCertCountsByTopic'
 import { useUserActivity } from '../hooks/useUserActivity'
 import { useTopClaims } from '../hooks/useTopClaims'
 import { useTrustScore } from '../hooks/useTrustScore'
@@ -44,12 +45,14 @@ export default function ProfilePage() {
   const { getStatus } = usePlatformConnections()
   const { score: trustCompositeScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
+  const certCountsByTopic = useUserCertCountsByTopic(activityAddresses)
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
     selectedCategories,
     trustCompositeScore,
     signals,
+    certCountsByTopic,
   )
   const topicScores = scores?.topics ?? []
   const { items: activityItems, loading: activityLoading } = useUserActivity(
