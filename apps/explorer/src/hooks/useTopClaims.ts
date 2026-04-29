@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { getAddress } from 'viem'
 import {
   useGetUserActivityQuery,
   useGetBatchTripleVaultStatsQuery,
 } from '@0xsofia/graphql'
-import { SOFIA_PROXY_ADDRESS } from '@/config'
 import {
   extractSide,
   type VaultStats,
@@ -27,10 +27,13 @@ export interface TopClaim {
 
 async function resolveTopClaims(addresses: string[]): Promise<TopClaim[]> {
   if (addresses.length === 0) return []
-  // 1. Fetch user's activity filtered by Sofia proxy (server-side)
+  // 1. Fetch user's activity. Pass both checksum and lowercase casings
+  //    because the indexer is inconsistent across deposit emitters.
+  const checksum = addresses.map((a) => getAddress(a))
+  const lower = addresses.map((a) => a.toLowerCase())
+  const allCases = Array.from(new Set([...checksum, ...lower]))
   const activityData = await useGetUserActivityQuery.fetcher({
-    proxy: SOFIA_PROXY_ADDRESS.toLowerCase(),
-    receivers: addresses.map((a) => a.toLowerCase()),
+    receivers: allCases,
     limit: 200,
     offset: 0,
   })()

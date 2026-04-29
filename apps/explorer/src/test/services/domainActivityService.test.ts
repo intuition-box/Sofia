@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { getAddress } from 'viem'
 
 vi.mock('@0xsofia/graphql', () => ({
   useGetUserActivityQuery: {
@@ -8,6 +9,7 @@ vi.mock('@0xsofia/graphql', () => ({
 
 vi.mock('@/services/feedProcessing', () => ({
   processEvents: vi.fn(() => []),
+  enrichWithTopicContexts: vi.fn(() => Promise.resolve()),
 }))
 
 // eslint-disable-next-line import/first
@@ -16,8 +18,6 @@ import { useGetUserActivityQuery } from '@0xsofia/graphql'
 import { processEvents } from '@/services/feedProcessing'
 // eslint-disable-next-line import/first
 import { fetchUserActivity } from '@/services/domainActivityService'
-// eslint-disable-next-line import/first
-import { SOFIA_PROXY_ADDRESS } from '@/config'
 
 const mockedFetcher = useGetUserActivityQuery.fetcher as unknown as ReturnType<
   typeof vi.fn
@@ -36,14 +36,15 @@ describe('domainActivityService.fetchUserActivity', () => {
     expect(mockedFetcher).not.toHaveBeenCalled()
   })
 
-  it('passes the addresses array to the receivers variable + lowercased proxy', async () => {
+  it('passes both checksummed and lowercase receivers, no proxy filter', async () => {
     mockedFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchUserActivity(['0xAAA', '0xBBB'])
+    const a = '0xc6344b9d5d6f3c4b9d5d6f3c4b9d5d6f3c4b9d5d'
+    const b = '0x8ba1f109551bd432803012645ac136ddd64dba72'
+    await fetchUserActivity([a, b])
 
     expect(mockedFetcher).toHaveBeenCalledWith({
-      proxy: SOFIA_PROXY_ADDRESS.toLowerCase(),
-      receivers: ['0xAAA', '0xBBB'],
+      receivers: [getAddress(a), getAddress(b), a, b],
       limit: 200,
       offset: 0,
     })
@@ -52,7 +53,11 @@ describe('domainActivityService.fetchUserActivity', () => {
   it('forwards custom limit and offset', async () => {
     mockedFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchUserActivity(['0xAAA'], 25, 50)
+    await fetchUserActivity(
+      ['0xc6344b9d5d6f3c4b9d5d6f3c4b9d5d6f3c4b9d5d'],
+      25,
+      50,
+    )
 
     expect(mockedFetcher).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 25, offset: 50 }),
@@ -67,7 +72,9 @@ describe('domainActivityService.fetchUserActivity', () => {
     mockedFetcher.mockReturnValue(() => Promise.resolve({ events: fakeEvents }))
     mockedProcess.mockReturnValue(processed)
 
-    const result = await fetchUserActivity(['0xAAA'])
+    const result = await fetchUserActivity([
+      '0xc6344b9d5d6f3c4b9d5d6f3c4b9d5d6f3c4b9d5d',
+    ])
 
     expect(mockedProcess).toHaveBeenCalledWith(fakeEvents, expect.any(Function))
     expect(result).toBe(processed)

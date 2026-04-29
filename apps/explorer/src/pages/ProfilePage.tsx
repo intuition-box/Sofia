@@ -157,6 +157,7 @@ export default function ProfilePage() {
           selectedTopics={selectedTopics}
           selectedCategories={selectedCategories}
           topicScores={topicScores}
+          addresses={myAddresses}
         />
 
         {/* Echoes */}
