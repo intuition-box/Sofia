@@ -197,7 +197,7 @@ query GetCertTopicLinks(
 query GetSofiaTrustedActivity(
   $trustedWallets: [String!]!
   $proxy: String!
-  $userAddresses: [String!]!
+  $userAddresses: [String!] = []
   $limit: Int!
   $offset: Int!
 ) {
