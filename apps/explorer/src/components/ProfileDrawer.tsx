@@ -165,9 +165,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     })
     .filter((x): x is TopicPieSlice => x !== null)
 
-  // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
+  // Percentile derived from `trustScore` (0–100, where 100 = most trusted).
+  // We only show a percentile when the user actually has a non-zero score —
+  // a 0 here means "no eigentrust paths yet", which would otherwise render
+  // as the misleading "Top 100%".
   const percentileLabel =
-    trustScore != null
+    trustScore != null && trustScore > 0
       ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
       : 'View details'
 

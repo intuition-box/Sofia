@@ -156,7 +156,7 @@ export default function ScoresPage() {
   const totalTopicScore = topicScores.reduce((a, t) => a + t.score, 0)
   const maxTopicScore = Math.max(...topicScores.map((t) => t.score), 1)
 
-  // Reputation by verb — count intentions across the user's activity.
+  // Reputation by verb — number of cert items under each intention.
   const verbCounts = VERBS.map((v) => {
     let count = 0
     for (const item of activity) {
@@ -168,7 +168,7 @@ export default function ScoresPage() {
         count++
       }
     }
-    return { ...v, count, score: count * 10 }
+    return { ...v, count }
   }).filter((v) => v.count > 0)
 
   // Badges earned on URLs — bucket top claims by derived badge.
@@ -271,7 +271,7 @@ export default function ScoresPage() {
                   <div className="pf-trust-topic-head">
                     <span className="pf-trust-topic-emoji">{v.emoji}</span>
                     <span className="pf-trust-topic-label">{v.label}</span>
-                    <span className="pf-trust-topic-score">{v.score}</span>
+                    <span className="pf-trust-topic-score">{v.count}</span>
                   </div>
                 </div>
               ))}
