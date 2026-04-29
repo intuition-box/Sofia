@@ -7,6 +7,9 @@ import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useState } from 'react'
+import { Info } from 'lucide-react'
+import ScoreExplanationDialog from '@/components/ScoreExplanationDialog'
 import { useSignals } from '@/hooks/useSignals'
 import { useTopicCertifications } from '@/hooks/useTopicCertifications'
 import { Button } from '@/components/ui/button'
@@ -51,6 +54,7 @@ export default function InterestPage() {
     certCountsByTopic,
   )
   const topicScore = scores?.topics.find((d) => d.topicId === topicId)
+  const [scoreInfoOpen, setScoreInfoOpen] = useState(false)
 
   const walletAddress = user?.wallet?.address
   const { certifications: allCertifications, loading: certsLoading } =
@@ -104,6 +108,22 @@ export default function InterestPage() {
         description={`Your footprint in ${topic.label} — categories you own, platforms you certified, and what the network signals here.`}
         topicColor={color}
         stat={{ value: topicScore?.score ?? 0, label: 'Topic score' }}
+      />
+      <button
+        type="button"
+        className="ip-score-info"
+        onClick={() => setScoreInfoOpen(true)}
+        aria-label="How is the topic score calculated?"
+      >
+        <Info className="h-3 w-3" aria-hidden />
+        <span>How is this score calculated?</span>
+      </button>
+      <ScoreExplanationDialog
+        open={scoreInfoOpen}
+        onOpenChange={setScoreInfoOpen}
+        topicLabel={topic.label}
+        topicColor={color}
+        explanation={topicScore?.explanation}
       />
       <div className="ip-sections">
         {/* Platforms */}

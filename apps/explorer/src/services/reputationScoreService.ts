@@ -388,6 +388,8 @@ export function computeReputationProfile(
       multiSourceReason,
       preCapScore: finalScore,
       capped: false,
+      certCount,
+      certPoints,
     }
 
     return {

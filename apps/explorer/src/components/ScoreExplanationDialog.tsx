@@ -108,6 +108,8 @@ export default function ScoreExplanationDialog({
     trustBonus,
     multiSourceMultiplier,
     multiSourceReason,
+    certCount,
+    certPoints,
   } = explanation
 
   const totalContrib =
@@ -195,6 +197,22 @@ export default function ScoreExplanationDialog({
               {multiSourceMultiplier === 0
                 ? '—'
                 : `×${multiSourceMultiplier.toFixed(2)}`}
+            </span>
+          </section>
+
+          {/* Cert contribution — added after the multiplier so a user
+              without OAuth signals still gets a real, un-capped score. */}
+          <section className="flex justify-between">
+            <div>
+              <div>Certifications in this topic</div>
+              <p className="text-xs text-muted-foreground">
+                {certCount === 0
+                  ? `Tag certs with "in context of ${topicLabel}" to grow this.`
+                  : `${certCount} cert${certCount > 1 ? 's' : ''} × 5 pts`}
+              </p>
+            </div>
+            <span className="tabular-nums">
+              {certPoints > 0 ? `+${certPoints}` : '—'}
             </span>
           </section>
 
