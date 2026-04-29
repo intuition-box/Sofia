@@ -6,15 +6,13 @@
      - ExtendedMetricsPanel.css
    ============================================= */
 
-/* Card Container */
+/* Card Container — flush, no margin/padding so it fills the page */
 .blockchain-card {
   border-radius: var(--radius-xl, 20px);
-  padding: var(--spacing-lg, 16px);
-  margin: var(--spacing-md, 12px) 0;
-  background: rgba(0, 0, 0, 0.14);
-  backdrop-filter: blur(50px) saturate(100%);
-  -webkit-backdrop-filter: blur(50px) saturate(100%);
-  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
   position: relative;
   z-index: var(--z-header, 100);
   transition: var(--transition-fast, all 0.2s ease);
@@ -287,10 +285,6 @@
 @media (max-width: 420px) {
   .trust-buttons-row {
     flex-direction: column;
-  }
-
-  .blockchain-card {
-    padding: var(--spacing-md, 12px);
   }
 }
 

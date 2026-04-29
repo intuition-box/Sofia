@@ -275,12 +275,17 @@
   color: var(--ds-ink);
 }
 
-/* ========== CATEGORY TOOLBAR (search + sort) ========== */
+/* ========== CATEGORY TOOLBAR (search + sort) ==========
+   Label "SEARCH" + search input + sort pills, stacked vertically. */
 .category-toolbar {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.category-toolbar > .circle-filter-label {
+  margin-bottom: 0;
 }
 
 /* Search input — DS .cmp-search-input pattern from explorer ComposePage */

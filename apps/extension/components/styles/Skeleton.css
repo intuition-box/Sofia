@@ -1,28 +1,31 @@
-/* Shimmer animation — moves a soft highlight across the surface */
+/* Smooth shimmer — wider gradient + slower transit feels less mechanical */
 @keyframes shimmer {
-  0% { background-position: -300px 0; }
-  100% { background-position: 300px 0; }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
-/* Shared shimmer surface for all skeleton primitives */
+/* Shared shimmer surface — uses ds-bg-subtle ↔ ds-card so the highlight
+   reads as one tone darker/lighter than the surrounding card */
 .skeleton-line,
 .skeleton-circle,
 .blockchain-skeleton__favicon,
 .blockchain-skeleton__badge,
+.blockchain-skeleton__badge-rank,
 .blockchain-skeleton__pill,
-.blockchain-skeleton__sep,
-.blockchain-skeleton__bar {
+.blockchain-skeleton__pill-dot,
+.blockchain-skeleton__section-title,
+.blockchain-skeleton__bar,
+.blockchain-skeleton__share {
   background: linear-gradient(
     90deg,
     var(--ds-bg-subtle) 25%,
     var(--ds-card) 50%,
     var(--ds-bg-subtle) 75%
   );
-  background-size: 600px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  background-size: 800px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
 }
 
-/* ─── Base Skeleton Elements ─── */
 .skeleton-line {
   border-radius: 4px;
 }
@@ -32,7 +35,7 @@
   flex-shrink: 0;
 }
 
-/* ─── PageBlockchainCard Skeleton ─── */
+/* ─── PageBlockchainCard skeleton root ─── */
 .blockchain-skeleton {
   display: flex;
   flex-direction: column;
@@ -56,7 +59,6 @@
   height: 44px;
   border-radius: 10px;
   flex-shrink: 0;
-  border: 1px solid var(--ds-border-soft);
 }
 
 .blockchain-skeleton__website-text {
@@ -72,14 +74,32 @@
   height: 56px;
   border-radius: 12px;
   flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Cert section — mirrors .cert-section + .cert-section-title */
+.blockchain-skeleton__badge-rank {
+  width: 28px;
+  height: 8px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+/* Cert section — mirrors .cert-section */
 .blockchain-skeleton__section {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 0;
+}
+
+/* Section title bar (mimics 13px Mono text) */
+.blockchain-skeleton__section-title {
+  width: 92px;
+  height: 13px;
+  border-radius: 3px;
 }
 
 .blockchain-skeleton__pills {
@@ -89,31 +109,95 @@
   gap: 6px;
 }
 
+/* Pills — mirror .intention-pill (ds-card + ds-border, 15px radius) */
 .blockchain-skeleton__pill {
+  display: inline-flex;
+  align-items: center;
   height: 28px;
+  padding: 0 10px;
   border-radius: 15px;
   border: 1px solid var(--ds-border);
 }
 
+/* Optional 8px circle dot prefix inside pill (mirrors .circle-chip-dot) */
+.blockchain-skeleton__pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  background: var(--ds-card);
+}
+
+/* Trust/distrust separator (mirrors .intention-pills__separator) */
 .blockchain-skeleton__sep {
   width: 1px;
   height: 24px;
   background: var(--ds-border);
   margin: 0 4px;
-  border: none;
   animation: none;
 }
 
-/* Extended metrics preview — mirrors .intentions-stats-section */
+/* Position board preview — mirrors .position-board */
+.blockchain-skeleton__board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 12px;
+}
+
+.blockchain-skeleton__board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.blockchain-skeleton__board-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockchain-skeleton__board-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.blockchain-skeleton__board-row:last-child {
+  border-bottom: none;
+}
+
+/* Share button placeholder */
+.blockchain-skeleton__share {
+  width: 100%;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+}
+
+/* Extended metrics — mirrors .extended-metrics-panel */
 .blockchain-skeleton__metrics {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 12px;
   padding: 16px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border-soft);
   border-radius: 12px;
+}
+
+.blockchain-skeleton__metrics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .blockchain-skeleton__bars {
@@ -128,9 +212,9 @@
   gap: 12px;
 }
 
+/* Progress track bar (mirrors .progress-track 6px height, 3px radius) */
 .blockchain-skeleton__bar {
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  border: 1px solid var(--ds-border-soft);
 }

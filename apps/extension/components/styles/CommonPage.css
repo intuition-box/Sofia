@@ -104,33 +104,29 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  padding: 20px 0;
+  padding: 0;
   grid-auto-rows: 140px;
 }
 
+/* Bento card root — transparent shell, real surface comes from .group-bento-card.
+   No transitions on this layer to avoid the "breathing" combo with the child. */
 .bento-card {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 12px;
   padding: 0;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   position: relative;
 }
 
-.bento-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 198, 176, 0.30);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
+.bento-card:hover,
 .bento-card:active {
-  transform: translateY(0px);
+  background: transparent;
+  border-color: transparent;
+  transform: none;
+  box-shadow: none;
 }
 
 .bento-title {
@@ -267,30 +263,63 @@
   flex-direction: column;
   padding: 14px;
   gap: 10px;
-  background: var(--ds-bg);
+  background: var(--ds-card);
   border: 1px solid var(--ds-border);
   border-radius: 14px;
   min-height: 130px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .group-bento-card:hover {
   border-color: var(--ds-ink-soft);
-  transform: translateY(-1px);
 }
 
-/* Subtle glow effect for cards ready to level up */
+/* Cards ready to level up — point lumineux qui circule en continu
+   sur les bordures top/bottom. Scroll unidirectionnel (pas alternate)
+   pour éviter l'effet "respiration" des aller-retours. */
 .group-bento-card.can-level-up {
-  animation: subtleGlow 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes subtleGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
-  }
-  50% {
-    box-shadow: 0 0 8px 1px rgba(255, 215, 0, 0.15);
-  }
+.group-bento-card.can-level-up::before,
+.group-bento-card.can-level-up::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    var(--ds-accent) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+}
+
+.group-bento-card.can-level-up::before {
+  top: 0;
+  left: 0;
+  animation: bento-star-top 4s linear infinite;
+}
+
+.group-bento-card.can-level-up::after {
+  bottom: 0;
+  left: 0;
+  animation: bento-star-bottom 4s linear infinite;
+}
+
+@keyframes bento-star-top {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+@keyframes bento-star-bottom {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(-100%); }
 }
 
 .group-bento-header {
@@ -416,19 +445,27 @@
 .progress-bar-fill {
   height: 100%;
   border-radius: 2px;
+  background: var(--ds-ink-soft);
   transition: width 0.3s ease;
 }
 
+/* Reserve a stable height regardless of state — keeps bento cards
+   aligned across the grid whether the label is the small "N certs to LVL"
+   or the larger "LEVEL UP" call-to-action. */
 .progress-label {
   color: rgba(255, 255, 255, 0.5);
   font-size: 9px;
   text-align: right;
   letter-spacing: 0.02em;
+  min-height: 16px;
+  line-height: 16px;
+  display: block;
 }
 
-/* When the bento card is ready to level up, hoist the call-to-action label */
+/* When the bento card is ready to level up, slightly emphasize the label
+   without injecting an accent color (border style already conveys it). */
 .group-bento-card.can-level-up .progress-label {
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -456,13 +493,17 @@
   padding: 0;
 }
 
+/* Stacked header — back button on row 1, domain title + level on row 2 */
 .group-detail-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 16px;
-  margin-bottom: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
   border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.group-detail-header .back-btn {
+  align-self: flex-start;
 }
 
 /* Back button — mirrors explorer .pf-btn (apps/explorer/.../pages.css).
@@ -496,13 +537,27 @@
   gap: 12px;
 }
 
+.group-detail-favicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  object-fit: contain;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  padding: 4px;
+  box-sizing: border-box;
+}
+
 .group-detail-domain {
   font-family: 'Fraunces', serif;
   color: var(--ds-ink);
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 0;
+  word-break: break-word;
 }
 
 .group-detail-level {
@@ -749,11 +804,14 @@
   gap: 8px;
 }
 
+/* Default state — URL is NOT certified yet:
+   - dashed border (mirrors explorer "create new circle" card)
+   - muted title color */
 .url-row {
   background: var(--ds-bg-subtle);
   border-radius: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--ds-border-soft);
+  padding: 0;
+  border: 1px dashed var(--ds-border);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -762,25 +820,38 @@
   background: var(--ds-card);
 }
 
+.url-row.expanded {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-card);
+}
+
 .url-row.removed {
   opacity: 0.4;
 }
 
+/* Certified — solid border + full white title */
 .url-row.on-chain {
+  border-style: solid;
   border-color: var(--ds-border);
 }
 
+.url-row.on-chain .url-title {
+  color: var(--ds-ink);
+}
+
+/* Whole row is clickable — bigger padding for easier tap target */
 .url-row-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  padding: 14px 16px;
+  outline: none;
 }
 
-.url-favicon {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  flex-shrink: 0;
+.url-row-main:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+  border-radius: 12px;
 }
 
 .url-info {
@@ -788,38 +859,67 @@
   min-width: 0;
 }
 
+/* Default = uncertified → muted; .on-chain override sets ds-ink.
+   inline-block keeps the click area scoped to the text (not the full row),
+   so clicking outside the title expands the row instead of opening the URL. */
 .url-title {
-  color: var(--ds-ink);
-  font-size: 13px;
+  color: var(--ds-muted);
+  font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  display: block;
+  display: inline-block;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
+  line-height: 1.35;
+  vertical-align: bottom;
 }
 
 .url-title:hover {
   color: var(--ds-ink);
+  text-decoration: underline;
 }
 
 .url-meta {
   display: flex;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 10px;
+  margin-top: 4px;
+  align-items: center;
 }
 
 .url-date,
 .url-duration {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 10px;
+  letter-spacing: 0.04em;
 }
 
 .url-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+/* Chevron — visual hint that row is expandable; rotates when open */
+.url-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--ds-muted);
+  transition: transform 0.18s ease, color 0.15s ease;
+}
+
+.url-row-main:hover .url-chevron {
+  color: var(--ds-ink);
+}
+
+.url-chevron.expanded {
+  transform: rotate(180deg);
 }
 
 .cert-btn {
@@ -844,23 +944,24 @@
 
 .remove-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  font-size: 14px;
+  border: 1px solid var(--ds-border-soft);
+  color: var(--ds-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .remove-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--color-error);
+  color: var(--color-error);
 }
 
 /* Container for multiple badges */
@@ -1065,9 +1166,11 @@
   background: var(--ds-accent);
 }
 
+/* Expanded pills row — same horizontal padding as .url-row-main so pills
+   don't touch the card edge */
 .url-expanded-section {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 0;
+  padding: 12px 16px 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1123,10 +1226,61 @@
 /* ========== LEVEL PROGRESS SECTION ========== */
 
 .level-progress-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--ds-bg-subtle);
   border-radius: 10px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ds-border-soft);
+}
+
+/* Inline level-up success — sits just under the progress bar.
+   Compact, dismissible, replaces the bottom .level-up-section banner. */
+.level-up-success-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-accent);
+  border-radius: 8px;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: var(--ds-ink);
+  line-height: 1.4;
+}
+
+.level-up-success-inline .success-icon {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.level-up-success-inline .success-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.level-up-success-inline .success-text strong {
+  font-weight: 700;
+  color: var(--ds-accent);
+}
+
+.level-up-success-inline .dismiss-btn {
+  background: transparent;
+  border: none;
+  color: var(--ds-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.level-up-success-inline .dismiss-btn:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
 
 .level-progress-header {

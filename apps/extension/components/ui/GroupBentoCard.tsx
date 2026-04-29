@@ -58,9 +58,6 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
     <div
       className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}`}
       onClick={onClick}
-      style={{
-        borderColor: dominantColor ? `${dominantColor}40` : undefined
-      }}
     >
       {/* Header with domain info */}
       <div className="group-bento-header">
@@ -75,12 +72,9 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         />
         <div className="group-bento-domain-info">
           <h3 className="group-bento-title">{domain}</h3>
-          {currentPredicate && (
-            <span className="group-bento-predicate">"{currentPredicate}"</span>
-          )}
         </div>
-        <div className="group-bento-level">
-          {onDelete && (
+        {onDelete && (
+          <div className="group-bento-level">
             <button
               className="group-delete-btn"
               onClick={(e) => {
@@ -91,16 +85,16 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
             >
               ×
             </button>
-          )}
-          <span
-            className="level-badge"
-            style={{ background: getLevelColor(displayLevel), color: '#000' }}
-          >LVL {displayLevel}</span>
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Stats */}
+      {/* Stats — includes level badge */}
       <div className="group-bento-stats">
+        <div className="stat-item">
+          <span className="stat-value">{displayLevel}</span>
+          <span className="stat-label">Level</span>
+        </div>
         <div className="stat-item">
           <span className="stat-value">{activeUrlCount}</span>
           <span className="stat-label">URLs</span>
@@ -121,8 +115,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
           <div
             className="progress-bar-fill"
             style={{
-              width: `${progressPercent}%`,
-              background: dominantColor
+              width: `${progressPercent}%`
             }}
           />
         </div>
