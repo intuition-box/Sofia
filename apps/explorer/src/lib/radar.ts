@@ -15,7 +15,7 @@ import {
   INTENTION_CONFIG,
   type IntentionType,
 } from '@/config/intentions'
-import type { CircleItem } from '@/services/circleService'
+import type { UserCert } from '@/services/userOnChainProfileService'
 
 export type RadarVerbId = Exclude<IntentionType, 'trusted' | 'distrusted'>
 export type SeriesFilter = 'all' | string
@@ -77,13 +77,13 @@ export const RADAR_VERBS: readonly RadarAxis[] = [
 ]
 
 /**
- * Real per-(topic × verb) cert counts derived from the user's CircleItem
- * activity feed. An item with multiple `topicContexts` and multiple
- * `intentions` is counted in every (topic, verb) cell it covers — that
- * matches how the radar should "spread" a multi-intent cert.
+ * Real per-(topic × verb) cert counts derived from the user's
+ * `UserCert` profile snapshot. A cert with multiple topic slugs counts
+ * in every (topic, verb) cell it covers — that matches how the radar
+ * should "spread" a multi-context cert.
  *
- * `quest:*` intentions and intentions that don't resolve to a radar verb
- * (e.g. trusted / distrusted) are skipped.
+ * Trust / distrust predicates and intentions that don't resolve to a
+ * radar verb are skipped.
  */
 export interface TopicVerbCounts {
   /** counts[topicId][verbId] = number of certs in that cell. */
@@ -100,35 +100,35 @@ export interface TopicVerbCounts {
   getVerbTotal: (verbId: string) => number
 }
 
-const RADAR_VERB_IDS = new Set<string>(['work', 'learning', 'inspiration', 'fun', 'buying', 'music'])
+const RADAR_VERB_IDS = new Set<string>([
+  'work',
+  'learning',
+  'inspiration',
+  'fun',
+  'buying',
+  'music',
+])
 
-export function bucketActivityByTopicAndVerb(
-  items: readonly CircleItem[],
+export function bucketProfileByTopicAndVerb(
+  certs: readonly UserCert[],
 ): TopicVerbCounts {
   const counts = new Map<string, Map<string, number>>()
   const topicTotals = new Map<string, number>()
   const verbTotals = new Map<string, number>()
 
-  for (const item of items) {
-    if (item.topicContexts.length === 0) continue
-    const verbIds = new Set<string>()
-    for (const label of item.intentions) {
-      if (label.startsWith('quest:')) continue
-      const verbId = displayLabelToIntentionType(label)
-      if (verbId && RADAR_VERB_IDS.has(verbId)) verbIds.add(verbId)
-    }
-    if (verbIds.size === 0) continue
-    for (const topicId of item.topicContexts) {
+  for (const cert of certs) {
+    if (cert.topicSlugs.length === 0) continue
+    const verbId = displayLabelToIntentionType(cert.intention)
+    if (!verbId || !RADAR_VERB_IDS.has(verbId)) continue
+    for (const topicId of cert.topicSlugs) {
       let row = counts.get(topicId)
       if (!row) {
         row = new Map()
         counts.set(topicId, row)
       }
+      row.set(verbId, (row.get(verbId) ?? 0) + 1)
       topicTotals.set(topicId, (topicTotals.get(topicId) ?? 0) + 1)
-      for (const verbId of verbIds) {
-        row.set(verbId, (row.get(verbId) ?? 0) + 1)
-        verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
-      }
+      verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
     }
   }
 

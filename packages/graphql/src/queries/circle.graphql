@@ -160,13 +160,18 @@ query GetFollowingCount($address: String!) {
   }
 }
 
-# Step 1 of the alltime per-topic count for a circle: every cert triple
-# whose subject is one of the circle's wallets. We only need the term_id
-# — step 2 filters those down to topic-tagged ones.
+# Step 1 of the alltime per-topic count: every cert triple where one of
+# the given accounts holds shares > 0. Filtering by `positions` (instead
+# of `subject.value.account.id`) is the right path for Sofia certs —
+# the triple subject is a generic "I" atom shared across users, whereas
+# positions carry the actual holder account.
 query GetCircleCerts($trustedWallets: [String!]!, $limit: Int = 50000) {
   triples(
     where: {
-      subject: { value: { account: { id: { _in: $trustedWallets } } } }
+      positions: {
+        account_id: { _in: $trustedWallets }
+        shares: { _gt: "0" }
+      }
     }
     limit: $limit
   ) {
@@ -190,7 +195,62 @@ query GetCertTopicLinks(
     }
     limit: $limit
   ) {
+    subject_id
     object_id
+  }
+}
+
+# Master query for the on-chain profile: every cert triple where the user
+# holds shares > 0, paginated. Returns enough metadata to drive the
+# calendar (timestamp + topic), the radar (intention + topic), the
+# discovery badges (positions_aggregate count = certifier total), the
+# top platforms / claims (object label + url), and the per-topic score.
+query GetUserCertsAlltime(
+  $userAddresses: [String!]!
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: {
+        account_id: { _in: $userAddresses }
+        shares: { _gt: "0" }
+      }
+    }
+    limit: $limit
+    offset: $offset
+    order_by: { term_id: asc }
+  ) {
+    term_id
+    counter_term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+      value {
+        thing {
+          url
+          name
+        }
+      }
+    }
+    positions_aggregate(where: { shares: { _gt: "0" } }) {
+      aggregate {
+        count
+      }
+    }
+    positions(
+      where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+    ) {
+      account_id
+      shares
+      created_at
+    }
   }
 }
 

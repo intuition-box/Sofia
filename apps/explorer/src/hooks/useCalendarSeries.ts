@@ -1,20 +1,17 @@
 /**
- * useCalendarSeries — per-topic contribution heat-map driven by the user's
- * real on-chain certification feed.
+ * useCalendarSeries — per-topic contribution heat-map.
  *
- * Each selected topic gets a CAL_DAYS-long count array sourced from
- * `useUserActivity().items` and bucketed via
- * `buildCalendarSeriesFromActivity`. Pass the linked-wallet addresses so
- * we can union activity across every wallet the user owns.
+ * Pure deriver over `useUserOnChainProfile`: bucket every UserCert by
+ * (day × topic) using `certifiedAt`. A cert with multiple topic slugs
+ * counts in each — same "spread" semantics as the radar bucket.
  */
 import { useMemo } from 'react'
 import {
-  buildCalendarSeriesFromActivity,
   CAL_DAYS,
   type CalendarTopicSeries,
 } from '@/lib/activityCalendar'
 import { getIntentionColor } from '@/config/intentions'
-import { useUserActivity } from '@/hooks/useUserActivity'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { OnChainTopic } from '@/services/taxonomyService'
 
 const EMPTY_SERIES: number[] = new Array(CAL_DAYS).fill(0)
@@ -24,9 +21,41 @@ export function useCalendarSeries(
   topicById: (id: string) => OnChainTopic | undefined,
   addresses: readonly string[] | undefined,
 ): CalendarTopicSeries[] {
-  const { items } = useUserActivity(
-    addresses && addresses.length > 0 ? [...addresses] : undefined,
-  )
+  const { profile } = useUserOnChainProfile(addresses)
+
+  // Map<topicSlug, number[]> of CAL_DAYS-length arrays. Built once per
+  // certs change and re-used for every selected topic below.
+  const countsByTopic = useMemo(() => {
+    const out = new Map<string, number[]>()
+    if (profile.certs.length === 0) return out
+
+    const todayMidnight = new Date()
+    todayMidnight.setHours(0, 0, 0, 0)
+    const todayMs = todayMidnight.getTime()
+    const dayMs = 86_400_000
+
+    for (const cert of profile.certs) {
+      if (cert.topicSlugs.length === 0) continue
+      const ts = cert.certifiedAt
+      if (!ts) continue
+      const itemMs = Date.parse(ts)
+      if (Number.isNaN(itemMs)) continue
+      const itemDay = new Date(itemMs)
+      itemDay.setHours(0, 0, 0, 0)
+      const daysAgo = Math.round((todayMs - itemDay.getTime()) / dayMs)
+      if (daysAgo < 0 || daysAgo >= CAL_DAYS) continue
+      const idx = CAL_DAYS - 1 - daysAgo
+      for (const slug of cert.topicSlugs) {
+        let counts = out.get(slug)
+        if (!counts) {
+          counts = new Array<number>(CAL_DAYS).fill(0)
+          out.set(slug, counts)
+        }
+        counts[idx] += 1
+      }
+    }
+    return out
+  }, [profile])
 
   return useMemo(
     () =>
@@ -34,10 +63,7 @@ export function useCalendarSeries(
         .map((id) => {
           const topic = topicById(id)
           if (!topic) return null
-          const counts =
-            items.length > 0
-              ? buildCalendarSeriesFromActivity(items, id)
-              : EMPTY_SERIES
+          const counts = countsByTopic.get(id) ?? EMPTY_SERIES
           return {
             id,
             label: topic.label,
@@ -46,6 +72,6 @@ export function useCalendarSeries(
           }
         })
         .filter((x): x is CalendarTopicSeries => x !== null),
-    [selectedTopics, topicById, items],
+    [selectedTopics, topicById, countsByTopic],
   )
 }

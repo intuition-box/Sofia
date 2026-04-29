@@ -16,14 +16,14 @@
 import { useMemo, useState } from 'react'
 import {
   RADAR_VERBS,
-  bucketActivityByTopicAndVerb,
+  bucketProfileByTopicAndVerb,
   type RadarAxis,
   type RadarSeries,
   type SeriesFilter,
 } from '@/lib/radar'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
-import { useUserActivity } from '@/hooks/useUserActivity'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { OnChainTopic } from '@/services/taxonomyService'
 
 interface RadarFocusResult {
@@ -42,9 +42,7 @@ export function useRadarFocus(
 ): RadarFocusResult {
   const [focus, setFocus] = useState<SeriesFilter>('all')
 
-  const { items } = useUserActivity(
-    addresses && addresses.length > 0 ? [...addresses] : undefined,
-  )
+  const { profile } = useUserOnChainProfile(addresses)
 
   const verbAxes = useMemo<RadarAxis[]>(() => [...RADAR_VERBS], [])
 
@@ -65,7 +63,10 @@ export function useRadarFocus(
     [selectedTopics, topicById],
   )
 
-  const buckets = useMemo(() => bucketActivityByTopicAndVerb(items), [items])
+  const buckets = useMemo(
+    () => bucketProfileByTopicAndVerb(profile.certs),
+    [profile],
+  )
 
   // One polygon per topic — spike on its own topic axis (= total certs in
   // that topic) + per-verb counts. Other topics' axes are omitted so the

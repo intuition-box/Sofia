@@ -32,12 +32,17 @@ export async function fetchCircleTopicCounts(
   const counts: CircleTopicCounts = new Map()
   if (trustedWallets.length === 0 || topicAtomIds.length === 0) return counts
 
-  // GraphQL stores accounts in EIP-55 checksum case — normalise once here.
-  const checksumWallets = trustedWallets.map((w) => getAddress(w))
+  // The indexer stores `positions.account_id` inconsistently across deposit
+  // emitters — pass both checksum and lowercase casings (deduped) so the
+  // `_in` filter hits regardless of how a row was written. Same pattern as
+  // discoveryScoreService and useOnChainIntentionGroups.
+  const checksum = trustedWallets.map((w) => getAddress(w))
+  const lower = trustedWallets.map((w) => w.toLowerCase())
+  const allCases = Array.from(new Set([...checksum, ...lower]))
 
-  // Step 1 — every cert triple owned by a circle wallet.
+  // Step 1 — every cert triple where one of the wallets holds shares > 0.
   const certData = await useGetCircleCertsQuery.fetcher({
-    trustedWallets: checksumWallets,
+    trustedWallets: allCases,
     limit: CERTS_LIMIT,
   })()
   const certTermIds = (certData.triples ?? [])
