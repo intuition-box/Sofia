@@ -55,9 +55,7 @@ export function useProfileTopicStats({
           platformsCount,
           signals: score?.explanation?.platformCount ?? 0,
           pnl: null,
-          score: Math.round(
-            score?.score ?? categoriesCount * 5 + platformsCount * 10,
-          ),
+          score: Math.round(score?.score ?? 0),
         }
       })
       .filter((x): x is ProfileTopicStats => x !== null)
