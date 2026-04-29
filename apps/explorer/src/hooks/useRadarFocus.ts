@@ -6,22 +6,24 @@
  *   - `topicAxes`  : one axis per selected topic (top semicircle)
  *   - `verbAxes`   : the 6 RADAR_VERBS (bottom semicircle)
  *   - `displayedSeries` : the polygons to draw. Defaults to one per topic;
- *     when `focus` matches a verb, a single synthesized verb polygon is
+ *     when `focus` matches a verb, a single synthesised verb polygon is
  *     returned instead so the chart mirrors the topic-polygon behaviour.
  *
- * Synthetic counts are used until the real (topic × verb) activity series
- * is wired from `useUserActivity` / `useTopicCertifications`.
+ * Counts come from the real (topic × verb) bucket of `useUserActivity`'s
+ * items — no synthetic fallback. Topics with zero certs render as a
+ * polygon at the center until the user actually certifies something.
  */
 import { useMemo, useState } from 'react'
 import {
   RADAR_VERBS,
-  syntheticCount,
+  bucketActivityByTopicAndVerb,
   type RadarAxis,
   type RadarSeries,
   type SeriesFilter,
 } from '@/lib/radar'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
+import { useUserActivity } from '@/hooks/useUserActivity'
 import type { OnChainTopic } from '@/services/taxonomyService'
 
 interface RadarFocusResult {
@@ -36,8 +38,13 @@ interface RadarFocusResult {
 export function useRadarFocus(
   selectedTopics: readonly string[],
   topicById: (id: string) => OnChainTopic | undefined,
+  addresses: readonly string[] | undefined,
 ): RadarFocusResult {
   const [focus, setFocus] = useState<SeriesFilter>('all')
+
+  const { items } = useUserActivity(
+    addresses && addresses.length > 0 ? [...addresses] : undefined,
+  )
 
   const verbAxes = useMemo<RadarAxis[]>(() => [...RADAR_VERBS], [])
 
@@ -58,17 +65,21 @@ export function useRadarFocus(
     [selectedTopics, topicById],
   )
 
-  // One polygon per topic — each spikes on its own topic axis + carries a
-  // synthetic count per verb axis. Other topics' axes are omitted so the
+  const buckets = useMemo(() => bucketActivityByTopicAndVerb(items), [items])
+
+  // One polygon per topic — spike on its own topic axis (= total certs in
+  // that topic) + per-verb counts. Other topics' axes are omitted so the
   // curve doesn't get pulled back through the centre on irrelevant spokes.
   const topicSeries = useMemo<RadarSeries[]>(
     () =>
       topicAxes.map((s) => {
-        const counts: Record<string, number> = { [s.id]: 10 }
-        for (const v of verbAxes) counts[v.id] = syntheticCount(s.id, v.id)
+        const counts: Record<string, number> = {
+          [s.id]: buckets.getTopicTotal(s.id),
+        }
+        for (const v of verbAxes) counts[v.id] = buckets.get(s.id, v.id)
         return { ...s, counts }
       }),
-    [topicAxes, verbAxes],
+    [topicAxes, verbAxes, buckets],
   )
 
   const displayedSeries = useMemo<RadarSeries[]>(() => {
@@ -76,10 +87,12 @@ export function useRadarFocus(
     if (!verbMatch) return topicSeries
     // Symmetric to a topic polygon: spike on its own verb axis + counts
     // across the topic axes.
-    const counts: Record<string, number> = { [verbMatch.id]: 10 }
-    for (const t of topicAxes) counts[t.id] = syntheticCount(t.id, verbMatch.id)
+    const counts: Record<string, number> = {
+      [verbMatch.id]: buckets.getVerbTotal(verbMatch.id),
+    }
+    for (const t of topicAxes) counts[t.id] = buckets.get(t.id, verbMatch.id)
     return [{ ...verbMatch, counts }]
-  }, [focus, verbAxes, topicAxes, topicSeries])
+  }, [focus, verbAxes, topicAxes, topicSeries, buckets])
 
   const pillItems = useMemo<RadarAxis[]>(
     () => [...topicAxes, ...verbAxes],

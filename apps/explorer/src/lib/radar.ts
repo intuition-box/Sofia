@@ -10,7 +10,12 @@
  * axes. Both `RadarAxis` and `RadarSeries` carry the same metadata so
  * the semantics are defined by the caller.
  */
-import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
+import {
+  displayLabelToIntentionType,
+  INTENTION_CONFIG,
+  type IntentionType,
+} from '@/config/intentions'
+import type { CircleItem } from '@/services/circleService'
 
 export type RadarVerbId = Exclude<IntentionType, 'trusted' | 'distrusted'>
 export type SeriesFilter = 'all' | string
@@ -71,15 +76,70 @@ export const RADAR_VERBS: readonly RadarAxis[] = [
   },
 ]
 
-/** Deterministic synthetic count for a (seriesKey, axisKey) pair — 0..12. */
-export function syntheticCount(seriesKey: string, axisKey: string): number {
-  let hash = 2166136261 >>> 0
-  const key = `${seriesKey}:${axisKey}`
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i)
-    hash = Math.imul(hash, 16777619) >>> 0
+/**
+ * Real per-(topic × verb) cert counts derived from the user's CircleItem
+ * activity feed. An item with multiple `topicContexts` and multiple
+ * `intentions` is counted in every (topic, verb) cell it covers — that
+ * matches how the radar should "spread" a multi-intent cert.
+ *
+ * `quest:*` intentions and intentions that don't resolve to a radar verb
+ * (e.g. trusted / distrusted) are skipped.
+ */
+export interface TopicVerbCounts {
+  /** counts[topicId][verbId] = number of certs in that cell. */
+  counts: Map<string, Map<string, number>>
+  /** Total certs per topic (sum across all verbs). */
+  topicTotals: Map<string, number>
+  /** Total certs per verb (sum across all topics). */
+  verbTotals: Map<string, number>
+  /** Lookup: 0 if the cell is missing. */
+  get: (topicId: string, verbId: string) => number
+  /** Total certs on a topic axis, regardless of verb. */
+  getTopicTotal: (topicId: string) => number
+  /** Total certs on a verb axis, regardless of topic. */
+  getVerbTotal: (verbId: string) => number
+}
+
+const RADAR_VERB_IDS = new Set<string>(['work', 'learning', 'inspiration', 'fun', 'buying', 'music'])
+
+export function bucketActivityByTopicAndVerb(
+  items: readonly CircleItem[],
+): TopicVerbCounts {
+  const counts = new Map<string, Map<string, number>>()
+  const topicTotals = new Map<string, number>()
+  const verbTotals = new Map<string, number>()
+
+  for (const item of items) {
+    if (item.topicContexts.length === 0) continue
+    const verbIds = new Set<string>()
+    for (const label of item.intentions) {
+      if (label.startsWith('quest:')) continue
+      const verbId = displayLabelToIntentionType(label)
+      if (verbId && RADAR_VERB_IDS.has(verbId)) verbIds.add(verbId)
+    }
+    if (verbIds.size === 0) continue
+    for (const topicId of item.topicContexts) {
+      let row = counts.get(topicId)
+      if (!row) {
+        row = new Map()
+        counts.set(topicId, row)
+      }
+      topicTotals.set(topicId, (topicTotals.get(topicId) ?? 0) + 1)
+      for (const verbId of verbIds) {
+        row.set(verbId, (row.get(verbId) ?? 0) + 1)
+        verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
+      }
+    }
   }
-  return hash % 13
+
+  return {
+    counts,
+    topicTotals,
+    verbTotals,
+    get: (topicId, verbId) => counts.get(topicId)?.get(verbId) ?? 0,
+    getTopicTotal: (topicId) => topicTotals.get(topicId) ?? 0,
+    getVerbTotal: (verbId) => verbTotals.get(verbId) ?? 0,
+  }
 }
 
 /** An axis positioned on the SVG circle (angle pre-computed). */

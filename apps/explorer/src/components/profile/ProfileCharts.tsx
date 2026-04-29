@@ -72,7 +72,7 @@ export default function ProfileCharts({
   const { getPlatformsByTopic } = usePlatformCatalog()
 
   const { focus, setFocus, topicAxes, verbAxes, displayedSeries, pillItems } =
-    useRadarFocus(selectedTopics, topicById)
+    useRadarFocus(selectedTopics, topicById, addresses)
 
   const topicStats = useProfileTopicStats({
     selectedTopics,
