@@ -6,7 +6,7 @@
  */
 import type { CircleItem } from '@/services/circleService'
 
-export const CAL_WEEKS = 52
+export const CAL_WEEKS = 26
 export const CAL_DAYS = CAL_WEEKS * 7
 
 /** Returns `today`, `yesterday`, or `Nd ago`. */
