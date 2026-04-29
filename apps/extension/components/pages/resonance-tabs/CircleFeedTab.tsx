@@ -515,84 +515,86 @@ const CircleFeedTab = () => {
   // Main feed view
   return (
     <div className="circle-feed-tab">
-      {/* Category filter chips + Go to Circle link */}
+      {/* Header row: Filter label aligned with refresh + My Circle actions */}
       <div className="circle-top-bar">
-        <div className="circle-filter-group">
+        <div className="circle-top-header">
           <span className="circle-filter-label">Filter</span>
-          <div className="circle-category-chips">
+          <div className="circle-top-actions">
             <button
-              className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('all')}
+              className="circle-go-btn"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Refresh feed"
+              aria-label="Refresh feed"
             >
-              All
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                style={refreshing ? { animation: 'spin 0.8s linear infinite' } : undefined}
+              >
+                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
             </button>
-            {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-              ([type, config]) => (
-                <button
-                  key={type}
-                  className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-                  onClick={() => setActiveFilter(type)}
-                >
-                  <span
-                    className="circle-chip-dot"
-                    aria-hidden="true"
-                    style={{ background: config.color }}
-                  />
-                  {config.label}
-                </button>
-              )
-            )}
+            <button
+              className="circle-go-btn"
+              onClick={() => {
+                setActiveProfileTab('community')
+                navigateTo('profile')
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="7" r="4" />
+                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+                <path d="m17 11 2 2 4-4" />
+              </svg>
+              My Circle
+            </button>
           </div>
         </div>
-        <button
-          className="circle-go-btn"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Refresh feed"
-          aria-label="Refresh feed"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            style={refreshing ? { animation: 'spin 0.8s linear infinite' } : undefined}
+        <div className="circle-category-chips">
+          <button
+            className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
           >
-            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-            <path d="M3 21v-5h5" />
-          </svg>
-        </button>
-        <button
-          className="circle-go-btn"
-          onClick={() => {
-            setActiveProfileTab('community')
-            navigateTo('profile')
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="9" cy="7" r="4" />
-            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
-            <path d="m17 11 2 2 4-4" />
-          </svg>
-          My Circle
-        </button>
+            All
+          </button>
+          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+            ([type, config]) => (
+              <button
+                key={type}
+                className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
+                onClick={() => setActiveFilter(type)}
+              >
+                <span
+                  className="circle-chip-dot"
+                  aria-hidden="true"
+                  style={{ background: config.color }}
+                />
+                {config.label}
+              </button>
+            )
+          )}
+        </div>
       </div>
 
       {/* Loading */}

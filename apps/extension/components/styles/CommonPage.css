@@ -263,13 +263,11 @@
 /* ========== GROUP BENTO CARD STYLES ========== */
 
 .group-bento-card {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   padding: 14px;
   gap: 10px;
-  background: var(--ds-card);
+  background: var(--ds-bg);
   border: 1px solid var(--ds-border);
   border-radius: 14px;
   min-height: 130px;

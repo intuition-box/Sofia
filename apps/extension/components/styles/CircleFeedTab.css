@@ -6,31 +6,39 @@
   background: transparent;
 }
 
-/* Top Bar: filter group + go buttons */
+/* Top bar — vertical stack:
+   row 1 (.circle-top-header): "FILTER" label left, [refresh][My Circle] right
+   row 2 (.circle-category-chips): chips wrap freely below */
 .circle-top-bar {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   padding-bottom: var(--spacing-sm);
 }
 
-/* Filter group — label "Filter" above the chip row */
-.circle-filter-group {
+/* Header row */
+.circle-top-header {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.circle-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .circle-filter-label {
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ds-muted);
-  padding: 0 2px;
 }
 
 /* Refresh / Go to Circle buttons — DS pf-btn pattern (same as
