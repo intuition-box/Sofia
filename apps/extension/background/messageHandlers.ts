@@ -1,15 +1,15 @@
 import {
-  badgeService, pageDataService, tripletStorageService,
+  badgeService, pageDataService,
   groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
   currencyMigrationService, sessionTracker, levelUpService,
   browsingNudgeService,
   type TrackedUrl, type DomainCluster
 } from "../lib/services"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
+import { sendMessage, sendRecommendationRequest } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { getAddress } from "viem"
-import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { IntentionGroupsService } from "../lib/database"
@@ -19,30 +19,6 @@ const logger = createServiceLogger('MessageHandlers')
 
 // Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
-
-
-
-// Generic handler for data extraction (bookmarks/history)
-async function handleDataExtraction(
-  type: string,
-  dataFetcher: () => Promise<{ success: boolean; urls?: string[]; error?: string }>,
-  processor: (urls: string[]) => Promise<{ success: boolean; message: string; themesExtracted?: number; triplesProcessed?: boolean; themes?: any[] }>,
-  sendResponse: (response: MessageResponse) => void
-): Promise<void> {
-  try {
-    const result = await dataFetcher()
-    if (result.success && result.urls) {
-      logger.info(`Starting ${type} analysis for ${result.urls.length} URLs`)
-      const finalResult = await processor(result.urls)
-      sendResponse(finalResult)
-    } else {
-      sendResponse({ success: false, error: result.error })
-    }
-  } catch (error) {
-    logger.error(`${type} extraction error`, error)
-    sendResponse({ success: false, error: error.message })
-  }
-}
 
 
 // Handle recommendation generation via RecommendationAgent
@@ -252,17 +228,6 @@ export function setupMessageHandlers(): void {
         return true
 
 
-      case "GET_TRACKING_STATS":
-        sendResponse({
-          success: true,
-          data: { message: "Data sent directly to agent - no local storage" }
-        })
-        break
-
-      case "CLEAR_TRACKING_DATA":
-        sendResponse({ success: true, message: "No local data to clear" })
-        break
-
       case "FETCH_BOOKMARKS":
         // Return bookmarks list without processing (for selection UI)
         try {
@@ -274,7 +239,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "GET_BOOKMARKS":
       case "IMPORT_SELECTED_BOOKMARKS": {
         // GET_BOOKMARKS: fetch all + import (orb button)
         // IMPORT_SELECTED_BOOKMARKS: import only selected bookmarks (onboarding)
@@ -333,28 +297,6 @@ export function setupMessageHandlers(): void {
         return true
       }
 
-      case "GET_HISTORY":
-        handleDataExtraction('history', getAllHistory, async (urls: string[]) => {
-          const themes = await sendThemeExtractionRequest(urls)
-          return {
-            success: true,
-            message: 'History analysis completed',
-            themesExtracted: themes?.length || 0,
-            triplesProcessed: true
-          }
-        }, sendResponse)
-        return true
-
-      case "STORE_BOOKMARK_TRIPLETS":
-        tripletStorageService.handleStoreBookmarkTriplets(message, sendResponse)
-        return true
-
-      case "STORE_DETECTED_TRIPLETS":
-        tripletStorageService.handleStoreDetectedTriplets(message, sendResponse)
-        return true
-
-
-
       case "UPDATE_ECHO_BADGE":
         badgeService.handleBadgeUpdate(sendResponse)
         return true
@@ -374,31 +316,6 @@ export function setupMessageHandlers(): void {
       case "GENERATE_RECOMMENDATIONS":
         handleRecommendationGeneration(message, sendResponse)
         return true
-
-      case "GET_PAGE_BLOCKCHAIN_DATA":
-        try {
-          const url = message.data?.url
-          if (!url) {
-            sendResponse({ success: false, error: "URL parameter required" })
-            return true
-          }
-          // For now, just return success - the actual GraphQL query is handled in the frontend
-          sendResponse({ success: true, data: { url } })
-        } catch (error) {
-          logger.error("GET_PAGE_BLOCKCHAIN_DATA error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "PAGE_ANALYSIS":
-        try {
-          // Log page analysis data for debugging
-          logger.debug("Page analysis received", message.data)
-          // This is a fire-and-forget message, no response needed
-        } catch (error) {
-          logger.error("PAGE_ANALYSIS error", error)
-        }
-        break
 
       case "URL_CHANGED":
         try {
@@ -582,16 +499,6 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           logger.error("TRACK_URL error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "FORCE_FLUSH_TRACKER":
-        try {
-          const clusters = await sessionTracker.forceFlush()
-          sendResponse({ success: true, clustersCount: clusters.length })
-        } catch (error) {
-          logger.error("FORCE_FLUSH_TRACKER error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

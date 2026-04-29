@@ -65,11 +65,6 @@ export const CERTIFICATION_LIST: { type: IntentionType; label: string; color: st
   (Object.entries(INTENTION_CONFIG) as [IntentionType, IntentionConfigEntry][])
     .map(([type, v]) => ({ type, label: v.label, color: v.color }))
 
-/** Get color for a certification type, with fallback */
-export function getIntentionColor(type: string): string {
-  return INTENTION_CONFIG[type as IntentionType]?.color ?? "#888888"
-}
-
 /** Resolve an intention string (IntentionType or IntentionPurpose) to badge info */
 export function getIntentionBadge(intention?: string): { label: string; color: string } | null {
   if (!intention) return null

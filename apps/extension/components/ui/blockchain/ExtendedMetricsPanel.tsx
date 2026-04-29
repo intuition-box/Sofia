@@ -11,11 +11,8 @@ import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { VerbTag } from "@0xsofia/design-system"
-import type { RankedPosition } from "~/lib/utils"
+import { formatTrust, type RankedPosition } from "~/lib/utils"
 import PagePositionBoard from "../PagePositionBoard"
-
-const formatTrust = (value: number): string =>
-  value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 
 type FilterScope = "domain" | "page" | "certifiers" | "signals"
 

@@ -22,9 +22,6 @@ import { getWalletKey } from '../utils/storageKeyUtils'
 
 const logger = createServiceLogger('GoldService')
 
-/** @deprecated Discovery Gold now covers all certification rewards. Only vote Gold uses certification_gold bucket. */
-const GOLD_PER_CERTIFICATION = 10
-
 // Gold earned per vote (capped at VOTE_GOLD_DAILY_CAP votes/day)
 const GOLD_PER_VOTE = 5
 const VOTE_GOLD_DAILY_CAP = 10
@@ -70,23 +67,6 @@ class GoldServiceClass {
     logger.debug('Gold state loaded', { discoveryGold, certificationGold, spentGold, totalGold })
 
     return { discoveryGold, certificationGold, spentGold, totalGold }
-  }
-
-  /**
-   * @deprecated No longer called — Discovery Gold covers certification rewards.
-   * Kept for backward compatibility. Only vote Gold uses certification_gold bucket.
-   * @returns The new certification Gold total.
-   */
-  async addCertificationGold(walletAddress: string, amount: number = GOLD_PER_CERTIFICATION): Promise<number> {
-    const key = getWalletKey('certification_gold', walletAddress.toLowerCase())
-    const result = await chrome.storage.local.get([key])
-    const current = result[key] || 0
-    const newTotal = current + amount
-
-    await chrome.storage.local.set({ [key]: newTotal })
-    logger.info('Added certification Gold', { amount, newTotal })
-
-    return newTotal
   }
 
   /**

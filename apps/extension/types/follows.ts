@@ -74,11 +74,3 @@ export interface AtomDataResponse {
 // Aliases for backward compatibility
 export type FollowAccountVM = CommunityAccountVM
 export type FollowQueryResult = CommunityQueryResult
-
-/**
- * Search context for navigation
- */
-export interface CommunitySearchContext {
-  query: string
-  showResults: boolean
-}

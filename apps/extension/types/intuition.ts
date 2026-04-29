@@ -1,16 +1,3 @@
-export interface IntuitionAtomResponse {
-  term_id: string
-  label: string
-  type?: string
-  created_at: string
-  transaction_hash?: string
-  value?: {
-    thing?: {
-      url?: string | null
-    }
-  }
-}
-
 export interface IntuitionTripleResponse {
   term_id: string
   created_at: string
@@ -49,10 +36,6 @@ export interface IntuitionTripleResponse {
     created_at: string
   }>
   creator_id?: string
-}
-
-export interface GraphQLAtomsResponse {
-  atoms: IntuitionAtomResponse[]
 }
 
 export interface GraphQLTriplesResponse {

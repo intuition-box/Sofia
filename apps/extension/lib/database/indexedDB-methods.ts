@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type TripletsRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord, type CartItemRecord } from './indexedDB'
+import sofiaDB, { STORES, type TripletsRecord, type SettingsRecord, type IntentionGroupRecord, type CartItemRecord } from './indexedDB'
 import { createServiceLogger } from '../utils/logger'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'

@@ -14,7 +14,7 @@ export type { RestrictionInfo } from './pageRestriction'
 export { parseSofiaMessage } from './parseSofiaMessage'
 
 // Web3 & Identity
-export { getEnsAvatar, getEnsName, batchResolveEns } from './ensUtils'
+export { getEnsAvatar, batchResolveEns } from './ensUtils'
 export { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, convertIpfsToHttp, normalizeAvatarUrl, getInitials } from './avatar'
 
 // IPFS
@@ -28,10 +28,10 @@ export { getWalletKey } from './storageKeyUtils'
 export { refetchWithBackoff, debounce } from './refetchUtils'
 
 // Level System (Groups/Echoes)
-export { LEVEL_THRESHOLDS, calculateLevel, calculateLevelProgress } from './levelCalculation'
+export { calculateLevel, calculateLevelProgress } from './levelCalculation'
 
 // Domain Utilities
-export { normalizeDomain, extractDomain, extractHostname, shouldExcludeDomain } from './domainUtils'
+export { normalizeDomain, extractDomain, shouldExcludeDomain } from './domainUtils'
 
 // Formatters
 export { getFaviconUrl, formatDuration, formatShortDate, formatBalance } from './formatters'
@@ -53,7 +53,7 @@ export { computeDiscoveryData, computeIntentionStats, computeTrustCounts, comput
 export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResult, RankedPosition, PagePositionsResult } from './pageCertificationCompute'
 
 // Page Blockchain Reducer (pure function)
-export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, EMPTY_INTENTIONS } from './pageBlockchainReducer'
+export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE } from './pageBlockchainReducer'
 
 // Debate / Claim Helpers
 export { formatTrust } from './formatTrust'

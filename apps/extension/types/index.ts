@@ -11,14 +11,8 @@ export * from './storage';
 
 // Message passing types (now consolidated in messages.ts)
 
-// Wallet integration types
-export * from './wallet';
-
 // Blockchain types
 export * from './blockchain';
-
-// Viem types
-export * from './viem';
 
 // Messages types
 export * from './messages';

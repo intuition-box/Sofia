@@ -5,7 +5,7 @@
 
 import { isSensitiveUrl } from '../../background/utils/url'
 import { EXCLUDED_URL_PATTERNS } from '../../background/constants'
-import type { PageData } from '../../background/types'
+import type { PageData } from '../../types/page'
 import type { ChromeMessage } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 import { sessionTracker } from './SessionTracker'

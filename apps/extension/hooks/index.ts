@@ -14,7 +14,6 @@ export { useRedeemTriple } from './useRedeemTriple'
 export { useRedeemGlobalStake } from './useRedeemGlobalStake'
 export { useDepositGlobalStake } from './useDepositGlobalStake'
 export { useIntentionCertify } from './useIntentionCertify'
-export { useTrustPage } from './useTrustPage'
 export { useTrustAccount } from './useTrustAccount'
 
 // Blockchain Read Operations

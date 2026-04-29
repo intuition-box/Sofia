@@ -17,6 +17,7 @@ import type { UserDiscoveryStats } from "../../types/discovery"
 import { goldService } from "./GoldService"
 import { createServiceLogger } from "../utils/logger"
 import { CERTIFICATION_PREDICATE_LABELS } from "../config/predicateConstants"
+import { getAddress } from "viem"
 import {
   buildPagePositionMap,
   calculateDiscoveryRanking,
@@ -85,14 +86,18 @@ class DiscoveryScoreServiceClass {
     this.updateState({ loading: true, error: null })
 
     try {
-      const userAddress = walletAddress.toLowerCase()
+      // Indexer stores EIP-55 checksum addresses but some old data may be lowercase.
+      // Pass both forms in `_in` filter to catch all positions.
+      let checksumAddr: string
+      try { checksumAddr = getAddress(walletAddress) } catch { checksumAddr = walletAddress }
+      const userAddresses = Array.from(new Set([checksumAddr, walletAddress.toLowerCase()]))
 
-      logger.debug("Fetching discovery score", { userAddress })
+      logger.debug("Fetching discovery score", { userAddresses })
 
       // Step 1: Fetch user's certifications
       const userTriples = await intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
         UserIntentionTriplesDocument,
-        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddresses: userAddress },
+        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddresses },
         "triples",
         100,
         100

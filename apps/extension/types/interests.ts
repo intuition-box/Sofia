@@ -77,14 +77,3 @@ export function getLevelColorAlpha(level: number, alpha = 0.19): string {
   return `hsla(${h}, ${s}%, ${adjustedL}%, ${alpha})`
 }
 
-/**
- * Get the tier base color (solid hex) for a given level.
- * Useful for CSS classes and simple color references.
- */
-export function getTierColor(level: number): string {
-  const tierIndex = Math.min(
-    Math.floor((level - 1) / 10),
-    TIER_COLORS.length - 1
-  )
-  return TIER_COLORS[tierIndex].base
-}

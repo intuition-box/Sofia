@@ -6,7 +6,7 @@
 // Blockchain
 export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
-export type { PinnedAtomData, PinThingFn } from './AtomService'
+export type { PinnedAtomData } from './AtomService'
 export { tripleService } from './TripleService'
 export type { ResolvedTriple } from './TripleService'
 
@@ -35,7 +35,6 @@ export { BadgeService, badgeService } from './BadgeService'
 // Messaging
 export { MessageBus, messageBus } from './MessageBus'
 export { txEventBus } from './TxEventBus'
-export type { TxEventType, TxEvent } from './TxEventBus'
 
 // Page & Session
 export { pageDataService } from './PageDataService'
@@ -44,11 +43,6 @@ export type { TrackedUrl, DomainCluster } from './SessionTracker'
 
 // User
 export { getWalletAddress } from './UserSessionManager'
-export type { AgentIds } from './UserSessionManager'
-
-// Storage
-export { tripletStorageService } from './TripletStorageService'
-
 
 // Discovery & Certifications
 export { discoveryScoreService } from './DiscoveryScoreService'

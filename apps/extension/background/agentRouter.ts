@@ -14,53 +14,6 @@ import { createServiceLogger } from '../lib/utils/logger'
 const logger = createServiceLogger('AgentRouter')
 
 /**
- * Send theme extraction request to Mastra ThemeExtractor agent
- * @param urls - Array of URLs to analyze for themes
- * @returns Promise resolving to extracted themes
- */
-export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]> {
-  logger.info(`[ThemeExtractor] Sending ${urls.length} URLs to Mastra`)
-
-  try {
-    const triplets = await sendThemeExtractionToMastra(urls)
-
-    // Store triplets in IndexedDB for EchoesTab
-    if (Array.isArray(triplets) && triplets.length > 0) {
-      const enrichedTriplets = triplets.map((t: any) => ({
-        subject: t.subject || "User",
-        predicate: t.predicate,
-        object: t.object,
-        objectUrl: t.objectUrl || (t.urls && t.urls.length > 0 ? t.urls[0] : '')
-      }))
-
-      const parsedRecord = {
-        messageId: `theme_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-        content: {
-          triplets: enrichedTriplets,
-          intention: `Extracted from bookmarks`
-        },
-        timestamp: Date.now(),
-        type: 'parsed_message'
-      }
-
-      await sofiaDB.put(STORES.TRIPLETS_DATA, parsedRecord)
-      logger.info('[ThemeExtractor] Triplets stored in IndexedDB', { count: enrichedTriplets.length })
-
-      try {
-        chrome.runtime.sendMessage({ type: "ECHOES_UPDATED" })
-      } catch (e) {
-        logger.warn('[ThemeExtractor] Could not notify UI', e)
-      }
-    }
-
-    return triplets
-  } catch (error) {
-    logger.error('[ThemeExtractor] Mastra request failed', error)
-    return []
-  }
-}
-
-/**
  * Send recommendation request to Mastra RecommendationAgent
  * @param walletData - Wallet data and user interests
  * @returns Promise resolving to recommendations

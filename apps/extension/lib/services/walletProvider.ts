@@ -164,13 +164,6 @@ chrome.runtime.onMessage.addListener((message) => {
 // Cached provider instance
 let cachedProvider: typeof walletProvider | null = null
 
-export const getWalletProvider = async () => {
-  if (!cachedProvider) {
-    cachedProvider = walletProvider
-  }
-  return cachedProvider
-}
-
 export const cleanupProvider = () => {
   if (cachedProvider) {
     try {
@@ -196,16 +189,6 @@ export const createBoundProvider = (tabId: number) => ({
   removeAllListeners: walletProvider.removeAllListeners,
   isSofiaBridge: true as const,
 })
-
-// Utility to list available wallet providers
-export const listWalletProviders = async (tabId?: number): Promise<Array<{ name: string; rdns: string; uuid: string }>> => {
-  try {
-    return await sendWalletRequest("wallet_listProviders", undefined, tabId)
-  } catch (error) {
-    logger.error('Failed to list wallet providers', error)
-    return []
-  }
-}
 
 // Select the wallet provider by name/type (the proper way)
 // walletType can be: 'metamask', 'rabby', 'coinbase', etc.
