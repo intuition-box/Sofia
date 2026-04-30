@@ -35,6 +35,7 @@ const ScoresPage = lazy(() => import('./pages/ScoresPage'))
 const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
+const GroupDetailPage = lazy(() => import('./pages/GroupDetailPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
@@ -270,6 +271,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <CirclesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/circles/group/:termId"
+                  element={
+                    <ProtectedRoute>
+                      <GroupDetailPage />
                     </ProtectedRoute>
                   }
                 />
