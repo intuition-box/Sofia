@@ -80,40 +80,8 @@ export const useFollowAccount = () => {
     }
   }
 
-  const unfollowAccount = async (
-    account: AccountAtom
-  ): Promise<FollowResult> => {
-    setIsLoading(true)
-
-    try {
-      // Unfollow is handled by useRedeemTriple hook - this is a legacy placeholder
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      return {
-        success: true,
-        transactionHash: '0x' + Math.random().toString(16).slice(2)
-      }
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-
-      logger.error('Unfollow account failed', {
-        accountId: account.id,
-        error
-      })
-
-      return {
-        success: false,
-        error: errorMessage
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return {
     followAccount,
-    unfollowAccount,
     isLoading
   }
 }

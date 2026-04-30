@@ -21,5 +21,3 @@ export {
   CartDataService
 } from './indexedDB-methods'
 
-// Recommendation storage
-export { StorageRecommendation } from './StorageRecommendation'

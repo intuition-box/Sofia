@@ -21,6 +21,7 @@ import {
   GLOBAL_STAKE,
   PREDICATE_IDS
 } from "~/lib/config/chainConfig"
+import { INTENTION_PREDICATE_IDS as INTENTION_PREDICATE_IDS_ARRAY } from "~/lib/config/predicateConstants"
 
 export type Position = NonNullable<
   WatchUserPositionsSubscription["positions"]
@@ -100,14 +101,7 @@ const OAUTH_PREDICATE_IDS = new Set<string>([
   PREDICATE_IDS.AM
 ])
 
-const INTENTION_PREDICATE_IDS = new Set<string>([
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC
-])
+const INTENTION_PREDICATE_IDS = new Set<string>(INTENTION_PREDICATE_IDS_ARRAY)
 
 function extractDomain(url: string): string {
   try {
