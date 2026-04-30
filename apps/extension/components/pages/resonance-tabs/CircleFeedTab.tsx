@@ -353,7 +353,7 @@ const CircleFeedTab = () => {
   } = useIntentionCategories(memberWallet)
 
   // Cart-based vote system
-  const { addVoteToCart, isVoteInCart, hasConflictingVote } = useCart()
+  const { addVoteToCart, isVoteInCart } = useCart()
 
   // Intention picker state (shown when a grouped card has multiple intentions)
   const [intentionPickerGroup, setIntentionPickerGroup] = useState<GroupedFeedItem | null>(null)
@@ -629,7 +629,6 @@ const CircleFeedTab = () => {
       {filteredItems.length > 0 && (
         <div className="circle-grid">
           {filteredItems.map(group => {
-            const primaryItem = group.intentions[0]
             return (
               <div
                 key={group.groupKey}

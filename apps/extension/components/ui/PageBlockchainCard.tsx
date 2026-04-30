@@ -4,7 +4,6 @@ import { useRouter } from "../layout/RouterProvider"
 import {
   usePageBlockchainData,
   useDiscoveryScore,
-  useGoldSystem,
   useFavicon,
   useDiscoveryReward,
   useCredibilityAnalysis,
@@ -64,7 +63,6 @@ const PageBlockchainCard = () => {
     resumeRefresh
   } = usePageBlockchainData()
   const { claimDiscoveryGold } = useDiscoveryScore()
-  const { totalGold } = useGoldSystem()
 
   // Extracted hooks
   const { faviconUrl, faviconError } = useFavicon(currentUrl)

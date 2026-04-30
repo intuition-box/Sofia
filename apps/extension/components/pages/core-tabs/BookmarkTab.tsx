@@ -31,8 +31,7 @@ const BookmarkTab = () => {
     deleteList,
     updateList,
     addTripletToList,
-    getTripletsByList,
-    refreshFromLocal
+    getTripletsByList
   } = useBookmarks()
 
   // Intention categories (on-chain certified URLs)
@@ -116,15 +115,6 @@ const BookmarkTab = () => {
       }
     } catch (err) {
       logger.error('Failed to delete list', err)
-    }
-  }
-
-  const startEditingList = (listId: string) => {
-    const list = lists.find(l => l.id === listId)
-    if (list) {
-      setNewListName(list.name)
-      setNewListDescription(list.description || '')
-      setIsEditingList(listId)
     }
   }
 

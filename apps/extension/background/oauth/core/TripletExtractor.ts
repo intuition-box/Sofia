@@ -185,24 +185,6 @@ export class TripletExtractor {
     return triplets
   }
 
-  private generateSpecificUrl(platform: string, userData: UserData): string {
-    try {
-      // Priorité 1 : Chercher le premier triplet qui a une objectUrl spécifique
-      const tripletWithUrl = userData.triplets.find(t => t.objectUrl)
-      if (tripletWithUrl?.objectUrl) {
-        logger.debug('Using specific object URL', { url: tripletWithUrl.objectUrl })
-        return tripletWithUrl.objectUrl
-      }
-
-      // Priorité 2 : Fallback vers votre profil utilisateur
-      logger.warn(`No object URL found, fallback to user profile for ${platform}`)
-      return this.generateUserProfileUrl(platform, userData)
-    } catch (error) {
-      logger.warn(`Error generating specific URL for ${platform}`, error)
-      return `https://${platform}.com`
-    }
-  }
-
   private generateUserProfileUrl(platform: string, userData: UserData): string {
     try {
       const profile = userData.profile

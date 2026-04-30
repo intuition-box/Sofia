@@ -5,19 +5,11 @@ interface SkeletonLineProps {
   height?: number
 }
 
-interface SkeletonCircleProps {
-  size?: number
-}
-
 const SkeletonLine = ({
   width = "100%",
   height = 12
 }: SkeletonLineProps) => (
   <div className="skeleton-line" style={{ width, height }} />
-)
-
-const SkeletonCircle = ({ size = 40 }: SkeletonCircleProps) => (
-  <div className="skeleton-circle" style={{ width: size, height: size }} />
 )
 
 /* Pill skeleton — mirrors .intention-pill / .interest-context__btn

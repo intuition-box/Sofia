@@ -1,10 +1,8 @@
 import { useSyncExternalStore, useEffect, useCallback } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { cartService } from "~/lib/services"
-import { normalizeUrl, createHookLogger } from "~/lib/utils"
+import { normalizeUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
-
-const logger = createHookLogger("useCart")
 
 export const useCart = () => {
   const { walletAddress } = useWalletFromStorage()

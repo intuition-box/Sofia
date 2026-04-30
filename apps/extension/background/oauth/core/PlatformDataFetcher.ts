@@ -172,7 +172,7 @@ export class PlatformDataFetcher {
     return userData
   }
 
-  private filterNewItems(platform: string, endpoint: string, data: any, lastSync: any): any {
+  private filterNewItems(platform: string, _endpoint: string, data: any, lastSync: any): any {
     if (!lastSync) return data
 
     const config = this.platformRegistry.getConfig(platform)!

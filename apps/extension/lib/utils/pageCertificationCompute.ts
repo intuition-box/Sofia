@@ -75,15 +75,6 @@ export interface PagePositionsResult {
 
 // ── Helpers ──
 
-const EMPTY_INTENTIONS: Record<IntentionPurpose, number> = {
-  for_work: 0,
-  for_learning: 0,
-  for_fun: 0,
-  for_inspiration: 0,
-  for_buying: 0,
-  for_music: 0
-}
-
 const emptyIntentionSets = (): Record<IntentionPurpose, Set<string>> => ({
   for_work: new Set(),
   for_learning: new Set(),

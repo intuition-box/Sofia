@@ -20,7 +20,6 @@ export class OAuthService {
   private dataFetcher: PlatformDataFetcher
   private tripletExtractor: TripletExtractor
   private syncManager: SyncManager
-  private messageHandler: MessageHandler
   private platformRegistry: PlatformRegistry
 
   constructor() {
@@ -29,12 +28,14 @@ export class OAuthService {
     this.syncManager = new SyncManager()
     this.dataFetcher = new PlatformDataFetcher(this.tokenManager, this.syncManager, this.platformRegistry)
     this.tripletExtractor = new TripletExtractor(this.platformRegistry)
-    
+
     // Connect the services
     this.dataFetcher.setTripletExtractor(this.tripletExtractor)
-    
+
     this.flowManager = new OAuthFlowManager(this.platformRegistry, this.tokenManager)
-    this.messageHandler = new MessageHandler(this)
+    // MessageHandler attaches chrome.runtime.onMessage listeners in its
+    // constructor — instantiate for the side-effect, no field needed.
+    new MessageHandler(this)
     
     // Configure automatic data sync after auth
     this.flowManager.setAuthSuccessCallback(async (platform: string) => {

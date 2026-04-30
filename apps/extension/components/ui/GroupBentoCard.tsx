@@ -18,7 +18,7 @@ interface GroupBentoCardProps {
 }
 
 const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
-  const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
+  const { domain, activeUrlCount, totalAttentionTime, urls } = group
 
   // Get active URLs for on-chain query (include OAuth URLs for correct count)
   const activeUrls = urls.filter(u => !u.removed).map(u => u.url)
@@ -40,13 +40,6 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   // Progress toward next level (same baseLevel as DetailView)
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
-
-  // Get dominant certification for styling
-  const dominantCert = Object.entries(certificationBreakdown)
-    .filter(([_, count]) => count > 0)
-    .sort(([, a], [, b]) => b - a)[0]
-
-  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as IntentionType] : null
 
   // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
   const highestPredicateLevel = group.predicateHistory?.length > 0

@@ -31,7 +31,7 @@ function sanitizeUrl(url: string): string {
 }
 
 // Listen for page analysis requests from the extension
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   logger.debug('Received message', { type: message.type })
   
   if (message.type === "GET_CLEAN_URL") {

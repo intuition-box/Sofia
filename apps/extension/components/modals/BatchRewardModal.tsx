@@ -8,7 +8,6 @@
 import { useState } from "react"
 import { createPortal } from "react-dom"
 import { useBatchRewards, useGoldSystem } from "~/hooks"
-import { getIntentionBadge } from "~/types/intentionCategories"
 import { getFaviconUrl, createHookLogger } from "~/lib/utils"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import SofiaLoader from "../ui/SofiaLoader"
@@ -174,9 +173,6 @@ const BatchRewardModal = ({
             {/* Items list */}
             <div className="batch-reward__list">
               {rewards.map((reward) => {
-                const badge = getIntentionBadge(
-                  reward.item.intention ?? undefined
-                )
                 return (
                   <div
                     key={reward.item.id}

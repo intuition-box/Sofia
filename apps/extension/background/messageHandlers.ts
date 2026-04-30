@@ -1,6 +1,6 @@
 import {
   badgeService, pageDataService,
-  groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
+  groupManager, XPServiceClass,
   sessionTracker, levelUpService,
   browsingNudgeService,
   type TrackedUrl, type DomainCluster

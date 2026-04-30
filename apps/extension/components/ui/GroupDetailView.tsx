@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
+  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp,
   useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
   useTopicInterests, useUserCertifications, useWalletFromStorage, getCertificationForUrl,
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
@@ -21,10 +21,9 @@ import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
 import { TOPIC_LABELS, TOPIC_COLORS } from '~/lib/config/topicConfig'
-import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
+import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
@@ -45,8 +44,6 @@ interface GroupDetailViewProps {
 const UrlRow = ({
   urlRecord,
   onChainStatus,
-  onIntentionSelect,
-  onTrustSelect,
   onAddToCart,
   onAddTrustToCart,
   onOAuthCertify,
@@ -59,8 +56,6 @@ const UrlRow = ({
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
-  onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
-  onTrustSelect: (predicateName: string, title?: string) => void
   onAddToCart: (intention: IntentionPurpose, title?: string, context?: string | null) => void
   onAddTrustToCart: (predicateName: string, title?: string, context?: string | null) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
@@ -311,9 +306,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
 
-  // Gold system hook (for displaying available Gold)
-  const { totalGold } = useGoldSystem()
-
   // Level up hook
   const {
     levelUp,
@@ -325,16 +317,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Redeem hook (for removing on-chain positions)
   const { redeemAllPositions } = useRedeemTriple()
-
-  // Amplify hook (publish group identity on-chain)
-  const {
-    amplify,
-    loading: amplifyLoading,
-    result: amplifyResult,
-    reset: resetAmplify
-  } = useGroupAmplify()
-  // Amplified = true if current predicate was already published on-chain
-  const isAmplified = group.amplifiedPredicate === group.currentPredicate && !!group.currentPredicate
 
   // Modal state for on-chain certification
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -459,14 +441,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     }
   }
 
-  // Handle amplify (publish identity on-chain)
-  const handleAmplify = async () => {
-    const result = await amplify(group.id)
-    if (result.success && onRefresh) {
-      await onRefresh()
-    }
-  }
-
   // Progress toward NEXT level threshold
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
 
@@ -496,59 +470,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     return !status.isCertified
   }).length
 
-  // Handle intention selection - opens the WeightModal
-  const handleIntentionSelect = (url: string, intention: IntentionPurpose, title?: string) => {
-    try {
-      const { label: pageLabel } = normalizeUrl(url)
-      const displayName = (title ? cleanTitle(title) : null) || pageLabel
-
-      // Prepare triplet for intention modal
-      const triplet = {
-        id: `intention-${intention}`,
-        triplet: {
-          subject: 'I',
-          predicate: INTENTION_PREDICATES[intention],
-          object: displayName
-        },
-        description: `I ${INTENTION_PREDICATES[intention]} ${displayName}`,
-        url: url,
-        intention: intention
-      }
-
-      setPendingCertification({ url, intention, title })
-      setModalTriplets([triplet])
-      setShowWeightModal(true)
-    } catch (error) {
-      logger.error('Invalid URL', url)
-    }
-  }
-
-  // Handle trust/distrust selection - opens the WeightModal with trust predicate
-  const handleTrustSelect = (url: string, predicateName: string, title?: string) => {
-    try {
-      const { label: pageLabel } = normalizeUrl(url)
-      const displayName = (title ? cleanTitle(title) : null) || pageLabel
-
-      const trustItem = TRUST_ITEMS.find(p => p.predicateLabel === predicateName)
-      const triplet = {
-        id: `trust-${predicateName}`,
-        triplet: {
-          subject: 'I',
-          predicate: predicateName,
-          object: displayName
-        },
-        description: `I ${predicateName} ${displayName}`,
-        url: url,
-        intention: trustItem?.type as IntentionPurpose | undefined
-      }
-
-      setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
-      setModalTriplets([triplet])
-      setShowWeightModal(true)
-    } catch (error) {
-      logger.error('Invalid URL', url)
-    }
-  }
 
   // Handle OAuth certification - uses predicate from OAuth extraction
   const handleOAuthCertify = (urlRecord: GroupUrlRecord) => {
@@ -645,10 +566,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   const handleRemove = async (url: string) => {
     const onChainStatus = getUrlCertification(url)
-    const urlRecord = group.urls.find(u => u.url === url)
-    const effectiveStatus = urlRecord
-      ? getEffectiveCertStatus(urlRecord, onChainStatus)
-      : { isCertified: false, labels: [] }
 
     // If URL is certified on-chain, redeem positions first
     if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
@@ -845,8 +762,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
-              onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
               onAddToCart={(intention, title, context) => handleAddToCart(urlRecord.url, intention, title, context)}
               onAddTrustToCart={(predicateName, title, context) => handleAddTrustToCart(urlRecord.url, predicateName, title, context)}
               onOAuthCertify={handleOAuthCertify}

@@ -19,7 +19,7 @@ export class MessageHandler {
       [MessageType.OAUTH_IMPLICIT_CALLBACK]: (msg: any) => this.oauthService.handleImplicitCallback(msg.platform, msg.accessToken, msg.state)
     }
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       const handler = messageHandlers[message.type as MessageType]
       if (handler) {
         handler(message)

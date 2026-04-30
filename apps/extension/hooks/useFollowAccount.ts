@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { parseEther } from 'viem'
 import { useCreateFollowTriples } from './useCreateFollowTriples'
 import { createHookLogger } from '../lib/utils/logger'
-import { useWalletFromStorage } from './useWalletFromStorage'
 import type { AccountAtom } from './useGetAtomAccount'
 
 const logger = createHookLogger('useFollowAccount')
@@ -16,7 +15,6 @@ export interface FollowResult {
 
 export const useFollowAccount = () => {
   const { createFollowTriple } = useCreateFollowTriples()
-  const { walletAddress: address } = useWalletFromStorage()
   const [isLoading, setIsLoading] = useState(false)
 
 
