@@ -6,7 +6,7 @@ import {
   useWalletFromStorage
 } from "~/hooks"
 import WeightModal from "../../modals/WeightModal"
-import { SofiaLoader } from "../../ui"
+import SofiaLoader from "../../ui/SofiaLoader"
 import ClaimCard from "./ClaimCard"
 import ListCard from "./ListCard"
 import ListModal from "./ListModal"

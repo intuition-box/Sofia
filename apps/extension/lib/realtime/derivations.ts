@@ -49,19 +49,7 @@ export const realtimeKeys = {
     ["verified-oauth-platforms", wallet] as const,
   intentionGroups: (wallet: string) => ["intention-groups", wallet] as const,
   globalStakePosition: (wallet: string) =>
-    ["global-stake-position", wallet] as const,
-
-  // Legacy Explorer keys — kept for SubscriptionManager compat. Sofia doesn't
-  // map topics/categories/platforms the same way; may be removed in cleanup
-  // once we're sure no consumer references them.
-  topicPositionsMap: (wallet: string) =>
-    ["topic-positions-map", wallet] as const,
-  categoryPositionsMap: (wallet: string) =>
-    ["category-positions-map", wallet] as const,
-  platformPositionsMap: (wallet: string) =>
-    ["platform-positions-map", wallet] as const,
-  verifiedPlatforms: (wallet: string) =>
-    ["verified-platforms", wallet] as const
+    ["global-stake-position", wallet] as const
 }
 
 // ── BigInt helpers (stable cache shape) ─────────────────────────────────────
@@ -399,35 +387,6 @@ export function deriveUserProfile(
     totalStaked: stats.totalStaked,
     verifiedPlatforms: stats.verifiedPlatforms
   }
-}
-
-// ── Explorer-legacy stubs (kept for SubscriptionManager compat) ─────────────
-// Sofia doesn't model topics/categories/platforms the same way. These stubs
-// let the manager's onTrackedPositionsUpdate still write to these keys
-// without breaking anything — returns are empty, consumers would see nothing.
-// Candidate for removal once we're confident no consumer references them.
-
-export function derivePositionsByTopic(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function derivePositionsByCategory(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function derivePositionsByPlatform(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function deriveVerifiedPlatforms(positions: Position[]): string[] {
-  // Alias to the OAuth version — Sofia's "verified platforms" concept IS OAuth.
-  return deriveVerifiedOAuthPlatforms(positions)
 }
 
 // ── Optimistic updates ──────────────────────────────────────────────────────

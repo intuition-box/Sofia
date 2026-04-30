@@ -5,7 +5,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
-import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
+import type { FollowAccountVM, FollowQueryResult } from '../types/follows'
 import { useGetMyTrustCircleQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
 
 import { batchFetchIPFS, batchResolveEns, createHookLogger } from '../lib/utils'

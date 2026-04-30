@@ -30,10 +30,6 @@ import {
   type WatchUserTrackedPositionsSubscriptionVariables
 } from "@0xsofia/graphql"
 import {
-  derivePositionsByTopic,
-  derivePositionsByCategory,
-  derivePositionsByPlatform,
-  deriveVerifiedPlatforms,
   deriveUserProfile,
   deriveUserStats,
   // Sofia-specific (Phase 3.A)
@@ -282,12 +278,6 @@ export class SubscriptionManager {
         realtimeKeys.userStats(wallet),
         deriveUserStats(positions)
       )
-
-      // Legacy alias — Sofia's "verified platforms" === OAuth platforms.
-      qc.setQueryData(
-        realtimeKeys.verifiedPlatforms(wallet),
-        deriveVerifiedPlatforms(positions)
-      )
     } catch (err) {
       console.error("[WS positions] derivation/setQueryData failed", err)
     }
@@ -304,33 +294,11 @@ export class SubscriptionManager {
     const wallet = this.walletAddress
     if (!wallet) return
 
-    const qc = this.queryClient
-    try {
-      qc.setQueryData(
-        realtimeKeys.topicPositionsMap(wallet),
-        derivePositionsByTopic(
-          positions as unknown as Parameters<typeof derivePositionsByTopic>[0]
-        )
-      )
-      qc.setQueryData(
-        realtimeKeys.categoryPositionsMap(wallet),
-        derivePositionsByCategory(
-          positions as unknown as Parameters<
-            typeof derivePositionsByCategory
-          >[0]
-        )
-      )
-      qc.setQueryData(
-        realtimeKeys.platformPositionsMap(wallet),
-        derivePositionsByPlatform(
-          positions as unknown as Parameters<
-            typeof derivePositionsByPlatform
-          >[0]
-        )
-      )
-    } catch (err) {
-      console.error("[WS tracked] derivation/setQueryData failed", err)
-    }
+    // No-op for now: tracked positions used to feed legacy Explorer keys
+    // (topicPositionsMap, categoryPositionsMap, platformPositionsMap) which
+    // had no consumer. Sofia uses dedicated services (TopicPositions, etc.).
+    void positions
+    void wallet
 
     console.log(
       `[WS tracked] ${positions.length} tracked positions for ${wallet.slice(0, 8)}…`

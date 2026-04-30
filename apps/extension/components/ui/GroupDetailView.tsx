@@ -26,7 +26,6 @@ const logger = createHookLogger('GroupDetailView')
 import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
 import { CartToast } from './CartDrawer'
 import '../styles/IntentionBubbleSelector.css'
-import onChainBadgeIcon from './icons/onchainbadge.png'
 
 interface GroupDetailViewProps {
   group: IntentionGroupWithStats
@@ -105,9 +104,6 @@ const UrlRow = ({
           <div className="url-meta">
             <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
-            {isCertifiedOnChain && (
-              <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
-            )}
             {isCertifiedOnChain && allCertInfos.length > 0 && (
               <div className="cert-badges">
                 {allCertInfos.map((certInfo) => (

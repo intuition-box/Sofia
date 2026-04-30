@@ -6,7 +6,7 @@ import {
   type TrackedUrl, type DomainCluster
 } from "../lib/services"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { sendMessage, sendRecommendationRequest } from "./agentRouter"
+import { sendMessage } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { getAddress } from "viem"
 import { getAllBookmarks } from "./messageSenders"
@@ -20,43 +20,6 @@ const logger = createServiceLogger('MessageHandlers')
 // Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
 
-
-// Handle recommendation generation via RecommendationAgent
-async function handleRecommendationGeneration(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
-  try {
-    const walletData = message.data
-    if (!walletData || !walletData.address) {
-      sendResponse({ success: false, error: "Wallet data required" })
-      return
-    }
-
-    logger.info('[messageHandlers] Generating recommendations for wallet', { address: walletData.address })
-
-    // Send request and wait for response (imported at top)
-    const recommendationsData = await sendRecommendationRequest(walletData)
-
-    if (!recommendationsData) {
-      sendResponse({ success: false, error: "No recommendations received from agent" })
-      return
-    }
-
-    // Extract recommendations array from response
-    const recommendations = recommendationsData.recommendations || []
-
-    logger.info(`[messageHandlers] Received ${recommendations.length} recommendation categories`)
-    sendResponse({
-      success: true,
-      recommendations
-    })
-
-  } catch (error) {
-    logger.error('[messageHandlers] Recommendation generation failed', error)
-    sendResponse({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    })
-  }
-}
 
 // Allowed origins for external messages (security)
 const ALLOWED_EXTERNAL_ORIGINS = [
@@ -210,10 +173,6 @@ export function setupMessageHandlers(): void {
         pageDataService.handlePageDuration(message)
         break
 
-      case "SCROLL_DATA":
-        pageDataService.handleScrollData(message)
-        break
-
 
       case "SEND_CHATBOT_MESSAGE":
         // Handle chatbot message from sidepanel (ChatPage)
@@ -297,24 +256,12 @@ export function setupMessageHandlers(): void {
         return true
       }
 
-      case "UPDATE_ECHO_BADGE":
-        badgeService.handleBadgeUpdate(sendResponse)
-        return true
-
       case "TRIPLET_PUBLISHED":
-        badgeService.handleBadgeUpdate(sendResponse)
-        return true
-
-      case "TRIPLETS_DELETED":
         badgeService.handleBadgeUpdate(sendResponse)
         return true
 
       case "INITIALIZE_BADGE":
         badgeService.handleBadgeUpdate(sendResponse)
-        return true
-
-      case "GENERATE_RECOMMENDATIONS":
-        handleRecommendationGeneration(message, sendResponse)
         return true
 
       case "URL_CHANGED":
@@ -368,18 +315,6 @@ export function setupMessageHandlers(): void {
           }
         } catch (error) {
           logger.error("GET_GROUP_DETAILS error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_USER_XP":
-        try {
-          const { lastActiveWallet: xpWallet } = await chrome.storage.local.get('lastActiveWallet')
-          const xpStats = await xpService.getStats(xpWallet || '')
-          const goldStats = await goldService.getStats(xpWallet || '')
-          sendResponse({ success: true, xp: xpStats, gold: goldStats })
-        } catch (error) {
-          logger.error("GET_USER_XP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -455,34 +390,6 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           logger.error("UPDATE_GROUP_LEVEL error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_LEVEL_UP_COST":
-        try {
-          const { groupId: lvlGroupId } = message.data || message
-          if (!lvlGroupId) {
-            sendResponse({ success: false, error: "groupId required" })
-            return true
-          }
-          const lvlGroup = await groupManager.getGroup(lvlGroupId)
-          if (!lvlGroup) {
-            sendResponse({ success: false, error: "Group not found" })
-            return true
-          }
-          const cost = getLevelUpCost(lvlGroup.level)
-          const { lastActiveWallet: lvlWallet } = await chrome.storage.local.get('lastActiveWallet')
-          const goldStats = await goldService.getStats(lvlWallet || '')
-          sendResponse({
-            success: true,
-            cost,
-            currentLevel: lvlGroup.level,
-            availableGold: goldStats.totalGold,
-            canAfford: goldStats.totalGold >= cost
-          })
-        } catch (error) {
-          logger.error("GET_LEVEL_UP_COST error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

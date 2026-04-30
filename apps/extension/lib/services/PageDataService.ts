@@ -59,13 +59,6 @@ export class PageDataService {
   }
 
   /**
-   * Handle SCROLL_DATA message (no-op, scroll tracking removed)
-   */
-  public handleScrollData(_message: ChromeMessage): void {
-    // Scroll tracking removed - keeping method for API compatibility
-  }
-
-  /**
    * Process page data inline (extracted from messageHandlers)
    */
   private async handlePageDataInline(data: PageData, pageLoadTime: number): Promise<void> {

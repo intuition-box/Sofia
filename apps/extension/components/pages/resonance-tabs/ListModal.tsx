@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom"
 
 import { formatTrust } from "~/lib/utils"
-import { SofiaLoader } from "../../ui"
+import SofiaLoader from "../../ui/SofiaLoader"
 
 import type { DebateClaim, FeaturedList } from "~/hooks"
 

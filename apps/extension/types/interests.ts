@@ -6,7 +6,7 @@
 // Tier colors — DS-aligned pastel palette (mirrors INTENTION_PASTEL) + gold cap.
 // One color per decade of levels (1-10, 11-20, …). Lightness ramps within each
 // tier so each level has a subtly different shade.
-export const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
+const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
   { base: '#8f8ca8', hsl: [245, 12, 60] },   // Tier 0: Lvl 1-10   — ds-muted (slate)
   { base: '#6dd4a0', hsl: [146, 53, 63] },   // Tier 1: Lvl 11-20  — trusted (green)
   { base: '#7bade0', hsl: [210, 60, 68] },   // Tier 2: Lvl 21-30  — work (blue)
@@ -20,7 +20,7 @@ export const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
 ]
 
 // Tier badge metadata — name, level range, and image import path
-export interface TierBadge {
+interface TierBadge {
   tier: number;
   name: string;
   levelRange: string;

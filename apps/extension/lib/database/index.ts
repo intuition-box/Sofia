@@ -7,12 +7,8 @@
 export { SofiaIndexedDB, sofiaDB, STORES } from './indexedDB'
 export type {
   TripletsRecord,
-  SettingsRecord,
-  BookmarkListRecord,
-  BookmarkedTripletRecord,
   IntentionGroupRecord,
   GroupUrlRecord,
-  PredicateChangeRecord,
   CartItemRecord
 } from './indexedDB'
 

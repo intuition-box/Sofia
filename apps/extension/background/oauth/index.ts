@@ -10,9 +10,6 @@ import { createServiceLogger } from '../../lib/utils/logger'
 
 const logger = createServiceLogger('OAuth')
 
-// Disable Twitter profile fetch for now
-const TWITTER_FETCH_PROFILE_ENABLED = false
-
 /**
  * Main OAuth service orchestrating all components
  * Reduced from 837 lines to ~100 lines by splitting responsibilities
@@ -70,8 +67,8 @@ export class OAuthService {
   async syncPlatformData(platform: string): Promise<any> {
     logger.info(`Starting data sync for ${platform}`)
 
-    // Skip Twitter profile fetch for now
-    if (platform === 'twitter' && !TWITTER_FETCH_PROFILE_ENABLED) {
+    // Skip Twitter profile fetch — endpoint disabled while reworked
+    if (platform === 'twitter') {
       logger.warn('Twitter profile fetch disabled. Token stored successfully.')
       return { triplets: [], skipped: true }
     }

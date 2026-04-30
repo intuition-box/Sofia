@@ -6,7 +6,6 @@
 // Blockchain
 export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
-export type { PinnedAtomData } from './AtomService'
 export { tripleService } from './TripleService'
 export type { ResolvedTriple } from './TripleService'
 
@@ -21,7 +20,7 @@ export { currencyMigrationService } from './CurrencyMigrationService'
 
 // Groups & Intentions
 export { groupManager } from './GroupManager'
-export type { CertificationType, CertifyResult, GroupStats } from './GroupManager'
+export type { CertificationType } from './GroupManager'
 
 // Quest System
 export { QuestBadgeService } from './QuestBadgeService'
@@ -41,14 +40,11 @@ export { pageDataService } from './PageDataService'
 export { sessionTracker } from './SessionTracker'
 export type { TrackedUrl, DomainCluster } from './SessionTracker'
 
-// User
-export { getWalletAddress } from './UserSessionManager'
 
 // Discovery & Certifications
 export { discoveryScoreService } from './DiscoveryScoreService'
-export type { DiscoveryState } from './DiscoveryScoreService'
 export { UserCertificationsServiceClass, userCertificationsService } from './UserCertificationsService'
-export type { TripleDetail, CertificationEntry, CertificationsStoreState } from './UserCertificationsService'
+export type { TripleDetail, CertificationEntry } from './UserCertificationsService'
 
 // Global Stake
 export { globalStakeService } from './GlobalStakeService'
@@ -56,11 +52,9 @@ export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVa
 
 // Cart
 export { cartService } from './CartService'
-export type { CartState } from './CartService'
 
 // Topic Interests (from Sofia Explorer)
 export { topicPositionsService } from './TopicPositionsService'
-export type { UserTopicPosition, TopicPositionsState } from './TopicPositionsService'
 
 // Platform Pool
 export { platformPoolService } from './PlatformPoolService'

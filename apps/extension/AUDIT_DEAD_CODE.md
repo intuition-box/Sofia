@@ -1,639 +1,472 @@
-# Sofia Extension — Audit Dead Code (post-cleanup)
+# Sofia Extension — Audit Dead Code (post-G)
 
 **Date :** 2026-04-29
-**Scope :** `apps/extension` (Plasmo Chrome extension, ~700 source files)
-**Hors scope (Plasmo entry points auto-loaded) :** `sidepanel.tsx`, `background/index.ts`, `background/*.ts`, `contents/*.ts`, `contents/*.tsx`
-**Note :** Re-scan effectué APRÈS les Lots A à D :
-- **Lot A** : 22 fichiers morts supprimés + 20 dépendances npm orphelines
-- **Lot B** : ~41 exports morts purgés des barrels
-- **Lot C** : 5 stores IndexedDB supprimés + 5 classes service + DB_VERSION bumpé 9→10 + predicates morts retirés
-- **Lot D** : 516 règles CSS mortes retirées
-
-`bun tsc --noEmit` n'a pas pu être exécuté (sandbox refuse l'accès), donc la **section 3 (TS6133)** est laissée à compléter localement. Tout le reste est corroboré par `grep -rn` cross-référencé. Tous les chemins sont absolus, toutes les lignes vérifiées.
+**Scope :** `/home/chauche/Sofia/apps/extension`
+**Hors scope (Plasmo entry points) :** `sidepanel.tsx`, `background/index.ts`, `background/*.ts`, `contents/*.ts`, `contents/*.tsx`
+**Cleanup history :** Lots A à G + DiscoveryScore fix déjà appliqués. ~30 fichiers supprimés, ~100 exports barrels purgés, ~516 règles CSS coupées, ~150 types/méthodes/messages morts retirés en passes précédentes.
 
 ## Sommaire
 
 1. [Fichiers entiers morts](#1-fichiers-entiers-morts)
 2. [Exports morts dans les barrels](#2-exports-morts-dans-les-barrels)
-3. [Imports inutilisés (TS6133)](#3-imports-inutilisés-ts6133)
-4. [Dépendances npm orphelines (re-audit)](#4-dépendances-npm-orphelines-re-audit)
+3. [Imports inutilisés (TS6133)](#3-imports-inutilises-ts6133)
+4. [Dépendances npm orphelines](#4-dependances-npm-orphelines)
 5. [CSS mort](#5-css-mort)
 6. [IndexedDB stores morts](#6-indexeddb-stores-morts)
 7. [Chrome message types morts](#7-chrome-message-types-morts)
 8. [Predicates morts](#8-predicates-morts)
-9. [Hooks/services dupliqués](#9-hooksservices-dupliqués)
+9. [Hooks/services dupliqués](#9-hooksservices-dupliques)
 10. [Code OAuth/Privy mort](#10-code-oauthprivy-mort)
 11. [Composants React morts](#11-composants-react-morts)
-12. [Branches mortes / legacy](#12-branches-mortes--legacy)
-13. [GraphQL ops importées non câblées](#13-graphql-ops-importées-non-câblées)
+12. [Code legacy / @deprecated / TODO-remove](#12-code-legacy--deprecated--todo-remove)
+13. [GraphQL ops importées non câblées](#13-graphql-ops-importees-non-cablees)
 14. [Doublons hook ↔ service](#14-doublons-hook--service)
-15. [Synthèse & quick wins](#synthèse--quick-wins)
 
 ---
 
 ## 1. Fichiers entiers morts
 
-### 1.1 Composants React
-
-| Fichier | Confidence | Note |
+| Fichier (chemin absolu) | Confiance | Justification |
 |---|---|---|
-| `/home/chauche/Sofia/apps/extension/components/pages/profile-tabs/follow/FollowAccountCard.tsx` | HIGH | `export const FollowAccountCard` ligne 18 — aucun import du fichier dans tout le repo. Probablement un legacy avant que la liste soit réécrite avec une autre carte. |
+| `/home/chauche/Sofia/apps/extension/lib/services/UserSessionManager.ts` | **HIGH** | Aucun consommateur externe (8 fonctions exportées). Le seul export ré-exposé via `~/lib/services` (`getWalletAddress`) n'est jamais importé : `getWalletAddress` interne aux services (QuestTrackingService, oauth/core/*, background/index.ts) re-définissent leur propre helper local. |
+| `/home/chauche/Sofia/apps/extension/background/tripletProcessor.ts` | **HIGH** | `convertThemesToTriplets` n'a aucun importeur. Plus utilisé depuis le retrait de l'agent de thème. |
+| `/home/chauche/Sofia/apps/extension/components/ui/AccountStats.tsx` | **HIGH** | Le composant React `<AccountStats>` n'est jamais rendu. Seul le hook `useAccountStats` (fichier différent) est consommé (par `ProfilePage`/`UserProfilePage`). Re-export barrel `components/ui/index.ts` dead (ligne 7). |
+| `/home/chauche/Sofia/apps/extension/components/ui/blockchain/CommunityTrustBar.tsx` | **HIGH** | `<CommunityTrustBar>` jamais rendu, importé nulle part. |
+| `/home/chauche/Sofia/apps/extension/components/styles/CommunityTrustBar.css` | **HIGH** | Importé uniquement par `CommunityTrustBar.tsx` (mort). |
+| `/home/chauche/Sofia/apps/extension/components/layout/background/fond.png` | **HIGH** | Aucune référence dans les sources `.ts/.tsx/.css`. |
+| `/home/chauche/Sofia/apps/extension/hooks/useRecommendations.ts` | **HIGH** | Hook jamais consommé par aucun composant. Cascade : rend morts `RecommendationService.generateRecommendations` + `RecommendationService.generateWithAgent` + message `GENERATE_RECOMMENDATIONS` + `agentRouter.sendRecommendationRequest`. (Note : `RecommendationService.clearCache` reste utilisé par `SettingsPage.tsx`.) |
 
-### 1.2 Hooks
+**Assets icônes / SVG morts** (jamais importés en `.tsx/.ts/.css`)
 
-Aucun hook entièrement mort détecté. Les 7 hooks signalés dans l'audit pré-cleanup (`useInterestAttention`, `useUserSignals`, `useUserLists`, `useEchoPublishing`, `useLinkedWallets`, `useCartReminder`, `usePageIntentionStats`) ont été supprimés en Lot A. ✅
-
-### 1.3 Services
-
-Aucun fichier service entièrement mort. Les 5 classes IndexedDB orphelines ont été supprimées en Lot C. ✅ Cependant plusieurs **méthodes publiques** de services restent mortes (cf. §2 et §12).
-
-### 1.4 Types / interfaces — fichiers entiers
-
-Aucun fichier `types/*.ts` n'est entièrement mort, mais plusieurs en contiennent une majorité de symboles morts :
-
-| Fichier | Confidence | Note |
-|---|---|---|
-| `/home/chauche/Sofia/apps/extension/types/wallet.ts` | HIGH | 3 interfaces (`WalletConnection`, `WalletState`, `WalletEvent`) — **0 import dans le repo**. `WalletState` est redéfini localement dans `useWalletFromStorage.ts:8`. **Tout le fichier peut être supprimé**, plus l'export `* from './wallet'` dans `types/index.ts:15`. |
-| `/home/chauche/Sofia/apps/extension/background/types.ts` | HIGH (sauf `PageData`) | `MessageData`, `RawMessage`, `PageStats`, `ChromeMessage` (alias) ne sont importés nulle part. Seule `PageData` est utilisée (cf. `PageDataService.ts:8`). **Recommandation : déplacer `PageData` vers `types/page.ts` et supprimer entièrement `background/types.ts` + `types/messaging.ts`** (qui n'est consommé que par `background/types.ts`). |
-| `/home/chauche/Sofia/apps/extension/types/messaging.ts` | HIGH | Le seul export `PlasmoMessage` n'est consommé que par `background/types.ts:1` (lui-même mort). À supprimer avec le précédent. |
-
-### 1.5 Assets / icônes
-
-| Fichier | Confidence | Note |
-|---|---|---|
-| `/home/chauche/Sofia/apps/extension/components/ui/icons/social/spotify.svg` | HIGH | 0 import. La copie utilisée est `components/ui/social/spotify.svg`. |
-| `/home/chauche/Sofia/apps/extension/components/ui/icons/social/twitch.svg` | HIGH | Idem. |
-| `/home/chauche/Sofia/apps/extension/components/ui/icons/social/youtube.svg` | HIGH | Idem. |
-| `/home/chauche/Sofia/apps/extension/components/ui/social/twitter.svg` | HIGH | 0 import (le repo importe `x.svg`, pas `twitter.svg`). |
-
-Le dossier `components/ui/icons/social/` complet peut être supprimé.
+| Asset | Confiance |
+|---|---|
+| `components/ui/icons/Icon=Search.svg` | **HIGH** |
+| `components/ui/icons/chatIcon.png` | **HIGH** |
+| `components/ui/icons/connectButtonOff.svg` | **HIGH** |
+| `components/ui/icons/connectButtonOn.svg` | **HIGH** |
+| `components/ui/icons/left side.svg` | **HIGH** |
+| `components/ui/icons/right side.svg` | **HIGH** |
+| `components/ui/icons/button=False.png` | **HIGH** |
+| `components/ui/icons/button=True.png` | **HIGH** |
+| `components/ui/icons/Toggle=false.png` | **HIGH** |
+| `components/ui/icons/Toggle=true.png` | **HIGH** |
+| `components/ui/icons/ConnectButton.png` | **HIGH** |
+| `components/ui/icons/ConnectButtonHover.png` | **HIGH** |
+| `components/ui/icons/Thumbs up.png` | **HIGH** |
+| `components/ui/icons/onchainbadge.png` | **HIGH** |
+| `components/ui/icons/network.png` | **HIGH** |
 
 ---
 
 ## 2. Exports morts dans les barrels
 
-### 2.1 `/home/chauche/Sofia/apps/extension/hooks/index.ts`
+### 2.1 `~/lib/services/index.ts`
 
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 17 | `useTrustPage` | HIGH | 0 consommateur `.tsx`. Seul `TripleService.ts` mentionne le nom dans des commentaires. |
+| Symbole | Confiance | Justification |
+|---|---|---|
+| `getWalletAddress` (UserSessionManager) | **HIGH** | Aucun consommateur externe (cf. §1). |
+| `type PinnedAtomData` | **HIGH** | Re-exporté aussi depuis `useCreateAtom`. Aucun consommateur via le barrel `~/lib/services`. |
+| `type CertifyResult` | **HIGH** | Aucun importeur externe. |
+| `type GroupStats` | **HIGH** | Aucun importeur externe. |
+| `type DiscoveryState` | **HIGH** | Aucun importeur externe. |
+| `type CertificationsStoreState` | **HIGH** | Aucun importeur externe. |
+| `type CartState` | **HIGH** | Aucun importeur externe. |
+| `type UserTopicPosition` | **HIGH** | Importeurs vont chercher directement dans `TopicPositionsService`. |
+| `type TopicPositionsState` | **HIGH** | Aucun importeur externe. |
 
-(Tous les autres hooks listés dans le barrel ont au moins 1 consommateur `.tsx` direct. Bilan : 7 hooks supprimés en Lot A — le barrel est aujourd'hui ~98% propre.)
+### 2.2 `~/lib/database/index.ts`
 
-### 2.2 `/home/chauche/Sofia/apps/extension/lib/services/index.ts`
+| Symbole | Confiance | Justification |
+|---|---|---|
+| `type BookmarkListRecord` | **HIGH** | Aucun importeur externe. |
+| `type BookmarkedTripletRecord` | **HIGH** | Aucun importeur externe. |
+| `type PredicateChangeRecord` | **HIGH** | Importé en interne via `~types/database` directement. Aucun consommateur via le barrel `~/lib/database`. |
+| `type SettingsRecord` | **HIGH** | Aucun importeur externe via le barrel. |
 
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 9 | `PinThingFn` (type) | HIGH | Le type est consommé en interne dans `AtomService.ts` ; aucun import externe. |
-| 14 | `cleanupProvider` | LOW | Consommé par `SettingsPage.tsx:9` — vivant. ✅ |
-| 14 | `selectProviderByName, selectProviderByAddress, clearProviderSelection, createBoundProvider` | — | Tous consommés (`useWalletFromStorage`, `viemClients`). ✅ |
-| 38 | `TxEventType` (type) | HIGH | 0 import externe — usage interne uniquement dans `TxEventBus.ts`. |
-| 38 | `TxEvent` (type) | HIGH | 0 import externe. |
-| 47 | `AgentIds` (type) | HIGH | Re-export depuis `UserSessionManager.ts` — 0 consommateur externe. |
+### 2.3 `~/lib/utils/index.ts`
 
-(Le reste du barrel est propre. Lot B a déjà retiré `AtomServiceClass`, `TripleServiceClass`, `GoldServiceClass`, `LevelUpServiceClass`, `CurrencyMigrationServiceClass`, `GroupManagerService`, `PageDataService`, `SessionTrackerService`, `DiscoveryScoreServiceClass`, `GlobalStakeServiceClass`, `CartServiceClass`, `BrowsingNudgeServiceClass`, `getWalletProvider`, `listWalletProviders`, `generateDeterministicUUID`, `isWalletConnected`, `getUserId`, `getUserAgentIds`, `getUserMapping`, `resetUserSession`, `debugUserSession`, `NUDGE_URL_THRESHOLD`. ✅)
+| Symbole | Confiance | Justification |
+|---|---|---|
+| (aucun mort détecté) | — | Tous les exports de `lib/utils/index.ts` ont au moins un consommateur après les Lots A–G. |
 
-### 2.3 `/home/chauche/Sofia/apps/extension/lib/utils/index.ts`
+### 2.4 `~/types/index.ts` — barrel mort entier
 
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 17 | `getEnsName` | HIGH | 0 consommateur du symbole exporté. Utilisé seulement en interne dans `ensUtils.ts:224`. |
-| 31 | `LEVEL_THRESHOLDS` | HIGH | 0 consommateur externe — consulté uniquement dans `levelCalculation.ts`. |
-| 34 | `extractHostname` | HIGH | 0 consommateur — `useTrendingCertifications`, `useOnChainIntentionGroups`, `useDebateClaims` utilisent tous `extractDomain` à la place. |
-| 56 | `EMPTY_INTENTIONS` | HIGH | Re-exporté depuis `pageBlockchainReducer.ts` mais aucun consommateur externe. Utilisé en interne dans le reducer. |
+| Symbole | Confiance | Justification |
+|---|---|---|
+| `type Timestamp`, `type URL`, `type Duration`, `interface ExtensionContext`, `interface ExtensionError` | **HIGH** | Aucun importeur. Le barrel `~/types` n'est jamais utilisé (consommateurs importent toujours depuis `~types/<file>` direct). Le fichier entier `types/index.ts` peut être supprimé. |
 
-(Lot B a déjà retiré `blockchainLogger`, `apiLogger`, `storageLogger`, `batchGetEnsAvatars`, `clearEnsAvatarCache`, `escapeSvgForCss`, `isEthereumAddress`, `fetchIPFSMetadata`, `clearIPFSCache`, `getIPFSCacheSize`, `toDateStr`, `DEFAULT_COUNTS`. ✅)
+### 2.5 `~/components/ui/index.ts` — barrel mort entier
 
-### 2.4 `/home/chauche/Sofia/apps/extension/lib/database/index.ts`
+| Symbole | Confiance | Justification |
+|---|---|---|
+| Tous (`Avatar`, `AccountStats`, `FollowButton`, `BookmarkButton`, `TrustAccountButton`, `SofiaLoader`, `FullScreenLoader`, `NavigationBar`, `SwitchButton`, `QuickActionButton`, `ProfileHeader`, `PageBlockchainCard`, `UserAtomStats`, `GroupBentoCard`, `GroupDetailView`, `CategoryCard`, `CategoryDetailView`, `StarBorder`, `WalletConnectionButton`, `IntentionBubbleSelector`) | **HIGH** | Aucun consommateur n'importe via `~/components/ui` ni via `../ui`. Tous les composants sont importés directement par fichier. Le barrel entier peut être supprimé. |
 
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 10–20 | `NavigationRecord, ProfileRecord, SearchRecord, RecommendationRecord, UserXPRecord` | HIGH | Stores supprimés en Lot C — ces types ne sont utilisés nulle part (l'IndexedDB.ts re-export liste de types n'inclut plus ces 5). **Mais ils restent définis dans `types/database.ts:20-113`**, et ré-exportés ici. À supprimer entièrement. |
+### 2.6 `~/components/charts/index.ts`
 
-(Lot C a retiré : `NavigationDataService`, `UserProfileService`, `SearchHistoryService`, `RecommendationsService` (DB), `UserXPService`, et les singletons minuscules associés. ✅)
+| Symbole | Confiance | Justification |
+|---|---|---|
+| `BondingCurveChart` (re-export) | **MEDIUM** | Importé directement depuis `../../charts/BondingCurveChart` par `HistoryTab.tsx`. Le barrel n'est jamais utilisé. |
 
-### 2.5 `/home/chauche/Sofia/apps/extension/components/ui/index.ts`
+### 2.7 `~/components/pages/profile-tabs/follow/index.ts` — cassé + mort
 
-Aucun export mort détecté — Lot A a déjà retiré `TrackingStatus`, `Portal`, `Button`, `SofiaNotification`. ✅
+| Symbole | Confiance | Justification |
+|---|---|---|
+| `FollowAccountCard` (re-export) | **HIGH** | Le fichier `FollowAccountCard.tsx` a été supprimé en Lot E — ce re-export est cassé (compile failure si jamais le barrel est utilisé). |
+| Tous les autres exports (`FollowersPanel`, `FollowingPanel`, `TrustCirclePanel`, `FollowSearchBox`) | **HIGH** | Le barrel n'est jamais importé (`CommunityTab.tsx` importe directement depuis `./follow/<file>`). De plus `ExplorerPanel` n'est PAS exporté par le barrel — incohérence. Le fichier `follow/index.ts` peut être supprimé entièrement. |
 
-### 2.6 `/home/chauche/Sofia/apps/extension/types/index.ts`
+### 2.8 `~/components/layout/background/index.ts`
 
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 15 | `export * from './wallet'` | HIGH | Le fichier `types/wallet.ts` n'a aucun consommateur externe (cf. §1.4). |
-
-### 2.7 `/home/chauche/Sofia/apps/extension/types/messages.ts` — types morts
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 7 | `BaseMessage` | HIGH | Référencé uniquement par les autres interfaces du fichier (`TripletMessage`, `BadgeMessage`, etc.) qui sont elles-mêmes mortes. |
-| 84 | `TripletMessage` | HIGH | 0 import externe. |
-| 90 | `BadgeMessage` | HIGH | 0 import externe. |
-| 124 | `SofiaRecord` | HIGH | 0 import externe. |
-| 132 | `PageMetadata` | HIGH | 0 import externe (le hook `usePageBlockchainData` n'utilise pas ce type — il utilise `MessageResponse.title`). |
-| 143 | `PageAnalysisData` | HIGH | 0 import externe. |
-| 152 | `PageBlockchainData` | HIGH | 0 import externe (le terme apparaît dans le nom des hooks/types `PageBlockchainState` mais ces derniers sont définis dans `types/page.ts`). |
-| 172 | `PageAnalysisMessage` | HIGH | 0 import externe. |
-| 177 | `PageBlockchainMessage` | HIGH | 0 import externe. |
-| 200 | `WalletRequestMessage` | HIGH | 0 import externe (les content scripts utilisent un objet inline, pas le type). |
-| 207 | `WalletResponseMessage` | HIGH | 0 import externe. |
-| 216 | `WalletEventMessage` | HIGH | 0 import externe. |
-
-Recommandation : supprimer 12 types ; garder uniquement `MessageType`, `ChromeMessage`, `MessageResponse`, `Triplet`, `ParsedSofiaMessage`, `SofiaMessage`, `Message` (legacy alias).
-
-### 2.8 `/home/chauche/Sofia/apps/extension/types/discovery.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 24 | `INTENTION_LABELS` | HIGH | 0 consommateur — l'UI utilise `INTENTION_CONFIG` directement depuis `intentionCategories.ts`. |
-| 32–39 | `PageDiscoveryRecord` | HIGH | 0 consommateur. |
-| 42–55 | `UserDiscoveryStats` | LOW | Utilisé par `useDiscoveryScore.ts:14` et `discoveryUtils.ts`. ✅ |
-| 58–64 | `InterestAttention` | HIGH | 0 consommateur. |
-| 67–70 | `ATTENTION_REQUIREMENTS` | HIGH | 0 consommateur. |
-| 79–80 | `DISCOVERY_XP_REWARDS` (`@deprecated`) | HIGH | 0 consommateur — alias kept for compat mais aucun appelant. |
-| 88–94 | `DiscoveryTriple` | HIGH | 0 consommateur. |
-| 97–105 | `RecentDiscovery` | HIGH | 0 consommateur. |
-
-### 2.9 `/home/chauche/Sofia/apps/extension/types/blockchain.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 9–13 | `BlockchainResult` | LOW | Utilisé en interne par `AtomCreationResult`/`TripleOnChainResult`/`BatchTripleResult`. ✅ |
-| 24–27 | `AtomCheckResult` | HIGH | 0 import externe. |
-| 35–39 | `TripleCheckResult` | HIGH | 0 import externe. |
-| 68–74 | `ContractConfig` | HIGH | 0 import. |
-| 77–84 | `TransactionParams` | HIGH | 0 import. |
-| 86–91 | `TransactionResult` | HIGH | 0 import. |
-| 94–102 | `EchoTriplet` | HIGH | 0 import. |
-
-### 2.10 `/home/chauche/Sofia/apps/extension/types/intuition.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 1–12 | `IntuitionAtomResponse` | HIGH | 0 import externe. |
-| 54–56 | `GraphQLAtomsResponse` | HIGH | 0 import externe. |
-| 14–52 | `IntuitionTripleResponse` | LOW | Utilisé par `useIntuitionTriplets.ts:17`. ✅ |
-| 58–60 | `GraphQLTriplesResponse` | LOW | Utilisé par `useIntuitionTriplets.ts:17`. ✅ |
-
-### 2.11 `/home/chauche/Sofia/apps/extension/types/viem.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 7–9 | `Address`, `Hash`, `Hex` | HIGH | **Le fichier entier n'est importé nulle part** (`grep -rn "from.*types/viem"` → 0). Tous les exports sont morts. |
-| 12–19 | `TransactionRequest` | HIGH | Idem. |
-| 21–32 | `ContractWriteParams` | HIGH | Idem. |
-| 34–39 | `ContractReadParams` | HIGH | Idem. |
-| 42–46 | `WalletExecutionResult` | HIGH | Idem. |
-| 49–52 | `TransactionExecutor` | HIGH | Idem. |
-
-**Recommandation : supprimer tout `types/viem.ts` + l'export `* from './viem'` dans `types/index.ts:21`.**
-
-### 2.12 `/home/chauche/Sofia/apps/extension/types/intentionCategories.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 69 | `getIntentionColor` | HIGH | 0 consommateur (les composants utilisent `CERTIFICATION_COLORS` directement). |
-
-### 2.13 `/home/chauche/Sofia/apps/extension/types/interests.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 84–90 | `getTierColor` | HIGH | 0 consommateur (`TIER_COLORS` est utilisé directement par `getLevelColor` et `getLevelColorAlpha` qui, eux, sont consommés). |
-
-### 2.14 `/home/chauche/Sofia/apps/extension/types/bonding-curve.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 15 | `PriceChange` | LOW | Utilisé en interne dans `BondingCurveData` ; aucun consommateur externe direct. |
-| 34–41 | `DepositPreview` | HIGH | 0 import. |
-| 43–49 | `VaultMetrics` | HIGH | 0 import. |
-
-### 2.15 `/home/chauche/Sofia/apps/extension/types/follows.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 81–84 | `CommunitySearchContext` | HIGH | 0 consommateur. |
-| 75 | `FollowAccountVM` (alias) / `FollowQueryResult` (alias) | LOW | Les deux **alias** sont consommés par `useFollowing/useFollowers` ; les originals `CommunityAccountVM`/`CommunityQueryResult` ne le sont pas externe. Choisir un canonique. |
-
-### 2.16 `/home/chauche/Sofia/apps/extension/lib/services/ai/types.ts`
-
-| Ligne | Export | Confidence | Note |
-|---|---|---|---|
-| 5–11 | `BentoSuggestion` | HIGH | 0 import. |
-| 23–26 | `WalletData` | HIGH | Utilisé seulement en interne dans `RecommendationService.ts`. |
+| Symbole | Confiance | Justification |
+|---|---|---|
+| (re-export `Background`) | **LOW** | `AppLayout.tsx` importe `import Background from './background'` — résolu via `index.ts` ; donc le barrel est utilisé. ✓ vivant. |
 
 ---
 
 ## 3. Imports inutilisés (TS6133)
 
-⚠️ **Non disponible** : `bun tsc --noEmit` est refusé par le sandbox. La commande à exécuter localement :
+Le sandbox refuse `bun tsc --noEmit`. Détection manuelle des plus probables :
 
-```bash
-cd /home/chauche/Sofia/apps/extension && bun tsc --noEmit 2>&1 | grep -E "TS6133|TS6196|TS6198|TS6192" > /tmp/tsc-unused.log
-```
+| Fichier | Symbole | Confiance |
+|---|---|---|
+| `/home/chauche/Sofia/apps/extension/hooks/useTrustCircle.ts` | `AtomDataResponse` (ligne 8) — importé mais jamais référencé | **HIGH** |
+| `/home/chauche/Sofia/apps/extension/hooks/useFollowing.ts` | `AtomDataResponse` (ligne 8) — importé mais jamais référencé | **HIGH** |
+| `/home/chauche/Sofia/apps/extension/hooks/useFollowers.ts` | `AtomDataResponse` (ligne 8) — importé mais jamais référencé | **HIGH** |
 
-Les fichiers déclarés morts ci-dessus (FollowAccountCard.tsx, types/wallet.ts, types/viem.ts, background/types.ts) génèrent automatiquement des dizaines d'imports inutilisés une fois supprimés. Les autres TS6133 demandent un audit ligne-par-ligne avec sortie du compilateur.
-
-**À noter** : on observe dans le code des patterns suspects :
-- `lib/database/indexedDB-methods.ts:5` — importe `NavigationRecord, ProfileRecord, SearchRecord, RecommendationRecord, UserXPRecord` qui ne sont utilisés nulle part dans ce fichier (les classes correspondantes ont été supprimées en Lot C). **HIGH confidence — TS6133 garanti.**
-- `components/ui/blockchain/ExtendedMetricsPanel.tsx:17` redéfinit localement `formatTrust` au lieu d'importer depuis `~/lib/utils`. **Doublon — voir §9.**
+Limitation : impossible d'exécuter `tsc --noEmit` dans le sandbox actuel pour énumérer le reste des TS6133.
 
 ---
 
-## 4. Dépendances npm orphelines (re-audit)
+## 4. Dépendances npm orphelines
 
-Le `package.json` actuel ne contient plus que **17 dépendances** (vs ~37 avant). Lot A a déjà retiré `@0xintuition/1ui`, `@0xintuition/graphql`, `@0xintuition/protocol`, `@elizaos/plugin-mcp`, `@modelcontextprotocol/sdk`, `umami`, `express`, `cors`, `node-fetch`, `evt`, `ws`, `@types/ws`, `@types/cors`, `@types/express`, `@types/react-router-dom`, `@wagmi/connectors`, `idb`, `ai`, `three`, `postprocessing`. ✅
+`package.json` contient 16 deps + 11 devDeps. Audit :
 
-Restantes orphelines (très peu) :
-
-| Package | Confidence | Note |
+| Dep | Statut | Notes |
 |---|---|---|
-| `tailwind` (4.0.0) | HIGH | `grep -rn "from.*tailwind"` retourne **0** dans tout `apps/extension`. Aucun `tailwind.config.*` à la racine. Plasmo a son propre handling CSS, ce package est mort. |
+| `@0xsofia/design-system` | ✓ vivant | DS, consommé partout |
+| `@0xsofia/graphql` | ✓ vivant | Hooks codegen |
+| `@dicebear/collection` | ✓ vivant | `lib/utils/avatar.ts` |
+| `@dicebear/core` | ✓ vivant | `lib/utils/avatar.ts` |
+| `@plasmohq/storage` | ✓ vivant | `contents/tracking.ts` |
+| `@tanstack/query-async-storage-persister` | ✓ vivant | `lib/providers/queryClient.ts` |
+| `@tanstack/react-query` | ✓ vivant | omniprésent |
+| `@tanstack/react-query-persist-client` | ✓ vivant | `background/realtime.ts`, `lib/providers/queryProvider.tsx` |
+| `graphql` | ✓ vivant | dépendance peer |
+| `lucide-react` | ✓ vivant | `BottomNavigation.tsx`, `CartDrawer.tsx` |
+| `mipd` | ✓ vivant | `contents/walletBridge.ts` |
+| `plasmo` | ✓ vivant | bundler |
+| `react`, `react-dom` | ✓ vivant | base |
+| `viem` | ✓ vivant | omniprésent |
+| `wagmi` | ✓ vivant | `lib/config/wagmi.ts`, providers |
 
-**Total : 1 dépendance restante à retirer.**
+**Aucune dépendance npm orpheline détectée** (tailwind retiré en Lot E).
 
 ---
 
 ## 5. CSS mort
 
-### 5.1 Fichiers CSS entièrement morts
+Sur 43 fichiers `components/styles/*.css`, tous ont au moins un import `.tsx/.ts` sauf :
 
-Aucun. Lot D a retiré `FeedTab.css`, `SofiaNotification.css`, `CircularMenu.css`, `PulseAnimation.css`, `PixelBlast.css` et 516 règles individuelles. ✅
-
-### 5.2 Classes CSS suspectes (détection)
-
-L'extraction `.foo { … }` × `grep -rn` × whitelist patterns dynamiques (`intention-pill--${type}`, `bento-${size}`, `avatar-${size}`, `position-board--${variant}`, `cart-drawer__item-pill--${voteAction}`, `batch-reward__item-tier--${tier}`, `podium-${rankClass}`, `badge-${badgeType}`, `fc-verb-tag`, `pf-platform-card`) a été appliquée. Après ce filtre, aucun CSS clairement mort dans la pile actuelle (Lot D a tout aplati).
-
-| Fichier CSS | Confidence | Note |
+| Fichier CSS | Confiance | Justification |
 |---|---|---|
-| Tous les fichiers `components/styles/*.css` | LOW | Vivants — chaque fichier importe au moins un composant `.tsx` valide. |
-| `components/styles/AccountTab.css` | LOW | Importé par `ProfilePage.tsx`, `SocialsTab.tsx`, `UserProfile.css` — vivant malgré le nom légèrement trompeur (pas de `AccountTab` composant). |
+| `components/styles/CommunityTrustBar.css` | **HIGH** | Importé uniquement par `CommunityTrustBar.tsx` qui est mort (cf. §1). |
 
-**Bilan : aucune action CSS post-Lot D.** Pour vérifier finement, exécuter :
+**Whitelist dynamique appliquée** (préfixes `intention-pill--`, `bento-`, `avatar-`, `badge-`, `podium-`, `position-board--`, `item-pill--`, `item-tier--`, `batch-reward__item-tier--`, `cart-drawer__item-pill--`) — ces classes générées dynamiquement ne sont pas considérées mortes.
 
-```bash
-cd /home/chauche/Sofia/apps/extension && bun run build 2>&1 | grep -i "unused\|purg"
-```
+**DS classes** (`fc-verb-tag`, `pf-platform-card`, `pf-echoes-sort`, `pf-sort-btn`, etc.) consommées via `@0xsofia/design-system` package — toujours vivantes.
+
+Pas d'audit fin par règle CSS effectué — Lot D a coupé 516 règles, le résiduel par règle est probablement <5 % et hors scope d'un audit fichier-par-fichier.
 
 ---
 
 ## 6. IndexedDB stores morts
 
-Le DB `sofia-extension-db` (v10) déclare maintenant **6 stores** dans `lib/database/indexedDB.ts:37-44` :
+Lot C (DB v9→v10) a déjà retiré 5 stores morts. Vérification post-G :
 
-| Store | Service | Consommateur | Confidence |
-|---|---|---|---|
-| `TRIPLETS_DATA` | `TripletsDataService` | TripletStorageService, TripletExtractor, BadgeService, EchoesTab, SettingsPage | ✅ Vivant |
-| `USER_SETTINGS` | `UserSettingsService` | EchoesTab, SettingsPage | ✅ Vivant |
-| `BOOKMARK_LISTS` | `BookmarkService` | useBookmarks | ✅ Vivant |
-| `BOOKMARKED_TRIPLETS` | `BookmarkService` | via BookmarkService.getAllTriplets | ✅ Vivant |
-| `INTENTION_GROUPS` | `IntentionGroupsService` | GroupManager, messageHandlers, sidepanel | ✅ Vivant |
-| `CART_ITEMS` | `CartDataService` | CartService | ✅ Vivant |
+| Store dans `STORES` | Status |
+|---|---|
+| `TRIPLETS_DATA` | ✓ vivant (TripletsDataService, agentRouter) |
+| `USER_SETTINGS` | ✓ vivant (UserSettingsService) |
+| `BOOKMARK_LISTS` | ✓ vivant (BookmarkService) |
+| `BOOKMARKED_TRIPLETS` | ✓ vivant (BookmarkService) |
+| `INTENTION_GROUPS` | ✓ vivant (IntentionGroupsService) |
+| `RECOMMENDATIONS` | ✓ vivant (StorageRecommendation, via `SettingsPage.tsx` clear) |
+| `CART_ITEMS` | ✓ vivant (CartDataService) |
 
-**Bilan : 0 store mort.** Les 5 stores morts (`NAVIGATION_DATA`, `USER_PROFILE`, `SEARCH_HISTORY`, `RECOMMENDATIONS`, `USER_XP`) ont été retirés en Lot C, et la migration `REMOVED_STORES_V10` (`indexedDB.ts:28-34`) supprime proprement les anciens stores chez les utilisateurs existants. ✅
-
-⚠️ **Cependant**, les **types** correspondants restent dans `types/database.ts:20-113` (`NavigationRecord`, `ProfileRecord`, `SearchRecord`, `RecommendationRecord`, `UserXPRecord`) et sont encore importés (mais inutilisés) dans `lib/database/indexedDB-methods.ts:5`. Voir §2.4 et §3.
+**Aucun store mort.** ✓
 
 ---
 
 ## 7. Chrome message types morts
 
-`types/messages.ts:14-65` déclare **45 types**. Vérification cross-handler (background/messageHandlers.ts + contents/* + background/oauth/*) **ET** caller (chrome.runtime.sendMessage ou messageBus) :
+`types/messages.ts` `MessageType` union. Pour chaque : (a) handler dans `background/messageHandlers.ts` OU `contents/*.ts` ET (b) sender.
 
-| Type | Handler | Caller | Confidence | Note |
+### 7.1 Messages avec handler MAIS sans sender (handler orphelin)
+
+| MessageType | Handler | Sender | Confiance | Justification |
 |---|---|---|---|---|
-| `GET_TAB_ID` | `messageHandlers.ts:222` | `tracking.ts:51`, `messageBus.getTabId()` | — | ✅ Vivant |
-| `PAGE_DATA` | `messageHandlers.ts:229` | `contents/tracking.ts:92`, `walletBridge.ts` | — | ✅ Vivant |
-| `PAGE_DURATION` | `messageHandlers.ts:233` | `tracking.ts:150` | — | ✅ Vivant |
-| `SCROLL_DATA` | `messageHandlers.ts:237` | `tracking.ts:181` | — | ✅ Vivant |
-| `SEND_CHATBOT_MESSAGE` | `messageHandlers.ts:242` | _(externe — landing page)_ | LOW | Probablement vivant via `externally_connectable` (`package.json:73`). |
-| `GET_TRACKING_STATS` | `messageHandlers.ts:255` (no-op) | ❌ **0 caller** (le seul `messageBus.getTrackingStats()` n'est appelé nulle part) | HIGH | Handler stub + 0 caller. |
-| `CLEAR_TRACKING_DATA` | `messageHandlers.ts:262` (no-op) | ❌ **0 caller** | HIGH | Handler stub + 0 caller. |
-| `GET_BOOKMARKS` | `messageHandlers.ts:277` | ❌ **0 caller** (`messageBus.getBookmarks()` jamais appelé) | HIGH | |
-| `FETCH_BOOKMARKS` | `messageHandlers.ts:266` | `OnboardingBookmarkSelectPage.tsx:90` | — | ✅ Vivant |
-| `IMPORT_SELECTED_BOOKMARKS` | `messageHandlers.ts:278` | `OnboardingBookmarkSelectPage.tsx` (probable) | LOW | |
-| `GET_HISTORY` | `messageHandlers.ts:336` | ❌ **0 caller** | HIGH | |
-| `STORE_BOOKMARK_TRIPLETS` | `messageHandlers.ts:348` | ❌ **0 caller** (`messageBus.storeBookmarkTriplets()` jamais appelé) | HIGH | |
-| `STORE_DETECTED_TRIPLETS` | `messageHandlers.ts:352` | ❌ **0 caller** | HIGH | |
-| `START_PULSE_ANALYSIS` | ❌ | ❌ | HIGH | Déclaré uniquement dans le union. |
-| `UPDATE_ECHO_BADGE` | `messageHandlers.ts:358` | indirectement via `BadgeService` | — | ✅ Vivant |
-| `TRIPLET_PUBLISHED` | `messageHandlers.ts:362` | `MessageBus.getInstance().sendMessageFireAndForget` (`indexedDB-methods.ts:190`) | — | ✅ Vivant |
-| `TRIPLETS_DELETED` | `messageHandlers.ts:366` | `messageBus.sendTripletsDeleted` jamais appelé | LOW | Handler vivant mais 0 caller — peut être déclenché depuis l'EchoesTab via supprimer triplet ; à vérifier. |
-| `INITIALIZE_BADGE` | `messageHandlers.ts:370` | `background/index.ts:25` | — | ✅ Vivant |
-| `AGENT_RESPONSE` | ❌ | `MessageBus.sendAgentResponse` (mais 0 caller du wrapper) | HIGH | Type isolé. |
-| `GET_PAGE_BLOCKCHAIN_DATA` | `messageHandlers.ts:378` | ❌ **0 caller** (`messageBus.getPageBlockchainData()` jamais appelé) | HIGH | |
-| `PAGE_ANALYSIS` | `messageHandlers.ts:393` | ❌ **0 caller** (`messageBus.sendPageAnalysis()` jamais appelé) | HIGH | |
-| `GET_PAGE_DATA` | **`contents/pageAnalyzer.ts:45`** ✅ | `messageBus.getPageData()` jamais appelé externe | LOW | Handler dans content script (caveat critique) — caller faible mais le content script écoute le canal pour la route de scraping. |
-| `GET_CLEAN_URL` | **`contents/pageAnalyzer.ts:37`** ✅ | `usePageBlockchainData.ts:173` (`messageBus.getCleanUrl()`) | — | ✅ Vivant — handler dans content script. |
-| `URL_CHANGED` | `messageHandlers.ts:403` | `tracking.ts` | — | ✅ Vivant |
-| `GENERATE_RECOMMENDATIONS` | `messageHandlers.ts:374` | `useRecommendations.ts` (probable) | LOW | |
-| `WALLET_CONNECTED` | `messageHandlers.ts:118` | `useWalletFromStorage.ts` | — | ✅ Vivant |
-| `WALLET_DISCONNECTED` | `messageHandlers.ts:151,413` | `useWalletFromStorage.ts:149` | — | ✅ Vivant |
-| `GET_INTENTION_GROUPS` | `messageHandlers.ts:428` | `useIntentionGroups.ts:122` | — | ✅ Vivant |
-| `GET_GROUP_DETAILS` | `messageHandlers.ts:438` | `useIntentionGroups.ts` | — | ✅ Vivant |
-| `GET_USER_XP` | `messageHandlers.ts:458` | _(probable)_ | LOW | |
-| `CERTIFY_URL` | `messageHandlers.ts:470` | `useIntentionGroups.ts` | — | ✅ Vivant |
-| `REMOVE_URL_FROM_GROUP` | `messageHandlers.ts:485` | `useIntentionGroups.ts` | — | ✅ Vivant |
-| `DELETE_GROUP` | `messageHandlers.ts:500` | `useIntentionGroups.ts` | — | ✅ Vivant |
-| `UPDATE_GROUP_LEVEL` | `messageHandlers.ts:515` | `useIntentionGroups.ts:308` | — | ✅ Vivant |
-| `GET_LEVEL_UP_COST` | `messageHandlers.ts:545` | `useLevelUp.ts:44` | — | ✅ Vivant |
-| `LEVEL_UP_GROUP` | `messageHandlers.ts:604` | `useLevelUp.ts:78` | — | ✅ Vivant |
-| `PREVIEW_LEVEL_UP` | `messageHandlers.ts:623` | `useLevelUp.ts` | — | ✅ Vivant |
-| `AMPLIFY_GROUP` | ❌ | ❌ | HIGH | Déclaré, pas câblé. |
-| `TRACK_URL` | `messageHandlers.ts:573` | `tracking.ts` | — | ✅ Vivant |
-| `FORCE_FLUSH_TRACKER` | `messageHandlers.ts:589` | ❌ **0 caller** | HIGH | Handler isolé. |
-| `DEEP_LINK_PROFILE` | `messageHandlers.ts:646` | `contents/shareRedirect.ts:18` | — | ✅ Vivant |
-| `FIRST_CLAIM` | `messageHandlers.ts:193` | _(externe — landing page)_ | LOW | Vivant via externally_connectable. |
-| `WALLET_REQUEST` | `walletProvider.ts:61` | `walletRelay.ts:17` | — | ✅ Vivant |
-| `WALLET_EVENT` | `walletProvider.ts:147` | `walletRelay.ts:69` | — | ✅ Vivant |
-| `BROWSING_NUDGE` | `BrowsingNudgeService.ts:62`, `contents/browsingNudge.ts:252` | — | ✅ Vivant |
-| `NUDGE_DISMISSED` | `messageHandlers.ts:599` | `CartService.ts:145,200` | — | ✅ Vivant |
+| `SCROLL_DATA` | `messageHandlers.ts:213` (no-op) | aucun | **HIGH** | `PageDataService.handleScrollData` est explicitement no-op (« scroll tracking removed »). Aucun envoi de SCROLL_DATA dans le code. |
+| `TRIPLETS_DELETED` | `messageHandlers.ts:308` | aucun | **HIGH** | Handler appelle `badgeService.handleBadgeUpdate`. Aucun sender. |
+| `UPDATE_ECHO_BADGE` | `messageHandlers.ts:300` | aucun | **HIGH** | Mention dans un commentaire `indexedDB-methods.ts:57` mais pas d'envoi réel. |
+| `GET_USER_XP` | `messageHandlers.ts:375` | aucun | **HIGH** | Aucun sender — orphelin. |
+| `GET_LEVEL_UP_COST` | `messageHandlers.ts:462` | aucun | **HIGH** | Aucun sender — orphelin. |
 
-### 7.1 Types morts (à retirer du union `MessageType`)
+### 7.2 Messages avec sender MAIS sans handler
 
-| Type | Confidence |
-|---|---|
-| `START_PULSE_ANALYSIS` | HIGH |
-| `AMPLIFY_GROUP` | HIGH |
-| `FORCE_FLUSH_TRACKER` | HIGH |
-| `GET_TRACKING_STATS` | HIGH |
-| `CLEAR_TRACKING_DATA` | HIGH |
-| `GET_BOOKMARKS` | HIGH |
-| `GET_HISTORY` | HIGH |
-| `STORE_BOOKMARK_TRIPLETS` | HIGH |
-| `STORE_DETECTED_TRIPLETS` | HIGH |
-| `GET_PAGE_BLOCKCHAIN_DATA` | HIGH |
-| `PAGE_ANALYSIS` | HIGH |
-| `AGENT_RESPONSE` | HIGH |
+Aucun détecté.
 
-**Bilan : 12 types morts à retirer** + le handler/caller correspondants dans `messageHandlers.ts` et les méthodes `MessageBus.*` listées au §11.
+### 7.3 Messages externes (LOW alive — externally_connectable)
 
-### 7.2 OAuth message enum
+| MessageType | Confiance | Notes |
+|---|---|---|
+| `WALLET_CONNECTED` | LOW alive | Envoyé par landing page externe via `chrome.runtime.sendMessageExternal` (manifest `externally_connectable.matches: doc.sofia.intuition.box, localhost:3000`). Handler `messageHandlers.ts:94` géré dans `onMessageExternal`. |
+| `WALLET_DISCONNECTED` | LOW alive | Idem (`messageHandlers.ts:127`). |
+| `FIRST_CLAIM` | LOW alive | Externe (manifest), handler `messageHandlers.ts:169`. |
+| `DEEP_LINK_PROFILE` | LOW alive | Envoyé par `contents/shareRedirect.ts:18`, traité dans `messageHandlers.ts:553`. |
+| `SEND_CHATBOT_MESSAGE` | LOW alive | Externe + interne. Handler `messageHandlers.ts:218`. |
 
-`background/oauth/types/interfaces.ts:8-15` — l'enum `MessageType` (différent du union de `types/messages.ts`) :
+### 7.4 Messages OAuth (`background/oauth/core/MessageHandler.ts`)
 
-| Type | Caller détecté | Confidence | Note |
-|---|---|---|---|
-| `OAUTH_CONNECT` | `SocialsTab.tsx:74` | — | ✅ Vivant |
-| `OAUTH_CALLBACK` | ❌ | HIGH | Aucun envoi dans la source extension. Probablement déclenché par le Privy callback externe (sofia.intuition.box) — à vérifier. |
-| `OAUTH_IMPLICIT_CALLBACK` | ❌ | HIGH | Idem. |
-| `OAUTH_SYNC` | ❌ | HIGH | |
-| `OAUTH_GET_SYNC_INFO` | ❌ | HIGH | |
-| `OAUTH_RESET_SYNC` | ❌ | HIGH | |
+| MessageType (enum interne) | Sender interne | Confiance |
+|---|---|---|
+| `OAUTH_CONNECT` | `SocialsTab.tsx:74` | ✓ vivant |
+| `OAUTH_CALLBACK` | aucun (chrome.runtime callback) | LOW alive (peut venir de la redirect page externe) |
+| `OAUTH_IMPLICIT_CALLBACK` | aucun | LOW alive |
+| `OAUTH_SYNC` | aucun | MEDIUM (probablement utilisé par un agent externe ou dead) |
+| `OAUTH_GET_SYNC_INFO` | aucun | MEDIUM |
+| `OAUTH_RESET_SYNC` | aucun | MEDIUM |
+| `OAUTH_TOKEN_SUCCESS` / `TWITTER_OAUTH_SUCCESS` | landing page externe | LOW alive (handler `messageHandlers.ts:139`) |
 
-5 types OAuth potentiellement morts — confidence dégradée à MEDIUM si l'on considère que la landing page externe (Privy redirect) peut envoyer ces messages.
+### 7.5 Messages utilisés (vivants)
+
+`GET_TAB_ID`, `PAGE_DATA`, `PAGE_DURATION`, `FETCH_BOOKMARKS`, `IMPORT_SELECTED_BOOKMARKS`, `INITIALIZE_BADGE`, `TRIPLET_PUBLISHED`, `GET_PAGE_DATA`, `GET_CLEAN_URL`, `URL_CHANGED`, `GENERATE_RECOMMENDATIONS` (sender mort en cascade — voir §1), `GET_INTENTION_GROUPS`, `GET_GROUP_DETAILS`, `CERTIFY_URL`, `REMOVE_URL_FROM_GROUP`, `DELETE_GROUP`, `UPDATE_GROUP_LEVEL`, `LEVEL_UP_GROUP`, `PREVIEW_LEVEL_UP`, `TRACK_URL`, `WALLET_REQUEST`, `WALLET_EVENT`, `BROWSING_NUDGE`, `NUDGE_DISMISSED`.
+
+**Note : `GENERATE_RECOMMENDATIONS`** — sender (`RecommendationService.generateWithAgent`) appelé seulement par `useRecommendations` qui est mort (§1). À retirer en cascade.
 
 ---
 
 ## 8. Predicates morts
 
-`lib/config/predicateConstants.ts` exporte **9 constantes** (vs 19 avant Lot C). Cross-réf avec consommateurs externes :
+`lib/config/predicateConstants.ts` — vérification de chaque export :
 
-| Export | Ligne | Consommateurs externes | Confidence |
-|---|---|---|---|
-| `INTENTION_PREDICATE_IDS` | 18 | `usePageBlockchainData`, `pageCertificationCompute` (probable) | ✅ Vivant |
-| `OAUTH_PREDICATE_IDS` | 27 | ❌ Re-définit localement dans `derivations.ts:107` | HIGH (mort) |
-| `TRUST_PREDICATE_IDS` | 35 | `usePageBlockchainData:31` | ✅ Vivant |
-| `ALL_PREDICATE_IDS` | 40 | `useOnChainIntentionGroups`, `UserCertificationsService` | ✅ Vivant |
-| `OAUTH_PREDICATE_LABELS` | 64 | `UserCertificationsService:16` | ✅ Vivant |
-| `ALL_PREDICATE_LABELS` | 79 | `UserCertificationsService` | ✅ Vivant |
-| `CERTIFICATION_PREDICATE_LABELS` | 86 | `useUserDiscoveryScore`, `DiscoveryScoreService` | ✅ Vivant |
-| `PREDICATE_LABEL_TO_INTENTION` | 93 | `discoveryUtils`, `UserCertificationsService` | ✅ Vivant |
-| `PREDICATE_LABEL_TO_TRUST` | 104 | `discoveryUtils`, `pageCertificationCompute` | ✅ Vivant |
-| `TRUST_LABEL_TO_TYPE` | 112 | `UserCertificationsService` | ✅ Vivant |
-| `PREDICATE_ID_TO_CERTIFICATION` | 119 | `useOnChainIntentionGroups` | ✅ Vivant |
-| `PREDICATE_ID_TO_INTENTION` | 138 | `pageCertificationCompute` | ✅ Vivant |
+| Export | Status |
+|---|---|
+| `INTENTION_PREDICATE_IDS` | ✓ vivant (`usePageBlockchainData.ts:30`) |
+| `TRUST_PREDICATE_IDS` | ✓ vivant (`usePageBlockchainData.ts:31`) |
+| `ALL_PREDICATE_IDS` | ✓ vivant (`useOnChainIntentionGroups.ts`, `UserCertificationsService.ts`) |
+| `OAUTH_PREDICATE_LABELS` | ✓ vivant (`UserCertificationsService.ts:16`) |
+| `ALL_PREDICATE_LABELS` | ✓ vivant (`UserCertificationsService.ts:15`) |
+| `CERTIFICATION_PREDICATE_LABELS` | ✓ vivant (`useUserDiscoveryScore.ts`, `DiscoveryScoreService.ts`) |
+| `PREDICATE_LABEL_TO_INTENTION` | ✓ vivant (`discoveryUtils.ts`, `UserCertificationsService.ts`) |
+| `PREDICATE_LABEL_TO_TRUST` | ✓ vivant (`discoveryUtils.ts`, `pageCertificationCompute.ts`) |
+| `TRUST_LABEL_TO_TYPE` | ✓ vivant (`UserCertificationsService.ts:18`) |
+| `PREDICATE_ID_TO_CERTIFICATION` | ✓ vivant (`useOnChainIntentionGroups.ts:13`) |
+| `PREDICATE_ID_TO_INTENTION` | ✓ vivant (`pageCertificationCompute.ts:12`) |
 
-**Bilan : 1 export mort** (`OAUTH_PREDICATE_IDS`).
-
-Lot C a déjà supprimé : `INTENTION_PREDICATE_LABELS`, `INTENTION_PREDICATE_LABELS_WITH_LEGACY` (qui sont maintenant `const` non-exportées en interne), `TRUST_PREDICATE_LABELS` (idem), `WEB_ACTIVITY_PREDICATES`, `PREDICATE_ID_TO_LABEL`, `GLOBAL_STAKE_TERM_ID`, `GLOBAL_STAKE_ENABLED`. ✅
+**Aucun export mort.** `OAUTH_PREDICATE_IDS` privatisé en Lot G. ✓
 
 ---
 
-## 9. Hooks/services dupliqués (et constantes redéfinies)
+## 9. Hooks/services dupliqués
 
-| Doublon | Confidence | Note |
+| Doublon | Confiance | Action |
 |---|---|---|
-| `WalletState` (local hook) ↔ `WalletState` (`types/wallet.ts:15`) | HIGH | `useWalletFromStorage.ts:8` redéfinit l'interface. Le centralisé est mort (cf. §1.4). |
-| `formatTrust` (local) ↔ `formatTrust` (`lib/utils/formatTrust`) | HIGH | `components/ui/blockchain/ExtendedMetricsPanel.tsx:17` redéfinit la fonction au lieu d'importer depuis `~/lib/utils`. |
-| `OAUTH_PREDICATE_IDS` (`predicateConstants.ts`) ↔ `OAUTH_PREDICATE_IDS` (`derivations.ts:107`) | HIGH | Redéfinition locale en `Set` dans derivations. Soit retirer l'export du predicateConstants (cf. §8), soit harmoniser. |
-| `DiscordProfile` (`types/social.ts:5`) ↔ `DiscordProfile` (`useIdentityResolution.ts:24`) | MEDIUM | `useIdentityResolution.ts` redéfinit localement l'interface. Le typage centralisé est consommé par `useDiscordProfile.ts`. |
-| `useUserDiscoveryScore` ↔ `useDiscoveryScore` | LOW | Pas un doublon strict — calculs complémentaires (lecture aggrégée vs service-store). À conserver. |
-| `useFollowAccount` placeholder | LOW | Le commentaire `useFollowAccount.ts:89` indique « legacy placeholder » — délégué à `useRedeemTriple`. Pas de code mort à proprement parler. |
+| `INTENTION_PREDICATE_IDS` re-défini dans `lib/realtime/derivations.ts:115` (Set) — doublon avec l'array exporté par `predicateConstants.ts` | **HIGH** | Importer `INTENTION_PREDICATE_IDS` depuis `~/lib/config/predicateConstants` et le wrapper en `new Set(...)` localement. |
+| `OAUTH_PREDICATE_IDS` re-défini dans `derivations.ts:107` (Set local) — privatisé en Lot G dans `predicateConstants.ts` (ré-introduit ici) | **MEDIUM** | Reconsidérer : soit ré-exporter depuis predicateConstants soit garder local et nettoyer le commentaire. |
+| `getWalletAddress` re-défini dans 4 endroits : `background/index.ts:11`, `lib/services/UserSessionManager.ts:52`, `oauth/core/TokenManager.ts:18`, `oauth/core/SyncManager.ts:14`, `lib/services/QuestTrackingService.ts:25` | **MEDIUM** | Centraliser. La version dans `UserSessionManager.ts` peut être supprimée (mort, §1). Les autres dupliquent la même logique `chrome.storage.session.get('walletAddress')`. |
 
 ---
 
 ## 10. Code OAuth/Privy mort
 
-| Élément | Path | Confidence | Note |
-|---|---|---|---|
-| `useLinkedWallets` | _supprimé en Lot A_ | — | ✅ Déjà fait. |
-| `useSocialVerifier` | `hooks/useSocialVerifier.ts` | — | ✅ Vivant — `ProfilePage.tsx`, `SocialsTab.tsx`. |
-| `lib/config/privy.ts` | _supprimé en Lot A_ | — | ✅ Déjà fait. |
-| `oauthService.handleCallback` | `background/oauth/index.ts:53` | MEDIUM | Câblé via `OAUTH_CALLBACK` mais aucun caller dans la source extension (cf. §7.2). |
-| `oauthService.handleImplicitCallback` | `background/oauth/index.ts:57` | MEDIUM | Idem. |
-| `oauthService.getSyncStatus` | `background/oauth/index.ts:90` | MEDIUM | Idem. |
-| `oauthService.resetSyncInfo` | `background/oauth/index.ts:94` | MEDIUM | Idem. |
-| `oauthService.initiateOAuth` | `background/oauth/index.ts:49` | LOW | Câblé via `OAUTH_CONNECT` qui a un caller (`SocialsTab.tsx:74`). ✅ |
-| `oauthService.syncPlatformData` | `background/oauth/index.ts:70` | LOW | Appelé en interne (callback `setAuthSuccessCallback`). ✅ |
-| `oauthService.handleExternalOAuthToken` | `background/oauth/index.ts:61` | — | Appelé par `messageHandlers.ts:175` (sur `WALLET_CONNECTED + token`). ✅ Vivant |
-| Legacy `TokenManager` fallback | `background/oauth/core/TokenManager.ts:108` | LOW | « kept for backwards compatibility » — à auditer manuellement, probable dette technique. |
-| `MessageHandler` (oauth) | `background/oauth/core/MessageHandler.ts:14-29` | MEDIUM | Si les 5 OAuth_xxx morts sont effectivement morts, le `messageHandlers` map ligne 21-25 est mort sauf `OAUTH_CONNECT`. |
+| Méthode/symbole | Status |
+|---|---|
+| `OAuthService.initiateOAuth` | ✓ vivant (sender `OAUTH_CONNECT`) |
+| `OAuthService.handleCallback` | LOW alive (sender externe) |
+| `OAuthService.handleImplicitCallback` | LOW alive (sender externe) |
+| `OAuthService.handleExternalOAuthToken` | ✓ vivant (`messageHandlers.ts:151`) |
+| `OAuthService.syncPlatformData` | LOW alive (auth callback) |
+| `OAuthService.getSyncStatus` | MEDIUM (sender `OAUTH_GET_SYNC_INFO` jamais émis dans le code) |
+| `OAuthService.resetSyncInfo` | MEDIUM (sender `OAUTH_RESET_SYNC` jamais émis) |
+| `TWITTER_FETCH_PROFILE_ENABLED` flag (`oauth/index.ts:14`) | **HIGH** dead-flag — toujours `false`, branche `&& !TWITTER_FETCH_PROFILE_ENABLED` toujours `true`. Soit on retire le flag, soit on l'expose (env var). |
+| `OAuthFlow` enum (`oauth/types/interfaces.ts:3`) | ✓ vivant |
+| `UserToken`, `SyncInfo`, `TripletRule`, `UserData` | ✓ vivants en interne |
 
-Bilan : **4-5 méthodes OAuth potentiellement inutilisées** (à confirmer en vérifiant les flows externes Privy/landing page). Si la landing externe ne les utilise pas, on peut simplifier `OAuthService` et `MessageHandler`.
+Hooks OAuth-side :
+
+| Hook | Status |
+|---|---|
+| `useSocialVerifier` | ✓ vivant (`ProfilePage.tsx`) |
+| `useDiscordProfile` | ✓ vivant (`ProfilePage.tsx`) |
 
 ---
 
 ## 11. Composants React morts
 
-(Cumul des §1.1 + §2.5.)
-
-| Composant | Path | Confidence |
+| Composant | Confiance | Justification |
 |---|---|---|
-| `FollowAccountCard` | `components/pages/profile-tabs/follow/FollowAccountCard.tsx` | HIGH |
-
-**Lot A a déjà supprimé** : `TrackingStatus`, `Portal`, `Button` (lowercase), `SofiaNotification`, `CircularMenu`, `PulseAnimation`, `PixelBlast`, `FeedTab` (Resonance). ✅
+| `AccountStats` (`components/ui/AccountStats.tsx`) | **HIGH** | Jamais rendu `<AccountStats>` ; seul le hook `useAccountStats` est consommé. Cf. §1. |
+| `CommunityTrustBar` (`components/ui/blockchain/CommunityTrustBar.tsx`) | **HIGH** | Jamais rendu ni importé. Cf. §1. |
+| `Skeleton.tsx` `default` export | **HIGH** | Pas d'export default réel dans le fichier. Composants nommés (`SkeletonLine`, `SkeletonCircle`, `PageBlockchainSkeleton`) vivants via `PageBlockchainCard.tsx`. |
 
 ---
 
-## 12. Branches mortes / legacy
+## 12. Code legacy / @deprecated / TODO-remove
 
-| Marqueur | Path | Confidence | Note |
-|---|---|---|---|
-| `@deprecated DISCOVERY_XP_REWARDS` | `types/discovery.ts:79-80` | HIGH | Alias `DISCOVERY_GOLD_REWARDS` — 0 consommateur. Suppression sans risque. |
-| `@deprecated addCertificationGold` | `lib/services/GoldService.ts:76-90` | HIGH | Méthode non appelée. Le commentaire dit « No longer called ». À supprimer. |
-| `@deprecated GOLD_PER_CERTIFICATION` | `lib/services/GoldService.ts:25-26, 219` | HIGH | Constante exportée mais 0 consommateur externe (seul `addCertificationGold` mort la lit). |
-| `@deprecated selectProviderByAddress` | `lib/services/walletProvider.ts:225` | LOW | Encore consommée par `useWalletFromStorage.ts:67`. À auditer pour migration vers `selectProviderByName`. |
-| `getWalletProvider` (commentaire) / `listWalletProviders` | `lib/services/walletProvider.ts:167, 201` | HIGH | 0 consommateur dans tout le repo. Ne sont plus exportés depuis le barrel `index.ts:14` (Lot B) mais restent dans le fichier. |
-| `MessageBus.sendAgentResponse` | `lib/services/MessageBus.ts:73` | HIGH | 0 caller. |
-| `MessageBus.sendUpdateBadge` | `lib/services/MessageBus.ts:81` | HIGH | 0 caller. |
-| `MessageBus.sendInitializeBadge` | `lib/services/MessageBus.ts:88` | HIGH | 0 caller (`background/index.ts:25` utilise directement `sendMessageFireAndForget`). |
-| `MessageBus.sendTripletPublished` | `lib/services/MessageBus.ts:95` | HIGH | 0 caller (`indexedDB-methods.ts:190` utilise directement `sendMessageFireAndForget`). |
-| `MessageBus.sendTripletsDeleted` | `lib/services/MessageBus.ts:102` | HIGH | 0 caller. |
-| `MessageBus.sendStoreDetectedTriplets` | `lib/services/MessageBus.ts:110` | HIGH | 0 caller. |
-| `MessageBus.sendTrackingMessage` | `lib/services/MessageBus.ts:118` | HIGH | 0 caller. |
-| `MessageBus.sendPageData` | `lib/services/MessageBus.ts:133` | HIGH | 0 caller. |
-| `MessageBus.sendPageDuration` | `lib/services/MessageBus.ts:141` | HIGH | 0 caller. |
-| `MessageBus.sendScrollData` | `lib/services/MessageBus.ts:148` | HIGH | 0 caller. |
-| `MessageBus.getBookmarks` | `lib/services/MessageBus.ts:156` | HIGH | 0 caller. |
-| `MessageBus.getHistory` | `lib/services/MessageBus.ts:160` | HIGH | 0 caller. |
-| `MessageBus.storeBookmarkTriplets` | `lib/services/MessageBus.ts:164` | HIGH | 0 caller. |
-| `MessageBus.getTrackingStats` | `lib/services/MessageBus.ts:172` | HIGH | 0 caller. |
-| `MessageBus.clearTrackingData` | `lib/services/MessageBus.ts:176` | HIGH | 0 caller. |
-| `MessageBus.getPageBlockchainData` | `lib/services/MessageBus.ts:181` | HIGH | 0 caller. |
-| `MessageBus.sendPageAnalysis` | `lib/services/MessageBus.ts:188` | HIGH | 0 caller. |
-| `MessageBus.getPageData` | `lib/services/MessageBus.ts:195` | HIGH | 0 caller. |
-| `wsStatus.getWsStatus` | `lib/realtime/wsStatus.ts:47` | HIGH | 0 caller (le commentaire dit « consommé par le badge offline Phase 5 » — non encore implémenté). |
-| `wsStatus.subscribeWsStatus` | `lib/realtime/wsStatus.ts:51` | HIGH | 0 caller. |
-| `derivePositionsByTopic/Category/Platform` | `lib/realtime/derivations.ts:410-426` | LOW | « Explorer-legacy stubs kept for SubscriptionManager compat » — encore appelés par `SubscriptionManager.ts:311-325` (writes empty maps to cache). Stubs morts au sens où ils ne renvoient rien d'utile. |
-| `realtimeKeys.topicPositionsMap/categoryPositionsMap/platformPositionsMap/verifiedPlatforms` | `derivations.ts:54-64` | LOW | « Legacy Explorer keys kept for SubscriptionManager compat » — usage interne seulement. |
-| `selectProviderByAddress` (`walletBridge.ts:142`) | `contents/walletBridge.ts:142-260` | LOW | Marqué `@deprecated` mais encore câblé — supprimer après migration `selectProviderByName` complète. |
-| Legacy trailing space `"visits for learning "` | `predicateConstants.ts:60, 97` | — | Documenté comme nécessaire pour les anciennes données on-chain. **NON mort** — à conserver. ✅ |
-| Legacy alias `Message = SofiaMessage` | `types/messages.ts:122` | — | Utilisé par `indexedDB-methods.ts:8`. **NON mort.** ✅ |
-| `// kept for stats display` | `useUserQuests.ts:97` | LOW | Commentaire — pas de code mort à proprement parler. |
-| `cleanupOldTripletRecords` | `indexedDB-methods.ts:264-282` | LOW | Méthode interne appelée seulement par `loadPublishedTriplets` ligne 247. Migration historique ; pourrait être supprimée si toutes les bases utilisateur sont à jour. |
-
-**Bilan : ~25 méthodes/constantes mortes**, dominées par le service `MessageBus` (18 méthodes mortes sur 24).
+| Localisation | Confiance | Justification |
+|---|---|---|
+| `lib/services/walletProvider.ts:208` `selectProviderByAddress` `@deprecated` | **LOW alive** | Toujours utilisé en fallback dans `useWalletFromStorage.ts:67` lorsque `walletType` n'est pas connu. Conserver tant que la migration vers walletType n'est pas garantie pour 100 % des utilisateurs. |
+| `contents/walletBridge.ts:142` `@deprecated` annotation | LOW alive | Référence interne au handler `wallet_selectProviderByAddress` côté content script — vivant tant que le hook l'appelle. |
+| `lib/services/CurrencyMigrationService.ts` (commentaire « This entire file can be removed once all users have migrated (~4 weeks) ») | **MEDIUM** | À évaluer : si les ~20-40 utilisateurs ont migré (la migration est idempotente et a tourné), tout le fichier peut être supprimé. Action différée — vérifier la date de déploiement initial (4+ semaines ?). |
+| `types/messages.ts:91` `Message = SofiaMessage` legacy alias | **MEDIUM** | `Message` (alias) est utilisé par `indexedDB-methods.ts:8` (`storeMessage`). `SofiaMessage` (la base) n'est PAS utilisé directement — seul l'alias l'est. Alias utile mais le type de base peut être inliné. |
+| `lib/realtime/derivations.ts:54-65` legacy keys `topicPositionsMap`, `categoryPositionsMap`, `platformPositionsMap`, `verifiedPlatforms` | **HIGH** | Le commentaire explicite : « Legacy Explorer keys — kept for SubscriptionManager compat. Sofia doesn't map topics/categories/platforms the same way; may be removed ». Ces clés sont écrites par `SubscriptionManager` mais aucun consumer (useQuery) ne les lit. Write-only — à supprimer (et nettoyer SubscriptionManager.ts:288, 310, 316, 324). |
+| `oauth/index.ts:14` `TWITTER_FETCH_PROFILE_ENABLED = false` | **HIGH** | Flag toujours faux, branche morte. À retirer ou rendre configurable. |
 
 ---
 
 ## 13. GraphQL ops importées non câblées
 
-Tous les `useXxxQuery`/`useXxxMutation`/`Document` importés depuis `@0xsofia/graphql` ont été cross-référencés ; tous ont au moins 1 site d'appel dans le même fichier. **0 import GraphQL orphelin.**
+Toutes les ops `@0xsofia/graphql` importées (24 hooks/types/documents) sont câblées :
 
-L'audit antérieur signalait `useGetTrustCirclePositionsQuery` et `useGetSofiaTrustedActivityQuery` comme suspects via `FeedTab.tsx` mort — ce dernier a été supprimé en Lot A, et ces hooks restent câblés via `CircleFeedTab.tsx`. ✅
+| Op | Consumer |
+|---|---|
+| `useGetMyTrustCircleQuery.fetcher` | useTrustCircle |
+| `useGetAtomDataByLabelsQuery.fetcher` | useTrustCircle, useFollowing, useFollowers |
+| `usePinThingMutation` | useCreateAtom |
+| `useGetTripleBondingCurveDataQuery` | useBondingCurveData |
+| `useGetFollowingPositionsQuery.fetcher` | useFollowing |
+| `useGetAccountAtomByWalletQuery.fetcher` | useFollowers |
+| `useGetMyFollowersQuery.fetcher` | useFollowers |
+| `useGetTopSofiaAccountsQuery` | ExplorerPanel |
+| `CheckSocialLinksDocument` | useSocialVerifier |
+| `CertificationTriplesDocument` | usePageDiscovery |
+| `PageCertificationDataDocument` | useBatchRewards |
+| `GetUserIntentionPositionsDocument` | useOnChainIntentionGroups |
+| `GetTrendingByPredicateDocument` | useTrendingCertifications |
+| `UserAllCertificationsDocument` | UserCertificationsService |
+| `WatchUserPositionsSubscription` (type) | derivations.ts |
+| Documents pour `QuestProgressService`, `QuestBadgeService`, `useStreakLeaderboard`, `useDebateClaims`, `useUserDiscoveryScore`, `DiscoveryScoreService`, `SubscriptionManager`, `useOnChainStreak` | tous câblés |
+
+**Aucune op orpheline.** ✓
 
 ---
 
 ## 14. Doublons hook ↔ service
 
-| Hook | Service | Doublon ? | Note |
-|---|---|---|---|
-| `useUserCertifications` | `UserCertificationsService` | NON | Wrapper `useSyncExternalStore`. ✅ |
-| `useDiscoveryScore` | `DiscoveryScoreService` | NON | Idem. |
-| `useGlobalStake` | `GlobalStakeService` | NON | Idem. |
-| `useCart` | `CartService` | NON | Idem. |
-| `useGroupManager` | `GroupManager` (singleton `groupManager`) | LOW | Hook = gestion de filtres UI, le service = persistence groupes. Pas de doublon strict. |
-| `useTopicInterests` | `TopicPositionsService` | NON | Wrapper `useSyncExternalStore`. ✅ |
-| `usePlatformPool` | `PlatformPoolService` | NON | Idem. |
-| `useBrowsingNudge` | `BrowsingNudgeService` | NON | Idem. |
+| Doublon | Confiance | Notes |
+|---|---|---|
+| `useRecommendations` (mort §1) duplique partiellement `RecommendationService.generateRecommendations` qui appelle `messageBus → background → RecommendationAgent` | **HIGH** | Hook mort. Si on conserve le service pour `clearCache`, on peut purger les méthodes `generateRecommendations` et `generateWithAgent` du service. |
 
-**Bilan : 0 doublon strict hook ↔ service** (les hooks morts qui touchaient directement IndexedDB ont été retirés en Lot A).
+Aucun autre doublon hook ↔ service détecté post-G.
+
+---
+
+## Annexes — Types morts in-file
+
+Liste des types exportés mais sans aucun consommateur externe au fichier (résiduel post Lot E) :
+
+| Fichier | Type mort | Confiance |
+|---|---|---|
+| `types/blockchain.ts` | `interface AtomCheckResult` | **LOW** (utilisé seulement comme retour de `BlockchainService.checkAtomExists` interne) |
+| `types/blockchain.ts` | `interface TripleCheckResult` | **LOW** (idem) |
+| `types/blockchain.ts` | `interface BlockchainResult` (base) | **LOW** (étendu par d'autres types — peut être inliné mais non urgent) |
+| `types/storage.ts` | `interface StorageData` | **HIGH** |
+| `types/storage.ts` | `interface CacheData` | **HIGH** |
+| `types/storage.ts` | `type StorageKey` | **HIGH** |
+| `types/storage.ts` | `interface StorageChangeEvent` | **HIGH** |
+| `types/storage.ts` | `interface StorageOptions` | **HIGH** |
+| `types/history.ts` | `interface DOMData` | **HIGH** |
+| `types/history.ts` | `interface SessionData` | **HIGH** |
+| `types/history.ts` | `interface PageMetrics` | **HIGH** |
+| `types/history.ts` | `interface CompleteVisitData` | **MEDIUM** (référencé dans storage.ts mort) |
+| `types/history.ts` | `interface SimplifiedHistoryEntry` | **MEDIUM** (idem) |
+| `types/follows.ts` | `interface AtomDataResponse` | **HIGH** (importé par 3 fichiers mais jamais référencé — TS6133, cf. §3) |
+| `types/discovery.ts` | (rien) — tout vivant | — |
+| `types/messages.ts` | `interface SofiaMessage` | **MEDIUM** (seul l'alias `Message` est utilisé) |
+| `types/page.ts` | `type PageDataStatus` | **LOW** (utilisé seulement à l'intérieur de page.ts via `PageBlockchainState.status`) |
+| `types/interests.ts` | `const TIER_COLORS` | **HIGH** (utilisé seulement par les helpers internes du même fichier) |
+| `types/interests.ts` | `interface TierBadge` | **HIGH** (idem) |
+| `types/questTypes.ts` | `type SocialPlatform` | **LOW** (utilisé seulement par `Quest.platform` interne) |
+| `lib/clients/graphql-client.ts` | `INTUITION_GRAPHQL_ENDPOINT` | **HIGH** (export jamais consommé) |
+| `lib/utils/ipfsCache.ts` | `fetchIPFSMetadata`, `clearIPFSCache`, `getIPFSCacheSize` | **HIGH** (jamais appelés — seul `batchFetchIPFS` consommé) |
+| `config.ts` | `SOFIA_SERVER_URL` | **HIGH** (jamais importé — seul `MASTRA_API_URL` consommé) |
 
 ---
 
 ## Synthèse & quick wins
 
-### Volumétrie par catégorie (entrées HIGH-confidence)
+### Volumétrie par catégorie
 
-| Catégorie | Entrées HIGH | Note |
-|---|---|---|
-| 1. Fichiers entiers morts | 5 (1 .tsx + 1 types/wallet.ts + background/types.ts + types/messaging.ts + 4 SVG morts) | post-Lot A : très peu reste |
-| 2. Exports morts dans barrels | ~30 (1 hook + 4 services types + 4 utils + 5 db types + 1 ui + 1 types/index + ~20 dans messages/discovery/blockchain/intuition/viem/intentionCategories/interests/follows/ai) | |
-| 3. Imports inutilisés (TS6133) | _N/A — tsc bloqué_ | À compléter localement |
-| 4. Dépendances npm orphelines | 1 (`tailwind`) | Lot A a fait le gros |
-| 5. CSS mort | 0 fichier entier (Lot D fait) | |
-| 6. IndexedDB stores morts | 0 (Lot C fait) | |
-| 7. Chrome message types morts | 12 dans `MessageType` + 5 OAuth (MEDIUM) | |
-| 8. Predicates morts | 1 (`OAUTH_PREDICATE_IDS`) | Lot C a fait l'essentiel |
-| 9. Hooks/services dupliqués | 4 (WalletState, formatTrust, OAUTH_PREDICATE_IDS, DiscordProfile) | |
-| 10. Code OAuth/Privy mort | 4-5 méthodes `OAuthService` (MEDIUM dépend de la landing externe) | |
-| 11. Composants React morts | 1 (`FollowAccountCard`) | Lot A a fait l'essentiel |
-| 12. Branches legacy / méthodes mortes | ~25 (dominé par `MessageBus` : 18 méthodes mortes) | |
-| 13. GraphQL ops mortes | 0 | |
-| 14. Doublons hook ↔ service | 0 | |
-| **Total HIGH cross-categories** | **~80 entrées** | post-cleanup, beaucoup plus petit que pré-Lot A-D |
+| Catégorie | Entrées (HIGH+MEDIUM) |
+|---|---|
+| 1. Fichiers entiers morts | 7 .ts/.tsx + 15 assets icônes/SVG = **22** |
+| 2. Exports morts dans les barrels | 9 (services) + 4 (database) + 5 (types/index) + 19 (components/ui — barrel entier) + 1 (charts) + 5 (follow barrel) = **43** |
+| 3. Imports inutilisés | 3 (limité au sandbox) |
+| 4. Deps npm orphelines | 0 |
+| 5. CSS mort (fichiers) | 1 |
+| 6. IndexedDB stores morts | 0 |
+| 7. Chrome message types morts | 5 (handler orphelin) |
+| 8. Predicates morts | 0 |
+| 9. Hooks/services dupliqués | 3 |
+| 10. OAuth mort | 1 flag + 3 méthodes MEDIUM |
+| 11. Composants React morts | 3 |
+| 12. Code legacy / @deprecated / TODO-remove | 6 |
+| 13. GraphQL ops orphelines | 0 |
+| 14. Doublons hook ↔ service | 1 |
+| **Annexes (types in-file morts)** | **22** |
+| **TOTAL HIGH+MEDIUM** | **~110 entrées** |
 
-### Top 10 quick wins (HIGH confidence, suppression sans risque)
+### Top quick wins (HIGH only)
 
-1. **Supprimer `types/wallet.ts`** + `export * from './wallet'` dans `types/index.ts:15` (3 interfaces mortes, 0 import).
-2. **Supprimer `types/viem.ts`** + `export * from './viem'` dans `types/index.ts:21` (6 types morts, 0 import du fichier).
-3. **Supprimer 12 message types morts** dans `types/messages.ts:14-65` (`START_PULSE_ANALYSIS`, `AMPLIFY_GROUP`, `FORCE_FLUSH_TRACKER`, `GET_TRACKING_STATS`, `CLEAR_TRACKING_DATA`, `GET_BOOKMARKS`, `GET_HISTORY`, `STORE_BOOKMARK_TRIPLETS`, `STORE_DETECTED_TRIPLETS`, `GET_PAGE_BLOCKCHAIN_DATA`, `PAGE_ANALYSIS`, `AGENT_RESPONSE`) **et leurs handlers + méthodes `MessageBus`** correspondants. ~150 lignes supprimables.
-4. **Supprimer 9 types morts** dans `types/messages.ts:84-220` (`TripletMessage`, `BadgeMessage`, `SofiaRecord`, `PageMetadata`, `PageAnalysisData`, `PageBlockchainData`, `PageAnalysisMessage`, `PageBlockchainMessage`, `WalletRequestMessage`, `WalletResponseMessage`, `WalletEventMessage`).
-5. **Supprimer `background/types.ts`** entier sauf l'interface `PageData` (à déplacer vers `types/page.ts`). + Supprimer `types/messaging.ts` (consommé seulement par `background/types.ts`).
-6. **Nettoyer 18 méthodes mortes de `MessageBus`** — réduire la classe à `sendMessage`, `sendMessageWithRetry`, `sendMessageFireAndForget`, `getTabId`, `getCleanUrl`. -130 lignes.
-7. **Supprimer `getWalletProvider` + `listWalletProviders`** dans `walletProvider.ts:167,201` (déjà non barrel-exportés, mais le code reste).
-8. **Supprimer 5 types morts** dans `types/database.ts` (`NavigationRecord`, `ProfileRecord`, `SearchRecord`, `RecommendationRecord`, `UserXPRecord`) + l'import correspondant dans `indexedDB-methods.ts:5`.
-9. **Supprimer `tailwind`** du `package.json:34` (0 import).
-10. **Supprimer le dossier `components/ui/icons/social/`** complet (3 SVG dupliqués/morts) + `components/ui/social/twitter.svg`.
+1. **Supprimer `lib/services/UserSessionManager.ts`** — fichier entier mort. Retirer aussi le re-export `getWalletAddress` de `lib/services/index.ts`.
+2. **Supprimer `background/tripletProcessor.ts`** — fichier entier mort.
+3. **Supprimer `components/ui/AccountStats.tsx` + entrée barrel ligne 7** — composant jamais rendu.
+4. **Supprimer `components/ui/blockchain/CommunityTrustBar.tsx` + `components/styles/CommunityTrustBar.css`** — duo orphelin.
+5. **Supprimer `hooks/useRecommendations.ts`** — hook orphelin. Retirer en cascade : `RecommendationService.generateRecommendations`, `RecommendationService.generateWithAgent`, message `GENERATE_RECOMMENDATIONS` (handler+sender), `agentRouter.sendRecommendationRequest`. Conserver `RecommendationService.clearCache` (utilisé par SettingsPage).
+6. **Supprimer le barrel `components/ui/index.ts`** — entièrement non importé. Tous les consommateurs vont en direct.
+7. **Supprimer le barrel `components/pages/profile-tabs/follow/index.ts`** — non importé ET cassé (référence `FollowAccountCard` supprimé en Lot E).
+8. **Supprimer le barrel `types/index.ts`** — entièrement non importé.
+9. **Retirer 5 message types morts** (`SCROLL_DATA`, `TRIPLETS_DELETED`, `UPDATE_ECHO_BADGE`, `GET_USER_XP`, `GET_LEVEL_UP_COST`) du `MessageType` union + leurs `case` dans `messageHandlers.ts`.
+10. **Centraliser `getWalletAddress`** — supprimer 4 redéfinitions, garder une seule source (par exemple dans `background/utils/`).
+11. **Retirer `lib/clients/graphql-client.ts:9 INTUITION_GRAPHQL_ENDPOINT`**, `config.ts:19 SOFIA_SERVER_URL`, `lib/utils/ipfsCache.ts` (`fetchIPFSMetadata`, `clearIPFSCache`, `getIPFSCacheSize`).
+12. **Retirer 8 types morts dans `types/storage.ts` et `types/history.ts`** (StorageData, CacheData, StorageKey, StorageChangeEvent, StorageOptions, DOMData, SessionData, PageMetrics).
+13. **Retirer `TIER_COLORS` + `TierBadge`** dans `types/interests.ts` (usage interne uniquement).
+14. **Retirer 4 legacy realtime keys** (`topicPositionsMap`, `categoryPositionsMap`, `platformPositionsMap`, `verifiedPlatforms`) dans `derivations.ts` ET les 4 sites d'écriture dans `SubscriptionManager.ts`.
+15. **Retirer le flag `TWITTER_FETCH_PROFILE_ENABLED`** dans `oauth/index.ts:14` (toujours `false`).
+16. **Importer `INTENTION_PREDICATE_IDS` depuis `predicateConstants`** au lieu de le re-définir dans `derivations.ts:115`.
+17. **Nettoyer 3 imports inutilisés `AtomDataResponse`** dans `useTrustCircle.ts`, `useFollowing.ts`, `useFollowers.ts`.
+18. **Supprimer 9 ré-exports types dans `lib/services/index.ts`** (PinnedAtomData, CertifyResult, GroupStats, DiscoveryState, CertificationsStoreState, CartState, UserTopicPosition, TopicPositionsState, getWalletAddress).
+19. **Supprimer 4 ré-exports types dans `lib/database/index.ts`** (BookmarkListRecord, BookmarkedTripletRecord, PredicateChangeRecord, SettingsRecord).
+20. **Supprimer 15 SVG/PNG icônes** dans `components/ui/icons/`.
 
-### Edits ciblés (`fichier:ligne → action`)
+### Edits ciblés (file:line → action)
 
-```
-hooks/index.ts:17                          → supprimer `export { useTrustPage }`
-lib/services/index.ts:9                    → supprimer `export type { PinThingFn }`
-lib/services/index.ts:38                   → supprimer `export type { TxEventType, TxEvent }`
-lib/services/index.ts:47                   → supprimer `export type { AgentIds }`
-lib/utils/index.ts:17                      → supprimer `getEnsName` (du re-export ensUtils)
-lib/utils/index.ts:31                      → supprimer `LEVEL_THRESHOLDS`
-lib/utils/index.ts:34                      → supprimer `extractHostname`
-lib/utils/index.ts:56                      → supprimer `EMPTY_INTENTIONS`
-lib/database/index.ts:10–20                → supprimer NavigationRecord, ProfileRecord, SearchRecord, RecommendationRecord, UserXPRecord
-lib/database/indexedDB-methods.ts:5        → supprimer NavigationRecord, ProfileRecord, SearchRecord, RecommendationRecord, UserXPRecord du import
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:9` → supprimer `export type { PinnedAtomData }`
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:24` → supprimer `CertifyResult, GroupStats` (garder `CertificationType`)
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:45` → supprimer `export { getWalletAddress }`
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:49` → supprimer `export type { DiscoveryState }`
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:51` → supprimer `CertificationsStoreState` du re-export (garder TripleDetail, CertificationEntry)
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:59` → supprimer `export type { CartState }`
+- `/home/chauche/Sofia/apps/extension/lib/services/index.ts:63` → supprimer `export type { UserTopicPosition, TopicPositionsState }`
+- `/home/chauche/Sofia/apps/extension/lib/database/index.ts:10-15` → ne garder que `TripletsRecord, IntentionGroupRecord, GroupUrlRecord, CartItemRecord` (4 sur 8)
+- `/home/chauche/Sofia/apps/extension/components/ui/index.ts` → supprimer le fichier (barrel mort)
+- `/home/chauche/Sofia/apps/extension/components/pages/profile-tabs/follow/index.ts` → supprimer le fichier (barrel mort + cassé)
+- `/home/chauche/Sofia/apps/extension/types/index.ts` → supprimer le fichier (barrel mort)
+- `/home/chauche/Sofia/apps/extension/types/messages.ts:11,15,17,28,33` → retirer les 5 MessageTypes morts + handlers correspondants dans `messageHandlers.ts`
+- `/home/chauche/Sofia/apps/extension/lib/realtime/derivations.ts:54-65,107-122` → retirer 4 legacy keys + redéfinitions doublons; importer `INTENTION_PREDICATE_IDS` du config
+- `/home/chauche/Sofia/apps/extension/lib/realtime/SubscriptionManager.ts:288,310,316,324` → retirer les écritures dans les legacy keys
+- `/home/chauche/Sofia/apps/extension/background/oauth/index.ts:14` → retirer `TWITTER_FETCH_PROFILE_ENABLED`
+- `/home/chauche/Sofia/apps/extension/types/storage.ts:9-53` → retirer 5 types morts (StorageData, CacheData, StorageKey, StorageChangeEvent, StorageOptions)
+- `/home/chauche/Sofia/apps/extension/types/history.ts:7-39,63-74` → retirer 3 types morts (DOMData, SessionData, PageMetrics)
+- `/home/chauche/Sofia/apps/extension/types/interests.ts:9-20,23-28` → retirer TIER_COLORS + TierBadge
+- `/home/chauche/Sofia/apps/extension/lib/clients/graphql-client.ts:9` → retirer `INTUITION_GRAPHQL_ENDPOINT`
+- `/home/chauche/Sofia/apps/extension/config.ts:19,25` → retirer `SOFIA_SERVER_URL`
+- `/home/chauche/Sofia/apps/extension/lib/utils/ipfsCache.ts:93-112` → retirer 3 fonctions mortes
+- `/home/chauche/Sofia/apps/extension/hooks/useTrustCircle.ts:8`, `useFollowing.ts:8`, `useFollowers.ts:8` → retirer `AtomDataResponse` de l'import
 
-types/index.ts:15                          → supprimer `export * from './wallet'`
-types/index.ts:21                          → supprimer `export * from './viem'`
-types/wallet.ts                            → supprimer entier
-types/viem.ts                              → supprimer entier
-types/messages.ts:14-65                    → retirer 12 types morts du union MessageType
-types/messages.ts:7-12                     → supprimer BaseMessage (orphelin après nettoyage)
-types/messages.ts:84-93                    → supprimer TripletMessage, BadgeMessage
-types/messages.ts:124-129                  → supprimer SofiaRecord
-types/messages.ts:131-150                  → supprimer PageMetadata, PageAnalysisData
-types/messages.ts:152-180                  → supprimer PageBlockchainData, PageAnalysisMessage, PageBlockchainMessage
-types/messages.ts:200-220                  → supprimer 3 wallet message types (Request/Response/Event)
-types/discovery.ts:24-29                   → supprimer INTENTION_LABELS
-types/discovery.ts:32-39                   → supprimer PageDiscoveryRecord
-types/discovery.ts:58-70                   → supprimer InterestAttention, ATTENTION_REQUIREMENTS
-types/discovery.ts:79-80                   → supprimer @deprecated DISCOVERY_XP_REWARDS
-types/discovery.ts:88-105                  → supprimer DiscoveryTriple, RecentDiscovery
-types/blockchain.ts:24-39                  → supprimer AtomCheckResult, TripleCheckResult
-types/blockchain.ts:68-102                 → supprimer ContractConfig, TransactionParams, TransactionResult, EchoTriplet
-types/intuition.ts:1-12, 54-56             → supprimer IntuitionAtomResponse, GraphQLAtomsResponse
-types/bonding-curve.ts:34-49               → supprimer DepositPreview, VaultMetrics
-types/follows.ts:81-84                     → supprimer CommunitySearchContext
-types/intentionCategories.ts:69-71         → supprimer getIntentionColor
-types/interests.ts:84-90                   → supprimer getTierColor
-lib/services/ai/types.ts:5-11, 23-26       → supprimer BentoSuggestion, WalletData
+### Limitations
 
-lib/config/predicateConstants.ts:27        → unexport OAUTH_PREDICATE_IDS (rester const interne) OU supprimer la duplication dans derivations.ts:107
-
-components/ui/blockchain/ExtendedMetricsPanel.tsx:17 → remplacer par `import { formatTrust } from "~/lib/utils"` (déjà existant) — supprimer la définition locale
-hooks/useWalletFromStorage.ts:8            → remplacer par `import type { WalletState } from "~/types/wallet"` (… non — le fichier wallet.ts est mort. Soit garder local, soit le déplacer)
-hooks/useIdentityResolution.ts:24          → supprimer le `interface DiscordProfile` local et utiliser `import type { DiscordProfile } from "~/types/social"`
-
-lib/services/MessageBus.ts:73-200          → supprimer 18 méthodes mortes (sendAgentResponse → getPageData)
-lib/services/walletProvider.ts:167-172     → supprimer `getWalletProvider`
-lib/services/walletProvider.ts:201-208     → supprimer `listWalletProviders`
-lib/services/GoldService.ts:25-26          → supprimer @deprecated GOLD_PER_CERTIFICATION
-lib/services/GoldService.ts:76-90          → supprimer @deprecated addCertificationGold
-lib/services/GoldService.ts:219            → réduire l'export — retirer GOLD_PER_CERTIFICATION (gardé GOLD_PER_VOTE, VOTE_GOLD_DAILY_CAP, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST si nécessaire — sinon tout retirer du barrel — 0 consommateur externe)
-
-lib/realtime/wsStatus.ts:47-56             → supprimer getWsStatus, subscribeWsStatus (resteront que les writers)
-
-background/messageHandlers.ts:255-264, 277-336, 348-401, 589-598 → supprimer les case morts (GET_TRACKING_STATS, CLEAR_TRACKING_DATA, GET_BOOKMARKS, GET_HISTORY, STORE_BOOKMARK_TRIPLETS, STORE_DETECTED_TRIPLETS, GET_PAGE_BLOCKCHAIN_DATA, PAGE_ANALYSIS, FORCE_FLUSH_TRACKER) — ATTENTION certaines branches sont câblées en sens content-script→background ; reverify avec gh runtime logs avant suppression.
-
-background/types.ts                        → supprimer entier sauf `interface PageData` (déplacer vers types/page.ts)
-types/messaging.ts                         → supprimer entier (consommé seulement par background/types.ts)
-
-components/ui/icons/social/                → supprimer le dossier (3 SVG dupliqués)
-components/ui/social/twitter.svg           → supprimer (le repo importe x.svg, pas twitter.svg)
-components/pages/profile-tabs/follow/FollowAccountCard.tsx → supprimer (0 caller)
-
-package.json:34                            → retirer `tailwind`
-```
-
-### Limitations & faux positifs probables
-
-- **`tsc` indisponible** : la liste précise des `TS6133`/`TS6196`/`TS6198` n'a pas pu être générée. Beaucoup d'imports inutiles dans `lib/database/indexedDB-methods.ts:5` (5 types récupérés mais 0 utilisé après Lot C) sont des candidats garantis.
-- **`OAUTH_*` messages externes** : 5 types OAuth (`OAUTH_CALLBACK`, `OAUTH_IMPLICIT_CALLBACK`, `OAUTH_SYNC`, `OAUTH_GET_SYNC_INFO`, `OAUTH_RESET_SYNC`) sont peut-être déclenchés par la landing page Privy externe (`sofia.intuition.box`) via `chrome.runtime.sendMessageExternal`. Confidence dégradée à MEDIUM.
-- **`SEND_CHATBOT_MESSAGE`, `FIRST_CLAIM`, `DEEP_LINK_PROFILE`** : externally_connectable depuis `localhost:3000` et `doc.sofia.intuition.box` (`package.json:73`). Vivants malgré l'absence de caller dans la source extension.
-- **`derivePositionsByTopic`/`Category`/`Platform`** : marqués « legacy stubs kept for SubscriptionManager compat » — leur suppression nécessite de retirer aussi les writes correspondants dans `SubscriptionManager.ts:311-325`. Confidence LOW car interactions multiples.
-- **CSS dynamique** : `intention-pill--${type}`, `bento-${size}`, `avatar-${size}`, etc. ne sont pas grep-ables littéralement. Lot D a déjà fait un gros nettoyage ; cette section est ~vide post-cleanup.
-- **DS components** : `<VerbTag>`, `<PlatformsGrid>`, `<PlatformCard>`, `<EchoesSortTabs>`, `<UserBadge>` viennent de `@0xsofia/design-system`. Les classes `fc-verb-tag`, `pf-platform-card`, `pf-echoes-sort` sont dans le DS, pas dans extension/. **Pas de faux positif détecté.**
-- **`useTrustPage`** est exporté mais 0 caller .tsx — vérifier si le hook est appelé dynamiquement (peu probable).
-- **`MessageBus.sendStoreDetectedTriplets`** : mort selon grep mais il existe un `case "STORE_DETECTED_TRIPLETS"` côté handler — possible que des content scripts envoient le message via `chrome.runtime.sendMessage` brut. À vérifier.
-
----
-
-*Rapport généré sans accès à `tsc`, basé exclusivement sur `grep -rn` cross-référencé. Tous les chemins sont absolus, toutes les lignes vérifiées. Post-cleanup Lot A-D, le repo est ~88% propre — le résiduel est dominé par `types/messages.ts`, `MessageBus`, et quelques types orphelins disséminés dans `types/`.*
+- **`bun tsc --noEmit` bloqué par sandbox** : pas d'énumération exhaustive des TS6133. Les 3 imports détectés en §3 sont ceux trouvés à la lecture manuelle.
+- **CSS par-règle** : un audit fichier-par-fichier (43 fichiers) est dans le scope, mais l'audit règle-par-règle (selectors morts à l'intérieur d'un fichier vivant) n'est pas effectué — Lot D a déjà coupé 516 règles en avril 2026, le résiduel est probablement <5 % par fichier vivant.
+- **Messages OAuth** : `OAUTH_CALLBACK`, `OAUTH_IMPLICIT_CALLBACK`, `OAUTH_SYNC`, `OAUTH_GET_SYNC_INFO`, `OAUTH_RESET_SYNC` n'ont aucun sender visible dans la codebase ; classés MEDIUM/LOW car ils peuvent être émis par la landing page externe (non versionnée ici) ou par un mécanisme automatique non encore identifié. Audit en équipe nécessaire pour décider de les retirer.
+- **`CurrencyMigrationService.ts`** : commentaire explicite « can be removed once all users have migrated (~4 weeks) ». Le déploiement initial date d'il y a >4 semaines (?) — vérification déploiement requise avant suppression.
+- **`selectProviderByAddress` `@deprecated`** : conservé volontairement comme fallback ; l'audit ne préconise PAS sa suppression sans une garantie de migration walletType à 100 %.
