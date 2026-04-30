@@ -1,7 +1,7 @@
 import {
   badgeService, pageDataService,
   groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
-  currencyMigrationService, sessionTracker, levelUpService,
+  sessionTracker, levelUpService,
   browsingNudgeService,
   type TrackedUrl, type DomainCluster
 } from "../lib/services"
@@ -71,8 +71,6 @@ export function setupMessageHandlers(): void {
             await chrome.storage.session.set({ walletAddress, walletType, pending_external_auth: true })
             // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
             await XPServiceClass.migrateToWalletKeys(walletAddress)
-            // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent
-            await currencyMigrationService.migrate(walletAddress)
             logger.info('Wallet connected from external page', { walletAddress, walletType })
             await initializeOnWalletConnect()
             sendResponse({ success: true })

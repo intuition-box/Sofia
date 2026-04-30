@@ -1,7 +1,6 @@
 // Incremental sync management
 // Sync info is stored per-wallet to isolate user identities
 import { SyncInfo } from '../types/interfaces'
-import { TokenManager } from './TokenManager'
 import { getAddress } from 'viem'
 import { createServiceLogger } from '../../../lib/utils/logger'
 
@@ -52,48 +51,4 @@ export class SyncManager {
     logger.info(`Sync info updated for ${platform}`, { wallet: walletAddress.slice(0, 8) })
   }
 
-  async getSyncStatus(platform: string | undefined, tokenManager: TokenManager): Promise<any> {
-    if (platform) {
-      const syncInfo = await this.getLastSyncInfo(platform)
-      const isConnected = await tokenManager.isConnected(platform)
-
-      return {
-        platform,
-        connected: isConnected,
-        lastSync: syncInfo ? {
-          date: new Date(syncInfo.lastSyncAt).toISOString(),
-          triplets: syncInfo.totalTriplets
-        } : null
-      }
-    } else {
-      // Get status for all platforms
-      const platforms = ['youtube', 'spotify', 'twitch', 'discord', 'twitter']
-      const statuses = await Promise.all(
-        platforms.map(p => this.getSyncStatus(p, tokenManager))
-      )
-      return statuses
-    }
-  }
-
-  async resetSyncInfo(platform?: string): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
-    if (!walletAddress) {
-      logger.warn('No wallet connected, cannot reset sync info')
-      return
-    }
-
-    if (platform) {
-      const key = this.getSyncKey(platform, walletAddress)
-      await chrome.storage.local.remove(key)
-      logger.info(`Sync info reset for ${platform}`, { wallet: walletAddress.slice(0, 8) })
-    } else {
-      // Reset all platforms for this wallet
-      const platforms = ['youtube', 'spotify', 'twitch', 'discord', 'twitter']
-      for (const p of platforms) {
-        const key = this.getSyncKey(p, walletAddress)
-        await chrome.storage.local.remove(key)
-      }
-      logger.info('Sync info reset for all platforms', { wallet: walletAddress.slice(0, 8) })
-    }
-  }
 }

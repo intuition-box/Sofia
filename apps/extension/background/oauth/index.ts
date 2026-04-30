@@ -83,14 +83,6 @@ export class OAuthService {
 
     return { triplets: userData.triplets }
   }
-
-  async getSyncStatus(platform?: string): Promise<any> {
-    return this.syncManager.getSyncStatus(platform, this.tokenManager)
-  }
-
-  async resetSyncInfo(platform?: string): Promise<void> {
-    return this.syncManager.resetSyncInfo(platform)
-  }
 }
 
 // Export singleton instance

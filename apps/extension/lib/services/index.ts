@@ -16,7 +16,6 @@ export { cleanupProvider, selectProviderByName, selectProviderByAddress, clearPr
 export { goldService, getLevelUpCost } from './GoldService'
 export { XPServiceClass, xpService } from './XPService'
 export { levelUpService } from './LevelUpService'
-export { currencyMigrationService } from './CurrencyMigrationService'
 
 // Groups & Intentions
 export { groupManager } from './GroupManager'
