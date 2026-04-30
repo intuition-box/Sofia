@@ -32,6 +32,7 @@ const DomainNicheSelectionPage = lazy(
 )
 const AllPlatformsPage = lazy(() => import('./pages/AllPlatformsPage'))
 const ScoresPage = lazy(() => import('./pages/ScoresPage'))
+const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
@@ -69,7 +70,8 @@ export default function App() {
     useNavCollapse()
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
-    location.pathname.startsWith('/profile') || location.pathname === '/scores'
+    location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/scores')
   // Routes that run full-width — no ProfileDrawer, no RightSidebar.
   const isFullWidthPage =
     location.pathname.startsWith('/circles') ||
@@ -243,6 +245,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <ScoresPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/scores/badges/:tier"
+                  element={
+                    <ProtectedRoute>
+                      <BadgeDetailPage />
                     </ProtectedRoute>
                   }
                 />
