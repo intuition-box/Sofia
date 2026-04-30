@@ -125,6 +125,18 @@
   color: var(--ds-on-accent, #1a0a04);
 }
 
+/* Profile Stats/Quests sub-toggle — sits right under the salmon
+   ProfileHeader, so the active pill is white-on-bg to contrast
+   instead of stacking another salmon surface. */
+.stats-subtab-row.scope-toggle--lg .scope-btn.active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}
+
+.stats-subtab-row.scope-toggle--lg .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+}
+
 /* Claimable indicator on a scope-btn — small red dot top-right */
 .scope-btn.has-claimable::after {
   content: '';

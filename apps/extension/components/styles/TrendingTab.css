@@ -107,24 +107,16 @@
   flex: 1 1 0;
   min-width: 0;
   min-height: 140px;
-  background: var(--ds-card);
+  background: var(--ds-bg);
   border-radius: 12px;
   border: 1px solid var(--ds-border);
   box-shadow: none;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .trending-card:hover {
-  background-color: var(--category-color, rgba(255, 255, 255, 0.06));
-  border-color: var(--category-color, rgba(255, 255, 255, 0.15));
-  color: #000;
-}
-
-.trending-card:hover .trending-card-title,
-.trending-card:hover .trending-card-url,
-.trending-card:hover .trending-certifier-count {
-  color: #000;
+  border-color: var(--category-color, var(--ds-ink));
 }
 
 /* Card header: favicon + rank */
@@ -293,18 +285,19 @@
   gap: 2px;
 }
 
-/* Item wrapper for list view */
-.trending-item-wrapper {
+/* Item wrapper for list view — black surface, neutral border at rest,
+   colored border on hover (color picked up from .trending-tab's
+   --category-color in detail view). */
+.trending-list .trending-item-wrapper {
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: var(--transition-fast, all 0.2s ease);
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  transition: border-color 0.15s ease;
   overflow: hidden;
 }
 
-.trending-item-wrapper:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.10);
+.trending-list .trending-item-wrapper:hover {
+  border-color: var(--category-color, var(--ds-ink));
 }
 
 .trending-item {

@@ -158,11 +158,11 @@ const TrendingTab = () => {
   if (selectedCategory && detailCategory) {
     const config = INTENTION_CONFIG[selectedCategory]
     return (
-      <div className="trending-tab">
-        <div
-          className="trending-detail-bar"
-          style={{ "--category-color": config.color } as React.CSSProperties}
-        >
+      <div
+        className="trending-tab"
+        style={{ "--category-color": config.color } as React.CSSProperties}
+      >
+        <div className="trending-detail-bar">
           <button className="trending-back-btn" onClick={handleBack}>
             ←
           </button>
