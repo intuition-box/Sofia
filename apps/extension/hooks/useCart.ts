@@ -48,6 +48,14 @@ export const useCart = () => {
     []
   )
 
+  const updateContextForUrl = useCallback(
+    (url: string, interestContext: string | null) => {
+      if (!walletAddress) return Promise.resolve()
+      return cartService.updateContextForUrl(walletAddress, url, interestContext)
+    },
+    [walletAddress]
+  )
+
   const clearCart = useCallback(() => {
     if (walletAddress) cartService.clearCart(walletAddress)
   }, [walletAddress])
@@ -118,6 +126,7 @@ export const useCart = () => {
     addToCart,
     addVoteToCart,
     removeFromCart,
+    updateContextForUrl,
     clearCart,
     isInCart,
     isVoteInCart,

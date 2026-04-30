@@ -4,18 +4,23 @@
  * Shows on-chain certification status and allows creating new certifications
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
   useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
   useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
+  useTopicInterests, useUserCertifications, useWalletFromStorage, getCertificationForUrl,
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
+import type { UserTopicPosition } from '~/lib/services/TopicPositionsService'
+import type { CertificationEntry } from '~/lib/services/UserCertificationsService'
+import { InterestContextSelector } from './InterestContextSelector'
 import type { GroupUrlRecord } from '~types/database'
 import type { CertificationType } from '~/lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
+import { TOPIC_LABELS, TOPIC_COLORS } from '~/lib/config/topicConfig'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
@@ -47,20 +52,51 @@ const UrlRow = ({
   onOAuthCertify,
   onRemove,
   isProcessing,
-  cartPredicates
+  cartPredicates,
+  topInterests,
+  certifiedContexts,
+  onContextChange
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
   onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
   onTrustSelect: (predicateName: string, title?: string) => void
-  onAddToCart: (intention: IntentionPurpose, title?: string) => void
-  onAddTrustToCart: (predicateName: string, title?: string) => void
+  onAddToCart: (intention: IntentionPurpose, title?: string, context?: string | null) => void
+  onAddTrustToCart: (predicateName: string, title?: string, context?: string | null) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
   cartPredicates: string[]
+  topInterests: UserTopicPosition[]
+  certifiedContexts: string[]
+  onContextChange: (context: string | null) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [selectedContext, setSelectedContext] = useState<string | null>(null)
+
+  const handleSelectContext = (slug: string | null) => {
+    setSelectedContext(slug)
+    onContextChange(slug)
+
+    // When picking a context on a URL that is already certified, auto-queue
+    // a deposit-with-context cart item for each certified predicate that is
+    // not already in the cart.
+    if (!slug) return
+    for (const certLabel of allCertLabels) {
+      const intentionItem = INTENTION_ITEMS.find(i => i.type === certLabel)
+      if (intentionItem) {
+        const predicateName = INTENTION_PREDICATES[intentionItem.key]
+        if (!cartPredicates.includes(predicateName)) {
+          onAddToCart(intentionItem.key, urlRecord.title, slug)
+        }
+        continue
+      }
+      const trustItem = TRUST_ITEMS.find(t => t.type === certLabel)
+      if (trustItem && !cartPredicates.includes(trustItem.predicateLabel)) {
+        onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slug)
+      }
+    }
+  }
 
   // Use Pipeline 2 data with Pipeline 1 fallback for trust/distrust
   const { isCertified: isCertifiedOnChain, labels: allCertLabels } =
@@ -102,9 +138,7 @@ const UrlRow = ({
             {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
           </a>
           <div className="url-meta">
-            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
-            <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
-            {isCertifiedOnChain && allCertInfos.length > 0 && (
+            {((isCertifiedOnChain && allCertInfos.length > 0) || certifiedContexts.length > 0) && (
               <div className="cert-badges">
                 {allCertInfos.map((certInfo) => (
                   <span
@@ -112,10 +146,28 @@ const UrlRow = ({
                     className="cert-badge on-chain"
                     style={{ backgroundColor: certInfo.color }}
                     title={`Certified as ${certInfo.label} (on-chain)`}
-                  />
+                  >
+                    {certInfo.label}
+                  </span>
                 ))}
+                {certifiedContexts.map((slug) => {
+                  const label = TOPIC_LABELS[slug] || slug
+                  const color = TOPIC_COLORS[slug] || 'var(--ds-accent)'
+                  return (
+                    <span
+                      key={`ctx-${slug}`}
+                      className="cert-badge cert-badge--context"
+                      style={{ backgroundColor: color }}
+                      title={`Certified in context of ${label}`}
+                    >
+                      {label}
+                    </span>
+                  )
+                })}
               </div>
             )}
+            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
+            <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
           </div>
         </div>
 
@@ -150,6 +202,7 @@ const UrlRow = ({
       {/* Expanded section with OAuth predicate + intention bubbles on same line */}
       {isExpanded && (
         <div className="url-expanded-section">
+          <div className="url-expanded-subtitle">Intentions</div>
           <div className="intention-pills">
             {urlRecord.oauthPredicate && (
               <button
@@ -166,18 +219,21 @@ const UrlRow = ({
             {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
               const isAlreadyCertified = allCertLabels.includes(type)
               const isInCart = cartPredicates.includes(predicateLabel)
+              const canDepositContext = isAlreadyCertified && !!selectedContext
+              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={type}
                   className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    if (!isInCart && !isAlreadyCertified) {
-                      onAddTrustToCart(predicateLabel, urlRecord.title)
+                    if (canAdd) {
+                      onAddTrustToCart(predicateLabel, urlRecord.title, selectedContext)
                     }
                   }}
-                  disabled={isProcessing || isInCart || isAlreadyCertified}
+                  disabled={isProcessing || !canAdd}
+                  title={canDepositContext ? 'Deposit + add context' : undefined}
                 >
-                  {isInCart ? `${label} ✓` : label}
+                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
                 </button>
               )
             })}
@@ -185,22 +241,34 @@ const UrlRow = ({
               const isAlreadyCertified = allCertLabels.includes(type)
               const predicateName = INTENTION_PREDICATES[key]
               const isInCart = cartPredicates.includes(predicateName)
+              const canDepositContext = isAlreadyCertified && !!selectedContext
+              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={key}
                   className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    if (!isInCart && !isAlreadyCertified) {
-                      onAddToCart(key, urlRecord.title)
+                    if (canAdd) {
+                      onAddToCart(key, urlRecord.title, selectedContext)
                     }
                   }}
-                  disabled={isProcessing || isInCart || isAlreadyCertified}
+                  disabled={isProcessing || !canAdd}
+                  title={canDepositContext ? 'Deposit + add context' : undefined}
                 >
-                  {isInCart ? `${label} ✓` : label}
+                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
                 </button>
               )
             })}
           </div>
+          {topInterests.length > 0 && (
+            <InterestContextSelector
+              interests={topInterests}
+              selectedContext={selectedContext}
+              onSelectContext={handleSelectContext}
+              disabled={isProcessing}
+              certifiedContexts={certifiedContexts}
+            />
+          )}
         </div>
       )}
     </div>
@@ -215,6 +283,19 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   // Cart
   const cart = useCart()
   const [cartToast, setCartToast] = useState<string | null>(null)
+
+  // Topic interests + per-URL certifications (for "in context of")
+  const { walletAddress } = useWalletFromStorage()
+  const { topInterests } = useTopicInterests()
+  const { certifications } = useUserCertifications(walletAddress)
+  const getCertifiedContexts = useCallback(
+    (url: string): string[] => {
+      if (certifications.size === 0) return []
+      const entry: CertificationEntry | null = getCertificationForUrl(certifications, url)
+      return entry?.interestContexts ?? []
+    },
+    [certifications]
+  )
 
   // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
   const activeUrls = useMemo(
@@ -274,7 +355,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   } = usePageDiscovery(pendingCertification?.url || null)
 
   // Cart: add intention to cart
-  const handleAddToCart = async (url: string, intention: IntentionPurpose, title?: string) => {
+  const handleAddToCart = async (
+    url: string,
+    intention: IntentionPurpose,
+    title?: string,
+    context?: string | null
+  ) => {
     const predicateName = INTENTION_PREDICATES[intention]
     const favicon = getFaviconUrl(url, 128)
     const added = await cart.addToCart(
@@ -282,20 +368,27 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       title || null,
       predicateName,
       intention,
-      favicon
+      favicon,
+      context ?? null
     )
     setCartToast(added ? "Added to cart" : "Already in cart")
   }
 
   // Cart: add trust/distrust to cart
-  const handleAddTrustToCart = async (url: string, predicateName: string, title?: string) => {
+  const handleAddTrustToCart = async (
+    url: string,
+    predicateName: string,
+    title?: string,
+    context?: string | null
+  ) => {
     const favicon = getFaviconUrl(url, 128)
     const added = await cart.addToCart(
       url,
       title || null,
       predicateName,
       null,
-      favicon
+      favicon,
+      context ?? null
     )
     setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
   }
@@ -754,12 +847,15 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               onChainStatus={getUrlCertification(urlRecord.url)}
               onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
               onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
-              onAddToCart={(intention, title) => handleAddToCart(urlRecord.url, intention, title)}
-              onAddTrustToCart={(predicateName, title) => handleAddTrustToCart(urlRecord.url, predicateName, title)}
+              onAddToCart={(intention, title, context) => handleAddToCart(urlRecord.url, intention, title, context)}
+              onAddTrustToCart={(predicateName, title, context) => handleAddTrustToCart(urlRecord.url, predicateName, title, context)}
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
               cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
+              topInterests={topInterests}
+              certifiedContexts={getCertifiedContexts(urlRecord.url)}
+              onContextChange={(context) => cart.updateContextForUrl(urlRecord.url, context)}
             />
           ))
         )}

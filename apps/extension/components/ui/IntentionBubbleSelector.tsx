@@ -15,6 +15,8 @@ interface IntentionBubbleSelectorProps {
   alreadyDistrusted?: boolean
   trustInCart?: boolean
   distrustInCart?: boolean
+  // Allow re-clicking certified pills to add a deposit + context
+  allowDepositContext?: boolean
 }
 
 export const IntentionBubbleSelector = memo(({
@@ -28,9 +30,11 @@ export const IntentionBubbleSelector = memo(({
   alreadyDistrusted = false,
   trustInCart = false,
   distrustInCart = false,
+  allowDepositContext = false,
 }: IntentionBubbleSelectorProps) => {
   const handleClick = (intention: IntentionPurpose, isCertified: boolean) => {
-    if (disabled || !isEligible || isCertified) return
+    if (disabled || !isEligible) return
+    if (isCertified && !allowDepositContext) return
     onBubbleClick(intention)
   }
 

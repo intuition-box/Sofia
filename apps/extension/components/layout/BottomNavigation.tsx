@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWalletFromStorage, useQuestSystem, useCart } from '../../hooks'
 import { useRouter } from './RouterProvider'
 import { Home } from 'lucide-react'
@@ -16,6 +16,13 @@ const BottomNavigation = () => {
   const { claimableQuests } = useQuestSystem()
   const { count: cartCount } = useCart()
   const [showCartDrawer, setShowCartDrawer] = useState(false)
+
+  // Allow other UI surfaces to request opening the cart drawer
+  useEffect(() => {
+    const open = () => setShowCartDrawer(true)
+    window.addEventListener('sofia:open-cart', open)
+    return () => window.removeEventListener('sofia:open-cart', open)
+  }, [])
 
   if (!account) return null
 

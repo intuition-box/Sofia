@@ -31,15 +31,17 @@
   padding: 10px 16px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  border-radius: 12px;
-  color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
+  border-radius: 6px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.18s ease;
   position: relative;
   overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .interest-context__btn:hover:not(:disabled),

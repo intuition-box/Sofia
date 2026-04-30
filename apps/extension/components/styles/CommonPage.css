@@ -638,23 +638,22 @@
 }
 
 /* Default state — URL is NOT certified yet:
-   - dashed border (mirrors explorer "create new circle" card)
-   - muted title color */
+   - dashed grey border at rest, white on hover/expanded */
 .url-row {
   background: var(--ds-bg-subtle);
   border-radius: 12px;
   padding: 0;
-  border: 1px dashed var(--ds-ink-soft);
+  border: 1px dashed var(--ds-border);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .url-row:hover {
-  border-color: var(--ds-ink-soft);
+  border-color: var(--ds-ink);
   background: var(--ds-card);
 }
 
 .url-row.expanded {
-  border-color: var(--ds-ink-soft);
+  border-color: var(--ds-ink);
   background: var(--ds-card);
 }
 
@@ -662,10 +661,15 @@
   opacity: 0.4;
 }
 
-/* Certified — solid border + full white title */
+/* Certified — solid border (grey at rest, white on hover/expanded) */
 .url-row.on-chain {
   border-style: solid;
   border-color: var(--ds-border);
+}
+
+.url-row.on-chain:hover,
+.url-row.on-chain.expanded {
+  border-color: var(--ds-ink);
 }
 
 .url-row.on-chain .url-title {
@@ -788,19 +792,32 @@
 /* Container for multiple badges */
 .cert-badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
+  align-items: center;
 }
 
 .cert-badge {
-  width: 11px;
-  height: 11px;
-  border-radius: 16px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 6px;
+  color: #000;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+}
+
+.cert-badge--context {
+  font-size: 9px;
+  padding: 4px 9px;
 }
 
 .empty-urls {
@@ -958,6 +975,17 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Subtitle above the intention pills */
+.url-expanded-subtitle {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
 /* Override IntentionBubbleSelector styles for compact display in URL rows */
 .url-expanded-section .intention-selector {
   padding: 0;
@@ -975,6 +1003,28 @@
 }
 
 .url-expanded-section .intention-pill {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+/* Show "in context of" label inside expanded URL row */
+.url-expanded-section .interest-context {
+  margin-top: 10px;
+  gap: 6px;
+}
+
+.url-expanded-section .interest-context__label {
+  display: block;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.url-expanded-section .interest-context__btn {
   padding: 6px 12px;
   font-size: 11px;
 }
@@ -1100,7 +1150,7 @@
 }
 
 .cert-badge.on-chain {
-  box-shadow: 0 0 6px rgba(255, 198, 176, 0.50);
+  box-shadow: none;
 }
 
 /* ========== LEVEL UP SECTION ========== */

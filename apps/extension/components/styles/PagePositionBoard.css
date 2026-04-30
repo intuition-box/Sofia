@@ -262,6 +262,7 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
   font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: var(--font-family-primary);
@@ -274,8 +275,13 @@
 }
 
 .share-certification-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--ds-ink);
+  border-color: var(--ds-ink);
+  color: #000;
+}
+
+.share-certification-btn:hover .share-certification-btn__icon {
+  filter: invert(0);
 }
 
 .share-certification-btn:disabled {
