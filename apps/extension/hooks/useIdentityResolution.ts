@@ -10,11 +10,11 @@
  */
 
 import { useState, useEffect } from 'react'
-import { createPublicClient, http, getAddress } from 'viem'
-import { mainnet } from 'viem/chains'
+import { getAddress } from 'viem'
 import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { getEnsAvatar } from '../lib/utils'
+import { ensPublicClient } from '../lib/utils/ensUtils'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useIdentityResolution')
@@ -105,12 +105,7 @@ export const useIdentityResolution = ({
         if (walletAddress.includes('.') && !walletAddress.startsWith('0x')) {
           logger.info('Detected ENS name, resolving', { walletAddress })
           try {
-            const publicClient = createPublicClient({
-              chain: mainnet,
-              transport: http()
-            })
-            
-            const address = await publicClient.getEnsAddress({
+            const address = await ensPublicClient.getEnsAddress({
               name: normalize(walletAddress)
             })
             
@@ -138,8 +133,11 @@ export const useIdentityResolution = ({
             // Invalidate cache if Discord profile now has an avatar but cache doesn't
             const discordAvatarUrl = getDiscordAvatarUrl(discordProfile)
             const discordHasNewAvatar = discordAvatarUrl && !avatar
-            // Cache valid for 1 hour, unless Discord profile changed
-            if (Date.now() - timestamp < CACHE_TTL_MS && !discordHasNewAvatar) {
+            // Invalidate if both avatar AND label are missing (bad state — likely
+            // a previous resolution returned nothing due to a transient failure).
+            const isEmptyEntry = !avatar && !label
+            // Cache valid for 1 hour, unless Discord profile changed or empty entry
+            if (Date.now() - timestamp < CACHE_TTL_MS && !discordHasNewAvatar && !isEmptyEntry) {
               logger.debug('Loading from cache', { avatar, label, source: cachedSource })
               setDisplayAvatar(avatar)
               setDisplayLabel(label)
@@ -152,13 +150,16 @@ export const useIdentityResolution = ({
             if (discordHasNewAvatar) {
               logger.debug('Cache invalidated: Discord avatar now available')
             }
+            if (isEmptyEntry) {
+              logger.debug('Cache invalidated: empty entry')
+            }
           }
         }
 
         // Query GraphQL for account data
         const avatarQuery = `
           query GetAccountProfile($id: String!) {
-            accounts(where: { id: { _eq: $id } }) {
+            accounts(where: { id: { _ilike: $id } }) {
               label
               image
               atom {
@@ -190,17 +191,11 @@ export const useIdentityResolution = ({
           }
         }
 
-        // Create public client for ENS operations
-        const publicClient = createPublicClient({
-          chain: mainnet,
-          transport: http()
-        })
-
         // If label is truncated or missing, try reverse ENS lookup
         if (!labelValue || !labelValue.endsWith('.eth') && !labelValue.endsWith('.box')) {
           logger.debug('Label is not an ENS name, attempting reverse lookup', { checksumAddress })
           try {
-            const ensName = await publicClient.getEnsName({
+            const ensName = await ensPublicClient.getEnsName({
               address: checksumAddress as `0x${string}`
             })
             if (ensName) {

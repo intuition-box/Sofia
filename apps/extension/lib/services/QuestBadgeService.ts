@@ -14,7 +14,7 @@ import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS, DAILY_CERTIFICATION_ATOM_ID, DAILY_STREAK_STAKE, DAILY_VOTE_ATOM_ID, DAILY_VOTE_STAKE } from '../config/chainConfig'
 import { MASTRA_API_URL } from '../../config'
-import type { Address } from '../../types/viem'
+import type { Address } from 'viem'
 import type { QuestDefinition, SocialPlatform, AtomOperations } from '../../types/questTypes'
 import {
   GetQuestBadgesAndSocialLinksDocument,

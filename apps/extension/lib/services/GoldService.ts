@@ -196,4 +196,4 @@ export const goldService = new GoldServiceClass()
 export { GoldServiceClass }
 
 // Export constants
-export { GOLD_PER_CERTIFICATION, GOLD_PER_VOTE, VOTE_GOLD_DAILY_CAP, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST }
+export { GOLD_PER_VOTE, VOTE_GOLD_DAILY_CAP, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST }

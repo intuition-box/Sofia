@@ -6,6 +6,7 @@
 import type { ParsedSofiaMessage } from './messages'
 import type { ExtensionSettings } from './storage'
 import type { BookmarkList, BookmarkedTriplet } from './bookmarks'
+import type { IntentionPurpose } from './discovery'
 
 export interface TripletsRecord {
   id?: number

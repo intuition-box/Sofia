@@ -17,7 +17,7 @@ import { BlockchainService } from './blockchainService'
 import { createServiceLogger } from '../utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../config/constants'
 import type { AtomIPFSData, AtomCreationResult } from '../../types/blockchain'
-import type { Address } from '../../types/viem'
+import type { Address } from 'viem'
 
 const logger = createServiceLogger('AtomService')
 

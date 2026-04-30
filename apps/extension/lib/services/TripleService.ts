@@ -26,7 +26,7 @@ import { platformPoolService } from './PlatformPoolService'
 import { createServiceLogger } from '../utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../config/constants'
 import type { TripleOnChainResult, BatchTripleResult } from '../../types/blockchain'
-import type { Address, Hash } from '../../types/viem'
+import type { Address, Hash } from 'viem'
 
 const logger = createServiceLogger('TripleService')
 

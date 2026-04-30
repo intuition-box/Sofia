@@ -2,8 +2,8 @@
 // Tokens are stored per-wallet to isolate user identities
 import { UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
-import { getAddress } from 'viem'
 import { createServiceLogger } from '../../../lib/utils/logger'
+import { getStoredWalletAddress } from '../../../lib/utils/walletStorage'
 
 const logger = createServiceLogger('TokenManager')
 
@@ -13,16 +13,6 @@ export class TokenManager {
   constructor(private platformRegistry: PlatformRegistry) {}
 
   /**
-   * Get current wallet address from session storage (checksummed)
-   */
-  private async getWalletAddress(): Promise<string | null> {
-    const result = await chrome.storage.session.get('walletAddress')
-    if (!result.walletAddress) return null
-    // Always return checksummed address for consistent storage keys
-    return getAddress(result.walletAddress)
-  }
-
-  /**
    * Generate storage key for a platform token (per-wallet)
    */
   private getStorageKey(platform: string, walletAddress: string): string {
@@ -30,7 +20,7 @@ export class TokenManager {
   }
 
   async storeToken(platform: string, token: UserToken): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       throw new Error('No wallet connected. Cannot store OAuth token.')
     }
@@ -40,7 +30,7 @@ export class TokenManager {
   }
 
   async getToken(platform: string): Promise<UserToken | null> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn('No wallet connected, cannot get token', { platform })
       return null
@@ -142,7 +132,7 @@ export class TokenManager {
   }
 
   async removeToken(platform: string): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn('No wallet connected, cannot remove token', { platform })
       return

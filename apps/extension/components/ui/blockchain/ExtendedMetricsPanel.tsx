@@ -11,8 +11,13 @@ import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { VerbTag } from "@0xsofia/design-system"
-import { formatTrust, type RankedPosition } from "~/lib/utils"
+import type { RankedPosition } from "~/lib/utils"
 import PagePositionBoard from "../PagePositionBoard"
+
+// Local formatter — `getTotalShares` already returns a decimal number
+// (shares / 1e18), so we just need thousands separators here.
+const formatTrust = (value: number): string =>
+  value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 
 type FilterScope = "domain" | "page" | "certifiers" | "signals"
 
