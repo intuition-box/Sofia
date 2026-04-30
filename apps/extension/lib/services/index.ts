@@ -7,7 +7,6 @@
 export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
-export type { ResolvedTriple } from './TripleService'
 
 // Wallet
 export { cleanupProvider, selectProviderByName, selectProviderByAddress, clearProviderSelection, createBoundProvider } from './walletProvider'
@@ -24,7 +23,6 @@ export type { CertificationType } from './GroupManager'
 // Quest System
 export { QuestBadgeService } from './QuestBadgeService'
 export { QuestProgressService } from './QuestProgressService'
-export type { LocalProgressData } from './QuestProgressService'
 export { QuestTrackingService, questTrackingService } from './QuestTrackingService'
 
 // Badges
@@ -47,7 +45,6 @@ export type { TripleDetail, CertificationEntry } from './UserCertificationsServi
 
 // Global Stake
 export { globalStakeService } from './GlobalStakeService'
-export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVaultStats, SeasonPosition } from '~/types/globalStake'
 
 // Cart
 export { cartService } from './CartService'
@@ -61,5 +58,3 @@ export { platformPoolService } from './PlatformPoolService'
 // Browsing Nudge
 export { browsingNudgeService } from './BrowsingNudgeService'
 
-// AI
-export { RecommendationService } from './ai/RecommendationService'

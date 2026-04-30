@@ -9,14 +9,14 @@ interface SkeletonCircleProps {
   size?: number
 }
 
-export const SkeletonLine = ({
+const SkeletonLine = ({
   width = "100%",
   height = 12
 }: SkeletonLineProps) => (
   <div className="skeleton-line" style={{ width, height }} />
 )
 
-export const SkeletonCircle = ({ size = 40 }: SkeletonCircleProps) => (
+const SkeletonCircle = ({ size = 40 }: SkeletonCircleProps) => (
   <div className="skeleton-circle" style={{ width: size, height: size }} />
 )
 

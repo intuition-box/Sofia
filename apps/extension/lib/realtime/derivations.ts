@@ -70,7 +70,7 @@ function toBigInt(v: unknown): bigint {
   return 0n
 }
 
-export function sharesToBigInt(v: unknown): bigint {
+function sharesToBigInt(v: unknown): bigint {
   return toBigInt(v)
 }
 
@@ -456,37 +456,3 @@ export function applyOptimisticDailyStreak(
   }
 }
 
-/**
- * Explicit clear without the rollback-closure dance. Prefer the rollback
- * returned by applyOptimisticDailyStreak — it restores the previous
- * snapshot instead of forcing certifiedToday/votedToday back to false
- * (which would be wrong if the user had already acted earlier today).
- */
-export function clearOptimisticDailyStreak(
-  qc: QueryClient,
-  walletAddress: string
-): void {
-  const wallet = walletAddress.toLowerCase()
-  qc.removeQueries({ queryKey: realtimeKeys.dailyStreak(wallet), exact: true })
-}
-
-// ── Legacy placeholders (Phase 3.B v2 can fill these in) ────────────────────
-
-export function applyOptimisticPosition(
-  _qc: QueryClient,
-  _walletAddress: string,
-  _termId: string,
-  _delta: bigint
-): void {
-  // Generic variant deferred — requires per-termId routing (topic /
-  // category / platform / triple) that Sofia's atom model doesn't neatly
-  // cover. Phase 3.B v2 should implement alongside the hook migrations.
-}
-
-export function clearOptimisticPosition(
-  _qc: QueryClient,
-  _walletAddress: string,
-  _termId: string
-): void {
-  // Same as above.
-}

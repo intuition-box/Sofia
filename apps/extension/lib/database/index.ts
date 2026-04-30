@@ -14,8 +14,6 @@ export type {
 
 // Data services
 export {
-  TripletsDataService,
-  UserSettingsService,
   BookmarkService,
   IntentionGroupsService,
   tripletsDataService,
