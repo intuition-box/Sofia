@@ -113,6 +113,33 @@
   min-width: 0;
 }
 
+/* Wrapper Link around each bento card → click navigates to platform
+   detail. `display: contents` keeps the bento-grid layout intact (the
+   Link's box is removed; the inner .bento-card stays the grid item). */
+.echoes-card-link {
+  display: contents;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── PlatformDetailPage toolbar ── */
+.pf-platform-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pf-platform-search {
+  flex: 1 1 280px;
+  max-width: 360px;
+}
+@media (max-width: 600px) {
+  .pf-platform-search {
+    max-width: none;
+  }
+}
+
 .las-loading,
 .las-empty {
   display: flex;

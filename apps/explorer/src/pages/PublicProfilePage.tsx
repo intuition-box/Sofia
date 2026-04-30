@@ -9,7 +9,8 @@ import { isAddress } from 'viem'
 import type { Address } from 'viem'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { useTopClaims } from '@/hooks/useTopClaims'
-import { useUserActivity } from '@/hooks/useUserActivity'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useTrustScore } from '@/hooks/useTrustScore'
 import { resolveEnsToAddress } from '@/services/ensService'
@@ -76,8 +77,17 @@ export default function PublicProfilePage() {
   // Fetch data
   const { profile, isLoading: profileLoading } = useUserProfile(addresses)
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(addresses)
-  const { items: activityItems, loading: activityLoading } =
-    useUserActivity(addresses)
+  // Echoes: alltime certs from the master profile, same source the rest
+  // of the profile panels read so the bento groups stay consistent.
+  const onChainAddresses = walletAddress ? [walletAddress] : undefined
+  const {
+    profile: onChainProfile,
+    isLoading: onChainLoading,
+  } = useUserOnChainProfile(onChainAddresses)
+  const echoesActivities = useMemo(
+    () => userCertsToActivityInputs(onChainProfile.certs),
+    [onChainProfile.certs],
+  )
   const { score: trustScore } = useTrustScore(walletAddress)
 
   // Derive interests from positions
@@ -269,9 +279,9 @@ export default function PublicProfilePage() {
         <section className="pp-section">
           <SectionTitle>Activity</SectionTitle>
           <LastActivitySection
-            items={activityItems}
-            loading={activityLoading}
-            walletAddress={walletAddress}
+            activities={echoesActivities}
+            loading={onChainLoading}
+            linkable={false}
           />
         </section>
       </div>

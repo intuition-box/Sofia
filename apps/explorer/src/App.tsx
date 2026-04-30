@@ -33,6 +33,7 @@ const DomainNicheSelectionPage = lazy(
 const AllPlatformsPage = lazy(() => import('./pages/AllPlatformsPage'))
 const ScoresPage = lazy(() => import('./pages/ScoresPage'))
 const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
+const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
@@ -253,6 +254,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <BadgeDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile/platform/:domain"
+                  element={
+                    <ProtectedRoute>
+                      <PlatformDetailPage />
                     </ProtectedRoute>
                   }
                 />

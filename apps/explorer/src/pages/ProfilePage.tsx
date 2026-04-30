@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useViewAs } from '@/hooks/useViewAs'
@@ -7,7 +7,8 @@ import { useTopicSync } from '../hooks/useTopicSync'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
 import { useUserCertCountsByTopic } from '../hooks/useUserCertCountsByTopic'
-import { useUserActivity } from '../hooks/useUserActivity'
+import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
+import { userCertsToActivityInputs } from '../hooks/useIntentionGroups'
 import { useTopClaims } from '../hooks/useTopClaims'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
@@ -55,8 +56,14 @@ export default function ProfilePage() {
     certCountsByTopic,
   )
   const topicScores = scores?.topics ?? []
-  const { items: activityItems, loading: activityLoading } = useUserActivity(
+  // Echoes derives from the master on-chain profile so the bento groups
+  // cover every cert (alltime), staying in sync with calendar/radar/score.
+  const { profile, isLoading: profileLoading } = useUserOnChainProfile(
     activityAddresses.length > 0 ? activityAddresses : undefined,
+  )
+  const echoesActivities = useMemo(
+    () => userCertsToActivityInputs(profile.certs),
+    [profile.certs],
   )
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(
     activityAddresses.length > 0 ? activityAddresses : undefined,
@@ -170,9 +177,8 @@ export default function ProfilePage() {
             <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
-            items={activityItems}
-            loading={activityLoading}
-            walletAddress={address}
+            activities={echoesActivities}
+            loading={profileLoading}
             sort={echoesSort}
           />
         </section>
