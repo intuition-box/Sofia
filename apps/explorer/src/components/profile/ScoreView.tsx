@@ -1,6 +1,8 @@
 import { usePrivy } from '@privy-io/react-auth'
 import { useReputationScores } from '../../hooks/useReputationScores'
 import { useSignals } from '../../hooks/useSignals'
+import { useUserCertCountsByTopic } from '../../hooks/useUserCertCountsByTopic'
+import { useLinkedWallets } from '../../hooks/useLinkedWallets'
 import type { ConnectionStatus } from '../../types/reputation'
 import { TOPIC_BY_ID } from '../../config/taxonomy'
 import { Card } from '../ui/card'
@@ -43,12 +45,15 @@ export default function ScoreView({
 }: ScoreViewProps) {
   const { user } = usePrivy()
   const { signals } = useSignals(user?.wallet?.address)
+  const { addresses: linkedAddresses } = useLinkedWallets()
+  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
     selectedCategories,
     undefined,
     signals,
+    certCountsByTopic,
   )
 
   return (

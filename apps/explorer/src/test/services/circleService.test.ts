@@ -54,18 +54,26 @@ describe('circleService.fetchCircleFeed', () => {
   it('passes the addresses array as walletAddresses to the trust circle query', async () => {
     mockedTrustFetcher.mockReturnValue(() => Promise.resolve({ triples: [] }))
 
-    await fetchCircleFeed(['0xAAA', '0xBBB'])
+    await fetchCircleFeed([
+      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+    ])
 
     expect(mockedTrustFetcher).toHaveBeenCalledWith({
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
-      walletAddresses: ['0xAAA', '0xBBB'],
+      walletAddresses: [
+        '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+        '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+      ],
     })
   })
 
   it('returns empty array when the user trusts no one', async () => {
     mockedTrustFetcher.mockReturnValue(() => Promise.resolve({ triples: [] }))
-    const result = await fetchCircleFeed(['0xAAA'])
+    const result = await fetchCircleFeed([
+      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+    ])
     expect(result).toEqual([])
     expect(mockedActivityFetcher).not.toHaveBeenCalled()
   })
@@ -89,7 +97,7 @@ describe('circleService.fetchCircleFeed', () => {
     )
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xAAA'])
+    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
 
     const activityCall = mockedActivityFetcher.mock.calls[0][0]
     expect(activityCall.trustedWallets).toHaveLength(2)
@@ -113,8 +121,8 @@ describe('circleService.fetchCircleFeed', () => {
     )
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xAAA'])
-    await fetchCircleFeed(['0xAAA'])
+    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
+    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
 
     expect(mockedTrustFetcher).toHaveBeenCalledTimes(1)
     expect(mockedActivityFetcher).toHaveBeenCalledTimes(2)
@@ -134,8 +142,11 @@ describe('circleService.fetchCircleFeed', () => {
     )
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xAAA'])
-    await fetchCircleFeed(['0xAAA', '0xBBB'])
+    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
+    await fetchCircleFeed([
+      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+    ])
 
     expect(mockedTrustFetcher).toHaveBeenCalledTimes(2)
   })

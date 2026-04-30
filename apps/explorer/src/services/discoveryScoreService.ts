@@ -11,6 +11,7 @@
  * - Signals: total terms_aggregate (same as extension)
  */
 
+import { getAddress } from 'viem'
 import { useGetUserSignalsCountQuery } from '@0xsofia/graphql'
 import { GRAPHQL_URL, SUBJECT_IDS, PREDICATE_IDS } from '../config'
 
@@ -149,14 +150,23 @@ export async function fetchDiscoveryStats(
 ): Promise<DiscoveryStats> {
   if (addresses.length === 0) return EMPTY_STATS
 
-  const userAddresses = addresses.map((a) => a.toLowerCase())
+  // Hasura `_in` filters are case-sensitive but the indexer stores some
+  // address columns checksummed (positions.account_id, accounts.id) and
+  // others lowercased (atoms.data on certain emitters). Pass both casings
+  // so the filter hits regardless of which one the source column uses.
+  // Same pattern as the useOnChainIntentionGroups fix.
+  const checksumAddresses = addresses.map((a) => getAddress(a))
+  const lowercaseAddresses = addresses.map((a) => a.toLowerCase())
+  const allCaseAddresses = Array.from(
+    new Set([...checksumAddresses, ...lowercaseAddresses]),
+  )
 
   // Launch all independent queries in parallel
   const [triplesResult, signalsResult, atomResult] = await Promise.all([
     // 1. User triples with position counts (server-side aggregate)
     gqlRequest<{ triples: TripleWithCount[] }>(USER_TRIPLES_WITH_COUNTS_QUERY, {
       predicateLabels: CERTIFICATION_PREDICATE_LABELS,
-      userAddresses,
+      userAddresses: allCaseAddresses,
       limit: 1000,
       offset: 0,
     }),
@@ -164,14 +174,14 @@ export async function fetchDiscoveryStats(
     // 2. Signals count (same aggregate, union via accountIds)
     useGetUserSignalsCountQuery
       .fetcher({
-        accountIds: addresses,
+        accountIds: allCaseAddresses,
         subjectId: SUBJECT_IDS.I,
       })()
       .catch(() => null),
 
     // 3. Account atoms for all linked wallets (for trusted count)
     gqlRequest<{ atoms: { term_id: string }[] }>(FIND_ACCOUNT_ATOMS_QUERY, {
-      addresses: userAddresses,
+      addresses: allCaseAddresses,
     }).catch(() => ({ atoms: [] })),
   ])
 

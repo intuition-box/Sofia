@@ -73,7 +73,10 @@ export default function ActivityCalendar({
     <div
       ref={wrapRef}
       className="pc-chart-wrap pc-cal-wrap"
-      style={{ ['--cal-base' as string]: accent }}
+      style={{
+        ['--cal-base' as string]: accent,
+        ['--cal-weeks' as string]: String(CAL_WEEKS),
+      }}
     >
       <div className="pc-chart-meta">
         <span>

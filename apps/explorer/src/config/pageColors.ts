@@ -63,4 +63,10 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
     subtitle: 'Pick the topics that anchor your knowledge graph.',
     glow: 'rgba(168,216,234,0.4)',
   },
+  '/profile/platform': {
+    color: '#E8D5FF',
+    title: 'Platform',
+    subtitle: 'Every URL you have certified on this platform.',
+    glow: 'rgba(232,213,255,0.4)',
+  },
 }

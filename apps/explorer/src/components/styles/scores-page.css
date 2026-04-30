@@ -239,6 +239,30 @@
   background: var(--ds-bg-subtle);
 }
 
+.pf-badge-view-all {
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.pf-badge-view-all:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+}
+
+.pf-badge-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .pf-ts-url-item {
   display: grid;
   grid-template-columns: 22px 1fr;

@@ -13,6 +13,7 @@ export function useReputationScores(
   selectedCategories: string[],
   compositeScore?: number | null,
   signals?: Record<string, SignalResult>,
+  certCountsByTopic?: ReadonlyMap<string, number>,
 ): UserReputationProfile | null {
   return useMemo(
     () =>
@@ -22,8 +23,16 @@ export function useReputationScores(
         selectedCategories,
         compositeScore,
         signals,
+        certCountsByTopic,
       ),
-    [getStatus, selectedTopics, selectedCategories, compositeScore, signals],
+    [
+      getStatus,
+      selectedTopics,
+      selectedCategories,
+      compositeScore,
+      signals,
+      certCountsByTopic,
+    ],
   )
 }
 

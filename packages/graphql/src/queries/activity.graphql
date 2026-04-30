@@ -41,7 +41,6 @@ query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
 }
 
 query GetUserActivity(
-  $proxy: String!
   $receivers: [String!]!
   $limit: Int!
   $offset: Int!
@@ -53,8 +52,7 @@ query GetUserActivity(
     where: {
       type: { _eq: "Deposited" }
       deposit: {
-        sender_id: { _ilike: $proxy }
-        receiver_id: { _in: $receivers }
+        receiver: { id: { _in: $receivers } }
         assets_after_fees: { _neq: "0" }
       }
     }

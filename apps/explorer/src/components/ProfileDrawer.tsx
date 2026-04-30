@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
@@ -6,11 +7,18 @@ import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
+import {
+  useUserCertCountsByTopic,
+  useUserCertCounts,
+} from '../hooks/useUserCertCountsByTopic'
+import { POINTS_PER_CERT } from '../services/reputationScoreService'
 import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
-import { useUserActivity } from '../hooks/useUserActivity'
+import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
+import { getFaviconUrl } from '@/utils/favicon'
+import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
@@ -100,28 +108,46 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
+  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
+  const certCounts = useUserCertCounts(linkedAddresses)
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
     selectedCategories,
     trustScore,
     signals,
+    certCountsByTopic,
   )
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
-  // Activity unioned across all linked wallets — the current user's full
-  // footprint, even after they subscribe and get an embedded wallet.
-  const { items: activityItems } = useUserActivity(
-    linkedAddresses.length > 0 ? linkedAddresses : undefined,
-  )
-
-  // Last Activity — restrict to support/oppose events for now (items whose
-  // predicate resolved to Trusted or Distrusted). Sorted newest-first, top 10.
-  const lastActivity = activityItems
-    .filter((it) =>
-      it.intentions.some((i) => i === 'Trusted' || i === 'Distrusted'),
-    )
-    .slice(0, 10)
+  // Activity comes from the master on-chain profile (alltime, paginated,
+  // shared across the page via React Query dedupe). Filter to the
+  // trusts / distrust intentions for the "Last activity" panel and
+  // derive the missing display fields from the cert's object metadata.
+  const { profile } = useUserOnChainProfile(linkedAddresses)
+  const lastActivity = useMemo(() => {
+    const byTime = profile.certs
+      .filter(
+        (c) => c.intention === 'trusts' || c.intention === 'distrust',
+      )
+      .slice()
+      .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
+      .slice(0, 10)
+    return byTime.map((c) => {
+      const url = c.objectUrl || ''
+      const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
+      const title = cleanLabel(c.objectLabel || domain || '')
+      return {
+        id: c.termId,
+        title,
+        url: url || (c.objectLabel.startsWith('http') ? c.objectLabel : ''),
+        domain,
+        favicon: domain ? getFaviconUrl(domain) : '',
+        timestamp: c.certifiedAt,
+        isOppose: c.intention === 'distrust',
+      }
+    })
+  }, [profile])
 
   const {
     isModalOpen,
@@ -164,10 +190,26 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       }
     })
     .filter((x): x is TopicPieSlice => x !== null)
+  // "General" sector for certs the user owns without an `in context of`
+  // nested triple. Counts toward the donut total so power users with
+  // mostly-untagged certs aren't stuck at zero.
+  const generalScore = certCounts.general * POINTS_PER_CERT
+  if (generalScore > 0) {
+    pieSlices.push({
+      id: 'general',
+      label: 'General',
+      emoji: '✨',
+      color: 'var(--ds-muted, #888)',
+      score: generalScore,
+    })
+  }
 
-  // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
+  // Percentile derived from `trustScore` (0–100, where 100 = most trusted).
+  // We only show a percentile when the user actually has a non-zero score —
+  // a 0 here means "no eigentrust paths yet", which would otherwise render
+  // as the misleading "Top 100%".
   const percentileLabel =
-    trustScore != null
+    trustScore != null && trustScore > 0
       ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
       : 'View details'
 
@@ -306,9 +348,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
-                  const isOppose = a.intentions.includes('Distrusted')
+                  const isOppose = a.isOppose
                   const actionLabel = isOppose ? 'Opposed' : 'Supported'
-                  const root = extractDomain(a.url || '') || a.domain
+                  const root = a.domain
                   return (
                     <a
                       key={a.id}

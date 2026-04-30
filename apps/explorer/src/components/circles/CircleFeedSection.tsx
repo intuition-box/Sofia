@@ -10,11 +10,19 @@
  * `useEnsNames` call. Verb filter is client-side over the first page
  * of `useCircleFeed` results.
  */
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { Address } from 'viem'
+import { usePrivy } from '@privy-io/react-auth'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
-import { displayLabelToIntentionType } from '@/config/intentions'
+import { useCart } from '@/hooks/useCart'
+import type { CartItem } from '@/hooks/useCart'
+import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
+import {
+  displayLabelToIntentionType,
+  INTENTION_COLORS,
+} from '@/config/intentions'
+import type { CircleItem } from '@/services/circleService'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import {
   Select,
@@ -23,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import PredicatePicker from '@/components/PredicatePicker'
 import CircleFeedCard from './CircleFeedCard'
 import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
 import '@/components/styles/feed-card.css'
@@ -43,6 +52,74 @@ export default function CircleFeedSection({
   const { items, loading, error } = useCircleFeed(addresses)
   const [verb, setVerb] = useState<VerbFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
+
+  const { authenticated } = usePrivy()
+  const cart = useCart()
+  const [predicatePicker, setPredicatePicker] = useState<{
+    side: 'support' | 'oppose'
+    item: CircleItem
+  } | null>(null)
+
+  // Live override of the support/oppose state — kept in sync with the
+  // realtime positions cache so a fresh deposit lights up the thumb
+  // without a refetch. Falls back to the feed payload when the WS hasn't
+  // pushed yet (or for positions outside the top-500 cap).
+  const livePositionTermIds = useUserPositionTermIds(addresses)
+
+  /** Click on support/oppose thumb on a feed card. */
+  const handleDeposit = useCallback(
+    (side: 'support' | 'oppose', item: CircleItem) => {
+      if (!authenticated) return
+      // Filter intentions whose vault has the matching side termId.
+      const available = item.intentions.filter((intent) => {
+        const vault = item.intentionVaults[intent]
+        if (!vault) return false
+        return side === 'support' ? !!vault.termId : !!vault.counterTermId
+      })
+      if (available.length === 0) return
+
+      if (available.length === 1) {
+        const intent = available[0]
+        const vault = item.intentionVaults[intent]
+        const color = INTENTION_COLORS[intent] ?? '#888'
+        cart.addItem({
+          id: `${vault.termId}-${side}`,
+          side,
+          termId: side === 'support' ? vault.termId : vault.counterTermId,
+          intention: intent,
+          title: item.title,
+          favicon: item.favicon,
+          intentionColor: color,
+        })
+      } else {
+        setPredicatePicker({ side, item })
+      }
+    },
+    [authenticated, cart],
+  )
+
+  const handlePredicateConfirm = useCallback(
+    (selectedIntentions: string[]) => {
+      if (!predicatePicker) return
+      const { side, item } = predicatePicker
+      const newItems: CartItem[] = selectedIntentions.map((intent) => {
+        const vault = item.intentionVaults[intent]
+        const color = INTENTION_COLORS[intent] ?? '#888'
+        return {
+          id: `${vault.termId}-${side}`,
+          side,
+          termId: side === 'support' ? vault.termId : vault.counterTermId,
+          intention: intent,
+          title: item.title,
+          favicon: item.favicon,
+          intentionColor: color,
+        }
+      })
+      cart.addItems(newItems)
+      setPredicatePicker(null)
+    },
+    [predicatePicker, cart],
+  )
 
   const filtered = useMemo(() => {
     return items
@@ -126,10 +203,22 @@ export default function CircleFeedSection({
                 item={item}
                 certifierName={name}
                 certifierAvatar={av}
+                onDeposit={authenticated ? handleDeposit : undefined}
+                livePositionTermIds={livePositionTermIds}
               />
             )
           })}
         </div>
+      )}
+
+      {predicatePicker && (
+        <PredicatePicker
+          isOpen
+          side={predicatePicker.side}
+          item={predicatePicker.item}
+          onConfirm={handlePredicateConfirm}
+          onClose={() => setPredicatePicker(null)}
+        />
       )}
     </section>
   )

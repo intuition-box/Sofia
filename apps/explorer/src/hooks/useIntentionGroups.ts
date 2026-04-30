@@ -2,9 +2,12 @@ import { useMemo } from 'react'
 import {
   CERTIFICATION_COLORS,
   INTENTION_CONFIG,
+  predicateLabelToIntentionType,
   type IntentionType,
 } from '../config/intentions'
 import { calculateLevel } from '../lib/level/calculation'
+import type { UserCert } from '../services/userOnChainProfileService'
+import { extractDomain } from '../utils/formatting'
 
 // ── Input contract ───────────────────────────────────────────────────────
 
@@ -28,6 +31,38 @@ export interface IntentionGroupWithStats {
   level: number
   certificationBreakdown: Partial<Record<IntentionType, number>>
   urls: { url: string; intent: IntentionType }[]
+}
+
+// ── Adapters ─────────────────────────────────────────────────────────────
+
+/**
+ * Convert master-profile UserCert rows to the `IntentionActivityInput`
+ * shape consumed by `buildIntentionGroups`. Every cert is treated as a
+ * certification (the master fetcher already filters out non-cert
+ * predicates) and the domain is derived from the URL atom — falling
+ * back to the label when the atom doesn't expose a URL (old-style
+ * atoms only stored the domain in `label`).
+ */
+export function userCertsToActivityInputs(
+  certs: readonly UserCert[],
+): IntentionActivityInput[] {
+  const out: IntentionActivityInput[] = []
+  for (const cert of certs) {
+    const intent = predicateLabelToIntentionType(cert.intention)
+    if (!intent) continue
+    const domain =
+      (cert.objectUrl && extractDomain(cert.objectUrl)) ||
+      (cert.objectLabel && extractDomain(cert.objectLabel)) ||
+      cert.objectLabel
+    if (!domain) continue
+    out.push({
+      domain,
+      intents: [intent],
+      tags: cert.topicSlugs,
+      isCertification: true,
+    })
+  }
+  return out
 }
 
 // ── Sort strategies ──────────────────────────────────────────────────────
@@ -100,15 +135,25 @@ export function buildIntentionGroups(
   }
 
   const out = [...groups.values()]
+  // Level desc is always the primary key — highest-level groups float
+  // to the top regardless of the tab. The chosen tab becomes the
+  // tiebreaker within the same level (alpha / verb cluster / topic
+  // cluster), with `activeUrlCount` desc as the final fallback.
   switch (sort) {
     case 'platform':
-      out.sort((a, b) => a.domain.localeCompare(b.domain))
+      out.sort(
+        (a, b) =>
+          b.level - a.level ||
+          b.activeUrlCount - a.activeUrlCount ||
+          a.domain.localeCompare(b.domain),
+      )
       break
     case 'verb': {
       const verbKey = (g: IntentionGroupWithStats): string =>
         (pickDominantIntent(g) as string | undefined) ?? 'zz'
       out.sort(
         (a, b) =>
+          b.level - a.level ||
           verbKey(a).localeCompare(verbKey(b)) ||
           b.activeUrlCount - a.activeUrlCount,
       )
@@ -134,6 +179,7 @@ export function buildIntentionGroups(
       }
       out.sort(
         (a, b) =>
+          b.level - a.level ||
           topicKey(a, lookup).localeCompare(topicKey(b, lookup)) ||
           b.activeUrlCount - a.activeUrlCount,
       )

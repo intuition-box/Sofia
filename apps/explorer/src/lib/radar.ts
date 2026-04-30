@@ -10,7 +10,12 @@
  * axes. Both `RadarAxis` and `RadarSeries` carry the same metadata so
  * the semantics are defined by the caller.
  */
-import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType,
+  type IntentionType,
+} from '@/config/intentions'
+import type { UserCert } from '@/services/userOnChainProfileService'
 
 export type RadarVerbId = Exclude<IntentionType, 'trusted' | 'distrusted'>
 export type SeriesFilter = 'all' | string
@@ -71,15 +76,86 @@ export const RADAR_VERBS: readonly RadarAxis[] = [
   },
 ]
 
-/** Deterministic synthetic count for a (seriesKey, axisKey) pair — 0..12. */
-export function syntheticCount(seriesKey: string, axisKey: string): number {
-  let hash = 2166136261 >>> 0
-  const key = `${seriesKey}:${axisKey}`
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i)
-    hash = Math.imul(hash, 16777619) >>> 0
+/**
+ * Real per-(topic × verb) cert counts derived from the user's
+ * `UserCert` profile snapshot. A cert with multiple topic slugs counts
+ * in every (topic, verb) cell it covers — that matches how the radar
+ * should "spread" a multi-context cert.
+ *
+ * Trust / distrust predicates and intentions that don't resolve to a
+ * radar verb are skipped.
+ */
+export interface TopicVerbCounts {
+  /** counts[topicId][verbId] = number of certs in that cell. */
+  counts: Map<string, Map<string, number>>
+  /** Total certs per topic (sum across all verbs). */
+  topicTotals: Map<string, number>
+  /** Total certs per verb (sum across all topics). */
+  verbTotals: Map<string, number>
+  /** Lookup: 0 if the cell is missing. */
+  get: (topicId: string, verbId: string) => number
+  /** Total certs on a topic axis, regardless of verb. */
+  getTopicTotal: (topicId: string) => number
+  /** Total certs on a verb axis, regardless of topic. */
+  getVerbTotal: (verbId: string) => number
+}
+
+const RADAR_VERB_IDS = new Set<string>([
+  'work',
+  'learning',
+  'inspiration',
+  'fun',
+  'buying',
+  'music',
+])
+
+export function bucketProfileByTopicAndVerb(
+  certs: readonly UserCert[],
+): TopicVerbCounts {
+  const counts = new Map<string, Map<string, number>>()
+  const topicTotals = new Map<string, number>()
+  const verbTotals = new Map<string, number>()
+
+  for (const cert of certs) {
+    const verbId = predicateLabelToIntentionType(cert.intention)
+    const isRadarVerb = !!verbId && RADAR_VERB_IDS.has(verbId)
+
+    // Verb totals count EVERY cert with this verb regardless of topic
+    // context. The user might have hundreds of `visits for work` certs
+    // without a nested topic triple — they still belong on the verb axis.
+    if (isRadarVerb) {
+      verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
+    }
+
+    if (cert.topicSlugs.length === 0) continue
+
+    // Topic totals count every cert with a topic context (any predicate)
+    // so the topic spoke stays populated for users whose certs are
+    // mostly trusts / distrusts.
+    for (const topicId of cert.topicSlugs) {
+      topicTotals.set(topicId, (topicTotals.get(topicId) ?? 0) + 1)
+    }
+
+    // (topic, verb) cells require both — only used inside topic polygons.
+    if (!isRadarVerb) continue
+    for (const topicId of cert.topicSlugs) {
+      let row = counts.get(topicId)
+      if (!row) {
+        row = new Map()
+        counts.set(topicId, row)
+      }
+      row.set(verbId, (row.get(verbId) ?? 0) + 1)
+    }
   }
-  return hash % 13
+
+  return {
+    counts,
+    topicTotals,
+    verbTotals,
+    get: (topicId, verbId) => counts.get(topicId)?.get(verbId) ?? 0,
+    getTopicTotal: (topicId) => topicTotals.get(topicId) ?? 0,
+    getVerbTotal: (verbId) => verbTotals.get(verbId) ?? 0,
+  }
 }
 
 /** An axis positioned on the SVG circle (angle pre-computed). */

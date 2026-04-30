@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { getAddress } from 'viem'
 
 vi.mock('@0xsofia/graphql', () => ({
   useGetUserSignalsCountQuery: {
@@ -66,7 +67,7 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
     expect(mockedSignals).not.toHaveBeenCalled()
   })
 
-  it('passes lowercased addresses to the direct queries as arrays', async () => {
+  it('passes both checksummed and lowercase addresses to every query', async () => {
     const capturedTriples: Record<string, unknown>[] = []
     const capturedAtoms: Record<string, unknown>[] = []
 
@@ -86,22 +87,16 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
       Promise.resolve({ signalsCount: { aggregate: { count: 0 } } }),
     )
 
-    await fetchDiscoveryStats([
-      '0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
-    ])
+    const a = '0xc6344b9d5d6f3c4b9d5d6f3c4b9d5d6f3c4b9d5d'
+    const b = '0x8ba1f109551bd432803012645ac136ddd64dba72'
+    await fetchDiscoveryStats([a, b])
 
-    expect(capturedTriples[0].userAddresses).toEqual([
-      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    ])
-    expect(capturedAtoms[0].addresses).toEqual([
-      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    ])
+    const expected = [getAddress(a), getAddress(b), a, b]
+    expect(capturedTriples[0].userAddresses).toEqual(expected)
+    expect(capturedAtoms[0].addresses).toEqual(expected)
   })
 
-  it('passes accountIds as the original-case addresses to the codegen signals query', async () => {
+  it('passes both casings as accountIds to the codegen signals query', async () => {
     installFetchMock([
       { match: 'UserTriplesWithCounts', response: { triples: [] } },
       { match: 'FindAccountAtoms', response: { atoms: [] } },
@@ -110,12 +105,11 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
       Promise.resolve({ signalsCount: { aggregate: { count: 13 } } }),
     )
 
-    const stats = await fetchDiscoveryStats([
-      '0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa',
-    ])
+    const lower = '0x8ba1f109551bd432803012645ac136ddd64dba72'
+    const stats = await fetchDiscoveryStats([lower])
 
     expect(mockedSignals).toHaveBeenCalledWith({
-      accountIds: ['0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa'],
+      accountIds: [getAddress(lower), lower],
       subjectId: SUBJECT_IDS.I,
     })
     expect(stats.totalCertifications).toBe(13)
@@ -153,7 +147,9 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
       Promise.resolve({ signalsCount: { aggregate: { count: 3 } } }),
     )
 
-    const stats = await fetchDiscoveryStats(['0xAAA'])
+    const stats = await fetchDiscoveryStats([
+      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+    ])
     expect(stats.pioneerCount).toBe(1) // p-1
     expect(stats.explorerCount).toBe(1) // p-2
     expect(stats.contributorCount).toBe(1) // p-3
@@ -191,7 +187,10 @@ describe('discoveryScoreService.fetchDiscoveryStats', () => {
       Promise.resolve({ signalsCount: { aggregate: { count: 0 } } }),
     )
 
-    const stats = await fetchDiscoveryStats(['0xAAA', '0xBBB'])
+    const stats = await fetchDiscoveryStats([
+      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
+      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+    ])
 
     expect(capturedTrustedVars).toMatchObject({
       subjectId: SUBJECT_IDS.I,

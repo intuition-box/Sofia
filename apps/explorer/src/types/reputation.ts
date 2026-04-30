@@ -150,6 +150,10 @@ export interface TopicScoreExplanation {
   preCapScore: number
   /** True if the cap actually bit */
   capped: boolean
+  /** Number of `in context of <topic>` certs the user owns. */
+  certCount: number
+  /** Points contributed by certs (= certCount × POINTS_PER_CERT). */
+  certPoints: number
 }
 
 export interface TopicScore {

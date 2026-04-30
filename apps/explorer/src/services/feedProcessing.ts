@@ -9,6 +9,11 @@ import { extractDomain, cleanLabel } from '../utils/formatting'
 import { getFaviconUrl } from '../utils/favicon'
 import type { CircleItem } from './circleService'
 
+interface VaultPositionCount {
+  position_count?: number | null
+  positions?: Array<{ shares?: string | null }> | null
+}
+
 interface FeedEvent {
   id: string
   created_at?: string | null
@@ -25,6 +30,14 @@ interface FeedEvent {
       term_id?: string | null
       label?: string | null
     } | null
+    /** Vaults on the positive term — populated by GetSofiaTrustedActivity (all curves). */
+    term?: {
+      vaults?: VaultPositionCount[] | null
+    } | null
+    /** Vaults on the counter term (all curves). */
+    counter_term?: {
+      vaults?: VaultPositionCount[] | null
+    } | null
   } | null
   deposit?: {
     receiver?: { id?: string | null; label?: string | null } | null
@@ -32,6 +45,28 @@ interface FeedEvent {
   redemption?: {
     sender?: { id?: string | null; label?: string | null } | null
   } | null
+}
+
+function sumVaultPositions(vaults?: VaultPositionCount[] | null): number {
+  if (!vaults) return 0
+  let total = 0
+  for (const v of vaults) total += v.position_count ?? 0
+  return total
+}
+
+/** True if the user owns shares > 0 on any of the term's vaults (any curve). */
+function userHoldsShares(vaults?: VaultPositionCount[] | null): boolean {
+  if (!vaults) return false
+  for (const v of vaults) {
+    for (const p of v.positions ?? []) {
+      try {
+        if (BigInt(p.shares ?? '0') > 0n) return true
+      } catch {
+        // ignore malformed shares strings
+      }
+    }
+  }
+  return false
 }
 
 interface CertifierInfo {
@@ -135,6 +170,10 @@ export function processEvents(
     const isContextOf = predicateLabel.toLowerCase() === 'in context of'
     const termId = triple.term_id || ''
     const counterTermId = triple.counter_term_id || ''
+    const supportCount = sumVaultPositions(triple.term?.vaults)
+    const opposeCount = sumVaultPositions(triple.counter_term?.vaults)
+    const userSupported = userHoldsShares(triple.term?.vaults)
+    const userOpposed = userHoldsShares(triple.counter_term?.vaults)
 
     const { address: certifierAddress, label: certifier } = getCertifier(evt)
 
@@ -161,7 +200,16 @@ export function processEvents(
           certifierAddress,
           intentions: [questIntention],
           timestamp: evt.created_at || '',
-          intentionVaults: { [questIntention]: { termId, counterTermId } },
+          intentionVaults: {
+            [questIntention]: {
+              termId,
+              counterTermId,
+              supportCount,
+              opposeCount,
+              userSupported,
+              userOpposed,
+            },
+          },
           topicContexts: [],
         })
       }
@@ -185,14 +233,27 @@ export function processEvents(
         existing.intentions.push(intention)
       }
       if (intention) {
-        existing.intentionVaults[intention] = { termId, counterTermId }
+        existing.intentionVaults[intention] = {
+          termId,
+          counterTermId,
+          supportCount,
+          opposeCount,
+          userSupported,
+          userOpposed,
+        }
       }
     } else {
-      const intentionVaults: Record<
-        string,
-        { termId: string; counterTermId: string }
-      > = {}
-      if (intention) intentionVaults[intention] = { termId, counterTermId }
+      const intentionVaults: CircleItem['intentionVaults'] = {}
+      if (intention) {
+        intentionVaults[intention] = {
+          termId,
+          counterTermId,
+          supportCount,
+          opposeCount,
+          userSupported,
+          userOpposed,
+        }
+      }
       groupedMap.set(key, {
         id: evt.id,
         title,

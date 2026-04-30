@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import {
   GroupBentoCard,
   type CertificationDot,
   formatDuration,
 } from '@0xsofia/design-system'
 import {
-  displayLabelToIntentionType,
   CERTIFICATION_COLORS,
   type IntentionType,
 } from '@/config/intentions'
@@ -17,30 +16,18 @@ import {
 } from '@/hooks/useIntentionGroups'
 import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
-import type { CircleItem } from '@/services/circleService'
 import { getFaviconUrl } from '@/utils/favicon'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
 interface LastActivitySectionProps {
-  items: CircleItem[]
+  /** Pre-built activity inputs — caller derives them from the master profile. */
+  activities: IntentionActivityInput[]
   loading: boolean
-  walletAddress: string
   /** Sort strategy — defaults to `platform`. Proto offers `platform | verb | topic`. */
   sort?: 'platform' | 'verb' | 'topic'
-}
-
-/** Map a filtered CircleItem into the hook's activity input shape. */
-function toActivityInput(item: CircleItem): IntentionActivityInput | null {
-  const intents = item.intentions
-    .map(displayLabelToIntentionType)
-    .filter((x): x is IntentionType => x !== null)
-  if (intents.length === 0) return null
-  return {
-    domain: item.domain || item.url,
-    intents,
-    tags: item.topicContexts,
-    isCertification: Object.keys(item.intentionVaults).length > 0,
-  }
+  /** When true (default), each card links to `/profile/platform/:domain`.
+   *  Disable on public-profile views — that detail page is owner-only. */
+  linkable?: boolean
 }
 
 /** Build the prop bag consumed by the presentational <GroupBentoCard>. */
@@ -75,24 +62,15 @@ function toCardProps(g: IntentionGroupWithStats) {
         : 'Max level!',
     dominantColor: pickDominantColor(g),
     certificationDots: dots,
-    canLevelUp: g.level > 1 && g.certifiedCount > 0,
   }
 }
 
 export default function LastActivitySection({
-  items,
+  activities,
   loading,
   sort = 'platform',
+  linkable = true,
 }: LastActivitySectionProps) {
-  const activities = useMemo<IntentionActivityInput[]>(() => {
-    const certifications = items.filter(
-      (item) => !item.intentions.some((i) => i.startsWith('quest:')),
-    )
-    return certifications
-      .map(toActivityInput)
-      .filter((x): x is IntentionActivityInput => x !== null)
-  }, [items])
-
   const groups = useIntentionGroups(activities, { sort })
 
   if (loading) {
@@ -119,9 +97,19 @@ export default function LastActivitySection({
     <div className="triples-container">
       <div className="groups-section">
         <div className="bento-grid bento-grid-3">
-          {groups.map((g) => (
-            <GroupBentoCard key={g.id} {...toCardProps(g)} />
-          ))}
+          {groups.map((g) =>
+            linkable ? (
+              <Link
+                key={g.id}
+                to={`/profile/platform/${encodeURIComponent(g.domain)}`}
+                className="echoes-card-link"
+              >
+                <GroupBentoCard {...toCardProps(g)} />
+              </Link>
+            ) : (
+              <GroupBentoCard key={g.id} {...toCardProps(g)} />
+            ),
+          )}
         </div>
       </div>
     </div>

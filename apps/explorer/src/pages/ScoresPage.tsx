@@ -11,7 +11,7 @@
  *   - Engagement on your URLs (support/oppose bar + counts)
  */
 
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { SectionTitle, FaviconWrapper } from '@0xsofia/design-system'
@@ -19,19 +19,20 @@ import { Button } from '@/components/ui/button'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import {
   INTENTION_CONFIG,
-  displayLabelToIntentionType,
   type IntentionType,
 } from '@/config/intentions'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
-import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
-import { useUserActivity } from '@/hooks/useUserActivity'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import {
-  deriveClaimBadge,
-  type ClaimBadge,
-} from '@/components/profile/ProfileClaimCard'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
+import { useReputationScores } from '@/hooks/useReputationScores'
+import { useSignals } from '@/hooks/useSignals'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { POINTS_PER_CERT } from '@/services/reputationScoreService'
+import { predicateLabelToIntentionType } from '@/config/intentions'
+import { type ClaimBadge } from '@/components/profile/ProfileClaimCard'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import '@/components/styles/pages.css'
@@ -123,75 +124,116 @@ export default function ScoresPage() {
   const navigate = useNavigate()
   const { user } = usePrivy()
   const address = user?.wallet?.address
+  const { addresses: linkedAddresses } = useLinkedWallets()
+  const profileAddresses =
+    linkedAddresses.length > 0
+      ? linkedAddresses
+      : address
+        ? [address]
+        : undefined
 
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
-  const { getPlatformsByTopic } = usePlatformCatalog()
   const { topicById } = useTaxonomy()
-  const { items: activity } = useUserActivity(address ? [address] : undefined)
-  const { claims: topClaims } = useTopClaims(address ? [address] : undefined)
+  const { claims: topClaims } = useTopClaims(profileAddresses)
 
-  // Reputation by topic — proto formula: categories × 5 + platforms × 10.
+  // Master profile cache — every panel below derives from this snapshot
+  // so /scores stays in sync with /profile (donut, panel, calendar).
+  const { profile } = useUserOnChainProfile(profileAddresses)
+  const certCounts = useUserCertCounts(profileAddresses)
+  const { signals } = useSignals(address)
+  const reputation = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    undefined,
+    signals,
+    certCounts.byTopic,
+  )
+
+  // Reputation by topic — same TopicScore shape used by /profile.
   const topicScores = selectedTopics
     .map((id) => {
       const topic = topicById(id)
       if (!topic) return null
-      const catCount = topic.categories.filter((c) =>
-        selectedCategories.includes(c.id),
-      ).length
-      const platformsOfTopic = getPlatformsByTopic(id) ?? []
-      const platCount = platformsOfTopic.filter(
-        (p) => getStatus(p.id) === 'connected',
-      ).length
+      const reputationScore = reputation?.topics.find(
+        (t) => t.topicId === id,
+      )?.score
       return {
         id,
         label: topic.label,
         emoji: getTopicEmoji(id) || '📌',
         color: topic.color ?? '#888888',
-        score: catCount * 5 + platCount * 10,
+        score: Math.round(reputationScore ?? 0),
       }
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
 
-  const totalTopicScore = topicScores.reduce((a, t) => a + t.score, 0)
+  const generalScore = certCounts.general * POINTS_PER_CERT
+  const totalTopicScore =
+    topicScores.reduce((a, t) => a + t.score, 0) + generalScore
   const maxTopicScore = Math.max(...topicScores.map((t) => t.score), 1)
 
-  // Reputation by verb — count intentions across the user's activity.
+  // Reputation by verb — derive directly from the master profile so the
+  // counts cover every cert (not just the loaded 200-event window).
   const verbCounts = VERBS.map((v) => {
     let count = 0
-    for (const item of activity) {
-      if (
-        item.intentions.some(
-          (intentLabel) => displayLabelToIntentionType(intentLabel) === v.id,
-        )
-      ) {
-        count++
-      }
+    for (const cert of profile.certs) {
+      if (predicateLabelToIntentionType(cert.intention) === v.id) count++
     }
-    return { ...v, count, score: count * 10 }
+    return { ...v, count }
   }).filter((v) => v.count > 0)
 
-  // Badges earned on URLs — bucket top claims by derived badge.
-  // All 3 groups are always rendered (empty state shown when no claim
-  // qualifies) so the user always sees Pioneer / Explorer / Contributor
-  // side by side.
-  const perBadgeUrls = BADGE_GROUPS.map((g) => {
-    const urls = topClaims
-      .filter((c) => {
-        const position = c.predicateLabel.toLowerCase().includes('distrust')
-          ? 'oppose'
-          : 'support'
-        const derived = deriveClaimBadge({
-          supportCount: c.stats.supportCount,
-          opposeCount: c.stats.opposeCount,
-          pnlPct: c.stats.userPnlPct ?? 0,
-          position,
-        })
-        return derived === g.id
+  // Badges earned on URLs — derive from EVERY cert the user owns,
+  // not just `topClaims` (which only tracks the top-N by market cap).
+  // Uses the same thresholds as the Discovery service so the numbers
+  // here match the right-rail Pioneer/Explorer/Contributor counts:
+  //   1 holder        → pioneer
+  //   2-10 holders    → explorer
+  //   11+ holders     → contributor
+  const perBadgeUrlsAll = (() => {
+    const buckets: Record<ClaimBadge, typeof topClaims> = {
+      pioneer: [],
+      early: [],
+      viral: [],
+      contrarian: [],
+    }
+    const seen = new Set<string>()
+    for (const cert of profile.certs) {
+      if (!cert.objectLabel) continue
+      const key = `${cert.objectLabel}::${cert.objectUrl}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      const tier =
+        cert.certifierCount <= 1
+          ? 'pioneer'
+          : cert.certifierCount <= 10
+            ? 'early'
+            : 'viral'
+      buckets[tier].push({
+        termId: cert.termId,
+        objectLabel: cert.objectLabel,
+        objectUrl: cert.objectUrl || undefined,
+        predicateLabel: cert.intention,
+        stats: {
+          supportCount: cert.certifierCount,
+          opposeCount: 0,
+          supportMarketCap: '0',
+          opposeMarketCap: '0',
+          userPnlPct: null,
+        },
+        totalMarketCap: 0n,
       })
-      .slice(0, 3)
-    return { group: g, urls }
-  })
+    }
+    return BADGE_GROUPS.map((g) => ({
+      group: g,
+      urls: buckets[g.id],
+    }))
+  })()
+  const perBadgeUrls = perBadgeUrlsAll.map((entry) => ({
+    ...entry,
+    urls: entry.urls.slice(0, 3),
+  }))
 
   // Engagement on your URLs — top 5 by total position count.
   const engagement = [...topClaims]
@@ -271,7 +313,7 @@ export default function ScoresPage() {
                   <div className="pf-trust-topic-head">
                     <span className="pf-trust-topic-emoji">{v.emoji}</span>
                     <span className="pf-trust-topic-label">{v.label}</span>
-                    <span className="pf-trust-topic-score">{v.score}</span>
+                    <span className="pf-trust-topic-score">{v.count}</span>
                   </div>
                 </div>
               ))}
@@ -282,7 +324,11 @@ export default function ScoresPage() {
         <section className="pp-section">
           <SectionTitle>Badges earned on URLs</SectionTitle>
           <div className="pf-badge-grid">
-            {perBadgeUrls.map(({ group, urls }) => (
+            {perBadgeUrls.map(({ group, urls }) => {
+              const totalCount =
+                perBadgeUrlsAll.find((e) => e.group.id === group.id)?.urls
+                  .length ?? 0
+              return (
               <div key={group.id} className="pf-badge-block">
                 <div className="pf-badge-head">
                   <img
@@ -291,7 +337,10 @@ export default function ScoresPage() {
                     alt={group.label}
                   />
                   <div className="pf-badge-head-text">
-                    <span className="pf-badge-head-label">{group.label}</span>
+                    <span className="pf-badge-head-label">
+                      {group.label}
+                      {totalCount > 0 ? ` · ${totalCount}` : ''}
+                    </span>
                     <span className="pf-badge-head-desc">
                       {group.description}
                     </span>
@@ -335,10 +384,26 @@ export default function ScoresPage() {
                 ) : (
                   <p className="pf-badge-empty">No claim in this tier yet.</p>
                 )}
+                {totalCount > urls.length && (
+                  <Link
+                    className="pf-badge-view-all"
+                    to={`/scores/badges/${
+                      group.id === 'pioneer'
+                        ? 'pioneer'
+                        : group.id === 'early'
+                          ? 'explorer'
+                          : 'contributor'
+                    }`}
+                  >
+                    View all {totalCount} →
+                  </Link>
+                )}
               </div>
-            ))}
+              )
+            })}
           </div>
         </section>
+
 
         {engagement.length > 0 && (
           <section className="pp-section">

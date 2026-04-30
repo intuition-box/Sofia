@@ -28,6 +28,8 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRadarFocus } from '@/hooks/useRadarFocus'
 import { useProfileTopicStats } from '@/hooks/useProfileTopicStats'
 import { useCalendarSeries } from '@/hooks/useCalendarSeries'
+import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
+import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import { useTopPlatformStats } from '@/hooks/useTopPlatformStats'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
@@ -50,6 +52,12 @@ interface ProfileChartsProps {
   selectedCategories?: string[]
   /** Topic reputation scores — fed into the details panel "Topic Score" row. */
   topicScores?: TopicScore[]
+  /**
+   * Linked-wallet addresses, unioned for the calendar heat-map. Pass
+   * `useLinkedWallets().addresses` for the current user, or `[address]`
+   * for a public profile.
+   */
+  addresses?: readonly string[]
 }
 
 export default function ProfileCharts({
@@ -58,14 +66,22 @@ export default function ProfileCharts({
   selectedTopics = [],
   selectedCategories = [],
   topicScores = [],
+  addresses,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
   const { markets } = usePlatformMarket()
   const { getStatus } = usePlatformConnections()
   const { getPlatformsByTopic } = usePlatformCatalog()
 
-  const { focus, setFocus, topicAxes, verbAxes, displayedSeries, pillItems } =
-    useRadarFocus(selectedTopics, topicById)
+  const {
+    focus,
+    setFocus,
+    topicAxes,
+    verbAxes,
+    displayedSeries,
+    pillItems,
+    verbCertCounts,
+  } = useRadarFocus(selectedTopics, topicById, addresses)
 
   const topicStats = useProfileTopicStats({
     selectedTopics,
@@ -76,7 +92,13 @@ export default function ProfileCharts({
     getStatus,
   })
 
-  const calendarSeries = useCalendarSeries(selectedTopics, topicById)
+  const calendarSeries = useCalendarSeries(
+    selectedTopics,
+    topicById,
+    addresses,
+    focus,
+  )
+  const certCounts = useUserCertCounts(addresses)
 
   const topPlatformItems = useTopPlatformStats({
     markets,
@@ -148,6 +170,9 @@ export default function ProfileCharts({
               topicFilter={focus === 'all' ? 'all' : focus}
               focusMeta={focusMeta}
               onClearFilter={() => setFocus('all')}
+              verbCertCounts={verbCertCounts}
+              generalCertCount={certCounts.general}
+              pointsPerCert={POINTS_PER_CERT}
             />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />

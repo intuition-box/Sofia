@@ -1,36 +1,30 @@
-import { Avatar, AvatarFallback } from './ui/avatar'
+import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import type { Address } from 'viem'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Star, Activity } from 'lucide-react'
 import TrendingPages from './TrendingPages'
 import { useRightRailContent } from '@/contexts/RightRailContext'
+import { useTrustLeaderboard } from '@/hooks/useTrustLeaderboard'
+import { useEnsNames } from '@/hooks/useEnsNames'
 import './styles/layout.css'
 
-const TOPIC_ICONS: Record<string, string> = {
-  'tech-dev': '💻',
-  'design-creative': '🎨',
-  'music-audio': '🎵',
-  gaming: '🎮',
-  'web3-crypto': '⛓️',
-  science: '🔬',
-  'sport-health': '🏋️',
-  'video-cinema': '📹',
-  entrepreneurship: '🚀',
-  'performing-arts': '🎭',
-  'nature-environment': '🌿',
-  'food-lifestyle': '🍽️',
-  literature: '📚',
-  'personal-dev': '🧠',
-}
+const TOP_REPUTATIONS_COUNT = 3
 
 export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
   const injected = useRightRailContent()
+  const { rankings, loading } = useTrustLeaderboard()
 
-  // Placeholder suggested accounts with good scores in user's topics
-  const suggestedAccounts = [
-    { address: '0x1a2b...3c4d', score: 87, topic: 'tech-dev' },
-    { address: '0x5e6f...7g8h', score: 74, topic: 'design-creative' },
-    { address: '0x9i0j...1k2l', score: 91, topic: 'web3-crypto' },
-  ]
+  const top = useMemo(
+    () => rankings.slice(0, TOP_REPUTATIONS_COUNT),
+    [rankings],
+  )
+  const topAddresses = useMemo(
+    () => top.map((r) => r.address as Address),
+    [top],
+  )
+  const { getDisplay, getAvatar } = useEnsNames(topAddresses)
 
   return (
     <aside
@@ -39,7 +33,7 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
       <div className="p-4 space-y-6">
         {injected ?? (
           <>
-            {/* Suggested Accounts */}
+            {/* Top Reputations — eigentrust top 3 */}
             <Card style={{ gap: 0 }}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -48,29 +42,51 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {suggestedAccounts.map((account) => (
-                  <div
-                    key={account.address}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="text-xs">
-                          {account.address.slice(2, 4).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">{account.address}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {TOPIC_ICONS[account.topic]} Score: {account.score}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <p className="text-xs text-center text-muted-foreground pt-1">
-                  Connect to discover more profiles
-                </p>
+                {loading && top.length === 0 ? (
+                  <p className="text-xs text-center text-muted-foreground py-4">
+                    Loading reputations…
+                  </p>
+                ) : top.length === 0 ? (
+                  <p className="text-xs text-center text-muted-foreground py-4">
+                    No reputations yet.
+                  </p>
+                ) : (
+                  <>
+                    {top.map((entry) => {
+                      const addr = entry.address as Address
+                      const display = getDisplay(addr)
+                      const avatar = getAvatar(addr)
+                      return (
+                        <Link
+                          key={addr}
+                          to={`/profile/${addr}`}
+                          className="flex items-center justify-between hover:opacity-80"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={avatar} alt={display} />
+                              <AvatarFallback className="text-xs">
+                                {addr.slice(2, 4).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-sm font-medium">{display}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Score: {entry.score.toFixed(4)}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                    <Link
+                      to="/leaderboard"
+                      className="text-xs text-center text-muted-foreground pt-1 block hover:opacity-80"
+                    >
+                      View full leaderboard →
+                    </Link>
+                  </>
+                )}
               </CardContent>
             </Card>
 

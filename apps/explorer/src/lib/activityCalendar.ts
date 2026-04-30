@@ -1,13 +1,12 @@
 /**
  * Activity calendar helpers — GitHub-style contribution heatmap.
  *
- * Ported from proto-explorer/src/components/profileCharts.ts:438-510. Until
- * the real activity graph is wired (`useUserActivity` × topic), the series
- * builder produces a deterministic synthetic pattern per topic so the
- * layout + colors can be visually validated end-to-end.
+ * Counts come from `buildCalendarSeriesFromActivity` which buckets the
+ * user's indexed CircleItem feed by (day × topic).
  */
+import type { CircleItem } from '@/services/circleService'
 
-export const CAL_WEEKS = 18
+export const CAL_WEEKS = 26
 export const CAL_DAYS = CAL_WEEKS * 7
 
 /** Returns `today`, `yesterday`, or `Nd ago`. */
@@ -41,41 +40,40 @@ export function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 /**
- * Deterministic synthetic activity series per topic — mocks months of
- * certifications so the heatmap shape is readable even with no real data.
+ * Real per-topic counts derived from a CircleItem feed. Each item is
+ * tallied once per topic in its `topicContexts`; the day index is its
+ * `timestamp`'s local-day offset from today (today → CAL_DAYS-1, yesterday
+ * → CAL_DAYS-2, …). Items older than the window or without a parseable
+ * timestamp are skipped.
  *
- * Same four-peak Gaussian sum + jittered amplitude as the proto; the hash
- * derived from the topic key shifts the rhythm per topic.
+ * `quest:*` intentions are ignored — they aren't certifications and would
+ * inflate the heatmap with badge claims.
  */
-export function buildSyntheticCalendarSeries(
-  topicId: string | 'all',
+export function buildCalendarSeriesFromActivity(
+  items: readonly CircleItem[],
+  topicId: string,
 ): number[] {
-  const key = `${topicId}:all`
-  let hash = 0
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) | 0
-  }
-  const offset = ((hash % 17) + 17) % 17
+  const counts = new Array<number>(CAL_DAYS).fill(0)
+  const todayMidnight = new Date()
+  todayMidnight.setHours(0, 0, 0, 0)
+  const todayMs = todayMidnight.getTime()
+  const dayMs = 86_400_000
 
-  const peaks = [
-    { center: 20 + offset, sigma: 7, amp: 3 },
-    { center: 55 + offset * 0.5, sigma: 10, amp: 4.2 },
-    { center: 90, sigma: 5, amp: 2.5 },
-    { center: CAL_DAYS - 6, sigma: 4, amp: 3.5 },
-  ]
-
-  const result: number[] = []
-  for (let t = 0; t < CAL_DAYS; t++) {
-    let intensity = 0
-    for (const p of peaks) {
-      const x = (t - p.center) / p.sigma
-      intensity += p.amp * Math.exp(-(x * x) / 2)
-    }
-    const jitter = (((hash ^ (t * 131)) >>> 0) % 100) / 100
-    intensity *= 0.45 + jitter * 0.75
-    result.push(Math.max(0, Math.round(intensity)))
+  for (const item of items) {
+    if (!item.topicContexts.includes(topicId)) continue
+    if (item.intentions.every((l) => l.startsWith('quest:'))) continue
+    const ts = item.timestamp
+    if (!ts) continue
+    const itemMs = Date.parse(ts)
+    if (Number.isNaN(itemMs)) continue
+    // Snap to local-day midnight so DST doesn't bleed counts across days.
+    const itemDay = new Date(itemMs)
+    itemDay.setHours(0, 0, 0, 0)
+    const daysAgo = Math.round((todayMs - itemDay.getTime()) / dayMs)
+    if (daysAgo < 0 || daysAgo >= CAL_DAYS) continue
+    counts[CAL_DAYS - 1 - daysAgo] += 1
   }
-  return result
+  return counts
 }
 
 /** One topic's contribution to the calendar. */

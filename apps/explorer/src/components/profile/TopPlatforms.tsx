@@ -1,6 +1,7 @@
 /**
  * TopPlatforms — ranked list of certified platforms with a horizontal bar
- * indicating relative activity count + a mock up/down delta.
+ * indicating relative activity count + an up/down delta sourced from the
+ * user's vault P&L on each platform (`PlatformVaultData.userPnlPct`).
  * Ported from proto-explorer/src/components/profileCharts.ts renderTopPlatforms.
  *
  * Pure view. Caller passes the precomputed stats; TopPlatforms renders.
@@ -17,7 +18,7 @@ export interface TopPlatformStat {
   color: string
   /** Short label for the primary topic (e.g. `Tech` / `Web3`). */
   primaryLabel: string
-  /** Mock percentage delta over the period; positive = up, negative = down. */
+  /** User's vault P&L percentage on this platform; positive = up, negative = down. */
   delta: number
 }
 
