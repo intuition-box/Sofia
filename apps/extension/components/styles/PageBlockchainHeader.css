@@ -5,16 +5,17 @@
   align-items: center;
   gap: 14px;
   padding: 14px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border);
+  background: var(--ds-accent);
+  border: 1px solid var(--ds-accent);
   border-radius: 14px;
   margin-bottom: 0;
   position: relative;
   transition: border-color 0.15s ease;
+  color: var(--ds-on-accent);
 }
 
 .website-info-container.clickable:hover {
-  border-color: var(--ds-ink-soft);
+  border-color: var(--ds-on-accent);
 }
 
 /* Favicon container */
@@ -53,10 +54,10 @@
 
 .website-url-text {
   font-family: 'Fraunces', serif;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 900;
   letter-spacing: -0.01em;
-  color: var(--ds-ink);
+  color: var(--ds-on-accent);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -65,7 +66,8 @@
 .website-url-full {
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 10px;
-  color: var(--ds-muted);
+  color: var(--ds-on-accent);
+  opacity: 0.7;
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
