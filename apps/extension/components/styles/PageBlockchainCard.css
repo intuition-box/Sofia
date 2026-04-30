@@ -26,6 +26,54 @@
   pointer-events: none;
 }
 
+/* Fade + slide-in when the real content replaces the skeleton.
+   Each top-level section animates in sequence so the page feels
+   composed instead of flashing all at once. */
+@keyframes blockchain-card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.blockchain-card .website-header-section {
+  animation: blockchain-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.blockchain-card .website-header-section .actions-panel {
+  animation: blockchain-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.1s;
+}
+
+.blockchain-card .website-header-section .share-certification-btn {
+  animation: blockchain-card-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.18s;
+}
+
+.blockchain-card .credibility-content {
+  animation: blockchain-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.22s;
+}
+
+/* Subtle pulse on the salmon header while data is being refreshed
+   in the background so users see something is happening even when
+   stale data is visible. */
+@keyframes blockchain-card-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 198, 176, 0); }
+  50%      { box-shadow: 0 0 0 6px rgba(255, 198, 176, 0.22); }
+}
+
+.blockchain-card--refreshing .website-info-container {
+  animation: blockchain-card-pulse 1.4s ease-in-out infinite;
+  border-radius: 14px;
+}
+
 /* ── Neutral notice (persistent error) ── */
 
 .blockchain-card__notice {
@@ -209,7 +257,7 @@
 }
 
 .credibility-analysis {
-  margin-top: 24px;
+  margin-top: var(--spacing-md, 12px);
 }
 
 
