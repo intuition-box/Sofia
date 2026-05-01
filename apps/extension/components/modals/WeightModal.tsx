@@ -41,6 +41,8 @@ interface WeightModalProps {
   estimateOptions?: { isNewTriple?: boolean; newAtomCount?: number }
   /** Customize submit button text (default: "Amplify") */
   submitLabel?: string
+  /** Pre-selected weight option when the modal opens (default: 'default' / 0.5 TRUST) */
+  initialWeight?: 'minimum' | 'default' | 'strong' | 'high' | 'max'
   /** Show XP cube animation on success (for quest/XP claim flows) */
   showXpAnimation?: boolean
   /** Optional curve selector for debate claims (linear=1 / progressive=2) */
@@ -72,7 +74,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onRemoveTriplet, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, initialWeight = 'default', showXpAnimation = false, curveSelector, positionBoard, onRemoveTriplet, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -134,20 +136,20 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   // Track removed triplets (by index) — kept in array for stable submit mapping
   const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set())
   // Apply a single weight option to ALL triplets at once
-  const [globalWeight, setGlobalWeight] = useState<WeightOption['id']>('default')
+  const [globalWeight, setGlobalWeight] = useState<WeightOption['id']>(initialWeight)
   const [globalCustomValue, setGlobalCustomValue] = useState('')
 
   // Initialize weights array when the actual triplets change (not just reference)
   const tripletKey = triplets.map(t => t.id).join(',')
   useEffect(() => {
     if (triplets.length > 0) {
-      setSelectedWeights(new Array(triplets.length).fill('default'))
+      setSelectedWeights(new Array(triplets.length).fill(initialWeight))
       setCustomValues(new Array(triplets.length).fill(''))
-      setGlobalWeight('default')
+      setGlobalWeight(initialWeight)
       setGlobalCustomValue('')
       setRemovedIndices(new Set())
     }
-  }, [tripletKey])
+  }, [tripletKey, initialWeight])
 
   // Warn user before leaving during processing
   useEffect(() => {
@@ -318,7 +320,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   const handleClose = () => {
     if (isProcessing) return
-    setSelectedWeights(new Array(triplets.length).fill('default'))
+    setSelectedWeights(new Array(triplets.length).fill(initialWeight))
     setCustomValues(new Array(triplets.length).fill(''))
     onClose()
   }

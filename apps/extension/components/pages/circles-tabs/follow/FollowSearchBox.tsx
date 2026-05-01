@@ -7,27 +7,28 @@ import { useGetAtomAccount, useCheckFollowStatus, type AccountAtom } from '../..
 import { debounce } from '../../../../lib/utils'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
-import FollowButton from '../../../ui/FollowButton'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
 
 interface FollowSearchBoxProps {
   onSelectAccount: (account: AccountAtom) => void
-  onFollowSuccess?: () => void
+  onTrustSuccess?: () => void
   onSearchChange?: (query: string) => void
   placeholder?: string
 }
 
 /**
- * Component to display the correct action button based on follow/trust status
+ * Add-to-circle button: opens WeightModal pre-filled with 0.01 TRUST
+ * and creates the I → TRUSTS → account triple in one step.
+ * Shows "Trusted ✓" if the account is already in the user's trust circle.
  */
-function AccountActionButton({ 
-  account, 
-  onFollowSuccess 
-}: { 
+function AccountActionButton({
+  account,
+  onTrustSuccess
+}: {
   account: AccountAtom
-  onFollowSuccess?: () => void 
+  onTrustSuccess?: () => void
 }) {
   const followStatus = useCheckFollowStatus(account.termId)
 
@@ -52,25 +53,15 @@ function AccountActionButton({
     )
   }
 
-  if (followStatus.isFollowing) {
-    return (
-      <TrustAccountButton
-        accountTermId={account.termId}
-        accountLabel={account.label}
-        onSuccess={() => {
-          followStatus.refetch()
-          onFollowSuccess?.()
-        }}
-      />
-    )
-  }
-
   return (
-    <FollowButton
-      account={account}
-      onFollowSuccess={() => {
+    <TrustAccountButton
+      accountTermId={account.termId}
+      accountLabel={account.label}
+      label="+ add to my circle"
+      initialWeight="minimum"
+      onSuccess={() => {
         followStatus.refetch()
-        onFollowSuccess?.()
+        onTrustSuccess?.()
       }}
     />
   )
@@ -78,7 +69,7 @@ function AccountActionButton({
 
 export function FollowSearchBox({
   onSelectAccount,
-  onFollowSuccess,
+  onTrustSuccess,
   onSearchChange,
   placeholder = 'Search all accounts on Intuition...'
 }: FollowSearchBoxProps) {
@@ -148,7 +139,7 @@ export function FollowSearchBox({
               <div className="account-right" onClick={(e) => e.stopPropagation()}>
                 <AccountActionButton
                   account={account}
-                  onFollowSuccess={onFollowSuccess}
+                  onTrustSuccess={onTrustSuccess}
                 />
               </div>
             </div>

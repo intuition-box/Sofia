@@ -86,7 +86,10 @@ const CirclesPage = () => {
                 ← Back to feed
               </button>
               <h3 className="circle-layer-title">Trust Circle Members</h3>
-              <TrustCirclePanel walletAddress={walletAddress} />
+              <TrustCirclePanel
+                walletAddress={walletAddress}
+                onInviteMember={() => setCircleLayer('home')}
+              />
             </>
           )}
           {activeTab === 'trending' && <TrendingTab />}

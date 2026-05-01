@@ -20,9 +20,11 @@ const logger = createHookLogger('TrustCirclePanel')
 
 interface TrustCirclePanelProps {
   walletAddress: string | undefined
+  /** Optional CTA: when provided, renders a "+ invite a member" button at top */
+  onInviteMember?: () => void
 }
 
-export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
+export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCirclePanelProps) {
   const { accounts, loading, error, refetch } = useTrustCircle(walletAddress)
   const { addWeight, removeWeight } = useWeightOnChain()
   const { redeemPosition } = useRedeemTriple()
@@ -158,6 +160,16 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
 
   return (
     <div className="follow-panel">
+      {onInviteMember && (
+        <button
+          type="button"
+          className="invite-member-btn"
+          onClick={onInviteMember}
+        >
+          + invite a member
+        </button>
+      )}
+
       {loading && (
         <div className="loading-state">
           <SofiaLoader size={150} />

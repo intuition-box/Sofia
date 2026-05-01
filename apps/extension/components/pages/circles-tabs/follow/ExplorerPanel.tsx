@@ -11,6 +11,7 @@ import { useGetTopSofiaAccountsQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../../../../lib/config/chainConfig'
 import { FollowSearchBox } from './FollowSearchBox'
 import Avatar from '../../../ui/Avatar'
+import TrustAccountButton from '../../../ui/TrustAccountButton'
 import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
@@ -81,7 +82,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     })
   }
 
-  const handleTopAccountClick = (account: TopAccount) => {
+  const handleViewProfile = (account: TopAccount) => {
     navigateTo('user-profile', {
       termId: account.termId ?? '',
       label: account.label,
@@ -106,8 +107,8 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     <div className="follow-panel">
       <FollowSearchBox
         onSelectAccount={handleSearchResultClick}
-        onFollowSuccess={() => {
-          logger.debug('Follow successful from explorer')
+        onTrustSuccess={() => {
+          logger.debug('Trust triple created from explorer search')
         }}
         placeholder="Search all accounts on Intuition..."
       />
@@ -139,8 +140,6 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
               <div
                 key={account.walletAddress}
                 className="followed-account-card"
-                onClick={() => handleTopAccountClick(account)}
-                style={{ cursor: 'pointer' }}
               >
                 <div className="account-left">
                   <span className="account-number">{index + 1}</span>
@@ -156,6 +155,26 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
                       {account.txCount} signals
                     </span>
                   </div>
+                </div>
+                <div className="account-right explorer-card-actions">
+                  <button
+                    type="button"
+                    className="explorer-view-profile-btn"
+                    onClick={() => handleViewProfile(account)}
+                  >
+                    View profile
+                  </button>
+                  {account.termId && account.termId.length === 66 && (
+                    <TrustAccountButton
+                      accountTermId={account.termId}
+                      accountLabel={account.label}
+                      label="+ add to my circle"
+                      initialWeight="minimum"
+                      onSuccess={() => {
+                        logger.debug('Trust triple created from explorer top accounts')
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             ))}
