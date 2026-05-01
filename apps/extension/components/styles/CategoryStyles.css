@@ -251,29 +251,74 @@
   margin-bottom: 8px;
 }
 
-/* Echoes search row — collapses category-toolbar's vertical stack to a single row */
+/* Echoes search row — single row, search input fills the width */
 .echoes-search-row {
   flex-direction: row;
   margin: 0 0 8px 0;
 }
 
-/* Echoes filter + sort row — pills left, sort buttons right, both can wrap */
+.echoes-search-row .category-search-container {
+  width: 100%;
+}
+
+/* Echoes filter + sort row — pills left, sort toggle right; row wraps when
+   the chips get too wide to share a line with the segmented toggle. */
 .echoes-filter-sort-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .echoes-filter-sort-row .circle-category-chips {
-  flex: 1 1 auto;
+  flex: 1 1 220px;
   min-width: 0;
+  padding: 0;
 }
 
-.echoes-filter-sort-row .sort-buttons {
+.echoes-filter-sort-row .echoes-sort-toggle {
   flex: 0 0 auto;
+  margin: 0;
+}
+
+/* Sort toggle inside Echoes — sized to visually match the .circle-chip
+   pills next to it (padding/font/border-radius lifted from .scope-toggle--lg
+   but tighter to align with chip height). */
+.echoes-sort-toggle {
+  padding: 3px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  flex-wrap: nowrap;
+}
+
+.echoes-sort-toggle .scope-btn {
+  padding: 4px 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.echoes-sort-toggle .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+}
+
+.echoes-sort-toggle .scope-btn.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+}
+
+/* Filter chips inside the Echoes filter+sort row — match the toggle button
+   metrics so both sides of the row share a visual baseline. */
+.echoes-filter-sort-row .circle-chip {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .category-toolbar > .circle-filter-label {

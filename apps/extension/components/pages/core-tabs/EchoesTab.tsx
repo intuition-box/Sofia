@@ -225,11 +225,13 @@ const EchoesTab = () => {
               )
             )}
           </div>
-          <div className="sort-buttons">
+          <div className="scope-toggle echoes-sort-toggle" role="group" aria-label="Sort groups by">
             {sortOptions.map(option => (
               <button
                 key={option.value}
-                className={`sort-btn ${sortBy === option.value ? 'active' : ''}`}
+                type="button"
+                className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
+                aria-pressed={sortBy === option.value}
                 onClick={() => setSortBy(option.value)}
               >
                 {option.label}
