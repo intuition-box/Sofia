@@ -45,14 +45,17 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     { enabled: !!walletAddress, staleTime: 60000 }
   )
 
-  // Aggregate deposits by receiver to get top accounts by tx count
+  // Aggregate deposits by receiver to get top accounts by tx count.
+  // Skip the connected user — they shouldn't be invited to their own circle.
   const topAccounts = useMemo<TopAccount[]>(() => {
     if (!data?.deposits) return []
 
+    const selfWallet = walletAddress?.toLowerCase()
     const countMap = new Map<string, TopAccount>()
 
     for (const deposit of data.deposits) {
       const id = deposit.receiver_id
+      if (selfWallet && id.toLowerCase() === selfWallet) continue
       const existing = countMap.get(id)
       if (existing) {
         existing.txCount++
@@ -70,7 +73,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     return Array.from(countMap.values())
       .sort((a, b) => b.txCount - a.txCount)
       .slice(0, 10)
-  }, [data])
+  }, [data, walletAddress])
 
   const handleSearchResultClick = (account: AccountAtom) => {
     navigateTo('user-profile', {
@@ -152,9 +155,6 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
                   />
                   <div className="account-info">
                     <span className="account-label">{account.label}</span>
-                    <span className="trust-amount">
-                      {account.txCount} signals
-                    </span>
                   </div>
                 </div>
                 <div className="account-right explorer-card-actions">

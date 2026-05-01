@@ -145,7 +145,6 @@ const ScorePage = () => {
               onClaimXP={claimQuestXP}
               onVerifySocials={async () => ({ success: false })}
               onMarkCompleted={markQuestCompleted}
-              onRefresh={handleFullRefresh}
               walletAddress={walletAddress}
               streakProfit={streakProfitData}
               voteProfit={voteProfitData}

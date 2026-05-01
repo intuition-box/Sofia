@@ -325,11 +325,11 @@
    sofia-explorer crd-members-invite-btn: dark bg with white text, salmon
    bg with black text on hover. Matches the per-account "+ add" buttons. */
 .invite-member-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: fit-content;
+  width: 100%;
   margin-bottom: var(--spacing-md);
   padding: 10px 14px;
   background: var(--ds-bg);

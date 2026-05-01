@@ -12,7 +12,7 @@ import { refetchWithBackoff } from '../../../../lib/utils'
 import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
 import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'
-import  UserAtomStats  from '../../../ui/UserAtomStats'
+import AccountSignalsBadge from '../../../ui/AccountSignalsBadge'
 import '../../../styles/CoreComponents.css'
 import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/FollowTab.css'
@@ -212,11 +212,9 @@ export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCircleP
                   />
                   <div className="account-info">
                     <span className="account-label">{account.label}</span>
-                    <UserAtomStats
-                      termId={account.termId}
-                      accountAddress={account.walletAddress}
+                    <AccountSignalsBadge
+                      walletAddress={account.walletAddress}
                       compact={true}
-                      hideMarketCap={true}
                     />
                   </div>
                 </div>

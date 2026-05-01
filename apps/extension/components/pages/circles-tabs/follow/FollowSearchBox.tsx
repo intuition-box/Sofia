@@ -2,12 +2,12 @@
  * FollowSearchBox - Search input with autocomplete for global account search
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { UserPlus } from 'lucide-react'
-import { useGetAtomAccount, useCheckFollowStatus, type AccountAtom } from '../../../../hooks'
+import { useGetAtomAccount, useCheckFollowStatus, useWalletFromStorage, type AccountAtom } from '../../../../hooks'
 import { debounce } from '../../../../lib/utils'
 import Avatar from '../../../ui/Avatar'
-import UserAtomStats from '../../../ui/UserAtomStats'
+import AccountSignalsBadge from '../../../ui/AccountSignalsBadge'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
@@ -79,6 +79,14 @@ export function FollowSearchBox({
   const [searchResults, setSearchResults] = useState<AccountAtom[]>([])
   const [showResults, setShowResults] = useState(false)
   const { searchAccounts } = useGetAtomAccount()
+  const { walletAddress: selfAddress } = useWalletFromStorage()
+
+  // Hide the connected user from their own search results
+  const visibleResults = useMemo(() => {
+    const self = selfAddress?.toLowerCase()
+    if (!self) return searchResults
+    return searchResults.filter(a => a.data?.toLowerCase() !== self)
+  }, [searchResults, selfAddress])
 
   // Debounced search
   useEffect(() => {
@@ -117,9 +125,9 @@ export function FollowSearchBox({
         onChange={(e) => setGlobalQuery(e.target.value)}
       />
 
-      {showResults && searchResults.length > 0 && (
+      {showResults && visibleResults.length > 0 && (
         <div className="search-results-dropdown">
-          {searchResults.slice(0, 10).map((account, index) => (
+          {visibleResults.slice(0, 10).map((account, index) => (
             <div
               key={account.id}
               className="search-result-card"
@@ -135,7 +143,10 @@ export function FollowSearchBox({
                 />
                 <div className="search-account-info">
                   <span className="account-label">{account.label}</span>
-                  <UserAtomStats termId={account.id} accountAddress={account.data} compact={true} />
+                  <AccountSignalsBadge
+                    walletAddress={account.data}
+                    compact={true}
+                  />
                 </div>
               </div>
               <div className="account-right" onClick={(e) => e.stopPropagation()}>
@@ -147,9 +158,9 @@ export function FollowSearchBox({
             </div>
           ))}
 
-          {searchResults.length > 10 && (
+          {visibleResults.length > 10 && (
             <div className="search-results-more">
-              +{searchResults.length - 10} more results
+              +{visibleResults.length - 10} more results
             </div>
           )}
         </div>
