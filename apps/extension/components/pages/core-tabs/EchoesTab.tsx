@@ -167,7 +167,7 @@ const EchoesTab = () => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        {/* Search bar + Manage on the same row */}
+        {/* Search bar — own row, full width */}
         <div className="echoes-search-row">
           <div className="category-search-container">
             <input
@@ -186,13 +186,6 @@ const EchoesTab = () => {
               </button>
             )}
           </div>
-          <button
-            className="circle-chip echoes-manage-chip"
-            onClick={() => handleOpenManager('all')}
-            title="Manage groups"
-          >
-            Manage
-          </button>
         </div>
 
         {/* Filter chips — All + intention filters */}
@@ -240,19 +233,29 @@ const EchoesTab = () => {
           </div>
         )}
 
-        {/* Sort toggle — sits right above the bento grid */}
-        <div className="scope-toggle echoes-sort-toggle" role="group" aria-label="Sort groups by">
-          {sortOptions.map(option => (
-            <button
-              key={option.value}
-              type="button"
-              className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
-              aria-pressed={sortBy === option.value}
-              onClick={() => setSortBy(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+        {/* Sort toggle + Manage — same row right above the bento grid;
+            toggle on the left, Manage button pinned to the far right. */}
+        <div className="echoes-sort-row">
+          <div className="scope-toggle echoes-sort-toggle" role="group" aria-label="Sort groups by">
+            {sortOptions.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
+                aria-pressed={sortBy === option.value}
+                onClick={() => setSortBy(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <button
+            className="circle-chip echoes-manage-chip"
+            onClick={() => handleOpenManager('all')}
+            title="Manage groups"
+          >
+            Manage
+          </button>
         </div>
 
         {filteredGroups.length === 0 ? (

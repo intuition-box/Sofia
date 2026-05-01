@@ -244,12 +244,11 @@
   margin: 12px 0 16px;
 }
 
-/* Echoes search row — search input flex-grows, Manage chip pinned right */
+/* Echoes search row — search input takes the full row */
 .echoes-search-row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
   margin: 0 0 8px 0;
 }
 
@@ -258,8 +257,23 @@
   min-width: 0;
 }
 
-.echoes-search-row .echoes-manage-chip {
+/* Sort toggle + Manage row — toggle on the left, Manage pinned to the right */
+.echoes-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.echoes-sort-row .echoes-sort-toggle {
   flex: 0 0 auto;
+  margin: 0;
+}
+
+.echoes-sort-row .echoes-manage-chip {
+  flex: 0 0 auto;
+  margin-left: auto;
   white-space: nowrap;
 }
 
