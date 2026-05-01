@@ -18,7 +18,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <div className={`app-container ${isOnboarding ? 'app-container--onboarding' : ''}`}>
       {!isOnboarding && <Background />}
-      {!isOnboarding && ((account && currentPage !== 'home-connected') || (!account && currentPage === 'home')) ? (
+      {!isOnboarding && ((account && currentPage !== 'attest') || (!account && currentPage === 'home')) ? (
         <div className="app-overlay" />
       ) : null}
 

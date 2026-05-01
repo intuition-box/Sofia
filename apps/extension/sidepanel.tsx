@@ -14,9 +14,9 @@ import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 import HomePage from "./components/pages/HomePage"
 import AttestPage from "./components/pages/AttestPage"
 import SettingsPage from "./components/pages/SettingsPage"
-import ProfilePage from "./components/pages/ProfilePage"
 import MyProfilePage from "./components/pages/MyProfilePage"
 import CirclesPage from "./components/pages/CirclesPage"
+import ScorePage from "./components/pages/ScorePage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
@@ -44,7 +44,7 @@ const SidePanelContent = () => {
       chrome.storage.session.get('pending_external_auth').then(result => {
         if (result.pending_external_auth) {
           chrome.storage.session.remove('pending_external_auth')
-          navigateTo('home-connected')
+          navigateTo('attest')
           setOnboardingChecked(true)
           return
         }
@@ -53,11 +53,11 @@ const SidePanelContent = () => {
           if (groups.length === 0) {
             navigateTo('onboarding-import')
           } else {
-            navigateTo('home-connected')
+            navigateTo('attest')
           }
           setOnboardingChecked(true)
         }).catch(() => {
-          navigateTo('home-connected')
+          navigateTo('attest')
           setOnboardingChecked(true)
         })
       })
@@ -71,16 +71,16 @@ const SidePanelContent = () => {
 
     switch (currentPage) {
       case 'home':
-      case 'home-connected':
+      case 'attest':
         return <AttestPage />
       case 'settings':
         return <SettingsPage />
-      case 'profile':
-        return <ProfilePage />
-      case 'Sofia':
+      case 'my-profile':
         return <MyProfilePage />
-      case 'resonance':
+      case 'circles':
         return <CirclesPage />
+      case 'score':
+        return <ScorePage />
       case 'user-profile':
         return <UserProfilePage />
       case 'onboarding-import':

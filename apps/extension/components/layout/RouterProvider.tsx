@@ -4,7 +4,7 @@ import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('RouterProvider')
 
-type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
+type Page = 'home' | 'settings' | 'attest' | 'my-profile' | 'circles' | 'score' | 'recommendations' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
 
 export interface UserProfileData {
   termId: string
@@ -34,8 +34,8 @@ interface RouterContextType {
   setUserProfileData: (data: UserProfileData | null) => void
   searchContext: SearchContext | null
   setSearchContext: (context: SearchContext | null) => void
-  activeProfileTab: string | null
-  setActiveProfileTab: (tab: string | null) => void
+  activeTab: string | null
+  setActiveTab: (tab: string | null) => void
   onboardingBookmarks: BookmarkData[]
   setOnboardingBookmarks: (bookmarks: BookmarkData[]) => void
   firstClaimData: FirstClaimData | null
@@ -57,7 +57,7 @@ export const RouterProvider = ({
   const [history, setHistory] = useState<Page[]>([initialPage])
   const [userProfileData, setUserProfileData] = useState<UserProfileData | null>(null)
   const [searchContext, setSearchContext] = useState<SearchContext | null>(null)
-  const [activeProfileTab, setActiveProfileTab] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<string | null>(null)
   const [onboardingBookmarks, setOnboardingBookmarks] = useState<BookmarkData[]>([])
   const [firstClaimData, setFirstClaimData] = useState<FirstClaimData | null>(null)
 
@@ -156,8 +156,8 @@ export const RouterProvider = ({
     setUserProfileData,
     searchContext,
     setSearchContext,
-    activeProfileTab,
-    setActiveProfileTab,
+    activeTab,
+    setActiveTab,
     onboardingBookmarks,
     setOnboardingBookmarks,
     firstClaimData,

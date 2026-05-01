@@ -14,22 +14,22 @@ const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
 type CirclesTab = 'circle' | 'trending' | 'community'
 
 const CirclesPage = () => {
-  const { activeProfileTab } = useRouter()
+  const { activeTab: pendingTab } = useRouter()
   const [activeTab, setActiveTab] = useState<CirclesTab>('circle')
   const [, startTransition] = useTransition()
 
   // Sync from router when an external caller (e.g. CircleFeedTab's
-  // circle-go-btn) pre-selects a tab via setActiveProfileTab(...) before
+  // circle-go-btn) pre-selects a tab via setActiveTab(...) before
   // navigating. Mirrors the pattern that ProfilePage used pre-refacto.
   useEffect(() => {
     if (
-      activeProfileTab === 'circle' ||
-      activeProfileTab === 'trending' ||
-      activeProfileTab === 'community'
+      pendingTab === 'circle' ||
+      pendingTab === 'trending' ||
+      pendingTab === 'community'
     ) {
-      setActiveTab(activeProfileTab as CirclesTab)
+      setActiveTab(pendingTab as CirclesTab)
     }
-  }, [activeProfileTab])
+  }, [pendingTab])
 
   return (
     <div className="page">

@@ -84,7 +84,7 @@ type ViewState =
   | { type: 'member-category'; address: string; label: string; image?: string }
 
 const CircleFeedTab = () => {
-  const { navigateTo, setActiveProfileTab } = useRouter()
+  const { navigateTo, setActiveTab } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<'all' | IntentionType>('all')
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
@@ -548,8 +548,8 @@ const CircleFeedTab = () => {
             <button
               className="circle-go-btn"
               onClick={() => {
-                setActiveProfileTab('community')
-                navigateTo('profile')
+                setActiveTab('community')
+                navigateTo('circles')
               }}
             >
               <svg

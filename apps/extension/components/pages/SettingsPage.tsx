@@ -44,7 +44,7 @@ const SettingsPage = () => {
         logger.info('Theme extraction completed, redirecting to Echoes')
         setIsImporting(false)
         localStorage.setItem('targetTab', 'Echoes')
-        navigateTo('Sofia')
+        navigateTo('my-profile')
       }
     }
     chrome.runtime.onMessage.addListener(handleMessage)
