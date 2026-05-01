@@ -1,14 +1,11 @@
-import { useState, useEffect, Suspense, lazy } from "react"
+import { useState, Suspense, lazy } from "react"
 
 import { useRouter } from "../layout/RouterProvider"
 import SofiaLoader from "../ui/SofiaLoader"
 import {
   useCheckFollowStatus,
-  useUserQuests,
   useIdentityResolution,
-  useTrustedByCount,
-  useAccountStats,
-  useUserDiscoveryScore
+  useAccountStats
 } from "../../hooks"
 import ProfileHeader from "../ui/ProfileHeader"
 import FollowButton from "../ui/FollowButton"
@@ -17,8 +14,6 @@ import "../styles/UserProfile.css"
 import "../styles/ProfilePage.css"
 
 // Lazy load tabs (same pattern as ProfilePage)
-const UserStatsTab = lazy(() => import("./user-profile-tabs/UserStatsTab"))
-const AchievementsTab = lazy(() => import("./score-tabs/AchievementsTab"))
 const TrustCirclePanel = lazy(() =>
   import("./circles-tabs/follow/TrustCirclePanel").then(m => ({
     default: m.TrustCirclePanel
@@ -26,47 +21,24 @@ const TrustCirclePanel = lazy(() =>
 )
 const UserBookmarksTab = lazy(() => import("./user-profile-tabs/UserBookmarksTab"))
 
-type SubTab = "stats" | "achievements" | "bookmarks" | "trust-circle"
+type SubTab = "bookmarks" | "trust-circle"
 
 const isValidTab = (tab?: string): tab is SubTab =>
-  !!tab && ["stats", "achievements", "bookmarks", "trust-circle"].includes(tab)
+  !!tab && ["bookmarks", "trust-circle"].includes(tab)
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
   const [activeTab, setActiveTab] = useState<SubTab>(
-    isValidTab(userProfileData?.initialTab) ? userProfileData.initialTab : "stats"
+    isValidTab(userProfileData?.initialTab) ? userProfileData.initialTab : "bookmarks"
   )
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
 
-  // User quests for the profile being viewed (on-chain completed only + signals count)
-  const {
-    completedQuests,
-    totalXP,
-    level,
-    signalsCreated,
-    loading: questsLoading
-  } = useUserQuests(userProfileData?.walletAddress)
-
-  // Trusted-by count (people who trust this account)
-  const {
-    count: trustedByCount,
-    refetch: fetchTrustedByCount
-  } = useTrustedByCount(userProfileData?.walletAddress)
-
   // Signals created (from on-chain stats)
   const { signalsCreated: accountSignals } = useAccountStats(
     userProfileData?.walletAddress
   )
-
-  // Discovery score for the viewed user
-  const {
-    stats: discoveryStats,
-    loading: discoveryLoading,
-    error: discoveryError,
-    refetch: refetchDiscovery
-  } = useUserDiscoveryScore(userProfileData?.walletAddress)
 
   // Identity resolution for the profile being viewed
   const { displayLabel, displayAvatar } = useIdentityResolution({
@@ -75,13 +47,6 @@ const UserProfilePage = () => {
     image: userProfileData?.image,
     enableCache: true
   })
-
-  // Fetch trusted-by count on mount
-  useEffect(() => {
-    if (userProfileData?.walletAddress) {
-      fetchTrustedByCount()
-    }
-  }, [userProfileData?.walletAddress, fetchTrustedByCount])
 
   if (!userProfileData) {
     return (
@@ -156,8 +121,6 @@ const UserProfilePage = () => {
     )
   }
 
-  const effectiveSignals = accountSignals ?? signalsCreated
-
   return (
     <div className="page profile-page">
     <div className="profile-section account-tab">
@@ -167,7 +130,7 @@ const UserProfilePage = () => {
         avatarUrl={displayAvatar}
         displayName={displayLabel}
         walletAddress={userProfileData.walletAddress}
-        signalsCreated={effectiveSignals}
+        signalsCreated={accountSignals}
         actions={renderActions()}
         backButton={
           <button className="user-profile-back-button" onClick={goBack}>
@@ -178,18 +141,6 @@ const UserProfilePage = () => {
 
       {/* Sub-tabs Navigation */}
       <div className="sub-tabs">
-        <button
-          className={`sub-tab ${activeTab === "stats" ? "active" : ""}`}
-          onClick={() => setActiveTab("stats")}
-        >
-          Stats
-        </button>
-        <button
-          className={`sub-tab ${activeTab === "achievements" ? "active" : ""}`}
-          onClick={() => setActiveTab("achievements")}
-        >
-          Quests
-        </button>
         <button
           className={`sub-tab ${activeTab === "bookmarks" ? "active" : ""}`}
           onClick={() => setActiveTab("bookmarks")}
@@ -206,34 +157,6 @@ const UserProfilePage = () => {
 
       {/* Tab Content */}
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
-          {activeTab === "stats" && (
-            <UserStatsTab
-              walletAddress={userProfileData.walletAddress}
-              trustedByCount={trustedByCount}
-              level={level}
-              totalXP={totalXP}
-              signalsCreated={effectiveSignals}
-              discoveryStats={discoveryStats}
-              discoveryLoading={discoveryLoading}
-              discoveryError={discoveryError}
-              onRetry={refetchDiscovery}
-            />
-          )}
-
-          {activeTab === "achievements" && (
-            <AchievementsTab
-              quests={completedQuests}
-              loading={questsLoading}
-              claimingQuestId={null}
-              isSocialVerified={false}
-              canVerify={false}
-              isVerifying={false}
-              onClaimXP={async () => ({ success: false })}
-              onVerifySocials={async () => ({ success: false })}
-              onMarkCompleted={() => {}}
-            />
-          )}
-
           {activeTab === "bookmarks" && (
             <UserBookmarksTab walletAddress={userProfileData.walletAddress} />
           )}

@@ -70,10 +70,10 @@ const ScorePage = () => {
       />
 
       <div className="stats-panel">
-        <div className="scope-toggle scope-toggle--lg stats-subtab-row" role="group" aria-label="Stats / Quests">
+        <div className="sub-tabs" role="group" aria-label="Stats / Quests">
           <button
             type="button"
-            className={`scope-btn ${activeTab === 'stats' ? 'active' : ''}`}
+            className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
             aria-pressed={activeTab === 'stats'}
             onClick={() => setActiveTab('stats')}
           >
@@ -81,7 +81,7 @@ const ScorePage = () => {
           </button>
           <button
             type="button"
-            className={`scope-btn ${activeTab === 'quests' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
+            className={`sub-tab ${activeTab === 'quests' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
             aria-pressed={activeTab === 'quests'}
             onClick={() => setActiveTab('quests')}
           >
