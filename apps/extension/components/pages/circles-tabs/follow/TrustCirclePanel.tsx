@@ -210,8 +210,12 @@ export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCircleP
                   />
                   <div className="account-info">
                     <span className="account-label">{account.label}</span>
-                    <UserAtomStats termId={account.termId} accountAddress={account.walletAddress} compact={true} />
-                    <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
+                    <UserAtomStats
+                      termId={account.termId}
+                      accountAddress={account.walletAddress}
+                      compact={true}
+                      hideMarketCap={true}
+                    />
                   </div>
                 </div>
                 <div className="account-right" onClick={(e) => e.stopPropagation()}>

@@ -106,6 +106,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  align-self: flex-start;
+  margin-right: auto;
   padding: var(--spacing-xs) var(--spacing-md);
   margin-bottom: var(--spacing-md);
   background: transparent;

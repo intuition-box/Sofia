@@ -168,8 +168,9 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
                     <TrustAccountButton
                       accountTermId={account.termId}
                       accountLabel={account.label}
-                      label="+ add to my circle"
+                      label="+ add"
                       initialWeight="minimum"
+                      className="explorer-add-btn"
                       onSuccess={() => {
                         logger.debug('Trust triple created from explorer top accounts')
                       }}

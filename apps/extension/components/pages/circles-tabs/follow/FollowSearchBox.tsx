@@ -57,7 +57,7 @@ function AccountActionButton({
     <TrustAccountButton
       accountTermId={account.termId}
       accountLabel={account.label}
-      label="+ add to my circle"
+      label="+ add"
       initialWeight="minimum"
       onSuccess={() => {
         followStatus.refetch()

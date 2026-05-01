@@ -321,43 +321,45 @@
   padding: var(--spacing-sm) 23px;
 }
 
-/* "+ invite a member" CTA at the top of TrustCirclePanel */
+/* "+ invite a member" CTA at the top of TrustCirclePanel — salmon-gradient
+   matches the per-account "+ add" buttons used on the Explore view */
 .invite-member-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 6px 12px;
   margin-bottom: var(--spacing-md);
-  background: var(--ds-card);
-  border: 1px dashed var(--ds-border);
-  border-radius: var(--radius-md);
-  color: var(--ds-muted);
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 700;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: background 0.2s ease;
 }
 
 .invite-member-btn:hover {
-  color: var(--ds-ink);
-  border-color: var(--ds-ink-soft);
-  background: var(--ds-card-hover, var(--ds-card));
+  background: var(--btn-primary-hover-bg);
 }
 
-/* Explorer card actions: View profile + add-to-circle stacked buttons */
+/* Explorer card actions: View profile + add-to-circle stacked buttons.
+   Both buttons share the same width, the +add stays compact vertically. */
 .explorer-card-actions {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   align-items: stretch;
+  min-width: 110px;
 }
 
 .explorer-view-profile-btn {
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: 4px 10px;
   background: transparent;
   border: 1px solid var(--ds-border);
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   color: var(--ds-muted);
   font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 11px;
@@ -366,11 +368,20 @@
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
 .explorer-view-profile-btn:hover {
   color: var(--ds-ink);
   border-color: var(--ds-ink-soft);
+}
+
+/* Compact +add button inside Explorer cards (matches view-profile height) */
+.follow-button.explorer-add-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  width: 100%;
 }
 
 /* Explorer top accounts section */
