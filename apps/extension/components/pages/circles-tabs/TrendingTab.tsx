@@ -1,7 +1,12 @@
 /**
  * TrendingTab Component
- * Displays globally trending certifications across all users
- * Grid view grouped by categories, with detail list view on category click
+ * Displays globally trending certifications across all users.
+ *
+ * Layout: top-level shows category tiles (one per IntentionType with at
+ * least one trending item). Clicking a tile drills into a vertical feed
+ * of TrendingFeedCard components for that predicate. The feed cards are
+ * a port of the explorer's Home FeedCard anatomy (favicon + title/host,
+ * actor row, verb pill).
  */
 
 import { useState, useMemo, useCallback } from "react"
@@ -12,76 +17,62 @@ import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionType } from "~/types/intentionCategories"
 import { INTENTION_CONFIG } from "~/types/intentionCategories"
 
-import Avatar from "../../ui/Avatar"
 import SofiaLoader from "../../ui/SofiaLoader"
+import TrendingFeedCard from "../../ui/TrendingFeedCard"
 import "../../styles/TrendingTab.css"
+import "../../styles/TrendingFeedCard.css"
 
-const GRID_DISPLAY_LIMIT = 3
-const MAX_AVATARS = 3
+const PREVIEW_LIMIT = 3
 
 /* --------------------------------
-   TrendingCard — single card in grid
+   CategoryTile — preview tile for one IntentionType
    -------------------------------- */
 
-interface TrendingCardProps {
-  item: TrendingItem
-  rank: number
+interface CategoryTileProps {
+  type: IntentionType
+  itemCount: number
+  previewItems: TrendingItem[]
+  onClick: () => void
 }
 
-const TrendingCard = ({ item, rank }: TrendingCardProps) => {
-  const truncatedUrl =
-    item.domain || item.objectUrl.replace(/^https?:\/\//, "")
-  const sortedCertifiers = [...item.topCertifiers].sort((a, b) => {
-    const aHasEns = a.label.includes(".")
-    const bHasEns = b.label.includes(".")
-    if (aHasEns && !bHasEns) return -1
-    if (!aHasEns && bHasEns) return 1
-    return 0
-  })
-  const visibleCertifiers = sortedCertifiers.slice(0, MAX_AVATARS)
-  const hasOverflow = sortedCertifiers.length > MAX_AVATARS
-
+const CategoryTile = ({
+  type,
+  itemCount,
+  previewItems,
+  onClick
+}: CategoryTileProps) => {
+  const config = INTENTION_CONFIG[type]
   return (
-    <div
-      className="trending-card"
-      onClick={() => chrome.tabs.create({ url: item.objectUrl })}
-    >
-      <div className="trending-card-header">
-        <img
-          src={getFaviconUrl(item.domain, 48)}
-          alt=""
-          className="trending-card-favicon"
-          onError={(e) => {
-            ;(e.target as HTMLImageElement).style.display = "none"
-          }}
-        />
-        <span className="trending-card-rank">#{rank}</span>
+    <button
+      type="button"
+      className="trending-tile"
+      style={
+        {
+          "--category-color": config.color,
+          "--category-gradient-end": config.gradientEnd
+        } as React.CSSProperties
+      }
+      onClick={onClick}>
+      <div className="trending-tile-header">
+        <span className="trending-tile-badge">{config.label}</span>
+        <span className="trending-tile-count">
+          {itemCount} {itemCount === 1 ? "site" : "sites"}
+        </span>
       </div>
-      <div className="trending-card-title">
-        {item.objectLabel || item.domain}
+      <div className="trending-tile-faviconrow">
+        {previewItems.slice(0, PREVIEW_LIMIT).map((it) => (
+          <img
+            key={it.termId}
+            src={getFaviconUrl(it.domain || it.objectUrl, 32)}
+            alt=""
+            className="trending-tile-favicon"
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).style.visibility = "hidden"
+            }}
+          />
+        ))}
       </div>
-      <div className="trending-card-url">{truncatedUrl}</div>
-      <div className="trending-card-footer">
-        <div className="trending-avatar-stack">
-          {visibleCertifiers.map((c) => (
-            <Avatar
-              key={c.id}
-              imgSrc={c.image || undefined}
-              name={c.id}
-              avatarClassName="trending-avatar-mini"
-            />
-          ))}
-          {hasOverflow && (
-            <span className="trending-avatar-overflow">...</span>
-          )}
-        </div>
-        {item.positionCount > 0 && (
-          <span className="trending-certifier-count">
-            +{item.positionCount}
-          </span>
-        )}
-      </div>
-    </div>
+    </button>
   )
 }
 
@@ -93,7 +84,7 @@ const TrendingTab = () => {
   const { categories, loading, error, refetchAll, available } =
     useTrendingCertifications()
 
-  // null = grid overview, IntentionType = detail list for that category
+  // null = grid overview, IntentionType = detail feed for that category
   const [selectedCategory, setSelectedCategory] =
     useState<IntentionType | null>(null)
 
@@ -115,7 +106,7 @@ const TrendingTab = () => {
     setSelectedCategory(null)
   }, [])
 
-  // Not available on testnet
+  /* ---------- UNAVAILABLE (testnet) ---------- */
   if (!available) {
     return (
       <div className="trending-tab">
@@ -129,7 +120,7 @@ const TrendingTab = () => {
     )
   }
 
-  // Loading
+  /* ---------- LOADING ---------- */
   if (loading && categories.length === 0) {
     return (
       <div className="trending-tab">
@@ -140,7 +131,7 @@ const TrendingTab = () => {
     )
   }
 
-  // Error
+  /* ---------- ERROR ---------- */
   if (error && categories.length === 0) {
     return (
       <div className="trending-tab">
@@ -154,14 +145,13 @@ const TrendingTab = () => {
     )
   }
 
-  /* ---------- DETAIL VIEW ---------- */
+  /* ---------- DETAIL VIEW (feed) ---------- */
   if (selectedCategory && detailCategory) {
     const config = INTENTION_CONFIG[selectedCategory]
     return (
       <div
         className="trending-tab"
-        style={{ "--category-color": config.color } as React.CSSProperties}
-      >
+        style={{ "--category-color": config.color } as React.CSSProperties}>
         <div className="trending-detail-bar">
           <button className="trending-back-btn" onClick={handleBack}>
             ←
@@ -176,39 +166,20 @@ const TrendingTab = () => {
             <p>No trending certifications yet</p>
           </div>
         ) : (
-          <div className="trending-list">
-            {detailCategory.items.map((item, index) => (
-              <div
+          <div className="tfc-list">
+            {detailCategory.items.map((item) => (
+              <TrendingFeedCard
                 key={item.termId}
-                className="trending-item-wrapper"
-                onClick={() => chrome.tabs.create({ url: item.objectUrl })}
-              >
-                <div className="trending-item">
-                  <span className="trending-rank">#{index + 1}</span>
-                  <img
-                    src={getFaviconUrl(item.domain)}
-                    alt=""
-                    className="trending-favicon"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.display = "none"
-                    }}
-                  />
-                  <div className="trending-item-info">
-                    <div className="trending-item-title">
-                      {item.objectLabel || item.domain}
-                    </div>
-                    {item.domain !== item.objectLabel && (
-                      <div className="trending-item-domain">{item.domain}</div>
-                    )}
-                  </div>
-                  <div className="trending-item-stats">
-                    <span className="trending-certifiers">
-                      {item.positionCount}{" "}
-                      {item.positionCount === 1 ? "certifier" : "certifiers"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                title={item.objectLabel || item.domain}
+                url={item.objectUrl}
+                domain={item.domain}
+                certifierId={item.topCertifierId}
+                certifierLabel={item.certifierLabel}
+                certifierImage={item.certifierImage}
+                timestamp={item.timestamp || item.createdAt}
+                intentions={[selectedCategory]}
+                certifierCount={item.positionCount}
+              />
             ))}
           </div>
         )}
@@ -216,12 +187,11 @@ const TrendingTab = () => {
     )
   }
 
-  /* ---------- GRID VIEW ---------- */
+  /* ---------- GRID VIEW (category tiles) ---------- */
   return (
     <div className="trending-tab">
       <div className="tab-description">
-        Most certified URLs across all Sofia users, ranked by number of
-        certifiers.
+        Most certified URLs across all Sofia users, grouped by intention.
       </div>
 
       {/* Empty state */}
@@ -234,49 +204,18 @@ const TrendingTab = () => {
         </div>
       )}
 
-      {/* Categories grid */}
+      {/* Category tiles */}
       {nonEmptyCategories.length > 0 && (
-        <div className="trending-categories">
-          {nonEmptyCategories.map((cat) => {
-            const config = INTENTION_CONFIG[cat.type]
-            const displayItems = cat.items.slice(0, GRID_DISPLAY_LIMIT)
-
-            return (
-              <div
-                key={cat.type}
-                className="trending-section"
-                style={
-                  {
-                    "--category-color": config.color,
-                    "--category-gradient-end": config.gradientEnd
-                  } as React.CSSProperties
-                }
-              >
-                <div className="trending-section-header">
-                  <span className="trending-section-badge">
-                    {config.label}
-                  </span>
-                </div>
-                <div className="trending-grid">
-                  {displayItems.map((item, index) => (
-                    <TrendingCard
-                      key={item.termId}
-                      item={item}
-                      rank={index + 1}
-                    />
-                  ))}
-                </div>
-                {cat.items.length > GRID_DISPLAY_LIMIT && (
-                  <button
-                    className="trending-more-btn"
-                    onClick={() => handleCategoryClick(cat.type)}
-                  >
-                    more →
-                  </button>
-                )}
-              </div>
-            )
-          })}
+        <div className="trending-tiles">
+          {nonEmptyCategories.map((cat) => (
+            <CategoryTile
+              key={cat.type}
+              type={cat.type}
+              itemCount={cat.items.length}
+              previewItems={cat.items}
+              onClick={() => handleCategoryClick(cat.type)}
+            />
+          ))}
         </div>
       )}
     </div>

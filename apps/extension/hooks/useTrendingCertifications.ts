@@ -9,7 +9,7 @@ import { GetTrendingByPredicateDocument } from "@0xsofia/graphql"
 
 import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
 import { PREDICATE_IDS } from "~/lib/config/chainConfig"
-import { createHookLogger, extractDomain } from "~/lib/utils"
+import { createHookLogger, extractDomain, shortenAddress } from "~/lib/utils"
 import type { IntentionType } from "~/types/intentionCategories"
 
 const logger = createHookLogger('useTrendingCertifications')
@@ -40,8 +40,17 @@ export interface TrendingItem {
   domain: string
   positionCount: number
   totalShares: string
+  /** Earliest triple created_at across merged pages (kept for back-compat). */
   createdAt: string
+  /** Latest activity timestamp — newest position-deposit or triple created_at. */
+  timestamp: string
   topCertifiers: TrendingCertifier[]
+  /** First (top) certifier's wallet address (lowercased), or "" if none. */
+  topCertifierId: string
+  /** Display label for the top certifier — ENS, account.label or shortened addr. */
+  certifierLabel: string
+  /** Avatar URL for the top certifier, when available. */
+  certifierImage?: string
 }
 
 export interface TrendingCategory {
@@ -144,6 +153,16 @@ export function useTrendingCertifications(): UseTrendingResult {
                   image: p.account.image || null
                 }))
 
+              // First (top) certifier — used by FeedCard actor row.
+              const top = topCertifiers[0]
+              const topCertifierId = top ? String(top.id || '').toLowerCase() : ''
+              const certifierLabel = top
+                ? (top.label && !top.label.startsWith('0x')
+                    ? top.label
+                    : shortenAddress(top.id))
+                : ''
+              const certifierImage = top?.image || undefined
+
               return {
                 termId: triple.term_id,
                 objectTermId: triple.object?.term_id || '',
@@ -153,7 +172,11 @@ export function useTrendingCertifications(): UseTrendingResult {
                 positionCount,
                 totalShares: String(triple.triple_vault?.total_shares || '0'),
                 createdAt: triple.created_at,
+                timestamp: triple.created_at,
                 topCertifiers,
+                topCertifierId,
+                certifierLabel,
+                certifierImage,
                 _allPositionIds: allPositionIds
               }
             })
@@ -182,6 +205,10 @@ export function useTrendingCertifications(): UseTrendingResult {
               // Keep earliest created_at
               if (item.createdAt < existing.createdAt) {
                 existing.createdAt = item.createdAt
+              }
+              // Track the LATEST activity timestamp for "recent activity"
+              if (item.timestamp > existing.timestamp) {
+                existing.timestamp = item.timestamp
               }
               // Sum total shares
               existing.totalShares = String(
