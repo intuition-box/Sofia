@@ -615,10 +615,39 @@ du début du refacto, pas l'état du commit du plan).
 | `setActiveProfileTab(...)` | `setActiveTab(...)` | CircleFeedTab + RouterProvider |
 
 5.2. Suppression des SVG orphelins (vérifier zéro match avant)
-5.3. `bun run build` (extension uniquement)
-5.4. `tsc --noEmit` sur l'extension
-5.5. Skill `arch-check` — comparer baseline Phase 1
-5.6. Test manuel mode dev :
+
+5.3. **Suppression des règles CSS mortes liées à DebateTab + cascade**
+
+Les composants supprimés (`DebateTab`, `ListCard`, `ListModal`, `ClaimCard`)
+utilisent des classes globales. Identifier puis supprimer les règles
+devenues orphelines :
+
+```bash
+# Identifier les fichiers CSS contenant les classes
+rg "list-card|list-modal|list-chip|claim-card|debate-" \
+   apps/extension/ --type css -l
+
+# Pour chaque classe, vérifier qu'elle n'est plus utilisée nulle part
+rg "list-card|list-modal|list-chip|claim-card|debate-" \
+   apps/extension/ --include="*.tsx" --include="*.ts"
+# → si zéro match, supprimer les règles correspondantes
+```
+
+Classes à auditer (liste non exhaustive, à compléter en lisant les
+composants supprimés avant Phase 5) :
+- `list-card`, `list-card-header`, `list-card-image`, `list-card-title`,
+  `list-card-content-visible`, `list-card-description`
+- `list-chip`, `list-chip-image`, `list-chips-scroll`
+- `list-modal`, `list-modal-overlay`, `list-modal-header`, `list-modal-back`,
+  `list-modal-title-wrap`, `list-modal-title`, `list-modal-meta`,
+  `list-modal-tvl`, `list-modal-loader`, `list-modal-table`
+- Toute classe `claim-*` ou `debate-*` exclusive à `ClaimCard.tsx` /
+  `DebateTab.tsx`
+
+5.4. `bun run build` (extension uniquement)
+5.5. `tsc --noEmit` sur l'extension
+5.6. Skill `arch-check` — comparer baseline Phase 1
+5.7. Test manuel mode dev :
 - Bottom nav : **5 onglets** (Attest / My Profile / Circles / Score / Settings), icônes correctes
 - Navigation entre les 5 onglets fonctionnelle
 - Sous-onglets My Profile : Echoes, Bookmark, History, Socials (4 onglets)
