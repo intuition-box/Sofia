@@ -167,9 +167,40 @@ const EchoesTab = () => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        {/* Certification filter chips — vf-chip pattern from explorer */}
-        <div className="circle-filter-group">
-          <span className="circle-filter-label">Filter</span>
+        {/* Manage button — sits above the search/filter toolbar */}
+        <div className="echoes-manage-row">
+          <button
+            className="sort-btn gm-manage-btn"
+            onClick={() => handleOpenManager('all')}
+            title="Manage groups"
+          >
+            Manage
+          </button>
+        </div>
+
+        {/* Search input — own row */}
+        <div className="category-toolbar echoes-search-row">
+          <div className="category-search-container">
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="category-search-input"
+            />
+            {searchQuery && (
+              <button
+                className="category-search-clear"
+                onClick={() => setSearchQuery('')}
+              >
+                x
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Combined filter pills + sort buttons — single row */}
+        <div className="echoes-filter-sort-row">
           <div className="circle-category-chips">
             <button
               className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
@@ -194,28 +225,6 @@ const EchoesTab = () => {
               )
             )}
           </div>
-        </div>
-
-        {/* Search + sort toolbar — sits below the filter chips */}
-        <div className="category-toolbar">
-          <span className="circle-filter-label">Search</span>
-          <div className="category-search-container">
-            <input
-              type="text"
-              placeholder="Search groups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="category-search-input"
-            />
-            {searchQuery && (
-              <button
-                className="category-search-clear"
-                onClick={() => setSearchQuery('')}
-              >
-                x
-              </button>
-            )}
-          </div>
           <div className="sort-buttons">
             {sortOptions.map(option => (
               <button
@@ -226,13 +235,6 @@ const EchoesTab = () => {
                 {option.label}
               </button>
             ))}
-            <button
-              className="sort-btn gm-manage-btn"
-              onClick={() => handleOpenManager('all')}
-              title="Manage groups"
-            >
-              Manage
-            </button>
           </div>
         </div>
 

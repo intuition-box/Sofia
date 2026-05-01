@@ -7,9 +7,9 @@ import '../styles/CorePage.css'
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 const HistoryTab = lazy(() => import('./core-tabs/HistoryTab'))
-const SocialsTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
+const ConnectTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
 
-type MyProfileTab = 'Echoes' | 'Bookmarks' | 'History' | 'Socials'
+type MyProfileTab = 'Echoes' | 'Bookmarks' | 'History' | 'Connect'
 
 const MyProfilePage = () => {
   const [activeGraphTab, setActiveGraphTab] = useState<MyProfileTab>('Echoes')
@@ -20,7 +20,7 @@ const MyProfilePage = () => {
   return (
     <div className="page">
       <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
-        {(['Echoes', 'Bookmarks', 'History', 'Socials'] as MyProfileTab[]).map(tab => (
+        {(['Echoes', 'Bookmarks', 'History', 'Connect'] as MyProfileTab[]).map(tab => (
           <button
             key={tab}
             type="button"
@@ -43,7 +43,7 @@ const MyProfilePage = () => {
               setExpandedTriplet={setExpandedHistoryTriplet}
             />
           )}
-          {activeGraphTab === 'Socials' && <SocialsTab />}
+          {activeGraphTab === 'Connect' && <ConnectTab />}
         </Suspense>
       </div>
     </div>

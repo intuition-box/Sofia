@@ -244,6 +244,38 @@
   margin: 12px 0 16px;
 }
 
+/* Echoes manage row — sits above the search/filter toolbar, button right-aligned */
+.echoes-manage-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* Echoes search row — collapses category-toolbar's vertical stack to a single row */
+.echoes-search-row {
+  flex-direction: row;
+  margin: 0 0 8px 0;
+}
+
+/* Echoes filter + sort row — pills left, sort buttons right, both can wrap */
+.echoes-filter-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.echoes-filter-sort-row .circle-category-chips {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.echoes-filter-sort-row .sort-buttons {
+  flex: 0 0 auto;
+}
+
 .category-toolbar > .circle-filter-label {
   margin-bottom: 0;
 }
