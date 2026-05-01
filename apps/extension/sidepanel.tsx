@@ -12,11 +12,11 @@ import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
-import HomeConnectedPage from "./components/pages/HomeConnectedPage"
+import AttestPage from "./components/pages/AttestPage"
 import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
-import CorePage from "./components/pages/CorePage"
-import ResonancePage from "./components/pages/ResonancePage"
+import MyProfilePage from "./components/pages/MyProfilePage"
+import CirclesPage from "./components/pages/CirclesPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
@@ -72,15 +72,15 @@ const SidePanelContent = () => {
     switch (currentPage) {
       case 'home':
       case 'home-connected':
-        return <HomeConnectedPage />
+        return <AttestPage />
       case 'settings':
         return <SettingsPage />
       case 'profile':
         return <ProfilePage />
       case 'Sofia':
-        return <CorePage />
+        return <MyProfilePage />
       case 'resonance':
-        return <ResonancePage />
+        return <CirclesPage />
       case 'user-profile':
         return <UserProfilePage />
       case 'onboarding-import':
@@ -90,7 +90,7 @@ const SidePanelContent = () => {
       case 'onboarding-tutorial':
         return <OnboardingTutorialPage />
       default:
-        return <HomeConnectedPage />
+        return <AttestPage />
     }
   }
 

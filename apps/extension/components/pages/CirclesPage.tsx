@@ -1,4 +1,5 @@
-import { Suspense, lazy, useState, useTransition } from 'react'
+import { Suspense, lazy, useState, useEffect, useTransition } from 'react'
+import { useRouter } from '../layout/RouterProvider'
 import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -8,12 +9,27 @@ import '../styles/CoreComponents.css'
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./circles-tabs/CircleFeedTab'))
 const TrendingTab = lazy(() => import('./circles-tabs/TrendingTab'))
+const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
 
-type ResonanceTab = 'circle' | 'trending'
+type CirclesTab = 'circle' | 'trending' | 'community'
 
-const ResonancePage = () => {
-  const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
+const CirclesPage = () => {
+  const { activeProfileTab } = useRouter()
+  const [activeTab, setActiveTab] = useState<CirclesTab>('circle')
   const [, startTransition] = useTransition()
+
+  // Sync from router when an external caller (e.g. CircleFeedTab's
+  // circle-go-btn) pre-selects a tab via setActiveProfileTab(...) before
+  // navigating. Mirrors the pattern that ProfilePage used pre-refacto.
+  useEffect(() => {
+    if (
+      activeProfileTab === 'circle' ||
+      activeProfileTab === 'trending' ||
+      activeProfileTab === 'community'
+    ) {
+      setActiveTab(activeProfileTab as CirclesTab)
+    }
+  }, [activeProfileTab])
 
   return (
     <div className="page">
@@ -34,15 +50,24 @@ const ResonancePage = () => {
         >
           Trending
         </button>
+        <button
+          type="button"
+          className={`pf-sort-btn ${activeTab === 'community' ? 'active' : ''}`}
+          aria-pressed={activeTab === 'community'}
+          onClick={() => startTransition(() => setActiveTab('community'))}
+        >
+          Community
+        </button>
       </div>
       <div className="page-content">
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
+          {activeTab === 'community' && <CommunityTab />}
         </Suspense>
       </div>
     </div>
   )
 }
 
-export default ResonancePage
+export default CirclesPage

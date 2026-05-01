@@ -18,7 +18,7 @@ import '../styles/CommonPage.css'
 import '../styles/ProfilePage.css'
 import '../styles/AccountTab.css'
 
-const StatsTab = lazy(() => import('./score-tabs/StatsTab'))
+const ScoreTab = lazy(() => import('./score-tabs/ScoreTab'))
 const AchievementsTab = lazy(() => import('./score-tabs/AchievementsTab'))
 
 type ScoreTab = 'stats' | 'quests'
@@ -91,7 +91,7 @@ const ScorePage = () => {
 
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           {activeTab === 'stats' ? (
-            <StatsTab
+            <ScoreTab
               walletAddress={walletAddress}
               trustedByCount={trustedByCount}
               level={level}

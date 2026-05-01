@@ -20,7 +20,7 @@ import '../styles/CommonPage.css'
 import '../styles/ProfilePage.css'
 import '../styles/AccountTab.css'
 
-const StatsTab = lazy(() => import('./score-tabs/StatsTab'))
+const StatsTab = lazy(() => import('./score-tabs/ScoreTab'))
 const AchievementsTab = lazy(() => import('./score-tabs/AchievementsTab'))
 const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
 const SocialsTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
