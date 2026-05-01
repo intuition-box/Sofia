@@ -354,20 +354,56 @@ git diff --stat | grep -v "apps/extension/"
 # doit être vide
 ```
 
-### Phase 0 — Pré-vérifs IndexedDB (avant tout)
+### Phase 0 — Pré-vérifs IndexedDB (✅ EXÉCUTÉE — GO)
 
-0.1. Lire shape complet de `userSettingsService` et `USER_SETTINGS` store :
+**Résultats audit IndexedDB** (effectué sur `ext/refacto-menu` après commit
+initial du plan) :
 
-```bash
-rg "USER_SETTINGS|userSettingsService" apps/extension/lib/database/
+#### Version DB
+
+`apps/extension/lib/database/indexedDB.ts:24` — `DB_VERSION = 10`. Le commit
+v10 a déjà nettoyé 5 stores inutilisés (`navigation_data`, `user_profile`,
+`search_history`, `recommendations`, `user_xp`). La doc CLAUDE.md projet
+mentionne "10 stores" — info obsolète à corriger ultérieurement.
+
+#### Stores actuels (6)
+
+| Store | Type record | Référence page name ? |
+|-------|-------------|------------------------|
+| `TRIPLETS_DATA` (`triplets_data`) | `TripletsRecord` (messages, triplets, parsed_message…) | ❌ |
+| `USER_SETTINGS` (`user_settings`) | `SettingsRecord` → `ExtensionSettings` | ❌ |
+| `BOOKMARK_LISTS` (`bookmark_lists`) | `BookmarkListRecord` | ❌ |
+| `BOOKMARKED_TRIPLETS` (`bookmarked_triplets`) | `BookmarkedTripletRecord` | ❌ |
+| `INTENTION_GROUPS` (`intention_groups`) | `IntentionGroupRecord` (domaines, predicates) | ❌ |
+| `CART_ITEMS` (`cart_items`) | `CartItemRecord` | ❌ |
+
+#### Shape `ExtensionSettings` (`types/storage.ts:6-16`)
+
+```ts
+export interface ExtensionSettings {
+  theme: 'light' | 'dark' | 'auto'
+  language: string
+  notifications: boolean
+  autoBackup: boolean
+  debugMode: boolean
+  isTrackingEnabled: boolean
+  autoCleanup: boolean
+  autoCleanupInactiveDays: number
+  autoCleanupMinLevel: number
+}
 ```
 
-0.2. Confirmer aucun champ `lastActiveTab` / `defaultPage` / `lastPage`
-persisté. Si trouvé → définir stratégie de **lecture-uniquement avec
-mapping** (pas de réécriture, schéma intact).
+Aucun champ `lastActiveTab` / `defaultPage` / `lastPage` / `currentPage` /
+`activeTab`. Le store **n'a strictement rien à migrer**.
 
-0.3. **GO/NO-GO** sur la suite : si IndexedDB stocke des refs page name, on
-revoit la stratégie de migration avant d'aller plus loin.
+#### Conclusion Phase 0
+
+**GO** — le refacto peut procéder sans modif du schéma IndexedDB.
+
+- Pas de bump de version DB nécessaire (`DB_VERSION` reste à 10)
+- Pas de migration en lecture des records existants
+- Contrainte Maxime "ne pas toucher à IndexedDB" respectée par construction
+- Aucune perte de data possible côté IDB
 
 ### Phase 1 — Audit final (read-only, déjà ~80% fait dans ce doc)
 
@@ -558,9 +594,9 @@ rg "Icon=Sofia\.svg|ResonanceIcon\.svg|Icon=person\.svg" apps/extension/
 - [x] Décision F-state : `activeTab` (générique) tranché
 - [x] Décision G : G.A — suppression complète de DebateTab + LeaderboardTab + useDebateClaims
 - [x] Bottom nav : 5 onglets (Score promu au niveau 1)
-- [x] Branche cible : `ext/refacto-menu`
-- [ ] Base monorepo propre (`git status` clean au moment d'exécuter)
-- [ ] Phase 0 (USER_SETTINGS shape) exécutée et GO/NO-GO validé
+- [x] Branche cible : `ext/refacto-menu` (créée, premier commit `fd0a33f1` posé)
+- [x] Phase 0 (USER_SETTINGS shape) exécutée et **GO** validé
+- [ ] Base monorepo propre (`git status` clean au moment d'exécuter Phase 2+)
 
 ---
 
