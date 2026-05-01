@@ -36,11 +36,6 @@ export interface CommunityAccountVM {
 }
 
 /**
- * Filter type for tabs
- */
-export type CommunityFilterType = 'explorer' | 'followers' | 'following' | 'trust-circle'
-
-/**
  * IPFS metadata structure
  */
 export interface IPFSMetadata {
