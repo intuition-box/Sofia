@@ -119,15 +119,18 @@ rg "useDebateClaims|useOnChainStreak|LeaderboardTab|DebateTab" apps/extension/
 |---------|--------|--------|
 | `components/pages/resonance-tabs/DebateTab.tsx` | **À supprimer** | Décision G.A |
 | `components/pages/resonance-tabs/LeaderboardTab.tsx` | **À supprimer** | Décision G.A |
-| `hooks/useDebateClaims.ts` | **À supprimer en cascade** | Consommé uniquement par DebateTab |
+| `components/pages/resonance-tabs/ClaimCard.tsx` | **À supprimer** | Cascade — consommé uniquement par DebateTab (audit Phase 1.2) |
+| `components/pages/resonance-tabs/ListModal.tsx` | **À supprimer** | Cascade — consommé uniquement par DebateTab (audit Phase 1.2) |
+| `components/pages/resonance-tabs/ListCard.tsx` | **À supprimer** | Cascade — consommé uniquement par DebateTab (audit Phase 1.2) |
+| `hooks/useDebateClaims.ts` | **À supprimer en cascade** | Consommé par DebateTab + ClaimCard + ListModal (tous supprimés) |
 | `hooks/index.ts:93-94` exports `useDebateClaims`, `DebateClaim`, `FeaturedList`, `UseDebateClaimsResult` | **À retirer du barrel** | Hook supprimé |
 | `hooks/useOnChainStreak.ts` | **À conserver** | Utilisé aussi par `QuestProgressService.ts:35,167` |
 | `hooks/index.ts:77-78` exports `useOnChainStreak` | **À conserver** | Hook conservé |
 | Commentaire `useOnChainStreak.ts:4` "same source as LeaderboardTab" | **À mettre à jour** | Référence obsolète post-suppression |
 | Commentaire `useQuestSystem.ts:63` "same source as LeaderboardTab" | **À mettre à jour** | Référence obsolète post-suppression |
 | Call-site `LeaderboardTab.tsx:83` `navigateTo('profile')` | **Disparaît avec le fichier** | Plus à mapper dans audit F |
-| Services GraphQL / queries spécifiques debate | **À auditer** | Vérifier si des queries dans `packages/graphql/` ne servent qu'à `useDebateClaims` |
-| CSS spécifique | Aucun fichier `.css` dans `resonance-tabs/` (audit confirmé) | Pas d'action |
+| `Sofia/packages/graphql/src/queries/debate.graphql` | **Inchangée** | Hors scope refacto. Utilisée par 7 fichiers de l'explorer (audit Phase 1.3) |
+| CSS spécifique | Aucun fichier `.css` dans `resonance-tabs/` (audit Phase 1.1) | Pas d'action |
 
 ### Audit secondaire à faire en Phase 1
 
@@ -405,21 +408,98 @@ Aucun champ `lastActiveTab` / `defaultPage` / `lastPage` / `currentPage` /
 - Contrainte Maxime "ne pas toucher à IndexedDB" respectée par construction
 - Aucune perte de data possible côté IDB
 
-### Phase 1 — Audit final (read-only, déjà ~80% fait dans ce doc)
+### Phase 1 — Audit final (✅ EXÉCUTÉE)
 
-1.1. Compléter Phase 0 (USER_SETTINGS shape)
-1.2. Inventaire des assets SVG à supprimer :
-- `components/ui/icons/Icon=Sofia.svg`
-- `components/ui/icons/ResonanceIcon.svg`
-- `components/ui/icons/Icon=person.svg`
+#### 1.1 — SVG icons à supprimer après refacto
 
-Vérifier qu'aucun import résiduel ne les utilise après refacto :
+Grep effectué :
 
 ```bash
-rg "Icon=Sofia\.svg|ResonanceIcon\.svg|Icon=person\.svg" apps/extension/
+rg "Icon=Sofia\.svg|ResonanceIcon\.svg|Icon=person\.svg|Icon=Settings\.svg" \
+   apps/extension/ --include="*.ts" --include="*.tsx" --include="*.css" \
+   --include="*.html" --include="*.md"
 ```
 
-1.3. Lancer skill `arch-check` — baseline avant refacto
+| Asset | Imports trouvés | Statut post-refacto |
+|-------|-----------------|---------------------|
+| `components/ui/icons/Icon=Sofia.svg` | `BottomNavigation.tsx:7` uniquement | ✅ Orphelin → suppression |
+| `components/ui/icons/ResonanceIcon.svg` | `BottomNavigation.tsx:8` uniquement | ✅ Orphelin → suppression |
+| `components/ui/icons/Icon=person.svg` | `BottomNavigation.tsx:9` uniquement | ✅ Orphelin → suppression |
+| `components/ui/icons/Icon=Settings.svg` | `BottomNavigation.tsx:10` uniquement | ✅ Orphelin → suppression (remplacé par lucide `Settings`) |
+
+→ **4 SVG à supprimer** une fois `BottomNavigation.tsx` migré sur lucide-react.
+Aucune autre référence (ni doc, ni HTML, ni CSS).
+
+#### 1.2 — Cascade de suppression liée à G.A (DebateTab)
+
+Audit étendu — **3 composants supplémentaires** détectés comme orphelins de
+`DebateTab.tsx` (au-delà de `useDebateClaims` déjà identifié) :
+
+```bash
+rg "useDebateClaims|DebateClaim|ClaimCard|ListModal|ListCard" apps/extension/
+```
+
+| Fichier | Consommateurs | Statut |
+|---------|---------------|--------|
+| `components/pages/resonance-tabs/DebateTab.tsx` | `ResonancePage.tsx:60` | À supprimer (G.A) |
+| `components/pages/resonance-tabs/LeaderboardTab.tsx` | `ResonancePage.tsx:61` | À supprimer (G.A) |
+| `components/pages/resonance-tabs/ClaimCard.tsx` | `DebateTab.tsx:10` uniquement | **À supprimer (cascade)** |
+| `components/pages/resonance-tabs/ListModal.tsx` | `DebateTab.tsx:12` uniquement | **À supprimer (cascade)** |
+| `components/pages/resonance-tabs/ListCard.tsx` | `DebateTab.tsx` uniquement | **À supprimer (cascade)** |
+| `hooks/useDebateClaims.ts` | `DebateTab.tsx`, `ClaimCard.tsx`, `ListModal.tsx` | À supprimer (cascade — tous consommateurs supprimés) |
+| `hooks/index.ts:93-94` exports | barrel | À mettre à jour |
+
+#### 1.3 — Audit GraphQL `debate`
+
+Localisation : **`Sofia/packages/graphql/src/queries/debate.graphql`** (package
+partagé du monorepo, racine).
+
+Consommateurs externes (hors extension) :
+
+| Fichier | App |
+|---------|-----|
+| `apps/explorer/src/pages/VotePage.tsx` | explorer |
+| `apps/explorer/src/hooks/useDebateClaims.ts` | explorer |
+| `apps/explorer/src/hooks/useDomainClaims.ts` | explorer |
+| `apps/explorer/src/hooks/useTopClaims.ts` | explorer |
+| `apps/explorer/src/services/debateService.ts` | explorer |
+| `apps/explorer/src/services/domainDebateService.ts` | explorer |
+| `apps/explorer/src/test/services/debateService.test.ts` | explorer |
+
+→ **`debate.graphql` reste intacte** (hors scope refacto + activement utilisée
+par l'explorer). Les hooks auto-générés `useGetClaimsByTermIdsQuery`,
+`useGetFeaturedListsByObjectIdsQuery`, `useGetListEntriesQuery` restent
+disponibles dans `@0xsofia/graphql`. L'extension cesse simplement de les
+importer.
+
+#### 1.4 — Tests et snapshots
+
+```bash
+rg "Resonance|home-connected|resonance-tabs|profile-tabs" \
+   apps/extension/ --include="*.test.*" --include="*.spec.*"
+find apps/extension -path "*__snapshots__*" -type f
+```
+
+→ **Aucun fichier de test** ni snapshot dans `apps/extension/`. Pas de
+risque de régression côté tests automatisés.
+
+Note : Sofia utilise des "manual integration tests" (`bun run test:all`,
+cf. CLAUDE.md). À valider en Phase 5 (test manuel mode dev).
+
+#### 1.5 — Skill `arch-check` baseline
+
+À lancer juste avant Phase 2 (le baseline doit refléter l'état au moment
+du début du refacto, pas l'état du commit du plan).
+
+#### Synthèse Phase 1
+
+| Élément | Quantité | Action |
+|---------|----------|--------|
+| SVG orphelins | 4 | Suppression Phase 5 |
+| Composants orphelins (cascade G.A) | 3 nouveaux (ClaimCard, ListModal, ListCard) | Suppression Phase 3.4 |
+| Fichiers GraphQL touchés | 0 | `debate.graphql` reste intacte (hors scope) |
+| Tests/snapshots impactés | 0 | RAS |
+| Mise à jour cascade attendue | `hooks/index.ts:93-94` (exports useDebateClaims) | Phase 3.4 |
 
 ### Phase 2 — Charpente nav + routing
 
@@ -479,12 +559,19 @@ rg "Icon=Sofia\.svg|ResonanceIcon\.svg|Icon=person\.svg" apps/extension/
 
 3.4. `resonance-tabs/` → `circles-tabs/`
 - `git mv` du dossier
-- **Suppression** `DebateTab.tsx` + `LeaderboardTab.tsx` (décision G.A actée)
+- **Suppressions G.A + cascade** (5 fichiers) :
+  - `DebateTab.tsx`
+  - `LeaderboardTab.tsx`
+  - `ClaimCard.tsx` (orphelin post-cascade — audit Phase 1.2)
+  - `ListModal.tsx` (orphelin post-cascade — audit Phase 1.2)
+  - `ListCard.tsx` (orphelin post-cascade — audit Phase 1.2)
 - **Suppression** `hooks/useDebateClaims.ts` (orphelin post-G.A)
 - Retrait des exports correspondants dans `hooks/index.ts:93-94`
 - Mise à jour des commentaires obsolètes dans `useOnChainStreak.ts:4` et
   `useQuestSystem.ts:63`
 - Mettre à jour les imports restants
+- Le dossier `circles-tabs/` ne contiendra que `CircleFeedTab.tsx`,
+  `TrendingTab.tsx` (+ `CommunityTab.tsx` ajouté en Phase 4.4)
 
 ### Phase 4 — Migration tabs ex-Profile
 
@@ -619,6 +706,9 @@ Components        HomeConnectedPage →  AttestPage
                   ProfilePage       →  (supprimé)
                   DebateTab         →  (supprimé — décision G.A)
                   LeaderboardTab    →  (supprimé — décision G.A)
+                  ClaimCard         →  (supprimé — cascade Phase 1.2)
+                  ListModal         →  (supprimé — cascade Phase 1.2)
+                  ListCard          →  (supprimé — cascade Phase 1.2)
 
 Hooks             useDebateClaims  →  (supprimé — orphelin post-G.A)
                   useOnChainStreak →  (conservé — utilisé par QuestProgressService)
