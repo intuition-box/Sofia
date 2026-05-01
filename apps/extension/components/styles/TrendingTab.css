@@ -101,13 +101,13 @@
 }
 
 .trending-tile-favicon {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #f2f2f2;
   border: 1px solid var(--ds-border);
   object-fit: contain;
-  padding: 2px;
+  padding: 4px;
   flex-shrink: 0;
 }
 
@@ -139,15 +139,28 @@
 }
 
 .trending-detail-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ds-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #02000e;
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  background: var(--category-color, var(--ds-accent));
 }
 
 .trending-detail-count {
-  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--ds-muted);
   margin-left: auto;
+  letter-spacing: 0.02em;
 }
 
 /* ============================

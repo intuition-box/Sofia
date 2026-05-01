@@ -36,8 +36,9 @@ export interface TrendingFeedCardProps {
   certifierImage?: string
   /** ISO/string timestamp of the latest activity on this URL/triple. */
   timestamp?: string
-  /** Verb pills — IntentionType keys map to label/color via INTENTION_CONFIG. */
-  intentions: IntentionType[]
+  /** Optional verb pills. Skipped when omitted (e.g. inside a category-detail
+      view where the page header already shows the intention). */
+  intentions?: IntentionType[]
   /** Optional certifier count badge on the bottom-right. */
   certifierCount?: number
   /** Click override; defaults to `chrome.tabs.create({ url })`. */
@@ -104,6 +105,7 @@ const TrendingFeedCard = ({
           <div className="tfc-title">{title || domain}</div>
           <div className="tfc-host">{domain}</div>
         </div>
+        {ago && <span className="tfc-actor-ago">{ago}</span>}
       </div>
 
       {(certifierLabel || certifierId) && (
@@ -116,30 +118,32 @@ const TrendingFeedCard = ({
           <span className="tfc-actor-name">
             {certifierLabel || certifierId}
           </span>
-          {ago && <span className="tfc-actor-ago">{ago}</span>}
         </div>
       )}
 
-      <div className="tfc-bottom">
-        {intentions.map((intent) => {
-          const cfg = INTENTION_CONFIG[intent]
-          if (!cfg) return null
-          return (
-            <span
-              key={intent}
-              className="tfc-verb-tag"
-              style={{ background: cfg.color }}>
-              {cfg.label}
+      {((intentions && intentions.length > 0) ||
+        (typeof certifierCount === "number" && certifierCount > 0)) && (
+        <div className="tfc-bottom">
+          {intentions?.map((intent) => {
+            const cfg = INTENTION_CONFIG[intent]
+            if (!cfg) return null
+            return (
+              <span
+                key={intent}
+                className="tfc-verb-tag"
+                style={{ background: cfg.color }}>
+                {cfg.label}
+              </span>
+            )
+          })}
+          {typeof certifierCount === "number" && certifierCount > 0 && (
+            <span className="tfc-cert-count">
+              {certifierCount}{" "}
+              {certifierCount === 1 ? "certifier" : "certifiers"}
             </span>
-          )
-        })}
-        {typeof certifierCount === "number" && certifierCount > 0 && (
-          <span className="tfc-cert-count">
-            {certifierCount}{" "}
-            {certifierCount === 1 ? "certifier" : "certifiers"}
-          </span>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </article>
   )
 }

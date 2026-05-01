@@ -91,6 +91,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
   const { navigateTo } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<'all' | IntentionType>('all')
+  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
   const [feedItems, setFeedItems] = useState<CircleFeedItem[]>([])
   const [trustedWallets, setTrustedWallets] = useState<string[]>([])
@@ -578,30 +579,58 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
             </button>
           </div>
         </div>
-        <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All
-          </button>
-          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-            ([type, config]) => (
+        {(() => {
+          const intentionEntries = Object.entries(INTENTION_CONFIG) as [
+            IntentionType,
+            { label: string; color: string }
+          ][]
+          const visibleEntries = filtersExpanded
+            ? intentionEntries
+            : intentionEntries.slice(0, 3)
+          const hiddenCount = intentionEntries.length - visibleEntries.length
+          return (
+            <div className="circle-category-chips">
               <button
-                key={type}
-                className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-                onClick={() => setActiveFilter(type)}
+                className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('all')}
               >
-                <span
-                  className="circle-chip-dot"
-                  aria-hidden="true"
-                  style={{ background: config.color }}
-                />
-                {config.label}
+                All
               </button>
-            )
-          )}
-        </div>
+              {visibleEntries.map(([type, config]) => (
+                <button
+                  key={type}
+                  className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(type)}
+                >
+                  <span
+                    className="circle-chip-dot"
+                    aria-hidden="true"
+                    style={{ background: config.color }}
+                  />
+                  {config.label}
+                </button>
+              ))}
+              {hiddenCount > 0 && (
+                <button
+                  type="button"
+                  className="circle-chip circle-chip-more"
+                  onClick={() => setFiltersExpanded(true)}
+                >
+                  +{hiddenCount} more
+                </button>
+              )}
+              {filtersExpanded && intentionEntries.length > 3 && (
+                <button
+                  type="button"
+                  className="circle-chip circle-chip-more"
+                  onClick={() => setFiltersExpanded(false)}
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Loading */}

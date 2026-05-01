@@ -172,6 +172,24 @@
   border-color: var(--ds-accent);
 }
 
+/* "+N more" / "Show less" chip — same shape, mono uppercase, muted.
+   Used to collapse a long chip row to 4 items + a toggle. */
+.circle-chip-more {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: transparent;
+  border-style: dashed;
+}
+
+.circle-chip-more:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
+}
+
 /* Small intent-color dot (mirrors .vf-chip-dot) — bg set inline. */
 .circle-chip-dot {
   width: 8px;

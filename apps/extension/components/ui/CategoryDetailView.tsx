@@ -95,6 +95,7 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortBy>("date-desc")
   const [domainFilter, setDomainFilter] = useState<string | null>(null)
+  const [domainsExpanded, setDomainsExpanded] = useState(false)
   const [redeemingUrls, setRedeemingUrls] = useState<Set<string>>(() => new Set())
   const [redeemedUrls, setRedeemedUrls] = useState<Set<string>>(() => new Set())
 
@@ -237,8 +238,13 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
         </div>
       )}
 
-      {/* Domain filter chips */}
-      {uniqueDomains.length > 1 && (
+      {/* Domain filter chips — show 4 (All + 3) collapsed, "+N more" expands */}
+      {uniqueDomains.length > 1 && (() => {
+        const visibleDomains = domainsExpanded
+          ? uniqueDomains
+          : uniqueDomains.slice(0, 3)
+        const hiddenCount = uniqueDomains.length - visibleDomains.length
+        return (
         <div className="circle-filter-group">
           <span className="circle-filter-label">Domain</span>
           <div className="circle-category-chips">
@@ -248,7 +254,7 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
             >
               All
             </button>
-            {uniqueDomains.map((domain) => (
+            {visibleDomains.map((domain) => (
               <button
                 key={domain}
                 className={`circle-chip ${domainFilter === domain ? "active" : ""}`}
@@ -259,9 +265,28 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
                 {domain}
               </button>
             ))}
+            {hiddenCount > 0 && (
+              <button
+                type="button"
+                className="circle-chip circle-chip-more"
+                onClick={() => setDomainsExpanded(true)}
+              >
+                +{hiddenCount} more
+              </button>
+            )}
+            {domainsExpanded && uniqueDomains.length > 3 && (
+              <button
+                type="button"
+                className="circle-chip circle-chip-more"
+                onClick={() => setDomainsExpanded(false)}
+              >
+                Show less
+              </button>
+            )}
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {/* Result count when filtered */}
       {isFiltered && (

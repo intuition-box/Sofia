@@ -177,7 +177,6 @@ const TrendingTab = () => {
                 certifierLabel={item.certifierLabel}
                 certifierImage={item.certifierImage}
                 timestamp={item.timestamp || item.createdAt}
-                intentions={[selectedCategory]}
                 certifierCount={item.positionCount}
               />
             ))}
