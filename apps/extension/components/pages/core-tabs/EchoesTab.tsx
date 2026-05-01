@@ -250,7 +250,7 @@ const EchoesTab = () => {
             ))}
           </div>
           <button
-            className="circle-chip echoes-manage-chip"
+            className="sort-btn gm-manage-btn"
             onClick={() => handleOpenManager('all')}
             title="Manage groups"
           >

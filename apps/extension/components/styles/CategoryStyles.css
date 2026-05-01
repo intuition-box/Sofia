@@ -271,9 +271,8 @@
   margin: 0;
 }
 
-.echoes-sort-row .echoes-manage-chip {
+.echoes-sort-row .gm-manage-btn {
   flex: 0 0 auto;
-  margin-left: auto;
   white-space: nowrap;
 }
 
