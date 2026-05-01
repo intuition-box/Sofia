@@ -21,9 +21,16 @@
 }
 
 .trust-circle-banner:hover {
-  background: var(--ds-card-hover, var(--ds-card));
-  border-color: var(--ds-ink-soft);
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent);
   transform: translateY(-1px);
+}
+
+.trust-circle-banner:hover .trust-circle-banner-title,
+.trust-circle-banner:hover .trust-circle-banner-count,
+.trust-circle-banner:hover .trust-circle-banner-chevron {
+  color: var(--ds-on-accent);
 }
 
 .trust-circle-banner:active {
@@ -103,13 +110,12 @@
 }
 
 .circle-layer-back-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
-  align-self: flex-start;
-  margin-right: auto;
+  width: fit-content;
+  margin: 0 auto var(--spacing-md) 0;
   padding: var(--spacing-xs) var(--spacing-md);
-  margin-bottom: var(--spacing-md);
   background: transparent;
   border: 1px solid var(--ds-border);
   border-radius: var(--radius-md);
@@ -133,5 +139,6 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ds-ink);
+  text-align: left;
   margin: 0 0 var(--spacing-md) 0;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks'
 import WeightModal from '../modals/WeightModal'
@@ -10,8 +10,8 @@ interface TrustAccountButtonProps {
   accountTermId: string
   accountLabel: string
   onSuccess?: () => void
-  /** Visible button label (default: "Trust") */
-  label?: string
+  /** Visible button label (default: "Trust"). Accepts ReactNode so callers can include an icon. */
+  label?: ReactNode
   /** Pre-selected weight option in the modal (default: 'default' / 0.5 TRUST) */
   initialWeight?: 'minimum' | 'default' | 'strong' | 'high' | 'max'
   /** Extra className appended to the button */

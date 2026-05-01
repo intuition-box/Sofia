@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react'
+import { UserPlus } from 'lucide-react'
 import { useRouter } from '../../../layout/RouterProvider'
 import SofiaLoader from '../../../ui/SofiaLoader'
 import type { AccountAtom } from '../../../../hooks'
@@ -168,7 +169,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
                     <TrustAccountButton
                       accountTermId={account.termId}
                       accountLabel={account.label}
-                      label="+ add"
+                      label={<><UserPlus size={12} /> add</>}
                       initialWeight="minimum"
                       className="explorer-add-btn"
                       onSuccess={() => {

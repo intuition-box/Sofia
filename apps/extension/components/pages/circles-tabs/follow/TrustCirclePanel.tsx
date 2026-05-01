@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { UserPlus } from 'lucide-react'
 import { useTrustCircle, useWeightOnChain, useRedeemTriple } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
 import SofiaLoader from '../../../ui/SofiaLoader'
@@ -166,7 +167,8 @@ export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCircleP
           className="invite-member-btn"
           onClick={onInviteMember}
         >
-          + invite a member
+          <UserPlus size={14} />
+          Invite a member
         </button>
       )}
 
