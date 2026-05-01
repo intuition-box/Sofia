@@ -11,7 +11,6 @@ import '../styles/CommunityHomeView.css'
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./circles-tabs/CircleFeedTab'))
 const TrendingTab = lazy(() => import('./circles-tabs/TrendingTab'))
-const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
 const CommunityHomeView = lazy(() => import('./circles-tabs/CommunityHomeView'))
 const TrustCirclePanel = lazy(() =>
   import('./circles-tabs/follow/TrustCirclePanel').then(m => ({
@@ -19,7 +18,7 @@ const TrustCirclePanel = lazy(() =>
   }))
 )
 
-type CirclesTab = 'circle' | 'trending' | 'community'
+type CirclesTab = 'circle' | 'trending'
 type CircleLayer = 'home' | 'feed' | 'members'
 
 const CirclesPage = () => {
@@ -29,15 +28,11 @@ const CirclesPage = () => {
   const [circleLayer, setCircleLayer] = useState<CircleLayer>('home')
   const [, startTransition] = useTransition()
 
-  // Sync from router when an external caller (e.g. CircleFeedTab's
-  // circle-go-btn) pre-selects a tab via setActiveTab(...) before
-  // navigating. Mirrors the pattern that ProfilePage used pre-refacto.
+  // Sync from router when an external caller pre-selects a tab via
+  // setActiveTab(...) before navigating. Mirrors the pattern that
+  // ProfilePage used pre-refacto.
   useEffect(() => {
-    if (
-      pendingTab === 'circle' ||
-      pendingTab === 'trending' ||
-      pendingTab === 'community'
-    ) {
+    if (pendingTab === 'circle' || pendingTab === 'trending') {
       setActiveTab(pendingTab as CirclesTab)
     }
   }, [pendingTab])
@@ -60,14 +55,6 @@ const CirclesPage = () => {
           onClick={() => startTransition(() => setActiveTab('trending'))}
         >
           Trending
-        </button>
-        <button
-          type="button"
-          className={`pf-sort-btn ${activeTab === 'community' ? 'active' : ''}`}
-          aria-pressed={activeTab === 'community'}
-          onClick={() => startTransition(() => setActiveTab('community'))}
-        >
-          Community
         </button>
       </div>
       <div className="page-content">
@@ -103,7 +90,6 @@ const CirclesPage = () => {
             </>
           )}
           {activeTab === 'trending' && <TrendingTab />}
-          {activeTab === 'community' && <CommunityTab />}
         </Suspense>
       </div>
     </div>

@@ -19,13 +19,17 @@ import "../styles/ProfilePage.css"
 // Lazy load tabs (same pattern as ProfilePage)
 const UserStatsTab = lazy(() => import("./user-profile-tabs/UserStatsTab"))
 const AchievementsTab = lazy(() => import("./score-tabs/AchievementsTab"))
-const CommunityTab = lazy(() => import("./circles-tabs/CommunityTab"))
+const TrustCirclePanel = lazy(() =>
+  import("./circles-tabs/follow/TrustCirclePanel").then(m => ({
+    default: m.TrustCirclePanel
+  }))
+)
 const UserBookmarksTab = lazy(() => import("./user-profile-tabs/UserBookmarksTab"))
 
-type SubTab = "stats" | "achievements" | "bookmarks" | "community"
+type SubTab = "stats" | "achievements" | "bookmarks" | "trust-circle"
 
 const isValidTab = (tab?: string): tab is SubTab =>
-  !!tab && ["stats", "achievements", "bookmarks", "community"].includes(tab)
+  !!tab && ["stats", "achievements", "bookmarks", "trust-circle"].includes(tab)
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
@@ -193,10 +197,10 @@ const UserProfilePage = () => {
           Bookmarks
         </button>
         <button
-          className={`sub-tab ${activeTab === "community" ? "active" : ""}`}
-          onClick={() => setActiveTab("community")}
+          className={`sub-tab ${activeTab === "trust-circle" ? "active" : ""}`}
+          onClick={() => setActiveTab("trust-circle")}
         >
-          Community
+          Trust Circle
         </button>
       </div>
 
@@ -234,8 +238,8 @@ const UserProfilePage = () => {
             <UserBookmarksTab walletAddress={userProfileData.walletAddress} />
           )}
 
-          {activeTab === "community" && (
-            <CommunityTab walletAddress={userProfileData.walletAddress} />
+          {activeTab === "trust-circle" && (
+            <TrustCirclePanel walletAddress={userProfileData.walletAddress} />
           )}
         </Suspense>
       </div>
