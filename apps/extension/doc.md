@@ -547,3 +547,83 @@ Router state      activeProfileTab    →  activeTab (générique)
 
 Branch            ext/refacto-menu (créée)
 ```
+
+---
+
+# Refacto v2 — Circle restructure (3 layers)
+
+> Suite du refacto principal (déjà mergé). Sub-task isolée : restructurer `CirclesPage` pour empiler 3 vues internes au lieu des 3 sub-tabs actuels (`circle / trending / community`).
+
+## v2.1 — Objectif
+
+Cible UX :
+
+```
+Niveau 1 (entry) : CirclesPage > sub-tabs [Circle | Trending]
+                                            │
+                                            ↓ (sub-tab = Circle)
+Niveau 2 (Layer A) : CommunityHomeView
+                     ├─ "My Trust Circle" (banner cliquable, nom + count)
+                     └─ Explore section (top 10 accounts + search)
+                                            │
+                                            ↓ (clic sur banner Trust Circle)
+Niveau 3 (Layer B) : CircleFeedTab + header "Members ({n}) | view all →"
+                                            │
+                                            ↓ (clic "view all")
+Niveau 4 (Layer C) : Members list page (TrustCirclePanel standalone)
+```
+
+**Décisions actées :**
+- Sub-tab `community` **supprimé** du segmented control (3 → 2 boutons : Circle | Trending).
+- Filtres `following / followers` **supprimés** entièrement (cascade : `useFollowing`, `useFollowers`, `FollowingPanel`, `FollowersPanel`).
+- `Trending` reste tel quel (out-of-scope).
+- État interne stocké dans `CirclesPage` via `useState` (D.1 — pas de nouvelle entrée dans le router/state machine).
+
+## v2.2 — Phase 1 — Audit (read-only) ✅
+
+### Tableau des fichiers (suppression / déplacement / modification)
+
+| Fichier | Action | Détail |
+|---|---|---|
+| `components/pages/circles-tabs/CommunityTab.tsx` (85 l.) | **SUPPRIMER** | Container `Trust Circle / Following / Followers / Explorer`. Logique répartie dans `CommunityHomeView` (Trust Circle banner + Explore) et `CircleFeedTab` (members header). |
+| `components/pages/circles-tabs/follow/FollowingPanel.tsx` (209 l.) | **SUPPRIMER** | Filtre `following` supprimé. |
+| `components/pages/circles-tabs/follow/FollowersPanel.tsx` (125 l.) | **SUPPRIMER** | Filtre `followers` supprimé. |
+| `hooks/useFollowing.ts` | **SUPPRIMER** | Plus aucun consumer après suppression de `FollowingPanel`. |
+| `hooks/useFollowers.ts` | **SUPPRIMER** | Plus aucun consumer après suppression de `FollowersPanel`. |
+| `hooks/index.ts:33-34` | **MODIFIER** | Retirer exports `useFollowing` + `useFollowers`. |
+| `types/follows.ts:41` | **MODIFIER** | `CommunityFilterType` → supprimer (ou trim à `'trust-circle' \| 'explorer'` si encore consommé ailleurs — à vérifier en Phase 2). |
+| `components/pages/circles-tabs/CommunityHomeView.tsx` | **CRÉER** (Layer A) | Banner cliquable `My Trust Circle` (consomme `useTrustCircle`) + section Explore (réutilise `ExplorerPanel` tel quel ou inline). Clic banner → `setLayer('feed')`. |
+| `components/pages/CirclesPage.tsx` (74 l.) | **MODIFIER** | Retirer bouton sub-tab `Community` + branche `activeTab === 'community'`. Ajouter `useState<'home' \| 'feed' \| 'members'>('home')` pour piloter Layer A/B/C dans la branche `circle`. Type `CirclesTab` passe à `'circle' \| 'trending'`. |
+| `components/pages/circles-tabs/CircleFeedTab.tsx` (767 l.) | **MODIFIER** | (a) Ajouter header `<MembersBar count viewAll />` au-dessus du filter chips (l. 519). (b) Retirer le bouton `My Circle` (l. 548-571) — fonction reprise par `viewAll`. (c) `setActiveTab('community')` (l. 551) supprimé : la nav vers Layer C est interne au composant via callback. (d) Ajouter prop `onViewMembers: () => void` + `onBack: () => void` injectés par CirclesPage. |
+| `components/pages/circles-tabs/follow/TrustCirclePanel.tsx` (237 l.) | **CONSERVER** | Réutilisé tel quel comme Layer C (members list page) — wrappé par CirclesPage avec un header `← Back to feed`. |
+| `components/pages/circles-tabs/follow/ExplorerPanel.tsx` (167 l.) | **CONSERVER** | Réutilisé dans `CommunityHomeView`. |
+| `components/pages/circles-tabs/follow/FollowSearchBox.tsx` (166 l.) | **CONSERVER** | Dépendance d'`ExplorerPanel`. |
+| `components/pages/UserProfilePage.tsx:22,238` | **MODIFIER** | Remplacer `<CommunityTab walletAddress={...} />` par `<TrustCirclePanel walletAddress={...} />` (vue externe = juste le trust circle de l'autre user, pas de filter row, pas d'explorer). |
+| `components/styles/FollowTab.css` (338 l.) | **AUDIT Phase 6** | Aucune classe `community-tab` / `community-filter-row` / `following-panel` / `followers-panel` trouvée (les panels supprimés réutilisent `.followed-accounts`, `.account-*`, `.follow-panel` partagés avec TrustCircle/Explorer). Probable que rien à supprimer en CSS — à reconfirmer après suppression. |
+| `lib/realtime/derivations.ts:3` | **MODIFIER (cosmétique)** | Commentaire mentionne `useFollowing` — à mettre à jour. |
+
+### Consommateurs hors `circles-tabs/` (cross-folder)
+
+- `components/ui/PageBlockchainCard.tsx:14,73` → utilise `useTrustCircle` (KEEP — pas affecté).
+- `components/pages/UserProfilePage.tsx:22,238` → utilise `CommunityTab` (à modifier, voir tableau).
+
+### Findings critiques à valider avec le user
+
+1. **Bouton `+ invite a member` introuvable** dans `ExplorerPanel.tsx`. Le seul élément correspondant est la `FollowSearchBox` ("Search all accounts on Intuition…") qui sert de point d'entrée. **Question :** garder la `FollowSearchBox` telle quelle dans `CommunityHomeView` (visible directement dans la section Explore) ou créer un bouton CTA `+ invite a member` qui ouvrirait la FollowSearchBox dans un état dédié ?
+2. **`UserProfilePage` consomme `CommunityTab`**. Stratégie proposée : remplacer par `<TrustCirclePanel walletAddress={user.walletAddress} />` directement (vue externe simplifiée — uniquement le trust circle de l'autre user, sans tabs, sans explorer). Confirmer.
+3. **Layer C (members list)** → architecture : page interne à `CirclesPage` (simple `state === 'members'` qui swap le rendu) ou nouvelle entrée dans le state machine du router (`page === 'circle-members'`) ? Le doc propose **interne** (D.1 cohérent), mais le bouton `× Back` doit alors être géré dans `CirclesPage` et non dans `BottomNavigation`.
+4. **Header `Members + view all` dans Layer B** → précisez l'avatar : un seul (premier membre) ou stack/cluster des N premiers ? Sofia-explorer a quel pattern ?
+
+## v2.3 — Plan d'exécution (à valider)
+
+| Phase | Action | Build vert ? |
+|---|---|---|
+| **1 — Audit** | Read-only, livrable ci-dessus | ✅ (aucune modif) |
+| **2 — CommunityHomeView** | Créer le composant, le brancher dans `CirclesPage` derrière un feature flag interne (`layer === 'home'`). Le sub-tab `community` reste actif en parallèle pour ne rien casser. | ✅ |
+| **3 — Layer transitions** | Ajouter `useState<'home' \| 'feed' \| 'members'>` dans `CirclesPage`. Brancher `onViewMembers` dans `CircleFeedTab`. Ajouter header `Members + view all` dans `CircleFeedTab`. | ✅ |
+| **4 — Suppression sub-tab `community`** | Retirer le bouton + la branche dans `CirclesPage`. Mettre à jour `UserProfilePage` (CommunityTab → TrustCirclePanel). Supprimer `setActiveTab('community')` dans `CircleFeedTab` | ✅ (CommunityTab et FollowingPanel/FollowersPanel encore présents mais plus consommés depuis la nav principale) |
+| **5 — Suppression code mort** | Supprimer `CommunityTab.tsx`, `FollowingPanel.tsx`, `FollowersPanel.tsx`, `useFollowing.ts`, `useFollowers.ts`. Update `hooks/index.ts`, `types/follows.ts`, `lib/realtime/derivations.ts`. | ✅ |
+| **6 — CSS dead code** | Audit ciblé `FollowTab.css` après suppression. Probable no-op. | ✅ |
+| **7 — Vérifs finales** | `tsc --noEmit`, `bun run build`, smoke test extension chargée, push. | ✅ |
+
+**Garde-fou Maxime (IndexedDB)** : aucune modif touchant `lib/database/`. `useTrustCircle` consomme GraphQL on-chain, pas IDB. Pas de migration nécessaire. ✅
