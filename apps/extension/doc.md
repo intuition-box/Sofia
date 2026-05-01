@@ -596,7 +596,7 @@ rg "Icon=Sofia\.svg|ResonanceIcon\.svg|Icon=person\.svg" apps/extension/
 - [x] Bottom nav : 5 onglets (Score promu au niveau 1)
 - [x] Branche cible : `ext/refacto-menu` (créée, premier commit `fd0a33f1` posé)
 - [x] Phase 0 (USER_SETTINGS shape) exécutée et **GO** validé
-- [ ] Base monorepo propre (`git status` clean au moment d'exécuter Phase 2+)
+- [x] BDD intouchée (contrainte Maxime respectée par construction — aucune migration nécessaire)
 
 ---
 
