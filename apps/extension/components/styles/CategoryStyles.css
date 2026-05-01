@@ -244,48 +244,45 @@
   margin: 12px 0 16px;
 }
 
-/* Echoes manage row — sits above the search/filter toolbar, button right-aligned */
-.echoes-manage-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
-/* Echoes search row — single row, search input fills the width */
+/* Echoes search row — search input flex-grows, Manage chip pinned right */
 .echoes-search-row {
+  display: flex;
   flex-direction: row;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 8px 0;
 }
 
 .echoes-search-row .category-search-container {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-/* Echoes filter + sort row — pills left, sort toggle right; row wraps when
-   the chips get too wide to share a line with the segmented toggle. */
-.echoes-filter-sort-row {
+.echoes-search-row .echoes-manage-chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Filter chips row — All + intention chips, wraps */
+.echoes-filter-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 12px;
 }
 
-.echoes-filter-sort-row .circle-category-chips {
-  flex: 1 1 220px;
-  min-width: 0;
-  padding: 0;
+.echoes-filter-row .circle-chip {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-.echoes-filter-sort-row .echoes-sort-toggle {
-  flex: 0 0 auto;
-  margin: 0;
-}
-
-/* Sort toggle inside Echoes — sized to visually match the .circle-chip
-   pills next to it (padding/font/border-radius lifted from .scope-toggle--lg
-   but tighter to align with chip height). */
+/* Sort toggle — segmented control sitting just above the bento grid. */
 .echoes-sort-toggle {
+  width: fit-content;
+  margin: 8px 0;
   padding: 3px;
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
@@ -310,15 +307,6 @@
 .echoes-sort-toggle .scope-btn.active {
   background: var(--ds-accent);
   color: var(--ds-on-accent, #1a0a04);
-}
-
-/* Filter chips inside the Echoes filter+sort row — match the toggle button
-   metrics so both sides of the row share a visual baseline. */
-.echoes-filter-sort-row .circle-chip {
-  padding: 5px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
 }
 
 .category-toolbar > .circle-filter-label {
