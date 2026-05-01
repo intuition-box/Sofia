@@ -5,17 +5,21 @@ import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/CorePage.css'
 import '../styles/CoreComponents.css'
+import '../styles/CommunityHomeView.css'
 
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./circles-tabs/CircleFeedTab'))
 const TrendingTab = lazy(() => import('./circles-tabs/TrendingTab'))
 const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
+const CommunityHomeView = lazy(() => import('./circles-tabs/CommunityHomeView'))
 
 type CirclesTab = 'circle' | 'trending' | 'community'
+type CircleLayer = 'home' | 'feed'
 
 const CirclesPage = () => {
   const { activeTab: pendingTab } = useRouter()
   const [activeTab, setActiveTab] = useState<CirclesTab>('circle')
+  const [circleLayer, setCircleLayer] = useState<CircleLayer>('home')
   const [, startTransition] = useTransition()
 
   // Sync from router when an external caller (e.g. CircleFeedTab's
@@ -61,7 +65,22 @@ const CirclesPage = () => {
       </div>
       <div className="page-content">
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
-          {activeTab === 'circle' && <CircleFeedTab />}
+          {activeTab === 'circle' && circleLayer === 'home' && (
+            <CommunityHomeView onOpenFeed={() => setCircleLayer('feed')} />
+          )}
+          {activeTab === 'circle' && circleLayer === 'feed' && (
+            <>
+              <button
+                type="button"
+                className="circle-layer-back-btn"
+                onClick={() => setCircleLayer('home')}
+                aria-label="Back to community home"
+              >
+                ← Back
+              </button>
+              <CircleFeedTab />
+            </>
+          )}
           {activeTab === 'trending' && <TrendingTab />}
           {activeTab === 'community' && <CommunityTab />}
         </Suspense>

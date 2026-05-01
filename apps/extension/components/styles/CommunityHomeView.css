@@ -1,0 +1,125 @@
+.community-home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-md) 0;
+}
+
+.trust-circle-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+  text-align: left;
+}
+
+.trust-circle-banner:hover {
+  background: var(--ds-card-hover, var(--ds-card));
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
+}
+
+.trust-circle-banner:active {
+  transform: translateY(0);
+}
+
+.trust-circle-banner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.trust-circle-banner-title {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+}
+
+.trust-circle-banner-count {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+
+.trust-circle-banner-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.trust-circle-avatar-slot {
+  margin-left: -8px;
+  border: 2px solid var(--ds-card);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--ds-card);
+}
+
+.trust-circle-avatar-slot:first-child {
+  margin-left: 0;
+}
+
+.trust-circle-avatar {
+  display: block;
+}
+
+.trust-circle-avatar-overflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  background: var(--ds-bg);
+}
+
+.trust-circle-banner-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trust-circle-banner-chevron {
+  font-size: 22px;
+  color: var(--ds-muted);
+  line-height: 1;
+}
+
+.community-explore-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.circle-layer-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--spacing-xs) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--radius-md);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.circle-layer-back-btn:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
+}
