@@ -403,15 +403,26 @@ rg "list-card|list-modal|list-chip|claim-card|debate-" \
 
 6.2. Pour chaque classe sans match dans `*.tsx`/`*.ts`, supprimer la règle CSS correspondante.
 
-Classes pré-identifiées (depuis lecture Phase 1 de `ListCard.tsx` + `ListModal.tsx`) :
+Classes identifiées (lecture pré-suppression effectuée en Phase 3) :
+
+Issues de `ListCard.tsx` + `ListModal.tsx` (Phase 1) :
 - `list-card`, `list-card-header`, `list-card-image`, `list-card-title`,
   `list-card-content-visible`, `list-card-description`
 - `list-chip`, `list-chip-image`, `list-chips-scroll`
 - `list-modal`, `list-modal-overlay`, `list-modal-header`, `list-modal-back`,
   `list-modal-title-wrap`, `list-modal-title`, `list-modal-meta`,
   `list-modal-tvl`, `list-modal-loader`, `list-modal-table`
-- À compléter avec une lecture de `DebateTab.tsx` et `ClaimCard.tsx` AVANT
-  Phase 3 pour ne pas perdre la liste
+
+Issues de `DebateTab.tsx` + `ClaimCard.tsx` (Phase 3 — pré-suppression) :
+- `claim-actions`, `claim-bar`, `claim-bottom`, `claim-card`, `claim-content-visible`
+- `claim-meta`, `claim-meta-mcap`
+- `claim-metrics`, `claim-metrics-col` (avec modifiers `support`, `oppose`),
+  `claim-metrics-count`, `claim-metrics-label`, `claim-metrics-value`
+- `claim-title`, `claim-title-icon`, `claim-title-left`, `claim-title-predicate`,
+  `claim-title-text`
+- `debate-empty`, `debate-section`, `debate-section-header`,
+  `debate-section-subtitle`, `debate-section-title`, `debate-tab`
+- `lists-section`
 
 **Commit** : `refactor(extension): remove dead CSS rules from deleted debate components`
 

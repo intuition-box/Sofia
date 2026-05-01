@@ -22,8 +22,8 @@ import '../styles/AccountTab.css'
 
 const StatsTab = lazy(() => import('./score-tabs/StatsTab'))
 const AchievementsTab = lazy(() => import('./score-tabs/AchievementsTab'))
-const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
-const SocialsTab = lazy(() => import('./profile-tabs/SocialsTab'))
+const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
+const SocialsTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
 
 type ProfileTab = 'stats' | 'community' | 'socials'
 type StatsSubTab = 'stats' | 'quests'

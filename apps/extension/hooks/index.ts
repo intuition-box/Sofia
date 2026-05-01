@@ -89,11 +89,6 @@ export { useBookmarks } from './useBookmarks'
 
 // Recommendations & Interest
 
-// Debate
-export { useDebateClaims } from './useDebateClaims'
-export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDebateClaims'
-
-
 // Topic Interests (from Sofia Explorer)
 export { useTopicInterests } from './useTopicInterests'
 export type { TopicInterestsResult } from './useTopicInterests'

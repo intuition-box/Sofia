@@ -19,7 +19,7 @@ import "../styles/ProfilePage.css"
 // Lazy load tabs (same pattern as ProfilePage)
 const UserStatsTab = lazy(() => import("./user-profile-tabs/UserStatsTab"))
 const AchievementsTab = lazy(() => import("./score-tabs/AchievementsTab"))
-const CommunityTab = lazy(() => import("./profile-tabs/CommunityTab"))
+const CommunityTab = lazy(() => import("./circles-tabs/CommunityTab"))
 const UserBookmarksTab = lazy(() => import("./user-profile-tabs/UserBookmarksTab"))
 
 type SubTab = "stats" | "achievements" | "bookmarks" | "community"

@@ -6,12 +6,10 @@ import '../styles/CorePage.css'
 import '../styles/CoreComponents.css'
 
 // Lazy load tab components (required by Parcel bundler)
-const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
-const TrendingTab = lazy(() => import('./resonance-tabs/TrendingTab'))
-const LeaderboardTab = lazy(() => import('./resonance-tabs/LeaderboardTab'))
-const DebateTab = lazy(() => import('./resonance-tabs/DebateTab'))
+const CircleFeedTab = lazy(() => import('./circles-tabs/CircleFeedTab'))
+const TrendingTab = lazy(() => import('./circles-tabs/TrendingTab'))
 
-type ResonanceTab = 'circle' | 'trending' | 'debate' | 'streak'
+type ResonanceTab = 'circle' | 'trending'
 
 const ResonancePage = () => {
   const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
@@ -36,29 +34,11 @@ const ResonancePage = () => {
         >
           Trending
         </button>
-        <button
-          type="button"
-          className={`pf-sort-btn ${activeTab === 'debate' ? 'active' : ''}`}
-          aria-pressed={activeTab === 'debate'}
-          onClick={() => startTransition(() => setActiveTab('debate'))}
-        >
-          Vote
-        </button>
-        <button
-          type="button"
-          className={`pf-sort-btn ${activeTab === 'streak' ? 'active' : ''}`}
-          aria-pressed={activeTab === 'streak'}
-          onClick={() => startTransition(() => setActiveTab('streak'))}
-        >
-          Streak
-        </button>
       </div>
       <div className="page-content">
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
-          {activeTab === 'debate' && <DebateTab />}
-          {activeTab === 'streak' && <LeaderboardTab />}
         </Suspense>
       </div>
     </div>
