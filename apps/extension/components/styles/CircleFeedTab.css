@@ -6,6 +6,67 @@
   background: transparent;
 }
 
+/* Members bar — clickable summary above the filter row, opens Layer C */
+.circle-members-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.circle-members-bar:hover {
+  background: var(--ds-card-hover, var(--ds-card));
+  border-color: var(--ds-ink-soft);
+}
+
+.circle-members-bar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.circle-members-avatar-slot {
+  margin-left: -8px;
+  border: 2px solid var(--ds-card);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--ds-card);
+}
+
+.circle-members-avatar-slot:first-child {
+  margin-left: 0;
+}
+
+.circle-members-bar-count {
+  flex: 1;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ds-ink);
+}
+
+.circle-members-bar-cta {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  white-space: nowrap;
+}
+
+.circle-members-bar:hover .circle-members-bar-cta {
+  color: var(--ds-ink);
+}
+
 /* Top bar — vertical stack:
    row 1 (.circle-top-header): "FILTER" label left, [refresh][My Circle] right
    row 2 (.circle-category-chips): chips wrap freely below */

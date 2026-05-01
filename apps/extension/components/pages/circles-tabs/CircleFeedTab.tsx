@@ -83,8 +83,12 @@ type ViewState =
   | { type: 'member-profile'; address: string; label: string; image?: string }
   | { type: 'member-category'; address: string; label: string; image?: string }
 
-const CircleFeedTab = () => {
-  const { navigateTo, setActiveTab } = useRouter()
+interface CircleFeedTabProps {
+  onViewMembers?: () => void
+}
+
+const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
+  const { navigateTo } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<'all' | IntentionType>('all')
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
@@ -515,7 +519,34 @@ const CircleFeedTab = () => {
   // Main feed view
   return (
     <div className="circle-feed-tab">
-      {/* Header row: Filter label aligned with refresh + My Circle actions */}
+      {/* Members bar — clickable summary that opens the full members list */}
+      {onViewMembers && trustedWallets.length > 0 && (
+        <button
+          type="button"
+          className="circle-members-bar"
+          onClick={onViewMembers}
+          aria-label="View all trust circle members"
+        >
+          <div className="circle-members-bar-stack" aria-hidden="true">
+            {trustedWallets.slice(0, 4).map(wallet => (
+              <div key={wallet} className="circle-members-avatar-slot">
+                <Avatar
+                  imgSrc={walletToImage.get(wallet)}
+                  name={walletToLabel.get(wallet) || wallet}
+                  avatarClassName="circle-members-avatar"
+                  size="small"
+                />
+              </div>
+            ))}
+          </div>
+          <span className="circle-members-bar-count">
+            {trustedWallets.length} member{trustedWallets.length === 1 ? '' : 's'}
+          </span>
+          <span className="circle-members-bar-cta">view all →</span>
+        </button>
+      )}
+
+      {/* Header row: Filter label aligned with refresh action */}
       <div className="circle-top-bar">
         <div className="circle-top-header">
           <span className="circle-filter-label">Filter</span>
@@ -544,30 +575,6 @@ const CircleFeedTab = () => {
                 <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
                 <path d="M3 21v-5h5" />
               </svg>
-            </button>
-            <button
-              className="circle-go-btn"
-              onClick={() => {
-                setActiveTab('community')
-                navigateTo('circles')
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="9" cy="7" r="4" />
-                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
-                <path d="m17 11 2 2 4-4" />
-              </svg>
-              My Circle
             </button>
           </div>
         </div>

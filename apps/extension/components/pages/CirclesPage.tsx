@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState, useEffect, useTransition } from 'react'
 import { useRouter } from '../layout/RouterProvider'
+import { useWalletFromStorage } from '../../hooks'
 import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -12,12 +13,18 @@ const CircleFeedTab = lazy(() => import('./circles-tabs/CircleFeedTab'))
 const TrendingTab = lazy(() => import('./circles-tabs/TrendingTab'))
 const CommunityTab = lazy(() => import('./circles-tabs/CommunityTab'))
 const CommunityHomeView = lazy(() => import('./circles-tabs/CommunityHomeView'))
+const TrustCirclePanel = lazy(() =>
+  import('./circles-tabs/follow/TrustCirclePanel').then(m => ({
+    default: m.TrustCirclePanel
+  }))
+)
 
 type CirclesTab = 'circle' | 'trending' | 'community'
-type CircleLayer = 'home' | 'feed'
+type CircleLayer = 'home' | 'feed' | 'members'
 
 const CirclesPage = () => {
   const { activeTab: pendingTab } = useRouter()
+  const { walletAddress } = useWalletFromStorage()
   const [activeTab, setActiveTab] = useState<CirclesTab>('circle')
   const [circleLayer, setCircleLayer] = useState<CircleLayer>('home')
   const [, startTransition] = useTransition()
@@ -78,7 +85,21 @@ const CirclesPage = () => {
               >
                 ← Back
               </button>
-              <CircleFeedTab />
+              <CircleFeedTab onViewMembers={() => setCircleLayer('members')} />
+            </>
+          )}
+          {activeTab === 'circle' && circleLayer === 'members' && (
+            <>
+              <button
+                type="button"
+                className="circle-layer-back-btn"
+                onClick={() => setCircleLayer('feed')}
+                aria-label="Back to feed"
+              >
+                ← Back to feed
+              </button>
+              <h3 className="circle-layer-title">Trust Circle Members</h3>
+              <TrustCirclePanel walletAddress={walletAddress} />
             </>
           )}
           {activeTab === 'trending' && <TrendingTab />}

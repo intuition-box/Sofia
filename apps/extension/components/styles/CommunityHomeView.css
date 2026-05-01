@@ -123,3 +123,13 @@
   color: var(--ds-ink);
   border-color: var(--ds-ink-soft);
 }
+
+.circle-layer-title {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+  margin: 0 0 var(--spacing-md) 0;
+}
