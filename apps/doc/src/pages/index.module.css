@@ -1,45 +1,66 @@
 /**
  * Documentation home — index.
  *
- * No marketing flourish. Pure doc-landing pattern: short intro, then a
- * sequence of sectioned card grids that mirror the sidebar.
+ * Hero section is a peach banner echoing Explorer's PageHero (dark ink
+ * on --ds-accent). Below it, a clean doc-landing pattern: sectioned
+ * card grids that mirror the sidebar.
  */
 
 .main {
   background: var(--ds-bg);
-  padding: 3rem 1.5rem 5rem;
+  padding-bottom: 5rem;
 }
 
-.intro,
-.section {
+/* ── Hero (peach banner) ─────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  background: var(--ds-accent);
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, #02000e 10%, transparent);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  right: -120px;
+  top: 50%;
+  width: 360px;
+  height: 360px;
+  background: rgba(0, 0, 0, 0.08);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  transform: translateY(-50%) rotate(-12deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
   max-width: var(--doc-max-wide);
   margin: 0 auto;
-}
-
-.intro {
-  padding: 1rem 0 2.5rem;
-  border-bottom: 1px solid var(--ds-border-soft);
-  margin-bottom: 3rem;
+  padding: 5rem 1.5rem 5rem;
 }
 
 .title {
-  margin: 0 0 0.85rem;
+  margin: 0 0 1.25rem;
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 1.6rem + 1.6vw, 2.75rem);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.025em;
-  color: var(--ds-ink);
+  font-size: clamp(2.5rem, 1.8rem + 3vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: #02000e;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  max-width: 18ch;
 }
 
 .lede {
-  margin: 0 0 1.75rem;
+  margin: 0 0 2rem;
   font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: var(--ds-muted);
-  max-width: 42rem;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.72);
+  max-width: 36rem;
 }
 
 .actions {
@@ -49,12 +70,50 @@
   flex-wrap: wrap;
 }
 
+/* Buttons inside the peach hero — dark ink on light pill, then a
+   transparent outline that picks up the dark ink instead of the theme. */
+.hero :global(a.button.button--primary),
+.hero :global(.button.button--primary) {
+  background-color: #02000e;
+  border-color: #02000e;
+  color: var(--ds-accent);
+}
+
+.hero :global(a.button.button--primary:hover),
+.hero :global(.button.button--primary:hover) {
+  background-color: #1a1727;
+  border-color: #1a1727;
+  color: var(--ds-accent);
+}
+
+.hero :global(a.button.button--outline.button--primary),
+.hero :global(.button.button--outline.button--primary) {
+  background-color: transparent;
+  border-color: #02000e;
+  color: #02000e;
+}
+
+.hero :global(a.button.button--outline.button--primary:hover),
+.hero :global(.button.button--outline.button--primary:hover) {
+  background-color: #02000e;
+  border-color: #02000e;
+  color: var(--ds-accent);
+}
+
+/* ── Sections (doc landing) ──────────────────────────────────── */
+
 .section {
-  padding: 0 0 2.5rem;
+  max-width: var(--doc-max-wide);
+  margin: 0 auto;
+  padding: 3rem 1.5rem 0;
+}
+
+.section:first-of-type {
+  padding-top: 4rem;
 }
 
 .sectionTitle {
-  margin: 0 0 0.85rem;
+  margin: 0 0 1rem;
   font-family: var(--font-body);
   font-size: var(--doc-text-xs);
   font-weight: 600;
@@ -64,13 +123,12 @@
 }
 
 @media (max-width: 768px) {
-  .main {
-    padding: 2rem 1rem 4rem;
+  .heroInner {
+    padding: 3.5rem 1rem 3rem;
   }
 
-  .intro {
-    padding: 0.5rem 0 2rem;
-    margin-bottom: 2rem;
+  .lede {
+    font-size: 1rem;
   }
 
   .actions {
@@ -81,5 +139,13 @@
   .actions :global(.button) {
     width: 100%;
     text-align: center;
+  }
+
+  .section {
+    padding: 2rem 1rem 0;
+  }
+
+  .section:first-of-type {
+    padding-top: 2.5rem;
   }
 }

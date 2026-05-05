@@ -11,24 +11,26 @@ export default function Home(): React.ReactElement {
       title="Sofia — Documentation"
       description="Sofia turns your browsing into verifiable, blockchain-backed knowledge — privately and on your terms.">
       <main className={styles.main}>
-        <header className={styles.intro}>
-          <h1 className={styles.title}>Sofia documentation</h1>
-          <p className={styles.lede}>
-            Sofia is a Chrome extension that turns the noise of your browsing
-            into verifiable, blockchain-anchored knowledge — privately, and on
-            your terms. Start with the basics or jump straight to a specific
-            chapter.
-          </p>
-          <div className={styles.actions}>
-            <Link className="button button--primary button--lg" to="/docs/intro">
-              Start reading
-            </Link>
-            <Link
-              className="button button--outline button--primary button--lg"
-              to="/blog"
-            >
-              Chronicles
-            </Link>
+        <header className={styles.hero}>
+          <div className={styles.heroInner}>
+            <h1 className={styles.title}>Sofia documentation</h1>
+            <p className={styles.lede}>
+              Sofia is a Chrome extension that turns the noise of your browsing
+              into verifiable, blockchain-anchored knowledge — privately, and on
+              your terms. Start with the basics or jump straight to a specific
+              chapter.
+            </p>
+            <div className={styles.actions}>
+              <Link className="button button--primary button--lg" to="/docs/intro">
+                Start reading
+              </Link>
+              <Link
+                className="button button--outline button--primary button--lg"
+                to="/blog"
+              >
+                Chronicles
+              </Link>
+            </div>
           </div>
         </header>
 
