@@ -207,6 +207,13 @@ nav[class*="blogSidebar"],
   padding: 0;
 }
 
+/* Tighten the BlogSidebar column so the middle main can breathe wider. */
+.theme-blog-list-page [class*="blogSidebarColumn"],
+.theme-blog-post-page [class*="blogSidebarColumn"] {
+  flex: 0 0 18% !important;
+  max-width: 18% !important;
+}
+
 /* Zero out the page-level wrappers Docusaurus puts around blog + doc */
 .theme-blog-list-page .container,
 .theme-blog-post-page .container,
