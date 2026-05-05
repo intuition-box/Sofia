@@ -108,8 +108,9 @@
 }
 
 .btn:hover {
-  background: var(--ds-ink);
-  color: var(--ds-bg) !important;
+  background: color-mix(in srgb, var(--ds-accent) 88%, var(--ds-ink) 12%);
+  border-color: color-mix(in srgb, var(--ds-accent) 88%, var(--ds-ink) 12%);
+  color: var(--ds-on-accent) !important;
   transform: translateY(-2px);
   box-shadow: var(--doc-shadow-md);
 }
