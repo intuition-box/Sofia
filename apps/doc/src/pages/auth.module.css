@@ -13,16 +13,16 @@
 }
 
 .card {
-  background: var(--sofia-bg-alt);
+  background: var(--ds-bg-subtle);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 3rem;
   text-align: center;
-  border: 1px solid var(--sofia-border);
+  border: 1px solid var(--ds-border);
   min-width: 320px;
   max-width: 420px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--doc-shadow-md);
 }
 
 .logo {
@@ -33,7 +33,7 @@
 }
 
 .subtitle {
-  color: var(--sofia-text-muted) !important;
+  color: var(--ds-muted) !important;
   font-size: 0.875rem;
   margin-bottom: 2rem;
   font-family: var(--font-mono);
@@ -42,8 +42,8 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--sofia-border);
-  border-top: 3px solid var(--sofia-green-vif);
+  border: 3px solid var(--ds-border);
+  border-top: 3px solid var(--ds-accent-ink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1.5rem;
@@ -56,18 +56,18 @@
 
 .checkmark {
   font-size: 3rem;
-  color: var(--sofia-success);
+  color: var(--trusted);
   margin-bottom: 1.5rem;
 }
 
 .errorIcon {
   font-size: 3rem;
-  color: var(--sofia-error);
+  color: var(--distrusted);
   margin-bottom: 1.5rem;
 }
 
 .text {
-  color: var(--sofia-text) !important;
+  color: var(--ds-ink) !important;
   font-size: 1.25rem;
   margin: 0 0 0.5rem;
   font-family: var(--font-mono);
@@ -75,30 +75,30 @@
 }
 
 .subtext {
-  color: var(--sofia-text-muted) !important;
+  color: var(--ds-muted) !important;
   font-size: 0.875rem;
   margin: 0;
   font-family: var(--font-mono);
 }
 
 .walletAddress {
-  background: var(--sofia-bg-elevated);
+  background: var(--ds-card);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: var(--sofia-text) !important;
+  color: var(--ds-ink) !important;
   margin: 1rem 0;
   word-break: break-all;
-  border: 1px solid var(--sofia-border);
+  border: 1px solid var(--ds-border);
 }
 
 .btn {
   margin-top: 1.5rem;
   padding: 0.875rem 2rem;
-  background: var(--sofia-accent);
-  color: var(--sofia-bg) !important;
-  border: 2px solid var(--sofia-accent);
+  background: var(--ds-accent);
+  color: var(--ds-bg) !important;
+  border: 2px solid var(--ds-accent);
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -108,10 +108,10 @@
 }
 
 .btn:hover {
-  background: var(--sofia-text);
-  color: var(--sofia-bg) !important;
+  background: var(--ds-ink);
+  color: var(--ds-bg) !important;
   transform: translateY(-2px);
-  box-shadow: var(--shadow-btn-hover);
+  box-shadow: var(--doc-shadow-md);
 }
 
 @keyframes orb-gradient {
@@ -154,8 +154,8 @@
   margin-left: 0.75rem;
   padding: 0.875rem 2rem;
   background: transparent;
-  border: 2px solid var(--sofia-border);
-  color: var(--sofia-text) !important;
+  border: 2px solid var(--ds-border);
+  color: var(--ds-ink) !important;
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -165,8 +165,8 @@
 }
 
 .btnSecondary:hover {
-  border-color: var(--sofia-border-hover);
-  background: var(--sofia-bg-alt);
+  border-color: var(--ds-border);
+  background: var(--ds-bg-subtle);
   transform: translateY(-2px);
 }
 
@@ -182,8 +182,8 @@
   margin-top: 1.5rem;
   padding: 0.5rem 1.5rem;
   background: transparent;
-  border: 1px solid var(--sofia-border);
-  color: var(--sofia-text-muted) !important;
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted) !important;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -193,8 +193,8 @@
 }
 
 .closeBtn:hover {
-  border-color: var(--sofia-border-hover);
-  background: var(--sofia-bg-alt);
+  border-color: var(--ds-border);
+  background: var(--ds-bg-subtle);
 }
 
 .disconnectBtn {
@@ -202,8 +202,8 @@
   margin-left: 16px;
   padding: 0.5rem 1.5rem;
   background: transparent;
-  border: 1px solid var(--sofia-border);
-  color: var(--sofia-text-muted) !important;
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted) !important;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -214,21 +214,21 @@
 }
 
 .disconnectBtn:hover {
-  border-color: var(--sofia-border-hover);
-  background: var(--sofia-bg-alt);
+  border-color: var(--ds-border);
+  background: var(--ds-bg-subtle);
   opacity: 1;
 }
 
 .instructions {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: var(--sofia-bg-elevated);
+  background: var(--ds-card);
   border-radius: 8px;
-  border: 1px solid var(--sofia-border);
+  border: 1px solid var(--ds-border);
 }
 
 .instructionsText {
-  color: var(--sofia-text-muted) !important;
+  color: var(--ds-muted) !important;
   font-size: 0.8125rem;
   line-height: 1.5;
   margin: 0;

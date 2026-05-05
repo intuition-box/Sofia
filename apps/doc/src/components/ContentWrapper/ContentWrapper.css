@@ -1,13 +1,17 @@
 .content-wrapper {
   position: relative;
   z-index: 1;
-  backdrop-filter: blur(5px);
-  border-radius: 8px;
-  padding: 2rem;
-  margin: 5rem auto;
-  max-width: 1400px;
+  padding: 4rem 1.5rem 5rem;
+  margin: 0 auto;
+  max-width: 760px;
 }
 
 .content-wrapper--wide {
-  max-width: 1470px;
+  max-width: 1180px;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 3rem 1.25rem 4rem;
+  }
 }

@@ -8,13 +8,8 @@ export default function Terms(): React.ReactElement {
       title="Terms and Conditions"
       description="Sofia Extension Terms and Conditions">
 
-      <main style={{ padding: '5', color: 'var(--sofia-text)', lineHeight: '2' }}>
-        <ContentWrapper wide>
-          <style>{`
-            .terms-page h1, .terms-page h2, .terms-page h3 {
-              color: var(--sofia-green-vif);
-            }
-          `}</style>
+      <main className="theme-doc-markdown">
+        <ContentWrapper>
           <article className="terms-page">
             <h1>Terms and Conditions</h1>
             <p><strong>Last updated: January 30, 2026</strong></p>

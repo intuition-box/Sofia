@@ -8,22 +8,10 @@ interface DocCardGridProps {
 export default function DocCardGrid({ children, columns = 2 }: DocCardGridProps) {
   return (
     <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: '1rem',
-        margin: '1.5rem 0',
-      }}
+      className="doc-card-grid"
+      style={{ ['--doc-card-cols' as string]: columns }}
     >
       {children}
-
-      <style>{`
-        @media (max-width: 768px) {
-          div[style*="grid-template-columns"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
