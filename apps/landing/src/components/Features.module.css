@@ -1,76 +1,75 @@
-.section {
-  padding: 96px var(--space-xl);
-}
-
-.header {
-  max-width: 640px;
-  margin-bottom: 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.title {
-  margin: 0;
-}
+/**
+ * Features — 4-column grid with shared 1px lines (no gaps), engineering
+ * drawing feel. Cards align to a single baseline; hover wash flips the
+ * cell to peach-on-ink, like a switched-on capability.
+ */
 
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0;
   border-top: 1px solid var(--color-border-soft);
-  border-bottom: 1px solid var(--color-border-soft);
+  border-left: 1px solid var(--color-border-soft);
 }
 
-/* Cards share dividers — vertical lines between them, no inter-card
-   gap. Hover pulls a peach background across the cell, matching the
-   peach hero accent. */
 .card {
   position: relative;
-  padding: 32px 28px 36px;
   border-right: 1px solid var(--color-border-soft);
-  background: transparent;
-  cursor: default;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-
-.card:last-child {
-  border-right: 0;
+  border-bottom: 1px solid var(--color-border-soft);
+  padding: 28px 24px 32px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .card:hover {
-  background: var(--color-accent);
-  color: #02000e;
+  background: var(--color-bg-alt);
 }
 
-.indexBadge {
-  display: inline-block;
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
   letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--color-text-dim);
-  margin-bottom: 16px;
+  margin-bottom: 28px;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
 .card:hover .indexBadge {
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--color-accent-ink);
+}
+
+.indexBadge {
+  font-weight: 500;
+}
+
+.indexCorner {
+  font-size: 10px;
+  color: var(--color-text-dim);
+  opacity: 0.65;
 }
 
 .icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  display: grid;
+  place-items: center;
   margin-bottom: 22px;
+  color: var(--color-accent-ink);
+  transition: border-color var(--duration-fast) var(--ease-out);
 }
 .icon svg {
-  width: 24px;
-  height: 24px;
-  stroke: var(--color-text);
-  transition: stroke var(--duration-fast) var(--ease-out);
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
 }
-.card:hover .icon svg {
-  stroke: #02000e;
+.card:hover .icon {
+  border-color: var(--color-accent);
 }
 
 .name {
@@ -79,12 +78,9 @@
   font-weight: 600;
   letter-spacing: -0.018em;
   line-height: 1.25;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: var(--color-text);
-  transition: color var(--duration-fast) var(--ease-out);
-}
-.card:hover .name {
-  color: #02000e;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .desc {
@@ -92,28 +88,27 @@
   font-size: var(--text-sm);
   line-height: 1.6;
   color: var(--color-text-muted);
-  margin: 0;
-  transition: color var(--duration-fast) var(--ease-out);
+  margin: 0 0 auto;
 }
-.card:hover .desc {
-  color: rgba(0, 0, 0, 0.7);
+
+.cardFoot {
+  margin-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  display: flex;
+  justify-content: space-between;
 }
 
 /* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 996px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
-  .card:nth-child(2n) { border-right: 0; }
-  .card:nth-child(-n+2) { border-bottom: 1px solid var(--color-border-soft); }
 }
 
 @media (max-width: 640px) {
-  .section { padding: 72px var(--space-md); }
   .grid { grid-template-columns: 1fr; }
-  .card {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border-soft);
-    padding: 28px 24px;
-  }
-  .card:last-child { border-bottom: 0; }
+  .card { min-height: 0; padding: 26px 22px 30px; }
 }

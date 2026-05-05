@@ -1,95 +1,70 @@
-.section {
-  padding: 96px var(--space-xl);
-}
+/**
+ * Steps — 3-card grid with shared 1px borders. Each card carries a
+ * mono numeral, Fraunces step name, body copy, and a mono "doc" link
+ * that nudges right on hover.
+ */
 
-.header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 32px;
-  margin-bottom: 56px;
-}
-
-.headerCopy {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 560px;
-}
-
-.title {
-  margin: 0;
+.headCta {
+  align-self: end;
+  justify-self: end;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0;
   border-top: 1px solid var(--color-border-soft);
+  border-left: 1px solid var(--color-border-soft);
 }
 
 .card {
   position: relative;
-  padding: 32px 28px 36px;
+  padding: 32px 28px 28px;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.card:last-child {
-  border-right: 0;
+.card:hover {
+  background: var(--color-bg-alt);
 }
 
 .num {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.18em;
-  color: var(--color-accent-ink);
-  margin-bottom: 22px;
-  display: flex;
+  letter-spacing: 0.22em;
+  color: var(--color-text-dim);
+  margin-bottom: 28px;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  align-self: flex-start;
 }
 
 .num::after {
   content: '';
-  flex: 1;
+  display: inline-block;
+  width: 28px;
   height: 1px;
-  background: var(--color-border-soft);
+  margin-left: 12px;
+  background: var(--color-border);
+}
+
+.card:hover .num {
+  color: var(--color-accent-ink);
 }
 
 .name {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.022em;
-  line-height: 1.2;
-  margin: 0 0 10px;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
-}
-
-.name a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  line-height: 1.15;
+  margin: 0 0 12px;
   color: var(--color-text);
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.name a :global(svg) {
-  width: 12px;
-  height: 12px;
-  opacity: 0.5;
-  transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
-}
-
-.name a:hover {
-  color: var(--color-accent-ink);
-}
-
-.name a:hover :global(svg) {
-  opacity: 1;
-  transform: translateX(2px);
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .desc {
@@ -97,17 +72,37 @@
   font-size: var(--text-sm);
   line-height: 1.6;
   color: var(--color-text-muted);
-  margin: 0;
+  margin: 0 0 auto;
 }
 
-@media (max-width: 996px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
-  .card:nth-child(2n) { border-right: 0; }
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
-@media (max-width: 640px) {
-  .section { padding: 72px var(--space-md); }
+.link span {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--color-accent-ink);
+}
+
+.link:hover span {
+  transform: translateX(3px);
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+
+@media (max-width: 880px) {
   .grid { grid-template-columns: 1fr; }
-  .card { border-right: 0; }
-  .header { flex-direction: column; align-items: flex-start; }
+  .card { min-height: 0; padding: 28px 22px 26px; }
 }

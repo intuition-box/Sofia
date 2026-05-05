@@ -1,91 +1,8 @@
 /**
- * Instruments — drafting-room section. Plates rendered as engineering
- * cards: tick brackets, mono coordinates, peach corner marks, dark
- * surfaces. Tokens-only, no hardcoded colors except the canonical
- * peach-on-ink ink fill (#0E0E0E) for plate body which mirrors the
- * SVG body in the schematics themselves.
+ * Instruments — drafting-room plates. Engineering cards with peach
+ * corner marks, mono header/foot strips, SVG body that fills the
+ * available width.
  */
-
-.section {
-  position: relative;
-  padding: 96px 0 120px;
-  background: var(--color-bg);
-  /* faint peach wash like the v2 mockup */
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-accent) 1.5%, transparent) 0%,
-    transparent 60%
-  );
-  overflow: hidden;
-}
-
-/* ── Module frame — corner ticks + coordinates ─────── */
-
-.tick {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--color-accent);
-  pointer-events: none;
-  z-index: 1;
-}
-.tickTl { top: 24px; left: 24px; border-right: 0; border-bottom: 0; }
-.tickTr { top: 24px; right: 24px; border-left: 0; border-bottom: 0; }
-.tickBl { bottom: 24px; left: 24px; border-right: 0; border-top: 0; }
-.tickBr { bottom: 24px; right: 24px; border-left: 0; border-top: 0; }
-
-.coord,
-.coordR {
-  position: absolute;
-  top: 28px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  z-index: 2;
-}
-
-.coord { left: 56px; }
-.coordR { right: 56px; }
-
-.coordDot {
-  width: 6px;
-  height: 6px;
-  background: var(--color-accent);
-  display: inline-block;
-}
-
-/* ── Header ─────────────────────────────────────────── */
-
-.head {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px 56px;
-  align-items: end;
-  margin-bottom: 48px;
-}
-
-.title {
-  margin: 18px 0 0;
-}
-
-.title :global(em) {
-  font-style: italic;
-  color: var(--color-accent-ink);
-}
-
-.sub {
-  margin: 0;
-  text-align: left;
-}
-
-@media (max-width: 900px) {
-  .head { grid-template-columns: 1fr; }
-}
 
 /* ── Plate card ─────────────────────────────────────── */
 
@@ -188,19 +105,21 @@
 .plateBody {
   padding: 24px;
   position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
 }
 
 .plateBodyCompact {
   padding: 18px;
-  display: grid;
-  place-items: center;
 }
 
-.plateBodyCompact > .svg {
-  max-width: 380px;
-  max-height: 380px;
+.plateBody > svg.svg {
   width: 100%;
   height: auto;
+  max-width: none;
+  max-height: none;
+  display: block;
 }
 
 .plateFoot {

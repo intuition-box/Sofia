@@ -1,138 +1,59 @@
 /**
- * Comparison — peach surface, echoing the Hero/CTA banner pattern.
- * Text reads in ink against the peach; the table becomes a translucent
- * card with ink-on-peach typography.
+ * Comparison — engineering-table inside a peach Module banner.
+ * Cells are mono, ink-on-peach; rows separated by ink hairlines.
  */
 
-.section {
-  position: relative;
-  padding: 96px var(--space-xl);
-  text-align: center;
-  background: var(--color-accent);
-  color: #02000e;
-  overflow: hidden;
-}
-
-/* Hex ornament — same vocabulary as Hero/CTA banners */
-.section::before {
-  content: '';
-  position: absolute;
-  left: -160px;
-  top: 50%;
-  width: 460px;
-  height: 460px;
-  background: rgba(0, 0, 0, 0.06);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
-  transform: translateY(-50%) rotate(8deg);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.header {
-  position: relative;
-  z-index: 1;
-  max-width: 640px;
-  margin: 0 auto 56px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-}
-
-.header :global(.mono-eyebrow) {
-  color: #02000e;
-}
-.header :global(.mono-eyebrow)::before {
-  background: #02000e;
-}
-
-.title {
-  margin: 0;
-  color: #02000e;
-}
-.title :global(em) {
-  color: #02000e;
-  font-style: italic;
-}
-
-.header :global(.section-subtitle) {
-  color: rgba(0, 0, 0, 0.72);
-}
-
 .table {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: left;
-  background: color-mix(in srgb, #02000e 6%, transparent);
-  border: 1px solid #02000e;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  font-family: var(--font-body);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
 }
 
-/* ── Header row ───────────────────────────────────────── */
+.table th,
+.table td {
+  text-align: left;
+  padding: 18px 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  vertical-align: middle;
+}
 
 .table thead th {
-  padding: 18px 22px;
-  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.7);
-  background: color-mix(in srgb, #02000e 10%, transparent);
-  border-bottom: 1px solid #02000e;
+  color: rgba(0, 0, 0, 0.55);
+  border-top: 0;
+  padding-top: 22px;
+  padding-bottom: 14px;
 }
 
 .table thead th.headSofia {
   color: #02000e;
-  letter-spacing: 0.2em;
   font-weight: 700;
+  letter-spacing: 0.24em;
 }
 
-/* ── Body cells ───────────────────────────────────────── */
-
-.table tbody td {
-  padding: 16px 22px;
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  color: rgba(0, 0, 0, 0.78);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  border-right: 1px solid rgba(0, 0, 0, 0.18);
-  transition: background var(--duration-fast) var(--ease-out);
-  vertical-align: top;
+.rowLabel {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+  width: 22%;
+  padding-left: 0;
 }
 
-.table tbody td:last-child {
-  border-right: 0;
-}
-
-.table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.table tbody td.tdSofia {
-  color: #02000e;
-  font-weight: 600;
-}
-
-.table tbody tr:hover td {
-  background: color-mix(in srgb, #02000e 10%, transparent);
-}
-
-.table tbody tr:hover td.tdSofia {
+.tdSofia {
   color: #02000e;
 }
 
-/* ── Check / cross marks ─────────────────────────────── */
+.cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .check,
 .cross {
@@ -141,44 +62,47 @@
   justify-content: center;
   width: 16px;
   height: 16px;
-  margin-right: 8px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  vertical-align: -2px;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
 }
 
 .check {
+  background: #02000e;
   color: var(--color-accent);
   border: 1px solid #02000e;
-  border-radius: var(--radius-pill);
-  background: #02000e;
 }
 
 .cross {
-  color: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  border-radius: var(--radius-pill);
   background: transparent;
+  color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.32);
+}
+
+/* hover row — subtle ink wash */
+.table tbody tr {
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  .section { padding: 72px var(--space-md); }
-  .section::before { width: 320px; height: 320px; left: -180px; }
-}
-
-@media (max-width: 640px) {
   .table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius-md);
-  }
-  .table thead th,
-  .table tbody td {
-    padding: 12px 16px;
-    font-size: var(--text-xs);
     white-space: nowrap;
+  }
+  .table th,
+  .table td {
+    padding: 14px 14px;
+    font-size: var(--text-xs);
+  }
+  .rowLabel {
+    width: auto;
   }
 }

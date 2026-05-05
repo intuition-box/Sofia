@@ -1,60 +1,6 @@
-.section {
-  padding: 96px var(--space-xl);
-  background: var(--color-bg-alt);
-}
-
-.header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 32px;
-  margin-bottom: 56px;
-}
-
-.headerCopy {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 560px;
-}
-
-.title { margin: 0; }
-
 .allLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  position: relative;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.allLink::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -3px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.4;
-  transform-origin: left;
-  transition: opacity var(--duration-fast), transform var(--duration-normal) var(--ease-out);
-}
-
-.allLink:hover { color: var(--color-accent-ink); }
-
-.allLink:hover::after {
-  opacity: 1;
-  transform: scaleX(1.05);
-}
-
-.allLink :global(svg) {
-  width: 12px;
-  height: 12px;
+  align-self: end;
+  justify-self: end;
 }
 
 .grid {
@@ -147,7 +93,3 @@
   .card:last-child { border-bottom: 0; }
 }
 
-@media (max-width: 640px) {
-  .section { padding: 72px var(--space-md); }
-  .header { flex-direction: column; align-items: flex-start; }
-}

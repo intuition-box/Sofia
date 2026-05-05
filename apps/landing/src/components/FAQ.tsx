@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './FAQ.module.css';
 
 interface FAQItem {
@@ -20,33 +21,37 @@ const FAQS: FAQItem[] = [
 ];
 
 export function FAQ() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section className={styles.section} id="faq">
-      <div className="container">
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <span className="mono-eyebrow">FAQ</span>
-          <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-            Questions? Answers.
-          </h2>
-        </div>
+    <Module id="faq" code="S.10" label="LOOKUPS" meta={`${FAQS.length} ENTRIES`}>
+      <ModuleHead
+        eyebrow="Frequently consulted"
+        title={
+          <>
+            Questions, <em>answered.</em>
+          </>
+        }
+        right={
+          <p>
+            Eight things people ask before they install. If your question isn't
+            here, ask in Discord — we answer.
+          </p>
+        }
+      />
 
-        <div className={styles.list}>
-          {FAQS.map((faq, i) => (
-            <FAQItemComp
-              key={faq.q}
-              faq={faq}
-              index={i}
-              isOpen={openIdx === i}
-              onToggle={() => setOpenIdx(openIdx === i ? null : i)}
-            />
-          ))}
-        </div>
+      <div className={styles.list}>
+        {FAQS.map((faq, i) => (
+          <FAQItemComp
+            key={faq.q}
+            faq={faq}
+            index={i}
+            isOpen={openIdx === i}
+            onToggle={() => setOpenIdx(openIdx === i ? null : i)}
+          />
+        ))}
       </div>
-    </section>
+    </Module>
   );
 }
 

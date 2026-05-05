@@ -1,11 +1,15 @@
 .cite {
-  padding: 96px var(--space-xl);
-  max-width: var(--max-width);
-  margin: 0 auto;
+  padding: 56px 0;
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 56px;
   align-items: start;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.cite:first-of-type {
+  border-top: 0;
+  padding-top: 16px;
 }
 
 .reversed {

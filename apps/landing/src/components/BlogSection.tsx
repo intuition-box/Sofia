@@ -1,7 +1,8 @@
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
 import { URLS } from '../lib/config/urls';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './BlogSection.module.css';
 
 interface BlogPost {
@@ -36,37 +37,33 @@ const POSTS: BlogPost[] = [
 ];
 
 export function BlogSection() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
-
   return (
-    <section className={styles.section} id="chronicles">
-      <div className="container">
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <div className={styles.headerCopy}>
-            <span className="mono-eyebrow">Chronicles</span>
-            <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-              Sofia Chronicles
-            </h2>
-          </div>
+    <Module id="chronicles" code="S.08" label="CHRONICLES" meta={`${POSTS.length} ENTRIES · BUILDING IN PUBLIC`}>
+      <ModuleHead
+        eyebrow="Build log"
+        title={
+          <>
+            Sofia Chronicles. <em>Quarterly, in public.</em>
+          </>
+        }
+        right={
           <a
             href={URLS.blog.index}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.allLink}
+            className={`btn btn-secondary ${styles.allLink}`}
           >
-            All articles
-            <Arrow />
+            All articles <Arrow />
           </a>
-        </div>
+        }
+      />
 
-        <div className={styles.grid}>
-          {POSTS.map((post, i) => (
-            <PostCard key={post.link} post={post} index={i} />
-          ))}
-        </div>
+      <div className={styles.grid}>
+        {POSTS.map((post, i) => (
+          <PostCard key={post.link} post={post} index={i} />
+        ))}
       </div>
-    </section>
+    </Module>
   );
 }
 

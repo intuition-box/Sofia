@@ -80,10 +80,10 @@ export function Citation({
   );
 
   return (
-    <section className={`${styles.cite} ${reversed ? styles.reversed : ''}`}>
+    <article className={`${styles.cite} ${reversed ? styles.reversed : ''}`}>
       {reversed ? figure : text}
       {reversed ? text : figure}
-    </section>
+    </article>
   );
 }
 

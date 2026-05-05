@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParallax } from '../hooks/useParallax';
 import { useScrollAnim } from '../hooks/useScrollAnim';
+import { Module } from './Module';
 import styles from './Carousel.module.css';
 
 interface Slide {
@@ -37,18 +38,22 @@ export function Carousel() {
   const imgRef = useParallax<HTMLDivElement>({ speed: 0.1, zoom: true, zoomMax: 1.08 });
 
   return (
-    <section className={styles.section}>
-      <div className={styles.container}>
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <span className="mono-eyebrow">Showcase</span>
-          <span className={styles.counter}>
-            <span className={styles.counterCurrent}>{String(current + 1).padStart(2, '0')}</span>
-            <span className={styles.counterDivider}>/</span>
-            <span className={styles.counterTotal}>{String(SLIDES.length).padStart(2, '0')}</span>
-          </span>
-        </div>
+    <Module
+      id="showcase"
+      code="S.05"
+      label="INSTRUMENT"
+      meta={`${String(current + 1).padStart(2, '0')} / ${String(SLIDES.length).padStart(2, '0')}`}
+    >
+      <div ref={headerRef} className={`${styles.header} anim anim-up`}>
+        <span className="mono-eyebrow">Showcase</span>
+        <span className={styles.counter}>
+          <span className={styles.counterCurrent}>{String(current + 1).padStart(2, '0')}</span>
+          <span className={styles.counterDivider}>/</span>
+          <span className={styles.counterTotal}>{String(SLIDES.length).padStart(2, '0')}</span>
+        </span>
+      </div>
 
-        <div ref={stageRef} className={`${styles.stage} anim anim-up anim-d2`}>
+      <div ref={stageRef} className={`${styles.stage} anim anim-up anim-d2`}>
           <div ref={imgRef} className={styles.imageWrap}>
             <button
               className={`${styles.arrow} ${styles.arrowLeft}`}
@@ -77,20 +82,19 @@ export function Carousel() {
             <p className={styles.subtitle}>{slide.subtitle}</p>
           </div>
 
-          <div className={styles.dots} role="tablist" aria-label="Carousel slides">
-            {SLIDES.map((_, i) => (
-              <button
-                key={i}
-                role="tab"
-                aria-selected={i === current}
-                className={`${styles.dot} ${i === current ? styles.dotActive : ''}`}
-                onClick={() => setCurrent(i)}
-                aria-label={`Slide ${i + 1}`}
-              />
-            ))}
-          </div>
+        <div className={styles.dots} role="tablist" aria-label="Carousel slides">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              role="tab"
+              aria-selected={i === current}
+              className={`${styles.dot} ${i === current ? styles.dotActive : ''}`}
+              onClick={() => setCurrent(i)}
+              aria-label={`Slide ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
-    </section>
+    </Module>
   );
 }

@@ -1,0 +1,71 @@
+/**
+ * ModuleHead — bipartite section header. Eyebrow + title left,
+ * descriptive paragraph or CTA right. Aligns to baseline at desktop;
+ * stacks at mobile. Used inside `Module`.
+ */
+
+.head {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 32px 60px;
+  align-items: end;
+  margin-bottom: 60px;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.title {
+  margin: 0;
+  max-width: 22ch;
+}
+
+.title :global(em) {
+  font-style: italic;
+  color: var(--color-accent-ink);
+}
+
+.right {
+  align-self: end;
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+.right :global(p) {
+  margin: 0;
+}
+
+/* ── Peach variant ────────────────────────────────────── */
+
+.peach .title,
+.peach .title :global(em) {
+  color: #02000e;
+}
+
+.peach .right {
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.peach :global(.mono-eyebrow) {
+  color: #02000e;
+}
+.peach :global(.mono-eyebrow)::before {
+  background: #02000e;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+
+@media (max-width: 800px) {
+  .head {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .right { max-width: none; }
+}

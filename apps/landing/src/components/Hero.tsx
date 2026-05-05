@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Arrow } from './Arrow';
@@ -15,31 +15,6 @@ const PARTNERS = [
   { name: 'Intuition', logo: '/img/partners/intuitionlogo.svg', url: 'https://intuition.systems' },
   { name: 'Ollama', logo: '/img/partners/ollama.png', url: 'https://ollama.com' },
 ];
-
-function Countdown() {
-  const [display, setDisplay] = useState('');
-
-  useEffect(() => {
-    const end = new Date('2026-04-27T00:00:00');
-    const update = () => {
-      const diff = Math.max(0, end.getTime() - Date.now());
-      const d = Math.floor(diff / 864e5);
-      const h = Math.floor((diff % 864e5) / 36e5);
-      const m = Math.floor((diff % 36e5) / 6e4);
-      const s = Math.floor((diff % 6e4) / 1e3);
-      setDisplay(`${d}d ${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`);
-    };
-    update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <span className={styles.countdown}>
-      <span className={styles.countdownNum}>{display}</span>
-    </span>
-  );
-}
 
 export function Hero() {
   const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
@@ -78,8 +53,6 @@ export function Hero() {
     <section className={styles.hero}>
       <div className={styles.banner}>
         <div className={styles.bannerInner}>
-          <Countdown />
-
           <h1 ref={titleRef} className={`display anim ${styles.title}`}>
             From surfing the web to <em>owning it.</em>
           </h1>

@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './Features.module.css';
 
 interface Feature {
   icon: ReactNode;
   name: string;
   desc: string;
+  foot: string;
 }
 
 const FEATURES: Feature[] = [
@@ -18,6 +20,7 @@ const FEATURES: Feature[] = [
     ),
     name: 'Connect your socials',
     desc: 'Link YouTube, Spotify, Twitch, Discord and X to build your on-chain identity from verified social proof.',
+    foot: 'X · DISCORD · YOUTUBE',
   },
   {
     icon: (
@@ -27,6 +30,7 @@ const FEATURES: Feature[] = [
     ),
     name: 'Proof of action',
     desc: 'Turn browsing into verifiable on-chain signals. Your AI analyzes interactions and you choose what to publish.',
+    foot: 'AI · TRIPLES · CONSENT',
   },
   {
     icon: (
@@ -37,6 +41,7 @@ const FEATURES: Feature[] = [
     ),
     name: 'Verified on-chain',
     desc: 'Anchored on Intuition Protocol. Your knowledge is immutable, transparent, and owned by you.',
+    foot: 'L1 · INTUITION · MULTIVAULT',
   },
   {
     icon: (
@@ -48,33 +53,35 @@ const FEATURES: Feature[] = [
     ),
     name: 'Community & trust',
     desc: 'Vote on claims, follow trusted circles, discover trending content. Influence earned through contribution.',
+    foot: 'TRUST · CIRCLES · VOTE',
   },
 ];
 
 export function Features() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
-
   return (
-    <section className={styles.section} id="features">
-      <div className="container">
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <span className="mono-eyebrow">Capabilities</span>
-          <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-            Every click becomes proof. Every proof has value.
-          </h2>
-          <p className="section-subtitle">
-            Sofia captures your online experience and transforms it into verifiable proof you own.
+    <Module id="features" code="S.01" label="CAPABILITIES" meta="04 MODULES">
+      <ModuleHead
+        eyebrow="What Sofia does"
+        title={
+          <>
+            An instrument for the <em>data you already make.</em>
+          </>
+        }
+        right={
+          <p>
+            Browsing, watching, listening and reading already produce a signal.
+            Sofia gives you the apparatus to record it, prove it, and price it —
+            on terms you set.
           </p>
-        </div>
+        }
+      />
 
-        <div className={styles.grid}>
-          {FEATURES.map((f, i) => (
-            <FeatureCard key={f.name} feature={f} index={i} />
-          ))}
-        </div>
+      <div className={styles.grid}>
+        {FEATURES.map((f, i) => (
+          <FeatureCard key={f.name} feature={f} index={i} />
+        ))}
       </div>
-    </section>
+    </Module>
   );
 }
 
@@ -86,12 +93,17 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
       ref={ref}
       className={`${styles.card} anim anim-up ${delay > 0 ? `anim-d${delay}` : ''}`}
     >
-      <span className={styles.indexBadge}>
-        {String(index + 1).padStart(2, '0')}
-      </span>
+      <div className={styles.cardHead}>
+        <span className={styles.indexBadge}>F.0{index + 1}</span>
+        <span className={styles.indexCorner} aria-hidden>◢</span>
+      </div>
       <div className={styles.icon}>{feature.icon}</div>
       <h3 className={styles.name}>{feature.name}</h3>
       <p className={styles.desc}>{feature.desc}</p>
+      <div className={styles.cardFoot}>
+        <span>{feature.foot}</span>
+        <span aria-hidden>→</span>
+      </div>
     </div>
   );
 }

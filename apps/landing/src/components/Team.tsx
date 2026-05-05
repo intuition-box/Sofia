@@ -1,5 +1,6 @@
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './Team.module.css';
 
 const X_ICON = (
@@ -58,37 +59,46 @@ const ADVISORS: Advisor[] = [
 ];
 
 export function Team() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
   const advHeaderRef = useScrollAnim<HTMLDivElement>();
 
   return (
-    <section className={styles.section} id="team">
-      <div className="container">
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <span className="mono-eyebrow">Team</span>
-          <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-            Built by people who use Sofia daily.
-          </h2>
-        </div>
+    <Module
+      id="team"
+      code="S.09"
+      label="OPERATORS"
+      meta={`${TEAM.length} CORE · ${ADVISORS.length} ADVISORS`}
+    >
+      <ModuleHead
+        eyebrow="The team"
+        title={
+          <>
+            Two builders, three advisors, <em>one open repository.</em>
+          </>
+        }
+        right={
+          <p>
+            Sofia is built in public on the Intuition Protocol. Every contributor
+            is reachable; every advisor stakes their name on the work.
+          </p>
+        }
+      />
 
-        <div className={styles.grid}>
-          {TEAM.map((m, i) => (
-            <MemberCard key={m.name} member={m} index={i} />
-          ))}
-        </div>
-
-        <div ref={advHeaderRef} className={`${styles.advHeader} anim anim-up`}>
-          <span className="mono-eyebrow">Advisors</span>
-        </div>
-
-        <div className={styles.advGrid}>
-          {ADVISORS.map((a, i) => (
-            <AdvisorCard key={a.name} advisor={a} index={i} />
-          ))}
-        </div>
+      <div className={styles.grid}>
+        {TEAM.map((m, i) => (
+          <MemberCard key={m.name} member={m} index={i} />
+        ))}
       </div>
-    </section>
+
+      <div ref={advHeaderRef} className={`${styles.advHeader} anim anim-up`}>
+        <span className={styles.advHeaderRule}>— ADVISORS</span>
+      </div>
+
+      <div className={styles.advGrid}>
+        {ADVISORS.map((a, i) => (
+          <AdvisorCard key={a.name} advisor={a} index={i} />
+        ))}
+      </div>
+    </Module>
   );
 }
 

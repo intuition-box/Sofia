@@ -1,17 +1,3 @@
-.section {
-  padding: 96px var(--space-xl);
-}
-
-.header {
-  max-width: 640px;
-  margin-bottom: 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.title { margin: 0; }
-
 /* ── Members grid ─────────────────────────────────────── */
 
 .grid {
@@ -19,17 +5,16 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
   border-top: 1px solid var(--color-border-soft);
-  border-bottom: 1px solid var(--color-border-soft);
-  margin-bottom: 80px;
+  border-left: 1px solid var(--color-border-soft);
+  margin-bottom: 56px;
 }
 
 .card {
   padding: 32px 28px 36px;
   border-right: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
   transition: background var(--duration-fast) var(--ease-out);
 }
-
-.card:last-child { border-right: 0; }
 
 .card:hover {
   background: color-mix(in srgb, var(--color-accent) 8%, transparent);
@@ -118,7 +103,16 @@
 /* ── Advisors strip ───────────────────────────────────── */
 
 .advHeader {
-  margin-bottom: 28px;
+  margin-bottom: 18px;
+}
+
+.advHeaderRule {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
 }
 
 .advGrid {
@@ -126,7 +120,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
   border-top: 1px solid var(--color-border-soft);
-  border-bottom: 1px solid var(--color-border-soft);
+  border-left: 1px solid var(--color-border-soft);
 }
 
 .adv {
@@ -137,11 +131,10 @@
   padding: 24px 24px 28px;
   text-decoration: none;
   border-right: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
   color: inherit;
   transition: background var(--duration-fast) var(--ease-out);
 }
-
-.adv:last-child { border-right: 0; }
 
 .adv:hover {
   background: color-mix(in srgb, var(--color-accent) 8%, transparent);
@@ -184,19 +177,8 @@
 
 @media (max-width: 996px) {
   .grid { grid-template-columns: 1fr; }
-  .card {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border-soft);
-  }
-  .card:last-child { border-bottom: 0; }
 }
 
 @media (max-width: 640px) {
-  .section { padding: 72px var(--space-md); }
   .advGrid { grid-template-columns: 1fr; }
-  .adv {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border-soft);
-  }
-  .adv:last-child { border-bottom: 0; }
 }

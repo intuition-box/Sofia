@@ -1,45 +1,47 @@
 import { useState } from 'react';
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
 import { useVoteStats } from '../hooks/useVoteStats';
 import { useVoting } from '../hooks/useVoting';
 import { VALUES_DATA } from '../lib/config/constants';
 import { URLS } from '../lib/config/urls';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './Values.module.css';
 
 export function Values() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
   const ctaRef = useScrollAnim<HTMLDivElement>();
 
   return (
-    <section className={styles.section} id="values">
-      <div className="container">
-        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-          <span className="mono-eyebrow">Manifesto</span>
-          <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-            What we stand for.
-          </h2>
-          <p className="section-subtitle">
-            These values define who we are. Stake your position on Intuition.
+    <Module id="values" code="S.07" label="DOCTRINE" meta={`${VALUES_DATA.length} VALUES · STAKEABLE`}>
+      <ModuleHead
+        eyebrow="What we stand for"
+        title={
+          <>
+            Five values, on chain. <em>Stake your position.</em>
+          </>
+        }
+        right={
+          <p>
+            Each value is a live triple on the Intuition Protocol. Support the
+            ones you stand for; the protocol weights influence accordingly.
           </p>
-        </div>
+        }
+      />
 
-        <div className={styles.grid}>
-          {VALUES_DATA.map((v, i) => (
-            <ValueCard key={v.id} value={v} index={i} />
-          ))}
-        </div>
-
-        <div ref={ctaRef} className={`${styles.cta} anim`}>
-          <a href={URLS.external.values} target="_blank" rel="noopener noreferrer" className={styles.ctaLink}>
-            Vote for our values
-            <Arrow />
-          </a>
-        </div>
+      <div className={styles.grid}>
+        {VALUES_DATA.map((v, i) => (
+          <ValueCard key={v.id} value={v} index={i} />
+        ))}
       </div>
-    </section>
+
+      <div ref={ctaRef} className={`${styles.cta} anim`}>
+        <a href={URLS.external.values} target="_blank" rel="noopener noreferrer" className={styles.ctaLink}>
+          Vote for our values
+          <Arrow />
+        </a>
+      </div>
+    </Module>
   );
 }
 

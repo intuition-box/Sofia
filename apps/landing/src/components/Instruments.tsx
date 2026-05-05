@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
+import { Module } from './Module';
+import { ModuleHead } from './ModuleHead';
 import styles from './Instruments.module.css';
 
 /**
@@ -590,40 +591,29 @@ function ThreeCircles() {
 /* ── Section ────────────────────────────────────────── */
 
 export function Instruments() {
-  const headerRef = useScrollAnim<HTMLDivElement>();
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
   const plateARef = useScrollAnim<HTMLDivElement>();
   const plateDRef = useScrollAnim<HTMLDivElement>();
   const plateCRef = useScrollAnim<HTMLDivElement>();
 
   return (
-    <section className={styles.section} id="instruments">
-      <span className={`${styles.tick} ${styles.tickTl}`} />
-      <span className={`${styles.tick} ${styles.tickTr}`} />
-      <span className={`${styles.tick} ${styles.tickBl}`} />
-      <span className={`${styles.tick} ${styles.tickBr}`} />
-
-      <div className={styles.coord}>
-        <span className={styles.coordDot} /> S.04 · MICROGRAPHICS
-      </div>
-      <div className={styles.coordR}>VECTOR · 1PX · 1:1</div>
-
-      <div className="container" style={{ paddingTop: 56 }}>
-        <div ref={headerRef} className={`${styles.head} anim anim-up`}>
-          <div>
-            <span className="mono-eyebrow">Drafting room</span>
-            <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
-              Sofia, <em>drawn to scale.</em>
-            </h2>
-          </div>
-          <p className={`section-subtitle ${styles.sub}`}>
+    <Module id="instruments" code="S.04" label="MICROGRAPHICS" meta="VECTOR · 1PX · 1:1">
+      <ModuleHead
+        eyebrow="Drafting room"
+        title={
+          <>
+            Sofia, <em>drawn to scale.</em>
+          </>
+        }
+        right={
+          <p>
             Three plates from the Sofia drawing set: the topics &amp; intentions
             field, the system topology, and the three circles in which a reader
             actually moves.
           </p>
-        </div>
+        }
+      />
 
-        <div className={styles.row2}>
+      <div className={styles.row2}>
           <div ref={plateARef} className={`${styles.plate} anim anim-up`}>
             <div className={styles.plateHead}>
               <div className={styles.plateHeadLeft}>
@@ -687,8 +677,7 @@ export function Instruments() {
             <span>SHEET 03/03</span>
           </div>
         </div>
-      </div>
-    </section>
+    </Module>
   );
 }
 
