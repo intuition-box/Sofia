@@ -214,21 +214,21 @@ article[class*="blogPost"] h2 a {
 /* sidebar_X / sidebarItemLink_X / sidebarItemLinkActive_X on the          */
 /* default `<aside class="col col--3">` rail. We hook on those.            */
 
-.theme-blog-list-page aside.col--3,
-.theme-blog-post-page aside.col--3 {
+.blog-list-page aside.col--3,
+.blog-post-page aside.col--3 {
   flex: 0 0 260px;
   max-width: 260px;
 }
 
-.theme-blog-list-page aside.col--3 nav,
-.theme-blog-post-page aside.col--3 nav {
+.blog-list-page aside.col--3 nav,
+.blog-post-page aside.col--3 nav {
   background: transparent;
   border: 0;
   padding: 0;
 }
 
-.theme-blog-list-page [class*="sidebarItemTitle"],
-.theme-blog-post-page [class*="sidebarItemTitle"] {
+.blog-list-page [class*="sidebarItemTitle"],
+.blog-post-page [class*="sidebarItemTitle"] {
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
@@ -239,20 +239,20 @@ article[class*="blogPost"] h2 a {
   margin-bottom: 0.25rem;
 }
 
-.theme-blog-list-page [class*="sidebarItemList"],
-.theme-blog-post-page [class*="sidebarItemList"] {
+.blog-list-page [class*="sidebarItemList"],
+.blog-post-page [class*="sidebarItemList"] {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.theme-blog-list-page [class*="sidebarItem_"],
-.theme-blog-post-page [class*="sidebarItem_"] {
+.blog-list-page [class*="sidebarItem_"],
+.blog-post-page [class*="sidebarItem_"] {
   margin: 0;
 }
 
-.theme-blog-list-page [class*="sidebarItemLink"],
-.theme-blog-post-page [class*="sidebarItemLink"] {
+.blog-list-page [class*="sidebarItemLink"],
+.blog-post-page [class*="sidebarItemLink"] {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -266,37 +266,37 @@ article[class*="blogPost"] h2 a {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-.theme-blog-list-page [class*="sidebarItemLink"]:hover,
-.theme-blog-post-page [class*="sidebarItemLink"]:hover {
+.blog-list-page [class*="sidebarItemLink"]:hover,
+.blog-post-page [class*="sidebarItemLink"]:hover {
   background-color: var(--ds-bg-subtle);
   color: var(--ds-ink);
   text-decoration: none;
 }
 
 /* The active article — peach pill, dark ink. */
-.theme-blog-list-page a[class*="sidebarItemLinkActive"],
-.theme-blog-list-page a[class*="sidebarItemLinkActive"]:hover,
-.theme-blog-post-page a[class*="sidebarItemLinkActive"],
-.theme-blog-post-page a[class*="sidebarItemLinkActive"]:hover {
+.blog-list-page a[class*="sidebarItemLinkActive"],
+.blog-list-page a[class*="sidebarItemLinkActive"]:hover,
+.blog-post-page a[class*="sidebarItemLinkActive"],
+.blog-post-page a[class*="sidebarItemLinkActive"]:hover {
   background-color: var(--ds-accent) !important;
   color: var(--ds-on-accent) !important;
   font-weight: 600 !important;
 }
 
 /* Zero out the page-level wrappers Docusaurus puts around blog + doc */
-.theme-blog-list-page .container,
-.theme-blog-post-page .container,
-.theme-doc-page-layout .container,
-.theme-blog-list-page .row,
-.theme-blog-post-page .row,
-.theme-doc-page-layout .row {
+.blog-list-page .container,
+.blog-post-page .container,
+.docs-doc-page .container,
+.blog-list-page .row,
+.blog-post-page .row,
+.docs-doc-page .row {
   padding-left: 0;
   padding-right: 0;
 }
 
-.theme-blog-list-page .margin-vert--lg,
-.theme-blog-post-page .margin-vert--lg,
-.theme-doc-page-layout .margin-vert--lg {
+.blog-list-page .margin-vert--lg,
+.blog-post-page .margin-vert--lg,
+.docs-doc-page .margin-vert--lg {
   margin-top: 0;
   margin-bottom: 0;
 }

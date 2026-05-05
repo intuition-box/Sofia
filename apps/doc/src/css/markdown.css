@@ -75,7 +75,7 @@
 /* ── Links ────────────────────────────────────────────────────── */
 
 .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link),
-.theme-blog-post-page a:not(.hash-link):not(.button) {
+.blog-post-page a:not(.hash-link):not(.button) {
   color: var(--ds-accent-ink);
   text-decoration: none;
   font-weight: 500;
@@ -88,13 +88,13 @@
 }
 
 .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link):hover,
-.theme-blog-post-page a:not(.hash-link):not(.button):hover {
+.blog-post-page a:not(.hash-link):not(.button):hover {
   color: var(--ds-ink);
   background-size: 100% 2px;
 }
 
 [data-theme='dark'] .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link),
-[data-theme='dark'] .theme-blog-post-page a:not(.hash-link):not(.button) {
+[data-theme='dark'] .blog-post-page a:not(.hash-link):not(.button) {
   color: var(--ds-accent);
 }
 
@@ -179,7 +179,7 @@ code[class*="language-"],
 }
 
 .theme-doc-markdown code:not(pre code),
-.theme-blog-post-page code:not(pre code),
+.blog-post-page code:not(pre code),
 [class*="docPage"] code:not(pre code) {
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border-soft);
