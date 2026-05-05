@@ -1,21 +1,27 @@
 /* ============================================================
    SOFIA LANDING TOKENS
 
-   Color tokens are aliased on @0xsofia/design-system (--ds-*).
-   theme.css is imported first in global.css, so the DS already
-   handles light + dark via `[data-theme='dark']` and `.dark`.
-
-   Local-only scales (spacing, radius, shadows, typography,
-   glass, motion) live below — landing-specific, not shared.
+   - Color tokens alias on @0xsofia/design-system (--ds-*).
+     theme.css is imported first in global.css, the DS handles
+     light + dark via [data-theme='dark'] and .dark.
+   - Radius aliases on the DS scale (single --ds-radius value).
+   - Typography uses the Sofia family fonts: Geist for body and
+     headings (friendly, modern), JetBrains Mono for technical
+     accents (eyebrows, stats, code, labels).
+   - Local-only scales: spacing, shadows, glass, motion.
    ============================================================ */
 
 :root {
   /* ── Layout ─────────────────────────────────────────── */
   --max-width: 1200px;
-  --radius-xl: 24px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
+
+  /* Radius — aliased on the DS single radius (10px), with a
+     pair of derived sizes for visual hierarchy. The pill stays
+     local (DS does not expose it). */
+  --radius-sm: calc(var(--ds-radius) - 4px);   /* 6px  */
+  --radius-md: var(--ds-radius);               /* 10px */
+  --radius-lg: calc(var(--ds-radius) + 4px);   /* 14px */
+  --radius-xl: calc(var(--ds-radius) + 10px);  /* 20px */
   --radius-pill: 9999px;
 
   /* ── Spacing ────────────────────────────────────────── */
@@ -28,22 +34,22 @@
   --space-3xl: 88px;
 
   /* ── Typography ─────────────────────────────────────── */
-  --font-body: 'Roboto', 'Inter', -apple-system, sans-serif;
-  --font-heading: 'Playfair Display', serif;
-  --font-mono: 'Overpass Mono', monospace;
-  --font-logo: 'Lalezar', cursive;
+  --font-body:    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-logo:    'Lalezar', cursive;
 
-  --text-xs: 0.65rem;
-  --text-sm: 0.78rem;
-  --text-base: 0.85rem;
-  --text-md: 0.95rem;
+  --text-xs: 0.7rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9rem;
+  --text-md: 1rem;
   --text-lg: 1.15rem;
   --text-xl: 1.5rem;
-  --text-2xl: 2.4rem;
-  --text-3xl: 3.4rem;
-  --text-hero: clamp(2.8rem, 6.5vw, 5rem);
+  --text-2xl: clamp(1.85rem, 1.4rem + 1.6vw, 2.4rem);
+  --text-3xl: clamp(2.4rem, 1.8rem + 2.2vw, 3.2rem);
+  --text-hero: clamp(2.6rem, 2rem + 3vw, 4.6rem);
 
-  /* ── Colors — aliased on the DS ─────────────────────── */
+  /* ── Colors — DS aliases ────────────────────────────── */
   --color-bg: var(--ds-bg);
   --color-bg-alt: var(--ds-bg-subtle);
   --color-bg-elevated: var(--ds-card);
@@ -53,15 +59,18 @@
   --color-text-dim: var(--ds-muted-soft);
 
   --color-border: var(--ds-border);
+  --color-border-soft: var(--ds-border-soft);
   --color-border-hover: var(--ds-ink);
 
   --color-accent: var(--ds-accent);
   --color-accent-ink: var(--ds-accent-ink);
+  --color-accent-soft: var(--ds-accent-soft);
   --color-on-accent: var(--ds-on-accent);
 
-  /* Buttons — collapsed to two intents (primary = ink → peach hover,
-     secondary = outline). The legacy --color-btn-light variant maps
-     to a subtle surface. */
+  /* Buttons collapse to two intents:
+       - .btn         : ink default, peach on hover
+       - .btn-secondary : outline, bg-subtle on hover
+     The legacy --color-btn-light variant maps to a subtle surface. */
   --color-btn-primary: var(--ds-ink);
   --color-btn-primary-hover: var(--ds-accent);
   --color-btn-secondary: transparent;
@@ -73,12 +82,9 @@
   --color-on-secondary: var(--ds-ink);
   --color-on-light: var(--ds-ink);
 
-  /* Status — predicate colors from the DS (unprefixed). */
+  /* Status — DS predicate colors (unprefixed shared vocabulary). */
   --color-success: var(--trusted, #22c55e);
   --color-error: var(--distrusted, #ef4444);
-
-  /* ── Brand color (landing-specific, not in DS) ──────── */
-  --landing-green: #8fb87a;
 
   /* ── Shadows ────────────────────────────────────────── */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -91,17 +97,14 @@
   --glass-bg: color-mix(in srgb, var(--ds-bg) 70%, transparent);
   --glass-blur: 20px;
 
-  /* ── Transitions ────────────────────────────────────── */
+  /* ── Motion ─────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 0.2s;
-  --duration-normal: 0.3s;
+  --duration-normal: 0.35s;
   --duration-slow: 0.65s;
 }
 
-/* ── Dark-only shadow overrides ─────────────────────────
-   Color tokens already flip via --ds-* in dark mode (handled
-   by @0xsofia/design-system/theme.css). We only need to deepen
-   shadows here. */
+/* Dark-only shadow overrides — colors already flip via DS. */
 [data-theme='dark'],
 .dark {
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
