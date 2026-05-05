@@ -25,8 +25,8 @@
   position: absolute;
   right: -120px;
   top: 50%;
-  width: 360px;
-  height: 360px;
+  width: 560px;
+  height: 560px;
   background: rgba(0, 0, 0, 0.08);
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
   transform: translateY(-50%) rotate(-12deg);
