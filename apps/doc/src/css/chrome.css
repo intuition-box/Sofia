@@ -200,22 +200,25 @@ article[class*="blogPost"] h2 a {
   color: var(--ds-ink);
 }
 
-nav[class*="blogSidebar"],
-.theme-blog-sidebar {
+/* BlogSidebar — Docusaurus emits CSS-module class names like              */
+/* sidebar_X / sidebarItemLink_X / sidebarItemLinkActive_X on the          */
+/* default `<aside class="col col--3">` rail. We hook on those.            */
+
+.theme-blog-list-page aside.col--3,
+.theme-blog-post-page aside.col--3 {
+  flex: 0 0 18%;
+  max-width: 18%;
+}
+
+.theme-blog-list-page aside.col--3 nav,
+.theme-blog-post-page aside.col--3 nav {
   background: transparent;
   border: 0;
   padding: 0;
 }
 
-/* Tighten the BlogSidebar column so the middle main can breathe wider. */
-.theme-blog-list-page [class*="blogSidebarColumn"],
-.theme-blog-post-page [class*="blogSidebarColumn"] {
-  flex: 0 0 18% !important;
-  max-width: 18% !important;
-}
-
-/* BlogSidebar links — same pattern as the doc sidebar.                 */
-nav[class*="blogSidebar"] [class*="sidebarItemTitle"] {
+.theme-blog-list-page [class*="sidebarItemTitle"],
+.theme-blog-post-page [class*="sidebarItemTitle"] {
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
@@ -226,14 +229,20 @@ nav[class*="blogSidebar"] [class*="sidebarItemTitle"] {
   margin-bottom: 0.25rem;
 }
 
-nav[class*="blogSidebar"] [class*="sidebarItemList"] {
+.theme-blog-list-page [class*="sidebarItemList"],
+.theme-blog-post-page [class*="sidebarItemList"] {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-nav[class*="blogSidebar"] [class*="sidebarItem"] a,
-nav[class*="blogSidebar"] [class*="sidebarItemLink"] {
+.theme-blog-list-page [class*="sidebarItem_"],
+.theme-blog-post-page [class*="sidebarItem_"] {
+  margin: 0;
+}
+
+.theme-blog-list-page [class*="sidebarItemLink"],
+.theme-blog-post-page [class*="sidebarItemLink"] {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -247,20 +256,21 @@ nav[class*="blogSidebar"] [class*="sidebarItemLink"] {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-nav[class*="blogSidebar"] [class*="sidebarItem"] a:hover,
-nav[class*="blogSidebar"] [class*="sidebarItemLink"]:hover {
+.theme-blog-list-page [class*="sidebarItemLink"]:hover,
+.theme-blog-post-page [class*="sidebarItemLink"]:hover {
   background-color: var(--ds-bg-subtle);
   color: var(--ds-ink);
   text-decoration: none;
 }
 
-nav[class*="blogSidebar"] [class*="sidebarItemLinkActive"],
-nav[class*="blogSidebar"] [class*="sidebarItemLinkActive"]:hover,
-nav[class*="blogSidebar"] [class*="sidebarItem"] a[aria-current="page"],
-nav[class*="blogSidebar"] [class*="sidebarItem"] a[aria-current="page"]:hover {
+/* The active article — peach pill, dark ink. */
+.theme-blog-list-page a[class*="sidebarItemLinkActive"],
+.theme-blog-list-page a[class*="sidebarItemLinkActive"]:hover,
+.theme-blog-post-page a[class*="sidebarItemLinkActive"],
+.theme-blog-post-page a[class*="sidebarItemLinkActive"]:hover {
   background-color: var(--ds-accent) !important;
   color: var(--ds-on-accent) !important;
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 /* Zero out the page-level wrappers Docusaurus puts around blog + doc */
