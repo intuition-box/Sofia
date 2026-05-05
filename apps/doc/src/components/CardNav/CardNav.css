@@ -89,6 +89,27 @@
   height: 28px;
 }
 
+.card-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-nav-top-link {
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  color: inherit;
+}
+
+.card-nav-top-link:hover {
+  opacity: 0.75;
+  text-decoration: none;
+}
+
 .dark-mode-toggle {
   background: none;
   border: none;

@@ -29,6 +29,7 @@ export interface CardNavProps {
   buttonTextColor?: string;
   isDark?: boolean;
   onToggleDarkMode?: () => void;
+  topLink?: { label: string; href: string; ariaLabel?: string };
 }
 
 const CardNav: React.FC<CardNavProps> = ({
@@ -43,6 +44,7 @@ const CardNav: React.FC<CardNavProps> = ({
   buttonTextColor,
   isDark = false,
   onToggleDarkMode,
+  topLink,
 }) => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -188,7 +190,19 @@ const CardNav: React.FC<CardNavProps> = ({
             <img src={logo} alt={logoAlt} className="logo" />
           </a>
 
-          {onToggleDarkMode && (
+          <div className="card-nav-actions">
+            {topLink && (
+              <a
+                className="card-nav-top-link"
+                href={topLink.href}
+                aria-label={topLink.ariaLabel || topLink.label}
+                style={{ color: menuColor || 'var(--ds-ink)' }}
+              >
+                {topLink.label}
+              </a>
+            )}
+
+            {onToggleDarkMode && (
             <button
               className="dark-mode-toggle"
               onClick={onToggleDarkMode}
@@ -213,7 +227,8 @@ const CardNav: React.FC<CardNavProps> = ({
                 </svg>
               )}
             </button>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>

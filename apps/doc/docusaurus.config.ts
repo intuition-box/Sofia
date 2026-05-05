@@ -125,68 +125,31 @@ const config: Config = {
       items: [
         {
           type: 'dropdown',
-          label: 'About',
+          label: 'Docs',
           position: 'right',
           items: [
-            {
-              label: 'About us',
-              to: '/about',
-            },
-            {
-              label: 'Manifesto',
-              to: '/manifesto',
-            },
-            {
-              label: 'Privacy',
-              to: '/privacy',
-            },
-            {
-              label: 'Terms',
-              to: '/terms',
-            },
+            { label: 'Documentation', to: '/docs/intro' },
+            { label: 'Manifesto', to: '/docs/manifesto' },
+            { label: 'About us', to: '/docs/about' },
+            { label: 'Litepaper', to: '/docs/litepaper/introduction' },
+            { label: 'Architecture', to: '/docs/architecture/overview' },
           ],
         },
         {
           type: 'dropdown',
-          label: 'Resources',
+          label: 'Community',
           position: 'right',
           items: [
-            {
-              label: 'Documentation',
-              to: '/docs/intro',
-            },
-            {
-              label: 'Sofia Values',
-              to: '/values',
-            },
-            {
-              label: 'Sofia Chronicles',
-              to: '/blog',
-            },
+            { label: 'GitHub', href: 'https://github.com/intuition-box' },
+            { label: 'X', href: 'https://x.com/0xsofia3' },
+            { label: 'Discord', href: 'https://discord.gg/sofia3' },
+            { label: 'Proxy Dashboard', href: 'https://sofia-proxy.intuition.box/' },
           ],
         },
         {
-          type: 'dropdown',
-          label: 'Links',
+          to: '/blog',
+          label: 'Chronicles',
           position: 'right',
-          items: [
-            {
-              label: 'Github',
-              href: 'https://github.com/intuition-box',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/0xsofia3',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discord.gg/sofia3',
-            },
-            {
-              label: 'Proxy Dashboard',
-              href: 'https://sofia-proxy.intuition.box/',
-            },
-          ],
         },
       ],
     },
@@ -194,11 +157,28 @@ const config: Config = {
       style: 'light',
       links: [
         {
+          title: 'Sofia',
+          items: [
+            { label: 'Documentation', to: '/docs/intro' },
+            { label: 'Manifesto', to: '/docs/manifesto' },
+            { label: 'About us', to: '/docs/about' },
+            { label: 'Chronicles', to: '/blog' },
+          ],
+        },
+        {
+          title: 'Community',
           items: [
             { label: 'Discord', href: 'https://discord.gg/sofia3' },
             { label: 'GitHub', href: 'https://github.com/intuition-box' },
             { label: 'X', href: 'https://x.com/0xsofia3' },
-            { label: 'Sofia', href: 'https://sofia.intuition.box' },
+            { label: 'Sofia App', href: 'https://sofia.intuition.box' },
+          ],
+        },
+        {
+          title: 'Legal',
+          items: [
+            { label: 'Privacy', to: '/privacy' },
+            { label: 'Terms', to: '/terms' },
           ],
         },
       ],
@@ -216,10 +196,10 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
-          {
-            from: '/docs/introduction',
-            to: '/docs/intro',
-          },
+          { from: '/docs/introduction', to: '/docs/intro' },
+          { from: '/about', to: '/docs/about' },
+          { from: '/manifesto', to: '/docs/manifesto' },
+          { from: '/values', to: '/docs/intro' },
         ],
       },
     ],

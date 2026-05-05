@@ -21,6 +21,16 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'doc',
+      id: 'manifesto',
+      label: 'Manifesto',
+    },
+    {
+      type: 'doc',
+      id: 'about',
+      label: 'About us',
+    },
+    {
+      type: 'doc',
       id: 'features/getting-started',
       label: 'Getting Started',
     },

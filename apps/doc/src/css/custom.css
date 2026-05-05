@@ -28,7 +28,7 @@
    1. FONTS & DESIGN TOKENS
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @import '@0xsofia/design-system/theme.css';
 
 :root {
@@ -71,11 +71,11 @@
   --space-2xl: 64px;
   --space-3xl: 88px;
 
-  /* Fonts */
-  --font-body:    'Roboto', 'Inter', -apple-system, sans-serif;
-  --font-heading: 'Playfair Display', serif;
-  --font-mono:    'Overpass Mono', monospace;
-  --font-logo:    'Lalezar', cursive;
+  /* Fonts — aligned on the design system stack used by Explorer */
+  --font-body:    'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-logo:    'Fraunces', Georgia, serif;
 
   /* Type scale */
   --text-xs:   0.65rem;

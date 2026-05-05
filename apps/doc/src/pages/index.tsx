@@ -13,7 +13,6 @@ export default function Home(): React.ReactElement {
         {/* Hero Section */}
         <section className={styles.heroSection}>
           <div className="container">
-            <p className={styles.heroLabel}>Documentation & Development Blog</p>
             <h1 className={styles.heroTitle}>
               From Surfing the Web to Owning It
             </h1>
@@ -32,13 +31,6 @@ export default function Home(): React.ReactElement {
                 Chronicles
               </Link>
             </div>
-            <a
-              href="https://sofia.intuition.box"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.heroLink}>
-              Try Sofia →
-            </a>
           </div>
         </section>
 
