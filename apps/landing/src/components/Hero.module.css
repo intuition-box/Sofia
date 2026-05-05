@@ -187,13 +187,7 @@
 .partners img {
   height: 20px;
   width: auto;
-  filter: grayscale(100%) brightness(0);
-}
-
-[data-theme='dark'] .partners img,
-.dark .partners img {
   filter: grayscale(100%) brightness(0) invert(1);
-  opacity: 1;
 }
 
 /* ── Responsive ───────────────────────────────────────── */

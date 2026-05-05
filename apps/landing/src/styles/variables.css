@@ -2,12 +2,12 @@
    SOFIA LANDING TOKENS
 
    - Color tokens alias on @0xsofia/design-system (--ds-*).
-     theme.css is imported first in global.css, the DS handles
-     light + dark via [data-theme='dark'] and .dark.
+     The landing is dark-only — `<html data-theme="dark">` is
+     hardcoded in index.html so the DS dark tokens apply at root.
    - Radius aliases on the DS scale (single --ds-radius value).
    - Typography uses the Sofia family fonts: Geist for body and
-     headings (friendly, modern), JetBrains Mono for technical
-     accents (eyebrows, stats, code, labels).
+     headings, JetBrains Mono for technical accents (eyebrows,
+     stats, code, labels).
    - Local-only scales: spacing, shadows, glass, motion.
    ============================================================ */
 
@@ -86,12 +86,12 @@
   --color-success: var(--trusted, #22c55e);
   --color-error: var(--distrusted, #ef4444);
 
-  /* ── Shadows ────────────────────────────────────────── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
-  --shadow-btn: 0 4px 16px rgba(0, 0, 0, 0.1);
-  --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.15);
+  /* ── Shadows (tuned for dark surfaces) ─────────────── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-btn: 0 4px 16px rgba(255, 255, 255, 0.05);
+  --shadow-btn-hover: 0 6px 24px rgba(255, 255, 255, 0.1);
 
   /* ── Glass ──────────────────────────────────────────── */
   --glass-bg: color-mix(in srgb, var(--ds-bg) 70%, transparent);
@@ -102,14 +102,4 @@
   --duration-fast: 0.2s;
   --duration-normal: 0.35s;
   --duration-slow: 0.65s;
-}
-
-/* Dark-only shadow overrides — colors already flip via DS. */
-[data-theme='dark'],
-.dark {
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-btn: 0 4px 16px rgba(255, 255, 255, 0.05);
-  --shadow-btn-hover: 0 6px 24px rgba(255, 255, 255, 0.1);
 }

@@ -369,13 +369,9 @@ a {
   border-left: 0;
 }
 
-/* ── Logo color flip in dark mode ──────────────────────── */
-.dark .logo-invert,
-[data-theme='dark'] .logo-invert {
-  filter: invert(1);
-}
-.dark .footer-logo,
-[data-theme='dark'] .footer-logo {
+/* Logos shipped as black PNG/SVG — invert once for the dark surface. */
+.logo-invert,
+.footer-logo {
   filter: invert(1);
 }
 

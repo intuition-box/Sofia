@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Arrow } from './Arrow';
-import { ThemeToggle } from './ThemeToggle';
 import { useWalletConnection } from '../hooks/useWalletConnection';
 import styles from './Navbar.module.css';
 
@@ -39,8 +38,6 @@ export function Navbar() {
       {open && <div className={styles.overlay} onClick={() => setOpen(false)} />}
 
       <div className={styles.right}>
-        <ThemeToggle />
-
         {isConnected && address ? (
           <button className={styles.wallet} onClick={disconnect}>
             <span className={styles.walletDot} aria-hidden="true" />
