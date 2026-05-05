@@ -99,18 +99,26 @@
 }
 
 /* ── Sidebar ──────────────────────────────────────────────────── */
-/* Visually aligned with the BlogSidebar — flat, transparent rail,      */
-/* peach pill on active leaf links. */
+/* Doc sidebar uniformised with the BlogSidebar — same fixed width,     */
+/* flat transparent rail, no border, no negative offset.               */
+
+:root {
+  --doc-sidebar-width: 260px;
+  --doc-sidebar-hidden-width: 30px;
+}
 
 .theme-doc-sidebar-container {
-  background: transparent;
-  border-right: 0;
+  background: transparent !important;
+  border-right: 0 !important;
   border-radius: 0;
   padding: 0;
-  margin: 0;
+  margin-top: 0 !important;
   font-family: var(--font-body);
-  flex: 0 0 18%;
-  max-width: 18%;
+}
+
+[class*="docSidebarContainer"] {
+  border-right: 0 !important;
+  margin-top: 0 !important;
 }
 
 aside .menu {
@@ -208,8 +216,8 @@ article[class*="blogPost"] h2 a {
 
 .theme-blog-list-page aside.col--3,
 .theme-blog-post-page aside.col--3 {
-  flex: 0 0 18%;
-  max-width: 18%;
+  flex: 0 0 260px;
+  max-width: 260px;
 }
 
 .theme-blog-list-page aside.col--3 nav,
