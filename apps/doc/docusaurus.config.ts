@@ -124,7 +124,7 @@ const config: Config = {
     navbar: {
       logo: {
         alt: 'Sofia',
-        src: 'img/logoDark.svg',
+        src: 'img/logoWhite.svg',
         href: '/',
       },
       items: [
