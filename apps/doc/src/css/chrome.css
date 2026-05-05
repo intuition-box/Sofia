@@ -175,20 +175,22 @@ aside .menu__caret::before {
 }
 
 article[class*="blogPost"] {
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border-soft);
-  border-radius: var(--doc-radius-md);
-  padding: 1.75rem;
-  margin-bottom: 1.5rem;
-  transition: border-color var(--doc-fast) var(--doc-ease-out),
-              box-shadow var(--doc-base) var(--doc-ease-out),
-              transform var(--doc-fast) var(--doc-ease-out);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ds-border-soft);
+  border-radius: 0;
+  padding: 0 0 2rem;
+  margin: 0 0 2rem;
+  box-shadow: none;
+  transition: none;
+  transform: none;
 }
 
 article[class*="blogPost"]:hover {
-  border-color: var(--ds-border);
-  box-shadow: var(--doc-shadow-md);
-  transform: translateY(-1px);
+  background: transparent;
+  border-color: var(--ds-border-soft);
+  box-shadow: none;
+  transform: none;
 }
 
 article[class*="blogPost"] h2 a {
@@ -202,7 +204,25 @@ nav[class*="blogSidebar"],
 .theme-blog-sidebar {
   background: transparent;
   border: 0;
-  padding: 1rem;
+  padding: 0;
+}
+
+/* Zero out the page-level wrappers Docusaurus puts around blog + doc */
+.theme-blog-list-page .container,
+.theme-blog-post-page .container,
+.theme-doc-page-layout .container,
+.theme-blog-list-page .row,
+.theme-blog-post-page .row,
+.theme-doc-page-layout .row {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.theme-blog-list-page .margin-vert--lg,
+.theme-blog-post-page .margin-vert--lg,
+.theme-doc-page-layout .margin-vert--lg {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* ── Footer ───────────────────────────────────────────────────── */
