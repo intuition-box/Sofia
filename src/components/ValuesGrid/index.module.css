@@ -7,10 +7,10 @@
 
 /* Wallet Connection Banner */
 .walletBanner {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--sofia-bg-alt);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--sofia-border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
@@ -31,23 +31,23 @@
 .connectedDot {
   width: 8px;
   height: 8px;
-  background: #4ade80;
+  background: var(--sofia-success);
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
 }
 
 .networkLabel {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--sofia-text-muted) !important;
   padding: 0.25rem 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sofia-bg-elevated);
   border-radius: 4px;
 }
 
 .address {
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9rem;
-  color: #ffffff !important;
+  color: var(--sofia-text) !important;
 }
 
 /* Connect Section */
@@ -60,7 +60,7 @@
 
 .connectHint {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--sofia-text-dim) !important;
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
 .disconnectBtn {
   padding: 0.75rem 1.5rem;
   border-radius: 50px;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -77,14 +77,14 @@
 }
 
 .connectBtn {
-  background: #ffffff;
-  color: #02000B !important;
+  background: var(--sofia-accent);
+  color: var(--sofia-bg) !important;
   border: none;
 }
 
 .connectBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  background: var(--sofia-text);
+  box-shadow: var(--shadow-btn-hover);
 }
 
 .connectBtn:disabled {
@@ -94,21 +94,21 @@
 
 .disconnectBtn {
   background: transparent;
-  color: rgba(255, 255, 255, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--sofia-text-muted) !important;
+  border: 1px solid var(--sofia-border);
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
 }
 
 .disconnectBtn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #ffffff !important;
+  border-color: var(--sofia-border-hover);
+  color: var(--sofia-text) !important;
 }
 
 /* Error Banner */
 .errorBanner {
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(196, 74, 74, 0.1);
+  border: 1px solid rgba(196, 74, 74, 0.3);
   border-radius: 10px;
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
@@ -120,25 +120,24 @@
 
 .errorText {
   font-size: 0.9rem;
-  color: #fca5a5 !important;
+  color: var(--sofia-error) !important;
   margin: 0;
 }
 
 .errorDismiss {
   background: transparent;
-  border: 1px solid rgba(248, 113, 113, 0.4);
-  color: #fca5a5 !important;
+  border: 1px solid rgba(196, 74, 74, 0.4);
+  color: var(--sofia-error) !important;
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .errorDismiss:hover {
-  background: rgba(248, 113, 113, 0.15);
-  border-color: #f87171;
+  background: rgba(196, 74, 74, 0.15);
 }
 
 /* Values Grid */
@@ -152,13 +151,13 @@
 .infoFooter {
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--sofia-border);
   text-align: center;
 }
 
 .infoText {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--sofia-text-dim) !important;
   margin: 0;
   max-width: 600px;
   margin-left: auto;
@@ -167,13 +166,13 @@
 }
 
 .infoLink {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--sofia-text-muted) !important;
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .infoLink:hover {
-  color: #ffffff !important;
+  color: var(--sofia-green-vif) !important;
 }
 
 /* Mobile Responsive */

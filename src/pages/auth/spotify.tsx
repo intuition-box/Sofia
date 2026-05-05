@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import styles from '../auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // ============= CONFIGURATION =============
 const SPOTIFY_CLIENT_ID = 'a60a4664664f44cc94ef402b3253cbc9';
@@ -68,7 +69,7 @@ const SpotifyAuthContent = () => {
         }, 500);
 
       } catch (error) {
-        console.error('[Sofia Spotify Auth] Error initiating OAuth:', error);
+        logger.error('[Sofia Spotify Auth] Error initiating OAuth:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Failed to initiate Spotify authentication');
       }
@@ -80,7 +81,7 @@ const SpotifyAuthContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Spotify Authentication</p>
 
         {status === 'loading' && (
@@ -120,7 +121,7 @@ const SpotifyAuthContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <p className={styles.subtitle}>Spotify Authentication</p>
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>

@@ -45,7 +45,7 @@ const faqData: FAQItem[] = [
     answer: (
       <>
         We're building Sofia in public and welcoming early contributors. Join our{' '}
-        <a href="https://discord.gg/39RP6h4WuH" target="_blank" rel="noopener noreferrer" className={styles.valuesLink}>
+        <a href="https://discord.gg/sofia3" target="_blank" rel="noopener noreferrer" className={styles.valuesLink}>
           Discord
         </a>{' '}
         to connect with the community. 
@@ -57,7 +57,7 @@ const faqData: FAQItem[] = [
     answer: (
       <>
         We're actively building with our early contributor community. Join our{' '}
-        <a href="https://discord.gg/39RP6h4WuH" target="_blank" rel="noopener noreferrer" className={styles.valuesLink}>
+        <a href="https://discord.gg/sofia3" target="_blank" rel="noopener noreferrer" className={styles.valuesLink}>
           Discord
         </a>{' '}
         to stay updated and be part of the journey from day one.

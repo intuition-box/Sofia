@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
-import ContentWrapperWide from '@site/src/components/ContentWrapperWide';
+import ContentWrapper from '@site/src/components/ContentWrapper';
 
 export default function Terms(): React.ReactElement {
   return (
@@ -8,9 +8,14 @@ export default function Terms(): React.ReactElement {
       title="Terms and Conditions"
       description="Sofia Extension Terms and Conditions">
 
-      <main style={{ padding: '5', color: '#02000B', lineHeight: '2' }}>
-        <ContentWrapperWide>
-          <article>
+      <main style={{ padding: '5', color: 'var(--sofia-text)', lineHeight: '2' }}>
+        <ContentWrapper wide>
+          <style>{`
+            .terms-page h1, .terms-page h2, .terms-page h3 {
+              color: var(--sofia-green-vif);
+            }
+          `}</style>
+          <article className="terms-page">
             <h1>Terms and Conditions</h1>
             <p><strong>Last updated: January 30, 2026</strong></p>
 
@@ -128,7 +133,7 @@ export default function Terms(): React.ReactElement {
               <li>GitHub Issues: <a href="https://github.com/intuition-box/Sofia/issues" target="_blank" rel="noopener noreferrer">https://github.com/intuition-box/Sofia/issues</a></li>
             </ul>
           </article>
-        </ContentWrapperWide>
+        </ContentWrapper>
       </main>
     </Layout>
   );

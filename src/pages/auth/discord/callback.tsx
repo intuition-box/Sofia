@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import styles from '../../auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // Chrome extension API type declaration
 declare const chrome: {
@@ -54,7 +55,7 @@ const exchangeCodeForToken = async (code: string) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error('[Sofia Discord Callback] Token exchange failed:', response.status, errorData);
+    logger.error('[Sofia Discord Callback] Token exchange failed:', response.status, errorData);
     throw new Error(errorData.error || `Token exchange failed: ${response.status}`);
   }
 
@@ -78,17 +79,17 @@ const sendTokenToExtension = (
   if (extensionId && typeof chrome !== 'undefined' && chrome?.runtime?.sendMessage) {
     try {
       chrome.runtime.sendMessage(extensionId, message, (response) => {
-        console.log('[Sofia Discord Callback] Extension response:', response);
+        logger.log('[Sofia Discord Callback] Extension response:', response);
       });
     } catch (e) {
-      console.log('[Sofia Discord Callback] Failed to send to extension:', e);
+      logger.log('[Sofia Discord Callback] Failed to send to extension:', e);
     }
   }
 
   // Method 2: postMessage to opener window
   if (window.opener) {
     window.opener.postMessage(message, '*');
-    console.log('[Sofia Discord Callback] Sent postMessage to opener');
+    logger.log('[Sofia Discord Callback] Sent postMessage to opener');
   }
 
   // Method 3: Store in localStorage for polling
@@ -97,9 +98,9 @@ const sendTokenToExtension = (
       ...message,
       timestamp: Date.now()
     }));
-    console.log('[Sofia Discord Callback] Stored in localStorage');
+    logger.log('[Sofia Discord Callback] Stored in localStorage');
   } catch (e) {
-    console.log('[Sofia Discord Callback] LocalStorage not available');
+    logger.log('[Sofia Discord Callback] LocalStorage not available');
   }
 };
 
@@ -151,7 +152,7 @@ const DiscordCallbackContent = () => {
         // Exchange code for token via API
         const tokenData = await exchangeCodeForToken(code);
 
-        console.log('[Sofia Discord Callback] Token received successfully');
+        logger.log('[Sofia Discord Callback] Token received successfully');
 
         // Clean up stored state
         localStorage.removeItem('discord_oauth_state');
@@ -167,7 +168,7 @@ const DiscordCallbackContent = () => {
         }, 3000);
 
       } catch (error) {
-        console.error('[Sofia Discord Callback] Error:', error);
+        logger.error('[Sofia Discord Callback] Error:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Authentication failed');
 
@@ -182,7 +183,7 @@ const DiscordCallbackContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Discord Authentication</p>
 
         {status === 'loading' && (
@@ -243,7 +244,7 @@ const DiscordCallbackContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <p className={styles.subtitle}>Discord Authentication</p>
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>

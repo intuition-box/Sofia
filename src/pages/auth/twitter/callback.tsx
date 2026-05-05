@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import styles from '../../auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // Chrome extension API type declaration
 declare const chrome: {
@@ -56,7 +57,7 @@ const exchangeCodeForToken = async (code: string, codeVerifier: string) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error('[Sofia Twitter Callback] Token exchange failed:', response.status, errorData);
+    logger.error('[Sofia Twitter Callback] Token exchange failed:', response.status, errorData);
     throw new Error(errorData.error || `Token exchange failed: ${response.status}`);
   }
 
@@ -80,17 +81,17 @@ const sendTokenToExtension = (
   if (extensionId && typeof chrome !== 'undefined' && chrome?.runtime?.sendMessage) {
     try {
       chrome.runtime.sendMessage(extensionId, message, (response) => {
-        console.log('[Sofia Twitter Callback] Extension response:', response);
+        logger.log('[Sofia Twitter Callback] Extension response:', response);
       });
     } catch (e) {
-      console.log('[Sofia Twitter Callback] Failed to send to extension:', e);
+      logger.log('[Sofia Twitter Callback] Failed to send to extension:', e);
     }
   }
 
   // Method 2: postMessage to opener window
   if (window.opener) {
     window.opener.postMessage(message, '*');
-    console.log('[Sofia Twitter Callback] Sent postMessage to opener');
+    logger.log('[Sofia Twitter Callback] Sent postMessage to opener');
   }
 
   // Method 3: Store in localStorage for polling
@@ -99,9 +100,9 @@ const sendTokenToExtension = (
       ...message,
       timestamp: Date.now()
     }));
-    console.log('[Sofia Twitter Callback] Stored in localStorage');
+    logger.log('[Sofia Twitter Callback] Stored in localStorage');
   } catch (e) {
-    console.log('[Sofia Twitter Callback] LocalStorage not available');
+    logger.log('[Sofia Twitter Callback] LocalStorage not available');
   }
 };
 
@@ -154,8 +155,8 @@ const TwitterCallbackContent = () => {
         const tokenData = await exchangeCodeForToken(code, storedState.codeVerifier);
 
         // DEBUG: Log full response from proxy API
-        console.log('[Sofia Twitter Callback] FULL TOKEN DATA:', JSON.stringify(tokenData, null, 2));
-        console.log('[Sofia Twitter Callback] Token received successfully');
+        logger.log('[Sofia Twitter Callback] FULL TOKEN DATA:', JSON.stringify(tokenData, null, 2));
+        logger.log('[Sofia Twitter Callback] Token received successfully');
 
         // Clean up stored state
         localStorage.removeItem('twitter_oauth_state');
@@ -171,7 +172,7 @@ const TwitterCallbackContent = () => {
         }, 3000);
 
       } catch (error) {
-        console.error('[Sofia Twitter Callback] Error:', error);
+        logger.error('[Sofia Twitter Callback] Error:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Authentication failed');
 
@@ -186,7 +187,7 @@ const TwitterCallbackContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Twitter/X Authentication</p>
 
         {status === 'loading' && (
@@ -247,7 +248,7 @@ const TwitterCallbackContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <p className={styles.subtitle}>Twitter/X Authentication</p>
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>

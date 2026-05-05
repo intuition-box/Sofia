@@ -5,6 +5,7 @@ import { SofiaFeeProxyAbi } from '@site/src/lib/ABI/SofiaFeeProxy';
 import { intuitionMainnet, SOFIA_PROXY_ADDRESS, BLOCKCHAIN_CONFIG } from '@site/src/lib/config/chainConfig';
 import { STAKE_AMOUNT, CURVE_ID } from '@site/src/lib/config/constants';
 import { parseContractError } from '@site/src/lib/web3/utils';
+import { logger } from '@site/src/lib/logger';
 
 declare global {
   interface Window {
@@ -36,21 +37,21 @@ export function useVoting() {
     const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
     const targetChainId = `0x${intuitionMainnet.id.toString(16)}`;
 
-    console.log('Current chain:', currentChainId, 'Target chain:', targetChainId);
+    logger.log('Current chain:', currentChainId, 'Target chain:', targetChainId);
 
     // Switch to Intuition chain if needed
     if (currentChainId !== targetChainId) {
       try {
-        console.log('Switching to Intuition chain...');
+        logger.log('Switching to Intuition chain...');
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: targetChainId }],
         });
-        console.log('Chain switch successful');
+        logger.log('Chain switch successful');
       } catch (switchError: any) {
         // Chain not added, add it
         if (switchError.code === 4902) {
-          console.log('Chain not found, adding Intuition chain...');
+          logger.log('Chain not found, adding Intuition chain...');
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -61,16 +62,16 @@ export function useVoting() {
               blockExplorerUrls: [intuitionMainnet.blockExplorers.default.url],
             }],
           });
-          console.log('Chain added successfully');
+          logger.log('Chain added successfully');
         } else {
-          console.error('Chain switch error:', switchError);
+          logger.error('Chain switch error:', switchError);
           throw new Error('Please switch to Intuition network in MetaMask');
         }
       }
 
       // Verify chain switch completed
       const newChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      console.log('Chain after switch:', newChainId);
+      logger.log('Chain after switch:', newChainId);
       if (newChainId !== targetChainId) {
         throw new Error('Please switch to Intuition network to vote');
       }
@@ -101,11 +102,11 @@ export function useVoting() {
     const isApproved = await BlockchainService.checkProxyApproval(publicClient, account);
 
     if (!isApproved) {
-      console.log('Requesting proxy approval...');
+      logger.log('Requesting proxy approval...');
       const approvalHash = await BlockchainService.requestProxyApproval(walletClient, account);
-      console.log('Approval tx:', approvalHash);
+      logger.log('Approval tx:', approvalHash);
       await publicClient.waitForTransactionReceipt({ hash: approvalHash });
-      console.log('Approval confirmed');
+      logger.log('Approval confirmed');
     }
   }, []);
 
@@ -116,14 +117,14 @@ export function useVoting() {
     try {
       const { walletClient, publicClient, account } = await getClients();
 
-      console.log('Voting FOR with account:', account);
+      logger.log('Voting FOR with account:', account);
 
       // Ensure proxy is approved
       await ensureProxyApproval(walletClient, publicClient, account);
 
       // Calculate total cost with Sofia fees
       const totalCost = await BlockchainService.getTotalDepositCost(publicClient, STAKE_AMOUNT);
-      console.log('Total cost:', totalCost.toString());
+      logger.log('Total cost:', totalCost.toString());
 
       // Execute deposit via proxy
       const hash = await walletClient.writeContract({
@@ -139,10 +140,10 @@ export function useVoting() {
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
       });
 
-      console.log('Deposit tx:', hash);
+      logger.log('Deposit tx:', hash);
       return hash;
     } catch (error) {
-      console.error('depositFor error:', error);
+      logger.error('depositFor error:', error);
       throw new Error(parseContractError(error));
     }
   }, [getClients, ensureProxyApproval]);
@@ -154,18 +155,18 @@ export function useVoting() {
     try {
       const { walletClient, publicClient, account } = await getClients();
 
-      console.log('Voting AGAINST with account:', account);
+      logger.log('Voting AGAINST with account:', account);
 
       // Ensure proxy is approved
       await ensureProxyApproval(walletClient, publicClient, account);
 
       // Get counter triple ID from contract
       const counterTripleId = await BlockchainService.getCounterTripleId(publicClient, tripleId);
-      console.log('Counter triple ID:', counterTripleId);
+      logger.log('Counter triple ID:', counterTripleId);
 
       // Calculate total cost with Sofia fees
       const totalCost = await BlockchainService.getTotalDepositCost(publicClient, STAKE_AMOUNT);
-      console.log('Total cost:', totalCost.toString());
+      logger.log('Total cost:', totalCost.toString());
 
       // Execute deposit on the counter triple via proxy
       const hash = await walletClient.writeContract({
@@ -181,10 +182,10 @@ export function useVoting() {
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
       });
 
-      console.log('Deposit tx:', hash);
+      logger.log('Deposit tx:', hash);
       return hash;
     } catch (error) {
-      console.error('depositAgainst error:', error);
+      logger.error('depositAgainst error:', error);
       throw new Error(parseContractError(error));
     }
   }, [getClients, ensureProxyApproval]);

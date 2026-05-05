@@ -15,6 +15,7 @@ import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useWalletConnection } from '@site/src/lib/web3/PrivyContext';
 import styles from './auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // Chrome extension API type declaration
 declare const chrome: {
@@ -32,9 +33,36 @@ const DEFAULT_EXTENSION_ID = 'YOUR_EXTENSION_ID_HERE';
 
 // ============= HELPER FUNCTIONS =============
 
+// Send FIRST_CLAIM message to extension to trigger onboarding
+const sendFirstClaim = (extensionId: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (extensionId === DEFAULT_EXTENSION_ID ||
+        typeof chrome === 'undefined' || !chrome?.runtime?.sendMessage) {
+      logger.log('[Sofia Auth] Cannot send FIRST_CLAIM: no valid extension ID or chrome API');
+      resolve(false);
+      return;
+    }
+
+    try {
+      chrome.runtime.sendMessage(extensionId, {
+        type: 'FIRST_CLAIM',
+        data: {
+          url: 'https://sofia.intuition.box'
+        }
+      }, (response) => {
+        logger.log('[Sofia Auth] FIRST_CLAIM response:', response);
+        resolve(response?.success === true);
+      });
+    } catch (e) {
+      logger.log('[Sofia Auth] Failed to send FIRST_CLAIM:', e);
+      resolve(false);
+    }
+  });
+};
+
 // Send wallet address and type to extension via multiple methods (does NOT auto-close)
 const sendToExtension = (address: string, walletType: string | null, extensionId?: string) => {
-  console.log('[Sofia Auth] Sending to extension:', { address, walletType });
+  logger.log('[Sofia Auth] Sending to extension:', { address, walletType });
 
   // Method 1: chrome.runtime.sendMessage (if extension ID is known)
   if (extensionId && extensionId !== DEFAULT_EXTENSION_ID &&
@@ -45,11 +73,11 @@ const sendToExtension = (address: string, walletType: string | null, extensionId
         walletAddress: address,
         walletType: walletType || 'unknown'
       }, (response) => {
-        console.log('[Sofia Auth] Extension response:', response);
+        logger.log('[Sofia Auth] Extension response:', response);
         // Don't auto-close - let user see the success state
       });
     } catch (e) {
-      console.log('[Sofia Auth] Failed to send to extension:', e);
+      logger.log('[Sofia Auth] Failed to send to extension:', e);
     }
   }
 
@@ -60,7 +88,7 @@ const sendToExtension = (address: string, walletType: string | null, extensionId
       address: address,
       walletType: walletType || 'unknown'
     }, '*');
-    console.log('[Sofia Auth] Sent postMessage to opener');
+    logger.log('[Sofia Auth] Sent postMessage to opener');
   }
 
   // Method 3: Store in localStorage for polling
@@ -68,9 +96,9 @@ const sendToExtension = (address: string, walletType: string | null, extensionId
     localStorage.setItem('sofia_wallet_address', address);
     localStorage.setItem('sofia_wallet_type', walletType || 'unknown');
     localStorage.setItem('sofia_wallet_timestamp', Date.now().toString());
-    console.log('[Sofia Auth] Stored in localStorage');
+    logger.log('[Sofia Auth] Stored in localStorage');
   } catch (e) {
-    console.log('[Sofia Auth] LocalStorage not available');
+    logger.log('[Sofia Auth] LocalStorage not available');
   }
 
   // Method 4: URL callback redirect (only if explicitly requested)
@@ -81,12 +109,12 @@ const sendToExtension = (address: string, walletType: string | null, extensionId
       const redirectUrl = new URL(callbackUrl);
       redirectUrl.searchParams.set('address', address);
       redirectUrl.searchParams.set('walletType', walletType || 'unknown');
-      console.log('[Sofia Auth] Redirecting to callback:', redirectUrl.toString());
+      logger.log('[Sofia Auth] Redirecting to callback:', redirectUrl.toString());
       setTimeout(() => {
         window.location.href = redirectUrl.toString();
       }, 1500);
     } catch (e) {
-      console.log('[Sofia Auth] Invalid callback URL');
+      logger.log('[Sofia Auth] Invalid callback URL');
     }
   }
 };
@@ -96,6 +124,7 @@ const sendToExtension = (address: string, walletType: string | null, extensionId
 const AuthContent = () => {
   const { address, walletType, isConnected, isConnecting, error, connect, disconnect, clearError } = useWalletConnection();
   const [hasSentToExtension, setHasSentToExtension] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const autoLoginTriggered = useRef(false);
 
   // Get extension ID from URL params
@@ -103,10 +132,10 @@ const AuthContent = () => {
     ? new URLSearchParams(window.location.search).get('extensionId') || DEFAULT_EXTENSION_ID
     : DEFAULT_EXTENSION_ID;
 
-  // Send to extension when connected
+  // Send wallet info to extension when connected (FIRST_CLAIM waits for user click)
   useEffect(() => {
     if (isConnected && address && !hasSentToExtension) {
-      console.log('[Sofia Auth] Wallet connected, sending to extension:', { address, walletType });
+      logger.log('[Sofia Auth] Wallet connected, sending to extension:', { address, walletType });
       sendToExtension(address, walletType, extensionId);
       setHasSentToExtension(true);
     }
@@ -134,6 +163,15 @@ const AuthContent = () => {
     clearError();
   }, [clearError]);
 
+  const handleFirstClaim = useCallback(async () => {
+    setClaimStatus('sending');
+    await sendFirstClaim(extensionId);
+    setClaimStatus('sent');
+    setTimeout(() => {
+      window.location.href = 'https://sofia.intuition.box';
+    }, 1500);
+  }, [extensionId]);
+
   const handleDisconnect = useCallback(async () => {
     await disconnect();
     setHasSentToExtension(false);
@@ -157,7 +195,7 @@ const AuthContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Secure Wallet Connection</p>
 
         {/* Loading State */}
@@ -187,14 +225,49 @@ const AuthContent = () => {
             <div className={styles.walletAddress}>
               {address.slice(0, 6)}...{address.slice(-4)}
             </div>
-            <div className={styles.instructions}>
-              <p className={styles.instructionsText}>
-                Your wallet is now connected to Sofia. You can close this tab.
-              </p>
-            </div>
-            <button className={styles.closeBtn} onClick={handleClose}>
-              Close
-            </button>
+
+            {claimStatus === 'idle' && (
+              <>
+                <div className={styles.instructions}>
+                  <p className={styles.instructionsText}>
+                    Your wallet is connected. Create your first claim to get started with Sofia.
+                  </p>
+                </div>
+                <button className={styles.claimBtn} onClick={handleFirstClaim}>
+                  Create your first claim
+                </button>
+              </>
+            )}
+
+            {claimStatus === 'sending' && (
+              <>
+                <div className={styles.spinner} />
+                <p className={styles.subtext}>Sending to extension...</p>
+              </>
+            )}
+
+            {claimStatus === 'sent' && (
+              <div className={styles.instructions}>
+                <p className={styles.instructionsText}>
+                  Your first claim has been sent to the extension. You can close this tab.
+                </p>
+              </div>
+            )}
+
+            {claimStatus === 'error' && (
+              <div className={styles.instructions}>
+                <p className={styles.instructionsText}>
+                  Could not reach the extension. Make sure Sofia is installed and try again.
+                </p>
+              </div>
+            )}
+
+            {(claimStatus === 'error' || claimStatus === 'sent') && (
+              <button className={styles.closeBtn} onClick={handleClose}>
+                Close
+              </button>
+            )}
+
             <button className={styles.disconnectBtn} onClick={handleDisconnect}>
               Disconnect
             </button>
@@ -221,7 +294,7 @@ const AuthContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <p className={styles.subtitle}>Secure Wallet Connection</p>
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>

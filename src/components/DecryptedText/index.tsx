@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
 import { motion, HTMLMotionProps } from 'motion/react';
 
 const styles = {
@@ -32,7 +32,7 @@ interface DecryptedTextProps extends HTMLMotionProps<'span'> {
   animateOn?: 'view' | 'hover' | 'both';
 }
 
-export default function DecryptedText({
+function DecryptedText({
   text,
   speed = 50,
   maxIterations = 10,
@@ -219,3 +219,5 @@ export default function DecryptedText({
     </motion.span>
   );
 }
+
+export default memo(DecryptedText);

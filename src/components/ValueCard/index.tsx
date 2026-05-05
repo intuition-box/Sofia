@@ -3,6 +3,7 @@ import { useVoting } from '@site/src/hooks/useVoting';
 import { useVoteStats } from '@site/src/hooks/useVoteStats';
 import { EXPLORER_URLS } from '@site/src/lib/config/chainConfig';
 import styles from './index.module.css';
+import { logger } from '@site/src/lib/logger';
 
 interface Value {
   id: number;
@@ -33,7 +34,7 @@ export default function ValueCard({
   const [activeVote, setActiveVote] = useState<VoteType | null>(null);
 
   const handleVote = async (voteType: VoteType) => {
-    console.log('handleVote called:', { voteType, isWalletConnected, tripleId: value.tripleId });
+    logger.log('handleVote called:', { voteType, isWalletConnected, tripleId: value.tripleId });
 
     if (!isWalletConnected) {
       onConnectWallet();
@@ -46,18 +47,18 @@ export default function ValueCard({
     setTxHash(null);
 
     try {
-      console.log('Calling deposit function...');
+      logger.log('Calling deposit function...');
       const hash = voteType === 'vote'
         ? await depositFor(value.tripleId)
         : await depositAgainst(value.tripleId);
 
-      console.log('Transaction hash:', hash);
+      logger.log('Transaction hash:', hash);
       setTxHash(hash);
       setTxStatus('success');
       // Refresh stats after successful vote
       refetch();
     } catch (err) {
-      console.error('Vote error:', err);
+      logger.error('Vote error:', err);
       setTxError(err instanceof Error ? err.message : 'Transaction failed');
       setTxStatus('error');
     }

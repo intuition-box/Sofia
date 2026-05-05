@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
-import ContentWrapperWide from '@site/src/components/ContentWrapperWide';
+import ContentWrapper from '@site/src/components/ContentWrapper';
 
 export default function Privacy(): React.ReactElement {
   return (
@@ -8,9 +8,14 @@ export default function Privacy(): React.ReactElement {
       title="Privacy Policy"
       description="Sofia Extension Privacy Policy">
 
-      <main style={{ padding: '5', color: '#02000B', lineHeight: '2' }}>
-        <ContentWrapperWide>
-          <article>
+      <main style={{ padding: '5', color: 'var(--sofia-text)', lineHeight: '2' }}>
+        <ContentWrapper wide>
+          <style>{`
+            .privacy-page h1, .privacy-page h2, .privacy-page h3 {
+              color: var(--sofia-green-vif);
+            }
+          `}</style>
+          <article className="privacy-page">
             <h1>Privacy Policy</h1>
             <p><strong>Last updated: January 30, 2026</strong></p>
 
@@ -199,7 +204,7 @@ export default function Privacy(): React.ReactElement {
               <li>GitHub Issues: <a href="https://github.com/intuition-box/Sofia/issues" target="_blank" rel="noopener noreferrer">https://github.com/intuition-box/Sofia/issues</a></li>
             </ul>
           </article>
-        </ContentWrapperWide>
+        </ContentWrapper>
       </main>
     </Layout>
   );

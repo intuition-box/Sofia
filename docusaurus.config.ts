@@ -6,25 +6,64 @@ import React from 'react';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Sofia Chronicles',
-  tagline: 'Sofia',
+  title: 'Sofia Documentation',
+  tagline: 'Documentation & Development Blog for Sofia — the Chrome extension that turns browsing into blockchain-backed knowledge.',
   favicon: 'img/favicon.png',
 
-  // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
-    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    v4: true,
   },
 
-  // Set the production url of your site here
-  url: 'https://sofia.intuition.box',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
+  url: 'https://doc.sofia.intuition.box',
   baseUrl: '/',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Sofia', // Usually your GitHub org/user name.
-  projectName: 'Sofia Chronicles', // Usually your repo name.
+  organizationName: 'intuition-box',
+  projectName: 'Sofia-landing-page',
+
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        property: 'og:type',
+        content: 'website',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        property: 'og:site_name',
+        content: 'Sofia Documentation',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'twitter:site',
+        content: '@0xsofia3',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'twitter:creator',
+        content: '@0xsofia3',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        href: '/img/favicon.png',
+      },
+    },
+  ],
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -72,8 +111,16 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/Sofia_Chronicles.webp',
+    metadata: [
+      {name: 'keywords', content: 'sofia, documentation, blockchain, chrome extension, knowledge, web3, intuition protocol'},
+      {name: 'author', content: 'Sofia Team'},
+    ],
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
     navbar: {
       items: [
         {
@@ -106,7 +153,7 @@ const config: Config = {
           items: [
             {
               label: 'Documentation',
-              to: '/docs/introduction',
+              to: '/docs/intro',
             },
             {
               label: 'Sofia Values',
@@ -115,10 +162,6 @@ const config: Config = {
             {
               label: 'Sofia Chronicles',
               to: '/blog',
-            },
-            {
-              label: 'Proxy Dashboard',
-              href: 'https://sofia-proxy.intuition.box/',
             },
           ],
         },
@@ -133,15 +176,33 @@ const config: Config = {
             },
             {
               label: 'X',
-              href: 'https://x.com/Sofia_Intuition',
+              href: 'https://x.com/0xsofia3',
             },
             {
               label: 'Discord',
-              href: 'https://discord.gg/intuition',
+              href: 'https://discord.gg/bDXWsV7Bb',
+            },
+            {
+              label: 'Proxy Dashboard',
+              href: 'https://sofia-proxy.intuition.box/',
             },
           ],
         },
       ],
+    },
+    footer: {
+      style: 'light',
+      links: [
+        {
+          items: [
+            { label: 'Discord', href: 'https://discord.gg/bDXWsV7Bb' },
+            { label: 'GitHub', href: 'https://github.com/intuition-box' },
+            { label: 'X', href: 'https://x.com/0xsofia3' },
+            { label: 'Sofia', href: 'https://sofia.intuition.box' },
+          ],
+        },
+      ],
+      copyright: `© ${new Date().getFullYear()} Sofia`,
     },
     prism: {
       theme: prismThemes.github,
@@ -151,6 +212,17 @@ const config: Config = {
 
   plugins: [
     require('./plugins/webpack-plugin.cjs').webpackPlugin,
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            from: '/docs/introduction',
+            to: '/docs/intro',
+          },
+        ],
+      },
+    ],
   ],
 };
 

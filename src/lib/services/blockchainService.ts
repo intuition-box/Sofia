@@ -2,6 +2,7 @@ import type { Address, Hash } from 'viem';
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy';
 import { MultiVaultAbi } from '../ABI/MultiVault';
 import { MULTIVAULT_ADDRESS, SOFIA_PROXY_ADDRESS, intuitionMainnet } from '../config/chainConfig';
+import { logger } from '@site/src/lib/logger';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type AnyClient = any;
@@ -58,7 +59,7 @@ export class BlockchainService {
       // ApprovalTypes: 0=NONE, 1=DEPOSIT, 2=REDEMPTION, 3=BOTH
       return approvalType === this.ApprovalTypes.DEPOSIT || approvalType === this.ApprovalTypes.BOTH;
     } catch (error) {
-      console.error('Error checking proxy approval:', error);
+      logger.error('Error checking proxy approval:', error);
       // If we can't check, assume not approved
       return false;
     }
@@ -138,7 +139,7 @@ export class BlockchainService {
         againstAssets: againstStats.totalAssets,
       };
     } catch (error) {
-      console.error('Error getting triple vote stats:', error);
+      logger.error('Error getting triple vote stats:', error);
       return { forAssets: 0n, againstAssets: 0n };
     }
   }

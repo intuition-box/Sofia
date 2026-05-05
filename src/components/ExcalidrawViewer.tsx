@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { logger } from '@site/src/lib/logger';
 
 type ExcalidrawInitialData = {
   elements?: any[];
@@ -22,7 +23,7 @@ export default function ExcalidrawViewer({ src }: { src: string }) {
         await import('@excalidraw/excalidraw/index.css');
         setExcalidrawComponent(() => mod.Excalidraw);
       } catch (err) {
-        console.error('Error loading Excalidraw:', err);
+        logger.error('Error loading Excalidraw:', err);
         setError('Failed to load Excalidraw component');
       }
     };
@@ -49,7 +50,7 @@ export default function ExcalidrawViewer({ src }: { src: string }) {
 
         setData({ elements, appState: customAppState, files });
       } catch (err) {
-        console.error('Error loading Excalidraw JSON:', err);
+        logger.error('Error loading Excalidraw JSON:', err);
         setError('Failed to load diagram data');
       }
     };

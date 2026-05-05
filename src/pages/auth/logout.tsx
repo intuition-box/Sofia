@@ -10,6 +10,7 @@ import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useWalletConnection } from '@site/src/lib/web3/PrivyContext';
 import styles from '../auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // Chrome extension API type declaration
 declare const chrome: {
@@ -30,10 +31,10 @@ const notifyExtensionDisconnected = (extensionId?: string) => {
       chrome.runtime.sendMessage(extensionId, {
         type: 'WALLET_DISCONNECTED'
       }, (response) => {
-        console.log('[Sofia Logout] Extension notified:', response);
+        logger.log('[Sofia Logout] Extension notified:', response);
       });
     } catch (e) {
-      console.log('[Sofia Logout] Failed to notify extension:', e);
+      logger.log('[Sofia Logout] Failed to notify extension:', e);
     }
   }
 
@@ -59,16 +60,16 @@ const notifyExtensionDisconnected = (extensionId?: string) => {
     keysToRemove.forEach(key => {
       try {
         localStorage.removeItem(key);
-        console.log('[Sofia Logout] Removed:', key);
+        logger.log('[Sofia Logout] Removed:', key);
       } catch (e) {}
     });
 
     // Clear session storage
     sessionStorage.clear();
 
-    console.log('[Sofia Logout] Storage cleared');
+    logger.log('[Sofia Logout] Storage cleared');
   } catch (e) {
-    console.log('[Sofia Logout] Failed to clear storage:', e);
+    logger.log('[Sofia Logout] Failed to clear storage:', e);
   }
 };
 
@@ -87,22 +88,22 @@ const LogoutContent = () => {
     logoutAttempted.current = true;
 
     const performLogout = async () => {
-      console.log('[Sofia Logout] Starting logout, isConnected:', isConnected);
+      logger.log('[Sofia Logout] Starting logout, isConnected:', isConnected);
 
       try {
         // Call disconnect from wallet context (which calls Privy logout)
         if (isConnected) {
           await disconnect();
-          console.log('[Sofia Logout] Wallet disconnected');
+          logger.log('[Sofia Logout] Wallet disconnected');
         }
 
         // Clear all storage and notify extension
         notifyExtensionDisconnected(extensionId);
 
         setStatus('success');
-        console.log('[Sofia Logout] Logout complete');
+        logger.log('[Sofia Logout] Logout complete');
       } catch (error) {
-        console.error('[Sofia Logout] Error:', error);
+        logger.error('[Sofia Logout] Error:', error);
         // Still clear storage even if disconnect fails
         notifyExtensionDisconnected(extensionId);
         setStatus('success'); // Show success anyway since we cleared storage
@@ -120,7 +121,7 @@ const LogoutContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
 
         {status === 'loading' && (
           <>
@@ -159,7 +160,7 @@ const LogoutContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>
     </div>

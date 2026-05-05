@@ -3,7 +3,7 @@ import styles from './index.module.css';
 
 export default function EarlyAccessButton(): React.ReactElement {
   const handleClick = () => {
-    window.open('https://tally.so/r/n9bvrY', '_blank');
+    window.open('https://tally.so/r/7RdaeR', '_blank');
   };
 
   return (

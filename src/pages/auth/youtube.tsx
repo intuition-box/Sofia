@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import styles from '../auth.module.css';
+import { logger } from '@site/src/lib/logger';
 
 // ============= CONFIGURATION =============
 const YOUTUBE_CLIENT_ID = '301365654069-u5qmofalvpte890u4detr99pij8m8da3.apps.googleusercontent.com';
@@ -70,7 +71,7 @@ const YouTubeAuthContent = () => {
         }, 500);
 
       } catch (error) {
-        console.error('[Sofia YouTube Auth] Error initiating OAuth:', error);
+        logger.error('[Sofia YouTube Auth] Error initiating OAuth:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Failed to initiate YouTube authentication');
       }
@@ -82,7 +83,7 @@ const YouTubeAuthContent = () => {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>YouTube Authentication</p>
 
         {status === 'loading' && (
@@ -122,7 +123,7 @@ const YouTubeAuthContent = () => {
 const LoadingPlaceholder = () => (
   <div className={styles.container}>
     <div className={styles.card}>
-      <img src="/img/logoBrut.png" alt="Sofia" className={styles.logo} />
+      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
       <p className={styles.subtitle}>YouTube Authentication</p>
       <div className={styles.spinner} />
       <p className={styles.text}>Loading...</p>

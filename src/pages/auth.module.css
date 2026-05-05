@@ -1,5 +1,5 @@
 /**
- * Authentication page styles - matches Sofia site design
+ * Authentication page styles
  */
 
 .container {
@@ -7,22 +7,22 @@
   justify-content: center;
   align-items: center;
   min-height: 80vh;
-  padding: 2rem;
+  padding: 12rem;
   position: relative;
   z-index: 1;
 }
 
 .card {
-  background: rgba(2, 0, 11, 0.6);
+  background: var(--sofia-bg-alt);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 3rem;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sofia-border);
   min-width: 320px;
   max-width: 420px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .logo {
@@ -33,17 +33,17 @@
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--sofia-text-muted) !important;
   font-size: 0.875rem;
   margin-bottom: 2rem;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top: 3px solid #ffffff;
+  border: 3px solid var(--sofia-border);
+  border-top: 3px solid var(--sofia-green-vif);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1.5rem;
@@ -56,62 +56,97 @@
 
 .checkmark {
   font-size: 3rem;
-  color: #4ade80;
+  color: var(--sofia-success);
   margin-bottom: 1.5rem;
 }
 
 .errorIcon {
   font-size: 3rem;
-  color: #f87171;
+  color: var(--sofia-error);
   margin-bottom: 1.5rem;
 }
 
 .text {
-  color: #ffffff !important;
+  color: var(--sofia-text) !important;
   font-size: 1.25rem;
   margin: 0 0 0.5rem;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 
 .subtext {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--sofia-text-muted) !important;
   font-size: 0.875rem;
   margin: 0;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .walletAddress {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--sofia-bg-elevated);
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: #ffffff !important;
+  color: var(--sofia-text) !important;
   margin: 1rem 0;
   word-break: break-all;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sofia-border);
 }
 
 .btn {
   margin-top: 1.5rem;
   padding: 0.875rem 2rem;
-  background: #02000B;
-  color: #ffffff !important;
-  border: 2px solid #ffffff;
+  background: var(--sofia-accent);
+  color: var(--sofia-bg) !important;
+  border: 2px solid var(--sofia-accent);
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .btn:hover {
-  background: #ffffff;
-  color: #02000B !important;
+  background: var(--sofia-text);
+  color: var(--sofia-bg) !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+@keyframes orb-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.claimBtn {
+  margin-top: 1.5rem;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000 !important;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  cursor: pointer;
+  transition: all 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.claimBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.6);
 }
 
 .btnSecondary {
@@ -119,19 +154,19 @@
   margin-left: 0.75rem;
   padding: 0.875rem 2rem;
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff !important;
+  border: 2px solid var(--sofia-border);
+  color: var(--sofia-text) !important;
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .btnSecondary:hover {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--sofia-border-hover);
+  background: var(--sofia-bg-alt);
   transform: translateY(-2px);
 }
 
@@ -147,56 +182,57 @@
   margin-top: 1.5rem;
   padding: 0.5rem 1.5rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff !important;
+  border: 1px solid var(--sofia-border);
+  color: var(--sofia-text-muted) !important;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .closeBtn:hover {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--sofia-border-hover);
+  background: var(--sofia-bg-alt);
 }
 
 .disconnectBtn {
-  margin-top: 0.75rem;
+  margin-top: 1.5rem;
+  margin-left: 16px;
   padding: 0.5rem 1.5rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff !important;
+  border: 1px solid var(--sofia-border);
+  color: var(--sofia-text-muted) !important;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
   opacity: 0.7;
 }
 
 .disconnectBtn:hover {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--sofia-border-hover);
+  background: var(--sofia-bg-alt);
   opacity: 1;
 }
 
 .instructions {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sofia-bg-elevated);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sofia-border);
 }
 
 .instructionsText {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--sofia-text-muted) !important;
   font-size: 0.8125rem;
   line-height: 1.5;
   margin: 0;
-  font-family: 'Overpass Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* Responsive */

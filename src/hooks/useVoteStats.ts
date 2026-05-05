@@ -3,6 +3,7 @@ import { createPublicClient, http, formatEther } from 'viem';
 import { BlockchainService } from '@site/src/lib/services/blockchainService';
 import { intuitionMainnet } from '@site/src/lib/config/chainConfig';
 import { CURVE_ID } from '@site/src/lib/config/constants';
+import { logger } from '@site/src/lib/logger';
 
 export interface VoteStats {
   forAssets: bigint;
@@ -51,7 +52,7 @@ export function useVoteStats(tripleId: `0x${string}`) {
         error: null,
       });
     } catch (error) {
-      console.error('Error fetching vote stats:', error);
+      logger.error('Error fetching vote stats:', error);
       setStats(prev => ({
         ...prev,
         isLoading: false,

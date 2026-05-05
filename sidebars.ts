@@ -13,12 +13,101 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  Create as many sidebars as you want.
  */
 const sidebars: SidebarsConfig = {
-  // Documentation sidebar
-  tutorialSidebar: [
+  docsSidebar: [
     {
       type: 'doc',
-      id: 'introduction',
-      label: 'Introduction',
+      id: 'intro',
+      label: 'What is Sofia?',
+    },
+    {
+      type: 'doc',
+      id: 'features/getting-started',
+      label: 'Getting Started',
+    },
+    {
+      type: 'category',
+      label: 'User Guide',
+      items: [
+        {
+          type: 'category',
+          label: 'Core Concepts',
+          items: [
+            'core-concepts/atoms',
+            'core-concepts/triples',
+            'core-concepts/predicates',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Features',
+          items: [
+            'features/echoes',
+            'features/intentions',
+            'features/certifications',
+            'features/bookmarks-signals',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Gamification',
+          items: [
+            'gamification/currencies-levels',
+            'gamification/quests-discovery',
+            'gamification/streaks-voting',
+            'gamification/badges-rewards',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'AI Features',
+          items: [
+            'ai-features/pulse-analysis',
+            'ai-features/interest-analysis',
+            'ai-features/chat-predicates',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Resonance',
+          items: [
+            'resonance/circle-feed',
+            'resonance/trending',
+            'resonance/vote',
+            'resonance/featured-lists',
+            'resonance/leaderboard',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Social',
+          items: [
+            'social/verification',
+            'social/following-trust',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Known Issues',
+          items: [
+            'known-issues/transactions',
+            'known-issues/social-verification',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Litepaper',
+      items: [
+        'litepaper/introduction',
+        'litepaper/network',
+        'litepaper/subscription',
+        'litepaper/dao',
+        'litepaper/features',
+        'litepaper/privacy',
+        'litepaper/why-unique',
+        'litepaper/audience',
+      ],
     },
     {
       type: 'category',
@@ -35,24 +124,6 @@ const sidebars: SidebarsConfig = {
         'ecosystem/gaianet',
         'ecosystem/mastra',
         'ecosystem/intuition',
-      ],
-    },
-  ],
-
-  // Litepaper sidebar (kept for backward compatibility)
-  litepaperSidebar: [
-    {
-      type: 'category',
-      label: 'Litepaper',
-      items: [
-        'litepaper/introduction',
-        'litepaper/network',
-        'litepaper/subscription',
-        'litepaper/dao',
-        'litepaper/features',
-        'litepaper/privacy',
-        'litepaper/why-unique',
-        'litepaper/audience',
       ],
     },
   ],

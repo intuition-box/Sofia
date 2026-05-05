@@ -1,7 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import BrowserOnly from '@docusaurus/BrowserOnly';
-import ContentWrapperWide from '@site/src/components/ContentWrapperWide';
+import ContentWrapper from '@site/src/components/ContentWrapper';
 import styles from './values.module.css';
 
 // Loading placeholder for SSR
@@ -26,7 +26,7 @@ export default function ValuesPage(): React.ReactElement {
       title="Sofia Values"
       description="The core values that guide Sofia's development and community. Vote to support or oppose each value on Intuition.">
       <main className={styles.main}>
-        <ContentWrapperWide>
+        <ContentWrapper wide>
           <header className={styles.header}>
             <h1 className={styles.title}>Sofia Values</h1>
             <p className={styles.subtitle}>
@@ -38,7 +38,7 @@ export default function ValuesPage(): React.ReactElement {
           <BrowserOnly fallback={<LoadingPlaceholder />}>
             {() => <ValuesGridWrapper />}
           </BrowserOnly>
-        </ContentWrapperWide>
+        </ContentWrapper>
       </main>
     </Layout>
   );

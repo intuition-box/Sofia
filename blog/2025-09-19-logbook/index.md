@@ -12,7 +12,7 @@ During this week we consolidated the whole Sofia extension stack. We migrated an
 
 <!-- truncate -->
 
-All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triplets; developers get a clearer architecture and a simpler way to extend the platform.
+All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triples; developers get a clearer architecture and a simpler way to extend the platform.
 
 On the design side, we implemented the orb on the home page, finalizing the logo and choosing the appropriate font for the whole app.
 
@@ -28,8 +28,8 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Authorization code flow (YouTube/Spotify) and implicit flow (Twitch)
 - External configuration for OAuth secrets
 - Template oauth-config.example.ts for developers
-- Extraction of user data and generation of triplets from OAuth APIs
-- Storing triplets in IndexedDB via elizaDataService for displaying EchoesTab
+- Extraction of user data and generation of triples from OAuth APIs
+- Storing triples in IndexedDB via elizaDataService for displaying EchoesTab
 
 
 ### URL Improvements:

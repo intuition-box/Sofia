@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { logger } from '@site/src/lib/logger';
 
 const PRIVY_APP_ID = 'cmj05tjsj03thjs0c3mgxrixm';
 const PRIVY_CLIENT_ID = 'client-WY6U3b3LFEgbveR2FVgiyTTbRWKCZhy6vEVFzQt9NvZYS';
@@ -56,6 +57,10 @@ const getWalletInfo = (user: any): { address: string | null; walletType: string 
 };
 
 function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
+  // Privy is required inline (not top-level) so its browser-only code never
+  // runs during Docusaurus SSR. WalletProvider guards with `isMounted` below,
+  // so this path is reached only on the client.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { PrivyProvider, usePrivy, useLogin, useLogout } = require('@privy-io/react-auth');
 
   function InnerProvider({ children }: { children: React.ReactNode }) {
@@ -74,7 +79,7 @@ function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
       onComplete: ({ user }: { user: any }) => {
         const { address, walletType } = getWalletInfo(user);
         if (address) {
-          console.log('[Privy] Connected wallet:', { address, walletType });
+          logger.log('[Privy] Connected wallet:', { address, walletType });
           setState({
             address,
             walletType,
@@ -104,7 +109,7 @@ function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
         if (authenticated && user) {
           const { address, walletType } = getWalletInfo(user);
           if (address) {
-            console.log('[Privy] Restored wallet:', { address, walletType });
+            logger.log('[Privy] Restored wallet:', { address, walletType });
             setState({
               address,
               walletType,
@@ -141,7 +146,7 @@ function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
           error: null,
         });
       } catch (err) {
-        console.error('Logout error:', err);
+        logger.error('Logout error:', err);
       }
     }, [logout]);
 

@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "docuBranch" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "docuBranch" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
           path: './build'
 
   deploy:
-    if: github.ref == 'refs/heads/docuBranch'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
