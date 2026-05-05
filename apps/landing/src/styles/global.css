@@ -25,48 +25,8 @@ body {
   position: relative;
 }
 
-/* Ambient grid + radial glow — dark mode only.
-   Matches the technical/terminal direction: 80px grid drawn
-   from soft white lines on top of the warm dark surface,
-   plus a peach/violet radial wash for depth. */
-[data-theme='dark'] body::before,
-.dark body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    radial-gradient(900px 600px at 88% -8%, color-mix(in srgb, var(--ds-accent) 14%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 0% 100%, color-mix(in srgb, var(--ds-accent) 8%, transparent), transparent 60%);
-  background-size: 80px 80px, 80px 80px, auto, auto;
-  background-position: -1px -1px, -1px -1px, 0 0, 0 0;
-}
-
-/* Scanline overlay — dark mode only, very subtle. */
-[data-theme='dark'] body::after,
-.dark body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 3px,
-    rgba(255, 255, 255, 0.012) 3px,
-    rgba(255, 255, 255, 0.012) 4px
-  );
-  mix-blend-mode: overlay;
-}
-
-/* Make sure app content sits above the ambient layers. */
 #root {
   position: relative;
-  z-index: 2;
 }
 
 img {

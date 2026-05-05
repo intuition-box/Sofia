@@ -10,6 +10,14 @@
   justify-content: space-between;
 }
 
+/* ── Brand cluster (logo + status pill) ───────────────── */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -18,6 +26,50 @@
   height: 36px;
   width: auto;
 }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.statusDot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: var(--color-accent);
+  opacity: 0.4;
+  animation: nav-led-pulse 2.4s var(--ease-out) infinite;
+}
+
+@keyframes nav-led-pulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(2.2); opacity: 0;   }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+
+/* ── Glass menu ───────────────────────────────────────── */
 
 .menu {
   position: absolute;
@@ -39,11 +91,13 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-text-muted);
-  transition: color var(--duration-fast);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 .menu a:hover {
   color: var(--color-text);
 }
+
+/* ── Right cluster ────────────────────────────────────── */
 
 .right {
   display: flex;
@@ -52,57 +106,60 @@
 }
 
 .cta {
-  padding: 10px 24px;
-  font-size: 0.88rem;
-  font-weight: 700;
+  padding: 10px 22px;
+  font-size: var(--text-sm);
+  font-weight: 600;
 }
 
-.wallet {
-  display: flex;
+.wallet,
+.walletConnect {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px 14px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--color-border);
-  background: var(--color-bg-alt);
+  background: transparent;
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--duration-fast);
-}
-.wallet:hover {
-  border-color: var(--color-border-hover);
-}
-.walletDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #8fb87a;
-}
-.walletConnect {
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--color-border);
-  background: none;
-  color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all var(--duration-fast);
-  font-family: var(--font-body);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
 }
+
+.wallet:hover,
 .walletConnect:hover {
   color: var(--color-text);
-  border-color: var(--color-border-hover);
+  border-color: var(--color-text);
+  background: var(--color-bg-alt);
 }
+
+.walletConnect {
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
 .walletConnect:disabled {
   opacity: 0.5;
   cursor: wait;
 }
 
-/* Burger — hidden on desktop */
+.walletDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* ── Burger — hidden on desktop ───────────────────────── */
+
 .burger {
   display: none;
   flex-direction: column;
@@ -124,29 +181,14 @@
   transition: transform 0.3s, opacity 0.3s;
   transform-origin: center;
 }
-.burgerOpen1 {
-  transform: translateY(7px) rotate(45deg);
-}
-.burgerOpen2 {
-  opacity: 0;
-}
-.burgerOpen3 {
-  transform: translateY(-7px) rotate(-45deg);
-}
+.burgerOpen1 { transform: translateY(7px) rotate(45deg); }
+.burgerOpen2 { opacity: 0; }
+.burgerOpen3 { transform: translateY(-7px) rotate(-45deg); }
 
-/* Overlay for mobile menu */
-.overlay {
-  display: none;
-}
+.overlay { display: none; }
 
-:global(.dark) .menu a {
-  color: #8a8a8a;
-}
-:global(.dark) .menu a:hover {
-  color: #f0f0f0;
-}
+/* ── Mobile ───────────────────────────────────────────── */
 
-/* ── Mobile ────────────────────────────────── */
 @media (max-width: 900px) {
   .menu {
     display: none;
@@ -167,31 +209,16 @@
     box-shadow: var(--shadow-md);
     z-index: 200;
   }
-
-  .menuOpen {
-    display: flex;
-  }
-
-  .menu li {
-    list-style: none;
-  }
-
+  .menuOpen { display: flex; }
+  .menu li { list-style: none; }
   .menu a {
     display: block;
     padding: 12px 24px;
-    font-size: 0.88rem;
+    font-size: var(--text-sm);
   }
-  .menu a:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
-  :global(.dark) .menu a:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
+  .menu a:hover { background: var(--color-bg-alt); }
 
-  .burger {
-    display: flex;
-  }
-
+  .burger { display: flex; }
   .overlay {
     display: block;
     position: fixed;
@@ -200,6 +227,7 @@
     background: transparent;
   }
 
+  .status,
   .wallet,
   .walletConnect {
     display: none;
@@ -207,16 +235,11 @@
 
   .cta {
     padding: 8px 16px;
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
   }
 }
 
 @media (max-width: 640px) {
-  .nav {
-    padding: 10px 20px;
-  }
-  .cta {
-    padding: 7px 14px;
-    font-size: 0.75rem;
-  }
+  .nav { padding: 10px 20px; }
+  .cta { padding: 7px 14px; font-size: 0.75rem; }
 }

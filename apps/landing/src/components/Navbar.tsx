@@ -18,9 +18,15 @@ export function Navbar() {
 
   return (
     <nav className={styles.nav}>
-      <a href="/" className={styles.logo}>
-        <img src="/img/logo-black.png" alt="Sofia" className="logo-invert" />
-      </a>
+      <div className={styles.brand}>
+        <a href="/" className={styles.logo}>
+          <img src="/img/logo-black.png" alt="Sofia" className="logo-invert" />
+        </a>
+        <span className={styles.status}>
+          <span className={styles.statusDot} aria-hidden="true" />
+          Alpha · Whitelist Open
+        </span>
+      </div>
 
       <ul className={`${styles.menu} ${open ? styles.menuOpen : ''}`}>
         {NAV_LINKS.map((link) => (
@@ -37,7 +43,7 @@ export function Navbar() {
 
         {isConnected && address ? (
           <button className={styles.wallet} onClick={disconnect}>
-            <span className={styles.walletDot} />
+            <span className={styles.walletDot} aria-hidden="true" />
             {address.slice(0, 6)}...{address.slice(-4)}
           </button>
         ) : (
