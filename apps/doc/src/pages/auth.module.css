@@ -96,9 +96,9 @@
 .btn {
   margin-top: 1.5rem;
   padding: 0.875rem 2rem;
-  background: var(--ds-accent);
+  background: var(--ds-ink);
   color: var(--ds-bg) !important;
-  border: 2px solid var(--ds-accent);
+  border: 2px solid var(--ds-ink);
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -108,8 +108,8 @@
 }
 
 .btn:hover {
-  background: color-mix(in srgb, var(--ds-accent) 88%, var(--ds-ink) 12%);
-  border-color: color-mix(in srgb, var(--ds-accent) 88%, var(--ds-ink) 12%);
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
   color: var(--ds-on-accent) !important;
   transform: translateY(-2px);
   box-shadow: var(--doc-shadow-md);
