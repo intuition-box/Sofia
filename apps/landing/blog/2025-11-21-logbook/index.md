@@ -8,7 +8,7 @@ authors: [Samuel, Maxime]
 
 This week has been focused on measuring and preparing for our Alpha launch.
 
-<!-- truncate -->
+{/* truncate */}
 
 ## Current Focus
 

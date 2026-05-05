@@ -8,9 +8,9 @@ authors: [Samuel, Maxime]
 
 During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTube, Spotify and Twitch and making it easier for developers to configure secrets. We improved URL handling and state management, added a complete Pulse agent with its own tab and WebSocket infrastructure, and refined our detection logic to extract data . On top of that we streamlined background code, unified message handlers, added badge/notification logic and rolled out a new theme extraction agent with bookmark and history import.
 
-<!-- truncate -->
+{/* truncate */}
 
-All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triplets; developers get a clearer architecture and a simpler way to extend the platform.
+All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triples; developers get a clearer architecture and a simpler way to extend the platform.
 
 On the design side, we implemented the orb on the home page, finalizing the logo and choosing the appropriate font for the whole app.
 
@@ -27,8 +27,8 @@ We also decided to open this "build in public" part by refactoring the landing p
 - Authorization code flow (YouTube/Spotify) and implicit flow (Twitch)
 - External configuration for OAuth secrets
 - Template oauth-config.example.ts for developers
-- Extraction of user data and generation of triplets from OAuth APIs
-- Storing triplets in IndexedDB via elizaDataService for displaying EchoesTab
+- Extraction of user data and generation of triples from OAuth APIs
+- Storing triples in IndexedDB via elizaDataService for displaying EchoesTab
 
 ### URL Improvements:
 

@@ -6,7 +6,7 @@ title: Logbook 23/01
 authors: [Samuel, Maxime]
 ---
 
-<!-- truncate -->
+{/* truncate */}
 
 ## Discovery System and Profiles
 

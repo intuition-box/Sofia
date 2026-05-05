@@ -1,16 +1,17 @@
-import { useState, useEffect, useCallback } from 'react'
-import { createPublicClient, http, formatEther } from 'viem'
-import { BlockchainService } from '@site/src/lib/services/blockchainService'
-import { intuitionMainnet } from '@site/src/lib/config/chainConfig'
-import { CURVE_ID } from '@site/src/lib/config/constants'
+import { useState, useEffect, useCallback } from 'react';
+import { createPublicClient, http, formatEther } from 'viem';
+import { BlockchainService } from '@site/src/lib/services/blockchainService';
+import { intuitionMainnet } from '@site/src/lib/config/chainConfig';
+import { CURVE_ID } from '@site/src/lib/config/constants';
+import { logger } from '@site/src/lib/logger';
 
 export interface VoteStats {
-  forAssets: bigint
-  againstAssets: bigint
-  forDisplay: string
-  againstDisplay: string
-  isLoading: boolean
-  error: string | null
+  forAssets: bigint;
+  againstAssets: bigint;
+  forDisplay: string;
+  againstDisplay: string;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const defaultStats: VoteStats = {
@@ -20,28 +21,27 @@ const defaultStats: VoteStats = {
   againstDisplay: '0',
   isLoading: true,
   error: null,
-}
+};
 
 export function useVoteStats(tripleId: `0x${string}`) {
-  const [stats, setStats] = useState<VoteStats>(defaultStats)
+  const [stats, setStats] = useState<VoteStats>(defaultStats);
 
   const fetchStats = useCallback(async () => {
     try {
       const publicClient = createPublicClient({
         chain: intuitionMainnet,
         transport: http(intuitionMainnet.rpcUrls.default.http[0]),
-      })
+      });
 
-      const { forAssets, againstAssets } =
-        await BlockchainService.getTripleVoteStats(
-          publicClient,
-          tripleId,
-          CURVE_ID,
-        )
+      const { forAssets, againstAssets } = await BlockchainService.getTripleVoteStats(
+        publicClient,
+        tripleId,
+        CURVE_ID
+      );
 
       // Format to readable TRUST amount (round to 2 decimals)
-      const forNum = parseFloat(formatEther(forAssets))
-      const againstNum = parseFloat(formatEther(againstAssets))
+      const forNum = parseFloat(formatEther(forAssets));
+      const againstNum = parseFloat(formatEther(againstAssets));
 
       setStats({
         forAssets,
@@ -50,20 +50,20 @@ export function useVoteStats(tripleId: `0x${string}`) {
         againstDisplay: againstNum.toFixed(1),
         isLoading: false,
         error: null,
-      })
+      });
     } catch (error) {
-      console.error('Error fetching vote stats:', error)
-      setStats((prev) => ({
+      logger.error('Error fetching vote stats:', error);
+      setStats(prev => ({
         ...prev,
         isLoading: false,
         error: 'Failed to load stats',
-      }))
+      }));
     }
-  }, [tripleId])
+  }, [tripleId]);
 
   useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
+    fetchStats();
+  }, [fetchStats]);
 
-  return { ...stats, refetch: fetchStats }
+  return { ...stats, refetch: fetchStats };
 }

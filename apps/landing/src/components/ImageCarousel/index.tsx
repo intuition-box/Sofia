@@ -1,41 +1,35 @@
-import React, { useState } from 'react'
-import styles from './index.module.css'
+import React, { useState } from 'react';
+import Lightbox from '@site/src/components/Lightbox';
+import styles from './index.module.css';
 
 interface ImageCarouselProps {
-  images: { src: string; alt: string }[]
+  images: { src: string; alt: string }[];
 }
 
-export default function ImageCarousel({
-  images,
-}: ImageCarouselProps): React.ReactElement {
-  const [current, setCurrent] = useState(0)
+export default function ImageCarousel({ images }: ImageCarouselProps): React.ReactElement {
+  const [current, setCurrent] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const goTo = (index: number) => setCurrent(index)
-  const prev = () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))
-  const next = () => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))
+  const goTo = (index: number) => setCurrent(index);
+  const prev = () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
+  const next = () => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
 
-  if (!images || images.length === 0) return null
+  if (!images || images.length === 0) return null;
 
   return (
     <div className={styles.carousel}>
       <div className={styles.imageContainer}>
-        <button
-          className={`${styles.arrow} ${styles.arrowLeft}`}
-          onClick={prev}
-          aria-label="Previous"
-        >
+        <button className={`${styles.arrow} ${styles.arrowLeft}`} onClick={prev} aria-label="Previous">
           ‹
         </button>
         <img
           src={images[current].src}
           alt={images[current].alt}
           className={styles.image}
+          onClick={() => setLightboxOpen(true)}
+          style={{ cursor: 'pointer' }}
         />
-        <button
-          className={`${styles.arrow} ${styles.arrowRight}`}
-          onClick={next}
-          aria-label="Next"
-        >
+        <button className={`${styles.arrow} ${styles.arrowRight}`} onClick={next} aria-label="Next">
           ›
         </button>
       </div>
@@ -50,9 +44,17 @@ export default function ImageCarousel({
           />
         ))}
       </div>
-      <p className={styles.counter}>
-        {current + 1} / {images.length}
-      </p>
+      <p className={styles.counter}>{current + 1} / {images.length}</p>
+
+      {lightboxOpen && (
+        <Lightbox
+          images={images}
+          currentIndex={current}
+          onClose={() => setLightboxOpen(false)}
+          onPrev={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
+          onNext={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
+        />
+      )}
     </div>
-  )
+  );
 }

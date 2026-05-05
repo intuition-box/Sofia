@@ -16,8 +16,11 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "3.8.1",
-    "@docusaurus/preset-classic": "3.8.1",
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/faster": "3.10.0",
+    "@docusaurus/plugin-client-redirects": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
+    "@docusaurus/theme-common": "3.10.0",
     "@excalidraw/excalidraw": "^0.18.0",
     "@mdx-js/react": "^3.0.0",
     "@privy-io/react-auth": "^3.8.1",
@@ -35,9 +38,9 @@
     "viem": "^2.44.4"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.8.1",
-    "@docusaurus/tsconfig": "3.8.1",
-    "@docusaurus/types": "3.8.1",
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
     "baseline-browser-mapping": "^2.9.7",
     "buffer": "^6.0.3",
     "esbuild-loader": "^4.4.0",
@@ -60,6 +63,6 @@
     ]
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=22.13.0"
   }
 }

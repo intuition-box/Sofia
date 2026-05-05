@@ -1,385 +1,236 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * Homepage
  */
 
-/* Hero Section */
+/* ── Hero ──────────────────────────────────── */
+
 .heroSection {
-  padding: 8rem 0 4rem 0;
+  padding: 8rem 0 6rem 0;
   text-align: center;
   position: relative;
-  background: transparent;
-  min-height: 40vh;
+  background: var(--sofia-green-sage);
   display: flex;
   align-items: center;
+}
+
+/* Gradient fade at bottom of hero */
+.heroSection::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--sofia-bg-alt));
+  pointer-events: none;
+}
+
+.heroLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sofia-text-muted) !important;
+  margin: 0 0 1.5rem 0;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-hero);
+  font-weight: 400;
+  color: var(--sofia-text) !important;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 1.5rem auto;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.heroSubtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--sofia-text-muted) !important;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 2.5rem auto;
 }
 
 .buttonsContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 120px;
 }
 
-/* Gallery Section */
-.gallerySection {
-  padding: 4rem 0;
-  background: transparent;
-  position: relative;
+.heroLink {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--sofia-text-muted);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
 }
 
-/* Logo Section */
-.logoSection {
-  padding: 4rem 0;
-  background: transparent;
-  position: relative;
-  overflow: hidden;
+.heroLink:hover {
+  color: var(--sofia-text);
 }
+
+/* ── Pillars ───────────────────────────────── */
+
+.pillarsSection {
+  padding: 4rem 0 3rem 0;
+  background: var(--sofia-bg-alt);
+}
+
+.pillarsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.pillar {
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+
+.pillarIcon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1rem;
+  opacity: 0.85;
+}
+
+[data-theme='dark'] .pillarIcon {
+  filter: invert(1);
+}
+
+.pillarTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  color: var(--sofia-text);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.pillarDesc {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--sofia-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Socials ───────────────────────────────── */
+
+.socialsSection {
+  padding: 3rem 0 4rem 0;
+  background: var(--sofia-bg);
+}
+
+.socialsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid var(--sofia-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--sofia-text-muted);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.socialLink:hover {
+  color: var(--sofia-text);
+  border-color: var(--sofia-border-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.socialIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+[data-theme='dark'] .socialIcon {
+  filter: invert(1);
+}
+
+/* ── Dark mode ─────────────────────────────── */
+
+[data-theme='dark'] .heroSection {
+  background: var(--sofia-green-sage);
+}
+
+/* ── Responsive ────────────────────────────── */
 
 @media screen and (max-width: 996px) {
   .heroSection {
-    padding: 6rem 2rem 3rem 2rem;
-    min-height: 30vh;
+    padding: 8rem 2rem 4rem 2rem;
   }
 
-  .gallerySection {
-    padding: 3rem 0;
+  .heroTitle {
+    font-size: 2.4rem;
   }
-}
 
-.hero {
-  max-width: 900px;
-  margin: 0 auto;
-}
+  .heroSubtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
 
-.imagesContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-  margin: 2rem 0;
-}
-
-.heroLogo {
-  max-width: 300px;
-  height: auto;
-  margin: 0;
-  display: block;
-  opacity: 1;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  flex: 1;
-  max-width: 45%;
-}
-
-@media screen and (max-width: 768px) {
-  .imagesContainer {
-    flex-direction: column;
+  .pillarsGrid {
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .heroLogo {
-    max-width: 80%;
-  }
-}
-
-.heroLogomanifesto {
-  max-width: 300px;
-  height: auto;
-  margin: 0 auto 0.5rem auto;
-  display: block;
-  opacity: 0.7;
-  border-radius: 10px;
-}
-
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 3rem;
-}
-
-@media screen and (max-width: 768px) {
-  .buttons {
-    flex-direction: column;
-    gap: 0.8rem;
+  .pillar {
+    padding: 1.5rem 1rem;
   }
 
-  .heroLogo {
-    max-width: 150px;
+  .socialsContainer {
+    gap: 1rem;
   }
-}
-
-/* Hero Content */
-.heroContent {
-  padding: 4rem 2rem;
-  text-align: left;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* Stats Section */
-.statsSection {
-  padding: 2rem 0;
-  background: transparent;
-}
-
-.statsGrid {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.statBox {
-  background: #02000b;
-  color: white;
-  padding: 1rem 3rem;
-  border: 2px solid #02000b;
-  border-radius: 50px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(2, 0, 11, 0.2);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  min-width: auto;
-}
-
-.statBox:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(2, 0, 11, 0.3);
-}
-
-.statNumber {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: white !important;
-}
-
-.statLabel {
-  font-size: 0.9rem;
-  opacity: 0.9;
-  color: white !important;
-}
-
-.manifestoSection {
-  text-align: center;
-  margin-top: 0.5rem;
-}
-
-.manifestoButton {
-  display: inline-block;
-  background: transparent;
-  color: #ffffff !important;
-  padding: 1rem 3rem;
-  border: 2px solid #02000b;
-  border-radius: 50px;
-  text-decoration: none !important;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.manifestoButton:hover {
-  background: #02000b;
-  color: white !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(2, 0, 11, 0.3);
-  text-decoration: none !important;
-}
-
-/* Section Styles */
-.visionSection,
-.missionSection,
-.problemSection,
-.painSection,
-.solutionSection {
-  padding: 1rem 0;
-  background: transparent;
-  color: #02000b;
-  position: relative;
-}
-
-/* Typography */
-.heroTitle {
-  font-size: 4.5rem;
-  font-weight: 450;
-  color: #ffffff !important;
-  text-align: center;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 10rem;
-  margin-bottom: 4rem;
-}
-
-.sectionTitle {
-  font-size: 2.18rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: #02000b !important;
-  text-align: center;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.sectionTitlemanifesto {
-  font-size: 2.18rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: #ffffff !important;
-  text-align: left;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.manifestoList {
-  text-align: left;
-}
-
-.sectionText {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  max-width: 800px;
-  margin: 0 auto 2rem auto;
-  color: #ffffff !important;
-  text-align: center;
-}
-
-.sectionTextmanifesto {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  max-width: 800px;
-  margin: 0 auto 2rem auto;
-  color: #ffffff !important;
-  text-align: left;
-}
-
-.manifestoArticle {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 0;
-}
-
-.manifestoList {
-  max-width: 800px;
-  margin: 0 auto 2rem auto;
-  padding-left: 2rem;
-  color: #ffffff !important;
-}
-
-.manifestoList li {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: #ffffff !important;
 }
 
 @media screen and (max-width: 768px) {
   .heroSection {
-    padding: 4rem 1rem 2rem 1rem;
-    min-height: 25vh;
-  }
-
-  .gallerySection {
-    padding: 2rem 0;
+    padding: 6rem 1rem 3rem 1rem;
   }
 
   .heroTitle {
     font-size: 2rem;
-    margin-top: 2rem;
-    margin-bottom: 3rem;
-    padding: 0 1rem;
-    line-height: 1.2;
+    line-height: 1.15;
   }
 
-  .sectionTitle {
-    font-size: 1.6rem;
-    margin-bottom: 1.5rem;
+  .heroSubtitle {
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
   }
 
-  .sectionText {
-    font-size: 1.33rem;
-    line-height: 1.6;
-    padding: 0 1rem;
-  }
-}
-
-/* Animation Classes */
-.scroll-section {
-  transition:
-    opacity 0.8s ease,
-    transform 0.8s ease;
-}
-
-.animated-text {
-  color: #02000b !important;
-}
-
-.animated-text--split-words .split-word {
-  display: inline-block;
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s ease;
-}
-
-/* Parallax and Sticky Sections */
-.parallax-section {
-  will-change: transform;
-}
-
-.sticky-reveal-container {
-  position: relative;
-}
-
-.sticky-reveal-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-/* Performance Optimizations */
-.scroll-section,
-.animated-text,
-.parallax-section {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: auto;
-}
-
-/* Optimize animations for GPU acceleration */
-.scroll-section {
-  transform: translate3d(0, 50px, 0);
-  transition:
-    opacity 0.8s ease,
-    transform 0.8s ease;
-}
-
-.scroll-section.animate-in {
-  transform: translate3d(0, 0, 0);
-}
-
-/* Responsive Design */
-@media screen and (max-width: 996px) {
-  .missionSection,
-  .problemSection,
-  .solutionSection {
-    padding: 6rem 0;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .missionSection,
-  .problemSection,
-  .solutionSection {
-    padding: 4rem 0;
+  .buttonsContainer {
+    flex-direction: column;
+    gap: 0.8rem;
   }
 }

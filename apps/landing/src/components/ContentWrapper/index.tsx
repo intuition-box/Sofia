@@ -1,24 +1,26 @@
-import React from 'react'
-import './ContentWrapper.css'
+import React from 'react';
+import './ContentWrapper.css';
 
 interface ContentWrapperProps {
-  children: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  wide?: boolean;
 }
 
-/**
- * ContentWrapper component that adds a backdrop blur filter
- * to make text readable over the PixelBlast animation
- */
 export default function ContentWrapper({
   children,
   className = '',
   style = {},
-}: ContentWrapperProps): JSX.Element {
+  wide = false,
+}: ContentWrapperProps): React.ReactElement {
+  const classes = ['content-wrapper', wide && 'content-wrapper--wide', className]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={`content-wrapper ${className}`} style={style}>
+    <div className={classes} style={style}>
       {children}
     </div>
-  )
+  );
 }
