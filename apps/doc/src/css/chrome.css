@@ -99,16 +99,18 @@
 }
 
 /* ── Sidebar ──────────────────────────────────────────────────── */
-/* Mirrors the Explorer NavSidebar — soft card surface, peach pill on   */
-/* active items with dark on-accent text.                               */
+/* Visually aligned with the BlogSidebar — flat, transparent rail,      */
+/* peach pill on active leaf links. */
 
 .theme-doc-sidebar-container {
-  background: var(--ds-card);
-  border-right: 1px solid var(--ds-border);
+  background: transparent;
+  border-right: 0;
   border-radius: 0;
-  padding: 1.5rem 0.75rem 2rem 1rem;
-  margin-right: 0;
+  padding: 0;
+  margin: 0;
   font-family: var(--font-body);
+  flex: 0 0 18%;
+  max-width: 18%;
 }
 
 aside .menu {
