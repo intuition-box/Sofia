@@ -1,54 +1,113 @@
 .section {
-  padding: 72px var(--space-xl);
+  padding: 96px var(--space-xl);
 }
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 48px;
+  gap: 32px;
+  margin-bottom: 56px;
+}
+
+.headerCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.title {
+  margin: 0;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 0;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.card {
+  position: relative;
+  padding: 32px 28px 36px;
+  border-right: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.card:last-child {
+  border-right: 0;
 }
 
 .num {
-  font-family: var(--font-heading);
-  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
-  font-weight: 300;
-  line-height: 1;
-  margin-bottom: 18px;
-  letter-spacing: -0.03em;
-  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--color-accent-ink);
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.num::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-soft);
 }
 
 .name {
-  font-size: var(--text-base);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 5px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  margin: 0 0 10px;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
+
 .name a {
-  transition: color var(--duration-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  transition: color var(--duration-fast) var(--ease-out);
 }
+
+.name a :global(svg) {
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
+  transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+
 .name a:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.name a:hover :global(svg) {
+  opacity: 1;
+  transform: translateX(2px);
 }
 
 .desc {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
   line-height: 1.6;
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 @media (max-width: 996px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
+  .card:nth-child(2n) { border-right: 0; }
 }
+
 @media (max-width: 640px) {
+  .section { padding: 72px var(--space-md); }
   .grid { grid-template-columns: 1fr; }
-  .header { flex-direction: column; gap: 14px; align-items: flex-start; }
+  .card { border-right: 0; }
+  .header { flex-direction: column; align-items: flex-start; }
 }

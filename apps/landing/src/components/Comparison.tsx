@@ -1,4 +1,5 @@
 import { useScrollAnim } from '../hooks/useScrollAnim';
+import { useTextSplit } from '../hooks/useTextSplit';
 import { ParallaxBg } from './ParallaxBg';
 import styles from './Comparison.module.css';
 
@@ -21,33 +22,37 @@ const CHECK = [
 ];
 
 export function Comparison() {
-  const titleRef = useScrollAnim();
-  const subRef = useScrollAnim();
-  const tableRef = useScrollAnim();
+  const headerRef = useScrollAnim<HTMLDivElement>();
+  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
+  const tableRef = useScrollAnim<HTMLTableElement>();
 
   return (
     <ParallaxBg src="/img/bg5.png" speed={0.15} zoom zoomMax={1.1} className={styles.section}>
       <div className="container">
-        <h2 ref={titleRef} className={`section-title anim ${styles.centered}`}>Sofia vs. the status quo.</h2>
-        <p ref={subRef} className={`section-subtitle anim ${styles.sub}`}>A transparent, user-first approach to digital identity.</p>
+        <div ref={headerRef} className={`${styles.header} anim anim-up`}>
+          <span className="mono-eyebrow">Why Sofia</span>
+          <h2 ref={titleRef} className={`section-title anim ${styles.title}`}>
+            Sofia vs. the status quo.
+          </h2>
+          <p className="section-subtitle">A transparent, user-first approach to digital identity.</p>
+        </div>
 
-
-        <table ref={tableRef as React.Ref<HTMLTableElement>} className={`${styles.table} anim`}>
+        <table ref={tableRef} className={`${styles.table} anim anim-up anim-d2`}>
           <thead>
             <tr>
-              <th className={styles.accent}>Sofia</th>
-              <th>Web2 Platforms</th>
-              <th>Web3 Native</th>
+              <th className={styles.headSofia}>Sofia</th>
+              <th>Web2 platforms</th>
+              <th>Web3 native</th>
             </tr>
           </thead>
           <tbody>
             {ROWS.map((row, i) => (
               <tr key={i}>
                 {row.map((cell, j) => (
-                  <td key={j}>
-                    <span className={CHECK[i][j] ? styles.check : styles.cross}>
+                  <td key={j} className={j === 0 ? styles.tdSofia : undefined}>
+                    <span className={CHECK[i][j] ? styles.check : styles.cross} aria-hidden="true">
                       {CHECK[i][j] ? '✓' : '×'}
-                    </span>{' '}
+                    </span>
                     {cell}
                   </td>
                 ))}
