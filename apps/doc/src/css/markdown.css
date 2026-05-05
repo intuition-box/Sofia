@@ -74,9 +74,12 @@
 
 /* ── Links ────────────────────────────────────────────────────── */
 
+/* Editorial link styling — only inside the actual markdown body
+   (.markdown is the wrapper Docusaurus puts around blog post + doc
+   content). Stays out of headers, sidebars, navbar, footer. */
 .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link),
-.blog-post-page a:not(.hash-link):not(.button) {
-  color: var(--ds-accent-ink);
+.markdown a:not(.hash-link):not(.button):not(.doc-card-link) {
+  color: var(--ds-accent);
   text-decoration: none;
   font-weight: 500;
   background-image: linear-gradient(currentColor, currentColor);
@@ -88,18 +91,9 @@
 }
 
 .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link):hover,
-.blog-post-page a:not(.hash-link):not(.button):hover {
+.markdown a:not(.hash-link):not(.button):not(.doc-card-link):hover {
   color: var(--ds-ink);
   background-size: 100% 2px;
-}
-
-[data-theme='dark'] .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link),
-[data-theme='dark'] .blog-post-page a:not(.hash-link):not(.button) {
-  color: var(--ds-accent);
-}
-
-[data-theme='dark'] .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link):hover {
-  color: var(--ds-ink);
 }
 
 /* ── Tables ───────────────────────────────────────────────────── */
@@ -179,8 +173,7 @@ code[class*="language-"],
 }
 
 .theme-doc-markdown code:not(pre code),
-.blog-post-page code:not(pre code),
-[class*="docPage"] code:not(pre code) {
+.markdown code:not(pre code) {
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border-soft);
   color: var(--ds-ink);

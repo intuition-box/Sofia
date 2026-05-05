@@ -16,7 +16,13 @@
 .navbar__inner {
   max-width: var(--doc-max-wide);
   margin: 0 auto;
-  padding: 0 1.25rem;
+  padding: 0 2rem;
+}
+
+.navbar > .navbar__inner,
+.navbar {
+  padding-left: max(2rem, env(safe-area-inset-left));
+  padding-right: max(2rem, env(safe-area-inset-right));
 }
 
 .navbar__brand {
@@ -98,84 +104,224 @@
   }
 }
 
-/* ── Sidebar ──────────────────────────────────────────────────── */
-/* Doc sidebar uniformised with the BlogSidebar — same fixed width,     */
-/* flat transparent rail, no border, no negative offset.               */
+/* ── Sidebars (doc + blog) ────────────────────────────────────── */
 
 :root {
   --doc-sidebar-width: 260px;
   --doc-sidebar-hidden-width: 30px;
 }
 
-.theme-doc-sidebar-container {
-  background: transparent !important;
-  border-right: 0 !important;
-  border-radius: 0;
-  padding: 0;
-  margin-top: 0 !important;
-  font-family: var(--font-body);
-}
-
+/* Doc sidebar — drop the default border-right, keep Docusaurus' sticky.   */
+.theme-doc-sidebar-container,
 [class*="docSidebarContainer"] {
+  background: transparent;
   border-right: 0 !important;
-  margin-top: 0 !important;
 }
 
-aside .menu {
+@media (min-width: 997px) {
+  .theme-doc-sidebar-container [class*="sidebar_"] {
+    padding-left: 1.25rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Blog shell — flex layout that mirrors DocRoot/Layout.                  */
+/*   <div .blog-shell>                                                     */
+/*     <aside class="col col--3">  (default BlogSidebar wrapper)          */
+/*     <main .blog-shell-main>                                            */
+/*       .container > .row > .col                                          */
+/*     </main>                                                             */
+/*   </div>                                                                */
+.blog-shell {
+  display: flex;
+  width: 100%;
+}
+
+.blog-shell-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 997px) {
+  .blog-shell-main {
+    max-width: calc(100% - var(--doc-sidebar-width));
+  }
+
+  .blog-shell > aside.col--3 {
+    flex: 0 0 var(--doc-sidebar-width);
+    max-width: var(--doc-sidebar-width);
+    width: var(--doc-sidebar-width);
+    padding: 0;
+    margin: 0;
+  }
+
+  .blog-shell > aside.col--3 [class*="sidebar_"] {
+    position: sticky;
+    top: var(--ifm-navbar-height);
+    max-height: calc(100vh - var(--ifm-navbar-height));
+    overflow-y: auto;
+    padding: 0 0.75rem 1.5rem 1.25rem;
+  }
+}
+
+@media (max-width: 996px) {
+  .blog-shell {
+    flex-direction: column;
+  }
+
+  .blog-shell > aside.col--3 {
+    display: none;
+  }
+}
+
+/* Common section title — doc collapsibles + blog sidebar title */
+aside .menu__list-item-collapsible > .menu__link,
+[class*="sidebarItemTitle"] {
   font-family: var(--font-body);
-  padding: 0;
-}
-
-aside .menu__list-item-collapsible > .menu__link {
-  color: var(--ds-muted);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.09em;
+  color: var(--ds-muted);
   padding: 0.5rem 0.65rem;
+  margin: 0 0 0.25rem;
 }
 
-aside .menu__link {
-  color: var(--ds-ink-soft);
-  border-radius: 8px;
-  font-size: 0.875rem;
+[class*="yearGroupHeading"] {
+  font-family: var(--font-heading);
   font-weight: 500;
-  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  margin: 1.25rem 0 0.5rem;
+  padding: 0 0.65rem;
+}
+
+[class*="sidebarItemList"] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+[class*="sidebarItem_"] {
+  margin: 0;
+}
+
+/* Common link — applies to .menu__link (doc) and .sidebarItemLink_* (blog) */
+aside .menu__link,
+aside [class*="sidebarItemLink"] {
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: background-color 150ms ease,
-              color 150ms ease;
+  color: var(--ds-ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
-aside .menu__link:hover {
+aside .menu__link:hover,
+aside [class*="sidebarItemLink"]:hover {
   background-color: var(--ds-bg-subtle);
   color: var(--ds-ink);
+  text-decoration: none;
 }
 
-/* Active state — only on leaf links, not on collapsible parents. */
-aside .menu__link--active:not(.menu__link--sublist-caret),
-aside .menu__link--active:not(.menu__link--sublist-caret):hover {
+/* Active leaf — peach pill on both doc and blog sidebars. We hook on
+   aria-current="page" (always present on Link/NavLink) PLUS the
+   CSS-module class names, AND we also redefine --ifm-color-primary
+   locally so Docusaurus' own !important rule resolves to dark ink. */
+html aside a[aria-current="page"],
+html aside .menu__link--active:not(.menu__link--sublist-caret),
+html aside [class*="sidebarItemLinkActive"] {
+  --ifm-color-primary: var(--ds-on-accent);
   background-color: var(--ds-accent) !important;
   color: var(--ds-on-accent) !important;
-  font-weight: 600;
+  font-weight: 600 !important;
+  border-radius: 8px;
 }
 
-/* Parent of an active leaf — keep the normal label colour, never peach. */
+/* Doc collapsible parent — never inherit the active pill */
 aside .menu__list-item-collapsible--active > .menu__link,
 aside .menu__list-item-collapsible--active > .menu__link:hover,
 aside .menu__link--sublist-caret.menu__link--active,
 aside .menu__link--sublist-caret.menu__link--active:hover {
   background-color: transparent !important;
   color: var(--ds-ink) !important;
-  font-weight: 500;
+  font-weight: 500 !important;
 }
 
 aside .menu__caret::before {
   filter: opacity(0.55);
 }
 
-/* ── Blog list ────────────────────────────────────────────────── */
+/* Blog post authors — compact pair, side-by-side, ~12px between blocks. */
+.row:has([class*="authorCol_"]) {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  margin: 0 !important;
+  gap: 0.75rem;
+}
+
+[class*="authorCol_"] {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+[class*="authorCol_"] .avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 !important;
+}
+
+[class*="authorImage_"],
+[class*="authorCol_"] .avatar__photo {
+  width: 2rem !important;
+  height: 2rem !important;
+  flex-shrink: 0;
+}
+
+[class*="authorDetails_"] {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+[class*="authorName_"] {
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+[class*="authorTitle_"] {
+  font-size: 0.65rem;
+  color: var(--ds-muted);
+  line-height: 1.2;
+}
+
+[class*="authorSocials_"] {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 1px;
+}
+
+[class*="authorSocialLink_"] {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Blog list / page wrappers ────────────────────────────────── */
 
 .avatar__photo {
   width: 2.5rem;
@@ -184,7 +330,8 @@ aside .menu__caret::before {
   border: 1px solid var(--ds-border);
 }
 
-article[class*="blogPost"] {
+article[class*="blogPost"],
+.blog-post-page article {
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--ds-border-soft);
@@ -192,114 +339,39 @@ article[class*="blogPost"] {
   padding: 0 0 2rem;
   margin: 0 0 2rem;
   box-shadow: none;
-  transition: none;
-  transform: none;
 }
 
-article[class*="blogPost"]:hover {
-  background: transparent;
-  border-color: var(--ds-border-soft);
-  box-shadow: none;
-  transform: none;
-}
-
-article[class*="blogPost"] h2 a {
+article[class*="blogPost"] h2 a,
+.blog-post-page article header h2 a {
   font-family: var(--font-heading);
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 
-/* BlogSidebar — Docusaurus emits CSS-module class names like              */
-/* sidebar_X / sidebarItemLink_X / sidebarItemLinkActive_X on the          */
-/* default `<aside class="col col--3">` rail. We hook on those.            */
-
-.blog-list-page aside.col--3,
-.blog-post-page aside.col--3 {
-  flex: 0 0 260px;
-  max-width: 260px;
+/* Align every block inside an article on the same left edge — kill the   */
+/* row negative-margin and the col padding for inner rows (authors,       */
+/* read-more), and left-align the read-more CTA.                          */
+article > .row,
+article > header .row,
+article > footer .row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
-.blog-list-page aside.col--3 nav,
-.blog-post-page aside.col--3 nav {
-  background: transparent;
-  border: 0;
-  padding: 0;
+article .row > .col {
+  padding-left: 0 !important;
 }
 
-.blog-list-page [class*="sidebarItemTitle"],
-.blog-post-page [class*="sidebarItemTitle"] {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--ds-muted);
-  padding: 0.5rem 0.65rem;
-  margin-bottom: 0.25rem;
+article .col.text--right {
+  text-align: left !important;
 }
 
-.blog-list-page [class*="sidebarItemList"],
-.blog-post-page [class*="sidebarItemList"] {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+article > footer,
+article > .row:last-child {
+  margin-top: 1rem;
 }
 
-.blog-list-page [class*="sidebarItem_"],
-.blog-post-page [class*="sidebarItem_"] {
-  margin: 0;
-}
-
-.blog-list-page [class*="sidebarItemLink"],
-.blog-post-page [class*="sidebarItemLink"] {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--ds-ink-soft);
-  padding: 0.55rem 0.7rem;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background-color 150ms ease, color 150ms ease;
-}
-
-.blog-list-page [class*="sidebarItemLink"]:hover,
-.blog-post-page [class*="sidebarItemLink"]:hover {
-  background-color: var(--ds-bg-subtle);
-  color: var(--ds-ink);
-  text-decoration: none;
-}
-
-/* The active article — peach pill, dark ink. */
-.blog-list-page a[class*="sidebarItemLinkActive"],
-.blog-list-page a[class*="sidebarItemLinkActive"]:hover,
-.blog-post-page a[class*="sidebarItemLinkActive"],
-.blog-post-page a[class*="sidebarItemLinkActive"]:hover {
-  background-color: var(--ds-accent) !important;
-  color: var(--ds-on-accent) !important;
-  font-weight: 600 !important;
-}
-
-/* Zero out the page-level wrappers Docusaurus puts around blog + doc */
-.blog-list-page .container,
-.blog-post-page .container,
-.docs-doc-page .container,
-.blog-list-page .row,
-.blog-post-page .row,
-.docs-doc-page .row {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.blog-list-page .margin-vert--lg,
-.blog-post-page .margin-vert--lg,
-.docs-doc-page .margin-vert--lg {
-  margin-top: 0;
-  margin-bottom: 0;
-}
 
 /* ── Footer ───────────────────────────────────────────────────── */
 
