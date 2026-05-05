@@ -13,8 +13,8 @@ export default function ThemedCardNav(): JSX.Element {
   const menuItems = [
     {
       label: "About",
-      bgColor: isDark ? "#1e1e1e" : "#eae8e5",
-      textColor: isDark ? "#f0f0f0" : "#1a1a1a",
+      bgColor: "var(--ds-card)",
+      textColor: "var(--ds-ink)",
       links: [
         { label: "About us", href: "/about", ariaLabel: "About us" },
         { label: "Manifesto", href: "/manifesto", ariaLabel: "Read Manifesto" },
@@ -24,8 +24,8 @@ export default function ThemedCardNav(): JSX.Element {
     },
     {
       label: "Resources",
-      bgColor: isDark ? "#2a3322" : "#c8cfb6",
-      textColor: isDark ? "#f0f0f0" : "#1a1a1a",
+      bgColor: "var(--ds-accent-soft)",
+      textColor: "var(--ds-ink)",
       links: [
         { label: "Documentation", href: "/docs/introduction", ariaLabel: "Read Documentation" },
         { label: "Sofia Values", href: "/values", ariaLabel: "View Sofia Values" },
@@ -34,8 +34,8 @@ export default function ThemedCardNav(): JSX.Element {
     },
     {
       label: "Links",
-      bgColor: isDark ? "#1e1e1e" : "#eae8e5",
-      textColor: isDark ? "#f0f0f0" : "#1a1a1a",
+      bgColor: "var(--ds-card)",
+      textColor: "var(--ds-ink)",
       links: [
         { label: "Github", href: "https://github.com/intuition-box", ariaLabel: "View on GitHub" },
         { label: "X", href: "https://x.com/0xsofia3", ariaLabel: "Follow us on X" },
@@ -50,10 +50,10 @@ export default function ThemedCardNav(): JSX.Element {
       logo={isDark ? "/img/logoWhite.svg" : "/img/logoDark.svg"}
       logoAlt="Sofia Logo"
       items={menuItems}
-      baseColor={isDark ? "#0a0a0a" : "#f5f4f2"}
-      menuColor={isDark ? "#f0f0f0" : "#1a1a1a"}
-      buttonBgColor={isDark ? "#e8e6e3" : "#2d2d2d"}
-      buttonTextColor={isDark ? "#0a0a0a" : "#ffffff"}
+      baseColor="var(--ds-bg-subtle)"
+      menuColor="var(--ds-ink)"
+      buttonBgColor="var(--ds-accent)"
+      buttonTextColor="var(--ds-on-accent)"
       ease="circ.out"
       isDark={isDark}
       onToggleDarkMode={toggleDarkMode}

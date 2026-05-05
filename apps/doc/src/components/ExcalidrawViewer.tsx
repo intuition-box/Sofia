@@ -57,18 +57,18 @@ export default function ExcalidrawViewer({ src }: { src: string }) {
     loadJSON();
   }, [src]);
 
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
+  if (error) return <p style={{ color: 'var(--distrusted)' }}>{error}</p>;
   if (!ExcalidrawComponent) return <p>Loading Excalidraw component...</p>;
   if (!data) return <p>Loading diagram...</p>;
 
   return (
     <div style={{
       height: 700,
-      border: '2px solid #e0e0e0',
+      border: '1px solid var(--ds-border)',
       borderRadius: 12,
       marginBottom: '2rem',
       overflow: 'hidden',
-      background: '#ffffff'
+      background: 'var(--ds-bg)'
     }}>
       <ExcalidrawComponent
         initialData={data}

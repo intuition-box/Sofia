@@ -18,14 +18,14 @@
 .title {
   font-size: 3.5rem;
   font-weight: 500;
-  color: #ffffff !important;
+  color: var(--ds-bg) !important;
   margin: 0 0 1.5rem 0;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
   font-size: 1.15rem;
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: color-mix(in srgb, var(--ds-bg) 60%, transparent) !important;
   line-height: 1.7;
   margin: 0;
 }
@@ -43,8 +43,8 @@
 .loadingSpinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid #ffffff;
+  border: 3px solid color-mix(in srgb, var(--ds-bg) 10%, transparent);
+  border-top: 3px solid var(--ds-bg);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -60,7 +60,7 @@
 
 .loadingText {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: color-mix(in srgb, var(--ds-bg) 50%, transparent) !important;
   margin: 0;
 }
 

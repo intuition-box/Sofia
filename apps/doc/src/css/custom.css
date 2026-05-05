@@ -1,5 +1,12 @@
 /**
- * Sofia Chronicles — Warm Sage Theme
+ * Sofia Doc — Design System tokens
+ *
+ * Imports `@0xsofia/design-system/theme.css` which provides --ds-* tokens
+ * (surface, ink, accent, semantic intentions). This file only defines:
+ *   - Doc-specific scales (radius, space, font, shadow, motion) under --ds-doc-*
+ *   - Infima (--ifm-*) overrides remapped onto --ds-*
+ *   - Backwards-compatible --sofia-* aliases pointing to --ds-* so existing
+ *     `var(--sofia-...)` consumers keep working through the migration.
  *
  * Architecture:
  * 1. Fonts & Design Tokens
@@ -22,31 +29,33 @@
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap');
+@import '@0xsofia/design-system/theme.css';
 
 :root {
-  /* Sofia palette */
-  --sofia-bg:          #ffffff;
-  --sofia-bg-alt:      #f5f4f2;
-  --sofia-bg-elevated: #eae8e5;
+  /* Sofia → Design System aliases (backwards compat).
+     The --ds-* tokens flip automatically in dark mode via the DS theme. */
+  --sofia-bg:          var(--ds-bg);
+  --sofia-bg-alt:      var(--ds-bg-subtle);
+  --sofia-bg-elevated: var(--ds-card);
 
-  --sofia-text:       #1a1a1a;
-  --sofia-text-muted: #6b6b6b;
-  --sofia-text-dim:   #999999;
+  --sofia-text:       var(--ds-ink);
+  --sofia-text-muted: var(--ds-muted);
+  --sofia-text-dim:   var(--ds-muted-soft);
 
-  --sofia-border:       #e0deda;
-  --sofia-border-hover: #c8c5c0;
+  --sofia-border:       var(--ds-border);
+  --sofia-border-hover: var(--ds-border);
 
-  --sofia-accent:     #2d2d2d;
-  --sofia-success:    #3a8a3a;
-  --sofia-error:      #c44a4a;
+  --sofia-accent:     var(--ds-accent);
+  --sofia-success:    var(--trusted);
+  --sofia-error:      var(--distrusted);
 
-  --sofia-green-sage: #c8cfb6;
-  --sofia-green-vif:  #8fb87a;
+  --sofia-green-sage: var(--ds-accent-soft);
+  --sofia-green-vif:  var(--ds-accent);
 
   /* Layout */
   --max-width: 1200px;
 
-  /* Radius */
+  /* Radius (doc-local — DS only ships --ds-radius single value) */
   --radius-xl:   24px;
   --radius-lg:   16px;
   --radius-md:   12px;
@@ -87,7 +96,7 @@
   --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.15);
 
   /* Glass */
-  --glass-bg:   color-mix(in srgb, var(--sofia-bg) 70%, transparent);
+  --glass-bg:   color-mix(in srgb, var(--ds-bg) 70%, transparent);
   --glass-blur: 20px;
 
   /* Transitions */
@@ -97,27 +106,27 @@
   --duration-normal: 0.3s;
   --duration-slow:   0.65s;
 
-  /* Infima overrides */
-  --ifm-color-primary: #2d2d2d;
-  --ifm-color-primary-dark: #1a1a1a;
-  --ifm-color-primary-darker: #111111;
-  --ifm-color-primary-darkest: #000000;
-  --ifm-color-primary-light: #4a4a4a;
-  --ifm-color-primary-lighter: #6b6b6b;
-  --ifm-color-primary-lightest: #999999;
+  /* Infima overrides — pointed at DS tokens */
+  --ifm-color-primary: var(--ds-ink);
+  --ifm-color-primary-dark: var(--ds-ink-soft);
+  --ifm-color-primary-darker: var(--ds-ink-soft);
+  --ifm-color-primary-darkest: var(--ds-ink-soft);
+  --ifm-color-primary-light: var(--ds-muted);
+  --ifm-color-primary-lighter: var(--ds-muted);
+  --ifm-color-primary-lightest: var(--ds-muted-soft);
 
-  --ifm-background-color: var(--sofia-bg);
-  --ifm-background-surface-color: var(--sofia-bg-alt);
+  --ifm-background-color: var(--ds-bg);
+  --ifm-background-surface-color: var(--ds-bg-subtle);
   --ifm-navbar-background-color: transparent;
   --ifm-footer-background-color: transparent;
 
-  --ifm-font-color-base: var(--sofia-text);
-  --ifm-color-content: var(--sofia-text);
-  --ifm-color-content-secondary: var(--sofia-text-muted);
-  --ifm-heading-color: var(--sofia-text);
+  --ifm-font-color-base: var(--ds-ink);
+  --ifm-color-content: var(--ds-ink);
+  --ifm-color-content-secondary: var(--ds-muted);
+  --ifm-heading-color: var(--ds-ink);
 
-  --ifm-link-color: var(--sofia-accent);
-  --ifm-link-hover-color: var(--sofia-green-vif);
+  --ifm-link-color: var(--ds-accent-ink);
+  --ifm-link-hover-color: var(--ds-ink);
   --ifm-link-hover-decoration: none;
 
   --ifm-font-family-base: var(--font-body);
@@ -127,59 +136,28 @@
 
   --ifm-navbar-height: 9rem;
 
-  --ifm-table-stripe-background: rgba(0, 0, 0, 0.02);
-  --ifm-table-border-color: var(--sofia-border);
-  --ifm-hr-border-color: var(--sofia-border);
+  --ifm-table-stripe-background: var(--ds-border-soft);
+  --ifm-table-border-color: var(--ds-border);
+  --ifm-hr-border-color: var(--ds-border);
+  --ifm-card-background-color: var(--ds-card);
 
-  --docusaurus-highlighted-code-line-bg: rgba(139, 184, 122, 0.12);
+  --docusaurus-highlighted-code-line-bg: color-mix(in srgb, var(--ds-accent) 18%, transparent);
 }
 
 /* ============================================
-   1b. DARK MODE TOKENS
+   1b. DARK MODE OVERRIDES (only what DS doesn't already flip)
    ============================================ */
 
 [data-theme='dark'] {
-  --sofia-bg:          #0a0a0a;
-  --sofia-bg-alt:      #141414;
-  --sofia-bg-elevated: #1e1e1e;
-
-  --sofia-text:       #f0f0f0;
-  --sofia-text-muted: #8a8a8a;
-  --sofia-text-dim:   #555555;
-
-  --sofia-border:       #2a2a2a;
-  --sofia-border-hover: #3a3a3a;
-
-  --sofia-accent:     #e8e6e3;
-
-  --sofia-green-sage: #2a3322;
-  --sofia-green-vif:  #a3d48e;
-
-  /* Shadows — dark */
+  /* Shadows — denser in dark for legibility */
   --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md:        0 6px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg:        0 20px 60px rgba(0, 0, 0, 0.5);
   --shadow-btn:       0 4px 16px rgba(255, 255, 255, 0.05);
   --shadow-btn-hover: 0 6px 24px rgba(255, 255, 255, 0.1);
 
-  /* Glass — dark */
-  --glass-bg: color-mix(in srgb, var(--sofia-bg) 70%, transparent);
-
-  /* Infima overrides — dark */
-  --ifm-color-primary: #e8e6e3;
-  --ifm-color-primary-dark: #d4d2cf;
-  --ifm-color-primary-darker: #c0bebb;
-  --ifm-color-primary-darkest: #999693;
-  --ifm-color-primary-light: #f0efed;
-  --ifm-color-primary-lighter: #f5f4f3;
-  --ifm-color-primary-lightest: #ffffff;
-
-  --ifm-background-color: var(--sofia-bg);
-  --ifm-background-surface-color: var(--sofia-bg-alt);
-
-  --ifm-table-stripe-background: rgba(255, 255, 255, 0.03);
-
-  --docusaurus-highlighted-code-line-bg: rgba(163, 212, 142, 0.1);
+  --ifm-table-stripe-background: color-mix(in srgb, var(--ds-bg) 3%, transparent);
+  --docusaurus-highlighted-code-line-bg: color-mix(in srgb, var(--ds-accent) 12%, transparent);
 }
 
 /* ============================================
@@ -244,7 +222,7 @@ body[class*="index"] main {
 
   .navbar-sidebar__backdrop,
   .theme-layout-navbar-sidebar-panel {
-    background-color: rgba(245, 244, 242, 0.95);
+    background-color: color-mix(in srgb, var(--ds-bg-subtle) 95%, transparent);
     backdrop-filter: blur(16px);
   }
 
@@ -263,7 +241,7 @@ body[class*="index"] main {
 
 [data-theme='dark'] .navbar-sidebar__backdrop,
 [data-theme='dark'] .theme-layout-navbar-sidebar-panel {
-  background-color: rgba(10, 10, 10, 0.9);
+  background-color: color-mix(in srgb, var(--ds-bg) 90%, transparent);
   backdrop-filter: blur(16px);
 }
 
@@ -309,7 +287,7 @@ aside .menu__link--active,
 aside .menu__link--active:hover {
   color: var(--sofia-green-vif) !important;
   font-weight: 600;
-  background-color: rgba(143, 184, 122, 0.1);
+  background-color: color-mix(in srgb, var(--ds-accent) 10%, transparent);
   border-left: 3px solid var(--sofia-green-vif);
 }
 
@@ -474,7 +452,7 @@ pre {
 }
 
 [data-theme='dark'] pre {
-  background-color: rgba(0, 0, 0, 0.5) !important;
+  background-color: color-mix(in srgb, var(--ds-ink) 50%, transparent) !important;
 }
 
 .codeBlockLines,
@@ -496,8 +474,8 @@ code[class*="language-"],
 /* Inline code */
 [class*="docPage"] code:not(pre code),
 .theme-doc-page-layout code:not(pre code) {
-  background: rgba(143, 184, 122, 0.12);
-  border: 1px solid rgba(143, 184, 122, 0.2);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 20%, transparent);
   color: var(--sofia-accent);
   border-radius: 4px;
   padding: 0.15em 0.4em;
@@ -652,7 +630,7 @@ code[class*="language-"],
 
 .breadcrumbs__item--active .breadcrumbs__link {
   color: var(--sofia-green-vif);
-  background: rgba(143, 184, 122, 0.1);
+  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
 }
 
 /* ============================================
@@ -926,9 +904,9 @@ button:focus-visible,
   background: linear-gradient(
     105deg,
     transparent 20%,
-    rgba(143, 184, 122, 0.04) 45%,
-    rgba(143, 184, 122, 0.06) 50%,
-    rgba(143, 184, 122, 0.04) 55%,
+    color-mix(in srgb, var(--ds-accent) 4%, transparent) 45%,
+    color-mix(in srgb, var(--ds-accent) 6%, transparent) 50%,
+    color-mix(in srgb, var(--ds-accent) 4%, transparent) 55%,
     transparent 80%
   );
   transition: none;

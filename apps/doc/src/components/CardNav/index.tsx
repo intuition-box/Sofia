@@ -37,7 +37,7 @@ const CardNav: React.FC<CardNavProps> = ({
   items,
   className = '',
   ease = 'circ.out',
-  baseColor = '#fff',
+  baseColor = 'var(--ds-bg)',
   menuColor,
   buttonBgColor,
   buttonTextColor,
@@ -169,7 +169,7 @@ const CardNav: React.FC<CardNavProps> = ({
       <nav
         ref={navRef}
         className={`card-nav ${isExpanded ? 'open' : ''}`}
-        style={{ backgroundColor: isDark ? 'rgba(10, 10, 10, 0.8)' : 'rgba(255, 255, 255, 0.75)' }}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--ds-bg) 80%, transparent)' }}
       >
         <div className="card-nav-top">
           <div
@@ -178,7 +178,7 @@ const CardNav: React.FC<CardNavProps> = ({
             role="button"
             aria-label={isExpanded ? 'Close menu' : 'Open menu'}
             tabIndex={0}
-            style={{ color: menuColor || '#000' }}
+            style={{ color: menuColor || 'var(--ds-ink)' }}
           >
             <div className="hamburger-line" />
             <div className="hamburger-line" />
@@ -193,7 +193,7 @@ const CardNav: React.FC<CardNavProps> = ({
               className="dark-mode-toggle"
               onClick={onToggleDarkMode}
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{ color: menuColor || '#000' }}
+              style={{ color: menuColor || 'var(--ds-ink)' }}
             >
               {isDark ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

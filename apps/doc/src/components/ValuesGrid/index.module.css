@@ -33,7 +33,7 @@
   height: 8px;
   background: var(--sofia-success);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--trusted) 50%, transparent);
 }
 
 .networkLabel {
@@ -107,8 +107,8 @@
 
 /* Error Banner */
 .errorBanner {
-  background: rgba(196, 74, 74, 0.1);
-  border: 1px solid rgba(196, 74, 74, 0.3);
+  background: color-mix(in srgb, var(--distrusted) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--distrusted) 30%, transparent);
   border-radius: 10px;
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
@@ -126,7 +126,7 @@
 
 .errorDismiss {
   background: transparent;
-  border: 1px solid rgba(196, 74, 74, 0.4);
+  border: 1px solid color-mix(in srgb, var(--distrusted) 40%, transparent);
   color: var(--sofia-error) !important;
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
@@ -137,7 +137,7 @@
 }
 
 .errorDismiss:hover {
-  background: rgba(196, 74, 74, 0.15);
+  background: color-mix(in srgb, var(--distrusted) 15%, transparent);
 }
 
 /* Values Grid */

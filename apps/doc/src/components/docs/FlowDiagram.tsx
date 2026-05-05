@@ -30,8 +30,8 @@ export default function FlowDiagram({ steps, direction = 'horizontal' }: FlowDia
         <React.Fragment key={i}>
           <div
             style={{
-              background: 'rgba(143, 184, 122, 0.08)',
-              border: '1px solid rgba(143, 184, 122, 0.25)',
+              background: 'color-mix(in srgb, var(--ds-accent) 8%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--ds-accent) 25%, transparent)',
               borderRadius: '10px',
               padding: '0.8rem 1.2rem',
               textAlign: 'center',

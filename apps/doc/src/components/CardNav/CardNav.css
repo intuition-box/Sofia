@@ -15,9 +15,9 @@
   padding: 0;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--sofia-border, #e0deda);
+  border: 1px solid var(--ds-border);
   border-radius: 0.75rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--ds-ink) 8%, transparent);
   position: relative;
   overflow: hidden;
   will-change: height;
@@ -107,8 +107,8 @@
 }
 
 .card-nav-cta-button {
-  background-color: var(--sofia-accent, #2d2d2d);
-  color: var(--sofia-bg, #ffffff);
+  background-color: var(--ds-accent);
+  color: var(--ds-on-accent);
   border: none;
   border-radius: calc(0.75rem - 0.35rem);
   padding: 0 1rem;
@@ -119,7 +119,8 @@
 }
 
 .card-nav-cta-button:hover {
-  background-color: var(--sofia-text, #1a1a1a);
+  background-color: var(--ds-ink);
+  color: var(--ds-bg);
 }
 
 .card-nav-content {
