@@ -37,7 +37,6 @@ function Countdown() {
   return (
     <span className={styles.countdown}>
       <span className={styles.countdownNum}>{display}</span>
-      <span className={styles.countdownLabel}>Alpha Reward Program is live</span>
     </span>
   );
 }

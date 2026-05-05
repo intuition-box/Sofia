@@ -1,6 +1,7 @@
 .footer {
-  padding: 48px var(--space-xl) 28px;
-  border-top: 1px solid var(--color-border);
+  padding: 64px var(--space-xl) 32px;
+  border-top: 1px solid var(--color-border-soft);
+  background: var(--color-bg);
 }
 
 .inner {
@@ -9,56 +10,93 @@
 }
 
 .columns {
-  display: flex;
-  gap: 64px;
-  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 56px;
+  margin-bottom: 56px;
 }
 
-.col {}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
 .colTitle {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text);
-  margin-bottom: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 .links {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
+
 .links a {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-  transition: color var(--duration-fast);
-}
-.links a:hover {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
   color: var(--color-text);
+  position: relative;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: opacity var(--duration-fast), transform var(--duration-normal) var(--ease-out);
+}
+
+.links a:hover {
+  color: var(--color-accent-ink);
+}
+
+.links a:hover::after {
+  opacity: 0.5;
+  transform: scaleX(1);
 }
 
 .copy {
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border);
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
+
 .copy img {
   width: 18px;
   height: 18px;
-  border-radius: 3px;
-  opacity: 0.35;
+  border-radius: var(--radius-sm);
+  opacity: 0.5;
 }
 
 @media (max-width: 640px) {
+  .footer { padding: 48px var(--space-md) 24px; }
   .columns {
-    flex-direction: column;
-    gap: 24px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 }
