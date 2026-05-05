@@ -1,0 +1,222 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+.logo img {
+  height: 36px;
+  width: auto;
+}
+
+.menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  list-style: none;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 10px 28px;
+}
+
+.menu a {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast);
+}
+.menu a:hover {
+  color: var(--color-text);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cta {
+  padding: 10px 24px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+.wallet:hover {
+  border-color: var(--color-border-hover);
+}
+.walletDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8fb87a;
+}
+.walletConnect {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  font-family: var(--font-body);
+}
+.walletConnect:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-hover);
+}
+.walletConnect:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* Burger — hidden on desktop */
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.burgerLine {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+  transform-origin: center;
+}
+.burgerOpen1 {
+  transform: translateY(7px) rotate(45deg);
+}
+.burgerOpen2 {
+  opacity: 0;
+}
+.burgerOpen3 {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Overlay for mobile menu */
+.overlay {
+  display: none;
+}
+
+:global(.dark) .menu a {
+  color: #8a8a8a;
+}
+:global(.dark) .menu a:hover {
+  color: #f0f0f0;
+}
+
+/* ── Mobile ────────────────────────────────── */
+@media (max-width: 900px) {
+  .menu {
+    display: none;
+    position: fixed;
+    transform: none;
+    top: 60px;
+    left: 16px;
+    right: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 0;
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    z-index: 200;
+  }
+
+  .menuOpen {
+    display: flex;
+  }
+
+  .menu li {
+    list-style: none;
+  }
+
+  .menu a {
+    display: block;
+    padding: 12px 24px;
+    font-size: 0.88rem;
+  }
+  .menu a:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  :global(.dark) .menu a:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: transparent;
+  }
+
+  .wallet,
+  .walletConnect {
+    display: none;
+  }
+
+  .cta {
+    padding: 8px 16px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 10px 20px;
+  }
+  .cta {
+    padding: 7px 14px;
+    font-size: 0.75rem;
+  }
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 19/09 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">September 19, 2025</div>
+<h1 class="post__title">Logbook 19/09</h1>
+<p>During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTube, Spotify and Twitch and making it easier for developers to configure secrets. We improved URL handling and state management, added a complete Pulse agent with its own tab and WebSocket infrastructure, and refined our detection logic to extract  data . On top of that we streamlined background code, unified message handlers, added badge/notification logic and rolled out a new theme extraction agent with bookmark and history import.</p>
+
+
+
+<p>All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triples; developers get a clearer architecture and a simpler way to extend the platform.</p>
+
+<p>On the design side, we implemented the orb on the home page, finalizing the logo and choosing the appropriate font for the whole app.</p>
+
+<p>We also decided to open this "build in public" part by refactoring the landing page and the light paper.</p>
+
+<hr>
+
+<h2>OAuth and URL Management</h2>
+<h3>OAuth Migration and Refactoring:</h3>
+
+<ul>
+<li>Complete refactoring of the OAuth service with dedicated folder organization</li>
+<li>Secure OAuth support for YouTube, Spotify, and Twitch</li>
+<li>Authorization code flow (YouTube/Spotify) and implicit flow (Twitch)</li>
+<li>External configuration for OAuth secrets</li>
+<li>Template oauth-config.example.ts for developers</li>
+<li>Extraction of user data and generation of triples from OAuth APIs</li>
+<li>Storing triples in IndexedDB via elizaDataService for displaying EchoesTab</li>
+</ul>
+
+
+<h3>URL Improvements:</h3>
+<ul>
+<li>Dynamic URLs during OAuth import</li>
+<li>Echoes tab with clickable links</li>
+<li>Priority system: official links fetched > user profile in case of errors</li>
+</ul>
+
+<hr>
+
+<h2>State and Data Management</h2>
+
+<h3>Authentication System:</h3>
+
+<ul>
+<li>Connection/disconnection state with full management</li>
+<li>Synchronous cleanup of all storage and tokens via "clear storage" button</li>
+<li>Automatic token update and verification for OAuth</li>
+<li>Updated Spotify scopes: user-read-private, user-follow-read, user-top-read</li>
+</ul>
+
+
+<h3>Data Detection:</h3>
+
+<ul>
+<li>Cleaned up Twitter DataDetector to work exclusively with Twitter</li>
+<li>Functional follow/unfollow logic via reading actual DOM data</li>
+<li>Action prediction based on DOM state</li>
+<li>Removed non-functional follower extraction logic</li>
+</ul>
+
+<hr>
+
+<h2>Pulse System</h2>
+
+<h3>Pulse Infrastructure:</h3>
+
+<ul>
+<li>Complete Pulse agent with a dedicated tab</li>
+<li>Content script sent to tabs</li>
+<li>WebSocket configuration for message manager and sender</li>
+<li>Constants for loaded channels</li>
+<li>Functional Pulse button in settings page</li>
+</ul>
+
+
+<h2>Pulse Features:</h2>
+
+<ul>
+<li>Search analysis working properly</li>
+<li>Display in search groups via Pulse Tab</li>
+<li>Resonance system and background gradient</li>
+<li>"Orb to pulse" transition fully operational</li>
+</ul>
+
+<hr>
+
+<h2>Technical Improvements</h2>
+
+<h3>Architecture Refactoring:</h3>
+
+<ul>
+<li>Simplified background files and removed code duplication</li>
+<li>websocket.ts: removed import aliases, unified socket configuration</li>
+<li>messageHandlers.ts: generalized handleDataExtraction for bookmarks/history</li>
+<li>messageSenders.ts: merged functions for theme extraction</li>
+<li>tripletProcessor.ts: removed unused idPrefix parameter</li>
+</ul>
+
+
+<h3>Badges and Notifications System:</h3>
+
+<ul>
+<li>Functional badge count based on storage detection (no longer relying on EchoesTab display)</li>
+<li>Updated message handler</li>
+</ul>
+
+
+<h3>Advanced Data Extraction:</h3>
+
+<ul>
+<li>Theme extraction system implemented with new agent</li>
+<li>Bookmark analysis</li>
+<li>History import enabled</li>
+<li>Improved parsing in WebSocket with message types</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

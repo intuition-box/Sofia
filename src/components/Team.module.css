@@ -1,0 +1,64 @@
+.section { padding: 72px var(--space-xl); }
+.centered { text-align: center; margin-bottom: 40px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 880px;
+  margin: 0 auto 48px;
+}
+
+.card {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 26px;
+}
+
+.cardHead { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.cardRole {
+  font-size: 0.68rem; font-weight: 600; color: var(--color-accent);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.cardName { font-size: 0.95rem; font-weight: 600; }
+.socials { display: flex; gap: 7px; margin-top: 3px; }
+.socials a { color: var(--color-text-muted); transition: color var(--duration-fast); }
+.socials a:hover { color: var(--color-text); }
+.socials svg { width: 13px; height: 13px; }
+
+.quote {
+  font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.55;
+  font-style: italic; margin-bottom: 12px;
+  padding-left: 12px; border-left: 2px solid var(--color-accent);
+}
+
+.list { list-style: none; }
+.list li {
+  font-size: 0.76rem; color: var(--color-text-muted);
+  padding-left: 12px; position: relative; margin-bottom: 3px;
+}
+.list li::before {
+  content: ''; position: absolute; left: 0; top: 7px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--color-accent);
+}
+
+/* Advisors */
+.advTitle { font-size: 1.3rem; margin-bottom: 24px; }
+.advGrid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; max-width: 880px; margin: 0 auto;
+}
+.adv { text-align: center; padding: 18px; display: block; color: inherit; text-decoration: none; }
+.adv:hover .advName { color: var(--color-accent); }
+.advAvatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block; }
+.advRole {
+  font-size: 0.68rem; font-weight: 600; color: var(--color-accent);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px;
+}
+.advName { font-size: 0.88rem; font-weight: 600; }
+.advCo { font-size: 0.76rem; color: var(--color-text-muted); }
+
+@media (max-width: 996px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .advGrid { grid-template-columns: 1fr; } }

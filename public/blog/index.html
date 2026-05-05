@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sofia Chronicles — Blog</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+.header{max-width:1200px;margin:0 auto;padding:100px 40px 40px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:400;letter-spacing:-.02em}
+.header__count{font-family:'Overpass Mono',monospace;font-size:.75rem;color:#6b6b6b}
+.grid{max-width:1200px;margin:0 auto;padding:0 40px 60px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#f7f7f5;border:1px solid #E9E9E9;border-radius:12px;padding:24px;transition:all .3s;display:flex;flex-direction:column}
+.card:hover{border-color:#8E9C78;transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.06)}
+.card__date{font-family:'Overpass Mono',monospace;font-size:.62rem;color:#485C11;font-weight:600;letter-spacing:.05em;margin-bottom:8px}
+.card__title{font-size:.92rem;font-weight:600;margin-bottom:8px;line-height:1.3}
+.card__exc{font-size:.78rem;color:#6b6b6b;line-height:1.55;margin-bottom:12px;flex:1}
+.card__link{font-size:.75rem;color:#485C11;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+.footer a{color:#485C11;text-decoration:underline}
+@media(max-width:996px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.header{flex-direction:column;gap:10px;align-items:flex-start}}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="../index.html" class="nav__back">&larr; Back to Home</a>
+</nav>
+<div class="header">
+<h1>Sofia Chronicles</h1>
+<span class="header__count">23 articles</span>
+</div>
+<div class="grid">
+<a href="logbook-13-03.html" class="card">
+<div class="card__date">MAR 13, 2026</div>
+<h3 class="card__title">Logbook #24 — Position Board & On-Chain Streaks</h3>
+<p class="card__exc">This week we shipped the Position Board — after certifying a page, you now see exactly who else certified it, their rank, and their avatar. We also added a Share to X button so you...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-06-03.html" class="card">
+<div class="card__date">MAR 6, 2026</div>
+<h3 class="card__title">Logbook #23 — Vote Tab & First Claim Experience</h3>
+<p class="card__exc">This week we shipped the Vote Tab — a brand new section in Resonance where you can support or oppose curated claims and lists. We also made it easier for new users to get started w...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-27-02.html" class="card">
+<div class="card__date">FEB 27, 2026</div>
+<h3 class="card__title">Logbook #22 — Beta Season Pool & Unified Fees</h3>
+<p class="card__exc">Big week on Sofia — we unified the transaction confirmation screen across the entire app, launched the Beta Season Pool (a shared vault funded by every certification), overhauled b...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-20-02.html" class="card">
+<div class="card__date">FEB 20, 2026</div>
+<h3 class="card__title">Logbook #21 — Streak System & Leaderboard</h3>
+<p class="card__exc">Massive week for Sofia — we shipped a full on-chain streak system with shared vault deposits, built a leaderboard with ENS resolution, introduced vote quests with Gold rewards, and...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-13-02.html" class="card">
+<div class="card__date">FEB 13, 2026</div>
+<h3 class="card__title">Logbook #20 — Resonance & Profile Redesign</h3>
+<p class="card__exc">Big week for Sofia — we cleaned up the entire codebase for better maintainability, introduced the ability to trust or distrust content, split the reward system into two currencies ...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-06-02.html" class="card">
+<div class="card__date">FEB 6, 2026</div>
+<h3 class="card__title">Logbook #19 — Circle Feed & Certifications</h3>
+<p class="card__exc">This week, we refactored the Account page into a tabbed layout with Stats, Quests and Achievements, shipped Bookmark V2 with on-chain certified badges, fixed on-chain certification...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-30-01.html" class="card">
+<div class="card__date">JAN 30, 2026</div>
+<h3 class="card__title">Logbook #18 — Onboarding & Quest System</h3>
+<p class="card__exc">import ImageCarousel from '@site/src/components/ImageCarousel'; This week, we shipped full multi-wallet support — Sofia now discovers wallet providers via EIP-6963 (MIPD) and bridg...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-23-01.html" class="card">
+<div class="card__date">JAN 23, 2026</div>
+<h3 class="card__title">Logbook #17 — AI Chat & Bookmarks</h3>
+<p class="card__exc"></p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-16-01.html" class="card">
+<div class="card__date">JAN 16, 2026</div>
+<h3 class="card__title">Logbook #16 — Pulse Analysis & Sessions</h3>
+<p class="card__exc">During this development cycle, we focused on strengthening Sofia's core mechanics and finalizing several key systems. The main effort went into improving discovery logic, intention...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-19-12.html" class="card">
+<div class="card__date">DEC 19, 2025</div>
+<h3 class="card__title">Logbook #15 — Trust Signals & Discovery</h3>
+<p class="card__exc">This week was dedicated to core infrastructure migration, authentication hardening, and on-chain verification foundations. We completed the migration of the extension authenticatio...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-12-12.html" class="card">
+<div class="card__date">DEC 12, 2025</div>
+<h3 class="card__title">Logbook #14 — Social Verification & Profiles</h3>
+<p class="card__exc">This week focused on core foundational deliveries, including connecting the MCP Server to our agent and deploying the full Privy authentication flow for the Chrome extension. We al...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-05-12.html" class="card">
+<div class="card__date">DEC 5, 2025</div>
+<h3 class="card__title">Logbook #13 — Intentions & Categories</h3>
+<p class="card__exc">This week, we achieved a major milestone by deploying the Sofia Fee Proxy Contract on Intuition Mainnet, enabling Sofia to collect transaction fees while maintaining full protocol ...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-02-12.html" class="card">
+<div class="card__date">DEC 2, 2025</div>
+<h3 class="card__title">Logbook #12 — Feed & Trending</h3>
+<p class="card__exc">This week, we successfully completed a major Curve System Upgrade, separating support (Curve 1) from financial investment (Curve 2) and implementing new logic for triples creation,...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-21-11.html" class="card">
+<div class="card__date">NOV 21, 2025</div>
+<h3 class="card__title">Logbook #11 — Wallet & Transactions</h3>
+<p class="card__exc">This week has been focused on measuring and preparing for our Alpha launch.</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-14-11.html" class="card">
+<div class="card__date">NOV 14, 2025</div>
+<h3 class="card__title">Logbook #10 — Extension Architecture</h3>
+<p class="card__exc">First of all, we apologize for being quiet over the past two weeks — we've been working hard on deploying Sofia on Phala, migrating to Intuition's mainnet, and setting up the GaiaN...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-31-10.html" class="card">
+<div class="card__date">OCT 31, 2025</div>
+<h3 class="card__title">Logbook #9 — Gamification & XP</h3>
+<p class="card__exc">This week was filled with significant progress across multiple fronts — from UI/UX refinements and feature implementations to infrastructure milestones and team methodology improve...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-24-10.html" class="card">
+<div class="card__date">OCT 24, 2025</div>
+<h3 class="card__title">Logbook #8 — Semantic Analysis</h3>
+<p class="card__exc">This week we completed managed hosting, opened the first round of public testing, and introduced several key improvements to the Trust system and account experience. On the infrast...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-17-10.html" class="card">
+<div class="card__date">OCT 17, 2025</div>
+<h3 class="card__title">Logbook #7 — Knowledge Graph</h3>
+<p class="card__exc">This week marked a major milestone for Sofia: our first public demo at Intuition's X Space, alongside significant improvements across recommendation intelligence, UI/UX redesign, a...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-10-10.html" class="card">
+<div class="card__date">OCT 10, 2025</div>
+<h3 class="card__title">Logbook #6 — Intuition Integration</h3>
+<p class="card__exc">This week we expanded SofIA’s intelligence layer by integrating Ollama for personalized recommendations and strengthening the search and indexing system for blockchain data. On the...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-03-10.html" class="card">
+<div class="card__date">OCT 3, 2025</div>
+<h3 class="card__title">Logbook #5 — Chrome Extension MVP</h3>
+<p class="card__exc">This week we pushed SofIA’s front-end and blockchain layers further. On the UI side, we continued the large CSS refactor, simplifying core pages, unifying modal styles, and ensurin...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-26-09.html" class="card">
+<div class="card__date">SEP 26, 2025</div>
+<h3 class="card__title">Logbook #4 — AI Agent & Themes</h3>
+<p class="card__exc">During this week we pushed SofIA’s architecture further, laying the groundwork for the indexer and cleaning up our core stack. We improved gas fee handling and contract interaction...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="logbook-19-09.html" class="card">
+<div class="card__date">SEP 19, 2025</div>
+<h3 class="card__title">Logbook #3 — First Prototype</h3>
+<p class="card__exc">During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTub...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+<a href="from-idea-to-reality.html" class="card">
+<div class="card__date">SEP 12, 2025</div>
+<h3 class="card__title">The Story of Sofia — From Idea to Reality</h3>
+<p class="card__exc">We met at the Hacking Project with the goal of becoming web developers. We began this adventure in February. Both passionate about electronic music, we immediately hit it off. In J...</p>
+<span class="card__link">Read article &rarr;</span>
+</a>
+</div>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

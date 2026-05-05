@@ -1,0 +1,134 @@
+.hero {
+  padding: 110px var(--space-xl) 0;
+  text-align: center;
+  overflow: hidden;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-hero);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 780px;
+  margin: 0 auto 9px;
+}
+.title em {
+  font-style: italic;
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  font-family: var(--font-mono);
+}
+.countdownNum {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+.countdownLabel {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Green background — expands to full width on scroll */
+.greenWrap {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 48px 48px 40px;
+  max-width: none;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.greenBg {
+  position: absolute;
+  inset: 0;
+  background: #c8cfb6;
+  border-radius: inherit;
+  z-index: 0;
+  will-change: transform;
+}
+
+.greenWrap > :not(.greenBg) {
+  position: relative;
+  z-index: 1;
+}
+
+.screenshot {
+  display: block;
+  width: 80%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.ctas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin: 32px 0 24px;
+  flex-wrap: wrap;
+}
+.ctas :global(.btn) {
+  padding: 11px 24px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.logos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 12px 32px;
+  margin: var(--space-lg) auto var(--space-sm);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-pill);
+  flex-wrap: wrap;
+}
+.logos img {
+  height: 20px;
+  opacity: 0.45;
+  filter: grayscale(100%) brightness(0);
+}
+
+.banner {
+  color: #2d2d2d;
+  padding: 16px 0 0;
+  text-align: center;
+}
+.banner p {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.spacer {
+  height: 60px;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 90px;
+  }
+  .greenWrap {
+    padding: 24px 20px 24px;
+    margin: 0 -20px;
+    border-radius: 0;
+  }
+  .screenshot {
+    width: 95%;
+  }
+}

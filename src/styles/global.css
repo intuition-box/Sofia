@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap');
+@import './variables.css';
+
+/* ── Reset ────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Utility ──────────────────────────────────────────── */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ── Section title (shared) ───────────────────────────── */
+.section-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.section-subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 28px;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-normal);
+  font-family: var(--font-body);
+}
+
+.btn-primary {
+  background: var(--color-btn-primary);
+  color: var(--color-on-primary);
+}
+.btn-primary:hover {
+  background: var(--color-btn-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+.btn-secondary {
+  background: var(--color-btn-secondary);
+  color: var(--color-on-secondary);
+}
+.btn-secondary:hover {
+  background: var(--color-btn-secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+.btn-light {
+  background: var(--color-btn-light);
+  color: var(--color-on-light);
+}
+.btn-light:hover {
+  background: var(--color-btn-light-hover);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+  transition: color var(--duration-fast);
+}
+.btn-ghost:hover {
+  color: var(--color-accent);
+}
+
+/* ── Arrow icon for buttons ───────────────────────────── */
+.btn-arrow {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* ── Scroll animation ─────────────────────────────────── */
+.anim {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.anim.visible {
+  opacity: 1;
+  transform: none;
+}
+.anim-d1 { transition-delay: 0.15s; }
+.anim-d2 { transition-delay: 0.3s; }
+.anim-d3 { transition-delay: 0.45s; }
+.anim-d4 { transition-delay: 0.6s; }
+
+/* ── Dark mode logo ───────────────────────────────────── */
+.dark .logo-invert {
+  filter: invert(1);
+}
+.dark .footer-logo {
+  filter: invert(1);
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 20px;
+  }
+}

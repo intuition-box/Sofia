@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 30/01 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">January 30, 2026</div>
+<h1 class="post__title">Logbook 30/01</h1>
+<p>import ImageCarousel from '@site/src/components/ImageCarousel';</p>
+
+<p>This week, we shipped full multi-wallet support — Sofia now discovers wallet providers via EIP-6963 (MIPD) and bridges multiple wallets (Rabby, MetaMask, etc.) and isolates all user data (tokens, bookmarks, quests, XP) per wallet address. We also securing postMessage origins, enforcing HTTPS for transactions, and adding crypto-based OAuth state. On the UX side, a complete onboarding flow with tutorial slides and bookmark selection is now live, alongside a new URL normalization layer that strips tracking params and uses page titles as atom names. Finally, we cleaned up the EchoesTab by excluding follow triples from group cards, fixed group levels from on-chain data, and removed legacy dead code.</p>
+
+<p>{/<em> truncate </em>/}</p>
+
+<h2>Multi-Wallet Support & Storage Isolation</h2>
+
+<ul>
+<li>EIP-6963 (MIPD) wallet discovery: detection of restricted pages + provider bridge for different wallets (Rabby, MetaMask, etc.)</li>
+<li>Wallet-agnostic provider selection: method routing to the correct provider</li>
+<li>Storage refactoring per wallet: tokens, bookmarks, quests, XP and all user memory tied to a wallet key</li>
+<li>Full storage isolation per wallet: each wallet gets its own storage space for user identity</li>
+<li>OAuth predicate IDs in chainConfig: OAuth predicates now count towards group levels</li>
+<li>Connect/disconnect wallet: local data cleared when a new wallet is detected</li>
+</ul>
+
+<h2>Security Hardening</h2>
+<ul>
+<li>Removed eth_sign, secured postMessage origin, crypto-based OAuth state, dead code removal, relay timeout</li>
+<li>HTTPS warning page: alert when a wallet transaction is attempted on a non-HTTPS page</li>
+</ul>
+
+<h2>Onboarding Flow</h2>
+
+<p><ImageCarousel images={[</p>
+<p>{ src: require('./start-onboarding.png').default, alt: 'Onboarding start' },</p>
+<p>{ src: require('./onboarding.png').default, alt: 'Onboarding' },</p>
+<p>{ src: require('./certify-onboarding-.png').default, alt: 'Certify onboarding' },</p>
+<p>{ src: require('./proof-analysys-onboarding.png').default, alt: 'Proof analysis onboarding' },</p>
+<p>{ src: require('./connect-your-friend-on-boarding.png').default, alt: 'Connect your friend onboarding' },</p>
+<p>{ src: require('./bookmarkonboarding.png').default, alt: 'Bookmark onboarding' },</p>
+<p>{ src: require('./select-bookmark-tab.png').default, alt: 'Select bookmark tab' },</p>
+<p>]} /></p>
+
+<ul>
+<li>Tutorial slides + bookmark selection during onboarding</li>
+<li>Blur card, new slide, dark background, tutorial replay button, UI refinements for trust and intention pills buttons</li>
+<li>Pills refactoring: updated pill sizing</li>
+</ul>
+
+<h2>URL Normalization & Atom Naming</h2>
+<ul>
+<li>normalizeUrl() strips tracking params, cleanTitle() removes site suffixes ("- YouTube")</li>
+<li>Page titles used as atom names</li>
+<li>Fix for recurring quest claims: deposit on existing triple</li>
+</ul>
+
+<h2>EchoesTab & Group Levels</h2>
+<ul>
+<li>Follow triples no longer create cards in EchoesTab, auto-removal of empty groups</li>
+<li>Fixed group levels: restored levels from on-chain data + English UI translation</li>
+</ul>
+
+
+<h2>Cleanup & Refactoring</h2>
+<ul>
+<li>Removed dead code and old dependencies</li>
+<li>Refactored social predicates: uses pre-existing term IDs for social verification instead of creating new ones</li>
+<li>Centralized ignored domains: shared constants + fix SettingsPage to clear per-wallet storage keys</li>
+</ul>
+
+<h2>Fixes</h2>
+<ul>
+<li>Fixed bookmark: null redirect after creation</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>
