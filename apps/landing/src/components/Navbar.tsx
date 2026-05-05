@@ -24,7 +24,7 @@ export function Navbar() {
         </a>
         <span className={styles.status}>
           <span className={styles.statusDot} aria-hidden="true" />
-          Alpha · Whitelist Open
+          Beta Open
         </span>
       </div>
 
