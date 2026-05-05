@@ -99,12 +99,14 @@
 }
 
 /* ── Sidebar ──────────────────────────────────────────────────── */
+/* Mirrors the Explorer NavSidebar — soft card surface, peach pill on   */
+/* active items with dark on-accent text.                               */
 
 .theme-doc-sidebar-container {
-  background: transparent;
-  border-right: 1px solid var(--ds-border-soft);
+  background: var(--ds-card);
+  border-right: 1px solid var(--ds-border);
   border-radius: 0;
-  padding: 1.5rem 0.5rem 1.5rem 1rem;
+  padding: 1.5rem 0.75rem 2rem 1rem;
   margin-right: 0;
   font-family: var(--font-body);
 }
@@ -120,17 +122,20 @@ aside .menu__list-item-collapsible > .menu__link {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.65rem;
 }
 
 aside .menu__link {
   color: var(--ds-ink-soft);
-  border-radius: var(--doc-radius-xs);
-  font-size: var(--doc-text-sm);
-  font-weight: 400;
-  padding: 0.4rem 0.65rem;
-  transition: background-color var(--doc-fast) var(--doc-ease-out),
-              color var(--doc-fast) var(--doc-ease-out);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 150ms ease,
+              color 150ms ease;
 }
 
 aside .menu__link:hover {
@@ -140,14 +145,21 @@ aside .menu__link:hover {
 
 aside .menu__link--active,
 aside .menu__link--active:hover {
-  color: var(--ds-accent-ink) !important;
-  font-weight: 500;
-  background-color: var(--doc-tint-accent-soft);
+  background-color: var(--ds-accent) !important;
+  color: var(--ds-on-accent) !important;
+  font-weight: 600;
 }
 
-[data-theme='dark'] aside .menu__link--active,
-[data-theme='dark'] aside .menu__link--active:hover {
-  color: var(--ds-accent) !important;
+aside .menu__list-item-collapsible--active > .menu__link {
+  color: var(--ds-ink) !important;
+}
+
+aside .menu__caret::before {
+  filter: opacity(0.55);
+}
+
+aside .menu__link--active .menu__caret::before {
+  filter: opacity(0.85);
 }
 
 /* ── Blog list ────────────────────────────────────────────────── */
