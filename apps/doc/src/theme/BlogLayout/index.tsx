@@ -12,7 +12,7 @@ export default function BlogLayout(props: Props): ReactNode {
 
   return (
     <Layout {...layoutProps}>
-      <ContentWrapper style={{ maxWidth: '1600px', margin: '2rem auto' }}>
+      <ContentWrapper style={{ maxWidth: '1600px' }}>
         <div className="container margin-vert--lg">
           <div className="row">
             <BlogSidebar sidebar={sidebar} />
