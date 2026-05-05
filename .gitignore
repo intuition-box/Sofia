@@ -20,7 +20,7 @@ out/
 
 # OAuth client IDs are checked in (apps/extension/background/oauth/config/oauth-config.ts).
 # They're public by nature — every OAuth request sends them in the URL. The secrets
-# live on the landing page handlers (apps/landing/src/pages/auth/{platform}/callback.tsx)
+# live on the doc page handlers (apps/doc/src/pages/auth/{platform}/callback.tsx)
 # and never ship in the extension bundle.
 
 # OS files

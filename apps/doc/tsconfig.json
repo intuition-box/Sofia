@@ -7,7 +7,7 @@
   "extends": "./node_modules/@docusaurus/tsconfig/tsconfig.json",
   "compilerOptions": {
     // Override baseUrl so that the inherited `paths: { "@site/*": ["./*"] }`
-    // resolves relative to apps/landing/ instead of @docusaurus/tsconfig/'s
+    // resolves relative to apps/doc/ instead of @docusaurus/tsconfig/'s
     // own directory. Without this, every `@site/src/...` import 404s.
     "baseUrl": "."
   },

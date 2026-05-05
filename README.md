@@ -13,7 +13,7 @@
 
 Sofia is a full-stack knowledge graph product on the [Intuition](https://intuition.systems) protocol. A Chrome extension captures your browsing, an explorer surfaces your on-chain reputation, AI workflows classify intent, and an MCP server exposes the data to LLMs.
 
-This repository is a **bun workspaces monorepo** containing all surfaces: extension, dashboard, image service, landing page, AI backend, and MCP server.
+This repository is a **bun workspaces monorepo** containing all surfaces: extension, dashboard, image service, documentation, AI backend, and MCP server.
 
 ## Repository layout
 
@@ -23,7 +23,7 @@ core/
 │   ├── explorer/         React + Vite dashboard — on-chain reputation & discovery
 │   ├── extension/        Plasmo Chrome extension (MV3) — browsing certification
 │   ├── og/               Next.js OG image generator for shared certifications
-│   └── landing/          Docusaurus landing site & docs
+│   └── doc/              Docusaurus documentation site (blog + docs)
 ├── packages/
 │   └── graphql/          @0xsofia/graphql — shared GraphQL client + codegen
 └── services/
@@ -38,7 +38,7 @@ core/
 | `apps/extension`      | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
 | `apps/explorer`       | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI          |
 | `apps/og`             | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
-| `apps/landing`        | [Docusaurus](https://docusaurus.io/) 3           | Privy, Three.js, GSAP                        |
+| `apps/doc`            | [Docusaurus](https://docusaurus.io/) 3           | Privy, GSAP                                  |
 | `packages/graphql`    | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
 | `services/mastra`     | [Mastra](https://mastra.ai/)                     | GaiaNet, `@mastra/core`, Viem                |
 | `services/mcp-server` | Model Context Protocol SDK                       | `express`, graphql-codegen                   |
@@ -81,7 +81,7 @@ bun run --filter @0xsofia/graphql codegen
 | `bun run --filter explorer dev`             | Vite on `localhost:5173`                                     |
 | `bun run --filter extension dev`            | Plasmo dev, output to `apps/extension/build/chrome-mv3-dev/` |
 | `bun run --filter og dev`                   | Next.js on `localhost:3000`                                  |
-| `bun run --filter landing start`            | Docusaurus on `localhost:3000`                               |
+| `bun run --filter doc start`                | Docusaurus on `localhost:3000`                               |
 | `bun run --filter @0xsofia/graphql codegen` | Regenerate GraphQL types                                     |
 
 **Loading the extension in Chrome**: after `bun run --filter extension dev`, open `chrome://extensions/` → enable Developer mode → "Load unpacked" → pick `apps/extension/build/chrome-mv3-dev/`.
