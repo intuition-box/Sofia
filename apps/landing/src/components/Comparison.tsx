@@ -1,6 +1,5 @@
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { useTextSplit } from '../hooks/useTextSplit';
-import { ParallaxBg } from './ParallaxBg';
 import styles from './Comparison.module.css';
 
 const ROWS = [
@@ -27,7 +26,7 @@ export function Comparison() {
   const tableRef = useScrollAnim<HTMLTableElement>();
 
   return (
-    <ParallaxBg src="/img/bg5.png" speed={0.15} zoom zoomMax={1.1} className={styles.section}>
+    <section className={styles.section}>
       <div className="container">
         <div ref={headerRef} className={`${styles.header} anim anim-up`}>
           <span className="mono-eyebrow">Why Sofia</span>
@@ -61,6 +60,6 @@ export function Comparison() {
           </tbody>
         </table>
       </div>
-    </ParallaxBg>
+    </section>
   );
 }

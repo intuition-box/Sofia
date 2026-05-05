@@ -11,6 +11,7 @@ import { FAQ } from './components/FAQ';
 import { CTA } from './components/CTA';
 import { Footer } from './components/Footer';
 import { Carousel } from './components/Carousel';
+import { Instruments } from './components/Instruments';
 import { URLS } from './lib/config/urls';
 
 export default function App() {
@@ -30,7 +31,11 @@ export default function App() {
       <div className="divider" />
       <Steps />
 
-      {/* 4. Screenshots carousel */}
+      {/* 4. Drafting room — vector schematics (3 plates) */}
+      <div className="divider" />
+      <Instruments />
+
+      {/* 5. Screenshots carousel */}
       <Carousel />
 
 
