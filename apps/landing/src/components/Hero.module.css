@@ -1,134 +1,229 @@
+/**
+ * Hero — peach banner echoing apps/explorer's PageHero and apps/doc's
+ * homepage banner: full-width --ds-accent surface, decorative hexagon,
+ * Fraunces serif title, mono eyebrow with the launch countdown.
+ *
+ * Below the banner: a screenshot showcase (GSAP scrub-scale) and a
+ * partner-logo pill on neutral surface.
+ */
+
 .hero {
-  padding: 110px var(--space-xl) 0;
-  text-align: center;
+  position: relative;
+  padding-top: 80px;
   overflow: hidden;
 }
 
-.title {
-  font-family: var(--font-heading);
-  font-size: var(--text-hero);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  max-width: 780px;
-  margin: 0 auto 9px;
+/* ── Peach banner ─────────────────────────────────────── */
+
+.banner {
+  position: relative;
+  background: var(--color-accent);
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, #02000e 10%, transparent);
 }
-.title em {
-  font-style: italic;
+
+.banner::before {
+  content: '';
+  position: absolute;
+  right: -120px;
+  top: 50%;
+  width: 540px;
+  height: 540px;
+  background: rgba(0, 0, 0, 0.08);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  transform: translateY(-50%) rotate(-12deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bannerInner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 88px var(--space-xl) 110px;
+  text-align: left;
 }
 
 .countdown {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-lg);
+  gap: 0.55em;
   font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #02000e;
+  margin-bottom: 28px;
 }
+
+.countdown::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #02000e;
+  flex-shrink: 0;
+}
+
 .countdownNum {
-  font-size: var(--text-base);
-  font-weight: 700;
-  color: var(--color-text);
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
+
 .countdownLabel {
-  font-size: 0.72rem;
-  color: var(--color-text-muted);
-  letter-spacing: 0.02em;
+  color: rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.18em;
+  text-transform: none;
+  font-weight: 400;
 }
 
-/* Green background — expands to full width on scroll */
-.greenWrap {
-  position: relative;
-  border-radius: var(--radius-lg);
-  padding: 48px 48px 40px;
-  max-width: none;
-  margin: 0 auto;
-  overflow: hidden;
+.title {
+  margin: 0 0 22px;
+  max-width: 22ch;
+  color: #02000e;
 }
 
-.greenBg {
-  position: absolute;
-  inset: 0;
-  background: #c8cfb6;
-  border-radius: inherit;
-  z-index: 0;
-  will-change: transform;
+.title em {
+  color: var(--color-accent-ink);
+  font-style: italic;
 }
 
-.greenWrap > :not(.greenBg) {
-  position: relative;
-  z-index: 1;
-}
-
-.screenshot {
-  display: block;
-  width: 80%;
-  max-width: 720px;
-  margin: 0 auto;
+.lede {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.72);
+  max-width: 38rem;
+  margin: 0 0 32px;
 }
 
 .ctas {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  margin: 32px 0 24px;
+  gap: 12px;
   flex-wrap: wrap;
 }
-.ctas :global(.btn) {
-  padding: 11px 24px;
-  font-size: 0.84rem;
-  font-weight: 600;
+
+/* Buttons inside the peach banner read against ink, not the
+   page theme. Primary = ink fill; secondary = ink outline. */
+.banner :global(.btn-primary) {
+  background: #02000e;
+  border-color: #02000e;
+  color: var(--color-accent);
+}
+.banner :global(.btn-primary:hover) {
+  background: #1a1727;
+  border-color: #1a1727;
+  color: var(--color-accent);
+  transform: translateY(-1px);
 }
 
-.logos {
+.banner :global(.btn-secondary) {
+  background: transparent;
+  border-color: #02000e;
+  color: #02000e;
+}
+.banner :global(.btn-secondary:hover) {
+  background: #02000e;
+  border-color: #02000e;
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+/* ── Screenshot showcase — pulled up to overlap the banner ─ */
+
+.showcase {
+  position: relative;
+  z-index: 2;
+  max-width: 1080px;
+  margin: -64px auto 0;
+  padding: 0 var(--space-xl);
+  perspective: 1200px;
+}
+
+.screenshot {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-bg-elevated);
+  will-change: transform;
+}
+
+/* ── Partners pill ────────────────────────────────────── */
+
+.partnersWrap {
+  display: flex;
+  justify-content: center;
+  margin: 56px auto 0;
+  padding: 0 var(--space-xl);
+}
+
+.partners {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 28px;
-  padding: 12px 32px;
-  margin: var(--space-lg) auto var(--space-sm);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 28px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-pill);
   flex-wrap: wrap;
 }
-.logos img {
+
+.partners a {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.55;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.partners a:hover {
+  opacity: 0.95;
+}
+
+.partners img {
   height: 20px;
-  opacity: 0.45;
+  width: auto;
   filter: grayscale(100%) brightness(0);
 }
 
-.banner {
-  color: #2d2d2d;
-  padding: 16px 0 0;
-  text-align: center;
-}
-.banner p {
-  font-family: var(--font-heading);
-  font-size: clamp(1rem, 2vw, 1.35rem);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  max-width: 700px;
-  margin: 0 auto;
+[data-theme='dark'] .partners img,
+.dark .partners img {
+  filter: grayscale(100%) brightness(0) invert(1);
+  opacity: 1;
 }
 
-.spacer {
-  height: 60px;
-}
+/* ── Responsive ───────────────────────────────────────── */
 
-@media (max-width: 640px) {
-  .hero {
-    padding-top: 90px;
+@media (max-width: 768px) {
+  .bannerInner {
+    padding: 64px var(--space-md) 88px;
+    text-align: left;
   }
-  .greenWrap {
-    padding: 24px 20px 24px;
-    margin: 0 -20px;
-    border-radius: 0;
+  .banner::before {
+    width: 360px;
+    height: 360px;
+    right: -160px;
   }
-  .screenshot {
-    width: 95%;
+  .lede {
+    font-size: 1rem;
+  }
+  .showcase {
+    margin-top: -40px;
+    padding: 0 var(--space-md);
+  }
+  .partnersWrap {
+    margin-top: 40px;
+    padding: 0 var(--space-md);
+  }
+  .partners {
+    gap: 18px;
+    padding: 10px 18px;
+  }
+  .partners img {
+    height: 16px;
   }
 }

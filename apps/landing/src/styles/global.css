@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Geist:wght@300..900&family=Lalezar&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Geist:wght@300..900&family=Fraunces:opsz,wght@9..144,400..900&family=Lalezar&display=swap');
 @import '@0xsofia/design-system/theme.css';
 @import './variables.css';
 
@@ -101,11 +101,12 @@ a {
 .section-title {
   font-family: var(--font-heading);
   font-size: var(--text-3xl);
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.022em;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
   margin-bottom: 12px;
   color: var(--color-text);
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .section-subtitle {
@@ -138,25 +139,22 @@ a {
   flex-shrink: 0;
 }
 
-/* ── Display heading — hero scale, mono uppercase, tight.
-   Use sparingly: hero title, final CTA. Most section titles
-   use .section-title (Geist). */
+/* ── Display heading — hero scale, Fraunces serif, tight.
+   Use sparingly: hero title, final CTA. */
 .display {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: clamp(2.4rem, 1.6rem + 3.6vw, 5.2rem);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 1.8rem + 3vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
   color: var(--color-text);
-  text-transform: uppercase;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
   margin: 0;
 }
 
 .display em {
-  font-family: var(--font-heading);
   font-style: italic;
-  font-weight: 500;
-  text-transform: none;
+  font-weight: 600;
   color: var(--color-accent-ink);
 }
 
