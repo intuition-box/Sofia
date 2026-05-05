@@ -180,7 +180,7 @@ const config: Config = {
             },
             {
               label: 'Discord',
-              href: 'https://discord.gg/bDXWsV7Bb',
+              href: 'https://discord.gg/sofia3',
             },
             {
               label: 'Proxy Dashboard',
@@ -195,7 +195,7 @@ const config: Config = {
       links: [
         {
           items: [
-            { label: 'Discord', href: 'https://discord.gg/bDXWsV7Bb' },
+            { label: 'Discord', href: 'https://discord.gg/sofia3' },
             { label: 'GitHub', href: 'https://github.com/intuition-box' },
             { label: 'X', href: 'https://x.com/0xsofia3' },
             { label: 'Sofia', href: 'https://sofia.intuition.box' },

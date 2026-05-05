@@ -7,7 +7,6 @@ description: Transform your web browsing into certified, blockchain-backed knowl
 
 import DocCard from '@site/src/components/docs/DocCard';
 import DocCardGrid from '@site/src/components/docs/DocCardGrid';
-import FlowDiagram from '@site/src/components/docs/FlowDiagram';
 import StatBox from '@site/src/components/docs/StatBox';
 
 # What is Sofia?
