@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 12/12 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">December 12, 2025</div>
+<h1 class="post__title">Logbook 12/12</h1>
+<p>This week focused on core foundational deliveries, including connecting the MCP Server to our agent and deploying the full Privy authentication flow for the Chrome extension. We also finalized the staking modal (with bonding curve options), optimized transactions using Sofia’s fee proxy, extended the Trust / Distrust system, and improved data integrity and UX reliability across triples creation and display.These features are not yet available to the public and will be pushed to production for alpha V2.</p>
+
+
+
+<h2>MCP Server Integration</h2>
+<p>We established a connection with the <strong>Intuition MCP Server</strong> and started defining the specific calling functions needed to make the best use of this link.</p>
+
+<h2>Authentication & Privy Integration</h2>
+<p>The <strong>Privy authentication flow</strong> is now fully implemented in the Chrome extension.</p>
+<p>We integrated the <strong>Privy wallet provider</strong> and added a <a href="https://sofia.intuition.box/auth" target="_blank">dedicated login component</a></p>
+<p>The provider is now configured with the correct environment and security settings.</p>
+
+<h2>Transactions & Staking</h2>
+<p>The <strong>staking modal</strong> is now fully functional, allowing users to stake through a clear and reliable process by choosing between offset-progressive or linear bonding curves.</p>
+<p>We also improved transaction handling by adding a deposit function when triples already exist, enabling users to stake on existing claims.</p>
+<p>In parallel, the proxy contract is now live, and a transaction-wrapping function has been implemented for triple creation and staking to optimize gas usage and Sofia’s fees.</p>
+
+<h2>Trust / Distrust System</h2>
+<p>We extended the trust system by introducing a <strong>distrust address constant</strong>, allowing users to create claims such as <strong>“I distrust "object"”</strong>.</p>
+<p>The trustPage component was updated to support this new feature.</p>
+<p>!<a href="./image.png" target="_blank">Distrust</a></p>
+
+<h2>Triples Generation Improvements</h2>
+<p>We fixed triple duplication issues in the UI using a hash-based deduplication system.</p>
+<p>Each triple now receives a unique key based on its exact name, and existing keys are checked in local storage before saving.</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

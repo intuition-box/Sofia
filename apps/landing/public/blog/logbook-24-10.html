@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 24/10 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">October 24, 2025</div>
+<h1 class="post__title">Logbook 24/10</h1>
+<p>This week we completed managed hosting, opened the first round of public testing, and introduced several key improvements to the Trust system and account experience.</p>
+
+<p>On the infrastructure side, Sofia’s environment is now fully managed and Alpha-ready — a critical milestone toward stability and scalability. This new setup allows us to continuously monitor multi-agent configurations with ease, ensuring smoother testing and faster iteration cycles.</p>
+
+<p>From a design perspective, this week brought a major UI and UX update to the Account page. Profiles now include Follow and Trust actions, detailed metrics, and a new Level Progress design that visualizes your growth and engagement over time. The homepage also introduces the new “Trust this site” component — enabling anyone to trust a webpage instantly, and view which triples and atoms are present on it.</p>
+
+<p>We’ve also refreshed several core components — including the Amplify and Connect Wallet buttons — to make the interface more cohesive across the entire extension.</p>
+
+<p>The new “Trust this site” component marks an important evolution in how Sofia connects browsing and trust. Directly from the homepage, users can now trust any webpage on the fly, without leaving their navigation flow. The component also reveals which triples and atoms are present on the page, allowing users to see the underlying semantic structure behind what they’re trusting. This feature bridges the gap between exploration and validation — turning every visit into an opportunity to expand the web of trusted knowledge.</p>
+
+<p>Altogether, these updates bring Sofia closer to a dynamic, user-driven ecosystem where trust, identity, and discovery seamlessly converge. The foundation is stronger than ever — and with user testing now open, we’re ready to take the next leap toward Sofia’s public Beta.</p>
+
+
+
+<h2>Managed Hosting & Deployment</h2>
+
+<ul>
+<li>Sofia’s hosting is now <strong>fully managed</strong> and production-ready</li>
+<li>Secure infrastructure with <strong>Dockerized agents</strong> and <strong>automated releases</strong></li>
+<li>Environment optimized for <strong>continuous testing and iteration</strong></li>
+</ul>
+
+<p>We’re officially <strong>ready for user testing!</strong></p>
+<p>If you’d like to be part of the first Alpha testers, please <strong>submit your request here:</strong></p>
+<p>➡️ <a href="https://tally.so/r/n9bvrY" target="_blank"><strong>Early Access Program</strong></a></p>
+
+<hr>
+
+<h2>UI / UX Enhancements</h2>
+
+<p>We’ve reimagined the <strong>Account page</strong> to make it more intuitive and social:</p>
+
+<ul>
+<li>New <strong>Follow / Trust</strong> actions directly on profiles</li>
+<li>Improved <strong>metrics visualization</strong> for your activity and reputation</li>
+<li>Added a <strong>Level Progress Design</strong> to visualize your growth and engagement</li>
+<li>Refined interactions and improved UI consistency</li>
+<p>!<a href="./2.png" target="_blank">Account Page</a></p>
+<p>!<a href="./3.png" target="_blank">Activity Page</a></p>
+<hr>
+</ul>
+
+<h2>Trust System Expansion</h2>
+
+<p>A new <strong>“Trust this site”</strong> component has been added to the homepage:</p>
+
+<ul>
+<li>Instantly <strong>trust any webpage on the fly</strong></li>
+<li>See which <strong>triples</strong> and <strong>atoms</strong> are present on the page</li>
+<li>Strengthens the link between web browsing and the semantic Trust graph</li>
+</ul>
+
+<p>This brings trust creation directly into your browsing experience — seamlessly integrated with Sofia.</p>
+
+<p>!<a href="./1.png" target="_blank">Trust this Page</a></p>
+
+<hr>
+
+<h2>Component & Design Updates</h2>
+
+<ul>
+<li><strong>Amplify button redesigned</strong> for better readability and balance</li>
+<li><strong>Connect Wallet button updated</strong> with new hover and feedback states</li>
+<li>Improved consistency and micro-animations across key components</li>
+</ul>
+
+<hr>
+
+<h2>What’s Next</h2>
+
+<ul>
+<li>Collecting and analyzing <strong>feedback from early testers</strong></li>
+<li>Expanding <strong>Trust Circle</strong> interactions within the Account view</li>
+<li>Adding real <strong>analytics and insights</strong> to the metrics dashboard</li>
+</ul>
+
+<hr>
+
+<p>Sofia continues to evolve with every iteration — from infrastructure to interaction.</p>
+<p>Thanks to everyone building, testing, and trusting with us.</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

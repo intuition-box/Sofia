@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 10/10 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">October 10, 2025</div>
+<h1 class="post__title">Logbook 10/10</h1>
+<p>This week we expanded SofIA’s intelligence layer by integrating Ollama for personalized recommendations and strengthening the search and indexing system for blockchain data.</p>
+
+<p>On the AI side, SofIA now features a complete recommendation engine capable of analyzing user on-chain activity and generating contextual suggestions. We implemented a double-pass strategy, producing a natural language response before reformatting it into structured JSON, and configured Ollama to accept secure requests directly from the Chrome extension. Results are now stored locally through IndexedDB, with automatic accumulation and deduplication to prevent redundant entries.</p>
+
+<p>On the blockchain side, we improved the search experience with EIP-55 normalization (via Viem) for wallet addresses, ensuring consistent query results. We also unified the search bar inside the SignalsTab and optimized GraphQL queries to fetch all triples where users hold positions, making blockchain exploration faster and more reliable.</p>
+
+<p>Together, these upgrades establish the foundation for adaptive, AI-driven insights within SofIA, linking behavioral patterns, blockchain data, and recommendation logic into one seamless experience.</p>
+
+<p>!<a href="./image.png" target="_blank">Personalized Recommendations</a></p>
+
+
+
+
+<h2>AI Recommendation System (Ollama)</h2>
+<ul>
+<li>Integrated Ollama for intelligent, personalized suggestions and accept requests from the Chrome extension</li>
+<li>Added double-pass generation (natural → JSON)</li>
+<li>Enabled IndexedDB persistence with smart accumulation and deduplication</li>
+</ul>
+
+<h2>Search System Improvements</h2>
+<ul>
+<li>Added EIP-55 normalization for wallet addresses (Viem)</li>
+<li>Unified search bar within the SignalsTab</li>
+<li>Optimized GraphQL queries for faster triplet retrieval</li>
+</ul>
+
+<h2>Overall Impact</h2>
+<ul>
+<li>Full AI recommendation engine operational</li>
+<li>Enhanced UX fluidity through local caching</li>
+<li>More reliable blockchain search and normalized data</li>
+<li>A key milestone toward a self-learning SofIA ecosystem</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

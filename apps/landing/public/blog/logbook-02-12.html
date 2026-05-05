@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 02-12 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">December 2, 2025</div>
+<h1 class="post__title">Logbook 02-12</h1>
+<p>This week, we successfully completed a major Curve System Upgrade, separating support (Curve 1) from financial investment (Curve 2) and implementing new logic for triples creation, including automatic deposit for existing signals. We introduced the dedicated Shares Modal and dynamic success messaging, alongside key social features like extended activity tracking, on-chain Follow functionality, and ENS resolution.</p>
+<p>Furthermore, we completed the full deployment of our Gaianet node, enabling the Qwen 2.5 14B model to seamlessly power our 5Agent within a secure TEE (Trusted Execution Environment) on Phala Cloud. We also finalized a stable, end-to-end data pipeline supporting our AI agent ecosystem. Lastly, the Intuition grant application was successfully completed.</p>
+
+
+
+<h2>Curve System Upgrade</h2>
+
+<h3>Curve Separation</h3>
+<ul>
+<li><strong>Curve 1 (Support/Upvotes)</strong>: Used for support votes on triples. This curve represents social engagement and community validation.</li>
+<li><strong>Curve 2 (Shares/Deposits)</strong>: Used for financial investments in triples. This curve allows users to acquire shares and participate economically in signals.</li>
+</ul>
+
+<h3>New Triples Creation Logic</h3>
+<ul>
+<li><strong>Minimum Required</strong>: Each triples creation now requires a minimum deposit of 0.01 TRUST plus creation fees.</li>
+<li><strong>Automatic Conversion to Shares</strong>: If a user wants to invest more than the minimum, the system first creates the triples with the minimum amount, then automatically performs a second deposit on Curve 2 to convert the excess into shares.</li>
+<li><strong>Example</strong>: If a user wants to create a triples with 0.1 TRUST, the system uses 0.01 TRUST + fees for creation, then deposits the remaining 0.09 TRUST on Curve 2 as an investment.</li>
+</ul>
+
+<h3>Existing triples Handling</h3>
+<ul>
+<li><strong>Previous Behavior</strong>: When a triples already existed, the system simply returned "triple already exists" without any action.</li>
+<li><strong>New Behavior</strong>: The system automatically detects if the triples exists and performs a deposit on Curve 2 instead of failing. This allows users to reinforce their existing signals.</li>
+</ul>
+
+
+<h3>Atom URI Calculation</h3>
+<ul>
+<li>Implemented atom URI calculation directly via the contract to obtain the correct.</li>
+<li>Support for batch creation with automatic fallback to deposit if the triples already exists.</li>
+</ul>
+
+<hr>
+
+<h2>Shares Modal Implementation</h2>
+
+<h3>SharesModal</h3>
+<ul>
+<li>New dedicated modal allowing users to invest in shares of an existing triples.</li>
+<li>Interface displaying the triples's object name in the title for better clarity.</li>
+<li>Predefined amount options (Minimum, Default, Strong) plus a Custom option.</li>
+</ul>
+
+<h3>Dynamic Messaging</h3>
+<ul>
+<li><strong>Added operationType</strong>: The useTrustPage and useTrustAccount hooks now return the type of operation performed ('created' or 'deposit').</li>
+<li><strong>Contextual Success Messages</strong>:</li>
+<li>Creation: "Your signal has been amplified!"</li>
+<li>Deposit on existing: "Your signal has been reinforced!"</li>
+<li>Mixed (batch): "X signals created, Y existing signals reinforced!"</li>
+<li><strong>createdCount` and depositCount Props</strong>: Passed to WeightModal to display the appropriate message.</li>
+</ul>
+
+<h3>SignalsTab Improvements</h3>
+<ul>
+<li>Added sorting by shares (Curve 2) separate from sorting by support (Curve 1).</li>
+<li>Display of user positions on each curve.</li>
+</ul>
+
+<hr>
+
+<h2>Social Features</h2>
+
+<h3>Activity Tracking</h3>
+<ul>
+<li>Extended activity tracking system to trace user interactions.</li>
+<li>Integration with ActivityTab to display action history.</li>
+</ul>
+
+<h3>Follow Functionality</h3>
+<ul>
+<li>useCreateFollowTriples hook to create "I follow [user]" triples.</li>
+<li>Uses the existing on-chain PREDICATE_IDS.FOLLOW predicate.</li>
+<li>Same curve logic: creation on Curve 1 with option to deposit on Curve 2.</li>
+<li>Custom amount support: creation fees are added on top of the user's desired amount (if user wants 0.01 TRUST in shares, total cost = 0.01 + 0.003 fees).</li>
+</ul>
+
+<h3>ENS Integration</h3>
+<ul>
+<li>ENS name resolution for user accounts.</li>
+</ul>
+
+<hr>
+
+<h2>Infrastructure & Model Deployment</h2>
+
+<h3>Qwen 2.5 14B Deployment</h3>
+<ul>
+<li>Qwen 2.5 14B model deployed on a dedicated Hetzner server.</li>
+<li>Configuration optimized for inference performance.</li>
+</ul>
+
+<h3>Gaianet Node</h3>
+<ul>
+<li>Gaianet node opened and configured.</li>
+<li>Powers the Sofia extension's AI agents via Mastra framework</li>
+<li>Enables decentralized model execution.</li>
+</ul>
+
+<h3>TEE Architecture (Trusted Execution Environment)</h3>
+<ul>
+<li>Agents hosted on Phala Cloud TEE machine to ensure computation confidentiality and integrity.</li>
+<li>Full connectivity established between all components:</li>
+<li>Sofia Extension ↔ Phala TEE ↔  Gaianet Node</li>
+<li>End-to-end data pipeline fully operational.</li>
+</ul>
+
+<h3>Stability</h3>
+<ul>
+<li>Infrastructure tested and validated.</li>
+<li>Complete pipeline functional from end to end.</li>
+</ul>
+
+<hr>
+
+<h2>Grant Application</h2>
+
+<h3>Intuition Grant</h3>
+<ul>
+<li>Intuition grant application document completed.</li>
+<li>Awaiting final validation.</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

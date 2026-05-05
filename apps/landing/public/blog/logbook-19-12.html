@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 19/12 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">December 19, 2025</div>
+<h1 class="post__title">Logbook 19/12</h1>
+<p>This week was dedicated to core infrastructure migration, authentication hardening, and on-chain verification foundations. We completed the migration of the extension authentication system to Privy, removing internal session wallets in favor of a secure external HTTPS flow. In parallel, the stack was fully migrated from ElizaOS to Mastra, improving modularity, performance, and agent orchestration while simplifying networking through an HTTP-based architecture. OAuth flows were secured via an external landing page backed by Cloudflare Workers, and the first version of our on-chain Proof of Human attestation system was implemented with gas abstraction for users.</p>
+
+
+
+<h2>Privy Authentication Migration</h2>
+
+<p>Migration of the extension authentication system to Privy:</p>
+
+<ul>
+<li>Integration of PrivyProvider with Wagmi</li>
+<li>External redirection to Sofia's website for authentication (HTTPS context required)</li>
+<li>Authentication flow: Extension → External Auth Page → Privy Auth → Wallet Connected → Return to Extension</li>
+</ul>
+
+<h2>MCP Server Integration + Loader</h2>
+
+<p>Chatbot connectivity and UX improvements:</p>
+
+<ul>
+<li>Connection of the chatbot to the Intuition MCP Server</li>
+<li>Sofia logo animation implemented as a loading state</li>
+<li>Extension of the Trust / Distrust system with new predicates</li>
+</ul>
+
+<h2>ElizaOS → Mastra Migration</h2>
+
+<p>Complete migration of the chatbot stack:</p>
+
+<ul>
+<li>Mastra framework setup with GaiaNet as LLM provider</li>
+<li>MCP integration for GraphQL queries</li>
+<li>Messaging migration from WebSocket → HTTP</li>
+<li>Deployment on Phala TEE</li>
+<li>Release v0.1.2 with Mastra fully enabled</li>
+</ul>
+
+<h2>OAuth Landing Page</h2>
+
+<p>Security-focused OAuth refactor:</p>
+
+<ul>
+<li>Migration of OAuth logic to an external landing page</li>
+<li>Implementation of sofia-api on Cloudflare Workers for secure token exchange</li>
+<li>OAuth support for YouTube, Spotify, Discord, Twitter, Twitch</li>
+<li>Client secrets stored securely in Cloudflare</li>
+</ul>
+
+<h2>Proof of Human System</h2>
+
+<p>Initial implementation of an on-chain Proof of Human attestation flow:</p>
+
+<ul>
+<li>"Proof of Human" quest unlocked after connecting all 5 OAuth platforms</li>
+<li>Attestation logic implemented as a Mastra Tool running on Phala TEE</li>
+<li>Gas abstraction: the bot pays transaction fees, free for users</li>
+<li>On-chain triple created: [I] → [am_human] → [verified]</li>
+</ul>
+
+<h3>UI updates</h3>
+
+<ul>
+<li>Gold "Claim Humanity" button</li>
+<li>Verified Human badge after claim</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

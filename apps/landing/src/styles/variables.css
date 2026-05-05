@@ -1,0 +1,115 @@
+/* ============================================================
+   SOFIA DESIGN TOKENS
+   ============================================================ */
+
+:root {
+  /* ── Layout ─────────────────────────────────────────── */
+  --max-width: 1200px;
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
+
+  /* ── Spacing ────────────────────────────────────────── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 88px;
+
+  /* ── Typography ─────────────────────────────────────── */
+  --font-body: 'Roboto', 'Inter', -apple-system, sans-serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-mono: 'Overpass Mono', monospace;
+  --font-logo: 'Lalezar', cursive;
+
+  --text-xs: 0.65rem;
+  --text-sm: 0.78rem;
+  --text-base: 0.85rem;
+  --text-md: 0.95rem;
+  --text-lg: 1.15rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.4rem;
+  --text-3xl: 3.4rem;
+  --text-hero: clamp(2.8rem, 6.5vw, 5rem);
+
+  /* ── Colors — Light (default) ───────────────────────── */
+  --color-bg: #ffffff;
+  --color-bg-alt: #f5f4f2;
+  --color-bg-elevated: #eae8e5;
+
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6b6b;
+  --color-text-dim: #999999;
+
+  --color-border: #e0deda;
+  --color-border-hover: #c8c5c0;
+
+  --color-btn-primary: #2d2d2d;
+  --color-btn-primary-hover: #1a1a1a;
+  --color-btn-secondary: #5a5a5a;
+  --color-btn-secondary-hover: #3a3a3a;
+  --color-btn-light: #eae8e5;
+  --color-btn-light-hover: #e0deda;
+
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-on-light: #2d2d2d;
+
+  --color-accent: #2d2d2d;
+  --color-success: #3a8a3a;
+  --color-error: #c44a4a;
+
+  /* ── Shadows ────────────────────────────────────────── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow-btn: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.15);
+
+  /* ── Glass ──────────────────────────────────────────── */
+  --glass-bg: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  --glass-blur: 20px;
+
+  /* ── Transitions ────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.2s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.65s;
+}
+
+/* ── Colors — Dark mode ───────────────────────────────── */
+html.dark {
+  --color-bg: #0a0a0a;
+  --color-bg-alt: #141414;
+  --color-bg-elevated: #1e1e1e;
+
+  --color-text: #f0f0f0;
+  --color-text-muted: #8a8a8a;
+  --color-text-dim: #555555;
+
+  --color-border: #2a2a2a;
+  --color-border-hover: #3a3a3a;
+
+  --color-btn-primary: #e8e6e3;
+  --color-btn-primary-hover: #ffffff;
+  --color-btn-secondary: #7a7a7a;
+  --color-btn-secondary-hover: #9a9a9a;
+  --color-btn-light: #1e1e1e;
+  --color-btn-light-hover: #2a2a2a;
+
+  --color-on-primary: #0a0a0a;
+  --color-on-secondary: #0a0a0a;
+  --color-on-light: #f0f0f0;
+
+  --color-accent: #e8e6e3;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-btn: 0 4px 16px rgba(255, 255, 255, 0.05);
+  --shadow-btn-hover: 0 6px 24px rgba(255, 255, 255, 0.1);
+}
