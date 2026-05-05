@@ -143,23 +143,26 @@ aside .menu__link:hover {
   color: var(--ds-ink);
 }
 
-aside .menu__link--active,
-aside .menu__link--active:hover {
+/* Active state — only on leaf links, not on collapsible parents. */
+aside .menu__link--active:not(.menu__link--sublist-caret),
+aside .menu__link--active:not(.menu__link--sublist-caret):hover {
   background-color: var(--ds-accent) !important;
   color: var(--ds-on-accent) !important;
   font-weight: 600;
 }
 
-aside .menu__list-item-collapsible--active > .menu__link {
+/* Parent of an active leaf — keep the normal label colour, never peach. */
+aside .menu__list-item-collapsible--active > .menu__link,
+aside .menu__list-item-collapsible--active > .menu__link:hover,
+aside .menu__link--sublist-caret.menu__link--active,
+aside .menu__link--sublist-caret.menu__link--active:hover {
+  background-color: transparent !important;
   color: var(--ds-ink) !important;
+  font-weight: 500;
 }
 
 aside .menu__caret::before {
   filter: opacity(0.55);
-}
-
-aside .menu__link--active .menu__caret::before {
-  filter: opacity(0.85);
 }
 
 /* ── Blog list ────────────────────────────────────────────────── */
