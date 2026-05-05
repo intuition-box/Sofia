@@ -198,6 +198,7 @@ const AuthContent = () => {
         <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Secure Wallet Connection</p>
 
+
         {/* Loading State */}
         {status === 'loading' && (
           <>
@@ -220,22 +221,29 @@ const AuthContent = () => {
         {/* Success State */}
         {status === 'success' && address && (
           <>
-            <div className={styles.checkmark}>✓</div>
-            <p className={styles.text}>Wallet Connected!</p>
-            <div className={styles.walletAddress}>
-              {address.slice(0, 6)}...{address.slice(-4)}
+            <p className={styles.successHeading}>
+              <span className={styles.checkmark} aria-hidden="true">✓</span>
+              Wallet Connected
+            </p>
+            <div className={styles.walletRow}>
+              <span className={styles.walletAddress}>
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </span>
+              <button className={styles.disconnectBtn} onClick={handleDisconnect}>
+                Disconnect
+              </button>
             </div>
 
             {claimStatus === 'idle' && (
               <>
+                <button className={styles.claimBtn} onClick={handleFirstClaim}>
+                  Create your first claim
+                </button>
                 <div className={styles.instructions}>
                   <p className={styles.instructionsText}>
                     Your wallet is connected. Create your first claim to get started with Sofia.
                   </p>
                 </div>
-                <button className={styles.claimBtn} onClick={handleFirstClaim}>
-                  Create your first claim
-                </button>
               </>
             )}
 
@@ -267,10 +275,6 @@ const AuthContent = () => {
                 Close
               </button>
             )}
-
-            <button className={styles.disconnectBtn} onClick={handleDisconnect}>
-              Disconnect
-            </button>
           </>
         )}
 
@@ -285,6 +289,17 @@ const AuthContent = () => {
             </button>
           </>
         )}
+
+        <p className={styles.privyMention}>
+          <svg className={styles.privyIcon} viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M14 2L3 8v12l11 6 11-6V8L14 2z" fill="currentColor" fillOpacity="0.4" />
+            <path d="M14 6l-7 4v8l7 4 7-4v-8l-7-4z" fill="currentColor" fillOpacity="0.15" />
+          </svg>
+          Secured by{' '}
+          <a href="https://www.privy.io" target="_blank" rel="noopener noreferrer">
+            Privy
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { logger } from '@site/src/lib/logger';
 
-const PRIVY_APP_ID = 'cmj05tjsj03thjs0c3mgxrixm';
-const PRIVY_CLIENT_ID = 'client-WY6U3b3LFEgbveR2FVgiyTTbRWKCZhy6vEVFzQt9NvZYS';
+// Aligned on the Explorer app — same Privy tenant, same allowlist.
+const PRIVY_APP_ID = 'cmmey7hlx01110clgylcc1ulc';
 
 interface WalletContextValue {
   address: string | null;
@@ -172,7 +172,6 @@ function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
   return (
     <PrivyProvider
       appId={PRIVY_APP_ID}
-      clientId={PRIVY_CLIENT_ID}
       config={{
         appearance: {
           theme: 'dark',
