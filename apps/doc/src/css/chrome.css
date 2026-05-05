@@ -214,6 +214,55 @@ nav[class*="blogSidebar"],
   max-width: 18% !important;
 }
 
+/* BlogSidebar links — same pattern as the doc sidebar.                 */
+nav[class*="blogSidebar"] [class*="sidebarItemTitle"] {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ds-muted);
+  padding: 0.5rem 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+nav[class*="blogSidebar"] [class*="sidebarItemList"] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav[class*="blogSidebar"] [class*="sidebarItem"] a,
+nav[class*="blogSidebar"] [class*="sidebarItemLink"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ds-ink-soft);
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+nav[class*="blogSidebar"] [class*="sidebarItem"] a:hover,
+nav[class*="blogSidebar"] [class*="sidebarItemLink"]:hover {
+  background-color: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  text-decoration: none;
+}
+
+nav[class*="blogSidebar"] [class*="sidebarItemLinkActive"],
+nav[class*="blogSidebar"] [class*="sidebarItemLinkActive"]:hover,
+nav[class*="blogSidebar"] [class*="sidebarItem"] a[aria-current="page"],
+nav[class*="blogSidebar"] [class*="sidebarItem"] a[aria-current="page"]:hover {
+  background-color: var(--ds-accent) !important;
+  color: var(--ds-on-accent) !important;
+  font-weight: 600;
+}
+
 /* Zero out the page-level wrappers Docusaurus puts around blog + doc */
 .theme-blog-list-page .container,
 .theme-blog-post-page .container,
