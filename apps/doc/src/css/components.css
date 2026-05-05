@@ -54,18 +54,6 @@ a.button.button--outline.button--primary:hover,
   transform: translateY(-1px);
 }
 
-[data-theme='dark'] a.button.button--primary,
-[data-theme='dark'] .button.button--primary {
-  background-color: var(--ds-bg);
-  border-color: var(--ds-bg);
-  color: var(--ds-ink);
-}
-
-[data-theme='dark'] a.button.button--primary:hover,
-[data-theme='dark'] .button.button--primary:hover {
-  background-color: var(--ds-bg-subtle);
-  border-color: var(--ds-bg-subtle);
-}
 
 /* ── Doc card grid ────────────────────────────────────────────── */
 

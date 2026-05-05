@@ -3,12 +3,11 @@
  */
 
 /* ── Navbar ───────────────────────────────────────────────────── */
+/* Peach banner echoing Explorer's PageHero — dark ink on accent.    */
 
 .navbar {
-  background-color: color-mix(in srgb, var(--ds-bg) 78%, transparent);
-  backdrop-filter: saturate(140%) blur(14px);
-  -webkit-backdrop-filter: saturate(140%) blur(14px);
-  border-bottom: 1px solid var(--ds-border-soft);
+  background-color: var(--ds-accent);
+  border-bottom: 1px solid color-mix(in srgb, #02000e 12%, transparent);
   box-shadow: none;
   height: var(--ifm-navbar-height);
 }
@@ -21,10 +20,12 @@
 
 .navbar__brand {
   margin-right: 2rem;
+  color: #02000e;
 }
 
 .navbar__logo {
-  height: 28px;
+  height: 26px;
+  filter: brightness(0);
 }
 
 .navbar__title {
@@ -32,24 +33,23 @@
 }
 
 .navbar__link {
-  color: var(--ds-ink);
+  color: #02000e;
   font-family: var(--font-body);
   font-size: var(--doc-text-sm);
   font-weight: 500;
   letter-spacing: -0.005em;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--doc-radius-xs);
-  transition: color var(--doc-fast) var(--doc-ease-out),
-              background-color var(--doc-fast) var(--doc-ease-out);
+  transition: background-color var(--doc-fast) var(--doc-ease-out);
 }
 
 .navbar__link:hover {
-  color: var(--ds-ink);
-  background-color: var(--ds-bg-subtle);
+  color: #02000e;
+  background-color: color-mix(in srgb, #02000e 8%, transparent);
 }
 
 .navbar__link--active {
-  color: var(--ds-accent-ink);
+  background-color: color-mix(in srgb, #02000e 14%, transparent);
 }
 
 .dropdown__menu {
@@ -78,7 +78,12 @@
 }
 
 .navbar__toggle {
-  color: var(--ds-ink);
+  color: #02000e;
+}
+
+[class*="colorModeToggle"],
+[class*="toggleButton"] {
+  display: none !important;
 }
 
 @media (max-width: 996px) {

@@ -117,15 +117,14 @@ const config: Config = {
       {name: 'author', content: 'Sofia Team'},
     ],
     colorMode: {
-      defaultMode: 'light',
-      disableSwitch: false,
-      respectPrefersColorScheme: true,
+      defaultMode: 'dark',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
     },
     navbar: {
       logo: {
         alt: 'Sofia',
         src: 'img/logoDark.svg',
-        srcDark: 'img/logoWhite.svg',
         href: '/',
       },
       items: [
