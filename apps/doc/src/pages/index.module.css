@@ -2,91 +2,38 @@
  * Homepage
  */
 
-/* ── Hero ──────────────────────────────────── */
-
-.heroSection {
-  padding: 8rem 0 6rem 0;
-  text-align: center;
+.main {
   position: relative;
-  background: var(--sofia-green-sage);
-  display: flex;
-  align-items: center;
+  z-index: 1;
 }
 
-/* Gradient fade at bottom of hero */
-.heroSection::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(to bottom, transparent, var(--sofia-bg-alt));
-  pointer-events: none;
+/* ── Hero wrapper ──────────────────────────── */
+
+.heroWrapper {
+  padding: 4rem 1.5rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.heroLabel {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--sofia-text-muted) !important;
-  margin: 0 0 1.5rem 0;
-}
-
-.heroTitle {
-  font-family: var(--font-heading);
-  font-size: var(--text-hero);
-  font-weight: 400;
-  color: var(--sofia-text) !important;
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto 1.5rem auto;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-
-.heroSubtitle {
-  font-family: var(--font-body);
-  font-size: var(--text-lg);
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--sofia-text-muted) !important;
-  text-align: center;
-  max-width: 560px;
-  margin: 0 auto 2.5rem auto;
+.heroWrapper :global(.ph-container) {
+  margin-bottom: 0;
 }
 
 .buttonsContainer {
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-.heroLink {
-  display: inline-block;
-  margin-top: 1.5rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--sofia-text-muted);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: color 0.2s ease;
-}
-
-.heroLink:hover {
-  color: var(--sofia-text);
+  margin-top: 24px;
+  position: relative;
+  z-index: 2;
 }
 
 /* ── Pillars ───────────────────────────────── */
 
 .pillarsSection {
-  padding: 4rem 0 3rem 0;
-  background: var(--sofia-bg-alt);
+  padding: 5rem 0 6rem 0;
+  background: var(--ds-bg);
 }
 
 .pillarsGrid {
@@ -115,7 +62,7 @@
   font-family: var(--font-heading);
   font-size: var(--text-xl);
   font-weight: 400;
-  color: var(--sofia-text);
+  color: var(--ds-ink);
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.01em;
 }
@@ -123,81 +70,17 @@
 .pillarDesc {
   font-family: var(--font-body);
   font-size: var(--text-base);
-  color: var(--sofia-text-muted);
+  color: var(--ds-ink-muted, var(--ds-ink));
   line-height: 1.6;
-  margin: 0;
+  margin: 0 auto;
   max-width: 280px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ── Socials ───────────────────────────────── */
-
-.socialsSection {
-  padding: 3rem 0 4rem 0;
-  background: var(--sofia-bg);
-}
-
-.socialsContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.socialLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1.4rem;
-  border: 1px solid var(--sofia-border);
-  border-radius: var(--radius-pill);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--sofia-text-muted);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.socialLink:hover {
-  color: var(--sofia-text);
-  border-color: var(--sofia-border-hover);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
-}
-
-.socialIcon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
-[data-theme='dark'] .socialIcon {
-  filter: invert(1);
-}
-
-/* ── Dark mode ─────────────────────────────── */
-
-[data-theme='dark'] .heroSection {
-  background: var(--sofia-green-sage);
 }
 
 /* ── Responsive ────────────────────────────── */
 
 @media screen and (max-width: 996px) {
-  .heroSection {
-    padding: 8rem 2rem 4rem 2rem;
-  }
-
-  .heroTitle {
-    font-size: 2.4rem;
-  }
-
-  .heroSubtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
+  .heroWrapper {
+    padding: 3rem 1rem 0;
   }
 
   .pillarsGrid {
@@ -208,29 +91,20 @@
   .pillar {
     padding: 1.5rem 1rem;
   }
-
-  .socialsContainer {
-    gap: 1rem;
-  }
 }
 
 @media screen and (max-width: 768px) {
-  .heroSection {
-    padding: 6rem 1rem 3rem 1rem;
+  .heroWrapper {
+    padding: 2rem 1rem 0;
   }
 
-  .heroTitle {
-    font-size: 2rem;
-    line-height: 1.15;
-  }
-
-  .heroSubtitle {
-    font-size: 0.95rem;
-    padding: 0 0.5rem;
+  .heroWrapper :global(.ph-title) {
+    font-size: 40px;
   }
 
   .buttonsContainer {
     flex-direction: column;
+    align-items: stretch;
     gap: 0.8rem;
   }
 }

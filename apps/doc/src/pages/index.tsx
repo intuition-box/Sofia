@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import {PageHero} from '@0xsofia/design-system';
 import styles from './index.module.css';
 
 export default function Home(): React.ReactElement {
@@ -9,16 +10,12 @@ export default function Home(): React.ReactElement {
       title="Sofia"
       description="Sofia Documentation & Development Blog — the Chrome extension that turns browsing into blockchain-backed knowledge.">
 
-      <main style={{ position: 'relative', zIndex: 1 }}>
-        {/* Hero Section */}
-        <section className={styles.heroSection}>
-          <div className="container">
-            <h1 className={styles.heroTitle}>
-              From Surfing the Web to Owning It
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Sofia turns your browsing into verifiable, blockchain-backed knowledge — privately and on your terms.
-            </p>
+      <main className={styles.main}>
+        <div className={styles.heroWrapper}>
+          <PageHero
+            title="From Surfing the Web to Owning It"
+            description="Sofia turns your browsing into verifiable, blockchain-backed knowledge — privately and on your terms."
+          >
             <div className={styles.buttonsContainer}>
               <Link
                 className="button button--primary button--lg"
@@ -31,10 +28,9 @@ export default function Home(): React.ReactElement {
                 Chronicles
               </Link>
             </div>
-          </div>
-        </section>
+          </PageHero>
+        </div>
 
-        {/* Pillars */}
         <section className={styles.pillarsSection}>
           <div className={`container ${styles.pillarsGrid}`}>
             <div className={styles.pillar}>

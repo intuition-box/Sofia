@@ -12,7 +12,7 @@
  * 1. Fonts & Design Tokens
  * 2. Base / Reset
  * 3. Layout
- * 4. Navbar (hidden — CardNav is used instead)
+ * 4. Navbar
  * 5. Sidebar
  * 6. Documentation content (typography, tables, code, admonitions)
  * 7. Blog
@@ -23,6 +23,8 @@
  * 12. Hero overrides
  * 13. Doc card / stat box shine
  */
+
+@import '@0xsofia/design-system/styles/page-hero.css';
 
 /* ============================================
    1. FONTS & DESIGN TOKENS
