@@ -1,6 +1,6 @@
 .section {
   width: 100%;
-  padding: 72px 0;
+  padding: 96px 0;
   overflow: hidden;
 }
 
@@ -8,6 +8,45 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 var(--space-xl);
+}
+
+/* ── Header — eyebrow on the left, counter on the right ─ */
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+.counterCurrent {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.counterDivider,
+.counterTotal {
+  font-size: var(--text-sm);
+  color: var(--color-text-dim);
+  letter-spacing: 0.06em;
+}
+
+/* ── Stage ────────────────────────────────────────────── */
+
+.stage {
+  display: flex;
+  flex-direction: column;
 }
 
 .imageWrap {
@@ -20,7 +59,9 @@
 
 .image {
   width: 100%;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
   box-shadow: var(--shadow-lg);
   user-select: none;
   pointer-events: none;
@@ -30,77 +71,100 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 1.6rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  color: var(--color-text);
+  font-size: 1.4rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
-  backdrop-filter: blur(8px);
-  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
+
 .arrow:hover {
-  background: rgba(0, 0, 0, 0.75);
-  transform: translateY(-50%) scale(1.08);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  transform: translateY(-50%) scale(1.06);
 }
-.arrowLeft { left: 16px; }
+
+.arrowLeft  { left: 16px; }
 .arrowRight { right: 16px; }
+
+/* ── Info ─────────────────────────────────────────────── */
 
 .info {
   text-align: center;
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .title {
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.022em;
   color: var(--color-text);
-  margin-bottom: 8px;
+  margin: 0 0 8px;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .subtitle {
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
   line-height: 1.6;
-  max-width: 560px;
+  color: var(--color-text-muted);
+  max-width: 56ch;
   margin: 0 auto;
 }
+
+/* ── Dots ─────────────────────────────────────────────── */
 
 .dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 24px;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
   border: none;
+  padding: 0;
   background: var(--color-border);
   cursor: pointer;
-  padding: 0;
-  transition: all 0.2s;
+  transition:
+    width var(--duration-normal) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
 }
+
+.dot:hover {
+  background: var(--color-text-dim);
+}
+
 .dotActive {
-  background: var(--color-text);
-  width: 24px;
-  border-radius: 4px;
+  width: 22px;
+  background: var(--color-accent);
 }
 
 @media (max-width: 640px) {
-  .arrow { width: 36px; height: 36px; font-size: 1.2rem; }
-  .arrowLeft { left: 8px; }
+  .section { padding: 72px 0; }
+  .container { padding: 0 var(--space-md); }
+  .arrow { width: 36px; height: 36px; font-size: 1.1rem; }
+  .arrowLeft  { left: 8px; }
   .arrowRight { right: 8px; }
 }
