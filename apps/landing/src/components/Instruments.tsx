@@ -242,12 +242,12 @@ function IsoStack() {
   ];
   const W = 70;
   const layers: Layer[] = [
-    { z: 250, tag: 'L.01', name: 'BROWSER', sub: 'page · session · attention', color: '#A6AF6B', dots: 6, detail: 'plasmo · chromium' },
-    { z: 200, tag: 'L.02', name: 'AGENT', sub: 'observe · classify · propose', color: '#cea2fd', dots: 9, detail: 'mastra · gaianet · qwen2.5' },
-    { z: 150, tag: 'L.03', name: 'ATOMS', sub: 'url · intention · user', color: '#ffa7b1', dots: 13, detail: 'ipfs · subject / pred / object' },
-    { z: 100, tag: 'L.04', name: 'TRIPLES', sub: '[you] → [verb] → [content]', color: '#ffc6b0', dots: 17, detail: 'multivault · createTriple()' },
-    { z: 50, tag: 'L.05', name: 'SIGNAL', sub: 'stake · trust · distrust', color: '#F59E0B', dots: 21, detail: '$TRUST · bonding curve' },
-    { z: 0, tag: 'L.06', name: 'PROTOCOL', sub: 'knowledge graph · onchain', color: '#945941', dots: 25, detail: 'intuition · base · DAG' },
+    { z: 250, tag: 'L.01', name: 'EXTENSION', sub: 'capture · echoes · bookmarks', color: '#A6AF6B', dots: 6, detail: 'chromium · local storage' },
+    { z: 200, tag: 'L.02', name: 'PHALA TEE', sub: 'encrypt · attest · zero-trust', color: '#cea2fd', dots: 9, detail: 'tee · sealed compute' },
+    { z: 150, tag: 'L.03', name: 'AGENT', sub: 'intentions · topics · pulse', color: '#ffa7b1', dots: 13, detail: 'mastra · gaianet · qwen2.5' },
+    { z: 100, tag: 'L.04', name: 'CERTIFY', sub: '[you] → [intention] → [page]', color: '#ffc6b0', dots: 17, detail: 'triples · signed · on-chain' },
+    { z: 50,  tag: 'L.05', name: 'EXPLORER', sub: 'resonance · vote · trending', color: '#F59E0B', dots: 21, detail: 'circle feed · claims · leaderboards' },
+    { z: 0,   tag: 'L.06', name: 'CIRCLES', sub: 'follow · stake · reputation', color: '#945941', dots: 25, detail: 'trust graph · TRUST · XP · gold' },
   ];
 
   const cx = 215;
@@ -426,7 +426,7 @@ function IsoStack() {
 
 /* ── PLATE.C — Three Circles (attention relief) ─────── */
 
-function ThreeCircles() {
+export function ThreeCircles() {
   const [t, setT] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -508,8 +508,8 @@ function ThreeCircles() {
         <line x1="40" y1="20" x2="40" y2="340" />
         <line x1="700" y1="20" x2="700" y2="340" />
       </g>
-      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <g key={i}>
+      {(['TRUST', 'TECH', 'MUSIC', 'LEARNING', 'WEB3', 'DESIGN', 'WORK'] as const).map((label, i) => (
+        <g key={label}>
           <line x1={40 + i * 110} y1="20" x2={40 + i * 110} y2="14" stroke="rgba(255,255,255,0.5)" strokeWidth="0.5" />
           <text
             x={40 + i * 110}
@@ -518,8 +518,9 @@ function ThreeCircles() {
             fontSize="7"
             fill="rgba(255,255,255,0.5)"
             textAnchor="middle"
+            letterSpacing="0.16em"
           >
-            {(i * 4).toString().padStart(2, '0')}h
+            {label}
           </text>
         </g>
       ))}
@@ -593,7 +594,6 @@ function ThreeCircles() {
 export function Instruments() {
   const plateARef = useScrollAnim<HTMLDivElement>();
   const plateDRef = useScrollAnim<HTMLDivElement>();
-  const plateCRef = useScrollAnim<HTMLDivElement>();
 
   return (
     <Module id="instruments" code="S.04" label="MICROGRAPHICS" meta="VECTOR · 1PX · 1:1">
@@ -606,77 +606,56 @@ export function Instruments() {
         }
         right={
           <p>
-            Three plates from the Sofia drawing set: the topics &amp; intentions
-            field, the system topology, and the three circles in which a reader
-            actually moves.
+            Two plates from the Sofia drawing set: the topics &amp; intentions
+            field and the system topology — local capture, on-chain anchor,
+            measured to the millimetre.
           </p>
         }
       />
 
       <div className={styles.row2}>
-          <div ref={plateARef} className={`${styles.plate} anim anim-up`}>
-            <div className={styles.plateHead}>
-              <div className={styles.plateHeadLeft}>
-                <span className={styles.plateTag}>PLATE.A</span>
-                <span className={styles.plateTitle}>Topics × intentions · polar field</span>
-              </div>
-              <div className={styles.plateMeta}>
-                <span>OUTER · TOPICS</span>
-                <span>INNER · INTENTIONS</span>
-              </div>
-            </div>
-            <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
-              <TopicsIntentions />
-            </div>
-            <div className={styles.plateFoot}>
-              <span>14 TOPICS</span>
-              <span>6 INTENTIONS</span>
-              <span>SHEET 01/03</span>
-            </div>
-          </div>
-
-          <div ref={plateDRef} className={`${styles.plate} anim anim-up anim-d2`}>
-            <div className={styles.plateHead}>
-              <div className={styles.plateHeadLeft}>
-                <span className={styles.plateTag}>PLATE.D</span>
-                <span className={styles.plateTitle}>Stack · system topology · iso 30°</span>
-              </div>
-              <div className={styles.plateMeta}>
-                <span>6 LAYERS</span>
-                <span>BROWSER → PROTOCOL</span>
-              </div>
-            </div>
-            <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
-              <IsoStack />
-            </div>
-            <div className={styles.plateFoot}>
-              <span>LOCAL → CHAIN</span>
-              <span>PROOF FLOWS DOWN</span>
-              <span>SHEET 02/03</span>
-            </div>
-          </div>
-        </div>
-
-        <div ref={plateCRef} className={`${styles.plate} ${styles.plateWide} anim anim-up`}>
+        <div ref={plateARef} className={`${styles.plate} anim anim-up`}>
           <div className={styles.plateHead}>
             <div className={styles.plateHeadLeft}>
-              <span className={styles.plateTag}>PLATE.C</span>
-              <span className={styles.plateTitle}>Three circles · intuition × vitalik × sofia</span>
+              <span className={styles.plateTag}>PLATE.A</span>
+              <span className={styles.plateTitle}>Topics × intentions · polar field</span>
             </div>
             <div className={styles.plateMeta}>
-              <span>RELIEF</span>
-              <span>12 BANDS</span>
+              <span>OUTER · TOPICS</span>
+              <span>INNER · INTENTIONS</span>
             </div>
           </div>
-          <div className={styles.plateBody}>
-            <ThreeCircles />
+          <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
+            <TopicsIntentions />
           </div>
           <div className={styles.plateFoot}>
-            <span>3 CIRCLES</span>
-            <span>ATTENTION RELIEF</span>
-            <span>SHEET 03/03</span>
+            <span>14 TOPICS</span>
+            <span>6 INTENTIONS</span>
+            <span>SHEET 01/02</span>
           </div>
         </div>
+
+        <div ref={plateDRef} className={`${styles.plate} anim anim-up anim-d2`}>
+          <div className={styles.plateHead}>
+            <div className={styles.plateHeadLeft}>
+              <span className={styles.plateTag}>PLATE.D</span>
+              <span className={styles.plateTitle}>Stack · system topology · iso 30°</span>
+            </div>
+            <div className={styles.plateMeta}>
+              <span>6 LAYERS</span>
+              <span>BROWSER → PROTOCOL</span>
+            </div>
+          </div>
+          <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
+            <IsoStack />
+          </div>
+          <div className={styles.plateFoot}>
+            <span>LOCAL → CHAIN</span>
+            <span>PROOF FLOWS DOWN</span>
+            <span>SHEET 02/02</span>
+          </div>
+        </div>
+      </div>
     </Module>
   );
 }

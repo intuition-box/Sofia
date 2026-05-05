@@ -21,12 +21,6 @@ export function Values() {
             Five values, on chain. <em>Stake your position.</em>
           </>
         }
-        right={
-          <p>
-            Each value is a live triple on the Intuition Protocol. Support the
-            ones you stand for; the protocol weights influence accordingly.
-          </p>
-        }
       />
 
       <div className={styles.grid}>

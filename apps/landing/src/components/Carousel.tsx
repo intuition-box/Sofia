@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useParallax } from '../hooks/useParallax';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { Module } from './Module';
 import styles from './Carousel.module.css';
@@ -35,7 +34,6 @@ export function Carousel() {
   const next = () => setCurrent((c) => (c === SLIDES.length - 1 ? 0 : c + 1));
 
   const slide = SLIDES[current];
-  const imgRef = useParallax<HTMLDivElement>({ speed: 0.1, zoom: true, zoomMax: 1.08 });
 
   return (
     <Module
@@ -54,7 +52,7 @@ export function Carousel() {
       </div>
 
       <div ref={stageRef} className={`${styles.stage} anim anim-up anim-d2`}>
-          <div ref={imgRef} className={styles.imageWrap}>
+          <div className={styles.imageWrap}>
             <button
               className={`${styles.arrow} ${styles.arrowLeft}`}
               onClick={prev}

@@ -1,15 +1,23 @@
 /**
- * ModuleHead — bipartite section header. Eyebrow + title left,
- * descriptive paragraph or CTA right. Aligns to baseline at desktop;
- * stacks at mobile. Used inside `Module`.
+ * ModuleHead — single column by default, becomes bipartite when a
+ * right slot is provided. Sub paragraph (optional) sits below the
+ * title inside the left column.
  */
 
 .head {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
   gap: 32px 60px;
   align-items: end;
   margin-bottom: 60px;
+}
+
+.solo {
+  grid-template-columns: 1fr;
+  max-width: 720px;
+}
+
+.bipartite {
+  grid-template-columns: 1.1fr 1fr;
 }
 
 .left {
@@ -26,6 +34,18 @@
 .title :global(em) {
   font-style: italic;
   color: var(--color-accent-ink);
+}
+
+.sub {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  max-width: 56ch;
+}
+
+.sub :global(p) {
+  margin: 0;
 }
 
 .right {
@@ -48,6 +68,7 @@
   color: #02000e;
 }
 
+.peach .sub,
 .peach .right {
   color: rgba(0, 0, 0, 0.72);
 }
@@ -62,7 +83,7 @@
 /* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 800px) {
-  .head {
+  .bipartite {
     grid-template-columns: 1fr;
     gap: 24px;
     margin-bottom: 48px;

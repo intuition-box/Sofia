@@ -90,14 +90,29 @@
 }
 
 .quote {
+  position: relative;
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: clamp(1.05rem, 0.85rem + 0.6vw, 1.25rem);
+  line-height: 1.55;
+  letter-spacing: -0.012em;
   color: var(--color-text);
-  margin: 0;
-  padding-left: 14px;
+  margin: 22px 0 0;
+  padding-left: 18px;
   border-left: 1px solid var(--color-accent);
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+}
+
+.quote::before {
+  content: '"';
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 2.4em;
+  line-height: 0.4;
+  color: var(--color-accent-ink);
+  margin-right: 6px;
+  vertical-align: -0.18em;
 }
 
 /* ── Advisors strip ───────────────────────────────────── */

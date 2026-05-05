@@ -1,19 +1,15 @@
 /**
- * Hero — peach banner echoing apps/explorer's PageHero and apps/doc's
- * homepage banner: full-width --ds-accent surface, decorative hexagon,
- * Fraunces serif title, mono eyebrow with the launch countdown.
- *
- * Below the banner: a screenshot showcase (GSAP scrub-scale) and a
- * partner-logo pill on neutral surface.
+ * Hero — peach banner with a 2-column inner: PLATE.C engineering card
+ * on the left, copy stack (title · lede · CTAs · partners) on the right.
+ * Stacks to a single column on tablet/mobile, plate falls below copy.
  */
 
 .hero {
   position: relative;
   padding-top: 80px;
   overflow: hidden;
+  background: var(--color-bg);
 }
-
-/* ── Peach banner ─────────────────────────────────────── */
 
 .banner {
   position: relative;
@@ -29,7 +25,7 @@
   top: 50%;
   width: 540px;
   height: 540px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.06);
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
   transform: translateY(-50%) rotate(-12deg);
   pointer-events: none;
@@ -39,49 +35,35 @@
 .bannerInner {
   position: relative;
   z-index: 1;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 88px var(--space-xl) 110px;
+  --inner-pad-x: max(var(--space-xl), calc((100vw - 1320px) / 2 + var(--space-md)));
+  --inner-pad-y: 56px;
+  --inner-gap: 56px;
+  --plate-col: 52%;
+  --inner-h: 560px;
+  padding: var(--inner-pad-y) var(--inner-pad-x) var(--inner-pad-y) 0;
+  display: grid;
+  grid-template-columns: var(--plate-col) minmax(0, 1fr);
+  gap: var(--inner-gap);
+  align-items: stretch;
   text-align: left;
+  min-height: var(--inner-h);
 }
 
-.countdown {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55em;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: #02000e;
-  margin-bottom: 28px;
-}
-
-.countdown::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: #02000e;
-  flex-shrink: 0;
-}
-
-.countdownNum {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-}
-
-.countdownLabel {
-  color: rgba(0, 0, 0, 0.6);
-  letter-spacing: 0.18em;
-  text-transform: none;
-  font-weight: 400;
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .title {
   margin: 0 0 22px;
-  max-width: 22ch;
   color: #02000e;
+  font-size: clamp(1.8rem, 1rem + 1.8vw, 2.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 
 .title em {
@@ -91,22 +73,67 @@
 
 .lede {
   font-family: var(--font-body);
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   line-height: 1.55;
   color: rgba(0, 0, 0, 0.72);
-  max-width: 38rem;
-  margin: 0 0 32px;
+  margin: 0 0 28px;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
 }
 
 .ctas {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-/* Buttons inside the peach banner read against ink, not the
-   page theme. Primary = ink fill; secondary = ink outline. */
+.partners {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.partnersLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.partnersList {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.partnersList a {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.partnersList a:hover {
+  opacity: 1;
+}
+
+.partnersList img {
+  height: 18px;
+  width: auto;
+  filter: grayscale(100%) brightness(0);
+}
+
+/* Buttons inside the peach banner read against ink, not the page theme. */
 .banner :global(.btn-primary) {
   background: #02000e;
   border-color: #02000e;
@@ -131,71 +158,136 @@
   transform: translateY(-1px);
 }
 
-/* ── Screenshot showcase — pulled up to overlap the banner ─ */
+/* ── PLATE.C — engineering card on the left ───────────── */
 
-.showcase {
+.plate {
   position: relative;
-  z-index: 2;
-  max-width: 1080px;
-  margin: -64px auto 0;
-  padding: 0 var(--space-xl);
-  perspective: 1200px;
-}
-
-.screenshot {
-  display: block;
-  width: 100%;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
-  background: var(--color-bg-elevated);
-  will-change: transform;
-}
-
-/* ── Partners pill ────────────────────────────────────── */
-
-.partnersWrap {
   display: flex;
-  justify-content: center;
-  margin: 56px auto 0;
-  padding: 0 var(--space-xl);
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+  will-change: transform, opacity;
+  transform-origin: center center;
 }
 
-.partners {
+.plate::before,
+.plate::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--color-accent);
+  pointer-events: none;
+}
+.plate::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.plate::after {
+  top: -1px;
+  right: -1px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.plateHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+}
+
+.plateHeadLeft {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 28px;
-  padding: 12px 28px;
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-pill);
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.partners a {
-  display: inline-flex;
-  align-items: center;
-  opacity: 0.55;
-  transition: opacity var(--duration-fast) var(--ease-out);
+.plateTag {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent-ink);
+  border: 1px solid var(--color-accent);
+  padding: 2px 8px;
 }
 
-.partners a:hover {
-  opacity: 0.95;
+.plateTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
 }
 
-.partners img {
-  height: 20px;
-  width: auto;
-  filter: grayscale(100%) brightness(0) invert(1);
+.plateMeta {
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  flex-wrap: wrap;
+}
+
+.plateBody {
+  padding: 16px 20px 20px;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.plateBody > svg {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  display: block;
+}
+
+.plateFoot {
+  border-top: 1px solid var(--color-border);
+  padding: 8px 16px;
+  display: flex;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 /* ── Responsive ───────────────────────────────────────── */
 
+@media (max-width: 1024px) {
+  .bannerInner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .plate {
+    order: 2;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .copy {
+    order: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .bannerInner {
-    padding: 64px var(--space-md) 88px;
-    text-align: left;
+    padding: 64px var(--space-md) 80px;
+    gap: 36px;
   }
   .banner::before {
     width: 360px;
@@ -205,19 +297,11 @@
   .lede {
     font-size: 1rem;
   }
-  .showcase {
-    margin-top: -40px;
-    padding: 0 var(--space-md);
-  }
-  .partnersWrap {
-    margin-top: 40px;
-    padding: 0 var(--space-md);
-  }
-  .partners {
-    gap: 18px;
-    padding: 10px 18px;
-  }
-  .partners img {
+  .partnersList img {
     height: 16px;
+  }
+  .ctaRow {
+    gap: 18px;
+    margin-bottom: 28px;
   }
 }

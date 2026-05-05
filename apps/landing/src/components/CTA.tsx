@@ -1,7 +1,6 @@
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { useTextSplit } from '../hooks/useTextSplit';
-import { ParallaxBg } from './ParallaxBg';
 import { URLS } from '../lib/config/urls';
 import styles from './CTA.module.css';
 
@@ -12,7 +11,7 @@ export function CTA() {
   const eyebrowRef = useScrollAnim<HTMLSpanElement>();
 
   return (
-    <ParallaxBg src="/img/bg2.png" speed={0.2} zoom zoomMax={1.12} className={styles.section}>
+    <section className={styles.section}>
       <div className={styles.inner}>
         <span ref={eyebrowRef} className={`${styles.eyebrow} anim`}>
           <span className={styles.eyebrowDot} aria-hidden="true" />
@@ -36,6 +35,6 @@ export function CTA() {
           </a>
         </div>
       </div>
-    </ParallaxBg>
+    </section>
   );
 }

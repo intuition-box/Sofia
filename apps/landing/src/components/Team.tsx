@@ -32,14 +32,16 @@ const TEAM: TeamMember[] = [
     name: 'Samuel Chauche',
     role: 'Core Contributor',
     avatar: 'https://avatars.githubusercontent.com/u/193877792?s=400&u=b40a4d61b73ba9be24d01694392ac4cb700f82a6&v=4',
-    quote: 'I have seen data used internally without any compensation to users.',
+    quote:
+      "Working as tech support for several companies, I have seen data used internally without any compensation to users. After 30 minutes browsing meaningless ads, I realized the internet wasn't enriching; it was exhausting.",
     socials: { x: 'Passive_Records', linkedin: 'Samuel-Chauche', github: 'SamuelChauche' },
   },
   {
     name: 'Maxime Saint-Joannis',
     role: 'Core Contributor',
     avatar: 'https://avatars.githubusercontent.com/u/193876743?v=4',
-    quote: "Streaming platforms manipulate discovery. We're building the alternative.",
+    quote:
+      "10 years as a music producer showed me how streaming platforms manipulate discovery with fake artists and paid algorithms, burying real creators. We're building the alternative.",
     socials: { x: 'MoodzMaxime', linkedin: 'maxime-saint-joannis-65163b345', github: 'Wieedze' },
   },
 ];
@@ -75,7 +77,7 @@ export function Team() {
             Two builders, three advisors, <em>one open repository.</em>
           </>
         }
-        right={
+        sub={
           <p>
             Sofia is built in public on the Intuition Protocol. Every contributor
             is reachable; every advisor stakes their name on the work.
