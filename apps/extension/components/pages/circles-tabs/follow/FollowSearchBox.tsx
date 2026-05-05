@@ -19,53 +19,113 @@ interface FollowSearchBoxProps {
   placeholder?: string
 }
 
+interface AccountActionButtonProps {
+  account: AccountAtom
+  onTrustSuccess?: () => void
+}
+
+interface AccountActionButtonRenderProps {
+  isTrusted: boolean
+  node: React.ReactNode
+}
+
 /**
  * Add-to-circle button: opens WeightModal pre-filled with 0.01 TRUST
  * and creates the I → TRUSTS → account triple in one step.
- * Shows "Trusted ✓" if the account is already in the user's trust circle.
+ * When the account is already trusted, the parent card uses a salmon border
+ * as the visual cue and we render nothing here.
  */
-function AccountActionButton({
+function useAccountActionButton({
   account,
   onTrustSuccess
-}: {
-  account: AccountAtom
-  onTrustSuccess?: () => void
-}) {
+}: AccountActionButtonProps): AccountActionButtonRenderProps {
   const followStatus = useCheckFollowStatus(account.termId)
 
-  // Only show buttons if termId is valid (bytes32 - 66 chars)
   if (account.termId.length !== 66) {
-    return null
+    return { isTrusted: false, node: null }
   }
 
   if (followStatus.loading) {
-    return (
-      <button className="follow-button salmon-gradient-button" disabled>
-        Loading...
-      </button>
-    )
+    return {
+      isTrusted: false,
+      node: (
+        <button className="follow-button salmon-gradient-button" disabled>
+          Loading...
+        </button>
+      )
+    }
   }
 
   if (followStatus.isTrusting) {
-    return (
-      <button className="follow-button salmon-gradient-button" disabled>
-        Trusted ✓
-      </button>
-    )
+    return {
+      isTrusted: true,
+      node: (
+        <button
+          className="follow-button salmon-gradient-button"
+          disabled
+        >
+          Trusted ✓
+        </button>
+      )
+    }
   }
 
+  return {
+    isTrusted: false,
+    node: (
+      <TrustAccountButton
+        accountTermId={account.termId}
+        accountLabel={account.label}
+        label={<><UserPlus size={12} /> add</>}
+        initialWeight="minimum"
+        className="explorer-add-btn"
+        onSuccess={() => {
+          followStatus.refetch()
+          onTrustSuccess?.()
+        }}
+      />
+    )
+  }
+}
+
+function SearchResultCard({
+  account,
+  index,
+  onSelect,
+  onTrustSuccess
+}: {
+  account: AccountAtom
+  index: number
+  onSelect: (account: AccountAtom) => void
+  onTrustSuccess?: () => void
+}) {
+  const { isTrusted, node } = useAccountActionButton({ account, onTrustSuccess })
+
   return (
-    <TrustAccountButton
-      accountTermId={account.termId}
-      accountLabel={account.label}
-      label={<><UserPlus size={12} /> add</>}
-      initialWeight="minimum"
-      className="explorer-add-btn"
-      onSuccess={() => {
-        followStatus.refetch()
-        onTrustSuccess?.()
-      }}
-    />
+    <div
+      className={`search-result-card${isTrusted ? ' search-result-card--trusted' : ''}`}
+      onClick={() => onSelect(account)}
+    >
+      <div className="account-left">
+        <span className="account-number">{index + 1}</span>
+        <Avatar
+          imgSrc={account.image}
+          name={account.label}
+          avatarClassName="account-avatar"
+          size="medium"
+        />
+        <div className="search-account-info">
+          <span className="account-label">{account.label}</span>
+          <AccountSignalsBadge
+            walletAddress={account.data}
+            compact={true}
+          />
+        </div>
+      </div>
+      <div className="account-right" onClick={(e) => e.stopPropagation()}>
+        {node}
+      </div>
+    </div>
   )
 }
 
@@ -128,34 +188,13 @@ export function FollowSearchBox({
       {showResults && visibleResults.length > 0 && (
         <div className="search-results-dropdown">
           {visibleResults.slice(0, 10).map((account, index) => (
-            <div
+            <SearchResultCard
               key={account.id}
-              className="search-result-card"
-              onClick={() => handleSelectAccount(account)}
-            >
-              <div className="account-left">
-                <span className="account-number">{index + 1}</span>
-                <Avatar
-                  imgSrc={account.image}
-                  name={account.label}
-                  avatarClassName="account-avatar"
-                  size="medium"
-                />
-                <div className="search-account-info">
-                  <span className="account-label">{account.label}</span>
-                  <AccountSignalsBadge
-                    walletAddress={account.data}
-                    compact={true}
-                  />
-                </div>
-              </div>
-              <div className="account-right" onClick={(e) => e.stopPropagation()}>
-                <AccountActionButton
-                  account={account}
-                  onTrustSuccess={onTrustSuccess}
-                />
-              </div>
-            </div>
+              account={account}
+              index={index}
+              onSelect={handleSelectAccount}
+              onTrustSuccess={onTrustSuccess}
+            />
           ))}
 
           {visibleResults.length > 10 && (

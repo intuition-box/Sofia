@@ -8,11 +8,12 @@ import '../../styles/CommunityHomeView.css'
 
 interface CommunityHomeViewProps {
   onOpenFeed: () => void
+  onTrustAdded?: () => void
 }
 
 const MAX_AVATARS_IN_STACK = 4
 
-const CommunityHomeView = ({ onOpenFeed }: CommunityHomeViewProps) => {
+const CommunityHomeView = ({ onOpenFeed, onTrustAdded }: CommunityHomeViewProps) => {
   const { walletAddress } = useWalletFromStorage()
   const { accounts, loading } = useTrustCircle(walletAddress)
 
@@ -79,7 +80,7 @@ const CommunityHomeView = ({ onOpenFeed }: CommunityHomeViewProps) => {
       </button>
 
       <div className="community-explore-section">
-        <ExplorerPanel walletAddress={walletAddress} />
+        <ExplorerPanel walletAddress={walletAddress} onTrustAdded={onTrustAdded} />
       </div>
     </div>
   )

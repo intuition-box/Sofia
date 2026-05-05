@@ -96,6 +96,7 @@
   cursor: pointer;
 }
 
+
 .search-results-more {
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
@@ -319,6 +320,35 @@
 /* Trust button in following section */
 .follow-tab .trust-page-button.salmon-gradient-button {
   padding: var(--spacing-sm) 23px;
+}
+
+/* Explicit "Retirer du trust circle" button — replaces the silent "×" icon.
+   Subdued by default, salmon-tinted on hover so the destructive intent is
+   clear without screaming on every list row. */
+.trust-remove-btn {
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.trust-remove-btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
+}
+
+.trust-remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* "+ invite a member" CTA at the top of TrustCirclePanel — mirrors the

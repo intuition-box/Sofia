@@ -5,13 +5,15 @@ import SofiaLoader from "../ui/SofiaLoader"
 import {
   useCheckFollowStatus,
   useIdentityResolution,
-  useAccountStats
+  useAccountStats,
+  useRedeemTriple
 } from "../../hooks"
 import ProfileHeader from "../ui/ProfileHeader"
 import FollowButton from "../ui/FollowButton"
 import TrustAccountButton from "../ui/TrustAccountButton"
 import "../styles/UserProfile.css"
 import "../styles/ProfilePage.css"
+import "../styles/FollowTab.css"
 
 // Lazy load tabs (same pattern as ProfilePage)
 const TrustCirclePanel = lazy(() =>
@@ -34,6 +36,27 @@ const UserProfilePage = () => {
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
+  const { redeemPosition } = useRedeemTriple()
+  const [removingTrust, setRemovingTrust] = useState(false)
+
+  const handleRemoveTrust = async () => {
+    if (!followStatus.trustTripleId) return
+    const confirmed = confirm(
+      `Remove ${userProfileData?.label ?? "this user"} from your trust circle?`
+    )
+    if (!confirmed) return
+    setRemovingTrust(true)
+    try {
+      const result = await redeemPosition(followStatus.trustTripleId)
+      if (!result.success) {
+        alert(`Remove failed: ${result.error}`)
+        return
+      }
+      followStatus.refetch()
+    } finally {
+      setRemovingTrust(false)
+    }
+  }
 
   // Signals created (from on-chain stats)
   const { signalsCreated: accountSignals } = useAccountStats(
@@ -83,9 +106,20 @@ const UserProfilePage = () => {
 
     if (followStatus.isTrusting) {
       return (
-        <button className="follow-button salmon-gradient-button" disabled>
-          Trusted
-        </button>
+        <div className="user-profile-trust-actions">
+          <button className="follow-button salmon-gradient-button" disabled>
+            Trusted ✓
+          </button>
+          <button
+            type="button"
+            className="trust-remove-btn"
+            onClick={handleRemoveTrust}
+            disabled={removingTrust || !followStatus.trustTripleId}
+            title="Remove this user from your trust circle"
+          >
+            {removingTrust ? "Removing…" : "Remove"}
+          </button>
+        </div>
       )
     }
 

@@ -220,12 +220,12 @@ export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCircleP
                 </div>
                 <div className="account-right" onClick={(e) => e.stopPropagation()}>
                   <button
-                    className="remove-btn"
+                    className="trust-remove-btn"
                     onClick={() => handleRemoveTrust(account)}
                     disabled={processingIds.has(account.tripleId)}
-                    title="Remove from trust circle"
+                    title="Remove this user from your trust circle"
                   >
-                    {processingIds.has(account.tripleId) ? '...' : '×'}
+                    {processingIds.has(account.tripleId) ? 'Removing…' : 'Remove'}
                   </button>
                 </div>
               </div>
