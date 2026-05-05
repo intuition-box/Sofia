@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
+import { useTextSplit } from '../hooks/useTextSplit';
 import { useVoteStats } from '../hooks/useVoteStats';
 import { useVoting } from '../hooks/useVoting';
 import styles from './Citation.module.css';
@@ -8,7 +10,7 @@ interface CitationProps {
   quote: string;
   name: string;
   role: string;
-  bio: string;
+  bio?: string;
   photo: string;
   tripleId?: `0x${string}`;
   blogLink: string;
@@ -17,41 +19,70 @@ interface CitationProps {
 }
 
 export function Citation({
-  quote, name, role, bio, photo, tripleId, blogLink, blogLabel, reversed = false,
+  quote,
+  name,
+  role,
+  bio,
+  photo,
+  tripleId,
+  blogLink,
+  blogLabel,
+  reversed = false,
 }: CitationProps) {
-  const textRef = useScrollAnim();
-  const photoRef = useScrollAnim();
+  const photoRef = useScrollAnim<HTMLDivElement>();
+  const headerRef = useScrollAnim<HTMLDivElement>();
+  const quoteRef = useTextSplit<HTMLQuoteElement>({ by: 'word' });
+  const meta1Ref = useScrollAnim<HTMLDivElement>();
+  const meta2Ref = useScrollAnim<HTMLDivElement>();
 
-  return (
-    <section className={`${styles.cite} ${reversed ? styles.reversed : ''}`}>
-      {reversed && (
-        <div ref={photoRef} className={`${styles.photo} anim`}>
-          <img src={photo} alt={name} />
-        </div>
-      )}
+  const text = (
+    <div className={styles.copy}>
+      <div ref={headerRef} className={`${styles.eyebrow} mono-eyebrow anim`}>
+        Founder voice
+      </div>
 
-      <div ref={textRef} className={`anim ${reversed ? '' : 'anim-d2'}`}>
-        <blockquote className={styles.quote}>"{quote}"</blockquote>
+      <blockquote ref={quoteRef} className={`${styles.quote} anim`}>
+        {quote}
+      </blockquote>
+
+      <div ref={meta1Ref} className={`${styles.meta} anim anim-d2`}>
         <p className={styles.name}>{name}</p>
         <p className={styles.role}>{role}</p>
-        {bio && <p className={styles.bio}>{bio}</p>}
+        {bio ? <p className={styles.bio}>{bio}</p> : null}
+      </div>
+
+      <div ref={meta2Ref} className={`${styles.actions} anim anim-d3`}>
         {tripleId ? (
           <VoteButton tripleId={tripleId} />
         ) : (
-          <div className={styles.voteRow}>
-            <button className="btn-ghost" disabled>Support &uarr;</button>
-          </div>
+          <button className={styles.vote} disabled>
+            Support
+            <span aria-hidden="true">↑</span>
+          </button>
         )}
-        <a href={blogLink} target="_blank" rel="noopener noreferrer" className={styles.link}>
-          {blogLabel} &rarr;
+        <a
+          href={blogLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.link}
+        >
+          {blogLabel}
+          <Arrow />
         </a>
       </div>
+    </div>
+  );
 
-      {!reversed && (
-        <div ref={photoRef} className={`${styles.photo} anim anim-d2`}>
-          <img src={photo} alt={name} />
-        </div>
-      )}
+  const figure = (
+    <div ref={photoRef} className={`${styles.photo} anim ${reversed ? '' : 'anim-d2'}`}>
+      <img src={photo} alt={name} />
+    </div>
+  );
+
+  return (
+    <section className={`${styles.cite} ${reversed ? styles.reversed : ''}`}>
+      {reversed ? figure : text}
+      {reversed ? text : figure}
     </section>
   );
 }
@@ -74,11 +105,12 @@ function VoteButton({ tripleId }: { tripleId: `0x${string}` }) {
 
   return (
     <div className={styles.voteRow}>
-      <button className="btn-ghost" onClick={handleVote} disabled={voting}>
-        {voting ? 'Signing...' : isConnected ? 'Support \u2191' : 'Connect to vote'}
+      <button className={styles.vote} onClick={handleVote} disabled={voting}>
+        {voting ? 'Signing…' : isConnected ? 'Support' : 'Connect to vote'}
+        <span aria-hidden="true">↑</span>
       </button>
       <span className={styles.voteCount}>
-        {isLoading ? '...' : `${forDisplay} TRUST`}
+        {isLoading ? '…' : `${forDisplay} TRUST`}
       </span>
     </div>
   );
