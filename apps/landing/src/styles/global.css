@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap');
+@import '@0xsofia/design-system/theme.css';
 @import './variables.css';
 
 /* ── Reset ────────────────────────────────────────────── */

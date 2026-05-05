@@ -1,5 +1,12 @@
 /* ============================================================
-   SOFIA DESIGN TOKENS
+   SOFIA LANDING TOKENS
+
+   Color tokens are aliased on @0xsofia/design-system (--ds-*).
+   theme.css is imported first in global.css, so the DS already
+   handles light + dark via `[data-theme='dark']` and `.dark`.
+
+   Local-only scales (spacing, radius, shadows, typography,
+   glass, motion) live below — landing-specific, not shared.
    ============================================================ */
 
 :root {
@@ -36,32 +43,42 @@
   --text-3xl: 3.4rem;
   --text-hero: clamp(2.8rem, 6.5vw, 5rem);
 
-  /* ── Colors — Light (default) ───────────────────────── */
-  --color-bg: #ffffff;
-  --color-bg-alt: #f5f4f2;
-  --color-bg-elevated: #eae8e5;
+  /* ── Colors — aliased on the DS ─────────────────────── */
+  --color-bg: var(--ds-bg);
+  --color-bg-alt: var(--ds-bg-subtle);
+  --color-bg-elevated: var(--ds-card);
 
-  --color-text: #1a1a1a;
-  --color-text-muted: #6b6b6b;
-  --color-text-dim: #999999;
+  --color-text: var(--ds-ink);
+  --color-text-muted: var(--ds-muted);
+  --color-text-dim: var(--ds-muted-soft);
 
-  --color-border: #e0deda;
-  --color-border-hover: #c8c5c0;
+  --color-border: var(--ds-border);
+  --color-border-hover: var(--ds-ink);
 
-  --color-btn-primary: #2d2d2d;
-  --color-btn-primary-hover: #1a1a1a;
-  --color-btn-secondary: #5a5a5a;
-  --color-btn-secondary-hover: #3a3a3a;
-  --color-btn-light: #eae8e5;
-  --color-btn-light-hover: #e0deda;
+  --color-accent: var(--ds-accent);
+  --color-accent-ink: var(--ds-accent-ink);
+  --color-on-accent: var(--ds-on-accent);
 
-  --color-on-primary: #ffffff;
-  --color-on-secondary: #ffffff;
-  --color-on-light: #2d2d2d;
+  /* Buttons — collapsed to two intents (primary = ink → peach hover,
+     secondary = outline). The legacy --color-btn-light variant maps
+     to a subtle surface. */
+  --color-btn-primary: var(--ds-ink);
+  --color-btn-primary-hover: var(--ds-accent);
+  --color-btn-secondary: transparent;
+  --color-btn-secondary-hover: var(--ds-bg-subtle);
+  --color-btn-light: var(--ds-bg-subtle);
+  --color-btn-light-hover: var(--ds-border);
 
-  --color-accent: #2d2d2d;
-  --color-success: #3a8a3a;
-  --color-error: #c44a4a;
+  --color-on-primary: var(--ds-bg);
+  --color-on-secondary: var(--ds-ink);
+  --color-on-light: var(--ds-ink);
+
+  /* Status — predicate colors from the DS (unprefixed). */
+  --color-success: var(--trusted, #22c55e);
+  --color-error: var(--distrusted, #ef4444);
+
+  /* ── Brand color (landing-specific, not in DS) ──────── */
+  --landing-green: #8fb87a;
 
   /* ── Shadows ────────────────────────────────────────── */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -71,7 +88,7 @@
   --shadow-btn-hover: 0 6px 24px rgba(0, 0, 0, 0.15);
 
   /* ── Glass ──────────────────────────────────────────── */
-  --glass-bg: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  --glass-bg: color-mix(in srgb, var(--ds-bg) 70%, transparent);
   --glass-blur: 20px;
 
   /* ── Transitions ────────────────────────────────────── */
@@ -81,32 +98,12 @@
   --duration-slow: 0.65s;
 }
 
-/* ── Colors — Dark mode ───────────────────────────────── */
-html.dark {
-  --color-bg: #0a0a0a;
-  --color-bg-alt: #141414;
-  --color-bg-elevated: #1e1e1e;
-
-  --color-text: #f0f0f0;
-  --color-text-muted: #8a8a8a;
-  --color-text-dim: #555555;
-
-  --color-border: #2a2a2a;
-  --color-border-hover: #3a3a3a;
-
-  --color-btn-primary: #e8e6e3;
-  --color-btn-primary-hover: #ffffff;
-  --color-btn-secondary: #7a7a7a;
-  --color-btn-secondary-hover: #9a9a9a;
-  --color-btn-light: #1e1e1e;
-  --color-btn-light-hover: #2a2a2a;
-
-  --color-on-primary: #0a0a0a;
-  --color-on-secondary: #0a0a0a;
-  --color-on-light: #f0f0f0;
-
-  --color-accent: #e8e6e3;
-
+/* ── Dark-only shadow overrides ─────────────────────────
+   Color tokens already flip via --ds-* in dark mode (handled
+   by @0xsofia/design-system/theme.css). We only need to deepen
+   shadows here. */
+[data-theme='dark'],
+.dark {
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
