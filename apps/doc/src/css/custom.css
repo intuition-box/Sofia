@@ -208,18 +208,28 @@ body[class*="index"] main {
 }
 
 /* ============================================
-   4. NAVBAR — Hidden (CardNav replaces it)
+   4. NAVBAR
    ============================================ */
 
 .navbar {
-  display: none !important;
+  background-color: color-mix(in srgb, var(--ds-bg) 80%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--ds-border);
+  box-shadow: none;
+}
+
+.navbar__brand,
+.navbar__link {
+  color: var(--ds-ink);
+}
+
+.navbar__link:hover {
+  color: var(--ds-ink);
+  opacity: 0.75;
 }
 
 @media (max-width: 996px) {
-  .navbar__toggle {
-    display: flex !important;
-  }
-
   .navbar-sidebar__backdrop,
   .theme-layout-navbar-sidebar-panel {
     background-color: color-mix(in srgb, var(--ds-bg-subtle) 95%, transparent);
@@ -228,14 +238,6 @@ body[class*="index"] main {
 
   .navbar-sidebar__item {
     background-color: var(--sofia-bg);
-    top: 13rem;
-  }
-
-  .navbar-sidebar .navbar__brand img {
-    content: url('/img/logoBrut.png');
-    width: 2rem;
-    height: 2rem;
-    object-fit: contain;
   }
 }
 

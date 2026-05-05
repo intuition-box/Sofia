@@ -122,6 +122,12 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
+      logo: {
+        alt: 'Sofia',
+        src: 'img/logoDark.svg',
+        srcDark: 'img/logoWhite.svg',
+        href: '/',
+      },
       items: [
         {
           type: 'dropdown',
@@ -129,7 +135,6 @@ const config: Config = {
           position: 'right',
           items: [
             { label: 'Documentation', to: '/docs/intro' },
-            { label: 'Manifesto', to: '/docs/manifesto' },
             { label: 'About us', to: '/docs/about' },
             { label: 'Litepaper', to: '/docs/litepaper/introduction' },
             { label: 'Architecture', to: '/docs/architecture/overview' },
@@ -160,7 +165,6 @@ const config: Config = {
           title: 'Sofia',
           items: [
             { label: 'Documentation', to: '/docs/intro' },
-            { label: 'Manifesto', to: '/docs/manifesto' },
             { label: 'About us', to: '/docs/about' },
             { label: 'Chronicles', to: '/blog' },
           ],
