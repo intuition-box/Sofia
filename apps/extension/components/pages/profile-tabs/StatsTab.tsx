@@ -39,7 +39,7 @@ interface StatsTabProps {
   signalsCreated?: number;
 }
 
-const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }: StatsTabProps) => {
+const StatsTab = ({ trustedByCount, level = 1, totalXP = 0 }: StatsTabProps) => {
   // XP progress calculation
   // Cumulative XP to reach current level = 100 * level*(level-1)/2
   const xpAtCurrentLevel = 100 * level * (level - 1) / 2

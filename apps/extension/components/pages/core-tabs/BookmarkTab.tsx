@@ -31,8 +31,7 @@ const BookmarkTab = () => {
     deleteList,
     updateList,
     addTripletToList,
-    getTripletsByList,
-    refreshFromLocal
+    getTripletsByList
   } = useBookmarks()
 
   // Intention categories (on-chain certified URLs)
@@ -116,15 +115,6 @@ const BookmarkTab = () => {
       }
     } catch (err) {
       logger.error('Failed to delete list', err)
-    }
-  }
-
-  const startEditingList = (listId: string) => {
-    const list = lists.find(l => l.id === listId)
-    if (list) {
-      setNewListName(list.name)
-      setNewListDescription(list.description || '')
-      setIsEditingList(listId)
     }
   }
 
@@ -238,7 +228,7 @@ const BookmarkTab = () => {
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
-              className="bookmark-card"
+              className="bookmark-card bookmark-card--colored"
               style={{ cursor: 'pointer' }}
             >
               <div className="bookmark-item">
@@ -302,16 +292,16 @@ const BookmarkTab = () => {
                     <div
                       key={category.id}
                       onClick={() => selectCategory(category.id)}
-                      className="bookmark-card"
-                      style={{ cursor: 'pointer' }}
+                      className="bookmark-card bookmark-card--colored"
+                      style={{
+                        cursor: 'pointer',
+                        '--cat-color': category.color
+                      } as React.CSSProperties}
                     >
                       <div className="bookmark-item">
                         <div className="bookmark-header-content">
                           <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              className="category-color-dot"
-                              style={{ backgroundColor: category.color }}
-                            />
+                            <span className="bookmark-card-dot" aria-hidden="true" />
                             <h4 style={{ margin: 0 }}>{category.label}</h4>
                           </div>
                           <div className="bookmark-list-meta">
@@ -514,7 +504,7 @@ const BookmarkTab = () => {
                 return (
                   <div
                     key={list.id}
-                    className="bookmark-card"
+                    className="bookmark-card bookmark-card--colored"
                     onClick={() => selectList(list.id)}
                     style={{ cursor: 'pointer' }}
                   >

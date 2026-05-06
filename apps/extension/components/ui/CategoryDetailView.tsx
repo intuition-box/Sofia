@@ -23,7 +23,6 @@ interface CategoryDetailViewProps {
   onRedeem?: () => void
 }
 
-// Format date for display
 const formatDate = (dateStr: string): string => {
   try {
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -35,7 +34,6 @@ const formatDate = (dateStr: string): string => {
   }
 }
 
-// URL Row Component
 const CategoryUrlRow = ({
   url,
   isRedeeming,
@@ -45,39 +43,47 @@ const CategoryUrlRow = ({
   isRedeeming: boolean
   onRedeem: (termId: string, urlStr: string) => void
 }) => {
-  const handleClick = () => {
-    window.open(url.url, "_blank", "noopener,noreferrer")
-  }
-
   return (
-    <div className="category-url-row" onClick={handleClick}>
-      <img
-        src={url.favicon}
-        alt=""
-        className="category-url-favicon"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement
-          target.style.display = "none"
-        }}
-      />
-      <div className="category-url-info">
-        <span className="category-url-label">{url.label || url.url}</span>
-        <span className="category-url-domain">{url.domain}</span>
-      </div>
-      <span className="category-url-date">{formatDate(url.certifiedAt)}</span>
-      {url.termId && (
-        <button
-          className="remove-btn"
-          onClick={(e) => {
-            e.stopPropagation()
-            onRedeem(url.termId, url.url)
+    <div className="url-row on-chain">
+      <a
+        href={url.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="url-row-main"
+      >
+        <img
+          src={url.favicon}
+          alt=""
+          className="url-favicon"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.style.display = "none"
           }}
-          disabled={isRedeeming}
-          title="Redeem position"
-        >
-          {isRedeeming ? "..." : "×"}
-        </button>
-      )}
+        />
+        <div className="url-info">
+          <span className="url-title">{url.label || url.url}</span>
+          <div className="url-meta">
+            <span className="url-date">{url.domain}</span>
+            {url.certifiedAt && (
+              <span className="url-date">{formatDate(url.certifiedAt)}</span>
+            )}
+          </div>
+        </div>
+        {url.termId && (
+          <button
+            className="url-redeem-btn"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onRedeem(url.termId, url.url)
+            }}
+            disabled={isRedeeming}
+            title="Redeem position"
+          >
+            {isRedeeming ? "..." : "Redeem"}
+          </button>
+        )}
+      </a>
     </div>
   )
 }
@@ -100,7 +106,6 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
         alert(`Redeem failed: ${result.error}`)
         return
       }
-      // Optimistic removal — hide immediately, refetch in background
       setRedeemedUrls(prev => new Set(prev).add(urlStr))
       onRedeem?.()
     } finally {
@@ -117,7 +122,6 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
   }, [urls])
 
   const displayedUrls = useMemo(() => {
-    // Exclude optimistically removed (redeemed) URLs
     let filtered = redeemedUrls.size > 0
       ? urls.filter(u => !redeemedUrls.has(u.url))
       : urls
@@ -175,24 +179,33 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
 
   return (
     <div className="category-detail">
-      {/* Header */}
+      {/* Header — same stacked pattern as GroupDetailView */}
       <div className="category-detail-header">
-        <button className="category-back-btn" onClick={onBack}>
-          Back
+        <button className="back-btn" onClick={onBack}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Back to Bookmarks
         </button>
-        <div
-          className="category-detail-dot"
-          style={{ backgroundColor: color }}
-        />
-        <div className="category-detail-info">
-          <h3 className="category-detail-name" style={{ color }}>{label}</h3>
-          <span className="category-detail-count">{urlCount} certified URLs</span>
+        <div className="category-detail-title-section">
+          <div
+            className="category-detail-marker"
+            style={{ backgroundColor: color }}
+            aria-hidden="true"
+          />
+          <div className="category-detail-info">
+            <h3 className="category-detail-name">{label}</h3>
+            <span className="category-detail-count">
+              {urlCount} certified URL{urlCount > 1 ? "s" : ""}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Search + Sort toolbar */}
       {urls.length > 0 && (
         <div className="category-toolbar">
+          <span className="circle-filter-label">Search</span>
           <div className="category-search-container">
             <input
               type="text"
@@ -226,24 +239,27 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
 
       {/* Domain filter chips */}
       {uniqueDomains.length > 1 && (
-        <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${domainFilter === null ? "active" : ""}`}
-            onClick={() => setDomainFilter(null)}
-          >
-            All
-          </button>
-          {uniqueDomains.map((domain) => (
+        <div className="circle-filter-group">
+          <span className="circle-filter-label">Domain</span>
+          <div className="circle-category-chips">
             <button
-              key={domain}
-              className={`circle-chip ${domainFilter === domain ? "active" : ""}`}
-              onClick={() =>
-                setDomainFilter(domainFilter === domain ? null : domain)
-              }
+              className={`circle-chip ${domainFilter === null ? "active" : ""}`}
+              onClick={() => setDomainFilter(null)}
             >
-              {domain}
+              All
             </button>
-          ))}
+            {uniqueDomains.map((domain) => (
+              <button
+                key={domain}
+                className={`circle-chip ${domainFilter === domain ? "active" : ""}`}
+                onClick={() =>
+                  setDomainFilter(domainFilter === domain ? null : domain)
+                }
+              >
+                {domain}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -259,15 +275,9 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
         {displayedUrls.length === 0 ? (
           <div className="category-empty">
             {urls.length === 0 ? (
-              <>
-                <div
-                  className="category-empty-dot"
-                  style={{ backgroundColor: color }}
-                />
-                <p className="category-empty-text">
-                  No URLs certified as {label.toLowerCase()} yet
-                </p>
-              </>
+              <p className="category-empty-text">
+                No URLs certified as {label.toLowerCase()} yet
+              </p>
             ) : (
               <p className="category-empty-text">No URLs match your search</p>
             )}

@@ -34,7 +34,7 @@ const SidePanelContent = () => {
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
-  const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [, setOnboardingChecked] = useState(false)
 
   // Automatic page management based on connection state
   useEffect(() => {

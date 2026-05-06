@@ -15,17 +15,6 @@ export const config: PlasmoCSConfig = {
 // =============================================================================
 
 /**
- * Internal bridge methods - handled locally, never sent to external wallet
- * These are for managing the bridge state (provider selection, etc.)
- */
-const INTERNAL_BRIDGE_METHODS = [
-  "wallet_listProviders",
-  "wallet_selectProviderByName",
-  "wallet_selectProviderByAddress",
-  "wallet_clearProviderSelection",
-]
-
-/**
  * Allowed Ethereum RPC methods - forwarded to the selected wallet provider
  * Security whitelist to prevent malicious sites from calling dangerous methods
  */

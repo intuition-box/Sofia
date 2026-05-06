@@ -21,7 +21,7 @@ import { MULTIVAULT_CONTRACT_ADDRESS, BOT_VERIFIER_ADDRESS } from '../lib/config
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { CheckSocialLinksDocument } from '@0xsofia/graphql'
 import { stringToHex, getAddress } from 'viem'
-import type { Address } from '../types/viem'
+import type { Address } from 'viem'
 
 const logger = createHookLogger('useSocialVerifier')
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { PlatformsGrid, PlatformCard } from '@0xsofia/design-system'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
@@ -14,12 +15,12 @@ const logger = createHookLogger('SocialsTab')
 
 type Platform = 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter'
 
-const PLATFORMS: { key: Platform; label: string; icon: string; iconClass: string }[] = [
-  { key: 'twitter', label: 'X', icon: xIcon, iconClass: 'twitter-icon' },
-  { key: 'discord', label: 'Discord', icon: discordIcon, iconClass: 'discord-icon' },
-  { key: 'youtube', label: 'YouTube', icon: youtubeIcon, iconClass: 'youtube-icon' },
-  { key: 'twitch', label: 'Twitch', icon: twitchIcon, iconClass: 'twitch-icon' },
-  { key: 'spotify', label: 'Spotify', icon: spotifyIcon, iconClass: 'spotify-icon' },
+const PLATFORMS: { key: Platform; label: string; icon: string }[] = [
+  { key: 'twitter', label: 'X', icon: xIcon },
+  { key: 'discord', label: 'Discord', icon: discordIcon },
+  { key: 'youtube', label: 'YouTube', icon: youtubeIcon },
+  { key: 'twitch', label: 'Twitch', icon: twitchIcon },
+  { key: 'spotify', label: 'Spotify', icon: spotifyIcon },
 ]
 
 const SocialsTab = () => {
@@ -102,24 +103,22 @@ const SocialsTab = () => {
         </div>
       )}
 
-      {/* Platform Icons */}
-      <div className="platform-icons-container">
-        {PLATFORMS.map(({ key, icon, label, iconClass }) => {
+      {/* Platform cards — DS PlatformsGrid pattern (matches explorer) */}
+      <PlatformsGrid>
+        {PLATFORMS.map(({ key, icon, label }) => {
           const connected = oauthTokens[key]
-
           return (
-            <button
+            <PlatformCard
               key={key}
-              className={`connect-button ${key} ${connected ? 'connected' : ''}`}
+              faviconSrc={icon}
+              name={label}
+              status={connected ? 'Connected' : 'Connect'}
+              connected={connected}
               onClick={() => connected ? disconnectOAuth(key) : connectOAuth(key)}
-            >
-              <div className={`platform-icon ${iconClass}`}>
-                <img src={icon} alt={label} />
-              </div>
-            </button>
+            />
           )
         })}
-      </div>
+      </PlatformsGrid>
     </div>
   )
 }

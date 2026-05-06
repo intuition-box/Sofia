@@ -5,35 +5,39 @@
 }
 
 /* Tab switcher */
+/* Sub-tab pills — DS pf-echoes-sort lite (used inside Leaderboard) */
 .leaderboard-tabs {
-  display: flex;
-  gap: var(--spacing-xs);
-  padding: 10px 0 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: var(--spacing-xs);
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  margin: 8px 0;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-card);
 }
 
 .leaderboard-tab-btn {
-  flex: 1;
-  padding: var(--spacing-sm) 0;
+  padding: 6px 14px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 999px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
-.leaderboard-tab-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.04);
+.leaderboard-tab-btn:hover:not(.active) {
+  color: var(--ds-ink);
 }
 
 .leaderboard-tab-btn.active {
-  color: var(--color-text-secondary);
-  background: var(--color-border-glass);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
 }
 
 .leaderboard-header {
@@ -50,31 +54,40 @@
 }
 
 .leaderboard-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
   margin: 0;
 }
 
 .leaderboard-count {
-  font-size: var(--font-size-sm);
-  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
 }
 
 .leaderboard-refresh {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  color: var(--color-text-very-muted);
-  font-size: var(--font-size-lg);
-  padding: var(--spacing-xs) 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  color: var(--ds-muted);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .leaderboard-refresh:hover {
-  background: var(--color-bg-glass-lighter);
-  color: var(--color-text-secondary);
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
 }
 
 .leaderboard-refresh:disabled {
@@ -233,10 +246,13 @@
 }
 
 .podium-streak {
-  font-size: 17px;
-  font-weight: 600;
-  color: #eab67a;
-  background: #eab67a1f;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
   padding: 1px 6px;
   border-radius: 6px;
   white-space: nowrap;
@@ -259,8 +275,9 @@
   gap: 10px;
   padding: 10px var(--spacing-md);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  transition: background 0.15s;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  transition: border-color 0.15s ease;
 }
 
 .leaderboard-row.clickable {
@@ -268,21 +285,23 @@
 }
 
 .leaderboard-row.clickable:hover {
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ds-ink-soft);
 }
 
 .leaderboard-row.current-user {
-  background: rgba(106, 204, 147, 0.1);
-  border: 1px solid rgba(106, 204, 147, 0.2);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-accent);
 }
 
 /* Rank */
 .leaderboard-rank {
   width: 32px;
   text-align: center;
-  font-size: 14px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
   flex-shrink: 0;
 }
 
@@ -301,26 +320,31 @@
 }
 
 .leaderboard-name {
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--ds-ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .leaderboard-address {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  font-family: monospace;
+  color: var(--ds-muted-soft);
+  letter-spacing: 0.04em;
 }
 
 /* Streak badge */
 .leaderboard-streak {
-  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
   font-weight: 600;
-  color: #eab67a;
-  background: rgba(234, 182, 122, 0.1);
+  letter-spacing: 0.04em;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
   padding: 2px var(--spacing-sm);
   border-radius: 10px;
   flex-shrink: 0;
@@ -337,16 +361,20 @@
 }
 
 .leaderboard-shares {
-  font-size: 14px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
   font-weight: 700;
-  color: #eab67a;
+  letter-spacing: 0.02em;
+  color: var(--ds-ink);
 }
 
 .leaderboard-value {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ds-muted-soft);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.06em;
 }
 
 /* ========== STATES ========== */
@@ -377,7 +405,7 @@
   background: rgba(106, 204, 147, 0.15);
   border: 1px solid rgba(106, 204, 147, 0.3);
   border-radius: 8px;
-  color: #6acc93;
+  color: var(--ds-ink);
   font-size: 13px;
   cursor: pointer;
   transition: var(--transition-fast);

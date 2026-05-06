@@ -87,7 +87,7 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
     }
   }
 
-  const handleStakeSubmit = async (amount: bigint, curveId: 1 | 2) => {
+  const handleStakeSubmit = async (amount: bigint) => {
     if (!selectedAccount || !walletAddress) {
       return {
         success: false,

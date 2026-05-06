@@ -72,7 +72,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onRemoveTriplet, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onRemoveTriplet, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -327,12 +327,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const newSelectedWeights = [...selectedWeights]
     newSelectedWeights[tripletIndex] = optionId
     setSelectedWeights(newSelectedWeights)
-  }
-
-  const handleCustomValueChange = (tripletIndex: number, value: string) => {
-    const newCustomValues = [...customValues]
-    newCustomValues[tripletIndex] = value
-    setCustomValues(newCustomValues)
   }
 
   const handleApplyAll = (optionId: WeightOption['id']) => {

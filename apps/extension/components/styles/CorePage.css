@@ -61,49 +61,29 @@
   }
 }
 
-/* Navigation par onglets */
-.tabs {
+/* Page-level segmented control wrapper.
+   Uses DS .pf-echoes-sort / .pf-sort-btn (echoes-sort-tabs.css imported in Global.css).
+   Enlarged compared to the DS default (which is sized for the profile sort row). */
+.core-page-tabs {
+  display: inline-flex;
+  padding: 4px;
+  margin: 0 auto 24px;
+}
+
+/* Center the DS segmented control on the page */
+.page > .pf-echoes-sort.core-page-tabs,
+.profile-page > .pf-echoes-sort.core-page-tabs {
   display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 32px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 8px;
-  border-radius: 29px;
-  backdrop-filter: blur(29px);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.tab {
-  padding: 10px 0;
-  background: none;
-  color: rgba(255, 255, 255, 0.6);
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 400;
-  font-family: 'Gotu', cursive;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.tab:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.tab.active {
-  color: #F2DED6;
-  font-weight: 500;
-  font-family: 'Fraunces', serif;
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #897359;
+/* Larger pill buttons inside the page-level segmented control */
+.core-page-tabs .pf-sort-btn {
+  padding: 8px 18px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
 }
 
 /* Contenu des pages */
@@ -122,39 +102,6 @@
   justify-content: center;
   align-items: center;
   min-height: 400px;
-}
-
-/* Reveal Interest CTA */
-.reveal-interest-cta {
-  display: flex;
-  justify-content: center;
-  margin-top: 8px;
-  margin-bottom: 16px;
-}
-
-.reveal-interest-btn {
-  background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 28px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: 'Gotu', cursive;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
-}
-
-.reveal-interest-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
-  filter: brightness(1.1);
-}
-
-.reveal-interest-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 12px rgba(130, 118, 237, 0.4);
 }
 
 /* Mobile Responsiveness */

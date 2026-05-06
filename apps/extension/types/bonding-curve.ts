@@ -31,19 +31,3 @@ export interface BondingCurveData {
   totalRedeemed?: string
 }
 
-export interface DepositPreview {
-  sharesOut: string // Nombre de shares qu'il recevra
-  effectivePrice: string // Prix par share
-  fees: string // Frais Sofia (0.1 + 5%)
-  totalCost: string // trustAmount + fees
-  isLoading: boolean
-  error: Error | null
-}
-
-export interface VaultMetrics {
-  currentPrice: string
-  totalShares: string
-  userShares: string
-  userValue: string
-  marketCap: string
-}

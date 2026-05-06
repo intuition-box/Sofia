@@ -4,29 +4,32 @@
  * Shows on-chain certification status and allows creating new certifications
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
+  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp,
   useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
+  useTopicInterests, useUserCertifications, useWalletFromStorage, getCertificationForUrl,
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
+import type { UserTopicPosition } from '~/lib/services/TopicPositionsService'
+import type { CertificationEntry } from '~/lib/services/UserCertificationsService'
+import { InterestContextSelector } from './InterestContextSelector'
 import type { GroupUrlRecord } from '~types/database'
 import type { CertificationType } from '~/lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
-import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { TOPIC_LABELS, TOPIC_COLORS } from '~/lib/config/topicConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
+import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
 import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
 import { CartToast } from './CartDrawer'
 import '../styles/IntentionBubbleSelector.css'
-import onChainBadgeIcon from './icons/onchainbadge.png'
 
 interface GroupDetailViewProps {
   group: IntentionGroupWithStats
@@ -41,27 +44,54 @@ interface GroupDetailViewProps {
 const UrlRow = ({
   urlRecord,
   onChainStatus,
-  onIntentionSelect,
-  onTrustSelect,
   onAddToCart,
   onAddTrustToCart,
   onOAuthCertify,
   onRemove,
   isProcessing,
-  cartPredicates
+  cartPredicates,
+  topInterests,
+  certifiedContexts,
+  onContextChange
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
-  onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
-  onTrustSelect: (predicateName: string, title?: string) => void
-  onAddToCart: (intention: IntentionPurpose, title?: string) => void
-  onAddTrustToCart: (predicateName: string, title?: string) => void
+  onAddToCart: (intention: IntentionPurpose, title?: string, context?: string | null) => void
+  onAddTrustToCart: (predicateName: string, title?: string, context?: string | null) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
   cartPredicates: string[]
+  topInterests: UserTopicPosition[]
+  certifiedContexts: string[]
+  onContextChange: (context: string | null) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [selectedContext, setSelectedContext] = useState<string | null>(null)
+
+  const handleSelectContext = (slug: string | null) => {
+    setSelectedContext(slug)
+    onContextChange(slug)
+
+    // When picking a context on a URL that is already certified, auto-queue
+    // a deposit-with-context cart item for each certified predicate that is
+    // not already in the cart.
+    if (!slug) return
+    for (const certLabel of allCertLabels) {
+      const intentionItem = INTENTION_ITEMS.find(i => i.type === certLabel)
+      if (intentionItem) {
+        const predicateName = INTENTION_PREDICATES[intentionItem.key]
+        if (!cartPredicates.includes(predicateName)) {
+          onAddToCart(intentionItem.key, urlRecord.title, slug)
+        }
+        continue
+      }
+      const trustItem = TRUST_ITEMS.find(t => t.type === certLabel)
+      if (trustItem && !cartPredicates.includes(trustItem.predicateLabel)) {
+        onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slug)
+      }
+    }
+  }
 
   // Use Pipeline 2 data with Pipeline 1 fallback for trust/distrust
   const { isCertified: isCertifiedOnChain, labels: allCertLabels } =
@@ -71,18 +101,27 @@ const UrlRow = ({
     .map(label => CERTIFICATION_LIST.find(c => c.type === label))
     .filter(Boolean) as typeof CERTIFICATION_LIST
 
+  const canToggle = !urlRecord.removed && !isProcessing
+  const handleToggle = () => {
+    if (!canToggle) return
+    setIsExpanded(prev => !prev)
+  }
+
   return (
     <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
-      <div className="url-row-main">
-        <img
-          src={getFaviconUrl(urlRecord.url, 16)}
-          alt=""
-          className="url-favicon"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.style.display = 'none'
-          }}
-        />
+      <div
+        className="url-row-main"
+        onClick={handleToggle}
+        role={canToggle ? 'button' : undefined}
+        tabIndex={canToggle ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (canToggle && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault()
+            handleToggle()
+          }
+        }}
+        style={{ cursor: canToggle ? 'pointer' : 'default' }}
+      >
         <div className="url-info">
           <a
             href={urlRecord.url}
@@ -94,46 +133,50 @@ const UrlRow = ({
             {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
           </a>
           <div className="url-meta">
+            {((isCertifiedOnChain && allCertInfos.length > 0) || certifiedContexts.length > 0) && (
+              <div className="cert-badges">
+                {allCertInfos.map((certInfo) => (
+                  <span
+                    key={certInfo.type}
+                    className="cert-badge on-chain"
+                    style={{ backgroundColor: certInfo.color }}
+                    title={`Certified as ${certInfo.label} (on-chain)`}
+                  >
+                    {certInfo.label}
+                  </span>
+                ))}
+                {certifiedContexts.map((slug) => {
+                  const label = TOPIC_LABELS[slug] || slug
+                  const color = TOPIC_COLORS[slug] || 'var(--ds-accent)'
+                  return (
+                    <span
+                      key={`ctx-${slug}`}
+                      className="cert-badge cert-badge--context"
+                      style={{ backgroundColor: color }}
+                      title={`Certified in context of ${label}`}
+                    >
+                      {label}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
             <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
-            {isCertifiedOnChain && (
-              <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
-            )}
           </div>
         </div>
 
-        {/* Certification badge AND menu buttons */}
         <div className="url-actions">
-          {/* Show all certification badges if certified ON-CHAIN */}
-          {isCertifiedOnChain && allCertInfos.length > 0 && (
-            <div className="cert-badges">
-              {allCertInfos.map((certInfo) => (
-                <span
-                  key={certInfo.type}
-                  className="cert-badge on-chain"
-                  style={{ backgroundColor: certInfo.color }}
-                  title={`Certified as ${certInfo.label} (on-chain)`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Always show menu for non-removed URLs */}
           {!urlRecord.removed && (
             <>
-              <button
-                className="menu-dots-btn"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsExpanded(!isExpanded)
-                }}
-                disabled={isProcessing}
-                title={isCertifiedOnChain ? "Add another certification" : "Certify this URL"}
+              <span
+                className={`url-chevron ${isExpanded ? 'expanded' : ''}`}
+                aria-hidden="true"
               >
-                <span className="dot"></span>
-                <span className="dot"></span>
-                <span className="dot"></span>
-              </button>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </span>
               <button
                 className="remove-btn"
                 onClick={(e) => {
@@ -142,6 +185,7 @@ const UrlRow = ({
                 }}
                 disabled={isProcessing}
                 title="Remove URL"
+                aria-label="Remove URL"
               >
                 ×
               </button>
@@ -153,6 +197,7 @@ const UrlRow = ({
       {/* Expanded section with OAuth predicate + intention bubbles on same line */}
       {isExpanded && (
         <div className="url-expanded-section">
+          <div className="url-expanded-subtitle">Intentions</div>
           <div className="intention-pills">
             {urlRecord.oauthPredicate && (
               <button
@@ -169,29 +214,21 @@ const UrlRow = ({
             {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
               const isAlreadyCertified = allCertLabels.includes(type)
               const isInCart = cartPredicates.includes(predicateLabel)
-              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
-              const color = certInfo?.color
+              const canDepositContext = isAlreadyCertified && !!selectedContext
+              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={type}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    if (!isInCart && !isAlreadyCertified) {
-                      onAddTrustToCart(predicateLabel, urlRecord.title)
+                    if (canAdd) {
+                      onAddTrustToCart(predicateLabel, urlRecord.title, selectedContext)
                     }
                   }}
-                  disabled={isProcessing || isInCart || isAlreadyCertified}
-                  style={isAlreadyCertified ? {
-                    backgroundColor: color,
-                    borderColor: color,
-                    color: '#fff'
-                  } : (isInCart && color) ? {
-                    backgroundColor: `${color}15`,
-                    borderColor: color,
-                    color
-                  } : undefined}
+                  disabled={isProcessing || !canAdd}
+                  title={canDepositContext ? 'Deposit + add context' : undefined}
                 >
-                  {isInCart ? `${label} ✓` : label}
+                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
                 </button>
               )
             })}
@@ -199,33 +236,34 @@ const UrlRow = ({
               const isAlreadyCertified = allCertLabels.includes(type)
               const predicateName = INTENTION_PREDICATES[key]
               const isInCart = cartPredicates.includes(predicateName)
-              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
-              const color = certInfo?.color
+              const canDepositContext = isAlreadyCertified && !!selectedContext
+              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={key}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    if (!isInCart && !isAlreadyCertified) {
-                      onAddToCart(key, urlRecord.title)
+                    if (canAdd) {
+                      onAddToCart(key, urlRecord.title, selectedContext)
                     }
                   }}
-                  disabled={isProcessing || isInCart || isAlreadyCertified}
-                  style={isAlreadyCertified ? {
-                    backgroundColor: color,
-                    borderColor: color,
-                    color: '#fff'
-                  } : (isInCart && color) ? {
-                    backgroundColor: `${color}15`,
-                    borderColor: color,
-                    color
-                  } : undefined}
+                  disabled={isProcessing || !canAdd}
+                  title={canDepositContext ? 'Deposit + add context' : undefined}
                 >
-                  {isInCart ? `${label} ✓` : label}
+                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
                 </button>
               )
             })}
           </div>
+          {topInterests.length > 0 && (
+            <InterestContextSelector
+              interests={topInterests}
+              selectedContext={selectedContext}
+              onSelectContext={handleSelectContext}
+              disabled={isProcessing}
+              certifiedContexts={certifiedContexts}
+            />
+          )}
         </div>
       )}
     </div>
@@ -241,6 +279,19 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const cart = useCart()
   const [cartToast, setCartToast] = useState<string | null>(null)
 
+  // Topic interests + per-URL certifications (for "in context of")
+  const { walletAddress } = useWalletFromStorage()
+  const { topInterests } = useTopicInterests()
+  const { certifications } = useUserCertifications(walletAddress)
+  const getCertifiedContexts = useCallback(
+    (url: string): string[] => {
+      if (certifications.size === 0) return []
+      const entry: CertificationEntry | null = getCertificationForUrl(certifications, url)
+      return entry?.interestContexts ?? []
+    },
+    [certifications]
+  )
+
   // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
   const activeUrls = useMemo(
     () => group.urls.filter(u => !u.removed).map(u => u.url),
@@ -255,9 +306,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
 
-  // Gold system hook (for displaying available Gold)
-  const { totalGold } = useGoldSystem()
-
   // Level up hook
   const {
     levelUp,
@@ -269,16 +317,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Redeem hook (for removing on-chain positions)
   const { redeemAllPositions } = useRedeemTriple()
-
-  // Amplify hook (publish group identity on-chain)
-  const {
-    amplify,
-    loading: amplifyLoading,
-    result: amplifyResult,
-    reset: resetAmplify
-  } = useGroupAmplify()
-  // Amplified = true if current predicate was already published on-chain
-  const isAmplified = group.amplifiedPredicate === group.currentPredicate && !!group.currentPredicate
 
   // Modal state for on-chain certification
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -299,7 +337,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   } = usePageDiscovery(pendingCertification?.url || null)
 
   // Cart: add intention to cart
-  const handleAddToCart = async (url: string, intention: IntentionPurpose, title?: string) => {
+  const handleAddToCart = async (
+    url: string,
+    intention: IntentionPurpose,
+    title?: string,
+    context?: string | null
+  ) => {
     const predicateName = INTENTION_PREDICATES[intention]
     const favicon = getFaviconUrl(url, 128)
     const added = await cart.addToCart(
@@ -307,20 +350,27 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       title || null,
       predicateName,
       intention,
-      favicon
+      favicon,
+      context ?? null
     )
     setCartToast(added ? "Added to cart" : "Already in cart")
   }
 
   // Cart: add trust/distrust to cart
-  const handleAddTrustToCart = async (url: string, predicateName: string, title?: string) => {
+  const handleAddTrustToCart = async (
+    url: string,
+    predicateName: string,
+    title?: string,
+    context?: string | null
+  ) => {
     const favicon = getFaviconUrl(url, 128)
     const added = await cart.addToCart(
       url,
       title || null,
       predicateName,
       null,
-      favicon
+      favicon,
+      context ?? null
     )
     setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
   }
@@ -391,14 +441,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     }
   }
 
-  // Handle amplify (publish identity on-chain)
-  const handleAmplify = async () => {
-    const result = await amplify(group.id)
-    if (result.success && onRefresh) {
-      await onRefresh()
-    }
-  }
-
   // Progress toward NEXT level threshold
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
 
@@ -428,59 +470,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     return !status.isCertified
   }).length
 
-  // Handle intention selection - opens the WeightModal
-  const handleIntentionSelect = (url: string, intention: IntentionPurpose, title?: string) => {
-    try {
-      const { label: pageLabel } = normalizeUrl(url)
-      const displayName = (title ? cleanTitle(title) : null) || pageLabel
-
-      // Prepare triplet for intention modal
-      const triplet = {
-        id: `intention-${intention}`,
-        triplet: {
-          subject: 'I',
-          predicate: INTENTION_PREDICATES[intention],
-          object: displayName
-        },
-        description: `I ${INTENTION_PREDICATES[intention]} ${displayName}`,
-        url: url,
-        intention: intention
-      }
-
-      setPendingCertification({ url, intention, title })
-      setModalTriplets([triplet])
-      setShowWeightModal(true)
-    } catch (error) {
-      logger.error('Invalid URL', url)
-    }
-  }
-
-  // Handle trust/distrust selection - opens the WeightModal with trust predicate
-  const handleTrustSelect = (url: string, predicateName: string, title?: string) => {
-    try {
-      const { label: pageLabel } = normalizeUrl(url)
-      const displayName = (title ? cleanTitle(title) : null) || pageLabel
-
-      const trustItem = TRUST_ITEMS.find(p => p.predicateLabel === predicateName)
-      const triplet = {
-        id: `trust-${predicateName}`,
-        triplet: {
-          subject: 'I',
-          predicate: predicateName,
-          object: displayName
-        },
-        description: `I ${predicateName} ${displayName}`,
-        url: url,
-        intention: trustItem?.type as IntentionPurpose | undefined
-      }
-
-      setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
-      setModalTriplets([triplet])
-      setShowWeightModal(true)
-    } catch (error) {
-      logger.error('Invalid URL', url)
-    }
-  }
 
   // Handle OAuth certification - uses predicate from OAuth extraction
   const handleOAuthCertify = (urlRecord: GroupUrlRecord) => {
@@ -577,10 +566,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   const handleRemove = async (url: string) => {
     const onChainStatus = getUrlCertification(url)
-    const urlRecord = group.urls.find(u => u.url === url)
-    const effectiveStatus = urlRecord
-      ? getEffectiveCertStatus(urlRecord, onChainStatus)
-      : { isCertified: false, labels: [] }
 
     // If URL is certified on-chain, redeem positions first
     if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
@@ -630,15 +615,83 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   return (
     <div className="group-detail-view">
-      {/* Header */}
+      {/* Header — back button on top row, domain title (large) below */}
       <div className="group-detail-header">
-        <button className="back-btn" onClick={onBack}>
-          Back
+        <button className="pf-btn back-btn" onClick={onBack}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Back to my Echoes
         </button>
         <div className="group-detail-title-section">
+          <img
+            src={getFaviconUrl(group.domain, 64)}
+            alt=""
+            className="group-detail-favicon"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none'
+            }}
+          />
           <h2 className="group-detail-domain">{group.domain}</h2>
-          <span className={`group-detail-level level-${Math.min(currentLevel, 10)}`}>Level {currentLevel}</span>
         </div>
+      </div>
+
+      {/* Level Progress — sits above the stats, single source of level info */}
+      <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
+        {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
+          <button
+            className="level-up-integrated-btn"
+            onClick={handleLevelUp}
+            disabled={levelUpLoading}
+          >
+            {levelUpLoading ? (
+              <span className="loading-text">Generating signal...</span>
+            ) : (
+              <>
+                <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
+                <span className="level-up-cost">{levelUpPreview.cost} Gold</span>
+              </>
+            )}
+          </button>
+        ) : (
+          <>
+            <div className="level-progress-header">
+              <span className="level-label">Level {currentLevel}</span>
+              <span className="level-xp">
+                {onChainLoading ? '...' : (
+                  xpToNextLevel > 0
+                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to Level ${currentLevel + 1}`
+                    : 'Max level!'
+                )}
+              </span>
+            </div>
+            <div className="progress-bar-container level-bar">
+              <div
+                className="progress-bar-fill"
+                style={{
+                  width: `${progressPercent}%`,
+                  background: 'var(--ds-accent)'
+                }}
+              />
+            </div>
+            {levelUpResult?.success && (
+              <div className="level-up-success-inline">
+                <span className="success-icon" aria-hidden="true">🎉</span>
+                <span className="success-text">
+                  Level Up — new identity:{' '}
+                  <strong>I {levelUpResult.newPredicate} {group.domain}</strong>
+                </span>
+                <button
+                  className="dismiss-btn"
+                  onClick={resetLevelUp}
+                  aria-label="Dismiss"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Stats Summary */}
@@ -657,51 +710,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         </div>
       </div>
 
-
-      {/* Level Progress - transforms into Level Up when ready */}
-      <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
-        {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
-          /* Ready to Level Up - show integrated button */
-          <button
-            className="level-up-integrated-btn"
-            onClick={handleLevelUp}
-            disabled={levelUpLoading}
-          >
-            {levelUpLoading ? (
-              <span className="loading-text">Generating signal...</span>
-            ) : (
-              <>
-                <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
-                <span className="level-up-cost">{levelUpPreview.cost} Gold</span>
-              </>
-            )}
-          </button>
-        ) : (
-          /* Normal progress display */
-          <>
-            <div className="level-progress-header">
-              <span className="level-label">Level {currentLevel}</span>
-              <span className="level-xp">
-                {onChainLoading ? '...' : (
-                  xpToNextLevel > 0
-                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to Level ${currentLevel + 1}`
-                    : 'Max level!'
-                )}
-              </span>
-            </div>
-            <div className="progress-bar-container level-bar">
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${progressPercent}%`,
-                  background: 'linear-gradient(90deg, #C7866C, #D4A574)'
-                }}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
       {/* Certification Filter */}
       <div className="filter-section">
         <button
@@ -711,7 +719,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           All ({group.activeUrlCount})
         </button>
         <button
-          className={`filter-btn ${filter === 'uncertified' ? 'active' : ''}`}
+          className={`filter-btn filter-btn--uncertified ${filter === 'uncertified' ? 'active' : ''}`}
           onClick={() => setFilter('uncertified')}
         >
           Uncertified ({uncertifiedCount})
@@ -730,11 +738,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={cert.type}
               className={`filter-btn ${filter === cert.type ? 'active' : ''}`}
               onClick={() => setFilter(cert.type)}
-              style={{
-                borderColor: cert.color,
-                color: filter === cert.type ? cert.color : undefined
-              }}
             >
+              <span
+                className="filter-btn-dot"
+                aria-hidden="true"
+                style={{ background: cert.color }}
+              />
               {cert.label} ({count})
             </button>
           )
@@ -753,43 +762,24 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
-              onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
-              onAddToCart={(intention, title) => handleAddToCart(urlRecord.url, intention, title)}
-              onAddTrustToCart={(predicateName, title) => handleAddTrustToCart(urlRecord.url, predicateName, title)}
+              onAddToCart={(intention, title, context) => handleAddToCart(urlRecord.url, intention, title, context)}
+              onAddTrustToCart={(predicateName, title, context) => handleAddTrustToCart(urlRecord.url, predicateName, title, context)}
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
               cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
+              topInterests={topInterests}
+              certifiedContexts={getCertifiedContexts(urlRecord.url)}
+              onContextChange={(context) => cart.updateContextForUrl(urlRecord.url, context)}
             />
           ))
         )}
       </div>
 
-      {/* XP Hint */}
-      {uncertifiedCount > 0 && (
-        <div className="xp-hint">
-          Certify URLs to earn Discovery Gold!
-        </div>
-      )}
-
-      {/* Level Up Section - shows result messages and button when progress < 100% */}
-      <div className="level-up-section">
-        {/* Level Up Result - always show */}
-        {levelUpResult?.success && (
-          <div className="level-up-success">
-            <span className="success-icon">🎉</span>
-            <div className="success-content">
-              <span className="success-title">Level Up!</span>
-              <span className="success-predicate">
-                New identity: I {levelUpResult.newPredicate} {group.domain}
-              </span>
-            </div>
-            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
-          </div>
-        )}
-
-        {levelUpResult?.error && !levelUpResult.success && (
+      {/* Level Up error stays inline (success message moved into the
+          progress section above); no other ambient hints needed here. */}
+      {levelUpResult?.error && !levelUpResult.success && (
+        <div className="level-up-section">
           <div className="level-up-error">
             <span className="error-icon">⚠️</span>
             <span className="error-text">{levelUpResult.error}</span>
@@ -800,17 +790,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             )}
             <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
           </div>
-        )}
-
-        {/* Show progress hint when not yet ready to level up */}
-        {!canLevelUp && xpToNextLevel > 0 && (
-          <div className="xp-needed">
-            {xpToNextLevel} cert{xpToNextLevel > 1 ? 's' : ''} to Level {currentLevel + 1}
-          </div>
-        )}
-
-        <div className="group-gold-balance">{totalGold} Gold available</div>
-      </div>
+        </div>
+      )}
 
       {/* Cart toast notification */}
       <CartToast message={cartToast} />

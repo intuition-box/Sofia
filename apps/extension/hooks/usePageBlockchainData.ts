@@ -569,10 +569,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     }
 
     const handleMessage = (message: any) => {
-      if (
-        message.type === "PAGE_ANALYSIS" ||
-        message.type === "URL_CHANGED"
-      ) {
+      if (message.type === "URL_CHANGED") {
         retryCountRef.current = 0
         resetForNewPage()
         debouncedFetch()

@@ -7,11 +7,8 @@
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { Quest } from '../../../types/questTypes'
-import { createHookLogger } from '../../../lib/utils/logger'
 import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
-
-const logger = createHookLogger('AchievementsTab')
 
 import bookmarkImg from '../../ui/img/questssuccess/bookmark.png'
 import curatorImg from '../../ui/img/questssuccess/curator.png'
@@ -134,7 +131,6 @@ const AchievementsTab = ({
   onVerifySocials,
   onMarkCompleted,
   onRefresh,
-  walletAddress,
   currentStreak,
   currentVoteStreak,
   certActivityDates = [],
@@ -343,7 +339,8 @@ const AchievementsTab = ({
           disabled={refreshing}
           title="Refresh quests"
         >
-          {refreshing ? "..." : "\u21BB"}
+          <span className="quest-refresh-icon" aria-hidden="true">{refreshing ? "..." : "\u21BB"}</span>
+          <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
         </button>
       )}
       {/* Streak Hub Card */}

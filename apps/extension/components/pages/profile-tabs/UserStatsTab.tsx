@@ -44,11 +44,9 @@ interface UserStatsTabProps {
 }
 
 const UserStatsTab = ({
-  walletAddress,
   trustedByCount,
   level = 1,
   totalXP = 0,
-  signalsCreated = 0,
   discoveryStats,
   discoveryLoading = false,
   discoveryError = null,

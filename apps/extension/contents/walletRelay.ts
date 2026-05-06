@@ -13,7 +13,7 @@ export const config: PlasmoCSConfig = {
 const pendingRequests = new Map<string, (response: any) => void>()
 
 // Listen for messages from extension (background/sidepanel)
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type !== "WALLET_REQUEST") return false
 
   const { requestId, method, params } = message

@@ -20,6 +20,7 @@ const CategoryCard = ({ category, onClick }: CategoryCardProps) => {
     <div
       className={`category-card ${id}`}
       onClick={onClick}
+      style={{ '--cat-color': color } as React.CSSProperties}
     >
       <div className="category-card-header">
         <div

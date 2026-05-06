@@ -3,15 +3,10 @@ import { MessageBus } from "../lib/services";
 import { initializeThemeIconManager } from "./themeIconManager";
 import { initializeRealtime } from "./realtime";
 import { createServiceLogger } from '../lib/utils/logger'
+import { getStoredWalletAddress } from '../lib/utils/walletStorage'
 import "./oauth/index"; // Initialize OAuth service
 
 const logger = createServiceLogger('ServiceWorker')
-
-// Helper pour récupérer l'adresse wallet depuis chrome.storage.session
-export async function getWalletAddress(): Promise<string | null> {
-  const result = await chrome.storage.session.get('walletAddress')
-  return result.walletAddress || null
-}
 
 // Exported function to initialize when wallet connects (called from messageHandlers)
 export async function initializeOnWalletConnect(): Promise<void> {
@@ -45,7 +40,7 @@ async function init(): Promise<void> {
     setupMessageHandlers()
 
     // Check wallet connection
-    const walletAddress = await getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn("Wallet not connected - Some features may be limited")
       await initializeBadgeCount()
@@ -79,7 +74,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
 // On startup, check if already connected (after extension reload)
 async function checkExistingConnection() {
-  const address = await getWalletAddress()
+  const address = await getStoredWalletAddress()
   if (address) {
     logger.info('Restoring wallet session', { address })
   } else {

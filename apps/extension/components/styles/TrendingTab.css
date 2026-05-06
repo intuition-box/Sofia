@@ -1,12 +1,14 @@
-/* Shared tab description */
+/* Shared tab description — subtle helper text under the tab title */
 .tab-description {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  padding: var(--spacing-sm) var(--spacing-md);
-  margin-bottom: var(--spacing-xs);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  line-height: 1.4;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: var(--ds-muted);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  line-height: 1.5;
 }
 
 /* TrendingTab - Global trending certifications */
@@ -51,20 +53,20 @@
 .trending-section-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  gap: 10px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-ink);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 
 .trending-section-badge::before {
   content: "";
   display: block;
   width: 4px;
-  height: 14px;
+  height: 16px;
   border-radius: 2px;
   background: linear-gradient(180deg, var(--category-color), var(--category-gradient-end));
   flex-shrink: 0;
@@ -76,7 +78,7 @@
   background: none;
   border: none;
   padding: 2px 0;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -85,7 +87,7 @@
 }
 
 .trending-more-btn:hover {
-  color: var(--category-color, rgba(255, 255, 255, 0.7));
+  color: var(--ds-ink);
 }
 
 /* Card grid — 3 cards fill the row */
@@ -100,26 +102,21 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 10px;
   padding: 14px;
   flex: 1 1 0;
   min-width: 0;
   min-height: 140px;
-  background-color: rgba(0, 0, 0, 0.14);
+  background: var(--ds-bg);
   border-radius: 12px;
-  backdrop-filter: blur(50px) saturate(100%);
-  -webkit-backdrop-filter: blur(50px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .trending-card:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+  border-color: var(--category-color, var(--ds-ink));
 }
 
 /* Card header: favicon + rank */
@@ -173,7 +170,7 @@
 .trending-card-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #F2DED6);
+  color: var(--color-text-primary, var(--ds-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,7 +255,7 @@
   border: none;
   border-radius: 8px;
   padding: 6px 10px;
-  color: var(--color-text-secondary, #faf7f3);
+  color: var(--color-text-secondary, var(--ds-ink));
   cursor: pointer;
   font-size: 12px;
   transition: var(--transition-fast, background 0.2s);
@@ -272,7 +269,7 @@
 .trending-detail-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--category-color, var(--color-text-secondary, #faf7f3));
+  color: var(--ds-ink);
 }
 
 .trending-detail-count {
@@ -288,18 +285,19 @@
   gap: 2px;
 }
 
-/* Item wrapper for list view */
-.trending-item-wrapper {
+/* Item wrapper for list view — black surface, neutral border at rest,
+   colored border on hover (color picked up from .trending-tab's
+   --category-color in detail view). */
+.trending-list .trending-item-wrapper {
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: var(--transition-fast, all 0.2s ease);
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  transition: border-color 0.15s ease;
   overflow: hidden;
 }
 
-.trending-item-wrapper:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.10);
+.trending-list .trending-item-wrapper:hover {
+  border-color: var(--category-color, var(--ds-ink));
 }
 
 .trending-item {
@@ -354,7 +352,7 @@
 .trending-item-title {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-primary, #F2DED6);
+  color: var(--color-text-primary, var(--ds-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

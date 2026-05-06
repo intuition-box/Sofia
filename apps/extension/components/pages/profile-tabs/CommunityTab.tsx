@@ -34,29 +34,37 @@ const CommunityTab = (props: CommunityTabProps) => {
 
   return (
     <div className="community-tab">
-      {/* Filter buttons / Tabs */}
-      <div className="filter-buttons">
+      {/* Filter buttons — scope-toggle segmented control (same as Stats sub-toggle) */}
+      <div className="scope-toggle scope-toggle--lg community-filter-row" role="group" aria-label="Community filter">
         <button
-          className={`filter-btn ${filterType === 'trust-circle' ? 'trustactive' : ''}`}
+          type="button"
+          className={`scope-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
+          aria-pressed={filterType === 'trust-circle'}
           onClick={() => setFilterType('trust-circle')}
         >
           Trust Circle
         </button>
         <button
-          className={`filter-btn ${filterType === 'following' ? 'active' : ''}`}
+          type="button"
+          className={`scope-btn ${filterType === 'following' ? 'active' : ''}`}
+          aria-pressed={filterType === 'following'}
           onClick={() => setFilterType('following')}
         >
           Following
         </button>
         <button
-          className={`filter-btn ${filterType === 'followers' ? 'active' : ''}`}
+          type="button"
+          className={`scope-btn ${filterType === 'followers' ? 'active' : ''}`}
+          aria-pressed={filterType === 'followers'}
           onClick={() => setFilterType('followers')}
         >
           Followers
         </button>
         {!isExternalProfile && (
           <button
-            className={`filter-btn ${filterType === 'explorer' ? 'active' : ''}`}
+            type="button"
+            className={`scope-btn ${filterType === 'explorer' ? 'active' : ''}`}
+            aria-pressed={filterType === 'explorer'}
             onClick={() => setFilterType('explorer')}
           >
             Explore

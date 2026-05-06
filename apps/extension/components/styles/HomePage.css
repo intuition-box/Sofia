@@ -28,13 +28,13 @@
   margin-bottom: var(--spacing-xl);
   max-width: 320px;
   text-align: center;
-  backdrop-filter: blur(20px);
 }
 
 .description-paragraph {
-  color: var(--color-text-primary);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.5;
   margin-bottom: var(--spacing-md);
   text-align: justify;
 }
@@ -46,7 +46,7 @@
   justify-content: center;
 }
 
-/* Wallet Connect Button - Orb Gradient Style with White Glow */
+/* Wallet Connect Button — full DS primary button (matches cart submit) */
 .wallet-connect-button {
   display: flex;
   align-items: center;
@@ -54,63 +54,28 @@
   gap: 8px;
   width: 332px;
   max-width: 100%;
-  padding: 12px 16px;
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
+  padding: 14px 24px;
+  background: var(--btn-primary-bg);
   border: none;
   border-radius: 12px;
-  color: #000000;
-  font-family: 'Gotu', cursive;
-  font-size: 14px;
+  color: var(--btn-primary-fg);
+  font-family: 'Geist', sans-serif;
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 1s ease;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
-  position: relative;
-  overflow: hidden;
-}
-
-.wallet-connect-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.wallet-connect-button > * {
-  position: relative;
-  z-index: 1;
+  transition: background 0.15s ease;
+  box-shadow: var(--btn-primary-shadow);
 }
 
 .wallet-connect-button:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
-}
-
-@keyframes orb-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Removed .wallet-button-background and .wallet-button-content - no longer needed */
-
-.wallet-connect-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(255, 110, 64, 0.3);
+  background: var(--btn-primary-hover-bg);
+  color: var(--btn-primary-hover-fg);
 }
 
 .wallet-connect-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  animation: none;
 }
 
 .wallet-connect-button.loading {
@@ -120,8 +85,8 @@
 .button-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
+  border: 2px solid var(--ds-border-soft);
+  border-top: 2px solid var(--ds-on-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -131,28 +96,11 @@
   100% { transform: rotate(360deg); }
 }
 
-.terms-section {
-  margin-top: var(--spacing-sm);
-}
-
-.terms-checkbox {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-}
-
-.terms-checkbox input[type="checkbox"] {
-  display: none;
-}
-
 .checkmark {
   width: 18px;
   height: 18px;
-  border: 2px solid var(--color-text-primary);
-  border-radius: 3px;
+  border: 1.5px solid var(--ds-border);
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,13 +108,13 @@
 }
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
   content: "✓";
-  color: white;
+  color: var(--ds-on-accent);
   font-size: var(--font-size-sm);
   font-weight: bold;
 }

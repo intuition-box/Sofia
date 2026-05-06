@@ -6,33 +6,64 @@
   background: transparent;
 }
 
-/* Top Bar: chips + go button */
+/* Top bar — vertical stack:
+   row 1 (.circle-top-header): "FILTER" label left, [refresh][My Circle] right
+   row 2 (.circle-category-chips): chips wrap freely below */
 .circle-top-bar {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 10px;
   padding-bottom: var(--spacing-sm);
 }
 
-/* Go to Circle button */
+/* Header row */
+.circle-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.circle-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.circle-filter-label {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+/* Refresh / Go to Circle buttons — DS pf-btn pattern (same as
+   GroupDetailView "Back" button). Outlined card-toned pill. */
 .circle-go-btn {
   flex-shrink: 0;
-  padding: 5px 10px;
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--transition-fast);
-  border: 1px solid rgba(199, 134, 108, 0.4);
-  background: rgba(199, 134, 108, 0.1);
-  color: var(--color-primary);
+  transition: border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
 
 .circle-go-btn:hover:not(:disabled) {
-  background: rgba(199, 134, 108, 0.2);
-  border-color: rgba(199, 134, 108, 0.6);
-  color: var(--color-text-primary);
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
 }
 
 .circle-go-btn:disabled {
@@ -40,55 +71,54 @@
   cursor: not-allowed;
 }
 
-/* Category Filter Chips */
+/* Category Filter Chips — wrap to next line instead of horizontal scroll */
 .circle-category-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
   padding: var(--spacing-sm) 0;
-  scrollbar-width: none;
   flex: 1;
   min-width: 0;
 }
 
-.circle-category-chips::-webkit-scrollbar {
-  display: none;
-}
-
+/* Verb filter chip — ported from explorer .vf-chip (feed-card.css).
+   Dark/neutral pill with a small colored dot inside that surfaces the
+   intent's color. Active state = peach (ds-accent) bg + dark text. */
 .circle-chip {
   flex-shrink: 0;
-  padding: 4px 8px;
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--transition-fast);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: transparent;
-  color: var(--color-text-very-muted);
+  transition: all 0.15s ease;
 }
 
-.circle-chip:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+.circle-chip:hover:not(.active) {
+  border-color: var(--ds-ink-soft);
 }
 
 .circle-chip.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--color-text-secondary);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
 }
 
-/* Colored chips when they have --chip-color */
-.circle-chip[style*="--chip-color"]:hover {
-  border-color: var(--chip-color);
-  color: var(--chip-color);
-}
-
-.circle-chip[style*="--chip-color"].active {
-  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-  border-color: var(--chip-color);
-  color: var(--chip-color);
+/* Small intent-color dot (mirrors .vf-chip-dot) — bg set inline. */
+.circle-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
 
 /* Grid Layout */
@@ -102,12 +132,12 @@
 .circle-card {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
-  background: #ffffff0d;
-  border: 1px solid var(--color-border-glass);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   padding: 14px;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: border-color 0.15s ease, transform 0.15s ease;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -119,8 +149,8 @@
 
 .circle-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  border-color: var(--ds-ink-soft);
 }
 
 /* Card Header: favicon + member + badge */
@@ -136,17 +166,21 @@
   height: 44px;
   border-radius: 10px;
   flex-shrink: 0;
-  background: var(--color-border-glass);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
 }
 
 .circle-card-member-name {
-  font-size: var(--font-size-sm);
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  color: var(--ds-muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -154,7 +188,7 @@
 }
 
 .circle-card-member-name:hover {
-  color: var(--color-text-secondary);
+  color: var(--ds-ink);
   text-decoration: underline;
 }
 
@@ -177,9 +211,10 @@
 
 /* Card Title */
 .circle-card-title {
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  color: var(--ds-ink);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -198,49 +233,47 @@
   margin-left: auto;
 }
 
+/* Vote buttons — DS .fc-pos pattern from explorer (FeedCard).
+   Square outlined button, lucide thumbs icon, color reveals on hover/voted.
+   Default: ds-bg + ds-border + ds-muted; support hover/voted = green
+   (--trusted), oppose hover/voted = red (--distrusted). */
 .circle-action-btn {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border-light);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-muted);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   padding: 0;
   flex-shrink: 0;
 }
 
-.circle-support-btn:hover {
-  color: var(--color-success);
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.1);
+.circle-action-btn:hover:not(:disabled) {
+  transform: scale(1.05);
 }
 
-.circle-oppose-btn:hover:not(:disabled) {
-  color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
-}
-
+.circle-support-btn:hover:not(:disabled),
 .circle-support-btn.voted {
-  color: var(--color-success);
-  border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
-  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--trusted);
+  border-color: var(--trusted);
 }
 
+.circle-oppose-btn:hover:not(:disabled),
 .circle-oppose-btn.voted {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
-  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  color: var(--distrusted);
+  border-color: var(--distrusted);
 }
 
 .circle-action-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Card Footer */
@@ -252,8 +285,12 @@
 }
 
 .circle-card-time {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted-soft);
   flex-shrink: 0;
 }
 

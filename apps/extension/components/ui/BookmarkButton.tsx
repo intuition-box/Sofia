@@ -18,11 +18,10 @@ const logger = createHookLogger('BookmarkButton')
 interface BookmarkButtonProps {
   triplet: Triplet
   sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>
-  size?: 'small' | 'medium'
   className?: string
 }
 
-const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: BookmarkButtonProps) => {
+const BookmarkButton = ({ triplet, sourceInfo, className }: BookmarkButtonProps) => {
   const { lists, addTripletToList, createList } = useBookmarks()
   const [showModal, setShowModal] = useState(false)
   const [selectedListId, setSelectedListId] = useState<string>('')
@@ -56,15 +55,6 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
 
   const handleOpenModal = () => {
     setShowModal(true)
-  }
-
-  const buttonStyle = size === 'small' ? {
-    fontSize: '11px',
-    padding: '4px 8px',
-    minHeight: 'auto'
-  } : {
-    fontSize: '12px',
-    padding: '6px 12px'
   }
 
   return (

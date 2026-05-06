@@ -24,6 +24,11 @@ export interface IntentionConfigEntry {
 
 // ── Central Config ──
 
+// Colors mirror @0xsofia/design-system INTENTION_HEX (vivid palette) —
+// matches the explorer's INTENTION_CONFIG.color exactly. The DS pastels
+// (#6dd4a0, #7bade0, …) are exposed as CSS vars (--trusted, --work, …)
+// for ambient/track usage; the vivid values below are for pills/badges
+// injected as inline styles where high contrast is needed.
 export const INTENTION_CONFIG: Record<IntentionType, IntentionConfigEntry> = {
   trusted:     { label: "Trusted",     color: "#22C55E", gradientEnd: "#4ADE80", cssClass: "trusted",     intentionPurpose: null,               predicateLabel: "trusts" },
   distrusted:  { label: "Distrusted",  color: "#EF4444", gradientEnd: "#F87171", cssClass: "distrusted",  intentionPurpose: null,               predicateLabel: "distrust" },
@@ -59,11 +64,6 @@ export const TRUST_ITEMS: { type: IntentionType; label: string; predicateLabel: 
 export const CERTIFICATION_LIST: { type: IntentionType; label: string; color: string }[] =
   (Object.entries(INTENTION_CONFIG) as [IntentionType, IntentionConfigEntry][])
     .map(([type, v]) => ({ type, label: v.label, color: v.color }))
-
-/** Get color for a certification type, with fallback */
-export function getIntentionColor(type: string): string {
-  return INTENTION_CONFIG[type as IntentionType]?.color ?? "#888888"
-}
 
 /** Resolve an intention string (IntentionType or IntentionPurpose) to badge info */
 export function getIntentionBadge(intention?: string): { label: string; color: string } | null {
