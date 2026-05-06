@@ -6,7 +6,7 @@ authors: [Samuel, Maxime]
 
 Big week on Sofia — we unified the transaction confirmation screen across the entire app, launched the **Beta Season Pool** (a shared vault funded by every certification), overhauled bookmarks with search and sorting, and shipped a major performance boost cutting the app's initial load by 535 KB. Page-level blockchain stats also got a full rewrite for better accuracy.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## New Confirmation Screen & Fee Transparency
 
@@ -60,7 +60,7 @@ Big week on Sofia — we unified the transaction confirmation screen across the 
 ## UI & Fixes
 
 - **"XP Gained" animation** after certifications — instant visual feedback
-- Redesigned metrics panel 
+- Redesigned metrics panel
 - Colored pills for already-certified intentions
 - **Trends view** and **Leaderboard** finalized
 - Fixes: quest initial state, Pioneer badge logic, Echoes group loading, URL parsing edge cases

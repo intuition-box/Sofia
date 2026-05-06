@@ -1,13 +1,14 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
-import type * as Preset from '@docusaurus/preset-classic';
-import React from 'react';
+import { themes as prismThemes } from 'prism-react-renderer'
+import type { Config } from '@docusaurus/types'
+import type * as Preset from '@docusaurus/preset-classic'
+import React from 'react'
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
   title: 'Sofia Documentation',
-  tagline: 'Documentation & Development Blog for Sofia — the Chrome extension that turns browsing into blockchain-backed knowledge.',
+  tagline:
+    'Documentation & Development Blog for Sofia — the Chrome extension that turns browsing into blockchain-backed knowledge.',
   favicon: 'img/favicon.png',
 
   future: {
@@ -113,8 +114,12 @@ const config: Config = {
   themeConfig: {
     image: 'img/Sofia_Chronicles.webp',
     metadata: [
-      {name: 'keywords', content: 'sofia, documentation, blockchain, chrome extension, knowledge, web3, intuition protocol'},
-      {name: 'author', content: 'Sofia Team'},
+      {
+        name: 'keywords',
+        content:
+          'sofia, documentation, blockchain, chrome extension, knowledge, web3, intuition protocol',
+      },
+      { name: 'author', content: 'Sofia Team' },
     ],
     colorMode: {
       defaultMode: 'dark',
@@ -147,7 +152,10 @@ const config: Config = {
             { label: 'GitHub', href: 'https://github.com/intuition-box' },
             { label: 'X', href: 'https://x.com/0xsofia3' },
             { label: 'Discord', href: 'https://discord.gg/sofia3' },
-            { label: 'Proxy Dashboard', href: 'https://sofia-proxy.intuition.box/' },
+            {
+              label: 'Proxy Dashboard',
+              href: 'https://sofia-proxy.intuition.box/',
+            },
           ],
         },
         {
@@ -207,6 +215,6 @@ const config: Config = {
       },
     ],
   ],
-};
+}
 
-export default config;
+export default config

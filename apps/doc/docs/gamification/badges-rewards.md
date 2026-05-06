@@ -12,13 +12,13 @@ Badges are visual achievements displayed on your profile:
 
 ### Badge Categories
 
-| Category | Examples |
-|----------|----------|
+| Category       | Examples                                |
+| -------------- | --------------------------------------- |
 | **Milestones** | First certification, 100 certifications |
-| **Streaks** | 7-day streak, 30-day streak |
-| **Social** | Verified Twitter, Golden Profile |
-| **Pioneer** | First 100 users, Beta tester |
-| **Expertise** | Domain specialist badges |
+| **Streaks**    | 7-day streak, 30-day streak             |
+| **Social**     | Verified Twitter, Golden Profile        |
+| **Pioneer**    | First 100 users, Beta tester            |
+| **Expertise**  | Domain specialist badges                |
 
 ---
 
@@ -46,6 +46,6 @@ At the end of each season, a **Redeem** button will be made available, allowing 
 
 1. **Complete daily quests** for consistent XP gain
 2. **Be a Pioneer** — certify new pages first for Gold
-4. **Link social accounts** for easy XP and Golden Profile
-5. **Focus on favorite domains** to level them up faster
-6. **Vote daily** for steady Gold income
+3. **Link social accounts** for easy XP and Golden Profile
+4. **Focus on favorite domains** to level them up faster
+5. **Vote daily** for steady Gold income

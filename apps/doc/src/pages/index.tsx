@@ -1,15 +1,16 @@
-import React from 'react';
-import Layout from '@theme/Layout';
-import Link from '@docusaurus/Link';
-import DocCard from '@site/src/components/docs/DocCard';
-import DocCardGrid from '@site/src/components/docs/DocCardGrid';
-import styles from './index.module.css';
+import React from 'react'
+import Layout from '@theme/Layout'
+import Link from '@docusaurus/Link'
+import DocCard from '@site/src/components/docs/DocCard'
+import DocCardGrid from '@site/src/components/docs/DocCardGrid'
+import styles from './index.module.css'
 
 export default function Home(): React.ReactElement {
   return (
     <Layout
       title="Sofia — Documentation"
-      description="Sofia turns your browsing into verifiable, blockchain-backed knowledge — privately and on your terms.">
+      description="Sofia turns your browsing into verifiable, blockchain-backed knowledge — privately and on your terms."
+    >
       <main className={styles.main}>
         <header className={styles.hero}>
           <div className={styles.heroInner}>
@@ -21,7 +22,10 @@ export default function Home(): React.ReactElement {
               chapter.
             </p>
             <div className={styles.actions}>
-              <Link className="button button--primary button--lg" to="/docs/intro">
+              <Link
+                className="button button--primary button--lg"
+                to="/docs/intro"
+              >
                 Start reading
               </Link>
               <Link
@@ -137,5 +141,5 @@ export default function Home(): React.ReactElement {
         </section>
       </main>
     </Layout>
-  );
+  )
 }

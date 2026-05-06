@@ -18,7 +18,7 @@ The new “Trust this site” component marks an important evolution in how Sofi
 
 Altogether, these updates bring Sofia closer to a dynamic, user-driven ecosystem where trust, identity, and discovery seamlessly converge. The foundation is stronger than ever — and with user testing now open, we’re ready to take the next leap toward Sofia’s public Beta.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Managed Hosting & Deployment
 

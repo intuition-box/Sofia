@@ -1,11 +1,11 @@
-import React from 'react';
-import './ContentWrapper.css';
+import React from 'react'
+import './ContentWrapper.css'
 
 interface ContentWrapperProps {
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-  wide?: boolean;
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+  wide?: boolean
 }
 
 export default function ContentWrapper({
@@ -14,13 +14,17 @@ export default function ContentWrapper({
   style = {},
   wide = false,
 }: ContentWrapperProps): React.ReactElement {
-  const classes = ['content-wrapper', wide && 'content-wrapper--wide', className]
+  const classes = [
+    'content-wrapper',
+    wide && 'content-wrapper--wide',
+    className,
+  ]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
 
   return (
     <div className={classes} style={style}>
       {children}
     </div>
-  );
+  )
 }

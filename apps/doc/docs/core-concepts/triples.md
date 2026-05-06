@@ -12,15 +12,16 @@ description: How Atoms connect through Triples with depositing and redeeming
 
 ## Example Triples in Sofia
 
-| Subject | Predicate | Object |
-|---------|-----------|--------|
-| alice.eth | visits for learning | docs.python.org |
-| bob.eth | visits for work | github.com/project |
-| carol.eth | visits for inspiration | dribbble.com |
+| Subject   | Predicate              | Object             |
+| --------- | ---------------------- | ------------------ |
+| alice.eth | visits for learning    | docs.python.org    |
+| bob.eth   | visits for work        | github.com/project |
+| carol.eth | visits for inspiration | dribbble.com       |
 
 ## Triple Properties
 
 Each Triple has:
+
 - **Vault ID**: Unique identifier on the blockchain
 - **Creator**: The wallet that created it
 - **Deposits**: Total TRUST tokens staked
@@ -31,6 +32,7 @@ Each Triple has:
 ## Depositing & Redeeming
 
 When you [certify](../features/certifications.md) a page:
+
 1. You **deposit** TRUST tokens into the Triple's vault
 2. You receive **shares** proportional to your deposit
 3. Early depositors get more shares (bonding curve advantage)

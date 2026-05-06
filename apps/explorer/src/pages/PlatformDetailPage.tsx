@@ -27,10 +27,7 @@ import '@/components/styles/pages.css'
 import '@/components/styles/feed-card.css'
 import '@/components/styles/topic-search.css'
 
-function certDomain(cert: {
-  objectUrl: string
-  objectLabel: string
-}): string {
+function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
   return (
     (cert.objectUrl && extractDomain(cert.objectUrl)) ||
     (cert.objectLabel && extractDomain(cert.objectLabel)) ||
@@ -64,7 +61,8 @@ export default function PlatformDetailPage() {
         .sort((a, b) => {
           const ta = Date.parse(a.certifiedAt)
           const tb = Date.parse(b.certifiedAt)
-          if (!Number.isNaN(ta) && !Number.isNaN(tb) && ta !== tb) return tb - ta
+          if (!Number.isNaN(ta) && !Number.isNaN(tb) && ta !== tb)
+            return tb - ta
           return b.certifierCount - a.certifierCount
         }),
     [profile.certs, decodedDomain],
@@ -149,9 +147,7 @@ export default function PlatformDetailPage() {
           {isLoading && items.length === 0 ? (
             <div className="crd-feed-empty">Loading…</div>
           ) : platformCerts.length === 0 ? (
-            <div className="crd-feed-empty">
-              No cert on this platform yet.
-            </div>
+            <div className="crd-feed-empty">No cert on this platform yet.</div>
           ) : items.length === 0 ? (
             <div className="crd-feed-empty">
               No match for &ldquo;{query}&rdquo;.
@@ -188,9 +184,7 @@ export default function PlatformDetailPage() {
                             loading="lazy"
                           />
                         ) : (
-                          (host || cert.objectLabel)
-                            .slice(0, 1)
-                            .toUpperCase()
+                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
                         )}
                       </div>
                       <div className="fc-title-wrap">

@@ -43,8 +43,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .checkmark {
@@ -111,7 +115,14 @@
   padding: 12px 24px;
   border-radius: var(--radius-md);
   border: none;
-  background: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
+  background: linear-gradient(
+    135deg,
+    #d790c7 0%,
+    #d37cbf 20%,
+    #ffc6b0 50%,
+    #ffa7b1 80%,
+    #cea2fd 100%
+  );
   background-size: 200% 200%;
   animation: orb-gradient 20s ease infinite;
   color: #000;
@@ -123,9 +134,15 @@
 }
 
 @keyframes orb-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .claimBtn:hover {

@@ -16,16 +16,18 @@
   --nav-h: 64px;
 
   /* ── Radius ─────────────────────────────────────────── */
-  --radius-sm: calc(var(--ds-radius) - 4px);   /* 6px  */
-  --radius-md: var(--ds-radius);               /* 10px */
-  --radius-lg: calc(var(--ds-radius) + 4px);   /* 14px */
-  --radius-xl: calc(var(--ds-radius) + 10px);  /* 20px */
+  --radius-sm: calc(var(--ds-radius) - 4px); /* 6px  */
+  --radius-md: var(--ds-radius); /* 10px */
+  --radius-lg: calc(var(--ds-radius) + 4px); /* 14px */
+  --radius-xl: calc(var(--ds-radius) + 10px); /* 20px */
   --radius-pill: 9999px;
 
   /* ── Typography ─────────────────────────────────────── */
-  --font-body:    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body:
+    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
   --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ── Colors — DS aliases ────────────────────────────── */
   --color-bg: var(--ds-bg);

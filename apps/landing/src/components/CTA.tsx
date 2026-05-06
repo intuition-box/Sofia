@@ -1,11 +1,11 @@
-import { Arrow } from './Arrow';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { URLS } from '../lib/config/urls';
-import { HexSplit } from './HexSplit';
-import styles from './CTA.module.css';
+import { Arrow } from './Arrow'
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import { URLS } from '../lib/config/urls'
+import { HexSplit } from './HexSplit'
+import styles from './CTA.module.css'
 
 export function CTA() {
-  const innerRef = useScrollAnim<HTMLDivElement>();
+  const innerRef = useScrollAnim<HTMLDivElement>()
 
   return (
     <section id="cta" className={`${styles.section} on-peach`}>
@@ -37,5 +37,5 @@ export function CTA() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -73,7 +73,9 @@
   letter-spacing: -0.022em;
   line-height: 1.15;
   color: var(--color-text);
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
   margin: 0;
 }
 
@@ -96,6 +98,10 @@
 }
 
 @media (max-width: 880px) {
-  .grid { grid-template-columns: 1fr; }
-  .step { border-right: 0; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .step {
+    border-right: 0;
+  }
 }

@@ -8,7 +8,7 @@ authors: [Samuel, Maxime]
 
 First of all, we apologize for being quiet over the past two weeks — we've been working hard on deploying Sofia on Phala, migrating to Intuition's mainnet, and setting up the GaiaNet node hosting. During this time, we've made significant progress across infrastructure, features, and user experience. Sofia is now running on mainnet with secure hosting, and we're testing with real users to prepare for broader Alpha release.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Infrastructure & Deployment
 

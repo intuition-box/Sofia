@@ -8,7 +8,7 @@ authors: [Samuel, Maxime]
 
 During this week we consolidated the whole Sofia extension stack. We migrated and refactored our OAuth service to a clean, dedicated structure, securing the integration with YouTube, Spotify and Twitch and making it easier for developers to configure secrets. We improved URL handling and state management, added a complete Pulse agent with its own tab and WebSocket infrastructure, and refined our detection logic to extract data . On top of that we streamlined background code, unified message handlers, added badge/notification logic and rolled out a new theme extraction agent with bookmark and history import.
 
-{/* truncate */}
+{/_ truncate _/}
 
 All these changes make Sofia more stable, more modular and more privacy-respectful. Users get smoother connections, faster imports and richer, verifiable triples; developers get a clearer architecture and a simpler way to extend the platform.
 

@@ -21,6 +21,7 @@ The **Trust Circle** is an on-chain way to vouch for other users by staking TRUS
 ### How Trust Circle Works
 
 When you add someone to your Trust Circle:
+
 1. You deposit TRUST tokens on the Triple Vault (I - Trust - Wieedze.eth)
 2. You receive shares
 3. Your stake shows public support for them

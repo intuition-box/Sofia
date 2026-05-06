@@ -10,12 +10,12 @@ Sofia includes a conversational AI assistant that knows about your activity and 
 
 ## What Sofia Can Do
 
-| Capability | Example |
-|------------|---------|
-| **Answer questions** | "What have I certified for Learning?" |
-| **Provide recommendations** | "What should I read next?" |
-| **Explain features** | "How do streaks work?" |
-| **Help navigate** | "Show me my Trust Circle" |
+| Capability                  | Example                               |
+| --------------------------- | ------------------------------------- |
+| **Answer questions**        | "What have I certified for Learning?" |
+| **Provide recommendations** | "What should I read next?"            |
+| **Explain features**        | "How do streaks work?"                |
+| **Help navigate**           | "Show me my Trust Circle"             |
 
 ## Example Conversation
 

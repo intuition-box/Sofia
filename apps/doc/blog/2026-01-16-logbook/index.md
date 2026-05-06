@@ -10,7 +10,7 @@ During this development cycle, we focused on strengthening Sofia's core mechanic
 
 This period was less about visible features and more about ensuring reliability, coherence, and long-term scalability across the product.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Discovery & Intentions
 

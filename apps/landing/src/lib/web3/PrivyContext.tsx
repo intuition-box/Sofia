@@ -1,18 +1,30 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { PrivyProvider, usePrivy, useLogin, useLogout } from '@privy-io/react-auth';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from 'react'
+import {
+  PrivyProvider,
+  usePrivy,
+  useLogin,
+  useLogout,
+} from '@privy-io/react-auth'
 
 // Aligned on the Explorer Privy app — same allowlist (localhost + prod).
-const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID ?? 'cmmey7hlx01110clgylcc1ulc';
+const PRIVY_APP_ID =
+  import.meta.env.VITE_PRIVY_APP_ID ?? 'cmmey7hlx01110clgylcc1ulc'
 
 interface WalletContextValue {
-  address: string | null;
-  walletType: string | null;
-  isConnected: boolean;
-  isConnecting: boolean;
-  error: string | null;
-  connect: () => void;
-  disconnect: () => void;
-  clearError: () => void;
+  address: string | null
+  walletType: string | null
+  isConnected: boolean
+  isConnecting: boolean
+  error: string | null
+  connect: () => void
+  disconnect: () => void
+  clearError: () => void
 }
 
 const defaultValue: WalletContextValue = {
@@ -24,66 +36,112 @@ const defaultValue: WalletContextValue = {
   connect: () => {},
   disconnect: () => {},
   clearError: () => {},
-};
+}
 
-const WalletContext = createContext<WalletContextValue>(defaultValue);
+const WalletContext = createContext<WalletContextValue>(defaultValue)
 
-const getWalletInfo = (user: any): { address: string | null; walletType: string | null } => {
-  if (!user) return { address: null, walletType: null };
-  const walletAccount = user.linkedAccounts?.find((a: any) => a.type === 'wallet');
-  if (walletAccount?.address) return { address: walletAccount.address, walletType: walletAccount.walletClientType || null };
-  if (user.wallet?.address) return { address: user.wallet.address, walletType: user.wallet.walletClientType || null };
-  return { address: null, walletType: null };
-};
+const getWalletInfo = (
+  user: any,
+): { address: string | null; walletType: string | null } => {
+  if (!user) return { address: null, walletType: null }
+  const walletAccount = user.linkedAccounts?.find(
+    (a: any) => a.type === 'wallet',
+  )
+  if (walletAccount?.address)
+    return {
+      address: walletAccount.address,
+      walletType: walletAccount.walletClientType || null,
+    }
+  if (user.wallet?.address)
+    return {
+      address: user.wallet.address,
+      walletType: user.wallet.walletClientType || null,
+    }
+  return { address: null, walletType: null }
+}
 
 function InnerProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user } = usePrivy();
-  const { logout } = useLogout();
+  const { ready, authenticated, user } = usePrivy()
+  const { logout } = useLogout()
   const [state, setState] = useState({
     address: null as string | null,
     walletType: null as string | null,
     isConnected: false,
     isConnecting: false,
     error: null as string | null,
-  });
+  })
 
   const { login } = useLogin({
     onComplete: ({ user: u }: { user: any }) => {
-      const { address, walletType } = getWalletInfo(u);
-      setState({ address, walletType, isConnected: !!address, isConnecting: false, error: address ? null : 'No wallet found.' });
+      const { address, walletType } = getWalletInfo(u)
+      setState({
+        address,
+        walletType,
+        isConnected: !!address,
+        isConnecting: false,
+        error: address ? null : 'No wallet found.',
+      })
     },
     onError: () => {
-      setState(prev => ({ ...prev, isConnecting: false, error: 'Connection failed.' }));
+      setState((prev) => ({
+        ...prev,
+        isConnecting: false,
+        error: 'Connection failed.',
+      }))
     },
-  });
+  })
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) return
     if (authenticated && user) {
-      const { address, walletType } = getWalletInfo(user);
-      if (address) setState({ address, walletType, isConnected: true, isConnecting: false, error: null });
+      const { address, walletType } = getWalletInfo(user)
+      if (address)
+        setState({
+          address,
+          walletType,
+          isConnected: true,
+          isConnecting: false,
+          error: null,
+        })
     } else {
-      setState({ address: null, walletType: null, isConnected: false, isConnecting: false, error: null });
+      setState({
+        address: null,
+        walletType: null,
+        isConnected: false,
+        isConnecting: false,
+        error: null,
+      })
     }
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, user])
 
   const connect = useCallback(() => {
-    setState(prev => ({ ...prev, isConnecting: true, error: null }));
-    login();
-  }, [login]);
+    setState((prev) => ({ ...prev, isConnecting: true, error: null }))
+    login()
+  }, [login])
 
   const disconnect = useCallback(async () => {
-    await logout();
-    setState({ address: null, walletType: null, isConnected: false, isConnecting: false, error: null });
-  }, [logout]);
+    await logout()
+    setState({
+      address: null,
+      walletType: null,
+      isConnected: false,
+      isConnecting: false,
+      error: null,
+    })
+  }, [logout])
 
-  const clearError = useCallback(() => setState(prev => ({ ...prev, error: null })), []);
+  const clearError = useCallback(
+    () => setState((prev) => ({ ...prev, error: null })),
+    [],
+  )
 
   return (
-    <WalletContext.Provider value={{ ...state, connect, disconnect, clearError }}>
+    <WalletContext.Provider
+      value={{ ...state, connect, disconnect, clearError }}
+    >
       {children}
     </WalletContext.Provider>
-  );
+  )
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
@@ -97,9 +155,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     >
       <InnerProvider>{children}</InnerProvider>
     </PrivyProvider>
-  );
+  )
 }
 
 export function useWalletConnection() {
-  return useContext(WalletContext);
+  return useContext(WalletContext)
 }

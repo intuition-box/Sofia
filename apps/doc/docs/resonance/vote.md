@@ -26,8 +26,8 @@ Participate in community vote by supporting or opposing claims.
 
 ## How Voting Works
 
-| Action | Description | Cost |
-|--------|-------------|------|
-| **Support** | Stake TRUST to agree with the claim | Custom TRUST |
-| **Oppose** | Stake TRUST to disagree with the claim | Custom TRUST |
-| **Choose curve** | Linear or Progressive staking | — |
+| Action           | Description                            | Cost         |
+| ---------------- | -------------------------------------- | ------------ |
+| **Support**      | Stake TRUST to agree with the claim    | Custom TRUST |
+| **Oppose**       | Stake TRUST to disagree with the claim | Custom TRUST |
+| **Choose curve** | Linear or Progressive staking          | —            |

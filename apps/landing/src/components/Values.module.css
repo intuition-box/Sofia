@@ -68,7 +68,9 @@
   letter-spacing: -0.022em;
   line-height: 1.15;
   color: #02000e;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
   margin: 0;
 }
 
@@ -96,7 +98,9 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .vote:hover {
@@ -119,9 +123,13 @@
 }
 
 @media (max-width: 1000px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

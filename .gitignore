@@ -75,6 +75,13 @@ sofia-agent-latest.tar.gz
 
 /PLAN.md
 
+# Windows WSL alternate data streams
+*:Zone.Identifier
+
+# Landing reference assets (never tracked)
+apps/landing/Sofia Landing 2/
+apps/landing/Hero Split*.html
+
 # Monorepo
 .turbo/
 .pnpm-store/

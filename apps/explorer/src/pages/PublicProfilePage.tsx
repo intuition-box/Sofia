@@ -80,10 +80,8 @@ export default function PublicProfilePage() {
   // Echoes: alltime certs from the master profile, same source the rest
   // of the profile panels read so the bento groups stay consistent.
   const onChainAddresses = walletAddress ? [walletAddress] : undefined
-  const {
-    profile: onChainProfile,
-    isLoading: onChainLoading,
-  } = useUserOnChainProfile(onChainAddresses)
+  const { profile: onChainProfile, isLoading: onChainLoading } =
+    useUserOnChainProfile(onChainAddresses)
   const echoesActivities = useMemo(
     () => userCertsToActivityInputs(onChainProfile.certs),
     [onChainProfile.certs],

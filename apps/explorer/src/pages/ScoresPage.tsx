@@ -17,10 +17,7 @@ import { ArrowLeft } from 'lucide-react'
 import { SectionTitle, FaviconWrapper } from '@0xsofia/design-system'
 import { Button } from '@/components/ui/button'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import {
-  INTENTION_CONFIG,
-  type IntentionType,
-} from '@/config/intentions'
+import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useTopClaims } from '@/hooks/useTopClaims'
@@ -329,81 +326,80 @@ export default function ScoresPage() {
                 perBadgeUrlsAll.find((e) => e.group.id === group.id)?.urls
                   .length ?? 0
               return (
-              <div key={group.id} className="pf-badge-block">
-                <div className="pf-badge-head">
-                  <img
-                    className="pf-badge-head-icon"
-                    src={group.icon}
-                    alt={group.label}
-                  />
-                  <div className="pf-badge-head-text">
-                    <span className="pf-badge-head-label">
-                      {group.label}
-                      {totalCount > 0 ? ` · ${totalCount}` : ''}
-                    </span>
-                    <span className="pf-badge-head-desc">
-                      {group.description}
-                    </span>
+                <div key={group.id} className="pf-badge-block">
+                  <div className="pf-badge-head">
+                    <img
+                      className="pf-badge-head-icon"
+                      src={group.icon}
+                      alt={group.label}
+                    />
+                    <div className="pf-badge-head-text">
+                      <span className="pf-badge-head-label">
+                        {group.label}
+                        {totalCount > 0 ? ` · ${totalCount}` : ''}
+                      </span>
+                      <span className="pf-badge-head-desc">
+                        {group.description}
+                      </span>
+                    </div>
                   </div>
+                  {urls.length > 0 ? (
+                    <div className="pf-badge-urls">
+                      {urls.map((c) => {
+                        const domain = c.objectUrl
+                          ? extractDomain(c.objectUrl)
+                          : ''
+                        return (
+                          <a
+                            key={c.termId}
+                            className="pf-ts-url-item"
+                            href={c.objectUrl || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <FaviconWrapper
+                              size={22}
+                              src={domain ? getFaviconUrl(domain) : undefined}
+                              alt={domain}
+                              className="pf-ts-url-fav"
+                            />
+                            <div className="pf-ts-url-meta">
+                              <span className="pf-ts-url-title">
+                                {c.objectLabel}
+                              </span>
+                              <span className="pf-ts-url-host">
+                                {domain}
+                                {c.stats.userPnlPct != null
+                                  ? ` · ${c.stats.userPnlPct >= 0 ? '+' : ''}${c.stats.userPnlPct}%`
+                                  : ''}
+                              </span>
+                            </div>
+                          </a>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="pf-badge-empty">No claim in this tier yet.</p>
+                  )}
+                  {totalCount > urls.length && (
+                    <Link
+                      className="pf-badge-view-all"
+                      to={`/scores/badges/${
+                        group.id === 'pioneer'
+                          ? 'pioneer'
+                          : group.id === 'early'
+                            ? 'explorer'
+                            : 'contributor'
+                      }`}
+                    >
+                      View all {totalCount} →
+                    </Link>
+                  )}
                 </div>
-                {urls.length > 0 ? (
-                  <div className="pf-badge-urls">
-                    {urls.map((c) => {
-                      const domain = c.objectUrl
-                        ? extractDomain(c.objectUrl)
-                        : ''
-                      return (
-                        <a
-                          key={c.termId}
-                          className="pf-ts-url-item"
-                          href={c.objectUrl || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FaviconWrapper
-                            size={22}
-                            src={domain ? getFaviconUrl(domain) : undefined}
-                            alt={domain}
-                            className="pf-ts-url-fav"
-                          />
-                          <div className="pf-ts-url-meta">
-                            <span className="pf-ts-url-title">
-                              {c.objectLabel}
-                            </span>
-                            <span className="pf-ts-url-host">
-                              {domain}
-                              {c.stats.userPnlPct != null
-                                ? ` · ${c.stats.userPnlPct >= 0 ? '+' : ''}${c.stats.userPnlPct}%`
-                                : ''}
-                            </span>
-                          </div>
-                        </a>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <p className="pf-badge-empty">No claim in this tier yet.</p>
-                )}
-                {totalCount > urls.length && (
-                  <Link
-                    className="pf-badge-view-all"
-                    to={`/scores/badges/${
-                      group.id === 'pioneer'
-                        ? 'pioneer'
-                        : group.id === 'early'
-                          ? 'explorer'
-                          : 'contributor'
-                    }`}
-                  >
-                    View all {totalCount} →
-                  </Link>
-                )}
-              </div>
               )
             })}
           </div>
         </section>
-
 
         {engagement.length > 0 && (
           <section className="pp-section">

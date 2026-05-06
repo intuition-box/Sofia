@@ -4,7 +4,7 @@
  */
 
 .theme-doc-markdown,
-[class*="docPage"] {
+[class*='docPage'] {
   font-family: var(--font-body);
 }
 
@@ -26,7 +26,9 @@
   font-family: var(--font-heading);
   color: var(--ds-ink);
   letter-spacing: -0.018em;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
 }
 
 .theme-doc-markdown h1 {
@@ -86,8 +88,9 @@
   background-position: 0 100%;
   background-repeat: no-repeat;
   background-size: 100% 1px;
-  transition: background-size var(--doc-fast) var(--doc-ease-out),
-              color var(--doc-fast) var(--doc-ease-out);
+  transition:
+    background-size var(--doc-fast) var(--doc-ease-out),
+    color var(--doc-fast) var(--doc-ease-out);
 }
 
 .theme-doc-markdown a:not(.hash-link):not(.button):not(.doc-card-link):hover,
@@ -154,15 +157,15 @@ pre {
 }
 
 .codeBlockLines,
-[class*="codeBlockLines"],
-pre[class*="language-"],
-code[class*="language-"],
+[class*='codeBlockLines'],
+pre[class*='language-'],
+code[class*='language-'],
 .prism-code {
   background-color: transparent !important;
   font-family: var(--font-mono);
 }
 
-[class*="codeBlockTitle"] {
+[class*='codeBlockTitle'] {
   background: var(--ds-bg-subtle);
   border-bottom: 1px solid var(--ds-border-soft);
   color: var(--ds-muted);
@@ -194,14 +197,24 @@ code[class*="language-"],
   padding: 1rem 1.2rem;
 }
 
-.theme-admonition-note    { border-left-color: var(--work); }
-.theme-admonition-tip     { border-left-color: var(--trusted); }
-.theme-admonition-info    { border-left-color: var(--learning); }
+.theme-admonition-note {
+  border-left-color: var(--work);
+}
+.theme-admonition-tip {
+  border-left-color: var(--trusted);
+}
+.theme-admonition-info {
+  border-left-color: var(--learning);
+}
 .theme-admonition-warning,
-.theme-admonition-caution { border-left-color: var(--fun); }
-.theme-admonition-danger  { border-left-color: var(--distrusted); }
+.theme-admonition-caution {
+  border-left-color: var(--fun);
+}
+.theme-admonition-danger {
+  border-left-color: var(--distrusted);
+}
 
-.theme-admonition [class*="admonitionHeading"] {
+.theme-admonition [class*='admonitionHeading'] {
   font-family: var(--font-body);
   font-weight: 600;
   font-size: var(--doc-text-xs);
@@ -210,12 +223,22 @@ code[class*="language-"],
   margin-bottom: 0.4rem;
 }
 
-.theme-admonition-note    [class*="admonitionHeading"] { color: var(--work); }
-.theme-admonition-tip     [class*="admonitionHeading"] { color: var(--trusted); }
-.theme-admonition-info    [class*="admonitionHeading"] { color: var(--learning); }
-.theme-admonition-warning [class*="admonitionHeading"],
-.theme-admonition-caution [class*="admonitionHeading"] { color: var(--fun); }
-.theme-admonition-danger  [class*="admonitionHeading"] { color: var(--distrusted); }
+.theme-admonition-note [class*='admonitionHeading'] {
+  color: var(--work);
+}
+.theme-admonition-tip [class*='admonitionHeading'] {
+  color: var(--trusted);
+}
+.theme-admonition-info [class*='admonitionHeading'] {
+  color: var(--learning);
+}
+.theme-admonition-warning [class*='admonitionHeading'],
+.theme-admonition-caution [class*='admonitionHeading'] {
+  color: var(--fun);
+}
+.theme-admonition-danger [class*='admonitionHeading'] {
+  color: var(--distrusted);
+}
 
 .theme-admonition p,
 .theme-admonition li {
@@ -275,9 +298,10 @@ code[class*="language-"],
   border: 1px solid var(--ds-border);
   border-radius: var(--doc-radius-md);
   padding: 1rem 1.25rem;
-  transition: border-color var(--doc-fast) var(--doc-ease-out),
-              background-color var(--doc-fast) var(--doc-ease-out),
-              transform var(--doc-fast) var(--doc-ease-out);
+  transition:
+    border-color var(--doc-fast) var(--doc-ease-out),
+    background-color var(--doc-fast) var(--doc-ease-out),
+    transform var(--doc-fast) var(--doc-ease-out);
 }
 
 .pagination-nav__link:hover {

@@ -279,8 +279,7 @@ export function computeReputationProfile(
     (p) => getStatus(p.id) === 'connected',
   )
 
-  const hasCertSignal =
-    !!certCountsByTopic && certCountsByTopic.size > 0
+  const hasCertSignal = !!certCountsByTopic && certCountsByTopic.size > 0
   if (
     connectedPlatforms.length === 0 &&
     selectedTopics.length === 0 &&

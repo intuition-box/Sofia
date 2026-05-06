@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useVoteStats } from '../hooks/useVoteStats';
-import { useVoting } from '../hooks/useVoting';
-import { VALUES_DATA } from '../lib/config/constants';
-import { Section } from './Section';
-import { SectionHead } from './SectionHead';
-import styles from './Values.module.css';
+import { useState } from 'react'
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import { useVoteStats } from '../hooks/useVoteStats'
+import { useVoting } from '../hooks/useVoting'
+import { VALUES_DATA } from '../lib/config/constants'
+import { Section } from './Section'
+import { SectionHead } from './SectionHead'
+import styles from './Values.module.css'
 
 export function Values() {
   return (
@@ -33,27 +33,33 @@ export function Values() {
         ))}
       </div>
     </Section>
-  );
+  )
 }
 
-function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index: number }) {
-  const ref = useScrollAnim<HTMLElement>();
-  const { forDisplay, isLoading } = useVoteStats(value.tripleId);
-  const { depositFor, isConnected } = useVoting();
-  const [voting, setVoting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function ValueCard({
+  value,
+  index,
+}: {
+  value: (typeof VALUES_DATA)[number]
+  index: number
+}) {
+  const ref = useScrollAnim<HTMLElement>()
+  const { forDisplay, isLoading } = useVoteStats(value.tripleId)
+  const { depositFor, isConnected } = useVoting()
+  const [voting, setVoting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleVote = async () => {
-    setError(null);
-    setVoting(true);
+    setError(null)
+    setVoting(true)
     try {
-      await depositFor(value.tripleId);
+      await depositFor(value.tripleId)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Vote failed');
+      setError(err instanceof Error ? err.message : 'Vote failed')
     } finally {
-      setVoting(false);
+      setVoting(false)
     }
-  };
+  }
 
   return (
     <article
@@ -62,9 +68,13 @@ function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index:
       style={{ ['--i' as never]: index }}
     >
       <header className={styles.cardHead}>
-        <span className={styles.num}>VALUE {String(value.id).padStart(2, '0')}</span>
+        <span className={styles.num}>
+          VALUE {String(value.id).padStart(2, '0')}
+        </span>
         <span className={styles.trust}>
-          <span className={styles.trustNum}>{isLoading ? '…' : forDisplay}</span>
+          <span className={styles.trustNum}>
+            {isLoading ? '…' : forDisplay}
+          </span>
           <span className={styles.trustUnit}>TRUST</span>
         </span>
       </header>
@@ -79,5 +89,5 @@ function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index:
 
       {error && <p className={styles.error}>{error}</p>}
     </article>
-  );
+  )
 }

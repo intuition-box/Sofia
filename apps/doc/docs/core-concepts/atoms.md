@@ -12,15 +12,16 @@ An **Atom** is the fundamental unit of data in Intuition. Think of it as a uniqu
 
 ## What can be an Atom?
 
-| Type | Example | Description |
-|------|---------|-------------|
-| **User** | `0x1234...abcd` | Your wallet address |
-| **URL** | `https://github.com` | A webpage you visited |
-| **Predicate** | `visits for work, trust, distrust` | A relationship type |
+| Type          | Example                            | Description           |
+| ------------- | ---------------------------------- | --------------------- |
+| **User**      | `0x1234...abcd`                    | Your wallet address   |
+| **URL**       | `https://github.com`               | A webpage you visited |
+| **Predicate** | `visits for work, trust, distrust` | A relationship type   |
 
 ## How Atoms are created
 
 When you [certify](../features/certifications.md) a page for the first time, Sofia automatically creates:
+
 1. An Atom for the URL (if it doesn't exist)
 2. An Atom for the [predicate](./predicates.md) (intention type)
 3. Links them in a [Triple](./triples.md)

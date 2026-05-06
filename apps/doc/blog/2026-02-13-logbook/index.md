@@ -1,16 +1,14 @@
 ---
-
 slug: logbook-13-02
 
 title: Logbook 13/02
 
 authors: [Samuel, Maxime]
-
 ---
 
 Big week for Sofia — we cleaned up the entire codebase for better maintainability, introduced the ability to trust or distrust content, split the reward system into two currencies (Gold and XP), added a voting system in the Circle Feed, enabled profile sharing on X, and completely redesigned the user profile with badges, animations, and new visuals.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Codebase Cleanup & Documentation
 
@@ -44,6 +42,7 @@ Big week for Sofia — we cleaned up the entire codebase for better maintainabil
 - You can **like or dislike** each shared link directly from the feed
 - Each vote is an **on-chain signal** — it strengthens or weakens the visibility of that content for the community
 - This turns the Circle Feed into a **collaborative filter**: the more your circle votes, the better the content surfaces
+
 ---
 
 ## Share Your Profile on X

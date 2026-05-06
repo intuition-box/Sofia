@@ -118,7 +118,7 @@
    uniform brightness(0) used for other partners flattens both colors
    to black and erases the "P" inside. Cap width since its viewBox is
    ~3:1 (138×48). */
-.partnersRow a[href*="phala"] img {
+.partnersRow a[href*='phala'] img {
   height: auto;
   max-height: 28px;
   max-width: 90px;
@@ -161,15 +161,29 @@
   pointer-events: none;
 }
 
-.tl { top: 0; left: 0; }
-.tr { top: 0; right: 0; }
-.bl { bottom: 0; left: 0; }
-.br { bottom: 0; right: 0; }
+.tl {
+  top: 0;
+  left: 0;
+}
+.tr {
+  top: 0;
+  right: 0;
+}
+.bl {
+  bottom: 0;
+  left: 0;
+}
+.br {
+  bottom: 0;
+  right: 0;
+}
 
 /* ── Responsive ──────────────────────────────────────── */
 
 @media (max-width: 900px) {
-  .body { grid-template-columns: 1fr; }
+  .body {
+    grid-template-columns: 1fr;
+  }
   .copyZone {
     padding: 48px 24px;
     border-right: 0;
@@ -179,7 +193,15 @@
     min-height: 50vh;
     padding: 32px;
   }
-  .tl, .bl { left: 16px; }
-  .tr, .br { right: 16px; }
-  .partners { max-width: none; }
+  .tl,
+  .bl {
+    left: 16px;
+  }
+  .tr,
+  .br {
+    right: 16px;
+  }
+  .partners {
+    max-width: none;
+  }
 }

@@ -30,21 +30,18 @@
 }
 
 .l {
-  transform: translate(
-      calc(-50% - var(--hex-spread, 0px)),
-      -50%
-    )
+  transform: translate(calc(-50% - var(--hex-spread, 0px)), -50%)
     rotate(calc(-12deg - var(--hex-rot, 0deg)));
 }
 
 .r {
-  transform: translate(
-      calc(-50% + var(--hex-spread, 0px)),
-      -50%
-    )
+  transform: translate(calc(-50% + var(--hex-spread, 0px)), -50%)
     rotate(calc(18deg + var(--hex-rot, 0deg)));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .l, .r { transform: translate(-50%, -50%) rotate(0deg); }
+  .l,
+  .r {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
 }

@@ -1,23 +1,23 @@
-import type { ReactNode } from 'react';
-import styles from './Section.module.css';
+import type { ReactNode } from 'react'
+import styles from './Section.module.css'
 
 interface SectionProps {
-  id?: string;
+  id?: string
   /** Coord prefix shown in the meta strip (e.g. "S.01"). */
-  code: string;
+  code: string
   /** Label next to the code (e.g. "CAPABILITIES"). */
-  label: string;
+  label: string
   /** Right-side meta string (e.g. "04 MODULES"). */
-  meta: string;
+  meta: string
   /** Visual variant. `"peach"` = ink-on-peach banner. */
-  variant?: 'dark' | 'peach';
+  variant?: 'dark' | 'peach'
   /** Optional absolute decoration filling the whole section (e.g. HexSplit).
    * Rendered outside the `.container` so it can span the full section width
    * regardless of gutter constraints. */
-  decoration?: ReactNode;
+  decoration?: ReactNode
   /** Extra className appended to the outer section. */
-  className?: string;
-  children: ReactNode;
+  className?: string
+  children: ReactNode
 }
 
 /**
@@ -37,7 +37,7 @@ export function Section({
   className = '',
   children,
 }: SectionProps) {
-  const peach = variant === 'peach';
+  const peach = variant === 'peach'
   return (
     <section
       id={id}
@@ -54,11 +54,13 @@ export function Section({
       <div className={styles.meta}>
         <span className={styles.metaL}>
           <span className={styles.dot} />
-          <span>{code} · {label}</span>
+          <span>
+            {code} · {label}
+          </span>
         </span>
         <span className={styles.metaR}>{meta}</span>
       </div>
       <div className={`container ${styles.body}`}>{children}</div>
     </section>
-  );
+  )
 }

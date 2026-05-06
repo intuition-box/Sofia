@@ -50,7 +50,9 @@
   line-height: 1;
   letter-spacing: -0.035em;
   color: #02000e;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
   max-width: 18ch;
 }
 

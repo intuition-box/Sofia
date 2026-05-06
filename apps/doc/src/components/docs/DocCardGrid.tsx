@@ -1,11 +1,14 @@
-import React from 'react';
+import React from 'react'
 
 interface DocCardGridProps {
-  children: React.ReactNode;
-  columns?: 2 | 3 | 4;
+  children: React.ReactNode
+  columns?: 2 | 3 | 4
 }
 
-export default function DocCardGrid({ children, columns = 2 }: DocCardGridProps) {
+export default function DocCardGrid({
+  children,
+  columns = 2,
+}: DocCardGridProps) {
   return (
     <div
       className="doc-card-grid"
@@ -13,5 +16,5 @@ export default function DocCardGrid({ children, columns = 2 }: DocCardGridProps)
     >
       {children}
     </div>
-  );
+  )
 }

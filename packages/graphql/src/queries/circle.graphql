@@ -168,10 +168,7 @@ query GetFollowingCount($address: String!) {
 query GetCircleCerts($trustedWallets: [String!]!, $limit: Int = 50000) {
   triples(
     where: {
-      positions: {
-        account_id: { _in: $trustedWallets }
-        shares: { _gt: "0" }
-      }
+      positions: { account_id: { _in: $trustedWallets }, shares: { _gt: "0" } }
     }
     limit: $limit
   ) {
@@ -214,10 +211,7 @@ query GetUserCertsAlltime(
   triples(
     where: {
       predicate: { label: { _in: $predicateLabels } }
-      positions: {
-        account_id: { _in: $userAddresses }
-        shares: { _gt: "0" }
-      }
+      positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
     limit: $limit
     offset: $offset

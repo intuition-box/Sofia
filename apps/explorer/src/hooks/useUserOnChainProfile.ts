@@ -40,12 +40,9 @@ interface PersistedProfile {
   topicContextsRecord: Record<string, string[]>
 }
 
-async function fetchPersisted(
-  addresses: string[],
-): Promise<PersistedProfile> {
-  const { certs, topicContextsByTerm } = await fetchUserOnChainProfile(
-    addresses,
-  )
+async function fetchPersisted(addresses: string[]): Promise<PersistedProfile> {
+  const { certs, topicContextsByTerm } =
+    await fetchUserOnChainProfile(addresses)
   const topicContextsRecord: Record<string, string[]> = {}
   for (const [k, v] of topicContextsByTerm) topicContextsRecord[k] = v
   return { certs, topicContextsRecord }
@@ -71,7 +68,11 @@ export function useUserOnChainProfile(
     return {
       profile: EMPTY,
       isLoading: enabled && isLoading,
-      error: error ? (error instanceof Error ? error.message : String(error)) : null,
+      error: error
+        ? error instanceof Error
+          ? error.message
+          : String(error)
+        : null,
       refresh: () => {
         refetch()
       },

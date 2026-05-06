@@ -1,4 +1,5 @@
-const DOCS_BASE = import.meta.env.VITE_DOCS_URL ?? 'https://doc.sofia.intuition.box';
+const DOCS_BASE =
+  import.meta.env.VITE_DOCS_URL ?? 'https://doc.sofia.intuition.box'
 
 export const URLS = {
   docs: {
@@ -22,6 +23,7 @@ export const URLS = {
     values: 'https://sofia.intuition.box/values/',
     github: 'https://github.com/intuition-box',
     x: 'https://x.com/0xsofia3',
-    proxyDashboard: 'https://explorer.intuition.systems/address/0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c',
+    proxyDashboard:
+      'https://explorer.intuition.systems/address/0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c',
   },
-} as const;
+} as const

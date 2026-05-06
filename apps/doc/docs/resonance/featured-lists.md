@@ -21,9 +21,9 @@ description: Curated collections from the Intuition community
 
 ## List Actions
 
-| Action | Description |
-|--------|-------------|
-| **Open list** | View all entries with detailed stats |
-| **Support entry** | Stake TRUST on a specific entry |
-| **Oppose entry** | Stake against a specific entry |
-| **Earn rewards** | [Gold and XP](../gamification/currencies-levels.md) for each vote |
+| Action            | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| **Open list**     | View all entries with detailed stats                              |
+| **Support entry** | Stake TRUST on a specific entry                                   |
+| **Oppose entry**  | Stake against a specific entry                                    |
+| **Earn rewards**  | [Gold and XP](../gamification/currencies-levels.md) for each vote |

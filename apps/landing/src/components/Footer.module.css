@@ -96,9 +96,13 @@
 }
 
 @media (max-width: 780px) {
-  .top { grid-template-columns: 1fr 1fr; }
+  .top {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 480px) {
-  .top { grid-template-columns: 1fr; }
+  .top {
+    grid-template-columns: 1fr;
+  }
 }

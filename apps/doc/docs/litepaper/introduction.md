@@ -33,26 +33,26 @@ These triples accumulate into a personal knowledge graph — a living, evolving 
 
 ## Core Mechanisms
 
-| Mechanism | Role |
-|-----------|------|
-| **Semantic Triples** | Structured relationships (Subject → Predicate → Object) stored on [Intuition](../ecosystem/intuition.md) |
-| **Token Economy** | TRUST tokens staked on certifications, with bonding curve incentives for early adopters |
-| **AI Agents** | Personal AI powered by [GaiaNet](../ecosystem/gaianet.md) and [Mastra](../ecosystem/mastra.md) for browsing analysis and signal enrichment |
-| **DAO Governance** | Community-driven decisions via [Colony](./dao.md), with reputation-weighted voting |
+| Mechanism            | Role                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Semantic Triples** | Structured relationships (Subject → Predicate → Object) stored on [Intuition](../ecosystem/intuition.md)                                   |
+| **Token Economy**    | TRUST tokens staked on certifications, with bonding curve incentives for early adopters                                                    |
+| **AI Agents**        | Personal AI powered by [GaiaNet](../ecosystem/gaianet.md) and [Mastra](../ecosystem/mastra.md) for browsing analysis and signal enrichment |
+| **DAO Governance**   | Community-driven decisions via [Colony](./dao.md), with reputation-weighted voting                                                         |
 
 ## Litepaper Overview
 
 This litepaper covers the following topics:
 
-| Section | Description |
-|---------|-------------|
-| [A Network Based on Proof](./network.md) | How Sofia turns browsing into validated credentials |
-| [Subscription Model](./subscription.md) | ERC-4337 wallet and cost model |
-| [DAO Colony](./dao.md) | Decentralized governance and meritocratic reputation |
-| [What You Can Do](./features.md) | Key capabilities and use cases |
-| [Privacy & Data Control](./privacy.md) | Self-sovereign data principles |
-| [Why Sofia Is Unique](./why-unique.md) | Key differentiators from existing platforms |
-| [Target Audience](./audience.md) | Who Sofia is built for |
+| Section                                  | Description                                          |
+| ---------------------------------------- | ---------------------------------------------------- |
+| [A Network Based on Proof](./network.md) | How Sofia turns browsing into validated credentials  |
+| [Subscription Model](./subscription.md)  | ERC-4337 wallet and cost model                       |
+| [DAO Colony](./dao.md)                   | Decentralized governance and meritocratic reputation |
+| [What You Can Do](./features.md)         | Key capabilities and use cases                       |
+| [Privacy & Data Control](./privacy.md)   | Self-sovereign data principles                       |
+| [Why Sofia Is Unique](./why-unique.md)   | Key differentiators from existing platforms          |
+| [Target Audience](./audience.md)         | Who Sofia is built for                               |
 
 :::info
 For hands-on documentation on how to use Sofia, see the [User Guide](../features/getting-started.md). This litepaper focuses on the **vision, architecture, and economic model** behind the project.

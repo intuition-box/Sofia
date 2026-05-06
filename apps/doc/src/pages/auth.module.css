@@ -71,7 +71,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .successHeading {
@@ -165,11 +167,12 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: background var(--doc-fast) var(--doc-ease-out),
-              border-color var(--doc-fast) var(--doc-ease-out),
-              color var(--doc-fast) var(--doc-ease-out),
-              transform var(--doc-fast) var(--doc-ease-out),
-              box-shadow var(--doc-fast) var(--doc-ease-out);
+  transition:
+    background var(--doc-fast) var(--doc-ease-out),
+    border-color var(--doc-fast) var(--doc-ease-out),
+    color var(--doc-fast) var(--doc-ease-out),
+    transform var(--doc-fast) var(--doc-ease-out),
+    box-shadow var(--doc-fast) var(--doc-ease-out);
 }
 
 .btn:hover,
@@ -195,8 +198,9 @@
   font-size: var(--doc-text-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--doc-fast) var(--doc-ease-out),
-              border-color var(--doc-fast) var(--doc-ease-out);
+  transition:
+    background var(--doc-fast) var(--doc-ease-out),
+    border-color var(--doc-fast) var(--doc-ease-out);
 }
 
 .btnSecondary:hover {
@@ -231,9 +235,10 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: color var(--doc-fast) var(--doc-ease-out),
-              border-color var(--doc-fast) var(--doc-ease-out),
-              background var(--doc-fast) var(--doc-ease-out);
+  transition:
+    color var(--doc-fast) var(--doc-ease-out),
+    border-color var(--doc-fast) var(--doc-ease-out),
+    background var(--doc-fast) var(--doc-ease-out);
 }
 
 .closeBtn:hover,

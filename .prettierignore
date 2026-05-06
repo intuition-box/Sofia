@@ -16,3 +16,9 @@ apps/doc/build
 # and is formatted via its local `bun run --filter extension prettier` script.
 # Excluded from root prettier so we don't need to install its plugin globally.
 apps/extension/
+
+# apps/landing static HTML artifacts (legacy exports with raw JSX
+# that prettier's HTML parser can't handle). Source files in src/ are formatted.
+apps/landing/public/blog/
+apps/landing/public/docs/
+apps/landing/Sofia Landing 2/

@@ -22,7 +22,7 @@
 .peach {
   background: var(--color-accent);
   color: #02000e;
-  border-top-color: rgba(0, 0, 0, 0.10);
+  border-top-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Coordinate strip — absolute top, mono uppercase. */
@@ -72,7 +72,9 @@
 }
 
 @media (max-width: 768px) {
-  .section { padding: 96px 0; }
+  .section {
+    padding: 96px 0;
+  }
   .meta {
     top: 20px;
     padding: 0 var(--gutter);

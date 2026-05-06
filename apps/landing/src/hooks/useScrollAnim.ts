@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react'
 
 /**
  * useScrollAnim — adds `.in` to the observed element the first time it
@@ -12,38 +12,42 @@ import { useEffect, useRef } from 'react';
  * - `once`       : if true (default), unobserve after first reveal.
  */
 type Options = {
-  threshold?: number;
-  rootMargin?: string;
-  once?: boolean;
-};
+  threshold?: number
+  rootMargin?: string
+  once?: boolean
+}
 
 export function useScrollAnim<T extends HTMLElement = HTMLDivElement>(
   options: Options = {},
 ) {
-  const ref = useRef<T>(null);
-  const { threshold = 0.12, rootMargin = '0px 0px -40px 0px', once = true } = options;
+  const ref = useRef<T>(null)
+  const {
+    threshold = 0.12,
+    rootMargin = '0px 0px -40px 0px',
+    once = true,
+  } = options
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const el = ref.current
+    if (!el) return
 
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('in');
-            if (once) io.unobserve(entry.target);
+            entry.target.classList.add('in')
+            if (once) io.unobserve(entry.target)
           } else if (!once) {
-            entry.target.classList.remove('in');
+            entry.target.classList.remove('in')
           }
         }
       },
       { threshold, rootMargin },
-    );
+    )
 
-    io.observe(el);
-    return () => io.disconnect();
-  }, [threshold, rootMargin, once]);
+    io.observe(el)
+    return () => io.disconnect()
+  }, [threshold, rootMargin, once])
 
-  return ref;
+  return ref
 }

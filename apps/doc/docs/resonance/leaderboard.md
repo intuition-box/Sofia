@@ -10,10 +10,10 @@ Compete with other users on daily activity.
 
 ## Leaderboards
 
-| Leaderboard | Metric |
-|-------------|--------|
+| Leaderboard                                               | Metric                                                                |
+| --------------------------------------------------------- | --------------------------------------------------------------------- |
 | **[Certification](../features/certifications.md) Streak** | Consecutive days with [certifications](../features/certifications.md) |
-| **Vote Streak** | Consecutive days with votes |
+| **Vote Streak**                                           | Consecutive days with votes                                           |
 
 ## Features
 

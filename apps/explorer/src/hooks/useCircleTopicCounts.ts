@@ -50,6 +50,10 @@ export function useCircleTopicCounts(
   return {
     counts: data ?? EMPTY,
     isLoading: enabled && isLoading,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
   }
 }

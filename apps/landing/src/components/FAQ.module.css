@@ -75,7 +75,9 @@
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.018em;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
 }
 
 .icon {
@@ -89,7 +91,11 @@
   font-size: 16px;
   color: var(--color-text-muted);
   flex-shrink: 0;
-  transition: transform 0.35s var(--ease-out), background 0.2s, border-color 0.2s, color 0.2s;
+  transition:
+    transform 0.35s var(--ease-out),
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .item.open .icon {
@@ -103,7 +109,9 @@
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 0.55s var(--ease-out), opacity 0.35s;
+  transition:
+    max-height 0.55s var(--ease-out),
+    opacity 0.35s;
 }
 
 .item.open .answer {
@@ -121,7 +129,8 @@
 
 .answer a {
   color: var(--color-accent-ink);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-ink) 40%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-accent-ink) 40%, transparent);
 }
 
 @media (max-width: 880px) {

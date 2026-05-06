@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { IsoStack } from './Instruments';
-import { Section } from './Section';
-import { Plate } from './Plate';
-import styles from './Features.module.css';
+import type { ReactNode } from 'react'
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import { IsoStack } from './Instruments'
+import { Section } from './Section'
+import { Plate } from './Plate'
+import styles from './Features.module.css'
 
 interface Feature {
-  icon: ReactNode;
-  name: string;
-  desc: string;
-  tag: string;
+  icon: ReactNode
+  name: string
+  desc: string
+  tag: string
 }
 
 const FEATURES: Feature[] = [
@@ -56,11 +56,17 @@ const FEATURES: Feature[] = [
     desc: 'Vote on claims. Follow trusted circles. Discover trending content. Influence is earned through contribution, not bought through ads.',
     tag: 'TRUST · CIRCLES · GOVERNANCE',
   },
-];
+]
 
 export function Features() {
   return (
-    <Section id="features" code="S.01" label="CAPABILITIES" meta="04 MODULES" variant="peach">
+    <Section
+      id="features"
+      code="S.01"
+      label="CAPABILITIES"
+      meta="04 MODULES"
+      variant="peach"
+    >
       <div className={styles.split}>
         {/* LEFT — copy zone (mirrors Hero pattern) */}
         <div className={styles.copyZone}>
@@ -115,11 +121,11 @@ export function Features() {
         ))}
       </div>
     </Section>
-  );
+  )
 }
 
 function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
-  const ref = useScrollAnim<HTMLElement>();
+  const ref = useScrollAnim<HTMLElement>()
   return (
     <article
       ref={ref}
@@ -134,5 +140,5 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
         <span className={styles.featTag}>{feature.tag}</span>
       </div>
     </article>
-  );
+  )
 }

@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react'
 
 interface DocCardProps {
-  title: string;
-  description: string;
-  href?: string;
-  icon?: string;
+  title: string
+  description: string
+  href?: string
+  icon?: string
 }
 
 const ArrowIcon = () => (
@@ -21,9 +21,14 @@ const ArrowIcon = () => (
     <line x1="3" y1="11" x2="11" y2="3" />
     <polyline points="5 3 11 3 11 9" />
   </svg>
-);
+)
 
-export default function DocCard({ title, description, href, icon }: DocCardProps) {
+export default function DocCard({
+  title,
+  description,
+  href,
+  icon,
+}: DocCardProps) {
   const card = (
     <div className="doc-card">
       <div className="doc-card-title">
@@ -33,15 +38,15 @@ export default function DocCard({ title, description, href, icon }: DocCardProps
       <p className="doc-card-desc">{description}</p>
       {href && <ArrowIcon />}
     </div>
-  );
+  )
 
   if (href) {
     return (
       <a href={href} className="doc-card-link">
         {card}
       </a>
-    );
+    )
   }
 
-  return card;
+  return card
 }

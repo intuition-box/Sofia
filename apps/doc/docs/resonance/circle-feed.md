@@ -12,12 +12,12 @@ See real-time [certifications](../features/certifications.md) from your [Trust C
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Real-time feed** | Certifications from people you trust |
-| **Vote Like/Dislike** | React to certifications (1 TRUST per vote) |
-| **Filter by [intention](../features/intentions.md)** | Show only Work, Learning, Fun, etc. |
-| **Visit profiles** | See other users' full certification history |
+| Feature                                              | Description                                 |
+| ---------------------------------------------------- | ------------------------------------------- |
+| **Real-time feed**                                   | Certifications from people you trust        |
+| **Vote Like/Dislike**                                | React to certifications (1 TRUST per vote)  |
+| **Filter by [intention](../features/intentions.md)** | Show only Work, Learning, Fun, etc.         |
+| **Visit profiles**                                   | See other users' full certification history |
 
 ## Feed Entry
 

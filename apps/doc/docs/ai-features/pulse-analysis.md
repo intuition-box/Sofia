@@ -14,10 +14,10 @@ description: Analyze your open tabs and extract signals to certify
 
 ## What You Can Do
 
-| Action | Description |
-|--------|-------------|
-| **Launch analysis** | AI analyzes all your open tabs |
-| **View signals** | See extracted [triples](../core-concepts/triples.md) by session |
-| **Select signals** | Choose individually or in bulk |
-| **Amplify signals** | Publish selected signals on-chain |
-| **Delete signals** | Remove irrelevant signals or entire sessions |
+| Action              | Description                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| **Launch analysis** | AI analyzes all your open tabs                                  |
+| **View signals**    | See extracted [triples](../core-concepts/triples.md) by session |
+| **Select signals**  | Choose individually or in bulk                                  |
+| **Amplify signals** | Publish selected signals on-chain                               |
+| **Delete signals**  | Remove irrelevant signals or entire sessions                    |

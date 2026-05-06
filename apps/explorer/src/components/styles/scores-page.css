@@ -250,7 +250,9 @@
   border-radius: 999px;
   cursor: pointer;
   align-self: flex-start;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 .pf-badge-view-all:hover {
   color: var(--ds-ink);

@@ -1,17 +1,47 @@
-import { Section } from './Section';
-import { SectionHead } from './SectionHead';
-import { Plate } from './Plate';
-import { HexSplit } from './HexSplit';
-import styles from './Comparison.module.css';
+import { Section } from './Section'
+import { SectionHead } from './SectionHead'
+import { Plate } from './Plate'
+import { HexSplit } from './HexSplit'
+import styles from './Comparison.module.css'
 
 const ROWS = [
-  { label: 'DATA RESIDENCY', sofia: 'On your device', web2: 'Harvested at scale', web3: 'Public by default' },
-  { label: 'SOURCE CODE', sofia: 'Open source', web2: 'Black box', web3: 'Open protocols' },
-  { label: 'VALUE FLOW', sofia: 'To contributors', web2: 'To the platform', web3: 'Pay to play' },
-  { label: 'PERSONALIZATION', sofia: 'Local AI, your rules', web2: 'Engagement loops', web3: 'None' },
-  { label: 'IDENTITY MODEL', sofia: 'Verified by action', web2: 'Self-declared', web3: 'Pseudonymous' },
-  { label: 'GOVERNANCE', sofia: 'Contribution-based', web2: 'Corporate control', web3: 'Token-weighted' },
-] as const;
+  {
+    label: 'DATA RESIDENCY',
+    sofia: 'On your device',
+    web2: 'Harvested at scale',
+    web3: 'Public by default',
+  },
+  {
+    label: 'SOURCE CODE',
+    sofia: 'Open source',
+    web2: 'Black box',
+    web3: 'Open protocols',
+  },
+  {
+    label: 'VALUE FLOW',
+    sofia: 'To contributors',
+    web2: 'To the platform',
+    web3: 'Pay to play',
+  },
+  {
+    label: 'PERSONALIZATION',
+    sofia: 'Local AI, your rules',
+    web2: 'Engagement loops',
+    web3: 'None',
+  },
+  {
+    label: 'IDENTITY MODEL',
+    sofia: 'Verified by action',
+    web2: 'Self-declared',
+    web3: 'Pseudonymous',
+  },
+  {
+    label: 'GOVERNANCE',
+    sofia: 'Contribution-based',
+    web2: 'Corporate control',
+    web3: 'Token-weighted',
+  },
+] as const
 
 const FLAGS: readonly (readonly [boolean, boolean, boolean])[] = [
   [true, false, true],
@@ -20,7 +50,7 @@ const FLAGS: readonly (readonly [boolean, boolean, boolean])[] = [
   [true, true, false],
   [true, false, false],
   [true, false, true],
-];
+]
 
 export function Comparison() {
   return (
@@ -36,7 +66,8 @@ export function Comparison() {
         eyebrow="Sofia vs. status quo"
         title={
           <>
-            The same web,<br />
+            The same web,
+            <br />
             <em>measured differently.</em>
           </>
         }
@@ -81,7 +112,7 @@ export function Comparison() {
         </table>
       </Plate>
     </Section>
-  );
+  )
 }
 
 function Cell({ ok, text }: { ok: boolean; text: string }) {
@@ -92,5 +123,5 @@ function Cell({ ok, text }: { ok: boolean; text: string }) {
       </span>
       {text}
     </span>
-  );
+  )
 }

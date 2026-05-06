@@ -51,7 +51,7 @@
 }
 .onPeach .head,
 .onPeach .foot {
-  border-color: rgba(0, 0, 0, 0.10);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 .onPeach .tag,
 .onPeach .meta,
@@ -104,7 +104,9 @@
   text-transform: uppercase;
 }
 
-.onPeach .title { color: #02000e; }
+.onPeach .title {
+  color: #02000e;
+}
 
 .meta {
   display: flex;
@@ -154,22 +156,25 @@
 
 .bodyInstrumentIso {
   padding: 14px;
-  background: #0E0E0E;
+  background: #0e0e0e;
   overflow: hidden;
   aspect-ratio: 1;
 }
-.bodyInstrumentIso > svg { max-width: 100%; max-height: 100%; }
+.bodyInstrumentIso > svg {
+  max-width: 100%;
+  max-height: 100%;
+}
 
 .bodyInstrumentCircles {
   padding: 14px;
-  background: #0E0E0E;
+  background: #0e0e0e;
   overflow: hidden;
   aspect-ratio: 2 / 1;
 }
 
 .bodyInstrumentTopics {
   padding: 14px;
-  background: #0E0E0E;
+  background: #0e0e0e;
   overflow: hidden;
   aspect-ratio: 1;
 }

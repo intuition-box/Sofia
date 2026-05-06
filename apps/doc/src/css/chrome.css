@@ -45,8 +45,9 @@
   letter-spacing: -0.005em;
   padding: 0.5rem 0.85rem;
   border-radius: var(--doc-radius-xs);
-  transition: color var(--doc-fast) var(--doc-ease-out),
-              background-color var(--doc-fast) var(--doc-ease-out);
+  transition:
+    color var(--doc-fast) var(--doc-ease-out),
+    background-color var(--doc-fast) var(--doc-ease-out);
 }
 
 .navbar__link:hover {
@@ -87,8 +88,8 @@
   color: var(--ds-ink);
 }
 
-[class*="colorModeToggle"],
-[class*="toggleButton"] {
+[class*='colorModeToggle'],
+[class*='toggleButton'] {
   display: none !important;
 }
 
@@ -113,13 +114,13 @@
 
 /* Doc sidebar — drop the default border-right, keep Docusaurus' sticky.   */
 .theme-doc-sidebar-container,
-[class*="docSidebarContainer"] {
+[class*='docSidebarContainer'] {
   background: transparent;
   border-right: 0 !important;
 }
 
 @media (min-width: 997px) {
-  .theme-doc-sidebar-container [class*="sidebar_"] {
+  .theme-doc-sidebar-container [class*='sidebar_'] {
     padding-left: 1.25rem;
     padding-right: 0.75rem;
   }
@@ -155,7 +156,7 @@
     margin: 0;
   }
 
-  .blog-shell > aside.col--3 [class*="sidebar_"] {
+  .blog-shell > aside.col--3 [class*='sidebar_'] {
     position: sticky;
     top: var(--ifm-navbar-height);
     max-height: calc(100vh - var(--ifm-navbar-height));
@@ -176,7 +177,7 @@
 
 /* Common section title — doc collapsibles + blog sidebar title */
 aside .menu__list-item-collapsible > .menu__link,
-[class*="sidebarItemTitle"] {
+[class*='sidebarItemTitle'] {
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
@@ -187,7 +188,7 @@ aside .menu__list-item-collapsible > .menu__link,
   margin: 0 0 0.25rem;
 }
 
-[class*="yearGroupHeading"] {
+[class*='yearGroupHeading'] {
   font-family: var(--font-heading);
   font-weight: 500;
   font-size: 0.95rem;
@@ -197,19 +198,19 @@ aside .menu__list-item-collapsible > .menu__link,
   padding: 0 0.65rem;
 }
 
-[class*="sidebarItemList"] {
+[class*='sidebarItemList'] {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-[class*="sidebarItem_"] {
+[class*='sidebarItem_'] {
   margin: 0;
 }
 
 /* Common link — applies to .menu__link (doc) and .sidebarItemLink_* (blog) */
 aside .menu__link,
-aside [class*="sidebarItemLink"] {
+aside [class*='sidebarItemLink'] {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -220,11 +221,13 @@ aside [class*="sidebarItemLink"] {
   padding: 0.55rem 0.7rem;
   border-radius: 8px;
   text-decoration: none;
-  transition: background-color 150ms ease, color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 aside .menu__link:hover,
-aside [class*="sidebarItemLink"]:hover {
+aside [class*='sidebarItemLink']:hover {
   background-color: var(--ds-bg-subtle);
   color: var(--ds-ink);
   text-decoration: none;
@@ -234,9 +237,9 @@ aside [class*="sidebarItemLink"]:hover {
    aria-current="page" (always present on Link/NavLink) PLUS the
    CSS-module class names, AND we also redefine --ifm-color-primary
    locally so Docusaurus' own !important rule resolves to dark ink. */
-html aside a[aria-current="page"],
+html aside a[aria-current='page'],
 html aside .menu__link--active:not(.menu__link--sublist-caret),
-html aside [class*="sidebarItemLinkActive"] {
+html aside [class*='sidebarItemLinkActive'] {
   --ifm-color-primary: var(--ds-on-accent);
   background-color: var(--ds-accent) !important;
   color: var(--ds-on-accent) !important;
@@ -259,7 +262,7 @@ aside .menu__caret::before {
 }
 
 /* Blog post authors — compact pair, side-by-side, ~12px between blocks. */
-.row:has([class*="authorCol_"]) {
+.row:has([class*='authorCol_']) {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
@@ -267,7 +270,7 @@ aside .menu__caret::before {
   gap: 0.75rem;
 }
 
-[class*="authorCol_"] {
+[class*='authorCol_'] {
   flex: 0 0 auto !important;
   width: auto !important;
   max-width: none !important;
@@ -276,47 +279,47 @@ aside .menu__caret::before {
   margin: 0 !important;
 }
 
-[class*="authorCol_"] .avatar {
+[class*='authorCol_'] .avatar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin: 0 !important;
 }
 
-[class*="authorImage_"],
-[class*="authorCol_"] .avatar__photo {
+[class*='authorImage_'],
+[class*='authorCol_'] .avatar__photo {
   width: 2rem !important;
   height: 2rem !important;
   flex-shrink: 0;
 }
 
-[class*="authorDetails_"] {
+[class*='authorDetails_'] {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-[class*="authorName_"] {
+[class*='authorName_'] {
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
   line-height: 1.2;
 }
 
-[class*="authorTitle_"] {
+[class*='authorTitle_'] {
   font-size: 0.65rem;
   color: var(--ds-muted);
   line-height: 1.2;
 }
 
-[class*="authorSocials_"] {
+[class*='authorSocials_'] {
   display: flex;
   gap: 0.3rem;
   margin-top: 1px;
 }
 
-[class*="authorSocialLink_"] {
+[class*='authorSocialLink_'] {
   width: 12px;
   height: 12px;
 }
@@ -330,7 +333,7 @@ aside .menu__caret::before {
   border: 1px solid var(--ds-border);
 }
 
-article[class*="blogPost"],
+article[class*='blogPost'],
 .blog-post-page article {
   background: transparent;
   border: 0;
@@ -341,7 +344,7 @@ article[class*="blogPost"],
   box-shadow: none;
 }
 
-article[class*="blogPost"] h2 a,
+article[class*='blogPost'] h2 a,
 .blog-post-page article header h2 a {
   font-family: var(--font-heading);
   font-weight: 600;
@@ -371,7 +374,6 @@ article > footer,
 article > .row:last-child {
   margin-top: 1rem;
 }
-
 
 /* ── Footer ───────────────────────────────────────────────────── */
 

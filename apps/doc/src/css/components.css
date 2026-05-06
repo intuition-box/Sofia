@@ -9,10 +9,11 @@
   font-weight: 500;
   letter-spacing: -0.005em;
   border-radius: var(--doc-radius-pill);
-  transition: background-color var(--doc-fast) var(--doc-ease-out),
-              color var(--doc-fast) var(--doc-ease-out),
-              border-color var(--doc-fast) var(--doc-ease-out),
-              transform var(--doc-fast) var(--doc-ease-out);
+  transition:
+    background-color var(--doc-fast) var(--doc-ease-out),
+    color var(--doc-fast) var(--doc-ease-out),
+    border-color var(--doc-fast) var(--doc-ease-out),
+    transform var(--doc-fast) var(--doc-ease-out);
 }
 
 .button.button--lg {
@@ -54,7 +55,6 @@ a.button.button--outline.button--primary:hover,
   transform: translateY(-1px);
 }
 
-
 /* ── Doc card grid ────────────────────────────────────────────── */
 
 .doc-card-grid {
@@ -80,9 +80,10 @@ a.button.button--outline.button--primary:hover,
   border: 1px solid var(--ds-border-soft);
   border-radius: var(--doc-radius-md);
   overflow: hidden;
-  transition: border-color var(--doc-fast) var(--doc-ease-out),
-              box-shadow var(--doc-base) var(--doc-ease-out),
-              transform var(--doc-fast) var(--doc-ease-out);
+  transition:
+    border-color var(--doc-fast) var(--doc-ease-out),
+    box-shadow var(--doc-base) var(--doc-ease-out),
+    transform var(--doc-fast) var(--doc-ease-out);
 }
 
 .doc-card-link:hover .doc-card {
@@ -121,8 +122,9 @@ a.button.button--outline.button--primary:hover,
   width: 14px;
   height: 14px;
   color: var(--ds-muted-soft);
-  transition: transform var(--doc-fast) var(--doc-ease-out),
-              color var(--doc-fast) var(--doc-ease-out);
+  transition:
+    transform var(--doc-fast) var(--doc-ease-out),
+    color var(--doc-fast) var(--doc-ease-out);
 }
 
 .doc-card-link:hover .doc-card-arrow {
@@ -152,7 +154,9 @@ a.button.button--outline.button--primary:hover,
   letter-spacing: -0.025em;
   color: var(--ds-ink);
   line-height: 1;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
 }
 
 .stat-box-label {

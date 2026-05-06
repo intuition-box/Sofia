@@ -16,7 +16,7 @@ Together, these upgrades establish the foundation for adaptive, AI-driven insigh
 
 ![Personalized Recommendations](./image.png)
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## AI Recommendation System (Ollama)
 

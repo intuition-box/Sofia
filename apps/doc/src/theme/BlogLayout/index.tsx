@@ -1,9 +1,9 @@
-import React, {type ReactNode} from 'react'
+import React, { type ReactNode } from 'react'
 import clsx from 'clsx'
 import Layout from '@theme/Layout'
 import BlogSidebar from '@theme/BlogSidebar'
 
-import type {Props} from '@theme/BlogLayout'
+import type { Props } from '@theme/BlogLayout'
 
 /**
  * Mirrors `DocRoot/Layout`: a flex shell with a sticky sidebar at
@@ -12,7 +12,7 @@ import type {Props} from '@theme/BlogLayout'
  * article + TOC layout matches the docs page byte-for-byte.
  */
 export default function BlogLayout(props: Props): ReactNode {
-  const {sidebar, toc, children, ...layoutProps} = props
+  const { sidebar, toc, children, ...layoutProps } = props
   const hasSidebar = sidebar && sidebar.items.length > 0
 
   return (

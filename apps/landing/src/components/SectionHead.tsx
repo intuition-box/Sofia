@@ -1,19 +1,19 @@
-import type { ReactNode } from 'react';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import styles from './SectionHead.module.css';
+import type { ReactNode } from 'react'
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import styles from './SectionHead.module.css'
 
 interface SectionHeadProps {
-  eyebrow: string;
+  eyebrow: string
   /** Title content (use `<em>` for italic accents). */
-  title: ReactNode;
+  title: ReactNode
   /** Optional subtitle/lede paragraph rendered under the title (left col). */
-  sub?: ReactNode;
+  sub?: ReactNode
   /** Optional right-column slot. When provided, layout becomes bipartite
    * (eyebrow + title left, this slot right). Pass a `<p className="lede">`
    * for a right-aligned lede, or a button for split-CTA. */
-  right?: ReactNode;
+  right?: ReactNode
   /** Apply ink-on-peach styling for sections inside a peach banner. */
-  variant?: 'dark' | 'peach';
+  variant?: 'dark' | 'peach'
 }
 
 /**
@@ -21,12 +21,20 @@ interface SectionHeadProps {
  *   solo (eyebrow + title + optional sub stacked, max-width 720px)
  *   bipartite (eyebrow + title + optional sub left, `right` slot right)
  */
-export function SectionHead({ eyebrow, title, sub, right, variant = 'dark' }: SectionHeadProps) {
-  const ref = useScrollAnim<HTMLElement>();
-  const peach = variant === 'peach';
-  const bipartite = right !== undefined;
-  const rightContent = typeof right === 'string' ? <p className="lede">{right}</p> : right;
-  const subContent = typeof sub === 'string' ? <p className="lede">{sub}</p> : sub;
+export function SectionHead({
+  eyebrow,
+  title,
+  sub,
+  right,
+  variant = 'dark',
+}: SectionHeadProps) {
+  const ref = useScrollAnim<HTMLElement>()
+  const peach = variant === 'peach'
+  const bipartite = right !== undefined
+  const rightContent =
+    typeof right === 'string' ? <p className="lede">{right}</p> : right
+  const subContent =
+    typeof sub === 'string' ? <p className="lede">{sub}</p> : sub
 
   return (
     <header
@@ -47,5 +55,5 @@ export function SectionHead({ eyebrow, title, sub, right, variant = 'dark' }: Se
       </div>
       {bipartite ? <div className={styles.right}>{rightContent}</div> : null}
     </header>
-  );
+  )
 }

@@ -61,7 +61,9 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   line-height: 1;
   padding: 0;
 }

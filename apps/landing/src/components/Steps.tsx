@@ -1,12 +1,12 @@
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { ThreeCircles } from './Instruments';
-import { Arrow } from './Arrow';
-import { Section } from './Section';
-import { SectionHead } from './SectionHead';
-import { Plate } from './Plate';
-import { HexSplit } from './HexSplit';
-import { URLS } from '../lib/config/urls';
-import styles from './Steps.module.css';
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import { ThreeCircles } from './Instruments'
+import { Arrow } from './Arrow'
+import { Section } from './Section'
+import { SectionHead } from './SectionHead'
+import { Plate } from './Plate'
+import { HexSplit } from './HexSplit'
+import { URLS } from '../lib/config/urls'
+import styles from './Steps.module.css'
 
 const STEPS = [
   {
@@ -26,11 +26,11 @@ const STEPS = [
   {
     num: '03',
     name: 'Start certifying',
-    desc: "Browse the web. Certify what you trust. Earn rewards. Build a reputation rooted in what you actually do — not what you claim.",
+    desc: 'Browse the web. Certify what you trust. Earn rewards. Build a reputation rooted in what you actually do — not what you claim.',
     link: URLS.docs.certifications,
     cta: 'Certify · docs',
   },
-];
+]
 
 export function Steps() {
   return (
@@ -71,11 +71,17 @@ export function Steps() {
         ))}
       </div>
     </Section>
-  );
+  )
 }
 
-function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }) {
-  const ref = useScrollAnim<HTMLElement>();
+function StepCard({
+  step,
+  index,
+}: {
+  step: (typeof STEPS)[number]
+  index: number
+}) {
+  const ref = useScrollAnim<HTMLElement>()
   return (
     <article
       ref={ref}
@@ -94,5 +100,5 @@ function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }
         {step.cta} <Arrow />
       </a>
     </article>
-  );
+  )
 }

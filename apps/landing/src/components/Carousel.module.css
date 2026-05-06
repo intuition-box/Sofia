@@ -51,7 +51,11 @@
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.25s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.25s;
 }
 
 .arrow:hover {
@@ -61,8 +65,12 @@
   transform: translateY(-50%) scale(1.06);
 }
 
-.arrowLeft { left: 16px; }
-.arrowRight { right: 16px; }
+.arrowLeft {
+  left: 16px;
+}
+.arrowRight {
+  right: 16px;
+}
 
 /* ── Info column ──────────────────────────────────────── */
 
@@ -105,7 +113,9 @@
   line-height: 1.1;
   letter-spacing: -0.024em;
   color: var(--color-text);
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
   margin: 0;
 }
 
@@ -131,7 +141,9 @@
   cursor: pointer;
   border: none;
   padding: 0;
-  transition: width 0.35s var(--ease-out), background 0.25s;
+  transition:
+    width 0.35s var(--ease-out),
+    background 0.25s;
 }
 
 .pip:hover {
@@ -159,7 +171,10 @@
   cursor: pointer;
   background: var(--color-card, #0e0e0e);
   opacity: 0.45;
-  transition: opacity 0.25s, border-color 0.25s, transform 0.25s;
+  transition:
+    opacity 0.25s,
+    border-color 0.25s,
+    transform 0.25s;
   padding: 0;
 }
 
@@ -171,7 +186,9 @@
   display: block;
 }
 
-.thumb:hover { opacity: 0.75; }
+.thumb:hover {
+  opacity: 0.75;
+}
 
 .thumbOn {
   opacity: 1;
@@ -179,5 +196,8 @@
 }
 
 @media (max-width: 1000px) {
-  .grid { grid-template-columns: 1fr; gap: 40px; }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }

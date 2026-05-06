@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 interface StatBoxProps {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 export default function StatBox({ value, label }: StatBoxProps) {
@@ -11,5 +11,5 @@ export default function StatBox({ value, label }: StatBoxProps) {
       <div className="stat-box-value">{value}</div>
       <div className="stat-box-label">{label}</div>
     </div>
-  );
+  )
 }

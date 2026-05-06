@@ -6,7 +6,7 @@ authors: [Samuel, Maxime]
 
 This week we shipped the **Vote Tab** — a brand new section in Resonance where you can support or oppose curated claims and lists. We also made it easier for new users to get started with a guided first claim experience, and improved stability and performance across the app.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Vote Tab
 
@@ -44,4 +44,3 @@ This week we shipped the **Vote Tab** — a brand new section in Resonance where
 - Fixed the Intuition status display in Settings
 - Better spacing and visual consistency throughout the app
 - Improved quest detection for social login users
-

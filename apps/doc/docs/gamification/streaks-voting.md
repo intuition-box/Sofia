@@ -17,8 +17,8 @@ A streak increments each day you make **at least one [certification](../features
 ### Streak Rewards
 
 | Streak Length | Reward |
-|---------------|--------|
-| 1 days | +50 XP |
+| ------------- | ------ |
+| 1 days        | +50 XP |
 
 ### Streak Display
 
@@ -41,17 +41,19 @@ Participate in community decisions to earn Gold and XP.
 
 ### Vote Types
 
-| Vote Type | Cost | Reward |
-|-----------|------|--------|
+| Vote Type                            | Cost               | Reward  |
+| ------------------------------------ | ------------------ | ------- |
 | **Support/Oppose** on certifications | 1 TRUST (on-chain) | +5 Gold |
-| **Support/Oppose** on claims | Custom TRUST | +5 Gold |
+| **Support/Oppose** on claims         | Custom TRUST       | +5 Gold |
 
 ### Daily Limits
+
 - **10 votes per day** maximum
 - **50 Gold/day** cap from voting
 - Each vote also contributes to the **Daily Voter** quest
 
 ### What You Can Vote On
+
 - Other users' certifications
 - [Sofia Claims and Featured Claims](../resonance/vote.md)
 - [Featured Lists](../resonance/featured-lists.md) entries

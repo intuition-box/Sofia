@@ -1,38 +1,38 @@
-import type { ReactNode } from 'react';
-import styles from './Plate.module.css';
+import type { ReactNode } from 'react'
+import styles from './Plate.module.css'
 
-type PlateVariant = 'dark' | 'on-peach' | 'cmp-dark';
-type Instrument = 'iso' | 'circles' | 'topics';
-type BodyModifier = 'flush' | 'grid';
+type PlateVariant = 'dark' | 'on-peach' | 'cmp-dark'
+type Instrument = 'iso' | 'circles' | 'topics'
+type BodyModifier = 'flush' | 'grid'
 
 interface PlateProps {
   /** Tag badge — e.g. "PLATE.C". */
-  tag: string;
+  tag: string
   /** Plate title — e.g. "Three circles · attention relief". */
-  title: string;
+  title: string
   /** Right-side mono meta strings (one or many). */
-  meta?: string[];
+  meta?: string[]
   /** Mono foot strings (one or many). */
-  foot?: string[];
+  foot?: string[]
   /** SVG content (TopicsIntentions / IsoStack / ThreeCircles). */
-  children: ReactNode;
+  children: ReactNode
   /** Visual variant. */
-  variant?: PlateVariant;
+  variant?: PlateVariant
   /** Optional instrument-aspect body wrapper (sets ratio + dark inner bg). */
-  instrument?: Instrument;
+  instrument?: Instrument
   /** Body layout modifier — `flush` removes padding for tables, `grid` for grid children. */
-  body?: BodyModifier;
+  body?: BodyModifier
   /** Extra className on the outer wrapper. */
-  className?: string;
+  className?: string
   /** Extra className on the body wrapper (for per-instance aspect / size overrides). */
-  bodyClassName?: string;
+  bodyClassName?: string
 }
 
 const VARIANT_CLASS: Record<PlateVariant, string> = {
   dark: '',
   'on-peach': 'plate-on-peach',
   'cmp-dark': 'plate-cmp-dark',
-};
+}
 
 /**
  * Plate — shared engineering-card frame wrapping any of the SVG
@@ -52,8 +52,12 @@ export function Plate({
   bodyClassName = '',
 }: PlateProps) {
   const variantStyle =
-    variant === 'on-peach' ? styles.onPeach : variant === 'cmp-dark' ? styles.cmpDark : '';
-  const variantGlobal = VARIANT_CLASS[variant];
+    variant === 'on-peach'
+      ? styles.onPeach
+      : variant === 'cmp-dark'
+        ? styles.cmpDark
+        : ''
+  const variantGlobal = VARIANT_CLASS[variant]
 
   const bodyClass = [
     styles.body,
@@ -65,11 +69,13 @@ export function Plate({
     bodyClassName,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
 
   return (
     <div
-      className={[styles.plate, variantStyle, variantGlobal, className].filter(Boolean).join(' ')}
+      className={[styles.plate, variantStyle, variantGlobal, className]
+        .filter(Boolean)
+        .join(' ')}
     >
       <div className={styles.head}>
         <div className={styles.headLeft}>
@@ -93,5 +99,5 @@ export function Plate({
         </div>
       )}
     </div>
-  );
+  )
 }

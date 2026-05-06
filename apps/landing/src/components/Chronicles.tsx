@@ -1,16 +1,16 @@
-import { Arrow } from './Arrow';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { URLS } from '../lib/config/urls';
-import { Section } from './Section';
-import { SectionHead } from './SectionHead';
-import { Plate } from './Plate';
-import styles from './Chronicles.module.css';
+import { Arrow } from './Arrow'
+import { useScrollAnim } from '../hooks/useScrollAnim'
+import { URLS } from '../lib/config/urls'
+import { Section } from './Section'
+import { SectionHead } from './SectionHead'
+import { Plate } from './Plate'
+import styles from './Chronicles.module.css'
 
 interface BlogPost {
-  date: string;
-  title: string;
-  excerpt: string;
-  link: string;
+  date: string
+  title: string
+  excerpt: string
+  link: string
 }
 
 const POSTS: BlogPost[] = [
@@ -35,7 +35,7 @@ const POSTS: BlogPost[] = [
       'A new Vote tab in Resonance: browse curated claims and lists, take a position with support or oppose. The first-claim flow is finally complete.',
     link: URLS.blog.logbook2303,
   },
-];
+]
 
 export function Chronicles() {
   return (
@@ -79,11 +79,11 @@ export function Chronicles() {
         </div>
       </Plate>
     </Section>
-  );
+  )
 }
 
 function PostCard({ post, index }: { post: BlogPost; index: number }) {
-  const ref = useScrollAnim<HTMLAnchorElement>();
+  const ref = useScrollAnim<HTMLAnchorElement>()
   return (
     <a
       ref={ref}
@@ -100,5 +100,5 @@ function PostCard({ post, index }: { post: BlogPost; index: number }) {
         Read article <Arrow />
       </span>
     </a>
-  );
+  )
 }
