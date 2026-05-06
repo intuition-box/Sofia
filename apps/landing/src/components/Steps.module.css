@@ -86,25 +86,13 @@
 }
 
 .link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
   align-self: flex-start;
-  padding: 10px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
-.link:hover {
-  color: #02000e;
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+.link.link:hover {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  color: #02000e !important;
 }
 
 @media (max-width: 880px) {

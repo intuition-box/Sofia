@@ -19,12 +19,12 @@ export function CTA() {
         </p>
         <div className={styles.btns}>
           <a
-            href={URLS.external.alpha}
+            href="https://explorer.sofia.intuition.box"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"
           >
-            Join the Beta <Arrow />
+            Go to the Explorer <Arrow />
           </a>
           <a
             href={URLS.external.discord}

@@ -58,6 +58,10 @@
 .onPeach .foot {
   color: rgba(0, 0, 0, 0.55);
 }
+.onPeach .tag {
+  color: #02000e;
+  border-color: rgba(0, 0, 0, 0.55);
+}
 
 .cmpDark {
   background: #0a0a0a;

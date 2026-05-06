@@ -1,7 +1,7 @@
 /**
- * Hero (design v2) — full-bleed peach background, asymmetric editorial grid.
- * Outer: full viewport width, peach + ink on top.
- * Inner: container constrained to maxw + 80px, 3-row / 2-col grid.
+ * Hero (design v3 — split sketch) — full-bleed peach background,
+ * 50/50 split: copy zone (left) + bare diagram with corner labels (right),
+ * separated by an ink hairline.
  */
 
 .hero {
@@ -9,115 +9,79 @@
   background: var(--color-accent);
   color: #02000e;
   width: 100%;
-  min-height: 100vh;
+  min-height: 0;
+  margin-top: var(--nav-h, 64px); /* push Hero below the fixed navbar */
   overflow: hidden;
+  isolation: isolate;
 }
 
-.inner {
-  position: relative;
-  min-height: 100vh;
-  padding: 160px var(--gutter) 80px;
+.body {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
-  column-gap: 80px;
-  row-gap: 48px;
-  max-width: calc(var(--maxw) + 80px);
-  margin: 0 auto;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: 0;
 }
 
-/* ── Row 1 — meta strip ──────────────────────────────── */
+/* ── LEFT — copy zone ─────────────────────────────────── */
 
-.meta {
-  grid-column: 1 / -1;
-  grid-row: 1;
+.copyZone {
+  padding: 32px 56px;
   display: flex;
-  justify-content: space-between;
-  align-items: end;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  justify-content: center;
+}
+
+.metaTag {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.55);
-}
-
-.metaL,
-.metaR {
   display: inline-flex;
-  gap: 18px;
   align-items: center;
+  gap: 10px;
 }
 
-.metaDot {
-  width: 5px;
-  height: 5px;
+.metaTag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
   background: #02000e;
   display: inline-block;
 }
 
-/* ── Row 2 col 1 — copy ──────────────────────────────── */
-
-.copy {
-  grid-column: 1;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 32px;
+.headline {
+  margin: 0;
+  max-width: 13ch;
 }
-
-.title { margin: 0; }
 
 .lede {
   margin: 0;
-  max-width: 46ch;
+  max-width: 42ch;
 }
 
 .cta {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-/* ── Row 2 col 2 — plate visual ──────────────────────── */
+/* Partners — bottom of the copy column */
 
-.visual {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  min-height: 440px;
-}
-
-.plate {
-  width: min(100%, 560px);
-  aspect-ratio: 1;
-}
-
-.plate :global(svg) {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-/* ── Partners strip — now under the CTA, inside the copy column ── */
-
-.strip {
+.partners {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-top: 20px;
-  margin-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.18);
-  max-width: 520px;
 }
 
-.stripLabel {
+.partnersLabel {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.22em;
@@ -125,46 +89,97 @@
   color: rgba(0, 0, 0, 0.55);
 }
 
-.stripList {
+.partnersRow {
   display: inline-flex;
   align-items: center;
-  gap: 22px;
-  flex-wrap: wrap;
+  gap: 24px;
+  flex-wrap: nowrap;
 }
 
-.stripList a {
+.partnersRow a {
   display: inline-flex;
   align-items: center;
   opacity: 0.75;
   transition: opacity 0.25s var(--ease-out);
 }
 
-.stripList a:hover {
+.partnersRow a:hover {
   opacity: 1;
 }
 
-.stripList img {
-  height: 18px;
+.partnersRow img {
+  height: 28px;
   width: auto;
   display: block;
-  /* Peach bg: keep logos black-on-peach (no invert). */
   filter: brightness(0);
 }
 
-/* ── Responsive ──────────────────────────────────────── */
-
-@media (max-width: 1000px) {
-  .inner {
-    grid-template-columns: 1fr;
-    padding-top: 140px;
-  }
-  .copy { grid-column: 1; grid-row: 2; }
-  .visual { grid-column: 1; grid-row: 3; min-height: 380px; }
-  .strip { max-width: none; }
+/* Phala logo — keep native colors (lime square + dark "P" mark). The
+   uniform brightness(0) used for other partners flattens both colors
+   to black and erases the "P" inside. Cap width since its viewBox is
+   ~3:1 (138×48). */
+.partnersRow a[href*="phala"] img {
+  height: auto;
+  max-height: 28px;
+  max-width: 90px;
+  filter: none;
 }
 
-@media (max-width: 560px) {
-  .inner { padding: 140px 24px 64px; }
-  .stripList { gap: 24px; }
-  .stripList img { height: 18px; }
+/* ── RIGHT — visual zone (bare diagram + corner labels) ─ */
+
+.visualZone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 32px;
+}
+
+/* Diagram sits directly on the peach Hero — TopicsIntentions is rendered
+   in `mode="light"` so its lines and labels are ink-on-peach. */
+.diagram {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  aspect-ratio: 1;
+}
+
+.diagram > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.plateTag {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.tl { top: 0; left: 0; }
+.tr { top: 0; right: 0; }
+.bl { bottom: 0; left: 0; }
+.br { bottom: 0; right: 0; }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: 1fr; }
+  .copyZone {
+    padding: 48px 24px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .visualZone {
+    min-height: 50vh;
+    padding: 32px;
+  }
+  .tl, .bl { left: 16px; }
+  .tr, .br { right: 16px; }
+  .partners { max-width: none; }
 }

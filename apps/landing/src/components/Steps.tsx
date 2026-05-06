@@ -1,5 +1,6 @@
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { ThreeCircles } from './Instruments';
+import { Arrow } from './Arrow';
 import { Section } from './Section';
 import { SectionHead } from './SectionHead';
 import { Plate } from './Plate';
@@ -10,10 +11,10 @@ import styles from './Steps.module.css';
 const STEPS = [
   {
     num: '01',
-    name: 'Apply for access',
-    desc: "Fill the early access form to join the beta tester community. Get whitelisted and prepare your wallet. Discord doors open the same day.",
-    link: URLS.external.alpha,
-    cta: 'Access form',
+    name: 'Step into the Explorer',
+    desc: 'Open the Sofia Explorer in your browser. Browse the live feed, the leaderboard, the trending claims — see what the network is doing right now, no install needed.',
+    link: 'https://explorer.sofia.intuition.box',
+    cta: 'Open Explorer',
   },
   {
     num: '02',
@@ -88,9 +89,9 @@ function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }
         href={step.link}
         target="_blank"
         rel="noopener noreferrer"
-        className={styles.link}
+        className={`btn btn-secondary ${styles.link}`}
       >
-        {step.cta} <span aria-hidden>→</span>
+        {step.cta} <Arrow />
       </a>
     </article>
   );

@@ -47,9 +47,12 @@ export function Navbar() {
 
       <div className={styles.right}>
         {isConnected && address ? (
-          <button className={styles.wallet} onClick={disconnect}>
+          <button className={styles.wallet} onClick={disconnect} aria-label="Disconnect wallet">
             <span className={styles.walletDot} aria-hidden="true" />
-            {address.slice(0, 6)}…{address.slice(-4)}
+            <span className={styles.walletAddr}>
+              {address.slice(0, 6)}…{address.slice(-4)}
+            </span>
+            <span className={styles.walletHover}>Disconnect</span>
           </button>
         ) : (
           <button className={styles.wallet} onClick={connect} disabled={isConnecting}>

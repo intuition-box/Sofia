@@ -127,6 +127,7 @@
 }
 
 .wallet {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -141,13 +142,36 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .wallet:hover {
   color: var(--color-text);
   border-color: var(--color-text);
 }
+
+/* Connected state — swap the address for "Disconnect" on hover. */
+.walletAddr,
+.walletHover {
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.walletHover {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  color: #ef4444;
+}
+
+.wallet:has(.walletHover):hover .walletAddr,
+.wallet:has(.walletHover):hover .walletDot { opacity: 0; }
+.wallet:has(.walletHover):hover .walletHover { opacity: 1; }
+.wallet:has(.walletHover):hover { border-color: #ef4444; color: #ef4444; }
 
 .walletDot {
   width: 6px;

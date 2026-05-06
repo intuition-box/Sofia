@@ -86,7 +86,7 @@ button {
 .h-display {
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: clamp(2.6rem, 1.6rem + 4vw, 5rem);
+  font-size: clamp(2.6rem, 4rem + 6vw, 170px);
   line-height: 0.96;
   letter-spacing: -0.038em;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;

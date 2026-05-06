@@ -5,8 +5,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr minmax(360px, 420px);
-  gap: 64px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 360px);
+  gap: 56px;
   align-items: center;
 }
 

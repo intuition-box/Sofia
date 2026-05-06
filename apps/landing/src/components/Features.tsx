@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { IsoStack } from './Instruments';
 import { Section } from './Section';
-import { SectionHead } from './SectionHead';
 import { Plate } from './Plate';
 import styles from './Features.module.css';
 
@@ -61,37 +60,59 @@ const FEATURES: Feature[] = [
 
 export function Features() {
   return (
-    <Section id="features" code="S.01" label="CAPABILITIES" meta="04 MODULES">
-      <SectionHead
-        eyebrow="What Sofia does"
-        title={
-          <>
+    <Section id="features" code="S.01" label="CAPABILITIES" meta="04 MODULES" variant="peach">
+      <div className={styles.split}>
+        {/* LEFT — copy zone (mirrors Hero pattern) */}
+        <div className={styles.copyZone}>
+          <span className="eyebrow">What Sofia does</span>
+          <h2 className={`h-section ${styles.title}`}>
             An instrument for the <em>data you already make.</em>
-          </>
-        }
-        sub="Browsing, watching, listening, reading — already produce a signal. Sofia gives you the apparatus to record it, prove it, and price it, on terms you set."
-      />
+          </h2>
+          <p className={`lede ${styles.lede}`}>
+            Browsing, watching, listening, reading — already produce a signal.
+            Sofia gives you the apparatus to record it, prove it, and price it,
+            on terms you set.
+          </p>
+          <p className={`lede ${styles.lede}`}>
+            A browser extension watches the pages you visit and the actions you
+            take on them. A local AI runs on your device, summarises the
+            session, extracts intentions and topics. Nothing leaves the machine
+            until you say so.
+          </p>
+          <p className={`lede ${styles.lede}`}>
+            What you keep becomes a triple — <em>you · intention · page</em> —
+            signed with your wallet and anchored on Intuition. The rest stays
+            local, gets discarded, or is rewritten until it reads true.
+          </p>
+          <p className={`lede ${styles.lede}`}>
+            Over time the chain builds a portrait of what you actually do
+            online. Trust accrues to the work, not the claim. Influence is
+            earned by contribution, not bought through ads. You own the proof
+            and you decide who reads it.
+          </p>
+        </div>
 
-      <div className={styles.layout}>
-        <div className={styles.featHero}>
+        {/* RIGHT — PLATE.D iso stack */}
+        <div className={styles.visualZone}>
           <Plate
             tag="PLATE.D"
             title="Stack · system topology · iso 30°"
             meta={['6 LAYERS', 'BROWSER → PROTOCOL']}
             foot={['LOCAL → CHAIN', 'PROOF FLOWS DOWN']}
             instrument="iso"
+            variant="on-peach"
             bodyClassName={styles.featHeroBody}
             className={styles.featHeroPlate}
           >
-            <IsoStack />
+            <IsoStack mode="light" />
           </Plate>
         </div>
+      </div>
 
-        <div className={`${styles.grid} stagger`}>
-          {FEATURES.map((f, i) => (
-            <FeatureCard key={f.name} feature={f} index={i} />
-          ))}
-        </div>
+      <div className={`${styles.grid} stagger`}>
+        {FEATURES.map((f, i) => (
+          <FeatureCard key={f.name} feature={f} index={i} />
+        ))}
       </div>
     </Section>
   );

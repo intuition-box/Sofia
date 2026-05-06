@@ -20,9 +20,59 @@ const PEACH_FADE_25 = 'rgba(255, 198, 176, 0.25)';
 const PEACH_FADE_35 = 'rgba(255, 198, 176, 0.35)';
 const INK_PLATE_FILL = '#0E0E0E';
 
+/* ── TopicsIntentions theme palette ─────────────────────
+ * `dark` (default) = white-on-dark used inside ink plates.
+ * `light` = ink-on-peach for use directly on the peach Hero. */
+type DiagramMode = 'dark' | 'light';
+
+const TOPICS_PALETTE: Record<DiagramMode, {
+  fg: string;
+  fgSoft: string;
+  fgDim: string;
+  ring: string;
+  ringFaint: string;
+  axis: string;
+  ticks: string;
+  accent: string;
+  accentFill: string;
+  accentDashed: string;
+  accentLine: string;
+  centerInner: string;
+}> = {
+  dark: {
+    fg: '#ffffff',
+    fgSoft: 'rgba(255,255,255,0.55)',
+    fgDim: 'rgba(255,255,255,0.5)',
+    ring: 'rgba(255,255,255,0.35)',
+    ringFaint: 'rgba(255,255,255,0.08)',
+    axis: 'rgba(255,255,255,0.12)',
+    ticks: 'rgba(255,255,255,0.4)',
+    accent: 'var(--color-accent)',
+    accentFill: PEACH_FADE_14,
+    accentDashed: PEACH_FADE_40,
+    accentLine: PEACH_FADE_50,
+    centerInner: '#000000',
+  },
+  light: {
+    fg: '#02000e',
+    fgSoft: 'rgba(0,0,0,0.55)',
+    fgDim: 'rgba(0,0,0,0.5)',
+    ring: 'rgba(0,0,0,0.45)',
+    ringFaint: 'rgba(0,0,0,0.18)',
+    axis: 'rgba(0,0,0,0.22)',
+    ticks: 'rgba(0,0,0,0.4)',
+    accent: '#02000e',
+    accentFill: 'rgba(0,0,0,0.10)',
+    accentDashed: 'rgba(0,0,0,0.5)',
+    accentLine: 'rgba(0,0,0,0.55)',
+    centerInner: '#ffffff',
+  },
+};
+
 /* ── PLATE.A — Topics × intentions ──────────────────── */
 
-export function TopicsIntentions() {
+export function TopicsIntentions({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
+  const c = TOPICS_PALETTE[mode];
   const [ang, setAng] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -75,7 +125,7 @@ export function TopicsIntentions() {
         y1={cy + Math.sin(rad(a - 90)) * inner}
         x2={cx + Math.cos(rad(a - 90)) * Rt}
         y2={cy + Math.sin(rad(a - 90)) * Rt}
-        stroke="rgba(255,255,255,0.4)"
+        stroke={c.ticks}
         strokeWidth={a % 45 === 0 ? 0.8 : 0.4}
       />,
     );
@@ -98,15 +148,15 @@ export function TopicsIntentions() {
 
   return (
     <svg viewBox="0 0 480 480" className={styles.svg} xmlns="http://www.w3.org/2000/svg">
-      <circle cx={cx} cy={cy} r={Rt} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.75" />
-      <circle cx={cx} cy={cy} r={Rt - 12} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-      <circle cx={cx} cy={cy} r={Ri} fill="none" stroke={PEACH_FADE_40} strokeWidth="0.5" strokeDasharray="2 3" />
-      <circle cx={cx} cy={cy} r={Ri - 50} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-      <circle cx={cx} cy={cy} r={Ri - 90} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+      <circle cx={cx} cy={cy} r={Rt} fill="none" stroke={c.ring} strokeWidth="0.75" />
+      <circle cx={cx} cy={cy} r={Rt - 12} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+      <circle cx={cx} cy={cy} r={Ri} fill="none" stroke={c.accentDashed} strokeWidth="0.5" strokeDasharray="2 3" />
+      <circle cx={cx} cy={cy} r={Ri - 50} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+      <circle cx={cx} cy={cy} r={Ri - 90} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
       {ticks}
 
-      <line x1={cx} y1={cy - Rt - 4} x2={cx} y2={cy + Rt + 4} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
-      <line x1={cx - Rt - 4} y1={cy} x2={cx + Rt + 4} y2={cy} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+      <line x1={cx} y1={cy - Rt - 4} x2={cx} y2={cy + Rt + 4} stroke={c.axis} strokeWidth="0.5" />
+      <line x1={cx - Rt - 4} y1={cy} x2={cx + Rt + 4} y2={cy} stroke={c.axis} strokeWidth="0.5" />
 
       {topics.map((t) => {
         const x = cx + Math.cos(rad(t.a)) * (Rt + 16);
@@ -121,7 +171,7 @@ export function TopicsIntentions() {
             transform={`rotate(${rot} ${x} ${y})`}
             fontFamily="JetBrains Mono, monospace"
             fontSize="8"
-            fill="#ffffff"
+            fill={c.fg}
             textAnchor="middle"
             dominantBaseline="middle"
             letterSpacing="0.18em"
@@ -136,14 +186,14 @@ export function TopicsIntentions() {
           cx={cx + Math.cos(rad(t.a)) * Rt}
           cy={cy + Math.sin(rad(t.a)) * Rt}
           r="2"
-          fill="#ffffff"
+          fill={c.fg}
         />
       ))}
 
       <polygon
         points={pts.map((p) => p.xy.map((n) => n.toFixed(1)).join(',')).join(' ')}
-        fill={PEACH_FADE_14}
-        stroke={PEACH}
+        fill={c.accentFill}
+        stroke={c.accent}
         strokeWidth="1"
       />
       {pts.map((p, i) => {
@@ -152,13 +202,13 @@ export function TopicsIntentions() {
         const ly = cy + Math.sin(rad(it.a)) * (Ri - 4);
         return (
           <g key={i}>
-            <circle cx={p.xy[0]} cy={p.xy[1]} r="3" fill={PEACH} />
+            <circle cx={p.xy[0]} cy={p.xy[1]} r="3" fill={c.accent} />
             <text
               x={lx}
               y={ly - 4}
               fontFamily="JetBrains Mono, monospace"
               fontSize="8"
-              fill={PEACH}
+              fill={c.accent}
               textAnchor="middle"
               letterSpacing="0.16em"
             >
@@ -169,7 +219,7 @@ export function TopicsIntentions() {
               y={ly + 6}
               fontFamily="JetBrains Mono, monospace"
               fontSize="7"
-              fill="rgba(255,255,255,0.55)"
+              fill={c.fgSoft}
               textAnchor="middle"
             >
               {p.v.toFixed(2)}
@@ -179,18 +229,18 @@ export function TopicsIntentions() {
       })}
 
       <g transform={`rotate(${ang} ${cx} ${cy})`}>
-        <line x1={cx} y1={cy} x2={cx} y2={cy - Rt} stroke={PEACH_FADE_50} strokeWidth="0.75" />
-        <circle cx={cx} cy={cy - Rt} r="2" fill={PEACH} />
+        <line x1={cx} y1={cy} x2={cx} y2={cy - Rt} stroke={c.accentLine} strokeWidth="0.75" />
+        <circle cx={cx} cy={cy - Rt} r="2" fill={c.accent} />
       </g>
 
-      <circle cx={cx} cy={cy} r="6" fill={PEACH} />
-      <circle cx={cx} cy={cy} r="2" fill="#000000" />
+      <circle cx={cx} cy={cy} r="6" fill={c.accent} />
+      <circle cx={cx} cy={cy} r="2" fill={c.centerInner} />
 
       <g
         transform="translate(14, 462)"
         fontFamily="JetBrains Mono, monospace"
         fontSize="8"
-        fill="rgba(255,255,255,0.5)"
+        fill={c.fgDim}
         letterSpacing="0.15em"
       >
         <text>n = 14 topics · 6 intentions</text>
@@ -199,7 +249,7 @@ export function TopicsIntentions() {
         transform="translate(380, 462)"
         fontFamily="JetBrains Mono, monospace"
         fontSize="8"
-        fill="rgba(255,255,255,0.5)"
+        fill={c.fgDim}
         letterSpacing="0.15em"
       >
         <text>θ · {Math.round(ang)}°</text>
@@ -220,7 +270,52 @@ interface Layer {
   dots: number;
 }
 
-export function IsoStack() {
+const ISO_PALETTE: Record<DiagramMode, {
+  fg: string;
+  fgSoft: string;
+  fgDim: string;
+  fgFaint: string;
+  plateFill: string;
+  plateFillTop: string;
+  grid: string;
+  framePath: string;
+  flowText: string;
+  block: string;
+  travel: string;
+  spineDashed: string;
+}> = {
+  dark: {
+    fg: '#ffffff',
+    fgSoft: 'rgba(255,255,255,0.55)',
+    fgDim: 'rgba(255,255,255,0.5)',
+    fgFaint: 'rgba(255,255,255,0.45)',
+    plateFill: 'rgba(255,255,255,0.02)',
+    plateFillTop: 'rgba(255,255,255,0.05)',
+    grid: 'rgba(255,255,255,0.06)',
+    framePath: 'rgba(255,255,255,0.4)',
+    flowText: 'rgba(255,255,255,0.6)',
+    block: 'rgba(255,255,255,0.25)',
+    travel: 'var(--color-accent)',
+    spineDashed: PEACH_FADE_35,
+  },
+  light: {
+    fg: '#02000e',
+    fgSoft: 'rgba(0,0,0,0.6)',
+    fgDim: 'rgba(0,0,0,0.55)',
+    fgFaint: 'rgba(0,0,0,0.5)',
+    plateFill: 'rgba(0,0,0,0.04)',
+    plateFillTop: 'rgba(0,0,0,0.08)',
+    grid: 'rgba(0,0,0,0.12)',
+    framePath: 'rgba(0,0,0,0.5)',
+    flowText: 'rgba(0,0,0,0.65)',
+    block: 'rgba(0,0,0,0.3)',
+    travel: '#02000e',
+    spineDashed: 'rgba(0,0,0,0.4)',
+  },
+};
+
+export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
+  const p = ISO_PALETTE[mode];
   const [t, setT] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -238,13 +333,21 @@ export function IsoStack() {
     (x + y) * 0.5 - z,
   ];
   const W = 70;
+  /* Per-layer accent colors. In `light` mode (peach background) the
+     pastel pinks/peaches collide with the surface, so we swap to darker
+     ink-tinted variants that stay readable. */
+  const LAYER_COLORS: Record<DiagramMode, string[]> = {
+    dark: ['#A6AF6B', '#cea2fd', '#ffa7b1', '#ffc6b0', '#F59E0B', '#945941'],
+    light: ['#5d6234', '#4a3a8a', '#a83042', '#8a3818', '#7a4a04', '#3a1f12'],
+  };
+  const lc = LAYER_COLORS[mode];
   const layers: Layer[] = [
-    { z: 250, tag: 'L.01', name: 'EXTENSION', sub: 'capture · echoes · bookmarks', color: '#A6AF6B', dots: 6, detail: 'chromium · local storage' },
-    { z: 200, tag: 'L.02', name: 'PHALA TEE', sub: 'encrypt · attest · zero-trust', color: '#cea2fd', dots: 9, detail: 'tee · sealed compute' },
-    { z: 150, tag: 'L.03', name: 'AGENT', sub: 'intentions · topics · pulse', color: '#ffa7b1', dots: 13, detail: 'mastra · gaianet · qwen2.5' },
-    { z: 100, tag: 'L.04', name: 'CERTIFY', sub: '[you] → [intention] → [page]', color: '#ffc6b0', dots: 17, detail: 'triples · signed · on-chain' },
-    { z: 50,  tag: 'L.05', name: 'EXPLORER', sub: 'resonance · vote · trending', color: '#F59E0B', dots: 21, detail: 'circle feed · claims · leaderboards' },
-    { z: 0,   tag: 'L.06', name: 'CIRCLES', sub: 'follow · stake · reputation', color: '#945941', dots: 25, detail: 'trust graph · TRUST · XP · gold' },
+    { z: 250, tag: 'L.01', name: 'EXTENSION', sub: 'capture · echoes · bookmarks', color: lc[0], dots: 6, detail: 'chromium · local storage' },
+    { z: 200, tag: 'L.02', name: 'PHALA TEE', sub: 'encrypt · attest · zero-trust', color: lc[1], dots: 9, detail: 'tee · sealed compute' },
+    { z: 150, tag: 'L.03', name: 'AGENT', sub: 'intentions · topics · pulse', color: lc[2], dots: 13, detail: 'mastra · gaianet · qwen2.5' },
+    { z: 100, tag: 'L.04', name: 'CERTIFY', sub: '[you] → [intention] → [page]', color: lc[3], dots: 17, detail: 'triples · signed · on-chain' },
+    { z: 50,  tag: 'L.05', name: 'EXPLORER', sub: 'resonance · vote · trending', color: lc[4], dots: 21, detail: 'circle feed · claims · leaderboards' },
+    { z: 0,   tag: 'L.06', name: 'CIRCLES', sub: 'follow · stake · reputation', color: lc[5], dots: 25, detail: 'trust graph · TRUST · XP · gold' },
   ];
 
   const cx = 215;
@@ -275,7 +378,7 @@ export function IsoStack() {
       <g>
         <path
           d={path}
-          fill={isTop ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)'}
+          fill={isTop ? p.plateFillTop : p.plateFill}
           stroke={color}
           strokeWidth={isTop ? 1.2 : 1}
           strokeLinejoin="miter"
@@ -286,7 +389,7 @@ export function IsoStack() {
           const c = pt(-W, g, z);
           const d = pt(W, g, z);
           return (
-            <g key={gi} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5">
+            <g key={gi} stroke={p.grid} strokeWidth="0.5">
               <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />
               <line x1={c[0]} y1={c[1]} x2={d[0]} y2={d[1]} />
             </g>
@@ -298,15 +401,15 @@ export function IsoStack() {
           const [x, y] = pt(dx + drift, dy + driftY, z);
           return <circle key={i} cx={x} cy={y} r="1.4" fill={color} />;
         })}
-        <line x1={right[0]} y1={right[1]} x2={labelX - 3} y2={labelY} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
+        <line x1={right[0]} y1={right[1]} x2={labelX - 3} y2={labelY} stroke={p.framePath} strokeWidth="0.5" />
         <circle cx={right[0]} cy={right[1]} r="2" fill={color} />
-        <text x={labelX} y={labelY - 4} fontFamily="JetBrains Mono, monospace" fontSize="7.5" fill="rgba(255,255,255,0.55)" letterSpacing="0.18em">
+        <text x={labelX} y={labelY - 4} fontFamily="JetBrains Mono, monospace" fontSize="7.5" fill={p.fgSoft} letterSpacing="0.18em">
           {tag}
         </text>
-        <text x={labelX} y={labelY + 7} fontFamily="JetBrains Mono, monospace" fontSize="11" fontWeight="500" fill="#ffffff" letterSpacing="0.14em">
+        <text x={labelX} y={labelY + 7} fontFamily="JetBrains Mono, monospace" fontSize="11" fontWeight="500" fill={p.fg} letterSpacing="0.14em">
           {name}
         </text>
-        <text x={labelX} y={labelY + 18} fontFamily="JetBrains Mono, monospace" fontSize="7" fill="rgba(255,255,255,0.5)" letterSpacing="0.1em">
+        <text x={labelX} y={labelY + 18} fontFamily="JetBrains Mono, monospace" fontSize="7" fill={p.fgDim} letterSpacing="0.1em">
           {sub}
         </text>
         <text x={labelX} y={labelY + 28} fontFamily="JetBrains Mono, monospace" fontSize="6.5" fill={color} fillOpacity="0.7" letterSpacing="0.14em">
@@ -337,21 +440,21 @@ export function IsoStack() {
           <path d="M 0 0 L 8 4 L 0 8 z" fill={PEACH} />
         </marker>
       </defs>
-      <g stroke="rgba(255,255,255,0.4)" strokeWidth="0.75" fill="none">
+      <g stroke={p.framePath} strokeWidth="0.75" fill="none">
         <path d="M 8 8 L 24 8 M 8 8 L 8 24" />
         <path d="M 532 8 L 516 8 M 532 8 L 532 24" />
         <path d="M 8 532 L 24 532 M 8 532 L 8 516" />
         <path d="M 532 532 L 516 532 M 532 532 L 532 516" />
       </g>
 
-      <g stroke="rgba(255,255,255,0.35)" strokeWidth="0.5" fill="none">
+      <g stroke={p.framePath} strokeWidth="0.5" fill="none">
         <path d="M 26 70 L 26 470" markerEnd="url(#iso-arr)" />
       </g>
       <g
         transform="translate(18, 270) rotate(-90)"
         fontFamily="JetBrains Mono, monospace"
         fontSize="8.5"
-        fill="rgba(255,255,255,0.6)"
+        fill={p.flowText}
         textAnchor="middle"
         letterSpacing="0.25em"
       >
@@ -363,7 +466,7 @@ export function IsoStack() {
         y1={spineTop[1]}
         x2={spineBot[0]}
         y2={spineBot[1]}
-        stroke={PEACH_FADE_35}
+        stroke={p.spineDashed}
         strokeWidth="0.75"
         strokeDasharray="3 3"
       />
@@ -372,19 +475,19 @@ export function IsoStack() {
         <Plate key={i} {...L} idx={i} isTop={i === 0} />
       ))}
 
-      {travelDots.map(({ p, u }, i) => (
-        <circle key={i} cx={p[0]} cy={p[1]} r="2.5" fill={PEACH} opacity={0.4 + u * 0.6} />
+      {travelDots.map(({ p: pos, u }, i) => (
+        <circle key={i} cx={pos[0]} cy={pos[1]} r="2.5" fill={p.travel} opacity={0.4 + u * 0.6} />
       ))}
 
       <g
         transform="translate(40, 36)"
         fontFamily="JetBrains Mono, monospace"
         fontSize="8.5"
-        fill="#ffffff"
+        fill={p.fg}
         letterSpacing="0.2em"
       >
         <text>FIG.D · SOFIA SYSTEM TOPOLOGY</text>
-        <text y="12" fontSize="7" fill="rgba(255,255,255,0.5)" letterSpacing="0.18em">
+        <text y="12" fontSize="7" fill={p.fgDim} letterSpacing="0.18em">
           6 LAYERS · ISOMETRIC 30°
         </text>
       </g>
@@ -392,7 +495,7 @@ export function IsoStack() {
       <g
         fontFamily="JetBrains Mono, monospace"
         fontSize="7"
-        fill="rgba(255,255,255,0.45)"
+        fill={p.fgFaint}
         letterSpacing="0.18em"
       >
         <text x="40" y="500">[A] LOCAL · NEVER LEAVES BROWSER</text>
@@ -404,11 +507,11 @@ export function IsoStack() {
         transform="translate(380, 488)"
         fontFamily="JetBrains Mono, monospace"
         fontSize="7.5"
-        fill="rgba(255,255,255,0.55)"
+        fill={p.fgSoft}
       >
-        <rect x="0" y="0" width="148" height="34" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" />
-        <line x1="48" y1="0" x2="48" y2="34" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" />
-        <line x1="0" y1="17" x2="148" y2="17" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" />
+        <rect x="0" y="0" width="148" height="34" fill="none" stroke={p.block} strokeWidth="0.5" />
+        <line x1="48" y1="0" x2="48" y2="34" stroke={p.block} strokeWidth="0.5" />
+        <line x1="0" y1="17" x2="148" y2="17" stroke={p.block} strokeWidth="0.5" />
         <text x="5" y="12">DWG</text>
         <text x="53" y="12">SOFIA-STACK-002</text>
         <text x="5" y="29">REV</text>
