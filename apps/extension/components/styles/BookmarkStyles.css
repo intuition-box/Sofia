@@ -521,11 +521,117 @@
   white-space: nowrap;
 }
 
-/* ========== BOOKMARK LISTS GRID (2 columns) ========== */
+/* ========== BOOKMARK LISTS GRID — mirrors trending-tiles ==========
+   The grid + each card share the .trending-tile visual identity:
+   colored left stripe, mono uppercase title, mono count meta, small
+   favicons. Scoped under .lists-grid so it doesn't bleed elsewhere. */
 .lists-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 360px) {
+  .lists-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lists-grid .bookmark-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  min-height: 110px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  margin-bottom: 0;
+  box-shadow: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.lists-grid .bookmark-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--cat-color, var(--ds-accent));
+}
+
+.lists-grid .bookmark-card:hover {
+  border-color: var(--cat-color, var(--ds-ink));
+  transform: translateY(-1px);
+  background: var(--ds-card);
+  box-shadow: none;
+}
+
+/* Left stripe replaces the colored dot */
+.lists-grid .bookmark-card-dot {
+  display: none;
+}
+
+/* Mono uppercase title — replaces Fraunces inside the tile */
+.lists-grid .bookmark-card h4,
+.lists-grid .bookmark-list-info h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ds-ink);
+  margin: 0;
+}
+
+.lists-grid .bookmark-card--colored h4 {
+  color: var(--ds-ink);
+}
+
+/* Tile is too compact for the description blurb */
+.lists-grid .bookmark-list-info p {
+  display: none;
+}
+
+.lists-grid .bookmark-header-content {
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.lists-grid .bookmark-list-meta {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.lists-grid .bookmark-item {
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+/* Smaller favicons matching the trending-tile thumbnail row */
+.lists-grid .bookmark-favicon-grid {
+  gap: 6px;
+  padding: 0;
+}
+
+.lists-grid .bookmark-favicon-icon,
+.lists-grid .bookmark-favicon-more {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.lists-grid .bookmark-favicon-more {
+  font-size: 11px;
 }
 
 /* ========== BOOKMARK FAVICON GRID (iOS-style) ========== */

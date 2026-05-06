@@ -368,6 +368,24 @@
   margin-bottom: 5px;
 }
 
+/* Score page toolbar: sub-tabs (left, flex-grow) + refresh button (right) */
+.score-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.score-toolbar .sub-tabs {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.score-refresh-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+}
+
 .sub-tab {
   flex: 1;
   padding: 10px 16px;
@@ -848,23 +866,24 @@
 .streak-hub-claim-btn {
   width: 100%;
   padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #0f1420;
+  border: 1px solid var(--btn-primary-bg);
+  border-radius: var(--btn-primary-radius, 8px);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
   font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 
 .streak-hub-claim-btn:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg);
+  color: var(--btn-primary-hover-fg);
+  border-color: var(--btn-primary-hover-bg);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
 }
 
 .streak-hub-claim-btn:disabled {

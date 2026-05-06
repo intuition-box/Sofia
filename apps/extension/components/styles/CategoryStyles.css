@@ -244,6 +244,83 @@
   margin: 12px 0 16px;
 }
 
+/* Echoes search row — search input takes the full row */
+.echoes-search-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0 0 8px 0;
+}
+
+.echoes-search-row .category-search-container {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Sort toggle + Manage row — toggle on the left, Manage pinned to the right */
+.echoes-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.echoes-sort-row .echoes-sort-toggle {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.echoes-sort-row .gm-manage-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Filter chips row — All + intention chips, wraps */
+.echoes-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.echoes-filter-row .circle-chip {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Sort toggle — segmented control sitting just above the bento grid. */
+.echoes-sort-toggle {
+  width: fit-content;
+  margin: 8px 0;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  flex-wrap: nowrap;
+}
+
+.echoes-sort-toggle .scope-btn {
+  padding: 4px 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.echoes-sort-toggle .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+}
+
+.echoes-sort-toggle .scope-btn.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+}
+
 .category-toolbar > .circle-filter-label {
   margin-bottom: 0;
 }

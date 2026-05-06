@@ -73,3 +73,38 @@ export function formatShortDate(timestamp: number): string {
     day: "numeric"
   })
 }
+
+/**
+ * Format an ISO/string/number timestamp as a short relative time:
+ * "just now", "Xm ago", "Xh ago", "Xd ago", or a locale date for older.
+ *
+ * Mirrors the local helper in CircleFeedTab.tsx (and proto explorer's
+ * timeAgo) so feed-style cards share the same wording.
+ */
+export function formatRelativeTime(input: string | number | Date): string {
+  const date = input instanceof Date ? input : new Date(input)
+  if (isNaN(date.getTime())) return ""
+  const now = Date.now()
+  const diffMs = now - date.getTime()
+  const diffMins = Math.floor(diffMs / 60_000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 1) return "just now"
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  return date.toLocaleDateString()
+}
+
+/**
+ * Shorten an EVM address to "0x1234...abcd" form. Returns the input
+ * unchanged when it doesn't look like an address.
+ */
+export function shortenAddress(address: string, head = 6, tail = 4): string {
+  if (!address) return ""
+  if (!address.startsWith("0x") || address.length < head + tail + 2) {
+    return address
+  }
+  return `${address.slice(0, head)}...${address.slice(-tail)}`
+}

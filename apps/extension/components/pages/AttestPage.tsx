@@ -1,7 +1,7 @@
 import PageBlockchainCard from '../ui/PageBlockchainCard'
-import '../styles/HomeConnectedPage.css'
+import '../styles/AttestPage.css'
 
-const HomeConnectedPage = () => {
+const AttestPage = () => {
   return (
     <div className="home-connected-page">
       <PageBlockchainCard />
@@ -10,4 +10,4 @@ const HomeConnectedPage = () => {
 }
 
 
-export default HomeConnectedPage
+export default AttestPage

@@ -83,10 +83,15 @@ type ViewState =
   | { type: 'member-profile'; address: string; label: string; image?: string }
   | { type: 'member-category'; address: string; label: string; image?: string }
 
-const CircleFeedTab = () => {
-  const { navigateTo, setActiveProfileTab } = useRouter()
+interface CircleFeedTabProps {
+  onViewMembers?: () => void
+}
+
+const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
+  const { navigateTo } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<'all' | IntentionType>('all')
+  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
   const [feedItems, setFeedItems] = useState<CircleFeedItem[]>([])
   const [trustedWallets, setTrustedWallets] = useState<string[]>([])
@@ -515,7 +520,34 @@ const CircleFeedTab = () => {
   // Main feed view
   return (
     <div className="circle-feed-tab">
-      {/* Header row: Filter label aligned with refresh + My Circle actions */}
+      {/* Members bar — clickable summary that opens the full members list */}
+      {onViewMembers && trustedWallets.length > 0 && (
+        <button
+          type="button"
+          className="circle-members-bar"
+          onClick={onViewMembers}
+          aria-label="View all trust circle members"
+        >
+          <div className="circle-members-bar-stack" aria-hidden="true">
+            {trustedWallets.slice(0, 4).map(wallet => (
+              <div key={wallet} className="circle-members-avatar-slot">
+                <Avatar
+                  imgSrc={walletToImage.get(wallet)}
+                  name={walletToLabel.get(wallet) || wallet}
+                  avatarClassName="circle-members-avatar"
+                  size="small"
+                />
+              </div>
+            ))}
+          </div>
+          <span className="circle-members-bar-count">
+            {trustedWallets.length} member{trustedWallets.length === 1 ? '' : 's'}
+          </span>
+          <span className="circle-members-bar-cta">view all →</span>
+        </button>
+      )}
+
+      {/* Header row: Filter label aligned with refresh action */}
       <div className="circle-top-bar">
         <div className="circle-top-header">
           <span className="circle-filter-label">Filter</span>
@@ -545,56 +577,60 @@ const CircleFeedTab = () => {
                 <path d="M3 21v-5h5" />
               </svg>
             </button>
-            <button
-              className="circle-go-btn"
-              onClick={() => {
-                setActiveProfileTab('community')
-                navigateTo('profile')
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="9" cy="7" r="4" />
-                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
-                <path d="m17 11 2 2 4-4" />
-              </svg>
-              My Circle
-            </button>
           </div>
         </div>
-        <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All
-          </button>
-          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-            ([type, config]) => (
+        {(() => {
+          const intentionEntries = Object.entries(INTENTION_CONFIG) as [
+            IntentionType,
+            { label: string; color: string }
+          ][]
+          const visibleEntries = filtersExpanded
+            ? intentionEntries
+            : intentionEntries.slice(0, 3)
+          const hiddenCount = intentionEntries.length - visibleEntries.length
+          return (
+            <div className="circle-category-chips">
               <button
-                key={type}
-                className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-                onClick={() => setActiveFilter(type)}
+                className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('all')}
               >
-                <span
-                  className="circle-chip-dot"
-                  aria-hidden="true"
-                  style={{ background: config.color }}
-                />
-                {config.label}
+                All
               </button>
-            )
-          )}
-        </div>
+              {visibleEntries.map(([type, config]) => (
+                <button
+                  key={type}
+                  className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(type)}
+                >
+                  <span
+                    className="circle-chip-dot"
+                    aria-hidden="true"
+                    style={{ background: config.color }}
+                  />
+                  {config.label}
+                </button>
+              ))}
+              {hiddenCount > 0 && (
+                <button
+                  type="button"
+                  className="circle-chip circle-chip-more"
+                  onClick={() => setFiltersExpanded(true)}
+                >
+                  +{hiddenCount} more
+                </button>
+              )}
+              {filtersExpanded && intentionEntries.length > 3 && (
+                <button
+                  type="button"
+                  className="circle-chip circle-chip-more"
+                  onClick={() => setFiltersExpanded(false)}
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Loading */}

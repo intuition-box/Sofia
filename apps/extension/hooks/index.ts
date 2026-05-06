@@ -30,8 +30,6 @@ export { useDiscordProfile } from './useDiscordProfile'
 export { useFollowAccount } from './useFollowAccount'
 export { useCreateFollowTriples } from './useCreateFollowTriples'
 export { useCheckFollowStatus } from './useCheckFollowStatus'
-export { useFollowing } from './useFollowing'
-export { useFollowers } from './useFollowers'
 export { useTrustCircle } from './useTrustCircle'
 export { useTrustedByCount } from './useTrustedByCount'
 export { useSocialVerifier } from './useSocialVerifier'
@@ -88,11 +86,6 @@ export { useCardStack } from './useCardStack'
 export { useBookmarks } from './useBookmarks'
 
 // Recommendations & Interest
-
-// Debate
-export { useDebateClaims } from './useDebateClaims'
-export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDebateClaims'
-
 
 // Topic Interests (from Sofia Explorer)
 export { useTopicInterests } from './useTopicInterests'

@@ -167,38 +167,8 @@ const EchoesTab = () => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        {/* Certification filter chips — vf-chip pattern from explorer */}
-        <div className="circle-filter-group">
-          <span className="circle-filter-label">Filter</span>
-          <div className="circle-category-chips">
-            <button
-              className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setCertFilter('all')}
-            >
-              All
-            </button>
-            {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-              ([type, config]) => (
-                <button
-                  key={type}
-                  className={`circle-chip ${certFilter === type ? 'active' : ''}`}
-                  onClick={() => setCertFilter(type)}
-                >
-                  <span
-                    className="circle-chip-dot"
-                    aria-hidden="true"
-                    style={{ background: config.color }}
-                  />
-                  {config.label}
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* Search + sort toolbar — sits below the filter chips */}
-        <div className="category-toolbar">
-          <span className="circle-filter-label">Search</span>
+        {/* Search bar — own row, full width */}
+        <div className="echoes-search-row">
           <div className="category-search-container">
             <input
               type="text"
@@ -216,24 +186,32 @@ const EchoesTab = () => {
               </button>
             )}
           </div>
-          <div className="sort-buttons">
-            {sortOptions.map(option => (
+        </div>
+
+        {/* Filter chips — All + intention filters */}
+        <div className="echoes-filter-row">
+          <button
+            className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setCertFilter('all')}
+          >
+            All
+          </button>
+          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+            ([type, config]) => (
               <button
-                key={option.value}
-                className={`sort-btn ${sortBy === option.value ? 'active' : ''}`}
-                onClick={() => setSortBy(option.value)}
+                key={type}
+                className={`circle-chip ${certFilter === type ? 'active' : ''}`}
+                onClick={() => setCertFilter(type)}
               >
-                {option.label}
+                <span
+                  className="circle-chip-dot"
+                  aria-hidden="true"
+                  style={{ background: config.color }}
+                />
+                {config.label}
               </button>
-            ))}
-            <button
-              className="sort-btn gm-manage-btn"
-              onClick={() => handleOpenManager('all')}
-              title="Manage groups"
-            >
-              Manage
-            </button>
-          </div>
+            )
+          )}
         </div>
 
         {/* Inactive groups cleanup banner */}
@@ -254,6 +232,31 @@ const EchoesTab = () => {
             </button>
           </div>
         )}
+
+        {/* Sort toggle + Manage — same row right above the bento grid;
+            toggle on the left, Manage button pinned to the far right. */}
+        <div className="echoes-sort-row">
+          <div className="scope-toggle echoes-sort-toggle" role="group" aria-label="Sort groups by">
+            {sortOptions.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
+                aria-pressed={sortBy === option.value}
+                onClick={() => setSortBy(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <button
+            className="sort-btn gm-manage-btn"
+            onClick={() => handleOpenManager('all')}
+            title="Manage groups"
+          >
+            Manage
+          </button>
+        </div>
 
         {filteredGroups.length === 0 ? (
           <div className="groups-empty">

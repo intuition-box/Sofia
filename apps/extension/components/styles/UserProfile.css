@@ -24,6 +24,16 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Stack the "Trusted ✓" pill and the "Retirer du trust circle" action
+   so both are visible on the profile of a user that is already in the
+   current account's trust circle. */
+.user-profile-trust-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
 /* ========== STATUS NOTE ========== */
 .user-profile-status-note {
   font-size: 12px;

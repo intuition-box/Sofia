@@ -96,6 +96,7 @@
   cursor: pointer;
 }
 
+
 .search-results-more {
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
@@ -319,6 +320,127 @@
 /* Trust button in following section */
 .follow-tab .trust-page-button.salmon-gradient-button {
   padding: var(--spacing-sm) 23px;
+}
+
+/* Explicit "Retirer du trust circle" button — replaces the silent "×" icon.
+   Subdued by default, salmon-tinted on hover so the destructive intent is
+   clear without screaming on every list row. */
+.trust-remove-btn {
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.trust-remove-btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
+}
+
+.trust-remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* "+ invite a member" CTA at the top of TrustCirclePanel — mirrors the
+   sofia-explorer crd-members-invite-btn: dark bg with white text, salmon
+   bg with black text on hover. Matches the per-account "+ add" buttons. */
+.invite-member-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+  padding: 10px 14px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.invite-member-btn:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  transform: translateY(-1px);
+}
+
+/* Explorer card actions: View profile + add-to-circle stacked buttons.
+   Both buttons share the same width, the +add stays compact vertically. */
+.explorer-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  align-items: stretch;
+  min-width: 110px;
+}
+
+.explorer-view-profile-btn {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.explorer-view-profile-btn:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
+}
+
+/* Compact +add button inside Explorer cards: same dark / salmon hover
+   treatment as the invite-member CTA, sized down to align with the
+   View profile button. Overrides the salmon-gradient applied by the
+   shared .follow-button class. */
+.follow-button.explorer-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 10px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.follow-button.explorer-add-btn:hover:not(:disabled) {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+.follow-button.explorer-add-btn::before {
+  content: none;
 }
 
 /* Explorer top accounts section */

@@ -34,7 +34,7 @@ export { calculateLevel, calculateLevelProgress } from './levelCalculation'
 export { normalizeDomain, extractDomain, shouldExcludeDomain } from './domainUtils'
 
 // Formatters
-export { getFaviconUrl, formatDuration, formatShortDate, formatBalance } from './formatters'
+export { getFaviconUrl, formatDuration, formatShortDate, formatBalance, formatRelativeTime, shortenAddress } from './formatters'
 
 // Certification Helpers
 export { intentionToCertification, trustToCertification, getEffectiveCertStatus, calculateDominantCertification, sumCertifications } from './certificationHelpers'

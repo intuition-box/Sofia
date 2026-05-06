@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { UserPlus } from 'lucide-react'
 import { useTrustCircle, useWeightOnChain, useRedeemTriple } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
 import SofiaLoader from '../../../ui/SofiaLoader'
@@ -11,7 +12,7 @@ import { refetchWithBackoff } from '../../../../lib/utils'
 import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
 import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'
-import  UserAtomStats  from '../../../ui/UserAtomStats'
+import AccountSignalsBadge from '../../../ui/AccountSignalsBadge'
 import '../../../styles/CoreComponents.css'
 import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/FollowTab.css'
@@ -20,9 +21,11 @@ const logger = createHookLogger('TrustCirclePanel')
 
 interface TrustCirclePanelProps {
   walletAddress: string | undefined
+  /** Optional CTA: when provided, renders a "+ invite a member" button at top */
+  onInviteMember?: () => void
 }
 
-export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
+export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCirclePanelProps) {
   const { accounts, loading, error, refetch } = useTrustCircle(walletAddress)
   const { addWeight, removeWeight } = useWeightOnChain()
   const { redeemPosition } = useRedeemTriple()
@@ -158,6 +161,17 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
 
   return (
     <div className="follow-panel">
+      {onInviteMember && (
+        <button
+          type="button"
+          className="invite-member-btn"
+          onClick={onInviteMember}
+        >
+          <UserPlus size={14} />
+          Invite a member
+        </button>
+      )}
+
       {loading && (
         <div className="loading-state">
           <SofiaLoader size={150} />
@@ -198,18 +212,20 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
                   />
                   <div className="account-info">
                     <span className="account-label">{account.label}</span>
-                    <UserAtomStats termId={account.termId} accountAddress={account.walletAddress} compact={true} />
-                    <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
+                    <AccountSignalsBadge
+                      walletAddress={account.walletAddress}
+                      compact={true}
+                    />
                   </div>
                 </div>
                 <div className="account-right" onClick={(e) => e.stopPropagation()}>
                   <button
-                    className="remove-btn"
+                    className="trust-remove-btn"
                     onClick={() => handleRemoveTrust(account)}
                     disabled={processingIds.has(account.tripleId)}
-                    title="Remove from trust circle"
+                    title="Remove this user from your trust circle"
                   >
-                    {processingIds.has(account.tripleId) ? '...' : '×'}
+                    {processingIds.has(account.tripleId) ? 'Removing…' : 'Remove'}
                   </button>
                 </div>
               </div>

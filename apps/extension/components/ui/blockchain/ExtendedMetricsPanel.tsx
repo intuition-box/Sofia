@@ -16,7 +16,10 @@ import PagePositionBoard from "../PagePositionBoard"
 
 // Local formatter — `getTotalShares` already returns a decimal number
 // (shares / 1e18), so we just need thousands separators here.
-const formatTrust = (value: number): string =>
+// Distinct from the shared `formatTrust(shares: string)` util in
+// lib/utils, which expects a raw BigInt-as-string in wei and returns a
+// compact "1.2K"-style label.
+const formatTrustDecimal = (value: number): string =>
   value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 
 type FilterScope = "domain" | "page" | "certifiers" | "signals"
@@ -168,7 +171,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
                         <span className="object">{triplet.object.label}</span>
                         {shares > 0 && (
                           <span className="tvl-badge">
-                            {formatTrust(shares)} TRUST
+                            {formatTrustDecimal(shares)} TRUST
                           </span>
                         )}
                       </div>

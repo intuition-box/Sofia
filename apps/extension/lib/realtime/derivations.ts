@@ -1,6 +1,6 @@
 /**
  * Derivations — pure functions that convert raw WS subscription payloads
- * into the shapes consumed by hooks (useTrustCircle, useFollowing, etc.).
+ * into the shapes consumed by hooks (useTrustCircle, etc.).
  *
  * SubscriptionManager.onPositionsUpdate pipes WatchUserPositions payloads
  * through each derivation and writes the result under a canonical query

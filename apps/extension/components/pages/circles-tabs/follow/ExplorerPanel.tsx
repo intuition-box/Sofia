@@ -4,21 +4,80 @@
  */
 
 import { useMemo } from 'react'
+import { UserPlus } from 'lucide-react'
 import { useRouter } from '../../../layout/RouterProvider'
 import SofiaLoader from '../../../ui/SofiaLoader'
-import type { AccountAtom } from '../../../../hooks'
+import { useCheckFollowStatus, type AccountAtom } from '../../../../hooks'
 import { useGetTopSofiaAccountsQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../../../../lib/config/chainConfig'
 import { FollowSearchBox } from './FollowSearchBox'
 import Avatar from '../../../ui/Avatar'
+import TrustAccountButton from '../../../ui/TrustAccountButton'
 import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
 
 const logger = createHookLogger('ExplorerPanel')
 
+/**
+ * Renders the trust action for a Top Account row. Shows a disabled
+ * "Trusted ✓" button when the account is already in the connected user's
+ * trust circle, otherwise the standard "+ add" button.
+ */
+function TopAccountTrustAction({
+  termId,
+  label,
+  onTrustAdded
+}: {
+  termId: string
+  label: string
+  onTrustAdded?: () => void
+}) {
+  const followStatus = useCheckFollowStatus(termId)
+
+  if (followStatus.loading) {
+    return (
+      <button
+        className="follow-button salmon-gradient-button"
+        disabled
+      >
+        Loading...
+      </button>
+    )
+  }
+
+  if (followStatus.isTrusting) {
+    return (
+      <button
+        className="follow-button salmon-gradient-button"
+        disabled
+      >
+        Trusted ✓
+      </button>
+    )
+  }
+
+  return (
+    <TrustAccountButton
+      accountTermId={termId}
+      accountLabel={label}
+      label={<><UserPlus size={12} /> add</>}
+      initialWeight="minimum"
+      className="explorer-add-btn"
+      onSuccess={() => {
+        logger.debug('Trust triple created from explorer top accounts')
+        followStatus.refetch()
+        onTrustAdded?.()
+      }}
+    />
+  )
+}
+
 interface ExplorerPanelProps {
   walletAddress: string | undefined
+  /** Called after a successful trust action so the parent can redirect
+      the user to the My Trust Circle members view. */
+  onTrustAdded?: () => void
 }
 
 interface TopAccount {
@@ -29,7 +88,7 @@ interface TopAccount {
   txCount: number
 }
 
-export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
+export function ExplorerPanel({ walletAddress, onTrustAdded }: ExplorerPanelProps) {
   const { navigateTo } = useRouter()
 
   const sevenDaysAgo = useMemo(() => {
@@ -43,14 +102,17 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     { enabled: !!walletAddress, staleTime: 60000 }
   )
 
-  // Aggregate deposits by receiver to get top accounts by tx count
+  // Aggregate deposits by receiver to get top accounts by tx count.
+  // Skip the connected user — they shouldn't be invited to their own circle.
   const topAccounts = useMemo<TopAccount[]>(() => {
     if (!data?.deposits) return []
 
+    const selfWallet = walletAddress?.toLowerCase()
     const countMap = new Map<string, TopAccount>()
 
     for (const deposit of data.deposits) {
       const id = deposit.receiver_id
+      if (selfWallet && id.toLowerCase() === selfWallet) continue
       const existing = countMap.get(id)
       if (existing) {
         existing.txCount++
@@ -68,7 +130,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     return Array.from(countMap.values())
       .sort((a, b) => b.txCount - a.txCount)
       .slice(0, 10)
-  }, [data])
+  }, [data, walletAddress])
 
   const handleSearchResultClick = (account: AccountAtom) => {
     navigateTo('user-profile', {
@@ -81,7 +143,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     })
   }
 
-  const handleTopAccountClick = (account: TopAccount) => {
+  const handleViewProfile = (account: TopAccount) => {
     navigateTo('user-profile', {
       termId: account.termId ?? '',
       label: account.label,
@@ -106,8 +168,9 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
     <div className="follow-panel">
       <FollowSearchBox
         onSelectAccount={handleSearchResultClick}
-        onFollowSuccess={() => {
-          logger.debug('Follow successful from explorer')
+        onTrustSuccess={() => {
+          logger.debug('Trust triple created from explorer search')
+          onTrustAdded?.()
         }}
         placeholder="Search all accounts on Intuition..."
       />
@@ -139,8 +202,6 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
               <div
                 key={account.walletAddress}
                 className="followed-account-card"
-                onClick={() => handleTopAccountClick(account)}
-                style={{ cursor: 'pointer' }}
               >
                 <div className="account-left">
                   <span className="account-number">{index + 1}</span>
@@ -152,10 +213,23 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
                   />
                   <div className="account-info">
                     <span className="account-label">{account.label}</span>
-                    <span className="trust-amount">
-                      {account.txCount} signals
-                    </span>
                   </div>
+                </div>
+                <div className="account-right explorer-card-actions">
+                  <button
+                    type="button"
+                    className="explorer-view-profile-btn"
+                    onClick={() => handleViewProfile(account)}
+                  >
+                    View profile
+                  </button>
+                  {account.termId && account.termId.length === 66 && (
+                    <TopAccountTrustAction
+                      termId={account.termId}
+                      label={account.label}
+                      onTrustAdded={onTrustAdded}
+                    />
+                  )}
                 </div>
               </div>
             ))}

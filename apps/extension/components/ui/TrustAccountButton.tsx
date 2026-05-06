@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks'
 import WeightModal from '../modals/WeightModal'
@@ -10,9 +10,15 @@ interface TrustAccountButtonProps {
   accountTermId: string
   accountLabel: string
   onSuccess?: () => void
+  /** Visible button label (default: "Trust"). Accepts ReactNode so callers can include an icon. */
+  label?: ReactNode
+  /** Pre-selected weight option in the modal (default: 'default' / 0.5 TRUST) */
+  initialWeight?: 'minimum' | 'default' | 'strong' | 'high' | 'max'
+  /** Extra className appended to the button */
+  className?: string
 }
 
-const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAccountButtonProps) => {
+const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess, label = 'Trust', initialWeight, className }: TrustAccountButtonProps) => {
   const { trustAccount, loading, error, success, transactionHash } = useTrustAccount()
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
@@ -92,11 +98,11 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
   return (
     <>
       <button
-        className={`follow-button trust-page-button salmon-gradient-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
+        className={`follow-button trust-page-button salmon-gradient-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''} ${className || ''}`}
         onClick={handleButtonClick}
         disabled={loading}
       >
-        {loading ? 'Processing...' : 'Trust'}
+        {loading ? 'Processing...' : label}
       </button>
 
       {showWeightModal && createPortal(
@@ -107,6 +113,7 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
           transactionSuccess={transactionSuccess}
           transactionError={transactionError || error}
           transactionHash={localTransactionHash || undefined}
+          initialWeight={initialWeight}
           onClose={handleModalClose}
           onSubmit={handleWeightSubmit}
         />,

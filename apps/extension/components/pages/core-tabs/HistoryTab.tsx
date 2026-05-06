@@ -303,7 +303,6 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                             description: tripletItem.description,
                             sourceMessageId: tripletItem.id
                           }}
-                          size="small"
                           className="portal-button"
                         />
                         <button

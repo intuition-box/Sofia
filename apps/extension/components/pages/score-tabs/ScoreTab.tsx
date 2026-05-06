@@ -1,5 +1,5 @@
 /**
- * StatsTab Component
+ * ScoreTab Component
  * Displays discovery statistics and intention distribution
  */
 
@@ -31,7 +31,7 @@ const TIER_BADGE_IMAGES: Record<number, string> = {
   6: tierBadge6, 7: tierBadge7, 8: tierBadge8, 9: tierBadge9, 10: tierBadge10,
 }
 
-interface StatsTabProps {
+interface ScoreTabProps {
   walletAddress?: string | null;
   trustedByCount?: number;
   level?: number;
@@ -39,7 +39,7 @@ interface StatsTabProps {
   signalsCreated?: number;
 }
 
-const StatsTab = ({ trustedByCount, level = 1, totalXP = 0 }: StatsTabProps) => {
+const ScoreTab = ({ trustedByCount, level = 1, totalXP = 0 }: ScoreTabProps) => {
   // XP progress calculation
   // Cumulative XP to reach current level = 100 * level*(level-1)/2
   const xpAtCurrentLevel = 100 * level * (level - 1) / 2
@@ -292,4 +292,4 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0 }: StatsTabProps) => 
   )
 }
 
-export default StatsTab
+export default ScoreTab
