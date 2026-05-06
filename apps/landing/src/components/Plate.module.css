@@ -1,24 +1,27 @@
 /**
- * Plate — engineering-card frame shared by Hero (PLATE.C), Features
- * (PLATE.D), Steps (PLATE.A). Peach corner brackets, mono header
- * with tag/title + meta, SVG body, mono footer.
+ * Plate — engineering-card frame shared across the landing.
+ * - Peach corner brackets at top
+ * - Mono header (tag + title) + meta + body + foot
+ * - Variants:
+ *     dark      — default (current behavior)
+ *     on-peach  — white card on a peach surface
+ *     cmp-dark  — deep-dark plate hosting the comparison table
  */
 
 .plate {
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border-soft);
+  background: #0a0a0a;
 }
 
 .plate::before,
 .plate::after {
   content: '';
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--color-accent);
   pointer-events: none;
 }
@@ -35,21 +38,48 @@
   border-bottom: 0;
 }
 
+/* ── Variants ─────────────────────────────────────────── */
+
+.onPeach {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.14);
+  color: #0a0a0a;
+}
+.onPeach::before,
+.onPeach::after {
+  border-color: rgba(0, 0, 0, 0.55);
+}
+.onPeach .head,
+.onPeach .foot {
+  border-color: rgba(0, 0, 0, 0.10);
+}
+.onPeach .tag,
+.onPeach .meta,
+.onPeach .foot {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.cmpDark {
+  background: #0a0a0a;
+}
+
+/* ── Head ─────────────────────────────────────────────── */
+
 .head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border-soft);
   font-family: var(--font-mono);
 }
 
 .headLeft {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -57,35 +87,42 @@
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--color-accent-ink);
+  color: var(--color-accent);
   border: 1px solid var(--color-accent);
-  padding: 2px 8px;
+  padding: 3px 8px;
 }
 
 .title {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.18em;
   color: var(--color-text);
+  text-transform: uppercase;
 }
+
+.onPeach .title { color: #02000e; }
 
 .meta {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.18em;
-  text-transform: uppercase;
   color: var(--color-text-dim);
+  text-transform: uppercase;
   flex-wrap: wrap;
 }
 
+/* ── Body ─────────────────────────────────────────────── */
+
 .body {
-  padding: 16px 20px 20px;
-  display: grid;
-  place-items: center;
+  padding: 18px;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
+  position: relative;
 }
 
 .body > svg {
@@ -95,13 +132,53 @@
   display: block;
 }
 
+/* ── Body modifiers ───────────────────────────────────── */
+
+.bodyFlush {
+  padding: 0;
+  display: block;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.bodyGrid {
+  padding: 0;
+  display: block;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.bodyInstrumentIso {
+  padding: 14px;
+  background: #0E0E0E;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.bodyInstrumentIso > svg { max-width: 100%; max-height: 100%; }
+
+.bodyInstrumentCircles {
+  padding: 14px;
+  background: #0E0E0E;
+  overflow: hidden;
+  aspect-ratio: 2 / 1;
+}
+
+.bodyInstrumentTopics {
+  padding: 14px;
+  background: #0E0E0E;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+/* ── Foot ─────────────────────────────────────────────── */
+
 .foot {
-  border-top: 1px solid var(--color-border);
-  padding: 8px 16px;
+  border-top: 1px solid var(--color-border-soft);
+  padding: 9px 18px;
   display: flex;
   gap: 18px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-text-dim);

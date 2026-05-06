@@ -1,6 +1,7 @@
 /**
- * Values — ink-on-peach segmented grid. Each card stakes a value;
- * cells separated by translucent ink hairlines, ink vote button.
+ * Values (S.05) — 5-col ink-on-peach grid. Cards split by 1px ink
+ * hairlines. Mono "VALUE NN", inline TRUST counter, Fraunces name,
+ * body copy, and a pill outline vote button that fills ink on hover.
  */
 
 .grid {
@@ -9,58 +10,52 @@
   gap: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.18);
   border-left: 1px solid rgba(0, 0, 0, 0.18);
-  margin-bottom: 28px;
 }
 
 .card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  padding: 22px 20px 24px;
+  gap: 14px;
+  padding: 32px 24px 30px;
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  background: transparent;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background 0.25s;
+  min-height: 280px;
 }
 
 .card:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .cardHead {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 18px;
 }
 
 .num {
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   color: rgba(0, 0, 0, 0.55);
 }
 
 .trust {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 5px;
   font-family: var(--font-mono);
-  font-feature-settings: 'tnum';
-  font-variant-numeric: tabular-nums;
   color: #02000e;
+  font-variant-numeric: tabular-nums;
 }
 
 .trustNum {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .trustUnit {
   font-size: 9px;
-  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   opacity: 0.65;
@@ -68,31 +63,30 @@
 
 .name {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: -0.018em;
-  line-height: 1.25;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
   color: #02000e;
-  margin: 0 0 8px;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  margin: 0;
 }
 
 .desc {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   line-height: 1.55;
   color: rgba(0, 0, 0, 0.7);
-  margin: 0 0 18px;
   flex: 1;
+  margin: 0;
 }
 
 .vote {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
   border: 1px solid #02000e;
   background: transparent;
   color: #02000e;
@@ -102,34 +96,32 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+  transition: background 0.2s, color 0.2s;
 }
 
-.vote:hover:not(:disabled) {
+.vote:hover {
   background: #02000e;
-  border-color: #02000e;
   color: var(--color-accent);
 }
 
 .vote:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .error {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: #7a1a1a;
-  margin: 8px 0 0;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c0392b;
+  margin: 4px 0 0;
 }
 
-@media (max-width: 996px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .grid { grid-template-columns: 1fr; }
 }

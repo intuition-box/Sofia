@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Arrow } from './Arrow';
+import { useEffect, useState } from 'react';
 import { useWalletConnection } from '../hooks/useWalletConnection';
 import styles from './Navbar.module.css';
 
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
+  { label: 'How it works', href: '#how' },
+  { label: 'Product', href: '#showcase' },
   { label: 'Values', href: '#values' },
-  { label: 'Docs', href: 'https://doc.sofia.intuition.box' },
   { label: 'Team', href: '#team' },
   { label: 'FAQ', href: '#faq' },
 ];
@@ -14,16 +14,24 @@ const NAV_LINKS = [
 export function Navbar() {
   const { address, isConnected, isConnecting, connect, disconnect } = useWalletConnection();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <nav className={styles.nav}>
+    <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
       <div className={styles.brand}>
         <a href="/" className={styles.logo}>
-          <img src="/img/logo-black.png" alt="Sofia" className="logo-invert" />
+          <img src="/img/logo-black.png" alt="Sofia" />
         </a>
         <span className={styles.status}>
           <span className={styles.statusDot} aria-hidden="true" />
-          Beta Open
+          Beta · Open
         </span>
       </div>
 
@@ -41,28 +49,19 @@ export function Navbar() {
         {isConnected && address ? (
           <button className={styles.wallet} onClick={disconnect}>
             <span className={styles.walletDot} aria-hidden="true" />
-            {address.slice(0, 6)}...{address.slice(-4)}
+            {address.slice(0, 6)}…{address.slice(-4)}
           </button>
         ) : (
-          <button className={styles.walletConnect} onClick={connect} disabled={isConnecting}>
-            {isConnecting ? '...' : 'Connect'}
+          <button className={styles.wallet} onClick={connect} disabled={isConnecting}>
+            {isConnecting ? '…' : 'Connect'}
           </button>
         )}
-
-        <a
-          href="https://explorer.sofia.intuition.box/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`btn btn-primary ${styles.cta}`}
-        >
-          Explorer
-          <Arrow />
-        </a>
 
         <button
           className={styles.burger}
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
+          aria-expanded={open}
         >
           <span className={`${styles.burgerLine} ${open ? styles.burgerOpen1 : ''}`} />
           <span className={`${styles.burgerLine} ${open ? styles.burgerOpen2 : ''}`} />

@@ -1,36 +1,37 @@
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { useTextSplit } from '../hooks/useTextSplit';
 import { URLS } from '../lib/config/urls';
+import { HexSplit } from './HexSplit';
 import styles from './CTA.module.css';
 
 export function CTA() {
-  const titleRef = useTextSplit<HTMLHeadingElement>({ by: 'word' });
-  const subRef = useScrollAnim<HTMLParagraphElement>();
-  const btnsRef = useScrollAnim<HTMLDivElement>();
-  const eyebrowRef = useScrollAnim<HTMLSpanElement>();
+  const innerRef = useScrollAnim<HTMLDivElement>();
 
   return (
-    <section className={styles.section}>
-      <div className={styles.inner}>
-        <span ref={eyebrowRef} className={`${styles.eyebrow} anim`}>
-          <span className={styles.eyebrowDot} aria-hidden="true" />
-          Beta open
-        </span>
-
-        <h2 ref={titleRef} className={`display anim ${styles.title}`}>
-          Join the movement.
-        </h2>
-
-        <p ref={subRef} className={`anim anim-d2 ${styles.sub}`}>
-          Your browsing history is your identity — not a PFP, not a token. It's what you actually do, verified on-chain.
+    <section id="cta" className={`${styles.section} on-peach`}>
+      <HexSplit size="520px" color="rgba(0,0,0,0.05)" />
+      <div ref={innerRef} className={`${styles.inner} stagger anim anim-up`}>
+        <span className={styles.eyebrow}>Beta · Open</span>
+        <h2 className={`h-display ${styles.title}`}>Join the movement.</h2>
+        <p className={styles.sub}>
+          Your browsing history is your identity — not a PFP, not a token. It's
+          what you actually do, verified on-chain.
         </p>
-
-        <div ref={btnsRef} className={`anim anim-d3 ${styles.btns}`}>
-          <a href={URLS.external.alpha} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+        <div className={styles.btns}>
+          <a
+            href={URLS.external.alpha}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary"
+          >
             Join the Beta <Arrow />
           </a>
-          <a href={URLS.external.discord} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+          <a
+            href={URLS.external.discord}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary"
+          >
             Join our Discord <Arrow />
           </a>
         </div>

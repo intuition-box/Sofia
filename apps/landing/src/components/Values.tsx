@@ -3,47 +3,41 @@ import { useScrollAnim } from '../hooks/useScrollAnim';
 import { useVoteStats } from '../hooks/useVoteStats';
 import { useVoting } from '../hooks/useVoting';
 import { VALUES_DATA } from '../lib/config/constants';
-import { Module } from './Module';
-import { ModuleHead } from './ModuleHead';
+import { Section } from './Section';
+import { SectionHead } from './SectionHead';
 import styles from './Values.module.css';
 
 export function Values() {
   return (
-    <Module
+    <Section
       id="values"
-      code="S.07"
+      code="S.05"
       label="DOCTRINE"
       meta={`${VALUES_DATA.length} VALUES · STAKEABLE`}
       variant="peach"
     >
-      <ModuleHead
+      <SectionHead
         eyebrow="What we stand for"
         title={
           <>
             Vote on the five values <em>that shape Sofia.</em>
           </>
         }
-        sub={
-          <p>
-            These are the convictions Sofia operates on. Stake TRUST behind the
-            ones you stand by — your position is signed on-chain and visible in
-            the protocol.
-          </p>
-        }
+        sub="These are the convictions Sofia operates on. Stake TRUST behind the ones you stand by — your position is signed on-chain and visible in the protocol."
         variant="peach"
       />
 
-      <div className={styles.grid}>
+      <div className={`${styles.grid} stagger`}>
         {VALUES_DATA.map((v, i) => (
           <ValueCard key={v.id} value={v} index={i} />
         ))}
       </div>
-    </Module>
+    </Section>
   );
 }
 
 function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index: number }) {
-  const ref = useScrollAnim<HTMLDivElement>();
+  const ref = useScrollAnim<HTMLElement>();
   const { forDisplay, isLoading } = useVoteStats(value.tripleId);
   const { depositFor, isConnected } = useVoting();
   const [voting, setVoting] = useState(false);
@@ -61,10 +55,12 @@ function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index:
     }
   };
 
-  const delay = Math.min(index, 4);
-
   return (
-    <article ref={ref} className={`${styles.card} anim anim-up ${delay > 0 ? `anim-d${delay}` : ''}`}>
+    <article
+      ref={ref}
+      className={`${styles.card} anim anim-up`}
+      style={{ ['--i' as never]: index }}
+    >
       <header className={styles.cardHead}>
         <span className={styles.num}>VALUE {String(value.id).padStart(2, '0')}</span>
         <span className={styles.trust}>
@@ -76,11 +72,7 @@ function ValueCard({ value, index }: { value: typeof VALUES_DATA[number]; index:
       <h3 className={styles.name}>{value.name}</h3>
       <p className={styles.desc}>{value.description}</p>
 
-      <button
-        className={styles.vote}
-        onClick={handleVote}
-        disabled={voting}
-      >
+      <button className={styles.vote} onClick={handleVote} disabled={voting}>
         {voting ? 'Signing…' : isConnected ? 'Support' : 'Connect to vote'}
         <span aria-hidden="true">↑</span>
       </button>

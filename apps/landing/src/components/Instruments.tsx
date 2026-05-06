@@ -337,9 +337,6 @@ export function IsoStack() {
           <path d="M 0 0 L 8 4 L 0 8 z" fill={PEACH} />
         </marker>
       </defs>
-      <rect width="540" height="540" fill="url(#iso-grid-fine)" />
-      <rect width="540" height="540" fill="url(#iso-grid)" />
-
       <g stroke="rgba(255,255,255,0.4)" strokeWidth="0.75" fill="none">
         <path d="M 8 8 L 24 8 M 8 8 L 8 24" />
         <path d="M 532 8 L 516 8 M 532 8 L 532 24" />

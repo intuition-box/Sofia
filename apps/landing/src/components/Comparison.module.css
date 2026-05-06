@@ -1,52 +1,69 @@
 /**
- * Comparison — engineering-table inside a peach Module banner.
- * Cells are mono, ink-on-peach; rows separated by ink hairlines.
+ * Comparison (S.03) — peach section hosting a `cmp-dark` plate that
+ * wraps the comparison table. Table is dark-on-light theming inverted:
+ * white text on #0a0a0a with peach checkmarks.
  */
+
+.cmpPlate {
+  width: 100%;
+}
+
+/* ── Table (inside the dark plate) ────────────────────── */
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
-}
-
-.table th,
-.table td {
-  text-align: left;
-  padding: 18px 18px;
-  border-top: 1px solid rgba(0, 0, 0, 0.18);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  vertical-align: middle;
+  font-size: 0.875rem;
+  color: var(--color-text);
 }
 
 .table thead th {
+  text-align: left;
+  padding: 18px 18px 16px;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.55);
-  border-top: 0;
-  padding-top: 22px;
-  padding-bottom: 14px;
+  color: var(--color-text-dim);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.table thead th:first-child {
+  padding-left: 24px;
 }
 
 .table thead th.headSofia {
-  color: #02000e;
+  color: var(--color-accent);
   font-weight: 700;
-  letter-spacing: 0.24em;
+}
+
+.table tbody td {
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--color-border-soft);
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background 0.2s var(--ease-out);
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .rowLabel {
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.55);
-  width: 22%;
-  padding-left: 0;
+  color: var(--color-text-dim);
+  width: 24%;
+  padding-left: 24px !important;
 }
 
 .tdSofia {
-  color: #02000e;
+  color: var(--color-accent);
+  font-weight: 500;
 }
 
 .cell {
@@ -60,32 +77,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  font-size: 10px;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
   font-weight: 700;
-  border-radius: var(--radius-pill);
+  border-radius: 999px;
   flex-shrink: 0;
 }
 
 .check {
-  background: #02000e;
-  color: var(--color-accent);
-  border: 1px solid #02000e;
+  background: var(--color-accent);
+  color: #02000e;
+  border: 1px solid var(--color-accent);
 }
 
 .cross {
   background: transparent;
-  color: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.32);
-}
-
-/* hover row — subtle ink wash */
-.table tbody tr {
-  transition: background var(--duration-fast) var(--ease-out);
-}
-.table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.32);
 }
 
 /* ── Responsive ───────────────────────────────────────── */
@@ -100,7 +109,7 @@
   .table th,
   .table td {
     padding: 14px 14px;
-    font-size: var(--text-xs);
+    font-size: 0.8125rem;
   }
   .rowLabel {
     width: auto;

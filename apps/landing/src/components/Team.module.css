@@ -1,36 +1,40 @@
-/* ── Members grid ─────────────────────────────────────── */
+/**
+ * Team (S.07) — 2 core operators (avatar + meta + quote) above an
+ * advisors strip (3-col grid sharing 1px borders).
+ */
 
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-  border-top: 1px solid var(--color-border-soft);
-  border-left: 1px solid var(--color-border-soft);
-  margin-bottom: 56px;
+  gap: 32px;
+  margin-bottom: 80px;
 }
 
 .card {
-  padding: 32px 28px 36px;
-  border-right: 1px solid var(--color-border-soft);
-  border-bottom: 1px solid var(--color-border-soft);
-  transition: background var(--duration-fast) var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 36px 32px;
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-bg-alt);
+  transition: border-color 0.25s, transform 0.3s;
 }
 
 .card:hover {
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-color: var(--color-border);
+  transform: translateY(-2px);
 }
 
 .cardHead {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 18px;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-pill);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -45,7 +49,6 @@
 .cardRole {
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-accent-ink);
@@ -54,80 +57,80 @@
 .cardName {
   font-family: var(--font-heading);
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.018em;
   color: var(--color-text);
-  margin: 0;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  margin: 0;
 }
 
 .socials {
   display: inline-flex;
-  align-items: center;
   gap: 10px;
-  margin-top: 4px;
+  align-items: center;
+  margin-top: 8px;
 }
 
 .socials a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   color: var(--color-text-muted);
-  border-radius: var(--radius-sm);
-  transition: color var(--duration-fast), background var(--duration-fast);
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
 }
 
 .socials a:hover {
   color: var(--color-text);
-  background: var(--color-bg-alt);
+  background: var(--color-card, #0e0e0e);
 }
 
 .socials svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
 .quote {
-  position: relative;
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: clamp(1.05rem, 0.85rem + 0.6vw, 1.25rem);
-  line-height: 1.55;
-  letter-spacing: -0.012em;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: var(--color-text);
-  margin: 22px 0 0;
-  padding-left: 18px;
+  padding-left: 16px;
   border-left: 1px solid var(--color-accent);
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  margin: 0;
 }
 
-.quote::before {
-  content: '"';
-  font-family: var(--font-heading);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 2.4em;
-  line-height: 0.4;
-  color: var(--color-accent-ink);
-  margin-right: 6px;
-  vertical-align: -0.18em;
-}
-
-/* ── Advisors strip ───────────────────────────────────── */
+/* ── Advisors ─────────────────────────────────────────── */
 
 .advHeader {
-  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
 }
 
 .advHeaderRule {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.advHeaderRule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-soft);
 }
 
 .advGrid {
@@ -142,23 +145,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
   padding: 24px 24px 28px;
-  text-decoration: none;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
+  transition: background 0.25s;
   color: inherit;
-  transition: background var(--duration-fast) var(--ease-out);
+  text-decoration: none;
 }
 
 .adv:hover {
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  background: var(--color-bg-alt);
 }
 
 .advAvatar {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-pill);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--color-border);
   margin-bottom: 4px;
@@ -167,7 +170,6 @@
 .advRole {
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-accent-ink);
@@ -175,25 +177,19 @@
 
 .advName {
   font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   letter-spacing: -0.018em;
   color: var(--color-text);
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .advCo {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 0.85rem;
   color: var(--color-text-muted);
 }
 
-/* ── Responsive ───────────────────────────────────────── */
-
-@media (max-width: 996px) {
+@media (max-width: 780px) {
   .grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px) {
   .advGrid { grid-template-columns: 1fr; }
 }

@@ -1,107 +1,41 @@
 /**
- * Hero — peach banner split in two: PLATE.C engineering card on the
- * left, copy stack (title · lede · CTAs · partners) on the right.
- * Inner is full hero height so each side feels like a deliberate
- * column. Stacks below 1024px.
+ * Hero (design v2) — full-bleed peach background, asymmetric editorial grid.
+ * Outer: full viewport width, peach + ink on top.
+ * Inner: container constrained to maxw + 80px, 3-row / 2-col grid.
  */
 
 .hero {
   position: relative;
-  padding-top: 80px;
-  overflow: hidden;
-  background: var(--color-bg);
-}
-
-.banner {
-  position: relative;
   background: var(--color-accent);
-  overflow: hidden;
-  border-bottom: 1px solid color-mix(in srgb, #02000e 10%, transparent);
-}
-
-.banner::before {
-  content: '';
-  position: absolute;
-  right: -120px;
-  top: 50%;
-  width: 540px;
-  height: 540px;
-  background: rgba(0, 0, 0, 0.06);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
-  transform: translateY(-50%) rotate(-12deg);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bannerInner {
-  position: relative;
-  z-index: 1;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 96px var(--space-xl);
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 64px;
-  align-items: center;
-  text-align: left;
-}
-
-.plate {
-  align-self: center;
+  color: #02000e;
   width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-.copy {
+.inner {
+  position: relative;
+  min-height: 100vh;
+  padding: 160px var(--gutter) 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  column-gap: 80px;
+  row-gap: 48px;
+  max-width: calc(var(--maxw) + 80px);
+  margin: 0 auto;
+}
+
+/* ── Row 1 — meta strip ──────────────────────────────── */
+
+.meta {
+  grid-column: 1 / -1;
+  grid-row: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.title {
-  margin: 0 0 22px;
-  color: #02000e;
-  font-size: clamp(1.8rem, 1rem + 1.8vw, 2.9rem);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  overflow-wrap: break-word;
-}
-
-.title em {
-  color: #02000e;
-  font-style: italic;
-}
-
-.lede {
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.55;
-  color: rgba(0, 0, 0, 0.72);
-  margin: 0 0 28px;
-}
-
-.ctaRow {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  margin-bottom: 36px;
-}
-
-.ctas {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.partners {
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.partnersLabel {
+  justify-content: space-between;
+  align-items: end;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
@@ -110,88 +44,127 @@
   color: rgba(0, 0, 0, 0.55);
 }
 
-.partnersList {
+.metaL,
+.metaR {
   display: inline-flex;
-  align-items: center;
   gap: 18px;
+  align-items: center;
 }
 
-.partnersList a {
+.metaDot {
+  width: 5px;
+  height: 5px;
+  background: #02000e;
+  display: inline-block;
+}
+
+/* ── Row 2 col 1 — copy ──────────────────────────────── */
+
+.copy {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+}
+
+.title { margin: 0; }
+
+.lede {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.cta {
   display: inline-flex;
   align-items: center;
-  opacity: 0.7;
-  transition: opacity var(--duration-fast) var(--ease-out);
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.partnersList a:hover {
+/* ── Row 2 col 2 — plate visual ──────────────────────── */
+
+.visual {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 440px;
+}
+
+.plate {
+  width: min(100%, 560px);
+  aspect-ratio: 1;
+}
+
+.plate :global(svg) {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── Partners strip — now under the CTA, inside the copy column ── */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  max-width: 520px;
+}
+
+.stripLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.stripList {
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.stripList a {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.75;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.stripList a:hover {
   opacity: 1;
 }
 
-.partnersList img {
+.stripList img {
   height: 18px;
   width: auto;
-  filter: grayscale(100%) brightness(0);
+  display: block;
+  /* Peach bg: keep logos black-on-peach (no invert). */
+  filter: brightness(0);
 }
 
-/* Buttons inside the peach banner read against ink, not the page theme. */
-.banner :global(.btn-primary) {
-  background: #02000e;
-  border-color: #02000e;
-  color: var(--color-accent);
-}
-.banner :global(.btn-primary:hover) {
-  background: #1a1727;
-  border-color: #1a1727;
-  color: var(--color-accent);
-  transform: translateY(-1px);
-}
+/* ── Responsive ──────────────────────────────────────── */
 
-.banner :global(.btn-secondary) {
-  background: transparent;
-  border-color: #02000e;
-  color: #02000e;
-}
-.banner :global(.btn-secondary:hover) {
-  background: #02000e;
-  border-color: #02000e;
-  color: var(--color-accent);
-  transform: translateY(-1px);
-}
-
-@media (max-width: 1024px) {
-  .bannerInner {
+@media (max-width: 1000px) {
+  .inner {
     grid-template-columns: 1fr;
-    gap: 48px;
-    padding: 72px var(--space-xl) 88px;
+    padding-top: 140px;
   }
-  .plate {
-    order: 2;
-    max-width: 820px;
-    margin: 0 auto;
-  }
-  .copy {
-    order: 1;
-  }
+  .copy { grid-column: 1; grid-row: 2; }
+  .visual { grid-column: 1; grid-row: 3; min-height: 380px; }
+  .strip { max-width: none; }
 }
 
-@media (max-width: 768px) {
-  .bannerInner {
-    padding: 64px var(--space-md) 80px;
-    gap: 36px;
-  }
-  .banner::before {
-    width: 360px;
-    height: 360px;
-    right: -160px;
-  }
-  .lede {
-    font-size: 1rem;
-  }
-  .partnersList img {
-    height: 16px;
-  }
-  .ctaRow {
-    gap: 18px;
-    margin-bottom: 28px;
-  }
+@media (max-width: 560px) {
+  .inner { padding: 140px 24px 64px; }
+  .stripList { gap: 24px; }
+  .stripList img { height: 18px; }
 }

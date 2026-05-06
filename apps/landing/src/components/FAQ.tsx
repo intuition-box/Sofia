@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { Module } from './Module';
-import { ModuleHead } from './ModuleHead';
+import { Arrow } from './Arrow';
+import { Section } from './Section';
 import styles from './FAQ.module.css';
 
 interface FAQItem {
@@ -24,34 +23,40 @@ export function FAQ() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <Module id="faq" code="S.10" label="LOOKUPS" meta={`${FAQS.length} ENTRIES`}>
-      <ModuleHead
-        eyebrow="Frequently consulted"
-        title={
-          <>
+    <Section id="faq" code="S.08" label="LOOKUPS" meta={`${FAQS.length} ENTRIES`}>
+      <div className={styles.faq}>
+        <div className={styles.faqLeft}>
+          <span className="eyebrow">Frequently consulted</span>
+          <h2 className="h-section">
             Questions, <em>answered.</em>
-          </>
-        }
-        right={
-          <p>
+          </h2>
+          <p className="lede">
             Eight things people ask before they install. If your question isn't
             here, ask in Discord — we answer.
           </p>
-        }
-      />
+          <a
+            href="https://discord.gg/sofia3"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`btn btn-secondary ${styles.discordBtn}`}
+          >
+            Open Discord <Arrow />
+          </a>
+        </div>
 
-      <div className={styles.list}>
-        {FAQS.map((faq, i) => (
-          <FAQItemComp
-            key={faq.q}
-            faq={faq}
-            index={i}
-            isOpen={openIdx === i}
-            onToggle={() => setOpenIdx(openIdx === i ? null : i)}
-          />
-        ))}
+        <div className={styles.list}>
+          {FAQS.map((faq, i) => (
+            <FAQItemComp
+              key={faq.q}
+              faq={faq}
+              index={i}
+              isOpen={openIdx === i}
+              onToggle={() => setOpenIdx(openIdx === i ? null : i)}
+            />
+          ))}
+        </div>
       </div>
-    </Module>
+    </Section>
   );
 }
 
@@ -66,9 +71,8 @@ function FAQItemComp({
   isOpen: boolean;
   onToggle: () => void;
 }) {
-  const ref = useScrollAnim<HTMLDivElement>();
   return (
-    <div ref={ref} className={`${styles.item} ${isOpen ? styles.open : ''} anim anim-up`}>
+    <div className={`${styles.item} ${isOpen ? styles.open : ''}`}>
       <button className={styles.question} onClick={onToggle} aria-expanded={isOpen}>
         <span className={styles.qIndex}>{String(index + 1).padStart(2, '0')}</span>
         <span className={styles.qLabel}>{faq.q}</span>

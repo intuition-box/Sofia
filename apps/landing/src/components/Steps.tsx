@@ -1,91 +1,86 @@
-import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { ThreeCircles } from './Instruments';
-import { Module } from './Module';
-import { ModuleHead } from './ModuleHead';
+import { Section } from './Section';
+import { SectionHead } from './SectionHead';
 import { Plate } from './Plate';
+import { HexSplit } from './HexSplit';
 import { URLS } from '../lib/config/urls';
 import styles from './Steps.module.css';
 
 const STEPS = [
   {
     num: '01',
-    name: 'Apply to Access Program',
-    desc: 'Fill the early access form to join our beta tester community. Get whitelisted, prepare your wallet. Join us on Discord — we need you!',
+    name: 'Apply for access',
+    desc: "Fill the early access form to join the beta tester community. Get whitelisted and prepare your wallet. Discord doors open the same day.",
     link: URLS.external.alpha,
-    cta: 'ACCESS FORM',
+    cta: 'Access form',
   },
   {
     num: '02',
-    name: 'Download the Extension',
-    desc: 'Install Sofia on your Chromium browser, connect your wallet, and link your social accounts in under 2 minutes.',
+    name: 'Install the extension',
+    desc: 'Install Sofia on any Chromium browser. Connect a wallet, link your social accounts. The whole onboarding takes under two minutes.',
     link: URLS.docs.gettingStarted,
-    cta: 'GETTING STARTED',
+    cta: 'Getting started',
   },
   {
     num: '03',
-    name: 'Start Certifying',
-    desc: 'Browse the web, certify pages you trust, earn rewards and build your verified on-chain reputation.',
+    name: 'Start certifying',
+    desc: "Browse the web. Certify what you trust. Earn rewards. Build a reputation rooted in what you actually do — not what you claim.",
     link: URLS.docs.certifications,
-    cta: 'DOCS · CERTIFY',
+    cta: 'Certify · docs',
   },
 ];
 
 export function Steps() {
   return (
-    <Module id="how" code="S.03" label="OPERATING SEQUENCE" meta="T+ 00:00 → 02:00">
-      <div className={styles.intro}>
+    <Section
+      id="how"
+      code="S.02"
+      label="OPERATING SEQUENCE"
+      meta="T+ 00:00 → 02:00"
+      decoration={<HexSplit size="560px" color="rgba(255,255,255,0.025)" />}
+    >
+      <SectionHead
+        eyebrow="How it works"
+        title={
+          <>
+            From install to <em>signed proof</em>, in under two minutes.
+          </>
+        }
+        sub="Three steps from a fresh browser to a signed, on-chain proof of what you've actually been doing — no friction, no forms, no surveillance."
+      />
+
+      <div className={styles.stepsLayout}>
         <Plate
           tag="PLATE.C"
           title="Three circles · attention relief"
           meta={['FIG.C']}
           foot={['INTUITION · VITALIK · SOFIA', 'LIVE']}
-          className={styles.introPlate}
+          instrument="circles"
+          bodyClassName={styles.stepsPlateBody}
+          className={styles.stepsPlate}
         >
           <ThreeCircles />
         </Plate>
-        <div>
-          <ModuleHead
-            eyebrow="How it works"
-            title={
-              <>
-                From install to <em>signed proof</em>
-                <br />
-                in under two minutes.
-              </>
-            }
-            sub={
-              <p>
-                Three steps from a fresh browser to a signed, on-chain proof of
-                what you've actually been doing — no friction, no forms.
-              </p>
-            }
-          />
-          <a
-            href="https://tally.so/r/7RdaeR"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`btn btn-primary ${styles.introCta}`}
-          >
-            Get Beta Access <Arrow />
-          </a>
-        </div>
       </div>
 
-      <div className={styles.grid}>
+      <div className={`${styles.grid} stagger`}>
         {STEPS.map((step, i) => (
           <StepCard key={step.num} step={step} index={i} />
         ))}
       </div>
-    </Module>
+    </Section>
   );
 }
 
 function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }) {
-  const ref = useScrollAnim<HTMLDivElement>();
-  const delay = Math.min(index, 4);
+  const ref = useScrollAnim<HTMLElement>();
   return (
-    <div ref={ref} className={`${styles.card} anim anim-up ${delay > 0 ? `anim-d${delay}` : ''}`}>
+    <article
+      ref={ref}
+      className={`${styles.step} anim anim-up`}
+      style={{ ['--i' as never]: index }}
+    >
       <div className={styles.num}>{step.num}</div>
       <h3 className={styles.name}>{step.name}</h3>
       <p className={styles.desc}>{step.desc}</p>
@@ -97,6 +92,6 @@ function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }
       >
         {step.cta} <span aria-hidden>→</span>
       </a>
-    </div>
+    </article>
   );
 }

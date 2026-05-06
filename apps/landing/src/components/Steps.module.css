@@ -1,137 +1,113 @@
 /**
- * Steps — 3-card grid with shared 1px borders. Each card carries a
- * mono numeral, Fraunces step name, body copy, and a mono "doc" link
- * that nudges right on hover.
+ * Steps (S.02) — single-col header, full-bleed PLATE.C (circles),
+ * then 3-col grid of steps (1px shared borders).
  */
 
-.headCta {
-  align-self: end;
-  justify-self: end;
+.stepsLayout {
+  margin-bottom: 48px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
-.intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 56px;
-  align-items: center;
-  margin-bottom: 56px;
+.stepsPlate {
+  width: 100%;
 }
 
-.introPlate {
-  height: 460px;
+/* Force the circles plate to widescreen aspect within Steps. */
+.stepsPlateBody {
+  aspect-ratio: 2 / 1 !important;
+  height: auto;
 }
 
-.introCta {
-  margin-top: 24px;
-  display: inline-flex;
-  align-self: flex-start;
-}
-
-@media (max-width: 996px) {
-  .intro {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-  .introPlate {
-    height: 420px;
-    max-width: 640px;
-  }
-}
+/* ── Steps grid ───────────────────────────────────────── */
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 0;
   border-top: 1px solid var(--color-border-soft);
-  border-left: 1px solid var(--color-border-soft);
+  counter-reset: step;
+  position: relative;
+  z-index: 1;
 }
 
-.card {
+.step {
   position: relative;
-  padding: 32px 28px 28px;
+  padding: 48px 36px 56px;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
   display: flex;
   flex-direction: column;
-  min-height: 280px;
-  transition: background var(--duration-fast) var(--ease-out);
+  gap: 20px;
+  min-height: 340px;
+  transition: background 0.3s var(--ease-out);
 }
 
-.card:hover {
+.step:last-child {
+  border-right: 0;
+}
+
+.step:hover {
   background: var(--color-bg-alt);
 }
 
 .num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-family: var(--font-heading);
+  font-size: 3.6rem;
+  font-weight: 300;
+  line-height: 1;
   color: var(--color-text-dim);
-  margin-bottom: 28px;
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
+  font-variation-settings: 'opsz' 144;
+  transition: color 0.25s;
 }
 
-.num::after {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  margin-left: 12px;
-  background: var(--color-border);
-}
-
-.card:hover .num {
+.step:hover .num {
   color: var(--color-accent-ink);
 }
 
 .name {
   font-family: var(--font-heading);
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.022em;
   line-height: 1.15;
-  margin: 0 0 12px;
   color: var(--color-text);
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  margin: 0;
 }
 
 .desc {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 0.95rem;
   line-height: 1.6;
   color: var(--color-text-muted);
-  margin: 0 0 auto;
+  flex: 1;
+  margin: 0;
 }
 
 .link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 28px;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-text-dim);
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.link span {
-  transition: transform var(--duration-fast) var(--ease-out);
+  color: var(--color-text-muted);
+  align-self: flex-start;
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .link:hover {
-  color: var(--color-accent-ink);
+  color: #02000e;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
-
-.link:hover span {
-  transform: translateX(3px);
-}
-
-/* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 880px) {
   .grid { grid-template-columns: 1fr; }
-  .card { min-height: 0; padding: 28px 22px 26px; }
+  .step { border-right: 0; }
 }

@@ -13,7 +13,10 @@
 
 :root {
   /* ── Layout ─────────────────────────────────────────── */
-  --max-width: 1200px;
+  --max-width: 1240px;
+  --maxw: 1240px;
+  --gutter: 48px;
+  /* Legacy alias: keep --max-width for any straggler. */
 
   /* Radius — aliased on the DS single radius (10px), with a
      pair of derived sizes for visual hierarchy. The pill stays
@@ -99,6 +102,7 @@
 
   /* ── Motion ─────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-fast: 0.2s;
   --duration-normal: 0.35s;
   --duration-slow: 0.65s;

@@ -1,144 +1,151 @@
 /**
- * Features — top intro pairs PLATE.D on the left with the ModuleHead
- * on the right. Below: 4-column grid with shared 1px lines (no gaps),
- * engineering drawing feel.
+ * Features (S.01) — single-col header, then full-bleed PLATE.D
+ * (iso stack), then a 4-column engineering grid (1px borders shared).
  */
+
+/* ── 2-col layout : PLATE.D left, 2x2 cards right ─────── */
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 56px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: stretch;
 }
 
-.layoutPlate {
-  align-self: start;
-  position: sticky;
-  top: 96px;
-  height: 460px;
-}
-
-.right {
+.featHero {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 32px;
-  min-width: 0;
+  align-items: stretch;
 }
 
-@media (max-width: 1100px) {
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-  .layoutPlate {
-    max-width: 720px;
-    margin: 0 auto;
-    width: 100%;
-    height: 460px;
-  }
+.featHeroPlate {
+  width: 100%;
 }
+
+.featHeroBody {
+  aspect-ratio: auto !important;
+  flex: 1 1 auto !important;
+  min-height: 420px;
+}
+.featHeroBody svg {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* ── Cards grid (2x2 on desktop) ──────────────────────── */
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   border-top: 1px solid var(--color-border-soft);
   border-left: 1px solid var(--color-border-soft);
 }
 
-.card {
+.feat {
   position: relative;
+  padding: 28px 24px 56px;
+  min-width: 0;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
-  padding: 24px 22px 26px;
-  min-height: 260px;
   display: flex;
   flex-direction: column;
-  transition: background var(--duration-fast) var(--ease-out);
+  gap: 18px;
+  transition: background 0.3s var(--ease-out);
 }
 
-.card:hover {
+.feat:hover {
   background: var(--color-bg-alt);
 }
 
-.cardHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.featNum {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   color: var(--color-text-dim);
-  margin-bottom: 28px;
-  transition: color var(--duration-fast) var(--ease-out);
+  align-self: flex-start;
+  transition: color 0.25s var(--ease-out);
 }
 
-.card:hover .indexBadge {
+.feat:hover .featNum {
   color: var(--color-accent-ink);
 }
 
-.indexBadge {
-  font-weight: 500;
+.featBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.indexCorner {
-  font-size: 10px;
-  color: var(--color-text-dim);
-  opacity: 0.65;
-}
-
-.icon {
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--color-border);
+.featIcon {
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
-  margin-bottom: 22px;
+  border: 1px solid var(--color-border);
   color: var(--color-accent-ink);
-  transition: border-color var(--duration-fast) var(--ease-out);
-}
-.icon svg {
-  width: 22px;
-  height: 22px;
-  stroke: currentColor;
-}
-.card:hover .icon {
-  border-color: var(--color-accent);
+  margin-bottom: 8px;
+  transition: border-color 0.25s, background 0.25s;
 }
 
-.name {
+.feat:hover .featIcon {
+  border-color: var(--color-accent);
+  background: rgba(255, 198, 176, 0.05);
+}
+
+.featIcon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.featName {
   font-family: var(--font-heading);
-  font-size: 1.125rem;
-  font-weight: 600;
-  letter-spacing: -0.018em;
-  line-height: 1.25;
-  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
   color: var(--color-text);
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  margin: 0;
 }
 
-.desc {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+.featDesc {
+  font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-muted);
-  margin: 0 0 auto;
+  margin: 0;
 }
 
-.cardFoot {
-  margin-top: 24px;
+.featTag {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-text-dim);
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ── Responsive ───────────────────────────────────────── */
 
-@media (max-width: 640px) {
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; gap: 32px; }
+}
+
+@media (max-width: 780px) {
   .grid { grid-template-columns: 1fr; }
-  .card { min-height: 0; padding: 26px 22px 30px; }
+  .feat { padding: 36px 28px; }
 }

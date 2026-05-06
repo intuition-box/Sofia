@@ -1,6 +1,6 @@
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { Module } from './Module';
-import { ModuleHead } from './ModuleHead';
+import { Section } from './Section';
+import { SectionHead } from './SectionHead';
 import styles from './Team.module.css';
 
 const X_ICON = (
@@ -64,28 +64,23 @@ export function Team() {
   const advHeaderRef = useScrollAnim<HTMLDivElement>();
 
   return (
-    <Module
+    <Section
       id="team"
-      code="S.09"
+      code="S.07"
       label="OPERATORS"
       meta={`${TEAM.length} CORE · ${ADVISORS.length} ADVISORS`}
     >
-      <ModuleHead
+      <SectionHead
         eyebrow="The team"
         title={
           <>
-            Two builders, three advisors, <em>one open repository.</em>
+            Two builders. Three advisors. <em>One open repository.</em>
           </>
         }
-        sub={
-          <p>
-            Sofia is built in public on the Intuition Protocol. Every contributor
-            is reachable; every advisor stakes their name on the work.
-          </p>
-        }
+        sub="Sofia is built in public on Intuition. Every contributor is reachable; every advisor stakes their name on the work."
       />
 
-      <div className={styles.grid}>
+      <div className={`${styles.grid} stagger`}>
         {TEAM.map((m, i) => (
           <MemberCard key={m.name} member={m} index={i} />
         ))}
@@ -95,22 +90,22 @@ export function Team() {
         <span className={styles.advHeaderRule}>— ADVISORS</span>
       </div>
 
-      <div className={styles.advGrid}>
+      <div className={`${styles.advGrid} stagger`}>
         {ADVISORS.map((a, i) => (
           <AdvisorCard key={a.name} advisor={a} index={i} />
         ))}
       </div>
-    </Module>
+    </Section>
   );
 }
 
 function MemberCard({ member, index }: { member: TeamMember; index: number }) {
-  const ref = useScrollAnim<HTMLDivElement>();
-  const delay = Math.min(index, 4);
+  const ref = useScrollAnim<HTMLElement>();
   return (
     <article
       ref={ref}
-      className={`${styles.card} anim anim-up ${delay > 0 ? `anim-d${delay}` : ''}`}
+      className={`${styles.card} anim anim-up`}
+      style={{ ['--i' as never]: index }}
     >
       <div className={styles.cardHead}>
         <img src={member.avatar} alt={member.name} className={styles.avatar} />
@@ -131,14 +126,14 @@ function MemberCard({ member, index }: { member: TeamMember; index: number }) {
 
 function AdvisorCard({ advisor, index }: { advisor: Advisor; index: number }) {
   const ref = useScrollAnim<HTMLAnchorElement>();
-  const delay = Math.min(index, 4);
   return (
     <a
       ref={ref}
       href={`https://x.com/${advisor.x}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${styles.adv} anim anim-up ${delay > 0 ? `anim-d${delay}` : ''}`}
+      className={`${styles.adv} anim anim-up`}
+      style={{ ['--i' as never]: index }}
     >
       <img src={advisor.avatar} alt={advisor.name} className={styles.advAvatar} />
       <span className={styles.advRole}>{advisor.role}</span>

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * useScrollAnim — adds `.visible` to the observed element the first time
- * it enters the viewport. Pair with `.anim` (and optional direction
- * variants like `.anim-left`, `.anim-up`, `.anim-scale`, `.anim-blur`)
- * defined in `global.css`.
+ * useScrollAnim — adds `.in` to the observed element the first time it
+ * enters the viewport. Pair with `.anim` (and optional direction variants
+ * `.anim-left`, `.anim-up`, `.anim-scale`, `.anim-blur`), or `.split-text`
+ * / `.reveal` defined in `global.css` — same hook drives them all.
  *
  * Options:
  * - `threshold`  : intersection ratio (0-1), default 0.12.
@@ -31,10 +31,10 @@ export function useScrollAnim<T extends HTMLElement = HTMLDivElement>(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            entry.target.classList.add('in');
             if (once) io.unobserve(entry.target);
           } else if (!once) {
-            entry.target.classList.remove('visible');
+            entry.target.classList.remove('in');
           }
         }
       },

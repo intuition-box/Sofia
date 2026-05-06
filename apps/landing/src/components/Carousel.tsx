@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
-import { Module } from './Module';
+import { Section } from './Section';
+import { SectionHead } from './SectionHead';
 import styles from './Carousel.module.css';
 
 interface Slide {
@@ -25,74 +26,100 @@ const SLIDES: Slide[] = [
   { src: '/img/slides/user interest.png', title: 'Interest analysis.', subtitle: 'AI-detected interests from your browsing — crypto finance, blockchain, collaboration tools.' },
 ];
 
+const THUMB_WINDOW = 6;
+
 export function Carousel() {
   const [current, setCurrent] = useState(0);
-  const headerRef = useScrollAnim<HTMLDivElement>();
   const stageRef = useScrollAnim<HTMLDivElement>();
+  const total = SLIDES.length;
 
-  const prev = () => setCurrent((c) => (c === 0 ? SLIDES.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === SLIDES.length - 1 ? 0 : c + 1));
+  const prev = () => setCurrent((c) => (c === 0 ? total - 1 : c - 1));
+  const next = () => setCurrent((c) => (c === total - 1 ? 0 : c + 1));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'ArrowRight') next();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const slide = SLIDES[current];
+  const counterMeta = `${String(current + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+
+  // Thumb window: keep current centered when possible.
+  const thumbStart = Math.max(0, Math.min(current - 2, total - THUMB_WINDOW));
+  const thumbs = SLIDES.slice(thumbStart, thumbStart + THUMB_WINDOW);
 
   return (
-    <Module
-      id="showcase"
-      code="S.05"
-      label="INSTRUMENT"
-      meta={`${String(current + 1).padStart(2, '0')} / ${String(SLIDES.length).padStart(2, '0')}`}
-    >
-      <div ref={headerRef} className={`${styles.header} anim anim-up`}>
-        <span className="mono-eyebrow">Showcase</span>
-        <span className={styles.counter}>
-          <span className={styles.counterCurrent}>{String(current + 1).padStart(2, '0')}</span>
-          <span className={styles.counterDivider}>/</span>
-          <span className={styles.counterTotal}>{String(SLIDES.length).padStart(2, '0')}</span>
-        </span>
-      </div>
+    <Section id="showcase" code="S.04" label="INSTRUMENT" meta={counterMeta}>
+      <SectionHead
+        eyebrow="Product preview"
+        title={
+          <>
+            Inside the product, <em>screen by screen.</em>
+          </>
+        }
+      />
 
-      <div ref={stageRef} className={`${styles.stage} anim anim-up anim-d2`}>
-          <div className={styles.imageWrap}>
-            <button
-              className={`${styles.arrow} ${styles.arrowLeft}`}
-              onClick={prev}
-              aria-label="Previous slide"
-            >
+      <div className={styles.grid}>
+        <div ref={stageRef} className={`${styles.stage} reveal`}>
+          <div className={styles.imgWrap}>
+            <button className={`${styles.arrow} ${styles.arrowLeft}`} onClick={prev} aria-label="Previous">
               ‹
             </button>
             <img
+              key={slide.src}
               src={slide.src}
               alt={slide.title}
               className={styles.image}
               draggable={false}
             />
-            <button
-              className={`${styles.arrow} ${styles.arrowRight}`}
-              onClick={next}
-              aria-label="Next slide"
-            >
+            <button className={`${styles.arrow} ${styles.arrowRight}`} onClick={next} aria-label="Next">
               ›
             </button>
           </div>
+        </div>
 
-          <div className={styles.info}>
-            <h3 className={styles.title}>{slide.title}</h3>
-            <p className={styles.subtitle}>{slide.subtitle}</p>
+        <div className={styles.info}>
+          <span className={styles.counter}>
+            <span className={styles.counterCur}>{String(current + 1).padStart(2, '0')}</span>
+            <span className={styles.counterTot}>{String(total).padStart(2, '0')}</span>
+          </span>
+          <h3 className={styles.title}>{slide.title}</h3>
+          <p className={styles.sub}>{slide.subtitle}</p>
+
+          <div className={styles.rail} role="tablist" aria-label="Carousel slides">
+            {SLIDES.map((_, i) => (
+              <button
+                key={i}
+                role="tab"
+                aria-selected={i === current}
+                aria-label={`Slide ${i + 1}`}
+                className={`${styles.pip} ${i === current ? styles.pipOn : ''}`}
+                onClick={() => setCurrent(i)}
+              />
+            ))}
           </div>
 
-        <div className={styles.dots} role="tablist" aria-label="Carousel slides">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              role="tab"
-              aria-selected={i === current}
-              className={`${styles.dot} ${i === current ? styles.dotActive : ''}`}
-              onClick={() => setCurrent(i)}
-              aria-label={`Slide ${i + 1}`}
-            />
-          ))}
+          <div className={styles.thumbs}>
+            {thumbs.map((t, i) => {
+              const idx = thumbStart + i;
+              return (
+                <button
+                  key={t.src}
+                  className={`${styles.thumb} ${idx === current ? styles.thumbOn : ''}`}
+                  onClick={() => setCurrent(idx)}
+                  aria-label={`Show slide ${idx + 1}`}
+                >
+                  <img src={t.src} alt="" />
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </Module>
+    </Section>
   );
 }

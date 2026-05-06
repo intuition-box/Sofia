@@ -1,26 +1,14 @@
-.section {
-  padding: 120px var(--space-xl);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--color-accent);
-  border-top: 1px solid color-mix(in srgb, #02000e 10%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, #02000e 10%, transparent);
-}
+/**
+ * CTA — peach panel, centered text, hex-split scroll-driven decoration.
+ */
 
-/* Hexagon — same decoration as the Hero banner. */
-.section::before {
-  content: '';
-  position: absolute;
-  left: -120px;
-  top: 50%;
-  width: 540px;
-  height: 540px;
-  background: rgba(0, 0, 0, 0.08);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
-  transform: translateY(-50%) rotate(12deg);
-  pointer-events: none;
-  z-index: 0;
+.section {
+  position: relative;
+  background: var(--color-accent);
+  color: #02000e;
+  padding: 140px var(--gutter);
+  text-align: center;
+  overflow: hidden;
 }
 
 .inner {
@@ -28,29 +16,32 @@
   z-index: 1;
   max-width: 760px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
 }
 
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55em;
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   color: #02000e;
-  margin-bottom: 24px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.eyebrowDot {
+.eyebrow::before {
+  content: '';
   width: 6px;
   height: 6px;
   background: #02000e;
 }
 
 .title {
-  margin: 0 auto 24px;
+  margin: 0 auto;
   max-width: 18ch;
   color: #02000e;
 }
@@ -61,7 +52,7 @@
   line-height: 1.55;
   color: rgba(0, 0, 0, 0.72);
   max-width: 36rem;
-  margin: 0 auto 32px;
+  margin: 0 auto;
 }
 
 .btns {
@@ -69,40 +60,5 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
-}
-
-/* Buttons inside the peach CTA — ink fill / ink outline,
-   both flip to peach text on hover (mirror Hero banner). */
-.section :global(.btn-primary) {
-  background: #02000e;
-  border-color: #02000e;
-  color: var(--color-accent);
-}
-.section :global(.btn-primary:hover) {
-  background: #1a1727;
-  border-color: #1a1727;
-  color: var(--color-accent);
-  transform: translateY(-1px);
-}
-
-.section :global(.btn-secondary) {
-  background: transparent;
-  border-color: #02000e;
-  color: #02000e;
-}
-.section :global(.btn-secondary:hover) {
-  background: #02000e;
-  border-color: #02000e;
-  color: var(--color-accent);
-  transform: translateY(-1px);
-}
-
-@media (max-width: 640px) {
-  .section { padding: 88px var(--space-md); }
-  .section::before {
-    width: 360px;
-    height: 360px;
-    left: -160px;
-  }
-  .btns { flex-direction: column; align-items: stretch; }
+  margin-top: 8px;
 }
