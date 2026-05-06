@@ -33,8 +33,12 @@
 /* ── Stage ────────────────────────────────────────────── */
 
 .stage {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 48px;
+  row-gap: 32px;
+  align-items: center;
 }
 
 .imageWrap {
@@ -43,6 +47,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .image {
@@ -93,38 +99,48 @@
 /* ── Info ─────────────────────────────────────────────── */
 
 .info {
-  text-align: center;
-  margin-top: 32px;
+  grid-column: 2;
+  grid-row: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 8px;
+  border-left: 1px solid var(--color-border-soft);
 }
 
 .title {
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.18;
   letter-spacing: -0.022em;
   color: var(--color-text);
-  margin: 0 0 8px;
+  margin: 0;
+  padding-left: 16px;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
 
 .subtitle {
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   line-height: 1.6;
   color: var(--color-text-muted);
-  max-width: 56ch;
-  margin: 0 auto;
+  max-width: 42ch;
+  margin: 0;
+  padding-left: 16px;
 }
 
 /* ── Dots ─────────────────────────────────────────────── */
 
 .dots {
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .dot {
@@ -147,6 +163,24 @@
 .dotActive {
   width: 22px;
   background: var(--color-accent);
+}
+
+@media (max-width: 880px) {
+  .stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .imageWrap { grid-column: 1; grid-row: 1; }
+  .info {
+    grid-column: 1;
+    grid-row: 2;
+    border-left: none;
+    border-top: 1px solid var(--color-border-soft);
+    padding-left: 0;
+    padding-top: 16px;
+  }
+  .title, .subtitle { padding-left: 0; }
+  .dots { grid-column: 1; grid-row: 3; }
 }
 
 @media (max-width: 640px) {

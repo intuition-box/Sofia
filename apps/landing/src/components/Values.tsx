@@ -1,39 +1,42 @@
 import { useState } from 'react';
-import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { useVoteStats } from '../hooks/useVoteStats';
 import { useVoting } from '../hooks/useVoting';
 import { VALUES_DATA } from '../lib/config/constants';
-import { URLS } from '../lib/config/urls';
 import { Module } from './Module';
 import { ModuleHead } from './ModuleHead';
 import styles from './Values.module.css';
 
 export function Values() {
-  const ctaRef = useScrollAnim<HTMLDivElement>();
-
   return (
-    <Module id="values" code="S.07" label="DOCTRINE" meta={`${VALUES_DATA.length} VALUES · STAKEABLE`}>
+    <Module
+      id="values"
+      code="S.07"
+      label="DOCTRINE"
+      meta={`${VALUES_DATA.length} VALUES · STAKEABLE`}
+      variant="peach"
+    >
       <ModuleHead
         eyebrow="What we stand for"
         title={
           <>
-            Five values, on chain. <em>Stake your position.</em>
+            Vote on the five values <em>that shape Sofia.</em>
           </>
         }
+        sub={
+          <p>
+            These are the convictions Sofia operates on. Stake TRUST behind the
+            ones you stand by — your position is signed on-chain and visible in
+            the protocol.
+          </p>
+        }
+        variant="peach"
       />
 
       <div className={styles.grid}>
         {VALUES_DATA.map((v, i) => (
           <ValueCard key={v.id} value={v} index={i} />
         ))}
-      </div>
-
-      <div ref={ctaRef} className={`${styles.cta} anim`}>
-        <a href={URLS.external.values} target="_blank" rel="noopener noreferrer" className={styles.ctaLink}>
-          Vote for our values
-          <Arrow />
-        </a>
       </div>
     </Module>
   );

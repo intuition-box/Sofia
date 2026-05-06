@@ -9,6 +9,35 @@
   justify-self: end;
 }
 
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+.introPlate {
+  height: 460px;
+}
+
+.introCta {
+  margin-top: 24px;
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+@media (max-width: 996px) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .introPlate {
+    height: 420px;
+    max-width: 640px;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

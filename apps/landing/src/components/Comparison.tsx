@@ -34,7 +34,7 @@ export function Comparison() {
             <em>measured differently.</em>
           </>
         }
-        right={
+        sub={
           <p>
             Three operating models for the modern web. Only one returns the
             value of your attention to you. Read the table.

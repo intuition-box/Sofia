@@ -10,7 +10,6 @@ import { FAQ } from './components/FAQ';
 import { CTA } from './components/CTA';
 import { Footer } from './components/Footer';
 import { Carousel } from './components/Carousel';
-import { Instruments } from './components/Instruments';
 
 export default function App() {
   return (
@@ -21,7 +20,6 @@ export default function App() {
       <Features />
       <Comparison />
       <Steps />
-      <Instruments />
       <Carousel />
 
       <Values />

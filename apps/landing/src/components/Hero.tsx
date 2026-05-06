@@ -1,8 +1,8 @@
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
 import { useTextSplit } from '../hooks/useTextSplit';
-import { useScrollDive } from '../hooks/useScrollScrub';
-import { ThreeCircles } from './Instruments';
+import { TopicsIntentions } from './Instruments';
+import { Plate } from './Plate';
 import styles from './Hero.module.css';
 
 const PARTNERS = [
@@ -18,37 +18,19 @@ export function Hero() {
   const ledeRef = useTextSplit<HTMLParagraphElement>({ by: 'word' });
   const ctasRef = useScrollAnim<HTMLDivElement>();
 
-  const plateRef = useScrollDive<HTMLDivElement>({
-    zoom: 1,
-    expandSelector: `.${styles.bannerInner}`,
-    fadeSelector: `.${styles.copy}`,
-    endDistance: '+=160%',
-  });
-
   return (
     <section className={styles.hero}>
       <div className={styles.banner}>
         <div className={styles.bannerInner}>
-          <div ref={plateRef} className={styles.plate}>
-            <div className={styles.plateHead}>
-              <div className={styles.plateHeadLeft}>
-                <span className={styles.plateTag}>PLATE.C</span>
-                <span className={styles.plateTitle}>
-                  Three circles · attention relief
-                </span>
-              </div>
-              <div className={styles.plateMeta}>
-                <span>FIG.C</span>
-              </div>
-            </div>
-            <div className={styles.plateBody}>
-              <ThreeCircles />
-            </div>
-            <div className={styles.plateFoot}>
-              <span>INTUITION · VITALIK · SOFIA</span>
-              <span>LIVE</span>
-            </div>
-          </div>
+          <Plate
+            tag="PLATE.A"
+            title="Topics × intentions · polar field"
+            meta={['OUTER · TOPICS', 'INNER · INTENTIONS']}
+            foot={['14 TOPICS', '6 INTENTIONS']}
+            className={styles.plate}
+          >
+            <TopicsIntentions />
+          </Plate>
 
           <div className={styles.copy}>
             <h1 ref={titleRef} className={`display anim ${styles.title}`}>

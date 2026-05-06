@@ -1,12 +1,46 @@
 /**
- * Features — 4-column grid with shared 1px lines (no gaps), engineering
- * drawing feel. Cards align to a single baseline; hover wash flips the
- * cell to peach-on-ink, like a switched-on capability.
+ * Features — top intro pairs PLATE.D on the left with the ModuleHead
+ * on the right. Below: 4-column grid with shared 1px lines (no gaps),
+ * engineering drawing feel.
  */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: start;
+}
+
+.layoutPlate {
+  align-self: start;
+  position: sticky;
+  top: 96px;
+  height: 460px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .layoutPlate {
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+    height: 460px;
+  }
+}
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr;
   border-top: 1px solid var(--color-border-soft);
   border-left: 1px solid var(--color-border-soft);
 }
@@ -15,8 +49,8 @@
   position: relative;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
-  padding: 28px 24px 32px;
-  min-height: 320px;
+  padding: 24px 22px 26px;
+  min-height: 260px;
   display: flex;
   flex-direction: column;
   transition: background var(--duration-fast) var(--ease-out);
@@ -103,10 +137,6 @@
 }
 
 /* ── Responsive ───────────────────────────────────────── */
-
-@media (max-width: 996px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
-}
 
 @media (max-width: 640px) {
   .grid { grid-template-columns: 1fr; }

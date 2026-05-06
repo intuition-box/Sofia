@@ -1,7 +1,8 @@
 /**
- * Hero — peach banner with a 2-column inner: PLATE.C engineering card
- * on the left, copy stack (title · lede · CTAs · partners) on the right.
- * Stacks to a single column on tablet/mobile, plate falls below copy.
+ * Hero — peach banner split in two: PLATE.C engineering card on the
+ * left, copy stack (title · lede · CTAs · partners) on the right.
+ * Inner is full hero height so each side feels like a deliberate
+ * column. Stacks below 1024px.
  */
 
 .hero {
@@ -35,18 +36,19 @@
 .bannerInner {
   position: relative;
   z-index: 1;
-  --inner-pad-x: max(var(--space-xl), calc((100vw - 1320px) / 2 + var(--space-md)));
-  --inner-pad-y: 56px;
-  --inner-gap: 56px;
-  --plate-col: 52%;
-  --inner-h: 560px;
-  padding: var(--inner-pad-y) var(--inner-pad-x) var(--inner-pad-y) 0;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 96px var(--space-xl);
   display: grid;
-  grid-template-columns: var(--plate-col) minmax(0, 1fr);
-  gap: var(--inner-gap);
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
   text-align: left;
-  min-height: var(--inner-h);
+}
+
+.plate {
+  align-self: center;
+  width: 100%;
 }
 
 .copy {
@@ -62,8 +64,6 @@
   line-height: 1.08;
   letter-spacing: -0.025em;
   overflow-wrap: break-word;
-  word-break: normal;
-  hyphens: none;
 }
 
 .title em {
@@ -158,125 +158,15 @@
   transform: translateY(-1px);
 }
 
-/* ── PLATE.C — engineering card on the left ───────────── */
-
-.plate {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-  will-change: transform, opacity;
-  transform-origin: center center;
-}
-
-.plate::before,
-.plate::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--color-accent);
-  pointer-events: none;
-}
-.plate::before {
-  top: -1px;
-  left: -1px;
-  border-right: 0;
-  border-bottom: 0;
-}
-.plate::after {
-  top: -1px;
-  right: -1px;
-  border-left: 0;
-  border-bottom: 0;
-}
-
-.plateHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  font-family: var(--font-mono);
-}
-
-.plateHeadLeft {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.plateTag {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--color-accent-ink);
-  border: 1px solid var(--color-accent);
-  padding: 2px 8px;
-}
-
-.plateTitle {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--color-text);
-}
-
-.plateMeta {
-  display: flex;
-  gap: 16px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  flex-wrap: wrap;
-}
-
-.plateBody {
-  padding: 16px 20px 20px;
-  display: grid;
-  place-items: center;
-  flex: 1;
-  min-height: 0;
-}
-
-.plateBody > svg {
-  width: 100%;
-  height: auto;
-  max-height: 100%;
-  display: block;
-}
-
-.plateFoot {
-  border-top: 1px solid var(--color-border);
-  padding: 8px 16px;
-  display: flex;
-  gap: 18px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-/* ── Responsive ───────────────────────────────────────── */
-
 @media (max-width: 1024px) {
   .bannerInner {
     grid-template-columns: 1fr;
     gap: 48px;
+    padding: 72px var(--space-xl) 88px;
   }
   .plate {
     order: 2;
-    max-width: 720px;
+    max-width: 820px;
     margin: 0 auto;
   }
   .copy {

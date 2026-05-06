@@ -1,27 +1,30 @@
+/**
+ * Values — ink-on-peach segmented grid. Each card stakes a value;
+ * cells separated by translucent ink hairlines, ink vote button.
+ */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
-  border-top: 1px solid var(--color-border-soft);
-  border-left: 1px solid var(--color-border-soft);
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  border-left: 1px solid rgba(0, 0, 0, 0.18);
   margin-bottom: 28px;
 }
-
-/* ── Card — segmented column with peach hover wash ─────── */
 
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
   padding: 22px 20px 24px;
-  border-right: 1px solid var(--color-border-soft);
-  border-bottom: 1px solid var(--color-border-soft);
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   background: transparent;
   transition: background var(--duration-fast) var(--ease-out);
 }
 
 .card:hover {
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .cardHead {
@@ -37,7 +40,7 @@
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.18em;
-  color: var(--color-text-dim);
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .trust {
@@ -47,12 +50,12 @@
   font-family: var(--font-mono);
   font-feature-settings: 'tnum';
   font-variant-numeric: tabular-nums;
-  color: var(--color-accent-ink);
+  color: #02000e;
 }
 
 .trustNum {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .trustUnit {
@@ -60,7 +63,7 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  opacity: 0.85;
+  opacity: 0.65;
 }
 
 .name {
@@ -69,7 +72,7 @@
   font-weight: 600;
   letter-spacing: -0.018em;
   line-height: 1.25;
-  color: var(--color-text);
+  color: #02000e;
   margin: 0 0 8px;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
 }
@@ -78,7 +81,7 @@
   font-family: var(--font-body);
   font-size: var(--text-sm);
   line-height: 1.55;
-  color: var(--color-text-muted);
+  color: rgba(0, 0, 0, 0.7);
   margin: 0 0 18px;
   flex: 1;
 }
@@ -90,9 +93,9 @@
   gap: 6px;
   padding: 6px 12px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-border);
+  border: 1px solid #02000e;
   background: transparent;
-  color: var(--color-text);
+  color: #02000e;
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
@@ -106,9 +109,9 @@
 }
 
 .vote:hover:not(:disabled) {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-on-accent);
+  background: #02000e;
+  border-color: #02000e;
+  color: var(--color-accent);
 }
 
 .vote:disabled {
@@ -119,57 +122,9 @@
 .error {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--color-error);
+  color: #7a1a1a;
   margin: 8px 0 0;
 }
-
-/* ── CTA below the grid ───────────────────────────────── */
-
-.cta {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.ctaLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-accent-ink);
-  position: relative;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.ctaLink::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -3px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.4;
-  transform-origin: left;
-  transition: opacity var(--duration-fast), transform var(--duration-normal) var(--ease-out);
-}
-
-.ctaLink:hover {
-  color: var(--color-text);
-}
-
-.ctaLink:hover::after {
-  opacity: 1;
-  transform: scaleX(1.05);
-}
-
-.ctaLink :global(svg) {
-  width: 12px;
-  height: 12px;
-}
-
-/* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 996px) {
   .grid { grid-template-columns: repeat(3, 1fr); }

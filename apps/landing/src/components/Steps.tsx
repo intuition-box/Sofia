@@ -1,7 +1,9 @@
 import { Arrow } from './Arrow';
 import { useScrollAnim } from '../hooks/useScrollAnim';
+import { ThreeCircles } from './Instruments';
 import { Module } from './Module';
 import { ModuleHead } from './ModuleHead';
+import { Plate } from './Plate';
 import { URLS } from '../lib/config/urls';
 import styles from './Steps.module.css';
 
@@ -32,26 +34,43 @@ const STEPS = [
 export function Steps() {
   return (
     <Module id="how" code="S.03" label="OPERATING SEQUENCE" meta="T+ 00:00 → 02:00">
-      <ModuleHead
-        eyebrow="How it works"
-        title={
-          <>
-            From install to <em>signed proof</em>
-            <br />
-            in under two minutes.
-          </>
-        }
-        right={
+      <div className={styles.intro}>
+        <Plate
+          tag="PLATE.C"
+          title="Three circles · attention relief"
+          meta={['FIG.C']}
+          foot={['INTUITION · VITALIK · SOFIA', 'LIVE']}
+          className={styles.introPlate}
+        >
+          <ThreeCircles />
+        </Plate>
+        <div>
+          <ModuleHead
+            eyebrow="How it works"
+            title={
+              <>
+                From install to <em>signed proof</em>
+                <br />
+                in under two minutes.
+              </>
+            }
+            sub={
+              <p>
+                Three steps from a fresh browser to a signed, on-chain proof of
+                what you've actually been doing — no friction, no forms.
+              </p>
+            }
+          />
           <a
             href="https://tally.so/r/7RdaeR"
             target="_blank"
             rel="noopener noreferrer"
-            className={`btn btn-primary ${styles.headCta}`}
+            className={`btn btn-primary ${styles.introCta}`}
           >
             Get Beta Access <Arrow />
           </a>
-        }
-      />
+        </div>
+      </div>
 
       <div className={styles.grid}>
         {STEPS.map((step, i) => (

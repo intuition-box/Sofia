@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useScrollAnim } from '../hooks/useScrollAnim';
-import { Module } from './Module';
-import { ModuleHead } from './ModuleHead';
 import styles from './Instruments.module.css';
 
 /**
- * Sofia · Drafting room — three plates of pure SVG schematics:
+ * Sofia · Drafting room — pure SVG schematics, used as side visuals
+ * inside the section frames (Hero, Features, Steps).
  *   PLATE.A — Topics × intentions (radial polar field)
  *   PLATE.D — Iso stack (system topology, isometric 30°)
  *   PLATE.C — Three circles (attention relief, contour map)
  *
  * Each plate is 1px-stroke vector, monospace annotations, peach
- * highlight, drawn against the dark surface like an engineering
- * drawing. Animated from a single rAF loop per plate.
+ * highlight. Animated from a single rAF loop per plate.
  */
 
 const PEACH = 'var(--color-accent)';
@@ -25,7 +22,7 @@ const INK_PLATE_FILL = '#0E0E0E';
 
 /* ── PLATE.A — Topics × intentions ──────────────────── */
 
-function TopicsIntentions() {
+export function TopicsIntentions() {
   const [ang, setAng] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -223,7 +220,7 @@ interface Layer {
   dots: number;
 }
 
-function IsoStack() {
+export function IsoStack() {
   const [t, setT] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -586,77 +583,6 @@ export function ThreeCircles() {
         </text>
       </g>
     </svg>
-  );
-}
-
-/* ── Section ────────────────────────────────────────── */
-
-export function Instruments() {
-  const plateARef = useScrollAnim<HTMLDivElement>();
-  const plateDRef = useScrollAnim<HTMLDivElement>();
-
-  return (
-    <Module id="instruments" code="S.04" label="MICROGRAPHICS" meta="VECTOR · 1PX · 1:1">
-      <ModuleHead
-        eyebrow="Drafting room"
-        title={
-          <>
-            Sofia, <em>drawn to scale.</em>
-          </>
-        }
-        right={
-          <p>
-            Two plates from the Sofia drawing set: the topics &amp; intentions
-            field and the system topology — local capture, on-chain anchor,
-            measured to the millimetre.
-          </p>
-        }
-      />
-
-      <div className={styles.row2}>
-        <div ref={plateARef} className={`${styles.plate} anim anim-up`}>
-          <div className={styles.plateHead}>
-            <div className={styles.plateHeadLeft}>
-              <span className={styles.plateTag}>PLATE.A</span>
-              <span className={styles.plateTitle}>Topics × intentions · polar field</span>
-            </div>
-            <div className={styles.plateMeta}>
-              <span>OUTER · TOPICS</span>
-              <span>INNER · INTENTIONS</span>
-            </div>
-          </div>
-          <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
-            <TopicsIntentions />
-          </div>
-          <div className={styles.plateFoot}>
-            <span>14 TOPICS</span>
-            <span>6 INTENTIONS</span>
-            <span>SHEET 01/02</span>
-          </div>
-        </div>
-
-        <div ref={plateDRef} className={`${styles.plate} anim anim-up anim-d2`}>
-          <div className={styles.plateHead}>
-            <div className={styles.plateHeadLeft}>
-              <span className={styles.plateTag}>PLATE.D</span>
-              <span className={styles.plateTitle}>Stack · system topology · iso 30°</span>
-            </div>
-            <div className={styles.plateMeta}>
-              <span>6 LAYERS</span>
-              <span>BROWSER → PROTOCOL</span>
-            </div>
-          </div>
-          <div className={`${styles.plateBody} ${styles.plateBodyCompact}`}>
-            <IsoStack />
-          </div>
-          <div className={styles.plateFoot}>
-            <span>LOCAL → CHAIN</span>
-            <span>PROOF FLOWS DOWN</span>
-            <span>SHEET 02/02</span>
-          </div>
-        </div>
-      </div>
-    </Module>
   );
 }
 

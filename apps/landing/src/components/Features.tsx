@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { useScrollAnim } from '../hooks/useScrollAnim';
+import { IsoStack } from './Instruments';
 import { Module } from './Module';
 import { ModuleHead } from './ModuleHead';
+import { Plate } from './Plate';
 import styles from './Features.module.css';
 
 interface Feature {
@@ -60,26 +62,39 @@ const FEATURES: Feature[] = [
 export function Features() {
   return (
     <Module id="features" code="S.01" label="CAPABILITIES" meta="04 MODULES">
-      <ModuleHead
-        eyebrow="What Sofia does"
-        title={
-          <>
-            An instrument for the <em>data you already make.</em>
-          </>
-        }
-        right={
-          <p>
-            Browsing, watching, listening and reading already produce a signal.
-            Sofia gives you the apparatus to record it, prove it, and price it —
-            on terms you set.
-          </p>
-        }
-      />
+      <div className={styles.layout}>
+        <Plate
+          tag="PLATE.D"
+          title="Stack · system topology · iso 30°"
+          meta={['6 LAYERS', 'BROWSER → PROTOCOL']}
+          foot={['LOCAL → CHAIN', 'PROOF FLOWS DOWN']}
+          className={styles.layoutPlate}
+        >
+          <IsoStack />
+        </Plate>
 
-      <div className={styles.grid}>
-        {FEATURES.map((f, i) => (
-          <FeatureCard key={f.name} feature={f} index={i} />
-        ))}
+        <div className={styles.right}>
+          <ModuleHead
+            eyebrow="What Sofia does"
+            title={
+              <>
+                An instrument for the <em>data you already make.</em>
+              </>
+            }
+            sub={
+              <p>
+                Browsing, watching, listening and reading already produce a signal.
+                Sofia gives you the apparatus to record it, prove it, and price it —
+                on terms you set.
+              </p>
+            }
+          />
+          <div className={styles.grid}>
+            {FEATURES.map((f, i) => (
+              <FeatureCard key={f.name} feature={f} index={i} />
+            ))}
+          </div>
+        </div>
       </div>
     </Module>
   );
