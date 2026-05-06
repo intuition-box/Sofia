@@ -1,0 +1,23 @@
+/**
+ * Sofia Doc — design system surface (entry point).
+ *
+ * Stack:
+ *  - DS theme.css ships --ds-* tokens (surface / ink / accent).
+ *  - Local modules below port those onto Docusaurus' --ifm-* knobs and
+ *    add the doc-specific scales the DS does not own.
+ *
+ * Modules are split to keep each file under the 800-line cap:
+ *  - tokens.css     → tokens, infima bridge, base/reset, focus, motion
+ *  - markdown.css   → docs typography, links, code, tables, admonitions, TOC, pagination
+ *  - chrome.css     → navbar, sidebar, blog list, footer
+ *  - components.css → buttons, doc-card, stat-box
+ */
+
+@import '@0xsofia/design-system/theme.css';
+@import '@0xsofia/design-system/styles/page-hero.css';
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,300..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import './tokens.css';
+@import './markdown.css';
+@import './chrome.css';
+@import './components.css';

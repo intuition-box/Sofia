@@ -1,0 +1,318 @@
+/**
+ * Authentication page — Chrome extension wallet handshake.
+ *
+ * Editorial layout: serif headline, mono affordances (address, status),
+ * a single button pattern (ink → peach hover) shared by every CTA.
+ */
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - var(--ifm-navbar-height));
+  padding: 4rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--doc-radius-lg);
+  padding: 3rem 2.75rem;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--doc-shadow-md);
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1.25rem;
+  object-fit: contain;
+}
+
+.subtitle {
+  color: var(--ds-muted) !important;
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 0 0 2rem;
+}
+
+.text {
+  color: var(--ds-ink) !important;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+}
+
+.subtext {
+  color: var(--ds-muted) !important;
+  font-family: var(--font-body);
+  font-size: var(--doc-text-sm);
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--ds-border);
+  border-top-color: var(--ds-accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0.5rem auto 1.25rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.successHeading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  color: var(--ds-ink) !important;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.errorIcon {
+  font-size: 2.25rem;
+  color: var(--distrusted, #d44);
+  margin-bottom: 1rem;
+}
+
+.walletRow {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 1rem 0 1.25rem;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.walletAddress {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-xs);
+  color: var(--ds-ink) !important;
+}
+
+.walletRow .disconnectBtn {
+  flex: 0 0 auto;
+  margin: 0;
+  border: 0;
+  border-left: 1px solid var(--ds-border);
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0.85rem;
+  font-size: var(--doc-text-xs);
+  letter-spacing: 0.04em;
+  color: var(--ds-muted) !important;
+}
+
+.walletRow .disconnectBtn:hover {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink) !important;
+}
+
+/* ── Buttons — single pattern, ink default, peach on hover ─────── */
+
+.btn,
+.claimBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.75rem;
+  background: var(--ds-ink);
+  color: var(--ds-bg) !important;
+  border: 1px solid var(--ds-ink);
+  border-radius: var(--doc-radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background var(--doc-fast) var(--doc-ease-out),
+              border-color var(--doc-fast) var(--doc-ease-out),
+              color var(--doc-fast) var(--doc-ease-out),
+              transform var(--doc-fast) var(--doc-ease-out),
+              box-shadow var(--doc-fast) var(--doc-ease-out);
+}
+
+.btn:hover,
+.claimBtn:hover {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--doc-shadow-md);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.75rem;
+  background: transparent;
+  color: var(--ds-ink) !important;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--doc-radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--doc-fast) var(--doc-ease-out),
+              border-color var(--doc-fast) var(--doc-ease-out);
+}
+
+.btnSecondary:hover {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-ink);
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+  margin-top: 1.25rem;
+}
+
+.buttonGroup > * {
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+}
+
+.closeBtn,
+.disconnectBtn {
+  margin-top: 1rem;
+  padding: 0.45rem 1.25rem;
+  background: transparent;
+  color: var(--ds-muted) !important;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: var(--doc-radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color var(--doc-fast) var(--doc-ease-out),
+              border-color var(--doc-fast) var(--doc-ease-out),
+              background var(--doc-fast) var(--doc-ease-out);
+}
+
+.closeBtn:hover,
+.disconnectBtn:hover {
+  color: var(--ds-ink) !important;
+  border-color: var(--ds-border);
+  background: var(--ds-bg-subtle);
+}
+
+/* ── Secured by Privy ──────────────────────────────────────────── */
+
+.privyMention {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 2rem 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--doc-text-xs);
+  color: var(--ds-muted-soft);
+  letter-spacing: 0.04em;
+}
+
+.privyIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  color: var(--ds-muted);
+}
+
+.privyMention a {
+  color: var(--ds-muted) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--doc-fast) var(--doc-ease-out);
+}
+
+.privyMention a:hover {
+  color: var(--ds-ink) !important;
+}
+
+.instructions {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: var(--doc-radius-sm);
+}
+
+.instructionsText {
+  color: var(--ds-muted) !important;
+  font-family: var(--font-body);
+  font-size: var(--doc-text-sm);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 2.5rem 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.5rem;
+  }
+
+  .text {
+    font-size: 1.4rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .buttonGroup > * {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+}

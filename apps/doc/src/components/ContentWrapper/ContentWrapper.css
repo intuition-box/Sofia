@@ -1,0 +1,11 @@
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  margin: 0;
+  max-width: 760px;
+}
+
+.content-wrapper--wide {
+  max-width: 1180px;
+}
