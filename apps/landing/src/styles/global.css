@@ -54,6 +54,38 @@ button {
   color: var(--color-on-accent);
 }
 
+/* ── Scrollbar ────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 2px solid var(--color-bg);
+  border-radius: 999px;
+  transition: background 0.2s var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg);
+}
+
 /* ── Layout ───────────────────────────────────────────── */
 .container {
   max-width: var(--maxw);
