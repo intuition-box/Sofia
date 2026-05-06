@@ -4,58 +4,31 @@
    - Color tokens alias on @0xsofia/design-system (--ds-*).
      The landing is dark-only — `<html data-theme="dark">` is
      hardcoded in index.html so the DS dark tokens apply at root.
-   - Radius aliases on the DS scale (single --ds-radius value).
-   - Typography uses the Sofia family fonts: Geist for body and
-     headings, JetBrains Mono for technical accents (eyebrows,
-     stats, code, labels).
-   - Local-only scales: spacing, shadows, glass, motion.
+   - Radius aliases on the DS single radius (10px).
+   - Typography uses Geist for body/headings, Fraunces for display
+     italic accents, JetBrains Mono for technical labels.
    ============================================================ */
 
 :root {
   /* ── Layout ─────────────────────────────────────────── */
-  --max-width: 1240px;
   --maxw: 1240px;
   --gutter: 48px;
-  /* Legacy alias: keep --max-width for any straggler. */
 
-  /* Radius — aliased on the DS single radius (10px), with a
-     pair of derived sizes for visual hierarchy. The pill stays
-     local (DS does not expose it). */
+  /* ── Radius ─────────────────────────────────────────── */
   --radius-sm: calc(var(--ds-radius) - 4px);   /* 6px  */
   --radius-md: var(--ds-radius);               /* 10px */
   --radius-lg: calc(var(--ds-radius) + 4px);   /* 14px */
   --radius-xl: calc(var(--ds-radius) + 10px);  /* 20px */
   --radius-pill: 9999px;
 
-  /* ── Spacing ────────────────────────────────────────── */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 40px;
-  --space-2xl: 64px;
-  --space-3xl: 88px;
-
   /* ── Typography ─────────────────────────────────────── */
   --font-body:    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-logo:    'Lalezar', cursive;
-
-  --text-xs: 0.7rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9rem;
-  --text-md: 1rem;
-  --text-lg: 1.15rem;
-  --text-xl: 1.5rem;
-  --text-2xl: clamp(1.85rem, 1.4rem + 1.6vw, 2.4rem);
-  --text-3xl: clamp(2.4rem, 1.8rem + 2.2vw, 3.2rem);
-  --text-hero: clamp(2.6rem, 2rem + 3vw, 4.6rem);
 
   /* ── Colors — DS aliases ────────────────────────────── */
   --color-bg: var(--ds-bg);
   --color-bg-alt: var(--ds-bg-subtle);
-  --color-bg-elevated: var(--ds-card);
 
   --color-text: var(--ds-ink);
   --color-text-muted: var(--ds-muted);
@@ -67,43 +40,21 @@
 
   --color-accent: var(--ds-accent);
   --color-accent-ink: var(--ds-accent-ink);
-  --color-accent-soft: var(--ds-accent-soft);
   --color-on-accent: var(--ds-on-accent);
 
-  /* Buttons collapse to two intents:
-       - .btn         : ink default, peach on hover
-       - .btn-secondary : outline, bg-subtle on hover
-     The legacy --color-btn-light variant maps to a subtle surface. */
   --color-btn-primary: var(--ds-ink);
   --color-btn-primary-hover: var(--ds-accent);
-  --color-btn-secondary: transparent;
-  --color-btn-secondary-hover: var(--ds-bg-subtle);
-  --color-btn-light: var(--ds-bg-subtle);
-  --color-btn-light-hover: var(--ds-border);
 
-  --color-on-primary: var(--ds-bg);
-  --color-on-secondary: var(--ds-ink);
-  --color-on-light: var(--ds-ink);
-
-  /* Status — DS predicate colors (unprefixed shared vocabulary). */
+  /* Status — DS predicate colors. */
   --color-success: var(--trusted, #22c55e);
   --color-error: var(--distrusted, #ef4444);
 
-  /* ── Shadows (tuned for dark surfaces) ─────────────── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4);
+  /* ── Effects ────────────────────────────────────────── */
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-btn: 0 4px 16px rgba(255, 255, 255, 0.05);
-  --shadow-btn-hover: 0 6px 24px rgba(255, 255, 255, 0.1);
-
-  /* ── Glass ──────────────────────────────────────────── */
-  --glass-bg: color-mix(in srgb, var(--ds-bg) 70%, transparent);
-  --glass-blur: 20px;
 
   /* ── Motion ─────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-fast: 0.2s;
   --duration-normal: 0.35s;
-  --duration-slow: 0.65s;
 }

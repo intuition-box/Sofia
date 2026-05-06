@@ -6,10 +6,9 @@ import styles from './Hero.module.css';
 
 const PARTNERS = [
   { name: 'Mastra', logo: '/img/partners/mastra.svg', url: 'https://mastra.ai/' },
-  { name: 'Gaianet', logo: '/img/partners/gaianetlogo.png', url: 'https://www.gaianet.ai' },
   { name: 'Colony', logo: '/img/partners/colonnylogo.png', url: 'https://colony.io/' },
   { name: 'Intuition', logo: '/img/partners/intuitionlogo.svg', url: 'https://intuition.systems' },
-  { name: 'Ollama', logo: '/img/partners/ollama.png', url: 'https://ollama.com' },
+  { name: 'Phala', logo: '/img/partners/phala.svg', url: 'https://phala.com' },
 ];
 
 export function Hero() {

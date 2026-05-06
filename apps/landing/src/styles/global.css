@@ -61,11 +61,6 @@ button {
   padding: 0 var(--gutter);
 }
 
-.divider {
-  height: 1px;
-  background: var(--color-border-soft);
-}
-
 /* ── Typography (design v2) ──────────────────────────── */
 
 .eyebrow {
@@ -129,107 +124,6 @@ button {
   max-width: 52ch;
 }
 
-/* ── Legacy aliases — kept until Sprint 13 cleanup ──── */
-
-.section-title {
-  font-family: var(--font-heading);
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.025em;
-  margin-bottom: 12px;
-  color: var(--color-text);
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
-}
-
-.section-subtitle {
-  font-size: var(--text-md);
-  color: var(--color-text-muted);
-  line-height: 1.65;
-  max-width: 56ch;
-}
-
-.mono-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55em;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--color-accent-ink);
-}
-
-.mono-eyebrow::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.display {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: clamp(2.5rem, 1.8rem + 3vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.035em;
-  color: var(--color-text);
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
-  margin: 0;
-}
-
-.display em {
-  font-style: italic;
-  font-weight: 600;
-  color: var(--color-accent-ink);
-}
-
-/* ── Brand mark — peach circle next to the wordmark. */
-.brand-mark {
-  display: inline-block;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  flex-shrink: 0;
-  vertical-align: middle;
-}
-
-/* ── LED dot — pulsing live indicator (nav status, feeds). */
-.led-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  position: relative;
-  flex-shrink: 0;
-}
-
-.led-dot::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  background: var(--color-accent);
-  opacity: 0.4;
-  animation: led-pulse 2s var(--ease-out) infinite;
-}
-
-@keyframes led-pulse {
-  0%   { transform: scale(1);   opacity: 0.45; }
-  70%  { transform: scale(2.2); opacity: 0;    }
-  100% { transform: scale(2.2); opacity: 0;    }
-}
-
-.tabular {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-}
-
 /* ── Buttons ──────────────────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -272,40 +166,6 @@ button {
   border-color: var(--color-text);
 }
 
-.btn-light {
-  background: var(--color-btn-light);
-  color: var(--color-on-light);
-  border-color: var(--color-btn-light);
-}
-.btn-light:hover {
-  background: var(--color-btn-light-hover);
-  border-color: var(--color-btn-light-hover);
-}
-
-.btn-ghost {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text);
-  padding: 0;
-  position: relative;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-.btn-ghost::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -2px;
-  height: 1px;
-  background: currentColor;
-  transform-origin: left;
-  transition: transform var(--duration-normal) var(--ease-out);
-}
-.btn-ghost:hover { color: var(--color-accent-ink); }
-.btn-ghost:hover::after { transform: scaleX(1.05); }
-
 .btn-arrow,
 .btn .arrow {
   width: 13px;
@@ -345,97 +205,28 @@ button {
 .on-peach .h-display em { color: #02000e; }
 .on-peach .lede { color: rgba(0, 0, 0, 0.7); }
 
-/* ── Scroll animation — directional reveal ─────────────
-   Add `.anim` to any element, then optionally a direction.
-   The `useScrollAnim` hook adds `.in` on intersect. */
+/* ── Scroll animation — fade-up reveal ───────────────── */
 
 .anim {
   opacity: 0;
   transition:
     opacity 0.7s var(--ease-out),
-    transform 0.7s var(--ease-out),
-    filter 0.7s var(--ease-out);
+    transform 0.7s var(--ease-out);
   will-change: opacity, transform;
 }
 
 .anim,
-.anim-up         { transform: translateY(48px); }
-.anim-down       { transform: translateY(-48px); }
-.anim-left       { transform: translateX(48px); }
-.anim-right      { transform: translateX(-48px); }
-.anim-scale      { transform: scale(0.92); }
-.anim-blur       { filter: blur(10px); }
-.anim-blur.anim  { transform: translateY(32px); }
+.anim-up { transform: translateY(48px); }
 
 .anim.in,
-.anim-up.in,
-.anim-down.in,
-.anim-left.in,
-.anim-right.in,
-.anim-scale.in,
-.anim-blur.in {
+.anim-up.in {
   opacity: 1;
   transform: none;
-  filter: none;
 }
-
-.anim-d1 { transition-delay: 0.08s; }
-.anim-d2 { transition-delay: 0.16s; }
-.anim-d3 { transition-delay: 0.24s; }
-.anim-d4 { transition-delay: 0.32s; }
-.anim-d5 { transition-delay: 0.4s; }
 
 /* Stagger via --i CSS variable on the parent. */
 .stagger > .anim {
   transition-delay: calc(var(--i, 0) * 90ms);
-}
-
-/* ── split-text — simple fade-up on whole element (design v2) ── */
-.split-text {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
-}
-.split-text.in {
-  opacity: 1;
-  transform: none;
-}
-
-/* ── Legacy split-word / split-char — kept until Sprint 13 ── */
-
-.split-line {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: top;
-}
-
-.split-word,
-.split-char {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(0.55em);
-  transition:
-    opacity 0.7s var(--ease-out),
-    transform 0.7s var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 0.035s);
-  will-change: opacity, transform;
-}
-
-.split-word + .split-word,
-.split-word + .split-space {
-  margin-left: 0;
-}
-
-.split-space { white-space: pre; }
-
-.in .split-word,
-.in .split-char,
-.in .split-line,
-.visible .split-word,
-.visible .split-char,
-.visible .split-line {
-  opacity: 1;
-  transform: none;
 }
 
 /* ── Reveal — peach panel wipes off the inner image/content ── */
@@ -464,35 +255,8 @@ button {
   transform: scale(1);
 }
 
-/* ── Vector ornament — dot grid background ───────────── */
-.dot-grid-bg {
-  background-image: radial-gradient(circle, var(--ds-grid-dot) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: 0 0;
-}
-
-/* Technical bracket — pair on opposite corners of cards. */
-.tech-bracket { position: relative; }
-.tech-bracket::before,
-.tech-bracket::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--color-text-dim);
-  pointer-events: none;
-}
-.tech-bracket::before {
-  top: -1px; left: -1px;
-  border-right: 0; border-bottom: 0;
-}
-.tech-bracket::after {
-  bottom: -1px; right: -1px;
-  border-top: 0; border-left: 0;
-}
-
-.logo-invert,
-.footer-logo {
+/* ── Auth pages helper — invert dark logos on light bg. */
+.logo-invert {
   filter: invert(1);
 }
 
@@ -502,13 +266,9 @@ button {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
-  .anim,
-  .split-text,
-  .split-word,
-  .split-char {
+  .anim {
     opacity: 1 !important;
     transform: none !important;
-    filter: none !important;
   }
   .reveal::after { display: none; }
   .reveal img,
