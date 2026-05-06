@@ -1,0 +1,61 @@
+/* ============================================================
+   SOFIA LANDING TOKENS
+
+   - Color tokens alias on @0xsofia/design-system (--ds-*).
+     The landing is dark-only — `<html data-theme="dark">` is
+     hardcoded in index.html so the DS dark tokens apply at root.
+   - Radius aliases on the DS single radius (10px).
+   - Typography uses Geist for body/headings, Fraunces for display
+     italic accents, JetBrains Mono for technical labels.
+   ============================================================ */
+
+:root {
+  /* ── Layout ─────────────────────────────────────────── */
+  --maxw: 1240px;
+  --gutter: 48px;
+  --nav-h: 64px;
+
+  /* ── Radius ─────────────────────────────────────────── */
+  --radius-sm: calc(var(--ds-radius) - 4px);   /* 6px  */
+  --radius-md: var(--ds-radius);               /* 10px */
+  --radius-lg: calc(var(--ds-radius) + 4px);   /* 14px */
+  --radius-xl: calc(var(--ds-radius) + 10px);  /* 20px */
+  --radius-pill: 9999px;
+
+  /* ── Typography ─────────────────────────────────────── */
+  --font-body:    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Colors — DS aliases ────────────────────────────── */
+  --color-bg: var(--ds-bg);
+  --color-bg-alt: var(--ds-bg-subtle);
+
+  --color-text: var(--ds-ink);
+  --color-text-muted: var(--ds-muted);
+  --color-text-dim: var(--ds-muted-soft);
+
+  --color-border: var(--ds-border);
+  --color-border-soft: var(--ds-border-soft);
+  --color-border-hover: var(--ds-ink);
+
+  --color-accent: var(--ds-accent);
+  --color-accent-ink: var(--ds-accent-ink);
+  --color-on-accent: var(--ds-on-accent);
+
+  --color-btn-primary: var(--ds-ink);
+  --color-btn-primary-hover: var(--ds-accent);
+
+  /* Status — DS predicate colors. */
+  --color-success: var(--trusted, #22c55e);
+  --color-error: var(--distrusted, #ef4444);
+
+  /* ── Effects ────────────────────────────────────────── */
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* ── Motion ─────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 0.2s;
+  --duration-normal: 0.35s;
+}

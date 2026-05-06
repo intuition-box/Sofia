@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 05/12 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">December 5, 2025</div>
+<h1 class="post__title">Logbook 05/12</h1>
+<p>This week, we achieved a major milestone by deploying the <strong>Sofia Fee Proxy Contract</strong> on Intuition Mainnet, enabling Sofia to collect transaction fees while maintaining full protocol compatibility. We enhanced user features with improved SignalTab functionality, image support for triples, and better transaction feedback. Multiple bug fixes improved the stability of the orb visualization, chat, activity feed, and follow system.</p>
+
+
+
+<h2>Smart Contract Development</h2>
+
+<h3>Sofia Fee Proxy Contract</h3>
+<ul>
+<li>Developed and deployed a custom proxy contract on Intuition Mainnet (<a href="https://basescan.org/address/0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c" target="_blank">0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c</a>) that wraps the MultiVault protocol</li>
+<li>Enables Sofia to collect transaction fees while maintaining full compatibility with Intuition's core functions</li>
+<li>Published the contract architecture as a reusable open-source template for other developers in the Intuition ecosystem</li>
+</ul>
+
+<h3>Fee Structure Implementation</h3>
+<ul>
+<li>Designed a deposit-based fee model charging <strong>0.1 TRUST fixed fee + 5%</strong> on each deposit</li>
+<li>No fees on atom/triple creation itself, ensuring fair pricing for users</li>
+<li>Fee collection mechanism seamlessly integrated with existing MultiVault operations</li>
+</ul>
+
+<h3>Hardhat Test Suite</h3>
+<ul>
+<li>Built comprehensive test coverage for all contract functions</li>
+<li>Tests include fee calculations, admin permissions, and edge cases</li>
+<li>100% tests passing with full validation of contract behavior</li>
+</ul>
+
+<h2>Blockchain Integration</h2>
+
+<h3>ABI Integration</h3>
+<ul>
+<li>Fully integrated the Sofia Fee Proxy ABI into the extension</li>
+<li>Enables direct contract interaction from the frontend</li>
+<li>Seamless transaction flow between UI and smart contracts</li>
+</ul>
+
+<h2>User Features</h2>
+
+<h3>SignalTab Enhancement</h3>
+<ul>
+<li>Upgraded the SignalTab to display users' share holdings across vaults</li>
+<li>New modal for investing directly in signals</li>
+<li>Improved visibility of user positions and investment opportunities</li>
+</ul>
+
+<h3>Image Support for Triples</h3>
+<ul>
+<li>Added the ability to attach images when creating triples</li>
+<li>Enriches semantic data with visual content</li>
+<li>Better context and representation for knowledge claims</li>
+</ul>
+
+<h3>Modal UX Improvements</h3>
+<ul>
+<li>Enhanced transaction modals to clearly show the action type on success</li>
+<li>Distinct feedback for create, deposit, and follow actions</li>
+<li>Improved user understanding of transaction outcomes</li>
+</ul>
+
+<h2>Fixes & Improvements</h2>
+
+<h3>Orb Visualization</h3>
+<ul>
+<li>Fixed rendering issues in the 3D orb component</li>
+<li>Improved stability and performance</li>
+</ul>
+
+<h3>Chat Functionality</h3>
+<ul>
+<li>Resolved message delivery and display bugs</li>
+<li>Better real-time communication experience</li>
+</ul>
+
+<h3>Activity Feed</h3>
+<ul>
+<li>Fixed data fetching and sorting issues</li>
+<li>More reliable activity stream updates</li>
+</ul>
+
+<h3>Follow System</h3>
+<ul>
+<li>Corrected follow/unfollow state management</li>
+<li>Improved UI updates for follow actions</li>
+</ul>
+
+<h3>Privacy Policy</h3>
+<ul>
+<li>Updated legal documentation to reflect new data handling practices</li>
+<li>Compliance with current privacy standards</li>
+</ul>
+
+<hr>
+
+<h2>Key Achievement</h2>
+
+<p><strong>Sofia Fee Proxy Contract</strong> (<a href="https://basescan.org/address/0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c" target="_blank">0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c</a>)</p>
+
+<p>A custom smart contract deployed on Intuition Mainnet that collects a <strong>0.1 TRUST + 5%</strong> fee on deposits, seamlessly integrated with the MultiVault protocol. The contract architecture has been open-sourced as a reusable template for developers to build their own fee-based applications on Intuition.</p>
+
+<hr>
+
+<h2>Grant Application</h2>
+
+<h3>Intuition Grant</h3>
+<ul>
+<li>Successfully submitted our grant application to Intuition</li>
+<li>Application document available at: <a href="https://salmon-petite-pinniped-299.mypinata.cloud/ipfs/bafybeidfqmvs2e5ln77syka67lopyhfpoofpcruxtcicn6qzva5ylejroa" target="_blank">Intuition Grant Application (PDF)</a></li>
+<li>Awaiting final validation</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

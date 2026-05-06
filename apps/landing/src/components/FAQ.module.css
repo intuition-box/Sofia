@@ -1,0 +1,135 @@
+/**
+ * FAQ (S.08) — split layout: copy + Discord CTA on the left,
+ * accordion list on the right (idx · label · pivoting + icon).
+ */
+
+.faq {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 80px;
+  align-items: start;
+}
+
+.faqLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.faqLeft .eyebrow {
+  margin-bottom: 0;
+}
+
+.faqLeft h2 {
+  margin: 0;
+}
+
+.faqLeft .lede {
+  margin: 0;
+}
+
+.discordBtn {
+  margin-top: 8px;
+}
+
+/* ── List ─────────────────────────────────────────────── */
+
+.list {
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.item {
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.question {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 4px;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.question:hover {
+  color: var(--color-accent-ink);
+}
+
+.qIndex {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--color-text-dim);
+}
+
+.qLabel {
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 0.9rem + 1vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: transform 0.35s var(--ease-out), background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.item.open .icon {
+  transform: rotate(45deg);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.answer {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.55s var(--ease-out), opacity 0.35s;
+}
+
+.item.open .answer {
+  max-height: 380px;
+  opacity: 1;
+}
+
+.answer p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  padding: 0 4px 28px 56px;
+  margin: 0;
+}
+
+.answer a {
+  color: var(--color-accent-ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-ink) 40%, transparent);
+}
+
+@media (max-width: 880px) {
+  .faq {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .answer p {
+    padding-left: 12px;
+  }
+}

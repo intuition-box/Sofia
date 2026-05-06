@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 23/01 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">January 23, 2026</div>
+<h1 class="post__title">Logbook 23/01</h1>
+<h2>Discovery System and Profiles</h2>
+<ul>
+<li>Complete implementation of a "Discovery" system with discovery score based on position-based ranking</li>
+<li>Creation of dedicated user profile page with intention statistics</li>
+<li>Added discovery metrics for "learning" with opportunity badge system</li>
+<li>Trust/distrust counter with person icons to visualize progression</li>
+</ul>
+
+<h2>Quest and Rewards System</h2>
+<ul>
+<li>Implementation of complete daily quest system</li>
+<li>Integration of discovery rewards for trust/distrust actions</li>
+<li>Quest cache system with "claimable_xp" state</li>
+<li>On-chain badge verification for quest validation</li>
+<li>TSX initialization when claiming XP after quest completion</li>
+</ul>
+
+<h2>Intention Groups System (Echoes)</h2>
+<ul>
+<li>Complete intention groups system with XP and level progression</li>
+<li>Merge of on-chain certifications with local groups</li>
+<li>Unified XP progress bar with level-up button</li>
+<li>Gold glow effect for level-up ready cards</li>
+<li>Level badge colors added for better UX</li>
+<li>Strict URL matching for on-chain badges with multi-certification support</li>
+<li>Integration with WeightModal for predicate creation and upgrades</li>
+</ul>
+
+<h2>Mastra Architecture Migration</h2>
+<ul>
+<li>Complete migration from ElizaOS to Mastra (v0.1.2)</li>
+<li>MCP connection for skills analysis with persistent cache</li>
+<li>New "askills" page merging AI and cache data</li>
+<li>New skills analysis agent in Mastra workflow</li>
+<li>Phala deployment with new docker-compose integrating MCP tools</li>
+<li>Gaianet plugin successfully implemented in framework</li>
+</ul>
+
+<h2>Social Verification and Humanity</h2>
+<ul>
+<li>Functional social verification system (Discord, Twitch)</li>
+<li>Twitch OAuth migration from implicit flow to external OAuth via landing page</li>
+<li>Complete "Proof of Humanity" implementation with on-chain attestation</li>
+<li>Bot verifier for filtering social link quests</li>
+<li>Golden border with glow animation for verified human avatars</li>
+<li>Mastra "human-attestor" workflow with bot wallet to pay fees</li>
+</ul>
+
+<h2>Activity Feed and Refactoring</h2>
+<ul>
+<li>Complete refactoring of Activity Feed page</li>
+<li>Added get_account_activity operation for analytics</li>
+<li>GraphQL pagination implemented</li>
+<li>Improved feed styling with links to atom objects</li>
+<li>GraphQL package added to workspace</li>
+</ul>
+
+<h2>Cleanup and Optimization</h2>
+<ul>
+<li>Removal of all legacy behavioral analysis code</li>
+<li>Removal of page duration and attention score systems</li>
+<li>Renamed all "elizaos" stores and functions</li>
+<li>New buffer system to send URLs after timeout or stack</li>
+<li>Removed AGENT_CHANNELS, added INTENTION_GROUPS and USER_XP stores</li>
+<li>Added SessionTracker service and GroupManager</li>
+</ul>
+
+<h2>UI/UX Improvements</h2>
+<ul>
+<li>Min-height added in Core Page</li>
+<li>Improved CSS tab organization for better comprehension</li>
+<li>Loader in TX state for weight modal</li>
+<li>Various interface improvements for proofs</li>
+<li>Multiple UI fixes</li>
+</ul>
+
+<h2>Infrastructure and DevOps</h2>
+<ul>
+<li>Webstore configuration</li>
+<li>Updated installation and development setup instructions</li>
+<li>Added .github and .git to .gitignore</li>
+<li>Fixed viem TypeScript errors</li>
+<li>Updated README documentation</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

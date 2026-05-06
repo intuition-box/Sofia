@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 27/02 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">February 27, 2026</div>
+<h1 class="post__title">Logbook 27/02</h1>
+<p>Big week on Sofia — we unified the transaction confirmation screen across the entire app, launched the <strong>Beta Season Pool</strong> (a shared vault funded by every certification), overhauled bookmarks with search and sorting, and shipped a major performance boost cutting the app's initial load by 535 KB. Page-level blockchain stats also got a full rewrite for better accuracy.</p>
+
+
+
+<h2>New Confirmation Screen & Fee Transparency</h2>
+
+<ul>
+<li>One single confirmation screen for every action: certifications, votes, follows, trust/distrust, quests — no more different UIs depending on the context</li>
+<li><strong>Real-time fee breakdown</strong> before each transaction: deposit amount, Sofia fees, and on-chain creation costs</li>
+<li>Quick-pick deposit amounts: 0.01, 0.5, 1, 5, 10 TRUST or custom input</li>
+<li>The feed and history now use this new screen with the full fee breakdown</li>
+<li>Like/dislike votes become <strong>support/oppose deposits</strong> — every vote now has real skin in the game</li>
+</ul>
+
+<hr>
+
+<h2>Beta Season Pool</h2>
+
+<ul>
+<li>Every certification automatically sends a portion of the deposit into a <strong>shared vault</strong>: the Beta Season Pool</li>
+<li>A <strong>slider</strong> lets users choose how much of their deposit goes to the pool</li>
+<li>New <strong>stats card</strong> for the pool: total value locked (TVL), number of stakers, share price, and personal P&L</li>
+<li>Your position in the pool updates in real time</li>
+<li>Deposits below a minimum threshold are skipped to avoid unnecessary fees</li>
+</ul>
+
+<hr>
+
+<h2>Bookmarks & Echoes</h2>
+
+<ul>
+<li><strong>Search, sort, and domain filter</strong> on bookmarks and categories</li>
+<li><strong>Redeem button</strong> to withdraw deposits directly from bookmarks or history</li>
+<li>Bookmarks section added to user profiles</li>
+<li>Badges now visible on the blockchain page with redesigned Trust & Distrust buttons</li>
+<li>Level badges based on on-chain level as source of truth</li>
+</ul>
+
+<hr>
+
+<h2>Page Blockchain Stats</h2>
+
+<ul>
+<li>Complete rewrite of how page stats are calculated — more reliable, faster, and consistent</li>
+<li><strong>Domain/page toggle</strong> to filter stats at the level you want</li>
+<li>Fixed a bug where some stats were showing 0</li>
+<li>Data now enriched with creation dates and associated metadata</li>
+</ul>
+
+<hr>
+
+<h2>Performance</h2>
+
+<ul>
+<li>The 3D background animation is now lazy-loaded — <strong>535 KB smaller</strong> initial app bundle</li>
+<li>Rendering optimized on 6 key components to avoid unnecessary re-renders</li>
+<li>Cleaned up unused dependencies and legacy code from the migration</li>
+<li>Certification values are now centralized in a single reference file</li>
+<li>Removed the +10 Gold bonus on certifications to eliminate double-counting with Discovery Gold</li>
+</ul>
+
+<hr>
+
+<h2>UI & Fixes</h2>
+
+<ul>
+<li><strong>"XP Gained" animation</strong> after certifications — instant visual feedback</li>
+<li>Redesigned metrics panel</li>
+<li>Colored pills for already-certified intentions</li>
+<li><strong>Trends view</strong> and <strong>Leaderboard</strong> finalized</li>
+<li>Fixes: quest initial state, Pioneer badge logic, Echoes group loading, URL parsing edge cases</li>
+<li>Contributor count now displayed on stats views</li>
+<li>Reload button and quest highlighting added</li>
+</ul>
+
+<hr>
+
+<p>Another dense week. The unified confirmation screen and the Beta Season Pool are foundational pieces that make every on-chain interaction in Sofia more transparent and rewarding. Onward.</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

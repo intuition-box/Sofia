@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 13/02 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">February 13, 2026</div>
+<h1 class="post__title">Logbook 13/02</h1>
+<p>Big week for Sofia — we cleaned up the entire codebase for better maintainability, introduced the ability to trust or distrust content, split the reward system into two currencies (Gold and XP), added a voting system in the Circle Feed, enabled profile sharing on X, and completely redesigned the user profile with badges, animations, and new visuals.</p>
+
+
+
+<h2>Codebase Cleanup & Documentation</h2>
+
+<ul>
+<li>Major <strong>spring cleaning</strong> of the code: removed outdated features, reorganized file structure, and standardized how errors are tracked across the project</li>
+<li>Removed legacy code that was no longer used (old AI system, old real-time communication layer)</li>
+<li>Added full <strong>architecture documentation</strong> so any new contributor can understand how Sofia works</li>
+<li>Updated the project <strong>README</strong> with comprehensive setup and usage instructions</li>
+</ul>
+
+<hr>
+
+<h2>Trust & Distrust System</h2>
+
+<ul>
+<li>This trust signal is visible across multiple views: your browsing groups, your interests, and the community feed</li>
+<li>Lays the groundwork for a <strong>reputation layer</strong> where the community collectively curates quality content</li>
+</ul>
+
+<hr>
+
+<h2>New Dual Currency: Gold & XP</h2>
+
+<ul>
+<li>Introduced <strong>two separate reward currencies</strong>:</li>
+<li><strong>Gold</strong> — earned passively through browsing and discovering new content</li>
+<li><strong>XP</strong> — earned by completing on-chain quests and actions</li>
+<li>Gold is now displayed throughout the interface with <strong>animated reward visuals</strong> when you earn it</li>
+<li>Smooth migration from the old single-currency system — no progress lost for existing users</li>
+</ul>
+
+<hr>
+
+<h2>Circle Feed Voting</h2>
+
+<ul>
+<li>The Circle Feed shows URLs certified by people you follow — a curated stream of what your trusted circle is browsing</li>
+<li>You can <strong>like or dislike</strong> each shared link directly from the feed</li>
+<li>Each vote is an <strong>on-chain signal</strong> — it strengthens or weakens the visibility of that content for the community</li>
+<li>This turns the Circle Feed into a <strong>collaborative filter</strong>: the more your circle votes, the better the content surfaces</li>
+<hr>
+</ul>
+
+<h2>Share Your Profile on X</h2>
+
+<ul>
+<li>New <strong>"Share on X"</strong> button that generates a short link to your Sofia profile</li>
+<li>Clicking the shared link on X <strong>opens Sofia directly</strong> in the extension — seamless deep linking</li>
+<li>Your shared profile includes your stats: trust circle size, pioneer/explorer counts, and signals</li>
+</ul>
+
+<hr>
+
+<h2>User Profile Redesign</h2>
+
+<ul>
+<li>Completely <strong>redesigned profile page</strong> with a cleaner, more visual layout</li>
+<li>New <strong>role badges</strong> — Pioneer, Explorer, Contributor — displayed with dedicated icons</li>
+<li>New <strong>Interest tab</strong> that automatically analyzes and shows your browsing themes</li>
+<li>Profile now split into clear sections: Stats, Socials, and Interests</li>
+<li><strong>Favicons</strong> (site icons) now appear on bookmarks and followed profiles for better visual recognition</li>
+</ul>
+
+<hr>
+
+<h2>Bug Fixes & Stability</h2>
+
+<ul>
+<li>Fixed an issue where <strong>browsing data could be lost</strong> if the browser put Sofia to sleep</li>
+<li>Fixed <strong>URL matching</strong> for sites with and without "www." — no more duplicate entries</li>
+<li>Fixed <strong>wallet connection</strong> dropping between transactions</li>
+<li>Fixed display issues on badges, profile page, and bookmarks</li>
+<li>Improved handling of <strong>single-page apps</strong> (sites like Twitter, Gmail) for better URL tracking</li>
+</ul>
+
+<hr>
+
+<p>A massive week of both visible features and foundational work — Sofia is now cleaner, faster, and ready for the next wave of features.</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

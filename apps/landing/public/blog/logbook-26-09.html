@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 26/09 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">September 26, 2025</div>
+<h1 class="post__title">Logbook 26/09</h1>
+<p>During this week we pushed SofIA’s architecture further, laying the groundwork for the indexer and cleaning up our core stack. We improved gas fee handling and contract interaction, refactored our hooks and state management to be fully modular, and optimized batch atom creation to avoid duplicate blockchain transactions.</p>
+
+<p>On top of that we restored the profile page, refined the Signal tab, improved CSS and integrated OAuth securely with YouTube, Spotify and Twitch. Our new theme-extraction agent now supports bookmark and history import with chunked processing for better memory usage.</p>
+
+<p>All these changes make SofIA lighter, faster and easier to extend. Users benefit from smoother interfaces, quicker imports and clearer TRUST metrics; developers get a cleaner, more predictable API and message bus.</p>
+
+
+
+<h2>Indexer & Core Infrastructure</h2>
+<ul>
+<li>Started implementing the indexer</li>
+<li>Fixed IPFS calculation</li>
+<li>General repository cleanup</li>
+</ul>
+
+<h2>Follow Function</h2>
+<ul>
+<li>Starting to create follow function on account tab</li>
+<li>Create Trust Circle tab on profile page to see which account you're following</li>
+</ul>
+
+<h2>Blockchain & Transactions</h2>
+<ul>
+<li>Configured maxGasFee for transaction execution</li>
+<li>Managed gas fees and enforced EIP-1559 for local signing</li>
+<li>Split MetaMask client from public HTTP client for contract reads</li>
+<li>Fixed TypeScript errors and RPC failures</li>
+</ul>
+
+<h2>Architecture & Hooks</h2>
+<ul>
+<li>Simplified hook architecture by removing local states</li>
+<li>Fixed TypeScript typing issues</li>
+<li>Optimized batch atom creation logic to avoid duplicate blockchain transactions</li>
+<li>Fully refactored type and message management</li>
+<li>Applied modular architecture to all hooks</li>
+</ul>
+
+<h2>State Management</h2>
+<ul>
+<li>Centralized messages into messageBus</li>
+<li>Removed local states — now handled by components</li>
+<li>Simplified remaining hooks</li>
+<li>Streamlined IndexedDB methods</li>
+</ul>
+
+<h2>UI/UX Improvements</h2>
+<ul>
+<li>Fixed display issues</li>
+<li>General CSS architecture improvements</li>
+<li>Improve social logo on account tab</li>
+<li>Finalize the logo</li>
+<li>Create trust circle Tab</li>
+</ul>
+
+<h2>OAuth & Social Integration</h2>
+<ul>
+<li>Secured OAuth service for YouTube, Spotify, and Twitch</li>
+<li>Extracted user data and generated triples</li>
+<li>Externalized OAuth configuration (not committed)</li>
+</ul>
+
+<h2>Data Processing</h2>
+<ul>
+<li>Implemented theme extraction logic with new agent</li>
+<li>Enabled import of history and bookmarks</li>
+<li>Introduced chunk-based processing for memory optimization</li>
+<li>Replaced parallel storage with sequential storage</li>
+</ul>
+
+<h2>Performance & Optimization</h2>
+<ul>
+<li>Removed dead code and optimized overall performance</li>
+<li>Centralized constants and services</li>
+<li>Simplified message handlers</li>
+<li>Improved WebSocket architecture</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

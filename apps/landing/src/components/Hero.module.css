@@ -1,0 +1,185 @@
+/**
+ * Hero (design v3 — split sketch) — full-bleed peach background,
+ * 50/50 split: copy zone (left) + bare diagram with corner labels (right),
+ * separated by an ink hairline.
+ */
+
+.hero {
+  position: relative;
+  background: var(--color-accent);
+  color: #02000e;
+  width: 100%;
+  min-height: 0;
+  margin-top: var(--nav-h, 64px); /* push Hero below the fixed navbar */
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* ── LEFT — copy zone ─────────────────────────────────── */
+
+.copyZone {
+  padding: 32px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  justify-content: center;
+}
+
+.metaTag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metaTag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #02000e;
+  display: inline-block;
+}
+
+.headline {
+  margin: 0;
+  max-width: 13ch;
+}
+
+.lede {
+  margin: 0;
+  max-width: 42ch;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* Partners — bottom of the copy column */
+
+.partners {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partnersLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.partnersRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+
+.partnersRow a {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.75;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.partnersRow a:hover {
+  opacity: 1;
+}
+
+.partnersRow img {
+  height: 28px;
+  width: auto;
+  display: block;
+  filter: brightness(0);
+}
+
+/* Phala logo — keep native colors (lime square + dark "P" mark). The
+   uniform brightness(0) used for other partners flattens both colors
+   to black and erases the "P" inside. Cap width since its viewBox is
+   ~3:1 (138×48). */
+.partnersRow a[href*="phala"] img {
+  height: auto;
+  max-height: 28px;
+  max-width: 90px;
+  filter: none;
+}
+
+/* ── RIGHT — visual zone (bare diagram + corner labels) ─ */
+
+.visualZone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 32px;
+}
+
+/* Diagram sits directly on the peach Hero — TopicsIntentions is rendered
+   in `mode="light"` so its lines and labels are ink-on-peach. */
+.diagram {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  aspect-ratio: 1;
+}
+
+.diagram > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.plateTag {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.tl { top: 0; left: 0; }
+.tr { top: 0; right: 0; }
+.bl { bottom: 0; left: 0; }
+.br { bottom: 0; right: 0; }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: 1fr; }
+  .copyZone {
+    padding: 48px 24px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .visualZone {
+    min-height: 50vh;
+    padding: 32px;
+  }
+  .tl, .bl { left: 16px; }
+  .tr, .br { right: 16px; }
+  .partners { max-width: none; }
+}

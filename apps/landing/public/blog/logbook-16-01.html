@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 16/01 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">January 16, 2026</div>
+<h1 class="post__title">Logbook 16/01</h1>
+<p>During this development cycle, we focused on strengthening Sofia's core mechanics and finalizing several key systems. The main effort went into improving discovery logic, intention classification, and social linking, while stabilizing authentication and agent infrastructure.</p>
+
+<p>This period was less about visible features and more about ensuring reliability, coherence, and long-term scalability across the product.</p>
+
+
+
+<h2>Discovery & Intentions</h2>
+
+<p>Discovery has become the central thread of the product. We spent a lot of time refining how visits are interpreted — not just counting them, but understanding intent. Pages can now be visited to <em>learn</em>, <em>work</em>, <em>get inspired</em>, <em>have fun</em>, or <em>buy</em>, and those nuances begin to shape how value and real use cases emerge over time.</p>
+
+<p>At the same time, the Trust / Distrust buttons remain part of the loop. They let users add a second layer of meaning on top of intentions — not only <em>why</em> a page was visited, but whether that intention feels legitimate or valuable. In practice, this creates a simple form of double verification: one signal for <em>intent</em>, and another for <em>trust</em>.</p>
+
+<p>The idea of being early also started to matter more. Discovering a page first, or being among the first few, now carries weight. This naturally led to the introduction of discovery roles — Pioneer, Explorer, Contributor — which quietly reinforce the idea that timing and curiosity become part of one's on-chain footprint.</p>
+
+<p>All of this is now visible through the Discovery Profile: a space that reflects how someone explores the web, with a discovery score, an intention breakdown, and progression over time. It's still early, but the shape is there.</p>
+
+<p>We also introduced quests as a way to give this exploration loop a bit more momentum. Completing key actions now grants XP, and over time unlocks success badges — small rewards designed to make the experience feel progressive, without turning it into pure gamification.</p>
+
+<hr>
+
+<h2>Social Identity</h2>
+
+<p>This cycle also marked the completion of the social verification layer. Wallets can now be linked to real social presence across <strong>Twitter/X, YouTube, Discord, and Spotify</strong>. The goal here was not to collect personal data, but to let users <em>prove</em> parts of their identity when they choose to.</p>
+
+<p>And when users allow it, Sofia can go further by importing useful signals from the linked platforms — for example favorite artists or playlists, Discord channels they own, or roles they hold across servers. The idea is to turn optional social context into structured, user-controlled knowledge that can later power recommendations and on-chain reputation.</p>
+
+<p>Everything is verified on-chain, scoped to the user's wallet, and filtered to remain clean and auditable. It's a quiet system by design — something that works in the background and only surfaces when it matters.</p>
+
+<hr>
+
+<h2>Social Links & Human Signals</h2>
+
+<p>For now, we're keeping things simple and honest: this stage is about <strong>linking socials</strong> and using that as a lightweight credibility signal, not claiming a definitive "proof of humanity."</p>
+
+<p>Once a user completes the full social verification quest, Sofia can already infer a meaningful level of continuity and real-world presence. A stronger Proof of Humanity — based on systems like World ID (or equivalent) — will come later, when we can genuinely certify uniqueness rather than approximation.</p>
+
+<hr>
+
+<h2>Stability, Auth & Flow</h2>
+
+<p>Authentication and OAuth flows have reached a stable point during this period. Token handling, refresh logic, and secure storage are now in place, making account connections reliable across sessions.</p>
+
+<p>In parallel, the migration to Mastra was fully completed. This brought a noticeable sense of calm to the codebase: fewer moving parts, clearer responsibilities, and a structure that feels easier to reason about. It's not something users see directly, but it already makes building feel lighter.</p>
+
+<hr>
+
+<h2>Small Things, Ongoing Work</h2>
+
+<p>UI and UX improvements continued quietly in the background. The Discovery Profile was refined, loading and error states were improved, and work is ongoing on the PageBlockchainCard to better express what's happening on-chain without overwhelming the user.</p>
+
+<p>These changes are incremental, but together they slowly shift Sofia from "working" to "feeling right".</p>
+
+<hr>
+
+<h2>Social Media & Content</h2>
+
+<p>Weekly X/Twitter content calendar</p>
+
+<hr>
+
+<h2>Strategic Positioning</h2>
+
+<p>Pitch deck restructuring for accelerator programs</p>
+
+<hr>
+
+<h2>Technical/Partnerships</h2>
+
+<p>Arbitrum hackathon strategy</p>
+
+<p>Planned Conference and Grant program in Europe</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

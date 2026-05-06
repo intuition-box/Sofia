@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 31/10 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">October 31, 2025</div>
+<h1 class="post__title">Logbook 31/10</h1>
+<p>This week was filled with significant progress across multiple fronts — from UI/UX refinements and feature implementations to infrastructure milestones and team methodology improvements. We're also navigating some technical challenges that are teaching us valuable lessons about building complex systems.</p>
+
+<p>On the product side, we've fixed numerous UI/UX issues and made substantial improvements to the Account page, including real quest functionality and enhanced user data display.</p>
+
+<p>On the infrastructure front, we achieved a major milestone by deploying <strong>our first TEE (Trusted Execution Environment) machine on Phala Network</strong>. We're incredibly proud to be among the first teams to leverage Phala as part of the partnership between Intuition and Phala — a testament to our commitment to decentralized, verifiable computation.</p>
+
+<p>Beyond code, we've been evolving how we work together. We've started integrating <strong>Agile methodology</strong> into our workflow and adopted the <strong>Core Protocols</strong> to improve team communication and decision-making. This shift is already helping us work more effectively and collaboratively.</p>
+
+<p>However, we're also facing challenges. Since last Sunday, we've been wrestling with a critical session ID issue for our agents — it's consuming significant development time and delaying our alpha launch for beta testers. While it's frustrating not to move as fast as we'd hoped, we're making steady progress and remain committed to getting it right.</p>
+
+<p>We've also begun working on Sofia's documentation — there's still a lot to write, but we're excited to make it available soon to help users and developers better understand and contribute to the project.</p>
+
+<p>The journey continues with its ups and downs, but every challenge brings us closer to a more robust, trustworthy Sofia.</p>
+
+
+
+<h2>UI / UX Enhancements</h2>
+
+<p>This week brought extensive <strong>UI/UX fixes</strong> across the platform, improving the overall user experience:</p>
+
+<ul>
+<li>Fixed numerous UI/UX issues throughout the application</li>
+<li><strong>Enhanced user data display</strong> on the Account page with real user data (Level, XP, Signals Created, Total Market Cap of the user atom)</li>
+<li>Implemented <strong>real quests functionality</strong> on the Account page</li>
+</ul>
+
+<hr>
+
+<h2>Infrastructure Milestone: First TEE on Phala Network</h2>
+
+<p>We're thrilled to announce a major infrastructure achievement: <strong>Sofia's Trusted Execution Environment (TEE) deployed on Phala</strong>.</p>
+
+<ul>
+<li><strong>Attestation Link</strong>: <a href="https://trust.phala.com/app/1c7e47af64a3446a360e8fceb253f38991cff023/2d402bdb-5867-4a6f-b841-57210a9fe3cc" target="_blank">View on Phala Trust</a></li>
+<li><strong>Partnership Milestone</strong>: We're extremely proud to be among the <strong>first teams to use Phala</strong> as part of the strategic partnership between Intuition and Phala. <a href="https://x.com/PhalaNetwork/status/1983926790864433354" target="_blank">Read Phala's announcement</a></li>
+<li><strong>Why it matters</strong>: TEEs provide verifiable, secure computation — essential for building trustworthy AI agents and decentralized systems</li>
+</ul>
+
+<p>This deployment marks a significant step forward in our commitment to transparent, verifiable infrastructure.</p>
+
+<hr>
+
+<h2>Team Evolution: Agile & Core Protocols</h2>
+
+<p>We've started evolving our team methodology to work more effectively:</p>
+
+<ul>
+<li><strong>Integrated Agile methodology</strong> into our development workflow</li>
+<li><strong>Adopted the Core Protocols</strong> for improved team communication and decision-making</li>
+<li>Learn more: <a href="https://thecoreprotocols.org/" target="_blank">The Core Protocols</a></li>
+</ul>
+
+<p>These changes are already improving our collaboration and helping us tackle complex challenges more efficiently.</p>
+
+<hr>
+
+<h2>Documentation Efforts</h2>
+
+<p>We've begun <strong>building Sofia's documentation</strong>:</p>
+<ul>
+<li>Lots more to write, but the foundation is being laid</li>
+<li>Goal: Help users and developers understand, use, and contribute to Sofia</li>
+</ul>
+
+<hr>
+
+<h2>Early Access Program</h2>
+
+<p>We're officially <strong>ready for user testing!</strong></p>
+<p>If you'd like to be part of the first Alpha testers, please <strong>submit your request here:</strong></p>
+<p>➡️ <a href="https://tally.so/r/n9bvrY" target="_blank"><strong>Early Access Program</strong></a></p>
+
+<hr>
+
+<p>Sofia continues to evolve with every iteration — from infrastructure to interaction.</p>
+<p>The journey has its challenges, but each one makes us stronger and Sofia better.</p>
+<p>Thanks to everyone building, testing, and trusting with us.</p>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Logbook 20/02 — Sofia Chronicles</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:#485C11;text-decoration:underline}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9}
+.nav a{text-decoration:none;color:#1a1a1a}.nav img{height:36px}
+.nav__back{font-size:.82rem;font-weight:500;color:#6b6b6b;display:flex;align-items:center;gap:6px}
+.nav__back:hover{color:#1a1a1a}
+article{max-width:720px;margin:0 auto;padding:100px 40px 60px}
+.post__date{font-family:'Overpass Mono',monospace;font-size:.72rem;font-weight:600;color:#485C11;letter-spacing:.05em;margin-bottom:8px}
+.post__title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.2;letter-spacing:-.02em;margin-bottom:24px}
+article h2{font-size:1.15rem;font-weight:600;margin:28px 0 10px;color:#1a1a1a}
+article h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:#1a1a1a}
+article p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+article ul{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+article li{margin-bottom:6px}
+article hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+article strong{color:#1a1a1a}
+.footer{padding:28px 40px;border-top:1px solid #E9E9E9;text-align:center;font-size:.75rem;color:#6b6b6b}
+</style>
+</head>
+<body>
+<nav class="nav">
+<a href="../index.html" class="nav"><img src="../img/logo-black.png" alt="Sofia"></a>
+<a href="index.html" class="nav__back">&larr; All Articles</a>
+</nav>
+<article>
+<div class="post__date">February 20, 2026</div>
+<h1 class="post__title">Logbook 20/02</h1>
+<p>Massive week for Sofia — we shipped a full on-chain streak system with shared vault deposits, built a leaderboard with ENS resolution, introduced vote quests with Gold rewards, and completed a major refactoring that significantly cleaned up the codebase. The trending tab got a complete overhaul, and the onboarding tutorial now covers 12 steps.</p>
+
+
+
+<h2>Streak System & On-Chain Rewards</h2>
+
+<ul>
+<li>Daily certification now <strong>deposits into a shared atom vault</strong>, making streak participation visible on-chain and creating a staking mechanism around daily activity</li>
+<li>Added a <strong>daily streak profit indicator</strong> showing shares held and current vault value</li>
+<li>New streak UI with dedicated visual assets and tier badges</li>
+<li>Streak stats moved to a dedicated Stats tab for better organization</li>
+</ul>
+
+<hr>
+
+<h2>Leaderboard & Trending</h2>
+
+<ul>
+<li>Built a full <strong>leaderboard</strong> with two tabs: Signals (streak-based) and Vote (daily vote deposits)</li>
+<li><strong>ENS name resolution</strong> for all leaderboard users — no more raw wallet addresses</li>
+<li>Clickable profiles that navigate directly to user profile views</li>
+<li>New <strong>Trending tab</strong> showing the top certified content with accurate position counts</li>
+<li>Trending now filters out wallets and non-URL atoms — only real content surfaces</li>
+<li>Added tab descriptions for better user understanding</li>
+</ul>
+
+<hr>
+
+<h2>Vote & Quest System</h2>
+
+<ul>
+<li>New <strong>vote quest type</strong> that rewards voting activity with Gold</li>
+<li>Daily vote deposits go to a shared atom vault, mirroring the streak mechanism</li>
+<li>Quest descriptions clarified across the board</li>
+</ul>
+
+<hr>
+
+<h2>Music Intention & Trust/Distrust</h2>
+
+<ul>
+<li>New <strong>"visits for music"</strong> intention — users can now bookmark and certify URLs as music content, with its own predicate, category, and color across the entire system</li>
+<li><strong>Trust/distrust pills</strong> visible in group detail views</li>
+</ul>
+
+<hr>
+
+<h2>Codebase Refactoring</h2>
+
+<ul>
+<li>Extracted <strong>4 new services</strong> from hooks, reducing them by ~1000 lines — hooks are now thin wrappers that delegate all logic to dedicated services</li>
+<li>Centralized all predicate constants as a <strong>single source of truth</strong>, removing hundreds of duplicated lines across the codebase</li>
+<li>Created shared utility modules for domain handling, discovery calculations, streak logic, and formatting — eliminating reimplementations scattered across files</li>
+<li>Removed obsolete documentation and cleaned up TypeScript type declarations</li>
+</ul>
+
+<hr>
+
+<h2>Echoes System Rework</h2>
+
+<ul>
+<li>Memory reading now pulls <strong>from on-chain data</strong> instead of local storage — the blockchain becomes source of truth</li>
+<li>Unified XP calculation for consistent level display across the app</li>
+<li>Removed the <strong>ForYou tab</strong> to simplify the Resonance page</li>
+<li>Updated level-up visual effects and system documentation</li>
+</ul>
+
+<hr>
+
+<h2>UI, Onboarding & Profiles</h2>
+
+<ul>
+<li>Redesigned <strong>profile header</strong> with new layout and badge display</li>
+<li>New <strong>social linked badge</strong> added to the collection</li>
+<li>Optimized badge and asset images for faster loading</li>
+<li><strong>Onboarding tutorial expanded from 6 to 12 steps</strong>, now covering chat, circle, community, gold, interests, pulse, quests, streak, and profile</li>
+<li>Fixed UI and music playback issues on the Resonance page</li>
+</ul>
+</article>
+<footer class="footer">&copy; Sofia 2026 &mdash; <a href="../index.html">Back to Home</a></footer>
+</body>
+</html>
