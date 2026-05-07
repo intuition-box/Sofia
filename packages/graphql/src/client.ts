@@ -105,15 +105,13 @@ function releaseSlot() {
 // time; in the extension/Plasmo build it falls back to NODE_ENV.
 const isDev = (() => {
   try {
-    // @ts-expect-error import.meta.env is not in lib.dom — Vite inlines it.
-    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true
+    const meta = import.meta as { env?: { DEV?: boolean } }
+    if (typeof import.meta !== 'undefined' && meta.env?.DEV) return true
   } catch {
     // ignored — non-Vite consumer
   }
-  return (
-    typeof process !== 'undefined' &&
-    process.env?.NODE_ENV !== 'production'
-  )
+  const proc = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process
+  return !!proc && proc.env?.NODE_ENV !== 'production'
 })()
 
 function extractQueryName(query: string): string {
