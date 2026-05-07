@@ -164,7 +164,7 @@ const ScorePage = () => {
               voteActivityDates={userProgress.voteActivityDates}
             />
           )}
-          {activeTab === 'pool' && <PoolTab walletAddress={walletAddress} />}
+          {activeTab === 'pool' && <PoolTab />}
         </Suspense>
       </div>
     </div>

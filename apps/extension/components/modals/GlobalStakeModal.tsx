@@ -449,7 +449,7 @@ const GlobalStakeModal = ({
             </button>
             {!txError && (
               <button
-                className="modal-btn primary"
+                className="modal-btn primary gs-modal__cta"
                 onClick={
                   mode === "deposit" ? handleDeposit : handleRedeem
                 }
@@ -469,7 +469,7 @@ const GlobalStakeModal = ({
             )}
             {txError && (
               <button
-                className="modal-btn primary"
+                className="modal-btn primary gs-modal__cta"
                 onClick={
                   mode === "deposit" ? handleDeposit : handleRedeem
                 }
