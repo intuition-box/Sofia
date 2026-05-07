@@ -151,11 +151,11 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
             <p className="restricted-page-hint">
               Navigate to an HTTPS page to sign transactions — e.g.{" "}
               <a
-                href="https://doc.sofia.intuition.box/values/"
+                href="https://doc.sofia.intuition.box/wallet-bridge"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                doc.sofia.intuition.box/values
+                doc.sofia.intuition.box/wallet-bridge
               </a>
             </p>
           </div>
