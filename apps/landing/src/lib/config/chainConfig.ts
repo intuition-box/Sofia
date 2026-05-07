@@ -47,15 +47,12 @@ export const EXPLORER_URLS = {
 
 /**
  * Chain parameters for MetaMask wallet_addEthereumChain
+ * Derived from intuitionMainnet to avoid duplication
  */
 export const CHAIN_PARAMS = {
-  chainId: `0x${(1155).toString(16)}`, // 0x483
-  chainName: 'Intuition Mainnet',
-  nativeCurrency: {
-    name: 'Trust',
-    symbol: 'TRUST',
-    decimals: 18,
-  },
-  rpcUrls: ['https://rpc.intuition.systems'],
-  blockExplorerUrls: ['https://explorer.intuition.systems'],
+  chainId: `0x${intuitionMainnet.id.toString(16)}`,
+  chainName: intuitionMainnet.name,
+  nativeCurrency: intuitionMainnet.nativeCurrency,
+  rpcUrls: [intuitionMainnet.rpcUrls.default.http[0]],
+  blockExplorerUrls: [intuitionMainnet.blockExplorers.default.url],
 }

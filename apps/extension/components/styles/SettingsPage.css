@@ -13,7 +13,7 @@
 .back-button {
   background-color: transparent;
   border: none;
-  color: #F2DED6;
+  color: var(--ds-ink);
   font-size: 12px;
   cursor: pointer;
   margin-bottom: 20px;
@@ -31,32 +31,23 @@
 }
 
 .settings-section {
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border-lighter);
-  box-shadow: var(--shadow-heavy), var(--shadow-inset);
+  background: var(--ds-card);
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
   margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-xl);
+  padding: 8px 18px;
   transition: var(--transition-normal);
-}
-
-.settings-section-title {
-  font-family: 'Gotu', cursive;
-  font-size: 18px;
-  font-weight: 500;
-  color: #FBF7F5;
-  margin-bottom: 15px;
-  margin-top: 0;
 }
 
 .settings-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg) 0;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-light);
+  gap: 12px;
+  padding: 14px 0;
+  color: var(--ds-ink-soft);
+  border-bottom: 1px solid var(--ds-border-soft);
   transition: var(--transition-normal);
 }
 
@@ -64,17 +55,12 @@
   border-bottom: none;
 }
 
-.settings-subtext {
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-}
-
 .select {
   background-color: rgba(251, 247, 245, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.125);
   padding: 8px 12px;
   border-radius: 8px;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   backdrop-filter: blur(10px) saturate(100%);
   -webkit-backdrop-filter: blur(10px) saturate(100%);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -91,129 +77,6 @@
   gap: none;
 }
 
-.profile-photo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.profile-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 60px;
-  overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.profile-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-placeholder {
-  font-size: 48px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.photo-input {
-  display: none;
-}
-
-.photo-upload-button {
-  background-color: rgba(199, 134, 108, 0.8);
-  color: #FBF7F5;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.photo-upload-button:hover {
-  background-color: rgba(199, 134, 108, 1);
-}
-
-.bio-section {
-  width: 100%;
-  max-width: 400px;
-}
-
-.bio-display {
-  text-align: center;
-}
-
-.bio-text {
-  color: #F2DED6;
-  line-height: 1.5;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.bio-edit {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.bio-textarea {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 12px;
-  color: #F2DED6;
-  resize: vertical;
-  min-height: 100px;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.bio-textarea:focus {
-  outline: none;
-  border-color: rgba(199, 134, 108, 0.5);
-}
-
-.bio-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.edit-button,
-.save-button,
-.cancel-button {
-  background-color: rgba(199, 134, 108, 0.8);
-  color: #FBF7F5;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.cancel-button {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.edit-button:hover,
-.save-button:hover {
-  background-color: rgba(199, 134, 108, 1);
-}
-
-.cancel-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
 /* Delete Button Styles */
 .delete-button {
   width: 100px;
@@ -221,7 +84,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  background: #e62222;
+  background: var(--color-error);
   border: none;
   border-radius: 5px;
   box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
@@ -242,7 +105,7 @@
 
 .delete-button .icon {
   position: absolute;
-  border-left: 1px solid #c41b1b;
+  border-left: 1px solid rgba(239, 68, 68, 0.7);
   right: 0;
   height: 28px;
   width: 28px;
@@ -257,7 +120,7 @@
 }
 
 .delete-button:hover {
-  background: #ff3636;
+  background: var(--color-error);
 }
 
 .delete-button:hover .text {
@@ -285,7 +148,7 @@
 }
 
 .delete-button:disabled:hover {
-  background: #e62222;
+  background: var(--color-error);
 }
 
 .delete-button:disabled:hover .text {
@@ -294,7 +157,7 @@
 
 .delete-button:disabled:hover .icon {
   width: 28px;
-  border-left: 1px solid #c41b1b;
+  border-left: 1px solid rgba(239, 68, 68, 0.7);
   left: auto;
   right: 0;
 }
@@ -436,174 +299,12 @@
   }
 }
 
-/* Session Wallet Manager Styles */
-.session-wallet-container {
-  padding: 20px;
-}
-
-.session-wallet-title {
-  font-family: 'Gotu', cursive;
-  font-size: 18px;
-  font-weight: 500;
-  color: #FBF7F5;
-  margin-bottom: 10px;
-  margin-top: 0;
-}
-
-.session-wallet-description {
-  font-size: 14px;
-  color: #F2DED6;
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-.session-wallet-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  color: #FBF7F5;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.wallet-status {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.125);
-}
-
-.wallet-status-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.wallet-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #FBF7F5;
-}
-
-.wallet-active-indicator {
-  font-size: 12px;
-  color: #28a745;
-}
-
-.wallet-details {
-  font-size: 12px;
-  color: #F2DED6;
-}
-
-.wallet-address-text {
-  font-family: monospace;
-  margin-bottom: 4px;
-}
-
-.wallet-balance-text {
-  font-weight: 500;
-}
-
-.wallet-refill-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  justify-content: space-between;
-}
-
-.wallet-refill-input-container {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.wallet-refill-input {
-  background-color: rgba(251, 247, 245, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.125);
-  padding: 6px 8px;
-  border-radius: 6px;
-  color: #FBF7F5;
-  width: 80px;
-  font-size: 12px;
-}
-
-.wallet-action-button {
-  background-color: rgba(199, 134, 108, 0.8);
-  color: #FBF7F5;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.wallet-action-buttons-container {
-  display: flex;
-  gap: 8px;
-}
-
-.wallet-refresh-button {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #FBF7F5;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.wallet-destroy-button {
-  background-color: rgba(220, 53, 69, 0.8);
-  color: #FBF7F5;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s ease;
-}
-
-.wallet-warning-box {
-  background-color: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.wallet-warning-icon {
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.wallet-warning-text {
-  font-size: 13px;
-  color: #F2DED6;
-  line-height: 1.4;
-}
-
 /* Settings Item Content (for Data Tracking with description) */
 .settings-item-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
   text-align: left;
-}
-
-.settings-item-title {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  font-weight: 400;
 }
 
 .settings-item-description {
@@ -616,25 +317,36 @@
 .settings-range {
   width: 80px;
   height: 4px;
-  accent-color: var(--color-primary, #C7866C);
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
 /* Wallet Address Display */
 .wallet-address-display {
-  font-family: monospace;
-  font-size: 14px;
-  color: #F2DED6;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 8px 16px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
+  border: 1px solid var(--ds-border);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .wallet-address-display:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
+}
+
+/* Version row value (right side) */
+.settings-version-value {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
 }
 
 /* Status Button with Animation */
@@ -787,7 +499,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .button-3d:hover:not(:disabled) {
@@ -835,7 +547,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   position: relative;
   overflow: hidden;
   font-size: 14px;
@@ -863,30 +575,8 @@
   cursor: not-allowed;
 }
 
-.wallet-button-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  border-radius: 0.5em;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
 .wallet-connect-button:hover:not(:disabled) .wallet-button-background {
   opacity: 1;
-}
-
-.wallet-button-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .button-spinner {
@@ -903,146 +593,78 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Disconnect Button (PowerOff Icon) */
-.disconnect-icon-button {
-  padding: 8px;
-  background-color: #2a2a2a;
-  border: 0;
-  border-radius: 0.4em;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow:
-    inset 0 0.0625em 0 0 #3a3a3a,
-    0 0.0625em 0 0 #252525,
-    0 0.125em 0 0 #202020,
-    0 0.25em 0 0 #1c1c1c;
-  display: flex;
+/* Default settings action button — outlined neutral pill.
+   Color goes ON THE BACKGROUND on hover, never on border + typo.
+   Works for both <button> and <a> (no underline on anchor). */
+.delete-button-3d {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.disconnect-icon-button:hover {
-  background-color: #dc3545;
-}
-
-.disconnect-icon-button:active {
-  translate: 0 0.125em;
-  box-shadow:
-    inset 0 0.03em 0 0 #3a3a3a,
-    0 0.03em 0 0 #252525,
-    0 0.0625em 0 0 #202020;
-}
-
-/* Delete Button 3D Style (Black with red hover) */
-.delete-button-3d {
-  font: inherit;
-  background-color: #2a2a2a;
-  border: 0;
-  color: #e0e0e0;
-  border-radius: 0.5em;
-  font-size: 14px;
-  padding: 0.375em 1em;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
   font-weight: 600;
-  text-shadow: 0 0.0625em 0 #000;
-  box-shadow:
-    inset 0 0.0625em 0 0 #3a3a3a,
-    0 0.0625em 0 0 #252525,
-    0 0.125em 0 0 #202020,
-    0 0.25em 0 0 #1c1c1c,
-    0 0.3125em 0 0 #181818,
-    0 0.375em 0 0 #141414,
-    0 0.425em 0 0 #101010,
-    0 0.425em 0.5em 0 #0a0a0a;
-  transition: 0.15s ease;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  border-radius: 8px;
+  padding: 8px 14px;
   cursor: pointer;
-  min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  min-width: 100px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .delete-button-3d:hover:not(:disabled) {
-  background-color: #e62222;
-  box-shadow:
-    inset 0 0.0625em 0 0 #ff3636,
-    0 0.0625em 0 0 #c41b1b,
-    0 0.125em 0 0 #b01818,
-    0 0.25em 0 0 #9c1515,
-    0 0.3125em 0 0 #881212,
-    0 0.375em 0 0 #741010,
-    0 0.425em 0 0 #600d0d,
-    0 0.425em 0.5em 0 #4c0a0a;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+  border-color: var(--ds-accent);
 }
 
 .delete-button-3d:active:not(:disabled) {
-  translate: 0 0.225em;
-  box-shadow:
-    inset 0 0.03em 0 0 #ff3636,
-    0 0.03em 0 0 #c41b1b,
-    0 0.0625em 0 0 #b01818,
-    0 0.125em 0 0 #9c1515,
-    0 0.125em 0 0 #881212,
-    0 0.2em 0 0 #741010,
-    0 0.225em 0 0 #600d0d,
-    0 0.225em 0.375em 0 #4c0a0a;
+  filter: brightness(0.95);
 }
 
 .delete-button-3d:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Disconnect Button 3D Style (Red hover) */
+/* Destructive variant — explicit class for "Clear All Data" only */
+.delete-button-3d.destructive:hover:not(:disabled) {
+  background: var(--color-error);
+  color: #fff;
+  border-color: var(--color-error);
+}
+
+/* Disconnect Button — outlined neutral default, red filled on hover */
 .disconnect-button-3d {
-  font: inherit;
-  background-color: #2a2a2a;
-  border: 0;
-  color: #e0e0e0;
-  border-radius: 0.5em;
-  font-size: 14px;
-  padding: 0.375em 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
   font-weight: 600;
-  text-shadow: 0 0.0625em 0 #000;
-  box-shadow:
-    inset 0 0.0625em 0 0 #3a3a3a,
-    0 0.0625em 0 0 #252525,
-    0 0.125em 0 0 #202020,
-    0 0.25em 0 0 #1c1c1c,
-    0 0.3125em 0 0 #181818,
-    0 0.375em 0 0 #141414,
-    0 0.425em 0 0 #101010,
-    0 0.425em 0.5em 0 #0a0a0a;
-  transition: 0.15s ease;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  border-radius: 8px;
+  padding: 8px 14px;
   cursor: pointer;
-  min-width: 120px;
-  font-family: 'Montserrat', sans-serif;
+  min-width: 100px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .disconnect-button-3d:hover:not(:disabled) {
-  background-color: #e62222;
-  box-shadow:
-    inset 0 0.0625em 0 0 #ff3636,
-    0 0.0625em 0 0 #c41b1b,
-    0 0.125em 0 0 #b01818,
-    0 0.25em 0 0 #9c1515,
-    0 0.3125em 0 0 #881212,
-    0 0.375em 0 0 #741010,
-    0 0.425em 0 0 #600d0d,
-    0 0.425em 0.5em 0 #4c0a0a;
+  background: var(--color-error);
+  color: #fff;
+  border-color: var(--color-error);
 }
 
 .disconnect-button-3d:active:not(:disabled) {
-  translate: 0 0.225em;
-  box-shadow:
-    inset 0 0.03em 0 0 #ff3636,
-    0 0.03em 0 0 #c41b1b,
-    0 0.0625em 0 0 #b01818,
-    0 0.125em 0 0 #9c1515,
-    0 0.125em 0 0 #881212,
-    0 0.2em 0 0 #741010,
-    0 0.225em 0 0 #600d0d,
-    0 0.225em 0.375em 0 #4c0a0a;
+  filter: brightness(0.95);
 }
 
 .disconnect-button-3d:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }

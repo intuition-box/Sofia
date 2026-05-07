@@ -1,0 +1,15 @@
+{
+  // This file is not used in compilation. It is here just for a nice editor experience.
+  // Explicit relative path so VSCode's TypeScript LSP resolves the extends
+  // correctly when the workspace is opened at the monorepo root (the bare
+  // module form "@docusaurus/tsconfig" only resolves via Node module
+  // resolution, which the LSP doesn't always perform from this depth).
+  "extends": "./node_modules/@docusaurus/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    // Override baseUrl so that the inherited `paths: { "@site/*": ["./*"] }`
+    // resolves relative to apps/doc/ instead of @docusaurus/tsconfig/'s
+    // own directory. Without this, every `@site/src/...` import 404s.
+    "baseUrl": "."
+  },
+  "exclude": [".docusaurus", "build"]
+}

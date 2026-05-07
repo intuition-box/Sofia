@@ -1,7 +1,7 @@
 /**
  * ExtendedMetricsPanel
- * Shows intentions stats with Domain/Page toggle,
- * accordion atoms/triples lists (mutually exclusive)
+ * Stats on this page — single panel with a 4-option scope toggle:
+ *   Domain | Page | Certifiers | Signals
  */
 
 import React, { useState, useMemo, memo } from "react"
@@ -9,14 +9,20 @@ import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
-import { INTENTION_ITEMS } from "~/types/intentionCategories"
+import { INTENTION_ITEMS, predicateLabelToIntentionType } from "~/types/intentionCategories"
+import { VerbTag } from "@0xsofia/design-system"
+import type { RankedPosition } from "~/lib/utils"
+import PagePositionBoard from "../PagePositionBoard"
 
-const formatTrust = (value: number): string =>
+// Local formatter — `getTotalShares` already returns a decimal number
+// (shares / 1e18), so we just need thousands separators here.
+// Distinct from the shared `formatTrust(shares: string)` util in
+// lib/utils, which expects a raw BigInt-as-string in wei and returns a
+// compact "1.2K"-style label.
+const formatTrustDecimal = (value: number): string =>
   value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 
-type SortMode = "market_cap" | "newest"
-type FilterScope = "domain" | "page"
-type ExpandedSection = "atoms" | "triples" | null
+type FilterScope = "domain" | "page" | "certifiers" | "signals"
 
 interface ExtendedMetricsPanelProps {
   analysis: CredibilityAnalysis
@@ -30,12 +36,14 @@ interface ExtendedMetricsPanelProps {
   pageMaxIntentionCount: number
   intentionStatsLoading: boolean
   currentUrl?: string | null
-  onAtomClick: (atomId: string) => void
+  positions: RankedPosition[]
+  userPosition: RankedPosition | null
+  totalPositions: number
+  positionsLoading?: boolean
   onTripletClick: (tripletId: string) => void
 }
 
 const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
-  analysis,
   counts,
   triplets,
   intentionStats,
@@ -46,25 +54,20 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
   pageMaxIntentionCount,
   intentionStatsLoading,
   currentUrl,
-  onAtomClick,
+  positions,
+  userPosition,
+  totalPositions,
+  positionsLoading,
   onTripletClick
 }) => {
-  const [expandedSection, setExpandedSection] =
-    useState<ExpandedSection>(null)
-  const [atomsSort, setAtomsSort] = useState<SortMode>("market_cap")
-  const [tripletsSort, setTripletsSort] = useState<SortMode>("market_cap")
   const [filterScope, setFilterScope] = useState<FilterScope>("page")
-
-  const toggleSection = (section: "atoms" | "triples") => {
-    setExpandedSection((prev) => (prev === section ? null : section))
-  }
 
   const hostname = useMemo(() => {
     if (!currentUrl) return null
     try { return new URL(currentUrl).hostname.replace(/^www\./, "") } catch { return null }
   }, [currentUrl])
 
-  // Select active stats based on scope
+  // Select active stats based on scope (only relevant for domain/page)
   const activeTrust =
     filterScope === "domain"
       ? counts.domainTrustCount
@@ -83,43 +86,23 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
   // Include trust/distrust in max for proportional progress bars
   const effectiveMax = Math.max(activeMax, activeTrust, activeDistrust)
 
-  // Sorted atoms list
-  const sortedAtoms = useMemo(() => {
-    if (!analysis.atomsList) return []
-    return [...analysis.atomsList].sort((a, b) => {
-      if (atomsSort === "newest") {
-        return (b.created_at || "").localeCompare(a.created_at || "")
-      }
-      const aShares = a.vaults.reduce(
-        (sum, v) => sum + Number(v.total_shares || 0) / 1e18,
-        0
-      )
-      const bShares = b.vaults.reduce(
-        (sum, v) => sum + Number(v.total_shares || 0) / 1e18,
-        0
-      )
-      return bShares - aShares
-    })
-  }, [analysis.atomsList, atomsSort])
-
-  // Sorted triplets list
+  // Triplets sorted by newest only (sort UI removed)
   const sortedTriplets = useMemo(() => {
-    return [...triplets].sort((a, b) => {
-      if (tripletsSort === "newest") {
-        return (b.created_at || "").localeCompare(a.created_at || "")
-      }
-      return getTotalShares(b) - getTotalShares(a)
-    })
-  }, [triplets, tripletsSort])
+    return [...triplets].sort((a, b) =>
+      (b.created_at || "").localeCompare(a.created_at || "")
+    )
+  }, [triplets])
+
+  const scopeLabel =
+    filterScope === "domain"
+      ? hostname || "domain"
+      : "this page"
 
   return (
     <div className="extended-metrics-panel">
-      {/* Intentions Section */}
       <div className="intentions-stats-section">
         <div className="section-header">
-          <span className="section-title">
-            Intentions on {filterScope === "domain" ? (hostname || "domain") : "this page"}
-          </span>
+          <span className="section-title">Stats on {scopeLabel}</span>
           <div className="scope-toggle">
             <button
               className={`scope-btn ${filterScope === "domain" ? "active" : ""}`}
@@ -133,199 +116,132 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
             >
               Page
             </button>
-          </div>
-        </div>
-
-        <div className="section-subheader">
-          <span className="intentions-total">
-            {activeTotal + activeTrust + activeDistrust} total
-          </span>
-        </div>
-
-        {intentionStatsLoading ? (
-          <div className="intentions-loading">
-            <div className="loading-spinner small"></div>
-          </div>
-        ) : (
-          <div className="intentions-progress-list">
-            {/* Trust / Distrust rows first */}
-            <div className="intention-progress-item">
-              <span className="intention-label">trusted</span>
-              <div className="progress-track">
-                <div
-                  className="progress-fill trusted"
-                  style={{
-                    width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
-                  }}
-                />
-              </div>
-              <span className="intention-count">{activeTrust}</span>
-            </div>
-            <div className="intention-progress-item">
-              <span className="intention-label">distrusted</span>
-              <div className="progress-track">
-                <div
-                  className="progress-fill distrusted"
-                  style={{
-                    width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
-                  }}
-                />
-              </div>
-              <span className="intention-count">{activeDistrust}</span>
-            </div>
-            {/* 6 intention types */}
-            {INTENTION_ITEMS.map(({ key, label }) => (
-              <div key={key} className="intention-progress-item">
-                <span className="intention-label">{label}</span>
-                <div className="progress-track">
-                  <div
-                    className={`progress-fill ${label}`}
-                    style={{
-                      width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
-                    }}
-                  />
-                </div>
-                <span className="intention-count">
-                  {activeIntentions[key]}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Related Signals Section */}
-      <div className="signals-section">
-        <div className="signals-section-title">Related</div>
-
-        {/* Accordion Toggles + Sort */}
-        <div className="collapsible-lists-section">
-          <div
-            className={`collapsible-toggle clickable ${expandedSection === "atoms" ? "active" : ""}`}
-            onClick={() => toggleSection("atoms")}
-          >
-            <span>Identity ({counts.atomsCount})</span>
-            <span
-              className={`toggle-arrow ${expandedSection === "atoms" ? "expanded" : ""}`}
+            <button
+              className={`scope-btn ${filterScope === "certifiers" ? "active" : ""}`}
+              onClick={() => setFilterScope("certifiers")}
             >
-              ▼
-            </span>
-          </div>
-          <div
-            className={`collapsible-toggle clickable ${expandedSection === "triples" ? "active" : ""}`}
-            onClick={() => toggleSection("triples")}
-          >
-            <span>Signals ({counts.triplesCount})</span>
-            <span
-              className={`toggle-arrow ${expandedSection === "triples" ? "expanded" : ""}`}
+              Certifiers
+            </button>
+            <button
+              className={`scope-btn ${filterScope === "signals" ? "active" : ""}`}
+              onClick={() => setFilterScope("signals")}
             >
-              ▼
-            </span>
+              Signals
+            </button>
           </div>
-          {expandedSection && (
-            <div className="sort-toggle">
-              <button
-                className={`sort-btn ${(expandedSection === "atoms" ? atomsSort : tripletsSort) === "market_cap" ? "active" : ""}`}
-                onClick={() =>
-                  expandedSection === "atoms"
-                    ? setAtomsSort("market_cap")
-                    : setTripletsSort("market_cap")
-                }
-              >
-                Market Cap
-              </button>
-              <button
-                className={`sort-btn ${(expandedSection === "atoms" ? atomsSort : tripletsSort) === "newest" ? "active" : ""}`}
-                onClick={() =>
-                  expandedSection === "atoms"
-                    ? setAtomsSort("newest")
-                    : setTripletsSort("newest")
-                }
-              >
-                Newest
-              </button>
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Atoms List (accordion) */}
-      <div
-        className={`accordion-content ${expandedSection === "atoms" ? "expanded" : ""}`}
-      >
-        {sortedAtoms.length > 0 && (
-          <div className="atoms-section">
-            <div className="atoms-list">
-              {sortedAtoms.map((atom) => {
-                const totalShares = atom.vaults.reduce(
-                  (sum, vault) =>
-                    sum + Number(vault.total_shares || 0) / 1e18,
-                  0
-                )
-
-                return (
-                  <div
-                    key={atom.id}
-                    className="atom-item clickable"
-                    onClick={() => onAtomClick(atom.id)}
-                  >
-                    <div className="atom-text">
-                      <span className="atom-label">
-                        {atom.label}
-                      </span>
-                      {totalShares > 0 && (
-                        <span className="tvl-badge">
-                          {formatTrust(totalShares)} TRUST
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+        {filterScope === "certifiers" && (
+          <PagePositionBoard
+            positions={positions}
+            userPosition={userPosition}
+            totalPositions={totalPositions}
+            variant="expanded"
+            loading={positionsLoading}
+          />
         )}
-      </div>
 
-      {/* Triplets List (accordion) */}
-      <div
-        className={`accordion-content ${expandedSection === "triples" ? "expanded" : ""}`}
-      >
-        {sortedTriplets.length > 0 && (
+        {filterScope === "signals" && (
           <div className="triplets-section">
-            <div className="triplets-list">
-              {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
-                const shares = getTotalShares(triplet)
-
-                return (
-                  <div
-                    key={triplet.term_id}
-                    className="triplet-item clickable"
-                    onClick={() =>
-                      onTripletClick(triplet.term_id)
-                    }
-                  >
-                    <div className="triplet-text">
-                      <span className="subject">
-                        {triplet.subject.label}
-                      </span>
-                      <span className="predicate">
-                        {triplet.predicate.label}
-                      </span>
-                      <span className="object">
-                        {triplet.object.label}
-                      </span>
-                      {shares > 0 && (
-                        <span className="tvl-badge">
-                          {formatTrust(shares)} TRUST
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="section-subheader">
+              <span className="intentions-total">{counts.triplesCount} signals</span>
             </div>
+            {sortedTriplets.length > 0 ? (
+              <div className="triplets-list">
+                {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
+                  const shares = getTotalShares(triplet)
+                  const intentSlug = predicateLabelToIntentionType(triplet.predicate.label)
+                  return (
+                    <div
+                      key={triplet.term_id}
+                      className="triplet-item clickable"
+                      onClick={() => onTripletClick(triplet.term_id)}
+                    >
+                      <div className="triplet-text">
+                        <span className="subject">{triplet.subject.label}</span>
+                        {intentSlug ? (
+                          <VerbTag
+                            intent={intentSlug}
+                            label={triplet.predicate.label}
+                            className="triplet-predicate-tag"
+                          />
+                        ) : (
+                          <span className="predicate">{triplet.predicate.label}</span>
+                        )}
+                        <span className="object">{triplet.object.label}</span>
+                        {shares > 0 && (
+                          <span className="tvl-badge">
+                            {formatTrustDecimal(shares)} TRUST
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="intentions-loading">No signals yet</div>
+            )}
           </div>
+        )}
+
+        {(filterScope === "domain" || filterScope === "page") && (
+          <>
+            <div className="section-subheader">
+              <span className="intentions-total">
+                {activeTotal + activeTrust + activeDistrust} total
+              </span>
+            </div>
+
+            {intentionStatsLoading ? (
+              <div className="intentions-loading">
+                <div className="loading-spinner small"></div>
+              </div>
+            ) : (
+              <div className="intentions-progress-list">
+                <div className="intention-progress-item">
+                  <VerbTag intent="trusted" label="trusted" />
+                  <div className="progress-track">
+                    <div
+                      className="progress-fill trusted"
+                      style={{
+                        width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
+                      }}
+                    />
+                  </div>
+                  <span className="intention-count">{activeTrust}</span>
+                </div>
+                <div className="intention-progress-item">
+                  <VerbTag intent="distrusted" label="distrusted" />
+                  <div className="progress-track">
+                    <div
+                      className="progress-fill distrusted"
+                      style={{
+                        width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
+                      }}
+                    />
+                  </div>
+                  <span className="intention-count">{activeDistrust}</span>
+                </div>
+                {INTENTION_ITEMS.map(({ key, label, type }) => (
+                  <div key={key} className="intention-progress-item">
+                    <VerbTag intent={type} label={label} />
+                    <div className="progress-track">
+                      <div
+                        className={`progress-fill ${type}`}
+                        style={{
+                          width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
+                        }}
+                      />
+                    </div>
+                    <span className="intention-count">
+                      {activeIntentions[key]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

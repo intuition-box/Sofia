@@ -40,11 +40,7 @@ query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
   }
 }
 
-query GetUserActivity(
-  $receivers: [String!]!
-  $limit: Int!
-  $offset: Int!
-) {
+query GetUserActivity($receivers: [String!]!, $limit: Int!, $offset: Int!) {
   events(
     limit: $limit
     offset: $offset

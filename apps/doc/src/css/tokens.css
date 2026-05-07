@@ -1,0 +1,196 @@
+/**
+ * Doc tokens — local scales the DS does not own + Infima → DS bridge.
+ *
+ * Imported from custom.css. Do not import @0xsofia/design-system/theme.css here;
+ * custom.css owns the import order so theme tokens land before this file.
+ */
+
+:root {
+  --font-body:
+    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --doc-text-xs: 0.75rem;
+  --doc-text-sm: 0.85rem;
+  --doc-text-md: 0.95rem;
+  --doc-text-lg: 1.125rem;
+  --doc-text-xl: 1.5rem;
+  --doc-text-2xl: clamp(1.85rem, 1.4rem + 1.6vw, 2.4rem);
+  --doc-text-hero: clamp(2.6rem, 2rem + 3vw, 4.2rem);
+
+  --doc-max-content: 760px;
+  --doc-max-wide: 1180px;
+
+  --doc-radius-xs: 6px;
+  --doc-radius-sm: 10px;
+  --doc-radius-md: 14px;
+  --doc-radius-lg: 20px;
+  --doc-radius-pill: 9999px;
+
+  --doc-shadow-xs: 0 1px 0 rgba(2, 0, 14, 0.04);
+  --doc-shadow-sm: 0 2px 8px rgba(2, 0, 14, 0.05);
+  --doc-shadow-md: 0 8px 24px -8px rgba(2, 0, 14, 0.12);
+
+  --doc-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --doc-fast: 160ms;
+  --doc-base: 220ms;
+
+  --doc-tint-accent: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+  --doc-tint-accent-soft: color-mix(in srgb, var(--ds-accent) 8%, transparent);
+}
+
+[data-theme='dark'] {
+  --doc-shadow-xs: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --doc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --doc-shadow-md: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  --doc-tint-accent: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+  --doc-tint-accent-soft: color-mix(in srgb, var(--ds-accent) 8%, transparent);
+}
+
+/* ── Infima → DS bridge ───────────────────────────────────────── */
+
+:root {
+  --ifm-color-primary: var(--ds-ink);
+  --ifm-color-primary-dark: var(--ds-ink-soft);
+  --ifm-color-primary-darker: var(--ds-ink-soft);
+  --ifm-color-primary-darkest: var(--ds-ink);
+  --ifm-color-primary-light: var(--ds-muted);
+  --ifm-color-primary-lighter: var(--ds-muted);
+  --ifm-color-primary-lightest: var(--ds-muted-soft);
+
+  --ifm-background-color: var(--ds-bg);
+  --ifm-background-surface-color: var(--ds-bg-subtle);
+  --ifm-navbar-background-color: transparent;
+  --ifm-footer-background-color: transparent;
+
+  --ifm-font-color-base: var(--ds-ink);
+  --ifm-color-content: var(--ds-ink);
+  --ifm-color-content-secondary: var(--ds-muted);
+  --ifm-heading-color: var(--ds-ink);
+
+  --ifm-link-color: var(--ds-accent-ink);
+  --ifm-link-hover-color: var(--ds-ink);
+  --ifm-link-hover-decoration: none;
+
+  --ifm-font-family-base: var(--font-body);
+  --ifm-heading-font-family: var(--font-heading);
+  --ifm-font-family-monospace: var(--font-mono);
+  --ifm-code-font-size: 88%;
+  --ifm-h1-font-size: var(--doc-text-2xl);
+  --ifm-h2-font-size: var(--doc-text-xl);
+  --ifm-h3-font-size: var(--doc-text-lg);
+
+  --ifm-navbar-height: 4rem;
+  --ifm-navbar-padding-vertical: 0.5rem;
+  --ifm-container-width-xl: var(--doc-max-wide);
+
+  --ifm-table-stripe-background: var(--ds-bg-subtle);
+  --ifm-table-border-color: var(--ds-border);
+  --ifm-hr-border-color: var(--ds-border);
+  --ifm-card-background-color: var(--ds-card);
+
+  --docusaurus-highlighted-code-line-bg: var(--doc-tint-accent);
+}
+
+[data-theme='dark'] {
+  --docusaurus-highlighted-code-line-bg: var(--doc-tint-accent);
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────── */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 9999px;
+  border: 2px solid var(--ds-bg);
+  transition: background 160ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-accent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html {
+  scrollbar-color: var(--ds-border) var(--ds-bg);
+}
+
+#__docusaurus,
+.main-wrapper {
+  background-color: var(--ds-bg);
+}
+
+.main-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ds-accent-ink);
+  outline-offset: 2px;
+  border-radius: var(--doc-radius-xs);
+}
+
+[data-theme='dark'] a:focus-visible,
+[data-theme='dark'] button:focus-visible,
+[data-theme='dark'] [tabindex]:focus-visible {
+  outline-color: var(--ds-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

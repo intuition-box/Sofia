@@ -1,15 +1,15 @@
 import {
-  badgeService, pageDataService, tripletStorageService,
-  groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
-  currencyMigrationService, sessionTracker, levelUpService,
+  badgeService, pageDataService,
+  groupManager, XPServiceClass,
+  sessionTracker, levelUpService,
   browsingNudgeService,
   type TrackedUrl, type DomainCluster
 } from "../lib/services"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
+import { sendMessage } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { getAddress } from "viem"
-import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { IntentionGroupsService } from "../lib/database"
@@ -20,67 +20,6 @@ const logger = createServiceLogger('MessageHandlers')
 // Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
 
-
-
-// Generic handler for data extraction (bookmarks/history)
-async function handleDataExtraction(
-  type: string,
-  dataFetcher: () => Promise<{ success: boolean; urls?: string[]; error?: string }>,
-  processor: (urls: string[]) => Promise<{ success: boolean; message: string; themesExtracted?: number; triplesProcessed?: boolean; themes?: any[] }>,
-  sendResponse: (response: MessageResponse) => void
-): Promise<void> {
-  try {
-    const result = await dataFetcher()
-    if (result.success && result.urls) {
-      logger.info(`Starting ${type} analysis for ${result.urls.length} URLs`)
-      const finalResult = await processor(result.urls)
-      sendResponse(finalResult)
-    } else {
-      sendResponse({ success: false, error: result.error })
-    }
-  } catch (error) {
-    logger.error(`${type} extraction error`, error)
-    sendResponse({ success: false, error: error.message })
-  }
-}
-
-
-// Handle recommendation generation via RecommendationAgent
-async function handleRecommendationGeneration(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
-  try {
-    const walletData = message.data
-    if (!walletData || !walletData.address) {
-      sendResponse({ success: false, error: "Wallet data required" })
-      return
-    }
-
-    logger.info('[messageHandlers] Generating recommendations for wallet', { address: walletData.address })
-
-    // Send request and wait for response (imported at top)
-    const recommendationsData = await sendRecommendationRequest(walletData)
-
-    if (!recommendationsData) {
-      sendResponse({ success: false, error: "No recommendations received from agent" })
-      return
-    }
-
-    // Extract recommendations array from response
-    const recommendations = recommendationsData.recommendations || []
-
-    logger.info(`[messageHandlers] Received ${recommendations.length} recommendation categories`)
-    sendResponse({
-      success: true,
-      recommendations
-    })
-
-  } catch (error) {
-    logger.error('[messageHandlers] Recommendation generation failed', error)
-    sendResponse({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    })
-  }
-}
 
 // Allowed origins for external messages (security)
 const ALLOWED_EXTERNAL_ORIGINS = [
@@ -132,8 +71,6 @@ export function setupMessageHandlers(): void {
             await chrome.storage.session.set({ walletAddress, walletType, pending_external_auth: true })
             // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
             await XPServiceClass.migrateToWalletKeys(walletAddress)
-            // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent
-            await currencyMigrationService.migrate(walletAddress)
             logger.info('Wallet connected from external page', { walletAddress, walletType })
             await initializeOnWalletConnect()
             sendResponse({ success: true })
@@ -234,10 +171,6 @@ export function setupMessageHandlers(): void {
         pageDataService.handlePageDuration(message)
         break
 
-      case "SCROLL_DATA":
-        pageDataService.handleScrollData(message)
-        break
-
 
       case "SEND_CHATBOT_MESSAGE":
         // Handle chatbot message from sidepanel (ChatPage)
@@ -252,17 +185,6 @@ export function setupMessageHandlers(): void {
         return true
 
 
-      case "GET_TRACKING_STATS":
-        sendResponse({
-          success: true,
-          data: { message: "Data sent directly to agent - no local storage" }
-        })
-        break
-
-      case "CLEAR_TRACKING_DATA":
-        sendResponse({ success: true, message: "No local data to clear" })
-        break
-
       case "FETCH_BOOKMARKS":
         // Return bookmarks list without processing (for selection UI)
         try {
@@ -274,7 +196,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "GET_BOOKMARKS":
       case "IMPORT_SELECTED_BOOKMARKS": {
         // GET_BOOKMARKS: fetch all + import (orb button)
         // IMPORT_SELECTED_BOOKMARKS: import only selected bookmarks (onboarding)
@@ -333,72 +254,13 @@ export function setupMessageHandlers(): void {
         return true
       }
 
-      case "GET_HISTORY":
-        handleDataExtraction('history', getAllHistory, async (urls: string[]) => {
-          const themes = await sendThemeExtractionRequest(urls)
-          return {
-            success: true,
-            message: 'History analysis completed',
-            themesExtracted: themes?.length || 0,
-            triplesProcessed: true
-          }
-        }, sendResponse)
-        return true
-
-      case "STORE_BOOKMARK_TRIPLETS":
-        tripletStorageService.handleStoreBookmarkTriplets(message, sendResponse)
-        return true
-
-      case "STORE_DETECTED_TRIPLETS":
-        tripletStorageService.handleStoreDetectedTriplets(message, sendResponse)
-        return true
-
-
-
-      case "UPDATE_ECHO_BADGE":
-        badgeService.handleBadgeUpdate(sendResponse)
-        return true
-
       case "TRIPLET_PUBLISHED":
-        badgeService.handleBadgeUpdate(sendResponse)
-        return true
-
-      case "TRIPLETS_DELETED":
         badgeService.handleBadgeUpdate(sendResponse)
         return true
 
       case "INITIALIZE_BADGE":
         badgeService.handleBadgeUpdate(sendResponse)
         return true
-
-      case "GENERATE_RECOMMENDATIONS":
-        handleRecommendationGeneration(message, sendResponse)
-        return true
-
-      case "GET_PAGE_BLOCKCHAIN_DATA":
-        try {
-          const url = message.data?.url
-          if (!url) {
-            sendResponse({ success: false, error: "URL parameter required" })
-            return true
-          }
-          // For now, just return success - the actual GraphQL query is handled in the frontend
-          sendResponse({ success: true, data: { url } })
-        } catch (error) {
-          logger.error("GET_PAGE_BLOCKCHAIN_DATA error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "PAGE_ANALYSIS":
-        try {
-          // Log page analysis data for debugging
-          logger.debug("Page analysis received", message.data)
-          // This is a fire-and-forget message, no response needed
-        } catch (error) {
-          logger.error("PAGE_ANALYSIS error", error)
-        }
-        break
 
       case "URL_CHANGED":
         try {
@@ -451,18 +313,6 @@ export function setupMessageHandlers(): void {
           }
         } catch (error) {
           logger.error("GET_GROUP_DETAILS error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_USER_XP":
-        try {
-          const { lastActiveWallet: xpWallet } = await chrome.storage.local.get('lastActiveWallet')
-          const xpStats = await xpService.getStats(xpWallet || '')
-          const goldStats = await goldService.getStats(xpWallet || '')
-          sendResponse({ success: true, xp: xpStats, gold: goldStats })
-        } catch (error) {
-          logger.error("GET_USER_XP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -542,34 +392,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "GET_LEVEL_UP_COST":
-        try {
-          const { groupId: lvlGroupId } = message.data || message
-          if (!lvlGroupId) {
-            sendResponse({ success: false, error: "groupId required" })
-            return true
-          }
-          const lvlGroup = await groupManager.getGroup(lvlGroupId)
-          if (!lvlGroup) {
-            sendResponse({ success: false, error: "Group not found" })
-            return true
-          }
-          const cost = getLevelUpCost(lvlGroup.level)
-          const { lastActiveWallet: lvlWallet } = await chrome.storage.local.get('lastActiveWallet')
-          const goldStats = await goldService.getStats(lvlWallet || '')
-          sendResponse({
-            success: true,
-            cost,
-            currentLevel: lvlGroup.level,
-            availableGold: goldStats.totalGold,
-            canAfford: goldStats.totalGold >= cost
-          })
-        } catch (error) {
-          logger.error("GET_LEVEL_UP_COST error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
       case "TRACK_URL":
         try {
           const { url: trackUrl, title: trackTitle, duration, favicon } = message.data || message
@@ -582,16 +404,6 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           logger.error("TRACK_URL error", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "FORCE_FLUSH_TRACKER":
-        try {
-          const clusters = await sessionTracker.forceFlush()
-          sendResponse({ success: true, clustersCount: clusters.length })
-        } catch (error) {
-          logger.error("FORCE_FLUSH_TRACKER error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

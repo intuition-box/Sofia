@@ -1,93 +1,217 @@
-/* ─── Shimmer Animation ─── */
+/* Smooth shimmer — wider gradient + slower transit feels less mechanical */
 @keyframes shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: 200px 0; }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
-/* ─── Base Skeleton Elements ─── */
-.skeleton-line {
+/* Shared shimmer surface — translucent whites so the highlight pops
+   against the dark blurred panels (.actions-panel / .extended-metrics-panel
+   are rgba(0,0,0,0.65), and the salmon header overrides below). */
+.skeleton-line,
+.skeleton-circle,
+.blockchain-skeleton__favicon,
+.blockchain-skeleton__badge,
+.blockchain-skeleton__pill,
+.blockchain-skeleton__section-title,
+.blockchain-skeleton__bar,
+.blockchain-skeleton__share,
+.blockchain-skeleton__validate,
+.blockchain-skeleton__sentence {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.14) 50%,
     rgba(255, 255, 255, 0.04) 75%
   );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Dark shimmer for elements sitting on the salmon header surface. */
+.blockchain-skeleton__website .blockchain-skeleton__favicon,
+.blockchain-skeleton__website .blockchain-skeleton__badge,
+.blockchain-skeleton__website .skeleton-line {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.10) 25%,
+    rgba(0, 0, 0, 0.28) 50%,
+    rgba(0, 0, 0, 0.10) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-line {
   border-radius: 4px;
 }
 
 .skeleton-circle {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-/* ─── PageBlockchain Skeleton ─── */
+/* ─── PageBlockchainCard skeleton root ─── */
 .blockchain-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 0;
+  padding: 0;
 }
 
-.blockchain-skeleton__header {
+/* Mirrors .star-border-container — 3px ring + 12px bottom margin */
+.blockchain-skeleton__star-border {
+  position: relative;
+  padding: 3px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(to bottom, #060504, #101010);
+  overflow: hidden;
+}
+
+/* Website header — mirrors .website-info-container (salmon surface) */
+.blockchain-skeleton__website {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--ds-accent);
+  border: 1px solid var(--ds-accent);
+  border-radius: 12px;
+}
+
+.blockchain-skeleton__favicon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.blockchain-skeleton__website-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.blockchain-skeleton__badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Share button placeholder — mirrors .share-certification-btn */
+.blockchain-skeleton__share {
+  width: 100%;
+  height: 40px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border-light, rgba(255, 255, 255, 0.1));
+  margin-top: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+/* Skeleton variant of .actions-panel — same surface, just disable its
+   pointer events while loading. */
+.blockchain-skeleton__actions {
+  pointer-events: none;
+}
+
+/* Cert section — mirrors .cert-section (gap 10px) */
+.blockchain-skeleton__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Section title bar (mimics 11px Mono uppercase text) */
+.blockchain-skeleton__section-title {
+  width: 92px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+
+.blockchain-skeleton__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Context section — pills should fill the row equally */
+.blockchain-skeleton__pills--full {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.blockchain-skeleton__pills--full .blockchain-skeleton__pill {
+  flex: 1;
+  width: auto !important;
+}
+
+/* Pills — mirror .intention-pill (6px radius, ds-card + ds-border).
+   Real pill height = padding 6×16 + 13px line + 1px border ≈ 32px. */
+.blockchain-skeleton__pill {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+}
+
+/* Trust/distrust separator (mirrors .intention-pills__separator) */
+.blockchain-skeleton__sep {
+  width: 1px;
+  height: 24px;
+  background: var(--ds-border);
+  margin: 0 4px;
+  animation: none;
+}
+
+/* Live-sentence preview box (mirrors .live-sentence) */
+.blockchain-skeleton__sentence {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px dashed var(--ds-border);
+}
+
+/* Validate button placeholder */
+.blockchain-skeleton__validate {
+  width: 100%;
+  height: 38px;
+  border-radius: 10px;
+}
+
+/* Skeleton variant of .extended-metrics-panel — keep the real surface
+   styling, kill interaction while loading. The 12px top gap mirrors the
+   real card's .credibility-analysis margin-top so the actions→stats gap
+   matches the StarBorder→share gap above. */
+.blockchain-skeleton__metrics {
+  pointer-events: none;
+  margin-top: var(--spacing-md, 12px);
+}
+
+.blockchain-skeleton__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockchain-skeleton__bar-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.blockchain-skeleton__header-text {
+/* Progress track bar (mirrors .progress-track 6px height, 3px radius) */
+.blockchain-skeleton__bar {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.blockchain-skeleton__buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.blockchain-skeleton__btn {
-  flex: 1;
-  height: 40px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.blockchain-skeleton__pills {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.blockchain-skeleton__pill {
-  width: 60px;
-  height: 28px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  height: 6px;
+  border-radius: 3px;
 }

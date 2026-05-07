@@ -10,7 +10,7 @@
     "dev:explorer": "bun run --filter explorer dev",
     "dev:extension": "bun run --filter extension dev",
     "dev:og": "bun run --filter og dev",
-    "dev:landing": "bun run --filter landing start",
+    "dev:doc": "bun run --filter doc start",
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter './apps/**' typecheck && bun run --filter './packages/**' typecheck && bun run --filter './services/**' typecheck",
     "format": "prettier --write .",

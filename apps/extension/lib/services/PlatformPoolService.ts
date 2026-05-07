@@ -51,10 +51,6 @@ class PlatformPoolServiceClass {
     return () => this.listeners.delete(listener)
   }
 
-  private emitChange() {
-    for (const listener of this.listeners) listener()
-  }
-
   // ── Split calculation ──
 
   isEnabled(): boolean {

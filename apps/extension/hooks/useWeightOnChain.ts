@@ -6,7 +6,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { BlockchainService, globalStakeService, txEventBus } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
-import type { Address, Hash } from '../types/viem'
+import type { Address, Hash } from 'viem'
 
 const logger = createHookLogger('useWeightOnChain')
 

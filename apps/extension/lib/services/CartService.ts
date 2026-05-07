@@ -233,6 +233,36 @@ class CartServiceClass {
     )
   }
 
+  async updateContextForUrl(
+    walletAddress: string,
+    url: string,
+    interestContext: string | null
+  ): Promise<void> {
+    const wallet = walletAddress.toLowerCase()
+    const { label: normalizedLabel } = normalizeUrl(url)
+    const matching = this.state.items.filter(
+      item =>
+        item.walletAddress === wallet && item.normalizedUrl === normalizedLabel
+    )
+    if (matching.length === 0) return
+
+    try {
+      const updated = matching.map(item => ({ ...item, interestContext }))
+      for (const item of updated) {
+        await CartDataService.addItem(item) // put = upsert
+      }
+      const items = this.state.items.map(item =>
+        item.walletAddress === wallet && item.normalizedUrl === normalizedLabel
+          ? { ...item, interestContext }
+          : item
+      )
+      this.updateState({ items, count: items.length })
+      logger.info("Updated context for URL", { normalizedLabel, interestContext })
+    } catch (error) {
+      logger.error("Failed to update context for URL", { error })
+    }
+  }
+
   async removeItem(itemId: string): Promise<void> {
     try {
       await CartDataService.removeItem(itemId)

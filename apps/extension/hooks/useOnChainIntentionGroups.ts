@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { getAddress } from 'viem'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
@@ -77,13 +78,23 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
     try {
       logger.debug('Fetching on-chain intention groups', { walletAddress })
 
+      // The query uses `account_id: { _in: $userAddresses }` (exact match in array).
+      // Intuition stores account_id as EIP-55 checksummed (mixed case), but some
+      // clients may write lowercase — pass both variants to cover all cases.
+      let checksumAddr: string
+      try {
+        checksumAddr = getAddress(walletAddress)
+      } catch {
+        checksumAddr = walletAddress
+      }
+      const userAddresses = Array.from(new Set([checksumAddr, walletAddress.toLowerCase()]))
+
       // Query for all triples where:
       // - predicate is an intention predicate
       // - user has a position (shares > 0)
-      // Using document from @0xsofia/graphql
       const response = await intuitionGraphqlClient.request(GetUserIntentionPositionsDocument, {
         predicateIds: ALL_PREDICATE_IDS,
-        userAddresses: `%${walletAddress.toLowerCase()}%`
+        userAddresses
       })
 
       const triples = response?.triples || []

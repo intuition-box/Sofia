@@ -8,10 +8,7 @@ import { useMemo, useCallback } from 'react'
 import { useUserCertifications, type TripleDetail } from './useUserCertifications'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import type { IntentionPurpose } from '../types/discovery'
-import { createHookLogger } from '../lib/utils/logger'
 import { normalizeUrl, calculateLevelProgress, intentionToCertification, trustToCertification } from '../lib/utils'
-
-const logger = createHookLogger('useGroupOnChainCertifications')
 
 export interface UrlCertificationStatus {
   url: string

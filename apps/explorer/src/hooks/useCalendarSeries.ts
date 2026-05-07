@@ -9,10 +9,7 @@
  * topic-context or not.
  */
 import { useMemo } from 'react'
-import {
-  CAL_DAYS,
-  type CalendarTopicSeries,
-} from '@/lib/activityCalendar'
+import { CAL_DAYS, type CalendarTopicSeries } from '@/lib/activityCalendar'
 import {
   INTENTION_CONFIG,
   getIntentionColor,
@@ -36,11 +33,7 @@ const RADAR_VERB_IDS = new Set([
 // Calendar bucket scope — radar verbs + the trust/distrust pair so the
 // heat-map captures every certification the user has authored, including
 // "Supported X" / "Opposed X" rows that don't show on the radar.
-const CALENDAR_VERB_IDS = new Set([
-  ...RADAR_VERB_IDS,
-  'trusted',
-  'distrusted',
-])
+const CALENDAR_VERB_IDS = new Set([...RADAR_VERB_IDS, 'trusted', 'distrusted'])
 
 function dayIndexFor(timestamp: string, todayMs: number): number | null {
   if (!timestamp) return null
@@ -139,7 +132,9 @@ export function useCalendarSeries(
     // ALL — show every verb (radar verbs + trusted/distrusted) so the
     // heat-map reflects the user's full activity, not just topic-tagged
     // certs. Empty buckets are dropped to keep the legend compact.
-    return (Array.from(CALENDAR_VERB_IDS) as Array<keyof typeof INTENTION_CONFIG>)
+    return (
+      Array.from(CALENDAR_VERB_IDS) as Array<keyof typeof INTENTION_CONFIG>
+    )
       .map((verbId) => {
         const cfg = INTENTION_CONFIG[verbId]
         const counts = countsByVerb.get(verbId)
@@ -151,6 +146,6 @@ export function useCalendarSeries(
           counts,
         }
       })
-      .filter((x): x is CalendarTopicSeries => x !== null)
+      .filter((x) => x !== null)
   }, [focus, selectedTopics, topicById, countsByTopic, countsByVerb])
 }

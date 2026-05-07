@@ -73,8 +73,7 @@ export default function BadgeDetailPage() {
 
   const { profile, isLoading } = useUserOnChainProfile(profileAddresses)
 
-  const tier =
-    tierParam && tierParam in TIERS ? TIERS[tierParam as Tier] : null
+  const tier = tierParam && tierParam in TIERS ? TIERS[tierParam as Tier] : null
   if (!tier) {
     return (
       <div className="pf-view page-enter">
@@ -183,9 +182,7 @@ export default function BadgeDetailPage() {
                             loading="lazy"
                           />
                         ) : (
-                          (host || cert.objectLabel)
-                            .slice(0, 1)
-                            .toUpperCase()
+                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
                         )}
                       </div>
                       <div className="fc-title-wrap">

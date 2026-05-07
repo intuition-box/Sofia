@@ -28,39 +28,28 @@
 }
 
 /* ─── Intentions Stats ─── */
+/* Primary section: takes more vertical space + stronger title */
 .intentions-stats-section {
-  margin-bottom: var(--spacing-lg, 16px);
+  margin-bottom: 24px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-sm, 8px);
+  margin-bottom: 12px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--font-size-sm, 12px);
-  font-weight: 600;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-ink);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* ─── Portal Link ─── */
-.portal-link {
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.4));
-  text-decoration: none;
-  font-size: var(--font-size-xs, 10px);
-  transition: color 0.2s ease;
-  line-height: 1;
-}
-
-.portal-link:hover {
-  color: var(--color-text-secondary, #FBF7F5);
+  letter-spacing: 0.06em;
 }
 
 .section-subheader {
@@ -77,6 +66,7 @@
   display: flex;
   gap: 2px;
   background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-sm, 4px);
   padding: 2px;
 }
@@ -98,7 +88,66 @@
 
 .scope-btn.active {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, #FBF7F5);
+  color: var(--color-text-secondary, var(--ds-ink));
+}
+
+/* Larger / standalone variant — used as a primary segmented control,
+   not just inline next to a section title. Better contrast and touch target. */
+.scope-toggle--lg {
+  width: fit-content;
+  max-width: 100%;
+  align-self: center;
+  margin: 12px auto;
+  padding: 4px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  flex-wrap: wrap;
+}
+
+.scope-toggle--lg .scope-btn {
+  padding: 8px 16px;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  border-radius: 999px;
+  position: relative;
+}
+
+.scope-toggle--lg .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.04));
+}
+
+.scope-toggle--lg .scope-btn.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #1a0a04);
+}
+
+/* Profile Stats/Quests sub-toggle — sits right under the salmon
+   ProfileHeader, so the active pill is white-on-bg to contrast
+   instead of stacking another salmon surface. */
+.stats-subtab-row.scope-toggle--lg .scope-btn.active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}
+
+.stats-subtab-row.scope-toggle--lg .scope-btn:hover:not(.active) {
+  color: var(--ds-ink);
+}
+
+/* Claimable indicator on a scope-btn — small red dot top-right */
+.scope-btn.has-claimable::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px var(--ds-bg-subtle);
 }
 
 .intentions-loading {
@@ -124,13 +173,6 @@
   gap: var(--spacing-md, 12px);
 }
 
-.intention-label {
-  width: 90px;
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
-  flex-shrink: 0;
-}
-
 .progress-track {
   flex: 1;
   height: 6px;
@@ -146,38 +188,15 @@
   min-width: 2px;
 }
 
-/* Intention progress colors — semantic brand colors per intention type */
-.progress-fill.work {
-  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-}
-
-.progress-fill.learning {
-  background: linear-gradient(90deg, #06B6D4 0%, #22D3EE 100%);
-}
-
-.progress-fill.fun {
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
-}
-
-.progress-fill.inspiration {
-  background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
-}
-
-.progress-fill.buying {
-  background: linear-gradient(90deg, #EC4899 0%, #F472B6 100%);
-}
-
-.progress-fill.music {
-  background: linear-gradient(90deg, #FF5722 0%, #FF8A65 100%);
-}
-
-.progress-fill.trusted {
-  background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
-}
-
-.progress-fill.distrusted {
-  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
-}
+/* Intention progress colors — DS palette tokens */
+.progress-fill.work       { background: var(--work); }
+.progress-fill.learning   { background: var(--learning); }
+.progress-fill.fun        { background: var(--fun); }
+.progress-fill.inspiration { background: var(--inspiration); }
+.progress-fill.buying     { background: var(--buying); }
+.progress-fill.music      { background: var(--music); }
+.progress-fill.trusted    { background: var(--trusted); }
+.progress-fill.distrusted { background: var(--distrusted); }
 
 .intention-count {
   min-width: 24px;
@@ -188,68 +207,21 @@
 }
 
 /* ─── Related Signals Section ─── */
+/* Secondary section — demoted: smaller title, more breathing room above */
 .signals-section {
   border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
-  padding-top: var(--spacing-md, 12px);
-}
-
-.signals-section-title {
-  font-size: var(--font-size-sm, 12px);
-  font-weight: 600;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
-  margin-bottom: var(--spacing-sm, 8px);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* ─── Accordion Toggles ─── */
-.collapsible-lists-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-}
-
-.collapsible-toggle {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
-  cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
-}
-
-.collapsible-toggle:hover {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+  padding-top: 20px;
+  margin-top: 8px;
 }
 
 .collapsible-toggle.active {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.08));
-  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
-  color: var(--color-text-secondary, #FBF7F5);
-}
-
-.collapsible-toggle .toggle-arrow {
-  font-size: 8px;
-  transition: transform 0.2s ease;
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
 }
 
 .collapsible-toggle .toggle-arrow.expanded {
   transform: rotate(180deg);
-}
-
-/* ─── Accordion Content ─── */
-.accordion-content {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
 }
 
 .accordion-content.expanded {
@@ -258,63 +230,23 @@
   overflow-y: auto;
 }
 
-/* ─── Atoms Section ─── */
-.atoms-section {
-  padding-top: var(--spacing-xs, 4px);
-}
-
-.atoms-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm, 8px);
-}
-
-.atom-item {
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
-  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  border-radius: var(--radius-md, 8px);
-  cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
-}
-
 .atom-item.clickable:hover {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
-  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
   transform: translateY(-1px);
-}
-
-.atom-text {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm, 8px);
-  align-items: center;
-  margin-bottom: var(--spacing-xs, 4px);
-}
-
-.atom-label {
-  color: var(--color-text-secondary, #FBF7F5);
-  font-weight: 600;
-  font-size: var(--font-size-sm, 12px);
-}
-
-.atom-type {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
-  padding: 2px var(--spacing-sm, 8px);
-  border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-xs, 10px);
-  text-transform: uppercase;
 }
 
 /* ─── TVL Badge (compact chip) ─── */
 .tvl-badge {
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ADE80;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  color: var(--trusted);
   padding: 1px 6px;
   border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 
@@ -330,18 +262,18 @@
 }
 
 .triplets-section .triplet-item {
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-md, 8px);
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   margin-bottom: 0px;
 }
 
 .triplets-section .triplet-item.clickable:hover {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
-  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+  background: var(--ds-card);
+  border-color: var(--ds-ink-soft);
   transform: translateY(-1px);
 }
 
@@ -358,44 +290,47 @@
 .triplets-section .triplet-text .object {
   padding: 4px 8px;
   border-radius: var(--radius-md, 8px);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-xs, 10px);
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
 }
 
 .triplets-section .triplet-text .subject,
 .triplets-section .triplet-text .object {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ds-ink-soft);
 }
 
 .triplets-section .triplet-text .predicate {
-  color: #FBF7F5;
-}
-
-.sort-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
-  border-radius: var(--radius-sm, 4px);
-  padding: 2px;
+  color: var(--ds-ink);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 9px;
 }
 
 .sort-toggle .sort-btn {
   padding: 2px var(--spacing-sm, 8px);
   border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: var(--transition-fast, all 0.2s ease);
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .sort-toggle .sort-btn:hover {
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  color: var(--ds-ink);
 }
 
 .sort-toggle .sort-btn.active {
-  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
-  color: var(--color-text-secondary, #FBF7F5);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
 }

@@ -58,25 +58,3 @@ export async function getAllBookmarks(): Promise<{ success: boolean; bookmarks?:
   }
 }
 
-export async function getAllHistory(): Promise<{success: boolean, urls?: string[], error?: string}> {
-  try {
-    // Get last 300 history items (most recent visits)
-    const historyItems = await chrome.history.search({
-      text: '',
-      maxResults: 300 // Just the 300 most recent visits
-    })
-    
-    // Extract URLs and filter out sensitive ones
-    
-    const urls = historyItems
-      .map(item => item.url)
-      .filter((url): url is string => !!url && !isSensitiveUrl(url))
-      .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
-    
-    logger.info(`Extracted ${urls.length} history URLs`)
-    return { success: true, urls }
-  } catch (error) {
-    logger.error('Failed to get browsing history', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-}

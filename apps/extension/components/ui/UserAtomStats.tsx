@@ -11,6 +11,8 @@ interface UserAtomStatsProps {
   compact?: boolean
   signalsCount?: number
   totalMarketCap?: string
+  /** Hide the market cap segment (default: false → market cap shown) */
+  hideMarketCap?: boolean
 }
 
 /**
@@ -18,7 +20,7 @@ interface UserAtomStatsProps {
  * Shows: Signals Created (Position Count), Total Market Cap
  * Can use pre-loaded data or fetch from GetAtomStats query
  */
-const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: preloadedSignals, totalMarketCap: preloadedMarketCap }: UserAtomStatsProps) => {
+const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: preloadedSignals, totalMarketCap: preloadedMarketCap, hideMarketCap = false }: UserAtomStatsProps) => {
   const atomStats = useUserAtomStats(termId, accountAddress)
   
   // Use pre-loaded data if available, otherwise use query data
@@ -71,11 +73,15 @@ const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: 
         <span className="account-stats-label">Signals:</span>
         <span className="account-stats-value">{signalsCreated}</span>
       </span>
-      <span className="account-stats-separator">•</span>
-      <span className="account-stats-item">
-        <span className="account-stats-label">Market Cap:</span>
-        <span className="account-stats-value">{totalMarketCap}</span>
-      </span>
+      {!hideMarketCap && (
+        <>
+          <span className="account-stats-separator">•</span>
+          <span className="account-stats-item">
+            <span className="account-stats-label">Market Cap:</span>
+            <span className="account-stats-value">{totalMarketCap}</span>
+          </span>
+        </>
+      )}
     </div>
   )
 }

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Atoms — Sofia Docs</title>
+<link rel="icon" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&family=Inter:wght@300;400;500;600;700&family=Overpass+Mono:wght@300..700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;line-height:1.7}
+a{color:#485C11;text-decoration:none}a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:#f7f7f5;border-right:1px solid #E9E9E9;padding:80px 20px 40px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:28px;text-decoration:none;color:#1a1a1a}
+.sb-logo img{height:28px}
+.sb-logo span{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600}
+.sb-cat{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b6b6b;margin:20px 0 6px;padding-left:12px}
+.sidebar a{display:block;font-size:.82rem;color:#6b6b6b;padding:5px 12px;border-radius:6px;transition:all .15s;text-decoration:none;margin:1px 0}
+.sidebar a:hover{color:#1a1a1a;background:rgba(0,0,0,.04)}
+.sidebar a.active{color:#485C11;font-weight:600;background:rgba(72,92,17,.08);border-left:3px solid #485C11;padding-left:9px}
+.content{padding:80px 60px 60px;max-width:800px}
+.nav-top{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #E9E9E9;display:flex;align-items:center;padding:0 24px;justify-content:space-between}
+.nav-top a{font-size:.8rem;color:#6b6b6b;text-decoration:none}.nav-top a:hover{color:#1a1a1a}
+.nav-top img{height:28px}
+.content h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:400;margin-bottom:20px;letter-spacing:-.02em}
+.content h2{font-size:1.2rem;font-weight:600;margin:32px 0 10px;color:#1a1a1a}
+.content h3{font-size:1rem;font-weight:600;margin:24px 0 8px;color:#1a1a1a}
+.content p{font-size:.88rem;color:#4a4a4a;margin-bottom:12px}
+.content ul,.content ol{margin:8px 0 16px 20px;font-size:.86rem;color:#4a4a4a}
+.content li{margin-bottom:6px}
+.content hr{border:none;height:1px;background:#E9E9E9;margin:24px 0}
+.content code{background:rgba(72,92,17,.08);color:#485C11;padding:2px 6px;border-radius:4px;font-size:.84rem;font-family:'Overpass Mono',monospace}
+.content pre{background:#1a1a1a;color:#e0e0e0;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0;font-size:.82rem}
+.content pre code{background:none;color:inherit;padding:0}
+.content blockquote{border-left:3px solid #485C11;padding:8px 16px;margin:12px 0;color:#6b6b6b;font-style:italic;background:#f7f7f5;border-radius:0 6px 6px 0}
+.content strong{color:#1a1a1a}
+.content img{max-width:100%;border-radius:8px;margin:12px 0}
+@media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{display:none}.content{padding:70px 20px 40px}}
+</style>
+</head>
+<body>
+<nav class="nav-top">
+<a href="../index.html"><img src="../img/logo-black.png" alt="Sofia"></a>
+<div style="display:flex;gap:16px">
+<a href="../index.html">Home</a>
+<a href="../blog/index.html">Blog</a>
+</div>
+</nav>
+<div class="layout">
+<aside class="sidebar">
+<a href="../index.html" class="sb-logo"><span>Docs</span></a>
+<a href="intro.html">What is Sofia?</a>
+<div class="sb-cat">Core Concepts</div>
+<a href="core-concepts-atoms.html" class="active">Atoms</a>
+<a href="core-concepts-triples.html">Triples</a>
+<a href="core-concepts-predicates.html">Predicates</a>
+<div class="sb-cat">Features</div>
+<a href="features-getting-started.html">Getting Started</a>
+<a href="features-echoes.html">Echoes</a>
+<a href="features-intentions.html">Intentions</a>
+<a href="features-certifications.html">Certifications</a>
+<a href="features-bookmarks-signals.html">Bookmarks & Signals</a>
+<div class="sb-cat">Gamification</div>
+<a href="gamification-currencies-levels.html">Currencies & Levels</a>
+<a href="gamification-quests-discovery.html">Quests & Discovery</a>
+<a href="gamification-streaks-voting.html">Streaks & Voting</a>
+<a href="gamification-badges-rewards.html">Badges & Rewards</a>
+<div class="sb-cat">AI Features</div>
+<a href="ai-features-pulse-analysis.html">Pulse Analysis</a>
+<a href="ai-features-interest-analysis.html">Interest Analysis</a>
+<a href="ai-features-chat-predicates.html">Chat & Predicates</a>
+<div class="sb-cat">Resonance</div>
+<a href="resonance-circle-feed.html">Circle Feed</a>
+<a href="resonance-trending.html">Trending</a>
+<a href="resonance-vote.html">Vote</a>
+<a href="resonance-featured-lists.html">Featured Lists</a>
+<a href="resonance-leaderboard.html">Leaderboard</a>
+<div class="sb-cat">Social</div>
+<a href="social-verification.html">Verification</a>
+<a href="social-following-trust.html">Following & Trust</a>
+<div class="sb-cat">Litepaper</div>
+<a href="litepaper-introduction.html">Introduction</a>
+<a href="litepaper-network.html">Network</a>
+<a href="litepaper-subscription.html">Subscription</a>
+<a href="litepaper-dao.html">DAO</a>
+<a href="litepaper-features.html">Features</a>
+<a href="litepaper-privacy.html">Privacy</a>
+<a href="litepaper-why-unique.html">Why Unique</a>
+<a href="litepaper-audience.html">Audience</a>
+<div class="sb-cat">Architecture</div>
+<a href="architecture-overview.html">Overview</a>
+<div class="sb-cat">Ecosystem</div>
+<a href="ecosystem-intuition.html">Intuition</a>
+<a href="ecosystem-gaianet.html">Gaianet</a>
+<a href="ecosystem-mastra.html">Mastra</a>
+<a href="ecosystem-phala.html">Phala</a>
+<div class="sb-cat">Known Issues</div>
+<a href="known-issues-transactions.html">Transactions</a>
+<a href="known-issues-social-verification.html">Social Verification</a>
+</aside>
+<main class="content">
+<h1>Atoms</h1>
+<p>Sofia is built on the <strong>Intuition Protocol</strong>, a decentralized knowledge graph. Understanding these core concepts will help you make the most of the platform.</p>
+<p>An <strong>Atom</strong> is the fundamental unit of data in Intuition. Think of it as a unique identifier for any entity — a URL, a user, a concept, or an idea.</p>
+<h2>What can be an Atom?</h2>
+<h2>How Atoms are created</h2>
+<p>When you <a href="../features/certifications.md" target="_blank">certify</a> a page for the first time, Sofia automatically creates:</p>
+<ol>
+<li>An Atom for the URL (if it doesn't exist)</li>
+<li>An Atom for the <a href="./predicates.md" target="_blank">predicate</a> (intention type)</li>
+<li>Links them in a <a href="./triples.md" target="_blank">Triple</a></li>
+</ul>
+<p>Each Atom has its own <strong>vault</strong> where users can deposit TRUST tokens.</p>
+</main>
+</div>
+</body>
+</html>

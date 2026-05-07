@@ -144,3 +144,18 @@ export interface UsePageBlockchainDataResult {
   pauseRefresh: () => void
   resumeRefresh: () => void
 }
+// Page data captured by the content script tracker.
+// Buffered and processed by PageDataService.
+export interface PageData {
+  url: string
+  title?: string
+  keywords?: string
+  description?: string
+  ogType?: string
+  h1?: string
+  hasScrolled?: boolean
+  timestamp: number
+  duration?: number
+  tabId?: number
+  attentionScore?: number
+}

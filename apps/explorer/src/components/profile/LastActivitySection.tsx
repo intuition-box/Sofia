@@ -4,10 +4,7 @@ import {
   type CertificationDot,
   formatDuration,
 } from '@0xsofia/design-system'
-import {
-  CERTIFICATION_COLORS,
-  type IntentionType,
-} from '@/config/intentions'
+import { CERTIFICATION_COLORS, type IntentionType } from '@/config/intentions'
 import {
   useIntentionGroups,
   pickDominantColor,

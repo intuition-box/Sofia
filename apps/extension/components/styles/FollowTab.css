@@ -1,62 +1,36 @@
-.follow-tab {
-  padding: var(--spacing-xl);
-  padding-bottom: 100px;
-  max-width: 100%;
-  position: relative;
-  overflow: visible;
-  min-height: 100%;
-}
-
-/* Filter buttons */
-.filter-buttons {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-2xl);
-  margin-top: 5px;
-}
-
 .filter-btn {
   padding: var(--spacing-sm) var(--spacing-xl);
-  background: rgba(26, 26, 26, 0.95);
-  color: var(--color-text-very-muted);
-  border: 1px solid rgba(42, 42, 42, 1);
+  background: var(--ds-card);
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-xl);
-  font-size: var(--font-size-base);
-  font-weight: 500;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .filter-btn:hover {
-  background: #252525;
-  border-color: #3a3a3a;
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
 }
 
 .filter-btn.active {
-  background: rgba(42, 42, 42, 1);
-  color: var(--color-text-secondary);
-  border-color: #3a3a3a;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
 }
 
 .filter-btn.trustactive {
-  background: var(--color-gradient-button);
-  animation: orb-gradient 20s ease infinite;
-  background-size: 200% 200%;
+  background: var(--btn-primary-bg);
   padding: var(--spacing-sm) var(--spacing-xl);
-  color: var(--color-text-dark);
-  border-color: #ffb01c;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  color: var(--btn-primary-fg);
+  border-color: transparent;
   position: relative;
   overflow: hidden;
-}
-
-/* Title */
-.follow-title {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-lg);
-  font-weight: 400;
-  margin-bottom: var(--spacing-xl);
 }
 
 /* Search and Sort */
@@ -66,11 +40,6 @@
   margin-bottom: var(--spacing-xl);
   z-index: var(--z-header);
   min-height: 50px;
-}
-
-.search-sort-container {
-  display: flex;
-  gap: var(--spacing-md);
 }
 
 .search-sort-container .input {
@@ -103,12 +72,12 @@
 }
 
 .search-results-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(42, 42, 42, 1);
+  background: var(--ds-border);
   border-radius: 3px;
 }
 
 .search-results-dropdown::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+  background: var(--ds-ink-soft);
 }
 
 .search-result-card {
@@ -116,50 +85,28 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg);
-  background: #0a0a0a;
-  border: 1px solid rgba(26, 26, 26, 1);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-md);
-  transition: var(--transition-fast);
+  transition: border-color 0.15s ease;
 }
 
 .search-result-card:hover {
-  background: #0f0f0f;
-  border-color: var(--color-primary);
+  border-color: var(--ds-accent);
   cursor: pointer;
 }
+
 
 .search-results-more {
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  background-color: rgba(255, 255, 255, 0.02);
-}
-
-.sort-select {
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg-glass);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-base);
-  font-family: var(--font-family-primary);
-  transition: var(--transition-fast);
-  cursor: pointer;
-  outline: none;
-  min-width: 150px;
-}
-
-.sort-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
-}
-
-.sort-select option {
-  background: #0a0a0a;
-  color: var(--color-text-secondary);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background-color: var(--ds-bg-subtle);
 }
 
 /* Accounts list */
@@ -176,28 +123,18 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg);
-  backdrop-filter: var(--backdrop-blur-heavy);
-  -webkit-backdrop-filter: var(--backdrop-blur-heavy);
-  border: 1px solid rgba(26, 26, 26, 1);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   border-radius: var(--radius-md);
-  transition: var(--transition-fast);
+  transition: border-color 0.15s ease;
 }
 
 .followed-account-card:hover {
-  background: #0f0f0f;
-  border-color: rgba(42, 42, 42, 1);
-}
-
-.account-link {
-  flex: 1;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  min-width: 0;
+  border-color: var(--ds-ink-soft);
 }
 
 .account-link:hover .account-label {
-  color: var(--color-primary);
+  color: var(--ds-accent);
   text-decoration: underline;
 }
 
@@ -210,8 +147,10 @@
 }
 
 .account-number {
-  color: var(--color-text-very-muted);
-  font-size: var(--font-size-base);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
   min-width: var(--spacing-xl);
   text-align: right;
   flex-shrink: 0;
@@ -247,9 +186,10 @@
 }
 
 .account-label {
-  color: var(--color-text-secondary);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: var(--font-size-base);
-  font-weight: 400;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -263,8 +203,11 @@
 }
 
 .trust-amount {
-  color: var(--color-text-very-muted);
-  font-size: 13px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -379,40 +322,139 @@
   padding: var(--spacing-sm) 23px;
 }
 
+/* Explicit "Retirer du trust circle" button — replaces the silent "×" icon.
+   Subdued by default, salmon-tinted on hover so the destructive intent is
+   clear without screaming on every list row. */
+.trust-remove-btn {
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.trust-remove-btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
+}
+
+.trust-remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* "+ invite a member" CTA at the top of TrustCirclePanel — mirrors the
+   sofia-explorer crd-members-invite-btn: dark bg with white text, salmon
+   bg with black text on hover. Matches the per-account "+ add" buttons. */
+.invite-member-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+  padding: 10px 14px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.invite-member-btn:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  transform: translateY(-1px);
+}
+
+/* Explorer card actions: View profile + add-to-circle stacked buttons.
+   Both buttons share the same width, the +add stays compact vertically. */
+.explorer-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  align-items: stretch;
+  min-width: 110px;
+}
+
+.explorer-view-profile-btn {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.explorer-view-profile-btn:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
+}
+
+/* Compact +add button inside Explorer cards: same dark / salmon hover
+   treatment as the invite-member CTA, sized down to align with the
+   View profile button. Overrides the salmon-gradient applied by the
+   shared .follow-button class. */
+.follow-button.explorer-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 10px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  border-radius: 6px;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.follow-button.explorer-add-btn:hover:not(:disabled) {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+.follow-button.explorer-add-btn::before {
+  content: none;
+}
+
 /* Explorer top accounts section */
 .explorer-top-accounts {
   margin-top: var(--spacing-lg);
 }
 
 .explorer-section-title {
-  color: var(--color-text-very-muted);
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-/* Explorer panel info section */
-.explorer-info {
-  margin-top: 32px;
-  padding: var(--spacing-2xl);
-  background: rgba(26, 26, 26, 0.95);
-  border: 1px solid rgba(42, 42, 42, 1);
-  border-radius: var(--radius-lg);
-  text-align: center;
-}
-
-.explorer-info h3 {
-  margin: 0 0 var(--spacing-md) 0;
-  font-size: var(--font-size-xl);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--spacing-md) 0;
 }
 
-.explorer-info p {
-  margin: 0;
-  font-size: var(--font-size-base);
-  color: var(--color-text-very-muted);
-  line-height: 1.6;
-}

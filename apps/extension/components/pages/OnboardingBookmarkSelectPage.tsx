@@ -96,7 +96,7 @@ const OnboardingBookmarkSelectPage = () => {
         setIsImporting(false)
         if (response?.success) {
           localStorage.setItem('targetTab', 'Echoes')
-          navigateTo('Sofia')
+          navigateTo('my-profile')
         } else {
           logger.error('Import failed', response?.error)
         }

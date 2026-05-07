@@ -5,20 +5,26 @@ import React, {
   useCallback,
   useEffect,
 } from 'react'
+import {
+  PrivyProvider,
+  usePrivy,
+  useLogin,
+  useLogout,
+} from '@privy-io/react-auth'
 
-const PRIVY_APP_ID = 'cmj05tjsj03thjs0c3mgxrixm'
-const PRIVY_CLIENT_ID = 'client-WY6U3b3LFEgbveR2FVgiyTTbRWKCZhy6vEVFzQt9NvZYS'
+// Aligned on the Explorer Privy app — same allowlist (localhost + prod).
+const PRIVY_APP_ID =
+  import.meta.env.VITE_PRIVY_APP_ID ?? 'cmmey7hlx01110clgylcc1ulc'
 
 interface WalletContextValue {
   address: string | null
-  walletType: string | null // 'metamask', 'rabby', 'coinbase_wallet', etc.
+  walletType: string | null
   isConnected: boolean
   isConnecting: boolean
   error: string | null
   connect: () => void
   disconnect: () => void
   clearError: () => void
-  isMetaMaskInstalled: boolean
 }
 
 const defaultValue: WalletContextValue = {
@@ -30,188 +36,126 @@ const defaultValue: WalletContextValue = {
   connect: () => {},
   disconnect: () => {},
   clearError: () => {},
-  isMetaMaskInstalled: true,
 }
 
 const WalletContext = createContext<WalletContextValue>(defaultValue)
 
-// Extract wallet info from Privy user
 const getWalletInfo = (
   user: any,
 ): { address: string | null; walletType: string | null } => {
   if (!user) return { address: null, walletType: null }
-
-  // Check linkedAccounts first
   const walletAccount = user.linkedAccounts?.find(
-    (account: any) => account.type === 'wallet',
+    (a: any) => a.type === 'wallet',
   )
-  if (walletAccount?.address) {
+  if (walletAccount?.address)
     return {
       address: walletAccount.address,
-      walletType:
-        walletAccount.walletClientType || walletAccount.walletClient || null,
+      walletType: walletAccount.walletClientType || null,
     }
-  }
-
-  // Fallback to user.wallet
-  if (user.wallet?.address) {
+  if (user.wallet?.address)
     return {
       address: user.wallet.address,
-      walletType:
-        user.wallet.walletClientType || user.wallet.walletClient || null,
+      walletType: user.wallet.walletClientType || null,
     }
-  }
-
   return { address: null, walletType: null }
 }
 
-function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
-  const {
-    PrivyProvider,
-    usePrivy,
-    useLogin,
-    useLogout,
-  } = require('@privy-io/react-auth')
+function InnerProvider({ children }: { children: React.ReactNode }) {
+  const { ready, authenticated, user } = usePrivy()
+  const { logout } = useLogout()
+  const [state, setState] = useState({
+    address: null as string | null,
+    walletType: null as string | null,
+    isConnected: false,
+    isConnecting: false,
+    error: null as string | null,
+  })
 
-  function InnerProvider({ children }: { children: React.ReactNode }) {
-    const { ready, authenticated, user } = usePrivy()
-    const { logout } = useLogout()
+  const { login } = useLogin({
+    onComplete: ({ user: u }: { user: any }) => {
+      const { address, walletType } = getWalletInfo(u)
+      setState({
+        address,
+        walletType,
+        isConnected: !!address,
+        isConnecting: false,
+        error: address ? null : 'No wallet found.',
+      })
+    },
+    onError: () => {
+      setState((prev) => ({
+        ...prev,
+        isConnecting: false,
+        error: 'Connection failed.',
+      }))
+    },
+  })
 
-    const [state, setState] = useState({
-      address: null as string | null,
-      walletType: null as string | null,
-      isConnected: false,
-      isConnecting: false,
-      error: null as string | null,
-    })
-
-    const { login } = useLogin({
-      onComplete: ({ user }: { user: any }) => {
-        const { address, walletType } = getWalletInfo(user)
-        if (address) {
-          console.log('[Privy] Connected wallet:', { address, walletType })
-          setState({
-            address,
-            walletType,
-            isConnected: true,
-            isConnecting: false,
-            error: null,
-          })
-        } else {
-          setState((prev) => ({
-            ...prev,
-            isConnecting: false,
-            error: 'No wallet address found.',
-          }))
-        }
-      },
-      onError: (error: any) => {
-        setState((prev) => ({
-          ...prev,
-          isConnecting: false,
-          error: typeof error === 'string' ? error : 'Connection failed.',
-        }))
-      },
-    })
-
-    useEffect(() => {
-      if (ready) {
-        if (authenticated && user) {
-          const { address, walletType } = getWalletInfo(user)
-          if (address) {
-            console.log('[Privy] Restored wallet:', { address, walletType })
-            setState({
-              address,
-              walletType,
-              isConnected: true,
-              isConnecting: false,
-              error: null,
-            })
-          }
-        } else {
-          setState({
-            address: null,
-            walletType: null,
-            isConnected: false,
-            isConnecting: false,
-            error: null,
-          })
-        }
-      }
-    }, [ready, authenticated, user])
-
-    const connect = useCallback(() => {
-      setState((prev) => ({ ...prev, isConnecting: true, error: null }))
-      login()
-    }, [login])
-
-    const disconnect = useCallback(async () => {
-      try {
-        await logout()
+  useEffect(() => {
+    if (!ready) return
+    if (authenticated && user) {
+      const { address, walletType } = getWalletInfo(user)
+      if (address)
         setState({
-          address: null,
-          walletType: null,
-          isConnected: false,
+          address,
+          walletType,
+          isConnected: true,
           isConnecting: false,
           error: null,
         })
-      } catch (err) {
-        console.error('Logout error:', err)
-      }
-    }, [logout])
+    } else {
+      setState({
+        address: null,
+        walletType: null,
+        isConnected: false,
+        isConnecting: false,
+        error: null,
+      })
+    }
+  }, [ready, authenticated, user])
 
-    const clearError = useCallback(() => {
-      setState((prev) => ({ ...prev, error: null }))
-    }, [])
+  const connect = useCallback(() => {
+    setState((prev) => ({ ...prev, isConnecting: true, error: null }))
+    login()
+  }, [login])
 
-    return (
-      <WalletContext.Provider
-        value={{
-          ...state,
-          connect,
-          disconnect,
-          clearError,
-          isMetaMaskInstalled: true,
-        }}
-      >
-        {children}
-      </WalletContext.Provider>
-    )
-  }
+  const disconnect = useCallback(async () => {
+    await logout()
+    setState({
+      address: null,
+      walletType: null,
+      isConnected: false,
+      isConnecting: false,
+      error: null,
+    })
+  }, [logout])
 
+  const clearError = useCallback(
+    () => setState((prev) => ({ ...prev, error: null })),
+    [],
+  )
+
+  return (
+    <WalletContext.Provider
+      value={{ ...state, connect, disconnect, clearError }}
+    >
+      {children}
+    </WalletContext.Provider>
+  )
+}
+
+export function WalletProvider({ children }: { children: React.ReactNode }) {
   return (
     <PrivyProvider
       appId={PRIVY_APP_ID}
-      clientId={PRIVY_CLIENT_ID}
       config={{
-        appearance: {
-          theme: 'dark',
-          accentColor: '#ffffff',
-        },
+        appearance: { theme: 'dark', accentColor: '#ffffff' },
         loginMethods: ['wallet'],
       }}
     >
       <InnerProvider>{children}</InnerProvider>
     </PrivyProvider>
   )
-}
-
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  if (!isMounted) {
-    return (
-      <WalletContext.Provider value={defaultValue}>
-        {children}
-      </WalletContext.Provider>
-    )
-  }
-
-  return <PrivyWalletProvider>{children}</PrivyWalletProvider>
 }
 
 export function useWalletConnection() {

@@ -1,7 +1,37 @@
 /* Styles globaux et communs à toute l'application */
 
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&family=Rubik+Mono+One&display=block');
+/* Import Google Fonts (Geist + Fraunces + JetBrains Mono — same as DS) */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=block');
+
+/* Design System tokens */
+@import "@0xsofia/design-system/theme.css";
+@import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/user-badge.css";
+@import "@0xsofia/design-system/styles/bento.css";
+@import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
+@import "@0xsofia/design-system/styles/platforms-grid.css";
+@import "@0xsofia/design-system/styles/favicon.css";
+
+/* Extension is always dark — pin DS tokens to dark-mode values.
+   theme.css defaults :root to light; this override ensures --ds-ink
+   is always #f5f3ff (not #02000e) regardless of system preference. */
+:root {
+  --ds-bg: #0b0a12;
+  --ds-bg-subtle: #121120;
+  --ds-card: #13121f;
+  --ds-border: #25223a;
+  --ds-border-soft: #1c1a2b;
+  --ds-ink: #f5f3ff;
+  --ds-ink-soft: #e5e2f5;
+  --ds-muted: #8f8ca8;
+  --ds-muted-soft: #55526c;
+  --ds-grid-dot: rgba(255, 255, 255, 0.05);
+  --ds-accent: #ffc6b0;
+  --ds-accent-ink: #ffc6b0;
+  --ds-accent-soft: rgba(255, 198, 176, 0.12);
+  --ds-on-accent: #0b0a12;
+  --ds-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
 
 /* Reset CSS global */
 * {
@@ -17,7 +47,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
@@ -39,48 +69,48 @@ body {
   --claims-oppose: var(--color-hover);
 
   /* Couleurs principales */
-  --color-primary: #C7866C;
-  --color-primary-dark: #372118;
-  --color-primary-light: #F2DED6;
-  --color-secondary: #945941;
-  --color-accent: #A6AF6B;
-  --color-hover: #cea2fd;
-  --color-hover-light: #F59E0B;
-  --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
+  --color-primary: var(--ds-accent);
+  --color-primary-dark: var(--ds-bg);
+  --color-primary-light: var(--ds-accent-soft);
+  --color-secondary: var(--ds-accent);
+  --color-accent: var(--ds-muted);
+  --color-hover: var(--ds-ink-soft);
+  --color-hover-light: var(--ds-accent);
+  --color-gradient-button: var(--btn-primary-bg);
+
+  /* ── Primary button tokens (mirrors explorer .pg-btn--primary in
+        platform-grid.css — white/ink default, peach hover flip). ── */
+  --btn-primary-bg: var(--ds-ink);
+  --btn-primary-fg: var(--ds-bg);
+  --btn-primary-hover-bg: var(--ds-accent);
+  --btn-primary-hover-fg: var(--ds-on-accent, #1a0a04);
+  --btn-primary-radius: 8px;
+  --btn-primary-shadow: none;
   
 
-.figma-colors{
-  color : #372118, 50;
-  color : #945941, 700;
-  color : #C7866C, 500;
-  color : #F2DED6, 200;
-  color : #FBF7F5, 50;
-  color : #0E0E0E;
-  }
+  /* ── Text — mapped to DS tokens ── */
+  --color-text-primary: var(--ds-ink);
+  --color-text-secondary: var(--ds-ink);
+  --color-text-dark: var(--ds-bg);
+  --color-text-muted: var(--ds-muted);
+  --color-text-very-muted: var(--ds-muted-soft);
+  --color-text-placeholder: var(--ds-muted-soft);
 
-  /* Couleurs de texte */
-  --color-text-primary: #F2DED6;
-  --color-text-secondary: #FBF7F5;
-  --color-text-dark: #050505;
-  --color-text-muted: rgba(255, 255, 255, 0.8);
-  --color-text-very-muted: rgba(255, 255, 255, 0.6);
-  --color-text-placeholder: rgba(255, 255, 255, 0.5);
-  
-  /* Couleurs de fond */
-  --color-bg-glass: rgba(0, 0, 0, 0.8);
-  --color-bg-glass-light: rgba(255, 255, 255, 0.05);
-  --color-bg-glass-lighter: rgba(255, 255, 255, 0.1);
-  --color-bg-dark: rgba(14, 14, 14, 0.15);
-  --color-bg-darker: rgba(10, 10, 10, 0.15);
-  --color-bg-black: rgba(0, 0, 0, 0.8);
-  --color-bg-overlay: rgba(26, 26, 26, 0.95);
-  
-  /* Bordures */
-  --color-border-glass: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.1);
-  --color-border-lighter: rgba(255, 255, 255, 0.125);
-  --color-border-very-light: rgba(255, 255, 255, 0.05);
-  --color-border-muted: rgba(242, 222, 214, 0.2);
+  /* ── Surfaces — mapped to DS tokens ── */
+  --color-bg-glass: var(--ds-card);
+  --color-bg-glass-light: var(--ds-bg-subtle);
+  --color-bg-glass-lighter: var(--ds-card);
+  --color-bg-dark: var(--ds-bg-subtle);
+  --color-bg-darker: var(--ds-bg-subtle);
+  --color-bg-black: var(--ds-card);
+  --color-bg-overlay: rgba(11, 10, 18, 0.95);
+
+  /* ── Borders — mapped to DS tokens ── */
+  --color-border-glass: var(--ds-border-soft);
+  --color-border-light: var(--ds-border);
+  --color-border-lighter: var(--ds-border);
+  --color-border-very-light: var(--ds-border-soft);
+  --color-border-muted: var(--ds-border-soft);
   
   /* Couleurs d'état */
   --color-success: #22c55e;
@@ -98,9 +128,9 @@ body {
   --shadow-glass: 0 4px 24px rgba(0, 0, 0, 0.2);
   --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.3);
   --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-primary: 0 4px 16px rgba(219, 107, 62, 0.3);
-  --shadow-button: 0 4px 12px rgba(212, 165, 116, 0.3);
-  --shadow-button-hover: 0 6px 16px rgba(212, 165, 116, 0.4);
+  --shadow-primary: var(--ds-shadow-card);
+  --shadow-button: none;
+  --shadow-button-hover: none;
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --shadow-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   
@@ -135,8 +165,9 @@ body {
   --size-nav-height: 60px;
   
   /* Typographie */
-  --font-family-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Gotu', cursive;
+  --font-family-primary: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'Fraunces', serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
   --font-size-xs: 10px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -244,7 +275,7 @@ body {
 .input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 .input.disabled {
@@ -273,7 +304,7 @@ body {
 .textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 .select {
@@ -291,7 +322,7 @@ body {
 .select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 198, 176, 0.25);
 }
 
 /* Boutons */
@@ -324,15 +355,19 @@ body {
   transform: none;
 }
 
-.btn.primary:not(.iridescence-btn) {
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
-  border-color: var(--color-primary);
+.btn.primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border-color: var(--btn-primary-bg);
+  border-radius: var(--btn-primary-radius);
+  box-shadow: var(--btn-primary-shadow);
 }
 
-.btn.primary:hover:not(:disabled):not(.iridescence-btn) {
-  background: var(--color-primary-dark);
-  box-shadow: var(--shadow-button-hover);
+.btn.primary:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
+  color: var(--btn-primary-hover-fg);
+  box-shadow: var(--btn-primary-shadow);
 }
 
 .btn.secondary {
@@ -427,9 +462,3 @@ body {
   margin-bottom: 0;
 }
 
-.form-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  justify-content: flex-end;
-  margin-top: var(--spacing-2xl);
-}

@@ -60,7 +60,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
 
   const queryClient = useQueryClient()
 
-  // On-chain streak data (same source as LeaderboardTab)
+  // On-chain streak data
   const certStreak = useOnChainStreak(DAILY_CERTIFICATION_ATOM_ID, walletAddress)
   const voteStreak = useOnChainStreak(DAILY_VOTE_ATOM_ID, walletAddress)
 

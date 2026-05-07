@@ -90,7 +90,7 @@ async function createOffscreenDocument(): Promise<void> {
  * Handles theme detection and change messages from offscreen document and content scripts
  */
 function setupThemeMessageHandler(): void {
-  chrome.runtime.onMessage.addListener((message, sender) => {
+  chrome.runtime.onMessage.addListener((message, _sender) => {
     if (message.type === 'THEME_DETECTED' || message.type === 'THEME_CHANGED' || message.type === 'PAGE_THEME_DETECTED') {
       const theme = message.theme as 'light' | 'dark';
       updateIconForTheme(theme);

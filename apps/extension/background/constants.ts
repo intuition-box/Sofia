@@ -68,10 +68,6 @@ export const EXCLUDED_URL_PATTERNS = [
   ...SENSITIVE_URL_PATTERNS
 ];
 
-export const SENSITIVE_URL_PARAMS = [
-  'token', 'session', 'auth', 'key', 'password', 'secret', 'api_key'
-];
-
 /** Tracking query params to strip when normalizing URLs for page identification */
 export const TRACKING_URL_PARAMS = new Set([
   // Google Analytics / Ads

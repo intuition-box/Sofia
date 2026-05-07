@@ -51,7 +51,7 @@
 .batch-reward__loading-text {
   color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
-  font-family: "Gotu", cursive;
+  font-family: 'Fraunces', serif;
 }
 
 /* ── Gold Header (top corner total) ── */
@@ -60,15 +60,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 28px 24px 16px;
+  gap: 8px;
+  padding: 36px 24px 20px;
   position: relative;
 }
 
 .batch-reward__gold-amount {
-  font-size: 48px;
+  font-size: 64px;
   font-weight: 700;
-  font-family: "Gotu", cursive;
+  font-family: 'Fraunces', serif;
+  letter-spacing: -0.03em;
   background: linear-gradient(
     180deg,
     #fef3c7 0%,
@@ -95,10 +96,12 @@
 }
 
 .batch-reward__gold-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
-  font-family: "Gotu", cursive;
-  letter-spacing: 0.5px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
 }
 
 .batch-reward__tier-summary {
@@ -109,30 +112,34 @@
   justify-content: center;
 }
 
+/* DS verb-tag shape for tier pills (6px radius, mono uppercase) */
 .batch-reward__tier-pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 20px;
-  letter-spacing: 0.3px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 .batch-reward__tier-pill--pioneer {
-  background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: var(--fun);
+  color: #000;
+  border: none;
 }
 
 .batch-reward__tier-pill--explorer {
-  background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: var(--work);
+  color: #000;
+  border: none;
 }
 
 .batch-reward__tier-pill--contributor {
-  background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: var(--inspiration);
+  color: #000;
+  border: none;
 }
 
 /* ── Reward List ── */
@@ -149,24 +156,27 @@
 .batch-reward__item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.15s ease;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .batch-reward__item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-card);
 }
 
 .batch-reward__item-favicon {
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   flex-shrink: 0;
   object-fit: contain;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
 }
 
 .batch-reward__item-info {
@@ -178,50 +188,59 @@
 }
 
 .batch-reward__item-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--ds-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .batch-reward__item-rank {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.batch-reward__item-tier {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+}
+
+/* Tier pill — DS verb-tag shape */
+.batch-reward__item-tier {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 6px;
   flex-shrink: 0;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 .batch-reward__item-tier--pioneer {
-  background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: var(--fun);
+  color: #000;
+  border: none;
 }
 
 .batch-reward__item-tier--explorer {
-  background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: var(--work);
+  color: #000;
+  border: none;
 }
 
 .batch-reward__item-tier--contributor {
-  background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: var(--inspiration);
+  color: #000;
+  border: none;
 }
 
 .batch-reward__item-gold {
-  font-size: 14px;
-  font-weight: 600;
-  font-family: "Gotu", cursive;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Fraunces', serif;
+  letter-spacing: -0.01em;
   background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -357,57 +376,64 @@
 }
 
 .batch-receipt__tier--pioneer {
-  background: rgba(212, 175, 55, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: var(--fun);
+  color: #000;
+  border: none;
 }
 
 .batch-receipt__tier--explorer {
-  background: rgba(96, 165, 250, 0.12);
-  color: #93c5fd;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: var(--work);
+  color: #000;
+  border: none;
 }
 
 .batch-receipt__tier--contributor {
-  background: rgba(167, 139, 250, 0.12);
-  color: #c4b5fd;
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: var(--inspiration);
+  color: #000;
+  border: none;
 }
 
 .batch-receipt__gold-line {
   font-size: 12px;
   font-weight: 500;
   color: rgba(212, 175, 55, 0.6);
-  font-family: "Gotu", cursive;
+  font-family: 'Fraunces', serif;
 }
 
+/* Share on X — same pattern as explorer .pd-share-btn (ProfileDrawer).
+   Transparent / white text / muted border default → inverts on hover. */
 .batch-receipt__share-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  padding: 10px 16px;
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  min-height: 44px;
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
   color: #fff;
-  font-size: 13px;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .batch-receipt__share-btn:hover {
-  background: #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.batch-receipt__share-btn svg {
+  fill: currentColor;
 }
 
 .batch-receipt__share-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 .batch-receipt__share-icon {

@@ -36,10 +36,3 @@ export interface GoldSpendResult {
   readonly newBalance?: number
   readonly error?: string
 }
-
-/** Migration status for the unified-XP-to-dual-currency migration. */
-export interface MigrationStatus {
-  readonly migrated: boolean
-  readonly migratedAt?: number
-  readonly version: number
-}

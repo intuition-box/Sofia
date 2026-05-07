@@ -1,0 +1,343 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Geist:wght@300..900&family=Fraunces:opsz,wght@9..144,400..900&family=Lalezar&display=swap');
+@import '@0xsofia/design-system/theme.css';
+@import './variables.css';
+
+/* ── Reset ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  position: relative;
+  overflow-x: hidden;
+}
+
+#root {
+  position: relative;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 2px solid var(--color-bg);
+  border-radius: 999px;
+  transition: background 0.2s var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg);
+}
+
+/* ── Layout ───────────────────────────────────────────── */
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ── Typography (design v2) ──────────────────────────── */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--color-accent-ink);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.h-display {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 4rem + 6vw, 170px);
+  line-height: 0.96;
+  letter-spacing: -0.038em;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.h-display em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--color-accent-ink);
+}
+
+.h-section {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.h-section em {
+  font-style: italic;
+  color: var(--color-accent-ink);
+}
+
+.lede {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.92rem + 0.25vw, 1.125rem);
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  max-width: 52ch;
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
+}
+.btn-primary:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btn-secondary:hover {
+  background: var(--color-bg-alt);
+  border-color: var(--color-text);
+}
+
+.btn-arrow,
+.btn .arrow {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+.btn:hover .arrow {
+  transform: translate(2px, -2px);
+}
+
+/* On peach surfaces — flip ink contrast. */
+.on-peach .btn-primary {
+  background: #02000e;
+  border-color: #02000e;
+  color: var(--color-accent);
+}
+.on-peach .btn-primary:hover {
+  background: #1a1727;
+  border-color: #1a1727;
+  color: var(--color-accent);
+}
+.on-peach .btn-secondary {
+  background: transparent;
+  border-color: #02000e;
+  color: #02000e;
+}
+.on-peach .btn-secondary:hover {
+  background: #02000e;
+  color: var(--color-accent);
+}
+
+/* On peach — typography contrast (eyebrow, headings, lede). */
+.on-peach .eyebrow {
+  color: #02000e;
+}
+.on-peach .eyebrow::before {
+  background: #02000e;
+}
+.on-peach .h-section,
+.on-peach .h-display,
+.on-peach .h-section em,
+.on-peach .h-display em {
+  color: #02000e;
+}
+.on-peach .lede {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* ── Scroll animation — fade-up reveal ───────────────── */
+
+.anim {
+  opacity: 0;
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+  will-change: opacity, transform;
+}
+
+.anim,
+.anim-up {
+  transform: translateY(48px);
+}
+
+.anim.in,
+.anim-up.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger via --i CSS variable on the parent. */
+.stagger > .anim {
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* ── Reveal — peach panel wipes off the inner image/content ── */
+.reveal {
+  position: relative;
+  overflow: hidden;
+}
+.reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  transform-origin: right;
+  transition: transform 1.1s var(--ease-in-out);
+  z-index: 4;
+  pointer-events: none;
+}
+.reveal.in::after {
+  transform: scaleX(0);
+}
+.reveal img,
+.reveal > .reveal-target {
+  transform: scale(1.08);
+  transition: transform 1.4s var(--ease-out);
+}
+.reveal.in img,
+.reveal.in > .reveal-target {
+  transform: scale(1);
+}
+
+/* ── Auth pages helper — invert dark logos on light bg. */
+.logo-invert {
+  filter: invert(1);
+}
+
+/* ── Reduced motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  .anim {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .reveal::after {
+    display: none;
+  }
+  .reveal img,
+  .reveal > .reveal-target {
+    transform: none !important;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 24px;
+  }
+}

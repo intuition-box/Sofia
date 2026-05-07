@@ -1,13 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWalletFromStorage, useQuestSystem, useCart } from '../../hooks'
 import { useRouter } from './RouterProvider'
-import { Home } from 'lucide-react'
+import { Pencil, User, Users, PieChart, Settings } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
 import CartDrawer, { CartFab } from '../ui/CartDrawer'
-import sofiaIcon from '../ui/icons/Icon=Sofia.svg'
-import resonanceIcon from '../ui/icons/ResonanceIcon.svg'
-import personIcon from '../ui/icons/Icon=person.svg'
-import settingsIcon from '../ui/icons/Icon=Settings.svg'
 
 const BottomNavigation = () => {
   const { walletAddress, authenticated } = useWalletFromStorage()
@@ -17,34 +13,41 @@ const BottomNavigation = () => {
   const { count: cartCount } = useCart()
   const [showCartDrawer, setShowCartDrawer] = useState(false)
 
+  // Allow other UI surfaces to request opening the cart drawer
+  useEffect(() => {
+    const open = () => setShowCartDrawer(true)
+    window.addEventListener('sofia:open-cart', open)
+    return () => window.removeEventListener('sofia:open-cart', open)
+  }, [])
+
   if (!account) return null
 
   const hasClaimable = claimableQuests.length > 0
 
   const dockItems: DockItemData[] = [
     {
-      icon: <Home size={24} />,
-      label: 'Home',
-      onClick: () => navigateTo('home-connected')
+      icon: <Pencil size={24} />,
+      label: 'Attest',
+      onClick: () => navigateTo('attest')
     },
     {
-      icon: <img src={sofiaIcon} alt="Sofia" style={{ width: '24px', height: '24px' }} />,
-      label: 'Sofia',
-      onClick: () => navigateTo('Sofia')
+      icon: <User size={24} />,
+      label: 'My Profile',
+      onClick: () => navigateTo('my-profile')
     },
     {
-      icon: <img src={resonanceIcon} alt="Resonance" style={{ width: '24px', height: '24px' }} />,
-      label: 'Resonance',
-      onClick: () => navigateTo('resonance')
+      icon: <Users size={24} />,
+      label: 'Circles',
+      onClick: () => navigateTo('circles')
     },
     {
-      icon: <img src={personIcon} alt="Profile" style={{ width: '24px', height: '24px' }} />,
-      label: 'Profile',
-      onClick: () => navigateTo('profile'),
+      icon: <PieChart size={24} />,
+      label: 'Score',
+      onClick: () => navigateTo('score'),
       className: hasClaimable ? 'has-claimable' : ''
     },
     {
-      icon: <img src={settingsIcon} alt="Settings" style={{ width: '24px', height: '24px' }} />,
+      icon: <Settings size={24} />,
       label: 'Settings',
       onClick: () => navigateTo('settings')
     }

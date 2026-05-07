@@ -127,9 +127,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { profile } = useUserOnChainProfile(linkedAddresses)
   const lastActivity = useMemo(() => {
     const byTime = profile.certs
-      .filter(
-        (c) => c.intention === 'trusts' || c.intention === 'distrust',
-      )
+      .filter((c) => c.intention === 'trusts' || c.intention === 'distrust')
       .slice()
       .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
       .slice(0, 10)

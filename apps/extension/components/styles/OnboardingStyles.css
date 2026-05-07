@@ -27,18 +27,21 @@
 }
 
 .onboarding-title {
-  color: var(--color-text-primary);
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
+  font-family: 'Fraunces', serif;
+  color: var(--ds-ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 12px;
 }
 
 .onboarding-description {
-  color: var(--color-text-primary);
-  font-size: 13px;
+  font-family: 'Geist', sans-serif;
+  color: var(--ds-muted);
+  font-size: 14px;
   line-height: 1.5;
   text-align: center;
-  opacity: 0.85;
 }
 
 .onboarding-actions {
@@ -54,7 +57,7 @@
   padding: 12px 16px;
   border: none;
   border-radius: 12px;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -62,40 +65,32 @@
 }
 
 .onboarding-btn-primary {
-  background: var(--color-gradient-button);
-  background-size: 200% 200%;
-  animation: onboarding-gradient 20s ease infinite;
-  color: #000;
-  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  box-shadow: var(--btn-primary-shadow);
+  border-radius: var(--btn-primary-radius);
 }
 
 .onboarding-btn-primary:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
-  transform: translateY(-2px);
+  background: var(--btn-primary-hover-bg);
 }
 
 .onboarding-btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .onboarding-btn-secondary {
   background: transparent;
-  color: var(--color-text-primary);
-  opacity: 0.7;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
 }
 
 .onboarding-btn-secondary:hover {
-  opacity: 1;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
 }
 
-@keyframes onboarding-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 /* Skip message */
 .onboarding-skip-message {
@@ -115,11 +110,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: var(--spacing-xl) var(--spacing-lg);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  padding: 24px 20px;
   width: 100%;
 }
 
@@ -139,13 +133,13 @@
 }
 
 .tutorial-dot.active {
-  background: var(--color-primary, #ec4899);
-  box-shadow: 0 0 8px rgba(236, 72, 153, 0.5);
+  background: var(--ds-accent);
+  box-shadow: 0 0 8px rgba(255, 198, 176, 0.50);
   transform: scale(1.4);
 }
 
 .tutorial-dot.completed {
-  background: var(--color-primary, #ec4899);
+  background: var(--ds-accent);
   opacity: 0.6;
 }
 
@@ -204,7 +198,7 @@
 .bookmark-select-link {
   background: none;
   border: none;
-  color: var(--color-primary, #ec4899);
+  color: var(--ds-ink);
   font-size: 12px;
   cursor: pointer;
   padding: 4px 8px;
@@ -213,7 +207,7 @@
 }
 
 .bookmark-select-link:hover {
-  background: rgba(236, 72, 153, 0.1);
+  background: rgba(255, 198, 176, 0.10);
 }
 
 .bookmark-select-list {
@@ -278,7 +272,7 @@
 }
 
 .bookmark-checkbox {
-  accent-color: var(--color-primary, #ec4899);
+  accent-color: var(--ds-accent);
   width: 14px;
   height: 14px;
   flex-shrink: 0;

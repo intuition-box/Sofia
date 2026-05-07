@@ -17,7 +17,7 @@ import { useWalletFromStorage } from '~/hooks'
 import { BlockchainService, txEventBus } from '~/lib/services'
 import { createHookLogger } from '~/lib/utils'
 import { ERROR_MESSAGES } from '~/lib/config/constants'
-import type { Address, Hash } from '../types/viem'
+import type { Address, Hash } from 'viem'
 
 const logger = createHookLogger('useRedeemTriple')
 
