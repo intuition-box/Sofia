@@ -11,9 +11,11 @@
  *   - Engagement on your URLs (support/oppose bar + counts)
  */
 
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
+import { formatEther } from 'viem'
 import { SectionTitle, FaviconWrapper } from '@0xsofia/design-system'
 import { Button } from '@/components/ui/button'
 import { getTopicEmoji } from '@/config/topicEmoji'
@@ -27,10 +29,11 @@ import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useSeasonPool } from '@/hooks/useSeasonPool'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import { predicateLabelToIntentionType } from '@/config/intentions'
 import { type ClaimBadge } from '@/components/profile/ProfileClaimCard'
-import { extractDomain } from '@/utils/formatting'
+import { extractDomain, formatTrust } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-page.css'
@@ -117,10 +120,33 @@ const BADGE_GROUPS: {
   },
 ]
 
+type ScoreTab = 'score' | 'pool'
+
 export default function ScoresPage() {
   const navigate = useNavigate()
-  const { user } = usePrivy()
+  const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
+  const [activeTab, setActiveTab] = useState<ScoreTab>('score')
+
+  // Beta Season Pool — vault stats + the connected wallet's position.
+  const {
+    data: poolPositions,
+    vaultStats,
+    loading: poolLoading,
+  } = useSeasonPool(authenticated && activeTab === 'pool')
+
+  const userPool = useMemo(() => {
+    if (!poolPositions || !address) return null
+    const sorted = [...poolPositions].sort(
+      (a, b) => b.pnlPercent - a.pnlPercent,
+    )
+    const idx = sorted.findIndex(
+      (p) => p.address.toLowerCase() === address.toLowerCase(),
+    )
+    return idx >= 0
+      ? { position: sorted[idx], rank: idx + 1, total: sorted.length }
+      : null
+  }, [poolPositions, address])
   const { addresses: linkedAddresses } = useLinkedWallets()
   const profileAddresses =
     linkedAddresses.length > 0
@@ -269,179 +295,305 @@ export default function ScoresPage() {
         </div>
       </div>
 
-      <div className="pp-sections">
-        {topicScores.length > 0 && (
+      <div className="sp-tabs">
+        <Button
+          size="sm"
+          variant={activeTab === 'score' ? 'default' : 'ghost'}
+          data-active={activeTab === 'score'}
+          onClick={() => setActiveTab('score')}
+        >
+          Score
+        </Button>
+        <Button
+          size="sm"
+          variant={activeTab === 'pool' ? 'default' : 'ghost'}
+          data-active={activeTab === 'pool'}
+          onClick={() => setActiveTab('pool')}
+        >
+          Pool
+        </Button>
+      </div>
+
+      {activeTab === 'pool' && (
+        <div className="pp-sections">
           <section className="pp-section">
-            <SectionTitle>Reputation by topic</SectionTitle>
-            <div className="pf-trust-topics">
-              {topicScores.map((t) => {
-                const pct = (t.score / maxTopicScore) * 100
-                return (
+            <SectionTitle>Beta Season Pool</SectionTitle>
+            {vaultStats && (
+              <div className="sp-pool-snapshot">
+                <div className="sp-pool-stat">
+                  <span className="sp-pool-stat-label">TVL</span>
+                  <span className="sp-pool-stat-value">
+                    {parseFloat(formatEther(vaultStats.tvl)).toFixed(2)} T
+                  </span>
+                </div>
+                <div className="sp-pool-stat">
+                  <span className="sp-pool-stat-label">Stakers</span>
+                  <span className="sp-pool-stat-value">
+                    {vaultStats.totalStakers.toLocaleString()}
+                  </span>
+                </div>
+                <div className="sp-pool-stat">
+                  <span className="sp-pool-stat-label">Share price</span>
+                  <span className="sp-pool-stat-value">
+                    {parseFloat(formatEther(vaultStats.sharePrice)).toFixed(4)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!authenticated && (
+              <div className="sp-pool-empty">
+                Connect your wallet to view your pool position.
+              </div>
+            )}
+
+            {authenticated && poolLoading && !userPool && (
+              <div className="sp-pool-empty">Loading your position…</div>
+            )}
+
+            {authenticated && !poolLoading && !userPool && (
+              <div className="sp-pool-empty">
+                <div className="sp-pool-empty-title">No position yet</div>
+                <div className="sp-pool-empty-sub">
+                  Stake into the Beta Season Pool to appear here.
+                </div>
+              </div>
+            )}
+
+            {userPool && (
+              <div className="sp-pool-card">
+                <div className="sp-pool-rank">
+                  <span className="sp-pool-rank-hash">#</span>
+                  <span className="sp-pool-rank-num">{userPool.rank}</span>
+                  <span className="sp-pool-rank-of">
+                    of {userPool.total.toLocaleString()}
+                  </span>
+                </div>
+                <div className="sp-pool-rows">
+                  <div className="sp-pool-row">
+                    <span className="sp-pool-row-label">Current value</span>
+                    <span className="sp-pool-row-value">
+                      {formatTrust(userPool.position.currentValue)}
+                    </span>
+                  </div>
+                  <div className="sp-pool-row">
+                    <span className="sp-pool-row-label">Net deposited</span>
+                    <span className="sp-pool-row-value">
+                      {formatTrust(userPool.position.netDeposited)}
+                    </span>
+                  </div>
+                  <div className="sp-pool-row">
+                    <span className="sp-pool-row-label">P&amp;L</span>
+                    <span
+                      className={
+                        'sp-pool-row-value ' +
+                        (userPool.position.pnl >= 0n
+                          ? 'sp-pool-pos'
+                          : 'sp-pool-neg')
+                      }
+                    >
+                      {userPool.position.pnl >= 0n ? '+' : ''}
+                      {formatTrust(userPool.position.pnl)}
+                    </span>
+                  </div>
+                  <div className="sp-pool-row">
+                    <span className="sp-pool-row-label">P&amp;L %</span>
+                    <span
+                      className={
+                        'sp-pool-row-value ' +
+                        (userPool.position.pnlPercent >= 0
+                          ? 'sp-pool-pos'
+                          : 'sp-pool-neg')
+                      }
+                    >
+                      {userPool.position.pnlPercent >= 0 ? '+' : ''}
+                      {userPool.position.pnlPercent.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {activeTab === 'score' && (
+        <div className="pp-sections">
+          {topicScores.length > 0 && (
+            <section className="pp-section">
+              <SectionTitle>Reputation by topic</SectionTitle>
+              <div className="pf-trust-topics">
+                {topicScores.map((t) => {
+                  const pct = (t.score / maxTopicScore) * 100
+                  return (
+                    <div
+                      key={t.id}
+                      className="pf-trust-topic"
+                      style={{ ['--topic-color' as string]: t.color }}
+                    >
+                      <div className="pf-trust-topic-head">
+                        <span className="pf-trust-topic-emoji">{t.emoji}</span>
+                        <span className="pf-trust-topic-label">{t.label}</span>
+                        <span className="pf-trust-topic-score">{t.score}</span>
+                      </div>
+                      <div className="pf-trust-topic-bar">
+                        <span style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {verbCounts.length > 0 && (
+            <section className="pp-section">
+              <SectionTitle>Reputation by verb</SectionTitle>
+              <div className="pf-verb-grid">
+                {verbCounts.map((v) => (
                   <div
-                    key={t.id}
+                    key={v.id}
                     className="pf-trust-topic"
-                    style={{ ['--topic-color' as string]: t.color }}
+                    style={{ ['--topic-color' as string]: v.color }}
                   >
                     <div className="pf-trust-topic-head">
-                      <span className="pf-trust-topic-emoji">{t.emoji}</span>
-                      <span className="pf-trust-topic-label">{t.label}</span>
-                      <span className="pf-trust-topic-score">{t.score}</span>
-                    </div>
-                    <div className="pf-trust-topic-bar">
-                      <span style={{ width: `${pct}%` }} />
+                      <span className="pf-trust-topic-emoji">{v.emoji}</span>
+                      <span className="pf-trust-topic-label">{v.label}</span>
+                      <span className="pf-trust-topic-score">{v.count}</span>
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          )}
 
-        {verbCounts.length > 0 && (
           <section className="pp-section">
-            <SectionTitle>Reputation by verb</SectionTitle>
-            <div className="pf-verb-grid">
-              {verbCounts.map((v) => (
-                <div
-                  key={v.id}
-                  className="pf-trust-topic"
-                  style={{ ['--topic-color' as string]: v.color }}
-                >
-                  <div className="pf-trust-topic-head">
-                    <span className="pf-trust-topic-emoji">{v.emoji}</span>
-                    <span className="pf-trust-topic-label">{v.label}</span>
-                    <span className="pf-trust-topic-score">{v.count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="pp-section">
-          <SectionTitle>Badges earned on URLs</SectionTitle>
-          <div className="pf-badge-grid">
-            {perBadgeUrls.map(({ group, urls }) => {
-              const totalCount =
-                perBadgeUrlsAll.find((e) => e.group.id === group.id)?.urls
-                  .length ?? 0
-              return (
-                <div key={group.id} className="pf-badge-block">
-                  <div className="pf-badge-head">
-                    <img
-                      className="pf-badge-head-icon"
-                      src={group.icon}
-                      alt={group.label}
-                    />
-                    <div className="pf-badge-head-text">
-                      <span className="pf-badge-head-label">
-                        {group.label}
-                        {totalCount > 0 ? ` · ${totalCount}` : ''}
-                      </span>
-                      <span className="pf-badge-head-desc">
-                        {group.description}
-                      </span>
-                    </div>
-                  </div>
-                  {urls.length > 0 ? (
-                    <div className="pf-badge-urls">
-                      {urls.map((c) => {
-                        const domain = c.objectUrl
-                          ? extractDomain(c.objectUrl)
-                          : ''
-                        return (
-                          <a
-                            key={c.termId}
-                            className="pf-ts-url-item"
-                            href={c.objectUrl || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <FaviconWrapper
-                              size={22}
-                              src={domain ? getFaviconUrl(domain) : undefined}
-                              alt={domain}
-                              className="pf-ts-url-fav"
-                            />
-                            <div className="pf-ts-url-meta">
-                              <span className="pf-ts-url-title">
-                                {c.objectLabel}
-                              </span>
-                              <span className="pf-ts-url-host">
-                                {domain}
-                                {c.stats.userPnlPct != null
-                                  ? ` · ${c.stats.userPnlPct >= 0 ? '+' : ''}${c.stats.userPnlPct}%`
-                                  : ''}
-                              </span>
-                            </div>
-                          </a>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <p className="pf-badge-empty">No claim in this tier yet.</p>
-                  )}
-                  {totalCount > urls.length && (
-                    <Link
-                      className="pf-badge-view-all"
-                      to={`/scores/badges/${
-                        group.id === 'pioneer'
-                          ? 'pioneer'
-                          : group.id === 'early'
-                            ? 'explorer'
-                            : 'contributor'
-                      }`}
-                    >
-                      View all {totalCount} →
-                    </Link>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-        {engagement.length > 0 && (
-          <section className="pp-section">
-            <SectionTitle>Engagement on your URLs</SectionTitle>
-            <div className="pf-engage-list">
-              {engagement.map((c) => {
-                const total = c.stats.supportCount + c.stats.opposeCount
-                const supPct =
-                  total > 0
-                    ? Math.round((c.stats.supportCount / total) * 100)
-                    : 50
-                const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
+            <SectionTitle>Badges earned on URLs</SectionTitle>
+            <div className="pf-badge-grid">
+              {perBadgeUrls.map(({ group, urls }) => {
+                const totalCount =
+                  perBadgeUrlsAll.find((e) => e.group.id === group.id)?.urls
+                    .length ?? 0
                 return (
-                  <div key={c.termId} className="pf-engage-row">
-                    <FaviconWrapper
-                      size={24}
-                      src={domain ? getFaviconUrl(domain) : undefined}
-                      alt={domain}
-                      className="pf-engage-fav"
-                    />
-                    <div className="pf-engage-meta">
-                      <span className="pf-engage-title">{c.objectLabel}</span>
-                      <span className="pf-engage-sub">{domain}</span>
+                  <div key={group.id} className="pf-badge-block">
+                    <div className="pf-badge-head">
+                      <img
+                        className="pf-badge-head-icon"
+                        src={group.icon}
+                        alt={group.label}
+                      />
+                      <div className="pf-badge-head-text">
+                        <span className="pf-badge-head-label">
+                          {group.label}
+                          {totalCount > 0 ? ` · ${totalCount}` : ''}
+                        </span>
+                        <span className="pf-badge-head-desc">
+                          {group.description}
+                        </span>
+                      </div>
                     </div>
-                    <div className="pf-engage-bar">
-                      <span style={{ width: `${supPct}%` }} />
-                    </div>
-                    <div className="pf-engage-counts">
-                      <span className="pf-engage-sup">
-                        ▲ {c.stats.supportCount}
-                      </span>
-                      <span className="pf-engage-opp">
-                        ▼ {c.stats.opposeCount}
-                      </span>
-                    </div>
+                    {urls.length > 0 ? (
+                      <div className="pf-badge-urls">
+                        {urls.map((c) => {
+                          const domain = c.objectUrl
+                            ? extractDomain(c.objectUrl)
+                            : ''
+                          return (
+                            <a
+                              key={c.termId}
+                              className="pf-ts-url-item"
+                              href={c.objectUrl || '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <FaviconWrapper
+                                size={22}
+                                src={domain ? getFaviconUrl(domain) : undefined}
+                                alt={domain}
+                                className="pf-ts-url-fav"
+                              />
+                              <div className="pf-ts-url-meta">
+                                <span className="pf-ts-url-title">
+                                  {c.objectLabel}
+                                </span>
+                                <span className="pf-ts-url-host">
+                                  {domain}
+                                  {c.stats.userPnlPct != null
+                                    ? ` · ${c.stats.userPnlPct >= 0 ? '+' : ''}${c.stats.userPnlPct}%`
+                                    : ''}
+                                </span>
+                              </div>
+                            </a>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className="pf-badge-empty">
+                        No claim in this tier yet.
+                      </p>
+                    )}
+                    {totalCount > urls.length && (
+                      <Link
+                        className="pf-badge-view-all"
+                        to={`/scores/badges/${
+                          group.id === 'pioneer'
+                            ? 'pioneer'
+                            : group.id === 'early'
+                              ? 'explorer'
+                              : 'contributor'
+                        }`}
+                      >
+                        View all {totalCount} →
+                      </Link>
+                    )}
                   </div>
                 )
               })}
             </div>
           </section>
-        )}
-      </div>
+
+          {engagement.length > 0 && (
+            <section className="pp-section">
+              <SectionTitle>Engagement on your URLs</SectionTitle>
+              <div className="pf-engage-list">
+                {engagement.map((c) => {
+                  const total = c.stats.supportCount + c.stats.opposeCount
+                  const supPct =
+                    total > 0
+                      ? Math.round((c.stats.supportCount / total) * 100)
+                      : 50
+                  const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
+                  return (
+                    <div key={c.termId} className="pf-engage-row">
+                      <FaviconWrapper
+                        size={24}
+                        src={domain ? getFaviconUrl(domain) : undefined}
+                        alt={domain}
+                        className="pf-engage-fav"
+                      />
+                      <div className="pf-engage-meta">
+                        <span className="pf-engage-title">{c.objectLabel}</span>
+                        <span className="pf-engage-sub">{domain}</span>
+                      </div>
+                      <div className="pf-engage-bar">
+                        <span style={{ width: `${supPct}%` }} />
+                      </div>
+                      <div className="pf-engage-counts">
+                        <span className="pf-engage-sup">
+                          ▲ {c.stats.supportCount}
+                        </span>
+                        <span className="pf-engage-opp">
+                          ▼ {c.stats.opposeCount}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
     </div>
   )
 }
