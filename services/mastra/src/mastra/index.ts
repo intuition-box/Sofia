@@ -1,37 +1,27 @@
 import { Mastra } from '@mastra/core/mastra'
 import { PinoLogger } from '@mastra/loggers'
 import { LibSQLStore } from '@mastra/libsql'
-import { sofiaWorkflow } from './workflows/sofia-workflow'
-import { chatbotWorkflow } from './workflows/chatbot-workflow'
 import { socialVerifierWorkflow } from './workflows/social-verifier-workflow'
 import { linkSocialWorkflow } from './workflows/link-social-workflow'
 import { signalFetcherWorkflow } from './workflows/signal-fetcher-workflow'
-import { themeExtractorAgent } from './agents/theme-extractor-agent'
-import { pulseAgent } from './agents/pulse-agent'
-import { recommendationAgent } from './agents/recommendation-agent'
-import { chatbotAgent } from './agents/chatbot-agent'
-import { predicateAgent } from './agents/predicate-agent'
-import { skillsAnalysisAgent } from './agents/skills-analysis-agent'
 import { oauthRoutes } from './oauth/routes'
 import { initTokenTable } from './db/tokens'
 
+// Mastra here is the OAuth + onchain attestation backend for Sofia.
+// All AI agents/workflows have been removed (chatbot, theme extractor,
+// pulse, predicate, recommendation, skills) along with the GaiaNet
+// provider and the MCP client. What remains:
+//   - 2 OAuth HTTP routes (/oauth/:platform/authorize, /callback)
+//   - encrypted oauth_tokens storage (AES-GCM)
+//   - 3 blockchain workflows that sign onchain attestations with the
+//     bot wallet (BOT_PRIVATE_KEY) — the reason this still runs in a
+//     Phala TEE.
 export const mastra = new Mastra({
   workflows: {
-    sofiaWorkflow,
-    chatbotWorkflow,
     socialVerifierWorkflow,
     linkSocialWorkflow,
     signalFetcherWorkflow,
   },
-  agents: {
-    themeExtractorAgent,
-    pulseAgent,
-    recommendationAgent,
-    chatbotAgent,
-    predicateAgent,
-    skillsAnalysisAgent,
-  },
-  scorers: {},
   storage: new LibSQLStore({
     url: process.env.DATABASE_URL || 'file:./data/mastra.db',
   }),
