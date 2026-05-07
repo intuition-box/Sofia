@@ -40,6 +40,7 @@ const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
+const BillingPage = lazy(() => import('./pages/BillingPage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
@@ -65,6 +66,8 @@ export default function App() {
   const location = useLocation()
   const isCallback = location.pathname === '/auth/callback'
   const isLanding = location.pathname === '/'
+  // Standalone routes — no NavSidebar / RightSidebar wrapper.
+  const isStandalone = location.pathname.startsWith('/settings')
   const cart = useCart()
   const sidebar = useSidebarState()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =
@@ -81,7 +84,8 @@ export default function App() {
     location.pathname.startsWith('/perspective') ||
     location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
-    location.pathname.startsWith('/leaderboard')
+    location.pathname.startsWith('/leaderboard') ||
+    location.pathname.startsWith('/settings')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -113,10 +117,29 @@ export default function App() {
     return <LandingPage />
   }
 
+  if (isStandalone) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route
+              path="/settings/billing"
+              element={
+                <ProtectedRoute>
+                  <BillingPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </div>
+    )
+  }
+
   return (
     <RightRailProvider>
       <div
-        className={`min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}
+        className={`relative min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}
       >
         {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
@@ -129,11 +152,9 @@ export default function App() {
           collapsed={navCollapsed}
           onToggleCollapse={toggleNavCollapsed}
         />
-        <RightSidebar
-          hidden={
-            isProfilePage || isFullWidthPage || cartOpen || !sidebar.isDesktop
-          }
-        />
+        {isFullWidthPage || !sidebar.isDesktop ? null : (
+          <RightSidebar hidden={isProfilePage || cartOpen} />
+        )}
 
         <CartDrawer
           items={cart.items}
@@ -310,6 +331,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <VotePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings/billing"
+                  element={
+                    <ProtectedRoute>
+                      <BillingPage />
                     </ProtectedRoute>
                   }
                 />

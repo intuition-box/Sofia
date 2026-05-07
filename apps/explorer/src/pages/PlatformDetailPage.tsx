@@ -11,21 +11,50 @@
 
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Search, X } from 'lucide-react'
+import { ArrowLeft, Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType,
 } from '@/config/intentions'
+import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
+import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { PAGE_COLORS } from '@/config/pageColors'
+import AtomDetailDialog from '@/components/AtomDetailDialog'
+import type { PlatformVaultData } from '@/services/platformMarketService'
 import '@/components/styles/pages.css'
 import '@/components/styles/feed-card.css'
 import '@/components/styles/topic-search.css'
+
+/** Domain → catalog slug, mirroring `utils/favicon.ts` so a `/profile/platform/youtube.com`
+ *  URL resolves to the same `youtube` slug used in PLATFORM_ATOM_IDS. */
+const DOMAIN_TO_SLUG = new Map<string, string>()
+const normalizeDomain = (domain: string) =>
+  domain.toLowerCase().replace(/^www\./, '')
+for (const p of PLATFORM_CATALOG) {
+  DOMAIN_TO_SLUG.set(`${p.id}.com`, p.id)
+  if (p.website) {
+    try {
+      DOMAIN_TO_SLUG.set(normalizeDomain(new URL(p.website).hostname), p.id)
+    } catch {
+      // ignore — invalid URL in catalog
+    }
+  }
+  if (p.apiBaseUrl) {
+    try {
+      const host = normalizeDomain(new URL(p.apiBaseUrl).hostname)
+      if (!host.startsWith('api.')) DOMAIN_TO_SLUG.set(host, p.id)
+    } catch {
+      // ignore
+    }
+  }
+}
 
 function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
   return (
@@ -51,7 +80,21 @@ export default function PlatformDetailPage() {
         : undefined
 
   const { profile, isLoading } = useUserOnChainProfile(profileAddresses)
+  const { ranked: platformMarkets } = usePlatformMarket()
   const [query, setQuery] = useState('')
+  const [investOpen, setInvestOpen] = useState(false)
+
+  // Resolve the platform market that matches the domain in the URL — same
+  // record the Platform Market list opens its Invest dialog on. Returns null
+  // if the domain isn't in the catalog or hasn't been indexed yet.
+  const platformMarket = useMemo<PlatformVaultData | null>(() => {
+    if (!decodedDomain) return null
+    const slug = DOMAIN_TO_SLUG.get(normalizeDomain(decodedDomain))
+    if (!slug) return null
+    const atomId = PLATFORM_ATOM_IDS[slug]
+    if (!atomId) return null
+    return platformMarkets.find((m) => m.termId === atomId) ?? null
+  }, [decodedDomain, platformMarkets])
 
   const platformCerts = useMemo(
     () =>
@@ -118,10 +161,33 @@ export default function PlatformDetailPage() {
         description={`Every URL you've certified on ${decodedDomain} — ${platformCerts.length} cert${platformCerts.length === 1 ? '' : 's'}.`}
       />
 
+      {platformMarket && (
+        <AtomDetailDialog
+          open={investOpen}
+          onOpenChange={setInvestOpen}
+          market={platformMarket}
+          platformName={platformMarket.label || decodedDomain}
+          favicon={getFaviconUrl(decodedDomain, 64)}
+          walletAddress={address}
+        />
+      )}
+
       <div className="pp-sections">
         <section className="pp-section">
           <div className="pf-platform-toolbar">
-            <SectionTitle>Certifications on this platform</SectionTitle>
+            {platformMarket ? (
+              <button
+                type="button"
+                className="pf-invest-btn"
+                style={{ background: heroColor }}
+                onClick={() => setInvestOpen(true)}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Invest on {decodedDomain}
+              </button>
+            ) : (
+              <SectionTitle>Certifications on this platform</SectionTitle>
+            )}
             <div className="ts-search pf-platform-search">
               <Search className="ts-search-icon h-4 w-4" />
               <input

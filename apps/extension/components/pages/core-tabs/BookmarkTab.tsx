@@ -207,20 +207,22 @@ const BookmarkTab = () => {
             >
               {isAddingSignal ? 'Cancel' : '+ Add'}
             </button>
-          ) : !showAllBookmarks ? (
-            <button
-              onClick={() => setIsCreatingList(true)}
-              className="btn iridescence-btn"
-              style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '700' }}
-            >
-              + New List
-            </button>
           ) : null}
         </div>
 
         {/* Categories as bookmark cards - Only show when no list is selected and not viewing all */}
         {!selectedListId && !showAllBookmarks && (
           <div className="lists-grid">
+            {/* New list ghost card — top 1, dashed border, matches explorer cr-card-new */}
+            <button
+              type="button"
+              onClick={() => setIsCreatingList(true)}
+              className="bookmark-card bookmark-card-new"
+            >
+              <span className="bookmark-card-new-plus">+</span>
+              <span className="bookmark-card-new-label">New list</span>
+            </button>
+
             {/* All bookmarks card */}
             <div
               onClick={() => {

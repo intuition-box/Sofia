@@ -18,6 +18,7 @@ import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
 import CirclesFilters from '@/components/circles/CirclesFilters'
 import TrustCircleCard from '@/components/circles/TrustCircleCard'
 import CreateCircleCard from '@/components/circles/CreateCircleCard'
+import CreateCircleDrawer from '@/components/circles/CreateCircleDrawer'
 import CircleDetailHero from '@/components/circles/CircleDetailHero'
 import CircleMembersCard from '@/components/circles/CircleMembersCard'
 import CircleTopTopicsCard from '@/components/circles/CircleTopTopicsCard'
@@ -69,6 +70,7 @@ export default function CirclesPage() {
     topTopicSlugs,
   )
   const [allMembersOpen, setAllMembersOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [trustColor, setTrustColor] = useState<string>(() => {
     if (typeof window === 'undefined') return TRUST_CIRCLE_META.color
     return (
@@ -150,8 +152,13 @@ export default function CirclesPage() {
 
       <div className="cr-grid">
         <TrustCircleCard members={members} loading={loading} />
-        <CreateCircleCard />
+        <CreateCircleCard onClick={() => setCreateOpen(true)} />
       </div>
+
+      <CreateCircleDrawer
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
     </div>
   )
 }

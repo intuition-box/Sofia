@@ -80,7 +80,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       appId={PRIVY_APP_ID}
       config={{
         loginMethods: ['wallet', 'google'],
-        appearance: { theme: 'dark' },
+        // Themed against @0xsofia/design-system: ink panel (--ds-ink),
+        // peach CTA (--ds-accent), Sofia wordmark logo.
+        appearance: {
+          theme: '#02000e',
+          accentColor: '#ffc6b0',
+          logo: '/logo.png',
+          showWalletLoginFirst: true,
+        },
       }}
     >
       <PersistQueryClientProvider

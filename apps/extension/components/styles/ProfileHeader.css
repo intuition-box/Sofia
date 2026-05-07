@@ -13,8 +13,8 @@
   gap: 14px;
   position: relative;
   margin: 8px 12px 16px;
-  background: var(--ds-accent);
-  border: 1px solid var(--ds-accent);
+  background: #ffffff;
+  border: 1px solid var(--ds-border);
   border-radius: 16px;
   color: #000;
 }

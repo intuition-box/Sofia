@@ -45,14 +45,14 @@ function createNotification(count = FALLBACK_COUNT) {
       bottom: 24px;
       right: 24px;
       z-index: 2147483647;
-      width: 380px;
+      width: 300px;
       background: var(--ds-bg);
       border: 1px solid var(--ds-border);
       border-radius: var(--ds-radius);
-      padding: 16px 18px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.04);
@@ -74,48 +74,25 @@ function createNotification(count = FALLBACK_COUNT) {
     }
     .sofia-nudge__header {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
     }
     .sofia-nudge__icon {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 8px;
       flex-shrink: 0;
     }
     .sofia-nudge__message {
       flex: 1;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 12.5px;
+      line-height: 1.4;
       color: var(--ds-ink);
       margin: 0;
-    }
-    .sofia-nudge__dismiss {
-      background: none;
-      border: none;
-      color: var(--ds-muted);
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      width: 24px;
-      height: 24px;
-    }
-    .sofia-nudge__dismiss:hover {
-      color: var(--ds-ink);
-      background: rgba(255, 255, 255, 0.08);
     }
     .sofia-nudge__count {
       color: var(--ds-accent);
       font-weight: 700;
-    }
-    .sofia-nudge__dismiss svg {
-      width: 14px;
-      height: 14px;
     }
     .sofia-nudge__actions {
       display: flex;
@@ -164,12 +141,6 @@ function createNotification(count = FALLBACK_COUNT) {
       <p class="sofia-nudge__message">
         <strong class="sofia-nudge__count">${count}</strong> pages browsed, none marked yet.
       </p>
-      <button class="sofia-nudge__dismiss" aria-label="Dismiss">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
     </div>
     <div class="sofia-nudge__actions">
       <button class="sofia-nudge__btn-primary" data-action="certify">Mark now</button>
@@ -185,8 +156,6 @@ function createNotification(count = FALLBACK_COUNT) {
   // Event handlers
   const dismiss = () => removeNotification(true)
 
-  container.querySelector(".sofia-nudge__dismiss")
-    ?.addEventListener("click", dismiss)
   container.querySelector('[data-action="later"]')
     ?.addEventListener("click", dismiss)
   container.querySelector('[data-action="certify"]')

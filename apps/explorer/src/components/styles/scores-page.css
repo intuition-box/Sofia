@@ -5,9 +5,8 @@
  * already live in theme.css.
  */
 
-.pf-ts-back-row {
-  margin-bottom: 16px;
-}
+/* `.pf-ts-back-row` lives in pages.css so it's available on every page
+   that uses it (PlatformDetailPage doesn't import scores-page.css). */
 
 /* ── Header card — kicker + Fraunces title + description + big total ── */
 

@@ -548,6 +548,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  align-self: flex-start;
+  margin-top: 4px;
 }
 .crd-get-more:hover {
   background: var(--ds-accent);
@@ -752,17 +754,24 @@
   border-radius: 999px;
 }
 
-/* All-members slide-in panel */
+/* All-members slide-in panel.
+   Backdrop tone is theme-anchored explicitly — `--ds-ink` flips between
+   modes which would tint the overlay with the wrong colour. White wash in
+   light mode, black wash in dark mode; both with the same blur. */
 .crd-members-backdrop {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--ds-ink) 35%, transparent);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 90;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
+}
+[data-theme='dark'] .crd-members-backdrop,
+.dark .crd-members-backdrop {
+  background: rgba(0, 0, 0, 0.55);
 }
 .crd-members-backdrop.open {
   opacity: 1;
@@ -815,6 +824,17 @@
   cursor: pointer;
   font-size: 13px;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.crd-members-panel-close > svg {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 .crd-members-panel-close:hover {
   color: var(--ds-ink);
@@ -962,3 +982,538 @@
   border-radius: 999px;
 }
 /* Masonry grid rules live in `feed-card.css`. */
+
+/* ── CreateCircleDrawer ─────────────────────────────────────────── */
+/* Reuses .crd-members-panel chrome for the slide-in shell; everything
+   inside is namespaced .cc-* so the form styling doesn't bleed into
+   the AllMembers panel. */
+
+.cc-drawer {
+  width: min(440px, 92vw);
+  gap: 0;
+  /* Allow scrolling but hide the scrollbar entirely. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cc-drawer::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Push the title down from the top edge of the drawer. */
+.cc-drawer > .crd-members-panel-head {
+  margin-top: 28px;
+}
+
+.cc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 0 8px;
+}
+
+.cc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cc-field-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.cc-label {
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+.cc-help {
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-top: 2px;
+}
+.cc-help-num {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--ds-ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-input,
+.cc-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+.cc-input:focus,
+.cc-textarea:focus {
+  outline: none;
+  border-color: var(--ds-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 35%, transparent);
+}
+.cc-textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.45;
+}
+
+/* Slider for the actions/month field. Uses native range with a custom
+   peach-fill track via `--cc-slider-progress` set inline. */
+.cc-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.cc-slider-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
+.cc-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  margin: 8px 0 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--ds-accent) 0%,
+    var(--ds-accent) var(--cc-slider-progress, 0%),
+    color-mix(in srgb, var(--ds-ink) 10%, transparent)
+      var(--cc-slider-progress, 0%),
+    color-mix(in srgb, var(--ds-ink) 10%, transparent) 100%
+  );
+  cursor: pointer;
+  outline: none;
+}
+.cc-slider:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 35%, transparent);
+}
+.cc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ds-ink);
+  border: 2px solid var(--ds-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.cc-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+.cc-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ds-ink);
+  border: 2px solid var(--ds-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.cc-slider-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.06em;
+}
+
+/* Quota row — "X actions left" + compact "Manage subscription" pill
+   share a single line, with the help text on the left and the CTA right. */
+.cc-quota-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+/* Manage subscription — small neutral pill (same family as `.pf-btn`),
+   inline with the quota help text. */
+.cc-sub-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.cc-sub-cta:hover {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: #02000e;
+  transform: translateY(-1px);
+}
+.cc-sub-cta-arrow {
+  color: var(--ds-muted);
+  transition: all 0.15s ease;
+}
+.cc-sub-cta:hover .cc-sub-cta-arrow {
+  color: #02000e;
+  transform: translate(1px, -1px);
+}
+
+/* Theme search — input with leading icon + clear button. */
+.cc-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cc-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.cc-search-input {
+  padding-left: 36px;
+  padding-right: 32px;
+}
+.cc-search-clear {
+  position: absolute;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  background: transparent;
+  color: var(--ds-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cc-search-clear:hover {
+  background: color-mix(in srgb, var(--ds-ink) 10%, transparent);
+  color: var(--ds-ink);
+}
+
+/* View more / Show less — uses the shared `.pf-btn` pill recipe so it
+   sits in the same family as the other neutral pills in the app. */
+.cc-view-more {
+  align-self: flex-start;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cc-view-more:hover {
+  border-color: var(--ds-ink);
+  transform: translateY(-1px);
+}
+.cc-view-more-icon {
+  transition: transform 0.15s ease;
+  color: var(--ds-muted);
+}
+.cc-view-more:hover .cc-view-more-icon {
+  color: var(--ds-ink);
+}
+.cc-view-more-icon--up {
+  transform: rotate(180deg);
+}
+
+/* Theme picker — wrapping pill list, single selection. */
+.cc-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cc-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cc-topic:hover {
+  border-color: var(--ds-ink-soft);
+}
+.cc-topic.is-active {
+  border-color: var(--cc-topic-color);
+  background: color-mix(in srgb, var(--cc-topic-color) 16%, var(--ds-bg));
+  color: var(--ds-ink);
+}
+.cc-topic-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Member input + chip list. */
+.cc-member-input-row {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  gap: 8px;
+}
+.cc-add-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.cc-add-btn:hover:not(:disabled) {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent, var(--ds-ink));
+}
+.cc-add-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cc-error {
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: #c4533c;
+}
+
+.cc-member-chips {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cc-member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ds-ink) 5%, var(--ds-bg));
+  border: 1px solid var(--ds-border);
+}
+.cc-member-chip-addr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.cc-member-chip-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--ds-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cc-member-chip-avatar--fallback {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--ds-muted);
+}
+.cc-member-chip-label {
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Account search result rows — same layout language as the extension's
+   FollowSearchBox cards, mapped to explorer DS tokens. */
+.cc-results {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  padding: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cc-results::-webkit-scrollbar {
+  display: none;
+}
+.cc-results-status {
+  padding: 8px 10px;
+  margin: 0;
+}
+.cc-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font: inherit;
+  color: var(--ds-ink);
+}
+.cc-result-row:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+}
+.cc-result-row:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cc-result-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--ds-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cc-result-avatar--fallback {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-muted);
+}
+.cc-result-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cc-result-label {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-result-addr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+.cc-member-chip-remove {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+.cc-member-chip-remove:hover {
+  background: color-mix(in srgb, var(--ds-ink) 10%, transparent);
+  color: var(--ds-ink);
+}
+
+/* Footer actions — sit just below the form. */
+.cc-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--ds-border);
+}
+.cc-btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.cc-btn-ghost {
+  background: transparent;
+  border-color: var(--ds-border);
+  color: var(--ds-ink);
+}
+.cc-btn-ghost:hover {
+  border-color: var(--ds-ink);
+}
+.cc-btn-primary {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}
+.cc-btn-primary:hover:not(:disabled) {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, var(--ds-ink));
+  transform: translateY(-1px);
+}
+.cc-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

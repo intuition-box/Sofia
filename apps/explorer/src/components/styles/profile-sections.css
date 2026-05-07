@@ -122,6 +122,166 @@
   text-decoration: none;
 }
 
+/* ── Echoes bento card — match the extension's bento style ────────────
+ * The DS GroupBentoCard ships with editorial typography (Fraunces stats,
+ * 20/22px padding, soft shadows). The extension uses a tighter, denser
+ * card for the Echoes tab — same DOM, just different padding/colors/
+ * animation. We override the explorer's profile Echoes grid to feel
+ * 1:1 with the extension's bento layout. */
+
+/* Override the DS .bento-grid-3 row height so the cards keep the
+   extension's denser proportions instead of the editorial 210px row. */
+.bento-grid.bento-grid-3 {
+  grid-auto-rows: auto;
+}
+
+/* The DS ships .bento-card with its own border + border-radius +
+   overflow:hidden. Since we tweak the inner .group-bento-card radius,
+   we have to match the outer wrapper or the two borders/radii leave
+   visible "trailing edges" at the corners. Reset the outer styling
+   so a single border + radius lives on .group-bento-card. */
+.bento-grid-3 .bento-card {
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.bento-grid-3 .group-bento-card {
+  padding: 14px;
+  gap: 10px;
+  border-radius: 14px;
+  min-height: 0;
+  height: auto;
+  border: 1px solid var(--ds-border);
+  /* The DS GroupBentoCard injects an inline `border-color` driven by the
+     group's dominantColor (e.g. "#FF5722 25%, var(--ds-border)"). We want
+     a neutral DS-tokened border in this context — !important is the only
+     way to beat the inline style. */
+  border-color: var(--ds-border) !important;
+  background: var(--ds-card);
+  box-shadow: none;
+  transition: border-color 0.15s ease;
+}
+
+.bento-grid-3 .group-bento-card:hover {
+  border-color: var(--ds-ink-soft) !important;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Bigger, more legible favicon (extension uses 24px; we bump for the
+   profile grid where there's more space). */
+.bento-grid-3 .group-bento-favicon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+/* Match the extension's level pill — neutral surface, ink text (white on
+   dark theme). The DS injects `color: levelColor; background: levelColorAlpha`
+   inline (level-driven palette); !important is required to neutralize. */
+.bento-grid-3 .level-badge {
+  color: var(--ds-ink) !important;
+  background: color-mix(in srgb, var(--ds-ink) 8%, transparent) !important;
+  border: 1px solid var(--ds-border);
+}
+
+.bento-grid-3 .group-bento-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.bento-grid-3 .group-bento-stats {
+  margin-top: 4px;
+}
+
+.bento-grid-3 .group-bento-stats .stat-value {
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.bento-grid-3 .group-bento-stats .stat-label {
+  font-size: 9px;
+}
+
+.bento-grid-3 .progress-bar-container {
+  background: color-mix(in srgb, var(--ds-ink) 8%, transparent);
+}
+
+.bento-grid-3 .progress-label {
+  font-size: 9px;
+  min-height: 16px;
+  line-height: 16px;
+}
+
+/* Level-up — shooting dot on top + bottom borders (extension spec).
+   Replaces the DS subtleGlow box-shadow animation. */
+.bento-grid-3 .group-bento-card.can-level-up {
+  position: relative;
+  overflow: hidden;
+  animation: none;
+}
+
+.bento-grid-3 .group-bento-card.can-level-up::before,
+.bento-grid-3 .group-bento-card.can-level-up::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    var(--ds-accent) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+}
+
+.bento-grid-3 .group-bento-card.can-level-up::before {
+  top: 0;
+  left: 0;
+  animation: echoes-bento-star-top 4s linear infinite;
+}
+
+.bento-grid-3 .group-bento-card.can-level-up::after {
+  bottom: 0;
+  left: 0;
+  animation: echoes-bento-star-bottom 4s linear infinite;
+}
+
+@keyframes echoes-bento-star-top {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes echoes-bento-star-bottom {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.bento-grid-3 .group-bento-card.can-level-up .progress-label {
+  color: var(--ds-ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* ── PlatformDetailPage toolbar ── */
 .pf-platform-toolbar {
   display: flex;
@@ -174,6 +334,15 @@
   transition:
     transform 0.15s,
     box-shadow 0.15s;
+}
+/* Bump the breathing room between the emoji and the topic title — DS
+   default of 10px feels cramped at the larger Fraunces label scale we
+   use on the profile page. Stack centered so the title lines up with the
+   emoji on the same vertical axis. */
+.ig-card-front {
+  gap: 20px;
+  align-items: center;
+  text-align: center;
 }
 .ig-card:hover {
   transform: translateY(-2px);
@@ -232,7 +401,7 @@
 }
 
 .ig-card-label {
-  font-size: 14px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--foreground);
 }
@@ -375,39 +544,46 @@
 /* ── TopClaimsSection ── */
 .tc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   grid-auto-rows: 1fr;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
 }
 
 .tc-card {
-  padding: 10px 12px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   height: 100%;
   min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--card);
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .tc-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--foreground) 22%, var(--border));
+  box-shadow: 0 10px 24px -16px
+    color-mix(in oklab, var(--foreground) 30%, transparent);
 }
 
 .tc-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 
 .tc-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--foreground);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -416,66 +592,74 @@
 .tc-stats-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  gap: 14px;
+  padding: 10px 0 0;
+  border-top: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  background: transparent;
 }
 
 .tc-stat-block {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   color: var(--muted-foreground);
+}
+.tc-stat-block svg {
+  opacity: 0.7;
 }
 
 .tc-stat-value {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 .tc-stat-label {
   font-size: 10px;
   font-weight: 500;
   color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .tc-pnl {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 3px;
   margin-left: auto;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 0;
+  background: transparent;
   font-variant-numeric: tabular-nums;
 }
 
 .tc-pnl--up {
-  color: #22c55e;
-  background: color-mix(in oklab, #22c55e 10%, transparent);
+  color: #16a34a;
 }
 
 .tc-pnl--down {
-  color: #ef4444;
-  background: color-mix(in oklab, #ef4444 10%, transparent);
+  color: #dc2626;
 }
 
 .tc-pnl-value {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .tc-badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   padding: 4px 10px;
-  height: 28px;
+  height: auto;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
-  border-radius: 6px;
+  border-radius: 999px;
   white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .tc-stat {
@@ -490,8 +674,20 @@
 .tc-actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   margin-top: auto;
+}
+.tc-actions .ac-btn-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--muted-foreground);
+  opacity: 0.7;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.tc-actions .ac-btn-icon:hover {
+  opacity: 1;
+  color: var(--foreground);
 }
 
 /* ── Skeletons ── */
