@@ -1,7 +1,7 @@
 import PageBlockchainCard from '../ui/PageBlockchainCard'
-import '../styles/AttestPage.css'
+import '../styles/MarkPage.css'
 
-const AttestPage = () => {
+const MarkPage = () => {
   return (
     <div className="home-connected-page">
       <PageBlockchainCard />
@@ -9,5 +9,4 @@ const AttestPage = () => {
   )
 }
 
-
-export default AttestPage
+export default MarkPage

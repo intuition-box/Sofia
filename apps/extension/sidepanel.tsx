@@ -12,7 +12,7 @@ import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
-import AttestPage from "./components/pages/AttestPage"
+import MarkPage from "./components/pages/MarkPage"
 import SettingsPage from "./components/pages/SettingsPage"
 import MyProfilePage from "./components/pages/MyProfilePage"
 import CirclesPage from "./components/pages/CirclesPage"
@@ -44,7 +44,7 @@ const SidePanelContent = () => {
       chrome.storage.session.get('pending_external_auth').then(result => {
         if (result.pending_external_auth) {
           chrome.storage.session.remove('pending_external_auth')
-          navigateTo('attest')
+          navigateTo('mark')
           setOnboardingChecked(true)
           return
         }
@@ -53,11 +53,11 @@ const SidePanelContent = () => {
           if (groups.length === 0) {
             navigateTo('onboarding-import')
           } else {
-            navigateTo('attest')
+            navigateTo('mark')
           }
           setOnboardingChecked(true)
         }).catch(() => {
-          navigateTo('attest')
+          navigateTo('mark')
           setOnboardingChecked(true)
         })
       })
@@ -71,8 +71,8 @@ const SidePanelContent = () => {
 
     switch (currentPage) {
       case 'home':
-      case 'attest':
-        return <AttestPage />
+      case 'mark':
+        return <MarkPage />
       case 'settings':
         return <SettingsPage />
       case 'my-profile':
@@ -90,7 +90,7 @@ const SidePanelContent = () => {
       case 'onboarding-tutorial':
         return <OnboardingTutorialPage />
       default:
-        return <AttestPage />
+        return <MarkPage />
     }
   }
 

@@ -114,7 +114,7 @@ const OnboardingTutorialPage = () => {
   }
 
   const handleSkip = () => {
-    navigateTo('attest')
+    navigateTo('mark')
   }
 
   const step = STEPS[currentStep]
