@@ -10,7 +10,11 @@ description: Analyze your open tabs and extract signals to certify
 
 ## How It Works
 
-<img src={require('./img/pulse-how-it-works.png').default} alt="Pulse How It Works" style={{maxWidth: '500px', width: '100%'}} />
+<img
+  src={require('./img/pulse-how-it-works.png').default}
+  alt="Pulse How It Works"
+  style={{ maxWidth: '500px', width: '100%' }}
+/>
 
 ## What You Can Do
 

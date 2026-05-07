@@ -12,7 +12,7 @@ On top of that we restored the profile page, refined the Signal tab, improved CS
 
 All these changes make SofIA lighter, faster and easier to extend. Users benefit from smoother interfaces, quicker imports and clearer TRUST metrics; developers get a cleaner, more predictable API and message bus.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Indexer & Core Infrastructure
 

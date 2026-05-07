@@ -8,7 +8,7 @@ authors: [Samuel, Maxime]
 
 This week focused on core foundational deliveries, including connecting the MCP Server to our agent and deploying the full Privy authentication flow for the Chrome extension. We also finalized the staking modal (with bonding curve options), optimized transactions using Sofia’s fee proxy, extended the Trust / Distrust system, and improved data integrity and UX reliability across triples creation and display.These features are not yet available to the public and will be pushed to production for alpha V2.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## MCP Server Integration
 
