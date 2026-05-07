@@ -4,9 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "mastra dev",
-    "build": "mastra build",
-    "start": "mastra start",
+    "dev": "node node_modules/mastra/dist/index.js dev",
+    "build": "node node_modules/mastra/dist/index.js build",
+    "start": "node node_modules/mastra/dist/index.js start",
     "typecheck": "bash scripts/typecheck.sh"
   },
   "keywords": [],
