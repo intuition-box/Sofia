@@ -13,6 +13,16 @@ import './styles/layout.css'
 const TOP_REPUTATIONS_COUNT = 3
 
 export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
+  // Every consumer route (full-width pages, profile pages, cart open,
+  // non-desktop) currently passes `hidden`. Early-return so the rail's
+  // GraphQL hooks (useEnsNames, TrendingPages → useTrending) don't fire
+  // on /feed cold-load and pile onto the upstream rate-limit gate.
+  if (hidden) return null
+
+  return <RightSidebarContent />
+}
+
+function RightSidebarContent() {
   const injected = useRightRailContent()
   const { rankings, loading } = useTrustLeaderboard()
 
@@ -28,7 +38,7 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
 
   return (
     <aside
-      className={`fixed right-0 top-0 overflow-y-auto z-40 rs-aside ${hidden ? 'rs-hidden' : ''}`}
+      className="fixed right-0 top-0 overflow-y-auto z-40 rs-aside"
     >
       <div className="p-4 space-y-6">
         {injected ?? (

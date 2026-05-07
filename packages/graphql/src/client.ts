@@ -9,13 +9,29 @@ export interface ClientConfig {
 }
 
 const DEFAULT_API_URL = API_URL_PROD
+const DEFAULT_MAX_CONCURRENT = 4
 
-let globalConfig: { apiUrl?: string } = {
+let globalConfig: {
+  apiUrl?: string
+  maxConcurrent: number
+} = {
   apiUrl: DEFAULT_API_URL,
+  maxConcurrent: DEFAULT_MAX_CONCURRENT,
 }
 
-export function configureClient(config: { apiUrl: string; wsUrl?: string }) {
-  globalConfig = { ...globalConfig, apiUrl: config.apiUrl }
+export function configureClient(config: {
+  apiUrl: string
+  wsUrl?: string
+  /** Max parallel HTTP requests through the fetcher.
+   *  Defaults to 4 — caps the burst on first paint so the upstream
+   *  Hasura/Kong gate doesn't 429 a wave of mounted hooks. */
+  maxConcurrent?: number
+}) {
+  globalConfig = {
+    ...globalConfig,
+    apiUrl: config.apiUrl,
+    maxConcurrent: config.maxConcurrent ?? globalConfig.maxConcurrent,
+  }
   if (config.wsUrl) {
     configureWsClient({ wsUrl: config.wsUrl })
   }
@@ -49,6 +65,79 @@ export const fetchParams = () => {
   }
 }
 
+// ── Concurrency limiter ─────────────────────────────────────────────
+//
+// Singleton queue scoped to this module — every `fetcher()` call goes
+// through it. Caps the in-flight HTTP requests to `globalConfig.
+// maxConcurrent` so a wave of hook mounts on first paint doesn't drown
+// the upstream gate. Tasks queue FIFO and release their slot when the
+// underlying fetch settles (success or error).
+
+let inflight = 0
+const waiters: Array<() => void> = []
+
+function acquireSlot(): Promise<void> {
+  if (inflight < globalConfig.maxConcurrent) {
+    inflight++
+    return Promise.resolve()
+  }
+  return new Promise<void>((resolve) => {
+    waiters.push(() => {
+      inflight++
+      resolve()
+    })
+  })
+}
+
+function releaseSlot() {
+  inflight--
+  const next = waiters.shift()
+  if (next) next()
+}
+
+// ── Dev-only audit logging ──────────────────────────────────────────
+//
+// Off in production. In dev, traces every request through the fetcher
+// so we can see exactly which queries fire on cold-load and where the
+// concurrency peak lands. Status 429 is highlighted.
+
+// Vite (used by the explorer + dashboard apps) replaces this at build
+// time; in the extension/Plasmo build it falls back to NODE_ENV.
+const isDev = (() => {
+  try {
+    // @ts-expect-error import.meta.env is not in lib.dom — Vite inlines it.
+    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true
+  } catch {
+    // ignored — non-Vite consumer
+  }
+  return (
+    typeof process !== 'undefined' &&
+    process.env?.NODE_ENV !== 'production'
+  )
+})()
+
+function extractQueryName(query: string): string {
+  const match = query.match(/(?:query|mutation|subscription)\s+(\w+)/)
+  return match?.[1] ?? 'anonymous'
+}
+
+function logStart(name: string, queued: boolean) {
+  if (!isDev) return
+  // eslint-disable-next-line no-console
+  console.debug(
+    `[gql] start ${name} inflight=${inflight}/${globalConfig.maxConcurrent}${queued ? ' (was queued)' : ''}`,
+  )
+}
+
+function logDone(name: string, status: number, durMs: number) {
+  if (!isDev) return
+  const level = status === 429 ? 'warn' : status >= 400 ? 'error' : 'debug'
+  // eslint-disable-next-line no-console
+  console[level](
+    `[gql] done  ${name} status=${status} dur=${durMs}ms inflight=${inflight}/${globalConfig.maxConcurrent} waiters=${waiters.length}`,
+  )
+}
+
 export function fetcher<TData, TVariables>(
   query: string,
   variables?: TVariables,
@@ -61,20 +150,33 @@ export function fetcher<TData, TVariables>(
       )
     }
 
-    const res = await fetch(globalConfig.apiUrl, {
-      method: 'POST',
-      ...fetchParams(),
-      ...options,
-      body: JSON.stringify({ query, variables }),
-    })
+    const name = extractQueryName(query)
+    const wasQueued = inflight >= globalConfig.maxConcurrent
+    await acquireSlot()
+    logStart(name, wasQueued)
 
-    const json = await res.json()
+    const start = isDev ? performance.now() : 0
+    let status = 0
+    try {
+      const res = await fetch(globalConfig.apiUrl, {
+        method: 'POST',
+        ...fetchParams(),
+        ...options,
+        body: JSON.stringify({ query, variables }),
+      })
+      status = res.status
 
-    if (json.errors && (!json.data || Object.keys(json.data).length === 0)) {
-      const { message } = json.errors[0]
-      throw new Error(message)
+      const json = await res.json()
+
+      if (json.errors && (!json.data || Object.keys(json.data).length === 0)) {
+        const { message } = json.errors[0]
+        throw new Error(message)
+      }
+
+      return json.data as TData
+    } finally {
+      logDone(name, status, isDev ? Math.round(performance.now() - start) : 0)
+      releaseSlot()
     }
-
-    return json.data as TData
   }
 }

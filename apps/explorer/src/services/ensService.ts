@@ -9,6 +9,12 @@ const avatarCache = new Map<string, string | null>()
 
 const ENS_BATCH_SIZE = 5
 
+// Serialise concurrent `resolveViaGraphQL` calls — when two `useEnsNames`
+// hooks mount on the same render tick with overlapping addresses, the
+// second call awaits the first and reads from the now-warm `labelCache`
+// instead of firing a duplicate GetAccountLabels request.
+let inflightLabelFetch: Promise<void> = Promise.resolve()
+
 // ── Helpers ──────────────────────────────────────────────────────────
 
 export function isRealLabel(label?: string | null): boolean {
@@ -28,26 +34,41 @@ export function formatEth(addr: string): string {
 // ── Resolvers ────────────────────────────────────────────────────────
 
 export async function resolveViaGraphQL(addresses: string[]): Promise<void> {
-  try {
-    const checksumIds = addresses.map((a) => getAddress(a))
-    const result = await useGetAccountLabelsQuery.fetcher({
-      ids: checksumIds,
-    })()
+  // Wait for any earlier resolveViaGraphQL to finish populating the
+  // cache, then fetch only what's still missing. This collapses
+  // overlapping bursts (e.g. NavSidebar + ProfileDrawer mounting on the
+  // same tick) into a single network round-trip.
+  await inflightLabelFetch
 
-    for (const account of result.accounts || []) {
-      const key = account.id.toLowerCase()
-      const label = account.label || account.atom?.label || null
-      const image = account.image || account.atom?.image || null
-      if (isRealLabel(label)) {
-        labelCache.set(key, label)
+  const uncached = addresses
+    .map((a) => a.toLowerCase())
+    .filter((a) => !labelCache.has(a))
+  if (uncached.length === 0) return
+
+  inflightLabelFetch = (async () => {
+    try {
+      const checksumIds = uncached.map((a) => getAddress(a))
+      const result = await useGetAccountLabelsQuery.fetcher({
+        ids: checksumIds,
+      })()
+
+      for (const account of result.accounts || []) {
+        const key = account.id.toLowerCase()
+        const label = account.label || account.atom?.label || null
+        const image = account.image || account.atom?.image || null
+        if (isRealLabel(label)) {
+          labelCache.set(key, label)
+        }
+        if (image) {
+          avatarCache.set(key, image)
+        }
       }
-      if (image) {
-        avatarCache.set(key, image)
-      }
+    } catch (err) {
+      console.warn('[ensService] GraphQL lookup failed:', err)
     }
-  } catch (err) {
-    console.warn('[ensService] GraphQL lookup failed:', err)
-  }
+  })()
+
+  await inflightLabelFetch
 }
 
 export async function resolveViaEns(address: string): Promise<void> {
