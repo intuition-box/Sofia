@@ -21,8 +21,9 @@ import '../styles/CircleFeedTab.css'
 
 const ScoreTab = lazy(() => import('./score-tabs/ScoreTab'))
 const AchievementsTab = lazy(() => import('./score-tabs/AchievementsTab'))
+const PoolTab = lazy(() => import('./score-tabs/PoolTab'))
 
-type ScoreTab = 'stats' | 'quests'
+type ScoreTab = 'stats' | 'quests' | 'pool'
 
 const ScorePage = () => {
   const [activeTab, setActiveTab] = useState<ScoreTab>('stats')
@@ -96,6 +97,14 @@ const ScorePage = () => {
             >
               Quests
             </button>
+            <button
+              type="button"
+              className={`sub-tab ${activeTab === 'pool' ? 'active' : ''}`}
+              aria-pressed={activeTab === 'pool'}
+              onClick={() => setActiveTab('pool')}
+            >
+              Pool
+            </button>
           </div>
           <button
             type="button"
@@ -126,7 +135,7 @@ const ScorePage = () => {
         </div>
 
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
-          {activeTab === 'stats' ? (
+          {activeTab === 'stats' && (
             <ScoreTab
               walletAddress={walletAddress}
               trustedByCount={trustedByCount}
@@ -134,7 +143,8 @@ const ScorePage = () => {
               totalXP={totalXP}
               signalsCreated={signalsCreated}
             />
-          ) : (
+          )}
+          {activeTab === 'quests' && (
             <AchievementsTab
               quests={quests}
               loading={questsLoading}
@@ -154,6 +164,7 @@ const ScorePage = () => {
               voteActivityDates={userProgress.voteActivityDates}
             />
           )}
+          {activeTab === 'pool' && <PoolTab />}
         </Suspense>
       </div>
     </div>

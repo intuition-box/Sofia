@@ -12,7 +12,11 @@ description: Build your expertise profile from your certifications
 
 The AI analyzes your **existing certifications** (not your browsing) to identify patterns and categorize your interests.
 
-<img src={require('./img/interest-how-it-works.png').default} alt="Interest How It Works" style={{maxWidth: '90%'}} />
+<img
+  src={require('./img/interest-how-it-works.png').default}
+  alt="Interest How It Works"
+  style={{ maxWidth: '90%' }}
+/>
 
 ## Interest Profile View
 

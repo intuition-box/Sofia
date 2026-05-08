@@ -821,8 +821,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px 22px 14px;
-  min-height: 204px;
+  padding: 20px 22px 16px;
   flex-shrink: 0;
   border-radius: 14px;
   border: 1px solid var(--ds-border);
@@ -832,13 +831,15 @@
   box-shadow: var(--ds-shadow-card);
   transition: all 0.2s ease;
   overflow: hidden;
-  border-left: 3px solid var(--pos-color, var(--ds-muted));
+}
+.pf-claim-card .pf-claim-bar {
+  margin-top: auto;
 }
 .pf-claim-card:hover {
   transform: translateY(-2px);
-  border-color: var(--pos-color, var(--ds-ink-soft));
+  border-color: color-mix(in srgb, var(--ds-ink) 22%, var(--ds-border));
   box-shadow: 0 14px 32px -18px
-    color-mix(in srgb, var(--pos-color, var(--ds-ink)) 50%, transparent);
+    color-mix(in srgb, var(--ds-ink) 35%, transparent);
 }
 
 .pf-claim-head {
@@ -849,9 +850,9 @@
 /* The DS FaviconWrapper handles the white bg; override its box to the proto's
    rounded 6px + 3px padding. */
 .pf-claim-fav {
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--ds-border-soft);
-  padding: 3px;
+  padding: 4px;
 }
 .pf-claim-meta {
   flex: 1;
@@ -915,14 +916,14 @@
   gap: 12px;
 }
 .pf-claim-pnl-pct {
-  font-family: 'Fraunces', serif;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1;
-  color: var(--trusted, #6dd4a0);
+  color: var(--ds-ink);
   margin-left: auto;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .pf-claim-bar {
@@ -946,6 +947,9 @@
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+.pf-claim-stats .pf-claim-verb {
+  margin-right: auto;
 }
 .pf-claim-stat {
   display: inline-flex;
@@ -971,11 +975,12 @@
   border-color: color-mix(in srgb, #e87c7c 32%, transparent);
 }
 .pf-claim-stat-val {
-  font-family: 'Fraunces', serif;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .pf-claim-reason {

@@ -27,8 +27,8 @@ const BottomNavigation = () => {
   const dockItems: DockItemData[] = [
     {
       icon: <Pencil size={24} />,
-      label: 'Attest',
-      onClick: () => navigateTo('attest')
+      label: 'Mark',
+      onClick: () => navigateTo('mark')
     },
     {
       icon: <User size={24} />,

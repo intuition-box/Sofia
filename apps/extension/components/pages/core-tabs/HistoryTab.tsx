@@ -167,7 +167,6 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
     <div className="triples-container">
       {/* Search + sort toolbar — same pattern as EchoesTab */}
       <div className="category-toolbar">
-        <span className="circle-filter-label">Search</span>
         <div className="category-search-container">
           <input
             type="text"

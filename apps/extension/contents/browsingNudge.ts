@@ -24,27 +24,41 @@ function createNotification(count = FALLBACK_COUNT) {
   shadow.id = "sofia-nudge-root"
   const root = shadow.attachShadow({ mode: "closed" })
 
+  // DS tokens are inlined here because the shadow DOM doesn't inherit
+  // host stylesheets. Values mirror @0xsofia/design-system dark theme.
   const style = document.createElement("style")
   style.textContent = `
+    :host {
+      --ds-bg: #0b0a12;
+      --ds-border: #25223a;
+      --ds-ink: #f5f3ff;
+      --ds-muted: #8f8ca8;
+      --ds-accent: #ffc6b0;
+      --ds-on-accent: #02000e;
+      --ds-radius: 12px;
+      --ds-font:
+        'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+        sans-serif;
+    }
     .sofia-nudge {
       position: fixed;
       bottom: 24px;
       right: 24px;
       z-index: 2147483647;
-      width: 380px;
-      background: rgba(10, 9, 8, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 16px 18px;
+      width: 300px;
+      background: var(--ds-bg);
+      border: 1px solid var(--ds-border);
+      border-radius: var(--ds-radius);
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
-      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      font-family: var(--ds-font);
       animation: sofiaNudgeSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      color: white;
+      color: var(--ds-ink);
       box-sizing: border-box;
     }
     @keyframes sofiaNudgeSlide {
@@ -60,88 +74,62 @@ function createNotification(count = FALLBACK_COUNT) {
     }
     .sofia-nudge__header {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
     }
     .sofia-nudge__icon {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 8px;
       flex-shrink: 0;
     }
     .sofia-nudge__message {
       flex: 1;
-      font-size: 13px;
-      line-height: 1.5;
-      color: rgba(255, 255, 255, 0.88);
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: var(--ds-ink);
       margin: 0;
     }
-    .sofia-nudge__dismiss {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.35);
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      width: 24px;
-      height: 24px;
-    }
-    .sofia-nudge__dismiss:hover {
-      color: white;
-      background: rgba(255, 255, 255, 0.1);
-    }
     .sofia-nudge__count {
-      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--ds-accent);
       font-weight: 700;
-    }
-    .sofia-nudge__dismiss svg {
-      width: 14px;
-      height: 14px;
     }
     .sofia-nudge__actions {
       display: flex;
       gap: 8px;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
     .sofia-nudge__btn-secondary {
       padding: 8px 18px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--ds-radius);
+      border: 1px solid var(--ds-border);
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--ds-muted);
       background: transparent;
       transition: all 0.15s;
       font-family: inherit;
     }
     .sofia-nudge__btn-secondary:hover {
-      color: white;
-      border-color: rgba(255, 255, 255, 0.25);
+      color: var(--ds-ink);
+      border-color: var(--ds-accent);
     }
     .sofia-nudge__btn-primary {
       padding: 8px 18px;
-      border-radius: 10px;
-      border: none;
+      border-radius: var(--ds-radius);
+      border: 1px solid var(--ds-accent);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      color: white;
-      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+      color: var(--ds-on-accent);
+      background: var(--ds-accent);
       transition: all 0.2s;
       font-family: inherit;
     }
     .sofia-nudge__btn-primary:hover {
-      opacity: 0.9;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 198, 176, 0.25);
     }
   `
 
@@ -151,18 +139,12 @@ function createNotification(count = FALLBACK_COUNT) {
     <div class="sofia-nudge__header">
       <img src="${sofiaIconUrl}" class="sofia-nudge__icon" alt="Sofia" />
       <p class="sofia-nudge__message">
-        You've visited <strong class="sofia-nudge__count">${count}</strong> pages without certifying any. Open Sofia to certify them!
+        <strong class="sofia-nudge__count">${count}</strong> pages browsed, none marked yet.
       </p>
-      <button class="sofia-nudge__dismiss" aria-label="Dismiss">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
     </div>
     <div class="sofia-nudge__actions">
+      <button class="sofia-nudge__btn-primary" data-action="certify">Mark now</button>
       <button class="sofia-nudge__btn-secondary" data-action="later">Later</button>
-      <button class="sofia-nudge__btn-primary" data-action="certify">Certify Now</button>
     </div>
   `
 
@@ -174,8 +156,6 @@ function createNotification(count = FALLBACK_COUNT) {
   // Event handlers
   const dismiss = () => removeNotification(true)
 
-  container.querySelector(".sofia-nudge__dismiss")
-    ?.addEventListener("click", dismiss)
   container.querySelector('[data-action="later"]')
     ?.addEventListener("click", dismiss)
   container.querySelector('[data-action="certify"]')

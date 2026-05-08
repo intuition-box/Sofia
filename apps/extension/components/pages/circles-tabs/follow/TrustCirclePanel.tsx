@@ -21,7 +21,7 @@ const logger = createHookLogger('TrustCirclePanel')
 
 interface TrustCirclePanelProps {
   walletAddress: string | undefined
-  /** Optional CTA: when provided, renders a "+ invite a member" button at top */
+  /** Optional CTA: when provided, renders a "+ add a member" button at top */
   onInviteMember?: () => void
 }
 
@@ -168,7 +168,7 @@ export function TrustCirclePanel({ walletAddress, onInviteMember }: TrustCircleP
           onClick={onInviteMember}
         >
           <UserPlus size={14} />
-          Invite a member
+          Add a member
         </button>
       )}
 

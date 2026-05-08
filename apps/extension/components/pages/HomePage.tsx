@@ -1,43 +1,138 @@
-import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
-import welcomeLogo from '../ui/icons/welcomeLogo.png'
+/**
+ * HomePage — extension popup login screen.
+ *
+ * Layout adapted from Claude Design sketch `ext-login-b3.html` and the
+ * explorer's `/` LandingPage. 50/50 vertical split:
+ *   - Top half  : peach (--ds-accent) plate with the same SVG identity-graph
+ *                 (`TopicsIntentions mode="light"`) used on the explorer's
+ *                 visual side. Sofia mark + version pinned at the top.
+ *   - Bottom half: ink (--ds-ink) panel with eyebrow / headline / lede /
+ *                  paper-pill connect button + Privy/Terms/Privacy footer
+ *                  (mirrors `.lp-btn-primary` on the explorer login).
+ *
+ * Tokenized through @0xsofia/design-system. The connect handler reuses
+ * the same `openAuthTab` / `useWalletFromStorage` flow as the previous
+ * `WalletConnectionButton` so we don't change auth behavior.
+ */
+
+import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks'
 import packageJson from '~/package.json'
+import sofiaIcon from '../../assets/icon-light-32.png'
+import { TopicsIntentions } from '../ui/TopicsIntentions'
 import '../styles/HomePage.css'
 
-const HomePage = () => {
+export default function HomePage() {
+  const { authenticated, ready } = useWalletFromStorage()
+  const isLoading = !ready
+
+  const handleConnect = () => {
+    if (isLoading) return
+    openAuthTab()
+  }
+
+  const handleDisconnect = async () => {
+    await disconnectWallet()
+  }
 
   return (
-    <div className="home-page">
-      <div className="welcome-header">
-        <img src={welcomeLogo} alt="Welcome on SofIA" className="welcome-image" />
-        <p className="description-paragraph" style={{ textAlign: 'center', marginTop: '4px' }}>
-          v{packageJson.version}
-        </p>
+    <div className="hp-page">
+      {/* ── Top half: peach + identity-graph diagram ─── */}
+      <div className="hp-visual">
+        <div className="hp-meta-row">
+          <span className="hp-brand">
+            <img className="hp-brand-mark" src={sofiaIcon} alt="Sofia" />
+            <span className="hp-brand-name">SOFIA</span>
+          </span>
+          <span>v{packageJson.version}</span>
+        </div>
+
+        <div className="hp-diagram-stage" aria-hidden="true">
+          <TopicsIntentions mode="light" />
+        </div>
       </div>
 
-      <div className="description-sections">
-        <p className="description-paragraph">
-        Sofia is a decentralized, intelligent interface that captures your web navigation, transforms it into verifiable knowledge, and helps you better understand – and leverage – your digital self.
+      {/* ── Bottom half: ink + copy ─── */}
+      <div className="hp-auth">
+        <span className="hp-eyebrow">S.01 · CONNECT</span>
+
+        <h1 className="hp-headline">
+          Your web, <em>mapped.</em>
+        </h1>
+
+        <p className="hp-lede">
+          Sofia turns every URL you visit into a verifiable signal — building
+          a graph of who you are, what you do, and what you trust.
         </p>
 
-        <p className="description-paragraph">
-        Every visited page, every action, every interest becomes a signal (who/what you are – what you do – on what content) stored under your control. 
+        {!authenticated ? (
+          <button
+            type="button"
+            className="hp-btn hp-btn-primary"
+            onClick={handleConnect}
+            disabled={isLoading}
+            aria-busy={isLoading}
+          >
+            <span className="hp-btn-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h16v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7" />
+                <circle cx="17" cy="13" r="1.2" fill="currentColor" />
+              </svg>
+            </span>
+            <span className="hp-btn-label">
+              {isLoading ? 'Connecting…' : 'Connect wallet'}
+            </span>
+            <span className="hp-btn-arrow" aria-hidden="true">→</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="hp-btn hp-btn-ghost"
+            onClick={handleDisconnect}
+          >
+            <span className="hp-btn-label">Disconnect</span>
+            <span className="hp-btn-arrow" aria-hidden="true">→</span>
+          </button>
+        )}
+
+        <div className="hp-spacer" />
+
+        <p className="hp-footer">
+          <span className="hp-secured">
+            <span className="hp-secured-dot" aria-hidden="true" />
+            Secured by{' '}
+            <a
+              href="https://www.privy.io"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Privy
+            </a>
+          </span>
+          <span className="hp-footer-sep" aria-hidden="true">·</span>
+          <a
+            href="https://doc.sofia.intuition.box/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Terms
+          </a>
+          <span className="hp-footer-sep" aria-hidden="true">·</span>
+          <a
+            href="https://doc.sofia.intuition.box/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Privacy
+          </a>
         </p>
-
-        <p className="description-paragraph">
-        This creates a living, semantic graph of your online activity, which you can enrich, share and get certified.
-        </p>
-
-        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="https://doc.sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a> and our <a href="https://doc.sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a>.</p>
-
       </div>
-
-      <div className="connect-section">
-        <WalletConnectionButton />
-      </div>
-
     </div>
   )
 }
-
-
-export default HomePage

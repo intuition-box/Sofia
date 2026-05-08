@@ -29,7 +29,7 @@ const OnboardingImportPage = () => {
   const handleSkip = () => {
     setShowSkipMessage(true)
     setTimeout(() => {
-      navigateTo('attest')
+      navigateTo('mark')
     }, 2500)
   }
 

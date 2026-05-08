@@ -81,7 +81,7 @@ export default function AllMembersPanel({
           }}
         >
           <UserPlus className="h-4 w-4" />
-          Invite a member
+          Add a member
         </button>
 
         <div className="crd-members-list">

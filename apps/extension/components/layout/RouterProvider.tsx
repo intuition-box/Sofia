@@ -4,7 +4,7 @@ import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('RouterProvider')
 
-type Page = 'home' | 'settings' | 'attest' | 'my-profile' | 'circles' | 'score' | 'recommendations' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
+type Page = 'home' | 'settings' | 'mark' | 'my-profile' | 'circles' | 'score' | 'recommendations' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
 
 export interface UserProfileData {
   termId: string

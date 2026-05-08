@@ -66,10 +66,31 @@
   color: #f87171;
 }
 
-/* Deposit amount section */
+/* Deposit amount section — flex column so the preset pills row keeps
+   breathing room from the custom-amount input above it. */
 
 .gs-modal__amount-section {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Scoped CTA: the primary button used in this modal flips the global
+   ink-on-bg defaults to a white surface with a peach hover, matching
+   the rest of the design system's CTA pattern. */
+.gs-modal__cta.modal-btn.primary {
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+}
+
+.gs-modal__cta.modal-btn.primary:hover:not(:disabled) {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent, var(--ds-ink));
+  box-shadow: 0 4px 14px rgba(255, 198, 176, 0.25);
+  transform: translateY(-1px);
 }
 
 /* Redeem percentage pills */

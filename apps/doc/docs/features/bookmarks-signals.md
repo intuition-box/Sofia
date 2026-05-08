@@ -8,7 +8,11 @@ description: Organize your bookmarks and signals
 
 ## Bookmarks
 
-<img src={require('./img/bookmark.png').default} alt="Bookmarks" style={{maxWidth: '60%'}} />
+<img
+  src={require('./img/bookmark.png').default}
+  alt="Bookmarks"
+  style={{ maxWidth: '60%' }}
+/>
 
 - Organize into [intention](./intentions.md) lists
 - Visible to other users from your profile

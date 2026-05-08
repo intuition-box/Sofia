@@ -6,7 +6,7 @@ authors: [Samuel, Maxime]
 
 Massive week for Sofia — we shipped a full on-chain streak system with shared vault deposits, built a leaderboard with ENS resolution, introduced vote quests with Gold rewards, and completed a major refactoring that significantly cleaned up the codebase. The trending tab got a complete overhaul, and the onboarding tutorial now covers 12 steps.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Streak System & On-Chain Rewards
 

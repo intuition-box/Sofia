@@ -8,6 +8,38 @@
    actions across the app. Prefer this over shadcn Button ghost whenever
    the surrounding surface is light / the hover background of ghost
    would clash with the design-system's ambient palette. */
+/* Wraps the .pf-btn back-link at the top of detail pages (Scores,
+   PlatformDetail, etc). Kept here — not in scores-page.css — so every
+   consumer gets the breathing room without an extra import. */
+.pf-ts-back-row {
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+/* Invest CTA used on platform-detail pages. Adopts the page's hero color
+   via inline `background`; keeps a dark on-color text for readability. */
+.pf-invest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: #02000e;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 6px 20px -10px color-mix(in srgb, var(--ds-ink) 30%, transparent);
+}
+.pf-invest-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  filter: brightness(1.04);
+}
+
 .pf-btn {
   display: inline-flex;
   align-items: center;

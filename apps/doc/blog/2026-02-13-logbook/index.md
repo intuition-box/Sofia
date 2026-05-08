@@ -8,7 +8,7 @@ authors: [Samuel, Maxime]
 
 Big week for Sofia — we cleaned up the entire codebase for better maintainability, introduced the ability to trust or distrust content, split the reward system into two currencies (Gold and XP), added a voting system in the Circle Feed, enabled profile sharing on X, and completely redesigned the user profile with badges, animations, and new visuals.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Codebase Cleanup & Documentation
 

@@ -10,7 +10,11 @@ description: Your browsing history, intelligently grouped by domain
 
 ## How Echoes Work
 
-<img src={require('./img/how-echoes-work.png').default} alt="How Echoes Work" style={{maxWidth: '80%'}} />
+<img
+  src={require('./img/how-echoes-work.png').default}
+  alt="How Echoes Work"
+  style={{ maxWidth: '80%' }}
+/>
 
 ## Echo Properties
 

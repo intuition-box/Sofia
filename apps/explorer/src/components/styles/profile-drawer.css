@@ -3,9 +3,12 @@
  * extras (Trust Circle section) kept. Proto tokens remapped to --ds-*. */
 
 .pd-aside {
+  position: absolute;
   top: 0;
+  right: 0;
+  bottom: 0;
   width: 350px;
-  height: 100vh;
+  min-height: 100%;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);
   background: linear-gradient(
@@ -276,13 +279,10 @@
   flex: 1;
   padding: 12px 4px;
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--badge-color, var(--ds-accent)) 8%,
-    var(--ds-card)
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--badge-color, var(--ds-accent)) 22%, transparent);
+  /* Slightly lighter than the surrounding card, no border. The badge
+     color still tints the surface enough to read at a glance. */
+  background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
+  border: 0;
 }
 .pd-badge-icon {
   width: 40px;

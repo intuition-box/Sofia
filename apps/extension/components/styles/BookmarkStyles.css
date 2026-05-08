@@ -598,6 +598,48 @@
   display: none;
 }
 
+/* New-list ghost tile — mirrors explorer's .cr-card-new (dashed, italic
+   Fraunces, no left stripe). Sits as the top-1 cell in .lists-grid. */
+.lists-grid .bookmark-card.bookmark-card-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px;
+  border: 1px dashed var(--ds-border);
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  text-align: center;
+  font: inherit;
+  width: 100%;
+}
+.lists-grid .bookmark-card.bookmark-card-new::before {
+  display: none;
+}
+.lists-grid .bookmark-card.bookmark-card-new:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+  background: transparent;
+  transform: translateY(-1px);
+}
+.bookmark-card-new-plus {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1;
+}
+.bookmark-card-new-label {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+}
+
 .lists-grid .bookmark-header-content {
   gap: 6px;
   margin-bottom: 0;

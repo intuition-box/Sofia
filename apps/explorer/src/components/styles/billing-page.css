@@ -1,0 +1,270 @@
+/* BillingPage — three-tier subscription comparison.
+   Tokens via --ds-*; pill toggle + tiered cards (Free / Plus / Studio).
+   Highlight tier (Plus) gets a peach inversion to draw the eye. */
+
+.bp-page {
+  animation: pf-fadein 0.4s ease both;
+  /* Standalone route — no NavSidebar / RightSidebar around it, so the page
+     owns its own gutter and centring. */
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+@media (max-width: 700px) {
+  .bp-page {
+    padding: 24px 16px 64px;
+  }
+}
+
+/* Period toggle ──────────────────────────────────────────────── */
+.bp-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  margin: 24px auto 32px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  align-self: center;
+}
+.bp-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.bp-period-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.bp-period-btn:hover {
+  color: var(--ds-ink);
+}
+.bp-period-btn.is-active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}
+.bp-period-save {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ds-accent) 50%, transparent);
+  color: #02000e;
+}
+.bp-period-btn.is-active .bp-period-save {
+  background: var(--ds-accent);
+  color: #02000e;
+}
+
+/* Pricing grid ───────────────────────────────────────────────── */
+.bp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+@media (max-width: 900px) {
+  .bp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 24px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  transition: all 0.2s ease;
+}
+.bp-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
+  box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+}
+.bp-card.is-highlight {
+  border-color: var(--ds-accent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ds-accent) 18%, var(--ds-card)) 0%,
+    var(--ds-card) 60%
+  );
+}
+.bp-card.is-current {
+  border-color: var(--ds-ink-soft);
+}
+
+.bp-card-ribbon {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.bp-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bp-card-name {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  margin: 0;
+}
+.bp-card-tagline {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: var(--ds-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.bp-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+.bp-card-price-num {
+  font-family: 'Fraunces', serif;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.bp-card-price-unit {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-muted);
+}
+
+.bp-card-cta {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.bp-card-cta:hover:not(:disabled) {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: #02000e;
+  transform: translateY(-1px);
+}
+.bp-card-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.bp-card-cta.is-primary {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+.bp-card-cta.is-primary:hover:not(:disabled) {
+  background: var(--ds-accent);
+  color: #02000e;
+  border-color: var(--ds-accent);
+}
+
+.bp-card-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bp-card-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: var(--ds-ink);
+  line-height: 1.4;
+}
+.bp-card-feature.is-muted {
+  color: var(--ds-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--ds-muted) 50%, transparent);
+}
+.bp-card-feature-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ds-accent) 30%, transparent);
+  color: #02000e;
+  margin-top: 2px;
+}
+.bp-card-feature-check.is-muted {
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Footnote ───────────────────────────────────────────────────── */
+.bp-footnote {
+  text-align: center;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: var(--ds-muted);
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+.bp-footnote-link {
+  color: var(--ds-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--ds-ink) 30%, transparent);
+}
+.bp-footnote-link:hover {
+  text-decoration-color: var(--ds-ink);
+}
