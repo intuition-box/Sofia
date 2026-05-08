@@ -7,10 +7,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react'
-import {
-  type AccountAtom,
-  useSearchAccounts,
-} from '@/hooks/useSearchAccounts'
+import { type AccountAtom, useSearchAccounts } from '@/hooks/useSearchAccounts'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 
 const TOPIC_PREVIEW_COUNT = 6
@@ -301,7 +298,9 @@ export default function CreateCircleDrawer({
             </div>
             <div className="cc-topics">
               {visibleTopics.length === 0 && (
-                <span className="cc-help">No theme matches “{topicQuery}”.</span>
+                <span className="cc-help">
+                  No theme matches “{topicQuery}”.
+                </span>
               )}
               {visibleTopics.map((t) => {
                 const active = draft.topicId === t.id

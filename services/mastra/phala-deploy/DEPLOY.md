@@ -50,26 +50,26 @@ image: maximesaintjoannis/sofia-mastra:v1.5.0
 
 ### 2.3 Variables d'environnement (UI Phala)
 
-| Variable | Description |
-|---|---|
-| `GAIANET_NODE_URL` | URL de ton noeud GaiaNet |
-| `GAIANET_MODEL` | Modèle principal (ex: `Qwen2.5-14B-Instruct-Q5_K_M`) |
-| `GAIANET_TEXT_MODEL_SMALL` | Modèle small |
-| `GAIANET_TEXT_MODEL_LARGE` | Modèle large |
-| `GAIANET_EMBEDDING_MODEL` | Modèle d'embeddings |
-| `GAIANET_EMBEDDING_URL` | URL embeddings (`/v1/embeddings`) |
-| `USE_EMBEDDINGS` | `true` |
-| `NODE_ENV` | `production` |
-| `DATABASE_URL` | `file:/dstack/data/mastra.db` (volume DStack chiffré) |
-| `TOKEN_ENCRYPTION_KEY` | 32 bytes hex (64 chars) — REQUIS pour OAuth tokens |
-| `MCP_SERVER_URL` | URL externe MCP (Coolify) ou vide si chatbot désactivé |
-| `BOT_PRIVATE_KEY` | Clé privée du bot Human Attestor |
-| `TWITCH_CLIENT_ID` | OAuth Twitch |
+| Variable                   | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `GAIANET_NODE_URL`         | URL de ton noeud GaiaNet                               |
+| `GAIANET_MODEL`            | Modèle principal (ex: `Qwen2.5-14B-Instruct-Q5_K_M`)   |
+| `GAIANET_TEXT_MODEL_SMALL` | Modèle small                                           |
+| `GAIANET_TEXT_MODEL_LARGE` | Modèle large                                           |
+| `GAIANET_EMBEDDING_MODEL`  | Modèle d'embeddings                                    |
+| `GAIANET_EMBEDDING_URL`    | URL embeddings (`/v1/embeddings`)                      |
+| `USE_EMBEDDINGS`           | `true`                                                 |
+| `NODE_ENV`                 | `production`                                           |
+| `DATABASE_URL`             | `file:/dstack/data/mastra.db` (volume DStack chiffré)  |
+| `TOKEN_ENCRYPTION_KEY`     | 32 bytes hex (64 chars) — REQUIS pour OAuth tokens     |
+| `MCP_SERVER_URL`           | URL externe MCP (Coolify) ou vide si chatbot désactivé |
+| `BOT_PRIVATE_KEY`          | Clé privée du bot Human Attestor                       |
+| `TWITCH_CLIENT_ID`         | OAuth Twitch                                           |
 
 ### 2.4 Volume DStack chiffré
 
-| Mount Path | Description |
-|---|---|
+| Mount Path     | Description                                  |
+| -------------- | -------------------------------------------- |
 | `/dstack/data` | LibSQL persisté (`mastra.db` + tokens OAuth) |
 
 ## Étape 3 — Vérification
@@ -131,11 +131,11 @@ pour que docker-compose les pioche.
 
 ## Endpoints Mastra
 
-| Endpoint | Description |
-|---|---|
-| `GET /api/health` | Health check |
-| `POST /api/agents/{agentId}/generate` | Générer une réponse |
-| `POST /api/agents/{agentId}/stream` | Streaming |
+| Endpoint                               | Description          |
+| -------------------------------------- | -------------------- |
+| `GET /api/health`                      | Health check         |
+| `POST /api/agents/{agentId}/generate`  | Générer une réponse  |
+| `POST /api/agents/{agentId}/stream`    | Streaming            |
 | `POST /api/workflows/{workflowId}/run` | Exécuter un workflow |
 
 ### Agents disponibles
@@ -158,17 +158,21 @@ pour que docker-compose les pioche.
 ## Troubleshooting
 
 ### Mastra crash avec "MCP unavailable at boot — chatbot tools disabled"
+
 C'est un warning, pas un crash. Mastra démarre, le chatbot répond sans
 les tools Intuition. Configure `MCP_SERVER_URL` quand tu veux activer
 le chatbot complet.
 
 ### Container reboot loop
+
 Vérifier les logs Phala. Causes communes :
+
 - `TOKEN_ENCRYPTION_KEY` manquant ou mal formé (doit être 64 chars hex)
 - `BOT_PRIVATE_KEY` invalide
 - Volume `/dstack/data` non monté → SQLite "unable to open database"
 - `GAIANET_NODE_URL` inaccessible depuis le TEE
 
 ### Database not persisted between restarts
+
 Vérifier que le volume `/dstack/data` est bien monté dans la config Phala.
 Sans volume, la SQLite est éphémère.

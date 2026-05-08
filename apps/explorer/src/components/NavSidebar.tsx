@@ -102,7 +102,6 @@ export function NavSidebar({
     displayAddr ||
     'User'
 
-
   const navItems: {
     to: string
     icon: typeof Home

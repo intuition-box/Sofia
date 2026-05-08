@@ -36,8 +36,8 @@ export default function GroupDetailPage() {
 
   const isAlreadyMember = Boolean(
     group &&
-      userAccountAtom &&
-      group.memberships.some((m) => m.member.termId === userAccountAtom),
+    userAccountAtom &&
+    group.memberships.some((m) => m.member.termId === userAccountAtom),
   )
 
   const cartId = termId ? `join-${termId}` : ''

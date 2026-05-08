@@ -14,7 +14,4 @@ export {
 } from './wsClient'
 export * from './constants'
 export * from './generated/index'
-export {
-  type AccountAtom,
-  searchAccounts,
-} from './hooks/useSearchAccounts'
+export { type AccountAtom, searchAccounts } from './hooks/useSearchAccounts'

@@ -9,11 +9,7 @@ interface CreateCircleCardProps {
 
 export default function CreateCircleCard({ onClick }: CreateCircleCardProps) {
   return (
-    <button
-      type="button"
-      className="cr-card cr-card-new"
-      onClick={onClick}
-    >
+    <button type="button" className="cr-card cr-card-new" onClick={onClick}>
       <span className="cr-card-new-plus">+</span>
       <span className="cr-card-new-label">Create a circle</span>
     </button>

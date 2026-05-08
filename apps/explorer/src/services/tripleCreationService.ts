@@ -55,6 +55,7 @@ async function tripleExistsOnChain(tripleId: string): Promise<boolean> {
       abi: SofiaFeeProxyAbi,
       functionName: 'getTriple',
       args: [tripleId as `0x${string}`],
+      authorizationList: undefined,
     })) as readonly [string, string, string]
     const [s, , o] = result
     // Zero-tuple = does not exist (contract sometimes returns it instead
@@ -97,6 +98,7 @@ export async function executeCreateTriple(
         predicateId as `0x${string}`,
         objectId as `0x${string}`,
       ],
+      authorizationList: undefined,
     })) as `0x${string}`
 
     // Idempotent path — if the triple already exists on-chain (indexer
@@ -109,6 +111,7 @@ export async function executeCreateTriple(
         abi: SofiaFeeProxyAbi,
         functionName: 'getTotalDepositCost',
         args: [signalDeposit],
+        authorizationList: undefined,
       })) as bigint
       const depositArgs = [
         address,
@@ -145,6 +148,7 @@ export async function executeCreateTriple(
       address: PROXY_ADDRESS,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTripleCost',
+      authorizationList: undefined,
     })) as bigint
     const multiVaultCost = tripleCost + signalDeposit
     const totalCost = (await publicClient.readContract({
@@ -152,6 +156,7 @@ export async function executeCreateTriple(
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalCreationCost',
       args: [1n, signalDeposit, multiVaultCost],
+      authorizationList: undefined,
     })) as bigint
 
     const args = [
@@ -214,8 +219,7 @@ export async function executeCreateTriplesBatch(
   wallet: WalletDescriptor,
   items: BatchCreateTripleItem[],
 ): Promise<CreateTripleResult> {
-  if (items.length === 0)
-    return { success: false, error: 'No items' }
+  if (items.length === 0) return { success: false, error: 'No items' }
 
   try {
     const { address, client } = await buildWalletClient(wallet)
@@ -237,6 +241,7 @@ export async function executeCreateTriplesBatch(
           item.predicateId as `0x${string}`,
           item.objectId as `0x${string}`,
         ],
+        authorizationList: undefined,
       })) as `0x${string}`
       calculated.push({
         item,
@@ -253,15 +258,11 @@ export async function executeCreateTriplesBatch(
 
     // Path 1 — mint the new triples in one batched tx.
     if (toCreate.length > 0) {
-      const subjectIds = toCreate.map(
-        (c) => c.item.subjectId as `0x${string}`,
-      )
+      const subjectIds = toCreate.map((c) => c.item.subjectId as `0x${string}`)
       const predicateIds = toCreate.map(
         (c) => c.item.predicateId as `0x${string}`,
       )
-      const objectIds = toCreate.map(
-        (c) => c.item.objectId as `0x${string}`,
-      )
+      const objectIds = toCreate.map((c) => c.item.objectId as `0x${string}`)
       const assets = toCreate.map((c) =>
         BigInt(Math.floor(c.item.signalTrust * 1e18)),
       )
@@ -271,6 +272,7 @@ export async function executeCreateTriplesBatch(
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'getTripleCost',
+        authorizationList: undefined,
       })) as bigint
       const multiVaultCost = tripleCost * BigInt(toCreate.length) + totalDeposit
       const totalCost = (await publicClient.readContract({
@@ -278,6 +280,7 @@ export async function executeCreateTriplesBatch(
         abi: SofiaFeeProxyAbi,
         functionName: 'getTotalCreationCost',
         args: [BigInt(toCreate.length), totalDeposit, multiVaultCost],
+        authorizationList: undefined,
       })) as bigint
 
       const args = [
@@ -332,6 +335,7 @@ export async function executeCreateTriplesBatch(
         abi: SofiaFeeProxyAbi,
         functionName: 'calculateDepositFee',
         args: [BigInt(toDeposit.length), totalDeposit],
+        authorizationList: undefined,
       })) as bigint
       const totalValue = totalDeposit + fee
 

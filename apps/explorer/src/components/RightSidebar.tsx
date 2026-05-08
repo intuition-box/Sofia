@@ -37,9 +37,7 @@ function RightSidebarContent() {
   const { getDisplay, getAvatar } = useEnsNames(topAddresses)
 
   return (
-    <aside
-      className="fixed right-0 top-0 overflow-y-auto z-40 rs-aside"
-    >
+    <aside className="fixed right-0 top-0 overflow-y-auto z-40 rs-aside">
       <div className="p-4 space-y-6">
         {injected ?? (
           <>

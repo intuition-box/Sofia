@@ -23,9 +23,7 @@ interface Result {
   error: string | null
 }
 
-export function useUserAccountAtom(
-  address: string | undefined,
-): Result {
+export function useUserAccountAtom(address: string | undefined): Result {
   const checksum = useMemo(() => {
     if (!address) return null
     try {

@@ -92,11 +92,7 @@ export default function BillingPage() {
   return (
     <div className="pf-view bp-page">
       <div className="pf-ts-back-row">
-        <button
-          type="button"
-          className="pf-btn"
-          onClick={() => navigate(-1)}
-        >
+        <button type="button" className="pf-btn" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
@@ -107,7 +103,11 @@ export default function BillingPage() {
         description="Pick the plan that matches how you want to host circles, sponsor actions and grow your community."
       />
 
-      <div className="bp-period-toggle" role="tablist" aria-label="Billing period">
+      <div
+        className="bp-period-toggle"
+        role="tablist"
+        aria-label="Billing period"
+      >
         <button
           type="button"
           role="tab"
@@ -196,10 +196,7 @@ export default function BillingPage() {
       <footer className="bp-footnote">
         Prices in USD. Cancel anytime; downgrades take effect at the end of the
         current billing period. Need a custom enterprise plan?{' '}
-        <a
-          href="mailto:hello@sofia.intuition.box"
-          className="bp-footnote-link"
-        >
+        <a href="mailto:hello@sofia.intuition.box" className="bp-footnote-link">
           Talk to us
         </a>
         .

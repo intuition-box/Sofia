@@ -15,7 +15,9 @@ export default function Auth(): JSX.Element {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const target =
-      EXPLORER_AUTH_URL + (window.location.search || '') + (window.location.hash || '')
+      EXPLORER_AUTH_URL +
+      (window.location.search || '') +
+      (window.location.hash || '')
     window.location.replace(target)
   }, [])
 
@@ -35,8 +37,8 @@ export default function Auth(): JSX.Element {
       >
         <h1 style={{ margin: 0 }}>Redirecting to Explorer…</h1>
         <p style={{ opacity: 0.7, maxWidth: '36rem' }}>
-          Wallet connection lives in the Sofia Explorer app. You'll be
-          forwarded automatically.
+          Wallet connection lives in the Sofia Explorer app. You'll be forwarded
+          automatically.
         </p>
         <p>
           <a href={EXPLORER_AUTH_URL}>Continue to Explorer</a>

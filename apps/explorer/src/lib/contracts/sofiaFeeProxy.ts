@@ -165,49 +165,41 @@ export const SofiaFeeProxyAbi = [
   {
     type: 'error',
     name: 'MultiVault_AtomExists',
-    inputs: [
-      { name: 'atomData', type: 'bytes', internalType: 'bytes' },
-    ],
+    inputs: [{ name: 'atomData', type: 'bytes', internalType: 'bytes' }],
   },
   {
     type: 'error',
     name: 'MultiVault_AtomDoesNotExist',
-    inputs: [
-      { name: 'atomId', type: 'bytes32', internalType: 'bytes32' },
-    ],
+    inputs: [{ name: 'atomId', type: 'bytes32', internalType: 'bytes32' }],
   },
   {
     type: 'error',
     name: 'MultiVaultCore_AtomDoesNotExist',
-    inputs: [
-      { name: 'termId', type: 'bytes32', internalType: 'bytes32' },
-    ],
+    inputs: [{ name: 'termId', type: 'bytes32', internalType: 'bytes32' }],
   },
   {
     type: 'error',
     name: 'MultiVault_TermDoesNotExist',
-    inputs: [
-      { name: 'termId', type: 'bytes32', internalType: 'bytes32' },
-    ],
+    inputs: [{ name: 'termId', type: 'bytes32', internalType: 'bytes32' }],
   },
   {
     type: 'error',
     name: 'MultiVaultCore_TermDoesNotExist',
-    inputs: [
-      { name: 'termId', type: 'bytes32', internalType: 'bytes32' },
-    ],
+    inputs: [{ name: 'termId', type: 'bytes32', internalType: 'bytes32' }],
   },
   {
     type: 'error',
     name: 'MultiVaultCore_TripleDoesNotExist',
-    inputs: [
-      { name: 'termId', type: 'bytes32', internalType: 'bytes32' },
-    ],
+    inputs: [{ name: 'termId', type: 'bytes32', internalType: 'bytes32' }],
   },
   { type: 'error', name: 'MultiVault_TermNotTriple', inputs: [] },
   { type: 'error', name: 'MultiVault_DepositBelowMinimumDeposit', inputs: [] },
   { type: 'error', name: 'MultiVault_DepositOrRedeemZeroShares', inputs: [] },
-  { type: 'error', name: 'MultiVault_DepositTooSmallToCoverMinShares', inputs: [] },
+  {
+    type: 'error',
+    name: 'MultiVault_DepositTooSmallToCoverMinShares',
+    inputs: [],
+  },
   { type: 'error', name: 'MultiVault_HasCounterStake', inputs: [] },
   { type: 'error', name: 'MultiVault_SlippageExceeded', inputs: [] },
   { type: 'error', name: 'MultiVault_InsufficientAssets', inputs: [] },
@@ -222,8 +214,16 @@ export const SofiaFeeProxyAbi = [
     ],
   },
   { type: 'error', name: 'MultiVault_InsufficientSharesInVault', inputs: [] },
-  { type: 'error', name: 'MultiVault_CannotDirectlyInitializeCounterTriple', inputs: [] },
-  { type: 'error', name: 'MultiVault_DefaultCurveMustBeInitializedViaCreatePaths', inputs: [] },
+  {
+    type: 'error',
+    name: 'MultiVault_CannotDirectlyInitializeCounterTriple',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'MultiVault_DefaultCurveMustBeInitializedViaCreatePaths',
+    inputs: [],
+  },
   { type: 'error', name: 'MultiVault_NoAtomDataProvided', inputs: [] },
   { type: 'error', name: 'MultiVault_AtomDataTooLong', inputs: [] },
   { type: 'error', name: 'MultiVault_OnlyAssociatedAtomWallet', inputs: [] },

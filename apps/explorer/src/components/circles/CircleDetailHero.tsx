@@ -108,10 +108,7 @@ export default function CircleDetailHero({
           </div>
           <div className="crd-actions-sub">actions left this month</div>
           <div className="crd-actions-bar">
-            <div
-              className="crd-actions-fill"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="crd-actions-fill" style={{ width: `${pct}%` }} />
           </div>
           <div className="crd-actions-meta">
             <span>~{perMember} per member</span>

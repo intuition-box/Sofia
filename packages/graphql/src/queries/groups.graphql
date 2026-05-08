@@ -6,11 +6,7 @@
 
 # Paginated list of every `is_member_of` triple — service derives the
 # group catalogue by bucketing the rows by `object.term_id`.
-query GetGroupsList(
-  $predicateId: String!
-  $limit: Int!
-  $offset: Int!
-) {
+query GetGroupsList($predicateId: String!, $limit: Int!, $offset: Int!) {
   triples(
     where: { predicate_id: { _eq: $predicateId } }
     order_by: { created_at: desc }

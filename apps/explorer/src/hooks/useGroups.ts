@@ -21,7 +21,10 @@ const GC_TIME_MS = 60 * 60 * 1000
 interface PersistedMembership extends Omit<GroupMembership, 'totalShares'> {
   totalShares: string
 }
-interface PersistedGroup extends Omit<GroupEntry, 'totalShares' | 'memberships'> {
+interface PersistedGroup extends Omit<
+  GroupEntry,
+  'totalShares' | 'memberships'
+> {
   totalShares: string
   memberships: PersistedMembership[]
 }
@@ -81,7 +84,11 @@ export function useGroups(): {
   return {
     groups,
     isLoading,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
     refresh: () => {
       refetch()
     },
@@ -113,7 +120,11 @@ export function useGroupDetail(termId: string | undefined): {
   return {
     group,
     isLoading: enabled && isLoading,
-    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null,
   }
 }
 
@@ -127,9 +138,7 @@ export function useUserGroups(
     if (!addresses || addresses.length === 0) return []
     const wallets = new Set(addresses.map((a) => a.toLowerCase()))
     return groups.filter((g) =>
-      g.memberships.some((m) =>
-        m.voucherWallets.some((w) => wallets.has(w)),
-      ),
+      g.memberships.some((m) => m.voucherWallets.some((w) => wallets.has(w))),
     )
   }, [groups, addresses])
 }

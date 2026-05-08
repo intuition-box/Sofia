@@ -101,4 +101,3 @@ export async function searchAccounts(query: string): Promise<AccountAtom[]> {
     return []
   }
 }
-

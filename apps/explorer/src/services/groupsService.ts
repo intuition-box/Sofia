@@ -76,8 +76,7 @@ function toMembership(triple: RawTriple): GroupMembership | null {
     value?.person?.description ??
     value?.organization?.description ??
     ''
-  const accountWallet =
-    value?.account?.id?.toLowerCase() ?? null
+  const accountWallet = value?.account?.id?.toLowerCase() ?? null
 
   const voucherWallets = new Set<string>()
   let totalShares = 0n
@@ -128,10 +127,7 @@ function aggregateByObject(triples: RawTriple[]): GroupEntry[] {
       value?.person?.description ??
       ''
     const objUrl =
-      value?.thing?.url ??
-      value?.organization?.url ??
-      value?.person?.url ??
-      ''
+      value?.thing?.url ?? value?.organization?.url ?? value?.person?.url ?? ''
     const objImage =
       value?.thing?.image ??
       value?.organization?.image ??

@@ -11,7 +11,7 @@
     "dev:extension": "bun run --filter extension dev",
     "dev:og": "bun run --filter og dev",
     "dev:doc": "bun run --filter doc start",
-    "dev:landing" : "bun run --filter landing dev",
+    "dev:landing": "bun run --filter landing dev",
     "dev:mastra": "bun run --filter mastra dev",
     "dev:mcp": "bun run --filter mcp-server start:http",
     "dev:stack": "concurrently -n mcp,mastra -c blue,green \"bun run dev:mcp\" \"bun run dev:mastra\"",

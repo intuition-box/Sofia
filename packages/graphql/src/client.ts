@@ -110,7 +110,8 @@ const isDev = (() => {
   } catch {
     // ignored — non-Vite consumer
   }
-  const proc = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process
+  const proc = (globalThis as { process?: { env?: { NODE_ENV?: string } } })
+    .process
   return !!proc && proc.env?.NODE_ENV !== 'production'
 })()
 
