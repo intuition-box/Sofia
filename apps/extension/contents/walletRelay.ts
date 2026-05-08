@@ -9,6 +9,19 @@ export const config: PlasmoCSConfig = {
   // Default world is ISOLATED - can communicate with chrome.runtime
 }
 
+// Singleton guard — prevents double registration of listeners when the content
+// script is re-injected (Plasmo HMR, extension reload during dev). Without this,
+// every wallet RPC would be relayed N times, producing N duplicated TXs.
+const SINGLETON_FLAG = "__sofiaWalletRelayInitialized" as const
+if ((globalThis as unknown as Record<string, boolean>)[SINGLETON_FLAG]) {
+  logger.warn("Wallet relay already initialized on this page — skipping re-init")
+} else {
+  ;(globalThis as unknown as Record<string, boolean>)[SINGLETON_FLAG] = true
+  initRelay()
+}
+
+function initRelay() {
+
 // Pending requests waiting for response from MAIN world
 const pendingRequests = new Map<string, (response: any) => void>()
 
@@ -76,3 +89,4 @@ window.addEventListener("message", (event) => {
 })
 
 logger.info("Relay initialized")
+}
