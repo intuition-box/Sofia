@@ -22,11 +22,16 @@ export function estimateCertificationCost(
   protocolCosts: ProtocolCosts,
   options?: {
     isNewTriple?: boolean
+    /** Number of new object atoms (URLs) to create */
     newAtomCount?: number
+    /** Number of new predicate atoms to create (testnet predicates without pre-defined ID) */
+    newPredicateAtomCount?: number
     /** Number of items in the batch (default 1) */
     itemCount?: number
     /** Number of context triples (TX2) — each costs tripleCost + min deposit */
     contextTripleCount?: number
+    /** True if "in context of" predicate atom must be created (mainnet first use) */
+    needsContextPredicateAtom?: boolean
     /** Platform pool percentage (0-100000, same denominator as GS) */
     ppPercentage?: number
   }
@@ -35,9 +40,13 @@ export function estimateCertificationCost(
   const { tripleCost, atomCost } = protocolCosts
   const isNewTriple = options?.isNewTriple ?? false
   const newAtomCount = options?.newAtomCount ?? 0
+  const newPredicateAtomCount = options?.newPredicateAtomCount ?? 0
   const itemCount = options?.itemCount ?? 1
   const contextTripleCount = options?.contextTripleCount ?? 0
+  const needsContextPredicateAtom = options?.needsContextPredicateAtom ?? false
   const ppPercentage = options?.ppPercentage ?? 0
+
+  const atomCostTrust = Number(atomCost) / 1e18
 
   // --- Deposit split (GS + Platform Pool) ---
   const poolFraction = gsPercentage / gsDenominator
@@ -62,8 +71,9 @@ export function estimateCertificationCost(
   const creationFixedPerUnit = Number(creationFixed) / 1e18
   let creationFixedFeeTotal = 0
   if (isNewTriple) {
-    // Each item = 1 triple creation + newAtomCount atom creations
-    creationFixedFeeTotal = creationFixedPerUnit * (itemCount + newAtomCount)
+    // Each item = 1 triple creation + newAtomCount object atoms + newPredicateAtomCount predicate atoms
+    creationFixedFeeTotal =
+      creationFixedPerUnit * (itemCount + newAtomCount + newPredicateAtomCount)
   }
 
   // --- Creation costs (full mandatory cost from MultiVault on CREATE path) ---
@@ -71,10 +81,12 @@ export function estimateCertificationCost(
   let creationCost = 0
   if (isNewTriple) {
     creationCost += (Number(tripleCost) / 1e18) * itemCount
-    creationCost += (Number(atomCost) / 1e18) * newAtomCount
+    creationCost += atomCostTrust * (newAtomCount + newPredicateAtomCount)
   }
 
   // --- TX2: Context triple costs (min deposit + creation per context triple) ---
+  // If "in context of" predicate atom is missing, an extra createAtoms TX precedes
+  // the context createTriples — adds atomCost + creationFixedFee (one-time for the batch).
   let contextTripleCost = 0
   if (contextTripleCount > 0) {
     const minDeposit = 0.01 // MIN_TRIPLE_DEPOSIT in TRUST
@@ -83,10 +95,14 @@ export function estimateCertificationCost(
     const ctxSofiaFixed = fixedFeePerDeposit * contextTripleCount
     const ctxSofiaPct = pctRate * (minDeposit * contextTripleCount)
     const ctxCreationFixed = creationFixedPerUnit * contextTripleCount
+    const ctxPredicateAtomCost = needsContextPredicateAtom
+      ? atomCostTrust + creationFixedPerUnit
+      : 0
     contextTripleCost =
       (ctxTripleCost * contextTripleCount) +
       (minDeposit * contextTripleCount) +
-      ctxSofiaFixed + ctxSofiaPct + ctxCreationFixed
+      ctxSofiaFixed + ctxSofiaPct + ctxCreationFixed +
+      ctxPredicateAtomCost
   }
 
   // --- Post-create deposit fees (GS + PP are deposited in separate TX after creation) ---
