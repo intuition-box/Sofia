@@ -10,11 +10,24 @@ import type { ReactNode } from 'react'
 export interface CartItem {
   id: string
   side: 'support' | 'oppose'
+  /** Existing-triple termId for deposits, or the deterministic tripleId
+   *  (calculated client-side via SofiaFeeProxy.calculateTripleId) for
+   *  brand-new create-triple items. Used as the dedupe key in the cart. */
   termId: string
   intention: string
   title: string
   favicon: string
   intentionColor: string
+  /** When 'create-triple', WeightModal mints the triple via
+   *  SofiaFeeProxy.createTriples instead of depositing on an existing
+   *  termId. Defaults to 'deposit' for back-compat with existing
+   *  callers (Support/Oppose, Interest, Trust). */
+  kind?: 'deposit' | 'create-triple'
+  /** Required when `kind === 'create-triple'`. The atom term_ids that
+   *  identify the new triple's subject / predicate / object. */
+  subjectId?: string
+  predicateId?: string
+  objectId?: string
 }
 
 interface CartContextValue {

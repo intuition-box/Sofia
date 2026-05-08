@@ -8,10 +8,15 @@
  */
 
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, UserPlus, Check } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useGroupDetail } from '@/hooks/useGroups'
+import { useUserAccountAtom } from '@/hooks/useUserAccountAtom'
+import { useCart } from '@/hooks/useCart'
+import { PREDICATE_IDS } from '@/config'
 import { extractDomain } from '@/utils/formatting'
+import { Button } from '@/components/ui/button'
 import '@/components/styles/pages.css'
 import '@/components/styles/circles.css'
 import '@/components/styles/feed-card.css'
@@ -20,6 +25,53 @@ export default function GroupDetailPage() {
   const navigate = useNavigate()
   const { termId } = useParams<{ termId: string }>()
   const { group, isLoading } = useGroupDetail(termId)
+  const { user, authenticated } = usePrivy()
+  const userWallet = user?.wallet?.address
+  const {
+    termId: userAccountAtom,
+    exists: accountAtomExists,
+    isLoading: accountAtomLoading,
+  } = useUserAccountAtom(userWallet)
+  const cart = useCart()
+
+  const isAlreadyMember = Boolean(
+    group &&
+      userAccountAtom &&
+      group.memberships.some((m) => m.member.termId === userAccountAtom),
+  )
+
+  const cartId = termId ? `join-${termId}` : ''
+  const isInCart = cart.items.some((i) => i.id === cartId)
+
+  const blockedReason: 'no-wallet' | 'no-account-atom' | 'loading' | null =
+    !authenticated
+      ? 'no-wallet'
+      : accountAtomLoading
+        ? 'loading'
+        : !accountAtomExists
+          ? 'no-account-atom'
+          : null
+
+  const handleAddToCart = () => {
+    if (!termId || !userAccountAtom || !group) return
+    cart.addItem({
+      id: cartId,
+      kind: 'create-triple',
+      side: 'support',
+      // Placeholder termId for cart dedupe — the real triple_id is
+      // computed inside the SofiaFeeProxy.calculateTripleId call when
+      // the cart submits. We use a deterministic prefix so the cart's
+      // own dedupe (`(termId, side)` pair) matches per-group.
+      termId: `triple-${termId}`,
+      subjectId: userAccountAtom,
+      predicateId: PREDICATE_IDS.MEMBER_OF,
+      objectId: termId,
+      intention: 'Join group',
+      title: group.label,
+      favicon: group.image ?? '',
+      intentionColor: '#a78bdb',
+    })
+  }
 
   if (!termId) {
     return (
@@ -66,7 +118,14 @@ export default function GroupDetailPage() {
           group.description ||
           `${group.memberCount} claimed member${group.memberCount === 1 ? '' : 's'} · ${group.voucherCount} voucher${group.voucherCount === 1 ? '' : 's'}.`
         }
-      />
+      >
+        <JoinButton
+          isAlreadyMember={isAlreadyMember}
+          isInCart={isInCart}
+          blockedReason={blockedReason}
+          onJoin={handleAddToCart}
+        />
+      </PageHero>
 
       {(group.url || group.image) && (
         <div className="grp-meta-row">
@@ -143,6 +202,65 @@ function BackRow({ onBack }: { onBack: () => void }) {
         <ArrowLeft className="h-4 w-4" />
         Back to circles
       </button>
+    </div>
+  )
+}
+
+interface JoinButtonProps {
+  isAlreadyMember: boolean
+  isInCart: boolean
+  blockedReason: 'no-wallet' | 'no-account-atom' | 'loading' | null
+  onJoin: () => void
+}
+
+function JoinButton({
+  isAlreadyMember,
+  isInCart,
+  blockedReason,
+  onJoin,
+}: JoinButtonProps) {
+  if (isAlreadyMember) {
+    return (
+      <div className="grp-join-row">
+        <span className="grp-join-status grp-join-status--member">
+          ✓ You&apos;re a member
+        </span>
+      </div>
+    )
+  }
+
+  if (isInCart) {
+    return (
+      <div className="grp-join-row">
+        <span className="grp-join-status grp-join-status--member">
+          <Check className="h-3.5 w-3.5" /> Added to cart — confirm in the
+          drawer
+        </span>
+      </div>
+    )
+  }
+
+  const blockedHint =
+    blockedReason === 'no-wallet'
+      ? 'Connect your wallet to join'
+      : blockedReason === 'no-account-atom'
+        ? 'Make any cert first to register your account on Intuition'
+        : blockedReason === 'loading'
+          ? 'Resolving your identity…'
+          : null
+
+  return (
+    <div className="grp-join-row">
+      <Button
+        type="button"
+        size="sm"
+        disabled={blockedReason !== null}
+        onClick={onJoin}
+      >
+        <UserPlus className="h-4 w-4 mr-2" />
+        Join group
+      </Button>
+      {blockedHint && <span className="grp-join-hint">{blockedHint}</span>}
     </div>
   )
 }

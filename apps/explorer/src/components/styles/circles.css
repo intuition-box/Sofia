@@ -166,6 +166,35 @@
 }
 
 /* ── GroupDetailPage ────────────────────────────────────────────── */
+.grp-join-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.grp-join-hint {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.grp-join-error {
+  font-size: 12px;
+  color: var(--distrusted, #e87c7c);
+}
+.grp-join-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+}
+.grp-join-status--member {
+  color: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+}
+
 .grp-meta-row {
   display: flex;
   align-items: center;

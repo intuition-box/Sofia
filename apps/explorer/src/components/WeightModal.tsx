@@ -1,10 +1,17 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL } from '../config'
 import { intentionBadgeStyle } from '../config/intentions'
+import {
+  executeCreateTriplesBatch,
+  type BatchCreateTripleItem,
+  type CreateTripleResult,
+} from '../services/tripleCreationService'
 import SofiaLoader from './ui/SofiaLoader'
 import './styles/weight-modal.css'
 
@@ -26,14 +33,28 @@ export default function WeightModal({
   const [weights, setWeights] = useState<number[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [balance, setBalance] = useState<string | null>(null)
-  const { depositBatch, processing, txResult, reset, getBalance } = useDeposit()
+  const [createTripleProcessing, setCreateTripleProcessing] = useState(false)
+  const [createTripleResult, setCreateTripleResult] =
+    useState<CreateTripleResult | null>(null)
+  const {
+    depositBatch,
+    processing: depositProcessing,
+    txResult: depositTxResult,
+    reset,
+    getBalance,
+  } = useDeposit()
   const { estimate } = useFeeEstimate()
+  const { authenticated } = usePrivy()
+  const { wallets } = useWallets()
+  const qc = useQueryClient()
 
   useEffect(() => {
     if (isOpen && items.length > 0) {
       setWeights(new Array(items.length).fill(0.5))
       setCustomValues(new Array(items.length).fill(''))
       reset()
+      setCreateTripleResult(null)
+      setCreateTripleProcessing(false)
       getBalance().then(setBalance)
     }
   }, [isOpen, items.length, getBalance, reset])
@@ -81,17 +102,82 @@ export default function WeightModal({
     })
   }
 
-  const handleSubmit = async () => {
-    const batchItems = items.map((item, i) => ({
-      termId: item.termId,
-      amountTrust: getAmount(i),
-    }))
-    const result = await depositBatch(batchItems)
-    if (result.success) onSuccess()
-  }
+  // Cart items split by kind so we route to the right contract call.
+  // create-triple items go through `executeCreateTriplesBatch` (mints
+  // the new triple + initial deposit), classic deposit items keep
+  // using `useDeposit.depositBatch`.
+  const handleSubmit = useCallback(async () => {
+    const depositItems: { termId: string; amountTrust: number }[] = []
+    const createItems: BatchCreateTripleItem[] = []
+    items.forEach((item, i) => {
+      const amount = getAmount(i)
+      if (
+        item.kind === 'create-triple' &&
+        item.subjectId &&
+        item.predicateId &&
+        item.objectId
+      ) {
+        createItems.push({
+          subjectId: item.subjectId,
+          predicateId: item.predicateId,
+          objectId: item.objectId,
+          signalTrust: amount,
+        })
+      } else {
+        depositItems.push({ termId: item.termId, amountTrust: amount })
+      }
+    })
+
+    let allOk = true
+
+    if (depositItems.length > 0) {
+      const r = await depositBatch(depositItems)
+      if (!r.success) allOk = false
+    }
+
+    if (createItems.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({
+          success: false,
+          error: 'No wallet connected',
+        })
+        allOk = false
+      } else {
+        setCreateTripleProcessing(true)
+        setCreateTripleResult(null)
+        try {
+          const r = await executeCreateTriplesBatch(wallets[0], createItems)
+          setCreateTripleResult(r)
+          if (!r.success) {
+            allOk = false
+          } else {
+            // Group panels read these queries, refresh after a join so
+            // the user shows up immediately.
+            qc.invalidateQueries({ queryKey: ['groups-list'] })
+            qc.invalidateQueries({ queryKey: ['group-detail'] })
+          }
+        } finally {
+          setCreateTripleProcessing(false)
+        }
+      }
+    }
+
+    if (allOk) onSuccess()
+  }, [
+    items,
+    weights,
+    customValues,
+    depositBatch,
+    authenticated,
+    wallets,
+    qc,
+    onSuccess,
+  ])
 
   const handleClose = () => {
     reset()
+    setCreateTripleResult(null)
+    setCreateTripleProcessing(false)
     onClose()
   }
 
@@ -100,6 +186,27 @@ export default function WeightModal({
     return parseFloat(val.toFixed(4)).toString()
   }
 
+  // Combine the deposit and create-triple states so the existing JSX
+  // "form / processing / success / error" branches stay coherent
+  // regardless of which contract path the cart items took. The local
+  // `processing` / `txResult` shadow the deposit-only versions so the
+  // rendering tree below doesn't have to know about the split.
+  const processing = depositProcessing || createTripleProcessing
+  const txResult = (() => {
+    if (depositTxResult && !depositTxResult.success) return depositTxResult
+    if (createTripleResult && !createTripleResult.success)
+      return {
+        success: false as const,
+        error: createTripleResult.error,
+      }
+    if (depositTxResult?.success) return depositTxResult
+    if (createTripleResult?.success)
+      return {
+        success: true as const,
+        txHash: createTripleResult.txHash,
+      }
+    return null
+  })()
   const isFormState = !txResult && !processing
 
   if (!isOpen || items.length === 0) return null
@@ -366,6 +473,7 @@ export default function WeightModal({
                 className="wm-btn wm-btn-submit"
                 onClick={() => {
                   reset()
+                  setCreateTripleResult(null)
                   handleSubmit()
                 }}
               >
