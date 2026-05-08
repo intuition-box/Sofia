@@ -1,160 +1,174 @@
-# Déploiement Sofia-Mastra sur Phala Cloud TEE
+# Sofia-Mastra — Phala Cloud TEE deployment
+
+Single-process container running Mastra alone. The Intuition MCP server
+lives outside the TEE (deployed on Coolify) since it has no secrets to
+protect. The chatbot agent gracefully degrades when MCP is unreachable.
 
 ## Prérequis
 
 - Compte Phala Cloud avec accès TEE
 - Docker installé localement
-- Image Docker buildée
+- Compte Docker Hub (ou GHCR)
 
-## Étape 1 : Build et Push de l'image Docker
+## Étape 1 — Build et push de l'image
 
-### 1.1 Build l'image
+### 1.1 Build depuis la racine du mono-repo (`core/`)
 
 ```bash
-cd sofia-mastra
-docker build -f phala-deploy/Dockerfile -t sofia-mastra .
+cd /home/max/Project/sofia-core/core
+docker build \
+  -f services/mastra/phala-deploy/Dockerfile \
+  -t maximesaintjoannis/sofia-mastra:v1.5.0 \
+  .
 ```
 
-### 1.2 Tag l'image pour ton registry
+⚠️ Le **build context est `core/`** (le `.` à la fin). Le Dockerfile copie
+`services/mastra/` et `package.json` racine via les paths du workspace.
+
+### 1.2 Push
 
 ```bash
-# Si tu utilises Docker Hub
-docker tag sofia-mastra:latest <ton-username>/sofia-mastra:latest
-
-# Si tu utilises un autre registry (ex: GitHub Container Registry)
-docker tag sofia-mastra:latest ghcr.io/<ton-username>/sofia-mastra:latest
-```
-
-### 1.3 Push l'image
-
-```bash
-# Docker Hub
 docker login
-docker push <ton-username>/sofia-mastra:latest
-
-# GitHub Container Registry
-echo $GITHUB_TOKEN | docker login ghcr.io -u <ton-username> --password-stdin
-docker push ghcr.io/<ton-username>/sofia-mastra:latest
+docker push maximesaintjoannis/sofia-mastra:v1.5.0
 ```
 
-## Étape 2 : Déploiement sur Phala Cloud
+## Étape 2 — Déploiement Phala Cloud
 
-### 2.1 Accède à Phala Cloud Dashboard
+### 2.1 Bump de l'image dans le `docker-compose.yaml`
 
-- Va sur https://cloud.phala.network
-- Connecte-toi à ton compte
+Editer [`docker-compose.yaml`](./docker-compose.yaml) ligne 4 :
 
-### 2.2 Crée un nouveau déploiement CVM
+```yaml
+image: maximesaintjoannis/sofia-mastra:v1.5.0
+```
 
-1. Clique sur **"Deploy"** ou **"New Deployment"**
-2. Sélectionne **"Docker Image"**
-3. Entre l'URL de ton image :
-   ```
-   <ton-username>/sofia-mastra:latest
-   ```
-   ou
-   ```
-   ghcr.io/<ton-username>/sofia-mastra:latest
-   ```
+### 2.2 Redeploy via le dashboard Phala
 
-### 2.3 Configure les ports
+- https://cloud.phala.network
+- Sélectionner ton CVM `sofia-mastra`
+- "Redeploy" — il pull la nouvelle image automatiquement
 
-| Port Container | Port Public | Description |
-| -------------- | ----------- | ----------- |
-| 4111           | 4111        | Mastra API  |
+### 2.3 Variables d'environnement (UI Phala)
 
-### 2.4 Configure les volumes (IMPORTANT pour la persistance)
+| Variable | Description |
+|---|---|
+| `GAIANET_NODE_URL` | URL de ton noeud GaiaNet |
+| `GAIANET_MODEL` | Modèle principal (ex: `Qwen2.5-14B-Instruct-Q5_K_M`) |
+| `GAIANET_TEXT_MODEL_SMALL` | Modèle small |
+| `GAIANET_TEXT_MODEL_LARGE` | Modèle large |
+| `GAIANET_EMBEDDING_MODEL` | Modèle d'embeddings |
+| `GAIANET_EMBEDDING_URL` | URL embeddings (`/v1/embeddings`) |
+| `USE_EMBEDDINGS` | `true` |
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | `file:/dstack/data/mastra.db` (volume DStack chiffré) |
+| `TOKEN_ENCRYPTION_KEY` | 32 bytes hex (64 chars) — REQUIS pour OAuth tokens |
+| `MCP_SERVER_URL` | URL externe MCP (Coolify) ou vide si chatbot désactivé |
+| `BOT_PRIVATE_KEY` | Clé privée du bot Human Attestor |
+| `TWITCH_CLIENT_ID` | OAuth Twitch |
 
-| Mount Path | Description            |
-| ---------- | ---------------------- |
-| /app/data  | Base de données LibSQL |
+### 2.4 Volume DStack chiffré
 
-### 2.5 Configure les variables d'environnement
+| Mount Path | Description |
+|---|---|
+| `/dstack/data` | LibSQL persisté (`mastra.db` + tokens OAuth) |
 
-| Variable         | Valeur                         | Description                 |
-| ---------------- | ------------------------------ | --------------------------- |
-| NODE_ENV         | production                     | Mode production             |
-| GAIANET_BASE_URL | https://ton-node.gaianet.ai/v1 | URL de ton noeud GaiaNet    |
-| GAIANET_API_KEY  | (ta clé si nécessaire)         | Clé API GaiaNet (optionnel) |
-| DATABASE_URL     | file:/app/data/mastra.db       | Chemin de la base LibSQL    |
-
-### 2.6 Lance le déploiement
-
-- Clique sur **"Deploy"**
-- Attends que le status passe à **"Running"**
-
-## Étape 3 : Vérification
-
-### 3.1 Test de santé
+## Étape 3 — Vérification
 
 ```bash
+# Health check
 curl https://<ton-url-phala>/api/health
-```
 
-### 3.2 Test d'un agent
-
-```bash
+# Test agent
 curl -X POST https://<ton-url-phala>/api/agents/chatbotAgent/generate \
   -H "Content-Type: application/json" \
   -d '{"messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
-## Endpoints disponibles
+## Test local avant push
 
-Une fois déployé, tu auras accès à :
+```bash
+# 1. Génère TOKEN_ENCRYPTION_KEY si t'en as pas
+openssl rand -hex 32
 
-| Endpoint                             | Description          |
-| ------------------------------------ | -------------------- |
-| GET /api/health                      | Health check         |
-| POST /api/agents/{agentId}/generate  | Générer une réponse  |
-| POST /api/agents/{agentId}/stream    | Streaming de réponse |
-| POST /api/workflows/{workflowId}/run | Exécuter un workflow |
+# 2. Build
+cd /home/max/Project/sofia-core/core
+docker build -f services/mastra/phala-deploy/Dockerfile -t sofia-mastra:test .
+
+# 3. Démarre via docker-compose (charge .env si présent)
+cd services/mastra/phala-deploy
+docker-compose up
+
+# 4. Test
+curl http://localhost:4111/api/health
+```
+
+Crée un `.env` à côté du `docker-compose.yaml` avec les variables ci-dessus
+pour que docker-compose les pioche.
+
+## Architecture
+
+```
+┌──────────────────────────────────┐
+│  Phala TEE (CVM)                 │
+│                                  │
+│  Mastra :4111                    │
+│  - OAuth tokens (chiffrés)       │
+│  - Bot private key (TEE-protégé) │
+│  - Signal fetchers               │
+│  - Workflows onchain             │
+│  - Chatbot (sans MCP → dégradé)  │
+└──────────────────────────────────┘
+         │ HTTP (optionnel)
+         ▼
+┌──────────────────────────────────┐
+│  Coolify (self-hosted)           │
+│                                  │
+│  MCP Server :3001                │
+│  - Lecture knowledge graph       │
+│  - Aucun secret                  │
+└──────────────────────────────────┘
+```
+
+## Endpoints Mastra
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/health` | Health check |
+| `POST /api/agents/{agentId}/generate` | Générer une réponse |
+| `POST /api/agents/{agentId}/stream` | Streaming |
+| `POST /api/workflows/{workflowId}/run` | Exécuter un workflow |
 
 ### Agents disponibles
 
-- `sofiaAgent`
+- `chatbotAgent` (nécessite `MCP_SERVER_URL` pour les tools)
 - `themeExtractorAgent`
 - `pulseAgent`
 - `recommendationAgent`
-- `chatbotAgent`
-- `predicateAgent` - Génère des prédicats d'identité pour les groupes d'intention
+- `predicateAgent`
+- `skillsAnalysisAgent`
 
 ### Workflows disponibles
 
 - `sofiaWorkflow`
 - `chatbotWorkflow`
+- `socialVerifierWorkflow`
+- `linkSocialWorkflow`
+- `signalFetcherWorkflow`
 
 ## Troubleshooting
 
-### Voir les logs
+### Mastra crash avec "MCP unavailable at boot — chatbot tools disabled"
+C'est un warning, pas un crash. Mastra démarre, le chatbot répond sans
+les tools Intuition. Configure `MCP_SERVER_URL` quand tu veux activer
+le chatbot complet.
 
-Dans le dashboard Phala Cloud, clique sur ton déploiement puis sur **"Logs"**.
+### Container reboot loop
+Vérifier les logs Phala. Causes communes :
+- `TOKEN_ENCRYPTION_KEY` manquant ou mal formé (doit être 64 chars hex)
+- `BOT_PRIVATE_KEY` invalide
+- Volume `/dstack/data` non monté → SQLite "unable to open database"
+- `GAIANET_NODE_URL` inaccessible depuis le TEE
 
-### La base de données n'est pas persistée
-
-Vérifie que le volume `/app/data` est bien monté. Sans volume, les données seront perdues à chaque redémarrage.
-
-### Erreur de connexion GaiaNet
-
-Vérifie que :
-
-1. `GAIANET_BASE_URL` est correctement défini
-2. L'URL se termine par `/v1`
-3. Le noeud GaiaNet est accessible depuis l'environnement TEE
-
-### Container qui redémarre en boucle
-
-Regarde les logs pour identifier l'erreur. Causes communes :
-
-- Variables d'environnement manquantes
-- Erreur de build dans l'image
-- Port déjà utilisé
-
-## Test local avant déploiement
-
-```bash
-cd sofia-mastra/phala-deploy
-docker-compose up
-```
-
-Accède à http://localhost:4111/api/health pour vérifier.
+### Database not persisted between restarts
+Vérifier que le volume `/dstack/data` est bien monté dans la config Phala.
+Sans volume, la SQLite est éphémère.

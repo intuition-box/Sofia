@@ -1,73 +1,84 @@
-# Sofia-Mastra + Intuition MCP Server for Phala Cloud TEE deployment
-# Combined container with LibSQL storage
+# Sofia-Mastra for Phala Cloud TEE deployment.
 #
-# Build from parent directory (core/):
-#   docker build -f sofia-mastra/phala-deploy/Dockerfile -t sofia-mastra .
+# Single-process container — Mastra only. The Intuition MCP server lives
+# outside the TEE (deployed separately on Coolify) since it has no
+# secrets to protect; Mastra connects to it over HTTP via MCP_SERVER_URL
+# when chatbot tools are needed. The chatbot agent gracefully degrades
+# when MCP is unreachable.
+#
+# Build context: the mono-repo root (core/). Build command:
+#   cd core
+#   docker build -f services/mastra/phala-deploy/Dockerfile \
+#     -t sofia-mastra:vX.Y.Z .
 
-FROM node:22-slim
+FROM node:22-slim AS build
 
-# Install supervisor and build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    supervisor \
-    curl \
-    ca-certificates \
-    build-essential \
-    python3 && \
+    curl ca-certificates build-essential python3 unzip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Bun runs the workspace — the mono-repo uses bun.lock + workspaces.
+RUN curl -fsSL https://bun.sh/install | bash && \
+    ln -s /root/.bun/bin/bun /usr/local/bin/bun
 
-# ========================================
-# Build Intuition MCP Server
-# ========================================
-WORKDIR /mcp-server
+WORKDIR /repo
 
-# Copy MCP server files
-COPY intuition-mcp-server/package.json intuition-mcp-server/pnpm-lock.yaml* ./
+# Workspace manifests — bun.lock pins every workspace, so all package.json
+# files must exist before --frozen-lockfile install. Listed explicitly
+# (rather than COPY apps/*/package.json) since Docker's COPY flattens
+# wildcards and we need the directory structure preserved.
+COPY package.json bun.lock tsconfig.base.json ./
+COPY apps/explorer/package.json ./apps/explorer/
+COPY apps/extension/package.json ./apps/extension/
+COPY apps/landing/package.json ./apps/landing/
+COPY apps/doc/package.json ./apps/doc/
+COPY apps/og/package.json ./apps/og/
+COPY packages/graphql/package.json ./packages/graphql/
+COPY packages/design-system/package.json ./packages/design-system/
+COPY services/mastra/package.json ./services/mastra/
+COPY services/mcp-server/package.json ./services/mcp-server/
 
-# Install MCP server dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN bun install --frozen-lockfile
 
-# Copy MCP server source
-COPY intuition-mcp-server/ .
+# Mastra sources only — keeps the build stage focused even if other
+# workspace sources are absent.
+COPY services/mastra/ ./services/mastra/
 
-# Build MCP server
-RUN pnpm run build
+# Mastra build emits to .mastra/output/ inside the workspace package.
+RUN bun run --filter mastra build
 
-# ========================================
-# Build Sofia-Mastra
-# ========================================
+# ── Runtime stage ──────────────────────────────────────────────────
+FROM node:22-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy package files for caching
-COPY sofia-mastra/package.json sofia-mastra/pnpm-lock.yaml* ./
+# Mastra build emits a self-contained server: index.mjs (bundled) + a
+# package.json listing ONLY the OpenTelemetry deps. Externals declared
+# in mastra/index.ts (pino, pino-pretty, bufferutil, utf-8-validate)
+# stay un-bundled and must be installed alongside.
+COPY --from=build /repo/services/mastra/.mastra/output /app
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+# Install the OpenTelemetry deps from the generated package.json + the
+# bundler externals. --omit=dev keeps the image lean.
+RUN npm install --omit=dev && \
+    npm install pino pino-pretty bufferutil utf-8-validate
 
-# Copy the rest of the application
-COPY sofia-mastra/ .
+# DStack mounts the encrypted volume here in production. The .env tells
+# Mastra to write the SQLite file under this path.
+RUN mkdir -p /dstack/data
 
-# Build the application
-RUN pnpm run build
+EXPOSE 4111
 
-# Create data directory for LibSQL persistence
-RUN mkdir -p /app/data
-
-# Copy supervisor config and start script
-COPY sofia-mastra/phala-deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY sofia-mastra/phala-deploy/start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Expose ports: Mastra (4111) + MCP Server (3001)
-EXPOSE 4111 3001
-
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4111/api/health || exit 1
 
-# Start with supervisor
-ENTRYPOINT ["/start.sh"]
+# Use the start script from .mastra/output/package.json — it wires up
+# the OpenTelemetry instrumentation hooks.
+CMD ["npm", "run", "start"]
