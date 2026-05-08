@@ -1,6 +1,6 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { createBoundProvider, selectProviderByName } from '../services/walletProvider'
+import { createBoundProvider } from '../services/walletProvider'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('ViemClients')
@@ -73,18 +73,10 @@ export const getPublicClient = () => {
 
 export const getClients = async () => {
     // Capture tabId once — all wallet requests in this flow use this tab
-    // Prevents race conditions when user switches tabs during multi-step flows
+    // Prevents race conditions when user switches tabs during multi-step flows.
+    // Provider selection happens inside createBoundProvider via EIP-6963 +
+    // walletType from chrome.storage.session — no content-script handshake.
     const tabId = await ensureHttpsTabForWallet()
-
-    // Always re-select the provider on the current tab's content script.
-    // Content scripts lose their selectedProvider state on page navigation
-    // or service worker restart, causing "No wallet found" errors.
-    const storage = await chrome.storage.session.get(['walletType'])
-    if (storage.walletType) {
-        await selectProviderByName(storage.walletType, tabId)
-    }
-
-    // Create a provider bound to this specific tabId (closure, no shared state)
     const provider = createBoundProvider(tabId)
 
     const accounts = await provider.request({

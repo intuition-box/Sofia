@@ -6,7 +6,6 @@ import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import { Storage } from '@plasmohq/storage'
-import { cleanupProvider } from '../../lib/services/walletProvider'
 import { tripletsDataService, userSettingsService } from '../../lib/database'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import '../styles/Global.css'
@@ -88,9 +87,6 @@ const SettingsPage = () => {
       if (authenticated) {
         await disconnectWallet()
       }
-
-      // Clean injected provider streams
-      cleanupProvider()
 
       // Clear Plasmo storage
       await storage.clear()

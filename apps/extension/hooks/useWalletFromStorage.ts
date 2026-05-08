@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react'
 import { getAuthUrl } from '../lib/config/externalAuth'
-import { selectProviderByName, selectProviderByAddress, clearProviderSelection } from '../lib/services/walletProvider'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useWalletFromStorage')
@@ -24,7 +23,6 @@ let sharedState: WalletState = {
 }
 
 let initialized = false
-let lastSyncedKey: string | null = null
 const listeners = new Set<() => void>()
 
 function notifyListeners() {
@@ -41,58 +39,20 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
-async function syncProvider(address: string | null, type: string | null) {
-  if (!address) {
-    lastSyncedKey = null
-    return
-  }
-
-  const syncKey = `${address}-${type}`
-  if (syncKey === lastSyncedKey) return
-  lastSyncedKey = syncKey
-
-  try {
-    if (type) {
-      const result = await selectProviderByName(type)
-      if (result.found) {
-        logger.debug('Synced to provider by type', { selectedProvider: result.selectedProvider })
-        return
-      }
-      logger.warn('Wallet type not found, trying by address')
-    } else {
-      logger.warn('No walletType stored, falling back to address lookup (deprecated)')
-    }
-
-    // Deprecated fallback: query all wallets by address (may trigger popups)
-    const result = await selectProviderByAddress(address)
-    if (result.found) {
-      logger.debug('Synced to provider by address', { selectedProvider: result.selectedProvider })
-    } else {
-      logger.warn('No provider found for wallet')
-    }
-  } catch (err) {
-    logger.warn('Could not sync provider', err instanceof Error ? err.message : err)
-  }
-}
-
 function initializeStore() {
   if (initialized) return
   initialized = true
 
   // Initial read from storage
   chrome.storage.session.get(['walletAddress', 'walletType']).then(result => {
-    const address = result.walletAddress || null
-    const type = result.walletType || null
-
     sharedState = {
-      walletAddress: address,
-      walletType: type,
-      authenticated: !!address,
+      walletAddress: result.walletAddress || null,
+      walletType: result.walletType || null,
+      authenticated: !!result.walletAddress,
       isLoading: false,
       ready: true,
     }
     notifyListeners()
-    syncProvider(address, type)
   }).catch(error => {
     logger.error('Error reading wallet from storage', error)
     sharedState = { ...sharedState, isLoading: false, ready: true }
@@ -119,7 +79,6 @@ function initializeStore() {
       ready: true,
     }
     notifyListeners()
-    syncProvider(address, type)
   })
 }
 
@@ -141,7 +100,12 @@ export const openAuthTab = () => {
 }
 
 /**
- * Disconnects the wallet from extension AND from Privy on the landing page
+ * Disconnects the wallet from the extension AND from Privy on the auth page.
+ *
+ * The WALLET_DISCONNECTED message handler in background/messageHandlers.ts
+ * clears walletAddress + walletType from chrome.storage.session, which is
+ * the single source of truth for the wallet selection. No content-script
+ * provider state to clear.
  */
 export const disconnectWallet = async () => {
   // 1. Clear local state FIRST so the UI reflects disconnected immediately
@@ -153,14 +117,7 @@ export const disconnectWallet = async () => {
     await chrome.storage.session.remove(['walletAddress', 'walletType'])
   }
 
-  // 2. Clear wallet provider cache (best effort, may fail on restricted pages)
-  try {
-    await clearProviderSelection()
-  } catch (error) {
-    logger.warn('Could not clear provider selection', error)
-  }
-
-  // 3. Trigger external Privy logout last (opens a tab, may auto-reconnect)
+  // 2. Trigger external Privy logout (opens a tab, may auto-reconnect)
   try {
     await triggerExternalLogout()
   } catch (error) {

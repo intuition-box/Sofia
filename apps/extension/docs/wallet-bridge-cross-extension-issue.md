@@ -1,7 +1,10 @@
 # Wallet Bridge — Cross-Extension TX Duplication
 
-**Status:** mitigated by user-level workaround. Proper fix proposed but not yet implemented.
+**Status:** ✅ resolved by replacing the content-script bridge with `chrome.scripting.executeScript` (one-shot RPC injection). The legacy `walletBridge.ts` and `walletRelay.ts` content scripts have been removed.
 **Discovered:** May 2026, while debugging duplicated certifications on mainnet.
+**Resolved:** May 2026, see commit `refactor(extension): replace wallet bridge with chrome.scripting RPC`.
+
+The rest of this document is preserved as a historical record of the bug, the analysis, and why the chosen fix is correct.
 
 ## Symptom
 
@@ -55,11 +58,31 @@ What may have changed: with the monorepo, the dev/build feedback loop is faster 
 
 So: **not a code regression, but a workflow regression**. The monorepo enabled a usage pattern the bridge was never designed for.
 
-## Current workaround (deployed)
+## Implemented fix — `chrome.scripting.executeScript`
 
-Disable one of the two Sofia extensions at `chrome://extensions/` (toggle off) when testing the other. One click to switch.
+We replaced the persistent content-script bridge entirely with one-shot
+`chrome.scripting.executeScript` calls from the sidepanel. Every wallet RPC
+now injects a self-contained function into the active tab's MAIN world,
+discovers the user's wallet via EIP-6963, forwards the request, and returns
+the result. No persistent listeners on the page, no message bridge.
 
-## Recommended fix (not yet implemented)
+This eliminates the cross-extension duplication (each extension's
+`chrome.scripting.executeScript` call only runs in its own context), the
+page-injection attack surface (no `window.message` listener for page scripts
+to spoof), and the listener-accumulation issue on hot reload.
+
+See [lib/services/walletProvider.ts](../lib/services/walletProvider.ts) for
+the implementation. The `walletRpcFn` injected into the page is strict about
+provider selection: it requires an EIP-6963 match against the persisted
+`walletType`. No `window.ethereum` fallback, since that pointer can be
+shadowed by a malicious page script or by a wallet other than the user's
+choice.
+
+## Workaround used while the bug was unmitigated
+
+Disable one of the two Sofia extensions at `chrome://extensions/` (toggle off) when testing the other. No longer required.
+
+## Alternative fixes considered (not chosen)
 
 Add an extension-id filter to the wallet bridge so the two installs can coexist.
 
@@ -113,11 +136,14 @@ With both `DEV | Sofia BETA` and `Sofia BETA` enabled in `chrome://extensions/`:
 
 ## Related code
 
-- [contents/walletBridge.ts](../contents/walletBridge.ts) — MAIN world, message handler
-- [contents/walletRelay.ts](../contents/walletRelay.ts) — ISOLATED world, relay
-- [lib/services/walletProvider.ts](../lib/services/walletProvider.ts) — sidepanel side, sends WALLET_REQUEST
+- [lib/services/walletProvider.ts](../lib/services/walletProvider.ts) — sidepanel-side facade. Calls `chrome.scripting.executeScript` per RPC.
+- ~~`contents/walletBridge.ts`~~ — removed. MAIN-world content-script bridge.
+- ~~`contents/walletRelay.ts`~~ — removed. ISOLATED-world relay.
 
-## Already shipped (palliative)
+## Palliative fixes that preceded the chrome.scripting refactor
 
-- `walletBridge.ts` removes the previous handler before registering (`window.__sofiaWalletBridgeHandler`). Protects against same-extension hot-reload listener accumulation but **does not** address cross-extension duplication.
-- `walletRelay.ts` uses a `globalThis` singleton flag to prevent double init in the same context.
+These shipped as defense-in-depth before the full refactor and were removed
+along with the content scripts:
+
+- `walletBridge.ts` removed the previous handler before registering (`window.__sofiaWalletBridgeHandler`). Protected against same-extension hot-reload listener accumulation but did not address cross-extension duplication.
+- `walletRelay.ts` used a `globalThis` singleton flag to prevent double init in the same context.
