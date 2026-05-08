@@ -56,7 +56,15 @@ export function useFeeEstimate() {
     (
       depositTrust: number,
       gsPercentage: number,
-      opts?: { isNewTriple?: boolean; newAtomCount?: number; itemCount?: number; contextTripleCount?: number; ppPercentage?: number }
+      opts?: {
+        isNewTriple?: boolean
+        newAtomCount?: number
+        newPredicateAtomCount?: number
+        itemCount?: number
+        contextTripleCount?: number
+        needsContextPredicateAtom?: boolean
+        ppPercentage?: number
+      }
     ): CostEstimate | null => {
       if (!feeParams || !protocolCosts) return null
       return estimateCertificationCost(

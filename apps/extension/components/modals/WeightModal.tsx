@@ -38,7 +38,12 @@ interface WeightModalProps {
   /** When set, hide weight selection and use this fixed deposit value (in TRUST) */
   fixedDeposit?: number
   /** Override creation cost estimation assumptions (default: isNewTriple=true, newAtomCount=1) */
-  estimateOptions?: { isNewTriple?: boolean; newAtomCount?: number }
+  estimateOptions?: {
+    isNewTriple?: boolean
+    newAtomCount?: number
+    newPredicateAtomCount?: number
+    needsContextPredicateAtom?: boolean
+  }
   /** Customize submit button text (default: "Amplify") */
   submitLabel?: string
   /** Pre-selected weight option when the modal opens (default: 'default' / 0.5 TRUST) */
@@ -190,6 +195,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   // Destructure estimateOptions for stable useMemo deps
   const isNewTriple = estimateOptions?.isNewTriple ?? true
   const newAtomCount = estimateOptions?.newAtomCount ?? 1
+  const newPredicateAtomCount = estimateOptions?.newPredicateAtomCount ?? 0
+  const needsContextPredicateAtom = estimateOptions?.needsContextPredicateAtom ?? false
 
   // Compute real-time breakdown for display
   const activeCount = triplets.length - removedIndices.size
@@ -223,7 +230,15 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       ? detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) / detectedPlatforms.length
       : 0
     const effectivePP = Math.round(totalPPPercentage)
-    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount, contextTripleCount, ppPercentage: effectivePP }
+    const createOpts = {
+      isNewTriple,
+      newAtomCount,
+      newPredicateAtomCount,
+      itemCount: activeCount,
+      contextTripleCount,
+      needsContextPredicateAtom: needsContextPredicateAtom && contextTripleCount > 0,
+      ppPercentage: effectivePP
+    }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -269,7 +284,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, ppPerPlatform, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices, triplets, hasPlatforms, detectedPlatforms])
+  }, [selectedWeights, customValues, gsPercentage, ppPerPlatform, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, newPredicateAtomCount, needsContextPredicateAtom, activeCount, removedIndices, triplets, hasPlatforms, detectedPlatforms])
 
   const handleSubmit = async () => {
     try {

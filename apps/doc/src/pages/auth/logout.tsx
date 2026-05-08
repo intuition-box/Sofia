@@ -1,201 +1,42 @@
-/**
- * Sofia Logout Page
- *
- * Dedicated page for logging out from Privy and clearing all session data.
- * Uses the existing WalletProvider context - no duplicate PrivyProvider.
- */
-
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect } from 'react'
 import Layout from '@theme/Layout'
-import BrowserOnly from '@docusaurus/BrowserOnly'
-import { useWalletConnection } from '@site/src/lib/web3/PrivyContext'
-import styles from '../auth.module.css'
-import { logger } from '@site/src/lib/logger'
 
-// Chrome extension API type declaration
-declare const chrome:
-  | {
-      runtime?: {
-        sendMessage?: (
-          extensionId: string,
-          message: any,
-          callback?: (response: any) => void,
-        ) => void
-      }
-    }
-  | undefined
+// Logout flow lives in the Explorer SPA — this page just redirects.
+// See ../auth.tsx for the rationale (keeps Privy out of Doc's bundle).
 
-// Notify extension that wallet is disconnected
-const notifyExtensionDisconnected = (extensionId?: string) => {
-  // Method 1: chrome.runtime.sendMessage
-  if (
-    extensionId &&
-    typeof chrome !== 'undefined' &&
-    chrome?.runtime?.sendMessage
-  ) {
-    try {
-      chrome.runtime.sendMessage(
-        extensionId,
-        {
-          type: 'WALLET_DISCONNECTED',
-        },
-        (response) => {
-          logger.log('[Sofia Logout] Extension notified:', response)
-        },
-      )
-    } catch (e) {
-      logger.log('[Sofia Logout] Failed to notify extension:', e)
-    }
-  }
+const EXPLORER_LOGOUT_URL = 'https://explorer.sofia.intuition.box/auth/logout'
 
-  // Method 2: postMessage to opener
-  if (window.opener) {
-    window.opener.postMessage({ type: 'SOFIA_WALLET_DISCONNECTED' }, '*')
-  }
-
-  // Method 3: Clear localStorage
-  try {
-    // Clear Sofia-specific storage
-    localStorage.removeItem('sofia_wallet_address')
-    localStorage.removeItem('sofia_wallet_timestamp')
-
-    // Clear all Privy-related storage
-    const keysToRemove: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key && (key.includes('privy') || key.includes('Privy'))) {
-        keysToRemove.push(key)
-      }
-    }
-    keysToRemove.forEach((key) => {
-      try {
-        localStorage.removeItem(key)
-        logger.log('[Sofia Logout] Removed:', key)
-      } catch (e) {}
-    })
-
-    // Clear session storage
-    sessionStorage.clear()
-
-    logger.log('[Sofia Logout] Storage cleared')
-  } catch (e) {
-    logger.log('[Sofia Logout] Failed to clear storage:', e)
-  }
-}
-
-const LogoutContent = () => {
-  const { isConnected, disconnect } = useWalletConnection()
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
-    'loading',
-  )
-  const logoutAttempted = useRef(false)
-
-  // Get extension ID from URL params
-  const extensionId =
-    typeof window !== 'undefined'
-      ? new URLSearchParams(window.location.search).get('extensionId') ||
-        undefined
-      : undefined
-
+export default function Logout(): JSX.Element {
   useEffect(() => {
-    if (logoutAttempted.current) return
-    logoutAttempted.current = true
-
-    const performLogout = async () => {
-      logger.log('[Sofia Logout] Starting logout, isConnected:', isConnected)
-
-      try {
-        // Call disconnect from wallet context (which calls Privy logout)
-        if (isConnected) {
-          await disconnect()
-          logger.log('[Sofia Logout] Wallet disconnected')
-        }
-
-        // Clear all storage and notify extension
-        notifyExtensionDisconnected(extensionId)
-
-        setStatus('success')
-        logger.log('[Sofia Logout] Logout complete')
-      } catch (error) {
-        logger.error('[Sofia Logout] Error:', error)
-        // Still clear storage even if disconnect fails
-        notifyExtensionDisconnected(extensionId)
-        setStatus('success') // Show success anyway since we cleared storage
-      }
-    }
-
-    // Small delay to ensure context is ready
-    setTimeout(performLogout, 100)
-  }, [isConnected, disconnect, extensionId])
-
-  const handleClose = () => {
-    window.close()
-  }
+    if (typeof window === 'undefined') return
+    const target =
+      EXPLORER_LOGOUT_URL + (window.location.search || '') + (window.location.hash || '')
+    window.location.replace(target)
+  }, [])
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
-
-        {status === 'loading' && (
-          <>
-            <div className={styles.spinner} />
-            <p className={styles.text}>Logging out...</p>
-          </>
-        )}
-
-        {status === 'success' && (
-          <>
-            <div className={styles.checkmark}>✓</div>
-            <p className={styles.text}>Logged Out</p>
-            <p className={styles.subtext}>
-              Your wallet has been disconnected from Sofia.
-            </p>
-            <button className={styles.closeBtn} onClick={handleClose}>
-              Close
-            </button>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <div className={styles.errorIcon}>✕</div>
-            <p className={styles.text}>Logout Failed</p>
-            <p className={styles.subtext}>Please try again.</p>
-            <button
-              className={styles.btn}
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Loading placeholder
-const LoadingPlaceholder = () => (
-  <div className={styles.container}>
-    <div className={styles.card}>
-      <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
-      <div className={styles.spinner} />
-      <p className={styles.text}>Loading...</p>
-    </div>
-  </div>
-)
-
-export default function LogoutPage() {
-  return (
-    <Layout
-      title="Logout"
-      description="Disconnect your wallet from Sofia"
-      noFooter
-    >
-      <BrowserOnly fallback={<LoadingPlaceholder />}>
-        {() => <LogoutContent />}
-      </BrowserOnly>
+    <Layout title="Sign out" description="Redirecting to Sofia Explorer">
+      <main
+        style={{
+          minHeight: '60vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1rem',
+          padding: '4rem 1.5rem',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ margin: 0 }}>Signing you out…</h1>
+        <p style={{ opacity: 0.7, maxWidth: '36rem' }}>
+          You're being redirected to the Sofia Explorer to complete the
+          logout.
+        </p>
+        <p>
+          <a href={EXPLORER_LOGOUT_URL}>Continue to Explorer</a>
+        </p>
+      </main>
     </Layout>
   )
 }

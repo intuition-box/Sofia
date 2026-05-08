@@ -366,14 +366,30 @@ function setupProviderListeners() {
   }
 }
 
+// Stale-listener cleanup — when the extension hot-reloads (dev mode), the
+// previous walletBridge instance is already running on the page with its
+// listener attached. Without this, every reload appends a new listener and
+// every wallet RPC fires as many TXs as listeners attached.
+// We store the active handler on window and replace it on each (re)init.
+const HANDLER_KEY = "__sofiaWalletBridgeHandler" as const
+const winAny = window as unknown as Record<string, ((e: MessageEvent) => void) | undefined>
+
 // Initialize
 function init() {
+  // Remove the previous instance's listener if any (survives across extension reloads)
+  const prevHandler = winAny[HANDLER_KEY]
+  if (prevHandler) {
+    window.removeEventListener("message", prevHandler)
+    logger.warn("Removed stale wallet bridge listener from previous load")
+  }
+
   logger.info("Initializing wallet bridge...")
 
   // Initialize EIP-6963 provider discovery
   initializeProviderStore()
 
-  // Listen for messages from extension
+  // Register and remember our handler so the next instance can clean it up
+  winAny[HANDLER_KEY] = handleWalletRequest
   window.addEventListener("message", handleWalletRequest)
 
   // Provider listeners are set up when a provider is selected (selectProviderByName)

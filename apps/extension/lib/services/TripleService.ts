@@ -24,7 +24,8 @@ import { BlockchainService } from './blockchainService'
 import { globalStakeService } from './GlobalStakeService'
 import { platformPoolService } from './PlatformPoolService'
 import { createServiceLogger } from '../utils/logger'
-import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../config/constants'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS } from '../config/constants'
+import { getPredicateIdByName } from '../config/predicateConstants'
 import type { TripleOnChainResult, BatchTripleResult } from '../../types/blockchain'
 import type { Address, Hash } from 'viem'
 
@@ -61,43 +62,7 @@ class TripleServiceClass {
 
   /** Check if predicate has a pre-defined ID (no creation needed). */
   getPredicateIdIfExists(predicateName: string): string | null {
-    if (predicateName === 'follow') {
-      return PREDICATE_IDS.FOLLOW
-    }
-    if (predicateName === 'trusts') {
-      return PREDICATE_IDS.TRUSTS
-    }
-    if (predicateName === 'distrust') {
-      return PREDICATE_IDS.DISTRUST || null
-    }
-    if (predicateName === 'visits for work') {
-      return PREDICATE_IDS.VISITS_FOR_WORK || null
-    }
-    if (predicateName === 'visits for learning') {
-      return PREDICATE_IDS.VISITS_FOR_LEARNING || null
-    }
-    if (predicateName === 'visits for fun') {
-      return PREDICATE_IDS.VISITS_FOR_FUN || null
-    }
-    if (predicateName === 'visits for inspiration') {
-      return PREDICATE_IDS.VISITS_FOR_INSPIRATION || null
-    }
-    if (predicateName === 'visits for buying') {
-      return PREDICATE_IDS.VISITS_FOR_BUYING || null
-    }
-    if (predicateName === 'visits for music') {
-      return PREDICATE_IDS.VISITS_FOR_MUSIC || null
-    }
-    if (predicateName === 'like') {
-      return PREDICATE_IDS.LIKE || null
-    }
-    if (predicateName === 'dislike') {
-      return PREDICATE_IDS.DISLIKE || null
-    }
-    if (predicateName === 'in context of') {
-      return PREDICATE_IDS.IN_CONTEXT_OF || null
-    }
-    return null
+    return getPredicateIdByName(predicateName)
   }
 
   /**
