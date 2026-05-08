@@ -1,0 +1,68 @@
+name: Mastra Build & Push (manual)
+
+# Manual trigger — builds the Mastra Phala TEE image and pushes it to
+# Docker Hub. Phala is then redeployed manually by bumping the image
+# tag in services/mastra/phala-deploy/docker-compose.yaml on the Phala
+# Cloud dashboard.
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   - DOCKER_HUB_USERNAME
+#   - DOCKER_HUB_TOKEN     (Docker Hub access token, not password)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version (e.g. 1.5.0). Pushed as $USER/sofia-mastra:vX.Y.Z'
+        required: true
+        type: string
+      latest:
+        description: 'Also tag as :latest'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  docker:
+    name: Build & Push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Compute tags
+        id: tags
+        run: |
+          VERSION="${{ inputs.version }}"
+          USER="${{ secrets.DOCKER_HUB_USERNAME }}"
+          TAGS="${USER}/sofia-mastra:v${VERSION}"
+          if [ "${{ inputs.latest }}" = "true" ]; then
+            TAGS="${TAGS},${USER}/sofia-mastra:latest"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/mastra/phala-deploy/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          # Phala TEE runs amd64 only.
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "### Image pushed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tags:" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.tags.outputs.tags }}' | tr ',' '\n' | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next step:** bump the image tag in services/mastra/phala-deploy/docker-compose.yaml on the Phala Cloud dashboard and redeploy." >> $GITHUB_STEP_SUMMARY
