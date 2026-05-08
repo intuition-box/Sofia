@@ -18,14 +18,11 @@ import {
   useRedeemGlobalStake
 } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { createHookLogger } from "~/lib/utils"
 import SofiaLoader from "../ui/SofiaLoader"
 import "../styles/Modal.css"
 import "../styles/GlobalStakeModal.css"
 
 const goldRewardVideoUrl = chrome.runtime.getURL("assets/bggoldreward.mp4")
-
-const logger = createHookLogger("GlobalStakeModal")
 
 type Mode = "deposit" | "redeem"
 
@@ -70,7 +67,6 @@ const GlobalStakeModal = ({
   } = useDepositGlobalStake()
   const {
     redeem,
-    getUserShares,
     previewRedeem,
     loading: redeemLoading
   } = useRedeemGlobalStake()
@@ -453,7 +449,7 @@ const GlobalStakeModal = ({
             </button>
             {!txError && (
               <button
-                className="modal-btn primary"
+                className="modal-btn primary gs-modal__cta"
                 onClick={
                   mode === "deposit" ? handleDeposit : handleRedeem
                 }
@@ -473,7 +469,7 @@ const GlobalStakeModal = ({
             )}
             {txError && (
               <button
-                className="modal-btn primary"
+                className="modal-btn primary gs-modal__cta"
                 onClick={
                   mode === "deposit" ? handleDeposit : handleRedeem
                 }

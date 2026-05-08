@@ -12,11 +12,11 @@ import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
-import HomeConnectedPage from "./components/pages/HomeConnectedPage"
+import MarkPage from "./components/pages/MarkPage"
 import SettingsPage from "./components/pages/SettingsPage"
-import ProfilePage from "./components/pages/ProfilePage"
-import CorePage from "./components/pages/CorePage"
-import ResonancePage from "./components/pages/ResonancePage"
+import MyProfilePage from "./components/pages/MyProfilePage"
+import CirclesPage from "./components/pages/CirclesPage"
+import ScorePage from "./components/pages/ScorePage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
@@ -34,7 +34,7 @@ const SidePanelContent = () => {
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
-  const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [, setOnboardingChecked] = useState(false)
 
   // Automatic page management based on connection state
   useEffect(() => {
@@ -44,7 +44,7 @@ const SidePanelContent = () => {
       chrome.storage.session.get('pending_external_auth').then(result => {
         if (result.pending_external_auth) {
           chrome.storage.session.remove('pending_external_auth')
-          navigateTo('home-connected')
+          navigateTo('mark')
           setOnboardingChecked(true)
           return
         }
@@ -53,11 +53,11 @@ const SidePanelContent = () => {
           if (groups.length === 0) {
             navigateTo('onboarding-import')
           } else {
-            navigateTo('home-connected')
+            navigateTo('mark')
           }
           setOnboardingChecked(true)
         }).catch(() => {
-          navigateTo('home-connected')
+          navigateTo('mark')
           setOnboardingChecked(true)
         })
       })
@@ -71,16 +71,16 @@ const SidePanelContent = () => {
 
     switch (currentPage) {
       case 'home':
-      case 'home-connected':
-        return <HomeConnectedPage />
+      case 'mark':
+        return <MarkPage />
       case 'settings':
         return <SettingsPage />
-      case 'profile':
-        return <ProfilePage />
-      case 'Sofia':
-        return <CorePage />
-      case 'resonance':
-        return <ResonancePage />
+      case 'my-profile':
+        return <MyProfilePage />
+      case 'circles':
+        return <CirclesPage />
+      case 'score':
+        return <ScorePage />
       case 'user-profile':
         return <UserProfilePage />
       case 'onboarding-import':
@@ -90,7 +90,7 @@ const SidePanelContent = () => {
       case 'onboarding-tutorial':
         return <OnboardingTutorialPage />
       default:
-        return <HomeConnectedPage />
+        return <MarkPage />
     }
   }
 

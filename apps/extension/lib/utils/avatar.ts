@@ -19,7 +19,7 @@ export function isValidImageUrl(url: string | undefined | null): boolean {
  * Vérifie si une valeur est une adresse Ethereum
  * Format: 0x + 40 caractères hexadécimaux
  */
-export function isEthereumAddress(value: string | undefined | null): boolean {
+function isEthereumAddress(value: string | undefined | null): boolean {
   if (!value) return false
   return /^0x[a-fA-F0-9]{40}$/.test(value)
 }
@@ -44,16 +44,6 @@ export function generateDiceBearAvatar(seed: string): string {
     seed: seed || 'unknown',
   })
   return avatar.toDataUri()
-}
-
-/**
- * Échappe les caractères spéciaux d'un Data URI SVG pour utilisation en CSS
- */
-export function escapeSvgForCss(uri: string): string {
-  return uri
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29')
-    .replace(/#/g, '%23')
 }
 
 /**

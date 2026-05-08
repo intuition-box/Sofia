@@ -1,7 +1,7 @@
 /**
  * useOnChainStreak
  * Fetches streak count + activity dates for the current user from on-chain
- * deposit data (same source as LeaderboardTab).
+ * deposit data.
  */
 
 import { useState, useEffect, useCallback } from "react"

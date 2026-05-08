@@ -3,11 +3,6 @@ import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('GraphQLClient')
 
-// GraphQL endpoint is now dynamically configured based on environment
-// - pnpm dev → testnet
-// - pnpm build → mainnet
-export const INTUITION_GRAPHQL_ENDPOINT = API_CONFIG.GRAPHQL_ENDPOINT
-
 // Cache for GraphQL responses (TTL: 30 seconds)
 const CACHE_TTL_MS = 30000
 const queryCache = new Map<string, { data: any; timestamp: number }>()

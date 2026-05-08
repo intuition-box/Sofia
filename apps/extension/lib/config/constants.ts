@@ -11,27 +11,10 @@
 // Re-export environment-specific configs for backward compatibility
 export {
   BLOCKCHAIN_CONFIG,
-  API_CONFIG,
-  EXPLORER_URLS,
   PREDICATE_IDS,
   SUBJECT_IDS,
   PREDICATE_NAMES
 } from './chainConfig'
-
-// Storage Configuration
-export const STORAGE_CONFIG = {
-  TRACKING_ENABLED_KEY: "tracking_enabled",
-  MAX_RECENT_MESSAGES: 50,
-  CLEANUP_DAYS: 30
-} as const
-
-// UI Configuration
-export const UI_CONFIG = {
-  REFRESH_INTERVAL: 30000,
-  TOAST_DURATION: 3000,
-  LOADING_DELAY: 500,
-  MAX_TRIPLETS_DISPLAY: 100
-} as const
 
 // Error Messages
 export const ERROR_MESSAGES = {

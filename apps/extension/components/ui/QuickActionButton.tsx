@@ -16,9 +16,6 @@ import ScanHoverIcon from './icons/quick_action/Selected=scan hover.svg'
 import SelectIcon from './icons/quick_action/Selected=Select.svg'
 import SelectHoverIcon from './icons/quick_action/Selected=Select hover.svg'
 import SelectedIcon from './icons/quick_action/Selected=Selected.svg'
-import SelectedHoverIcon from './icons/quick_action/Selected=SelectedHover.svg'
-import RemoveIcon2 from './icons/quick_action/Selected=Remove.svg'
-import RemoveHoverIcon2 from './icons/quick_action/Selected=RemoveHover.svg'
 import BookmarkPlusIcon from './icons/bookmark-plus.svg'
 
 interface QuickActionButtonProps {
@@ -49,7 +46,7 @@ const QuickActionButton = ({
       amplify: { normal: AmplifyIcon, hover: AmplifyHoverIcon },
       select: {
         normal: isSelected ? SelectedIcon : SelectIcon,
-        hover: isSelected ? RemoveIcon2 : SelectHoverIcon
+        hover: isSelected ? RemoveIcon : SelectHoverIcon
       }
     }
 

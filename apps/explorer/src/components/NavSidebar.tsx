@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   usePrivy,
@@ -27,10 +26,14 @@ import {
   ShoppingCart,
   Users,
   Layers,
+  Puzzle,
+  Check,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
+import { useExtensionInstalled } from '../hooks/useExtensionInstalled'
+import { CHROME_STORE_URL } from '../utils/sofiaDetect'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
@@ -45,22 +48,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { SEASON_END } from '../config'
 import './styles/nav-sidebar-trust-circle.css'
 import './styles/nav-sidebar-toolbar.css'
-
-function getTimeLeft() {
-  const diff = SEASON_END.getTime() - Date.now()
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 }
-  return {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-  }
-}
-
-const pad = (n: number) => String(n).padStart(2, '0')
 
 interface NavSidebarProps {
   /** Toggles the cart drawer. Receives the new open state so the parent can
@@ -92,7 +81,7 @@ export function NavSidebar({
   )
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft)
+  const extensionInstalled = useExtensionInstalled()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -113,10 +102,6 @@ export function NavSidebar({
     displayAddr ||
     'User'
 
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(getTimeLeft()), 1_000)
-    return () => clearInterval(timer)
-  }, [])
 
   const navItems: {
     to: string
@@ -295,16 +280,30 @@ export function NavSidebar({
           pinned right below it. margin-top:auto on .ns-bottom pulls the
           whole group to the bottom of the rail. */}
       <div className="ns-bottom">
-        <div className="ns-countdown">
-          <p className="ns-countdown-time">
-            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m{' '}
-            {pad(timeLeft.seconds)}s
-          </p>
-          <p className="ns-countdown-hint">
-            remaining — Alpha Reward Program is live
-          </p>
-        </div>
-
+        {extensionInstalled ? (
+          <button
+            type="button"
+            className="ns-extension-btn ns-extension-btn--installed"
+            disabled
+            aria-label="Extension installed"
+            title="Sofia extension installed"
+          >
+            <Check className="h-4 w-4" />
+            {!collapsed && <span>Extension installed</span>}
+          </button>
+        ) : (
+          <a
+            className="ns-extension-btn"
+            href={CHROME_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Download the Sofia extension"
+            title="Download the Sofia extension"
+          >
+            <Puzzle className="h-4 w-4" />
+            {!collapsed && <span>Download the extension</span>}
+          </a>
+        )}
         {ready && !authenticated && (
           <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
             <Wallet className="h-4 w-4 mr-1" />

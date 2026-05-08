@@ -109,7 +109,7 @@ export default function ProfileClaimCard({
       <div className="pf-claim-head">
         <FaviconWrapper
           className="pf-claim-fav"
-          size={28}
+          size={40}
           src={faviconSrc}
           alt={host}
         />
@@ -129,11 +129,8 @@ export default function ProfileClaimCard({
         ) : null}
       </div>
 
-      {(intentSlug || topicChips.length > 0) && (
+      {topicChips.length > 0 && (
         <div className="pf-claim-chips">
-          {intentSlug && (
-            <span className={`fc-verb-tag ${intentSlug}`}>{verbLabel}</span>
-          )}
           {topicChips.slice(0, 2).map((t) => (
             <span key={t.id} className="fc-tag">
               {t.label}
@@ -156,6 +153,11 @@ export default function ProfileClaimCard({
         />
       </div>
       <div className="pf-claim-stats">
+        {intentSlug && (
+          <span className={`fc-verb-tag pf-claim-verb ${intentSlug}`}>
+            {verbLabel}
+          </span>
+        )}
         <span className="pf-claim-stat support">
           <ThumbsUp size={14} />
           <span className="pf-claim-stat-val">{supportCount}</span>

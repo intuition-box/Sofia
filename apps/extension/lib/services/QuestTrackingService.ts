@@ -4,8 +4,8 @@
  * Data is stored per-wallet to isolate user identities
  */
 
-import { getAddress } from 'viem'
 import { createServiceLogger } from '../utils/logger'
+import { getStoredWalletAddress } from '../utils/walletStorage'
 
 const logger = createServiceLogger('QuestTrackingService')
 
@@ -17,16 +17,6 @@ export class QuestTrackingService {
       QuestTrackingService.instance = new QuestTrackingService()
     }
     return QuestTrackingService.instance
-  }
-
-  /**
-   * Get current wallet address from session storage (checksummed)
-   */
-  private async getWalletAddress(): Promise<string | null> {
-    const result = await chrome.storage.session.get('walletAddress')
-    if (!result.walletAddress) return null
-    // Always return checksummed address for consistent storage keys
-    return getAddress(result.walletAddress)
   }
 
   /**
@@ -43,7 +33,7 @@ export class QuestTrackingService {
 
   // Called after each successful publish
   async recordSignalActivity(): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn('No wallet connected, cannot record signal activity')
       return
@@ -65,7 +55,7 @@ export class QuestTrackingService {
   }
 
   async hasSignalToday(): Promise<boolean> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) return false
 
     const key = this.getStorageKey('signal_activity_dates', walletAddress)
@@ -76,7 +66,7 @@ export class QuestTrackingService {
 
   // Called after each successful certification
   async recordCertificationActivity(): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn('No wallet connected, cannot record certification activity')
       return
@@ -98,7 +88,7 @@ export class QuestTrackingService {
   }
 
   async hasCertificationToday(): Promise<boolean> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) return false
 
     const key = this.getStorageKey('certification_activity_dates', walletAddress)
@@ -110,7 +100,7 @@ export class QuestTrackingService {
   // ── Vote tracking ──
 
   async recordVoteActivity(): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) {
       logger.warn('No wallet connected, cannot record vote activity')
       return
@@ -150,7 +140,7 @@ export class QuestTrackingService {
   }
 
   async hasVotedToday(): Promise<boolean> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) return false
 
     const key = this.getStorageKey('vote_activity_dates', walletAddress)
@@ -160,7 +150,7 @@ export class QuestTrackingService {
   }
 
   async getTotalVotes(): Promise<number> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) return 0
 
     const key = this.getStorageKey('total_votes', walletAddress)
@@ -169,7 +159,7 @@ export class QuestTrackingService {
   }
 
   async getDailyVoteCount(): Promise<number> {
-    const walletAddress = await this.getWalletAddress()
+    const walletAddress = await getStoredWalletAddress()
     if (!walletAddress) return 0
 
     const dailyCountKey = this.getStorageKey('daily_vote_count', walletAddress)

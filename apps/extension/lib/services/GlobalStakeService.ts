@@ -11,6 +11,7 @@
  * Does NOT handle depositBatch execution — that stays in TripleService.
  */
 
+import { getAddress } from "viem"
 import { createServiceLogger } from "../utils/logger"
 import { txEventBus } from "./TxEventBus"
 import { GLOBAL_STAKE, SEASON_HISTORY } from "../config/chainConfig"
@@ -131,12 +132,15 @@ class GlobalStakeServiceClass {
       const { intuitionGraphqlClient } = await import("../clients/graphql-client")
       const { GetGlobalStakePositionDocument } = await import("@0xsofia/graphql")
 
+      // account_id is stored checksummed in Hasura; lowercase never matches
+      // (we got TVL but no position for the connected wallet).
+      const checksummed = getAddress(wallet)
       const result = await intuitionGraphqlClient.request(
         GetGlobalStakePositionDocument,
         {
           globalTermId: config.termId,
           curveId: Number(config.curveId),
-          walletAddresses: wallet.toLowerCase()
+          walletAddresses: checksummed
         }
       )
 

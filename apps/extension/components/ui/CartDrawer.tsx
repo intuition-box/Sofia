@@ -1,7 +1,9 @@
 import { useState, useRef } from "react"
-import { X, Trash2 } from "lucide-react"
-import sofiaIcon from "data-base64:~assets/icon-dark-32.png"
+import { X, Trash2, ShoppingCart } from "lucide-react"
+import { VerbTag } from "@0xsofia/design-system"
+import type { IntentionSlug } from "@0xsofia/design-system"
 import { useCart, useCartSubmit } from "~/hooks"
+import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import WeightModal from "../modals/WeightModal"
@@ -109,13 +111,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             {/* Items */}
             {count === 0 ? (
               <div className="cart-drawer__empty">
-                <img
-                  src={sofiaIcon}
-                  width={32}
-                  height={32}
-                  className="cart-drawer__empty-icon"
-                  alt="Sofia"
-                />
+                <ShoppingCart size={40} className="cart-drawer__empty-icon" strokeWidth={1.5} />
                 <span className="cart-drawer__empty-text">
                   Click intentions to add them here
                 </span>
@@ -123,70 +119,73 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             ) : (
               <div className="cart-drawer__list">
                 {items.map(item => {
-                  const badge = getIntentionBadge(
-                    item.intention ?? undefined
-                  ) || (() => {
-                    const t = predicateLabelToIntentionType(item.predicateName)
-                    return t ? getIntentionBadge(t) : null
-                  })()
+                  const intentionType: IntentionType | null = item.intention
+                    ? (item.intention.replace('for_', '') as IntentionType)
+                    : predicateLabelToIntentionType(item.predicateName)
+                  const badge = getIntentionBadge(item.intention ?? undefined)
+                    || (intentionType ? getIntentionBadge(intentionType) : null)
                   const isVote = !!item.voteAction
+                  const hasContext = !!(item.interestContext && TOPIC_LABELS[item.interestContext])
                   return (
                     <div key={item.id} className="cart-drawer__item">
-                      {item.faviconUrl ? (
-                        <img
-                          src={item.faviconUrl}
-                          className="cart-drawer__item-favicon"
-                          alt=""
-                        />
-                      ) : (
-                        <div className="cart-drawer__item-favicon--fallback">
-                          ?
+                      {/* Top row: favicon + title/url + remove */}
+                      <div className="cart-drawer__item-main">
+                        {item.faviconUrl ? (
+                          <img
+                            src={item.faviconUrl}
+                            className="cart-drawer__item-favicon"
+                            alt=""
+                          />
+                        ) : (
+                          <div className="cart-drawer__item-favicon--fallback">
+                            ?
+                          </div>
+                        )}
+                        <div className="cart-drawer__item-info">
+                          <div className="cart-drawer__item-title">
+                            {item.pageTitle || item.normalizedUrl}
+                          </div>
+                          <div className="cart-drawer__item-url">
+                            {item.normalizedUrl}
+                          </div>
                         </div>
-                      )}
-                      <div className="cart-drawer__item-info">
-                        <div className="cart-drawer__item-title">
-                          {item.pageTitle || item.normalizedUrl}
-                        </div>
-                        <div className="cart-drawer__item-url">
-                          {item.normalizedUrl}
-                        </div>
+                        <button
+                          className="cart-drawer__item-remove"
+                          onClick={() => removeFromCart(item.id)}
+                          title="Remove from cart"
+                          aria-label="Remove from cart"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      {isVote ? (
-                        <span
-                          className={`cart-drawer__item-pill cart-drawer__item-pill--${item.voteAction}`}
-                        >
-                          {item.voteAction === "support" ? "▲ Support" : "▼ Oppose"}
-                        </span>
-                      ) : badge ? (
-                        <span
-                          className="cart-drawer__item-pill"
-                          style={{
-                            backgroundColor: `${badge.color}20`,
-                            color: badge.color,
-                            border: `1px solid ${badge.color}40`
-                          }}
-                        >
-                          {badge.label}
-                        </span>
-                      ) : null}
-                      {item.interestContext && TOPIC_LABELS[item.interestContext] && (
-                        <span
-                          className="cart-drawer__item-pill cart-drawer__item-pill--context"
-                          style={{
-                            backgroundColor: `${TOPIC_COLORS[item.interestContext] || "#888"}15`,
-                            color: TOPIC_COLORS[item.interestContext] || "#888",
-                            border: `1px dashed ${TOPIC_COLORS[item.interestContext] || "#888"}40`
-                          }}
-                        >
-                          {TOPIC_LABELS[item.interestContext]}
-                        </span>
+
+                      {/* Bottom row: pills (intention/vote + topic context) */}
+                      {(isVote || badge || hasContext) && (
+                        <div className="cart-drawer__item-pills">
+                          {isVote ? (
+                            <span
+                              className={`cart-drawer__item-pill cart-drawer__item-pill--${item.voteAction}`}
+                            >
+                              {item.voteAction === "support" ? "▲ Support" : "▼ Oppose"}
+                            </span>
+                          ) : intentionType ? (
+                            <VerbTag
+                              intent={intentionType as IntentionSlug}
+                              label={badge?.label || intentionType}
+                            />
+                          ) : null}
+                          {hasContext && (
+                            <span
+                              className="cart-drawer__item-pill cart-drawer__item-pill--context"
+                              style={{
+                                background: TOPIC_COLORS[item.interestContext!] || "var(--ds-accent)"
+                              }}
+                            >
+                              {TOPIC_LABELS[item.interestContext!]}
+                            </span>
+                          )}
+                        </div>
                       )}
-                      <button
-                        className="cart-drawer__item-remove"
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
                     </div>
                   )
                 })}
@@ -279,8 +278,8 @@ export const CartFab = ({
   if (count === 0) return null
 
   return (
-    <button className="cart-fab" onClick={onClick}>
-      <img src={sofiaIcon} width={20} height={20} className="cart-fab__icon" alt="Sofia" />
+    <button className="cart-fab" onClick={onClick} aria-label="Open cart">
+      <ShoppingCart size={20} className="cart-fab__icon" strokeWidth={2} />
       <span className="cart-fab__badge">{count}</span>
     </button>
   )

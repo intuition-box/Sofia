@@ -8,15 +8,15 @@
 }
 
 .gs-modal__title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #FBF7F5;
+  color: var(--ds-ink);
   margin: 0 0 2px;
 }
 
 .gs-modal__subtitle {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -45,14 +45,14 @@
 }
 
 .gs-modal__position-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
 }
 
 .gs-modal__position-value {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -66,10 +66,31 @@
   color: #f87171;
 }
 
-/* Deposit amount section */
+/* Deposit amount section — flex column so the preset pills row keeps
+   breathing room from the custom-amount input above it. */
 
 .gs-modal__amount-section {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Scoped CTA: the primary button used in this modal flips the global
+   ink-on-bg defaults to a white surface with a peach hover, matching
+   the rest of the design system's CTA pattern. */
+.gs-modal__cta.modal-btn.primary {
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+}
+
+.gs-modal__cta.modal-btn.primary:hover:not(:disabled) {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent, var(--ds-ink));
+  box-shadow: 0 4px 14px rgba(255, 198, 176, 0.25);
+  transform: translateY(-1px);
 }
 
 /* Redeem percentage pills */
@@ -98,5 +119,5 @@
   padding: 24px 0;
   color: rgba(255, 255, 255, 0.35);
   font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }

@@ -16,12 +16,11 @@
   display: flex;
   flex-direction: column;
   width: 95%;
-  max-width: 480px;
-  max-height: 85vh;
-  background: rgba(20, 20, 25, 0.92);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl, 16px);
+  max-width: 520px;
+  max-height: 88vh;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
   overflow: hidden;
   animation: gmSlideUp 0.25s ease;
 }
@@ -31,46 +30,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ds-border-soft);
 }
 
 .gm-header-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .gm-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text, #FBF7F5);
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
   margin: 0;
 }
 
 .gm-counter {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
 }
 
 .gm-close-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-muted);
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .gm-close-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #FBF7F5;
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
 
 /* Toolbar */
@@ -88,23 +94,25 @@
 
 .gm-search {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md, 8px);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text, #FBF7F5);
+  padding: 10px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
   box-sizing: border-box;
 }
 
 .gm-search:focus {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-card);
 }
 
 .gm-search::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--ds-muted);
 }
 
 .gm-search-clear {
@@ -154,7 +162,7 @@
 .gm-filter-btn.active {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 .gm-badge {
@@ -195,7 +203,7 @@
 
 .gm-sort-btn.active {
   background: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 /* Select bar */
@@ -217,7 +225,7 @@
 
 .gm-select-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
+  color: var(--ds-ink);
 }
 
 /* Group list */
@@ -255,13 +263,13 @@
 }
 
 .gm-group-row.selected {
-  background: rgba(199, 134, 108, 0.08);
+  background: rgba(255, 198, 176, 0.08);
 }
 
 .gm-checkbox {
   width: 16px;
   height: 16px;
-  accent-color: var(--color-primary, #C7866C);
+  accent-color: var(--color-primary, var(--ds-accent));
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -284,7 +292,7 @@
 .gm-domain {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text, #FBF7F5);
+  color: var(--color-text, var(--ds-ink));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -383,7 +391,7 @@
   padding: 1px 5px;
   border-radius: 6px;
   background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
+  color: var(--ds-ink);
   font-size: 9px;
   font-weight: 600;
 }
@@ -433,7 +441,7 @@
 
 .gm-action-btn.remove {
   background: rgba(234, 179, 8, 0.2);
-  color: #fbbf24;
+  color: var(--ds-ink);
 }
 
 .gm-action-btn.remove:hover {
@@ -491,43 +499,49 @@
   cursor: not-allowed;
 }
 
-/* Manage button in toolbar */
+/* Manage button — primary CTA in toolbar.
+   Overrides .sort-btn (cr-chip) styles to use the DS primary tokens. */
 .gm-manage-btn {
   margin-left: auto;
-  background: rgba(199, 134, 108, 0.12) !important;
-  color: #C7866C !important;
-  border: 1px solid rgba(199, 134, 108, 0.2) !important;
-  border-radius: 4px;
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-fg) !important;
+  border: 1px solid var(--btn-primary-bg) !important;
+  border-radius: var(--btn-primary-radius, 8px) !important;
+  font-weight: 600 !important;
 }
 
-.gm-manage-btn:hover {
-  background: rgba(199, 134, 108, 0.25) !important;
+.gm-manage-btn:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg) !important;
+  border-color: var(--btn-primary-hover-bg) !important;
 }
 
 /* Cleanup banner */
 .gm-cleanup-banner {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  margin: 0 0 8px;
-  border-radius: var(--radius-md, 8px);
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  font-size: 12px;
-  color: #fbbf24;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 0 0 10px;
+  border-radius: 12px;
+  background: var(--fun);
+  color: #000;
+  border: none;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .gm-cleanup-banner > span {
   flex: 1;
+  color: #000;
 }
 
 .gm-cleanup-review {
   padding: 3px 10px;
   border-radius: 6px;
   border: none;
-  background: rgba(234, 179, 8, 0.2);
-  color: #fbbf24;
+  background: rgba(0, 0, 0, 0.15);
+  color: #000;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -535,13 +549,13 @@
 }
 
 .gm-cleanup-review:hover {
-  background: rgba(234, 179, 8, 0.35);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .gm-cleanup-dismiss {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(0, 0, 0, 0.5);
   font-size: 16px;
   cursor: pointer;
   padding: 0 4px;
@@ -549,7 +563,7 @@
 }
 
 .gm-cleanup-dismiss:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.85);
 }
 
 /* Animations */

@@ -94,10 +94,6 @@ export default function OverviewTab({
                     <Card
                       key={topic.id}
                       className="overflow-hidden"
-                      style={{
-                        borderLeftColor: topic.color,
-                        borderLeftWidth: 3,
-                      }}
                     >
                       <button
                         className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"

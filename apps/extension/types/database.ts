@@ -4,7 +4,6 @@
  */
 
 import type { ParsedSofiaMessage } from './messages'
-import type { VisitData, DOMData } from './history'
 import type { ExtensionSettings } from './storage'
 import type { BookmarkList, BookmarkedTriplet } from './bookmarks'
 import type { IntentionPurpose } from './discovery'
@@ -17,33 +16,10 @@ export interface TripletsRecord {
   type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details'
 }
 
-export interface NavigationRecord {
-  id?: number
-  url: string
-  visitData: VisitData
-  domData?: DOMData
-  lastUpdated: number
-}
-
-export interface ProfileRecord {
-  id: 'profile'
-  profilePhoto?: string
-  bio: string
-  profileUrl: string
-  lastUpdated: number
-}
-
 export interface SettingsRecord {
   id: 'settings'
   settings: ExtensionSettings
   lastUpdated: number
-}
-
-export interface SearchRecord {
-  id?: number
-  query: string
-  timestamp: number
-  results?: any[]
 }
 
 export interface BookmarkListRecord extends Omit<BookmarkList, 'id'> {
@@ -52,14 +28,6 @@ export interface BookmarkListRecord extends Omit<BookmarkList, 'id'> {
 
 export interface BookmarkedTripletRecord extends Omit<BookmarkedTriplet, 'id'> {
   id?: string
-}
-
-export interface RecommendationRecord {
-  walletAddress: string
-  rawResponse: string
-  parsedRecommendations: any[]
-  timestamp: number
-  lastUpdated: number
 }
 
 export interface IntentionGroupRecord {
@@ -102,14 +70,6 @@ export interface PredicateChangeRecord {
   changedAt: number
   xpSpent: number
   reason: string
-}
-
-export interface UserXPRecord {
-  id: 'user'
-  totalXP: number
-  totalEarned: number
-  totalSpent: number
-  lastUpdated: number
 }
 
 export interface CartItemRecord {

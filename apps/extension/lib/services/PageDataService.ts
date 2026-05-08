@@ -5,7 +5,7 @@
 
 import { isSensitiveUrl } from '../../background/utils/url'
 import { EXCLUDED_URL_PATTERNS } from '../../background/constants'
-import type { PageData } from '../../background/types'
+import type { PageData } from '../../types/page'
 import type { ChromeMessage } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 import { sessionTracker } from './SessionTracker'
@@ -56,13 +56,6 @@ export class PageDataService {
     buffered.data.duration = duration
     this.handlePageDataInline(buffered.data, buffered.loadTime)
     this.pageDataBuffer.delete(url)
-  }
-
-  /**
-   * Handle SCROLL_DATA message (no-op, scroll tracking removed)
-   */
-  public handleScrollData(_message: ChromeMessage): void {
-    // Scroll tracking removed - keeping method for API compatibility
   }
 
   /**

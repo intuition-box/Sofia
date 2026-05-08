@@ -6,18 +6,26 @@
  * - L2: chrome.storage.local with 24h TTL (persiste entre restarts)
  */
 
-import { createPublicClient, http } from "viem"
+import { createPublicClient, http, fallback } from "viem"
 import { mainnet } from "viem/chains"
 import { createServiceLogger } from "./logger"
 
 const logger = createServiceLogger("ENSUtils")
 
 // ── Singleton viem client (reused across all calls) ──
-
-const publicClient = createPublicClient({
+// Default viem mainnet RPC (eth.merkle.io) rate-limits aggressively.
+// Use a stable public RPC chain with fallback for ENS lookups.
+export const ensPublicClient = createPublicClient({
   chain: mainnet,
-  transport: http()
+  transport: fallback([
+    http("https://cloudflare-eth.com"),
+    http("https://ethereum.publicnode.com"),
+    http("https://eth.llamarpc.com"),
+    http() // viem default as last resort
+  ])
 })
+
+const publicClient = ensPublicClient
 
 // ── Cache constants ──
 

@@ -3,8 +3,6 @@
  * Eliminates type duplication across hooks
  */
 
-import type { Triplet } from './messages'
-
 // Base blockchain result
 export interface BlockchainResult {
   success: boolean
@@ -59,46 +57,6 @@ export interface BatchTripleResult extends BlockchainResult {
   failedTriples: { input: BatchTripleInput; error: string }[]
   createdCount?: number  // Number of newly created triples
   depositCount?: number  // Number of deposits on existing triples
-}
-
-// Export legacy types for compatibility
-
-
-// Contract types
-export interface ContractConfig {
-  address: `0x${string}`
-  abi: any[]
-  gasLimit: bigint
-  maxFeePerGas: bigint
-  maxPriorityFeePerGas: bigint
-}
-
-// Transaction types
-export interface TransactionParams {
-  to: `0x${string}`
-  data: `0x${string}`
-  value: bigint
-  gas: bigint
-  maxFeePerGas: bigint
-  maxPriorityFeePerGas: bigint
-}
-
-export interface TransactionResult {
-  hash: `0x${string}`
-  status: 'success' | 'failed'
-  blockNumber?: bigint
-  gasUsed?: bigint
-}
-
-// Echo Triplet types
-export interface EchoTriplet {
-  id: string
-  triplet: Triplet
-  url: string
-  description: string
-  timestamp: number
-  sourceMessageId: string
-  status: 'available' | 'published'
 }
 
 // Fee parameters read from SofiaFeeProxy contract

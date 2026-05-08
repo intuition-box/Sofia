@@ -104,4 +104,3 @@ class BrowsingNudgeServiceClass {
 }
 
 export const browsingNudgeService = new BrowsingNudgeServiceClass()
-export { BrowsingNudgeServiceClass }

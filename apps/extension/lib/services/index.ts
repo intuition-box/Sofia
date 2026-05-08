@@ -5,28 +5,24 @@
 
 // Blockchain
 export { BlockchainService } from './blockchainService'
-export { AtomServiceClass, atomService } from './AtomService'
-export type { PinnedAtomData, PinThingFn } from './AtomService'
-export { TripleServiceClass, tripleService } from './TripleService'
-export type { ResolvedTriple } from './TripleService'
+export { atomService } from './AtomService'
+export { tripleService } from './TripleService'
 
 // Wallet
-export { getWalletProvider, cleanupProvider, listWalletProviders, selectProviderByName, selectProviderByAddress, clearProviderSelection, createBoundProvider } from './walletProvider'
+export { cleanupProvider, selectProviderByName, clearProviderSelection, createBoundProvider } from './walletProvider'
 
 // Currency & Economy
-export { GoldServiceClass, goldService, getLevelUpCost, GOLD_PER_CERTIFICATION, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST } from './GoldService'
+export { goldService, getLevelUpCost } from './GoldService'
 export { XPServiceClass, xpService } from './XPService'
-export { LevelUpServiceClass, levelUpService } from './LevelUpService'
-export { CurrencyMigrationServiceClass, currencyMigrationService } from './CurrencyMigrationService'
+export { levelUpService } from './LevelUpService'
 
 // Groups & Intentions
-export { GroupManagerService, groupManager } from './GroupManager'
-export type { CertificationType, CertifyResult, GroupStats } from './GroupManager'
+export { groupManager } from './GroupManager'
+export type { CertificationType } from './GroupManager'
 
 // Quest System
 export { QuestBadgeService } from './QuestBadgeService'
 export { QuestProgressService } from './QuestProgressService'
-export type { LocalProgressData } from './QuestProgressService'
 export { QuestTrackingService, questTrackingService } from './QuestTrackingService'
 
 // Badges
@@ -35,44 +31,30 @@ export { BadgeService, badgeService } from './BadgeService'
 // Messaging
 export { MessageBus, messageBus } from './MessageBus'
 export { txEventBus } from './TxEventBus'
-export type { TxEventType, TxEvent } from './TxEventBus'
 
 // Page & Session
-export { PageDataService, pageDataService } from './PageDataService'
-export { SessionTrackerService, sessionTracker } from './SessionTracker'
+export { pageDataService } from './PageDataService'
+export { sessionTracker } from './SessionTracker'
 export type { TrackedUrl, DomainCluster } from './SessionTracker'
-
-// User
-export { generateDeterministicUUID, getWalletAddress, isWalletConnected, getUserId, getUserAgentIds, getUserMapping, resetUserSession, debugUserSession } from './UserSessionManager'
-export type { AgentIds } from './UserSessionManager'
-
-// Storage
-export { TripletStorageService, tripletStorageService } from './TripletStorageService'
 
 
 // Discovery & Certifications
-export { DiscoveryScoreServiceClass, discoveryScoreService } from './DiscoveryScoreService'
-export type { DiscoveryState } from './DiscoveryScoreService'
+export { discoveryScoreService } from './DiscoveryScoreService'
 export { UserCertificationsServiceClass, userCertificationsService } from './UserCertificationsService'
-export type { TripleDetail, CertificationEntry, CertificationsStoreState } from './UserCertificationsService'
+export type { TripleDetail, CertificationEntry } from './UserCertificationsService'
 
 // Global Stake
-export { GlobalStakeServiceClass, globalStakeService } from './GlobalStakeService'
-export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVaultStats, SeasonPosition } from '~/types/globalStake'
+export { globalStakeService } from './GlobalStakeService'
 
 // Cart
-export { CartServiceClass, cartService } from './CartService'
-export type { CartState } from './CartService'
+export { cartService } from './CartService'
 
 // Topic Interests (from Sofia Explorer)
 export { topicPositionsService } from './TopicPositionsService'
-export type { UserTopicPosition, TopicPositionsState } from './TopicPositionsService'
 
 // Platform Pool
 export { platformPoolService } from './PlatformPoolService'
 
 // Browsing Nudge
-export { BrowsingNudgeServiceClass, browsingNudgeService, NUDGE_URL_THRESHOLD } from './BrowsingNudgeService'
+export { browsingNudgeService } from './BrowsingNudgeService'
 
-// AI
-export { RecommendationService } from './ai/RecommendationService'

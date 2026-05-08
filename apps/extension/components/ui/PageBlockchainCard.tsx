@@ -4,7 +4,6 @@ import { useRouter } from "../layout/RouterProvider"
 import {
   usePageBlockchainData,
   useDiscoveryScore,
-  useGoldSystem,
   useFavicon,
   useDiscoveryReward,
   useCredibilityAnalysis,
@@ -20,6 +19,11 @@ import {
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import { getFaviconUrl } from "~/lib/utils"
+import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType
+} from "~/types/intentionCategories"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import { InterestContextSelector } from "./InterestContextSelector"
@@ -59,7 +63,6 @@ const PageBlockchainCard = () => {
     resumeRefresh
   } = usePageBlockchainData()
   const { claimDiscoveryGold } = useDiscoveryScore()
-  const { totalGold } = useGoldSystem()
 
   // Extracted hooks
   const { faviconUrl, faviconError } = useFavicon(currentUrl)
@@ -132,10 +135,25 @@ const PageBlockchainCard = () => {
     )
   }, [cart.items, currentUrl])
 
+  // Cart items for the current page (used for the live sentence + validate)
+  const cartItemsForPage = useMemo(() => {
+    if (!currentUrl) return [] as typeof cart.items
+    return cart.items.filter(item => item.url === currentUrl)
+  }, [cart.items, currentUrl])
+
   const handleAddToCart = useCallback(
     async (intention: IntentionPurpose) => {
       if (!currentUrl) return
       const predicateName = INTENTION_PREDICATES[intention]
+      // Toggle: if already queued, remove instead of re-adding
+      const existing = cart.items.find(
+        item => item.url === currentUrl && item.predicateName === predicateName
+      )
+      if (existing) {
+        await cart.removeFromCart(existing.id)
+        setCartToast("Removed from cart")
+        return
+      }
       const favicon = getFaviconUrl(currentUrl, 128)
       const added = await cart.addToCart(
         currentUrl,
@@ -157,6 +175,15 @@ const PageBlockchainCard = () => {
   const handleAddTrustToCart = useCallback(
     async (predicate: "trusts" | "distrust") => {
       if (!currentUrl) return
+      // Toggle: if already queued, remove instead of re-adding
+      const existing = cart.items.find(
+        item => item.url === currentUrl && item.predicateName === predicate
+      )
+      if (existing) {
+        await cart.removeFromCart(existing.id)
+        setCartToast(`Removed ${predicate === "trusts" ? "Trust" : "Distrust"} from cart`)
+        return
+      }
       const favicon = getFaviconUrl(currentUrl, 128)
       const added = await cart.addToCart(
         currentUrl,
@@ -183,17 +210,10 @@ const PageBlockchainCard = () => {
   }, [cartToast])
 
   // UI toggle
-  const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
+  const [showExtendedMetrics, setShowExtendedMetrics] = useState(true)
 
   const isReady = status === "ready" || status === "refreshing"
   const isRefreshing = status === "refreshing"
-
-  const handleAtomClick = (atomId: string) => {
-    chrome.tabs.create({
-      url: `https://portal.intuition.systems/explore/atom/${atomId}`,
-      active: false
-    })
-  }
 
   const handleTripletClick = (tripletId: string) => {
     chrome.tabs.create({
@@ -241,56 +261,217 @@ const PageBlockchainCard = () => {
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
-          {/* Interest Context (from Sofia Explorer) */}
-          {!isRestricted && hasInterests && (
-            <InterestContextSelector
-              interests={topInterests}
-              selectedContext={selectedContext}
-              onSelectContext={setSelectedContext}
-              disabled={modal.intentionState.loading}
-              certifiedContexts={certifiedContexts}
+          {/* Share CTA — sits between the URL header and the actions panel.
+              Always rendered (when not restricted): the button itself
+              disables/enables based on whether the user has a position. */}
+          {!isRestricted && (
+            <ShareCertificationButton
+              pageUrl={currentUrl}
+              pageTitle={pageTitle}
+              userStatus={userPosition?.status ?? null}
+              userRank={userPosition?.rank ?? null}
+              totalPositions={totalPositions}
             />
           )}
 
-          {/* Trust/Distrust pills + Intention pills (unified) */}
+          {/* Actions panel — Intentions + Context grouped under one section */}
           {!isRestricted && (
-            <div className="discovery-section">
-              <IntentionBubbleSelector
-                onBubbleClick={(intention: IntentionPurpose) => {
-                  if (!currentUrl) return
-                  handleAddToCart(intention)
-                }}
-                onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
-                disabled={modal.intentionState.loading}
-                isEligible={true}
-                certifiedIntentions={certifiedIntentions}
-                cartIntentions={cartIntentionsForPage}
-                alreadyTrusted={alreadyTrusted}
-                alreadyDistrusted={alreadyDistrusted}
-                trustInCart={trustInCart}
-                distrustInCart={distrustInCart}
-              />
-            </div>
-          )}
+            <div className="actions-panel">
+              <div className="actions-panel-title">Actions on this page</div>
+              <div className="cert-section">
+                <div className="cert-section-title">Intentions</div>
+                <IntentionBubbleSelector
+                  onBubbleClick={(intention: IntentionPurpose) => {
+                    if (!currentUrl) return
+                    handleAddToCart(intention)
+                  }}
+                  onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
+                  disabled={modal.intentionState.loading}
+                  isEligible={true}
+                  certifiedIntentions={certifiedIntentions}
+                  cartIntentions={cartIntentionsForPage}
+                  alreadyTrusted={alreadyTrusted}
+                  alreadyDistrusted={alreadyDistrusted}
+                  trustInCart={trustInCart}
+                  distrustInCart={distrustInCart}
+                  allowDepositContext={!!selectedContext}
+                />
+              </div>
+              {hasInterests && (
+                <div className="cert-section">
+                  <div className="cert-section-title">In context of</div>
+                  <InterestContextSelector
+                    interests={topInterests}
+                    selectedContext={selectedContext}
+                    onSelectContext={(slug) => {
+                      setSelectedContext(slug)
+                      if (!currentUrl) return
+                      cart.updateContextForUrl(currentUrl, slug)
+                      // Auto-queue deposit + context for already-certified
+                      // intentions / trust (slug captured explicitly so we
+                      // don't race the setSelectedContext closure).
+                      if (!slug) return
+                      const favicon = getFaviconUrl(currentUrl, 128)
+                      for (const intention of certifiedIntentions) {
+                        if (cartIntentionsForPage.includes(intention)) continue
+                        cart.addToCart(
+                          currentUrl,
+                          pageTitle,
+                          INTENTION_PREDICATES[intention],
+                          intention,
+                          favicon,
+                          slug
+                        )
+                      }
+                      if (alreadyTrusted && !trustInCart) {
+                        cart.addToCart(currentUrl, pageTitle, "trusts", null, favicon, slug)
+                      }
+                      if (alreadyDistrusted && !distrustInCart) {
+                        cart.addToCart(currentUrl, pageTitle, "distrust", null, favicon, slug)
+                      }
+                    }}
+                    disabled={modal.intentionState.loading}
+                    certifiedContexts={certifiedContexts}
+                  />
+                </div>
+              )}
 
-          {/* Position Board — certifiers leaderboard */}
-          {!isRestricted && (totalPositions > 0 || isRefreshing) && (
-            <>
-              <PagePositionBoard
-                positions={positions}
-                userPosition={userPosition}
-                totalPositions={totalPositions}
-                variant="expanded"
-                loading={isRefreshing && totalPositions === 0}
-              />
-              <ShareCertificationButton
-                pageUrl={currentUrl}
-                pageTitle={pageTitle}
-                userStatus={userPosition?.status ?? null}
-                userRank={userPosition?.rank ?? null}
-                totalPositions={totalPositions}
-              />
-            </>
+              {/* Live-built sentence — reflects what will be committed */}
+              <div className="cert-section live-sentence-section">
+                <div className="cert-section-title">Preview</div>
+                <div className="live-sentence">
+                  {cartItemsForPage.length === 0 ? (
+                    <span className="live-sentence__placeholder">
+                      Pick an intention to start building your signal…
+                    </span>
+                  ) : (
+                    (() => {
+                      const object =
+                        cartItemsForPage[0].pageTitle ||
+                        cartItemsForPage[0].normalizedUrl
+
+                      // Split predicates: "visits for X" → verb "visit" + tail X.
+                      // "trusts" / "distrust" → standalone colored verbs.
+                      const VERB_PREFIX = "visits for"
+                      const visitTails: { label: string; color: string }[] = []
+                      const trustVerbs: { label: string; color: string }[] = []
+                      const seen = new Set<string>()
+                      for (const item of cartItemsForPage) {
+                        if (seen.has(item.predicateName)) continue
+                        seen.add(item.predicateName)
+                        const type = predicateLabelToIntentionType(item.predicateName)
+                        if (item.predicateName.startsWith(`${VERB_PREFIX} `)) {
+                          const tail = item.predicateName.slice(VERB_PREFIX.length + 1)
+                          visitTails.push({
+                            label: tail,
+                            color: type
+                              ? INTENTION_CONFIG[type].color
+                              : "var(--ds-accent)"
+                          })
+                        } else {
+                          trustVerbs.push({
+                            label: item.predicateName,
+                            color: type
+                              ? INTENTION_CONFIG[type].color
+                              : "var(--ds-accent)"
+                          })
+                        }
+                      }
+
+                      const contexts = Array.from(
+                        new Set(
+                          cartItemsForPage
+                            .map(i => i.interestContext)
+                            .filter((c): c is string => !!c && !!TOPIC_LABELS[c])
+                        )
+                      ).map(slug => ({
+                        label: TOPIC_LABELS[slug],
+                        color: TOPIC_COLORS[slug] || "var(--ds-accent)"
+                      }))
+
+                      const renderColored = (
+                        items: { label: string; color: string }[]
+                      ) =>
+                        items.map((it, idx) => (
+                          <span key={`${it.label}-${idx}`}>
+                            {idx > 0 && (
+                              <span className="live-sentence__connector"> and </span>
+                            )}
+                            <span
+                              className="live-sentence__token"
+                              style={{ color: it.color }}
+                            >
+                              {it.label}
+                            </span>
+                          </span>
+                        ))
+
+                      // Verb cluster: "visit" (muted) + colored trust verbs.
+                      const verbNodes: React.ReactNode[] = []
+                      if (visitTails.length > 0) {
+                        verbNodes.push(
+                          <span key="v-visit" className="live-sentence__verb">
+                            visit
+                          </span>
+                        )
+                      }
+                      trustVerbs.forEach((tv, idx) => {
+                        verbNodes.push(
+                          <span
+                            key={`v-trust-${idx}`}
+                            className="live-sentence__token"
+                            style={{ color: tv.color }}
+                          >
+                            {tv.label}
+                          </span>
+                        )
+                      })
+
+                      return (
+                        <span className="live-sentence__line">
+                          <span className="live-sentence__subject">I</span>{" "}
+                          {verbNodes.map((node, idx) => (
+                            <span key={`vn-${idx}`}>
+                              {idx > 0 && (
+                                <span className="live-sentence__connector"> and </span>
+                              )}
+                              {node}
+                            </span>
+                          ))}{" "}
+                          <span className="live-sentence__object">{object}</span>
+                          {visitTails.length > 0 && (
+                            <>
+                              {" "}
+                              <span className="live-sentence__connector">for</span>{" "}
+                              {renderColored(visitTails)}
+                            </>
+                          )}
+                          {contexts.length > 0 && (
+                            <>
+                              {" "}
+                              <span className="live-sentence__connector">
+                                in context of
+                              </span>{" "}
+                              {renderColored(contexts)}
+                            </>
+                          )}
+                        </span>
+                      )
+                    })()
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="validate-btn"
+                  disabled={cartItemsForPage.length === 0}
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent("sofia:open-cart"))
+                  }}
+                >
+                  Validate
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -313,7 +494,10 @@ const PageBlockchainCard = () => {
                   pageMaxIntentionCount={pageMaxIntentionCount}
                   intentionStatsLoading={false}
                   currentUrl={currentUrl}
-                  onAtomClick={handleAtomClick}
+                  positions={positions}
+                  userPosition={userPosition}
+                  totalPositions={totalPositions}
+                  positionsLoading={isRefreshing && totalPositions === 0}
                   onTripletClick={handleTripletClick}
                 />
               </>

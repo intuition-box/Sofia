@@ -127,9 +127,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { profile } = useUserOnChainProfile(linkedAddresses)
   const lastActivity = useMemo(() => {
     const byTime = profile.certs
-      .filter(
-        (c) => c.intention === 'trusts' || c.intention === 'distrust',
-      )
+      .filter((c) => c.intention === 'trusts' || c.intention === 'distrust')
       .slice()
       .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
       .slice(0, 10)
@@ -216,9 +214,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   return (
     <>
       <aside
-        className={`fixed right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}
+        className={`right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}
       >
-        <div className="flex flex-col h-full overflow-y-auto">
+        <div className="flex flex-col">
           {/* Banner — avatar + name + share + journey CTA */}
           <div className="pd-banner">
             <Avatar className="pd-avatar border-2 border-border shadow-lg">
@@ -248,14 +246,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                 </svg>
                 {shareLoading ? 'Sharing...' : 'Share on X'}
               </Button>
-              <button
-                type="button"
-                className="pd-journey-btn"
-                onClick={() => navigate('/profile/topics')}
-              >
-                Start your journey
-                <span className="pd-journey-arrow">→</span>
-              </button>
             </div>
           </div>
 
@@ -342,7 +332,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Last Activity — support/oppose only for now */}
+          {/* Last Activity — support/oppose only for now. */}
           {lastActivity.length > 0 && (
             <div className="pd-section">
               <p className="pd-section-title">Last activity</p>

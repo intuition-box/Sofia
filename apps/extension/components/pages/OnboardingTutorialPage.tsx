@@ -114,7 +114,7 @@ const OnboardingTutorialPage = () => {
   }
 
   const handleSkip = () => {
-    navigateTo('home-connected')
+    navigateTo('mark')
   }
 
   const step = STEPS[currentStep]

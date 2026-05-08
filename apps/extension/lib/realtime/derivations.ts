@@ -1,6 +1,6 @@
 /**
  * Derivations — pure functions that convert raw WS subscription payloads
- * into the shapes consumed by hooks (useTrustCircle, useFollowing, etc.).
+ * into the shapes consumed by hooks (useTrustCircle, etc.).
  *
  * SubscriptionManager.onPositionsUpdate pipes WatchUserPositions payloads
  * through each derivation and writes the result under a canonical query
@@ -21,6 +21,7 @@ import {
   GLOBAL_STAKE,
   PREDICATE_IDS
 } from "~/lib/config/chainConfig"
+import { INTENTION_PREDICATE_IDS as INTENTION_PREDICATE_IDS_ARRAY } from "~/lib/config/predicateConstants"
 
 export type Position = NonNullable<
   WatchUserPositionsSubscription["positions"]
@@ -49,19 +50,7 @@ export const realtimeKeys = {
     ["verified-oauth-platforms", wallet] as const,
   intentionGroups: (wallet: string) => ["intention-groups", wallet] as const,
   globalStakePosition: (wallet: string) =>
-    ["global-stake-position", wallet] as const,
-
-  // Legacy Explorer keys — kept for SubscriptionManager compat. Sofia doesn't
-  // map topics/categories/platforms the same way; may be removed in cleanup
-  // once we're sure no consumer references them.
-  topicPositionsMap: (wallet: string) =>
-    ["topic-positions-map", wallet] as const,
-  categoryPositionsMap: (wallet: string) =>
-    ["category-positions-map", wallet] as const,
-  platformPositionsMap: (wallet: string) =>
-    ["platform-positions-map", wallet] as const,
-  verifiedPlatforms: (wallet: string) =>
-    ["verified-platforms", wallet] as const
+    ["global-stake-position", wallet] as const
 }
 
 // ── BigInt helpers (stable cache shape) ─────────────────────────────────────
@@ -82,7 +71,7 @@ function toBigInt(v: unknown): bigint {
   return 0n
 }
 
-export function sharesToBigInt(v: unknown): bigint {
+function sharesToBigInt(v: unknown): bigint {
   return toBigInt(v)
 }
 
@@ -112,14 +101,7 @@ const OAUTH_PREDICATE_IDS = new Set<string>([
   PREDICATE_IDS.AM
 ])
 
-const INTENTION_PREDICATE_IDS = new Set<string>([
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC
-])
+const INTENTION_PREDICATE_IDS = new Set<string>(INTENTION_PREDICATE_IDS_ARRAY)
 
 function extractDomain(url: string): string {
   try {
@@ -401,35 +383,6 @@ export function deriveUserProfile(
   }
 }
 
-// ── Explorer-legacy stubs (kept for SubscriptionManager compat) ─────────────
-// Sofia doesn't model topics/categories/platforms the same way. These stubs
-// let the manager's onTrackedPositionsUpdate still write to these keys
-// without breaking anything — returns are empty, consumers would see nothing.
-// Candidate for removal once we're confident no consumer references them.
-
-export function derivePositionsByTopic(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function derivePositionsByCategory(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function derivePositionsByPlatform(
-  _positions: Position[]
-): Record<string, string> {
-  return {}
-}
-
-export function deriveVerifiedPlatforms(positions: Position[]): string[] {
-  // Alias to the OAuth version — Sofia's "verified platforms" concept IS OAuth.
-  return deriveVerifiedOAuthPlatforms(positions)
-}
-
 // ── Optimistic updates ──────────────────────────────────────────────────────
 //
 // Applied client-side right after the user clicks an action, so the UI
@@ -497,37 +450,3 @@ export function applyOptimisticDailyStreak(
   }
 }
 
-/**
- * Explicit clear without the rollback-closure dance. Prefer the rollback
- * returned by applyOptimisticDailyStreak — it restores the previous
- * snapshot instead of forcing certifiedToday/votedToday back to false
- * (which would be wrong if the user had already acted earlier today).
- */
-export function clearOptimisticDailyStreak(
-  qc: QueryClient,
-  walletAddress: string
-): void {
-  const wallet = walletAddress.toLowerCase()
-  qc.removeQueries({ queryKey: realtimeKeys.dailyStreak(wallet), exact: true })
-}
-
-// ── Legacy placeholders (Phase 3.B v2 can fill these in) ────────────────────
-
-export function applyOptimisticPosition(
-  _qc: QueryClient,
-  _walletAddress: string,
-  _termId: string,
-  _delta: bigint
-): void {
-  // Generic variant deferred — requires per-termId routing (topic /
-  // category / platform / triple) that Sofia's atom model doesn't neatly
-  // cover. Phase 3.B v2 should implement alongside the hook migrations.
-}
-
-export function clearOptimisticPosition(
-  _qc: QueryClient,
-  _walletAddress: string,
-  _termId: string
-): void {
-  // Same as above.
-}

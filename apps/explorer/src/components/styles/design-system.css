@@ -35,6 +35,14 @@
   width: 290px;
   z-index: 40;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Lock the rail in place — no scroll, no scrollbar. The DS ships an
+     auto overflow + thumb style for hosts that want a scrollable rail;
+     in Explorer the content is sized to fit the viewport. */
+  overflow: hidden;
+}
+
+.nav-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Collapsed rail — parent `.nav-collapsed` is set on the root App wrapper.

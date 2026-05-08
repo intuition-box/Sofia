@@ -1,0 +1,209 @@
+/**
+ * Team (S.07) — 2 core operators (avatar + meta + quote) above an
+ * advisors strip (3-col grid sharing 1px borders).
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  margin-bottom: 80px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 36px 32px;
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-bg-alt);
+  transition:
+    border-color 0.25s,
+    transform 0.3s;
+}
+
+.card:hover {
+  border-color: var(--color-border);
+  transform: translateY(-2px);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardRole {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-ink);
+}
+
+.cardName {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  color: var(--color-text);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+}
+
+.socials {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-muted);
+  border-radius: 4px;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.socials a:hover {
+  color: var(--color-text);
+  background: var(--color-card, #0e0e0e);
+}
+
+.socials svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.quote {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  padding-left: 16px;
+  border-left: 1px solid var(--color-accent);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+}
+
+/* ── Advisors ─────────────────────────────────────────── */
+
+.advHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+.advHeaderRule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.advHeaderRule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-soft);
+}
+
+.advGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--color-border-soft);
+  border-left: 1px solid var(--color-border-soft);
+}
+
+.adv {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px 24px 28px;
+  border-right: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
+  transition: background 0.25s;
+  color: inherit;
+  text-decoration: none;
+}
+
+.adv:hover {
+  background: var(--color-bg-alt);
+}
+
+.advAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  margin-bottom: 4px;
+}
+
+.advRole {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-ink);
+}
+
+.advName {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  color: var(--color-text);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+}
+
+.advCo {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .advGrid {
+    grid-template-columns: 1fr;
+  }
+}

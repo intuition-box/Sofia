@@ -1,0 +1,123 @@
+.pool-tab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pool-explainer {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted, rgba(255, 255, 255, 0.65));
+}
+
+.pool-tab-empty {
+  background: var(--surface-elev-1, rgba(255, 255, 255, 0.04));
+  border: 1px dashed var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  padding: 24px 18px;
+  text-align: center;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-size: 12px;
+}
+
+.pool-card {
+  background: var(--surface-elev-1, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pool-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pool-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.pool-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pool-row-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  flex-shrink: 0;
+}
+
+.pool-row-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f5f3ff);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.pool-pos {
+  color: #6dd4a0;
+}
+
+.pool-neg {
+  color: #e87c7c;
+}
+
+/* Action buttons — Add position is the primary CTA, Redeem is the
+   softer secondary action only shown when the user has shares. */
+.pool-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pool-action-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #f5f3ff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.pool-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Add position — primary peach hover (full peach fill, ink text). */
+.pool-action-btn:not(.pool-action-btn--redeem):hover {
+  background: #ffc6b0;
+  border-color: #ffc6b0;
+  color: #02000e;
+  box-shadow: 0 4px 14px rgba(255, 198, 176, 0.25);
+}
+
+.pool-action-btn--redeem {
+  background: transparent;
+}
+
+.pool-action-btn--redeem:hover {
+  background: rgba(232, 124, 124, 0.1);
+  border-color: rgba(232, 124, 124, 0.45);
+}

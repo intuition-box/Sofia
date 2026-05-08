@@ -1,10 +1,8 @@
 import { useSyncExternalStore, useEffect, useCallback } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { cartService } from "~/lib/services"
-import { normalizeUrl, createHookLogger } from "~/lib/utils"
+import { normalizeUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
-
-const logger = createHookLogger("useCart")
 
 export const useCart = () => {
   const { walletAddress } = useWalletFromStorage()
@@ -46,6 +44,14 @@ export const useCart = () => {
   const removeFromCart = useCallback(
     (itemId: string) => cartService.removeItem(itemId),
     []
+  )
+
+  const updateContextForUrl = useCallback(
+    (url: string, interestContext: string | null) => {
+      if (!walletAddress) return Promise.resolve()
+      return cartService.updateContextForUrl(walletAddress, url, interestContext)
+    },
+    [walletAddress]
   )
 
   const clearCart = useCallback(() => {
@@ -118,6 +124,7 @@ export const useCart = () => {
     addToCart,
     addVoteToCart,
     removeFromCart,
+    updateContextForUrl,
     clearCart,
     isInCart,
     isVoteInCart,

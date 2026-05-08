@@ -3,23 +3,24 @@
  * Used by StatsTab, UserStatsTab, GroupManagerModal for level colors and badges
  */
 
-// Tier colors — one color per decade of levels (1-10, 11-20, 21-30, …)
-// Each tier has a base hue that gets more vibrant as the level rises within it.
-export const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
-  { base: '#9CA3AF', hsl: [220, 9, 65] },   // Tier 0: Lvl 1-10  — Slate
-  { base: '#22C55E', hsl: [142, 71, 45] },   // Tier 1: Lvl 11-20 — Emerald
-  { base: '#3B82F6', hsl: [217, 91, 60] },   // Tier 2: Lvl 21-30 — Blue
-  { base: '#8B5CF6', hsl: [258, 90, 66] },   // Tier 3: Lvl 31-40 — Purple
-  { base: '#EF4444', hsl: [0, 84, 60] },     // Tier 4: Lvl 41-50 — Red
-  { base: '#EC4899', hsl: [330, 81, 60] },    // Tier 5: Lvl 51-60 — Pink
-  { base: '#06B6D4', hsl: [188, 94, 43] },   // Tier 6: Lvl 61-70 — Cyan
-  { base: '#F97316', hsl: [25, 95, 53] },     // Tier 7: Lvl 71-80 — Orange
-  { base: '#FBBF24', hsl: [43, 96, 56] },     // Tier 8: Lvl 81-90 — Amber
-  { base: '#FFD700', hsl: [51, 100, 50] },    // Tier 9: Lvl 91-100 — Gold
+// Tier colors — DS-aligned pastel palette (mirrors INTENTION_PASTEL) + gold cap.
+// One color per decade of levels (1-10, 11-20, …). Lightness ramps within each
+// tier so each level has a subtly different shade.
+const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
+  { base: '#8f8ca8', hsl: [245, 12, 60] },   // Tier 0: Lvl 1-10   — ds-muted (slate)
+  { base: '#6dd4a0', hsl: [146, 53, 63] },   // Tier 1: Lvl 11-20  — trusted (green)
+  { base: '#7bade0', hsl: [210, 60, 68] },   // Tier 2: Lvl 21-30  — work (blue)
+  { base: '#a78bdb', hsl: [263, 51, 70] },   // Tier 3: Lvl 31-40  — inspiration (purple)
+  { base: '#e87c7c', hsl: [0, 70, 70] },     // Tier 4: Lvl 41-50  — distrusted (red)
+  { base: '#d98cb3', hsl: [330, 51, 70] },   // Tier 5: Lvl 51-60  — buying (pink)
+  { base: '#5cc4d6', hsl: [188, 60, 60] },   // Tier 6: Lvl 61-70  — learning (cyan)
+  { base: '#e0896a', hsl: [16, 65, 65] },    // Tier 7: Lvl 71-80  — music (orange)
+  { base: '#e4b95a', hsl: [41, 73, 62] },    // Tier 8: Lvl 81-90  — fun (amber)
+  { base: '#FFD700', hsl: [51, 100, 50] },   // Tier 9: Lvl 91-100 — Gold (max tier cap)
 ]
 
 // Tier badge metadata — name, level range, and image import path
-export interface TierBadge {
+interface TierBadge {
   tier: number;
   name: string;
   levelRange: string;
@@ -76,14 +77,3 @@ export function getLevelColorAlpha(level: number, alpha = 0.19): string {
   return `hsla(${h}, ${s}%, ${adjustedL}%, ${alpha})`
 }
 
-/**
- * Get the tier base color (solid hex) for a given level.
- * Useful for CSS classes and simple color references.
- */
-export function getTierColor(level: number): string {
-  const tierIndex = Math.min(
-    Math.floor((level - 1) / 10),
-    TIER_COLORS.length - 1
-  )
-  return TIER_COLORS[tierIndex].base
-}

@@ -71,7 +71,9 @@ async function resolveTopClaims(
       objectUrl:
         triple.object?.value?.thing?.url ?? fallbackObj?.url ?? undefined,
       predicateLabel:
-        triple.predicate?.label ?? predicateByTerm.get(triple.term_id ?? '') ?? '',
+        triple.predicate?.label ??
+        predicateByTerm.get(triple.term_id ?? '') ??
+        '',
       stats,
       totalMarketCap,
     })
@@ -117,7 +119,8 @@ export function useTopClaims(addresses: string[] | undefined) {
   const normalized = addresses ? [...addresses].sort() : []
   const cacheKey =
     normalized.join(',') + '::' + candidates.termIds.slice(0, 64).join(',')
-  const enabled = !!addresses && addresses.length > 0 && candidates.termIds.length > 0
+  const enabled =
+    !!addresses && addresses.length > 0 && candidates.termIds.length > 0
 
   const { data, isLoading } = useQuery<TopClaim[]>({
     queryKey: ['topClaims', cacheKey],

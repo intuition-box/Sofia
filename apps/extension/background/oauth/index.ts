@@ -10,9 +10,6 @@ import { createServiceLogger } from '../../lib/utils/logger'
 
 const logger = createServiceLogger('OAuth')
 
-// Disable Twitter profile fetch for now
-const TWITTER_FETCH_PROFILE_ENABLED = false
-
 /**
  * Main OAuth service orchestrating all components
  * Reduced from 837 lines to ~100 lines by splitting responsibilities
@@ -23,7 +20,6 @@ export class OAuthService {
   private dataFetcher: PlatformDataFetcher
   private tripletExtractor: TripletExtractor
   private syncManager: SyncManager
-  private messageHandler: MessageHandler
   private platformRegistry: PlatformRegistry
 
   constructor() {
@@ -32,12 +28,14 @@ export class OAuthService {
     this.syncManager = new SyncManager()
     this.dataFetcher = new PlatformDataFetcher(this.tokenManager, this.syncManager, this.platformRegistry)
     this.tripletExtractor = new TripletExtractor(this.platformRegistry)
-    
+
     // Connect the services
     this.dataFetcher.setTripletExtractor(this.tripletExtractor)
-    
+
     this.flowManager = new OAuthFlowManager(this.platformRegistry, this.tokenManager)
-    this.messageHandler = new MessageHandler(this)
+    // MessageHandler attaches chrome.runtime.onMessage listeners in its
+    // constructor — instantiate for the side-effect, no field needed.
+    new MessageHandler(this)
     
     // Configure automatic data sync after auth
     this.flowManager.setAuthSuccessCallback(async (platform: string) => {
@@ -70,8 +68,8 @@ export class OAuthService {
   async syncPlatformData(platform: string): Promise<any> {
     logger.info(`Starting data sync for ${platform}`)
 
-    // Skip Twitter profile fetch for now
-    if (platform === 'twitter' && !TWITTER_FETCH_PROFILE_ENABLED) {
+    // Skip Twitter profile fetch — endpoint disabled while reworked
+    if (platform === 'twitter') {
       logger.warn('Twitter profile fetch disabled. Token stored successfully.')
       return { triplets: [], skipped: true }
     }
@@ -85,14 +83,6 @@ export class OAuthService {
     }
 
     return { triplets: userData.triplets }
-  }
-
-  async getSyncStatus(platform?: string): Promise<any> {
-    return this.syncManager.getSyncStatus(platform, this.tokenManager)
-  }
-
-  async resetSyncInfo(platform?: string): Promise<void> {
-    return this.syncManager.resetSyncInfo(platform)
   }
 }
 

@@ -3,7 +3,7 @@ import { BookmarkService } from '../lib/database'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { getAddress } from 'viem'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'
-import type { Triplet } from '../../extension/types/messages'
+import type { Triplet } from '../types/messages'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useBookmarks')

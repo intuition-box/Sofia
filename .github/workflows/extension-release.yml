@@ -1,0 +1,63 @@
+name: Extension Release (manual)
+
+# Manual trigger only — runs `apps/extension/build-release.sh <version>`
+# to build, package and publish a GitHub Release with the side-loadable
+# .zip + installation guide. Does not push to the Chrome Web Store
+# (still manual upload of the ZIP via the developer dashboard).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Extension version to release (e.g. 0.6.1)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release on GitHub'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  release:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # build-release.sh diffs commits against the previous tag for
+          # release notes, so we need full history.
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build release
+        working-directory: apps/extension
+        run: bash build-release.sh ${{ inputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: apps/extension
+        run: |
+          VERSION="${{ inputs.version }}"
+          FLAGS=""
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            FLAGS="--prerelease"
+          fi
+          gh release create "extension-v${VERSION}" \
+            "releases/sofia-extension-${VERSION}.zip" \
+            "releases/INSTALLATION_${VERSION}.md" \
+            --title "Sofia Extension v${VERSION}" \
+            --notes-file "releases/RELEASE_NOTES_${VERSION}.md" \
+            ${FLAGS}

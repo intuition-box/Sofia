@@ -1,58 +1,55 @@
 /**
- * useGetAtomAccount Hook
- * Integration with Intuition blockchain API to filter atoms by account type
- * Used for searching other users in the account tab
+ * useGetAtomAccount — backwards-compatible wrapper around the shared
+ * `searchAccounts` helper from `@0xsofia/graphql`. Kept so existing
+ * extension consumers (FollowSearchBox, ExplorerPanel) don't need to be
+ * touched in the same change. New consumers should import the shared
+ * hook directly:
+ *
+ *   import { useSearchAccounts } from '@0xsofia/graphql'
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { searchAccounts as sharedSearchAccounts, type AccountAtom as SharedAccountAtom } from '@0xsofia/graphql'
 import { API_CONFIG } from '../lib/config/chainConfig'
 
-export interface AccountAtom {
-  id: string
-  label: string
-  termId: string
+export type AccountAtom = SharedAccountAtom & {
   description?: string
   type: string
-  createdAt: string
-  creatorId: string
-  atomType: string // Le vrai type de l'atom (Account, Thing, Caip10, etc.)
-  ipfsUri?: string // IPFS URI of the atom for triple creation
-  image?: string // ENS avatar image URL
-  data?: string // Wallet address for Account atoms
 }
 
 interface UseGetAtomAccountResult {
-  // Data state
   accounts: AccountAtom[]
-
-  // Methods
   searchAccounts: (query: string) => Promise<AccountAtom[]>
   refreshAccounts: () => Promise<void>
 }
 
+const decorate = (a: SharedAccountAtom): AccountAtom => ({
+  ...a,
+  description: `Account: ${a.label}`,
+  type: 'Account',
+})
+
 /**
- * Hook for managing account atoms from Intuition blockchain
- * Filters atoms by type "account" for user search functionality
+ * Hook for managing account atoms from Intuition blockchain.
+ * Filters atoms by type "account" for user search functionality.
  */
 export const useGetAtomAccount = (): UseGetAtomAccountResult => {
   const [accounts, setAccounts] = useState<AccountAtom[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
+  // The "list" path stays local because it's only used by ExplorerPanel
+  // for the seed list and isn't worth promoting to the shared package.
   const refreshAccounts = useCallback(async (): Promise<void> => {
     if (isLoading) return
-
     setIsLoading(true)
-
     try {
       const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: `
             query GetAccountAtoms {
-              atoms(where: {type: {_eq: "Account"}}, limit: 50) {
+              atoms(where: { type: { _eq: "Account" } }, limit: 50) {
                 term_id
                 label
                 type
@@ -64,110 +61,40 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
           `,
         }),
       })
-
       const jsonData = await response.json()
-
       if (jsonData.errors) {
         throw new Error(`GraphQL error: ${jsonData.errors[0].message}`)
       }
-
       const atoms = jsonData.data?.atoms || []
-
-      const mappedAccounts: AccountAtom[] = atoms.map((atom: any) => ({
-        id: atom.term_id,
-        label: atom.label || 'Unknown',
-        termId: atom.term_id,
-        description: `Account: ${atom.label}`,
-        type: 'Account' as const,
-        createdAt: atom.created_at,
-        creatorId: atom.creator_id || '',
-        atomType: atom.type,
-        ipfsUri: atom.data, // This is the IPFS URI we need!
-        image: atom.image,
-        data: atom.data
-      }))
-
-      setAccounts(mappedAccounts)
-
-    } catch (err) {
+      const mapped: AccountAtom[] = atoms.map((atom: any) =>
+        decorate({
+          id: atom.term_id,
+          label: atom.label || 'Unknown',
+          termId: atom.term_id,
+          atomType: atom.type,
+          createdAt: atom.created_at,
+          creatorId: atom.creator_id || '',
+          ipfsUri: atom.data,
+          image: atom.image,
+          data: atom.data,
+        }),
+      )
+      setAccounts(mapped)
+    } catch {
       setAccounts([])
     } finally {
       setIsLoading(false)
     }
   }, [isLoading])
 
-  // Load once on mount
   useEffect(() => {
     refreshAccounts()
   }, [])
 
   const searchAccounts = useCallback(async (query: string): Promise<AccountAtom[]> => {
-    if (!query.trim()) return []
-
-    try {
-      const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            query SearchAtoms($searchTerm: String!) {
-              atoms(
-                where: {
-                  _and: [
-                    { label: { _ilike: $searchTerm } },
-                    { type: { _eq: "Account" } }
-                  ]
-                }
-                limit: 20
-              ) {
-                term_id
-                label
-                type
-                created_at
-                creator_id
-                data
-                image
-              }
-            }
-          `,
-          variables: {
-            searchTerm: `%${query}%`
-          }
-        }),
-      })
-
-      const jsonData = await response.json()
-
-      if (jsonData.errors) {
-        return []
-      }
-
-      const atoms = jsonData.data?.atoms || []
-
-      return atoms.map((atom: any) => ({
-        id: atom.term_id,
-        label: atom.label || 'Unknown',
-        termId: atom.term_id,
-        description: `${atom.type}: ${atom.label}`,
-        type: 'Account' as const,
-        createdAt: atom.created_at,
-        creatorId: atom.creator_id,
-        atomType: atom.type,
-        ipfsUri: atom.data,
-        image: atom.image,
-        data: atom.data
-      }))
-
-    } catch (err) {
-      return []
-    }
+    const results = await sharedSearchAccounts(query)
+    return results.map(decorate)
   }, [])
 
-  return {
-    accounts,
-    searchAccounts,
-    refreshAccounts
-  }
+  return { accounts, searchAccounts, refreshAccounts }
 }

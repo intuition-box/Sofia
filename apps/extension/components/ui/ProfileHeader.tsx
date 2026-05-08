@@ -5,8 +5,6 @@
  * Displays avatar, name, wallet address, and optional badges/actions
  */
 
-import React from "react"
-
 import Avatar from "./Avatar"
 import goldCoin from "./img/gold/goldcoin.png"
 import socialLinkedBg from "./img/badges/sociallinkedpp.png"

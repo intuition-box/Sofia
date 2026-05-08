@@ -87,26 +87,3 @@ export async function batchFetchIPFS(
   return resultMap
 }
 
-/**
- * Fetch IPFS metadata for a single URI
- */
-export async function fetchIPFSMetadata(ipfsUri: string): Promise<IPFSMetadata | null> {
-  if (!ipfsUri || !ipfsUri.startsWith('ipfs://')) {
-    return null
-  }
-  return fetchFromIPFS(ipfsUri)
-}
-
-/**
- * Clear IPFS cache
- */
-export function clearIPFSCache(): void {
-  ipfsCache.clear()
-}
-
-/**
- * Get cache size
- */
-export function getIPFSCacheSize(): number {
-  return ipfsCache.size
-}

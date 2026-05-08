@@ -1,0 +1,47 @@
+/**
+ * HexSplit — scroll-driven decoration. Two hexagons centered over the
+ * section, that spread outward and rotate as the section is scrolled
+ * past the viewport. Drives the visual energy of How / Comparison / CTA.
+ *
+ * Variables set inline by the React component:
+ *   --hex-size  : edge length of each hex (default 420px)
+ *   --hex-color : fill color (default rgba(0,0,0,.05))
+ *   --hex-spread: lateral offset px (animated)
+ *   --hex-rot   : extra rotation deg (animated)
+ */
+
+.host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hex {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--hex-size, 420px);
+  aspect-ratio: 1;
+  background: var(--hex-color, rgba(0, 0, 0, 0.05));
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  will-change: transform;
+}
+
+.l {
+  transform: translate(calc(-50% - var(--hex-spread, 0px)), -50%)
+    rotate(calc(-12deg - var(--hex-rot, 0deg)));
+}
+
+.r {
+  transform: translate(calc(-50% + var(--hex-spread, 0px)), -50%)
+    rotate(calc(18deg + var(--hex-rot, 0deg)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l,
+  .r {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}

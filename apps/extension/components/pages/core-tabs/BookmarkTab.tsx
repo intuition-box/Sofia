@@ -31,8 +31,7 @@ const BookmarkTab = () => {
     deleteList,
     updateList,
     addTripletToList,
-    getTripletsByList,
-    refreshFromLocal
+    getTripletsByList
   } = useBookmarks()
 
   // Intention categories (on-chain certified URLs)
@@ -116,15 +115,6 @@ const BookmarkTab = () => {
       }
     } catch (err) {
       logger.error('Failed to delete list', err)
-    }
-  }
-
-  const startEditingList = (listId: string) => {
-    const list = lists.find(l => l.id === listId)
-    if (list) {
-      setNewListName(list.name)
-      setNewListDescription(list.description || '')
-      setIsEditingList(listId)
     }
   }
 
@@ -217,20 +207,22 @@ const BookmarkTab = () => {
             >
               {isAddingSignal ? 'Cancel' : '+ Add'}
             </button>
-          ) : !showAllBookmarks ? (
-            <button
-              onClick={() => setIsCreatingList(true)}
-              className="btn iridescence-btn"
-              style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '700' }}
-            >
-              + New List
-            </button>
           ) : null}
         </div>
 
         {/* Categories as bookmark cards - Only show when no list is selected and not viewing all */}
         {!selectedListId && !showAllBookmarks && (
           <div className="lists-grid">
+            {/* New list ghost card — top 1, dashed border, matches explorer cr-card-new */}
+            <button
+              type="button"
+              onClick={() => setIsCreatingList(true)}
+              className="bookmark-card bookmark-card-new"
+            >
+              <span className="bookmark-card-new-plus">+</span>
+              <span className="bookmark-card-new-label">New list</span>
+            </button>
+
             {/* All bookmarks card */}
             <div
               onClick={() => {
@@ -238,7 +230,7 @@ const BookmarkTab = () => {
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
-              className="bookmark-card"
+              className="bookmark-card bookmark-card--colored"
               style={{ cursor: 'pointer' }}
             >
               <div className="bookmark-item">
@@ -302,16 +294,16 @@ const BookmarkTab = () => {
                     <div
                       key={category.id}
                       onClick={() => selectCategory(category.id)}
-                      className="bookmark-card"
-                      style={{ cursor: 'pointer' }}
+                      className="bookmark-card bookmark-card--colored"
+                      style={{
+                        cursor: 'pointer',
+                        '--cat-color': category.color
+                      } as React.CSSProperties}
                     >
                       <div className="bookmark-item">
                         <div className="bookmark-header-content">
                           <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              className="category-color-dot"
-                              style={{ backgroundColor: category.color }}
-                            />
+                            <span className="bookmark-card-dot" aria-hidden="true" />
                             <h4 style={{ margin: 0 }}>{category.label}</h4>
                           </div>
                           <div className="bookmark-list-meta">
@@ -514,7 +506,7 @@ const BookmarkTab = () => {
                 return (
                   <div
                     key={list.id}
-                    className="bookmark-card"
+                    className="bookmark-card bookmark-card--colored"
                     onClick={() => selectList(list.id)}
                     style={{ cursor: 'pointer' }}
                   >

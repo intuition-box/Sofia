@@ -10,13 +10,17 @@
     "dev:explorer": "bun run --filter explorer dev",
     "dev:extension": "bun run --filter extension dev",
     "dev:og": "bun run --filter og dev",
-    "dev:landing": "bun run --filter landing start",
+    "dev:doc": "bun run --filter doc start",
+    "dev:mastra": "bun run --filter mastra dev",
+    "dev:mcp": "bun run --filter mcp-server start:http",
+    "dev:stack": "concurrently -n mcp,mastra -c blue,green \"bun run dev:mcp\" \"bun run dev:mastra\"",
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter './apps/**' typecheck && bun run --filter './packages/**' typecheck && bun run --filter './services/**' typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "pino-pretty": "^11.3.0",
     "prettier": "^3.4.2"
   },

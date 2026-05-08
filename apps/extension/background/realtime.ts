@@ -94,8 +94,3 @@ export async function initializeRealtime(): Promise<void> {
   })
 }
 
-/** Exposed for manual cleanup — typically on full logout. */
-export function shutdownRealtime(): void {
-  manager.shutdown()
-  initialized = false
-}

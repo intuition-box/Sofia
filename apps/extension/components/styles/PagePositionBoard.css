@@ -60,7 +60,7 @@
 }
 
 .position-board__item.position-board__item--current-user {
-  background: rgba(199, 134, 108, 0.08);
+  background: rgba(255, 198, 176, 0.08);
   border-left: 2px solid var(--color-primary);
 }
 
@@ -71,15 +71,37 @@
 /* ── Rank ── */
 
 .position-board__rank {
-  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-very-muted);
-  min-width: 24px;
+  color: var(--ds-muted);
+  min-width: 26px;
   text-align: center;
+  letter-spacing: 0.04em;
 }
 
-.position-board__item:first-child .position-board__rank {
-  color: #D4A843;
+/* Top 3 — celebrate medals: bigger rank + accent left border on the row */
+.position-board__item:nth-child(1) {
+  border-left: 3px solid #FFD700; /* gold */
+}
+.position-board__item:nth-child(2) {
+  border-left: 3px solid #C0C0C0; /* silver */
+}
+.position-board__item:nth-child(3) {
+  border-left: 3px solid #CD7F32; /* bronze */
+}
+.position-board__item:nth-child(1) .position-board__rank,
+.position-board__item:nth-child(2) .position-board__rank,
+.position-board__item:nth-child(3) .position-board__rank {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.position-board__item:nth-child(1) .position-board__label,
+.position-board__item:nth-child(2) .position-board__label,
+.position-board__item:nth-child(3) .position-board__label {
+  font-weight: 700;
+  color: var(--ds-ink);
 }
 
 /* ── Avatar ── */
@@ -117,32 +139,30 @@
 
 /* ── Badge ── */
 
+/* Tier pills — solid filled bg (DS verb-tag shape) */
 .position-board__badge {
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px var(--spacing-xs);
-  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: none;
   white-space: nowrap;
+  color: #000;
 }
 
 .position-board__badge--pioneer {
-  color: #D4A843;
-  background: rgba(212, 168, 67, 0.12);
-  border: 1px solid rgba(212, 168, 67, 0.2);
+  background: var(--fun);
 }
 
 .position-board__badge--explorer {
-  color: #6B8AFF;
-  background: rgba(107, 138, 255, 0.1);
-  border: 1px solid rgba(107, 138, 255, 0.15);
+  background: var(--work);
 }
 
 .position-board__badge--contributor {
-  color: var(--color-text-very-muted);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--inspiration);
 }
 
 /* ── You Tag ── */
@@ -215,15 +235,6 @@
   50% { opacity: 1; }
 }
 
-/* ── Empty state ── */
-
-.position-board__empty {
-  padding: var(--spacing-md);
-  text-align: center;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-very-muted);
-}
-
 /* ── Animation ── */
 
 @keyframes positionBoardAppear {
@@ -251,6 +262,7 @@
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
   font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: var(--font-family-primary);
@@ -263,8 +275,13 @@
 }
 
 .share-certification-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--ds-ink);
+  border-color: var(--ds-ink);
+  color: #000;
+}
+
+.share-certification-btn:hover .share-certification-btn__icon {
+  filter: invert(0);
 }
 
 .share-certification-btn:disabled {

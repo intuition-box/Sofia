@@ -1,11 +1,11 @@
-/* Intention Selector - Compact Design */
+/* Intention Selector — sits inside .cert-section wrapper which provides title */
 .intention-selector {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
-  padding: 14px 16px;
-  margin-top: 12px;
+  padding: 0;
+  margin-top: 0;
 }
 
 .intention-selector.not-eligible {
@@ -13,73 +13,89 @@
 }
 
 .intention-selector .intention-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Gotu', cursive;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  text-align: center;
+  display: none;
 }
 
 .intention-pills {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
 }
 
+/* Default = neutral muted pill. Intention pastel revealed on hover only.
+   Certified/in-cart states reveal the color too (since the action is
+   already committed/queued). One class per intention slug; pastel CSS vars
+   come from DS theme.css. */
 .intention-pill {
   padding: 6px 16px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 14px;
-  font-weight: 200;
-  font-family: 'Montserrat', cursive;
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-muted);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
   cursor: pointer;
-  transition: all 0.15s ease;
-  text-transform: lowercase;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.intention-pill:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-}
+/* Hover: solid intention pastel + black text */
+.intention-pill--trusted:hover:not(:disabled),
+.intention-pill--trusted.certified,
+.intention-pill--trusted.in-cart           { background: var(--trusted);     color: #000; }
+.intention-pill--distrusted:hover:not(:disabled),
+.intention-pill--distrusted.certified,
+.intention-pill--distrusted.in-cart        { background: var(--distrusted);  color: #000; }
+.intention-pill--work:hover:not(:disabled),
+.intention-pill--work.certified,
+.intention-pill--work.in-cart              { background: var(--work);        color: #000; }
+.intention-pill--learning:hover:not(:disabled),
+.intention-pill--learning.certified,
+.intention-pill--learning.in-cart          { background: var(--learning);    color: #000; }
+.intention-pill--fun:hover:not(:disabled),
+.intention-pill--fun.certified,
+.intention-pill--fun.in-cart               { background: var(--fun);         color: #000; }
+.intention-pill--inspiration:hover:not(:disabled),
+.intention-pill--inspiration.certified,
+.intention-pill--inspiration.in-cart       { background: var(--inspiration); color: #000; }
+.intention-pill--buying:hover:not(:disabled),
+.intention-pill--buying.certified,
+.intention-pill--buying.in-cart            { background: var(--buying);      color: #000; }
+.intention-pill--music:hover:not(:disabled),
+.intention-pill--music.certified,
+.intention-pill--music.in-cart             { background: var(--music);       color: #000; }
 
 .intention-pill.certified {
-  font-weight: 600;
+  font-weight: 700;
+  border-color: rgba(0, 0, 0, 0.4);
 }
 
 .intention-pill.in-cart {
   border-style: dashed;
-  border-color: rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.08);
-  color: rgba(212, 175, 55, 0.85);
-  font-weight: 400;
-  opacity: 1;
+  border-color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
 }
 
-.intention-pill--trust {
-  text-transform: capitalize;
-  font-weight: 400;
-}
 
 .intention-pills__separator {
   width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 24px;
+  background: rgba(255, 255, 255, 0.18);
   align-self: center;
   flex-shrink: 0;
+  margin: 0 4px;
 }
 
 .intention-pill:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
-.intention-pill.in-cart:disabled {
+.intention-pill.in-cart:disabled,
+.intention-pill.certified:disabled {
   opacity: 0.85;
 }
 

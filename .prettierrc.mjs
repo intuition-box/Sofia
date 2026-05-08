@@ -17,4 +17,14 @@ export default {
   bracketSpacing: true,
   bracketSameLine: false,
   arrowParens: 'always',
+  overrides: [
+    {
+      // Docusaurus processes blog/docs `.md` files through its MDX loader,
+      // so JSX expressions like `{/* truncate */}` are valid content. Force
+      // Prettier to use the MDX parser here too — the default Markdown
+      // parser mangles `{/* */}` into `{/_ _/}` (interpreting `*` as italic).
+      files: ['apps/doc/blog/**/*.md', 'apps/doc/docs/**/*.md'],
+      options: { parser: 'mdx' },
+    },
+  ],
 }

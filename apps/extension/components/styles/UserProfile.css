@@ -12,8 +12,8 @@
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
-  color: #FBF7F5;
-  font-family: 'Montserrat', sans-serif;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   transition: all 0.3s ease;
   z-index: 10;
@@ -24,11 +24,21 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Stack the "Trusted ✓" pill and the "Retirer du trust circle" action
+   so both are visible on the profile of a user that is already in the
+   current account's trust circle. */
+.user-profile-trust-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
 /* ========== STATUS NOTE ========== */
 .user-profile-status-note {
   font-size: 12px;
   color: rgba(251, 247, 245, 0.5);
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   margin-top: 8px;
   text-align: center;
   font-style: italic;
@@ -39,6 +49,6 @@
   padding: 40px 20px;
   text-align: center;
   color: #ff6b6b;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
 }

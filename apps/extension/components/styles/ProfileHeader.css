@@ -12,14 +12,11 @@
   padding: 16px;
   gap: 14px;
   position: relative;
-  margin: 8px 12px;
-  margin-bottom: 15px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 8px 12px 16px;
+  background: #ffffff;
+  border: 1px solid var(--ds-border);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  color: #000;
 }
 
 /* Avatar wrapper — holds background dots + avatar */
@@ -83,15 +80,17 @@
 }
 
 .profile-name {
-  font-family: 'Gotu', cursive;
-  font-size: 18px;
-  font-weight: 600;
-  color: #FBF7F5;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #000;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  line-height: 1.15;
 }
 
 /* ========== META ROW (address + badge + signals + gold) ========== */
@@ -99,22 +98,24 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  font-family: 'Montserrat', sans-serif;
+  gap: 10px;
+  font-family: 'Geist', sans-serif;
   font-size: 11px;
 }
 
 .profile-meta-address {
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 400;
-  letter-spacing: 0.2px;
+  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 .profile-meta-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #22C55E;
+  color: #000;
   font-weight: 600;
 }
 
@@ -128,14 +129,14 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.7);
   font-weight: 500;
 }
 
 .profile-meta-signal-icon {
   width: 14px;
   height: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
 }
 
@@ -143,7 +144,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #FBBF24;
+  color: #000;
   font-weight: 700;
 }
 
@@ -157,7 +158,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: #EAB67A;
+  color: #000;
   font-weight: 600;
 }
 
@@ -191,7 +192,7 @@
   text-transform: uppercase;
   letter-spacing: 0.3px;
   transition: all 0.2s ease;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .badge-item:hover {
@@ -216,7 +217,7 @@
   color: #e5e7eb;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
-  font-family: Gotu, cursive;
+  font-family: 'Fraunces', serif;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -239,30 +240,3 @@
   filter: invert(1);
 }
 
-/* ========== LEGACY COMPAT (streak indicator used elsewhere) ========== */
-.streak-indicator {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: rgba(234, 182, 122, 0.15);
-  border: 1px solid rgba(234, 182, 122, 0.25);
-  font-family: 'Montserrat', sans-serif;
-}
-
-.streak-flame {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.streak-count {
-  font-size: 13px;
-  font-weight: 700;
-  color: #EAB67A;
-}
-
-.streak-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-}

@@ -18,7 +18,7 @@ interface GroupBentoCardProps {
 }
 
 const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
-  const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
+  const { domain, activeUrlCount, totalAttentionTime, urls } = group
 
   // Get active URLs for on-chain query (include OAuth URLs for correct count)
   const activeUrls = urls.filter(u => !u.removed).map(u => u.url)
@@ -41,13 +41,6 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   // Progress toward next level (same baseLevel as DetailView)
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
 
-  // Get dominant certification for styling
-  const dominantCert = Object.entries(certificationBreakdown)
-    .filter(([_, count]) => count > 0)
-    .sort(([, a], [, b]) => b - a)[0]
-
-  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as IntentionType] : '#C7866C'
-
   // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
   const highestPredicateLevel = group.predicateHistory?.length > 0
     ? Math.max(...group.predicateHistory.map(h => h.toLevel))
@@ -58,9 +51,6 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
     <div
       className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}`}
       onClick={onClick}
-      style={{
-        borderColor: dominantCert ? `${dominantColor}40` : undefined
-      }}
     >
       {/* Header with domain info */}
       <div className="group-bento-header">
@@ -75,12 +65,9 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         />
         <div className="group-bento-domain-info">
           <h3 className="group-bento-title">{domain}</h3>
-          {currentPredicate && (
-            <span className="group-bento-predicate">"{currentPredicate}"</span>
-          )}
         </div>
-        <div className="group-bento-level">
-          {onDelete && (
+        {onDelete && (
+          <div className="group-bento-level">
             <button
               className="group-delete-btn"
               onClick={(e) => {
@@ -91,16 +78,16 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
             >
               ×
             </button>
-          )}
-          <span
-            className="level-badge"
-            style={{ color: getLevelColor(displayLevel), background: getLevelColorAlpha(displayLevel) }}
-          >LVL {displayLevel}</span>
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Stats */}
+      {/* Stats — includes level badge */}
       <div className="group-bento-stats">
+        <div className="stat-item">
+          <span className="stat-value">{displayLevel}</span>
+          <span className="stat-label">Level</span>
+        </div>
         <div className="stat-item">
           <span className="stat-value">{activeUrlCount}</span>
           <span className="stat-label">URLs</span>
@@ -121,8 +108,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
           <div
             className="progress-bar-fill"
             style={{
-              width: `${progressPercent}%`,
-              background: dominantColor
+              width: `${progressPercent}%`
             }}
           />
         </div>

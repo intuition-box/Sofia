@@ -1,6 +1,6 @@
 import { memo } from "react"
 import type { IntentionPurpose } from '../../types/discovery'
-import { INTENTION_ITEMS, TRUST_ITEMS, getIntentionColor } from '~/types/intentionCategories'
+import { INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
 import '../styles/IntentionBubbleSelector.css'
 
 interface IntentionBubbleSelectorProps {
@@ -15,6 +15,8 @@ interface IntentionBubbleSelectorProps {
   alreadyDistrusted?: boolean
   trustInCart?: boolean
   distrustInCart?: boolean
+  // Allow re-clicking certified pills to add a deposit + context
+  allowDepositContext?: boolean
 }
 
 export const IntentionBubbleSelector = memo(({
@@ -28,9 +30,11 @@ export const IntentionBubbleSelector = memo(({
   alreadyDistrusted = false,
   trustInCart = false,
   distrustInCart = false,
+  allowDepositContext = false,
 }: IntentionBubbleSelectorProps) => {
-  const handleClick = (intention: IntentionPurpose) => {
+  const handleClick = (intention: IntentionPurpose, isCertified: boolean) => {
     if (disabled || !isEligible) return
+    if (isCertified && !allowDepositContext) return
     onBubbleClick(intention)
   }
 
@@ -44,23 +48,15 @@ export const IntentionBubbleSelector = memo(({
           const isTrust = type === "trusted"
           const isCertified = isTrust ? alreadyTrusted : alreadyDistrusted
           const isInCart = isTrust ? trustInCart : distrustInCart
-          const color = (isCertified || isInCart)
-            ? getIntentionColor(type)
-            : undefined
 
           return (
             <button
               key={type}
-              className={`intention-pill intention-pill--trust ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
+              className={`intention-pill intention-pill--${type} ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
               onClick={() => onTrustClick!(
                 predicateLabel as "trusts" | "distrust"
               )}
-              disabled={disabled || isCertified || isInCart}
-              style={(isCertified || isInCart) ? {
-                backgroundColor: `${color}${isInCart && !isCertified ? '15' : '25'}`,
-                borderColor: color,
-                color
-              } : undefined}
+              disabled={disabled || isCertified}
             >
               {isCertified
                 ? label
@@ -80,21 +76,13 @@ export const IntentionBubbleSelector = memo(({
         {INTENTION_ITEMS.map(({ key, label, type }) => {
           const isCertified = certifiedIntentions.includes(key)
           const isInCart = cartIntentions.includes(key)
-          const color = (isCertified || isInCart)
-            ? getIntentionColor(type)
-            : undefined
 
           return (
             <button
               key={key}
-              className={`intention-pill ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
-              onClick={() => handleClick(key)}
-              disabled={disabled || !isEligible}
-              style={(isCertified || isInCart) ? {
-                backgroundColor: `${color}${isInCart && !isCertified ? '15' : '25'}`,
-                borderColor: color,
-                color
-              } : undefined}
+              className={`intention-pill intention-pill--${type} ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
+              onClick={() => handleClick(key, isCertified)}
+              disabled={disabled || !isEligible || isCertified}
             >
               {isInCart && !isCertified ? `+ ${label}` : label}
             </button>

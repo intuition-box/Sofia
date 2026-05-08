@@ -102,33 +102,25 @@ export default function CircleDetailHero({
 
       <div className="crd-hero-right">
         <div className="crd-hero-actions">
-          <div className="crd-actions-head">
-            <div className="cr-section-head">Actions budget</div>
-            <button type="button" className="crd-get-more">
-              <Zap size={14} />
-              <span>Boost</span>
-            </button>
+          <div className="cr-section-head">Actions budget</div>
+          <div className="crd-actions-big">
+            {sponsorClaimsLeft.toLocaleString()}
           </div>
-          <div className="crd-actions-body">
-            <div>
-              <div className="crd-actions-big">
-                {sponsorClaimsLeft.toLocaleString()}
-              </div>
-              <div className="crd-actions-sub">actions left this month</div>
-            </div>
-            <div className="crd-actions-right">
-              <div className="crd-actions-bar">
-                <div
-                  className="crd-actions-fill"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <div className="crd-actions-meta">
-                <span>~{perMember} per member</span>
-                <span>resets in 16 days</span>
-              </div>
-            </div>
+          <div className="crd-actions-sub">actions left this month</div>
+          <div className="crd-actions-bar">
+            <div
+              className="crd-actions-fill"
+              style={{ width: `${pct}%` }}
+            />
           </div>
+          <div className="crd-actions-meta">
+            <span>~{perMember} per member</span>
+            <span>resets in 16 days</span>
+          </div>
+          <button type="button" className="crd-get-more">
+            <Zap size={14} />
+            <span>Boost</span>
+          </button>
         </div>
       </div>
     </div>
