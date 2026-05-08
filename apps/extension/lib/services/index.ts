@@ -9,7 +9,7 @@ export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
 
 // Wallet
-export { cleanupProvider, selectProviderByName, clearProviderSelection, createBoundProvider } from './walletProvider'
+export { createBoundProvider } from './walletProvider'
 
 // Currency & Economy
 export { goldService, getLevelUpCost } from './GoldService'
