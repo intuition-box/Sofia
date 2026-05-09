@@ -23,6 +23,25 @@ export const useCartSubmit = () => {
     async (items: CartItemRecord[], customWeight?: bigint) => {
       if (!walletAddress || items.length === 0) return
 
+      // Refuse to sign for cart items that don't belong to the active wallet.
+      // An async wallet swap between cart load and submit (chrome.storage
+      // listeners are independent) could otherwise cause the user to sign a
+      // batch they never assembled.
+      const submitter = walletAddress.toLowerCase()
+      const orphan = items.find(
+        item => item.walletAddress.toLowerCase() !== submitter
+      )
+      if (orphan) {
+        const msg = "Cart wallet mismatch — refresh the cart"
+        logger.error(msg, {
+          submitter,
+          orphanWallet: orphan.walletAddress,
+          orphanId: orphan.id
+        })
+        setError(msg)
+        return
+      }
+
       setSubmitting(true)
       setError(null)
       setResult(null)
