@@ -91,9 +91,19 @@ export const useCartSubmit = () => {
         if (batchResult?.success) {
           const contextItems = certItems
             .filter(item => item.interestContext)
-            .map((item, i) => {
-              const tripleVaultId = batchResult.results[i]?.tripleVaultId
+            .map(item => {
+              // Look up the triple vault by stable input key. Indexing into
+              // `batchResult.results` positionally is wrong: the service
+              // reorders entries (created first, then deposits) after dedup.
+              const inputKey = `${item.predicateName}|${item.url}`
+              const tripleVaultId = batchResult.vaultIdByInputKey?.[inputKey]
               const topicTermId = TOPIC_ATOM_IDS[item.interestContext!]
+              if (!tripleVaultId) {
+                logger.warn("Skip context triple: no vaultId resolved", {
+                  inputKey,
+                  interestContext: item.interestContext
+                })
+              }
               return tripleVaultId && topicTermId
                 ? { certTripleVaultId: tripleVaultId, topicTermId }
                 : null
