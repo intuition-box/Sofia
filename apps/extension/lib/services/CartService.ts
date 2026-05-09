@@ -16,7 +16,7 @@ import { createServiceLogger } from "../utils/logger"
 import { normalizeUrl } from "../utils/normalizeUrl"
 import { CartDataService } from "../database"
 import { INTENTION_PREDICATES } from "../../types/discovery"
-import { getPredicateIdByName } from "../config/predicateConstants"
+import { getPredicateIdByName, isKnownPredicateName } from "../config/predicateConstants"
 import { PREDICATE_NAMES } from "../config/chainConfig"
 import type { CartItemRecord } from "../../types/database"
 import type { IntentionPurpose } from "../../types/discovery"
@@ -33,6 +33,17 @@ export interface AtomsToCreateEstimate {
 }
 
 const logger = createServiceLogger("CartService")
+
+// Sanity check: every UI-visible intention predicate must resolve to a known
+// on-chain predicate. Catches drift between INTENTION_PREDICATES (UI) and
+// PREDICATE_NAME_TO_ID (canonical registry) at module load.
+for (const predicateName of Object.values(INTENTION_PREDICATES)) {
+  if (!isKnownPredicateName(predicateName)) {
+    logger.error(
+      `INTENTION_PREDICATES drift: "${predicateName}" missing from PREDICATE_NAME_TO_ID`
+    )
+  }
+}
 
 export interface CartState {
   items: CartItemRecord[]
@@ -125,6 +136,14 @@ class CartServiceClass {
     faviconUrl: string | null,
     interestContext?: string | null
   ): Promise<boolean> {
+    // Reject free-form predicate strings to prevent silent on-chain creation
+    // of attacker-shaped predicate atoms (lookalike trailing space, homograph,
+    // double-space). Only names registered in PREDICATE_NAME_TO_ID are allowed.
+    if (!isKnownPredicateName(predicateName)) {
+      logger.error("Rejected unknown predicate", { predicateName })
+      return false
+    }
+
     const { label: normalizedLabel } = normalizeUrl(url)
     const id = `${walletAddress.toLowerCase()}:${normalizedLabel}:${predicateName}`
 
@@ -173,6 +192,12 @@ class CartServiceClass {
     voteAction: "support" | "oppose",
     tripleTermId: string
   ): Promise<boolean> {
+    // Reject free-form predicate strings — see addItem rationale.
+    if (!isKnownPredicateName(predicateName)) {
+      logger.error("Rejected unknown predicate on vote", { predicateName })
+      return false
+    }
+
     const { label: normalizedLabel } = normalizeUrl(url)
     const wallet = walletAddress.toLowerCase()
     const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}`
