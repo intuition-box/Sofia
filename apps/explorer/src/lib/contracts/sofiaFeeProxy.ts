@@ -1,6 +1,42 @@
-/** SofiaFeeProxy ABI — deposits + triple creation. Redeems go through
- *  MultiVault directly. */
+/** SofiaFeeProxy ABI — atom creation, triple creation, deposits.
+ *  Redeems go through MultiVault directly. */
 export const SofiaFeeProxyAbi = [
+  // createAtoms(receiver, data[], assets[], curveId) payable → atomIds[]
+  // Mints brand-new atoms from raw bytes payloads (typically IPFS URIs
+  // returned by the pinThing mutation). Each entry's `assets[i]` is an
+  // optional initial deposit on the new atom's positive vault.
+  {
+    inputs: [
+      { internalType: 'address', name: 'receiver', type: 'address' },
+      { internalType: 'bytes[]', name: 'data', type: 'bytes[]' },
+      { internalType: 'uint256[]', name: 'assets', type: 'uint256[]' },
+      { internalType: 'uint256', name: 'curveId', type: 'uint256' },
+    ],
+    name: 'createAtoms',
+    outputs: [
+      { internalType: 'bytes32[]', name: 'atomIds', type: 'bytes32[]' },
+    ],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  // getAtomCost() view → cost (full creation cost for a single atom)
+  {
+    inputs: [],
+    name: 'getAtomCost',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // calculateAtomId(data) pure → atomId
+  // Pre-image of the deterministic atom hash, used to know the term_id
+  // before submitting the create-atoms transaction.
+  {
+    inputs: [{ internalType: 'bytes', name: 'data', type: 'bytes' }],
+    name: 'calculateAtomId',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'pure',
+    type: 'function',
+  },
   // createTriples(receiver, subjectIds[], predicateIds[], objectIds[], assets[], curveId)
   // payable → tripleIds[]
   // Used to mint a brand-new triple (subject/predicate/object atom term_ids
