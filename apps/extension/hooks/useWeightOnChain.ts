@@ -42,6 +42,12 @@ export const useWeightOnChain = () => {
         curveId: curveId.toString()
       })
 
+      const minShares = await BlockchainService.previewDepositMinShares(
+        tripleVaultId,
+        curveId,
+        additionalWeight
+      )
+
       const hash = await walletClient.writeContract({
         address: contractAddress,
         abi: SofiaFeeProxyAbi,
@@ -50,7 +56,7 @@ export const useWeightOnChain = () => {
           address as Address, // receiver
           tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
           curveId, // curveId
-          0n // minShares (0 for no slippage protection)
+          minShares // 1% slippage protection
         ],
         value: totalCost, // Use totalCost which includes Sofia fees
         chain: SELECTED_CHAIN,
@@ -130,12 +136,19 @@ export const useWeightOnChain = () => {
         sharesToRedeem = (userShares * weightToRemove) / totalAssets
       }
 
+      // Re-preview with the actual shares we're going to redeem to bound minAssets.
+      const minAssets = await BlockchainService.previewRedeemMinAssets(
+        tripleVaultId,
+        BigInt(curveId),
+        sharesToRedeem
+      )
+
       const txArgs = [
         address as Address,
         tripleVaultId as `0x${string}`,
         curveId,
         sharesToRedeem,
-        0n
+        minAssets
       ] as const
 
       // 2. Get wallet client right before write (minimize timeout window)
@@ -208,6 +221,12 @@ export const useWeightOnChain = () => {
       // Use curve ID 2 (Offset Progressive - Shares/Deposit)
       const curveId = 2n
 
+      const minShares = await BlockchainService.previewDepositMinShares(
+        tripleVaultId,
+        curveId,
+        amount
+      )
+
       const hash = await walletClient.writeContract({
         address: contractAddress,
         abi: SofiaFeeProxyAbi,
@@ -216,7 +235,7 @@ export const useWeightOnChain = () => {
           address as Address, // receiver
           tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
           curveId, // curveId
-          0n // minShares (0 for no slippage protection)
+          minShares // 1% slippage protection
         ],
         value: totalCost,
         chain: SELECTED_CHAIN,
@@ -279,7 +298,11 @@ export const useWeightOnChain = () => {
         const termIds = [tripleVaultId as Address, config.termId as Address]
         const curveIds = [curveId, config.curveId]
         const assets = [split.mainAmount, split.globalAmount]
-        const minShares = [0n, 0n]
+        const minShares = await BlockchainService.previewDepositMinSharesBatch(
+          termIds,
+          curveIds,
+          assets
+        )
         const totalDeposit = split.mainAmount + split.globalAmount
         const fee = await BlockchainService.calculateDepositFee(2, totalDeposit)
         const totalValue = totalDeposit + fee
@@ -333,6 +356,12 @@ export const useWeightOnChain = () => {
           curveId: curveId.toString()
         })
 
+        const minShares = await BlockchainService.previewDepositMinShares(
+          tripleVaultId,
+          curveId,
+          depositAmount
+        )
+
         const hash = await walletClient.writeContract({
           address: contractAddress,
           abi: SofiaFeeProxyAbi,
@@ -341,7 +370,7 @@ export const useWeightOnChain = () => {
             address as Address,
             tripleVaultId as `0x${string}`,
             curveId,
-            0n
+            minShares
           ],
           value: totalCost,
           chain: SELECTED_CHAIN,

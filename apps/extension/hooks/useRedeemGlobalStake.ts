@@ -113,12 +113,18 @@ export const useRedeemGlobalStake = () => {
       // 2. Get wallet client
       const { walletClient, publicClient } = await getClients()
 
+      const minAssets = await BlockchainService.previewRedeemMinAssets(
+        gsConfig.termId,
+        gsConfig.curveId,
+        shares
+      )
+
       const txArgs = [
         address as Address,
         gsConfig.termId as `0x${string}`,
         gsConfig.curveId,
         shares,
-        0n // minAssets (no slippage protection)
+        minAssets // 1% slippage protection
       ] as const
 
       // 3. Simulate first

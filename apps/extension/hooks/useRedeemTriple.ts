@@ -90,12 +90,18 @@ export const useRedeemTriple = () => {
       // 2. Get wallet client right before write (minimize timeout window)
       const { walletClient, publicClient } = await getClients()
 
+      const minAssets = await BlockchainService.previewRedeemMinAssets(
+        tripleVaultId,
+        BigInt(TRIPLE_CURVE_ID),
+        shares
+      )
+
       const txArgs = [
         address as Address,
         tripleVaultId as `0x${string}`,
         TRIPLE_CURVE_ID,
         shares,
-        0n // minAssets
+        minAssets
       ] as const
 
       // 3. Simulate first for better error messages
@@ -188,12 +194,19 @@ export const useRedeemTriple = () => {
       // Get wallet client right before write (minimize timeout window)
       const { walletClient, publicClient } = await getClients()
 
+      const curveIds = validTermIds.map(() => BigInt(TRIPLE_CURVE_ID))
+      const minAssets = await BlockchainService.previewRedeemMinAssetsBatch(
+        validTermIds,
+        curveIds,
+        sharesPerTriple
+      )
+
       const batchArgs = [
         address as Address,
         validTermIds.map(id => id as `0x${string}`),
-        validTermIds.map(() => BigInt(TRIPLE_CURVE_ID)),
+        curveIds,
         sharesPerTriple,
-        validTermIds.map(() => 0n)
+        minAssets
       ] as const
 
       // Simulate first
