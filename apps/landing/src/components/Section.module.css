@@ -71,6 +71,61 @@
   z-index: 2;
 }
 
+/* ── Blueprint draw-in: corner brackets + animated rule ──────── */
+
+.rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border-soft);
+  transform-origin: left center;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.peach .rule {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* The .section + .section { border-top } now lives in the animated rule
+   instead, so the rule can scaleX from 0. Remove the static border on
+   sections that have the rule. */
+.section + .section {
+  border-top: 0;
+}
+
+.corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+}
+
+.corner_tl {
+  top: 16px;
+  left: 16px;
+}
+.corner_tr {
+  top: 16px;
+  right: 16px;
+}
+.corner_bl {
+  bottom: 16px;
+  left: 16px;
+}
+.corner_br {
+  bottom: 16px;
+  right: 16px;
+}
+
 @media (max-width: 768px) {
   .section {
     padding: 96px 0;

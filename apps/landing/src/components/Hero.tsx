@@ -1,9 +1,13 @@
 import { Arrow } from './Arrow'
-import { useScrollAnim } from '../hooks/useScrollAnim'
 import { TopicsIntentions } from './Instruments'
 import styles from './Hero.module.css'
 
 const PARTNERS = [
+  {
+    name: 'Intuition',
+    logo: '/img/partners/intuitionlogo.svg',
+    url: 'https://intuition.systems',
+  },
   {
     name: 'Mastra',
     logo: '/img/partners/mastra.svg',
@@ -14,25 +18,18 @@ const PARTNERS = [
     logo: '/img/partners/colonnylogo.png',
     url: 'https://colony.io/',
   },
-  {
-    name: 'Intuition',
-    logo: '/img/partners/intuitionlogo.svg',
-    url: 'https://intuition.systems',
-  },
   { name: 'Phala', logo: '/img/partners/phala.svg', url: 'https://phala.com' },
 ]
 
+/**
+ * Hero — first slide in the HexDeck. Radar zoom is paused while we
+ * wire the deck; can be re-introduced as a slot-internal animation
+ * once the master timeline is stable.
+ */
 export function Hero() {
-  const heroRef = useScrollAnim<HTMLElement>()
-
   return (
-    <section
-      ref={heroRef}
-      className={`anim anim-up on-peach ${styles.hero}`}
-      id="top"
-    >
+    <section className={`on-peach ${styles.hero}`} id="top">
       <div className={styles.body}>
-        {/* LEFT — copy */}
         <div className={styles.copyZone}>
           <span className={styles.metaTag}>S.00 · COVER</span>
 
@@ -41,8 +38,8 @@ export function Hero() {
           </h1>
 
           <p className={`lede ${styles.lede}`}>
-            Sofia turns your web activity into a verifiable, rewarded on-chain
-            identity.
+            Your time online becomes a record only you can sign — kept
+            forever, rewarded by the people who follow you.
           </p>
 
           <div className={styles.cta}>
@@ -79,7 +76,6 @@ export function Hero() {
           </div>
         </div>
 
-        {/* RIGHT — visual: ink panel on peach, with corner labels */}
         <div className={styles.visualZone}>
           <div className={styles.diagram}>
             <span className={`${styles.plateTag} ${styles.tl}`}>

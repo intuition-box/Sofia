@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { WalletProvider } from './lib/web3/PrivyContext'
+import { SmoothScroll } from './lib/animation/SmoothScroll'
 import './styles/global.css'
 import App from './App'
 import { AuthPage } from './pages/auth/AuthPage'
@@ -12,9 +13,10 @@ import { OAuthCallback } from './pages/auth/OAuthCallback'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WalletProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />} />
+      <SmoothScroll>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/logout" element={<AuthLogout />} />
           <Route
@@ -57,8 +59,9 @@ createRoot(document.getElementById('root')!).render(
             path="/auth/youtube/callback"
             element={<OAuthCallback platform="youtube" />}
           />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </SmoothScroll>
     </WalletProvider>
   </StrictMode>,
 )

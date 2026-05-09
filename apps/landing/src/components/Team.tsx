@@ -61,7 +61,48 @@ interface Advisor {
   company: string
   avatar: string
   x: string
+  expertise: string[]
+  quote: string
 }
+
+interface Testimonial {
+  handle: string
+  name: string
+  role: string
+  quote: string
+  intent: 'work' | 'learning' | 'fun' | 'inspiration' | 'music' | 'buying'
+  source: 'X' | 'Discord' | 'Telegram'
+  ago: string
+}
+
+interface Traction {
+  tag: string
+  value: string
+  label: string
+}
+
+const TRACTION: Traction[] = [
+  {
+    tag: 'T.01',
+    value: '20K',
+    label: 'Intuition grant',
+  },
+  {
+    tag: 'T.02',
+    value: '10K',
+    label: 'on-chain interactions',
+  },
+  {
+    tag: 'T.03',
+    value: '2 500',
+    label: 'TRUST distributed',
+  },
+  {
+    tag: 'T.04',
+    value: 'DAO',
+    label: 'community-owned',
+  },
+]
 
 const ADVISORS: Advisor[] = [
   {
@@ -70,6 +111,9 @@ const ADVISORS: Advisor[] = [
     company: 'Zet.box',
     avatar: 'https://unavatar.io/twitter/olivierjeremie',
     x: 'olivierjeremie',
+    expertise: ['DAO ops', 'Web3 strategy', 'Tokenomics'],
+    quote:
+      "Sofia turns the most ordinary act of the web — opening a tab — into a sovereign signal. That's the missing primitive.",
   },
   {
     name: 'James Woods',
@@ -77,6 +121,9 @@ const ADVISORS: Advisor[] = [
     company: 'W O O D S',
     avatar: 'https://unavatar.io/twitter/W00DS_eth',
     x: 'W00DS_eth',
+    expertise: ['Brand', 'GTM', 'Community'],
+    quote:
+      "We don't sell extensions. We sell ownership. Sofia is the first product I've seen articulate that for the open web.",
   },
   {
     name: 'Billy Luentke',
@@ -84,6 +131,72 @@ const ADVISORS: Advisor[] = [
     company: '0xBilly',
     avatar: 'https://unavatar.io/twitter/0xbilly',
     x: '0xbilly',
+    expertise: ['Product', 'Distribution', 'Intuition'],
+    quote:
+      'Once you certify your first intent on Sofia, the rest of the web feels read-only. There is no going back.',
+  },
+]
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    handle: '0xnova.eth',
+    name: 'Nova',
+    role: 'Independent researcher',
+    quote:
+      'I had no idea my reading habits were a portfolio. Three weeks in, my Sofia graph reads like a CV I never had to write.',
+    intent: 'learning',
+    source: 'X',
+    ago: '2d',
+  },
+  {
+    handle: 'lyra_bld',
+    name: 'Lyra',
+    role: 'Product designer',
+    quote:
+      "Trust signals on every page is the feature I didn't know I was missing. My circle's taste shows up where I browse — finally.",
+    intent: 'inspiration',
+    source: 'Discord',
+    ago: '5d',
+  },
+  {
+    handle: 'passive_records',
+    name: 'Sam',
+    role: 'Music producer',
+    quote:
+      'Built my reputation on Sofia in three weeks. The atoms I minted are real proof of taste, not vibes — labels can verify it on-chain.',
+    intent: 'music',
+    source: 'X',
+    ago: '1w',
+  },
+  {
+    handle: 'jolad.eth',
+    name: 'Jolad',
+    role: 'DAO operator',
+    quote:
+      'We share knowledge graphs across the team. Curation that used to live in random Notion pages is now an actual on-chain asset.',
+    intent: 'work',
+    source: 'Telegram',
+    ago: '4d',
+  },
+  {
+    handle: 'wieedze.eth',
+    name: 'Maxime',
+    role: 'Music producer',
+    quote:
+      'Three months in, my expertise badges started unlocking real introductions. The protocol does what playlists never could.',
+    intent: 'music',
+    source: 'Discord',
+    ago: '6d',
+  },
+  {
+    handle: 'orin.eth',
+    name: 'Orin',
+    role: 'Indie hacker',
+    quote:
+      "Sofia's radar surfaces what my own attention misses. It's the first AI agent that feels like it's actually working with me, not on me.",
+    intent: 'fun',
+    source: 'X',
+    ago: '3d',
   },
 ]
 
@@ -95,7 +208,7 @@ export function Team() {
       id="team"
       code="S.07"
       label="OPERATORS"
-      meta={`${TEAM.length} CORE · ${ADVISORS.length} ADVISORS`}
+      meta={`${TEAM.length} CORE · ${ADVISORS.length} ADVISORS · ${TESTIMONIALS.length} VOICES`}
     >
       <SectionHead
         eyebrow="The team"
@@ -107,14 +220,43 @@ export function Team() {
         sub="Sofia is built in public on Intuition. Every contributor is reachable; every advisor stakes their name on the work."
       />
 
+      <div className={`${styles.traction} stagger`}>
+        {TRACTION.map((t, i) => (
+          <article
+            key={t.label}
+            className={`${styles.tractionCard} anim anim-up`}
+            style={{ ['--i' as never]: i }}
+          >
+            <span className={styles.tractionTag}>{t.tag}</span>
+            <span className={styles.tractionValue}>{t.value}</span>
+            <span className={styles.tractionLabel}>{t.label}</span>
+          </article>
+        ))}
+      </div>
+
       <div className={`${styles.grid} stagger`}>
         {TEAM.map((m, i) => (
           <MemberCard key={m.name} member={m} index={i} />
         ))}
       </div>
 
+      {/* Testimonials — voices from the community */}
+      <div className={styles.voicesHeader}>
+        <span className={styles.voicesEyebrow}>— FROM THE COMMUNITY</span>
+        <span className={styles.voicesMeta}>
+          {TESTIMONIALS.length} VOICES · LIVE
+        </span>
+      </div>
+
+      <div className={`${styles.voicesGrid} stagger`}>
+        {TESTIMONIALS.map((t, i) => (
+          <TestimonialCard key={t.handle} t={t} index={i} />
+        ))}
+      </div>
+
       <div ref={advHeaderRef} className={`${styles.advHeader} anim anim-up`}>
         <span className={styles.advHeaderRule}>— ADVISORS</span>
+        <span className={styles.advHeaderMeta}>{ADVISORS.length} OPERATORS</span>
       </div>
 
       <div className={`${styles.advGrid} stagger`}>
@@ -123,6 +265,48 @@ export function Team() {
         ))}
       </div>
     </Section>
+  )
+}
+
+function TestimonialCard({ t, index }: { t: Testimonial; index: number }) {
+  const ref = useScrollAnim<HTMLElement>()
+  const intentColor = `var(--${t.intent})`
+  return (
+    <article
+      ref={ref}
+      className={`${styles.voice} anim anim-up`}
+      style={
+        {
+          ['--i' as never]: index,
+          ['--voice-accent' as never]: intentColor,
+        } as React.CSSProperties
+      }
+    >
+      <div className={styles.voiceHead}>
+        <span
+          className={styles.voiceAvatar}
+          style={
+            {
+              background: `linear-gradient(135deg, ${intentColor}, var(--color-accent))`,
+            } as React.CSSProperties
+          }
+          aria-hidden="true"
+        >
+          {t.name.charAt(0)}
+        </span>
+        <div className={styles.voiceMeta}>
+          <span className={styles.voiceHandle}>@{t.handle}</span>
+          <span className={styles.voiceRole}>{t.role}</span>
+        </div>
+        <span className={styles.voiceTag}>{t.intent}</span>
+      </div>
+      <p className={styles.voiceQuote}>{t.quote}</p>
+      <div className={styles.voiceFoot}>
+        <span className={styles.voiceSource}>{t.source}</span>
+        <span className={styles.voiceDot}>·</span>
+        <span className={styles.voiceAgo}>{t.ago} ago</span>
+      </div>
+    </article>
   )
 }
 
@@ -183,14 +367,30 @@ function AdvisorCard({ advisor, index }: { advisor: Advisor; index: number }) {
       className={`${styles.adv} anim anim-up`}
       style={{ ['--i' as never]: index }}
     >
-      <img
-        src={advisor.avatar}
-        alt={advisor.name}
-        className={styles.advAvatar}
-      />
-      <span className={styles.advRole}>{advisor.role}</span>
-      <span className={styles.advName}>{advisor.name}</span>
-      <span className={styles.advCo}>{advisor.company}</span>
+      <div className={styles.advHead}>
+        <img
+          src={advisor.avatar}
+          alt={advisor.name}
+          className={styles.advAvatar}
+        />
+        <div className={styles.advHeadMeta}>
+          <span className={styles.advRole}>{advisor.role}</span>
+          <span className={styles.advName}>{advisor.name}</span>
+          <span className={styles.advCo}>
+            {advisor.company} · @{advisor.x}
+          </span>
+        </div>
+      </div>
+
+      <p className={styles.advQuote}>{advisor.quote}</p>
+
+      <div className={styles.advTags}>
+        {advisor.expertise.map((tag) => (
+          <span key={tag} className={styles.advTag}>
+            {tag}
+          </span>
+        ))}
+      </div>
     </a>
   )
 }

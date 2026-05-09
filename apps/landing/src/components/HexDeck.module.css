@@ -1,0 +1,116 @@
+/**
+ * HexDeck — horizontal-scroll deck with a fixed hex accent.
+ *
+ * The container reserves the full pin distance via the inner viewport
+ * wrapper; ScrollTrigger pins the container for the duration so the
+ * track's horizontal translation is driven by vertical scroll.
+ */
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+
+.slide {
+  flex: 0 0 100vw;
+  height: 100%;
+  position: relative;
+  /* Reserve space for the fixed navbar so content doesn't tuck under
+     it. The navbar is rendered outside the deck (sibling of HexDeck). */
+  padding-top: var(--nav-h, 64px);
+  overflow: hidden;
+}
+
+.slide > * {
+  width: 100%;
+  height: 100%;
+  margin-top: 0 !important;
+}
+
+/* Compress in-deck section padding so each section fits inside its
+   100vh slide without cropping. Sections outside the deck (FAQ, CTA,
+   Footer) keep their full vertical rhythm. */
+/* Sections inside the deck are flex columns so the body can fill
+   the available height without overflowing. min-height anchored to
+   100vh inside the section CSS modules is cancelled. */
+.slide :global(section) {
+  padding-top: clamp(32px, 3.5vh, 56px) !important;
+  padding-bottom: clamp(32px, 3.5vh, 56px) !important;
+  min-height: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide :global(section) > div {
+  /* Allow the section body to absorb the leftover space and shrink
+     content if needed; cancels any 100vh-based min-height inside. */
+  min-height: 0 !important;
+}
+
+.slide :global(.container) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ── Hex accent — large background marker that takes the page height.
+ *
+ * Sized off the viewport height so the hex feels like a full-height
+ * watermark, not a small chip. Aspect 1.155:1 = 2/sqrt(3) so the
+ * flat-top polygon below fills the box as a perfectly regular hex.
+ *
+ * Color adapts to the active slide via `data-bg`:
+ *   - peach surfaces → a soft tone slightly lighter than the peach
+ *   - dark surfaces  → a soft gray
+ * The transition is smoothed with a CSS color transition so the
+ * snap at slide midpoint reads as a wash rather than a flash.
+ */
+
+.hex {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 88vh;
+  aspect-ratio: 1.1547 / 1;
+  background: rgba(255, 220, 198, 0.45);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  z-index: 1;
+  transition: background 0.5s var(--ease-out, ease);
+}
+
+.hex[data-bg='peach'] {
+  /* Whisper-soft cream over peach. Just enough to read as a shape,
+     not enough to compete with the section content. */
+  background: rgba(255, 240, 226, 0.12);
+}
+
+.hex[data-bg='dark'] {
+  /* Faint gray on dark — outline-grade presence. */
+  background: rgba(255, 255, 255, 0.025);
+}
+
+@media (max-width: 720px) {
+  .hex {
+    height: 70vh;
+  }
+}

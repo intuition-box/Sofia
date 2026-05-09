@@ -8,8 +8,9 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.18);
-  border-left: 1px solid rgba(0, 0, 0, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  background: #02000e;
 }
 
 .card {
@@ -17,14 +18,16 @@
   flex-direction: column;
   gap: 14px;
   padding: 32px 24px 30px;
-  border-right: 1px solid rgba(0, 0, 0, 0.18);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: #02000e;
+  color: rgba(255, 255, 255, 0.92);
   transition: background 0.25s;
   min-height: 280px;
 }
 
 .card:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .cardHead {
@@ -37,7 +40,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.22em;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .trust {
@@ -45,7 +48,7 @@
   align-items: baseline;
   gap: 5px;
   font-family: var(--font-mono);
-  color: #02000e;
+  color: var(--color-accent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -58,7 +61,7 @@
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  opacity: 0.65;
+  opacity: 0.7;
 }
 
 .name {
@@ -67,7 +70,7 @@
   font-weight: 500;
   letter-spacing: -0.022em;
   line-height: 1.15;
-  color: #02000e;
+  color: #ffffff;
   font-variation-settings:
     'opsz' 144,
     'SOFT' 30;
@@ -77,7 +80,7 @@
 .desc {
   font-size: 0.875rem;
   line-height: 1.55;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 0.68);
   flex: 1;
   margin: 0;
 }
@@ -89,9 +92,9 @@
   gap: 8px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #02000e;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   background: transparent;
-  color: #02000e;
+  color: rgba(255, 255, 255, 0.92);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
@@ -100,12 +103,14 @@
   cursor: pointer;
   transition:
     background 0.2s,
-    color 0.2s;
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .vote:hover {
-  background: #02000e;
-  color: var(--color-accent);
+  background: var(--color-accent);
+  color: #02000e;
+  border-color: var(--color-accent);
 }
 
 .vote:disabled {

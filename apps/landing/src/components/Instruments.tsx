@@ -426,58 +426,62 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
     {
       z: 250,
       tag: 'L.01',
-      name: 'EXTENSION',
-      sub: 'capture · echoes · bookmarks',
+      name: 'BROWSING ACTIVITY',
+      sub: 'pages · sessions · echoes',
       color: lc[0],
       dots: 6,
-      detail: 'chromium · local storage',
+      detail: 'your data · stays local',
     },
     {
-      z: 200,
+      z: 187.5,
       tag: 'L.02',
-      name: 'PHALA TEE',
-      sub: 'encrypt · attest · zero-trust',
+      name: 'EXTENSION',
+      sub: 'capture · summarize · sign',
       color: lc[1],
-      dots: 9,
-      detail: 'tee · sealed compute',
+      dots: 10,
+      detail: 'chromium · local-first agent',
     },
     {
-      z: 150,
+      z: 125,
       tag: 'L.03',
-      name: 'AGENT',
-      sub: 'intentions · topics · pulse',
+      name: 'PUBLIC LEDGER',
+      sub: 'signed · permanent · yours',
       color: lc[2],
-      dots: 13,
-      detail: 'mastra · gaianet · qwen2.5',
+      dots: 14,
+      detail: 'a record nobody can rewrite',
     },
     {
-      z: 100,
+      z: 62.5,
       tag: 'L.04',
-      name: 'CERTIFY',
-      sub: '[you] → [intention] → [page]',
+      name: 'COLLECTIVE INTELLIGENCE',
+      sub: 'resonance · ranking · trends',
       color: lc[3],
-      dots: 17,
-      detail: 'triples · signed · on-chain',
-    },
-    {
-      z: 50,
-      tag: 'L.05',
-      name: 'EXPLORER',
-      sub: 'resonance · vote · trending',
-      color: lc[4],
-      dots: 21,
-      detail: 'circle feed · claims · leaderboards',
+      dots: 18,
+      detail: 'aggregated signal · network',
     },
     {
       z: 0,
-      tag: 'L.06',
-      name: 'CIRCLES',
+      tag: 'L.05',
+      name: 'TRUSTED CIRCLE',
       sub: 'follow · stake · reputation',
-      color: lc[5],
-      dots: 25,
-      detail: 'trust graph · TRUST · XP · gold',
+      color: lc[4],
+      dots: 22,
+      detail: 'your people · your weighting',
     },
   ]
+
+  const REVEAL_START = 0.3
+  const REVEAL_STRIDE = 0.55
+  const REVEAL_FADE = 0.4
+  /* Reveal order: top of screen first → bottom of screen last.
+     With descending z values (L.01 at bottom, L.05 at top), this means
+     starting from the LAST layer in the array and walking back. */
+  const layerOpacity = (i: number) => {
+    const order = layers.length - 1 - i
+    const start = REVEAL_START + order * REVEAL_STRIDE
+    return Math.max(0, Math.min(1, (t - start) / REVEAL_FADE))
+  }
+  const allRevealed = t > REVEAL_START + (layers.length - 1) * REVEAL_STRIDE + REVEAL_FADE
 
   const cx = 215
   const cy = 130
@@ -496,7 +500,8 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
     dots,
     idx,
     isTop,
-  }: Layer & { idx: number; isTop: boolean }) => {
+    opacity,
+  }: Layer & { idx: number; isTop: boolean; opacity: number }) => {
     const tl = pt(-W, -W, z)
     const tr = pt(W, -W, z)
     const br = pt(W, W, z)
@@ -514,7 +519,7 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
     const labelX = right[0] + 22
     const labelY = right[1] + 2
     return (
-      <g>
+      <g opacity={opacity} style={{ transition: 'opacity 0.2s linear' }}>
         <path
           d={path}
           fill={isTop ? p.plateFillTop : p.plateFill}
@@ -598,9 +603,11 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
   const spineTop = pt(0, 0, 250)
   const spineBot = pt(0, 0, 0)
 
+  /* Travel dots flow top → bottom: u=0 starts at z=0 (top of screen),
+     u=1 ends at z=250 (bottom of screen). */
   const travelDots = [0, 0.2, 0.4, 0.6, 0.8].map((off) => {
     const u = (off + ((t * 0.16) % 1)) % 1
-    return { p: pt(0, 0, 250 - u * 250), u }
+    return { p: pt(0, 0, u * 250), u }
   })
 
   return (
@@ -680,19 +687,26 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
       />
 
       {layers.map((L, i) => (
-        <Plate key={i} {...L} idx={i} isTop={i === 0} />
-      ))}
-
-      {travelDots.map(({ p: pos, u }, i) => (
-        <circle
+        <Plate
           key={i}
-          cx={pos[0]}
-          cy={pos[1]}
-          r="2.5"
-          fill={p.travel}
-          opacity={0.4 + u * 0.6}
+          {...L}
+          idx={i}
+          isTop={i === 0}
+          opacity={layerOpacity(i)}
         />
       ))}
+
+      {allRevealed &&
+        travelDots.map(({ p: pos, u }, i) => (
+          <circle
+            key={i}
+            cx={pos[0]}
+            cy={pos[1]}
+            r="2.5"
+            fill={p.travel}
+            opacity={0.4 + u * 0.6}
+          />
+        ))}
 
       <g
         transform="translate(40, 36)"
@@ -703,7 +717,7 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
       >
         <text>FIG.D · SOFIA SYSTEM TOPOLOGY</text>
         <text y="12" fontSize="7" fill={p.fgDim} letterSpacing="0.18em">
-          6 LAYERS · ISOMETRIC 30°
+          5 LAYERS · ISOMETRIC 30°
         </text>
       </g>
 

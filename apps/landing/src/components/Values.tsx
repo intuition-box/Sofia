@@ -20,10 +20,10 @@ export function Values() {
         eyebrow="What we stand for"
         title={
           <>
-            Vote on the five values <em>that shape Sofia.</em>
+            The values <em>the community staked into existence.</em>
           </>
         }
-        sub="These are the convictions Sofia operates on. Stake TRUST behind the ones you stand by — your position is signed on-chain and visible in the protocol."
+        sub="Sofia doesn't pick its principles — you do. Each value below was surfaced and ranked by the people who staked TRUST on the ones they believe in most. The more conviction behind a value, the more weight it carries in the protocol."
         variant="peach"
       />
 
