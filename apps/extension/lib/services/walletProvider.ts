@@ -26,6 +26,38 @@ const logger = createServiceLogger('WalletProvider')
 // safe upper bound that stays imperceptible.
 const PROVIDER_DISCOVERY_WAIT_MS = 50
 
+/**
+ * Registry mapping Privy's `walletClientType` (the value we persist in
+ * `chrome.storage.session.walletType` at connect time) to the canonical
+ * EIP-6963 `rdns` (reverse-DNS) of that wallet. We accept multiple variants
+ * because some wallets ship under historical or vendor-suffixed rdns.
+ *
+ * `rdns` is the only stable, attacker-resistant identifier in EIP-6963 —
+ * unlike `name` (free-form, copyable) or `uuid` (regenerated per page load).
+ *
+ * If you add a wallet here, verify the rdns by reading
+ * `window.dispatchEvent(new Event('eip6963:requestProvider'))` events from
+ * a known-good install of the wallet.
+ */
+const WALLET_RDNS_REGISTRY: Record<string, string[]> = {
+  metamask: ['io.metamask', 'io.metamask.flask'],
+  rabby: ['io.rabby', 'io.rabby.wallet'],
+  coinbase_wallet: ['com.coinbase.wallet', 'org.toshi'],
+  trust_wallet: ['com.trustwallet.app'],
+  okx_wallet: ['com.okex.wallet'],
+  brave_wallet: ['com.brave.wallet'],
+  phantom: ['app.phantom'],
+  zerion: ['io.zerion.wallet'],
+  rainbow: ['me.rainbow'],
+  frame: ['sh.frame']
+}
+
+function resolveExpectedRdns(walletType: string | null): string[] {
+  if (!walletType) return []
+  const key = walletType.toLowerCase().trim()
+  return WALLET_RDNS_REGISTRY[key] ?? []
+}
+
 // ── Tab resolution ─────────────────────────────────────────────────────────
 
 async function getActiveTabId(): Promise<number> {
@@ -67,6 +99,7 @@ function walletRpcFn(
   method: string,
   params: unknown[],
   walletType: string,
+  expectedRdnsList: string[],
   discoveryWaitMs: number
 ): Promise<{ result?: unknown; error?: { message: string; code?: number } }> {
   return new Promise((resolve) => {
@@ -101,31 +134,59 @@ function walletRpcFn(
       let selected: Eip6963Detail['provider'] | null = null
 
       if (walletType) {
-        const norm = walletType
-          .toLowerCase()
-          .replace(/_wallet$/, '')
-          .replace(/_/g, ' ')
-          .trim()
-        const match = announced.find((p) => {
-          const name = p.info.name.toLowerCase()
-          const rdns = (p.info.rdns || '').toLowerCase()
-          return (
-            name.includes(norm) ||
-            rdns.includes(norm) ||
-            norm.includes(name.split(' ')[0])
-          )
-        })
-        if (!match) {
-          const available = announced.map((p) => p.info.name).join(', ')
-          resolve({
-            error: {
-              message: `Selected wallet "${walletType}" is not available on this page. Available: ${available}. Please reconnect.`,
-              code: -32002,
-            },
+        // Strict EIP-6963 matching: a wallet is selected iff its `rdns`
+        // (reverse-DNS — the only stable, attacker-resistant identifier
+        // standardised by EIP-6963) appears in the registry-derived
+        // expectedRdnsList. The previous loose contains-match accepted
+        // an attacker provider named "M" as MetaMask.
+        if (expectedRdnsList.length > 0) {
+          const match = announced.find((p) => {
+            const rdns = (p.info.rdns || '').toLowerCase()
+            return expectedRdnsList.includes(rdns)
           })
-          return
+          if (!match) {
+            const available = announced
+              .map((p) => `${p.info.name} (${p.info.rdns || 'no rdns'})`)
+              .join(', ')
+            resolve({
+              error: {
+                message: `Selected wallet "${walletType}" not announced on this page (expected rdns: ${expectedRdnsList.join(', ')}). Available: ${available}. Please reconnect.`,
+                code: -32002,
+              },
+            })
+            return
+          }
+          selected = match.provider
+        } else {
+          // walletType is set but unknown to the registry. Fall back to a
+          // strict equality match on name/rdns (no substring) so an attacker
+          // cannot win with a partial name overlap. If nothing matches, fail
+          // closed — better to ask the user to reconnect than to sign with
+          // an unverified provider.
+          const norm = walletType
+            .toLowerCase()
+            .replace(/_wallet$/, '')
+            .replace(/_/g, ' ')
+            .trim()
+          const match = announced.find((p) => {
+            const name = p.info.name.toLowerCase()
+            const rdns = (p.info.rdns || '').toLowerCase()
+            return name === norm || rdns === norm
+          })
+          if (!match) {
+            const available = announced
+              .map((p) => `${p.info.name} (${p.info.rdns || 'no rdns'})`)
+              .join(', ')
+            resolve({
+              error: {
+                message: `Selected wallet "${walletType}" not announced on this page. Available: ${available}. Please reconnect.`,
+                code: -32002,
+              },
+            })
+            return
+          }
+          selected = match.provider
         }
-        selected = match.provider
       } else {
         // walletType missing — should be rare (storage gets it at connect time).
         // Use first announced as a best-effort fallback; the user will have to
@@ -164,13 +225,26 @@ async function executeRpc(
   params: unknown[] | undefined,
   walletType: string | null
 ): Promise<unknown> {
+  const expectedRdnsList = resolveExpectedRdns(walletType)
+  if (walletType && expectedRdnsList.length === 0) {
+    logger.warn('Wallet type unknown to RDNS registry, falling back to strict equality match', {
+      walletType
+    })
+  }
+
   let executions: chrome.scripting.InjectionResult<unknown>[]
   try {
     executions = await chrome.scripting.executeScript({
       target: { tabId },
       world: 'MAIN',
       func: walletRpcFn,
-      args: [method, params ?? [], walletType ?? '', PROVIDER_DISCOVERY_WAIT_MS],
+      args: [
+        method,
+        params ?? [],
+        walletType ?? '',
+        expectedRdnsList,
+        PROVIDER_DISCOVERY_WAIT_MS
+      ],
     })
   } catch (injectionError) {
     const isHttps = await isActiveTabHttps()
