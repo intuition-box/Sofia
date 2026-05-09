@@ -14,6 +14,7 @@ import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, PenSquare } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
+import { useGroups } from '@/hooks/useGroups'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import type { CompareMode } from '@/lib/compileActionAnims'
 import '@/components/styles/pages.css'
@@ -48,9 +49,10 @@ const MODE_META: Record<CompareMode, ModeMeta> = {
   },
 }
 
-// Human-readable name for each circle id. Real metadata will come from
-// a `useCircleById` hook once circle creation ships on-chain.
-const CIRCLE_NAMES: Record<string, string> = {
+// Hardcoded names for synthetic circles (Trust Circle is local, not
+// indexed on-chain). On-chain circles fall through to `useGroups()`
+// resolution below.
+const SYNTHETIC_CIRCLE_NAMES: Record<string, string> = {
   trust: 'Trust Circle',
 }
 
@@ -64,6 +66,7 @@ export default function PerspectivePage() {
   const { mode } = useParams<{ mode: string }>()
   const [searchParams] = useSearchParams()
   const { topicById } = useTaxonomy()
+  const { groups } = useGroups()
 
   if (!isCompareMode(mode)) {
     return <Navigate to="/compose" replace />
@@ -89,6 +92,19 @@ export default function PerspectivePage() {
   const editHref =
     `/compose?circles=${encodeURIComponent(circleIds.join(','))}` +
     `&topics=${encodeURIComponent(topicIds.join(','))}`
+
+  // term_id → label resolver. Falls back to a truncated id so the chip
+  // never renders a 64-char bytes32 string.
+  const groupLabelById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const g of groups) map.set(g.termId, g.label)
+    return map
+  }, [groups])
+
+  const resolveCircleName = (id: string): string =>
+    SYNTHETIC_CIRCLE_NAMES[id] ??
+    groupLabelById.get(id) ??
+    `${id.slice(0, 6)}…${id.slice(-4)}`
 
   return (
     <div className="page-content page-enter perspective-page">
@@ -122,7 +138,7 @@ export default function PerspectivePage() {
             ) : (
               circleIds.map((id) => (
                 <span key={id} className="psp-chip psp-chip--circle">
-                  {CIRCLE_NAMES[id] ?? id}
+                  {resolveCircleName(id)}
                 </span>
               ))
             )}

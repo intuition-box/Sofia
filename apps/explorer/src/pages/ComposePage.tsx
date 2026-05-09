@@ -19,6 +19,7 @@ import { ArrowUpRight, Search } from 'lucide-react'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
+import { useGroups } from '@/hooks/useGroups'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import MemberAvatar from '@/components/circles/MemberAvatar'
 import CompileActionButton from '@/components/CompileActionButton'
@@ -67,6 +68,7 @@ export default function ComposePage() {
   const { addresses } = useLinkedWallets()
   const { accounts: trustMembers } = useTrustCircle(addresses)
   const { topics } = useTaxonomy()
+  const { groups } = useGroups()
   // Pre-fill from `?circles=&topics=` — lets PerspectivePage round-trip the
   // selection via the "Edit" button.
   const [selectedCircles, setSelectedCircles] = useState<Set<string>>(
@@ -88,17 +90,51 @@ export default function ComposePage() {
   const matchesQuery = (label: string) =>
     q.length === 0 || label.toLowerCase().includes(q)
 
-  const circles = useMemo(
-    () => [
+  // Trust Circle stays in pole position (local identity construct), then
+  // every on-chain group surfaced by useGroups (sorted by member count).
+  // For each group we pull the first 4 member atoms with a wallet so the
+  // avatar stack matches the Trust Circle UI without an extra query.
+  const circles = useMemo(() => {
+    type Member = (typeof trustMembers)[number]
+    const onChain = groups.map((g) => {
+      const seen = new Set<string>()
+      const members: Member[] = []
+      for (const m of g.memberships) {
+        if (members.length >= 4) break
+        if (!m.member.walletAddress) continue
+        if (seen.has(m.member.termId)) continue
+        seen.add(m.member.termId)
+        // MemberAvatar only reads termId/label/image. Fill the remaining
+        // TrustCircleAccount fields with neutral placeholders so the
+        // shared type checks but no consumer drifts onto stale data.
+        members.push({
+          id: m.member.termId,
+          termId: m.member.termId,
+          tripleId: m.tripleTermId,
+          label: m.member.label,
+          image: m.member.image,
+          walletAddress: m.member.walletAddress,
+          trustAmount: 0,
+          createdAt: 0,
+        } as Member)
+      }
+      return {
+        id: g.termId,
+        name: g.label,
+        size: g.memberCount,
+        members,
+      }
+    })
+    return [
       {
         id: TRUST_CIRCLE_ID,
         name: 'Trust Circle',
         size: trustMembers.length,
         members: trustMembers.slice(0, 4),
       },
-    ],
-    [trustMembers],
-  )
+      ...onChain,
+    ]
+  }, [trustMembers, groups])
 
   const visibleCircles = circles.filter((c) => matchesQuery(c.name))
   const visibleTopics = topics.filter((t) => matchesQuery(t.label))
@@ -216,7 +252,7 @@ export default function ComposePage() {
                         className="cmp-card-view"
                         onClick={(e) => {
                           e.stopPropagation()
-                          navigate('/circles/trust')
+                          navigate(`/circles/${c.id}`)
                         }}
                       >
                         <ArrowUpRight className="h-3 w-3" />
