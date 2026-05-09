@@ -96,7 +96,8 @@
 .bp-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
-  box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  box-shadow: 0 16px 40px -28px
+    color-mix(in srgb, var(--ds-ink) 40%, transparent);
 }
 .bp-card.is-highlight {
   border-color: var(--ds-accent);

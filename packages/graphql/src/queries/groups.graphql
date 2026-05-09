@@ -1,0 +1,85 @@
+# Groups — `is member of` membership claims/vouches.
+#
+# Sofia model: anyone can claim "X is member of Y" and people vouch via
+# positions on the resulting triple. We aggregate these triples by the
+# object atom (the group) on the service side.
+
+# Paginated list of every `is_member_of` triple — service derives the
+# group catalogue by bucketing the rows by `object.term_id`.
+query GetGroupsList($predicateId: String!, $limit: Int!, $offset: Int!) {
+  triples(
+    where: { predicate_id: { _eq: $predicateId } }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    created_at
+    subject {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(order_by: { curve_id: asc }) {
+        curve_id
+        total_shares
+        positions_aggregate {
+          aggregate {
+            count
+          }
+        }
+        positions {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
+# All membership triples for one specific group atom — used by the
+# group detail page to list every claimed member + their vouches.
+query GetGroupDetail(
+  $predicateId: String!
+  $objectId: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      _and: [
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    created_at
+    subject {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(order_by: { curve_id: asc }) {
+        curve_id
+        total_shares
+        positions_aggregate {
+          aggregate {
+            count
+          }
+        }
+        positions {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}

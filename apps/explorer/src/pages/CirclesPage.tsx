@@ -15,9 +15,11 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
+import { useGroups } from '@/hooks/useGroups'
 import CirclesFilters from '@/components/circles/CirclesFilters'
 import TrustCircleCard from '@/components/circles/TrustCircleCard'
 import CreateCircleCard from '@/components/circles/CreateCircleCard'
+import GroupCard from '@/components/circles/GroupCard'
 import CreateCircleDrawer from '@/components/circles/CreateCircleDrawer'
 import CircleDetailHero from '@/components/circles/CircleDetailHero'
 import CircleMembersCard from '@/components/circles/CircleMembersCard'
@@ -155,10 +157,42 @@ export default function CirclesPage() {
         <CreateCircleCard onClick={() => setCreateOpen(true)} />
       </div>
 
+      <DiscoverGroupsSection />
+
       <CreateCircleDrawer
         open={createOpen}
         onClose={() => setCreateOpen(false)}
       />
     </div>
+  )
+}
+
+function DiscoverGroupsSection() {
+  const { groups, isLoading } = useGroups()
+
+  return (
+    <>
+      <div className="cr-section-head">
+        <h2 className="cr-section-title">Discover groups</h2>
+        <span className="cr-section-sub">
+          {isLoading
+            ? 'Loading…'
+            : `${groups.length} group${groups.length === 1 ? '' : 's'} on-chain`}
+        </span>
+      </div>
+      {isLoading && groups.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Loading groups…</p>
+      ) : groups.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No `is member of` claims found yet.
+        </p>
+      ) : (
+        <div className="cr-grid">
+          {groups.map((g) => (
+            <GroupCard key={g.termId} group={g} />
+          ))}
+        </div>
+      )}
+    </>
   )
 }

@@ -1,7 +1,9 @@
-version: '3.8'
 services:
   sofia:
-    image: maximesaintjoannis/sofia-mastra:v1.4.2
+    # En prod sur Phala : maximesaintjoannis/sofia-mastra:vX.Y.Z (push via
+    # le workflow CI). En local pour tester l'image fraîchement buildée :
+    # docker build -f Dockerfile -t sofia-mastra:test . puis IMAGE=sofia-mastra:test
+    image: ${IMAGE:-maximesaintjoannis/sofia-mastra:v1.5.0}
     container_name: sofia
     environment:
       # GaiaNet configuration
@@ -16,18 +18,23 @@ services:
       # Database (LibSQL file for persistence on DStack encrypted volume)
       - DATABASE_URL=file:/dstack/data/mastra.db
 
-      # MCP Server (internal - runs in same container)
-      - MCP_SERVER_URL=http://127.0.0.1:3001/sse
+      # MCP Server — points to an external instance (Coolify) when the
+      # chatbot is wired up. Leave empty for now: the chatbot agent
+      # tolerates MCP being unreachable and boots without tools.
+      - MCP_SERVER_URL=${MCP_SERVER_URL:-}
 
       # Server configuration
       - NODE_ENV=${NODE_ENV:-production}
 
-      # Human Attestor Bot (Proof of Human)
+      # OAuth token storage (AES-256-GCM, 32 bytes hex — REQUIRED to
+      # enable the encrypted oauth_tokens table)
+      - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}
+
+      # Human Attestor Bot (Proof of Human onchain attestations)
       - BOT_PRIVATE_KEY=${BOT_PRIVATE_KEY}
       - TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID}
     ports:
       - '4111:4111'
-      - '3001:3001'
     restart: always
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:4111/api/health']

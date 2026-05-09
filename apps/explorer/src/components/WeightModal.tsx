@@ -1,10 +1,28 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { useQueryClient } from '@tanstack/react-query'
+import { usePinThingMutation } from '@0xsofia/graphql'
 import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
+import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import type { CartItem } from '../hooks/useCart'
-import { EXPLORER_URL } from '../config'
+import { EXPLORER_URL, PREDICATE_IDS } from '../config'
+import {
+  HAS_TAG_PREDICATE_ID,
+  TOPIC_ATOM_IDS,
+} from '../config/atomIds'
 import { intentionBadgeStyle } from '../config/intentions'
+import {
+  executeCreateTriplesBatch,
+  type BatchCreateTripleItem,
+  type CreateTripleResult,
+} from '../services/tripleCreationService'
+import {
+  executeCreateAtomsBatch,
+  type AtomIPFSPayload,
+  type PinThingFn,
+} from '../services/atomCreationService'
 import SofiaLoader from './ui/SofiaLoader'
 import './styles/weight-modal.css'
 
@@ -26,14 +44,44 @@ export default function WeightModal({
   const [weights, setWeights] = useState<number[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [balance, setBalance] = useState<string | null>(null)
-  const { depositBatch, processing, txResult, reset, getBalance } = useDeposit()
+  const [createTripleProcessing, setCreateTripleProcessing] = useState(false)
+  const [createTripleResult, setCreateTripleResult] =
+    useState<CreateTripleResult | null>(null)
+  const {
+    depositBatch,
+    processing: depositProcessing,
+    txResult: depositTxResult,
+    reset,
+    getBalance,
+  } = useDeposit()
   const { estimate } = useFeeEstimate()
+  const { authenticated } = usePrivy()
+  const { wallets } = useWallets()
+  const qc = useQueryClient()
+  // Resolve the wallet's Account atom term_id — required as the subject
+  // of any membership triple we mint when items[].kind === 'create-circle'.
+  const userAccountAtom = useUserAccountAtom(wallets[0]?.address)
+  // Static fetcher exposed alongside the React Query mutation hook —
+  // we use it here to keep the create flow fully callable from a sync
+  // event handler without needing a separate `mutate` callback.
+  const pinThing: PinThingFn = useCallback(
+    (vars) =>
+      usePinThingMutation.fetcher({
+        name: vars.name,
+        description: vars.description,
+        image: vars.image,
+        url: vars.url,
+      })(),
+    [],
+  )
 
   useEffect(() => {
     if (isOpen && items.length > 0) {
       setWeights(new Array(items.length).fill(0.5))
       setCustomValues(new Array(items.length).fill(''))
       reset()
+      setCreateTripleResult(null)
+      setCreateTripleProcessing(false)
       getBalance().then(setBalance)
     }
   }, [isOpen, items.length, getBalance, reset])
@@ -81,17 +129,181 @@ export default function WeightModal({
     })
   }
 
-  const handleSubmit = async () => {
-    const batchItems = items.map((item, i) => ({
-      termId: item.termId,
-      amountTrust: getAmount(i),
-    }))
-    const result = await depositBatch(batchItems)
-    if (result.success) onSuccess()
-  }
+  // Cart items split by kind so we route to the right contract call:
+  //   - 'deposit'        → useDeposit.depositBatch
+  //   - 'create-triple'  → executeCreateTriplesBatch
+  //   - 'create-circle'  → executeCreateAtomsBatch THEN executeCreateTriplesBatch
+  //                        (the membership + has_tag triples reference the
+  //                        atom ids returned by the atom batch)
+  const handleSubmit = useCallback(async () => {
+    const depositItems: { termId: string; amountTrust: number }[] = []
+    const createItems: BatchCreateTripleItem[] = []
+    /** Indices of items[] that are 'create-circle', kept in order so
+     *  we can map them back to their amounts after the atom batch. */
+    const circleIndices: number[] = []
+    items.forEach((item, i) => {
+      const amount = getAmount(i)
+      if (
+        item.kind === 'create-triple' &&
+        item.subjectId &&
+        item.predicateId &&
+        item.objectId
+      ) {
+        createItems.push({
+          subjectId: item.subjectId,
+          predicateId: item.predicateId,
+          objectId: item.objectId,
+          signalTrust: amount,
+        })
+      } else if (item.kind === 'create-circle' && item.circleDraft) {
+        circleIndices.push(i)
+      } else {
+        depositItems.push({ termId: item.termId, amountTrust: amount })
+      }
+    })
+
+    let allOk = true
+
+    if (depositItems.length > 0) {
+      const r = await depositBatch(depositItems)
+      if (!r.success) allOk = false
+    }
+
+    // Phase A — mint every queued circle atom in one tx, then derive
+    // the membership + has_tag triples that reference the new atom ids.
+    if (circleIndices.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      if (!userAccountAtom.exists || !userAccountAtom.termId) {
+        setCreateTripleResult({
+          success: false,
+          error:
+            'Your Account atom is not yet on-chain. Make any deposit or certification first, then retry.',
+        })
+        return
+      }
+
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        const payloads: AtomIPFSPayload[] = circleIndices.map((idx) => {
+          const draft = items[idx].circleDraft!
+          return {
+            name: draft.name,
+            description: draft.description,
+            image: '',
+            // Sentinel URL — the protocol uses this string for atom
+            // dedupe. `circle:<name>` keeps it human-readable in the
+            // indexer and avoids collisions with content URLs.
+            url: `circle:${draft.name}`,
+          }
+        })
+
+        const atomBatch = await executeCreateAtomsBatch(
+          wallets[0],
+          payloads,
+          pinThing,
+        )
+        if (!atomBatch.success) {
+          setCreateTripleResult({
+            success: false,
+            error: atomBatch.error ?? 'Circle atom creation failed',
+          })
+          return
+        }
+
+        // For each circle atom, push membership + has_tag triples into
+        // the existing createItems batch — single triple-batch tx mints
+        // them all together (1 + N per circle).
+        const userAtomId = userAccountAtom.termId
+        circleIndices.forEach((idx, i) => {
+          const result = atomBatch.results[i]
+          const atomId = result?.atomId
+          if (!atomId) return
+          const item = items[idx]
+          const draft = item.circleDraft!
+          const amount = getAmount(idx)
+
+          // Membership: account → MEMBER_OF → circle
+          createItems.push({
+            subjectId: userAtomId,
+            predicateId: PREDICATE_IDS.MEMBER_OF,
+            objectId: atomId,
+            signalTrust: amount,
+          })
+
+          // Topic tags: circle → has_tag → topic (one per selected topic)
+          for (const topicSlug of draft.topicIds) {
+            const topicAtomId = TOPIC_ATOM_IDS[topicSlug]
+            if (!topicAtomId) continue
+            createItems.push({
+              subjectId: atomId,
+              predicateId: HAS_TAG_PREDICATE_ID,
+              objectId: topicAtomId,
+              signalTrust: amount,
+            })
+          }
+        })
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        setCreateTripleProcessing(false)
+        return
+      }
+    }
+
+    // Phase B — single triple-batch tx (covers both pre-existing
+    // create-triple items and newly-derived circle triples).
+    if (createItems.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({
+          success: false,
+          error: 'No wallet connected',
+        })
+        allOk = false
+      } else {
+        setCreateTripleProcessing(true)
+        setCreateTripleResult(null)
+        try {
+          const r = await executeCreateTriplesBatch(wallets[0], createItems)
+          setCreateTripleResult(r)
+          if (!r.success) {
+            allOk = false
+          } else {
+            // Group panels read these queries, refresh after a join so
+            // the user shows up immediately.
+            qc.invalidateQueries({ queryKey: ['groups-list'] })
+            qc.invalidateQueries({ queryKey: ['group-detail'] })
+          }
+        } finally {
+          setCreateTripleProcessing(false)
+        }
+      }
+    }
+
+    if (allOk) onSuccess()
+  }, [
+    items,
+    weights,
+    customValues,
+    depositBatch,
+    authenticated,
+    wallets,
+    qc,
+    onSuccess,
+    userAccountAtom.exists,
+    userAccountAtom.termId,
+    pinThing,
+  ])
 
   const handleClose = () => {
     reset()
+    setCreateTripleResult(null)
+    setCreateTripleProcessing(false)
     onClose()
   }
 
@@ -100,6 +312,27 @@ export default function WeightModal({
     return parseFloat(val.toFixed(4)).toString()
   }
 
+  // Combine the deposit and create-triple states so the existing JSX
+  // "form / processing / success / error" branches stay coherent
+  // regardless of which contract path the cart items took. The local
+  // `processing` / `txResult` shadow the deposit-only versions so the
+  // rendering tree below doesn't have to know about the split.
+  const processing = depositProcessing || createTripleProcessing
+  const txResult = (() => {
+    if (depositTxResult && !depositTxResult.success) return depositTxResult
+    if (createTripleResult && !createTripleResult.success)
+      return {
+        success: false as const,
+        error: createTripleResult.error,
+      }
+    if (depositTxResult?.success) return depositTxResult
+    if (createTripleResult?.success)
+      return {
+        success: true as const,
+        txHash: createTripleResult.txHash,
+      }
+    return null
+  })()
   const isFormState = !txResult && !processing
 
   if (!isOpen || items.length === 0) return null
@@ -366,6 +599,7 @@ export default function WeightModal({
                 className="wm-btn wm-btn-submit"
                 onClick={() => {
                   reset()
+                  setCreateTripleResult(null)
                   handleSubmit()
                 }}
               >

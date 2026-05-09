@@ -164,8 +164,22 @@ export function TopicsIntentions({
       }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx={cx} cy={cy} r={Rt} fill="none" stroke={c.ring} strokeWidth="0.75" />
-      <circle cx={cx} cy={cy} r={Rt - 12} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Rt}
+        fill="none"
+        stroke={c.ring}
+        strokeWidth="0.75"
+      />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Rt - 12}
+        fill="none"
+        stroke={c.ringFaint}
+        strokeWidth="0.5"
+      />
       <circle
         cx={cx}
         cy={cy}
@@ -175,12 +189,40 @@ export function TopicsIntentions({
         strokeWidth="0.5"
         strokeDasharray="2 3"
       />
-      <circle cx={cx} cy={cy} r={Ri - 50} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
-      <circle cx={cx} cy={cy} r={Ri - 90} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Ri - 50}
+        fill="none"
+        stroke={c.ringFaint}
+        strokeWidth="0.5"
+      />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Ri - 90}
+        fill="none"
+        stroke={c.ringFaint}
+        strokeWidth="0.5"
+      />
       {ticks}
 
-      <line x1={cx} y1={cy - Rt - 4} x2={cx} y2={cy + Rt + 4} stroke={c.axis} strokeWidth="0.5" />
-      <line x1={cx - Rt - 4} y1={cy} x2={cx + Rt + 4} y2={cy} stroke={c.axis} strokeWidth="0.5" />
+      <line
+        x1={cx}
+        y1={cy - Rt - 4}
+        x2={cx}
+        y2={cy + Rt + 4}
+        stroke={c.axis}
+        strokeWidth="0.5"
+      />
+      <line
+        x1={cx - Rt - 4}
+        y1={cy}
+        x2={cx + Rt + 4}
+        y2={cy}
+        stroke={c.axis}
+        strokeWidth="0.5"
+      />
 
       {topics.map((t) => {
         const x = cx + Math.cos(rad(t.a)) * (Rt + 16)
@@ -215,7 +257,9 @@ export function TopicsIntentions({
       ))}
 
       <polygon
-        points={pts.map((p) => p.xy.map((n) => n.toFixed(1)).join(',')).join(' ')}
+        points={pts
+          .map((p) => p.xy.map((n) => n.toFixed(1)).join(','))
+          .join(' ')}
         fill={c.accentFill}
         stroke={c.accent}
         strokeWidth="1"

@@ -683,7 +683,9 @@
   height: 26px;
   color: var(--muted-foreground);
   opacity: 0.7;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
 }
 .tc-actions .ac-btn-icon:hover {
   opacity: 1;

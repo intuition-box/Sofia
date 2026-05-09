@@ -131,6 +131,182 @@
   gap: 24px;
 }
 
+/* Two-line description on the discover-groups cards. Truncated to
+   keep the card height aligned with TrustCircleCard. */
+.cr-group-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ds-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Section heading row above the discover-groups grid. */
+.cr-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.cr-section-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.cr-section-sub {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+
+/* ── GroupDetailPage ────────────────────────────────────────────── */
+.grp-join-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.grp-join-hint {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.grp-join-error {
+  font-size: 12px;
+  color: var(--distrusted, #e87c7c);
+}
+.grp-join-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+}
+.grp-join-status--member {
+  color: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+}
+
+.grp-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0 8px;
+}
+.grp-meta-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--ds-border);
+}
+.grp-meta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  text-decoration: none;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.grp-meta-link:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+}
+
+.grp-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  padding: 8px;
+  box-shadow: var(--ds-shadow-card);
+}
+.grp-member-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.grp-member-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.grp-member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--ds-border-soft);
+}
+.grp-member-avatar.fallback {
+  display: grid;
+  place-items: center;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+.grp-member-text {
+  min-width: 0;
+}
+.grp-member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.grp-member-desc {
+  font-size: 11px;
+  color: var(--ds-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.grp-member-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.grp-member-stat-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ds-ink);
+  line-height: 1;
+}
+.grp-member-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
 .cr-card {
   position: relative;
   background: var(--ds-card);

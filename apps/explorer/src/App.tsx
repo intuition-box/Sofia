@@ -35,6 +35,7 @@ const ScoresPage = lazy(() => import('./pages/ScoresPage'))
 const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
+const GroupDetailPage = lazy(() => import('./pages/GroupDetailPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
@@ -86,7 +87,7 @@ export default function App() {
     location.pathname.startsWith('/streaks') ||
     location.pathname.startsWith('/leaderboard') ||
     location.pathname.startsWith('/settings')
-  const [cartOpen, setCartOpen] = useState(false)
+  const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
 
@@ -95,15 +96,10 @@ export default function App() {
     setProfileDrawerOpen(false)
   }, [location.pathname])
 
-  // Auto-close cart when it becomes empty
-  useEffect(() => {
-    if (cartOpen && cart.count === 0) setCartOpen(false)
-  }, [cartOpen, cart.count])
-
   const handleCartSubmit = useCallback(() => {
-    setCartOpen(false)
+    cart.close()
     setWeightModalOpen(true)
-  }, [])
+  }, [cart])
 
   const handleDepositSuccess = useCallback(() => {
     cart.clear()
@@ -148,7 +144,7 @@ export default function App() {
         <InterestsHydrationBoundary />
         <WsStatusBadge />
         <NavSidebar
-          onCartClick={() => setCartOpen((o) => !o)}
+          onCartClick={cart.toggle}
           collapsed={navCollapsed}
           onToggleCollapse={toggleNavCollapsed}
         />
@@ -159,7 +155,7 @@ export default function App() {
         <CartDrawer
           items={cart.items}
           isOpen={cartOpen}
-          onClose={() => setCartOpen(false)}
+          onClose={cart.close}
           onRemove={cart.removeItem}
           onClear={cart.clear}
           onSubmit={handleCartSubmit}
@@ -291,6 +287,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <CirclesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/circles/group/:termId"
+                  element={
+                    <ProtectedRoute>
+                      <GroupDetailPage />
                     </ProtectedRoute>
                   }
                 />

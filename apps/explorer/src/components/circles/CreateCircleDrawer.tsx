@@ -1,17 +1,16 @@
 /**
  * CreateCircleDrawer — slide-in form for creating a new circle.
  * Mirrors AllMembersPanel's drawer chrome (backdrop + right-side aside)
- * so the two share visual language. The submit handler is a no-op
- * pending the on-chain primitive — see CreateCircleCard's TODO.
+ * so the two share visual language. On submit we queue a
+ * `kind: 'create-circle'` cart item — WeightModal expands it into a
+ * circle atom + membership triple + N has_tag triples at submit time.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react'
-import {
-  type AccountAtom,
-  useSearchAccounts,
-} from '@/hooks/useSearchAccounts'
+import { type AccountAtom, useSearchAccounts } from '@/hooks/useSearchAccounts'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { useCart, type CircleDraft } from '@/hooks/useCart'
 
 const TOPIC_PREVIEW_COUNT = 6
 
@@ -31,7 +30,9 @@ interface DraftCircle {
   name: string
   description: string
   actionsPerMonth: number
-  topicId: string | null
+  /** Multi-select — each selected topic produces one (circle, has_tag,
+   *  topic) triple alongside the membership triple at submit. */
+  topicIds: string[]
   members: DraftMember[]
 }
 
@@ -39,7 +40,7 @@ const EMPTY_DRAFT: DraftCircle = {
   name: '',
   description: '',
   actionsPerMonth: 30,
-  topicId: null,
+  topicIds: [],
   members: [],
 }
 
@@ -50,6 +51,7 @@ export default function CreateCircleDrawer({
   onClose,
 }: CreateCircleDrawerProps) {
   const navigate = useNavigate()
+  const cart = useCart()
   const [draft, setDraft] = useState<DraftCircle>(EMPTY_DRAFT)
   const [topicQuery, setTopicQuery] = useState('')
   const [topicsExpanded, setTopicsExpanded] = useState(false)
@@ -82,44 +84,55 @@ export default function CreateCircleDrawer({
     [],
   )
 
-  // Filter by query (case-insensitive); always keep the active topic visible
-  // even if it doesn't match, so the user can see their current selection.
+  // Filter by query (case-insensitive); always keep selected topics
+  // visible even if they don't match, so the user can see their picks.
   const filteredTopics = useMemo(() => {
     const q = topicQuery.trim().toLowerCase()
+    const selected = new Set(draft.topicIds)
     if (!q) return topicOptions
     return topicOptions.filter(
-      (t) => t.label.toLowerCase().includes(q) || t.id === draft.topicId,
+      (t) => t.label.toLowerCase().includes(q) || selected.has(t.id),
     )
-  }, [topicOptions, topicQuery, draft.topicId])
+  }, [topicOptions, topicQuery, draft.topicIds])
 
-  // Collapsed view shows only the first N — but keep the selected topic in
-  // the visible slice so the user always sees what they picked.
+  // Collapsed view shows only the first N — but lift every selected
+  // topic into the visible slice so the user always sees their picks.
   const visibleTopics = useMemo(() => {
     if (topicsExpanded || filteredTopics.length <= TOPIC_PREVIEW_COUNT) {
       return filteredTopics
     }
-    const head = filteredTopics.slice(0, TOPIC_PREVIEW_COUNT)
-    if (
-      draft.topicId &&
-      !head.some((t) => t.id === draft.topicId) &&
-      filteredTopics.some((t) => t.id === draft.topicId)
-    ) {
-      const sel = filteredTopics.find((t) => t.id === draft.topicId)!
-      return [sel, ...head.slice(0, TOPIC_PREVIEW_COUNT - 1)]
-    }
-    return head
-  }, [filteredTopics, topicsExpanded, draft.topicId])
+    const selected = filteredTopics.filter((t) => draft.topicIds.includes(t.id))
+    const unselected = filteredTopics.filter(
+      (t) => !draft.topicIds.includes(t.id),
+    )
+    const remaining = Math.max(0, TOPIC_PREVIEW_COUNT - selected.length)
+    return [...selected, ...unselected.slice(0, remaining)]
+  }, [filteredTopics, topicsExpanded, draft.topicIds])
 
   const hiddenTopicCount = Math.max(
     0,
     filteredTopics.length - visibleTopics.length,
   )
 
-  const canSubmit =
-    draft.name.trim().length >= 3 &&
-    draft.description.trim().length >= 10 &&
-    draft.actionsPerMonth > 0 &&
-    draft.topicId !== null
+  // Per-rule validation. We surface the first failing reason under the
+  // submit button so the user isn't left guessing why it's disabled.
+  const validationError = (() => {
+    if (draft.name.trim().length < 3) return 'Name must be at least 3 characters'
+    if (draft.description.trim().length < 10)
+      return `Description must be at least 10 characters (${draft.description.trim().length}/10)`
+    if (draft.actionsPerMonth <= 0) return 'Pick a positive actions/month value'
+    if (draft.topicIds.length < 1) return 'Select at least one theme'
+    return null
+  })()
+  const canSubmit = validationError === null
+
+  const toggleTopic = (id: string) => {
+    setDraft((d) =>
+      d.topicIds.includes(id)
+        ? { ...d, topicIds: d.topicIds.filter((t) => t !== id) }
+        : { ...d, topicIds: [...d.topicIds, id] },
+    )
+  }
 
   const addMember = (account: AccountAtom) => {
     if (!account.data) return
@@ -155,9 +168,33 @@ export default function CreateCircleDrawer({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSubmit) return
-    // TODO: replace with on-chain create-circle call once available.
-    // eslint-disable-next-line no-console
-    console.log('[circles] draft circle', draft)
+
+    const circleDraft: CircleDraft = {
+      name: draft.name.trim(),
+      description: draft.description.trim(),
+      topicIds: draft.topicIds,
+    }
+
+    // Pick the first selected topic's color for the cart item border —
+    // visual cue that ties the queued circle to its primary theme.
+    const primaryColor =
+      topicOptions.find((t) => t.id === draft.topicIds[0])?.color ??
+      'var(--foreground)'
+
+    cart.addItem({
+      id: `create-circle-${Date.now()}`,
+      side: 'support',
+      // Sentinel termId — no on-chain id known until WeightModal mints
+      // the circle atom. The draft name keeps it unique within the cart.
+      termId: `pending-circle:${circleDraft.name}`,
+      kind: 'create-circle',
+      intention: 'Circle',
+      title: circleDraft.name,
+      favicon: '',
+      intentionColor: primaryColor,
+      circleDraft,
+    })
+    cart.open()
     onClose()
   }
 
@@ -271,7 +308,12 @@ export default function CreateCircleDrawer({
           </div>
 
           <fieldset className="cc-field cc-field-fieldset">
-            <legend className="cc-label">Theme</legend>
+            <legend className="cc-label">
+              Themes
+              <span className="cc-help" style={{ marginLeft: 8 }}>
+                {draft.topicIds.length} selected — at least 1 required
+              </span>
+            </legend>
             <div className="cc-search">
               <Search className="cc-search-icon h-4 w-4" />
               <input
@@ -301,10 +343,12 @@ export default function CreateCircleDrawer({
             </div>
             <div className="cc-topics">
               {visibleTopics.length === 0 && (
-                <span className="cc-help">No theme matches “{topicQuery}”.</span>
+                <span className="cc-help">
+                  No theme matches “{topicQuery}”.
+                </span>
               )}
               {visibleTopics.map((t) => {
-                const active = draft.topicId === t.id
+                const active = draft.topicIds.includes(t.id)
                 return (
                   <button
                     type="button"
@@ -317,7 +361,7 @@ export default function CreateCircleDrawer({
                           } as React.CSSProperties)
                         : undefined
                     }
-                    onClick={() => setDraft((d) => ({ ...d, topicId: t.id }))}
+                    onClick={() => toggleTopic(t.id)}
                     aria-pressed={active}
                   >
                     <span
@@ -462,10 +506,19 @@ export default function CreateCircleDrawer({
               type="submit"
               className="cc-btn cc-btn-primary"
               disabled={!canSubmit}
+              title={validationError ?? undefined}
             >
-              Create circle
+              Add to cart
             </button>
           </div>
+          {validationError && (
+            <p
+              className="cc-help"
+              style={{ textAlign: 'right', marginTop: 4 }}
+            >
+              {validationError}
+            </p>
+          )}
         </form>
       </aside>
     </>

@@ -13,7 +13,9 @@ import { useTopClaims } from '../hooks/useTopClaims'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
-import InterestsGrid, { MAX_INTERESTS } from '../components/profile/InterestsGrid'
+import InterestsGrid, {
+  MAX_INTERESTS,
+} from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -40,8 +42,11 @@ export default function ProfilePage() {
   // When viewing yourself, aggregate across all linked wallets. When viewing
   // someone else (isViewingAs), use only their address.
   const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
-  const { selectedTopics: rawSelectedTopics, selectedCategories, removeTopic } =
-    useTopicSync()
+  const {
+    selectedTopics: rawSelectedTopics,
+    selectedCategories,
+    removeTopic,
+  } = useTopicSync()
   // Profile (grid + radar + calendar + top-platforms) caps at 3 topics — the
   // grid widget exports `MAX_INTERESTS` but the rest of the chart bundle
   // honours whatever array we hand it, so trim here.

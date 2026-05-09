@@ -18,7 +18,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-  const { items, count, removeFromCart, clearCart } = useCart()
+  const { items, count, atomsToCreate, removeFromCart, clearCart } = useCart()
   const { submitCart, submitting, result, error, reset, clearSubmittedItems } =
     useCartSubmit()
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -249,6 +249,12 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           depositCount={result?.depositCount ?? 0}
           isIntentionCertification={true}
           showXpAnimation={true}
+          estimateOptions={{
+            isNewTriple: true,
+            newAtomCount: atomsToCreate.newObjectAtoms,
+            newPredicateAtomCount: atomsToCreate.newPredicateAtoms,
+            needsContextPredicateAtom: atomsToCreate.needsContextPredicateAtom
+          }}
           onRemoveTriplet={(tripletId) => removeFromCart(tripletId)}
           onClose={handleWeightClose}
           onSubmit={handleWeightSubmit}

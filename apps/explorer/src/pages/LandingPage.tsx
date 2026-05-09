@@ -57,8 +57,7 @@ export default function LandingPage() {
             </h1>
             <p className="lp-lede">
               Connect your wallet to track your browsing intents, certify your
-              interests, and build a verifiable reputation profile on
-              Intuition.
+              interests, and build a verifiable reputation profile on Intuition.
             </p>
 
             <div className="lp-auth-actions">

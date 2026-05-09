@@ -91,10 +91,7 @@ export default function OverviewTab({
                 ({ topic, activeCategories, categories }) => {
                   const isExpanded = expandedTopic === topic.id
                   return (
-                    <Card
-                      key={topic.id}
-                      className="overflow-hidden"
-                    >
+                    <Card key={topic.id} className="overflow-hidden">
                       <button
                         className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
                         onClick={() =>

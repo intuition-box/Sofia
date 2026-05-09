@@ -1,25 +1,62 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   useCallback,
   createElement,
 } from 'react'
 import type { ReactNode } from 'react'
 
+/** Draft payload carried by a `kind: 'create-circle'` cart item. The
+ *  drawer collects this; WeightModal expands it into a circle atom +
+ *  membership triple + N has_tag triples at submit time. */
+export interface CircleDraft {
+  name: string
+  description: string
+  /** Topic atom slugs (keys of TOPIC_ATOM_IDS) — one has_tag triple per
+   *  entry is minted alongside the membership triple. */
+  topicIds: string[]
+}
+
 export interface CartItem {
   id: string
   side: 'support' | 'oppose'
+  /** Existing-triple termId for deposits, the deterministic tripleId
+   *  for `kind: 'create-triple'`, or a `pending:<draftKey>` sentinel
+   *  for `kind: 'create-circle'` (no on-chain id known until submit).
+   *  Used as the dedupe key in the cart. */
   termId: string
   intention: string
   title: string
   favicon: string
   intentionColor: string
+  /** Routing tag — WeightModal partitions items by `kind`:
+   *   - 'deposit'        → SofiaFeeProxy.deposit / depositBatch
+   *   - 'create-triple'  → SofiaFeeProxy.createTriples (atoms must exist)
+   *   - 'create-circle'  → atomCreationService + createTriples (mints
+   *                        circle atom + membership + has_tag triples)
+   *  Defaults to 'deposit' for back-compat with existing callers. */
+  kind?: 'deposit' | 'create-triple' | 'create-circle'
+  /** Required when `kind === 'create-triple'`. The atom term_ids that
+   *  identify the new triple's subject / predicate / object. */
+  subjectId?: string
+  predicateId?: string
+  objectId?: string
+  /** Required when `kind === 'create-circle'`. */
+  circleDraft?: CircleDraft
 }
 
 interface CartContextValue {
   items: CartItem[]
   count: number
+  /** True when the cart drawer is currently visible. Components that
+   *  add items can call `open()` to surface the drawer immediately so
+   *  the user sees their pending action queued up. */
+  isOpen: boolean
+  open: () => void
+  close: () => void
+  toggle: () => void
   addItem: (item: CartItem) => void
   addItems: (items: CartItem[]) => void
   removeItem: (id: string) => void
@@ -30,6 +67,7 @@ const CartContext = createContext<CartContextValue | null>(null)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isOpen, setIsOpen] = useState(false)
 
   const addItem = useCallback((item: CartItem) => {
     setItems((prev) => {
@@ -58,6 +96,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const clear = useCallback(() => setItems([]), [])
+  const open = useCallback(() => setIsOpen(true), [])
+  const close = useCallback(() => setIsOpen(false), [])
+  const toggle = useCallback(() => setIsOpen((o) => !o), [])
+
+  // Auto-close when the cart becomes empty so the slot frees up for
+  // the right-rail content. Mirrors the pre-context behavior in App.tsx.
+  useEffect(() => {
+    if (isOpen && items.length === 0) setIsOpen(false)
+  }, [isOpen, items.length])
 
   return createElement(
     CartContext.Provider,
@@ -65,6 +112,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value: {
         items,
         count: items.length,
+        isOpen,
+        open,
+        close,
+        toggle,
         addItem,
         addItems,
         removeItem,

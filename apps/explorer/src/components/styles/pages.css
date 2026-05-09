@@ -32,11 +32,13 @@
   letter-spacing: -0.005em;
   cursor: pointer;
   transition: all 0.18s ease;
-  box-shadow: 0 6px 20px -10px color-mix(in srgb, var(--ds-ink) 30%, transparent);
+  box-shadow: 0 6px 20px -10px
+    color-mix(in srgb, var(--ds-ink) 30%, transparent);
 }
 .pf-invest-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  box-shadow: 0 10px 26px -12px
+    color-mix(in srgb, var(--ds-ink) 40%, transparent);
   filter: brightness(1.04);
 }
 

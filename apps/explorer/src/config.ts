@@ -60,6 +60,11 @@ export const PREDICATE_IDS = {
     '0xb8b8ab8d23678edad85cec5e580caeb564a88b532f8dfd884f93dcf2cab32459',
   VISITS_FOR_INSPIRATION:
     '0xd635b7467c9f89a9d243b82c5e4f6a97d238ad91a914b5de9949e107e5f59825',
+  // The `is member of` semantic atom (Thing) used for group-membership
+  // claims. Distinct from the extension's MEMBER_OF predicate which
+  // tracks OAuth-derived platform memberships.
+  MEMBER_OF:
+    '0xe489948c4bd4fa6f50f402434996b90942ab67585a71c71d81dff8e624f661d4',
 }
 
 // ── Subject IDs (mainnet) ──

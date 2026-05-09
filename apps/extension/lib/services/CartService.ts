@@ -16,9 +16,21 @@ import { createServiceLogger } from "../utils/logger"
 import { normalizeUrl } from "../utils/normalizeUrl"
 import { CartDataService } from "../database"
 import { INTENTION_PREDICATES } from "../../types/discovery"
+import { getPredicateIdByName } from "../config/predicateConstants"
+import { PREDICATE_NAMES } from "../config/chainConfig"
 import type { CartItemRecord } from "../../types/database"
 import type { IntentionPurpose } from "../../types/discovery"
 import type { BatchTripleInput } from "../../types/blockchain"
+
+/** Worst-case count of atoms that may need on-chain creation for a cart batch. */
+export interface AtomsToCreateEstimate {
+  /** Unique URLs (object atoms — one per page) */
+  newObjectAtoms: number
+  /** Unique non-pre-defined predicate names (e.g. testnet predicates) */
+  newPredicateAtoms: number
+  /** True if any cert item has interestContext AND "in context of" predicate has no pre-defined ID */
+  needsContextPredicateAtom: boolean
+}
 
 const logger = createServiceLogger("CartService")
 
@@ -307,6 +319,39 @@ class CartServiceClass {
 
   getVoteItems(items: CartItemRecord[]): CartItemRecord[] {
     return items.filter(item => !!item.voteAction && !!item.tripleTermId)
+  }
+
+  /**
+   * Worst-case count of atoms that may need on-chain creation for a cart batch.
+   * Used by fee estimation to avoid the under-counting that happens when only
+   * the URL atom is assumed (default newAtomCount=1) but the batch also creates
+   * predicate atoms (testnet) and/or the "in context of" predicate (mainnet first use).
+   *
+   * Pure derivation, no chain reads — surestimates if atoms already exist.
+   */
+  estimateAtomsToCreate(items: CartItemRecord[]): AtomsToCreateEstimate {
+    const certItems = items.filter(item => !item.voteAction)
+
+    const uniqueUrls = new Set<string>()
+    const uniqueNewPredicates = new Set<string>()
+    let hasContext = false
+
+    for (const item of certItems) {
+      uniqueUrls.add(item.normalizedUrl)
+      if (!getPredicateIdByName(item.predicateName)) {
+        uniqueNewPredicates.add(item.predicateName)
+      }
+      if (item.interestContext) hasContext = true
+    }
+
+    const needsContextPredicateAtom =
+      hasContext && !getPredicateIdByName(PREDICATE_NAMES.IN_CONTEXT_OF)
+
+    return {
+      newObjectAtoms: uniqueUrls.size,
+      newPredicateAtoms: uniqueNewPredicates.size,
+      needsContextPredicateAtom
+    }
   }
 
   // Helper: get predicate name from intention

@@ -1,4 +1,4 @@
-import { useSyncExternalStore, useEffect, useCallback } from "react"
+import { useSyncExternalStore, useEffect, useCallback, useMemo } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { cartService } from "~/lib/services"
 import { normalizeUrl } from "~/lib/utils"
@@ -118,9 +118,16 @@ export const useCart = () => {
     [state]
   )
 
+  // Worst-case atom creation count for the current cart — used by fee estimation.
+  const atomsToCreate = useMemo(
+    () => cartService.estimateAtomsToCreate(state.items),
+    [state.items]
+  )
+
   return {
     items: state.items,
     count: state.count,
+    atomsToCreate,
     addToCart,
     addVoteToCart,
     removeFromCart,
