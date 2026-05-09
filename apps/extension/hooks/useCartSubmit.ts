@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useCreateTripleOnChain } from "./useCreateTripleOnChain"
 import { useWeightOnChain } from "./useWeightOnChain"
 import { useWalletFromStorage } from "./useWalletFromStorage"
-import { cartService, questTrackingService, goldService, txEventBus } from "~/lib/services"
+import { cartService, questTrackingService, goldService, txEventBus, BlockchainService } from "~/lib/services"
 import { createHookLogger } from "~/lib/utils"
 import { TOPIC_ATOM_IDS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
@@ -56,8 +56,22 @@ export const useCartSubmit = () => {
         if (voteItems.length > 0) {
           const voteWeight = customWeight || BigInt(Math.floor(0.5 * 1e18))
 
+          // Verify all vote target triples exist on-chain before depositing.
+          // A poisoned indexer or stale cart entry could otherwise route TRUST
+          // into an attacker-controlled vault. Single multicall3 roundtrip.
+          const termIds = voteItems
+            .map(v => v.tripleTermId)
+            .filter((id): id is string => !!id)
+          const existsMap = await BlockchainService.checkTriplesExistByTermIds(termIds)
+
           for (const vote of voteItems) {
             if (!vote.tripleTermId) continue
+            if (!existsMap.get(vote.tripleTermId)) {
+              logger.warn("Skip vote: triple does not exist on-chain", {
+                tripleTermId: vote.tripleTermId
+              })
+              continue
+            }
             try {
               const voteResult = await depositWithPool(
                 vote.tripleTermId,

@@ -287,6 +287,61 @@ export class BlockchainService {
   }
 
   /**
+   * Batch-verify that a list of triple term IDs exist on-chain.
+   * Uses Multicall3 to issue a single RPC roundtrip for N reads.
+   *
+   * @returns Map of termId → exists. Missing/invalid IDs map to false.
+   */
+  static async checkTriplesExistByTermIds(
+    termIds: string[]
+  ): Promise<Map<string, boolean>> {
+    const result = new Map<string, boolean>()
+    if (termIds.length === 0) return result
+
+    const publicClient = getPublicClient()
+
+    try {
+      const responses = await publicClient.multicall({
+        contracts: termIds.map(termId => ({
+          address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'getTriple' as const,
+          args: [termId as `0x${string}`]
+        })),
+        allowFailure: true
+      })
+
+      termIds.forEach((termId, i) => {
+        // getTriple reverts when the triple doesn't exist → status: 'failure'.
+        result.set(termId, responses[i]?.status === 'success')
+      })
+      return result
+    } catch (err) {
+      // Fallback: parallel individual reads (e.g., if multicall3 isn't deployed
+      // on the active chain). Slower but functional.
+      logger.warn('Multicall failed, falling back to parallel getTriple', { error: err })
+      const checks = await Promise.all(
+        termIds.map(async termId => {
+          try {
+            await publicClient.readContract({
+              address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+              abi: MultiVaultAbi,
+              functionName: 'getTriple',
+              args: [termId as `0x${string}`],
+              authorizationList: undefined
+            })
+            return [termId, true] as const
+          } catch {
+            return [termId, false] as const
+          }
+        })
+      )
+      for (const [termId, exists] of checks) result.set(termId, exists)
+      return result
+    }
+  }
+
+  /**
    * Get user's shares in a triple vault
    * Returns > 0n if the user has deposited into this triple
    */
