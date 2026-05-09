@@ -8,7 +8,7 @@ import {
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { getAddress } from "viem"
+import { getAddress, recoverMessageAddress } from "viem"
 import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
@@ -16,6 +16,74 @@ import { IntentionGroupsService } from "../lib/database"
 import { createServiceLogger } from '../lib/utils/logger'
 
 const logger = createServiceLogger('MessageHandlers')
+
+// SIWE proofs older than this window are rejected (anti-replay).
+const SIWE_MAX_AGE_MS = 5 * 60 * 1000  // 5 minutes
+
+/**
+ * Verify a Sign-In With Ethereum (EIP-4361) proof for a WALLET_CONNECTED
+ * message. Returns null on success, or an error string describing why the
+ * proof was rejected.
+ *
+ * The extension trusts the rejected origin (already gated by
+ * ALLOWED_EXTERNAL_ORIGINS) but does NOT trust that the page knows the
+ * wallet's private key without a signature, otherwise an XSS on the landing
+ * could persist any wallet address in chrome.storage.session and phish
+ * the user inside Sofia.
+ */
+async function verifySiweProof(args: {
+  walletAddress: string
+  siweMessage: string
+  siweSignature: string
+  expectedDomain: string | undefined
+}): Promise<string | null> {
+  const { walletAddress, siweMessage, siweSignature, expectedDomain } = args
+
+  if (!siweMessage || !siweSignature) {
+    return 'Missing SIWE proof'
+  }
+
+  // Domain check: the message MUST start with the origin we accepted the
+  // payload from (defence against a SIWE generated for another dApp).
+  if (expectedDomain) {
+    const stripped = expectedDomain.replace(/^https?:\/\//, '')
+    if (!siweMessage.startsWith(`${stripped} wants you to sign in with your Ethereum account:`)) {
+      return `SIWE domain mismatch (expected ${stripped})`
+    }
+  }
+
+  // Anti-replay: parse `Issued At:` line and reject messages older than the
+  // window (also reject far-future timestamps to defend against clock skew).
+  const issuedAtMatch = siweMessage.match(/^Issued At: (.+)$/m)
+  if (!issuedAtMatch) {
+    return 'SIWE missing Issued At'
+  }
+  const issuedAt = Date.parse(issuedAtMatch[1])
+  if (Number.isNaN(issuedAt)) {
+    return 'SIWE Issued At not parseable'
+  }
+  const now = Date.now()
+  if (Math.abs(now - issuedAt) > SIWE_MAX_AGE_MS) {
+    return `SIWE expired (issued ${Math.round((now - issuedAt) / 1000)}s ago)`
+  }
+
+  // Signature check: the recovered address MUST equal the claimed wallet.
+  let recovered: string
+  try {
+    recovered = await recoverMessageAddress({
+      message: siweMessage,
+      signature: siweSignature as `0x${string}`
+    })
+  } catch (err) {
+    return `Signature recover failed: ${err instanceof Error ? err.message : 'unknown'}`
+  }
+
+  if (recovered.toLowerCase() !== walletAddress.toLowerCase()) {
+    return `Signature does not match claimed address (recovered ${recovered})`
+  }
+
+  return null
+}
 
 // Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
@@ -57,9 +125,31 @@ export function setupMessageHandlers(): void {
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
       const walletType = message.data?.walletType || message.walletType || null
+      const siweMessage =
+        message.data?.siweMessage || message.siweMessage || ''
+      const siweSignature =
+        message.data?.siweSignature || message.siweSignature || ''
       if (walletAddress) {
         (async () => {
           try {
+            // SIWE proof verification: prove the page actually controls the
+            // wallet's private key, not just that it can claim an address.
+            const siweError = await verifySiweProof({
+              walletAddress,
+              siweMessage,
+              siweSignature,
+              expectedDomain: sender.origin
+            })
+            if (siweError) {
+              logger.warn('Rejected WALLET_CONNECTED: invalid SIWE proof', {
+                origin: sender.origin,
+                walletAddress,
+                reason: siweError
+              })
+              sendResponse({ success: false, error: siweError })
+              return
+            }
+
             // Check if wallet changed using persistent lastActiveWallet
             const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
             if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
