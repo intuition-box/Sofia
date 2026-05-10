@@ -62,11 +62,11 @@
       "sidePanel",
       "bookmarks",
       "identity",
-      "offscreen"
+      "offscreen",
+      "scripting"
     ],
     "host_permissions": [
-      "<all_urls>",
-      "https://auth.privy.io/*"
+      "<all_urls>"
     ],
     "externally_connectable": {
       "matches": [
