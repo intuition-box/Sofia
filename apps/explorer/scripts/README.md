@@ -1,5 +1,12 @@
 # Sofia Platform Atoms — Guide de creation
 
+> **Note 2026-05** — `create-platform-atoms.mjs` has been removed.
+> The platform/category atoms are already seeded on Intuition mainnet
+> and the Pinata JWT is no longer kept in the repo. The sections
+> below remain as historical context for the seeding process; if you
+> ever need to re-seed, restore the script from git history and use
+> a freshly-rotated Pinata key kept outside `.env`.
+
 ## Contexte
 
 Chaque plateforme du dashboard Sofia doit exister comme un **atom** sur le protocole Intuition.
