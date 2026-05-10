@@ -210,7 +210,7 @@ export async function executeSingleDeposit(
     functionName: 'deposit',
     args: [address, termId as `0x${string}`, 1n, 0n],
     value: totalCost,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 
@@ -254,7 +254,7 @@ export async function executeBatchDeposit(
     functionName: 'depositBatch',
     args: [address, termIds, curveIds, assets, minShares],
     value: totalValue,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 
