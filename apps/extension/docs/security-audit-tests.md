@@ -192,4 +192,172 @@ submit, des items du wallet A pouvaient être signés par le wallet B.
 
 ## Phase 2 — Wallet provider & signing
 
+### Commit 5 — `fix(wallet): strict EIP-6963 rdns matching, reject ambiguous providers`
+
+**Bug** : `name.includes(norm)` + `norm.includes(name.split(' ')[0])` permettait
+à une page d'annoncer un provider EIP-6963 nommé "M" et de matcher "metamask".
+Une page malveillante pouvait alors router le signing vers son propre provider
+(qui afficherait une UI imitant MetaMask).
+
+🧪 **Test 5.1 — Golden path MetaMask / Rabby**
+1. Connecter MetaMask via la landing.
+2. Déclencher une action qui demande une signature/TX (ex: certifier une
+   page → submit cart).
+3. ✅ Le popup MetaMask s'ouvre et la TX se broadcast normalement.
+
+🧪 **Test 5.2 — Provider impersonator (bookmarklet de test)**
+1. Sur n'importe quel site HTTPS, ouvrir DevTools console.
+2. Coller :
+   ```js
+   const fakeProvider = {
+     request: async () => { alert("PWNED"); return [] }
+   }
+   window.addEventListener('eip6963:requestProvider', () => {
+     window.dispatchEvent(new CustomEvent('eip6963:announceProvider', {
+       detail: { info: { name: "M", rdns: "fake.attacker", uuid: crypto.randomUUID() }, provider: fakeProvider }
+     }))
+   })
+   ```
+3. **Note** : pour test fidèle il faut aussi désactiver MetaMask le temps du
+   test (ou tester sur un profil sans wallet legit), sinon le vrai MetaMask
+   aussi annonce et match en premier.
+4. Avec walletType="metamask" persisté, déclencher une action de signature.
+5. ✅ Console : `Selected wallet "metamask" not announced on this page (expected rdns: io.metamask, io.metamask.flask). Available: M (fake.attacker)...`
+6. ✅ Aucune signature n'est routée vers le fake provider.
+7. 🔴 Si bug : alert("PWNED") s'affiche, signing routé vers le fake.
+
+🧪 **Test 5.3 — Wallet inconnu du registry (fallback strict equality)**
+1. Si tu as un wallet exotique (Frame, Phantom, etc.) déclaré dans
+   WALLET_RDNS_REGISTRY → le test 5.1 doit aussi marcher.
+2. Si ton wallet n'est PAS dans le registry → console doit logger
+   `Wallet type unknown to RDNS registry, falling back to strict equality match`.
+3. Le fallback ne match que si `name === walletType` ou `rdns === walletType`
+   (égalité stricte, pas substring).
+
+---
+
+### Commit 6 — `feat(blockchain): 1% slippage protection on deposits and redeems`
+
+**Bug** : tous les `deposit`/`redeem`/votes passaient `minShares=0n` /
+`minAssets=0n`. Un MEV bot pouvait sandwich une transaction sur la bonding
+curve et siphoner la valeur (l'utilisateur recevait quasi-zéro shares pour
+le même TRUST déposé).
+
+🧪 **Test 6.1 — Golden path single deposit**
+1. Cocher une intention sur une URL nouvelle, customiser le weight.
+2. Submit cart → confirmer la TX.
+3. ✅ La TX réussit. DevTools Network : un `eth_call` à `previewDeposit` est
+   visible avant le `eth_sendTransaction`.
+4. ✅ Inspecter la TX dans l'explorer : `minShares` doit être ~99% des shares
+   reçues réellement (1% slippage tolerance).
+
+🧪 **Test 6.2 — Batch deposit + GS pool**
+1. Activer Global Stake (si pas déjà actif).
+2. Ajouter 3+ certs au cart pour des URLs déjà existantes (ce qui force le
+   fallback `executeDepositBatch`).
+3. Submit.
+4. ✅ Network : un `eth_call` Multicall3 (1 round trip) au lieu de N calls.
+5. ✅ La TX réussit. `minShares[i]` non-zero pour chaque entry.
+
+🧪 **Test 6.3 — Redeem (single + batch)**
+1. Avoir des positions sur 2+ triples (depuis Profile → Positions).
+2. Tester :
+   - Redeem 1 position → ✅ TX OK, `minAssets` calculé via `previewRedeem`
+   - Redeem all → ✅ TX OK, multicall preview, `redeemBatch` avec array de
+     `minAssets` non-zero
+
+🧪 **Test 6.4 — Slippage actif (théorique, hard to repro sans setup MEV)**
+1. Si quelqu'un fait un gros deposit/redeem dans le même block, la curve
+   bouge. Si ça fait baisser le minShares attendu de plus de 1%, la TX
+   doit revert avec une erreur claire (au lieu de réussir avec ~zero shares).
+2. Pour tester localement : déposer en 2 wallets en même temps depuis 2 onglets.
+3. ✅ La 2ème TX revert avec `MultiVault_InsufficientShares` ou similaire.
+
+---
+
+### Commit 7 — `feat(auth): require SIWE proof for WALLET_CONNECTED messages`
+
+**Bug** : la landing envoyait `{ type: WALLET_CONNECTED, walletAddress: "0x..." }`
+et l'extension le croyait sans preuve cryptographique. Un XSS sur la landing
+(ou tout origin allowlisté) pouvait faire afficher n'importe quel wallet
+dans Sofia, ouvrant une surface de phishing.
+
+🧪 **Test 7.1 — Golden path connect**
+1. Aller sur la landing (`/auth?extensionId=...`).
+2. Cliquer Connect Wallet → choisir MetaMask.
+3. ✅ MetaMask popup avec un message SIWE :
+   ```
+   doc.sofia.intuition.box wants you to sign in with your Ethereum account:
+   0xABC...
+
+   Connect your wallet to the Sofia extension.
+
+   URI: https://doc.sofia.intuition.box
+   Version: 1
+   Chain ID: 1155
+   Nonce: <16 hex>
+   Issued At: <now>
+   ```
+4. Signer.
+5. ✅ La landing affiche "Wallet Connected!". L'extension a `walletAddress`
+   en `chrome.storage.session`. Click "Create your first claim" déclenche
+   la suite normalement.
+
+🧪 **Test 7.2 — User refuse la signature**
+1. Sur la landing, Connect Wallet → MetaMask popup.
+2. Cliquer "Reject" sur le popup.
+3. ✅ La landing affiche "Signature Required" avec le message d'erreur et un
+   bouton "Retry signature".
+4. ✅ L'extension ne reçoit PAS de `WALLET_CONNECTED` (rien dans
+   `chrome.storage.session`).
+5. Cliquer "Retry signature" → MetaMask popup à nouveau, accepter cette fois.
+6. ✅ Connect réussi.
+
+🧪 **Test 7.3 — Replay (anti-replay window 5 min)**
+DevTools console de la landing avant le sendToExtension :
+```js
+// Intercepter le message envoyé pour le replayer plus tard
+let captured
+const orig = chrome.runtime.sendMessage
+chrome.runtime.sendMessage = (extId, msg, ...rest) => {
+  if (msg.type === "WALLET_CONNECTED") captured = msg
+  return orig(extId, msg, ...rest)
+}
+```
+Connecter normalement (capture du message). Attendre 6+ minutes. Renvoyer :
+```js
+chrome.runtime.sendMessage("<extension-id>", captured, console.log)
+```
+✅ Console extension : `Rejected WALLET_CONNECTED: invalid SIWE proof`
+avec `reason: SIWE expired (issued ...s ago)`.
+
+🧪 **Test 7.4 — Signature forgée**
+DevTools de la landing, modifier le payload avant l'envoi :
+```js
+// Forge une mauvaise signature
+const badPayload = {
+  type: "WALLET_CONNECTED",
+  walletAddress: "0xattackerWallet",  // wallet qu'on ne possède pas
+  walletType: "metamask",
+  siweMessage: "doc.sofia.intuition.box wants you to sign in with your Ethereum account:\n0xattackerWallet\n\n...",
+  siweSignature: "0x" + "00".repeat(65)  // signature invalide
+}
+chrome.runtime.sendMessage("<extension-id>", badPayload, console.log)
+```
+✅ Réponse : `{ success: false, error: "Signature does not match claimed address" }` (ou similaire selon le `recoverMessageAddress`).
+✅ `chrome.storage.session.walletAddress` n'est pas modifié.
+
+🧪 **Test 7.5 — Domain mismatch**
+Si tu as un dev qui tourne sur localhost:3000, le SIWE doit avoir
+`localhost:3000 wants you to sign...`. Si quelqu'un tente d'envoyer un SIWE
+avec `doc.sofia.intuition.box wants...` depuis localhost:3000 → reject :
+```
+Rejected WALLET_CONNECTED: invalid SIWE proof
+  reason: SIWE domain mismatch (expected localhost:3000)
+```
+
+---
+
+## Phase 3 — Manifest & permissions
+
 (à compléter après les commits)
