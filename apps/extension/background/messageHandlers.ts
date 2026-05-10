@@ -103,6 +103,29 @@ const ALLOWED_EXTERNAL_ORIGINS = (() => {
 // Supported OAuth platforms
 const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', 'twitch']
 
+// Messages that mutate state or trigger user-visible UI must originate from
+// the side panel / extension pages, never from a content script (= a visited
+// web page). Anything that reads tracking telemetry (PAGE_DATA, TRACK_URL,
+// URL_CHANGED) is intentionally NOT in this set: those are content-script-
+// emitted by design.
+const SIDEPANEL_ONLY_MESSAGES = new Set<string>([
+  'SEND_CHATBOT_MESSAGE',
+  'FETCH_BOOKMARKS',
+  'IMPORT_SELECTED_BOOKMARKS',
+  'GET_INTENTION_GROUPS',
+  'GET_GROUP_DETAILS',
+  'CERTIFY_URL',
+  'REMOVE_URL_FROM_GROUP',
+  'DELETE_GROUP',
+  'UPDATE_GROUP_LEVEL',
+  'LEVEL_UP_GROUP',
+  'PREVIEW_LEVEL_UP',
+  'INITIALIZE_BADGE',
+  'TRIPLET_PUBLISHED',
+  'WALLET_DISCONNECTED',
+  'GET_TAB_ID'
+])
+
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
   if (handlersRegistered) {
@@ -247,7 +270,22 @@ export function setupMessageHandlers(): void {
     return true
   })
 
-  chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message: ChromeMessage, sender, sendResponse) => {
+    // Reject privileged messages coming from a content script. The sidepanel
+    // (and other extension pages) have `sender.tab === undefined`; content
+    // scripts always carry their tab. An XSS on a visited page can sendMessage
+    // into the SW and would otherwise hit handlers that mutate cart state,
+    // trigger level-ups, or open the side panel.
+    if (sender.tab !== undefined && SIDEPANEL_ONLY_MESSAGES.has(message.type)) {
+      logger.warn('Rejected privileged message from content script', {
+        type: message.type,
+        tabId: sender.tab.id,
+        url: sender.tab.url
+      })
+      sendResponse({ success: false, error: 'Message not allowed from content script' })
+      return true
+    }
+
     // Handle async operations
     (async () => {
     switch (message.type) {
