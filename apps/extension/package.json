@@ -71,6 +71,7 @@
     "externally_connectable": {
       "matches": [
         "http://localhost:3000/*",
+        "http://localhost:5174/*",
         "https://doc.sofia.intuition.box/*"
       ]
     },
