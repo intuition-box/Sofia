@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useSignMessage } from '@privy-io/react-auth'
+import { useWallets } from '@privy-io/react-auth'
 import { useWalletConnection } from '../../lib/web3/PrivyContext'
 import { sendToExtension, DEFAULT_EXTENSION_ID } from './oauthConfig'
 import styles from './auth.module.css'
@@ -49,7 +49,11 @@ export function AuthPage() {
     disconnect,
     clearError,
   } = useWalletConnection()
-  const { signMessage } = useSignMessage()
+  // Use the wallet's own provider (personal_sign) rather than Privy's
+  // useSignMessage hook: the latter throws "No embedded or connected wallet
+  // found for address" when signing for an external wallet (MetaMask et al.)
+  // because it expects a Privy-managed embedded wallet by default.
+  const { wallets } = useWallets()
   const [hasSent, setHasSent] = useState(false)
   const [siweError, setSiweError] = useState<string | null>(null)
   const signaturePending = useRef(false)
@@ -82,9 +86,26 @@ export function AuthPage() {
     ;(async () => {
       try {
         const siweMessage = buildSiweMessage(address)
-        // Privy returns `{ signature }`; the wallet popup shows the SIWE
-        // message to the user before signing.
-        const { signature } = await signMessage({ message: siweMessage })
+
+        // Find the wallet matching the connected address. Privy may have
+        // multiple wallets (e.g. an embedded one + the user's external one);
+        // we want the one whose address equals what we're authenticating.
+        const wallet = wallets.find(
+          (w) => w.address?.toLowerCase() === address.toLowerCase(),
+        )
+        if (!wallet) {
+          throw new Error(
+            `No connected wallet found for ${address.slice(0, 8)}…. Please reconnect.`,
+          )
+        }
+
+        const provider = await wallet.getEthereumProvider()
+        // EIP-191 personal_sign — what SIWE expects on the verifier side
+        // (recoverMessageAddress in viem matches this signing scheme).
+        const signature = (await provider.request({
+          method: 'personal_sign',
+          params: [siweMessage, address],
+        })) as string
 
         if (cancelled) return
 
@@ -129,7 +150,7 @@ export function AuthPage() {
     extensionId,
     hasSent,
     siweError,
-    signMessage,
+    wallets,
   ])
 
   useEffect(() => {
