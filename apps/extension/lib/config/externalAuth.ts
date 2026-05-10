@@ -3,9 +3,14 @@
  *
  * Since Privy requires HTTPS and Chrome extensions run on chrome-extension:// protocol,
  * we use an external HTTPS page for authentication.
+ *
+ * Override the URL via PLASMO_PUBLIC_AUTH_URL in .env.development to point at
+ * a local landing (e.g. http://localhost:3000/auth) and validate the SIWE
+ * handshake end-to-end before publishing.
  */
 
-const AUTH_PAGE_URL = 'https://doc.sofia.intuition.box/auth'
+const AUTH_PAGE_URL =
+  process.env.PLASMO_PUBLIC_AUTH_URL || 'https://doc.sofia.intuition.box/auth'
 
 /**
  * Build the full auth URL with callback parameters
