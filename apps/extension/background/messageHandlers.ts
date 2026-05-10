@@ -89,11 +89,16 @@ async function verifySiweProof(args: {
 let handlersRegistered = false
 
 
-// Allowed origins for external messages (security)
-const ALLOWED_EXTERNAL_ORIGINS = [
-  'https://doc.sofia.intuition.box',
-  'http://localhost:3000' // For development only
-]
+// Allowed origins for external messages (security).
+// `localhost:3000` is filtered out at runtime in mainnet builds (defence in
+// depth on top of the post-build manifest stripping in scripts/post-build.js).
+const ALLOWED_EXTERNAL_ORIGINS = (() => {
+  const origins = ['https://doc.sofia.intuition.box', 'http://localhost:3000']
+  if (process.env.PLASMO_PUBLIC_NETWORK === 'mainnet') {
+    return origins.filter((o) => !/^https?:\/\/localhost(:\d+)?$/i.test(o))
+  }
+  return origins
+})()
 
 // Supported OAuth platforms
 const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', 'twitch']
