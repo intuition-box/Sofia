@@ -314,19 +314,9 @@ class AtomServiceClass {
 
       const ipfsUri = pinnedData.ipfsUri
 
-      console.log('📍 ATOM IPFS DATA:', {
+      logger.debug('Atom pinned to IPFS', {
         atomName: atomData.name,
-        ipfsUri: ipfsUri,
-        ipfsUriHex: stringToHex(ipfsUri),
-        ipfsUriBytes: [...Buffer.from(ipfsUri, 'utf8')],
-        ipfsUriLength: ipfsUri.length,
-        rawMetadata: {
-          name: atomData.name,
-          description: atomData.description || "Contenu visité par l'utilisateur.",
-          image: atomData.image || "",
-          url: atomData.url,
-          type: atomData.type
-        }
+        ipfsUriLength: ipfsUri.length
       })
 
       const { walletClient } = await getClients()
@@ -355,13 +345,9 @@ class AtomServiceClass {
       // Convert IPFS URI to bytes
       const encodedData = stringToHex(ipfsUri)
 
-      console.log('📦 ENCODED DATA FOR CONTRACT:', {
+      logger.debug('Atom calldata encoded', {
         atomName: atomData.name,
-        originalIpfsUri: ipfsUri,
-        encodedData: encodedData,
-        encodedDataLength: encodedData.length,
-        decodableBack: Buffer.from(encodedData.slice(2), 'hex').toString('utf8'),
-        contractAddress: BlockchainService.getContractAddress()
+        encodedDataLength: encodedData.length
       })
 
       // Calculate expected vaultId
@@ -425,12 +411,9 @@ class AtomServiceClass {
           txHash
         }
 
-        console.log('✅ ATOM CREATION COMPLETED:', {
+        logger.debug('Atom creation completed', {
           atomName: atomData.name,
-          ipfsUri: ipfsUri,
-          encodedData: encodedData,
           vaultId: result.vaultId,
-          atomHash: result.atomHash,
           txHash: result.txHash
         })
 
