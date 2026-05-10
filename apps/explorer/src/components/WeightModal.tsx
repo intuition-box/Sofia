@@ -390,6 +390,7 @@ export default function WeightModal({
                         <img
                           src={item.favicon}
                           alt=""
+                          referrerPolicy="no-referrer"
                           style={{
                             width: 18,
                             height: 18,
