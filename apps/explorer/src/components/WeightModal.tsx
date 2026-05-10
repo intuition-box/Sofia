@@ -8,7 +8,7 @@ import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
 import type { CartItem } from '../hooks/useCart'
-import { EXPLORER_URL, PREDICATE_IDS } from '../config'
+import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import {
   HAS_TAG_PREDICATE_ID,
   TOPIC_ATOM_IDS,
@@ -535,6 +535,24 @@ export default function WeightModal({
                 </span>
               </div>
               <p className="wm-cost-note">* Estimated — actual may vary</p>
+              {/* Surface the contract the wallet popup will sign against, so
+                  a compromised bundle that swaps SOFIA_PROXY_ADDRESS can be
+                  caught by reading the address against a known reference. */}
+              <div
+                className="wm-cost-row"
+                style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}
+              >
+                <span>Signing against</span>
+                <a
+                  href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontFamily: 'monospace' }}
+                >
+                  {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
+                  {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
+                </a>
+              </div>
             </div>
           )}
 
