@@ -1,6 +1,8 @@
 /**
  * GroupCard — a single discovered group rendered with the same shell
- * as `TrustCircleCard`. Clicks route to `/circles/group/:termId`.
+ * as `TrustCircleCard`. Clicks route to `/circles/:termId` where the
+ * unified `<CircleDetailView>` decides whether to show the full
+ * content (member) or the gated teaser (non-member).
  */
 import { useNavigate } from 'react-router-dom'
 import type { GroupEntry } from '@/services/groupsService'
@@ -17,7 +19,7 @@ export default function GroupCard({ group }: GroupCardProps) {
     <button
       type="button"
       className="cr-card"
-      onClick={() => navigate(`/circles/group/${group.termId}`)}
+      onClick={() => navigate(`/circles/${group.termId}`)}
     >
       <div className="cr-card-head">
         {group.image ? (

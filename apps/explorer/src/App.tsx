@@ -1,5 +1,11 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import {
+  Routes,
+  Route,
+  useLocation,
+  useParams,
+  Navigate,
+} from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
@@ -35,7 +41,6 @@ const ScoresPage = lazy(() => import('./pages/ScoresPage'))
 const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
-const GroupDetailPage = lazy(() => import('./pages/GroupDetailPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
@@ -61,6 +66,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!ready) return null
   if (!authenticated && !isViewingAs) return <Navigate to="/feed" replace />
   return <>{children}</>
+}
+
+/** Maps the legacy `/circles/group/:id` URL onto `/circles/:id`. The
+ *  unified CirclesPage handles both trust and on-chain group ids. */
+function LegacyGroupRedirect() {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/circles/${id ?? ''}`} replace />
 }
 
 export default function App() {
@@ -290,13 +302,12 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Legacy redirect — older share links pointed to
+                    `/circles/group/:termId`. The unified detail page
+                    lives at `/circles/:id` now. */}
                 <Route
-                  path="/circles/group/:termId"
-                  element={
-                    <ProtectedRoute>
-                      <GroupDetailPage />
-                    </ProtectedRoute>
-                  }
+                  path="/circles/group/:id"
+                  element={<LegacyGroupRedirect />}
                 />
                 <Route
                   path="/circles/:id"
