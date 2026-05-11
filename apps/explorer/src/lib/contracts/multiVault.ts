@@ -12,6 +12,19 @@ export const MultiVaultAbi = [
     stateMutability: 'view',
     type: 'function',
   },
+  // getTriple(tripleId) view → (subjectId, predicateId, objectId)
+  // Reverts when the triple doesn't exist; we treat that as `exists: false`.
+  {
+    inputs: [{ internalType: 'bytes32', name: 'tripleId', type: 'bytes32' }],
+    name: 'getTriple',
+    outputs: [
+      { internalType: 'bytes32', name: 'subjectId', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'predicateId', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'objectId', type: 'bytes32' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
   // redeem(receiver, termId, curveId, shares, minAssets) → assets
   {
     inputs: [

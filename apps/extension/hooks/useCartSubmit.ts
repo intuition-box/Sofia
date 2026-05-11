@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useCreateTripleOnChain } from "./useCreateTripleOnChain"
 import { useWeightOnChain } from "./useWeightOnChain"
 import { useWalletFromStorage } from "./useWalletFromStorage"
-import { cartService, questTrackingService, goldService, txEventBus } from "~/lib/services"
+import { cartService, questTrackingService, goldService, txEventBus, BlockchainService } from "~/lib/services"
 import { createHookLogger } from "~/lib/utils"
 import { TOPIC_ATOM_IDS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
@@ -22,6 +22,25 @@ export const useCartSubmit = () => {
   const submitCart = useCallback(
     async (items: CartItemRecord[], customWeight?: bigint) => {
       if (!walletAddress || items.length === 0) return
+
+      // Refuse to sign for cart items that don't belong to the active wallet.
+      // An async wallet swap between cart load and submit (chrome.storage
+      // listeners are independent) could otherwise cause the user to sign a
+      // batch they never assembled.
+      const submitter = walletAddress.toLowerCase()
+      const orphan = items.find(
+        item => item.walletAddress.toLowerCase() !== submitter
+      )
+      if (orphan) {
+        const msg = "Cart wallet mismatch — refresh the cart"
+        logger.error(msg, {
+          submitter,
+          orphanWallet: orphan.walletAddress,
+          orphanId: orphan.id
+        })
+        setError(msg)
+        return
+      }
 
       setSubmitting(true)
       setError(null)
@@ -56,8 +75,22 @@ export const useCartSubmit = () => {
         if (voteItems.length > 0) {
           const voteWeight = customWeight || BigInt(Math.floor(0.5 * 1e18))
 
+          // Verify all vote target triples exist on-chain before depositing.
+          // A poisoned indexer or stale cart entry could otherwise route TRUST
+          // into an attacker-controlled vault. Single multicall3 roundtrip.
+          const termIds = voteItems
+            .map(v => v.tripleTermId)
+            .filter((id): id is string => !!id)
+          const existsMap = await BlockchainService.checkTriplesExistByTermIds(termIds)
+
           for (const vote of voteItems) {
             if (!vote.tripleTermId) continue
+            if (!existsMap.get(vote.tripleTermId)) {
+              logger.warn("Skip vote: triple does not exist on-chain", {
+                tripleTermId: vote.tripleTermId
+              })
+              continue
+            }
             try {
               const voteResult = await depositWithPool(
                 vote.tripleTermId,
@@ -91,9 +124,19 @@ export const useCartSubmit = () => {
         if (batchResult?.success) {
           const contextItems = certItems
             .filter(item => item.interestContext)
-            .map((item, i) => {
-              const tripleVaultId = batchResult.results[i]?.tripleVaultId
+            .map(item => {
+              // Look up the triple vault by stable input key. Indexing into
+              // `batchResult.results` positionally is wrong: the service
+              // reorders entries (created first, then deposits) after dedup.
+              const inputKey = `${item.predicateName}|${item.url}`
+              const tripleVaultId = batchResult.vaultIdByInputKey?.[inputKey]
               const topicTermId = TOPIC_ATOM_IDS[item.interestContext!]
+              if (!tripleVaultId) {
+                logger.warn("Skip context triple: no vaultId resolved", {
+                  inputKey,
+                  interestContext: item.interestContext
+                })
+              }
               return tripleVaultId && topicTermId
                 ? { certTripleVaultId: tripleVaultId, topicTermId }
                 : null

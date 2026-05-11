@@ -6,12 +6,10 @@ import { usePinThingMutation } from '@0xsofia/graphql'
 import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
+import { useTripleVerification } from '../hooks/useTripleVerification'
 import type { CartItem } from '../hooks/useCart'
-import { EXPLORER_URL, PREDICATE_IDS } from '../config'
-import {
-  HAS_TAG_PREDICATE_ID,
-  TOPIC_ATOM_IDS,
-} from '../config/atomIds'
+import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
+import { HAS_TAG_PREDICATE_ID, TOPIC_ATOM_IDS } from '../config/atomIds'
 import { intentionBadgeStyle } from '../config/intentions'
 import {
   executeCreateTriplesBatch,
@@ -61,6 +59,24 @@ export default function WeightModal({
   // Resolve the wallet's Account atom term_id — required as the subject
   // of any membership triple we mint when items[].kind === 'create-circle'.
   const userAccountAtom = useUserAccountAtom(wallets[0]?.address)
+  // Defence against a poisoned indexer / stale cart entry: pre-check that
+  // every `kind: 'deposit'` termId actually exists on-chain. If a triple is
+  // missing the deposit would route TRUST into an attacker-controlled vault.
+  const depositTermIds = useMemo(
+    () =>
+      items
+        .filter((it) => (it.kind ?? 'deposit') === 'deposit')
+        .map((it) => it.termId),
+    [items],
+  )
+  const verifiedTriples = useTripleVerification(depositTermIds)
+  const verifying = verifiedTriples === undefined && depositTermIds.length > 0
+  const missingTripleIds = useMemo(() => {
+    if (!verifiedTriples) return []
+    return depositTermIds.filter(
+      (id) => !verifiedTriples.get(id.toLowerCase())?.exists,
+    )
+  }, [verifiedTriples, depositTermIds])
   // Static fetcher exposed alongside the React Query mutation hook —
   // we use it here to keep the create flow fully callable from a sync
   // event handler without needing a separate `mutate` callback.
@@ -371,6 +387,7 @@ export default function WeightModal({
                         <img
                           src={item.favicon}
                           alt=""
+                          referrerPolicy="no-referrer"
                           style={{
                             width: 18,
                             height: 18,
@@ -437,6 +454,28 @@ export default function WeightModal({
             </div>
           )}
 
+          {/* On-chain verification warning — form state only */}
+          {isFormState && missingTripleIds.length > 0 && (
+            <div className="wm-error-section" style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 18 }}>⚠️</span>
+              <div>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ margin: '0 0 4px' }}
+                >
+                  Triple verification failed
+                </p>
+                <p className="text-xs text-destructive" style={{ margin: 0 }}>
+                  {missingTripleIds.length} item
+                  {missingTripleIds.length > 1 ? 's' : ''} reference a triple
+                  that does not exist on-chain. Refusing to deposit — the cart
+                  data may be stale or the indexer may be out of sync. Remove
+                  affected items and retry.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Cost summary — form state only */}
           {isFormState && (
             <div className="wm-cost-summary">
@@ -494,6 +533,24 @@ export default function WeightModal({
                 </span>
               </div>
               <p className="wm-cost-note">* Estimated — actual may vary</p>
+              {/* Surface the contract the wallet popup will sign against, so
+                  a compromised bundle that swaps SOFIA_PROXY_ADDRESS can be
+                  caught by reading the address against a known reference. */}
+              <div
+                className="wm-cost-row"
+                style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}
+              >
+                <span>Signing against</span>
+                <a
+                  href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontFamily: 'monospace' }}
+                >
+                  {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
+                  {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
+                </a>
+              </div>
             </div>
           )}
 
@@ -585,13 +642,17 @@ export default function WeightModal({
                 onClick={handleSubmit}
                 disabled={
                   processing ||
+                  verifying ||
+                  missingTripleIds.length > 0 ||
                   totalDeposit <= 0 ||
                   balNum < breakdown.totalEstimate
                 }
               >
                 {processing
                   ? 'Submitting...'
-                  : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
+                  : verifying
+                    ? 'Verifying on-chain...'
+                    : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
               </button>
             )}
             {txResult && !txResult.success && !processing && (

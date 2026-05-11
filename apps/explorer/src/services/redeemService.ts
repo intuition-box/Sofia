@@ -132,7 +132,7 @@ export async function redeemAtom(
     abi: MultiVaultAbi,
     functionName: 'redeem',
     args,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 
@@ -199,7 +199,7 @@ export async function redeemBatchAtoms(
     abi: MultiVaultAbi,
     functionName: 'redeemBatch',
     args,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 

@@ -80,7 +80,9 @@ export class OAuthFlowManager {
         interactive: true
       })
 
-      logger.debug('Received callback URL', { responseUrl })
+      // Don't log responseUrl: it carries the OAuth `code` (or implicit
+      // `access_token`) in the query/fragment.
+      logger.debug('Received OAuth callback')
 
       // Extract parameters based on OAuth flow type
       const urlObj = new URL(responseUrl)

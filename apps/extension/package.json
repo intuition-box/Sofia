@@ -21,6 +21,8 @@
     "@0xsofia/graphql": "workspace:*",
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",
+    "@noble/curves": "^1.8.0",
+    "@noble/hashes": "^1.7.0",
     "@plasmohq/storage": "^1.15.0",
     "@tanstack/query-async-storage-persister": "^5.99.2",
     "@tanstack/react-query": "^5.0.0",
@@ -62,15 +64,16 @@
       "sidePanel",
       "bookmarks",
       "identity",
-      "offscreen"
+      "offscreen",
+      "scripting"
     ],
     "host_permissions": [
-      "<all_urls>",
-      "https://auth.privy.io/*"
+      "<all_urls>"
     ],
     "externally_connectable": {
       "matches": [
         "http://localhost:3000/*",
+        "http://localhost:5174/*",
         "https://doc.sofia.intuition.box/*"
       ]
     },

@@ -9,6 +9,8 @@ import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { getAddress } from "viem"
+import { secp256k1 } from "@noble/curves/secp256k1"
+import { keccak_256 } from "@noble/hashes/sha3"
 import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
@@ -17,18 +19,171 @@ import { createServiceLogger } from '../lib/utils/logger'
 
 const logger = createServiceLogger('MessageHandlers')
 
+// SIWE proofs older than this window are rejected (anti-replay).
+const SIWE_MAX_AGE_MS = 5 * 60 * 1000  // 5 minutes
+
+function hexToBytes(hex: string): Uint8Array {
+  const cleaned = hex.startsWith('0x') ? hex.slice(2) : hex
+  if (cleaned.length % 2 !== 0) throw new Error('Invalid hex length')
+  const bytes = new Uint8Array(cleaned.length / 2)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(cleaned.slice(i * 2, i * 2 + 2), 16)
+  }
+  return bytes
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * Recover the Ethereum address that signed `message` via EIP-191
+ * personal_sign.
+ *
+ * We don't use viem.recoverMessageAddress here: viem lazy-imports
+ * @noble/curves, which Parcel splits into a separate chunk
+ * (secp256k1.<hash>.js). Service Worker `importScripts` can't resolve
+ * extension-relative chunks → the SIWE check explodes at runtime in MV3.
+ *
+ * Calling noble directly keeps everything statically bundled into the SW
+ * entry.
+ */
+function recoverPersonalSignAddress(message: string, signatureHex: string): string {
+  const sig = hexToBytes(signatureHex)
+  if (sig.length !== 65) {
+    throw new Error(`Invalid signature length: ${sig.length}`)
+  }
+
+  // EIP-191 prefix: "\x19Ethereum Signed Message:\n" + decimal length
+  const messageBytes = new TextEncoder().encode(message)
+  const prefixStr = `\x19Ethereum Signed Message:\n${messageBytes.length}`
+  const prefixBytes = new TextEncoder().encode(prefixStr)
+  const prefixed = new Uint8Array(prefixBytes.length + messageBytes.length)
+  prefixed.set(prefixBytes, 0)
+  prefixed.set(messageBytes, prefixBytes.length)
+  const messageHash = keccak_256(prefixed)
+
+  let v = sig[64]
+  if (v >= 27) v -= 27
+  if (v !== 0 && v !== 1) throw new Error(`Invalid recovery v: ${sig[64]}`)
+
+  const signature = secp256k1.Signature
+    .fromCompact(sig.slice(0, 64))
+    .addRecoveryBit(v)
+  const publicKey = signature.recoverPublicKey(messageHash).toRawBytes(false)
+  // publicKey: 65 bytes (0x04 prefix + 64 bytes uncompressed). Drop prefix.
+  const addressBytes = keccak_256(publicKey.slice(1)).slice(-20)
+  return '0x' + bytesToHex(addressBytes)
+}
+
+/**
+ * Verify a Sign-In With Ethereum (EIP-4361) proof for a WALLET_CONNECTED
+ * message. Returns null on success, or an error string describing why the
+ * proof was rejected.
+ *
+ * The extension trusts the rejected origin (already gated by
+ * ALLOWED_EXTERNAL_ORIGINS) but does NOT trust that the page knows the
+ * wallet's private key without a signature, otherwise an XSS on the landing
+ * could persist any wallet address in chrome.storage.session and phish
+ * the user inside Sofia.
+ */
+async function verifySiweProof(args: {
+  walletAddress: string
+  siweMessage: string
+  siweSignature: string
+  expectedDomain: string | undefined
+}): Promise<string | null> {
+  const { walletAddress, siweMessage, siweSignature, expectedDomain } = args
+
+  if (!siweMessage || !siweSignature) {
+    return 'Missing SIWE proof'
+  }
+
+  // Domain check: the message MUST start with the origin we accepted the
+  // payload from (defence against a SIWE generated for another dApp).
+  if (expectedDomain) {
+    const stripped = expectedDomain.replace(/^https?:\/\//, '')
+    if (!siweMessage.startsWith(`${stripped} wants you to sign in with your Ethereum account:`)) {
+      return `SIWE domain mismatch (expected ${stripped})`
+    }
+  }
+
+  // Anti-replay: parse `Issued At:` line and reject messages older than the
+  // window (also reject far-future timestamps to defend against clock skew).
+  const issuedAtMatch = siweMessage.match(/^Issued At: (.+)$/m)
+  if (!issuedAtMatch) {
+    return 'SIWE missing Issued At'
+  }
+  const issuedAt = Date.parse(issuedAtMatch[1])
+  if (Number.isNaN(issuedAt)) {
+    return 'SIWE Issued At not parseable'
+  }
+  const now = Date.now()
+  if (Math.abs(now - issuedAt) > SIWE_MAX_AGE_MS) {
+    return `SIWE expired (issued ${Math.round((now - issuedAt) / 1000)}s ago)`
+  }
+
+  // Signature check: the recovered address MUST equal the claimed wallet.
+  let recovered: string
+  try {
+    recovered = recoverPersonalSignAddress(siweMessage, siweSignature)
+  } catch (err) {
+    return `Signature recover failed: ${err instanceof Error ? err.message : 'unknown'}`
+  }
+
+  if (recovered.toLowerCase() !== walletAddress.toLowerCase()) {
+    return `Signature does not match claimed address (recovered ${recovered})`
+  }
+
+  return null
+}
+
 // Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
 
 
-// Allowed origins for external messages (security)
-const ALLOWED_EXTERNAL_ORIGINS = [
-  'https://doc.sofia.intuition.box',
-  'http://localhost:3000' // For development only
-]
+// Allowed origins for external messages (security).
+// Must mirror the entries in package.json -> manifest.externally_connectable
+// minus the trailing /* path. Localhost entries are filtered out at runtime in
+// mainnet builds (defence in depth on top of the post-build manifest stripping
+// in scripts/post-build.js).
+const ALLOWED_EXTERNAL_ORIGINS = (() => {
+  const origins = [
+    'https://doc.sofia.intuition.box',
+    'http://localhost:3000',
+    'http://localhost:5174'
+  ]
+  if (process.env.PLASMO_PUBLIC_NETWORK === 'mainnet') {
+    return origins.filter((o) => !/^https?:\/\/localhost(:\d+)?$/i.test(o))
+  }
+  return origins
+})()
 
 // Supported OAuth platforms
 const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', 'twitch']
+
+// Messages that mutate state or trigger user-visible UI must originate from
+// the side panel / extension pages, never from a content script (= a visited
+// web page). Anything that reads tracking telemetry (PAGE_DATA, TRACK_URL,
+// URL_CHANGED) is intentionally NOT in this set: those are content-script-
+// emitted by design.
+const SIDEPANEL_ONLY_MESSAGES = new Set<string>([
+  'SEND_CHATBOT_MESSAGE',
+  'FETCH_BOOKMARKS',
+  'IMPORT_SELECTED_BOOKMARKS',
+  'GET_INTENTION_GROUPS',
+  'GET_GROUP_DETAILS',
+  'CERTIFY_URL',
+  'REMOVE_URL_FROM_GROUP',
+  'DELETE_GROUP',
+  'UPDATE_GROUP_LEVEL',
+  'LEVEL_UP_GROUP',
+  'PREVIEW_LEVEL_UP',
+  'INITIALIZE_BADGE',
+  'TRIPLET_PUBLISHED',
+  'WALLET_DISCONNECTED',
+  'GET_TAB_ID'
+])
 
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
@@ -57,9 +212,31 @@ export function setupMessageHandlers(): void {
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
       const walletType = message.data?.walletType || message.walletType || null
+      const siweMessage =
+        message.data?.siweMessage || message.siweMessage || ''
+      const siweSignature =
+        message.data?.siweSignature || message.siweSignature || ''
       if (walletAddress) {
         (async () => {
           try {
+            // SIWE proof verification: prove the page actually controls the
+            // wallet's private key, not just that it can claim an address.
+            const siweError = await verifySiweProof({
+              walletAddress,
+              siweMessage,
+              siweSignature,
+              expectedDomain: sender.origin
+            })
+            if (siweError) {
+              logger.warn('Rejected WALLET_CONNECTED: invalid SIWE proof', {
+                origin: sender.origin,
+                walletAddress,
+                reason: siweError
+              })
+              sendResponse({ success: false, error: siweError })
+              return
+            }
+
             // Check if wallet changed using persistent lastActiveWallet
             const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
             if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
@@ -152,7 +329,22 @@ export function setupMessageHandlers(): void {
     return true
   })
 
-  chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message: ChromeMessage, sender, sendResponse) => {
+    // Reject privileged messages coming from a content script. The sidepanel
+    // (and other extension pages) have `sender.tab === undefined`; content
+    // scripts always carry their tab. An XSS on a visited page can sendMessage
+    // into the SW and would otherwise hit handlers that mutate cart state,
+    // trigger level-ups, or open the side panel.
+    if (sender.tab !== undefined && SIDEPANEL_ONLY_MESSAGES.has(message.type)) {
+      logger.warn('Rejected privileged message from content script', {
+        type: message.type,
+        tabId: sender.tab.id,
+        url: sender.tab.url
+      })
+      sendResponse({ success: false, error: 'Message not allowed from content script' })
+      return true
+    }
+
     // Handle async operations
     (async () => {
     switch (message.type) {

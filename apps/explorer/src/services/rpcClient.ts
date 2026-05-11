@@ -1,23 +1,15 @@
-import { createPublicClient, defineChain, http } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { RpcQueue } from './rpcQueue'
-import { RPC_URL } from '../config'
+import { intuitionChain } from '../lib/contracts/chainConfig'
 
-export const intuitionMainnet = defineChain({
-  id: 1155,
-  name: 'Intuition Mainnet',
-  nativeCurrency: { decimals: 18, name: 'Trust', symbol: 'TRUST' },
-  rpcUrls: {
-    default: { http: [RPC_URL] },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
-  },
-})
+// Re-export for callers that want the canonical chain definition.
+// Includes Multicall3 contract address so viem batches reads automatically.
+export { intuitionChain as intuitionMainnet }
 
 const rpcQueue = new RpcQueue()
 
 export const rpcClient = createPublicClient({
-  chain: intuitionMainnet,
+  chain: intuitionChain,
   transport: http(undefined, {
     retryCount: 0,
     fetchFn: rpcQueue.createFetchFn(),

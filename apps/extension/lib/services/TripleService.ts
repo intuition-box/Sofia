@@ -81,7 +81,11 @@ class TripleServiceClass {
     const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
     const fee = await BlockchainService.calculateDepositFee(assets.length, totalDeposit)
     const totalValue = totalDeposit + fee
-    const minShares = assets.map(() => 0n)
+    const minShares = await BlockchainService.previewDepositMinSharesBatch(
+      termIds,
+      curveIds,
+      assets
+    )
 
     logger.debug('depositBatch', {
       count: termIds.length,

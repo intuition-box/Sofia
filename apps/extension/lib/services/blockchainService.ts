@@ -9,6 +9,26 @@ import { createServiceLogger } from '../utils/logger'
 const logger = createServiceLogger('BlockchainService')
 
 /**
+ * Slippage tolerance applied to every deposit/redeem (1% = 100 bps).
+ *
+ * Bonding-curve mints are MEV-vulnerable: a sandwich attack pushes the curve
+ * forward and the user receives near-zero shares for the same TRUST. We pass
+ * a non-zero `minShares` derived from `previewDeposit() * (1 - SLIPPAGE_BPS)`,
+ * so an attacker that moves the curve more than 1% causes the deposit to
+ * revert instead of silently extracting value.
+ */
+export const SLIPPAGE_BPS = 100n // 1%
+const BPS_DENOMINATOR = 10000n
+
+/**
+ * Subtract `bps` basis points from `amount`. Used to derive a slippage-aware
+ * lower bound for `minShares` / `minAssets`.
+ */
+export function applySlippage(amount: bigint, bps: bigint = SLIPPAGE_BPS): bigint {
+  return amount - (amount * bps) / BPS_DENOMINATOR
+}
+
+/**
  * Centralized service for blockchain operations
  *
  * All write operations go through the Sofia Fee Proxy which:
@@ -21,6 +41,117 @@ export class BlockchainService {
   private static readonly PROXY_ADDRESS = SOFIA_PROXY_ADDRESS
   private static feeCache: FeeParams | null = null
   private static protocolCostsCache: ProtocolCosts | null = null
+
+  /**
+   * Read previewDeposit on the MultiVault and return the slippage-adjusted
+   * minimum shares the user should accept for this deposit.
+   *
+   * `assets` is the amount that reaches the MultiVault after the proxy fees
+   * are deducted — i.e. the user-facing nominal stake (e.g. INTENTION_MIN_STAKE).
+   */
+  static async previewDepositMinShares(
+    termId: string,
+    curveId: bigint,
+    assets: bigint,
+    bps: bigint = SLIPPAGE_BPS
+  ): Promise<bigint> {
+    const publicClient = getPublicClient()
+    const [shares] = (await publicClient.readContract({
+      address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'previewDeposit',
+      args: [termId as `0x${string}`, curveId, assets],
+      authorizationList: undefined
+    })) as [bigint, bigint]
+    return applySlippage(shares, bps)
+  }
+
+  /**
+   * Batch-version using Multicall3. Returns minShares aligned with the input
+   * arrays. Falls back to parallel reads if multicall3 is unavailable.
+   */
+  static async previewDepositMinSharesBatch(
+    termIds: readonly string[],
+    curveIds: readonly bigint[],
+    assets: readonly bigint[],
+    bps: bigint = SLIPPAGE_BPS
+  ): Promise<bigint[]> {
+    if (termIds.length === 0) return []
+    const publicClient = getPublicClient()
+    try {
+      const responses = await publicClient.multicall({
+        contracts: termIds.map((termId, i) => ({
+          address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'previewDeposit' as const,
+          args: [termId as `0x${string}`, curveIds[i], assets[i]]
+        })),
+        allowFailure: false
+      })
+      return responses.map(([shares]) => applySlippage(shares as bigint, bps))
+    } catch (err) {
+      logger.warn('Multicall previewDeposit failed, falling back to parallel reads', { error: err })
+      return Promise.all(
+        termIds.map((termId, i) =>
+          this.previewDepositMinShares(termId, curveIds[i], assets[i], bps)
+        )
+      )
+    }
+  }
+
+  /**
+   * Read previewRedeem on the MultiVault and return the slippage-adjusted
+   * minimum assets the user should accept when burning `shares`.
+   */
+  static async previewRedeemMinAssets(
+    termId: string,
+    curveId: bigint,
+    shares: bigint,
+    bps: bigint = SLIPPAGE_BPS
+  ): Promise<bigint> {
+    const publicClient = getPublicClient()
+    const [assets] = (await publicClient.readContract({
+      address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'previewRedeem',
+      args: [termId as `0x${string}`, curveId, shares],
+      authorizationList: undefined
+    })) as [bigint, bigint]
+    return applySlippage(assets, bps)
+  }
+
+  /**
+   * Batch-version using Multicall3. Returns minAssets aligned with the input
+   * arrays. Falls back to parallel reads if multicall3 is unavailable.
+   */
+  static async previewRedeemMinAssetsBatch(
+    termIds: readonly string[],
+    curveIds: readonly bigint[],
+    shares: readonly bigint[],
+    bps: bigint = SLIPPAGE_BPS
+  ): Promise<bigint[]> {
+    if (termIds.length === 0) return []
+    const publicClient = getPublicClient()
+    try {
+      const responses = await publicClient.multicall({
+        contracts: termIds.map((termId, i) => ({
+          address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'previewRedeem' as const,
+          args: [termId as `0x${string}`, curveIds[i], shares[i]]
+        })),
+        allowFailure: false
+      })
+      return responses.map(([assets]) => applySlippage(assets as bigint, bps))
+    } catch (err) {
+      logger.warn('Multicall previewRedeem failed, falling back to parallel reads', { error: err })
+      return Promise.all(
+        termIds.map((termId, i) =>
+          this.previewRedeemMinAssets(termId, curveIds[i], shares[i], bps)
+        )
+      )
+    }
+  }
 
   /**
    * Calculate Sofia fee for deposits
@@ -283,6 +414,61 @@ export class BlockchainService {
         exists: false,
         tripleHash: ''
       }
+    }
+  }
+
+  /**
+   * Batch-verify that a list of triple term IDs exist on-chain.
+   * Uses Multicall3 to issue a single RPC roundtrip for N reads.
+   *
+   * @returns Map of termId → exists. Missing/invalid IDs map to false.
+   */
+  static async checkTriplesExistByTermIds(
+    termIds: string[]
+  ): Promise<Map<string, boolean>> {
+    const result = new Map<string, boolean>()
+    if (termIds.length === 0) return result
+
+    const publicClient = getPublicClient()
+
+    try {
+      const responses = await publicClient.multicall({
+        contracts: termIds.map(termId => ({
+          address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'getTriple' as const,
+          args: [termId as `0x${string}`]
+        })),
+        allowFailure: true
+      })
+
+      termIds.forEach((termId, i) => {
+        // getTriple reverts when the triple doesn't exist → status: 'failure'.
+        result.set(termId, responses[i]?.status === 'success')
+      })
+      return result
+    } catch (err) {
+      // Fallback: parallel individual reads (e.g., if multicall3 isn't deployed
+      // on the active chain). Slower but functional.
+      logger.warn('Multicall failed, falling back to parallel getTriple', { error: err })
+      const checks = await Promise.all(
+        termIds.map(async termId => {
+          try {
+            await publicClient.readContract({
+              address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+              abi: MultiVaultAbi,
+              functionName: 'getTriple',
+              args: [termId as `0x${string}`],
+              authorizationList: undefined
+            })
+            return [termId, true] as const
+          } catch {
+            return [termId, false] as const
+          }
+        })
+      )
+      for (const [termId, exists] of checks) result.set(termId, exists)
+      return result
     }
   }
 
