@@ -90,10 +90,16 @@ let handlersRegistered = false
 
 
 // Allowed origins for external messages (security).
-// `localhost:3000` is filtered out at runtime in mainnet builds (defence in
-// depth on top of the post-build manifest stripping in scripts/post-build.js).
+// Must mirror the entries in package.json -> manifest.externally_connectable
+// minus the trailing /* path. Localhost entries are filtered out at runtime in
+// mainnet builds (defence in depth on top of the post-build manifest stripping
+// in scripts/post-build.js).
 const ALLOWED_EXTERNAL_ORIGINS = (() => {
-  const origins = ['https://doc.sofia.intuition.box', 'http://localhost:3000']
+  const origins = [
+    'https://doc.sofia.intuition.box',
+    'http://localhost:3000',
+    'http://localhost:5174'
+  ]
   if (process.env.PLASMO_PUBLIC_NETWORK === 'mainnet') {
     return origins.filter((o) => !/^https?:\/\/localhost(:\d+)?$/i.test(o))
   }
