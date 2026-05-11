@@ -1,11 +1,9 @@
 /**
- * PerspectivePage — `/perspective/:mode` stub.
+ * PerspectivePage — `/perspective/:mode`.
  *
- * Today this page only renders the selection that was compiled from
- * the Compose view: a hero tinted per mode + the picked circles and
- * topics as chips. The aggregation hook (`usePerspective`) and the
- * feed grid land in a follow-up wave — for now the page just proves
- * the routing path end-to-end.
+ * Compiles the URL selection chosen on Compose into a ranked list of
+ * URLs via `usePerspective`. The selection chips stay visible above
+ * the grid so the user can read what they compiled at a glance.
  *
  * Mode + selection come from the URL: `/perspective/:mode?circles=…&topics=…`
  */
@@ -15,7 +13,10 @@ import { ArrowLeft, PenSquare } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useGroups } from '@/hooks/useGroups'
+import { usePerspective } from '@/hooks/usePerspective'
 import { getTopicEmoji } from '@/config/topicEmoji'
+import { INTENTION_CONFIG } from '@/config/intentions'
+import PerspectiveItemCard from '@/components/perspective/PerspectiveItemCard'
 import type { CompareMode } from '@/lib/compileActionAnims'
 import '@/components/styles/pages.css'
 import '@/components/styles/perspective.css'
@@ -62,15 +63,17 @@ function isCompareMode(v: string | undefined): v is CompareMode {
   )
 }
 
+// Map intention LABEL → color for the result-card badges. Built once
+// so PerspectiveItemCard stays free of `INTENTION_CONFIG`.
+const INTENTION_COLORS: Record<string, string> = Object.fromEntries(
+  Object.values(INTENTION_CONFIG).map((v) => [v.label, v.color]),
+)
+
 export default function PerspectivePage() {
   const { mode } = useParams<{ mode: string }>()
   const [searchParams] = useSearchParams()
   const { topicById } = useTaxonomy()
   const { groups } = useGroups()
-
-  if (!isCompareMode(mode)) {
-    return <Navigate to="/compose" replace />
-  }
 
   const circleIds = useMemo(() => {
     const raw = searchParams.get('circles') ?? ''
@@ -88,18 +91,31 @@ export default function PerspectivePage() {
       .filter(Boolean)
   }, [searchParams])
 
-  const meta = MODE_META[mode]
-  const editHref =
-    `/compose?circles=${encodeURIComponent(circleIds.join(','))}` +
-    `&topics=${encodeURIComponent(topicIds.join(','))}`
+  const aggregationMode = isCompareMode(mode) ? mode : 'merge'
+  const { items, loading, error, hasPicks } = usePerspective(
+    circleIds,
+    topicIds,
+    aggregationMode,
+    isCompareMode(mode),
+  )
 
   // term_id → label resolver. Falls back to a truncated id so the chip
-  // never renders a 64-char bytes32 string.
+  // never renders a 64-char bytes32 string. Kept above any early return
+  // so hook order stays stable across mode states.
   const groupLabelById = useMemo(() => {
     const map = new Map<string, string>()
     for (const g of groups) map.set(g.termId, g.label)
     return map
   }, [groups])
+
+  if (!isCompareMode(mode)) {
+    return <Navigate to="/compose" replace />
+  }
+
+  const meta = MODE_META[mode]
+  const editHref =
+    `/compose?circles=${encodeURIComponent(circleIds.join(','))}` +
+    `&topics=${encodeURIComponent(topicIds.join(','))}`
 
   const resolveCircleName = (id: string): string =>
     SYNTHETIC_CIRCLE_NAMES[id] ??
@@ -173,14 +189,60 @@ export default function PerspectivePage() {
         </div>
       </section>
 
-      <div className="psp-empty">
-        <p className="psp-empty-title">Compiled perspective coming soon.</p>
-        <p className="psp-empty-sub">
-          The aggregation pipeline (union / intersection / difference /
-          divergence over circle certifications) lands in the next wave. For now
-          this page confirms the routing and the payload.
-        </p>
+      <div className="psp-results-head">
+        <span className="psp-kicker">Result</span>
+        {!loading && (
+          <span className="psp-results-count">
+            {items.length} URL{items.length === 1 ? '' : 's'}
+          </span>
+        )}
       </div>
+
+      {loading ? (
+        <div className="psp-skeleton-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="psp-skeleton-card" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="psp-empty">
+          <p className="psp-empty-title">Couldn't compile this perspective.</p>
+          <p className="psp-empty-sub">{error}</p>
+        </div>
+      ) : !hasPicks ? (
+        <div className="psp-empty">
+          <p className="psp-empty-title">Nothing to compile yet.</p>
+          <p className="psp-empty-sub">
+            {circleIds.length === 0
+              ? 'Pick at least one circle on the Compose page — topics narrow the result but the circles supply the certifying members.'
+              : 'The selected circles have no certifications matching the chosen topics. Try a broader topic set or a different circle.'}
+          </p>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="psp-empty">
+          <p className="psp-empty-title">No URLs in this perspective.</p>
+          <p className="psp-empty-sub">
+            {mode === 'intersect'
+              ? 'No URL is certified by every circle in your selection. Switch to Merge to see the union, or remove a circle to relax the constraint.'
+              : mode === 'subtract'
+                ? 'Every URL the first circle certified is also covered by the others. Reorder the circles to flip the base, or try Merge.'
+                : mode === 'contrast'
+                  ? 'The selected circles agree too much for a Contrast view. Add a circle with different signals to surface divergence.'
+                  : 'No URLs found for this selection.'}
+          </p>
+        </div>
+      ) : (
+        <div className="psp-grid">
+          {items.map((item) => (
+            <PerspectiveItemCard
+              key={item.objectTermId}
+              item={item}
+              intentionColors={INTENTION_COLORS}
+              showContrastScore={mode === 'contrast'}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
