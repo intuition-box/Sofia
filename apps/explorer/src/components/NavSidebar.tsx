@@ -30,8 +30,10 @@ import {
   Check,
 } from 'lucide-react'
 import type { Address } from 'viem'
+import { useMemo } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
+import { useGroups } from '../hooks/useGroups'
 import { useExtensionInstalled } from '../hooks/useExtensionInstalled'
 import { CHROME_STORE_URL } from '../utils/sofiaDetect'
 import { avatarColor } from '../utils/avatarColor'
@@ -79,6 +81,20 @@ export function NavSidebar({
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
+  // Joined on-chain groups — the user is the subject of an
+  // `is_member_of` claim. We piggyback on the shared useGroups cache
+  // (also consumed by /circles) so there's no extra fetch from the rail.
+  const { groups: allGroups } = useGroups()
+  const joinedGroups = useMemo(() => {
+    if (!authenticated || linkedAddresses.length === 0) return []
+    const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
+    return allGroups.filter((g) =>
+      g.memberships.some((m) => {
+        const w = m.member.walletAddress?.toLowerCase()
+        return w !== undefined && userWallets.has(w)
+      }),
+    )
+  }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
   const extensionInstalled = useExtensionInstalled()
@@ -224,52 +240,121 @@ export function NavSidebar({
         <NavSection title="Circles">
           {trustLoading ? (
             <p className="ns-tc-empty">Loading…</p>
-          ) : trustCircle.length === 0 ? (
-            <p className="ns-tc-empty">No accounts yet.</p>
           ) : (
             <div className="ns-circles-list">
-              <Link
-                to="/circles/trust"
-                className="ns-circle"
-                title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
-              >
-                <div className="ns-circle-head">
-                  <span
-                    className="ns-circle-dot"
-                    style={{ background: 'var(--trusted, #6dd4a0)' }}
-                  />
-                  <span className="ns-circle-name">Trust Circle</span>
-                  <span className="ns-circle-count">{trustCircle.length}</span>
-                </div>
-                <div className="ns-circle-avatars">
-                  {trustCircle.slice(0, 5).map((a) => {
-                    const bg = avatarColor(a.termId || a.label)
-                    return (
-                      <Avatar
-                        key={a.termId}
-                        className="ns-mav"
-                        style={{ background: bg }}
-                      >
-                        {a.image && <AvatarImage src={a.image} alt={a.label} />}
-                        <AvatarFallback
-                          className="text-[9px]"
-                          style={{ background: bg, color: '#02000e' }}
-                        >
-                          {a.label.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    )
-                  })}
-                  {trustCircle.length > 5 && (
-                    <span className="ns-mav ns-mav-more">
-                      +{trustCircle.length - 5}
+              {trustCircle.length > 0 && (
+                <Link
+                  to="/circles/trust"
+                  className="ns-circle"
+                  title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
+                >
+                  <div className="ns-circle-head">
+                    <span
+                      className="ns-circle-dot"
+                      style={{ background: 'var(--trusted, #6dd4a0)' }}
+                    />
+                    <span className="ns-circle-name">Trust Circle</span>
+                    <span className="ns-circle-count">
+                      {trustCircle.length}
                     </span>
-                  )}
-                  <span className="ns-mav ns-mav-add" aria-hidden="true">
-                    +
-                  </span>
-                </div>
-              </Link>
+                  </div>
+                  <div className="ns-circle-avatars">
+                    {trustCircle.slice(0, 5).map((a) => {
+                      const bg = avatarColor(a.termId || a.label)
+                      return (
+                        <Avatar
+                          key={a.termId}
+                          className="ns-mav"
+                          style={{ background: bg }}
+                        >
+                          {a.image && (
+                            <AvatarImage src={a.image} alt={a.label} />
+                          )}
+                          <AvatarFallback
+                            className="text-[9px]"
+                            style={{ background: bg, color: '#02000e' }}
+                          >
+                            {a.label.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      )
+                    })}
+                    {trustCircle.length > 5 && (
+                      <span className="ns-mav ns-mav-more">
+                        +{trustCircle.length - 5}
+                      </span>
+                    )}
+                    <span className="ns-mav ns-mav-add" aria-hidden="true">
+                      +
+                    </span>
+                  </div>
+                </Link>
+              )}
+
+              {/* Joined on-chain groups — rendered like Trust Circle so
+                  the rail reads as a single uniform list of "circles
+                  this user belongs to". */}
+              {joinedGroups.map((group) => {
+                const dotColor = avatarColor(group.termId || group.label)
+                const previewMembers = group.memberships.slice(0, 5)
+                const extra = Math.max(
+                  0,
+                  group.memberCount - previewMembers.length,
+                )
+                return (
+                  <Link
+                    key={group.termId}
+                    to={`/circles/${group.termId}`}
+                    className="ns-circle"
+                    title={`${group.label} — ${group.memberCount} member${group.memberCount === 1 ? '' : 's'}`}
+                  >
+                    <div className="ns-circle-head">
+                      <span
+                        className="ns-circle-dot"
+                        style={{ background: dotColor }}
+                      />
+                      <span className="ns-circle-name">{group.label}</span>
+                      <span className="ns-circle-count">
+                        {group.memberCount}
+                      </span>
+                    </div>
+                    <div className="ns-circle-avatars">
+                      {previewMembers.map((m) => {
+                        const bg = avatarColor(
+                          m.member.termId || m.member.label,
+                        )
+                        return (
+                          <Avatar
+                            key={m.member.termId}
+                            className="ns-mav"
+                            style={{ background: bg }}
+                          >
+                            {m.member.image && (
+                              <AvatarImage
+                                src={m.member.image}
+                                alt={m.member.label}
+                              />
+                            )}
+                            <AvatarFallback
+                              className="text-[9px]"
+                              style={{ background: bg, color: '#02000e' }}
+                            >
+                              {m.member.label.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        )
+                      })}
+                      {extra > 0 && (
+                        <span className="ns-mav ns-mav-more">+{extra}</span>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+
+              {trustCircle.length === 0 && joinedGroups.length === 0 && (
+                <p className="ns-tc-empty">No circles yet.</p>
+              )}
             </div>
           )}
         </NavSection>
