@@ -36,8 +36,7 @@ export default function CircleJoinOverlay({
           Join {circleName} to see members & activity
         </p>
         <p className="crd-join-overlay-sub">
-          Members of this circle shape its perspective. Joining mints an{' '}
-          <em>is member of</em> claim on Intuition.
+          Members of this circle shape its perspective.
         </p>
 
         {inCart ? (
