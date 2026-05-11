@@ -121,13 +121,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
   // Activity comes from the master on-chain profile (alltime, paginated,
-  // shared across the page via React Query dedupe). Filter to the
-  // trusts / distrust intentions for the "Last activity" panel and
-  // derive the missing display fields from the cert's object metadata.
+  // shared across the page via React Query dedupe). Every cert kind
+  // surfaces here — visits_for_* + trusts + distrust — sorted by recency
+  // so the panel reads as a true activity feed and not just a trust log.
   const { profile } = useUserOnChainProfile(linkedAddresses)
   const lastActivity = useMemo(() => {
     const byTime = profile.certs
-      .filter((c) => c.intention === 'trusts' || c.intention === 'distrust')
       .slice()
       .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
       .slice(0, 10)
@@ -135,6 +134,19 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       const url = c.objectUrl || ''
       const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
       const title = cleanLabel(c.objectLabel || domain || '')
+      const intentionLower = (c.intention ?? '').trim().toLowerCase()
+      const isOppose = intentionLower === 'distrust'
+      // Action verb per intention — keeps the row scannable. Trust /
+      // distrust read as social signals; visits_for_* read as topical
+      // marks. Fallback to "Certified" so any future predicate the
+      // indexer surfaces still renders something coherent.
+      let actionLabel = 'Certified'
+      if (intentionLower === 'trusts') actionLabel = 'Trusted'
+      else if (isOppose) actionLabel = 'Distrusted'
+      else if (intentionLower.startsWith('visits for ')) {
+        const tail = intentionLower.slice('visits for '.length)
+        actionLabel = `Marked for ${tail}`
+      }
       return {
         id: c.termId,
         title,
@@ -142,7 +154,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         domain,
         favicon: domain ? getFaviconUrl(domain) : '',
         timestamp: c.certifiedAt,
-        isOppose: c.intention === 'distrust',
+        isOppose,
+        actionLabel,
       }
     })
   }, [profile])
@@ -339,7 +352,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
                   const isOppose = a.isOppose
-                  const actionLabel = isOppose ? 'Opposed' : 'Supported'
+                  const actionLabel = a.actionLabel
                   const root = a.domain
                   return (
                     <a
