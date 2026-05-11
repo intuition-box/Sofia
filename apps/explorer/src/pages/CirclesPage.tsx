@@ -1,147 +1,47 @@
 /**
  * CirclesPage — `/circles` (list) and `/circles/:id` (detail).
  *
- * Only one real circle today: the user's Trust Circle at `/circles/trust`.
- * The proto's concepts that aren't wired yet (group creation, invite,
- * leave, top-topics aggregation, sponsor budget) are rendered as UI
- * scaffolding with mock values — marked with TODOs.
+ * The page dispatches by route param into two thin sections so each
+ * one owns only the hooks it actually needs (no detail queries fire
+ * on the list view and vice versa). Detail rendering goes through
+ * `<CircleDetailView>` which is agnostic of trust vs group.
  */
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
-import { useTopicSelection } from '@/hooks/useDomainSelection'
-import { useCircleFeed } from '@/hooks/useCircleFeed'
-import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
 import { useGroups } from '@/hooks/useGroups'
+import { useCircle } from '@/hooks/useCircle'
 import CirclesFilters from '@/components/circles/CirclesFilters'
 import TrustCircleCard from '@/components/circles/TrustCircleCard'
 import CreateCircleCard from '@/components/circles/CreateCircleCard'
 import GroupCard from '@/components/circles/GroupCard'
 import CreateCircleDrawer from '@/components/circles/CreateCircleDrawer'
-import CircleDetailHero from '@/components/circles/CircleDetailHero'
-import CircleMembersCard from '@/components/circles/CircleMembersCard'
-import CircleTopTopicsCard from '@/components/circles/CircleTopTopicsCard'
-import CircleFeedSection from '@/components/circles/CircleFeedSection'
-import AllMembersPanel from '@/components/circles/AllMembersPanel'
+import CircleDetailView from '@/components/circles/CircleDetailView'
 import '@/components/styles/pages.css'
 import '@/components/styles/circles.css'
 
-// Mock placeholder — replaced when circle metadata lands on-chain.
-const TRUST_CIRCLE_META = {
-  name: 'Trust Circle',
-  description:
-    'People whose taste you value — their signals shape your feed. Today this is your personal trust circle; circles you join from the broader network will show up here too.',
-  createdAgo: 'a long time ago',
-  color: 'var(--trusted, #6dd4a0)',
-  sponsorClaimsLeft: 3200,
-}
+const TRUST_CIRCLE_COLOR_KEY = 'sofia-trust-circle-color'
+const TRUST_CIRCLE_COLOR_FALLBACK = 'var(--trusted, #6dd4a0)'
 
 /** Palette surfaced by the Trust Circle color picker. */
 const TRUST_CIRCLE_COLOR_OPTIONS: readonly string[] =
   Object.values(INTENTION_PASTEL)
-const TRUST_CIRCLE_COLOR_KEY = 'sofia-trust-circle-color'
 
 export default function CirclesPage() {
-  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  if (id) return <CircleDetailSection id={id} />
+  return <CirclesListSection />
+}
+
+// ── List view ────────────────────────────────────────────────────────
+
+function CirclesListSection() {
   const { addresses } = useLinkedWallets()
   const { accounts: members, loading } = useTrustCircle(addresses)
-  const { selectedTopics } = useTopicSelection()
-  // React Query dedupes by key, so calling useCircleFeed here only mounts a
-  // second consumer of the same cache entry CircleFeedSection already reads.
-  const { items: feedItems } = useCircleFeed(addresses)
-  // Resolved circle members → wallet addresses, for the alltime topic count
-  // query. Self is included so the user's own certs show up under their topics.
-  const circleWallets = useMemo(() => {
-    const set = new Set<string>()
-    for (const a of addresses) set.add(a)
-    for (const m of members) {
-      if (m.walletAddress) set.add(m.walletAddress)
-    }
-    return Array.from(set)
-  }, [addresses, members])
-  const topTopicSlugs = useMemo(
-    () => selectedTopics.slice(0, 4),
-    [selectedTopics],
-  )
-  const { counts: topicCounts } = useCircleTopicCounts(
-    circleWallets,
-    topTopicSlugs,
-  )
-  const [allMembersOpen, setAllMembersOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const [trustColor, setTrustColor] = useState<string>(() => {
-    if (typeof window === 'undefined') return TRUST_CIRCLE_META.color
-    return (
-      window.localStorage.getItem(TRUST_CIRCLE_COLOR_KEY) ||
-      TRUST_CIRCLE_META.color
-    )
-  })
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(TRUST_CIRCLE_COLOR_KEY, trustColor)
-    } catch {
-      // ignore — private mode / storage full
-    }
-  }, [trustColor])
-
-  if (id === 'trust') {
-    return (
-      <div className="pf-view crd-detail">
-        <div className="pf-ts-back-row">
-          <button
-            type="button"
-            className="pf-btn"
-            onClick={() => navigate('/circles')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to circles
-          </button>
-        </div>
-
-        <CircleDetailHero
-          name={TRUST_CIRCLE_META.name}
-          description={TRUST_CIRCLE_META.description}
-          createdAgo={TRUST_CIRCLE_META.createdAgo}
-          circleColor={trustColor}
-          sponsorClaimsLeft={TRUST_CIRCLE_META.sponsorClaimsLeft}
-          memberCount={Math.max(1, members.length)}
-          onColorChange={setTrustColor}
-          colorOptions={TRUST_CIRCLE_COLOR_OPTIONS}
-        />
-
-        <div className="crd-info-row">
-          <CircleMembersCard
-            members={members}
-            onViewAll={() => setAllMembersOpen(true)}
-          />
-          <CircleTopTopicsCard
-            topicIds={topTopicSlugs}
-            circleColor={trustColor}
-            counts={topicCounts}
-            items={feedItems}
-          />
-        </div>
-
-        <CircleFeedSection
-          addresses={addresses}
-          circleName={TRUST_CIRCLE_META.name}
-          members={members}
-        />
-
-        <AllMembersPanel
-          open={allMembersOpen}
-          onClose={() => setAllMembersOpen(false)}
-          members={members}
-          circleName={TRUST_CIRCLE_META.name}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className="pf-view cr-page">
@@ -194,5 +94,65 @@ function DiscoverGroupsSection() {
         </div>
       )}
     </>
+  )
+}
+
+// ── Detail view ──────────────────────────────────────────────────────
+
+function CircleDetailSection({ id }: { id: string }) {
+  const { circle, isLoading, notFound } = useCircle(id)
+
+  // Trust Circle keeps a local color override persisted to localStorage —
+  // a UX nicety that pre-dates groups. Always called (rules-of-hooks
+  // safe), only forwarded to the view when the resolved circle is the
+  // Trust Circle. Groups render their topic-derived color untouched.
+  const [trustColor, setTrustColor] = useState<string>(() => {
+    if (typeof window === 'undefined') return TRUST_CIRCLE_COLOR_FALLBACK
+    return (
+      window.localStorage.getItem(TRUST_CIRCLE_COLOR_KEY) ||
+      TRUST_CIRCLE_COLOR_FALLBACK
+    )
+  })
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(TRUST_CIRCLE_COLOR_KEY, trustColor)
+    } catch {
+      // ignore — private mode / storage full
+    }
+  }, [trustColor])
+
+  if (notFound) {
+    // Bad id (deleted group, stale share link…) — bounce back to the list.
+    return <Navigate to="/circles" replace />
+  }
+
+  if (!circle) {
+    // Cache cold → skeleton. `<CircleDetailView>` itself doesn't have
+    // an empty state and we don't want to flash a 404 while useGroups
+    // is still warming up.
+    return (
+      <div className="pf-view crd-detail">
+        <div className="pf-ts-back-row">
+          <Link to="/circles" className="pf-btn">
+            <ArrowLeft className="h-4 w-4" />
+            Back to circles
+          </Link>
+        </div>
+        <p className="text-sm text-muted-foreground" style={{ padding: 24 }}>
+          {isLoading ? 'Loading circle…' : 'Circle not found.'}
+        </p>
+      </div>
+    )
+  }
+
+  const isTrust = circle.kind === 'trust'
+  return (
+    <CircleDetailView
+      circle={circle}
+      colorOverride={isTrust ? trustColor : undefined}
+      onColorChange={isTrust ? setTrustColor : undefined}
+      colorOptions={isTrust ? TRUST_CIRCLE_COLOR_OPTIONS : undefined}
+    />
   )
 }
