@@ -13,6 +13,7 @@ import { HAS_TAG_PREDICATE_ID, TOPIC_ATOM_IDS } from '../config/atomIds'
 import { intentionBadgeStyle } from '../config/intentions'
 import {
   executeCreateTriplesBatch,
+  MIN_SIGNAL_TRUST,
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
@@ -113,16 +114,45 @@ export default function WeightModal({
 
   const balNum = balance ? parseFloat(balance) : 0
 
+  // Each cart item maps to one or more on-chain operations:
+  //   - 'deposit' / 'create-triple' → 1 deposit, 0 or 1 triple creation
+  //   - 'create-circle' → 1 + N triples (membership + has_tag per topic)
+  // Both counts feed `estimateDepositCost` so the Sofia fixed fee and the
+  // protocol's per-triple creation cost are reflected in the modal total
+  // (otherwise the wallet popup shows a much higher number than the UI).
+  const { depositCount, tripleCreateCount } = useMemo(() => {
+    let deposits = 0
+    let creates = 0
+    for (const item of items) {
+      if (item.kind === 'create-circle' && item.circleDraft) {
+        const validTopics = item.circleDraft.topicIds.filter(
+          (slug) => !!TOPIC_ATOM_IDS[slug],
+        )
+        const tripleCount = 1 + validTopics.length
+        deposits += tripleCount
+        creates += tripleCount
+      } else if (item.kind === 'create-triple') {
+        deposits += 1
+        creates += 1
+      } else {
+        deposits += 1
+      }
+    }
+    return { depositCount: deposits, tripleCreateCount: creates }
+  }, [items])
+
   const breakdown = useMemo(() => {
-    const costEstimate = estimate?.(totalDeposit) ?? null
+    const costEstimate =
+      estimate?.(totalDeposit, { depositCount, tripleCreateCount }) ?? null
     return {
       deposit: totalDeposit,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      tripleCreationCost: costEstimate?.tripleCreationCost ?? 0,
       totalFees: costEstimate?.totalFees ?? 0,
       totalEstimate: costEstimate?.totalEstimate ?? totalDeposit,
     }
-  }, [totalDeposit, estimate])
+  }, [totalDeposit, depositCount, tripleCreateCount, estimate])
 
   const handleWeightSelect = (index: number, value: number) => {
     setWeights((prev) => {
@@ -232,7 +262,11 @@ export default function WeightModal({
 
         // For each circle atom, push membership + has_tag triples into
         // the existing createItems batch — single triple-batch tx mints
-        // them all together (1 + N per circle).
+        // them all together (1 + N per circle). The amount the user
+        // entered is treated as the TOTAL signal deposit for the circle,
+        // split evenly across the derived triples (membership + each
+        // valid has_tag). Floors at `MIN_SIGNAL_TRUST` so each individual
+        // deposit clears the protocol minimum.
         const userAtomId = userAccountAtom.termId
         circleIndices.forEach((idx, i) => {
           const result = atomBatch.results[i]
@@ -240,25 +274,33 @@ export default function WeightModal({
           if (!atomId) return
           const item = items[idx]
           const draft = item.circleDraft!
-          const amount = getAmount(idx)
+          const totalAmount = getAmount(idx)
+
+          const validTopicIds = draft.topicIds.filter(
+            (slug) => !!TOPIC_ATOM_IDS[slug],
+          )
+          const tripleCount = 1 + validTopicIds.length
+          const perTripleAmount = Math.max(
+            totalAmount / tripleCount,
+            MIN_SIGNAL_TRUST,
+          )
 
           // Membership: account → MEMBER_OF → circle
           createItems.push({
             subjectId: userAtomId,
             predicateId: PREDICATE_IDS.MEMBER_OF,
             objectId: atomId,
-            signalTrust: amount,
+            signalTrust: perTripleAmount,
           })
 
           // Topic tags: circle → has_tag → topic (one per selected topic)
-          for (const topicSlug of draft.topicIds) {
+          for (const topicSlug of validTopicIds) {
             const topicAtomId = TOPIC_ATOM_IDS[topicSlug]
-            if (!topicAtomId) continue
             createItems.push({
               subjectId: atomId,
               predicateId: HAS_TAG_PREDICATE_ID,
               objectId: topicAtomId,
-              signalTrust: amount,
+              signalTrust: perTripleAmount,
             })
           }
         })
@@ -512,6 +554,20 @@ export default function WeightModal({
                       <span>Sofia % fee</span>
                       <span>
                         {formatTrust(breakdown.sofiaPercentFee)} TRUST
+                      </span>
+                    </div>
+                  )}
+                  {breakdown.tripleCreationCost > 0 && (
+                    <div
+                      className="wm-cost-row"
+                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
+                    >
+                      <span>
+                        Triple creation
+                        {tripleCreateCount > 1 ? ` × ${tripleCreateCount}` : ''}
+                      </span>
+                      <span>
+                        {formatTrust(breakdown.tripleCreationCost)} TRUST
                       </span>
                     </div>
                   )}

@@ -16,6 +16,8 @@
 import { createPublicClient, http, stringToHex } from 'viem'
 import {
   INTUITION_RPC_URL,
+  MULTI_VAULT_ADDRESS,
+  MultiVaultAbi,
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
 } from '../lib/contracts'
@@ -88,28 +90,19 @@ async function pinAtomToIPFS(
   return { ipfsUri, encodedData: stringToHex(ipfsUri) }
 }
 
-/** Read-only check via `calculateAtomId` + a simulation probe. The
- *  contract has no `getAtom` selector; instead we attempt a 1-element
- *  `createAtoms` simulation and treat `MultiVault_AtomExists` as the
- *  "already on-chain" signal. */
-async function atomExistsOnChain(
-  encodedData: `0x${string}`,
-  receiver: `0x${string}`,
-  atomCost: bigint,
-): Promise<boolean> {
+/** Read-only check via MultiVault's `isTermCreated`. Direct + cheap —
+ *  no simulation gymnastics needed. */
+async function atomExistsOnChain(atomId: `0x${string}`): Promise<boolean> {
   try {
-    await publicClient.simulateContract({
-      address: PROXY_ADDRESS,
-      abi: SofiaFeeProxyAbi,
-      functionName: 'createAtoms',
-      args: [receiver, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
-      value: atomCost,
-      account: receiver,
-    })
+    return (await publicClient.readContract({
+      address: MULTI_VAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'isTermCreated',
+      args: [atomId],
+      authorizationList: undefined,
+    })) as boolean
+  } catch {
     return false
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return /AtomExists/.test(msg)
   }
 }
 
@@ -130,10 +123,12 @@ export async function executeCreateAtom(
     const { encodedData } = await pinAtomToIPFS(payload, pinThing)
 
     // Pre-compute the deterministic atom term_id so callers can route
-    // before the receipt lands.
+    // before the receipt lands. Must hit MultiVault directly — the
+    // proxy's `calculateAtomId` returns a different hash and downstream
+    // `createTriples` reverts with `MultiVault_TermDoesNotExist`.
     const atomId = (await publicClient.readContract({
-      address: PROXY_ADDRESS,
-      abi: SofiaFeeProxyAbi,
+      address: MULTI_VAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
       functionName: 'calculateAtomId',
       args: [encodedData],
       authorizationList: undefined,
@@ -147,7 +142,7 @@ export async function executeCreateAtom(
     })) as bigint
 
     // Idempotent path — atom already on-chain.
-    if (await atomExistsOnChain(encodedData, address, atomCost)) {
+    if (await atomExistsOnChain(atomId)) {
       return { success: true, atomId, alreadyExisted: true }
     }
 
@@ -232,17 +227,19 @@ export async function executeCreateAtomsBatch(
       authorizationList: undefined,
     })) as bigint
 
-    // Pre-compute every atomId + existence flag.
+    // Pre-compute every atomId + existence flag. `calculateAtomId`
+    // must hit MultiVault directly (see single-atom path above for the
+    // proxy hash mismatch rationale).
     const calculated = await Promise.all(
       pinned.map(async ({ payload, encodedData }) => {
         const atomId = (await publicClient.readContract({
-          address: PROXY_ADDRESS,
-          abi: SofiaFeeProxyAbi,
+          address: MULTI_VAULT_ADDRESS as `0x${string}`,
+          abi: MultiVaultAbi,
           functionName: 'calculateAtomId',
           args: [encodedData],
           authorizationList: undefined,
         })) as `0x${string}`
-        const exists = await atomExistsOnChain(encodedData, address, atomCost)
+        const exists = await atomExistsOnChain(atomId)
         return { payload, encodedData, atomId, exists }
       }),
     )

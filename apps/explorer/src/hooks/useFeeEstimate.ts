@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   type FeeParams,
   type CostEstimate,
+  type CostEstimateOptions,
   getFeeParams,
   estimateDepositCost,
 } from '@/services/depositService'
 
-export type { FeeParams, CostEstimate }
+export type { FeeParams, CostEstimate, CostEstimateOptions }
 
 export function useFeeEstimate() {
   const [feeParams, setFeeParams] = useState<FeeParams | null>(null)
@@ -24,9 +25,12 @@ export function useFeeEstimate() {
   }, [])
 
   const estimate = useCallback(
-    (depositTrust: number): CostEstimate | null => {
+    (
+      depositTrust: number,
+      options?: CostEstimateOptions,
+    ): CostEstimate | null => {
       if (!feeParams) return null
-      return estimateDepositCost(depositTrust, feeParams)
+      return estimateDepositCost(depositTrust, feeParams, options)
     },
     [feeParams],
   )
