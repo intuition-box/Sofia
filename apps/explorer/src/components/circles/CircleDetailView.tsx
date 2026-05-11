@@ -97,45 +97,53 @@ export default function CircleDetailView({
         colorOptions={colorOptions}
       />
 
-      {/* Lockable area — blurred when the user isn't a member. The
-          overlay sits inside this wrapper so it can render on top of
-          (and only on top of) the gated content; the hero above stays
-          fully interactive. */}
-      <div className={`crd-lockable${locked ? ' crd-lockable--locked' : ''}`}>
-        <div className="crd-lockable-content" aria-hidden={locked}>
-          <div className="crd-info-row">
-            <CircleMembersCard
-              members={circle.members}
-              onViewAll={() => setAllMembersOpen(true)}
-            />
-            <CircleTopTopicsCard
-              topicIds={topTopicSlugs}
-              circleColor={effectiveColor}
-              counts={topicCounts}
-              items={feedItems}
-            />
-          </div>
+      {/* Non-member CTA — surfaced as an inline banner just below the
+          hero so the user can join without obscuring the circle's
+          activity. The members / topics / feed sections below stay
+          fully visible and interactive. */}
+      {locked && onJoin && (
+        <CircleJoinOverlay
+          circleName={circle.name}
+          inCart={joinInCart}
+          disabled={joinDisabled}
+          disabledReason={joinDisabledReason}
+          onJoin={onJoin}
+        />
+      )}
 
-          <CircleFeedSection
-            addresses={circle.addresses}
-            circleName={circle.name}
-            members={circle.members}
-          />
-        </div>
+      {/* Members card + Top Topics stay fully accessible — even for
+          non-members. They surface enough of the circle's identity
+          (who's in, which topics are hot) to inform the Join decision
+          without giving away the activity feed. */}
+      <div className="crd-info-row">
+        <CircleMembersCard
+          members={circle.members}
+          onViewAll={() => setAllMembersOpen(true)}
+        />
+        <CircleTopTopicsCard
+          topicIds={topTopicSlugs}
+          circleColor={effectiveColor}
+          counts={topicCounts}
+          items={feedItems}
+        />
+      </div>
 
-        {locked && onJoin && (
-          <CircleJoinOverlay
-            circleName={circle.name}
-            inCart={joinInCart}
-            disabled={joinDisabled}
-            disabledReason={joinDisabledReason}
-            onJoin={onJoin}
-          />
-        )}
+      {/* Activity feed — the only section gated for non-members. The
+          `aria-hidden` mirrors the visual blur so assistive tech sees
+          the same surface as a sighted viewer. */}
+      <div
+        className={locked ? 'crd-feed-locked' : undefined}
+        aria-hidden={locked}
+      >
+        <CircleFeedSection
+          addresses={circle.addresses}
+          circleName={circle.name}
+          members={circle.members}
+        />
       </div>
 
       <AllMembersPanel
-        open={allMembersOpen && !locked}
+        open={allMembersOpen}
         onClose={() => setAllMembersOpen(false)}
         members={circle.members}
         circleName={circle.name}

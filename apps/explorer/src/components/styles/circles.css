@@ -1699,41 +1699,37 @@
 /* Members card + top topics + feed get blurred when the user is not a
    member of the group. The hero is kept legible above so the visitor
    knows exactly what they would be joining. */
-.crd-lockable {
-  position: relative;
-}
-.crd-lockable--locked .crd-lockable-content {
+/* Activity feed gating — only the bottom "Certified by" section is
+   blurred for non-members; members card + top topics above stay fully
+   accessible so the visitor can tell who's already in and which topics
+   the circle leans on before deciding to join. */
+.crd-feed-locked {
   filter: blur(6px) saturate(0.85);
   pointer-events: none;
   user-select: none;
-  /* Allow the underlying content to keep its layout height so the
-     overlay positions itself naturally over the section. */
-  min-height: 320px;
 }
 
+/* Inline banner rendered between the hero and the info row when the
+   user isn't a member. No absolute positioning — sits in the flow so
+   it never obscures the (now visible) members / topics sections. */
 .crd-join-overlay {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
-  /* Sits above the blurred content but below the global modal stack. */
-  z-index: 2;
+  margin: 16px 0 8px;
 }
 .crd-join-overlay-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  max-width: 420px;
-  padding: 24px 28px;
-  border-radius: 16px;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  padding: 18px 22px;
+  border-radius: 14px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   text-align: center;
 }
 .crd-join-overlay-icon {
