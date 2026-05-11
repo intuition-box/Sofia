@@ -14,6 +14,7 @@
  * lives in `lib/perspectiveAggregation.ts` — this file only fetches.
  */
 
+import { getAddress } from 'viem'
 import { useGetPerspectiveCertsQuery } from '@0xsofia/graphql'
 import { GRAPHQL_URL, PREDICATE_IDS } from '@/config'
 import { LABEL_TO_INTENTION } from '@/config/intentions'
@@ -112,8 +113,23 @@ export async function fetchPerspectiveCertifications(
 ): Promise<PerspectiveCert[]> {
   if (wallets.length === 0) return []
 
+  // The Intuition indexer stores account ids in EIP-55 checksum case;
+  // a lowercase `_in` filter silently matches nothing. Checksum the
+  // wallet list before the network call, and keep a lowercase mirror
+  // for the client-side certifier filter below.
+  const checksumWallets: string[] = []
+  for (const w of wallets) {
+    try {
+      checksumWallets.push(getAddress(w))
+    } catch {
+      // Skip non-address strings rather than throw — keeps the rest of
+      // the selection compilable when one circle member has a bad id.
+    }
+  }
+  if (checksumWallets.length === 0) return []
+
   const data = await useGetPerspectiveCertsQuery.fetcher({
-    wallets,
+    wallets: checksumWallets,
     predicateIds: PERSPECTIVE_PREDICATE_IDS,
     limit,
     offset: 0,
