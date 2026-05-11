@@ -2,7 +2,30 @@ import { getClients, getPublicClient } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
+import type { Abi } from 'viem'
 import type { AtomCheckResult, TripleCheckResult, FeeParams, ProtocolCosts } from '../../types/blockchain'
+
+// viem's ABI-typed APIs rely on TypeScript reading the literal string
+// `type: "function"` (not the widened `type: string`) on every ABI entry.
+// They use that literal to derive the union of valid `functionName` values
+// and the argument tuple types — i.e. the part that gives you autocomplete
+// and `args: [...]` checking. With a literal, an Abi entry matches
+// `AbiFunction`; without it, the entry matches none of the AbiX shapes and
+// the whole array stops being assignable to viem's `Abi`.
+//
+// `MultiVaultAbi` is exported as a plain array (no `as const`), so each
+// entry's `type` is inferred as the wider `string`. `readContract`
+// historically accepts this because its generic resolves to a permissive
+// shape; `multicall` does not — it requires `Abi` strictly, so the same
+// untouched ABI fails to typecheck inside `contracts: [...]` even though
+// the runtime behaviour is identical.
+//
+// Two ways to fix it: (a) add `as const` to the ABI source, which would
+// tighten every consumer site (risk of cascading errors), or (b) cast
+// once locally to `Abi`. We do (b). The cast is safe: viem validates the
+// resolved function exists at runtime via the ABI bytes, the TS layer is
+// purely for ergonomics.
+const MultiVaultAbiTyped = MultiVaultAbi as Abi
 import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
 import { createServiceLogger } from '../utils/logger'
 
@@ -82,13 +105,17 @@ export class BlockchainService {
       const responses = await publicClient.multicall({
         contracts: termIds.map((termId, i) => ({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-          abi: MultiVaultAbi,
-          functionName: 'previewDeposit' as const,
+          abi: MultiVaultAbiTyped,
+          functionName: 'previewDeposit',
           args: [termId as `0x${string}`, curveIds[i], assets[i]]
         })),
-        allowFailure: false
+        allowFailure: false,
+        // viem 2.x MulticallParameters intersects with Pick<CallParameters,
+        // "authorizationList" | ...> which lists this as required (EIP-7702
+        // opt-in). Pass undefined to opt out cleanly.
+        authorizationList: undefined
       })
-      return responses.map(([shares]) => applySlippage(shares as bigint, bps))
+      return responses.map((r) => applySlippage((r as readonly bigint[])[0], bps))
     } catch (err) {
       logger.warn('Multicall previewDeposit failed, falling back to parallel reads', { error: err })
       return Promise.all(
@@ -136,13 +163,14 @@ export class BlockchainService {
       const responses = await publicClient.multicall({
         contracts: termIds.map((termId, i) => ({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-          abi: MultiVaultAbi,
-          functionName: 'previewRedeem' as const,
+          abi: MultiVaultAbiTyped,
+          functionName: 'previewRedeem',
           args: [termId as `0x${string}`, curveIds[i], shares[i]]
         })),
-        allowFailure: false
+        allowFailure: false,
+        authorizationList: undefined
       })
-      return responses.map(([assets]) => applySlippage(assets as bigint, bps))
+      return responses.map((r) => applySlippage((r as readonly bigint[])[0], bps))
     } catch (err) {
       logger.warn('Multicall previewRedeem failed, falling back to parallel reads', { error: err })
       return Promise.all(
@@ -435,11 +463,12 @@ export class BlockchainService {
       const responses = await publicClient.multicall({
         contracts: termIds.map(termId => ({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-          abi: MultiVaultAbi,
-          functionName: 'getTriple' as const,
+          abi: MultiVaultAbiTyped,
+          functionName: 'getTriple',
           args: [termId as `0x${string}`]
         })),
-        allowFailure: true
+        allowFailure: true,
+        authorizationList: undefined
       })
 
       termIds.forEach((termId, i) => {

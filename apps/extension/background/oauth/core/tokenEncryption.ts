@@ -98,10 +98,14 @@ export async function encryptToken<T>(value: T): Promise<EncryptedBlob> {
 
 export async function decryptToken<T>(blob: EncryptedBlob): Promise<T> {
   const key = await getOrCreateSessionKey()
+  // TS 5.x widens Uint8Array's buffer type to ArrayBufferLike (which may be
+  // SharedArrayBuffer). WebCrypto's BufferSource still requires the stricter
+  // Uint8Array<ArrayBuffer>. Cast at the boundary: we know base64ToBuffer
+  // always returns a fresh non-shared buffer.
   const plaintext = await crypto.subtle.decrypt(
-    { name: ALGO, iv: base64ToBuffer(blob.iv) },
+    { name: ALGO, iv: base64ToBuffer(blob.iv) as BufferSource },
     key,
-    base64ToBuffer(blob.ct)
+    base64ToBuffer(blob.ct) as BufferSource
   )
   return JSON.parse(new TextDecoder().decode(plaintext)) as T
 }

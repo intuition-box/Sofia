@@ -47,6 +47,13 @@ export function useTripleVerification(
             args: [termId as `0x${string}`],
           })),
           allowFailure: true,
+          // viem's MulticallParameters in this project's pinned version
+          // declares this field as required (Pick<..., "authorizationList">
+          // intersection). Passing undefined opts out of EIP-7702 auth
+          // injection without changing call semantics. We don't cast the
+          // whole param object: doing so makes `responses` lose its tuple
+          // shape and degrade to unknown[] (errors TS2339 at the call site).
+          authorizationList: undefined,
         })
         if (cancelled) return
         const map = new Map<string, OnchainTriple>()
@@ -81,6 +88,8 @@ export function useTripleVerification(
                 abi: MultiVaultAbi,
                 functionName: 'getTriple',
                 args: [termId as `0x${string}`],
+                // Same EIP-7702 opt-out as in the multicall path above.
+                authorizationList: undefined,
               })) as [string, string, string]
               return [
                 termId.toLowerCase(),
