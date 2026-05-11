@@ -1693,3 +1693,119 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+
+/* ── Lockable detail (non-member groups) ──────────────────────────── */
+/* Members card + top topics + feed get blurred when the user is not a
+   member of the group. The hero is kept legible above so the visitor
+   knows exactly what they would be joining. */
+.crd-lockable {
+  position: relative;
+}
+.crd-lockable--locked .crd-lockable-content {
+  filter: blur(6px) saturate(0.85);
+  pointer-events: none;
+  user-select: none;
+  /* Allow the underlying content to keep its layout height so the
+     overlay positions itself naturally over the section. */
+  min-height: 320px;
+}
+
+.crd-join-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  /* Sits above the blurred content but below the global modal stack. */
+  z-index: 2;
+}
+.crd-join-overlay-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 420px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+.crd-join-overlay-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+}
+.crd-join-overlay-title {
+  margin: 0;
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.crd-join-overlay-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+}
+.crd-join-overlay-sub em {
+  font-style: italic;
+  color: var(--ds-ink);
+}
+.crd-join-overlay-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 4px;
+}
+.crd-join-overlay-cta:hover:not(:disabled) {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+.crd-join-overlay-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.crd-join-overlay-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #6dd4a0 14%, var(--ds-bg-subtle));
+  border: 1px solid color-mix(in srgb, #6dd4a0 30%, var(--ds-border));
+  color: var(--ds-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.crd-join-overlay-hint {
+  font-size: 11px;
+  color: var(--ds-muted);
+}

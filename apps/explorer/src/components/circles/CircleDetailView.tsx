@@ -24,6 +24,7 @@ import CircleMembersCard from './CircleMembersCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
 import AllMembersPanel from './AllMembersPanel'
+import CircleJoinOverlay from './CircleJoinOverlay'
 import type { CircleData } from '@/types/circle'
 
 interface CircleDetailViewProps {
@@ -35,6 +36,20 @@ interface CircleDetailViewProps {
   /** Enables the hero's color-picker overlay. */
   onColorChange?: (color: string) => void
   colorOptions?: readonly string[]
+  /** Locked state for non-member groups — blurs the members/topics/feed
+   *  sections and renders `<CircleJoinOverlay>` on top. The hero stays
+   *  legible so the user knows which circle they'd be joining. */
+  locked?: boolean
+  /** Whether the join action is already queued in the cart. Toggles
+   *  the overlay CTA into a confirmation hint. */
+  joinInCart?: boolean
+  /** When `true`, the join CTA is disabled and `joinDisabledReason`
+   *  is surfaced as a hint (no wallet, no account atom, etc.). */
+  joinDisabled?: boolean
+  joinDisabledReason?: string | null
+  /** Fires when the user clicks the join CTA. Only invoked when the
+   *  view is locked AND join isn't already in cart / disabled. */
+  onJoin?: () => void
 }
 
 export default function CircleDetailView({
@@ -42,6 +57,11 @@ export default function CircleDetailView({
   colorOverride,
   onColorChange,
   colorOptions,
+  locked = false,
+  joinInCart = false,
+  joinDisabled = false,
+  joinDisabledReason,
+  onJoin,
 }: CircleDetailViewProps) {
   const { selectedTopics } = useTopicSelection()
   const { items: feedItems } = useCircleFeed(circle.addresses)
@@ -77,27 +97,45 @@ export default function CircleDetailView({
         colorOptions={colorOptions}
       />
 
-      <div className="crd-info-row">
-        <CircleMembersCard
-          members={circle.members}
-          onViewAll={() => setAllMembersOpen(true)}
-        />
-        <CircleTopTopicsCard
-          topicIds={topTopicSlugs}
-          circleColor={effectiveColor}
-          counts={topicCounts}
-          items={feedItems}
-        />
+      {/* Lockable area — blurred when the user isn't a member. The
+          overlay sits inside this wrapper so it can render on top of
+          (and only on top of) the gated content; the hero above stays
+          fully interactive. */}
+      <div className={`crd-lockable${locked ? ' crd-lockable--locked' : ''}`}>
+        <div className="crd-lockable-content" aria-hidden={locked}>
+          <div className="crd-info-row">
+            <CircleMembersCard
+              members={circle.members}
+              onViewAll={() => setAllMembersOpen(true)}
+            />
+            <CircleTopTopicsCard
+              topicIds={topTopicSlugs}
+              circleColor={effectiveColor}
+              counts={topicCounts}
+              items={feedItems}
+            />
+          </div>
+
+          <CircleFeedSection
+            addresses={circle.addresses}
+            circleName={circle.name}
+            members={circle.members}
+          />
+        </div>
+
+        {locked && onJoin && (
+          <CircleJoinOverlay
+            circleName={circle.name}
+            inCart={joinInCart}
+            disabled={joinDisabled}
+            disabledReason={joinDisabledReason}
+            onJoin={onJoin}
+          />
+        )}
       </div>
 
-      <CircleFeedSection
-        addresses={circle.addresses}
-        circleName={circle.name}
-        members={circle.members}
-      />
-
       <AllMembersPanel
-        open={allMembersOpen}
+        open={allMembersOpen && !locked}
         onClose={() => setAllMembersOpen(false)}
         members={circle.members}
         circleName={circle.name}
