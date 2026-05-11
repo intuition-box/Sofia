@@ -56,6 +56,12 @@ export function AuthPage() {
   const { wallets } = useWallets()
   const [hasSent, setHasSent] = useState(false)
   const [siweError, setSiweError] = useState<string | null>(null)
+  // hasSentRef persists across renders and useEffect cleanups, unlike the
+  // hasSent state which is gated by React batching. Without it, when Privy
+  // mutates `wallets` mid-signing (changing the effect deps), the cleanup
+  // sets cancelled=true and the setHasSent update is skipped — the next
+  // render then re-enters the effect and pops another MetaMask request.
+  const hasSentRef = useRef(false)
   const signaturePending = useRef(false)
   const [claimStatus, setClaimStatus] = useState<'idle' | 'sending' | 'sent'>(
     'idle',
@@ -66,6 +72,7 @@ export function AuthPage() {
   const retrySiwe = useCallback(() => {
     setSiweError(null)
     signaturePending.current = false
+    hasSentRef.current = false
     setHasSent(false)
   }, [])
 
@@ -75,14 +82,13 @@ export function AuthPage() {
     if (
       !isConnected ||
       !address ||
-      hasSent ||
+      hasSentRef.current ||
       signaturePending.current ||
       siweError
     ) {
       return
     }
     signaturePending.current = true
-    let cancelled = false
     ;(async () => {
       try {
         const siweMessage = buildSiweMessage(address)
@@ -101,13 +107,16 @@ export function AuthPage() {
 
         const provider = await wallet.getEthereumProvider()
         // EIP-191 personal_sign — what SIWE expects on the verifier side
-        // (recoverMessageAddress in viem matches this signing scheme).
+        // (recoverPersonalSignAddress in the extension matches this scheme).
         const signature = (await provider.request({
           method: 'personal_sign',
           params: [siweMessage, address],
         })) as string
 
-        if (cancelled) return
+        // Claim the slot synchronously *before* any state mutation so the
+        // next render of this effect (likely fired by Privy mutating wallets
+        // during the await above) sees hasSentRef.current === true and bails.
+        hasSentRef.current = true
 
         sendToExtension(
           {
@@ -133,22 +142,17 @@ export function AuthPage() {
 
         setHasSent(true)
       } catch (err) {
-        if (cancelled) return
         const msg = err instanceof Error ? err.message : 'Signature rejected'
         setSiweError(msg)
       } finally {
-        if (!cancelled) signaturePending.current = false
+        signaturePending.current = false
       }
     })()
-    return () => {
-      cancelled = true
-    }
   }, [
     isConnected,
     address,
     walletType,
     extensionId,
-    hasSent,
     siweError,
     wallets,
   ])
