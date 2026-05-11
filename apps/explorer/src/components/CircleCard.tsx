@@ -203,7 +203,11 @@ export default function CircleCard({
             className="h-7 w-7 ml-auto"
             asChild
           >
-            <a href={safeHref(item.url)} target="_blank" rel="noopener noreferrer">
+            <a
+              href={safeHref(item.url)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </Button>

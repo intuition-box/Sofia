@@ -9,10 +9,7 @@ import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
-import {
-  HAS_TAG_PREDICATE_ID,
-  TOPIC_ATOM_IDS,
-} from '../config/atomIds'
+import { HAS_TAG_PREDICATE_ID, TOPIC_ATOM_IDS } from '../config/atomIds'
 import { intentionBadgeStyle } from '../config/intentions'
 import {
   executeCreateTriplesBatch,

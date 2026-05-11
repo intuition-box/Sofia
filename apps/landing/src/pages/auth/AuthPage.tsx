@@ -132,10 +132,7 @@ export function AuthPage() {
         try {
           localStorage.setItem('sofia_wallet_address', address)
           localStorage.setItem('sofia_wallet_type', walletType || 'unknown')
-          localStorage.setItem(
-            'sofia_wallet_timestamp',
-            Date.now().toString(),
-          )
+          localStorage.setItem('sofia_wallet_timestamp', Date.now().toString())
         } catch {
           /* not available */
         }
@@ -148,14 +145,7 @@ export function AuthPage() {
         signaturePending.current = false
       }
     })()
-  }, [
-    isConnected,
-    address,
-    walletType,
-    extensionId,
-    siweError,
-    wallets,
-  ])
+  }, [isConnected, address, walletType, extensionId, siweError, wallets])
 
   useEffect(() => {
     if (autoLoginTriggered.current) return
@@ -237,8 +227,8 @@ export function AuthPage() {
             <div className={styles.errorIcon}>✕</div>
             <p className={styles.text}>Signature Required</p>
             <p className={styles.subtext}>
-              The extension needs a signed message to verify ownership of
-              your wallet. {siweError}
+              The extension needs a signed message to verify ownership of your
+              wallet. {siweError}
             </p>
             <button className={styles.btn} onClick={retrySiwe}>
               Retry signature
