@@ -58,6 +58,9 @@ export default function CreateCircleDrawer({
   // Shared account search — same data layer the extension's Circle page
   // uses (`@0xsofia/graphql`, `useSearchAccounts`).
   const memberSearch = useSearchAccounts({ debounceMs: 250 })
+  // `memberSearch` is a fresh object every render — depend on the
+  // stable `reset` callback instead to avoid an infinite effect loop.
+  const { reset: resetMemberSearch } = memberSearch
 
   useEffect(() => {
     if (!open) return
@@ -74,9 +77,9 @@ export default function CreateCircleDrawer({
       setDraft(EMPTY_DRAFT)
       setTopicQuery('')
       setTopicsExpanded(false)
-      memberSearch.reset()
+      resetMemberSearch()
     }
-  }, [open, memberSearch])
+  }, [open, resetMemberSearch])
 
   const topicOptions = useMemo(
     () =>
