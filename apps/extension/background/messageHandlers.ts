@@ -8,7 +8,9 @@ import {
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { getAddress, recoverMessageAddress } from "viem"
+import { getAddress } from "viem"
+import { secp256k1 } from "@noble/curves/secp256k1"
+import { keccak_256 } from "@noble/hashes/sha3"
 import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
@@ -19,6 +21,60 @@ const logger = createServiceLogger('MessageHandlers')
 
 // SIWE proofs older than this window are rejected (anti-replay).
 const SIWE_MAX_AGE_MS = 5 * 60 * 1000  // 5 minutes
+
+function hexToBytes(hex: string): Uint8Array {
+  const cleaned = hex.startsWith('0x') ? hex.slice(2) : hex
+  if (cleaned.length % 2 !== 0) throw new Error('Invalid hex length')
+  const bytes = new Uint8Array(cleaned.length / 2)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(cleaned.slice(i * 2, i * 2 + 2), 16)
+  }
+  return bytes
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * Recover the Ethereum address that signed `message` via EIP-191
+ * personal_sign.
+ *
+ * We don't use viem.recoverMessageAddress here: viem lazy-imports
+ * @noble/curves, which Parcel splits into a separate chunk
+ * (secp256k1.<hash>.js). Service Worker `importScripts` can't resolve
+ * extension-relative chunks → the SIWE check explodes at runtime in MV3.
+ *
+ * Calling noble directly keeps everything statically bundled into the SW
+ * entry.
+ */
+function recoverPersonalSignAddress(message: string, signatureHex: string): string {
+  const sig = hexToBytes(signatureHex)
+  if (sig.length !== 65) {
+    throw new Error(`Invalid signature length: ${sig.length}`)
+  }
+
+  // EIP-191 prefix: "\x19Ethereum Signed Message:\n" + decimal length
+  const messageBytes = new TextEncoder().encode(message)
+  const prefixStr = `\x19Ethereum Signed Message:\n${messageBytes.length}`
+  const prefixBytes = new TextEncoder().encode(prefixStr)
+  const prefixed = new Uint8Array(prefixBytes.length + messageBytes.length)
+  prefixed.set(prefixBytes, 0)
+  prefixed.set(messageBytes, prefixBytes.length)
+  const messageHash = keccak_256(prefixed)
+
+  let v = sig[64]
+  if (v >= 27) v -= 27
+  if (v !== 0 && v !== 1) throw new Error(`Invalid recovery v: ${sig[64]}`)
+
+  const signature = secp256k1.Signature
+    .fromCompact(sig.slice(0, 64))
+    .addRecoveryBit(v)
+  const publicKey = signature.recoverPublicKey(messageHash).toRawBytes(false)
+  // publicKey: 65 bytes (0x04 prefix + 64 bytes uncompressed). Drop prefix.
+  const addressBytes = keccak_256(publicKey.slice(1)).slice(-20)
+  return '0x' + bytesToHex(addressBytes)
+}
 
 /**
  * Verify a Sign-In With Ethereum (EIP-4361) proof for a WALLET_CONNECTED
@@ -70,10 +126,7 @@ async function verifySiweProof(args: {
   // Signature check: the recovered address MUST equal the claimed wallet.
   let recovered: string
   try {
-    recovered = await recoverMessageAddress({
-      message: siweMessage,
-      signature: siweSignature as `0x${string}`
-    })
+    recovered = recoverPersonalSignAddress(siweMessage, siweSignature)
   } catch (err) {
     return `Signature recover failed: ${err instanceof Error ? err.message : 'unknown'}`
   }
