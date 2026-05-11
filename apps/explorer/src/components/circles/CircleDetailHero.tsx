@@ -106,6 +106,8 @@ export default function CircleDetailHero({
         <p className="crd-hero-desc">{description}</p>
       </div>
 
+      {cta && <div className="crd-hero-cta">{cta}</div>}
+
       <div className="crd-hero-right">
         <div className="crd-hero-actions">
           <div className="cr-section-head">Actions budget</div>

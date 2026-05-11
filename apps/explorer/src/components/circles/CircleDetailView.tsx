@@ -95,6 +95,21 @@ export default function CircleDetailView({
         memberCount={Math.max(1, circle.members.length)}
         onColorChange={onColorChange}
         colorOptions={colorOptions}
+        // Non-member CTA lives inside the hero's middle slot so the
+        // page doesn't grow a separate banner row above the activity
+        // feed. The hero is the only thing the user reads first; the
+        // join action belongs there.
+        cta={
+          locked && onJoin ? (
+            <CircleJoinOverlay
+              circleName={circle.name}
+              inCart={joinInCart}
+              disabled={joinDisabled}
+              disabledReason={joinDisabledReason}
+              onJoin={onJoin}
+            />
+          ) : undefined
+        }
       />
 
       {/* Members card + Top Topics stay fully accessible — even for
@@ -113,19 +128,6 @@ export default function CircleDetailView({
           items={feedItems}
         />
       </div>
-
-      {/* Non-member CTA — sits directly above the gated feed so the
-          banner reads as an explicit "unlock what's below" cue rather
-          than a floating message at page top. */}
-      {locked && onJoin && (
-        <CircleJoinOverlay
-          circleName={circle.name}
-          inCart={joinInCart}
-          disabled={joinDisabled}
-          disabledReason={joinDisabledReason}
-          onJoin={onJoin}
-        />
-      )}
 
       {/* Activity feed — the only section gated for non-members. The
           `aria-hidden` mirrors the visual blur so assistive tech sees

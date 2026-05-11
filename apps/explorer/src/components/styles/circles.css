@@ -1709,27 +1709,36 @@
   user-select: none;
 }
 
-/* Inline banner rendered between the hero and the info row when the
-   user isn't a member. No absolute positioning — sits in the flow so
-   it never obscures the (now visible) members / topics sections. */
+/* Hero slot wrapper — fills the empty space between the left title
+   block and the right actions-budget panel. Centers the overlay
+   horizontally inside the slot. */
+.crd-hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+/* The overlay itself — compact form so it sits comfortably inside
+   the hero rather than sprawling like a full-width banner. */
 .crd-join-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 16px 0 8px;
+  width: 100%;
 }
 .crd-join-overlay-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  max-width: 520px;
-  padding: 18px 22px;
-  border-radius: 14px;
-  background: var(--ds-card);
+  max-width: 360px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   text-align: center;
 }
 .crd-join-overlay-icon {
