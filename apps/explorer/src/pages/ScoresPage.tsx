@@ -25,6 +25,7 @@ import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { computeDiscoveryBuckets } from '@/services/userOnChainProfileService'
 import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
@@ -209,50 +210,39 @@ export default function ScoresPage() {
 
   // Badges earned on URLs — derive from EVERY cert the user owns,
   // not just `topClaims` (which only tracks the top-N by market cap).
-  // Uses the same thresholds as the Discovery service so the numbers
-  // here match the right-rail Pioneer/Explorer/Contributor counts:
-  //   1 holder        → pioneer
-  //   2-10 holders    → explorer
-  //   11+ holders     → contributor
-  const perBadgeUrlsAll = (() => {
-    const buckets: Record<ClaimBadge, typeof topClaims> = {
-      pioneer: [],
-      early: [],
-      viral: [],
-      contrarian: [],
-    }
-    const seen = new Set<string>()
-    for (const cert of profile.certs) {
-      if (!cert.objectLabel) continue
-      const key = `${cert.objectLabel}::${cert.objectUrl}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      const tier =
-        cert.certifierCount <= 1
-          ? 'pioneer'
-          : cert.certifierCount <= 10
-            ? 'early'
-            : 'viral'
-      buckets[tier].push({
-        termId: cert.termId,
-        objectLabel: cert.objectLabel,
-        objectUrl: cert.objectUrl || undefined,
-        predicateLabel: cert.intention,
-        stats: {
-          supportCount: cert.certifierCount,
-          opposeCount: 0,
-          supportMarketCap: '0',
-          opposeMarketCap: '0',
-          userPnlPct: null,
-        },
-        totalMarketCap: 0n,
-      })
-    }
-    return BADGE_GROUPS.map((g) => ({
-      group: g,
-      urls: buckets[g.id],
-    }))
-  })()
+  // Single source of truth: `computeDiscoveryBuckets` is the same
+  // selector the right-rail Discovery badges consume.
+  const discoveryBuckets = computeDiscoveryBuckets(profile.certs)
+  const certToClaim = (cert: (typeof profile.certs)[number]) => ({
+    termId: cert.termId,
+    objectLabel: cert.objectLabel,
+    objectUrl: cert.objectUrl || undefined,
+    predicateLabel: cert.intention,
+    stats: {
+      supportCount: cert.certifierCount,
+      opposeCount: 0,
+      supportMarketCap: '0',
+      opposeMarketCap: '0',
+      userPnlPct: null,
+    },
+    totalMarketCap: 0n,
+  })
+  const bucketsByBadge: Record<ClaimBadge, typeof topClaims> = {
+    pioneer: discoveryBuckets.pioneer
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
+    early: discoveryBuckets.explorer
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
+    viral: discoveryBuckets.contributor
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
+    contrarian: [],
+  }
+  const perBadgeUrlsAll = BADGE_GROUPS.map((g) => ({
+    group: g,
+    urls: bucketsByBadge[g.id],
+  }))
   const perBadgeUrls = perBadgeUrlsAll.map((entry) => ({
     ...entry,
     urls: entry.urls.slice(0, 3),

@@ -1,5 +1,40 @@
-/** MultiVault ABI — direct calls for redeem, getShares (not via proxy) */
+/** MultiVault ABI — direct calls for redeem, getShares, and term-id
+ *  calculation (must hit MultiVault directly — the proxy's
+ *  `calculateAtomId` returns a different hash and breaks downstream
+ *  `createTriples` with `MultiVault_TermDoesNotExist`). */
 export const MultiVaultAbi = [
+  // calculateAtomId(data) pure → atomId
+  // Source of truth for the deterministic atom term_id — must be
+  // called on MultiVault, not the proxy.
+  {
+    inputs: [{ internalType: 'bytes', name: 'data', type: 'bytes' }],
+    name: 'calculateAtomId',
+    outputs: [{ internalType: 'bytes32', name: 'id', type: 'bytes32' }],
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  // calculateTripleId(subjectId, predicateId, objectId) pure → tripleId
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'subjectId', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'predicateId', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'objectId', type: 'bytes32' },
+    ],
+    name: 'calculateTripleId',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  // isTermCreated(termId) view → bool — true when the atom/triple is
+  // already minted on-chain. Faster + more direct than a `createAtoms`
+  // simulation probe.
+  {
+    inputs: [{ internalType: 'bytes32', name: 'termId', type: 'bytes32' }],
+    name: 'isTermCreated',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
   // getShares(account, termId, curveId) view → shares
   {
     inputs: [

@@ -1,51 +1,57 @@
 /**
- * PublicProfilePage — read-only profile view for any wallet address or ENS name.
- * Accessible via /profile/:address (public, no auth required).
+ * PublicProfilePage — read-only profile view for any wallet address or
+ * ENS name. Accessible via `/profile/:address` (public, no auth gate).
+ *
+ * Mirrors the personal `ProfilePage` skeleton — same hero, interests
+ * grid, ProfileCharts (radar + calendar + top platforms + top claim)
+ * and Echoes section — so a visitor sees the same layout regardless
+ * of whose wallet they're looking at. The only structural difference
+ * is that the interests grid is rendered read-only (no add/remove)
+ * and the topic selection is derived from the user's on-chain
+ * positions instead of a local taxonomy preference.
  */
 
-import { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
-import { useUserProfile } from '@/hooks/useUserProfile'
-import { useTopClaims } from '@/hooks/useTopClaims'
+import {
+  SectionH2,
+  EchoesSortTabs,
+  type EchoesSortKey,
+} from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
+import { useTopClaims } from '@/hooks/useTopClaims'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useTrustScore } from '@/hooks/useTrustScore'
+import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
+import { useReputationScores } from '@/hooks/useReputationScores'
+import { useSignals } from '@/hooks/useSignals'
+import { useAddressInterests } from '@/hooks/useAddressInterests'
 import { resolveEnsToAddress } from '@/services/ensService'
-import {
-  ATOM_ID_TO_TOPIC,
-  ATOM_ID_TO_CATEGORY,
-  ATOM_ID_TO_PLATFORM,
-} from '@/config/atomIds'
-import { TOPIC_META } from '@/config/topicMeta'
-import TopClaimsSection from '@/components/profile/TopClaimsSection'
+import type { ConnectionStatus } from '@/types/reputation'
+import InterestsGrid, {
+  MAX_INTERESTS,
+} from '@/components/profile/InterestsGrid'
+import ProfileCharts from '@/components/profile/ProfileCharts'
 import LastActivitySection from '@/components/profile/LastActivitySection'
-import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
-import { Card } from '@/components/ui/card'
-import { Users, Award, BarChart3, Layers, Shield, Globe } from 'lucide-react'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
 
-function formatStaked(raw: number): string {
-  // totalStaked from profileService is shares*price/1e18, still in wei scale
-  const trust = raw / 1e18
-  if (trust >= 1000) return (trust / 1000).toFixed(1) + 'k'
-  if (trust >= 1) return trust.toFixed(2)
-  if (trust >= 0.001) return trust.toFixed(4)
-  return '0'
-}
+const PUBLIC_HERO_COLOR = '#627EEA'
 
 export default function PublicProfilePage() {
   const { address: rawAddress } = useParams<{ address: string }>()
-  const navigate = useNavigate()
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null)
   const [resolving, setResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
+  const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
 
-  // Resolve ENS or validate address
+  // Resolve ENS (`.eth` / `.box`) or validate the raw address. The
+  // page renders only once `resolvedAddress` is set so downstream
+  // hooks always see a stable canonical address.
   useEffect(() => {
     if (!rawAddress) return
     setResolvedAddress(null)
@@ -71,83 +77,95 @@ export default function PublicProfilePage() {
   }, [rawAddress])
 
   const walletAddress = resolvedAddress || undefined
-  const addresses = walletAddress ? [walletAddress as Address] : []
+  const addresses = useMemo<Address[]>(
+    () => (walletAddress ? [walletAddress as Address] : []),
+    [walletAddress],
+  )
   const { getDisplay, getAvatar } = useEnsNames(addresses)
 
-  // Fetch data
-  const { profile, isLoading: profileLoading } = useUserProfile(addresses)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(addresses)
-  // Echoes: alltime certs from the master profile, same source the rest
-  // of the profile panels read so the bento groups stay consistent.
-  const onChainAddresses = walletAddress ? [walletAddress] : undefined
+  // ── On-chain data — single round of fetches the rest of the page reads.
   const { profile: onChainProfile, isLoading: onChainLoading } =
-    useUserOnChainProfile(onChainAddresses)
+    useUserOnChainProfile(addresses.length > 0 ? addresses : undefined)
+  const { claims: topClaims, loading: claimsLoading } = useTopClaims(
+    addresses.length > 0 ? addresses : undefined,
+  )
+  const { score: trustScore } = useTrustScore(walletAddress)
+  const { signals } = useSignals(walletAddress)
+
+  // Cert counts per topic — same source the personal profile feeds
+  // into `useReputationScores`. Drives the radar weight so the charts
+  // surface the same numbers the user sees on their own /profile.
+  const certCountsByTopic = useUserCertCountsByTopic(
+    addresses.length > 0 ? addresses : undefined,
+  )
+
+  // Interests — the personal profile's `useInterestsHydration` calls
+  // `getSharesBatch(connectedWallet, TOPIC_ATOM_IDS)` against every
+  // topic atom and keeps the ones with shares > 0. We do the exact
+  // same on-chain read here but for the viewed address, via the
+  // pure-read variant `useAddressInterests`. Same source, same set.
+  const { topics: ownedTopics, categories: ownedCategories } =
+    useAddressInterests(walletAddress)
+
+  const selectedTopics = useMemo<string[]>(() => {
+    if (ownedTopics.length > 0) return ownedTopics.slice(0, MAX_INTERESTS)
+    // Fallback — for users who only have certifications and never
+    // staked on a raw topic atom, surface the top cert contexts so
+    // the interests grid isn't empty.
+    return [...certCountsByTopic.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MAX_INTERESTS)
+      .map(([slug]) => slug)
+  }, [ownedTopics, certCountsByTopic])
+
+  const selectedCategories = useMemo<string[]>(
+    () => ownedCategories.slice(0, 6),
+    [ownedCategories],
+  )
+
+  // Platform connections aren't queryable for someone else — stub
+  // every lookup as `disconnected` so the score service treats their
+  // profile as a pure on-chain footprint. `useReputationScores` then
+  // produces the same topic scores the personal profile would
+  // synthesize had its platforms been disconnected.
+  const getStatus = useMemo(
+    () =>
+      (_platformId: string): ConnectionStatus =>
+        'disconnected',
+    [],
+  )
+  const scores = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    trustScore,
+    signals,
+    certCountsByTopic,
+  )
+  const topicScores = scores?.topics ?? []
+
+  // Echoes activities feed the bento grid — same source the personal
+  // profile uses so the section stays visually identical.
   const echoesActivities = useMemo(
     () => userCertsToActivityInputs(onChainProfile.certs),
     [onChainProfile.certs],
   )
-  const { score: trustScore } = useTrustScore(walletAddress)
 
-  // Derive interests from positions
-  const interests = useMemo(() => {
-    if (!profile)
-      return {
-        topics: new Map<string, number>(),
-        platforms: new Map<string, number>(),
-      }
-
-    const topicCounts = new Map<string, number>()
-    const platformCounts = new Map<string, number>()
-
-    for (const pos of profile.positions) {
-      // Check if position is in a topic atom
-      const topicSlug = ATOM_ID_TO_TOPIC.get(pos.termId)
-      if (topicSlug) {
-        topicCounts.set(topicSlug, (topicCounts.get(topicSlug) || 0) + 1)
-      }
-
-      // Check if position is in a platform atom
-      const platformSlug = ATOM_ID_TO_PLATFORM.get(pos.termId)
-      if (platformSlug) {
-        platformCounts.set(
-          platformSlug,
-          (platformCounts.get(platformSlug) || 0) + 1,
-        )
-      }
-
-      // Check triple subjects/objects for topic/category references
-      if (pos.tripleSubjectId) {
-        const subTopic = ATOM_ID_TO_TOPIC.get(pos.tripleSubjectId)
-        if (subTopic)
-          topicCounts.set(subTopic, (topicCounts.get(subTopic) || 0) + 1)
-        const subPlatform = ATOM_ID_TO_PLATFORM.get(pos.tripleSubjectId)
-        if (subPlatform)
-          platformCounts.set(
-            subPlatform,
-            (platformCounts.get(subPlatform) || 0) + 1,
-          )
-      }
-      if (pos.tripleObjectId) {
-        const objTopic = ATOM_ID_TO_TOPIC.get(pos.tripleObjectId)
-        if (objTopic)
-          topicCounts.set(objTopic, (topicCounts.get(objTopic) || 0) + 1)
-      }
-    }
-
-    return { topics: topicCounts, platforms: platformCounts }
-  }, [profile])
-
-  const sortedTopics = [...interests.topics.entries()].sort(
-    (a, b) => b[1] - a[1],
-  )
-
+  // ── Hero copy
   const displayName = walletAddress
     ? getDisplay(walletAddress as Address)
     : rawAddress || ''
+  const ensAvatar = walletAddress ? getAvatar(walletAddress as Address) : ''
   const shortAddress = walletAddress
     ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4)
     : ''
+  const heroDescription =
+    shortAddress && shortAddress !== displayName
+      ? shortAddress
+      : 'Public profile'
+  const initials = (displayName || rawAddress || '?').slice(0, 2).toUpperCase()
 
+  // ── Resolution states
   if (resolving) {
     return (
       <div className="pf-view page-enter" style={{ textAlign: 'center' }}>
@@ -168,118 +186,74 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="pf-view page-enter">
-      <PageHero
-        background="#627EEA"
-        title={displayName}
-        description={
-          shortAddress !== displayName ? shortAddress : 'Public profile'
-        }
-      />
+    <div className="pf-view pf-home page-enter">
+      {/* Custom hero — same peach-banner silhouette as `<PageHero>` but
+          with the viewed user's ENS avatar inlined to the left of the
+          title, so visitors immediately see whose profile they're on. */}
+      <div
+        className="ph-container pp-public-hero"
+        style={{ background: PUBLIC_HERO_COLOR }}
+      >
+        <div className="pp-public-hero-row">
+          <span className="pp-public-hero-avatar" aria-hidden="true">
+            {ensAvatar ? (
+              <img src={ensAvatar} alt="" referrerPolicy="no-referrer" />
+            ) : (
+              <span className="pp-public-hero-initials">{initials}</span>
+            )}
+          </span>
+          <div className="pp-public-hero-text">
+            <h1 className="ph-title">
+              {displayName || shortAddress || 'Profile'}
+            </h1>
+            {heroDescription && (
+              <p className="ph-description">{heroDescription}</p>
+            )}
+          </div>
+        </div>
+        <div className="ph-deco" aria-hidden="true" />
+      </div>
 
       <div className="pp-sections">
-        {/* Stats */}
-        {profileLoading ? (
-          <div style={{ textAlign: 'center', padding: 20 }}>
-            <SofiaLoader size={32} />
-          </div>
-        ) : (
-          profile && (
-            <section className="pp-section">
-              <SectionTitle>Stats</SectionTitle>
-              <div className="pub-stats-grid">
-                <Card className="pub-stat-card">
-                  <Layers className="h-4 w-4 text-muted-foreground" />
-                  <span className="pub-stat-value">
-                    {profile.totalPositions}
-                  </span>
-                  <span className="pub-stat-label">Positions</span>
-                </Card>
-                <Card className="pub-stat-card">
-                  <Award className="h-4 w-4 text-muted-foreground" />
-                  <span className="pub-stat-value">
-                    {profile.totalCertifications}
-                  </span>
-                  <span className="pub-stat-label">Certifications</span>
-                </Card>
-                <Card className="pub-stat-card">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  <span className="pub-stat-value">
-                    {formatStaked(profile.totalStaked)}
-                  </span>
-                  <span className="pub-stat-label">Staked (T)</span>
-                </Card>
-                {trustScore != null && (
-                  <Card className="pub-stat-card">
-                    <Shield className="h-4 w-4 text-emerald-500" />
-                    <span className="pub-stat-value">
-                      {trustScore.toFixed(1)}
-                    </span>
-                    <span className="pub-stat-label">Trust Score</span>
-                  </Card>
-                )}
-                {trustScore == null && (
-                  <Card className="pub-stat-card">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <span className="pub-stat-value">
-                      {interests.platforms.size}
-                    </span>
-                    <span className="pub-stat-label">Platforms</span>
-                  </Card>
-                )}
-              </div>
-            </section>
-          )
-        )}
-
-        {/* Interests derived from on-chain positions */}
-        {sortedTopics.length > 0 && (
-          <section className="pp-section">
-            <SectionTitle>Interests</SectionTitle>
-            <div className="pub-interests-grid">
-              {sortedTopics.map(([slug, count]) => {
-                const meta = TOPIC_META[slug]
-                const label = slug
-                  .replace(/-/g, ' ')
-                  .replace(/\b\w/g, (c) => c.toUpperCase())
-                return (
-                  <Card
-                    key={slug}
-                    className="pub-interest-card"
-                    style={{ borderTop: `3px solid ${meta?.color || '#888'}` }}
-                    onClick={() => navigate(`/profile/interest/${slug}`)}
-                  >
-                    <span className="pub-interest-label">{label}</span>
-                    <span className="pub-interest-count">
-                      {count} position{count > 1 ? 's' : ''}
-                    </span>
-                  </Card>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Top Claims */}
-        {(claimsLoading || topClaims.length > 0) && (
-          <section className="pp-section">
-            <SectionTitle>Top Claims</SectionTitle>
-            <TopClaimsSection
-              claims={topClaims}
-              loading={claimsLoading}
-              walletAddress={walletAddress}
-              hideplatformPositions
-            />
-          </section>
-        )}
-
-        {/* Activity */}
+        {/* Interests — mirrors the personal-profile grid. Read-only:
+            no add / remove on someone else's profile. */}
         <section className="pp-section">
-          <SectionTitle>Activity</SectionTitle>
+          <SectionH2>Interests</SectionH2>
+          <InterestsGrid
+            selectedTopics={selectedTopics}
+            topicScores={topicScores}
+          />
+        </section>
+
+        {/* Profile charts — radar + details + calendar + top platforms
+            + top claim. The component already accepts a foreign
+            `addresses` array (see prop docs) so no fork needed. */}
+        <ProfileCharts
+          topClaims={topClaims}
+          claimsLoading={claimsLoading}
+          walletAddress={walletAddress}
+          hideplatformPositions
+          selectedTopics={selectedTopics}
+          selectedCategories={selectedCategories}
+          topicScores={topicScores}
+          addresses={addresses}
+        />
+
+        {/* Echoes — same bento grid as the personal profile. */}
+        <section className="pp-section">
+          <div className="pf-echoes-head">
+            <SectionH2>Echoes</SectionH2>
+            <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
+          </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={onChainLoading}
-            linkable={false}
+            sort={echoesSort}
+            // Echo cards now route to /profile/platform/:domain?address=…
+            // so visitors can drill into the viewed user's certs on a
+            // given platform, just like the personal profile does for
+            // its own wallets.
+            viewedAddress={walletAddress}
           />
         </section>
       </div>

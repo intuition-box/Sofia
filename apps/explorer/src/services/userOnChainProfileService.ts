@@ -31,8 +31,7 @@ const MAX_PAGES = 100 // 20 000 certs cap — far past any real user
 const TOPIC_LINKS_LIMIT = 50_000
 
 // Predicate labels Sofia treats as "certifications" for the profile.
-// Matches discoveryScoreService.CERTIFICATION_PREDICATE_LABELS plus
-// the legacy trailing-space variant that still appears on old data.
+// Includes the legacy trailing-space variant that still appears on old data.
 const CERT_PREDICATE_LABELS = [
   'visits for work',
   'visits for learning',
@@ -169,4 +168,46 @@ export async function fetchUserOnChainProfile(
   })
 
   return { certs, topicContextsByTerm }
+}
+
+// ---------------------------------------------------------------------------
+// Derived selectors
+// ---------------------------------------------------------------------------
+
+/**
+ * Pioneer / Explorer / Contributor buckets, derived from a UserCert list.
+ *
+ *   - Pioneer:     1 certifier total  (the user is the only holder)
+ *   - Explorer:    2-10 certifiers
+ *   - Contributor: 11+ certifiers
+ *
+ * Dedupe is keyed by `objectTermId` (the URL atom) — a single page only
+ * counts toward one bucket no matter how many intentions the user has
+ * stacked on it. Order is preserved from the input (alltime newest-first
+ * after the standard sort).
+ */
+export interface DiscoveryBuckets {
+  pioneer: UserCert[]
+  explorer: UserCert[]
+  contributor: UserCert[]
+}
+
+export function computeDiscoveryBuckets(
+  certs: readonly UserCert[],
+): DiscoveryBuckets {
+  const buckets: DiscoveryBuckets = {
+    pioneer: [],
+    explorer: [],
+    contributor: [],
+  }
+  const seen = new Set<string>()
+  for (const cert of certs) {
+    if (!cert.objectTermId || seen.has(cert.objectTermId)) continue
+    seen.add(cert.objectTermId)
+    const n = cert.certifierCount
+    if (n <= 1) buckets.pioneer.push(cert)
+    else if (n <= 10) buckets.explorer.push(cert)
+    else buckets.contributor.push(cert)
+  }
+  return buckets
 }

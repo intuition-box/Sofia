@@ -801,3 +801,56 @@
     opacity: 0.8;
   }
 }
+
+/* ── Public profile custom hero ───────────────────────────────────── */
+/* Mirrors `.ph-container` but lifts the title block to sit beside the
+   viewed user's ENS avatar instead of stacking under it. The avatar
+   size matches the bigger title so the line feels balanced. */
+.pp-public-hero {
+  padding-top: 28px;
+  padding-bottom: 32px;
+}
+.pp-public-hero-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.pp-public-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.pp-public-hero-text .ph-title {
+  margin: 0;
+}
+.pp-public-hero-text .ph-description {
+  margin: 0;
+}
+.pp-public-hero-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.12);
+  border: 2px solid rgba(0, 0, 0, 0.15);
+}
+.pp-public-hero-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pp-public-hero-initials {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: rgba(0, 0, 0, 0.7);
+  letter-spacing: -0.02em;
+}

@@ -35,7 +35,7 @@ export async function fetchCircleTopicCounts(
   // The indexer stores `positions.account_id` inconsistently across deposit
   // emitters — pass both checksum and lowercase casings (deduped) so the
   // `_in` filter hits regardless of how a row was written. Same pattern as
-  // discoveryScoreService and useOnChainIntentionGroups.
+  // useTrustedReceived and useOnChainIntentionGroups.
   const checksum = trustedWallets.map((w) => getAddress(w))
   const lower = trustedWallets.map((w) => w.toLowerCase())
   const allCases = Array.from(new Set([...checksum, ...lower]))

@@ -12,6 +12,7 @@
  * picker for multi-intention items), mirroring DashboardPage.
  */
 import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import {
@@ -152,7 +153,18 @@ export default function CircleFeedCard({
       {certifierName ? (
         <div className="fc-cert">
           <span className="fc-cert-label">Certified by</span>
-          <span className="fc-cert-who">{certifierName}</span>
+          {item.certifierAddress ? (
+            // The outer card is already an <a> so we can't nest another
+            // link. Treat the certifier name as a "navigate on click"
+            // span: stop the event from bubbling up so the card doesn't
+            // also open the URL, then push the route programmatically.
+            <CertifierLink
+              name={certifierName}
+              address={item.certifierAddress}
+            />
+          ) : (
+            <span className="fc-cert-who">{certifierName}</span>
+          )}
         </div>
       ) : null}
 
@@ -213,5 +225,33 @@ export default function CircleFeedCard({
         </div>
       </div>
     </a>
+  )
+}
+
+/** Inline certifier name that routes to the public profile without
+ *  triggering the parent card's external-URL anchor. Kept here as a
+ *  local helper so the navigation concern stays next to its usage. */
+function CertifierLink({ name, address }: { name: string; address: string }) {
+  const navigate = useNavigate()
+  return (
+    <span
+      className="fc-cert-who fc-cert-who--link"
+      role="link"
+      tabIndex={0}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate(`/profile/${address}`)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          navigate(`/profile/${address}`)
+        }
+      }}
+    >
+      {name}
+    </span>
   )
 }

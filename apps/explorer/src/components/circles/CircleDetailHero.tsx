@@ -7,6 +7,7 @@
  * surfaces a small color picker — used today by the Trust Circle to let
  * the owner pick its accent color.
  */
+import type { ReactNode } from 'react'
 import { Zap } from 'lucide-react'
 
 interface CircleDetailHeroProps {
@@ -20,6 +21,10 @@ interface CircleDetailHeroProps {
   onColorChange?: (color: string) => void
   /** Palette rendered inside the picker. Ignored when onColorChange is not set. */
   colorOptions?: readonly string[]
+  /** Optional slot rendered between the left title block and the right
+   *  actions-budget panel. Used today by non-member groups to surface
+   *  the Join CTA without taking a row of its own below the hero. */
+  cta?: ReactNode
 }
 
 export default function CircleDetailHero({
@@ -31,6 +36,7 @@ export default function CircleDetailHero({
   memberCount,
   onColorChange,
   colorOptions,
+  cta,
 }: CircleDetailHeroProps) {
   const total = sponsorClaimsLeft + 2000
   const pct = Math.min(100, Math.round((sponsorClaimsLeft / total) * 100))
@@ -99,6 +105,8 @@ export default function CircleDetailHero({
         </div>
         <p className="crd-hero-desc">{description}</p>
       </div>
+
+      {cta && <div className="crd-hero-cta">{cta}</div>}
 
       <div className="crd-hero-right">
         <div className="crd-hero-actions">
