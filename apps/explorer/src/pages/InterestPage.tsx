@@ -11,9 +11,12 @@ import { useState } from 'react'
 import { Info } from 'lucide-react'
 import ScoreExplanationDialog from '@/components/ScoreExplanationDialog'
 import { useSignals } from '@/hooks/useSignals'
-import { useTopicCertifications } from '@/hooks/useTopicCertifications'
+import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
+import LastActivitySection from '@/components/profile/LastActivitySection'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { useMemo } from 'react'
 import {
   InterestHero,
   SectionTitle,
@@ -21,14 +24,8 @@ import {
   PlatformCard,
   PlatformAddCard,
   PlatformSkeleton,
-  FaviconWrapper,
 } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import {
-  INTENTION_COLORS_BY_LABEL,
-  LABEL_TO_INTENTION,
-  displayLabelToIntentionType,
-} from '@/config/intentions'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
 
@@ -57,15 +54,22 @@ export default function InterestPage() {
   const [scoreInfoOpen, setScoreInfoOpen] = useState(false)
 
   const walletAddress = user?.wallet?.address
-  const { certifications: allCertifications, loading: certsLoading } =
-    useTopicCertifications(topicId, walletAddress)
 
-  // Only show certifications the user personally made: the service query
-  // filters positions to the wallet address via _ilike, so a non-empty
-  // certifiers array means the user holds shares on this cert triple.
-  const certifications = walletAddress
-    ? allCertifications.filter((c) => c.certifiers.length > 0)
-    : []
+  // Certifications for THIS topic, mapped onto the same Echoes bento
+  // shape used on /profile so the visuals stay 1:1 with the rest of
+  // the profile. The on-chain profile is shared cache — no extra
+  // fetch on top of what /profile already paid for.
+  const { profile: onChainProfile, isLoading: certsLoading } =
+    useUserOnChainProfile(
+      linkedAddresses.length > 0 ? linkedAddresses : undefined,
+    )
+  const topicEchoesActivities = useMemo(() => {
+    if (!topicId) return []
+    const filtered = onChainProfile.certs.filter((c) =>
+      c.topicSlugs.includes(topicId),
+    )
+    return userCertsToActivityInputs(filtered)
+  }, [onChainProfile.certs, topicId])
 
   const platforms = topicId ? getPlatformsByTopic(topicId) : []
   const connectedPlatforms = platforms.filter(
@@ -153,70 +157,27 @@ export default function InterestPage() {
           </PlatformsGrid>
         </section>
 
-        {/* Certified in this topic */}
+        {/* Certified in this topic — same bento layout as the personal
+            profile's Echoes section so visitors see a consistent
+            language across the app. */}
         <section className="ip-section">
           <SectionTitle>Certified in {topic.label}</SectionTitle>
-          {certsLoading ? (
+          {certsLoading && topicEchoesActivities.length === 0 ? (
             <div className="ip-loader">
               <SofiaLoader size={48} />
             </div>
-          ) : certifications.length === 0 ? (
+          ) : topicEchoesActivities.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              You haven't certified any URL in this topic yet.
+              {walletAddress
+                ? `You haven't certified any URL in ${topic.label} yet.`
+                : 'Connect your wallet to see your certifications.'}
             </p>
           ) : (
-            <div className="ip-certs-grid">
-              {certifications.map((cert) => {
-                const intentLabel =
-                  LABEL_TO_INTENTION[cert.intention.trim().toLowerCase()] ??
-                  cert.intention
-                const intentColor =
-                  INTENTION_COLORS_BY_LABEL[intentLabel] ?? 'var(--ds-muted)'
-                const intentSlug = displayLabelToIntentionType(intentLabel)
-                return (
-                  <a
-                    key={cert.termId}
-                    className="ip-cert-card"
-                    href={cert.url || `https://${cert.domain}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ ['--cert-color' as string]: intentColor }}
-                  >
-                    <FaviconWrapper
-                      size={36}
-                      src={cert.favicon}
-                      alt={cert.domain}
-                      className="ip-cert-fav"
-                    />
-                    <div className="ip-cert-meta">
-                      <span className="ip-cert-title">
-                        {cert.domain || cert.platformLabel}
-                      </span>
-                      {intentSlug ? (
-                        <span
-                          className={`fc-verb-tag ${intentSlug} ip-cert-verb`}
-                        >
-                          {intentLabel}
-                        </span>
-                      ) : (
-                        <span className="ip-cert-verb-plain">
-                          {intentLabel}
-                        </span>
-                      )}
-                    </div>
-                    <div className="ip-cert-right">
-                      <span className="ip-cert-holders">
-                        {cert.positionCount}
-                      </span>
-                      <span className="ip-cert-holders-label">holders</span>
-                    </div>
-                    <span className="ip-cert-link" aria-hidden="true">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </span>
-                  </a>
-                )
-              })}
-            </div>
+            <LastActivitySection
+              activities={topicEchoesActivities}
+              loading={certsLoading}
+              sort="platform"
+            />
           )}
         </section>
       </div>
