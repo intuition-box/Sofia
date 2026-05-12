@@ -23,6 +23,7 @@ import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import TopicBadge from './profile/TopicBadge'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
@@ -279,10 +280,13 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                   {pieSlices.map((t) => {
                     const inner = (
                       <>
-                        <span className="pd-ts-legend-dot" />
-                        <span className="pd-ts-legend-label">
-                          {t.emoji} {t.label}
-                        </span>
+                        <TopicBadge
+                          topicId={t.id}
+                          color={t.color}
+                          size={18}
+                          title={t.label}
+                        />
+                        <span className="pd-ts-legend-label">{t.label}</span>
                         <span className="pd-ts-legend-val">{t.score}</span>
                       </>
                     )

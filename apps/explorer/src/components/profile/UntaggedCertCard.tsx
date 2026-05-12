@@ -11,7 +11,6 @@
 import { useMemo } from 'react'
 import { Plus, Check } from 'lucide-react'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
-import { getTopicEmoji } from '@/config/topicEmoji'
 import { useCart } from '@/hooks/useCart'
 import {
   buildContextCartItem,
@@ -22,6 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import TopicBadge from './TopicBadge'
 
 interface UntaggedCertCardProps {
   certTermId: string
@@ -116,9 +116,12 @@ export default function UntaggedCertCard({
               onClick={() => toggle(topic.id, topic.label, topic.color)}
               title="Remove from cart"
             >
-              <span aria-hidden="true">
-                {getTopicEmoji(topic.id) || '📌'}
-              </span>
+              <TopicBadge
+                topicId={topic.id}
+                color={topic.color}
+                size={16}
+                title={topic.label}
+              />
               {topic.label}
               <span className="ctx-card-tag-remove" aria-hidden="true">
                 ×
@@ -156,14 +159,12 @@ export default function UntaggedCertCard({
                       : undefined
                   }
                 >
-                  <span
-                    className="ctx-popover-dot"
-                    style={{ background: topic.color }}
-                  >
-                    <span aria-hidden="true">
-                      {getTopicEmoji(topic.id) || '📌'}
-                    </span>
-                  </span>
+                  <TopicBadge
+                    topicId={topic.id}
+                    color={topic.color}
+                    size={22}
+                    title={topic.label}
+                  />
                   <span className="ctx-popover-label">{topic.label}</span>
                   {active && <Check className="h-3.5 w-3.5" />}
                 </button>
