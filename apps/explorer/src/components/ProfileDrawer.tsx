@@ -133,15 +133,62 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     () => computeDiscoveryBuckets(profile.certs),
     [profile.certs],
   )
+  // Merge cert events (initial certification with a verb) and context
+  // additions (later "in context of <topic>" stakes) into one feed so
+  // tagging activity isn't invisible just because the underlying cert
+  // is old. Each kind keeps its own timestamp.
   const lastActivity = useMemo(() => {
-    const byTime = profile.certs
-      .slice()
-      .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
-      .slice(0, 10)
-    return byTime.map((c) => {
+    const certByTerm = new Map(profile.certs.map((c) => [c.termId, c]))
+    type Event =
+      | { kind: 'cert'; cert: (typeof profile.certs)[number]; ts: string }
+      | {
+          kind: 'context'
+          cert: (typeof profile.certs)[number]
+          topicSlug: string
+          topicAtomId: string
+          ts: string
+        }
+    const events: Event[] = []
+    for (const c of profile.certs) {
+      if (c.certifiedAt) events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
+    }
+    for (const ca of profile.contextAdditions) {
+      const cert = certByTerm.get(ca.certTermId)
+      if (!cert || !ca.addedAt) continue
+      events.push({
+        kind: 'context',
+        cert,
+        topicSlug: ca.topicSlug,
+        topicAtomId: ca.topicAtomId,
+        ts: ca.addedAt,
+      })
+    }
+    events.sort((a, b) => (b.ts > a.ts ? 1 : -1))
+    return events.slice(0, 10).map((e) => {
+      const c = e.cert
       const url = c.objectUrl || ''
       const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
       const title = cleanLabel(c.objectLabel || domain || '')
+      const linkUrl =
+        url || (c.objectLabel.startsWith('http') ? c.objectLabel : '')
+      const favicon = domain ? getFaviconUrl(domain) : ''
+
+      if (e.kind === 'context') {
+        const topic = e.topicSlug ? topicById(e.topicSlug) : null
+        const emoji = (e.topicSlug && getTopicEmoji(e.topicSlug)) || '🏷️'
+        const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
+        return {
+          id: `${c.termId}::${e.topicAtomId}`,
+          title,
+          url: linkUrl,
+          domain,
+          favicon,
+          timestamp: e.ts,
+          isOppose: false,
+          actionLabel: `Tagged ${emoji} ${topicLabel} on`,
+        }
+      }
+
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
       // Action verb per intention — keeps the row scannable. Trust /
@@ -158,15 +205,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       return {
         id: c.termId,
         title,
-        url: url || (c.objectLabel.startsWith('http') ? c.objectLabel : ''),
+        url: linkUrl,
         domain,
-        favicon: domain ? getFaviconUrl(domain) : '',
-        timestamp: c.certifiedAt,
+        favicon,
+        timestamp: e.ts,
         isOppose,
         actionLabel,
       }
     })
-  }, [profile])
+  }, [profile, topicById])
 
   const {
     isModalOpen,

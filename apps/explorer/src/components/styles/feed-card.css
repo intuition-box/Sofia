@@ -139,13 +139,14 @@
   font-weight: 700;
   color: var(--ds-ink);
   background: #ffffff;
-  padding: 5px 11px;
-  border-radius: 6px;
+  padding: 4px 11px 4px 6px;
+  border-radius: 999px;
   border: 1px solid var(--ds-border);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   line-height: 1;
 }
 [data-theme='dark'] .fc-tag,

@@ -69,12 +69,10 @@
   padding: 20px;
   height: 100%;
   min-height: 160px;
-  filter: grayscale(0.9) contrast(0.95);
+  /* No grayscale here: the TopicBadge inside is supposed to show the
+     topic's actual colour at all times. The hover affordance now
+     comes from the parent card's transform + border tint. */
   transition: filter 0.3s ease;
-}
-
-.ig-card:hover .ig-card-front {
-  filter: grayscale(0) contrast(1);
 }
 
 .ig-card-emoji {
