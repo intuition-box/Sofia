@@ -11,6 +11,7 @@
 import { useMemo } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { TOPIC_ATOM_IDS } from '@/config/atomIds'
+import TopicBadge from '@/components/profile/TopicBadge'
 import type { CircleItem } from '@/services/circleService'
 import type { CircleTopicCounts } from '@/services/circleTopicCountsService'
 
@@ -59,10 +60,13 @@ export default function CircleTopTopicsCard({
       const atomId = TOPIC_ATOM_IDS[id]
       const alltime = atomId ? counts?.get(atomId) : undefined
       const count = alltime ?? fallbackCounts.get(id) ?? 0
-      return { id, label: topic.label, count }
+      return { id, label: topic.label, color: topic.color, count }
     })
     .filter(
-      (x): x is { id: string; label: string; count: number } => x !== null,
+      (
+        x,
+      ): x is { id: string; label: string; color: string; count: number } =>
+        x !== null,
     )
 
   // Scale bars to the largest count in the visible set (or 1 when empty)
@@ -75,6 +79,12 @@ export default function CircleTopTopicsCard({
       <div className="cr-topics-list">
         {rows.map((r) => (
           <div key={r.id} className="cr-topics-row">
+            <TopicBadge
+              topicId={r.id}
+              color={r.color}
+              size={20}
+              title={r.label}
+            />
             <span className="cr-topics-label">{r.label}</span>
             <span className="cr-topics-num">{r.count}</span>
             <div className="cr-topics-bar">

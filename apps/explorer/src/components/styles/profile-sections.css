@@ -122,6 +122,91 @@
   text-decoration: none;
 }
 
+/* ── Echoes search input ──────────────────────────────────────────
+   Sits between the section title and the sort tabs in .pf-echoes-head.
+   Filters the bento grid by domain substring. Mirrors the platform-
+   market search pill so the look stays consistent across pages. */
+/* Title + search bundled on the left so they sit flush together.
+   `space-between` on the parent .pf-echoes-head pushes EchoesSortTabs
+   to the right edge without affecting this pair. */
+.pf-echoes-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pf-echoes-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 220px;
+  flex: 0 0 auto;
+}
+.pf-echoes-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.pf-echoes-search-input {
+  width: 100%;
+  padding: 7px 32px 7px 36px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pf-echoes-search-input::placeholder {
+  color: var(--ds-muted);
+}
+.pf-echoes-search-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+.pf-echoes-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.pf-echoes-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.pf-echoes-search-clear:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+
+/* The default .pf-echoes-head is `align-items: baseline` — fine for
+   the title + tabs row, but the input pill needs the row to center on
+   its own baseline so the search and tabs line up vertically. */
+.pf-echoes-head:has(.pf-echoes-search) {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* ── Echoes bento card — match the extension's bento style ────────────
  * The DS GroupBentoCard ships with editorial typography (Fraunces stats,
  * 20/22px padding, soft shadows). The extension uses a tighter, denser
@@ -129,10 +214,139 @@
  * animation. We override the explorer's profile Echoes grid to feel
  * 1:1 with the extension's bento layout. */
 
-/* Override the DS .bento-grid-3 row height so the cards keep the
-   extension's denser proportions instead of the editorial 210px row. */
+/* Fixed row height + dense flow so the bento spans (tall/mega) create
+   a real visual hierarchy instead of stretching their first row. Dense
+   flow lets small cards backfill the trailing cells, so the hero can
+   sit anywhere in the user's chosen sort. */
 .bento-grid.bento-grid-3 {
-  grid-auto-rows: auto;
+  grid-auto-rows: 168px;
+  grid-auto-flow: dense;
+}
+
+/* DS default .bento-mega is `span 3 rows` (editorial layout). Inside a
+   3-column Echoes grid this leaves a huge empty band underneath every
+   mega card — collapse it back to 2 rows so the layout breathes. */
+.bento-grid-3 .bento-mega {
+  grid-row: span 2;
+}
+
+/* Tall + mega cards span 2 rows → distribute the inner sections in
+   the extra vertical space instead of bunching at the top. */
+.bento-grid-3 .bento-tall .group-bento-card,
+.bento-grid-3 .bento-mega .group-bento-card {
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Scale internal elements per size — bigger cards = bigger content. */
+.bento-grid-3 .bento-tall .group-bento-card {
+  padding: 18px;
+}
+.bento-grid-3 .bento-tall .group-bento-favicon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+.bento-grid-3 .bento-tall .group-bento-title {
+  font-size: 17px;
+}
+.bento-grid-3 .bento-tall .group-bento-stats .stat-value {
+  font-size: 18px;
+}
+
+.bento-grid-3 .bento-mega .group-bento-card {
+  padding: 22px;
+}
+.bento-grid-3 .bento-mega .group-bento-favicon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+}
+.bento-grid-3 .bento-mega .group-bento-title {
+  font-size: 22px;
+}
+.bento-grid-3 .bento-mega .group-bento-stats .stat-value {
+  font-size: 24px;
+}
+.bento-grid-3 .bento-mega .level-badge {
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+/* ── Tall/Mega backdrops ───────────────────────────────────────────
+   Larger bento cards get a backdrop image via `--echoes-bento-bg`
+   (set inline by LastActivitySection). Two flavours:
+
+   - .echoes-bento-thumb: YouTube hqdefault. Image dominates, dimmed
+     gradient overlay keeps the white text readable on bright frames.
+
+   - .echoes-bento-favicon-bg: heavily-blurred favicon — just a brand
+     tint behind the existing card content. Stays subtle so the card
+     reads like a normal Echoes card with a coloured aura. */
+
+.bento-grid-3 .group-bento-card.echoes-bento-thumb,
+.bento-grid-3 .group-bento-card.echoes-bento-favicon-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-grid-3 .group-bento-card.echoes-bento-thumb::before,
+.bento-grid-3 .group-bento-card.echoes-bento-favicon-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--echoes-bento-bg);
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Thumb — moderate blur + dark gradient via ::after for legibility.
+   transform: scale(1.06) hides the blurred edges leaking past inset 0. */
+.bento-grid-3 .group-bento-card.echoes-bento-thumb::before {
+  filter: blur(2px) brightness(0.55);
+  transform: scale(1.06);
+}
+.bento-grid-3 .group-bento-card.echoes-bento-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Favicon — heavily blurred + low opacity = ambient brand wash. */
+.bento-grid-3 .group-bento-card.echoes-bento-favicon-bg::before {
+  filter: blur(32px) saturate(1.4) opacity(0.4);
+  transform: scale(1.6);
+}
+
+/* Lift the actual card content above the backdrop layers. Direct
+   children only — descendants inherit their own stacking inside. */
+.bento-grid-3 .group-bento-card.echoes-bento-thumb > *,
+.bento-grid-3 .group-bento-card.echoes-bento-favicon-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* On thumb backdrops the existing --ds-ink palette becomes unreadable
+   against the photo. Force white text + a soft text-shadow so the
+   title/stats survive whatever frame YouTube returned. */
+.bento-grid-3 .group-bento-card.echoes-bento-thumb .group-bento-title,
+.bento-grid-3 .group-bento-card.echoes-bento-thumb .stat-value {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.bento-grid-3 .group-bento-card.echoes-bento-thumb .stat-label,
+.bento-grid-3 .group-bento-card.echoes-bento-thumb .progress-label,
+.bento-grid-3 .group-bento-card.echoes-bento-thumb .group-bento-predicate {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* The DS ships .bento-card with its own border + border-radius +
@@ -853,4 +1067,78 @@
   font-size: 32px;
   color: rgba(0, 0, 0, 0.7);
   letter-spacing: -0.02em;
+}
+
+/* ── Context Manager banner ──────────────────────────────────────── */
+/* Surfaces under the wallet banners on /profile when the user has
+   tagable certs without an `in context of` triple. Renders as a
+   button-styled row so the whole strip is clickable. */
+.pp-context-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  margin: 0 0 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #a78bdb 14%, var(--ds-card));
+  border: 1px solid color-mix(in srgb, #a78bdb 35%, var(--ds-border));
+  cursor: pointer;
+  text-align: left;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  transition: all 0.15s ease;
+}
+.pp-context-banner:hover {
+  transform: translateY(-1px);
+  border-color: #a78bdb;
+  box-shadow: 0 6px 20px color-mix(in srgb, #a78bdb 20%, transparent);
+}
+.pp-context-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #a78bdb 25%, var(--ds-card));
+  color: var(--ds-ink);
+  flex-shrink: 0;
+}
+.pp-context-banner-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ds-ink);
+}
+.pp-context-banner-text strong {
+  font-weight: 700;
+}
+.pp-context-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ── TopicBadge ───────────────────────────────────────────────────── */
+/* Coloured disc + emoji used across the profile surfaces (drawer
+   legend, interests grid, compose, context manager, etc.). The
+   width/height/font-size are set inline by the component so callers
+   can pick a size without a CSS variable round-trip. */
+.topic-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }

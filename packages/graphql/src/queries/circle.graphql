@@ -197,6 +197,38 @@ query GetCertTopicLinks(
   }
 }
 
+# Step 2b: same "in context of" nested triples, restricted to those the
+# user actually staked on — with the user's earliest position timestamp.
+# Drives "Tagged X with topic Y" rows in the ProfileDrawer activity feed.
+# `positions` is filtered+ordered+limited to the user's first share so
+# the row count stays bounded.
+query GetUserContextAdditions(
+  $userAddresses: [String!]!
+  $certTermIds: [String!]!
+  $topicAtomIds: [String!]!
+  $limit: Int = 50000
+) {
+  triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      subject_id: { _in: $certTermIds }
+      object_id: { _in: $topicAtomIds }
+      positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+    }
+    limit: $limit
+  ) {
+    subject_id
+    object_id
+    positions(
+      where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 1
+    ) {
+      created_at
+    }
+  }
+}
+
 # Master query for the on-chain profile: every cert triple where the user
 # holds shares > 0, paginated. Returns enough metadata to drive the
 # calendar (timestamp + topic), the radar (intention + topic), the

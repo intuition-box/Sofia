@@ -1,0 +1,386 @@
+/**
+ * Context Manager — bulk-tag UI for adding `in context of <topic>`
+ * to the user's untagged certifications. Layout pinches the
+ * `.pf-view` container, then renders a stats row + grouped list +
+ * sticky footer.
+ */
+
+.main-content:has(.ctx-page) {
+  margin-right: 0;
+}
+.pf-view.ctx-page {
+  max-width: none;
+}
+
+/* ── Stats row ────────────────────────────────────────────────────── */
+
+.ctx-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 16px 0 20px;
+}
+.ctx-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+}
+.ctx-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  line-height: 1;
+}
+.ctx-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+
+/* ── Empty / loading ─────────────────────────────────────────────── */
+
+.ctx-loading,
+.ctx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  text-align: center;
+}
+.ctx-empty-title {
+  margin: 4px 0 0;
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.ctx-empty-sub {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+}
+
+/* ── Domain groups ───────────────────────────────────────────────── */
+
+.ctx-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 96px;
+}
+.ctx-group {
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ctx-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--ds-bg-subtle);
+  border-bottom: 1px solid var(--ds-border);
+}
+.ctx-group-domain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.ctx-group-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Grid: responsive 3-column on wide screens, falls back to 2 / 1
+   as the viewport tightens. Inside each domain group so users still
+   see the URL clusters at a glance. */
+.ctx-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 14px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+
+.ctx-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  transition: all 0.15s ease;
+}
+.ctx-card:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
+}
+.ctx-card--active {
+  background: color-mix(in srgb, var(--ds-accent) 8%, var(--ds-card));
+  border-color: color-mix(in srgb, var(--ds-accent) 40%, var(--ds-border));
+}
+
+.ctx-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ctx-card-favicon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--ds-bg-subtle);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.ctx-card-favicon--fallback {
+  display: inline-block;
+}
+.ctx-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.ctx-card-title {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ctx-card-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Selected-topic chips rendered inside the card. */
+.ctx-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ctx-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 16%,
+    var(--ds-bg-subtle)
+  );
+  border: 1px solid color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 40%,
+    var(--ds-border)
+  );
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ctx-card-tag:hover {
+  background: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 28%,
+    var(--ds-bg-subtle)
+  );
+}
+.ctx-card-tag-remove {
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 2px;
+  opacity: 0.6;
+}
+.ctx-card-tag:hover .ctx-card-tag-remove {
+  opacity: 1;
+}
+
+/* "Add topics" / "Edit topics" button — opens the picker popover. */
+.ctx-card-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.15s ease;
+}
+.ctx-card-add:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+  border-style: solid;
+}
+.ctx-card--active .ctx-card-add {
+  border-style: solid;
+  color: var(--ds-ink);
+}
+
+/* ── Topic picker popover ────────────────────────────────────────── */
+
+.ctx-popover {
+  width: 260px;
+  padding: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+.ctx-popover-title {
+  margin: 4px 6px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.ctx-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ctx-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink-soft);
+  text-align: left;
+  transition: all 0.12s ease;
+}
+.ctx-popover-item:hover {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+}
+.ctx-popover-item--active {
+  background: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 14%,
+    var(--ds-bg-subtle)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 35%,
+    var(--ds-border)
+  );
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.ctx-popover-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.ctx-popover-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Sticky footer ────────────────────────────────────────────────── */
+
+.ctx-sticky-footer {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: var(--ds-ink);
+  z-index: 50;
+}
+.ctx-sticky-footer strong {
+  font-weight: 700;
+}
+.ctx-open-cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ctx-open-cart:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}

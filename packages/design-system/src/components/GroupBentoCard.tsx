@@ -131,19 +131,22 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
         </div>
       </div>
 
+      {/* Stats — every URL surfaced here is on-chain by definition, so
+          the legacy "URLs vs On-chain" split collapsed into a single
+          count. The "Time" stat is optional: it only renders when the
+          caller supplies a non-empty `timeLabel`, since attention
+          time isn't measurable in every context. */}
       <div className="group-bento-stats">
         <div className="stat-item">
-          <span className="stat-value">{activeUrlCount}</span>
+          <span className="stat-value">{certifiedCount || activeUrlCount}</span>
           <span className="stat-label">URLs</span>
         </div>
-        <div className="stat-item">
-          <span className="stat-value">{certifiedCount}</span>
-          <span className="stat-label">On-chain</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">{timeLabel}</span>
-          <span className="stat-label">Time</span>
-        </div>
+        {timeLabel ? (
+          <div className="stat-item">
+            <span className="stat-value">{timeLabel}</span>
+            <span className="stat-label">Time</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="group-bento-progress">

@@ -23,6 +23,7 @@ import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import TopicBadge from './profile/TopicBadge'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
@@ -132,40 +133,95 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     () => computeDiscoveryBuckets(profile.certs),
     [profile.certs],
   )
+  // Merge cert events (initial certification with a verb) and context
+  // additions (later "in context of <topic>" stakes) into one feed so
+  // tagging activity isn't invisible just because the underlying cert
+  // is old. Each kind keeps its own timestamp.
   const lastActivity = useMemo(() => {
-    const byTime = profile.certs
-      .slice()
-      .sort((a, b) => (b.certifiedAt > a.certifiedAt ? 1 : -1))
-      .slice(0, 10)
-    return byTime.map((c) => {
+    const certByTerm = new Map(profile.certs.map((c) => [c.termId, c]))
+    type Event =
+      | { kind: 'cert'; cert: (typeof profile.certs)[number]; ts: string }
+      | {
+          kind: 'context'
+          cert: (typeof profile.certs)[number]
+          topicSlug: string
+          topicAtomId: string
+          ts: string
+        }
+    const events: Event[] = []
+    for (const c of profile.certs) {
+      if (c.certifiedAt) events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
+    }
+    for (const ca of profile.contextAdditions) {
+      const cert = certByTerm.get(ca.certTermId)
+      if (!cert || !ca.addedAt) continue
+      events.push({
+        kind: 'context',
+        cert,
+        topicSlug: ca.topicSlug,
+        topicAtomId: ca.topicAtomId,
+        ts: ca.addedAt,
+      })
+    }
+    events.sort((a, b) => (b.ts > a.ts ? 1 : -1))
+    return events.slice(0, 10).map((e) => {
+      const c = e.cert
       const url = c.objectUrl || ''
       const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
       const title = cleanLabel(c.objectLabel || domain || '')
+      const linkUrl =
+        url || (c.objectLabel.startsWith('http') ? c.objectLabel : '')
+      const favicon = domain ? getFaviconUrl(domain) : ''
+
+      if (e.kind === 'context') {
+        const topic = e.topicSlug ? topicById(e.topicSlug) : null
+        const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
+        return {
+          id: `${c.termId}::${e.topicAtomId}`,
+          title,
+          url: linkUrl,
+          domain,
+          favicon,
+          timestamp: e.ts,
+          isOppose: false,
+          // Surface the topic as a structured payload so the row can
+          // render a coloured <TopicBadge> inline instead of dropping
+          // a raw emoji into the action-label string.
+          actionPrefix: 'Tagged',
+          actionSuffix: 'on',
+          topic: e.topicSlug
+            ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
+            : null,
+        }
+      }
+
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
       // Action verb per intention — keeps the row scannable. Trust /
       // distrust read as social signals; visits_for_* read as topical
       // marks. Fallback to "Certified" so any future predicate the
       // indexer surfaces still renders something coherent.
-      let actionLabel = 'Certified'
-      if (intentionLower === 'trusts') actionLabel = 'Trusted'
-      else if (isOppose) actionLabel = 'Distrusted'
+      let actionPrefix = 'Certified'
+      if (intentionLower === 'trusts') actionPrefix = 'Trusted'
+      else if (isOppose) actionPrefix = 'Distrusted'
       else if (intentionLower.startsWith('visits for ')) {
         const tail = intentionLower.slice('visits for '.length)
-        actionLabel = `Marked for ${tail}`
+        actionPrefix = `Marked for ${tail}`
       }
       return {
         id: c.termId,
         title,
-        url: url || (c.objectLabel.startsWith('http') ? c.objectLabel : ''),
+        url: linkUrl,
         domain,
-        favicon: domain ? getFaviconUrl(domain) : '',
-        timestamp: c.certifiedAt,
+        favicon,
+        timestamp: e.ts,
         isOppose,
-        actionLabel,
+        actionPrefix,
+        actionSuffix: '',
+        topic: null,
       }
     })
-  }, [profile])
+  }, [profile, topicById])
 
   const {
     isModalOpen,
@@ -233,9 +289,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
   return (
     <>
-      <aside
-        className={`right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}
-      >
+      <aside className={`pd-aside ${isOpen ? 'pd-open' : ''}`}>
         <div className="flex flex-col">
           {/* Banner — avatar + name + share + journey CTA */}
           <div className="pd-banner">
@@ -276,19 +330,46 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <>
                 <TopicScorePie slices={pieSlices} />
                 <div className="pd-ts-legend">
-                  {pieSlices.map((t) => (
-                    <span
-                      key={t.id}
-                      className="pd-ts-legend-item"
-                      style={{ ['--slice-color' as string]: t.color }}
-                    >
-                      <span className="pd-ts-legend-dot" />
-                      <span className="pd-ts-legend-label">
-                        {t.emoji} {t.label}
+                  {pieSlices.map((t) => {
+                    const inner = (
+                      <>
+                        <TopicBadge
+                          topicId={t.id}
+                          color={t.color}
+                          size={18}
+                          title={t.label}
+                        />
+                        <span className="pd-ts-legend-label">{t.label}</span>
+                        <span className="pd-ts-legend-val">{t.score}</span>
+                      </>
+                    )
+                    // The "general" slice is the only one with an
+                    // actionable next step — open the Context Manager
+                    // so the user can tag the URLs that landed in it.
+                    if (t.id === 'general') {
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className="pd-ts-legend-item pd-ts-legend-item--link"
+                          style={{ ['--slice-color' as string]: t.color }}
+                          onClick={() => navigate('/profile/context-manager')}
+                          title="Add topic context to these certs"
+                        >
+                          {inner}
+                        </button>
+                      )
+                    }
+                    return (
+                      <span
+                        key={t.id}
+                        className="pd-ts-legend-item"
+                        style={{ ['--slice-color' as string]: t.color }}
+                      >
+                        {inner}
                       </span>
-                      <span className="pd-ts-legend-val">{t.score}</span>
-                    </span>
-                  ))}
+                    )
+                  })}
                 </div>
               </>
             ) : (
@@ -317,35 +398,42 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                   value: discoveryBuckets.pioneer.length,
                   icon: '/badges/pioneer.png',
                   color: '#e4b95a',
+                  to: '/scores/badges/pioneer',
                 },
                 {
                   label: 'Explorer',
                   value: discoveryBuckets.explorer.length,
                   icon: '/badges/explorer.png',
                   color: '#5cc4d6',
+                  to: '/scores/badges/explorer',
                 },
                 {
                   label: 'Contributor',
                   value: discoveryBuckets.contributor.length,
                   icon: '/badges/contributor.png',
                   color: '#a78bdb',
+                  to: '/scores/badges/contributor',
                 },
                 {
                   label: 'Trusted',
                   value: trustedCount,
                   icon: '/badges/trust.png',
                   color: '#6dd4a0',
+                  to: '/scores',
                 },
               ].map((b) => (
-                <div
+                <button
                   key={b.label}
+                  type="button"
                   className="pd-badge-card"
                   style={{ ['--badge-color' as string]: b.color }}
+                  onClick={() => navigate(b.to)}
+                  title={`View ${b.label} details`}
                 >
                   <img src={b.icon} alt={b.label} className="pd-badge-icon" />
                   <span className="pd-badge-label">{b.label}</span>
                   <span className="pd-badge-value">{b.value}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -357,7 +445,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
                   const isOppose = a.isOppose
-                  const actionLabel = a.actionLabel
                   const root = a.domain
                   return (
                     <a
@@ -419,7 +506,22 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       </span>
                       <span className="pd-la-text">
                         <span className="pd-la-title">
-                          {actionLabel} <strong>{a.title}</strong>
+                          {a.actionPrefix}{' '}
+                          {a.topic && (
+                            <>
+                              <TopicBadge
+                                topicId={a.topic.id}
+                                color={a.topic.color || 'var(--ds-muted)'}
+                                size={14}
+                                title={a.topic.label}
+                              />{' '}
+                              <span className="pd-la-topic-label">
+                                {a.topic.label}
+                              </span>{' '}
+                            </>
+                          )}
+                          {a.actionSuffix ? `${a.actionSuffix} ` : ''}
+                          <strong>{a.title}</strong>
                         </span>
                         <span className="pd-la-sub">
                           {root}

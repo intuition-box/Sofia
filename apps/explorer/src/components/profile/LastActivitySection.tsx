@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   GroupBentoCard,
@@ -14,7 +15,23 @@ import {
 import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import { getFaviconUrl } from '@/utils/favicon'
+import { extractYouTubeId, getYouTubeThumbnail } from '@/utils/youtube'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
+
+/** Pick a backdrop image for the bigger (tall/mega) bento cards. Walks
+ *  the group's recorded URLs looking for a YouTube video — if found,
+ *  returns the public thumbnail. Otherwise falls back to a large favicon
+ *  which the CSS heavily blurs into a brand-coloured tint. */
+function getEchoesBackdrop(
+  group: IntentionGroupWithStats,
+): { url: string; kind: 'thumb' | 'favicon' } {
+  for (const u of group.urls) {
+    if (!u.fullUrl) continue
+    const ytId = extractYouTubeId(u.fullUrl)
+    if (ytId) return { url: getYouTubeThumbnail(ytId), kind: 'thumb' }
+  }
+  return { url: getFaviconUrl(group.domain, 128), kind: 'favicon' }
+}
 
 interface LastActivitySectionProps {
   /** Pre-built activity inputs — caller derives them from the master profile. */
@@ -29,6 +46,8 @@ interface LastActivitySectionProps {
    *  connected user. Public profile pages pass this through; the
    *  personal profile leaves it `undefined`. */
   viewedAddress?: string
+  /** Optional case-insensitive substring filter on the group domain. */
+  searchQuery?: string
 }
 
 /** Build the prop bag consumed by the presentational <GroupBentoCard>. */
@@ -49,10 +68,14 @@ function toCardProps(g: IntentionGroupWithStats) {
   return {
     domain: g.domain,
     faviconSrc: getFaviconUrl(g.domain),
-    currentPredicate: g.currentPredicate,
+    // The italic predicate line was noise — every cert on a card
+    // already exposes its intention through the colored cert dots.
+    currentPredicate: null,
     activeUrlCount: g.activeUrlCount,
     certifiedCount: g.certifiedCount,
-    timeLabel: formatDuration(g.totalAttentionTime),
+    // Attention time isn't measurable here (no extension context),
+    // so we skip the "0s" stat entirely.
+    timeLabel: '',
     level: g.level,
     levelColor: getLevelColor(g.level),
     levelColorAlpha: getLevelColorAlpha(g.level),
@@ -72,8 +95,37 @@ export default function LastActivitySection({
   sort = 'platform',
   linkable = true,
   viewedAddress,
+  searchQuery,
 }: LastActivitySectionProps) {
   const groups = useIntentionGroups(activities, { sort })
+  const trimmed = searchQuery?.trim().toLowerCase() ?? ''
+  const filteredGroups = useMemo(() => {
+    if (!trimmed) return groups
+    return groups.filter((g) => g.domain.toLowerCase().includes(trimmed))
+  }, [groups, trimmed])
+
+  // Bento sizing — promote the highest-level groups to span more cells.
+  // Picked from a level/cert-count ranking (NOT array position) so the
+  // hero is stable across sort changes. The grid uses `grid-auto-flow:
+  // dense`, so the hero stays where the user's sort put it and CSS
+  // reflows small cards to fill the spans cleanly.
+  const sizedGroups = useMemo(() => {
+    const ranked = [...filteredGroups].sort((a, b) => {
+      if (b.level !== a.level) return b.level - a.level
+      return (b.certifiedCount || 0) - (a.certifiedCount || 0)
+    })
+    const sizes = new Map<string, 'small' | 'tall' | 'mega'>()
+    if (filteredGroups.length >= 8 && ranked[0]) {
+      sizes.set(ranked[0].id, 'mega')
+      if (ranked[1]) sizes.set(ranked[1].id, 'tall')
+    } else if (filteredGroups.length >= 4 && ranked[0]) {
+      sizes.set(ranked[0].id, 'tall')
+    }
+    return filteredGroups.map((g) => ({
+      group: g,
+      size: sizes.get(g.id) ?? ('small' as const),
+    }))
+  }, [filteredGroups])
 
   if (loading) {
     return (
@@ -85,11 +137,13 @@ export default function LastActivitySection({
     )
   }
 
-  if (groups.length === 0) {
+  if (filteredGroups.length === 0) {
     return (
       <div className="groups-empty">
         <p className="text-sm text-muted-foreground">
-          No activity yet. Start certifying pages with Sofia!
+          {trimmed
+            ? `No echoes match “${searchQuery}”.`
+            : 'No activity yet. Start certifying pages with Sofia!'}
         </p>
       </div>
     )
@@ -99,17 +153,36 @@ export default function LastActivitySection({
     <div className="triples-container">
       <div className="groups-section">
         <div className="bento-grid bento-grid-3">
-          {groups.map((g) => {
-            if (!linkable) {
-              return <GroupBentoCard key={g.id} {...toCardProps(g)} />
+          {sizedGroups.map(({ group: g, size }) => {
+            // Only the spanning cards (tall/mega) get a backdrop — small
+            // cards stay clean. Backdrop is exposed via a CSS custom
+            // property so the pseudo-element in profile-sections.css can
+            // pick it up without leaking a prop into the DS component.
+            const backdrop = size === 'small' ? null : getEchoesBackdrop(g)
+            const bentoClass = backdrop
+              ? backdrop.kind === 'thumb'
+                ? 'echoes-bento-thumb'
+                : 'echoes-bento-favicon-bg'
+              : undefined
+            const bentoStyle = backdrop
+              ? ({
+                  ['--echoes-bento-bg' as string]: `url(${backdrop.url})`,
+                } as React.CSSProperties)
+              : undefined
+            const cardProps = {
+              ...toCardProps(g),
+              size,
+              className: bentoClass,
+              style: bentoStyle,
             }
+            if (!linkable) return <GroupBentoCard key={g.id} {...cardProps} />
             const base = `/profile/platform/${encodeURIComponent(g.domain)}`
             const href = viewedAddress
               ? `${base}?address=${viewedAddress}`
               : base
             return (
               <Link key={g.id} to={href} className="echoes-card-link">
-                <GroupBentoCard {...toCardProps(g)} />
+                <GroupBentoCard {...cardProps} />
               </Link>
             )
           })}

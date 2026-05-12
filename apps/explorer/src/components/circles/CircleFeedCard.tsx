@@ -22,6 +22,7 @@ import {
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
+import TopicBadge from '@/components/profile/TopicBadge'
 
 interface CircleFeedCardProps {
   item: CircleItem
@@ -77,9 +78,15 @@ export default function CircleFeedCard({
     .filter((l) => !l.startsWith('quest:'))
     .slice(0, 2)
 
+  // Keep the id alongside the short label so the badge can resolve
+  // the topic colour without a second lookup.
   const topicTags = item.topicContexts
-    .map((id) => topicById(id)?.label?.split(' ')[0])
-    .filter((x): x is string => !!x)
+    .map((id) => {
+      const t = topicById(id)
+      if (!t) return null
+      return { id, label: t.label.split(' ')[0], color: t.color }
+    })
+    .filter((x): x is { id: string; label: string; color: string } => !!x)
     .slice(0, 2)
 
   // Aggregated position counts and user state across all intention vaults.
@@ -171,8 +178,14 @@ export default function CircleFeedCard({
       <div className="fc-bottom">
         <div className="fc-tags">
           {topicTags.map((t) => (
-            <span key={t} className="fc-tag">
-              {t}
+            <span key={t.id} className="fc-tag">
+              <TopicBadge
+                topicId={t.id}
+                color={t.color}
+                size={14}
+                title={t.label}
+              />
+              {t.label}
             </span>
           ))}
           {verbs.map((label) => {

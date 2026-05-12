@@ -21,6 +21,7 @@ const GC_TIME_MS = 60 * 60 * 1000
 const EMPTY: UserOnChainProfile = {
   certs: [],
   topicContextsByTerm: new Map(),
+  contextAdditions: [],
 }
 
 interface Result {
@@ -38,14 +39,15 @@ interface Result {
 interface PersistedProfile {
   certs: UserOnChainProfile['certs']
   topicContextsRecord: Record<string, string[]>
+  contextAdditions: UserOnChainProfile['contextAdditions']
 }
 
 async function fetchPersisted(addresses: string[]): Promise<PersistedProfile> {
-  const { certs, topicContextsByTerm } =
+  const { certs, topicContextsByTerm, contextAdditions } =
     await fetchUserOnChainProfile(addresses)
   const topicContextsRecord: Record<string, string[]> = {}
   for (const [k, v] of topicContextsByTerm) topicContextsRecord[k] = v
-  return { certs, topicContextsRecord }
+  return { certs, topicContextsRecord, contextAdditions }
 }
 
 export function useUserOnChainProfile(
@@ -94,7 +96,11 @@ export function useUserOnChainProfile(
   )
 
   return {
-    profile: { certs, topicContextsByTerm },
+    profile: {
+      certs,
+      topicContextsByTerm,
+      contextAdditions: data.contextAdditions ?? [],
+    },
     isLoading: false,
     error: null,
     refresh: () => {

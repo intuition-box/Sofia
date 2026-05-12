@@ -3,12 +3,12 @@
  * extras (Trust Circle section) kept. Proto tokens remapped to --ds-*. */
 
 .pd-aside {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   width: 350px;
-  min-height: 100%;
+  height: 100vh;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);
   background: linear-gradient(
@@ -23,6 +23,17 @@
     transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.35s ease;
   pointer-events: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+.pd-aside::-webkit-scrollbar {
+  width: 6px;
+}
+.pd-aside::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 3px;
 }
 .pd-aside.pd-open {
   transform: translateX(0);
@@ -198,9 +209,12 @@
 }
 .pd-ts-legend-item {
   display: grid;
-  grid-template-columns: 8px 1fr auto;
+  /* `auto` for the leading TopicBadge so its 18px disc no longer
+     overflows into the label column — the previous fixed 8px slot
+     was sized for the old dot indicator. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 11px;
 }
 .pd-ts-legend-dot {
@@ -283,6 +297,24 @@
      color still tints the surface enough to read at a glance. */
   background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
   border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+.pd-badge-card:hover {
+  background: color-mix(in srgb, var(--badge-color) 14%, var(--ds-card));
+  transform: translateY(-1px);
+}
+.pd-badge-card:focus-visible {
+  outline: 2px solid var(--badge-color);
+  outline-offset: 2px;
+}
+.pd-badge-card:active {
+  transform: translateY(0);
 }
 .pd-badge-icon {
   width: 40px;
@@ -547,4 +579,33 @@ a.pd-la-row:hover {
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
+}
+
+/* "General" pie slice gets a button-like affordance so the user
+   knows it's actionable (jumps to the Context Manager). */
+button.pd-ts-legend-item {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+.pd-ts-legend-item--link {
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.pd-ts-legend-item--link:hover {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.pd-ts-legend-item--link::after {
+  content: '→';
+  margin-left: 6px;
+  color: var(--ds-muted);
+  font-weight: 600;
 }

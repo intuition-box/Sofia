@@ -75,11 +75,11 @@ function CirclesListSection() {
       <CirclesFilters />
 
       <div className="cr-grid">
+        <CreateCircleCard onClick={() => setCreateOpen(true)} />
         <TrustCircleCard members={trustMembers} loading={trustLoading} />
         {joinedGroups.map((g) => (
           <GroupCard key={g.termId} group={g} />
         ))}
-        <CreateCircleCard onClick={() => setCreateOpen(true)} />
       </div>
 
       <DiscoverGroupsSection

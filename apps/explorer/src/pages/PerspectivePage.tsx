@@ -14,9 +14,9 @@ import { PageHero } from '@0xsofia/design-system'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useGroups } from '@/hooks/useGroups'
 import { usePerspective } from '@/hooks/usePerspective'
-import { getTopicEmoji } from '@/config/topicEmoji'
 import { INTENTION_CONFIG } from '@/config/intentions'
 import PerspectiveItemCard from '@/components/perspective/PerspectiveItemCard'
+import TopicBadge from '@/components/profile/TopicBadge'
 import type { CompareMode } from '@/lib/compileActionAnims'
 import '@/components/styles/pages.css'
 import '@/components/styles/perspective.css'
@@ -179,7 +179,12 @@ export default function PerspectivePage() {
                         : undefined
                     }
                   >
-                    <span aria-hidden="true">{getTopicEmoji(id) || '📌'}</span>
+                    <TopicBadge
+                      topicId={id}
+                      color={topic?.color ?? 'var(--ds-muted)'}
+                      size={18}
+                      title={topic?.label}
+                    />
                     {topic?.label ?? id}
                   </span>
                 )

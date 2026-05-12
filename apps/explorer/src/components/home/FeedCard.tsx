@@ -16,6 +16,11 @@ import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
+import TopicBadge from '@/components/profile/TopicBadge'
+
+function topicMeta(slug: string) {
+  return SOFIA_TOPICS.find((t) => t.id === slug)
+}
 
 interface FeedCardProps {
   item: CircleItem
@@ -23,10 +28,6 @@ interface FeedCardProps {
   avatar: string
   isPrivate?: boolean
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
-}
-
-function topicLabel(slug: string): string {
-  return SOFIA_TOPICS.find((t) => t.id === slug)?.label ?? slug
 }
 
 /** Proto verb-tag class is lowercase — Sofia intentions come capitalised. */
@@ -93,11 +94,20 @@ export default function FeedCard({
 
       <div className="fc-bottom">
         <div className="fc-tags">
-          {item.topicContexts?.slice(0, 2).map((slug) => (
-            <span key={slug} className="fc-tag">
-              {topicLabel(slug)}
-            </span>
-          ))}
+          {item.topicContexts?.slice(0, 2).map((slug) => {
+            const meta = topicMeta(slug)
+            return (
+              <span key={slug} className="fc-tag">
+                <TopicBadge
+                  topicId={slug}
+                  color={meta?.color ?? 'var(--ds-muted)'}
+                  size={14}
+                  title={meta?.label}
+                />
+                {meta?.label ?? slug}
+              </span>
+            )
+          })}
           {item.intentions.map((intent) => (
             <span
               key={intent}
