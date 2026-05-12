@@ -562,5 +562,12 @@ export const ATOM_ID_TO_PLATFORM = new Map(
 export const HAS_TAG_PREDICATE_ID =
   '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
 
+/** "in context of" — predicate used by nested triples that link a
+ *  certification to one or more topics. Used by the Context Manager
+ *  to add topic tags to certs that were minted without an
+ *  `in context of` link. */
+export const IN_CONTEXT_OF_PREDICATE_ID =
+  '0x892054b01d389bfe566166120470f572a56e3d4cd88c599b52c4708949625390'
+
 // Topic term IDs as array (for GraphQL batch queries)
 export const TOPIC_TERM_IDS = Object.values(TOPIC_ATOM_IDS)
