@@ -20,7 +20,7 @@ import ProfileCharts from '../components/profile/ProfileCharts'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User, Tags, ArrowUpRight } from 'lucide-react'
+import { Wallet, User, Tags, ArrowUpRight, Search, X } from 'lucide-react'
 import {
   PageHero,
   SectionH2,
@@ -110,6 +110,7 @@ export default function ProfilePage() {
     ? address.slice(0, 6) + '...' + address.slice(-4)
     : ''
   const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
+  const [echoesSearch, setEchoesSearch] = useState('')
   const heroDescription = isViewingAs
     ? 'Exploring this wallet — pick an interest to dive in.'
     : address
@@ -214,13 +215,40 @@ export default function ProfilePage() {
         {/* Echoes */}
         <section className="pp-section">
           <div className="pf-echoes-head">
-            <SectionH2>Echoes</SectionH2>
+            <div className="pf-echoes-head-left">
+              <SectionH2>Echoes</SectionH2>
+              <div className="pf-echoes-search">
+                <Search
+                  className="pf-echoes-search-icon h-3.5 w-3.5"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  className="pf-echoes-search-input"
+                  placeholder="Search echoes…"
+                  value={echoesSearch}
+                  onChange={(e) => setEchoesSearch(e.target.value)}
+                  aria-label="Search echoes"
+                />
+                {echoesSearch ? (
+                  <button
+                    type="button"
+                    className="pf-echoes-search-clear"
+                    onClick={() => setEchoesSearch('')}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
+            </div>
             <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={profileLoading}
             sort={echoesSort}
+            searchQuery={echoesSearch}
           />
         </section>
       </div>
