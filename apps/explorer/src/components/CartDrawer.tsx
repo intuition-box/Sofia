@@ -137,13 +137,14 @@ export default function CartDrawer({
                     </p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5"
+                        className="font-semibold px-1.5 py-[1px] leading-none"
                         style={{
+                          fontSize: 8,
                           backgroundColor: `${color}20`,
                           borderWidth: '1px',
                           borderStyle: 'solid',
                           borderColor: `${color}40`,
-                          borderRadius: '6px',
+                          borderRadius: '4px',
                         }}
                       >
                         {item.intention}
@@ -152,6 +153,7 @@ export default function CartDrawer({
                         style={{
                           fontSize: 10,
                           fontWeight: 700,
+                          lineHeight: 1,
                           color:
                             item.side === 'support' ? '#10B981' : '#EF4444',
                         }}

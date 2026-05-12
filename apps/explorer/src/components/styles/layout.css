@@ -26,6 +26,13 @@ body:has(.pd-aside.pd-open) .main-content {
   margin-right: 350px;
 }
 
+/* CartDrawer is 333px wide (.cd-aside). When open, push the main's right
+   margin so the cart never overlaps page content — mirrors ProfileDrawer.
+   Specificity beats any `.main-content:has(.<page>)` full-width overrides. */
+body:has(.cd-aside.cd-open) .main-content {
+  margin-right: 333px;
+}
+
 /* ── RightSidebar ── */
 .rs-aside {
   width: 290px;
