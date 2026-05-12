@@ -20,6 +20,7 @@ import {
   getUrlPreview,
   type UrlPreview as UrlPreviewData,
 } from '@/utils/urlPreview'
+import { useUrlPreviewAsync } from '@/hooks/useUrlPreviewAsync'
 import './styles/url-preview.css'
 
 type UrlPreviewVariant = 'card' | 'thumb'
@@ -49,11 +50,18 @@ export function UrlPreview({
   alt,
   className,
 }: UrlPreviewProps) {
-  const data = preview ?? getUrlPreview(url, domain)
+  // Sync resolution first — instant render with YouTube thumb / GitHub
+  // OG card / favicon fallback. No flash, no layout shift.
+  const sync = preview ?? getUrlPreview(url, domain)
+  // Background upgrade for URLs covered by async providers (Spotify
+  // oEmbed, Vimeo, SoundCloud, universal OG proxy). When the caller
+  // passes a pre-resolved `preview`, we skip the async path entirely.
+  const { data: asyncPreview } = useUrlPreviewAsync(preview ? undefined : url)
+  const data = asyncPreview ?? sync
   const [errored, setErrored] = useState(false)
-  // When the thumb fails (deleted video, broken endpoint), swap to the
-  // favicon fallback for the domain. Computed lazily on error so the
-  // happy path stays a single render with no extra work.
+  // When the thumb 404s (deleted video, broken endpoint), fall back to
+  // the favicon for the domain. Computed lazily on error so the happy
+  // path stays a single render with no extra work.
   const effective: UrlPreviewData =
     errored && data.kind === 'thumb'
       ? getUrlPreview(undefined, domain || extractHost(url))

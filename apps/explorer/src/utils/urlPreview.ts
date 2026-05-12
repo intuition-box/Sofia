@@ -16,6 +16,7 @@
 
 import { extractDomain } from './formatting'
 import { getFaviconUrl } from './favicon'
+import { getGithubPreview } from './github'
 import { extractYouTubeId, getYouTubeThumbnail } from './youtube'
 
 /** Discriminator describing how the preview should be rendered.
@@ -51,7 +52,11 @@ export function getUrlPreview(
         alt: 'YouTube thumbnail',
       }
     }
-    // Future providers slot in here — Spotify oEmbed, GitHub OG, etc.
+    const gh = getGithubPreview(pageUrl)
+    if (gh) return gh
+    // Async providers (Spotify oEmbed, Vimeo, SoundCloud, OG proxy)
+    // upgrade this favicon fallback in <UrlPreview> via React Query —
+    // see hooks/useUrlPreviewAsync.ts.
   }
   const host = domainHint || (pageUrl ? extractDomain(pageUrl) : '') || ''
   return {
