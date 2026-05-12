@@ -19,7 +19,7 @@ import { useCart } from '@/hooks/useCart'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { LABEL_TO_INTENTION } from '@/config/intentions'
-import UntaggedCertRow from '@/components/profile/UntaggedCertRow'
+import UntaggedCertCard from '@/components/profile/UntaggedCertCard'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/pages.css'
 import '@/components/styles/context-manager.css'
@@ -131,9 +131,9 @@ export default function ContextManagerPage() {
                   {group.certs.length === 1 ? '' : 's'}
                 </span>
               </header>
-              <div className="ctx-group-list">
+              <div className="ctx-group-grid">
                 {group.certs.map((row) => (
-                  <UntaggedCertRow
+                  <UntaggedCertCard
                     key={row.termId}
                     certTermId={row.termId}
                     title={row.title}
