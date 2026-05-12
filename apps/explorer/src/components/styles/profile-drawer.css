@@ -198,9 +198,12 @@
 }
 .pd-ts-legend-item {
   display: grid;
-  grid-template-columns: 8px 1fr auto;
+  /* `auto` for the leading TopicBadge so its 18px disc no longer
+     overflows into the label column — the previous fixed 8px slot
+     was sized for the old dot indicator. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 11px;
 }
 .pd-ts-legend-dot {
