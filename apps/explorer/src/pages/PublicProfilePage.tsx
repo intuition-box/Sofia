@@ -16,7 +16,6 @@ import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
 import {
-  PageHero,
   SectionH2,
   EchoesSortTabs,
   type EchoesSortKey,
@@ -82,7 +81,7 @@ export default function PublicProfilePage() {
     () => (walletAddress ? [walletAddress as Address] : []),
     [walletAddress],
   )
-  const { getDisplay } = useEnsNames(addresses)
+  const { getDisplay, getAvatar } = useEnsNames(addresses)
 
   // ── On-chain data — single round of fetches the rest of the page reads.
   const { profile: onChainProfile, isLoading: onChainLoading } =
@@ -154,6 +153,9 @@ export default function PublicProfilePage() {
   const displayName = walletAddress
     ? getDisplay(walletAddress as Address)
     : rawAddress || ''
+  const ensAvatar = walletAddress
+    ? getAvatar(walletAddress as Address)
+    : ''
   const shortAddress = walletAddress
     ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4)
     : ''
@@ -161,6 +163,7 @@ export default function PublicProfilePage() {
     shortAddress && shortAddress !== displayName
       ? shortAddress
       : 'Public profile'
+  const initials = (displayName || rawAddress || '?').slice(0, 2).toUpperCase()
 
   // ── Resolution states
   if (resolving) {
@@ -184,11 +187,32 @@ export default function PublicProfilePage() {
 
   return (
     <div className="pf-view pf-home page-enter">
-      <PageHero
-        title={displayName || shortAddress || 'Profile'}
-        description={heroDescription}
-        background={PUBLIC_HERO_COLOR}
-      />
+      {/* Custom hero — same peach-banner silhouette as `<PageHero>` but
+          with the viewed user's ENS avatar inlined to the left of the
+          title, so visitors immediately see whose profile they're on. */}
+      <div
+        className="ph-container pp-public-hero"
+        style={{ background: PUBLIC_HERO_COLOR }}
+      >
+        <div className="pp-public-hero-row">
+          <span className="pp-public-hero-avatar" aria-hidden="true">
+            {ensAvatar ? (
+              <img src={ensAvatar} alt="" referrerPolicy="no-referrer" />
+            ) : (
+              <span className="pp-public-hero-initials">{initials}</span>
+            )}
+          </span>
+          <div className="pp-public-hero-text">
+            <h1 className="ph-title">
+              {displayName || shortAddress || 'Profile'}
+            </h1>
+            {heroDescription && (
+              <p className="ph-description">{heroDescription}</p>
+            )}
+          </div>
+        </div>
+        <div className="ph-deco" aria-hidden="true" />
+      </div>
 
       <div className="pp-sections">
         {/* Interests — mirrors the personal-profile grid. Read-only:
