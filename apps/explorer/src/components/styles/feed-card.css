@@ -27,6 +27,39 @@
   z-index: 10;
 }
 
+/* Cards with a real content thumbnail (e.g. YouTube) get a 16:9 image
+   bleeding to the card edges at the top. We can't undo the padding on
+   .feed-card without breaking the rest of the children, so the thumb
+   is sized with calc() and pulled out with negative margins. The
+   parent's overflow stays visible — the thumb has its own rounded-top
+   corners that match the card's. */
+/* Higher specificity than `.masonry-grid > *` which forces overflow:visible
+   on every direct child. The card has its own rounded corners; the header
+   image needs to clip cleanly to them. */
+.masonry-grid > .feed-card--has-header,
+.feed-card--has-header {
+  overflow: hidden;
+}
+
+/* Header image — bleeds to the card's inner border via negative margins
+   + calc width. Top corners match the card's 12px radius. */
+.feed-card .fc-thumb.up-card {
+  width: calc(100% + 40px);
+  margin: -18px -20px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
+}
+
+/* When the card already shows a header, suppress the tiny favicon
+   inside .fc-head so the brand icon doesn't appear twice. The title +
+   host text stay — they carry the actual information. */
+.feed-card--has-header .fc-favicon {
+  display: none;
+}
+.feed-card--has-header .fc-head {
+  padding-right: 0;
+}
+
 .fc-head {
   display: flex;
   align-items: flex-start;
