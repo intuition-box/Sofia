@@ -228,9 +228,15 @@ export default function ScoresPage() {
     totalMarketCap: 0n,
   })
   const bucketsByBadge: Record<ClaimBadge, typeof topClaims> = {
-    pioneer: discoveryBuckets.pioneer.filter((c) => c.objectLabel).map(certToClaim),
-    early: discoveryBuckets.explorer.filter((c) => c.objectLabel).map(certToClaim),
-    viral: discoveryBuckets.contributor.filter((c) => c.objectLabel).map(certToClaim),
+    pioneer: discoveryBuckets.pioneer
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
+    early: discoveryBuckets.explorer
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
+    viral: discoveryBuckets.contributor
+      .filter((c) => c.objectLabel)
+      .map(certToClaim),
     contrarian: [],
   }
   const perBadgeUrlsAll = BADGE_GROUPS.map((g) => ({
