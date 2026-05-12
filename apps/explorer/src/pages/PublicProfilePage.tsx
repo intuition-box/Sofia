@@ -27,11 +27,12 @@ import { useUserProfile } from '@/hooks/useUserProfile'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useTrustScore } from '@/hooks/useTrustScore'
+import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
+import { useReputationScores } from '@/hooks/useReputationScores'
+import { useSignals } from '@/hooks/useSignals'
 import { resolveEnsToAddress } from '@/services/ensService'
-import {
-  ATOM_ID_TO_TOPIC,
-  ATOM_ID_TO_CATEGORY,
-} from '@/config/atomIds'
+import { ATOM_ID_TO_CATEGORY } from '@/config/atomIds'
+import type { ConnectionStatus } from '@/types/reputation'
 import InterestsGrid, {
   MAX_INTERESTS,
 } from '@/components/profile/InterestsGrid'
@@ -92,32 +93,30 @@ export default function PublicProfilePage() {
     addresses.length > 0 ? addresses : undefined,
   )
   const { score: trustScore } = useTrustScore(walletAddress)
+  const { signals } = useSignals(walletAddress)
 
-  // Topic selection for the charts. The personal profile pulls this
-  // from `useTopicSync` (the user's saved preferences); a visitor has
-  // no access to that store, so we derive the top N topics from the
-  // viewed user's on-chain footprint instead.
+  // Cert counts per topic — same source the personal profile feeds
+  // into `useReputationScores`. Drives the radar weight + interests
+  // selection so the charts surface the same numbers the user sees on
+  // their own /profile.
+  const certCountsByTopic = useUserCertCountsByTopic(
+    addresses.length > 0 ? addresses : undefined,
+  )
+
+  // Topic selection — derived from the viewed user's cert footprint
+  // (top-N by `in context of` count). The personal profile uses
+  // `useTopicSync()` instead because the user has a local preference;
+  // visitors have no such store, so we read from-chain.
   const selectedTopics = useMemo<string[]>(() => {
-    if (!userProfile) return []
-    const counts = new Map<string, number>()
-    for (const pos of userProfile.positions) {
-      const slug = ATOM_ID_TO_TOPIC.get(pos.termId)
-      if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1)
-      if (pos.tripleSubjectId) {
-        const subSlug = ATOM_ID_TO_TOPIC.get(pos.tripleSubjectId)
-        if (subSlug) counts.set(subSlug, (counts.get(subSlug) ?? 0) + 1)
-      }
-      if (pos.tripleObjectId) {
-        const objSlug = ATOM_ID_TO_TOPIC.get(pos.tripleObjectId)
-        if (objSlug) counts.set(objSlug, (counts.get(objSlug) ?? 0) + 1)
-      }
-    }
-    return [...counts.entries()]
+    return [...certCountsByTopic.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, MAX_INTERESTS)
       .map(([slug]) => slug)
-  }, [userProfile])
+  }, [certCountsByTopic])
 
+  // Categories — same idea, but pulled from the userProfile's
+  // positions on category atoms. Categories don't have an "in context
+  // of" path, so positions are the only signal.
   const selectedCategories = useMemo<string[]>(() => {
     if (!userProfile) return []
     const counts = new Map<string, number>()
@@ -131,23 +130,30 @@ export default function PublicProfilePage() {
       .map(([slug]) => slug)
   }, [userProfile])
 
+  // Platform connections aren't queryable for someone else — stub
+  // every lookup as `disconnected` so the score service treats their
+  // profile as a pure on-chain footprint. `useReputationScores` then
+  // produces the same topic scores the personal profile would
+  // synthesize had its platforms been disconnected.
+  const getStatus = useMemo(
+    () => (_platformId: string): ConnectionStatus => 'disconnected',
+    [],
+  )
+  const scores = useReputationScores(
+    getStatus,
+    selectedTopics,
+    selectedCategories,
+    trustScore,
+    signals,
+    certCountsByTopic,
+  )
+  const topicScores = scores?.topics ?? []
+
   // Echoes activities feed the bento grid — same source the personal
   // profile uses so the section stays visually identical.
   const echoesActivities = useMemo(
     () => userCertsToActivityInputs(onChainProfile.certs),
     [onChainProfile.certs],
-  )
-
-  // Topic scores aren't available without the viewed user's platform
-  // connections, but ProfileCharts gracefully falls back when the
-  // array is empty — radar axes still render, the details panel
-  // shows zeroes. Pass the trust score so the badge can surface.
-  const topicScores = useMemo(
-    () =>
-      trustScore != null
-        ? selectedTopics.map((id) => ({ topicId: id, score: trustScore }))
-        : [],
-    [selectedTopics, trustScore],
   )
 
   // ── Hero copy
