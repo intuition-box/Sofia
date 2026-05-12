@@ -109,9 +109,10 @@ async function fetchTrustedReceived(
   return total
 }
 
-export function useTrustedReceived(
-  addresses: readonly string[] | undefined,
-): { count: number; isLoading: boolean } {
+export function useTrustedReceived(addresses: readonly string[] | undefined): {
+  count: number
+  isLoading: boolean
+} {
   const sorted = addresses ? [...addresses].sort() : []
   const enabled = sorted.length > 0
   const cacheKey = sorted.join(',')
