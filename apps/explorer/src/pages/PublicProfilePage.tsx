@@ -31,7 +31,10 @@ import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
 import { resolveEnsToAddress } from '@/services/ensService'
-import { ATOM_ID_TO_CATEGORY } from '@/config/atomIds'
+import {
+  ATOM_ID_TO_CATEGORY,
+  ATOM_ID_TO_TOPIC,
+} from '@/config/atomIds'
 import type { ConnectionStatus } from '@/types/reputation'
 import InterestsGrid, {
   MAX_INTERESTS,
@@ -103,16 +106,36 @@ export default function PublicProfilePage() {
     addresses.length > 0 ? addresses : undefined,
   )
 
-  // Topic selection — derived from the viewed user's cert footprint
-  // (top-N by `in context of` count). The personal profile uses
-  // `useTopicSync()` instead because the user has a local preference;
-  // visitors have no such store, so we read from-chain.
+  // Topic selection — the personal profile reads this from
+  // `useTopicSync` (local selection + a position on the topic atom).
+  // Visitors don't see the local selection, so we mirror the on-chain
+  // half: every position on a `TOPIC_ATOM_IDS` atom is an interest
+  // the viewed user has committed to. Falls back to the cert-context
+  // derivation when no topic positions exist, so cert-heavy users
+  // who never explicitly "selected" a topic still surface something.
   const selectedTopics = useMemo<string[]>(() => {
+    if (!userProfile) return []
+    const fromPositions = new Map<string, number>()
+    for (const pos of userProfile.positions) {
+      const slug = ATOM_ID_TO_TOPIC.get(pos.termId)
+      if (slug) {
+        fromPositions.set(slug, (fromPositions.get(slug) ?? 0) + 1)
+      }
+    }
+    if (fromPositions.size > 0) {
+      return [...fromPositions.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([slug]) => slug)
+        .slice(0, MAX_INTERESTS)
+    }
+    // Fallback — surface the top cert contexts so the interests grid
+    // isn't empty for users who only have certifications and never
+    // staked on a raw topic atom.
     return [...certCountsByTopic.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, MAX_INTERESTS)
       .map(([slug]) => slug)
-  }, [certCountsByTopic])
+  }, [userProfile, certCountsByTopic])
 
   // Categories — same idea, but pulled from the userProfile's
   // positions on category atoms. Categories don't have an "in context
