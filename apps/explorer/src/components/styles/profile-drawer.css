@@ -3,12 +3,12 @@
  * extras (Trust Circle section) kept. Proto tokens remapped to --ds-*. */
 
 .pd-aside {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   width: 350px;
-  min-height: 100%;
+  height: 100vh;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);
   background: linear-gradient(
@@ -23,6 +23,17 @@
     transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.35s ease;
   pointer-events: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+.pd-aside::-webkit-scrollbar {
+  width: 6px;
+}
+.pd-aside::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 3px;
 }
 .pd-aside.pd-open {
   transform: translateX(0);

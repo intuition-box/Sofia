@@ -234,9 +234,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
   return (
     <>
-      <aside
-        className={`right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}
-      >
+      <aside className={`pd-aside ${isOpen ? 'pd-open' : ''}`}>
         <div className="flex flex-col">
           {/* Banner — avatar + name + share + journey CTA */}
           <div className="pd-banner">

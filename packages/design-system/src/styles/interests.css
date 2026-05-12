@@ -78,10 +78,19 @@
 }
 
 .ig-card-emoji {
-  font-size: 32px;
+  /* Coloured disc + emoji — same silhouette as <TopicBadge> elsewhere
+     so the "My Interests" cards read consistently with the rest of
+     the profile surfaces. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--topic-color, var(--ds-muted));
+  font-size: 28px;
   line-height: 1;
-  display: inline-grid;
-  place-items: center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .ig-card-label {

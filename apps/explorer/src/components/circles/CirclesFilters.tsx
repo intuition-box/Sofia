@@ -5,6 +5,7 @@
  */
 import { useState } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
+import TopicBadge from '@/components/profile/TopicBadge'
 
 const SORT_OPTIONS = [
   { id: 'activity', label: 'Active today' },
@@ -36,10 +37,11 @@ export default function CirclesFilters() {
               className={`cr-chip${topic === t.id ? ' active' : ''}`}
               onClick={() => setTopic(t.id)}
             >
-              <span
-                className="cr-chip-dot"
-                aria-hidden="true"
-                style={{ background: t.color }}
+              <TopicBadge
+                topicId={t.id}
+                color={t.color}
+                size={16}
+                title={t.label}
               />
               {t.label}
             </button>
