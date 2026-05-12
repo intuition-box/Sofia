@@ -1,0 +1,105 @@
+/**
+ * <UrlPreview> — visual rendering of a URL preview.
+ *
+ * Renders one of two layouts:
+ *
+ *  - `card`  — full-width, 16/9-ish header image. The thumb fills with
+ *               `object-fit: cover`; the favicon fallback shows a
+ *               centered icon over a brand-tinted background so cards
+ *               never look broken.
+ *  - `thumb` — square mini-thumbnail (cart items, list rows). Falls
+ *               back to favicon silently when the thumb 404s.
+ *
+ * For the third "backdrop" use case (decorating an existing card via
+ * a CSS pseudo-element + custom property), there is no component —
+ * the consumer sets `--echoes-bento-bg` inline and lets the existing
+ * CSS handle it. That pattern stays cleaner for DS-card decoration.
+ */
+import { useState } from 'react'
+import {
+  getUrlPreview,
+  type UrlPreview as UrlPreviewData,
+} from '@/utils/urlPreview'
+import './styles/url-preview.css'
+
+type UrlPreviewVariant = 'card' | 'thumb'
+
+interface UrlPreviewProps {
+  /** URL whose preview we want. Optional when `preview` is supplied. */
+  url?: string
+  /** Domain override (when caller already knows it). */
+  domain?: string
+  /** Pre-resolved preview — skips dispatch. Useful when the parent
+   *  picked the best URL out of a list (Echoes, group, circle). */
+  preview?: UrlPreviewData
+  variant: UrlPreviewVariant
+  /** Size in px — only honoured by `thumb`. Defaults to 40px. */
+  size?: number
+  /** Override alt; falls back to `preview.alt`. */
+  alt?: string
+  className?: string
+}
+
+export function UrlPreview({
+  url,
+  domain,
+  preview,
+  variant,
+  size = 40,
+  alt,
+  className,
+}: UrlPreviewProps) {
+  const data = preview ?? getUrlPreview(url, domain)
+  const [errored, setErrored] = useState(false)
+  // When the thumb fails (deleted video, broken endpoint), swap to the
+  // favicon fallback for the domain. Computed lazily on error so the
+  // happy path stays a single render with no extra work.
+  const effective: UrlPreviewData =
+    errored && data.kind === 'thumb'
+      ? getUrlPreview(undefined, domain || extractHost(url))
+      : data
+
+  if (variant === 'card') {
+    const isThumb = effective.kind === 'thumb'
+    return (
+      <div
+        className={[
+          'up-card',
+          isThumb ? 'up-card--thumb' : 'up-card--favicon',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <img
+          src={effective.url}
+          alt={alt ?? effective.alt}
+          loading="lazy"
+          onError={() => setErrored(true)}
+        />
+      </div>
+    )
+  }
+
+  // thumb variant
+  return (
+    <img
+      src={effective.url}
+      alt={alt ?? effective.alt}
+      width={size}
+      height={size}
+      loading="lazy"
+      className={['up-thumb', className].filter(Boolean).join(' ')}
+      onError={() => setErrored(true)}
+    />
+  )
+}
+
+function extractHost(url: string | undefined): string {
+  if (!url) return ''
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
