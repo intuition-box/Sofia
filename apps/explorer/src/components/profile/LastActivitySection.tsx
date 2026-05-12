@@ -16,6 +16,7 @@ import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import { getFaviconUrl } from '@/utils/favicon'
 import { pickBestUrlPreview } from '@/utils/urlPreview'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
 interface LastActivitySectionProps {
@@ -124,13 +125,21 @@ export default function LastActivitySection({
 
   if (filteredGroups.length === 0) {
     return (
-      <div className="groups-empty">
-        <p className="text-sm text-muted-foreground">
-          {trimmed
+      <EmptyFeedState
+        gridClassName="bento-grid bento-grid-3"
+        skeletonCount={6}
+        renderSkeleton={() => <ActivityCardSkeleton />}
+        message={
+          trimmed
             ? `No echoes match “${searchQuery}”.`
-            : 'No activity yet. Start certifying pages with Sofia!'}
-        </p>
-      </div>
+            : 'No activity yet.'
+        }
+        hint={
+          trimmed
+            ? 'Try a different keyword or clear the search.'
+            : 'Start certifying pages with Sofia and your Echoes will land here.'
+        }
+      />
     )
   }
 

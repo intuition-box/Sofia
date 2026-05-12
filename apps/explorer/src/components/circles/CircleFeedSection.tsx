@@ -32,6 +32,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import PredicatePicker from '@/components/PredicatePicker'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import CircleFeedCard from './CircleFeedCard'
 import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
 import CircleTopicFilter, {
@@ -192,15 +194,36 @@ export default function CircleFeedSection({
       </div>
 
       {loading ? (
-        <div className="crd-feed-empty">Loading feed…</div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={6}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message="Loading feed…"
+        />
       ) : error ? (
-        <div className="crd-feed-empty">Couldn't load the feed.</div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={3}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message="Couldn't load the feed."
+          hint="Check your connection and refresh the page."
+        />
       ) : shown.length === 0 ? (
-        <div className="crd-feed-empty">
-          {verb === 'all'
-            ? 'No certifications from the circle yet.'
-            : 'No items for this verb yet.'}
-        </div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={6}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message={
+            verb === 'all'
+              ? 'No certifications from the circle yet.'
+              : 'No items for this verb yet.'
+          }
+          hint={
+            verb === 'all'
+              ? 'Members of this circle will see their certifications appear here.'
+              : 'Try switching to a different verb in the filter.'
+          }
+        />
       ) : (
         <div className="masonry-grid crd-feed">
           {shown.map((item) => {

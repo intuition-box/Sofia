@@ -10,12 +10,13 @@
  * star badge and `fc-desc` sections aren't rendered here.
  */
 import type { MouseEvent } from 'react'
-import { FaviconWrapper } from '@0xsofia/design-system'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
+import { getUrlPreview } from '@/utils/urlPreview'
+import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from '@/components/profile/TopicBadge'
 
 function topicMeta(slug: string) {
@@ -47,6 +48,10 @@ export default function FeedCard({
   const canOppose = Object.values(item.intentionVaults).some(
     (v) => v.counterTermId,
   )
+  // Resolved once per render — the dispatcher returns a real thumb for
+  // YouTube and a favicon-tinted fallback for everything else, so the
+  // header is uniform across the grid.
+  const preview = getUrlPreview(item.url, item.domain)
 
   const openUrl = () => {
     if (!item.url) return
@@ -60,7 +65,7 @@ export default function FeedCard({
 
   return (
     <article
-      className="fc fc-standard"
+      className="fc fc-standard fc--has-header"
       role="link"
       tabIndex={0}
       onClick={openUrl}
@@ -71,8 +76,13 @@ export default function FeedCard({
         }
       }}
     >
+      <UrlPreview
+        variant="card"
+        preview={preview}
+        className="fc-thumb"
+        alt={item.title || item.domain}
+      />
       <div className="fc-head">
-        <FaviconWrapper size={34} src={item.favicon} alt={item.domain} />
         <div className="fc-title-wrap">
           <div className="fc-title">{item.title}</div>
           <div className="fc-host">{item.domain}</div>

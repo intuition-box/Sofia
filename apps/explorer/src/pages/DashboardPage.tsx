@@ -8,15 +8,16 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Globe, Search, X, XCircle } from 'lucide-react'
+import { Search, X, XCircle } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
 import { PageHero } from '@0xsofia/design-system'
 import PredicatePicker from '../components/PredicatePicker'
-import QuestCard from '../components/QuestCard'
 import CircleCard from '../components/CircleCard'
 import FeedCard from '../components/home/FeedCard'
+import { EmptyFeedState } from '../components/EmptyFeedState'
+import { FeedCardSkeleton } from '../components/FeedCardSkeleton'
 import InterestTilesGrid from '../components/home/InterestTilesGrid'
 import type { InterestPreset } from '../components/home/useInterestTiles'
 import { useTaxonomy } from '../hooks/useTaxonomy'
@@ -385,13 +386,13 @@ export default function DashboardPage() {
             {!loading && (
               <>
                 {filteredItems.length === 0 ? (
-                  <Card className="p-10 text-center">
-                    <Globe className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                    <h3 className="mt-4 font-medium">No activity yet</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Recent certifications will appear here.
-                    </p>
-                  </Card>
+                  <EmptyFeedState
+                    gridClassName="hm-drill-grid"
+                    skeletonCount={6}
+                    renderSkeleton={() => <FeedCardSkeleton />}
+                    message="No activity yet"
+                    hint="Recent certifications from your trust circle will land here."
+                  />
                 ) : (
                   <>
                     <div className="hm-drill-grid">
@@ -399,15 +400,7 @@ export default function DashboardPage() {
                         const addr = item.certifierAddress as Address
                         const name = addr ? getDisplay(addr) : item.certifier
                         const av = addr ? getAvatar(addr) : ''
-                        const isQuest = item.intentions[0]?.startsWith('quest:')
-                        return isQuest ? (
-                          <QuestCard
-                            key={item.id}
-                            item={item}
-                            displayName={name}
-                            avatar={av}
-                          />
-                        ) : (
+                        return (
                           <FeedCard
                             key={item.id}
                             item={item}

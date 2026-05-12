@@ -1,0 +1,62 @@
+/* ── <EmptyFeedState> ─────────────────────────────────────────────
+ * Layered "no data" pattern — faded skeleton grid + centered glass
+ * message panel. The empty state mirrors the real layout the feed
+ * would have when populated, so the user immediately understands the
+ * shape of what's missing.
+ *
+ * Skeleton grid is opacity-dimmed + non-interactive; the message panel
+ * floats on top with a backdrop blur so it stays legible against any
+ * grid background.
+ */
+
+.feed-empty-stack {
+  position: relative;
+  min-height: 280px;
+}
+
+.feed-empty-skeletons {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+  /* Slight saturation drop reinforces "this is a placeholder" without
+     killing the layout's colour vocabulary. */
+  filter: saturate(0.6);
+}
+
+.feed-empty-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 28px;
+  max-width: 380px;
+  text-align: center;
+  background: color-mix(in srgb, var(--ds-card) 92%, transparent);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.25);
+}
+
+.feed-empty-msg {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.feed-empty-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+
+.feed-empty-action {
+  margin-top: 4px;
+}
