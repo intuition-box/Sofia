@@ -11,7 +11,6 @@
  * of `useCircleFeed` results.
  */
 import { useCallback, useMemo, useState } from 'react'
-import type { Address } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
@@ -37,7 +36,7 @@ import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
-  addresses: Address[]
+  addresses: string[]
   circleName: string
   members: TrustCircleAccount[]
 }
