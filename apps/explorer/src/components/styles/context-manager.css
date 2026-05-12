@@ -1,0 +1,275 @@
+/**
+ * Context Manager — bulk-tag UI for adding `in context of <topic>`
+ * to the user's untagged certifications. Layout pinches the
+ * `.pf-view` container, then renders a stats row + grouped list +
+ * sticky footer.
+ */
+
+.main-content:has(.ctx-page) {
+  margin-right: 0;
+}
+.pf-view.ctx-page {
+  max-width: none;
+}
+
+/* ── Stats row ────────────────────────────────────────────────────── */
+
+.ctx-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 16px 0 20px;
+}
+.ctx-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+}
+.ctx-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  line-height: 1;
+}
+.ctx-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+
+/* ── Empty / loading ─────────────────────────────────────────────── */
+
+.ctx-loading,
+.ctx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  text-align: center;
+}
+.ctx-empty-title {
+  margin: 4px 0 0;
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.ctx-empty-sub {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+}
+
+/* ── Domain groups ───────────────────────────────────────────────── */
+
+.ctx-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 96px;
+}
+.ctx-group {
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ctx-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--ds-bg-subtle);
+  border-bottom: 1px solid var(--ds-border);
+}
+.ctx-group-domain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.ctx-group-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ctx-group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Row ─────────────────────────────────────────────────────────── */
+
+.ctx-row {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--ds-border);
+}
+.ctx-row:last-child {
+  border-bottom: none;
+}
+
+.ctx-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ctx-row-favicon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--ds-bg-subtle);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.ctx-row-favicon--fallback {
+  display: inline-block;
+}
+.ctx-row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.ctx-row-title {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ctx-row-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+.ctx-row-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ds-accent) 18%, var(--ds-bg-subtle));
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, var(--ds-border));
+  color: var(--ds-ink);
+}
+
+/* ── Topic chips ─────────────────────────────────────────────────── */
+
+.ctx-row-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ctx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ctx-chip:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+  transform: translateY(-1px);
+}
+.ctx-chip--active {
+  background: color-mix(in srgb, var(--ctx-chip-color, var(--ds-accent)) 18%, var(--ds-bg-subtle));
+  border-color: color-mix(in srgb, var(--ctx-chip-color, var(--ds-accent)) 50%, var(--ds-border));
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.ctx-chip-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+}
+
+/* ── Sticky footer ────────────────────────────────────────────────── */
+
+.ctx-sticky-footer {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: var(--ds-ink);
+  z-index: 50;
+}
+.ctx-sticky-footer strong {
+  font-weight: 700;
+}
+.ctx-open-cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ctx-open-cart:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}

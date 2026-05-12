@@ -46,6 +46,7 @@ const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
+const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
 const BillingPage = lazy(() => import('./pages/BillingPage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
@@ -219,6 +220,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile/context-manager"
+                  element={
+                    <ProtectedRoute>
+                      <ContextManagerPage />
                     </ProtectedRoute>
                   }
                 />
