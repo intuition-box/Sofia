@@ -23,18 +23,14 @@ import {
 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
-import { useUserProfile } from '@/hooks/useUserProfile'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useTrustScore } from '@/hooks/useTrustScore'
 import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
+import { useAddressInterests } from '@/hooks/useAddressInterests'
 import { resolveEnsToAddress } from '@/services/ensService'
-import {
-  ATOM_ID_TO_CATEGORY,
-  ATOM_ID_TO_TOPIC,
-} from '@/config/atomIds'
 import type { ConnectionStatus } from '@/types/reputation'
 import InterestsGrid, {
   MAX_INTERESTS,
@@ -89,7 +85,6 @@ export default function PublicProfilePage() {
   const { getDisplay } = useEnsNames(addresses)
 
   // ── On-chain data — single round of fetches the rest of the page reads.
-  const { profile: userProfile } = useUserProfile(addresses)
   const { profile: onChainProfile, isLoading: onChainLoading } =
     useUserOnChainProfile(addresses.length > 0 ? addresses : undefined)
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(
@@ -99,59 +94,35 @@ export default function PublicProfilePage() {
   const { signals } = useSignals(walletAddress)
 
   // Cert counts per topic — same source the personal profile feeds
-  // into `useReputationScores`. Drives the radar weight + interests
-  // selection so the charts surface the same numbers the user sees on
-  // their own /profile.
+  // into `useReputationScores`. Drives the radar weight so the charts
+  // surface the same numbers the user sees on their own /profile.
   const certCountsByTopic = useUserCertCountsByTopic(
     addresses.length > 0 ? addresses : undefined,
   )
 
-  // Topic selection — the personal profile reads this from
-  // `useTopicSync` (local selection + a position on the topic atom).
-  // Visitors don't see the local selection, so we mirror the on-chain
-  // half: every position on a `TOPIC_ATOM_IDS` atom is an interest
-  // the viewed user has committed to. Falls back to the cert-context
-  // derivation when no topic positions exist, so cert-heavy users
-  // who never explicitly "selected" a topic still surface something.
+  // Interests — the personal profile's `useInterestsHydration` calls
+  // `getSharesBatch(connectedWallet, TOPIC_ATOM_IDS)` against every
+  // topic atom and keeps the ones with shares > 0. We do the exact
+  // same on-chain read here but for the viewed address, via the
+  // pure-read variant `useAddressInterests`. Same source, same set.
+  const { topics: ownedTopics, categories: ownedCategories } =
+    useAddressInterests(walletAddress)
+
   const selectedTopics = useMemo<string[]>(() => {
-    if (!userProfile) return []
-    const fromPositions = new Map<string, number>()
-    for (const pos of userProfile.positions) {
-      const slug = ATOM_ID_TO_TOPIC.get(pos.termId)
-      if (slug) {
-        fromPositions.set(slug, (fromPositions.get(slug) ?? 0) + 1)
-      }
-    }
-    if (fromPositions.size > 0) {
-      return [...fromPositions.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([slug]) => slug)
-        .slice(0, MAX_INTERESTS)
-    }
-    // Fallback — surface the top cert contexts so the interests grid
-    // isn't empty for users who only have certifications and never
-    // staked on a raw topic atom.
+    if (ownedTopics.length > 0) return ownedTopics.slice(0, MAX_INTERESTS)
+    // Fallback — for users who only have certifications and never
+    // staked on a raw topic atom, surface the top cert contexts so
+    // the interests grid isn't empty.
     return [...certCountsByTopic.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, MAX_INTERESTS)
       .map(([slug]) => slug)
-  }, [userProfile, certCountsByTopic])
+  }, [ownedTopics, certCountsByTopic])
 
-  // Categories — same idea, but pulled from the userProfile's
-  // positions on category atoms. Categories don't have an "in context
-  // of" path, so positions are the only signal.
-  const selectedCategories = useMemo<string[]>(() => {
-    if (!userProfile) return []
-    const counts = new Map<string, number>()
-    for (const pos of userProfile.positions) {
-      const slug = ATOM_ID_TO_CATEGORY.get(pos.termId)
-      if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1)
-    }
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([slug]) => slug)
-  }, [userProfile])
+  const selectedCategories = useMemo<string[]>(
+    () => ownedCategories.slice(0, 6),
+    [ownedCategories],
+  )
 
   // Platform connections aren't queryable for someone else — stub
   // every lookup as `disconnected` so the score service treats their
