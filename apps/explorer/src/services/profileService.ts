@@ -43,8 +43,8 @@ type PositionRaw = GetUserPositionsQuery['positions'][number]
 
 /**
  * Fetch only the signalsCount aggregate, union across all linked wallets.
- * Used as a separate pull query by useUserProfile / useDiscoveryScore — the
- * WS subscription doesn't stream server-side aggregates, so this stays HTTP.
+ * Used as a separate pull query by useUserProfile — the WS subscription
+ * doesn't stream server-side aggregates, so this stays HTTP.
  */
 export async function fetchSignalsCount(addresses: string[]): Promise<number> {
   if (addresses.length === 0) return 0

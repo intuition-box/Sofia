@@ -91,10 +91,7 @@ function bucketByObject(certsByPick: CertsByPick): {
     /** Inner per-pick accumulator so the per-pick stats (netSignal,
      *  holders) reflect ALL contributing certs for this URL inside
      *  this single pick — not just the first one we hit. */
-    const perPickAgg = new Map<
-      string,
-      { netSignal: bigint; holders: number }
-    >()
+    const perPickAgg = new Map<string, { netSignal: bigint; holders: number }>()
 
     for (const cert of certs) {
       const objId = cert.objectTermId

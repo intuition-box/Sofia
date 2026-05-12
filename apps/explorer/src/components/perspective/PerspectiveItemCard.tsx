@@ -84,13 +84,12 @@ export default function PerspectiveItemCard({
 
       <div className="psp-item-stats">
         <span className="psp-item-stat">
-          <strong>{certifierCount}</strong>
-          {' '}certifier{certifierCount === 1 ? '' : 's'} in this perspective
+          <strong>{certifierCount}</strong> certifier
+          {certifierCount === 1 ? '' : 's'} in this perspective
         </span>
         {showContrastScore && item.contrastScore != null && (
           <span className="psp-item-stat psp-item-stat--contrast">
-            divergence{' '}
-            <strong>{formatTrust(item.contrastScore)} TRUST</strong>
+            divergence <strong>{formatTrust(item.contrastScore)} TRUST</strong>
           </span>
         )}
       </div>

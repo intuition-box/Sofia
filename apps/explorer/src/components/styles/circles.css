@@ -1694,7 +1694,6 @@
   cursor: not-allowed;
 }
 
-
 /* ── Lockable detail (non-member groups) ──────────────────────────── */
 /* Members card + top topics + feed get blurred when the user is not a
    member of the group. The hero is kept legible above so the visitor

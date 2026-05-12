@@ -12,6 +12,7 @@
  */
 import { useCallback, useMemo, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
+import type { Address } from 'viem'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useCart } from '@/hooks/useCart'

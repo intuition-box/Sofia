@@ -27,7 +27,11 @@ export default function CircleJoinOverlay({
   onJoin,
 }: CircleJoinOverlayProps) {
   return (
-    <div className="crd-join-overlay" role="region" aria-label="Join this circle">
+    <div
+      className="crd-join-overlay"
+      role="region"
+      aria-label="Join this circle"
+    >
       <div className="crd-join-overlay-card">
         <span className="crd-join-overlay-icon" aria-hidden="true">
           <Lock className="h-5 w-5" />

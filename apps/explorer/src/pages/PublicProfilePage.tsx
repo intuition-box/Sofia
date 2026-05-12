@@ -129,7 +129,9 @@ export default function PublicProfilePage() {
   // produces the same topic scores the personal profile would
   // synthesize had its platforms been disconnected.
   const getStatus = useMemo(
-    () => (_platformId: string): ConnectionStatus => 'disconnected',
+    () =>
+      (_platformId: string): ConnectionStatus =>
+        'disconnected',
     [],
   )
   const scores = useReputationScores(
@@ -153,9 +155,7 @@ export default function PublicProfilePage() {
   const displayName = walletAddress
     ? getDisplay(walletAddress as Address)
     : rawAddress || ''
-  const ensAvatar = walletAddress
-    ? getAvatar(walletAddress as Address)
-    : ''
+  const ensAvatar = walletAddress ? getAvatar(walletAddress as Address) : ''
   const shortAddress = walletAddress
     ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4)
     : ''

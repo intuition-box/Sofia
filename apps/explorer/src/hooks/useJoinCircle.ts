@@ -83,14 +83,7 @@ export function useJoinCircle(circle: CircleData | null): UseJoinCircleResult {
     if (!item) return
     cart.addItem(item)
     cart.open()
-  }, [
-    circle,
-    targetTermId,
-    userAccountAtomId,
-    disabledReason,
-    inCart,
-    cart,
-  ])
+  }, [circle, targetTermId, userAccountAtomId, disabledReason, inCart, cart])
 
   return {
     join,

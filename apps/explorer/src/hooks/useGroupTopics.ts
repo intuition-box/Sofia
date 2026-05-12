@@ -14,10 +14,7 @@
  */
 import { useQuery } from '@tanstack/react-query'
 import { GRAPHQL_URL } from '@/config'
-import {
-  ATOM_ID_TO_TOPIC,
-  HAS_TAG_PREDICATE_ID,
-} from '@/config/atomIds'
+import { ATOM_ID_TO_TOPIC, HAS_TAG_PREDICATE_ID } from '@/config/atomIds'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import type { GroupTopicSummary } from '@/lib/circleBuilders'
 
@@ -42,9 +39,7 @@ const GET_GROUP_TOPICS = `
 // small (≤ 14 topics). Built once at module load.
 const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
 
-async function fetchGroupTopics(
-  termId: string,
-): Promise<GroupTopicSummary[]> {
+async function fetchGroupTopics(termId: string): Promise<GroupTopicSummary[]> {
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

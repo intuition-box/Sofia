@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
-import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
+import { useTrustedReceived } from '../hooks/useTrustedReceived'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
@@ -17,6 +17,7 @@ import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
+import { computeDiscoveryBuckets } from '../services/userOnChainProfileService'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -101,7 +102,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
-  const { stats } = useDiscoveryScore(
+  const { count: trustedCount } = useTrustedReceived(
     linkedAddresses.length > 0 ? linkedAddresses : undefined,
   )
   const { selectedTopics, selectedCategories } = useTopicSelection()
@@ -125,6 +126,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // surfaces here — visits_for_* + trusts + distrust — sorted by recency
   // so the panel reads as a true activity feed and not just a trust log.
   const { profile } = useUserOnChainProfile(linkedAddresses)
+  // Pioneer/Explorer/Contributor — derive from the master cert list so the
+  // numbers match the /scores page exactly (single source of truth).
+  const discoveryBuckets = useMemo(
+    () => computeDiscoveryBuckets(profile.certs),
+    [profile.certs],
+  )
   const lastActivity = useMemo(() => {
     const byTime = profile.certs
       .slice()
@@ -175,7 +182,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     walletAddress: address,
     topicScores,
     connectedCount,
-    totalCertifications: stats?.totalCertifications ?? 0,
+    totalCertifications: profile.certs.length,
   })
 
   if (!authenticated) return null
@@ -301,49 +308,47 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           </button>
 
           {/* Discovery badges */}
-          {stats && (
-            <div className="pd-section">
-              <p className="pd-section-title">Discovery</p>
-              <div className="pd-badge-row">
-                {[
-                  {
-                    label: 'Pioneer',
-                    value: stats.pioneerCount,
-                    icon: '/badges/pioneer.png',
-                    color: '#e4b95a',
-                  },
-                  {
-                    label: 'Explorer',
-                    value: stats.explorerCount,
-                    icon: '/badges/explorer.png',
-                    color: '#5cc4d6',
-                  },
-                  {
-                    label: 'Contributor',
-                    value: stats.contributorCount,
-                    icon: '/badges/contributor.png',
-                    color: '#a78bdb',
-                  },
-                  {
-                    label: 'Trusted',
-                    value: stats.trustedCount,
-                    icon: '/badges/trust.png',
-                    color: '#6dd4a0',
-                  },
-                ].map((b) => (
-                  <div
-                    key={b.label}
-                    className="pd-badge-card"
-                    style={{ ['--badge-color' as string]: b.color }}
-                  >
-                    <img src={b.icon} alt={b.label} className="pd-badge-icon" />
-                    <span className="pd-badge-label">{b.label}</span>
-                    <span className="pd-badge-value">{b.value}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="pd-section">
+            <p className="pd-section-title">Discovery</p>
+            <div className="pd-badge-row">
+              {[
+                {
+                  label: 'Pioneer',
+                  value: discoveryBuckets.pioneer.length,
+                  icon: '/badges/pioneer.png',
+                  color: '#e4b95a',
+                },
+                {
+                  label: 'Explorer',
+                  value: discoveryBuckets.explorer.length,
+                  icon: '/badges/explorer.png',
+                  color: '#5cc4d6',
+                },
+                {
+                  label: 'Contributor',
+                  value: discoveryBuckets.contributor.length,
+                  icon: '/badges/contributor.png',
+                  color: '#a78bdb',
+                },
+                {
+                  label: 'Trusted',
+                  value: trustedCount,
+                  icon: '/badges/trust.png',
+                  color: '#6dd4a0',
+                },
+              ].map((b) => (
+                <div
+                  key={b.label}
+                  className="pd-badge-card"
+                  style={{ ['--badge-color' as string]: b.color }}
+                >
+                  <img src={b.icon} alt={b.label} className="pd-badge-icon" />
+                  <span className="pd-badge-label">{b.label}</span>
+                  <span className="pd-badge-value">{b.value}</span>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Last Activity — support/oppose only for now. */}
           {lastActivity.length > 0 && (

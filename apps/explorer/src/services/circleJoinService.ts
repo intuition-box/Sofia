@@ -39,9 +39,7 @@ export function joinCartId(groupTermId: string): string {
  * when any required input is missing so the caller can short-circuit
  * without throwing.
  */
-export function buildJoinCartItem(
-  input: JoinCircleInput,
-): CartItem | null {
+export function buildJoinCartItem(input: JoinCircleInput): CartItem | null {
   const { groupTermId, groupLabel, groupImage, userAccountAtomId, color } =
     input
   if (!groupTermId || !userAccountAtomId) return null

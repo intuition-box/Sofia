@@ -63,23 +63,12 @@ export function useCircle(id: string | undefined): UseCircleResult {
     const group = groups.find((g) => g.termId === groupTermId)
     if (!group) return null
     return buildGroupCircle(group, addresses, groupTopics)
-  }, [
-    id,
-    isTrust,
-    addresses,
-    trustMembers,
-    groups,
-    groupTermId,
-    groupTopics,
-  ])
+  }, [id, isTrust, addresses, trustMembers, groups, groupTermId, groupTopics])
 
   // Pure resolution states — derived, never set.
   const isLoading = isTrust ? trustLoading : groupsLoading
   const notFound =
-    !isTrust &&
-    !groupsLoading &&
-    Boolean(groupTermId) &&
-    circle === null
+    !isTrust && !groupsLoading && Boolean(groupTermId) && circle === null
 
   return {
     circle,

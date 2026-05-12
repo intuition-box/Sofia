@@ -297,6 +297,10 @@
   animation: psp-skeleton-shimmer 1.4s ease-in-out infinite;
 }
 @keyframes psp-skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
