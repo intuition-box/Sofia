@@ -854,3 +854,62 @@
   color: rgba(0, 0, 0, 0.7);
   letter-spacing: -0.02em;
 }
+
+/* ── Context Manager banner ──────────────────────────────────────── */
+/* Surfaces under the wallet banners on /profile when the user has
+   tagable certs without an `in context of` triple. Renders as a
+   button-styled row so the whole strip is clickable. */
+.pp-context-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  margin: 0 0 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #a78bdb 14%, var(--ds-card));
+  border: 1px solid color-mix(in srgb, #a78bdb 35%, var(--ds-border));
+  cursor: pointer;
+  text-align: left;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  transition: all 0.15s ease;
+}
+.pp-context-banner:hover {
+  transform: translateY(-1px);
+  border-color: #a78bdb;
+  box-shadow: 0 6px 20px color-mix(in srgb, #a78bdb 20%, transparent);
+}
+.pp-context-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #a78bdb 25%, var(--ds-card));
+  color: var(--ds-ink);
+  flex-shrink: 0;
+}
+.pp-context-banner-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ds-ink);
+}
+.pp-context-banner-text strong {
+  font-weight: 700;
+}
+.pp-context-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}

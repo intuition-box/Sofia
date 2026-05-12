@@ -548,3 +548,32 @@ a.pd-la-row:hover {
   color: var(--ds-muted);
   letter-spacing: 0.02em;
 }
+
+/* "General" pie slice gets a button-like affordance so the user
+   knows it's actionable (jumps to the Context Manager). */
+button.pd-ts-legend-item {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+.pd-ts-legend-item--link {
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.pd-ts-legend-item--link:hover {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.pd-ts-legend-item--link::after {
+  content: '→';
+  margin-left: 6px;
+  color: var(--ds-muted);
+  font-weight: 600;
+}

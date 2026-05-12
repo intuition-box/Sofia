@@ -276,19 +276,43 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <>
                 <TopicScorePie slices={pieSlices} />
                 <div className="pd-ts-legend">
-                  {pieSlices.map((t) => (
-                    <span
-                      key={t.id}
-                      className="pd-ts-legend-item"
-                      style={{ ['--slice-color' as string]: t.color }}
-                    >
-                      <span className="pd-ts-legend-dot" />
-                      <span className="pd-ts-legend-label">
-                        {t.emoji} {t.label}
+                  {pieSlices.map((t) => {
+                    const inner = (
+                      <>
+                        <span className="pd-ts-legend-dot" />
+                        <span className="pd-ts-legend-label">
+                          {t.emoji} {t.label}
+                        </span>
+                        <span className="pd-ts-legend-val">{t.score}</span>
+                      </>
+                    )
+                    // The "general" slice is the only one with an
+                    // actionable next step — open the Context Manager
+                    // so the user can tag the URLs that landed in it.
+                    if (t.id === 'general') {
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className="pd-ts-legend-item pd-ts-legend-item--link"
+                          style={{ ['--slice-color' as string]: t.color }}
+                          onClick={() => navigate('/profile/context-manager')}
+                          title="Add topic context to these certs"
+                        >
+                          {inner}
+                        </button>
+                      )
+                    }
+                    return (
+                      <span
+                        key={t.id}
+                        className="pd-ts-legend-item"
+                        style={{ ['--slice-color' as string]: t.color }}
+                      >
+                        {inner}
                       </span>
-                      <span className="pd-ts-legend-val">{t.score}</span>
-                    </span>
-                  ))}
+                    )
+                  })}
                 </div>
               </>
             ) : (

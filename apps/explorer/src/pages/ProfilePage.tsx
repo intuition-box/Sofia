@@ -17,9 +17,10 @@ import InterestsGrid, {
   MAX_INTERESTS,
 } from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
+import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User } from 'lucide-react'
+import { Wallet, User, Tags, ArrowUpRight } from 'lucide-react'
 import {
   PageHero,
   SectionH2,
@@ -78,6 +79,12 @@ export default function ProfilePage() {
     [profile.certs],
   )
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(
+    activityAddresses.length > 0 ? activityAddresses : undefined,
+  )
+  // Untagged-cert count feeds the Context Manager banner. Same cache
+  // ProfileCharts already reads, so this is a derived value, not a
+  // new fetch.
+  const { certs: untaggedCerts } = useUntaggedCerts(
     activityAddresses.length > 0 ? activityAddresses : undefined,
   )
 
@@ -152,6 +159,30 @@ export default function ProfilePage() {
             Link Wallet
           </Button>
         </Card>
+      )}
+
+      {/* Context Manager CTA — only surfaces when the user has tagable
+          certs without an `in context of` link. Hidden on view-as so a
+          visitor doesn't see a CTA they can't fulfil. */}
+      {!isViewingAs && untaggedCerts.length > 0 && (
+        <button
+          type="button"
+          className="pp-context-banner"
+          onClick={() => navigate('/profile/context-manager')}
+        >
+          <span className="pp-context-banner-icon">
+            <Tags className="h-4 w-4" />
+          </span>
+          <span className="pp-context-banner-text">
+            <strong>{untaggedCerts.length}</strong> URL
+            {untaggedCerts.length === 1 ? '' : 's'} without context — give
+            them topics to grow your reputation
+          </span>
+          <span className="pp-context-banner-cta">
+            Open Context Manager
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
       )}
 
       <div className="pp-sections">
