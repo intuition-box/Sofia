@@ -297,6 +297,24 @@
      color still tints the surface enough to read at a glance. */
   background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
   border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+.pd-badge-card:hover {
+  background: color-mix(in srgb, var(--badge-color) 14%, var(--ds-card));
+  transform: translateY(-1px);
+}
+.pd-badge-card:focus-visible {
+  outline: 2px solid var(--badge-color);
+  outline-offset: 2px;
+}
+.pd-badge-card:active {
+  transform: translateY(0);
 }
 .pd-badge-icon {
   width: 40px;

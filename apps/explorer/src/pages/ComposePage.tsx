@@ -304,7 +304,17 @@ export default function ComposePage() {
                     }}
                   >
                     <div className="check" aria-hidden="true" />
-                    <div className="what-head-row">
+                    <div className="what-row">
+                      <div className="what-name">
+                        <TopicBadge
+                          topicId={topic.id}
+                          color={topic.color}
+                          size={24}
+                          title={topic.label}
+                          className="what-emoji"
+                        />
+                        <span>{topic.label}</span>
+                      </div>
                       <button
                         type="button"
                         className="cmp-card-view"
@@ -316,16 +326,6 @@ export default function ComposePage() {
                         <ArrowUpRight className="h-3 w-3" />
                         View
                       </button>
-                    </div>
-                    <div className="what-name">
-                      <TopicBadge
-                        topicId={topic.id}
-                        color={topic.color}
-                        size={32}
-                        title={topic.label}
-                        className="what-emoji"
-                      />
-                      {topic.label}
                     </div>
                   </div>
                 )

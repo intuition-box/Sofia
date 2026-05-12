@@ -247,22 +247,20 @@
   margin-left: 10px;
 }
 
-/* What (topic) card */
+/* What (topic) card — compact single-row layout: badge + label on the
+   left, "View" pill on the right, selection check anchored in the
+   top-right corner via .select-card .check. */
 .what-card {
-  padding-right: 44px;
+  padding: 12px 44px 12px 14px;
+  gap: 0;
 }
-.what-head-row {
+.what-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.what-card .what-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Per-card "View" pill — opens the detail route for the card's target. */
@@ -297,8 +295,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex: 1;
   font-family: 'Fraunces', serif;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.015em;
   line-height: 1.1;
@@ -306,6 +306,11 @@
     'SOFT' 30,
     'opsz' 144;
   color: var(--ds-ink);
+}
+.what-card .what-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .what-card .what-emoji {
   font-size: 18px;

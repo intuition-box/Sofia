@@ -175,7 +175,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
       if (e.kind === 'context') {
         const topic = e.topicSlug ? topicById(e.topicSlug) : null
-        const emoji = (e.topicSlug && getTopicEmoji(e.topicSlug)) || '🏷️'
         const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
         return {
           id: `${c.termId}::${e.topicAtomId}`,
@@ -185,7 +184,14 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           favicon,
           timestamp: e.ts,
           isOppose: false,
-          actionLabel: `Tagged ${emoji} ${topicLabel} on`,
+          // Surface the topic as a structured payload so the row can
+          // render a coloured <TopicBadge> inline instead of dropping
+          // a raw emoji into the action-label string.
+          actionPrefix: 'Tagged',
+          actionSuffix: 'on',
+          topic: e.topicSlug
+            ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
+            : null,
         }
       }
 
@@ -195,12 +201,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // distrust read as social signals; visits_for_* read as topical
       // marks. Fallback to "Certified" so any future predicate the
       // indexer surfaces still renders something coherent.
-      let actionLabel = 'Certified'
-      if (intentionLower === 'trusts') actionLabel = 'Trusted'
-      else if (isOppose) actionLabel = 'Distrusted'
+      let actionPrefix = 'Certified'
+      if (intentionLower === 'trusts') actionPrefix = 'Trusted'
+      else if (isOppose) actionPrefix = 'Distrusted'
       else if (intentionLower.startsWith('visits for ')) {
         const tail = intentionLower.slice('visits for '.length)
-        actionLabel = `Marked for ${tail}`
+        actionPrefix = `Marked for ${tail}`
       }
       return {
         id: c.termId,
@@ -210,7 +216,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         favicon,
         timestamp: e.ts,
         isOppose,
-        actionLabel,
+        actionPrefix,
+        actionSuffix: '',
+        topic: null,
       }
     })
   }, [profile, topicById])
@@ -390,35 +398,42 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                   value: discoveryBuckets.pioneer.length,
                   icon: '/badges/pioneer.png',
                   color: '#e4b95a',
+                  to: '/scores/badges/pioneer',
                 },
                 {
                   label: 'Explorer',
                   value: discoveryBuckets.explorer.length,
                   icon: '/badges/explorer.png',
                   color: '#5cc4d6',
+                  to: '/scores/badges/explorer',
                 },
                 {
                   label: 'Contributor',
                   value: discoveryBuckets.contributor.length,
                   icon: '/badges/contributor.png',
                   color: '#a78bdb',
+                  to: '/scores/badges/contributor',
                 },
                 {
                   label: 'Trusted',
                   value: trustedCount,
                   icon: '/badges/trust.png',
                   color: '#6dd4a0',
+                  to: '/scores',
                 },
               ].map((b) => (
-                <div
+                <button
                   key={b.label}
+                  type="button"
                   className="pd-badge-card"
                   style={{ ['--badge-color' as string]: b.color }}
+                  onClick={() => navigate(b.to)}
+                  title={`View ${b.label} details`}
                 >
                   <img src={b.icon} alt={b.label} className="pd-badge-icon" />
                   <span className="pd-badge-label">{b.label}</span>
                   <span className="pd-badge-value">{b.value}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -430,7 +445,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
                   const isOppose = a.isOppose
-                  const actionLabel = a.actionLabel
                   const root = a.domain
                   return (
                     <a
@@ -492,7 +506,22 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       </span>
                       <span className="pd-la-text">
                         <span className="pd-la-title">
-                          {actionLabel} <strong>{a.title}</strong>
+                          {a.actionPrefix}{' '}
+                          {a.topic && (
+                            <>
+                              <TopicBadge
+                                topicId={a.topic.id}
+                                color={a.topic.color || 'var(--ds-muted)'}
+                                size={14}
+                                title={a.topic.label}
+                              />{' '}
+                              <span className="pd-la-topic-label">
+                                {a.topic.label}
+                              </span>{' '}
+                            </>
+                          )}
+                          {a.actionSuffix ? `${a.actionSuffix} ` : ''}
+                          <strong>{a.title}</strong>
                         </span>
                         <span className="pd-la-sub">
                           {root}
