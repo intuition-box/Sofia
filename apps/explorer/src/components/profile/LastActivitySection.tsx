@@ -49,10 +49,14 @@ function toCardProps(g: IntentionGroupWithStats) {
   return {
     domain: g.domain,
     faviconSrc: getFaviconUrl(g.domain),
-    currentPredicate: g.currentPredicate,
+    // The italic predicate line was noise — every cert on a card
+    // already exposes its intention through the colored cert dots.
+    currentPredicate: null,
     activeUrlCount: g.activeUrlCount,
     certifiedCount: g.certifiedCount,
-    timeLabel: formatDuration(g.totalAttentionTime),
+    // Attention time isn't measurable here (no extension context),
+    // so we skip the "0s" stat entirely.
+    timeLabel: '',
     level: g.level,
     levelColor: getLevelColor(g.level),
     levelColorAlpha: getLevelColorAlpha(g.level),
