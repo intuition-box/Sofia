@@ -305,7 +305,6 @@ export default function ComposePage() {
                   >
                     <div className="check" aria-hidden="true" />
                     <div className="what-head-row">
-                      <span className="what-label">Topic</span>
                       <button
                         type="button"
                         className="cmp-card-view"

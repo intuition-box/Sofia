@@ -34,6 +34,9 @@ import {
 import PredicatePicker from '@/components/PredicatePicker'
 import CircleFeedCard from './CircleFeedCard'
 import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
+import CircleTopicFilter, {
+  type TopicFilterId,
+} from './CircleTopicFilter'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
@@ -51,6 +54,7 @@ export default function CircleFeedSection({
 }: CircleFeedSectionProps) {
   const { items, loading, error } = useCircleFeed(addresses)
   const [verb, setVerb] = useState<VerbFilterId>('all')
+  const [topic, setTopic] = useState<TopicFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
 
   const { authenticated } = usePrivy()
@@ -130,13 +134,17 @@ export default function CircleFeedSection({
         )
       })
       .filter((item) => {
+        if (topic === 'all') return true
+        return item.topicContexts?.includes(topic)
+      })
+      .filter((item) => {
         if (memberFilter === 'all') return true
         return (
           (item.certifierAddress || '').toLowerCase() ===
           memberFilter.toLowerCase()
         )
       })
-  }, [items, verb, memberFilter])
+  }, [items, verb, topic, memberFilter])
 
   const shown = filtered.slice(0, MAX_SHOWN)
 
@@ -156,6 +164,8 @@ export default function CircleFeedSection({
 
       <div className="crd-feed-filters">
         <CircleVerbFilter active={verb} onChange={setVerb} />
+        <div className="crd-feed-filters-divider" aria-hidden="true" />
+        <CircleTopicFilter active={topic} onChange={setTopic} />
         <div className="crd-feed-filters-divider" aria-hidden="true" />
         <div className="crd-user-filter">
           <label className="crd-user-filter-label" htmlFor="crd-user-filter">
