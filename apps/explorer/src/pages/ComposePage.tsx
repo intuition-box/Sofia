@@ -20,7 +20,7 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useGroups } from '@/hooks/useGroups'
-import { getTopicEmoji } from '@/config/topicEmoji'
+import TopicBadge from '@/components/profile/TopicBadge'
 import MemberAvatar from '@/components/circles/MemberAvatar'
 import CompileActionButton from '@/components/CompileActionButton'
 import type { CompareMode } from '@/lib/compileActionAnims'
@@ -319,9 +319,13 @@ export default function ComposePage() {
                       </button>
                     </div>
                     <div className="what-name">
-                      <span className="what-emoji" aria-hidden="true">
-                        {getTopicEmoji(topic.id) || '📌'}
-                      </span>
+                      <TopicBadge
+                        topicId={topic.id}
+                        color={topic.color}
+                        size={32}
+                        title={topic.label}
+                        className="what-emoji"
+                      />
                       {topic.label}
                     </div>
                   </div>

@@ -23,6 +23,7 @@ import {
   type GetUserCertsAlltimeQuery,
 } from '@0xsofia/graphql'
 import { TOPIC_TERM_IDS, ATOM_ID_TO_TOPIC } from '@/config/atomIds'
+import { GRAPHQL_URL } from '@/config'
 
 type RawCertTriple = NonNullable<GetUserCertsAlltimeQuery['triples']>[number]
 
