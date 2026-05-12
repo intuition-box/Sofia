@@ -249,7 +249,11 @@ export default function PublicProfilePage() {
             activities={echoesActivities}
             loading={onChainLoading}
             sort={echoesSort}
-            linkable={false}
+            // Echo cards now route to /profile/platform/:domain?address=…
+            // so visitors can drill into the viewed user's certs on a
+            // given platform, just like the personal profile does for
+            // its own wallets.
+            viewedAddress={walletAddress}
           />
         </section>
       </div>

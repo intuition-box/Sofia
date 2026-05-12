@@ -22,9 +22,13 @@ interface LastActivitySectionProps {
   loading: boolean
   /** Sort strategy — defaults to `platform`. Proto offers `platform | verb | topic`. */
   sort?: 'platform' | 'verb' | 'topic'
-  /** When true (default), each card links to `/profile/platform/:domain`.
-   *  Disable on public-profile views — that detail page is owner-only. */
+  /** When true (default), each card links to `/profile/platform/:domain`. */
   linkable?: boolean
+  /** When provided, the link gains `?address=:viewedAddress` so the
+   *  platform detail page renders for THAT wallet instead of the
+   *  connected user. Public profile pages pass this through; the
+   *  personal profile leaves it `undefined`. */
+  viewedAddress?: string
 }
 
 /** Build the prop bag consumed by the presentational <GroupBentoCard>. */
@@ -67,6 +71,7 @@ export default function LastActivitySection({
   loading,
   sort = 'platform',
   linkable = true,
+  viewedAddress,
 }: LastActivitySectionProps) {
   const groups = useIntentionGroups(activities, { sort })
 
@@ -94,19 +99,20 @@ export default function LastActivitySection({
     <div className="triples-container">
       <div className="groups-section">
         <div className="bento-grid bento-grid-3">
-          {groups.map((g) =>
-            linkable ? (
-              <Link
-                key={g.id}
-                to={`/profile/platform/${encodeURIComponent(g.domain)}`}
-                className="echoes-card-link"
-              >
+          {groups.map((g) => {
+            if (!linkable) {
+              return <GroupBentoCard key={g.id} {...toCardProps(g)} />
+            }
+            const base = `/profile/platform/${encodeURIComponent(g.domain)}`
+            const href = viewedAddress
+              ? `${base}?address=${viewedAddress}`
+              : base
+            return (
+              <Link key={g.id} to={href} className="echoes-card-link">
                 <GroupBentoCard {...toCardProps(g)} />
               </Link>
-            ) : (
-              <GroupBentoCard key={g.id} {...toCardProps(g)} />
-            ),
-          )}
+            )
+          })}
         </div>
       </div>
     </div>

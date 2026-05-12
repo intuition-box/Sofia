@@ -10,7 +10,7 @@
  */
 
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
@@ -68,12 +68,19 @@ function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
 export default function PlatformDetailPage() {
   const navigate = useNavigate()
   const { domain: domainParam } = useParams<{ domain: string }>()
+  const [searchParams] = useSearchParams()
   const decodedDomain = domainParam ? decodeURIComponent(domainParam) : ''
   const { user } = usePrivy()
   const address = user?.wallet?.address
   const { addresses: linkedAddresses } = useLinkedWallets()
-  const profileAddresses =
-    linkedAddresses.length > 0
+  // Public-profile entry point: `?address=0x…` lets the page render
+  // any wallet's certs on this platform, not just the connected user's.
+  // Falls back to the connected user when no override is provided so
+  // the personal flow stays unchanged.
+  const viewedAddress = searchParams.get('address') ?? undefined
+  const profileAddresses = viewedAddress
+    ? [viewedAddress]
+    : linkedAddresses.length > 0
       ? linkedAddresses
       : address
         ? [address]
@@ -131,7 +138,9 @@ export default function PlatformDetailPage() {
           <button
             type="button"
             className="pf-btn"
-            onClick={() => navigate('/profile')}
+            onClick={() =>
+              navigate(viewedAddress ? `/profile/${viewedAddress}` : '/profile')
+            }
           >
             <ArrowLeft className="h-4 w-4" />
             Back to profile
