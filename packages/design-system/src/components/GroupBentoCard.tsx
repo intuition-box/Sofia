@@ -48,6 +48,13 @@ export type GroupBentoCardProps = {
   canLevelUp?: boolean
   /** Size of the bento card within the grid. Mirrors the CSS utility classes. */
   size?: 'small' | 'tall' | 'mega'
+  /** Optional image rendered as a full-bleed header at the top of the
+   *  card, before `.group-bento-header`. When set, the existing
+   *  content collapses into a compact bandeau below the image. Falls
+   *  back to the legacy flat layout when absent. */
+  headerImage?: string
+  /** Alt text for `headerImage`. Defaults to the empty string. */
+  headerImageAlt?: string
   /** Extra class names appended to the root `.bento-card.group-bento-card`. */
   className?: string
   /** Optional children rendered AFTER the built-in sections. */
@@ -87,6 +94,8 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     canLevelUp,
     size = 'small',
     className,
+    headerImage,
+    headerImageAlt,
     children,
     style: callerStyle,
     ...rest
@@ -97,6 +106,7 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     `bento-${size}`,
     'group-bento-card',
     canLevelUp ? 'can-level-up' : null,
+    headerImage ? 'group-bento-card--with-thumb' : null,
     className,
   ]
     .filter(Boolean)
@@ -106,6 +116,15 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
 
   const innerBody = (
     <>
+      {headerImage ? (
+        <div className="group-bento-thumb">
+          <img
+            src={headerImage}
+            alt={headerImageAlt ?? ''}
+            loading="lazy"
+          />
+        </div>
+      ) : null}
       <div className="group-bento-header">
         <FaviconWrapper
           className="group-bento-favicon"
