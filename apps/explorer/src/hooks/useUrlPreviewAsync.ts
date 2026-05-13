@@ -19,13 +19,22 @@ import {
 } from '@/utils/asyncUrlPreview'
 import type { UrlPreview } from '@/utils/urlPreview'
 
+// Injected into the React Query key so that flipping the OG proxy env
+// var (e.g. from "unset" to "set") naturally invalidates every cached
+// preview. Without this, a `null` cached when the proxy was off would
+// keep being served after the proxy comes online — for the cache's
+// full 7-day gcTime.
+const PROXY_FINGERPRINT = import.meta.env.VITE_OG_PROXY_URL
+  ? 'proxy-on'
+  : 'proxy-off'
+
 export function useUrlPreviewAsync(url: string | undefined): {
   data: UrlPreview | undefined
   isLoading: boolean
 } {
   const enabled = !!url && hasAsyncProvider(url)
   const { data, isLoading } = useQuery({
-    queryKey: ['url-preview', url],
+    queryKey: ['url-preview', PROXY_FINGERPRINT, url],
     queryFn: () => fetchAsyncUrlPreview(url!),
     enabled,
     staleTime: 24 * 60 * 60 * 1000,

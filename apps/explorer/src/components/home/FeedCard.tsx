@@ -15,7 +15,6 @@ import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
-import { getUrlPreview } from '@/utils/urlPreview'
 import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from '@/components/profile/TopicBadge'
 
@@ -48,10 +47,6 @@ export default function FeedCard({
   const canOppose = Object.values(item.intentionVaults).some(
     (v) => v.counterTermId,
   )
-  // Resolved once per render — the dispatcher returns a real thumb for
-  // YouTube and a favicon-tinted fallback for everything else, so the
-  // header is uniform across the grid.
-  const preview = getUrlPreview(item.url, item.domain)
 
   const openUrl = () => {
     if (!item.url) return
@@ -78,7 +73,8 @@ export default function FeedCard({
     >
       <UrlPreview
         variant="card"
-        preview={preview}
+        url={item.url}
+        domain={item.domain}
         className="fc-thumb"
         alt={item.title || item.domain}
       />

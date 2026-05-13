@@ -25,7 +25,6 @@ import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
-import { getUrlPreview } from '@/utils/urlPreview'
 import { UrlPreview } from '@/components/UrlPreview'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
@@ -260,13 +259,6 @@ export default function PlatformDetailPage() {
                   cert.objectUrl && cert.objectUrl.startsWith('http')
                     ? cert.objectUrl
                     : '#'
-                // Always mount the header — real thumbnail when we
-                // have one (YouTube today, more providers later),
-                // otherwise the favicon-tinted fallback so the grid
-                // stays visually uniform. CSS hides the small favicon
-                // in .fc-head whenever the header is rendered, so the
-                // brand icon never appears twice on the same card.
-                const preview = getUrlPreview(cert.objectUrl, host)
                 return (
                   <a
                     key={cert.termId}
@@ -277,7 +269,8 @@ export default function PlatformDetailPage() {
                   >
                     <UrlPreview
                       variant="card"
-                      preview={preview}
+                      url={cert.objectUrl}
+                      domain={host}
                       className="fc-thumb"
                       alt={cert.objectLabel || host}
                     />

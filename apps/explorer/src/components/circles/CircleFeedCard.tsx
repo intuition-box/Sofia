@@ -21,7 +21,6 @@ import {
 } from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { extractDomain } from '@/utils/formatting'
-import { getUrlPreview } from '@/utils/urlPreview'
 import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from '@/components/profile/TopicBadge'
 
@@ -122,9 +121,6 @@ export default function CircleFeedCard({
   }
 
   const href = item.url && item.url.startsWith('http') ? item.url : '#'
-  // Resolved once per render — real thumbnail for YouTube, favicon-tinted
-  // fallback for the rest. Keeps the grid visually uniform.
-  const preview = getUrlPreview(item.url, host)
 
   return (
     <a
@@ -143,7 +139,8 @@ export default function CircleFeedCard({
 
       <UrlPreview
         variant="card"
-        preview={preview}
+        url={item.url}
+        domain={host}
         className="fc-thumb"
         alt={item.title || host}
       />

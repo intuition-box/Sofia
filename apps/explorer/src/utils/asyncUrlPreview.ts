@@ -13,7 +13,7 @@
  *
  * The OG proxy slot is opt-in via `VITE_OG_PROXY_URL`. When unset, the
  * provider isn't tried — the card stays on its sync favicon fallback.
- * Once a Cloudflare Worker (see `services/og-proxy/`) is deployed and
+ * Once the OG proxy service (see `services/og-proxy/`) is deployed and
  * the env var points at it, every URL with OpenGraph meta tags gets a
  * real preview.
  */
