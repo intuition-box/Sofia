@@ -1,0 +1,574 @@
+/**
+ * NewLayout — bare deck skeleton.
+ *
+ * Each slide is a single peach- or dark-background frame with the
+ * section code + label only. No real content, no inner grids. The
+ * point is to validate that the deck's pin / horizontal-track /
+ * state-machine mechanics work end-to-end before reintroducing the
+ * real component content slide by slide.
+ *
+ * A thin outline + corner ticks make it obvious whether a slide is
+ * actually filling 100% of the deck stage.
+ */
+
+.placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  /* Transparent — the Deck's bgLayer paints the colour underneath
+     with a 60° angled wipe between slides. */
+  background: transparent;
+}
+
+/* Wrapper around the real <Footer /> so it sits inside a deck slide
+   at full height, vertically centered. */
+.footerSlide {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: transparent;
+  overflow: hidden;
+}
+
+.footerSlide :global(footer) {
+  background: transparent !important;
+}
+
+/* Ink colour for content sitting on a peach slab. The variant class
+   is applied at the .zones layer level (not the placeholder) so each
+   layer has a stable palette across the sub-state crossfade — no
+   palette flip while a layer is fading out. */
+.peach {
+  color: #02000e;
+}
+
+/* Ink colour for content sitting on a dark slab. */
+.dark {
+  color: var(--color-text);
+}
+
+.frame {
+  flex: 1;
+  position: relative;
+  margin: 24px;
+  border: 1px solid rgba(128, 128, 128, 0.55);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 32px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.metaStrip,
+.bottomStrip {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+/* Optional slide header — slot rendered between the meta strip and
+   the zones grid for intro copy (e.g. S.05 vision paragraph). Sits
+   above the grid without consuming a zone number. Width is capped
+   to the first two grid cols (2fr out of 3.6fr + the gap between
+   them) so it aligns flush with cards 15/16 below and leaves the
+   right Plate D column visually clear. */
+.header {
+  flex: 0 0 auto;
+  padding: 12px 0 14px;
+}
+
+/* Deck button hover rules live in src/styles/global.css under the
+   [data-deck-slide][data-variant] selectors so they sit after the
+   global .btn-secondary rule in the cascade and bypass any CSS-module
+   hashing of the .placeholder/.peach/.dark class names. */
+
+/* Inline links inside the Q&A answers (zone 32 `dd` cells) — hover
+   flips to the peach accent so the affordance reads against the slab
+   ink. !important because the inline `color: inherit` would otherwise
+   beat external CSS at equal specificity. */
+.placeholder dd a:hover {
+  color: var(--color-accent) !important;
+}
+
+/* ValueCard pill ("Support" stake button OR "See on Intuition" link) —
+   hover flips to solid black slab with light ink. !important is needed
+   because the pill carries inline-style background/color (transparent
+   / inherit) that would otherwise beat external CSS at equal
+   specificity. */
+.placeholder a:hover .valuePill,
+.valuePill:hover {
+  background: #02000e !important;
+  border-color: #02000e !important;
+  color: #f5e9d8 !important;
+}
+
+/* In-grid banner cell — used by layouts that declare an `h` area
+   (e.g. quad-banner-tall-right). Matches the .zoneContent padding
+   so the banner text starts at the same X as the card text below. */
+.gridBanner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 28px 10px;
+}
+
+/* ── Numbered zones (2×2 grid) ──────────────────────────── */
+
+/* Container that anchors both the base zones grid AND the reveal
+   layer in the same slot of the slide. Flex:1 inside the frame, with
+   the two layers absolutely stacked on top of each other. */
+.contentArea {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+}
+
+.zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+  min-width: 0;
+  transition: opacity 220ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Base zones fade out when sub-state ≥ 1. */
+.zones[data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Reveal zones live in the same content slot as the base zones,
+   stacked on top via absolute positioning. They start hidden and
+   fade in on sub-state ≥ 1. */
+.revealZones {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition:
+    opacity 240ms cubic-bezier(0.65, 0, 0.35, 1) 80ms,
+    transform 320ms cubic-bezier(0.65, 0, 0.35, 1) 80ms;
+}
+
+.revealZones[data-revealed='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Single full-bleed zone covering the whole slide. */
+.layout_single {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'a';
+}
+
+/* Two equal full-height columns. */
+.layout_two_col {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'a b';
+}
+
+/* Narrow left column (1fr) + wide right column (2fr). */
+.layout_two_col_narrow_left {
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'a b';
+}
+
+/* Two equal full-width rows, stacked top/bottom. */
+.layout_two_row {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    'a'
+    'b';
+}
+
+/* Left column spans both rows; right column is split top/bottom.
+   Top right gets ~2/3 of the height (b carries the heavier banner
+   content on S.06 — Backed by), bottom right ~1/3 (c is a compact
+   row like the advisor strip). */
+.layout_left_stack_right {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 2fr 1fr;
+  grid-template-areas:
+    'a b'
+    'a c';
+}
+
+/* Left column spans both rows; right side is a 2×2 quad (b/c top
+   pair, d/e bottom pair) — 5 zones total. */
+.layout_left_quad_right {
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    'a b c'
+    'a d e';
+}
+
+/* Left column spans both rows; right side has a banner across the
+   top then a pair (c/d) at the bottom — 4 zones total. */
+.layout_left_banner_pair_right {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    'a b b'
+    'a c d';
+}
+
+/* Left column stacked top (≈85 %) / bottom (≈15 %); right column
+   spans both rows. The S.01 hero stacks a giant h-display + CTA
+   buttons in cell `a`, and with `justify-content: space-between` the
+   buttons anchor at the bottom of cell `a`. Bumped to 6:1 so cell `a`
+   eats more of the slide height — the buttons now sit visibly lower
+   on the page while the partner strip stays readable. */
+.layout_stack_left_tall_right {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 6fr 1fr;
+  grid-template-areas:
+    'a c'
+    'b c';
+}
+
+/* S.06 reveal — bottom-left cell (zone 24, Community T.03) holds the
+   "2500 TRUST + title + lede" block which needs more vertical room
+   than the 1fr base allots, so the reveal layer flips to 1:1 rows. */
+.revealZones.layout_stack_left_tall_right {
+  grid-template-rows: 1fr 1fr;
+}
+
+/* Stack-pair on the left (a top, b middle, d/e pair at the bottom),
+   right column (c) spans all three rows. Used by S.06 — the d/e
+   pair are flagged reveal-only and fade in on sub-scroll. */
+.layout_stack_pair_tall_right {
+  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+    'a a c'
+    'b b c'
+    'd e c';
+}
+
+/* Left column spans all 3 rows; right side has a banner row across
+   the top, then a 2×2 quad below it — 6 zones total. Left column
+   sized to 50% so it matches the width of slide 1's right zone. */
+.layout_left_quintet_right {
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+    'a b b'
+    'a c d'
+    'a e f';
+}
+
+/* 2x2 quadrants. */
+.layout_quad {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    'a b'
+    'c d';
+}
+
+/* 2×2 quad on the left two cols, tall right col spans both rows.
+   Used by S.05 — VISION cards 15/16/17/18 stay quadded, zone 19 is
+   the right tall vector slot (Plate D / IsoStack). */
+.layout_quad_tall_right {
+  grid-template-columns: 1fr 1fr 1.6fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    'a b e'
+    'c d e';
+}
+
+/* Same right-tall layout as `quad-tall-right` plus a banner row at
+   the top spanning cols 1+2. The tall right col `e` extends through
+   ALL three rows so Plate D occupies the full slide height alongside
+   the banner + cards. `h` carries the headerContent (not numbered). */
+.layout_quad_banner_tall_right {
+  grid-template-columns: 1fr 1fr 1.6fr;
+  grid-template-rows: auto 1fr 1fr;
+  grid-template-areas:
+    'h h e'
+    'a b e'
+    'c d e';
+}
+
+.zone {
+  position: relative;
+  border: 1px dashed currentColor;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  /* Slight tint so empty zones read as "container", not "void". */
+  background: rgba(0, 0, 0, 0.025);
+  /* Hide overflow so the wipe slab can't escape the zone. */
+  overflow: hidden;
+}
+
+.dark .zone {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Zones that host real content (ZONE_NODES entry) drop the wireframe
+   dashed border + tint so the typography and graphics sit on the raw
+   slab colour. The wipe slab still plays on top via z-index. */
+.zone[data-custom='true'] {
+  border: none;
+  background: transparent;
+}
+.dark .zone[data-custom='true'] {
+  background: transparent;
+}
+
+/* Inner wrapper holding the visible content (number + label).
+   We animate THIS, not the .zone box itself, so the dashed border
+   stays put while the content slides / scales / wipes in. */
+.zoneInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  z-index: 1;
+}
+
+/* Container used when a zone is rendered with custom content
+   (graphics, composed React nodes) instead of the wireframe
+   "<num> / <label>" skeleton. Fills the zone so SVGs that use
+   width/height 100% stretch correctly, and stays under the wipe slab
+   (z-index 1) so the diagonal entrance still plays on top. */
+/* Custom-content layer sits ABOVE the wipe slab (which is at z-index
+   2 via .zone[data-anim='wipe']::after) so real copy and graphics
+   stay visible and uncropped through the entrance animation. The
+   slab still sweeps the bg colour around the content. */
+.zoneContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 14px 28px;
+  z-index: 3;
+}
+
+.zoneContent > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Entrance animations (driven by [data-active] on .placeholder) ─
+ *
+ * The active slide's zones animate in with a per-zone delay computed
+ * from `--zone-i` (the zone index inside the slide). Three patterns
+ * coexist:
+ *   wipe      = 60° diagonal colour slab sweeps off, revealing text
+ *   slide-up  = translateY from below + fade
+ *   scale     = scale from 0.92 + fade
+ *
+ * Inactive slides force the closed/covered state so the next time
+ * they become active the entrance plays again.
+ */
+
+.zone {
+  --zone-i: 0;
+  --zone-extra-delay: 0ms;
+  --enter-delay: calc(440ms + var(--zone-i) * 80ms + var(--zone-extra-delay));
+}
+
+/* slide-up (default for non-first zones) — hidden state. The fast
+   default transition is what plays on EXIT (slide leaving): a quick
+   200ms fade-out so the dots/cards don't linger across the bg wipe.
+   The slower staggered transition lives on the [data-active] rule
+   below, only active during entry. */
+.zone[data-anim='slide-up'] .zoneInner,
+.zone[data-anim='slide-up'] .zoneContent {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 200ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 200ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* scale — used for the reveal-state zones (S.06 community). */
+.zone[data-anim='scale'] .zoneInner,
+.zone[data-anim='scale'] .zoneContent {
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 200ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* wipe — a 60° skewed colour slab sits on top of the zone at rest,
+   and slides out to the right when the slide becomes active. The slab
+   colour is the opposite of the slide's background (peach on dark,
+   ink on peach), giving the "full colour reveals text" effect. */
+.zone[data-anim='wipe']::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  right: -30%;
+  z-index: 2;
+  background: var(--zone-wipe-color, #02000e);
+  transform-origin: top left;
+  transform: skewX(-30deg) translateX(0);
+  transition: transform 700ms cubic-bezier(0.65, 0, 0.35, 1) var(--enter-delay);
+}
+
+.peach .zone[data-anim='wipe'] { --zone-wipe-color: #02000e; }
+.dark  .zone[data-anim='wipe'] { --zone-wipe-color: var(--color-accent); }
+
+/* Wipe zone — content hidden at rest; the long staggered entrance
+   sits on [data-active] below. Default short transition makes exit
+   feel instant rather than waiting for the entrance delay. */
+.zone[data-anim='wipe'] .zoneInner,
+.zone[data-anim='wipe'] .zoneContent {
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ── Active state — play the entrance animations ────────────────── */
+
+/* Entry — the active slide plays the long staggered reveal. Both
+   the property values AND the transition itself live on this rule,
+   so when data-active flips back to false the slow entry transition
+   is no longer in effect: the rest-state's fast 200ms fade-out
+   handles the exit, and the slide leaves cleanly without flashing
+   its content across the bg wipe. */
+.placeholder[data-active='true'] .zone[data-anim='slide-up'] .zoneInner,
+.placeholder[data-active='true'] .zone[data-anim='slide-up'] .zoneContent {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 360ms cubic-bezier(0.65, 0, 0.35, 1) var(--enter-delay),
+    transform 480ms cubic-bezier(0.65, 0, 0.35, 1) var(--enter-delay);
+}
+
+.placeholder[data-active='true'] .zone[data-anim='scale'] .zoneInner,
+.placeholder[data-active='true'] .zone[data-anim='scale'] .zoneContent {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 320ms cubic-bezier(0.65, 0, 0.35, 1) var(--enter-delay),
+    transform 460ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--enter-delay);
+}
+
+.placeholder[data-active='true'] .zone[data-anim='wipe'] .zoneInner,
+.placeholder[data-active='true'] .zone[data-anim='wipe'] .zoneContent {
+  opacity: 1;
+  transition: opacity 320ms cubic-bezier(0.65, 0, 0.35, 1)
+    calc(var(--enter-delay) + 180ms);
+}
+
+.placeholder[data-active='true'] .zone[data-anim='wipe']::after {
+  transform: skewX(-30deg) translateX(160%);
+}
+
+/* The reveal layer waits for the sub-state flip — its zones play
+   their entrance only once `data-revealed='true'` is on the parent
+   .revealZones grid. The base data-active selector triggers the
+   first layer (sub-state 0), this one triggers the second. */
+.revealZones[data-revealed='false'] .zone .zoneInner {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.revealZones[data-revealed='false'] .zone[data-anim='wipe']::after {
+  transform: skewX(-30deg) translateX(0);
+}
+
+.dark .zone {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.zoneNum {
+  font-family: var(--font-mono);
+  font-size: clamp(2.6rem, 6vw, 5.6rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.zoneRef {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: center;
+  line-height: 1.35;
+  max-width: 26ch;
+  padding: 0 12px;
+  word-break: break-word;
+}
+
+/* ── Reveal layer (sub-state-driven) ─────────────────────── */
+
+/* The reveal layer is absolutely positioned in the same content slot
+   as `.zones`. When the sub-state goes to 1, the base layout fades
+   out and the reveal cards fade in on top. */
+.revealLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition:
+    opacity 240ms cubic-bezier(0.65, 0, 0.35, 1) 80ms,
+    transform 320ms cubic-bezier(0.65, 0, 0.35, 1) 80ms;
+}
+
+.revealLayer[data-revealed='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.revealCard {
+  position: relative;
+  border: 1px dashed currentColor;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.04);
+  min-width: 0;
+  min-height: 0;
+}
+
+.dark .revealCard {
+  background: rgba(255, 255, 255, 0.04);
+}

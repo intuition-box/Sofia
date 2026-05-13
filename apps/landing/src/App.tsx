@@ -8,30 +8,28 @@ import { Team } from './components/Team'
 import { FAQ } from './components/FAQ'
 import { CTA } from './components/CTA'
 import { Footer } from './components/Footer'
-import { HexDeck } from './components/HexDeck'
+import { Deck } from './proto/Deck'
 
 /**
- * Page order locked from `docs/landing-mockup-refactor-plan.md`:
- *   HexDeck { Hero, ValueProps, Carousel, Product, Values, Team } → FAQ → CTA → Footer
+ * Page order:
+ *   Deck { Hero, ValueProps, Carousel, Vision, Values, Team } → FAQ → CTA → Footer
  *
- * The HexDeck pins for one viewport per inter-slide transition and
- * unfolds each slide via a hex-shaped iris. FAQ / CTA / Footer keep
- * a normal vertical flow after the deck unpins.
+ * The deck is a sticky-pinned horizontal carousel of 6 slides. Wheel,
+ * touch and keyboard input advance through discrete states. FAQ, CTA
+ * and Footer scroll normally under Lenis once the deck unpins.
  */
 export default function App() {
   return (
     <>
       <Navbar />
-      <HexDeck
-        bgs={['peach', 'peach', 'dark', 'peach', 'peach', 'dark']}
-      >
+      <Deck bgs={['peach', 'peach', 'dark', 'peach', 'peach', 'dark']}>
         <Hero />
         <ValueProps />
         <Carousel />
         <Features />
         <Values />
         <Team />
-      </HexDeck>
+      </Deck>
       <FAQ />
       <CTA />
       <Footer />

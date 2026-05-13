@@ -127,12 +127,16 @@
 /* ── 2. Vision block — full width long-form ─────────────── */
 
 .vision {
-  margin-top: 88px;
-  padding: 48px 0 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  /* Standalone slide content — no top margin/border (the previous
+     design had Pillars above; now Vision is the only block). */
+  margin-top: 0;
+  padding: 0;
+  border-top: none;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
 }
 
 .subEyebrow {
@@ -165,9 +169,12 @@
 .visionLayout {
   display: grid;
   grid-template-columns: 1fr 1.05fr;
-  gap: 48px;
-  margin-top: 22px;
-  align-items: stretch;
+  grid-template-rows: 1fr;
+  gap: 32px;
+  margin-top: 8px;
+  align-items: center;
+  min-height: 0;
+  flex: 1;
 }
 
 .visionCopy {
@@ -186,8 +193,9 @@
 
 .visionVisual {
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
 }
 
 /* Plate visual override — let the iso stack fill the column. */
@@ -201,7 +209,8 @@
 .visionPlateBody {
   aspect-ratio: auto !important;
   flex: 1 1 auto !important;
-  min-height: 480px;
+  min-height: 0 !important;
+  max-height: calc(100vh - var(--nav-h, 64px) - 18vh);
   padding: 0 !important;
   background: transparent !important;
 }
@@ -214,12 +223,10 @@
   display: block;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 720px) {
   .visionLayout {
     grid-template-columns: 1fr;
-  }
-  .visionPlateBody {
-    min-height: 420px;
+    gap: 16px;
   }
 }
 

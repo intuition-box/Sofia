@@ -201,23 +201,30 @@ const TESTIMONIALS: Testimonial[] = [
 ]
 
 export function Team() {
-  const advHeaderRef = useScrollAnim<HTMLDivElement>()
-
+  /*
+   * In-deck Operators slide — renders only SectionHead + Traction +
+   * Core team grid. Voices (testimonials) and Advisors blocks were
+   * previously rendered here but pushed the slide content well beyond
+   * 100vh and caused the trigger to crop the page in half. They are
+   * kept defined below (`TESTIMONIALS`, `ADVISORS`, `TestimonialCard`,
+   * `AdvisorCard`) for the upcoming sub-trigger pass that will reveal
+   * them progressively, or for a follow-up Operators slide.
+   */
   return (
     <Section
       id="team"
       code="S.07"
       label="OPERATORS"
-      meta={`${TEAM.length} CORE · ${ADVISORS.length} ADVISORS · ${TESTIMONIALS.length} VOICES`}
+      meta={`${TEAM.length} CORE · ${TRACTION.length} METRICS`}
     >
       <SectionHead
         eyebrow="The team"
         title={
           <>
-            Two builders. Three advisors. <em>One open repository.</em>
+            Two builders. <em>One open repository.</em>
           </>
         }
-        sub="Sofia is built in public on Intuition. Every contributor is reachable; every advisor stakes their name on the work."
+        sub="Sofia is built in public on Intuition. Every contributor is reachable; every commit lands in the open."
       />
 
       <div className={`${styles.traction} stagger`}>
@@ -237,31 +244,6 @@ export function Team() {
       <div className={`${styles.grid} stagger`}>
         {TEAM.map((m, i) => (
           <MemberCard key={m.name} member={m} index={i} />
-        ))}
-      </div>
-
-      {/* Testimonials — voices from the community */}
-      <div className={styles.voicesHeader}>
-        <span className={styles.voicesEyebrow}>— FROM THE COMMUNITY</span>
-        <span className={styles.voicesMeta}>
-          {TESTIMONIALS.length} VOICES · LIVE
-        </span>
-      </div>
-
-      <div className={`${styles.voicesGrid} stagger`}>
-        {TESTIMONIALS.map((t, i) => (
-          <TestimonialCard key={t.handle} t={t} index={i} />
-        ))}
-      </div>
-
-      <div ref={advHeaderRef} className={`${styles.advHeader} anim anim-up`}>
-        <span className={styles.advHeaderRule}>— ADVISORS</span>
-        <span className={styles.advHeaderMeta}>{ADVISORS.length} OPERATORS</span>
-      </div>
-
-      <div className={`${styles.advGrid} stagger`}>
-        {ADVISORS.map((a, i) => (
-          <AdvisorCard key={a.name} advisor={a} index={i} />
         ))}
       </div>
     </Section>

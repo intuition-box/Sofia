@@ -73,43 +73,39 @@ const CHRONICLE_TEASERS: ChronicleTeaser[] = [
 ]
 
 /**
- * Product (S.01) — replaces the prior Features section.
+ * Vision (S.01) — Vision-only slide inside the HexDeck.
  *
- * Three blocks:
- *   1. Two-pillar overview (Explorer + Extension)
- *   2. Vision — long-form copy + IsoStack visual
- *   3. Open & built-in-public — open source, GitHub link, chronicles
- *      teaser, build-in-public statement
+ * The previous version of this slide rendered three blocks (pillars,
+ * vision, open-source) which pushed Plate D to the very bottom of the
+ * 100vh slide. The slide now shows only the Vision block: copy on the
+ * left, Plate D (IsoStack) on the right, centred vertically.
+ *
+ * The Pillars and OpenBlock content + helpers are kept further down
+ * in this file as inert code so the rédactionnel isn't lost — they
+ * can be re-mounted in another section later, or cleaned up once we
+ * decide not to reuse them.
  */
 export function Features() {
   return (
     <Section
-      id="product"
+      id="vision"
       code="S.01"
-      label="PRODUCT"
-      meta="02 SURFACES · OPEN BUILD"
+      label="VISION"
+      meta="YOUR WEB → YOUR PEOPLE"
       variant="peach"
     >
       <SectionHead
-        eyebrow="The product"
+        eyebrow="Vision"
         title={
           <>
-            Two surfaces, <em>one identity.</em>
+            The web you browse becomes <em>a story you own.</em>
           </>
         }
-        sub="Sofia is two tools that work together: the Explorer to see and share, the Extension to turn what you do into proof you own."
+        sub="Sofia turns your attention into a shared signal without renting it out. You sign what's worth keeping; it becomes permanent proof, and over time these proofs draw a map of who cares about what."
         variant="peach"
       />
 
-      <div className={`${styles.pillars} stagger`}>
-        {PILLARS.map((p, i) => (
-          <PillarCard key={p.tag} pillar={p} index={i} />
-        ))}
-      </div>
-
       <VisionBlock />
-
-      <OpenBlock teasers={CHRONICLE_TEASERS} />
     </Section>
   )
 }
@@ -141,10 +137,6 @@ function VisionBlock() {
   const ref = useScrollAnim<HTMLElement>()
   return (
     <article ref={ref} className={`${styles.vision} anim anim-up`}>
-      <span className={styles.subEyebrow}>Vision</span>
-      <h3 className={styles.subTitle}>
-        The web you browse becomes <em>a story you own.</em>
-      </h3>
       <div className={styles.visionLayout}>
         <div className={styles.visionCopy}>
           <p>

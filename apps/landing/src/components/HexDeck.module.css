@@ -48,12 +48,32 @@
    the available height without overflowing. min-height anchored to
    100vh inside the section CSS modules is cancelled. */
 .slide :global(section) {
-  padding-top: clamp(32px, 3.5vh, 56px) !important;
-  padding-bottom: clamp(32px, 3.5vh, 56px) !important;
+  /* Tight padding in the deck — sections in the regular page flow keep
+     their full 140px rhythm; here we free up ~50px of vertical budget
+     per slide so the content fits 100vh - navbar. */
+  padding-top: clamp(16px, 2vh, 32px) !important;
+  padding-bottom: clamp(16px, 2vh, 32px) !important;
   min-height: 0 !important;
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* SectionHead compact mode when rendered inside a deck slide. Targets
+   CSS Modules hashed class names of the form `SectionHead_head__xxx`
+   via attribute-contains selector. */
+.slide :global(header[class*="head"]) {
+  margin-bottom: 12px !important;
+}
+.slide :global(header[class*="head"]) :is(h1, h2) {
+  font-size: clamp(1.4rem, 2vw, 2rem) !important;
+  line-height: 1.1 !important;
+  margin: 4px 0 6px !important;
+}
+.slide :global(header[class*="head"]) p {
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  max-width: 60ch;
 }
 
 .slide :global(section) > div {
@@ -85,16 +105,28 @@
 
 .hex {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 88vh;
+  /* Anchor the hex center on the viewport's left edge so only the
+     right half is visible (the rest spills off-screen left). */
+  left: 0;
+  /* Center vertically inside the space _below_ the navbar instead of
+     the whole viewport — otherwise the navbar crops the top. */
+  top: calc(var(--nav-h, 64px) + (100vh - var(--nav-h, 64px)) / 2);
+  /* Cap height to the area available under the navbar with a touch
+     of breathing room so the hex never reads as clipped. */
+  height: min(88vh, calc(100vh - var(--nav-h, 64px) - 4vh));
   aspect-ratio: 1.1547 / 1;
   background: rgba(255, 220, 198, 0.45);
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
   pointer-events: none;
-  z-index: 1;
+  /* z-index -1 puts the hex behind every other deck child, so the
+     slide content/section background covers it entirely. The hex acts
+     as a subtle watermark visible only through transparent areas of
+     the section, not over the cards / SectionHead. Without this, the
+     hex paints on top of slide content and the user perceives every
+     slide as offset right vs non-deck sections like FAQ. */
+  z-index: -1;
   transition: background 0.5s var(--ease-out, ease);
 }
 
@@ -111,6 +143,44 @@
 
 @media (max-width: 720px) {
   .hex {
-    height: 70vh;
+    height: min(70vh, calc(100vh - var(--nav-h, 64px) - 4vh));
+  }
+}
+
+/* ── Shared Plate A — single instrument that survives the boundary
+ *
+ * Positioned in the viewport (not in the track) so it can be animated
+ * independently of the horizontal slide motion. Resting position is
+ * the left column of slide 1 (centred at 25vw vertically below the
+ * navbar). HexDeck.tsx applies an initial +50vw translateX via GSAP
+ * to put it at the right column of slide 0 (centred at 75vw) and
+ * animates it back to x=0 across the first slide transition. */
+
+.sharedPlate {
+  position: absolute;
+  /* Resting position (slide 1) = centred horizontally at 25vw and
+     vertically in the area below the navbar. */
+  left: 25vw;
+  top: calc(var(--nav-h, 64px) + (100vh - var(--nav-h, 64px)) / 2);
+  transform: translate(-50%, -50%);
+  /* Width is the primary constraint: cap at 45vw so the plate fits on
+     slide 1 (centre = 25vw → edges 2.5vw / 47.5vw, visible) and on
+     slide 0 (centre = 60vw → edges 37.5vw / 82.5vw, visible). Height
+     follows via aspect-ratio: 1 but is also capped to the available
+     height so the plate never bleeds past the navbar or viewport. */
+  width: min(45vw, calc(100vh - var(--nav-h, 64px) - 4vh));
+  height: auto;
+  aspect-ratio: 1;
+  max-width: 760px;
+  pointer-events: none;
+  z-index: 3;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 720px) {
+  /* On narrow screens the deck collapses (handled elsewhere); hide
+     the shared plate to avoid overlapping cramped column content. */
+  .sharedPlate {
+    display: none;
   }
 }

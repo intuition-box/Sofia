@@ -7,23 +7,28 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr;
   gap: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   background: #02000e;
+  /* Take the slide's leftover height instead of growing with content. */
+  flex: 1;
+  min-height: 0;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 32px 24px 30px;
+  gap: 10px;
+  padding: 22px 18px 22px;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background: #02000e;
   color: rgba(255, 255, 255, 0.92);
   transition: background 0.25s;
-  min-height: 280px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .card:hover {
@@ -127,7 +132,7 @@
   margin: 4px 0 0;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 720px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }

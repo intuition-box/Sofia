@@ -1,5 +1,4 @@
 import { Arrow } from './Arrow'
-import { TopicsIntentions } from './Instruments'
 import styles from './Hero.module.css'
 
 const PARTNERS = [
@@ -76,21 +75,10 @@ export function Hero() {
           </div>
         </div>
 
-        <div className={styles.visualZone}>
-          <div className={styles.diagram}>
-            <span className={`${styles.plateTag} ${styles.tl}`}>
-              PLATE.A · TOPICS × INTENTIONS
-            </span>
-            <span className={`${styles.plateTag} ${styles.tr}`}>v0.9</span>
-            <span className={`${styles.plateTag} ${styles.bl}`}>
-              OUTER · TOPICS
-            </span>
-            <span className={`${styles.plateTag} ${styles.br}`}>
-              INNER · INTENTIONS
-            </span>
-            <TopicsIntentions mode="light" />
-          </div>
-        </div>
+        {/* Right column reserved for the shared Plate A. The Plate is
+            rendered once by the HexDeck so it can animate across the
+            slide boundary (right of Hero → left of ValueProps). */}
+        <div className={styles.visualZone} aria-hidden="true" />
       </div>
     </section>
   )
