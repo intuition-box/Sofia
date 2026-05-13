@@ -10,12 +10,17 @@
  * star badge and `fc-desc` sections aren't rendered here.
  */
 import type { MouseEvent } from 'react'
-import { FaviconWrapper } from '@0xsofia/design-system'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
+import { UrlPreview } from '@/components/UrlPreview'
+import TopicBadge from '@/components/profile/TopicBadge'
+
+function topicMeta(slug: string) {
+  return SOFIA_TOPICS.find((t) => t.id === slug)
+}
 
 interface FeedCardProps {
   item: CircleItem
@@ -23,10 +28,6 @@ interface FeedCardProps {
   avatar: string
   isPrivate?: boolean
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
-}
-
-function topicLabel(slug: string): string {
-  return SOFIA_TOPICS.find((t) => t.id === slug)?.label ?? slug
 }
 
 /** Proto verb-tag class is lowercase — Sofia intentions come capitalised. */
@@ -59,7 +60,7 @@ export default function FeedCard({
 
   return (
     <article
-      className="fc fc-standard"
+      className="fc fc-standard fc--has-header"
       role="link"
       tabIndex={0}
       onClick={openUrl}
@@ -70,8 +71,14 @@ export default function FeedCard({
         }
       }}
     >
+      <UrlPreview
+        variant="card"
+        url={item.url}
+        domain={item.domain}
+        className="fc-thumb"
+        alt={item.title || item.domain}
+      />
       <div className="fc-head">
-        <FaviconWrapper size={34} src={item.favicon} alt={item.domain} />
         <div className="fc-title-wrap">
           <div className="fc-title">{item.title}</div>
           <div className="fc-host">{item.domain}</div>
@@ -93,11 +100,20 @@ export default function FeedCard({
 
       <div className="fc-bottom">
         <div className="fc-tags">
-          {item.topicContexts?.slice(0, 2).map((slug) => (
-            <span key={slug} className="fc-tag">
-              {topicLabel(slug)}
-            </span>
-          ))}
+          {item.topicContexts?.slice(0, 2).map((slug) => {
+            const meta = topicMeta(slug)
+            return (
+              <span key={slug} className="fc-tag">
+                <TopicBadge
+                  topicId={slug}
+                  color={meta?.color ?? 'var(--ds-muted)'}
+                  size={14}
+                  title={meta?.label}
+                />
+                {meta?.label ?? slug}
+              </span>
+            )
+          })}
           {item.intentions.map((intent) => (
             <span
               key={intent}

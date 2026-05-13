@@ -35,17 +35,17 @@ core/
 
 ## Stack per surface
 
-| Surface                   | Framework                                        | Key libs                                     |
-| ------------------------- | ------------------------------------------------ | -------------------------------------------- |
-| `apps/extension`          | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
-| `apps/explorer`           | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI          |
-| `apps/og`                 | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
-| `apps/doc`                | [Docusaurus](https://docusaurus.io/) 3           | GSAP                                         |
-| `apps/landing`            | [Vite](https://vitejs.dev/) + React 19           | Privy, Viem, React Router, GSAP              |
-| `packages/graphql`        | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
-| `packages/design-system`  | TS source workspace                              | shared theme tokens, components, hooks       |
-| `services/mastra`         | [Mastra](https://mastra.ai/)                     | GaiaNet, `@mastra/core`, Viem                |
-| `services/mcp-server`     | Model Context Protocol SDK                       | `express`, graphql-codegen                   |
+| Surface                  | Framework                                        | Key libs                                     |
+| ------------------------ | ------------------------------------------------ | -------------------------------------------- |
+| `apps/extension`         | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
+| `apps/explorer`          | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI          |
+| `apps/og`                | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
+| `apps/doc`               | [Docusaurus](https://docusaurus.io/) 3           | GSAP                                         |
+| `apps/landing`           | [Vite](https://vitejs.dev/) + React 19           | Privy, Viem, React Router, GSAP              |
+| `packages/graphql`       | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
+| `packages/design-system` | TS source workspace                              | shared theme tokens, components, hooks       |
+| `services/mastra`        | [Mastra](https://mastra.ai/)                     | GaiaNet, `@mastra/core`, Viem                |
+| `services/mcp-server`    | Model Context Protocol SDK                       | `express`, graphql-codegen                   |
 
 ## Requirements
 

@@ -10,7 +10,7 @@
  */
 
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
@@ -25,6 +25,9 @@ import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { UrlPreview } from '@/components/UrlPreview'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import { PAGE_COLORS } from '@/config/pageColors'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -68,12 +71,19 @@ function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
 export default function PlatformDetailPage() {
   const navigate = useNavigate()
   const { domain: domainParam } = useParams<{ domain: string }>()
+  const [searchParams] = useSearchParams()
   const decodedDomain = domainParam ? decodeURIComponent(domainParam) : ''
   const { user } = usePrivy()
   const address = user?.wallet?.address
   const { addresses: linkedAddresses } = useLinkedWallets()
-  const profileAddresses =
-    linkedAddresses.length > 0
+  // Public-profile entry point: `?address=0x…` lets the page render
+  // any wallet's certs on this platform, not just the connected user's.
+  // Falls back to the connected user when no override is provided so
+  // the personal flow stays unchanged.
+  const viewedAddress = searchParams.get('address') ?? undefined
+  const profileAddresses = viewedAddress
+    ? [viewedAddress]
+    : linkedAddresses.length > 0
       ? linkedAddresses
       : address
         ? [address]
@@ -131,7 +141,9 @@ export default function PlatformDetailPage() {
           <button
             type="button"
             className="pf-btn"
-            onClick={() => navigate('/profile')}
+            onClick={() =>
+              navigate(viewedAddress ? `/profile/${viewedAddress}` : '/profile')
+            }
           >
             <ArrowLeft className="h-4 w-4" />
             Back to profile
@@ -211,13 +223,28 @@ export default function PlatformDetailPage() {
           </div>
 
           {isLoading && items.length === 0 ? (
-            <div className="crd-feed-empty">Loading…</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message="Loading…"
+            />
           ) : platformCerts.length === 0 ? (
-            <div className="crd-feed-empty">No cert on this platform yet.</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message={`No cert on ${decodedDomain} yet.`}
+              hint={`Pages you certify on ${decodedDomain} will land here.`}
+            />
           ) : items.length === 0 ? (
-            <div className="crd-feed-empty">
-              No match for &ldquo;{query}&rdquo;.
-            </div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={4}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message={`No match for “${query}”.`}
+              hint="Try a different keyword or clear the search."
+            />
           ) : (
             <div className="masonry-grid crd-feed">
               {items.map((cert) => {
@@ -235,11 +262,18 @@ export default function PlatformDetailPage() {
                 return (
                   <a
                     key={cert.termId}
-                    className="feed-card"
+                    className="feed-card feed-card--has-header"
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <UrlPreview
+                      variant="card"
+                      url={cert.objectUrl}
+                      domain={host}
+                      className="fc-thumb"
+                      alt={cert.objectLabel || host}
+                    />
                     <div className="fc-head">
                       <div className="fc-favicon">
                         {itemFavicon ? (

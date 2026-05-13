@@ -178,7 +178,28 @@ export const useCreateTripleOnChain = () => {
       }))
 
       const urls = inputs.map(i => i.objectData.url).filter(Boolean)
-      return tripleService.createTriplesBatch(resolvedTriples, address, urls)
+      const batchResult = await tripleService.createTriplesBatch(resolvedTriples, address, urls)
+
+      // Build a stable input-key → tripleVaultId map so callers don't have to
+      // rely on positional indexing into `results` (which is reordered by the
+      // service: created-first-then-deposit, after dedup).
+      const vaultIdByInputKey: Record<string, string> = {}
+      for (let i = 0; i < inputs.length; i++) {
+        const triple = resolvedTriples[i]
+        const match = batchResult.results.find(
+          r =>
+            r.subjectVaultId === triple.subjectId &&
+            r.predicateVaultId === triple.predicateId &&
+            r.objectVaultId === triple.objectId
+        )
+        if (match?.tripleVaultId) {
+          const input = inputs[i]
+          const key = `${input.predicateName}|${input.objectData.url || input.objectData.name}`
+          vaultIdByInputKey[key] = match.tripleVaultId
+        }
+      }
+
+      return { ...batchResult, vaultIdByInputKey }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'

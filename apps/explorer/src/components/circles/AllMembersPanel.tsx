@@ -5,6 +5,7 @@
  * identical to the stack preview.
  */
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import type { Address } from 'viem'
@@ -96,8 +97,8 @@ export default function AllMembersPanel({
                 ? shortAddress(m.walletAddress)
                 : ''
               const displayName = ens && ens !== shortAddr ? ens : m.label
-              return (
-                <div key={m.termId} className="crd-member-row">
+              const inner = (
+                <>
                   <MemberAvatar member={m} />
                   <div className="crd-member-info">
                     <span className="crd-member-name">{displayName}</span>
@@ -105,6 +106,22 @@ export default function AllMembersPanel({
                       <span className="crd-member-addr">{shortAddr}</span>
                     ) : null}
                   </div>
+                </>
+              )
+              // Whole row navigates to the member's public profile when
+              // we have a resolved wallet. Members without one render as
+              // a plain <div> — clicking nothing is the right default.
+              return m.walletAddress ? (
+                <Link
+                  key={m.termId}
+                  to={`/profile/${m.walletAddress}`}
+                  className="crd-member-row crd-member-row--link"
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div key={m.termId} className="crd-member-row">
+                  {inner}
                 </div>
               )
             })

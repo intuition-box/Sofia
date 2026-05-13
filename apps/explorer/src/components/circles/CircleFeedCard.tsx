@@ -12,6 +12,7 @@
  * picker for multi-intention items), mirroring DashboardPage.
  */
 import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import {
@@ -19,8 +20,9 @@ import {
   INTENTION_CONFIG,
 } from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
+import { UrlPreview } from '@/components/UrlPreview'
+import TopicBadge from '@/components/profile/TopicBadge'
 
 interface CircleFeedCardProps {
   item: CircleItem
@@ -70,15 +72,20 @@ export default function CircleFeedCard({
 }: CircleFeedCardProps) {
   const { topicById } = useTaxonomy()
   const host = item.domain || (item.url ? extractDomain(item.url) : '')
-  const favicon = item.favicon || (host ? getFaviconUrl(host) : '')
 
   const verbs = item.intentions
     .filter((l) => !l.startsWith('quest:'))
     .slice(0, 2)
 
+  // Keep the id alongside the short label so the badge can resolve
+  // the topic colour without a second lookup.
   const topicTags = item.topicContexts
-    .map((id) => topicById(id)?.label?.split(' ')[0])
-    .filter((x): x is string => !!x)
+    .map((id) => {
+      const t = topicById(id)
+      if (!t) return null
+      return { id, label: t.label.split(' ')[0], color: t.color }
+    })
+    .filter((x): x is { id: string; label: string; color: string } => !!x)
     .slice(0, 2)
 
   // Aggregated position counts and user state across all intention vaults.
@@ -117,7 +124,7 @@ export default function CircleFeedCard({
 
   return (
     <a
-      className="feed-card"
+      className="feed-card feed-card--has-header"
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -130,19 +137,15 @@ export default function CircleFeedCard({
         </div>
       </div>
 
+      <UrlPreview
+        variant="card"
+        url={item.url}
+        domain={host}
+        className="fc-thumb"
+        alt={item.title || host}
+      />
+
       <div className="fc-head">
-        <div className="fc-favicon">
-          {favicon ? (
-            <img
-              className="fc-favicon-img"
-              src={favicon}
-              alt=""
-              loading="lazy"
-            />
-          ) : (
-            (host || item.title).slice(0, 1).toUpperCase()
-          )}
-        </div>
         <div className="fc-title-wrap">
           <div className="fc-title">{item.title || host}</div>
           <div className="fc-host">{host}</div>
@@ -152,15 +155,32 @@ export default function CircleFeedCard({
       {certifierName ? (
         <div className="fc-cert">
           <span className="fc-cert-label">Certified by</span>
-          <span className="fc-cert-who">{certifierName}</span>
+          {item.certifierAddress ? (
+            // The outer card is already an <a> so we can't nest another
+            // link. Treat the certifier name as a "navigate on click"
+            // span: stop the event from bubbling up so the card doesn't
+            // also open the URL, then push the route programmatically.
+            <CertifierLink
+              name={certifierName}
+              address={item.certifierAddress}
+            />
+          ) : (
+            <span className="fc-cert-who">{certifierName}</span>
+          )}
         </div>
       ) : null}
 
       <div className="fc-bottom">
         <div className="fc-tags">
           {topicTags.map((t) => (
-            <span key={t} className="fc-tag">
-              {t}
+            <span key={t.id} className="fc-tag">
+              <TopicBadge
+                topicId={t.id}
+                color={t.color}
+                size={14}
+                title={t.label}
+              />
+              {t.label}
             </span>
           ))}
           {verbs.map((label) => {
@@ -213,5 +233,33 @@ export default function CircleFeedCard({
         </div>
       </div>
     </a>
+  )
+}
+
+/** Inline certifier name that routes to the public profile without
+ *  triggering the parent card's external-URL anchor. Kept here as a
+ *  local helper so the navigation concern stays next to its usage. */
+function CertifierLink({ name, address }: { name: string; address: string }) {
+  const navigate = useNavigate()
+  return (
+    <span
+      className="fc-cert-who fc-cert-who--link"
+      role="link"
+      tabIndex={0}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate(`/profile/${address}`)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          navigate(`/profile/${address}`)
+        }
+      }}
+    >
+      {name}
+    </span>
   )
 }

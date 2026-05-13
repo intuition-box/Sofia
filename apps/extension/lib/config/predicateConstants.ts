@@ -169,3 +169,11 @@ export const PREDICATE_NAME_TO_ID: Record<string, string> = buildMap([
 export const getPredicateIdByName = (name: string): string | null =>
   PREDICATE_NAME_TO_ID[name] ?? null
 
+/**
+ * Returns true if the predicate name is recognized by Sofia (whitelisted in
+ * PREDICATE_NAME_TO_ID). Use this to reject free-form predicate strings before
+ * they reach the cart / on-chain creation path.
+ */
+export const isKnownPredicateName = (name: string): boolean =>
+  name in PREDICATE_NAME_TO_ID
+

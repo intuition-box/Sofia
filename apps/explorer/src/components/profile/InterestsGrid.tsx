@@ -5,6 +5,7 @@ import {
   AddInterestCard,
 } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
+import TopicBadge from './TopicBadge'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
 
@@ -63,8 +64,19 @@ export default function InterestsGrid({
             aria-label={topic.label}
             topicColor={topic.color}
             topicLabel={topic.label}
+            // Pass the badge directly so the disc colour comes from the
+            // taxonomy entry — relying on `--topic-color` inheritance
+            // through the CSS var was racing the visual's inline styles
+            // and left the discs grey on dark theme.
             visual={
-              emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined
+              emoji ? (
+                <TopicBadge
+                  topicId={topicId}
+                  color={topic.color}
+                  size={56}
+                  title={topic.label}
+                />
+              ) : undefined
             }
             stats={stats}
             onClick={() => navigate(`/profile/interest/${topicId}`)}

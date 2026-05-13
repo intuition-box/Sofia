@@ -4,6 +4,11 @@ import { UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { createServiceLogger } from '../../../lib/utils/logger'
 import { getStoredWalletAddress } from '../../../lib/utils/walletStorage'
+import {
+  encryptToken,
+  decryptToken,
+  isEncryptedBlob
+} from './tokenEncryption'
 
 const logger = createServiceLogger('TokenManager')
 
@@ -25,8 +30,11 @@ export class TokenManager {
       throw new Error('No wallet connected. Cannot store OAuth token.')
     }
     const key = this.getStorageKey(platform, walletAddress)
-    await chrome.storage.local.set({ [key]: token })
-    logger.info('Token stored', { platform, wallet: walletAddress.slice(0, 8) })
+    // Encrypt before persisting. Key lives in chrome.storage.session so a
+    // disk dump of Local Extension Settings yields only ciphertext.
+    const blob = await encryptToken(token)
+    await chrome.storage.local.set({ [key]: blob })
+    logger.info('Token stored (encrypted)', { platform, wallet: walletAddress.slice(0, 8) })
   }
 
   async getToken(platform: string): Promise<UserToken | null> {
@@ -37,7 +45,31 @@ export class TokenManager {
     }
     const key = this.getStorageKey(platform, walletAddress)
     const result = await chrome.storage.local.get(key)
-    return result[key] || null
+    const stored = result[key]
+    if (!stored) return null
+    if (isEncryptedBlob(stored)) {
+      try {
+        return await decryptToken<UserToken>(stored)
+      } catch (err) {
+        // Decryption only fails if the session key was rotated (browser
+        // restart) — drop the now-unrecoverable token so the user re-OAuths.
+        logger.warn('Token decrypt failed, removing stale ciphertext', {
+          platform,
+          err
+        })
+        await chrome.storage.local.remove(key)
+        return null
+      }
+    }
+    // Legacy plaintext entry from before encryption was wired in.
+    // Re-encrypt in place so the next call benefits from at-rest protection.
+    logger.info('Migrating plaintext token to encrypted form', { platform })
+    try {
+      await this.storeToken(platform, stored as UserToken)
+    } catch {
+      // Best effort — fall through and return the plaintext below.
+    }
+    return stored as UserToken
   }
 
   async getValidToken(platform: string): Promise<string> {

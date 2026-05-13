@@ -46,6 +46,11 @@ export default function TrustCircleCard({
         <span className="cr-role cr-role-owner">owner</span>
       </div>
 
+      <p className="cr-group-desc">
+        This is your personal circle — add people you trust and their signals
+        will shape your feed.
+      </p>
+
       <div className="cr-avatars">
         {visible.map((a) => (
           <MemberAvatar key={a.termId} member={a} />

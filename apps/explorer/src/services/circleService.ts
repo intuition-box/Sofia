@@ -1,10 +1,9 @@
 import {
-  useGetTrustCircleAccountsQuery,
   useGetSofiaTrustedActivityQuery,
   useGetFollowingCountQuery,
 } from '@0xsofia/graphql'
 import { getAddress } from 'viem'
-import { SOFIA_PROXY_ADDRESS, PREDICATE_IDS, SUBJECT_IDS } from '../config'
+import { SOFIA_PROXY_ADDRESS } from '../config'
 import { processEvents, enrichWithTopicContexts } from './feedProcessing'
 
 export interface CircleItem {
@@ -36,77 +35,34 @@ export interface CircleItem {
   topicContexts: string[]
 }
 
-// Cache trusted wallets keyed by the sorted set of linked wallets that asked.
-// Multi-wallet users have the same cache entry regardless of which wallet
-// triggered the fetch, so this is effectively a per-user cache.
-//
-// TTL prevents serving stale graphs forever — the trust circle changes slowly
-// but it does change (new trusts, untrusts), and a 60s window keeps the
-// feed responsive without re-fetching on every interaction.
-const TRUSTED_WALLETS_TTL_MS = 60_000
-
-let cachedTrustedWallets: string[] | null = null
-let cachedForKey: string | null = null
-let cachedAt = 0
-
-function cacheKeyFor(addresses: string[]): string {
-  return [...addresses].sort().join(',')
-}
-
-/** Step 1: union of wallets trusted by any of the user's linked wallets */
-async function fetchTrustedWallets(addresses: string[]): Promise<string[]> {
-  const key = cacheKeyFor(addresses)
-  const fresh = Date.now() - cachedAt < TRUSTED_WALLETS_TTL_MS
-  if (cachedForKey === key && cachedTrustedWallets && fresh) {
-    return cachedTrustedWallets
-  }
-
-  const data = await useGetTrustCircleAccountsQuery.fetcher({
-    subjectId: SUBJECT_IDS.I,
-    predicateId: PREDICATE_IDS.TRUSTS,
-    walletAddresses: addresses,
-  })()
-
-  const wallets: string[] = []
-  for (const triple of data.triples ?? []) {
-    const accounts = triple.object?.accounts ?? []
-    for (const acc of accounts) {
-      if (acc.id) wallets.push(acc.id)
-    }
-  }
-
-  cachedTrustedWallets = wallets
-  cachedForKey = key
-  cachedAt = Date.now()
-  return wallets
-}
-
-/** Invalidate the trusted-wallets cache (e.g. after a trust/untrust action). */
-export function invalidateTrustedWalletsCache() {
-  cachedTrustedWallets = null
-  cachedForKey = null
-  cachedAt = 0
-}
-
-/** Step 2: activity from trusted wallets, unioned across the user's linked wallets */
+/**
+ * Activity authored by `certifierWallets` — the circle's roster, regardless
+ * of whether that roster is "wallets the user trusts" (Trust Circle) or
+ * "wallets claimed as members of this group" (on-chain group).
+ *
+ * `viewerWallets` is the current user's own linked wallets; it powers the
+ * per-item `userSupported`/`userOpposed` flags so the support/oppose thumbs
+ * light up on triples the viewer has already staked on. It's intentionally
+ * decoupled from `certifierWallets` — a viewer browsing a group they
+ * haven't joined still wants to see whether they vouched on any of the
+ * certs surfaced there.
+ */
 export async function fetchCircleFeed(
-  addresses: string[],
+  certifierWallets: string[],
+  viewerWallets: string[],
   limit: number = 200,
   offset: number = 0,
 ): Promise<CircleItem[]> {
-  if (addresses.length === 0) return []
+  if (certifierWallets.length === 0) return []
 
-  const trustedWallets = await fetchTrustedWallets(addresses)
-  if (trustedWallets.length === 0) return []
-
-  // GraphQL stores addresses in checksum case
-  const checksumWallets = trustedWallets.map((w) => getAddress(w))
-  const checksumUserWallets = addresses.map((w) => getAddress(w))
+  // GraphQL stores addresses in EIP-55 checksum case — normalize both sets.
+  const checksumCertifiers = certifierWallets.map((w) => getAddress(w))
+  const checksumViewer = viewerWallets.map((w) => getAddress(w))
 
   const data = await useGetSofiaTrustedActivityQuery.fetcher({
-    trustedWallets: checksumWallets,
+    trustedWallets: checksumCertifiers,
     proxy: getAddress(SOFIA_PROXY_ADDRESS),
-    userAddresses: checksumUserWallets,
+    userAddresses: checksumViewer,
     limit,
     offset,
   })()
@@ -139,9 +95,4 @@ export async function fetchFollowingCount(
   } catch {
     return 0
   }
-}
-
-/** Escape hatch for tests that need to reset the module-level cache. */
-export function __clearTrustedWalletsCacheForTests() {
-  invalidateTrustedWalletsCache()
 }

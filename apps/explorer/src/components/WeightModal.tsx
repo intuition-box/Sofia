@@ -6,15 +6,14 @@ import { usePinThingMutation } from '@0xsofia/graphql'
 import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
+import { useTripleVerification } from '../hooks/useTripleVerification'
 import type { CartItem } from '../hooks/useCart'
-import { EXPLORER_URL, PREDICATE_IDS } from '../config'
-import {
-  HAS_TAG_PREDICATE_ID,
-  TOPIC_ATOM_IDS,
-} from '../config/atomIds'
+import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
+import { HAS_TAG_PREDICATE_ID, TOPIC_ATOM_IDS } from '../config/atomIds'
 import { intentionBadgeStyle } from '../config/intentions'
 import {
   executeCreateTriplesBatch,
+  MIN_SIGNAL_TRUST,
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
@@ -61,6 +60,24 @@ export default function WeightModal({
   // Resolve the wallet's Account atom term_id — required as the subject
   // of any membership triple we mint when items[].kind === 'create-circle'.
   const userAccountAtom = useUserAccountAtom(wallets[0]?.address)
+  // Defence against a poisoned indexer / stale cart entry: pre-check that
+  // every `kind: 'deposit'` termId actually exists on-chain. If a triple is
+  // missing the deposit would route TRUST into an attacker-controlled vault.
+  const depositTermIds = useMemo(
+    () =>
+      items
+        .filter((it) => (it.kind ?? 'deposit') === 'deposit')
+        .map((it) => it.termId),
+    [items],
+  )
+  const verifiedTriples = useTripleVerification(depositTermIds)
+  const verifying = verifiedTriples === undefined && depositTermIds.length > 0
+  const missingTripleIds = useMemo(() => {
+    if (!verifiedTriples) return []
+    return depositTermIds.filter(
+      (id) => !verifiedTriples.get(id.toLowerCase())?.exists,
+    )
+  }, [verifiedTriples, depositTermIds])
   // Static fetcher exposed alongside the React Query mutation hook —
   // we use it here to keep the create flow fully callable from a sync
   // event handler without needing a separate `mutate` callback.
@@ -97,16 +114,45 @@ export default function WeightModal({
 
   const balNum = balance ? parseFloat(balance) : 0
 
+  // Each cart item maps to one or more on-chain operations:
+  //   - 'deposit' / 'create-triple' → 1 deposit, 0 or 1 triple creation
+  //   - 'create-circle' → 1 + N triples (membership + has_tag per topic)
+  // Both counts feed `estimateDepositCost` so the Sofia fixed fee and the
+  // protocol's per-triple creation cost are reflected in the modal total
+  // (otherwise the wallet popup shows a much higher number than the UI).
+  const { depositCount, tripleCreateCount } = useMemo(() => {
+    let deposits = 0
+    let creates = 0
+    for (const item of items) {
+      if (item.kind === 'create-circle' && item.circleDraft) {
+        const validTopics = item.circleDraft.topicIds.filter(
+          (slug) => !!TOPIC_ATOM_IDS[slug],
+        )
+        const tripleCount = 1 + validTopics.length
+        deposits += tripleCount
+        creates += tripleCount
+      } else if (item.kind === 'create-triple') {
+        deposits += 1
+        creates += 1
+      } else {
+        deposits += 1
+      }
+    }
+    return { depositCount: deposits, tripleCreateCount: creates }
+  }, [items])
+
   const breakdown = useMemo(() => {
-    const costEstimate = estimate?.(totalDeposit) ?? null
+    const costEstimate =
+      estimate?.(totalDeposit, { depositCount, tripleCreateCount }) ?? null
     return {
       deposit: totalDeposit,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      tripleCreationCost: costEstimate?.tripleCreationCost ?? 0,
       totalFees: costEstimate?.totalFees ?? 0,
       totalEstimate: costEstimate?.totalEstimate ?? totalDeposit,
     }
-  }, [totalDeposit, estimate])
+  }, [totalDeposit, depositCount, tripleCreateCount, estimate])
 
   const handleWeightSelect = (index: number, value: number) => {
     setWeights((prev) => {
@@ -216,7 +262,11 @@ export default function WeightModal({
 
         // For each circle atom, push membership + has_tag triples into
         // the existing createItems batch — single triple-batch tx mints
-        // them all together (1 + N per circle).
+        // them all together (1 + N per circle). The amount the user
+        // entered is treated as the TOTAL signal deposit for the circle,
+        // split evenly across the derived triples (membership + each
+        // valid has_tag). Floors at `MIN_SIGNAL_TRUST` so each individual
+        // deposit clears the protocol minimum.
         const userAtomId = userAccountAtom.termId
         circleIndices.forEach((idx, i) => {
           const result = atomBatch.results[i]
@@ -224,25 +274,33 @@ export default function WeightModal({
           if (!atomId) return
           const item = items[idx]
           const draft = item.circleDraft!
-          const amount = getAmount(idx)
+          const totalAmount = getAmount(idx)
+
+          const validTopicIds = draft.topicIds.filter(
+            (slug) => !!TOPIC_ATOM_IDS[slug],
+          )
+          const tripleCount = 1 + validTopicIds.length
+          const perTripleAmount = Math.max(
+            totalAmount / tripleCount,
+            MIN_SIGNAL_TRUST,
+          )
 
           // Membership: account → MEMBER_OF → circle
           createItems.push({
             subjectId: userAtomId,
             predicateId: PREDICATE_IDS.MEMBER_OF,
             objectId: atomId,
-            signalTrust: amount,
+            signalTrust: perTripleAmount,
           })
 
           // Topic tags: circle → has_tag → topic (one per selected topic)
-          for (const topicSlug of draft.topicIds) {
+          for (const topicSlug of validTopicIds) {
             const topicAtomId = TOPIC_ATOM_IDS[topicSlug]
-            if (!topicAtomId) continue
             createItems.push({
               subjectId: atomId,
               predicateId: HAS_TAG_PREDICATE_ID,
               objectId: topicAtomId,
-              signalTrust: amount,
+              signalTrust: perTripleAmount,
             })
           }
         })
@@ -371,6 +429,7 @@ export default function WeightModal({
                         <img
                           src={item.favicon}
                           alt=""
+                          referrerPolicy="no-referrer"
                           style={{
                             width: 18,
                             height: 18,
@@ -437,6 +496,28 @@ export default function WeightModal({
             </div>
           )}
 
+          {/* On-chain verification warning — form state only */}
+          {isFormState && missingTripleIds.length > 0 && (
+            <div className="wm-error-section" style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 18 }}>⚠️</span>
+              <div>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ margin: '0 0 4px' }}
+                >
+                  Triple verification failed
+                </p>
+                <p className="text-xs text-destructive" style={{ margin: 0 }}>
+                  {missingTripleIds.length} item
+                  {missingTripleIds.length > 1 ? 's' : ''} reference a triple
+                  that does not exist on-chain. Refusing to deposit — the cart
+                  data may be stale or the indexer may be out of sync. Remove
+                  affected items and retry.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Cost summary — form state only */}
           {isFormState && (
             <div className="wm-cost-summary">
@@ -476,6 +557,20 @@ export default function WeightModal({
                       </span>
                     </div>
                   )}
+                  {breakdown.tripleCreationCost > 0 && (
+                    <div
+                      className="wm-cost-row"
+                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
+                    >
+                      <span>
+                        Triple creation
+                        {tripleCreateCount > 1 ? ` × ${tripleCreateCount}` : ''}
+                      </span>
+                      <span>
+                        {formatTrust(breakdown.tripleCreationCost)} TRUST
+                      </span>
+                    </div>
+                  )}
                   <div className="wm-cost-divider" />
                   <div className="wm-cost-row wm-cost-total">
                     <span>Total</span>
@@ -494,6 +589,24 @@ export default function WeightModal({
                 </span>
               </div>
               <p className="wm-cost-note">* Estimated — actual may vary</p>
+              {/* Surface the contract the wallet popup will sign against, so
+                  a compromised bundle that swaps SOFIA_PROXY_ADDRESS can be
+                  caught by reading the address against a known reference. */}
+              <div
+                className="wm-cost-row"
+                style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}
+              >
+                <span>Signing against</span>
+                <a
+                  href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontFamily: 'monospace' }}
+                >
+                  {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
+                  {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
+                </a>
+              </div>
             </div>
           )}
 
@@ -585,13 +698,17 @@ export default function WeightModal({
                 onClick={handleSubmit}
                 disabled={
                   processing ||
+                  verifying ||
+                  missingTripleIds.length > 0 ||
                   totalDeposit <= 0 ||
                   balNum < breakdown.totalEstimate
                 }
               >
                 {processing
                   ? 'Submitting...'
-                  : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
+                  : verifying
+                    ? 'Verifying on-chain...'
+                    : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
               </button>
             )}
             {txResult && !txResult.success && !processing && (

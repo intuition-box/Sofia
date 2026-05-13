@@ -68,6 +68,8 @@ export interface FeeParams {
   depositFixed: bigint
   depositPct: bigint
   creationFixed: bigint
+  /** Full creation cost per triple (MultiVault portion ~0.1 TRUST). */
+  tripleCost: bigint
   feeDenom: bigint
 }
 
@@ -75,9 +77,27 @@ export interface CostEstimate {
   depositAmount: number
   sofiaFixedFee: number
   sofiaPercentFee: number
+  /** Sum of `tripleCost × tripleCreateCount` — the protocol's per-triple
+   *  creation cost when the cart will mint new triples. 0 for pure
+   *  deposit-on-existing-triple flows. */
+  tripleCreationCost: number
   totalFees: number
   totalEstimate: number
   depositCount: number
+  tripleCreateCount: number
+}
+
+/** Optional knobs for cost estimation. Defaults model a single
+ *  deposit-on-existing-triple — anything that mints new triples or
+ *  fans out into multiple deposits must override these. */
+export interface CostEstimateOptions {
+  /** Number of deposits the transaction will perform. Drives the
+   *  Sofia fixed-fee multiplier. Defaults to 1. */
+  depositCount?: number
+  /** Number of NEW triples the transaction will mint. Each one costs
+   *  `tripleCost` (~0.1 TRUST) on top of any signal deposit. Defaults
+   *  to 0 (pure deposit). */
+  tripleCreateCount?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -106,7 +126,7 @@ let feeParamsCache: FeeParams | null = null
 export async function getFeeParams(): Promise<FeeParams> {
   if (feeParamsCache) return feeParamsCache
 
-  const [depositFixed, depositPct, feeDenom] = await Promise.all([
+  const [depositFixed, depositPct, feeDenom, tripleCost] = await Promise.all([
     publicClient.readContract({
       address: PROXY_ADDRESS,
       abi: SofiaFeeProxyAbi,
@@ -125,6 +145,12 @@ export async function getFeeParams(): Promise<FeeParams> {
       functionName: 'FEE_DENOMINATOR',
       authorizationList: undefined,
     }) as Promise<bigint>,
+    publicClient.readContract({
+      address: PROXY_ADDRESS,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'getTripleCost',
+      authorizationList: undefined,
+    }) as Promise<bigint>,
   ])
 
   let creationFixed = 0n
@@ -139,7 +165,13 @@ export async function getFeeParams(): Promise<FeeParams> {
     // creationFixedFee not available on older contract deployments
   }
 
-  feeParamsCache = { depositFixed, depositPct, creationFixed, feeDenom }
+  feeParamsCache = {
+    depositFixed,
+    depositPct,
+    creationFixed,
+    tripleCost,
+    feeDenom,
+  }
   return feeParamsCache
 }
 
@@ -150,28 +182,40 @@ export async function getFeeParams(): Promise<FeeParams> {
 export function estimateDepositCost(
   depositTrust: number,
   feeParams: FeeParams,
+  options: CostEstimateOptions = {},
 ): CostEstimate {
-  const { depositFixed, depositPct, feeDenom } = feeParams
-  const depositCount = 1
+  const { depositFixed, depositPct, creationFixed, tripleCost, feeDenom } =
+    feeParams
+  const depositCount = options.depositCount ?? 1
+  const tripleCreateCount = options.tripleCreateCount ?? 0
 
-  // Fixed fee per deposit
+  // Sofia fixed fee per deposit
   const fixedFeePerDeposit = Number(depositFixed) / 1e18
   const sofiaFixedFee = fixedFeePerDeposit * depositCount
 
-  // Percentage fee
+  // Sofia percentage fee on the deposit amount
   const pctRate = Number(depositPct) / Number(feeDenom)
   const sofiaPercentFee = pctRate * depositTrust
 
-  const totalFees = sofiaFixedFee + sofiaPercentFee
+  // Protocol creation cost — what MultiVault charges to mint each new
+  // triple, plus the Sofia per-creation fixed fee if configured.
+  const perTripleCreation = Number(tripleCost) / 1e18
+  const perTripleSofiaCreationFee = Number(creationFixed) / 1e18
+  const tripleCreationCost =
+    (perTripleCreation + perTripleSofiaCreationFee) * tripleCreateCount
+
+  const totalFees = sofiaFixedFee + sofiaPercentFee + tripleCreationCost
   const totalEstimate = depositTrust + totalFees
 
   return {
     depositAmount: depositTrust,
     sofiaFixedFee,
     sofiaPercentFee,
+    tripleCreationCost,
     totalFees,
     totalEstimate,
     depositCount,
+    tripleCreateCount,
   }
 }
 
@@ -210,7 +254,7 @@ export async function executeSingleDeposit(
     functionName: 'deposit',
     args: [address, termId as `0x${string}`, 1n, 0n],
     value: totalCost,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 
@@ -254,7 +298,7 @@ export async function executeBatchDeposit(
     functionName: 'depositBatch',
     args: [address, termIds, curveIds, assets, minShares],
     value: totalValue,
-    chain: undefined,
+    chain: intuitionChain,
     account: address,
   })
 

@@ -50,7 +50,12 @@ export default function TrendingPages() {
                 className="hover:bg-muted/50 rounded transition-colors tp-link"
               >
                 <div className="tp-link-content">
-                  <img src={item.favicon} alt="" className="tp-favicon" />
+                  <img
+                    src={item.favicon}
+                    alt=""
+                    className="tp-favicon"
+                    referrerPolicy="no-referrer"
+                  />
                   <div className="tp-text">
                     <p className="text-sm font-medium tp-domain">
                       {item.domain}

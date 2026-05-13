@@ -9,7 +9,7 @@
   "scripts": {
     "dev:explorer": "bun run --filter explorer dev",
     "dev:extension": "bun run --filter extension dev",
-    "dev:og": "bun run --filter og dev",
+    "dev:og": "bun run --filter og-proxy dev",
     "dev:doc": "bun run --filter doc start",
     "dev:landing": "bun run --filter landing dev",
     "dev:mastra": "bun run --filter mastra dev",

@@ -28,7 +28,7 @@ export default function CircleMembersCard({
       <div className="crd-members-row">
         <div className="crd-members-stack">
           {visible.map((m) => (
-            <MemberAvatar key={m.termId} member={m} />
+            <MemberAvatar key={m.termId} member={m} linkable />
           ))}
         </div>
         {extra > 0 && (

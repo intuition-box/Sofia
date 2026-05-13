@@ -17,9 +17,10 @@ import InterestsGrid, {
   MAX_INTERESTS,
 } from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
+import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User } from 'lucide-react'
+import { Wallet, User, Tags, ArrowUpRight, Search, X } from 'lucide-react'
 import {
   PageHero,
   SectionH2,
@@ -80,6 +81,12 @@ export default function ProfilePage() {
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(
     activityAddresses.length > 0 ? activityAddresses : undefined,
   )
+  // Untagged-cert count feeds the Context Manager banner. Same cache
+  // ProfileCharts already reads, so this is a derived value, not a
+  // new fetch.
+  const { certs: untaggedCerts } = useUntaggedCerts(
+    activityAddresses.length > 0 ? activityAddresses : undefined,
+  )
 
   if (!authenticated && !isViewingAs) {
     return (
@@ -103,6 +110,7 @@ export default function ProfilePage() {
     ? address.slice(0, 6) + '...' + address.slice(-4)
     : ''
   const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
+  const [echoesSearch, setEchoesSearch] = useState('')
   const heroDescription = isViewingAs
     ? 'Exploring this wallet — pick an interest to dive in.'
     : address
@@ -154,6 +162,30 @@ export default function ProfilePage() {
         </Card>
       )}
 
+      {/* Context Manager CTA — only surfaces when the user has tagable
+          certs without an `in context of` link. Hidden on view-as so a
+          visitor doesn't see a CTA they can't fulfil. */}
+      {!isViewingAs && untaggedCerts.length > 0 && (
+        <button
+          type="button"
+          className="pp-context-banner"
+          onClick={() => navigate('/profile/context-manager')}
+        >
+          <span className="pp-context-banner-icon">
+            <Tags className="h-4 w-4" />
+          </span>
+          <span className="pp-context-banner-text">
+            <strong>{untaggedCerts.length}</strong> URL
+            {untaggedCerts.length === 1 ? '' : 's'} without context — give
+            them topics to grow your reputation
+          </span>
+          <span className="pp-context-banner-cta">
+            Open Context Manager
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+      )}
+
       <div className="pp-sections">
         {/* Interests */}
         <section className="pp-section">
@@ -183,13 +215,40 @@ export default function ProfilePage() {
         {/* Echoes */}
         <section className="pp-section">
           <div className="pf-echoes-head">
-            <SectionH2>Echoes</SectionH2>
+            <div className="pf-echoes-head-left">
+              <SectionH2>Echoes</SectionH2>
+              <div className="pf-echoes-search">
+                <Search
+                  className="pf-echoes-search-icon h-3.5 w-3.5"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  className="pf-echoes-search-input"
+                  placeholder="Search echoes…"
+                  value={echoesSearch}
+                  onChange={(e) => setEchoesSearch(e.target.value)}
+                  aria-label="Search echoes"
+                />
+                {echoesSearch ? (
+                  <button
+                    type="button"
+                    className="pf-echoes-search-clear"
+                    onClick={() => setEchoesSearch('')}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
+            </div>
             <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={profileLoading}
             sort={echoesSort}
+            searchQuery={echoesSearch}
           />
         </section>
       </div>

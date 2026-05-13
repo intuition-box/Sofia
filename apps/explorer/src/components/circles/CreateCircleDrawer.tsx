@@ -58,6 +58,9 @@ export default function CreateCircleDrawer({
   // Shared account search — same data layer the extension's Circle page
   // uses (`@0xsofia/graphql`, `useSearchAccounts`).
   const memberSearch = useSearchAccounts({ debounceMs: 250 })
+  // `memberSearch` is a fresh object every render — depend on the
+  // stable `reset` callback instead to avoid an infinite effect loop.
+  const { reset: resetMemberSearch } = memberSearch
 
   useEffect(() => {
     if (!open) return
@@ -74,9 +77,9 @@ export default function CreateCircleDrawer({
       setDraft(EMPTY_DRAFT)
       setTopicQuery('')
       setTopicsExpanded(false)
-      memberSearch.reset()
+      resetMemberSearch()
     }
-  }, [open, memberSearch])
+  }, [open, resetMemberSearch])
 
   const topicOptions = useMemo(
     () =>
@@ -117,7 +120,8 @@ export default function CreateCircleDrawer({
   // Per-rule validation. We surface the first failing reason under the
   // submit button so the user isn't left guessing why it's disabled.
   const validationError = (() => {
-    if (draft.name.trim().length < 3) return 'Name must be at least 3 characters'
+    if (draft.name.trim().length < 3)
+      return 'Name must be at least 3 characters'
     if (draft.description.trim().length < 10)
       return `Description must be at least 10 characters (${draft.description.trim().length}/10)`
     if (draft.actionsPerMonth <= 0) return 'Pick a positive actions/month value'
@@ -512,10 +516,7 @@ export default function CreateCircleDrawer({
             </button>
           </div>
           {validationError && (
-            <p
-              className="cc-help"
-              style={{ textAlign: 'right', marginTop: 4 }}
-            >
+            <p className="cc-help" style={{ textAlign: 'right', marginTop: 4 }}>
               {validationError}
             </p>
           )}

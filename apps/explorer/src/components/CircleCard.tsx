@@ -7,6 +7,7 @@ import { INTENTION_COLORS } from '@/config/intentions'
 import { TOPIC_META } from '@/config/topicMeta'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
+import { safeHref } from '@/lib/safeUrl'
 
 /** Connector phrase displayed after the title for each intention */
 const INTENTION_CONNECTOR: Record<string, string> = {
@@ -195,14 +196,18 @@ export default function CircleCard({
           <ChevronDown className="h-3.5 w-3.5" />
           Oppose
         </Button>
-        {item.url && (
+        {safeHref(item.url) && (
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7 ml-auto"
             asChild
           >
-            <a href={item.url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={safeHref(item.url)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </Button>

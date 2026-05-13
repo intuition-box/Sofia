@@ -20,6 +20,7 @@ import { getAddress } from 'viem'
 import {
   useGetUserCertsAlltimeQuery,
   useGetCertTopicLinksQuery,
+  useGetUserContextAdditionsQuery,
   type GetUserCertsAlltimeQuery,
 } from '@0xsofia/graphql'
 import { TOPIC_TERM_IDS, ATOM_ID_TO_TOPIC } from '@/config/atomIds'
@@ -31,8 +32,7 @@ const MAX_PAGES = 100 // 20 000 certs cap — far past any real user
 const TOPIC_LINKS_LIMIT = 50_000
 
 // Predicate labels Sofia treats as "certifications" for the profile.
-// Matches discoveryScoreService.CERTIFICATION_PREDICATE_LABELS plus
-// the legacy trailing-space variant that still appears on old data.
+// Includes the legacy trailing-space variant that still appears on old data.
 const CERT_PREDICATE_LABELS = [
   'visits for work',
   'visits for learning',
@@ -72,15 +72,35 @@ export interface UserCert {
   topicSlugs: string[]
 }
 
+/**
+ * One context-addition event: the user attached a topic to one of their
+ * cert triples via an `"in context of"` nested triple. `addedAt` is the
+ * user's earliest position timestamp on that nested triple — i.e. the
+ * moment the tag was first staked.
+ */
+export interface ContextAddition {
+  /** Cert triple term_id this context was attached to. */
+  certTermId: string
+  /** Topic atom term_id (the tag itself). */
+  topicAtomId: string
+  /** Topic slug resolved via `ATOM_ID_TO_TOPIC`, or `""` if unknown. */
+  topicSlug: string
+  /** ISO timestamp of the user's first share on the nested triple. */
+  addedAt: string
+}
+
 export interface UserOnChainProfile {
   certs: UserCert[]
   /** Map<certTermId, topicAtomIds[]> for raw consumers. */
   topicContextsByTerm: Map<string, string[]>
+  /** Context additions the user staked on, ordered newest-first. */
+  contextAdditions: ContextAddition[]
 }
 
 const EMPTY_PROFILE: UserOnChainProfile = {
   certs: [],
   topicContextsByTerm: new Map(),
+  contextAdditions: [],
 }
 
 export async function fetchUserOnChainProfile(
@@ -110,18 +130,32 @@ export async function fetchUserOnChainProfile(
   }
   if (rawTriples.length === 0) return EMPTY_PROFILE
 
-  // Step 2 — resolve "in context of" nested triples for every cert.
+  // Step 2 — resolve "in context of" nested triples for every cert, and
+  // in parallel the subset the user actually staked on (with timestamps,
+  // so the ProfileDrawer activity feed can render "Tagged X with Y"
+  // events alongside the regular certs).
   const certTermIds = rawTriples
     .map((t) => t.term_id)
     .filter((x): x is string => !!x)
 
   const topicContextsByTerm = new Map<string, string[]>()
+  const contextAdditions: ContextAddition[] = []
+
   if (certTermIds.length > 0) {
-    const linkData = await useGetCertTopicLinksQuery.fetcher({
-      certTermIds,
-      topicAtomIds: TOPIC_TERM_IDS,
-      limit: TOPIC_LINKS_LIMIT,
-    })()
+    const [linkData, additionData] = await Promise.all([
+      useGetCertTopicLinksQuery.fetcher({
+        certTermIds,
+        topicAtomIds: TOPIC_TERM_IDS,
+        limit: TOPIC_LINKS_LIMIT,
+      })(),
+      useGetUserContextAdditionsQuery.fetcher({
+        userAddresses,
+        certTermIds,
+        topicAtomIds: TOPIC_TERM_IDS,
+        limit: TOPIC_LINKS_LIMIT,
+      })(),
+    ])
+
     for (const row of linkData.triples ?? []) {
       const certTermId = row.subject_id
       const topicAtomId = row.object_id
@@ -130,6 +164,20 @@ export async function fetchUserOnChainProfile(
       if (list) list.push(topicAtomId)
       else topicContextsByTerm.set(certTermId, [topicAtomId])
     }
+
+    for (const row of additionData.triples ?? []) {
+      const certTermId = row.subject_id
+      const topicAtomId = row.object_id
+      const addedAt = row.positions?.[0]?.created_at ?? ''
+      if (!certTermId || !topicAtomId || !addedAt) continue
+      contextAdditions.push({
+        certTermId,
+        topicAtomId,
+        topicSlug: ATOM_ID_TO_TOPIC.get(topicAtomId) ?? '',
+        addedAt: String(addedAt),
+      })
+    }
+    contextAdditions.sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1))
   }
 
   // Normalise into UserCert.
@@ -168,5 +216,47 @@ export async function fetchUserOnChainProfile(
     }
   })
 
-  return { certs, topicContextsByTerm }
+  return { certs, topicContextsByTerm, contextAdditions }
+}
+
+// ---------------------------------------------------------------------------
+// Derived selectors
+// ---------------------------------------------------------------------------
+
+/**
+ * Pioneer / Explorer / Contributor buckets, derived from a UserCert list.
+ *
+ *   - Pioneer:     1 certifier total  (the user is the only holder)
+ *   - Explorer:    2-10 certifiers
+ *   - Contributor: 11+ certifiers
+ *
+ * Dedupe is keyed by `objectTermId` (the URL atom) — a single page only
+ * counts toward one bucket no matter how many intentions the user has
+ * stacked on it. Order is preserved from the input (alltime newest-first
+ * after the standard sort).
+ */
+export interface DiscoveryBuckets {
+  pioneer: UserCert[]
+  explorer: UserCert[]
+  contributor: UserCert[]
+}
+
+export function computeDiscoveryBuckets(
+  certs: readonly UserCert[],
+): DiscoveryBuckets {
+  const buckets: DiscoveryBuckets = {
+    pioneer: [],
+    explorer: [],
+    contributor: [],
+  }
+  const seen = new Set<string>()
+  for (const cert of certs) {
+    if (!cert.objectTermId || seen.has(cert.objectTermId)) continue
+    seen.add(cert.objectTermId)
+    const n = cert.certifierCount
+    if (n <= 1) buckets.pioneer.push(cert)
+    else if (n <= 10) buckets.explorer.push(cert)
+    else buckets.contributor.push(cert)
+  }
+  return buckets
 }

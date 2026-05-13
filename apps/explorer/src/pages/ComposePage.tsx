@@ -20,7 +20,7 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useGroups } from '@/hooks/useGroups'
-import { getTopicEmoji } from '@/config/topicEmoji'
+import TopicBadge from '@/components/profile/TopicBadge'
 import MemberAvatar from '@/components/circles/MemberAvatar'
 import CompileActionButton from '@/components/CompileActionButton'
 import type { CompareMode } from '@/lib/compileActionAnims'
@@ -304,8 +304,17 @@ export default function ComposePage() {
                     }}
                   >
                     <div className="check" aria-hidden="true" />
-                    <div className="what-head-row">
-                      <span className="what-label">Topic</span>
+                    <div className="what-row">
+                      <div className="what-name">
+                        <TopicBadge
+                          topicId={topic.id}
+                          color={topic.color}
+                          size={24}
+                          title={topic.label}
+                          className="what-emoji"
+                        />
+                        <span>{topic.label}</span>
+                      </div>
                       <button
                         type="button"
                         className="cmp-card-view"
@@ -317,12 +326,6 @@ export default function ComposePage() {
                         <ArrowUpRight className="h-3 w-3" />
                         View
                       </button>
-                    </div>
-                    <div className="what-name">
-                      <span className="what-emoji" aria-hidden="true">
-                        {getTopicEmoji(topic.id) || '📌'}
-                      </span>
-                      {topic.label}
                     </div>
                   </div>
                 )

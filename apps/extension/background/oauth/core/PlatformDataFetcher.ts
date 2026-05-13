@@ -42,7 +42,7 @@ export class PlatformDataFetcher {
       accessToken = await this.tokenManager.getValidToken(platform)
     }
 
-    logger.debug(`Token retrieved for ${platform}: ${accessToken ? accessToken.substring(0, 20) + '...' : 'NULL'}`)
+    logger.debug('Token retrieved', { platform, present: !!accessToken })
 
 
     const userData: UserData = {

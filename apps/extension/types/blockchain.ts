@@ -57,6 +57,10 @@ export interface BatchTripleResult extends BlockchainResult {
   failedTriples: { input: BatchTripleInput; error: string }[]
   createdCount?: number  // Number of newly created triples
   depositCount?: number  // Number of deposits on existing triples
+  // Maps input cart key `${predicateName}|${objectUrlOrName}` to its on-chain
+  // tripleVaultId. Required because `results` is reordered (created-then-deposit
+  // after dedup) and cannot be looked up positionally from the original inputs.
+  vaultIdByInputKey?: Record<string, string>
 }
 
 // Fee parameters read from SofiaFeeProxy contract

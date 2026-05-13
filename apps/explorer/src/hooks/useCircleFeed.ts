@@ -2,18 +2,26 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCircleFeed, type CircleItem } from '../services/circleService'
 import { fetchWithRetry } from '../utils/fetchRetry'
+import { useLinkedWallets } from './useLinkedWallets'
 
 const BATCH_SIZE = 200
 
 /**
- * Circle feed across all linked wallets. Callers pass the full addresses
- * array from `useLinkedWallets()`; the service unions trust relationships
- * before pulling activity.
+ * Activity authored by the circle's roster.
+ *
+ * `certifierWallets` is the roster — Trust Circle members for the trust
+ * circle, claimed group members for an on-chain group. The viewer's own
+ * linked wallets are pulled from `useLinkedWallets()` for the per-item
+ * support/oppose stake flags.
  */
-export function useCircleFeed(addresses: string[] | undefined) {
-  const normalized = addresses ? [...addresses].sort() : []
+export function useCircleFeed(certifierWallets: string[] | undefined) {
+  const { addresses: viewerWallets } = useLinkedWallets()
+
+  const normalized = certifierWallets ? [...certifierWallets].sort() : []
+  const viewerNormalized = [...viewerWallets].sort()
   const cacheKey = normalized.join(',') || undefined
-  const enabled = !!addresses && addresses.length > 0
+  const viewerKey = viewerNormalized.join(',')
+  const enabled = !!certifierWallets && certifierWallets.length > 0
 
   const {
     data: initial,
@@ -21,9 +29,13 @@ export function useCircleFeed(addresses: string[] | undefined) {
     error,
     refetch,
   } = useQuery<CircleItem[]>({
-    queryKey: cacheKey ? ['circle-feed', cacheKey] : ['circle-feed', undefined],
+    queryKey: cacheKey
+      ? ['circle-feed', cacheKey, viewerKey]
+      : ['circle-feed', undefined, viewerKey],
     queryFn: () =>
-      fetchWithRetry(() => fetchCircleFeed(addresses!, BATCH_SIZE, 0)),
+      fetchWithRetry(() =>
+        fetchCircleFeed(certifierWallets!, viewerWallets, BATCH_SIZE, 0),
+      ),
     enabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -46,7 +58,8 @@ export function useCircleFeed(addresses: string[] | undefined) {
     setLoadingMore(true)
     try {
       const newItems = await fetchCircleFeed(
-        addresses!,
+        certifierWallets!,
+        viewerWallets,
         BATCH_SIZE,
         offsetRef.current,
       )
@@ -67,7 +80,7 @@ export function useCircleFeed(addresses: string[] | undefined) {
     } finally {
       setLoadingMore(false)
     }
-  }, [addresses, enabled, loadingMore, hasMore, initial])
+  }, [certifierWallets, viewerWallets, enabled, loadingMore, hasMore, initial])
 
   const items = [...(initial ?? []), ...extra]
 

@@ -11,8 +11,8 @@
  * of `useCircleFeed` results.
  */
 import { useCallback, useMemo, useState } from 'react'
-import type { Address } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
+import type { Address } from 'viem'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useCart } from '@/hooks/useCart'
@@ -32,12 +32,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import PredicatePicker from '@/components/PredicatePicker'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import CircleFeedCard from './CircleFeedCard'
 import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
+import CircleTopicFilter, {
+  type TopicFilterId,
+} from './CircleTopicFilter'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
-  addresses: Address[]
+  addresses: string[]
   circleName: string
   members: TrustCircleAccount[]
 }
@@ -51,6 +56,7 @@ export default function CircleFeedSection({
 }: CircleFeedSectionProps) {
   const { items, loading, error } = useCircleFeed(addresses)
   const [verb, setVerb] = useState<VerbFilterId>('all')
+  const [topic, setTopic] = useState<TopicFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
 
   const { authenticated } = usePrivy()
@@ -130,13 +136,17 @@ export default function CircleFeedSection({
         )
       })
       .filter((item) => {
+        if (topic === 'all') return true
+        return item.topicContexts?.includes(topic)
+      })
+      .filter((item) => {
         if (memberFilter === 'all') return true
         return (
           (item.certifierAddress || '').toLowerCase() ===
           memberFilter.toLowerCase()
         )
       })
-  }, [items, verb, memberFilter])
+  }, [items, verb, topic, memberFilter])
 
   const shown = filtered.slice(0, MAX_SHOWN)
 
@@ -156,6 +166,8 @@ export default function CircleFeedSection({
 
       <div className="crd-feed-filters">
         <CircleVerbFilter active={verb} onChange={setVerb} />
+        <div className="crd-feed-filters-divider" aria-hidden="true" />
+        <CircleTopicFilter active={topic} onChange={setTopic} />
         <div className="crd-feed-filters-divider" aria-hidden="true" />
         <div className="crd-user-filter">
           <label className="crd-user-filter-label" htmlFor="crd-user-filter">
@@ -182,15 +194,36 @@ export default function CircleFeedSection({
       </div>
 
       {loading ? (
-        <div className="crd-feed-empty">Loading feed…</div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={6}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message="Loading feed…"
+        />
       ) : error ? (
-        <div className="crd-feed-empty">Couldn't load the feed.</div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={3}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message="Couldn't load the feed."
+          hint="Check your connection and refresh the page."
+        />
       ) : shown.length === 0 ? (
-        <div className="crd-feed-empty">
-          {verb === 'all'
-            ? 'No certifications from the circle yet.'
-            : 'No items for this verb yet.'}
-        </div>
+        <EmptyFeedState
+          gridClassName="masonry-grid crd-feed"
+          skeletonCount={6}
+          renderSkeleton={() => <FeedCardSkeleton />}
+          message={
+            verb === 'all'
+              ? 'No certifications from the circle yet.'
+              : 'No items for this verb yet.'
+          }
+          hint={
+            verb === 'all'
+              ? 'Members of this circle will see their certifications appear here.'
+              : 'Try switching to a different verb in the filter.'
+          }
+        />
       ) : (
         <div className="masonry-grid crd-feed">
           {shown.map((item) => {

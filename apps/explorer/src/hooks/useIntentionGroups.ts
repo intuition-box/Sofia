@@ -17,6 +17,10 @@ export interface IntentionActivityInput {
   tags?: string[]
   isCertification?: boolean
   attentionSeconds?: number
+  /** Full URL of the certified resource. Optional — old atoms only
+   *  stored the domain. Used downstream to derive YouTube thumbnails
+   *  and similar URL-specific previews on the Echoes bento cards. */
+  url?: string
 }
 
 // ── Output shape ─────────────────────────────────────────────────────────
@@ -30,7 +34,15 @@ export interface IntentionGroupWithStats {
   currentPredicate: string | null
   level: number
   certificationBreakdown: Partial<Record<IntentionType, number>>
-  urls: { url: string; intent: IntentionType }[]
+  urls: {
+    /** Historically the domain — kept for back-compat with callers
+     *  that read `.url`. New consumers should prefer `fullUrl`. */
+    url: string
+    intent: IntentionType
+    /** Full URL when available (post-migration certs); undefined for
+     *  legacy atoms that only stored the domain in `objectLabel`. */
+    fullUrl?: string
+  }[]
 }
 
 // ── Adapters ─────────────────────────────────────────────────────────────
@@ -60,6 +72,7 @@ export function userCertsToActivityInputs(
       intents: [intent],
       tags: cert.topicSlugs,
       isCertification: true,
+      url: cert.objectUrl || undefined,
     })
   }
   return out
@@ -120,7 +133,7 @@ export function buildIntentionGroups(
     }
     const firstIntent = a.intents[0]
     if (firstIntent !== undefined) {
-      g.urls.push({ url: a.domain, intent: firstIntent })
+      g.urls.push({ url: a.domain, intent: firstIntent, fullUrl: a.url })
     }
   }
 

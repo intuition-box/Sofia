@@ -2,7 +2,37 @@ import { X, Trash2 } from 'lucide-react'
 import { Button } from './ui/button'
 import type { CartItem } from '../hooks/useCart'
 import { INTENTION_COLORS } from '../config/intentions'
+import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
+import { SOFIA_TOPICS } from '../config/taxonomy'
+import TopicBadge from './profile/TopicBadge'
 import './styles/cart-drawer.css'
+
+const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
+
+/** Resolve the topic this cart item ultimately points to, if any.
+ *  Covers the three ways a topic ends up in the cart:
+ *   - Interest selection (kind: 'deposit') → termId IS the topic atom
+ *   - Context Manager (kind: 'create-triple') → id encodes the slug
+ *   - Create-circle has_tag (kind: 'create-triple') → objectId IS the
+ *     topic atom (handled implicitly via ATOM_ID_TO_TOPIC). */
+function resolveTopic(item: CartItem) {
+  // 1. Direct topic-atom deposit (Interest cart items).
+  const direct = ATOM_ID_TO_TOPIC.get(item.termId)
+  if (direct) return TOPIC_BY_ID.get(direct) ?? null
+  // 2. Context-Manager nested triple — id format: `context-<cert>-<slug>`.
+  if (item.id.startsWith('context-')) {
+    const parts = item.id.split('-')
+    const slug = parts[parts.length - 1]
+    const meta = TOPIC_BY_ID.get(slug)
+    if (meta) return meta
+  }
+  // 3. has_tag triple — `objectId` is the topic atom id.
+  if (item.objectId) {
+    const slug = ATOM_ID_TO_TOPIC.get(item.objectId)
+    if (slug) return TOPIC_BY_ID.get(slug) ?? null
+  }
+  return null
+}
 
 interface CartDrawerProps {
   items: CartItem[]
@@ -69,7 +99,9 @@ export default function CartDrawer({
             </div>
           ) : (
             items.map((item) => {
+              const topicMeta = resolveTopic(item)
               const color =
+                topicMeta?.color ||
                 item.intentionColor ||
                 INTENTION_COLORS[item.intention] ||
                 'var(--foreground)'
@@ -79,7 +111,17 @@ export default function CartDrawer({
                   className="rounded-lg border border-border bg-card px-3 py-2 flex items-center gap-3 transition-colors hover:bg-muted/30"
                   style={{ borderLeftWidth: 3, borderLeftColor: color }}
                 >
-                  {item.favicon && (
+                  {topicMeta ? (
+                    // Topic-flavoured cart items (interests, context tags,
+                    // has_tag triples) lead with the coloured TopicBadge
+                    // so they match the rest of the topic surfaces.
+                    <TopicBadge
+                      topicId={topicMeta.id}
+                      color={topicMeta.color}
+                      size={28}
+                      title={topicMeta.label}
+                    />
+                  ) : item.favicon ? (
                     <img
                       src={item.favicon}
                       alt=""
@@ -88,20 +130,21 @@ export default function CartDrawer({
                         ;(e.target as HTMLImageElement).style.display = 'none'
                       }}
                     />
-                  )}
+                  ) : null}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium leading-snug line-clamp-1">
                       {item.title}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5"
+                        className="font-semibold px-1.5 py-[1px] leading-none"
                         style={{
+                          fontSize: 8,
                           backgroundColor: `${color}20`,
                           borderWidth: '1px',
                           borderStyle: 'solid',
                           borderColor: `${color}40`,
-                          borderRadius: '6px',
+                          borderRadius: '4px',
                         }}
                       >
                         {item.intention}
@@ -110,6 +153,7 @@ export default function CartDrawer({
                         style={{
                           fontSize: 10,
                           fontWeight: 700,
+                          lineHeight: 1,
                           color:
                             item.side === 'support' ? '#10B981' : '#EF4444',
                         }}

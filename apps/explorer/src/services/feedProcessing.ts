@@ -1,7 +1,6 @@
 import {
   PREDICATE_TO_INTENTION,
   LABEL_TO_INTENTION,
-  QUEST_BADGES,
 } from '../config/intentions'
 import { GRAPHQL_URL } from '../config'
 import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
@@ -180,41 +179,10 @@ export function processEvents(
     // Skip "in context of" nested triples — resolved separately via enrichWithTopicContexts
     if (isContextOf) continue
 
-    // Handle "has tag" events as quest badges
-    if (isTag) {
-      const tagName = cleanLabel(objectLabel).toLowerCase()
-      const quest = QUEST_BADGES[tagName]
-      const displayName = quest?.name ?? cleanLabel(objectLabel)
-      const category = quest?.category ?? 'milestone'
-      const questIntention = `quest:${category}`
-
-      const key = `${certifierAddress}-${objectLabel}`
-      if (!groupedMap.has(key)) {
-        groupedMap.set(key, {
-          id: evt.id,
-          title: displayName,
-          url: '',
-          domain: displayName,
-          favicon: '',
-          certifier,
-          certifierAddress,
-          intentions: [questIntention],
-          timestamp: evt.created_at || '',
-          intentionVaults: {
-            [questIntention]: {
-              termId,
-              counterTermId,
-              supportCount,
-              opposeCount,
-              userSupported,
-              userOpposed,
-            },
-          },
-          topicContexts: [],
-        })
-      }
-      continue
-    }
+    // Skip "has tag" events — they used to surface as quest badges in
+    // the feed, but those add noise without a URL and pollute the
+    // surfaces (Home, Circle) that we now want focused on URL cards.
+    if (isTag) continue
 
     const intention =
       PREDICATE_TO_INTENTION[predicateId] ||

@@ -85,11 +85,17 @@ export const useDepositGlobalStake = () => {
 
       const { walletClient, publicClient } = await getClients()
 
+      const minShares = await BlockchainService.previewDepositMinShares(
+        gsConfig.termId,
+        gsConfig.curveId,
+        amount
+      )
+
       const txArgs = [
         address as Address,
         gsConfig.termId as `0x${string}`,
         gsConfig.curveId,
-        0n // minShares (no slippage protection)
+        minShares // 1% slippage protection
       ] as const
 
       // Simulate first

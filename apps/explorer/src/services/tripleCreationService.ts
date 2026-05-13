@@ -17,6 +17,7 @@ import {
   INTUITION_RPC_URL,
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
+  intuitionChain,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -133,7 +134,7 @@ export async function executeCreateTriple(
         functionName: 'deposit',
         args: depositArgs,
         value: totalCost,
-        chain: undefined,
+        chain: intuitionChain,
         account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -183,7 +184,7 @@ export async function executeCreateTriple(
       functionName: 'createTriples',
       args,
       value: totalCost,
-      chain: undefined,
+      chain: intuitionChain,
       account: address,
     })
 
@@ -307,7 +308,7 @@ export async function executeCreateTriplesBatch(
         functionName: 'createTriples',
         args,
         value: totalCost,
-        chain: undefined,
+        chain: intuitionChain,
         account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -356,7 +357,7 @@ export async function executeCreateTriplesBatch(
         functionName: 'depositBatch',
         args,
         value: totalValue,
-        chain: undefined,
+        chain: intuitionChain,
         account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
