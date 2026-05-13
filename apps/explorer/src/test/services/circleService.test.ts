@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@0xsofia/graphql', () => ({
-  useGetTrustCircleAccountsQuery: { fetcher: vi.fn() },
   useGetSofiaTrustedActivityQuery: { fetcher: vi.fn() },
   useGetFollowingCountQuery: { fetcher: vi.fn() },
 }))
@@ -13,23 +12,14 @@ vi.mock('@/services/feedProcessing', () => ({
 
 // eslint-disable-next-line import/first
 import {
-  useGetTrustCircleAccountsQuery,
   useGetSofiaTrustedActivityQuery,
   useGetFollowingCountQuery,
 } from '@0xsofia/graphql'
 // eslint-disable-next-line import/first
 import { processEvents } from '@/services/feedProcessing'
 // eslint-disable-next-line import/first
-import {
-  fetchCircleFeed,
-  fetchFollowingCount,
-  __clearTrustedWalletsCacheForTests,
-} from '@/services/circleService'
-// eslint-disable-next-line import/first
-import { PREDICATE_IDS, SUBJECT_IDS } from '@/config'
+import { fetchCircleFeed, fetchFollowingCount } from '@/services/circleService'
 
-const mockedTrustFetcher =
-  useGetTrustCircleAccountsQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 const mockedActivityFetcher =
   useGetSofiaTrustedActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 const mockedFollowingFetcher =
@@ -38,117 +28,49 @@ const mockedProcess = processEvents as unknown as ReturnType<typeof vi.fn>
 
 describe('circleService.fetchCircleFeed', () => {
   beforeEach(() => {
-    mockedTrustFetcher.mockReset()
     mockedActivityFetcher.mockReset()
     mockedProcess.mockReset().mockReturnValue([])
-    __clearTrustedWalletsCacheForTests()
   })
 
-  it('returns empty array when no addresses are linked (no queries fired)', async () => {
-    const result = await fetchCircleFeed([])
+  it('returns empty array when no certifier wallets are provided (no queries fired)', async () => {
+    const result = await fetchCircleFeed([], [])
     expect(result).toEqual([])
-    expect(mockedTrustFetcher).not.toHaveBeenCalled()
     expect(mockedActivityFetcher).not.toHaveBeenCalled()
   })
 
-  it('passes the addresses array as walletAddresses to the trust circle query', async () => {
-    mockedTrustFetcher.mockReturnValue(() => Promise.resolve({ triples: [] }))
+  it('passes the certifier wallets as trustedWallets and the viewer wallets as userAddresses', async () => {
+    mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed([
-      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
-      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-    ])
-
-    expect(mockedTrustFetcher).toHaveBeenCalledWith({
-      subjectId: SUBJECT_IDS.I,
-      predicateId: PREDICATE_IDS.TRUSTS,
-      walletAddresses: [
+    await fetchCircleFeed(
+      [
         '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
         '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
       ],
-    })
-  })
-
-  it('returns empty array when the user trusts no one', async () => {
-    mockedTrustFetcher.mockReturnValue(() => Promise.resolve({ triples: [] }))
-    const result = await fetchCircleFeed([
-      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
-    ])
-    expect(result).toEqual([])
-    expect(mockedActivityFetcher).not.toHaveBeenCalled()
-  })
-
-  it('unions all trusted-account ids across the returned triples', async () => {
-    mockedTrustFetcher.mockReturnValue(() =>
-      Promise.resolve({
-        triples: [
-          {
-            object: {
-              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
-            },
-          },
-          {
-            object: {
-              accounts: [{ id: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }],
-            },
-          },
-        ],
-      }),
+      ['0xAaAaaAaAAaAaAaAaAaaAaaAaAAaAaAaaAAaaaAaA'],
     )
-    mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
-
-    const activityCall = mockedActivityFetcher.mock.calls[0][0]
-    expect(activityCall.trustedWallets).toHaveLength(2)
+    const call = mockedActivityFetcher.mock.calls[0][0]
+    expect(call.trustedWallets).toHaveLength(2)
+    expect(call.userAddresses).toHaveLength(1)
     // Checksummed format check (mixed case)
-    for (const w of activityCall.trustedWallets) {
+    for (const w of [...call.trustedWallets, ...call.userAddresses]) {
       expect(w).toMatch(/^0x[0-9a-fA-F]{40}$/)
     }
   })
 
-  it('caches trusted wallets per address set and skips the first fetcher on reuse', async () => {
-    mockedTrustFetcher.mockReturnValue(() =>
-      Promise.resolve({
-        triples: [
-          {
-            object: {
-              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
-            },
-          },
-        ],
-      }),
-    )
+  it('passes through the limit/offset to the activity fetcher', async () => {
     mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
-    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
-
-    expect(mockedTrustFetcher).toHaveBeenCalledTimes(1)
-    expect(mockedActivityFetcher).toHaveBeenCalledTimes(2)
-  })
-
-  it('re-fetches trust circle when the address set changes', async () => {
-    mockedTrustFetcher.mockReturnValue(() =>
-      Promise.resolve({
-        triples: [
-          {
-            object: {
-              accounts: [{ id: '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D' }],
-            },
-          },
-        ],
-      }),
+    await fetchCircleFeed(
+      ['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'],
+      [],
+      50,
+      100,
     )
-    mockedActivityFetcher.mockReturnValue(() => Promise.resolve({ events: [] }))
 
-    await fetchCircleFeed(['0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D'])
-    await fetchCircleFeed([
-      '0xc6344b9D5d6F3c4B9d5d6f3C4b9d5D6F3c4B9D5D',
-      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-    ])
-
-    expect(mockedTrustFetcher).toHaveBeenCalledTimes(2)
+    const call = mockedActivityFetcher.mock.calls[0][0]
+    expect(call.limit).toBe(50)
+    expect(call.offset).toBe(100)
   })
 })
 

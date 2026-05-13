@@ -1,8 +1,9 @@
-# Groups — `is member of` membership claims/vouches.
+# Groups — `is member of` membership claims.
 #
-# Sofia model: anyone can claim "X is member of Y" and people vouch via
-# positions on the resulting triple. We aggregate these triples by the
-# object atom (the group) on the service side.
+# Sofia model: anyone can mint a triple "X is member of Y". We list
+# every such claim and aggregate by the object atom (the group) on the
+# service side. Anti-spam filtering is intentionally out of scope here;
+# it'll be enforced by an on-chain process in a future iteration.
 
 # Paginated list of every `is_member_of` triple — service derives the
 # group catalogue by bucketing the rows by `object.term_id`.
@@ -21,26 +22,11 @@ query GetGroupsList($predicateId: String!, $limit: Int!, $offset: Int!) {
     object {
       ...AtomMetadata
     }
-    term {
-      vaults(order_by: { curve_id: asc }) {
-        curve_id
-        total_shares
-        positions_aggregate {
-          aggregate {
-            count
-          }
-        }
-        positions {
-          account_id
-          shares
-        }
-      }
-    }
   }
 }
 
 # All membership triples for one specific group atom — used by the
-# group detail page to list every claimed member + their vouches.
+# group detail page to list every claimed member.
 query GetGroupDetail(
   $predicateId: String!
   $objectId: String!
@@ -65,21 +51,6 @@ query GetGroupDetail(
     }
     object {
       ...AtomMetadata
-    }
-    term {
-      vaults(order_by: { curve_id: asc }) {
-        curve_id
-        total_shares
-        positions_aggregate {
-          aggregate {
-            count
-          }
-        }
-        positions {
-          account_id
-          shares
-        }
-      }
     }
   }
 }
