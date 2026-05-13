@@ -331,10 +331,15 @@
 /* ── Drill masonry ──────────────────────────────────────────────── */
 
 .hm-drill-grid {
-  column-count: 2;
+  column-count: 3;
   column-gap: 16px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
+  .hm-drill-grid {
+    column-count: 2;
+  }
+}
+@media (max-width: 720px) {
   .hm-drill-grid {
     column-count: 1;
   }

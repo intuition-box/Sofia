@@ -20,8 +20,8 @@ import {
   INTENTION_CONFIG,
 } from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
+import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from '@/components/profile/TopicBadge'
 
 interface CircleFeedCardProps {
@@ -72,7 +72,6 @@ export default function CircleFeedCard({
 }: CircleFeedCardProps) {
   const { topicById } = useTaxonomy()
   const host = item.domain || (item.url ? extractDomain(item.url) : '')
-  const favicon = item.favicon || (host ? getFaviconUrl(host) : '')
 
   const verbs = item.intentions
     .filter((l) => !l.startsWith('quest:'))
@@ -125,7 +124,7 @@ export default function CircleFeedCard({
 
   return (
     <a
-      className="feed-card"
+      className="feed-card feed-card--has-header"
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -138,19 +137,15 @@ export default function CircleFeedCard({
         </div>
       </div>
 
+      <UrlPreview
+        variant="card"
+        url={item.url}
+        domain={host}
+        className="fc-thumb"
+        alt={item.title || host}
+      />
+
       <div className="fc-head">
-        <div className="fc-favicon">
-          {favicon ? (
-            <img
-              className="fc-favicon-img"
-              src={favicon}
-              alt=""
-              loading="lazy"
-            />
-          ) : (
-            (host || item.title).slice(0, 1).toUpperCase()
-          )}
-        </div>
         <div className="fc-title-wrap">
           <div className="fc-title">{item.title || host}</div>
           <div className="fc-host">{host}</div>

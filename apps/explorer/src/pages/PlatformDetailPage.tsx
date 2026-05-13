@@ -25,6 +25,9 @@ import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { UrlPreview } from '@/components/UrlPreview'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import { PAGE_COLORS } from '@/config/pageColors'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -220,13 +223,28 @@ export default function PlatformDetailPage() {
           </div>
 
           {isLoading && items.length === 0 ? (
-            <div className="crd-feed-empty">Loading…</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message="Loading…"
+            />
           ) : platformCerts.length === 0 ? (
-            <div className="crd-feed-empty">No cert on this platform yet.</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message={`No cert on ${decodedDomain} yet.`}
+              hint={`Pages you certify on ${decodedDomain} will land here.`}
+            />
           ) : items.length === 0 ? (
-            <div className="crd-feed-empty">
-              No match for &ldquo;{query}&rdquo;.
-            </div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={4}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message={`No match for “${query}”.`}
+              hint="Try a different keyword or clear the search."
+            />
           ) : (
             <div className="masonry-grid crd-feed">
               {items.map((cert) => {
@@ -244,11 +262,18 @@ export default function PlatformDetailPage() {
                 return (
                   <a
                     key={cert.termId}
-                    className="feed-card"
+                    className="feed-card feed-card--has-header"
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <UrlPreview
+                      variant="card"
+                      url={cert.objectUrl}
+                      domain={host}
+                      className="fc-thumb"
+                      alt={cert.objectLabel || host}
+                    />
                     <div className="fc-head">
                       <div className="fc-favicon">
                         {itemFavicon ? (

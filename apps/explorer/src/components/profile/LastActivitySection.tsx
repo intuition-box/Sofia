@@ -15,23 +15,9 @@ import {
 import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import { getFaviconUrl } from '@/utils/favicon'
-import { extractYouTubeId, getYouTubeThumbnail } from '@/utils/youtube'
+import { pickBestUrlPreview } from '@/utils/urlPreview'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
-
-/** Pick a backdrop image for the bigger (tall/mega) bento cards. Walks
- *  the group's recorded URLs looking for a YouTube video — if found,
- *  returns the public thumbnail. Otherwise falls back to a large favicon
- *  which the CSS heavily blurs into a brand-coloured tint. */
-function getEchoesBackdrop(
-  group: IntentionGroupWithStats,
-): { url: string; kind: 'thumb' | 'favicon' } {
-  for (const u of group.urls) {
-    if (!u.fullUrl) continue
-    const ytId = extractYouTubeId(u.fullUrl)
-    if (ytId) return { url: getYouTubeThumbnail(ytId), kind: 'thumb' }
-  }
-  return { url: getFaviconUrl(group.domain, 128), kind: 'favicon' }
-}
 
 interface LastActivitySectionProps {
   /** Pre-built activity inputs — caller derives them from the master profile. */
@@ -139,13 +125,21 @@ export default function LastActivitySection({
 
   if (filteredGroups.length === 0) {
     return (
-      <div className="groups-empty">
-        <p className="text-sm text-muted-foreground">
-          {trimmed
+      <EmptyFeedState
+        gridClassName="bento-grid bento-grid-3"
+        skeletonCount={6}
+        renderSkeleton={() => <ActivityCardSkeleton />}
+        message={
+          trimmed
             ? `No echoes match “${searchQuery}”.`
-            : 'No activity yet. Start certifying pages with Sofia!'}
-        </p>
-      </div>
+            : 'No activity yet.'
+        }
+        hint={
+          trimmed
+            ? 'Try a different keyword or clear the search.'
+            : 'Start certifying pages with Sofia and your Echoes will land here.'
+        }
+      />
     )
   }
 
@@ -155,10 +149,18 @@ export default function LastActivitySection({
         <div className="bento-grid bento-grid-3">
           {sizedGroups.map(({ group: g, size }) => {
             // Only the spanning cards (tall/mega) get a backdrop — small
-            // cards stay clean. Backdrop is exposed via a CSS custom
-            // property so the pseudo-element in profile-sections.css can
-            // pick it up without leaking a prop into the DS component.
-            const backdrop = size === 'small' ? null : getEchoesBackdrop(g)
+            // cards stay clean. The dispatcher walks `g.urls` looking
+            // for the best preview and falls back to a favicon for the
+            // domain. CSS pseudo-elements in profile-sections.css read
+            // the `--echoes-bento-bg` custom property so we don't leak
+            // an extra DOM node into the DS component.
+            const backdrop =
+              size === 'small'
+                ? null
+                : pickBestUrlPreview(
+                    g.urls.map((u) => u.fullUrl),
+                    g.domain,
+                  )
             const bentoClass = backdrop
               ? backdrop.kind === 'thumb'
                 ? 'echoes-bento-thumb'

@@ -10,12 +10,12 @@
  * star badge and `fc-desc` sections aren't rendered here.
  */
 import type { MouseEvent } from 'react'
-import { FaviconWrapper } from '@0xsofia/design-system'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
+import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from '@/components/profile/TopicBadge'
 
 function topicMeta(slug: string) {
@@ -60,7 +60,7 @@ export default function FeedCard({
 
   return (
     <article
-      className="fc fc-standard"
+      className="fc fc-standard fc--has-header"
       role="link"
       tabIndex={0}
       onClick={openUrl}
@@ -71,8 +71,14 @@ export default function FeedCard({
         }
       }}
     >
+      <UrlPreview
+        variant="card"
+        url={item.url}
+        domain={item.domain}
+        className="fc-thumb"
+        alt={item.title || item.domain}
+      />
       <div className="fc-head">
-        <FaviconWrapper size={34} src={item.favicon} alt={item.domain} />
         <div className="fc-title-wrap">
           <div className="fc-title">{item.title}</div>
           <div className="fc-host">{item.domain}</div>
