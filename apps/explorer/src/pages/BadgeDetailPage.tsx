@@ -19,7 +19,9 @@ import {
   predicateLabelToIntentionType,
 } from '@/config/intentions'
 import { extractDomain } from '@/utils/formatting'
-import { getFaviconUrl } from '@/utils/favicon'
+import { UrlPreview } from '@/components/UrlPreview'
+import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import '@/components/styles/pages.css'
 import '@/components/styles/feed-card.css'
 
@@ -144,9 +146,20 @@ export default function BadgeDetailPage() {
         <section className="pp-section">
           <SectionTitle>URLs in this tier</SectionTitle>
           {isLoading && items.length === 0 ? (
-            <div className="crd-feed-empty">Loading…</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message="Loading…"
+            />
           ) : items.length === 0 ? (
-            <div className="crd-feed-empty">No URL in this tier yet.</div>
+            <EmptyFeedState
+              gridClassName="masonry-grid crd-feed"
+              skeletonCount={6}
+              renderSkeleton={() => <FeedCardSkeleton />}
+              message="No URL in this tier yet."
+              hint="Keep certifying — URLs that hit this tier's holder threshold will land here."
+            />
           ) : (
             <div className="masonry-grid crd-feed">
               {items.map((cert) => {
@@ -154,7 +167,6 @@ export default function BadgeDetailPage() {
                   (cert.objectUrl && extractDomain(cert.objectUrl)) ||
                   extractDomain(cert.objectLabel) ||
                   ''
-                const favicon = host ? getFaviconUrl(host) : ''
                 const verbId = predicateLabelToIntentionType(cert.intention)
                 const cfg =
                   verbId && verbId in INTENTION_CONFIG
@@ -167,24 +179,19 @@ export default function BadgeDetailPage() {
                 return (
                   <a
                     key={cert.termId}
-                    className="feed-card"
+                    className="feed-card feed-card--has-header"
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <UrlPreview
+                      variant="card"
+                      url={cert.objectUrl}
+                      domain={host}
+                      className="fc-thumb"
+                      alt={cert.objectLabel || host}
+                    />
                     <div className="fc-head">
-                      <div className="fc-favicon">
-                        {favicon ? (
-                          <img
-                            className="fc-favicon-img"
-                            src={favicon}
-                            alt=""
-                            loading="lazy"
-                          />
-                        ) : (
-                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
-                        )}
-                      </div>
                       <div className="fc-title-wrap">
                         <div className="fc-title">
                           {cert.objectLabel || host}

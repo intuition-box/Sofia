@@ -9,6 +9,7 @@
 import { ExternalLink } from 'lucide-react'
 import type { AggregatedCert } from '@/lib/perspectiveAggregation'
 import { intentionBadgeStyle } from '@/config/intentions'
+import { UrlPreview } from '@/components/UrlPreview'
 
 interface PerspectiveItemCardProps {
   item: AggregatedCert
@@ -39,25 +40,19 @@ export default function PerspectiveItemCard({
 
   return (
     <a
-      className="psp-item-card"
+      className="psp-item-card psp-item-card--has-header"
       href={item.url || '#'}
       target="_blank"
       rel="noopener noreferrer"
     >
+      <UrlPreview
+        variant="card"
+        url={item.url}
+        domain={item.domain}
+        className="psp-thumb"
+        alt={item.title}
+      />
       <div className="psp-item-head">
-        {item.favicon ? (
-          <img
-            src={item.favicon}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="psp-item-favicon"
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
-        ) : (
-          <span className="psp-item-favicon psp-item-favicon--fallback" />
-        )}
         <div className="psp-item-meta">
           <span className="psp-item-title">{item.title}</span>
           <span className="psp-item-host">{host}</span>

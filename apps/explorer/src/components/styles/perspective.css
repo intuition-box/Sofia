@@ -168,10 +168,29 @@
   color: var(--ds-muted);
 }
 
+/* Masonry packing — switched from CSS Grid (which gapped under
+   variable-height cards once URL-preview thumbs landed) to a CSS
+   columns layout that packs naturally like the Home / Circle /
+   Platform feeds. Breakpoints mirror those grids for consistency. */
 .psp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  column-count: 3;
+  column-gap: 12px;
+}
+.psp-grid > * {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  display: block;
+  width: 100%;
+}
+@media (max-width: 1200px) {
+  .psp-grid {
+    column-count: 2;
+  }
+}
+@media (max-width: 720px) {
+  .psp-grid {
+    column-count: 1;
+  }
 }
 
 .psp-item-card {
@@ -189,6 +208,18 @@
 .psp-item-card:hover {
   border-color: var(--ds-ink);
   transform: translateY(-1px);
+}
+
+/* Header thumbnail variant — same layered pattern as .feed-card but
+   scaled to the Perspective card's tighter 14px padding. */
+.psp-item-card--has-header {
+  overflow: hidden;
+}
+.psp-item-card .psp-thumb.up-card {
+  width: calc(100% + 28px);
+  margin: -14px -14px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
 }
 
 .psp-item-head {

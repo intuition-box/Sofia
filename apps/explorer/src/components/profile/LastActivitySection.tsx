@@ -15,7 +15,7 @@ import {
 import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import { getFaviconUrl } from '@/utils/favicon'
-import { pickBestUrlPreview } from '@/utils/urlPreview'
+import { useGroupPreview } from '@/hooks/useGroupPreview'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
@@ -100,6 +100,13 @@ export default function LastActivitySection({
       if (b.level !== a.level) return b.level - a.level
       return (b.certifiedCount || 0) - (a.certifiedCount || 0)
     })
+    // Three sizes for visual hierarchy:
+    //   - small : 1 col × 1 row (the base unit, 280px)
+    //   - tall  : 1 col × 2 rows (vertical hero, 572px)
+    //   - mega  : 2 cols × 2 rows (the absolute hero — 2× width AND
+    //             2× height for the top-ranked domain)
+    // Thresholds based on group count so smalls always fill around
+    // the spans cleanly with `grid-auto-flow: dense`.
     const sizes = new Map<string, 'small' | 'tall' | 'mega'>()
     if (filteredGroups.length >= 8 && ranked[0]) {
       sizes.set(ranked[0].id, 'mega')
@@ -147,49 +154,52 @@ export default function LastActivitySection({
     <div className="triples-container">
       <div className="groups-section">
         <div className="bento-grid bento-grid-3">
-          {sizedGroups.map(({ group: g, size }) => {
-            // Only the spanning cards (tall/mega) get a backdrop — small
-            // cards stay clean. The dispatcher walks `g.urls` looking
-            // for the best preview and falls back to a favicon for the
-            // domain. CSS pseudo-elements in profile-sections.css read
-            // the `--echoes-bento-bg` custom property so we don't leak
-            // an extra DOM node into the DS component.
-            const backdrop =
-              size === 'small'
-                ? null
-                : pickBestUrlPreview(
-                    g.urls.map((u) => u.fullUrl),
-                    g.domain,
-                  )
-            const bentoClass = backdrop
-              ? backdrop.kind === 'thumb'
-                ? 'echoes-bento-thumb'
-                : 'echoes-bento-favicon-bg'
-              : undefined
-            const bentoStyle = backdrop
-              ? ({
-                  ['--echoes-bento-bg' as string]: `url(${backdrop.url})`,
-                } as React.CSSProperties)
-              : undefined
-            const cardProps = {
-              ...toCardProps(g),
-              size,
-              className: bentoClass,
-              style: bentoStyle,
-            }
-            if (!linkable) return <GroupBentoCard key={g.id} {...cardProps} />
-            const base = `/profile/platform/${encodeURIComponent(g.domain)}`
-            const href = viewedAddress
-              ? `${base}?address=${viewedAddress}`
-              : base
-            return (
-              <Link key={g.id} to={href} className="echoes-card-link">
-                <GroupBentoCard {...cardProps} />
-              </Link>
-            )
-          })}
+          {sizedGroups.map(({ group: g, size }) => (
+            <BentoGroupItem
+              key={g.id}
+              group={g}
+              size={size}
+              linkable={linkable}
+              viewedAddress={viewedAddress}
+            />
+          ))}
         </div>
       </div>
     </div>
+  )
+}
+
+interface BentoGroupItemProps {
+  group: IntentionGroupWithStats
+  size: 'small' | 'tall' | 'mega'
+  linkable: boolean
+  viewedAddress?: string
+}
+
+/** One bento card. Owns its own preview resolution so the async
+ *  OG-proxy upgrade hook (`useGroupPreview`) can be called once per
+ *  rendered group — rules of hooks forbid calling hooks inside the
+ *  parent's `.map()` body, so we extract the body into a real
+ *  component. */
+function BentoGroupItem({
+  group,
+  size,
+  linkable,
+  viewedAddress,
+}: BentoGroupItemProps) {
+  const preview = useGroupPreview(group)
+  const cardProps = {
+    ...toCardProps(group),
+    size,
+    headerImage: preview.url,
+    headerImageAlt: group.domain,
+  }
+  if (!linkable) return <GroupBentoCard {...cardProps} />
+  const base = `/profile/platform/${encodeURIComponent(group.domain)}`
+  const href = viewedAddress ? `${base}?address=${viewedAddress}` : base
+  return (
+    <Link to={href} className="echoes-card-link">
+      <GroupBentoCard {...cardProps} />
+    </Link>
   )
 }

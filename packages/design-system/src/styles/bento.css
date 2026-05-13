@@ -107,6 +107,53 @@ a.bento-card {
   gap: 12px;
 }
 
+/* ── Optional thumb header ──────────────────────────────────────────
+   When the consumer supplies a `headerImage`, the card grows a hero
+   image at the top that fills whatever space the bandeau doesn't
+   claim, and the bandeau itself stays a compact fixed-content strip
+   at the bottom (favicon + domain + level + cert dots). Designed for
+   cards with constrained height (the Echoes bento grid sets fixed
+   row sizes), so the image must shrink — never expand past — its
+   share of the card. */
+.group-bento-card--with-thumb {
+  padding: 0;
+  gap: 0;
+}
+
+.group-bento-thumb {
+  /* `flex: 1 1 0` lets the image grab every pixel the bandeau leaves
+     behind, and `min-height: 0` allows it to shrink below its
+     intrinsic size when the card is short. */
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  background: var(--ds-bg-subtle, #f4f4f5);
+}
+
+.group-bento-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Bandeau children — pinned to the bottom, never shrink. */
+.group-bento-card--with-thumb > *:not(.group-bento-thumb) {
+  flex: 0 0 auto;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.group-bento-card--with-thumb > .group-bento-header {
+  padding-top: 10px;
+}
+.group-bento-card--with-thumb > *:last-child {
+  padding-bottom: 12px;
+}
+.group-bento-card--with-thumb > * + *:not(.group-bento-thumb) {
+  margin-top: 6px;
+}
+
 .group-bento-card.can-level-up {
   animation: subtleGlow 3s ease-in-out infinite;
 }
