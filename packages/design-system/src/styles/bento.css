@@ -135,6 +135,10 @@ a.bento-card {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Crop happens at the bottom — OG cards almost always carry their
+     title / logo at the top, so this preserves the meaningful part
+     when the source aspect ratio doesn't match the card. */
+  object-position: center top;
   display: block;
 }
 
