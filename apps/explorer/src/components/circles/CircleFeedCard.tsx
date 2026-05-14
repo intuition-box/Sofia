@@ -63,6 +63,15 @@ function starLabel(stars: number): string {
   if (stars >= 2) return 'Low engagement'
   return 'New'
 }
+/** Tier color per slot — gold for 1..3, orange for 4, red for 5.
+ *  Slots above `stars` render muted so the bar still reads as a fixed
+ *  5-step scale. */
+function starTier(slot: number, stars: number): 'gold' | 'orange' | 'red' | 'muted' {
+  if (slot > stars) return 'muted'
+  if (slot <= 3) return 'gold'
+  if (slot === 4) return 'orange'
+  return 'red'
+}
 
 export default function CircleFeedCard({
   item,
@@ -130,8 +139,17 @@ export default function CircleFeedCard({
       rel="noopener noreferrer"
     >
       <div className="fc-star-badge" title={starLabel(stars)}>
-        <Star size={14} fill="currentColor" strokeWidth={0} />
-        <span className="fc-star-num">{stars}</span>
+        <div className="fc-star-row" aria-label={`${stars} out of 5`}>
+          {[1, 2, 3, 4, 5].map((slot) => (
+            <Star
+              key={slot}
+              size={11}
+              fill="currentColor"
+              strokeWidth={0}
+              className={`fc-star fc-star--${starTier(slot, stars)}`}
+            />
+          ))}
+        </div>
         <div className="fc-star-tip">
           <strong>{starLabel(stars)}</strong> · {totalVotes} endorsed
         </div>
