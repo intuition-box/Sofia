@@ -35,7 +35,9 @@ import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
 import RadarChart from './RadarChart'
 import TopPlatforms from './TopPlatforms'
-import ProfileDetailsPanel from './ProfileDetailsPanel'
+import ProfileDetailsPanel, {
+  type InterestPill,
+} from './ProfileDetailsPanel'
 import ProfileClaimCard, { deriveClaimBadge } from './ProfileClaimCard'
 import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
@@ -58,6 +60,13 @@ interface ProfileChartsProps {
    * for a public profile.
    */
   addresses?: readonly string[]
+  /** Fired when the user wants to pick/edit interests. When omitted the
+   *  compact interest rail in the Overview block is hidden (view-as). */
+  onAddInterest?: () => void
+  /** Fired when the user clicks the × on an interest pill. */
+  onRemoveInterest?: (topicId: string) => void
+  /** Fired when the user clicks the body of an interest pill. */
+  onSelectInterest?: (topicId: string) => void
 }
 
 export default function ProfileCharts({
@@ -67,6 +76,9 @@ export default function ProfileCharts({
   selectedCategories = [],
   topicScores = [],
   addresses,
+  onAddInterest,
+  onRemoveInterest,
+  onSelectInterest,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
   const { markets } = usePlatformMarket()
@@ -121,6 +133,27 @@ export default function ProfileCharts({
   const topClaimMeta =
     focus === 'all' ? 'your best picks' : (topicById(focus)?.label ?? focus)
 
+  // Compact interest pills shown in the Overview block. We resolve
+  // taxonomy + score here so the panel stays presentational. Shown only
+  // when an `onAddInterest` callback is wired (i.e. own-profile mode);
+  // view-as keeps the Overview slim.
+  const interestPills = useMemo<InterestPill[] | undefined>(() => {
+    if (!onAddInterest) return undefined
+    const scoreById = new Map(topicScores.map((s) => [s.topicId, s.score]))
+    return selectedTopics
+      .map((id) => {
+        const topic = topicById(id)
+        if (!topic) return null
+        return {
+          id,
+          label: topic.label,
+          color: topic.color ?? 'var(--ds-muted)',
+          score: Math.round(scoreById.get(id) ?? 0),
+        }
+      })
+      .filter((p): p is InterestPill => p !== null)
+  }, [onAddInterest, selectedTopics, topicScores, topicById])
+
   // Resolve the focused axis (topic OR verb) into meta for the
   // details panel — the panel needs label + colour to render the
   // title, whether a topic or an intent is currently focused.
@@ -173,6 +206,10 @@ export default function ProfileCharts({
               verbCertCounts={verbCertCounts}
               generalCertCount={certCounts.general}
               pointsPerCert={POINTS_PER_CERT}
+              interestPills={interestPills}
+              onAddInterest={onAddInterest}
+              onRemoveInterest={onRemoveInterest}
+              onSelectInterest={onSelectInterest}
             />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />
