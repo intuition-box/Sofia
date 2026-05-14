@@ -1314,18 +1314,18 @@
   flex-shrink: 0;
 }
 /* Trust this member — small pill action sitting at the end of each
-   row in AllMembersPanel. Stays subtle by default (--trusted color at
-   low intensity) and flips to a "queued" muted look once the intent
-   is in the cart. */
+   row in AllMembersPanel. Neutral by default so the "Trusted"
+   state (solid green) keeps the on-chain confirmation visually
+   distinctive. */
 .crd-trust-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--trusted, #6dd4a0) 50%, transparent);
-  background: color-mix(in srgb, var(--trusted, #6dd4a0) 10%, transparent);
-  color: var(--trusted, #6dd4a0);
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink-soft);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.08em;
@@ -1340,8 +1340,9 @@
     opacity 0.15s ease;
 }
 .crd-trust-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--trusted, #6dd4a0) 22%, transparent);
-  border-color: var(--trusted, #6dd4a0);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
 }
 .crd-trust-btn.is-queued {
   color: var(--ds-muted);
