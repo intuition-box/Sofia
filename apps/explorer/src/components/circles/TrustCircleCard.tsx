@@ -52,6 +52,12 @@ export default function TrustCircleCard({
               : `${members.length} member${members.length === 1 ? '' : 's'}`}
           </div>
         </div>
+        <div className="cr-avatars cr-avatars--head">
+          {visible.map((a) => (
+            <MemberAvatar key={a.termId} member={a} />
+          ))}
+          {extra > 0 && <span className="mav more">+{extra}</span>}
+        </div>
         <span className="cr-role cr-role-owner">owner</span>
       </div>
 
@@ -59,13 +65,6 @@ export default function TrustCircleCard({
         This is your personal circle — add people you trust and their signals
         will shape your feed.
       </p>
-
-      <div className="cr-avatars">
-        {visible.map((a) => (
-          <MemberAvatar key={a.termId} member={a} />
-        ))}
-        {extra > 0 && <span className="mav more">+{extra}</span>}
-      </div>
 
       <CircleCardStats memberCount={members.length} addresses={addresses} />
 

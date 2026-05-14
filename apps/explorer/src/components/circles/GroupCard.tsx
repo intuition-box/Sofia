@@ -83,19 +83,18 @@ export default function GroupCard({ group }: GroupCardProps) {
             {group.memberCount} member{group.memberCount === 1 ? '' : 's'}
           </div>
         </div>
+        {avatarMembers.length > 0 && (
+          <div className="cr-avatars cr-avatars--head">
+            {avatarMembers.map((m) => (
+              <MemberAvatar key={m.termId} member={m} />
+            ))}
+            {extra > 0 && <span className="mav more">+{extra}</span>}
+          </div>
+        )}
       </div>
 
       {group.description && (
         <p className="cr-group-desc">{group.description}</p>
-      )}
-
-      {avatarMembers.length > 0 && (
-        <div className="cr-avatars">
-          {avatarMembers.map((m) => (
-            <MemberAvatar key={m.termId} member={m} />
-          ))}
-          {extra > 0 && <span className="mav more">+{extra}</span>}
-        </div>
       )}
 
       <CircleCardStats

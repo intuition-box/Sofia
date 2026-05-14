@@ -475,6 +475,19 @@
   display: flex;
   align-items: center;
 }
+/* Compact avatar stack inlined next to the card title — smaller
+   bubbles + tighter overlap so the stack sits in the header without
+   crowding the name. */
+.cr-avatars--head {
+  flex-shrink: 0;
+}
+.cr-avatars--head .mav {
+  width: 24px;
+  height: 24px;
+  margin-left: -6px;
+  font-size: 9px;
+  border-width: 2px;
+}
 .cr-avatars .mav {
   width: 34px;
   height: 34px;
