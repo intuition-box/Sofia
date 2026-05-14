@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type CSSProperties,
+} from 'react'
 import { Navbar } from './components/Navbar'
 import { Footer } from './components/Footer'
 import { Arrow } from './components/Arrow'
@@ -123,8 +129,7 @@ function DeckBtn({
    *   dark slab (white bg)  → deep-ink outline + deep-ink text
    *   peach slab            → off-white outline + off-white text
    * Override via the `ink` prop on a case-by-case basis. */
-  const resolvedInk =
-    ink ?? (variant === 'peach' ? 'light' : 'dark')
+  const resolvedInk = ink ?? (variant === 'peach' ? 'light' : 'dark')
   const restingInk = resolvedInk === 'light' ? '#f5e9d8' : '#02000e'
   const base: CSSProperties = {
     display: 'inline-flex',
@@ -160,18 +165,18 @@ function DeckBtn({
             transform: 'translateY(-1px)',
           }
         : variant === 'peach'
-        ? {
-            background: 'var(--color-accent)',
-            borderColor: 'var(--color-accent)',
-            color: '#02000e',
-            transform: 'translateY(-1px)',
-          }
-        : {
-            background: '#02000e',
-            borderColor: '#02000e',
-            color: '#f5e9d8',
-            transform: 'translateY(-1px)',
-          }
+          ? {
+              background: 'var(--color-accent)',
+              borderColor: 'var(--color-accent)',
+              color: '#02000e',
+              transform: 'translateY(-1px)',
+            }
+          : {
+              background: '#02000e',
+              borderColor: '#02000e',
+              color: '#f5e9d8',
+              transform: 'translateY(-1px)',
+            }
   return (
     <a
       href={href}
@@ -195,9 +200,21 @@ function DeckBtn({
 /* Pulled verbatim from `Hero.tsx` so we keep a single source of
    truth on partner identities. */
 const PARTNERS = [
-  { name: 'Intuition', logo: '/img/partners/intuitionlogo.svg', url: 'https://intuition.systems' },
-  { name: 'Mastra', logo: '/img/partners/mastra.svg', url: 'https://mastra.ai/' },
-  { name: 'Colony', logo: '/img/partners/colonnylogo.png', url: 'https://colony.io/' },
+  {
+    name: 'Intuition',
+    logo: '/img/partners/intuitionlogo.svg',
+    url: 'https://intuition.systems',
+  },
+  {
+    name: 'Mastra',
+    logo: '/img/partners/mastra.svg',
+    url: 'https://mastra.ai/',
+  },
+  {
+    name: 'Colony',
+    logo: '/img/partners/colonnylogo.png',
+    url: 'https://colony.io/',
+  },
   { name: 'Phala', logo: '/img/partners/phala.svg', url: 'https://phala.com' },
 ]
 
@@ -342,9 +359,9 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         Four angles, <em>one promise.</em>
       </h2>
       <p className="lede" style={{ maxWidth: '60ch' }}>
-        Sofia answers four real needs — personal, group, watch, and
-        collective intelligence. No jargon, no posturing: what you
-        actually get from using it.
+        Sofia answers four real needs — personal, group, watch, and collective
+        intelligence. No jargon, no posturing: what you actually get from using
+        it.
       </p>
     </div>
   ),
@@ -421,12 +438,12 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        Mark a page with how it served you — for learning, for work,
-        for inspiration — and Sofia remembers. Months later, your
-        reading still has shape: which articles taught you something,
-        which podcasts shifted your thinking, which people you keep
-        coming back to. Your moves quietly become a map the rest of
-        the network can read without ever touching your data.
+        Mark a page with how it served you — for learning, for work, for
+        inspiration — and Sofia remembers. Months later, your reading still has
+        shape: which articles taught you something, which podcasts shifted your
+        thinking, which people you keep coming back to. Your moves quietly
+        become a map the rest of the network can read without ever touching your
+        data.
       </p>
     </div>
   ),
@@ -562,8 +579,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           {
             name: 'Maxime Saint-Joannis',
             handle: 'wieedze.eth',
-            avatar:
-              'https://avatars.githubusercontent.com/u/193876743?v=4',
+            avatar: 'https://avatars.githubusercontent.com/u/193876743?v=4',
             quote:
               "10 years as a music producer showed me how streaming platforms manipulate discovery — fake artists, paid algorithms, real creators buried. We're building the alternative.",
           },
@@ -662,12 +678,11 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        Sofia is built on Intuition — the protocol where every
-        meaningful action becomes a verifiable record owned by the
-        person who made it. The alignment is structural, not
-        commercial: the same infrastructure that secures your trail
-        is the one we ship on, and Intuition's builder grant carries
-        us through the early miles.
+        Sofia is built on Intuition — the protocol where every meaningful action
+        becomes a verifiable record owned by the person who made it. The
+        alignment is structural, not commercial: the same infrastructure that
+        secures your trail is the one we ship on, and Intuition's builder grant
+        carries us through the early miles.
       </p>
       <p
         className="lede"
@@ -677,10 +692,9 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        DAO-oriented from day one. Decisions, treasury, and rewards
-        live on-chain — contributors who ship and users who curate
-        get TRUST in return, and the community owns the roadmap as
-        Sofia grows.
+        DAO-oriented from day one. Decisions, treasury, and rewards live
+        on-chain — contributors who ship and users who curate get TRUST in
+        return, and the community owns the roadmap as Sofia grows.
       </p>
       <div
         style={{
@@ -840,9 +854,9 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           fontSize: 'clamp(0.78rem, 0.7rem + 0.35vw, 1rem)',
         }}
       >
-        Every certify, every vote, every trust signal lives on
-        Intuition — public, permanent, replayable. Our users aren't
-        a metric; they're the network.
+        Every certify, every vote, every trust signal lives on Intuition —
+        public, permanent, replayable. Our users aren't a metric; they're the
+        network.
       </p>
     </div>
   ),
@@ -897,12 +911,11 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           lineHeight: 1.35,
         }}
       >
-        Distributed to the early certifiers, curators, and contributors
-        who carried Sofia through its first miles — every signal
-        recorded on Intuition, every contributor identified by their
-        wallet. No team allocation, no insider round: the people who
-        built the network with us are the people the network rewards
-        first.
+        Distributed to the early certifiers, curators, and contributors who
+        carried Sofia through its first miles — every signal recorded on
+        Intuition, every contributor identified by their wallet. No team
+        allocation, no insider round: the people who built the network with us
+        are the people the network rewards first.
       </p>
     </div>
   ),
@@ -1025,7 +1038,12 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           lineHeight: 0.95,
         }}
       >
-        Values <em>the community<br />staked into existence.</em>
+        Values{' '}
+        <em>
+          the community
+          <br />
+          staked into existence.
+        </em>
       </h2>
       <p
         className="lede"
@@ -1035,9 +1053,9 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        Sofia doesn&apos;t pick its principles — you do. Each value
-        below was surfaced and ranked by the people who staked TRUST
-        on the ones they believe in most.
+        Sofia doesn&apos;t pick its principles — you do. Each value below was
+        surfaced and ranked by the people who staked TRUST on the ones they
+        believe in most.
       </p>
       <p
         className="lede"
@@ -1047,9 +1065,9 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        The more conviction behind a value, the more weight it
-        carries in the protocol. No board vote, no manifesto written
-        in a back room — just signal recorded on Intuition.
+        The more conviction behind a value, the more weight it carries in the
+        protocol. No board vote, no manifesto written in a back room — just
+        signal recorded on Intuition.
       </p>
     </div>
   ),
@@ -1110,8 +1128,8 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           maxWidth: 'none',
         }}
       >
-        Short answers to the questions that come up most. Need
-        something we didn&apos;t cover? Ask us directly.
+        Short answers to the questions that come up most. Need something we
+        didn&apos;t cover? Ask us directly.
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         <DeckBtn
@@ -1142,8 +1160,8 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         q: 'Is my data safe?',
         a: (
           <>
-            Yes. Processed on your device with secure tech even we
-            can&apos;t access. Code is{' '}
+            Yes. Processed on your device with secure tech even we can&apos;t
+            access. Code is{' '}
             <a
               href="https://github.com/intuition-box"
               target="_blank"
@@ -1173,8 +1191,8 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
             >
               Explorer
             </a>{' '}
-            to read your graph and follow others. To start recording
-            your own data, install the{' '}
+            to read your graph and follow others. To start recording your own
+            data, install the{' '}
             <a
               href="https://doc.sofia.intuition.box/docs/extension"
               target="_blank"
@@ -1314,8 +1332,8 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
             maxWidth: '52ch',
           }}
         >
-          Your browsing history is your identity — not a PFP, not a
-          token. It&apos;s what you actually do, verified on-chain.
+          Your browsing history is your identity — not a PFP, not a token.
+          It&apos;s what you actually do, verified on-chain.
         </p>
         <div
           style={{
@@ -1352,13 +1370,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
  * (deep-ink slab + peach text) with a hard hover swap to white bg +
  * deep-ink text. Inline-styled with React hover state so the colours
  * are deterministic across slide variants and CSS cascade. */
-function PrimaryBtn({
-  href,
-  children,
-}: {
-  href: string
-  children: ReactNode
-}) {
+function PrimaryBtn({ href, children }: { href: string; children: ReactNode }) {
   const [hover, setHover] = useState(false)
   const base: CSSProperties = {
     display: 'inline-flex',
@@ -1557,8 +1569,9 @@ function ValueCard({
   /* Live voting wiring — mirrors `components/Values.tsx` exactly so the
    * two staking surfaces share one implementation. Hooks run with a
    * placeholder tripleId when none is provided (safe no-op). */
-  const liveTripleId = (tripleId ??
-    ('0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`))
+  const liveTripleId =
+    tripleId ??
+    ('0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`)
   const { forDisplay, isLoading } = useVoteStats(liveTripleId)
   const { depositFor, isConnected } = useVoting()
   const [voting, setVoting] = useState(false)
@@ -1680,11 +1693,7 @@ function ValueCard({
               'background 160ms ease, color 160ms ease, border-color 160ms ease',
           }}
         >
-          {voting
-            ? 'Signing…'
-            : isConnected
-              ? 'Support'
-              : 'Connect to vote'}
+          {voting ? 'Signing…' : isConnected ? 'Support' : 'Connect to vote'}
           <span aria-hidden="true">↑</span>
         </button>
       ) : href ? (
@@ -1843,13 +1852,13 @@ function layoutClass(layout: SlideLayout) {
 function PlaceholderSlide({
   code,
   label,
-  meta,
+  meta: _meta,
   variant,
   zoneStart,
   layout,
   revealLayout,
   revealLabel,
-  revealMeta,
+  revealMeta: _revealMeta,
   revealVariant,
   wipeIndex = 0,
   revealWipeIndex = -1,
@@ -1863,14 +1872,11 @@ function PlaceholderSlide({
   const { subState, isActive } = useDeckSubState()
   const revealed = subState >= 1
   const activeLabel = revealed && revealLabel ? revealLabel : label
-  const activeMeta = revealed && revealMeta ? revealMeta : meta
   /* Applied to the placeholder (frame strips) so the meta/bottom
      strips flip ink with the active bg. The content zones use their
      own per-layer variant class on `.zones` so they stay stable. */
   const activeVariant = revealed && revealVariant ? revealVariant : variant
-  const baseLast = zoneStart + baseAreas.length - 1
   const revealStart = zoneStart + baseAreas.length
-  const revealLast = revealStart + revealAreas.length - 1
   return (
     <section
       className={`${styles.placeholder} ${styles[activeVariant]}`}
@@ -1906,10 +1912,7 @@ function PlaceholderSlide({
                 host headerContent as a normal grid cell so the tall
                 right column ('e') keeps its full-slide span. */}
             {headerContent && layout === 'quad-banner-tall-right' && (
-              <div
-                className={styles.gridBanner}
-                style={{ gridArea: 'h' }}
-              >
+              <div className={styles.gridBanner} style={{ gridArea: 'h' }}>
                 {headerContent}
               </div>
             )}
@@ -1939,7 +1942,7 @@ function PlaceholderSlide({
                 ['--zone-extra-delay' as never]: `${extraDelay}ms`,
               }
               if (anim === 'wipe' && wipeColor) {
-                zoneStyle['--zone-wipe-color' as never] = wipeColor
+                zoneStyle['--zone-wipe-color' as never] = wipeColor as never
               }
               return (
                 <div
@@ -1975,7 +1978,9 @@ function PlaceholderSlide({
                 /* Reveal zones get their dedicated variant (e.g. dark
                    on the WHY SOFIA reveal of S.01) — stable across the
                    crossfade, no palette flip mid-transition. */
-                const customNode = ZONE_NODES[displayN]?.(revealVariant ?? variant)
+                const customNode = ZONE_NODES[displayN]?.(
+                  revealVariant ?? variant,
+                )
                 /* Same lead/cascade pattern as the base layer: the
                    reveal-wipe zone (or idx 0 by default) lands first,
                    the rest cascade after `revealDelay` ms. Animation
@@ -1983,8 +1988,7 @@ function PlaceholderSlide({
                    otherwise the default 'scale' fade. */
                 const isRevealWipe =
                   revealWipeIndex >= 0 && idx === revealWipeIndex
-                const revealLeadIdx =
-                  revealWipeIndex >= 0 ? revealWipeIndex : 0
+                const revealLeadIdx = revealWipeIndex >= 0 ? revealWipeIndex : 0
                 const extraDelay = idx === revealLeadIdx ? 0 : revealDelay
                 const anim = isRevealWipe ? 'wipe' : 'scale'
                 const revealZoneStyle: CSSProperties = {
@@ -1993,7 +1997,8 @@ function PlaceholderSlide({
                   ['--zone-extra-delay' as never]: `${extraDelay}ms`,
                 }
                 if (anim === 'wipe' && wipeColor) {
-                  revealZoneStyle['--zone-wipe-color' as never] = wipeColor
+                  revealZoneStyle['--zone-wipe-color' as never] =
+                    wipeColor as never
                 }
                 return (
                   <div
@@ -2038,9 +2043,15 @@ const SLIDES: SlideConfig[] = [
      content "graphic vector" so the swap reads as a slide-left), and
      5–9 cascade in 700ms later. The background also wipes peach →
      dark on the same sub-scroll. Label flips COVER → WHY SOFIA. */
-  { code: 'S.01', label: 'HERO',        meta: 'COVER',         layout: 'stack-left-tall-right',
-    revealLayout: 'left-quintet-right', revealLabel: 'WHY SOFIA',
-    revealMeta: '04 ANGLES', revealDelay: 700,
+  {
+    code: 'S.01',
+    label: 'HERO',
+    meta: 'COVER',
+    layout: 'stack-left-tall-right',
+    revealLayout: 'left-quintet-right',
+    revealLabel: 'WHY SOFIA',
+    revealMeta: '04 ANGLES',
+    revealDelay: 700,
     revealVariant: 'dark',
     /* Reveal idx 0 (left-tall slot) mirrors base zone 3 — same number
        "3", same "graphic vector" label, so the swap reads as zone 3
@@ -2050,14 +2061,25 @@ const SLIDES: SlideConfig[] = [
        right-tall). The diagonal slab balaie le graphic à l'entrée de
        slide, le catch phrase + partners cascadent en slide-up. */
     wipeIndex: 2,
-    wipeColor: '#e4b95a' /* fun · jaune */ },
-  { code: 'S.03', label: 'INSTRUMENT',  meta: 'CAROUSEL',      layout: 'single',
-    wipeColor: '#6dd4a0' /* trusted · vert */ },
+    wipeColor: '#e4b95a' /* fun · jaune */,
+  },
+  {
+    code: 'S.03',
+    label: 'INSTRUMENT',
+    meta: 'CAROUSEL',
+    layout: 'single',
+    wipeColor: '#6dd4a0' /* trusted · vert */,
+  },
   /* S.04 — 11 (left tall) lands first with its diagonal wipe, then
      12/13/14 cascade in after a 700ms beat. */
-  { code: 'S.04', label: 'PRODUCT',     meta: 'PREVIEW',       layout: 'left-banner-pair-right',
+  {
+    code: 'S.04',
+    label: 'PRODUCT',
+    meta: 'PREVIEW',
+    layout: 'left-banner-pair-right',
     revealDelay: 700,
-    wipeColor: '#5cc4d6' /* learning · turquoise */ },
+    wipeColor: '#5cc4d6' /* learning · turquoise */,
+  },
   /* S.05 — VISION. Quad of feature cards on the left/middle (15-18),
      Plate D vector graphic (IsoStack) on the right tall slot (19),
      which spans the full slide height. `headerContent` is rendered
@@ -2065,7 +2087,11 @@ const SLIDES: SlideConfig[] = [
      above the cards) so Plate D keeps its full vertical span.
      wipeIndex: 4 → the diagonal slab balaie Plate D (grid area `e`) en
      entrée de slide, en violet (--inspiration). */
-  { code: 'S.05', label: 'VISION',      meta: 'FEATURES',      layout: 'quad-banner-tall-right',
+  {
+    code: 'S.05',
+    label: 'VISION',
+    meta: 'FEATURES',
+    layout: 'quad-banner-tall-right',
     wipeIndex: 4,
     wipeColor: '#a78bdb' /* inspiration · violet */,
     headerContent: (
@@ -2089,30 +2115,53 @@ const SLIDES: SlideConfig[] = [
             maxWidth: 'none',
           }}
         >
-          Sofia turns every meaningful action you take online — what
-          you read, certify, back — into a verifiable proof only you
-          own. Identity becomes lived, not declared.
+          Sofia turns every meaningful action you take online — what you read,
+          certify, back — into a verifiable proof only you own. Identity becomes
+          lived, not declared.
         </p>
       </div>
-    ) },
+    ),
+  },
   /* S.06 — left-stack-right base: Core contributor on the left tall
      column, Backed by stacked on top of Advisors on the right. The
      diagonal wipe lands on Backed by (idx 1, top right); Core and
      Advisors cascade in after. Reveal flips CONTRIBUTOR → COMMUNITY
      using stack-left-tall-right for the three new zones. */
-  { code: 'S.06', label: 'CONTRIBUTOR', meta: 'TEAM',          layout: 'left-stack-right',
-    revealLayout: 'stack-left-tall-right', revealLabel: 'COMMUNITY',
-    wipeIndex: 1, revealDelay: 700,
-    wipeColor: '#e4b95a' /* fun · jaune (cycle) */ },
+  {
+    code: 'S.06',
+    label: 'CONTRIBUTOR',
+    meta: 'TEAM',
+    layout: 'left-stack-right',
+    revealLayout: 'stack-left-tall-right',
+    revealLabel: 'COMMUNITY',
+    wipeIndex: 1,
+    revealDelay: 700,
+    wipeColor: '#e4b95a' /* fun · jaune (cycle) */,
+  },
   /* S.07 — 25 (left tall) lands first with its wipe, then the 2×2
      quad 26/27/28/29 cascade in after a beat. */
-  { code: 'S.07', label: 'VALUES',      meta: '04 PRINCIPLES', layout: 'left-quad-right',
+  {
+    code: 'S.07',
+    label: 'VALUES',
+    meta: '04 PRINCIPLES',
+    layout: 'left-quad-right',
     revealDelay: 700,
-    wipeColor: '#7bade0' /* work · bleu (cycle) */ },
-  { code: 'S.08', label: 'LOOKUPS',     meta: 'Q&A',           layout: 'two-col-narrow-left',
-    wipeColor: '#6dd4a0' /* trusted · vert (cycle) */ },
-  { code: 'S.09', label: 'CTA',         meta: 'JOIN',          layout: 'single',
-    wipeColor: '#5cc4d6' /* learning · turquoise (cycle) */ },
+    wipeColor: '#7bade0' /* work · bleu (cycle) */,
+  },
+  {
+    code: 'S.08',
+    label: 'LOOKUPS',
+    meta: 'Q&A',
+    layout: 'two-col-narrow-left',
+    wipeColor: '#6dd4a0' /* trusted · vert (cycle) */,
+  },
+  {
+    code: 'S.09',
+    label: 'CTA',
+    meta: 'JOIN',
+    layout: 'single',
+    wipeColor: '#5cc4d6' /* learning · turquoise (cycle) */,
+  },
 ]
 
 /* subStates[i] = number of sub-triggers on slide i before forwarding
@@ -2123,23 +2172,30 @@ const SUB_STATES = SLIDES.map((s) => (s.revealLayout ? 1 : 0))
 /* Alternating peach / dark — every trigger flips the slab colour so
    the 60° wipe between two slides is always a visible colour change. */
 const VARIANTS = [
-  'peach', 'peach', 'dark', 'peach',
-  'dark', 'peach', 'dark', 'peach', 'dark',
+  'peach',
+  'peach',
+  'dark',
+  'peach',
+  'dark',
+  'peach',
+  'dark',
+  'peach',
+  'dark',
 ] as const
 
 /* Reveal-state background per slide. Index matches the SLIDES order
    (footer slide doesn't appear here — it's added separately). When
    set, the deck paints a wipe-in slab of this colour on top of the
    slide's base bg as soon as that slide's sub-state goes ≥ 1. */
-const REVEAL_BGS: (typeof VARIANTS[number] | undefined)[] = [
-  'dark',     // S.01 reveal → why-sofia is on dark
-  undefined,  // S.03
-  undefined,  // S.04
-  undefined,  // S.05
-  undefined,  // S.06 (reveal stays on same bg)
-  undefined,  // S.07
-  undefined,  // S.08
-  undefined,  // S.09
+const REVEAL_BGS: ((typeof VARIANTS)[number] | undefined)[] = [
+  'dark', // S.01 reveal → why-sofia is on dark
+  undefined, // S.03
+  undefined, // S.04
+  undefined, // S.05
+  undefined, // S.06 (reveal stays on same bg)
+  undefined, // S.07
+  undefined, // S.08
+  undefined, // S.09
 ]
 
 /* Per-zone content labels (numbered globally across the deck). The
@@ -2185,7 +2241,12 @@ export default function App() {
       <Navbar />
       {/* `pinned` keeps the deck always active — first / last slides
           are end-stops, no vertical scroll on this page. */}
-      <Deck bgs={[...VARIANTS]} revealBgs={REVEAL_BGS} pinned subStates={SUB_STATES}>
+      <Deck
+        bgs={[...VARIANTS]}
+        revealBgs={REVEAL_BGS}
+        pinned
+        subStates={SUB_STATES}
+      >
         {SLIDES.map((s, i) => {
           const zoneStart = zoneCursor
           zoneCursor +=

@@ -12,9 +12,9 @@
   --ink-on-dark: #ffffff;
   --muted: rgba(2, 0, 14, 0.55);
   --muted-soft: rgba(2, 0, 14, 0.35);
-  --border: rgba(2, 0, 14, 0.10);
+  --border: rgba(2, 0, 14, 0.1);
   --border-soft: rgba(2, 0, 14, 0.06);
-  --skeleton: rgba(2, 0, 14, 0.10);
+  --skeleton: rgba(2, 0, 14, 0.1);
   --skeleton-soft: rgba(2, 0, 14, 0.06);
   --peach: #ffc6b0;
   --peach-deep: #7a3a1e;
@@ -31,27 +31,37 @@
   --music: #ff5722;
 
   /* Brand palette — kept as authentic surfaces for the chaos beat */
-  --brand-google-blue:  #4285F4;
-  --brand-google-red:   #EA4335;
-  --brand-google-yel:   #FBBC05;
-  --brand-google-green: #34A853;
-  --brand-booking:      #003580;
-  --brand-tripadvisor:  #34E0A1;
+  --brand-google-blue: #4285f4;
+  --brand-google-red: #ea4335;
+  --brand-google-yel: #fbbc05;
+  --brand-google-green: #34a853;
+  --brand-booking: #003580;
+  --brand-tripadvisor: #34e0a1;
   --brand-tripadvisor-ink: #003e23;
-  --brand-airbnb:       #FF5A5F;
-  --brand-reddit:       #FF4500;
-  --brand-expedia:      #FCC110;
-  --brand-expedia-ink:  #191e3b;
-  --brand-hotels:       #D32F2F;
-  --brand-facebook:     #1877F2;
-  --brand-trivago:      #C3261A;
-  --brand-marriott:     #1C1C1C;
-  --brand-youtube:      #FF0000;
-  --brand-tiktok:       #000000;
-  --brand-quora:        #B92B27;
+  --brand-airbnb: #ff5a5f;
+  --brand-reddit: #ff4500;
+  --brand-expedia: #fcc110;
+  --brand-expedia-ink: #191e3b;
+  --brand-hotels: #d32f2f;
+  --brand-facebook: #1877f2;
+  --brand-trivago: #c3261a;
+  --brand-marriott: #1c1c1c;
+  --brand-youtube: #ff0000;
+  --brand-tiktok: #000000;
+  --brand-quora: #b92b27;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 1776px; height: 890px; overflow: hidden; background: #000; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  width: 1776px;
+  height: 890px;
+  overflow: hidden;
+  background: #000;
+}
 body {
   font-family: 'Geist', sans-serif;
   color: var(--ink);
@@ -59,25 +69,42 @@ body {
   text-rendering: optimizeLegibility;
 }
 .scene {
-  position: absolute; inset: 0;
-  width: 1776px; height: 890px;
+  position: absolute;
+  inset: 0;
+  width: 1776px;
+  height: 890px;
   overflow: hidden;
 }
 /* F2 chaos sits above F3 reveal so the chrome windows visually OCCLUDE the
    Sofia logo as it grows from behind. The scatter then reveals the logo. */
-#f2-chaos { z-index: 5; }
-#f3-reveal { z-index: 6; }
+#f2-chaos {
+  z-index: 5;
+}
+#f3-reveal {
+  z-index: 6;
+}
 /* Merged F2 scene — peach bg + rays sit above the chaos bg but below the
    Sofia logo (z-42) + text (z-44). */
-#f2-chaos .f3-bg    { position: absolute; inset: 0; z-index: 40; opacity: 0; }
-#f2-chaos .f3-rays  { position: absolute; inset: 0; z-index: 41; opacity: 0; }
+#f2-chaos .f3-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  opacity: 0;
+}
+#f2-chaos .f3-rays {
+  position: absolute;
+  inset: 0;
+  z-index: 41;
+  opacity: 0;
+}
 
 /* Diagonal wipe band — vivid learning cyan. Right edge stays STRAIGHT
    against the canvas; left diagonal leading edge extends OFF-canvas both
    at top and bottom so no peach bleeds through anywhere. */
 .f2-sweep {
   position: absolute;
-  top: 0; right: 0;
+  top: 0;
+  right: 0;
   width: 160%;
   height: 100%;
   background: var(--learning);
@@ -95,11 +122,18 @@ body {
 /* ════════════════════════════════════════════════════════════
    FRAME 1 — Search
    ════════════════════════════════════════════════════════════ */
-.f1-bg { position: absolute; inset: 0; background: #fff; }
+.f1-bg {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+}
 .f1-stage {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 64px;
 }
 .f1-google {
@@ -110,28 +144,44 @@ body {
   letter-spacing: -0.04em;
 }
 .f1-bar {
-  display: flex; align-items: center;
-  width: 920px; height: 92px;
+  display: flex;
+  align-items: center;
+  width: 920px;
+  height: 92px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: #fff;
   padding: 0 32px;
-  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.1);
   gap: 18px;
   font-family: 'Geist', sans-serif;
   font-size: 26px;
   color: var(--ink);
 }
-.f1-bar-icon { font-size: 32px; opacity: 0.55; }
-.f1-bar-text { white-space: nowrap; overflow: hidden; flex: 0 0 auto; }
+.f1-bar-icon {
+  font-size: 32px;
+  opacity: 0.55;
+}
+.f1-bar-text {
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
 .f1-bar-cursor {
-  display: inline-block; width: 3px; height: 32px;
+  display: inline-block;
+  width: 3px;
+  height: 32px;
   background: var(--ink);
   vertical-align: middle;
 }
-.f1-bar-mic { color: #4285F4; font-size: 22px; margin-left: auto; }
+.f1-bar-mic {
+  color: #4285f4;
+  font-size: 22px;
+  margin-left: auto;
+}
 .f1-flash {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background: #fff;
   opacity: 0;
   pointer-events: none;
@@ -140,7 +190,11 @@ body {
 /* ════════════════════════════════════════════════════════════
    FRAME 2 — Chaos (chrome windows)
    ════════════════════════════════════════════════════════════ */
-.f2-bg { position: absolute; inset: 0; background: var(--bg-subtle); }
+.f2-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-subtle);
+}
 
 /* F2 peach iris overlay — covers the F2 bg + chrome but stays BELOW the
    Sofia logo (z-43 inline) so the logo remains the constant element through
@@ -149,7 +203,12 @@ body {
   position: absolute;
   inset: 0;
   z-index: 30;
-  background: radial-gradient(ellipse at 50% 45%, var(--peach-soft) 0%, var(--peach) 60%, var(--peach) 100%);
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    var(--peach-soft) 0%,
+    var(--peach) 60%,
+    var(--peach) 100%
+  );
   clip-path: circle(0% at 50% 50%);
   pointer-events: none;
 }
@@ -173,47 +232,68 @@ body {
 }
 
 .f2-stage {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   z-index: 2;
 }
 .cw {
   position: absolute;
-  width: 460px; height: 310px;
+  width: 460px;
+  height: 310px;
   background: #fff;
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow: hidden;
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.18);
   transform: translate(-50%, -50%);
-  left: 50%; top: 50%;
+  left: 50%;
+  top: 50%;
 }
 .cw-bar {
   height: 38px;
   background: var(--bg-subtle);
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   padding: 0 14px;
   gap: 14px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--muted);
 }
-.cw-dots { display: flex; gap: 6px; }
+.cw-dots {
+  display: flex;
+  gap: 6px;
+}
 .cw-dots i {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: rgba(2, 0, 14, 0.20);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(2, 0, 14, 0.2);
   display: block;
 }
-.cw-url { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cw-x { font-size: 16px; opacity: 0.55; }
+.cw-url {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cw-x {
+  font-size: 16px;
+  opacity: 0.55;
+}
 .cw-content {
-  display: flex; align-items: center;
-  gap: 18px; padding: 26px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 26px;
 }
 .cw-fav {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   border-radius: 14px;
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   font-family: 'Fraunces', serif;
   font-weight: 800;
   font-size: 30px;
@@ -228,58 +308,132 @@ body {
   filter: brightness(0) invert(1);
 }
 /* Brand surfaces — used as background behind monochrome SVG logos. */
-.cw-fav.b-booking      { background: var(--brand-booking); }
-.cw-fav.b-tripadvisor  { background: var(--brand-tripadvisor); }
-.cw-fav.b-tripadvisor img { filter: none; }
-.cw-fav.b-airbnb       { background: var(--brand-airbnb); }
-.cw-fav.b-reddit       { background: var(--brand-reddit); }
-.cw-fav.b-expedia      { background: var(--brand-expedia); }
-.cw-fav.b-expedia img  { filter: brightness(0); }
-.cw-fav.b-hotels       { background: var(--brand-hotels); }
-.cw-fav.b-facebook     { background: var(--brand-facebook); }
-.cw-fav.b-trivago      { background: var(--brand-trivago); }
-.cw-fav.b-marriott     { background: var(--brand-marriott); }
-.cw-fav.b-youtube      { background: var(--brand-youtube); }
-.cw-fav.b-tiktok       { background: var(--brand-tiktok); }
-.cw-fav.b-quora        { background: var(--brand-quora); }
+.cw-fav.b-booking {
+  background: var(--brand-booking);
+}
+.cw-fav.b-tripadvisor {
+  background: var(--brand-tripadvisor);
+}
+.cw-fav.b-tripadvisor img {
+  filter: none;
+}
+.cw-fav.b-airbnb {
+  background: var(--brand-airbnb);
+}
+.cw-fav.b-reddit {
+  background: var(--brand-reddit);
+}
+.cw-fav.b-expedia {
+  background: var(--brand-expedia);
+}
+.cw-fav.b-expedia img {
+  filter: brightness(0);
+}
+.cw-fav.b-hotels {
+  background: var(--brand-hotels);
+}
+.cw-fav.b-facebook {
+  background: var(--brand-facebook);
+}
+.cw-fav.b-trivago {
+  background: var(--brand-trivago);
+}
+.cw-fav.b-marriott {
+  background: var(--brand-marriott);
+}
+.cw-fav.b-youtube {
+  background: var(--brand-youtube);
+}
+.cw-fav.b-tiktok {
+  background: var(--brand-tiktok);
+}
+.cw-fav.b-quora {
+  background: var(--brand-quora);
+}
 
-.cw-meta { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.cw-h { height: 18px; background: var(--skeleton); border-radius: 4px; width: 80%; }
-.cw-l { height: 12px; background: var(--skeleton-soft); border-radius: 4px; }
-.cw-l.short { width: 55%; }
+.cw-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cw-h {
+  height: 18px;
+  background: var(--skeleton);
+  border-radius: 4px;
+  width: 80%;
+}
+.cw-l {
+  height: 12px;
+  background: var(--skeleton-soft);
+  border-radius: 4px;
+}
+.cw-l.short {
+  width: 55%;
+}
 
 /* Mini chrome windows used in frame 4 left wall */
 .cw-mini {
-  width: 220px; height: 130px;
+  width: 220px;
+  height: 130px;
   position: relative;
   transform: none;
-  left: auto; top: auto;
+  left: auto;
+  top: auto;
 }
-.cw-mini .cw-bar { height: 28px; font-size: 10px; padding: 0 10px; gap: 8px; }
-.cw-mini .cw-dots i { width: 7px; height: 7px; }
-.cw-mini .cw-content { padding: 18px; }
-.cw-mini .cw-fav { width: 44px; height: 44px; border-radius: 10px; font-size: 22px; }
-.cw-mini .cw-fav img { width: 64%; height: 64%; }
+.cw-mini .cw-bar {
+  height: 28px;
+  font-size: 10px;
+  padding: 0 10px;
+  gap: 8px;
+}
+.cw-mini .cw-dots i {
+  width: 7px;
+  height: 7px;
+}
+.cw-mini .cw-content {
+  padding: 18px;
+}
+.cw-mini .cw-fav {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 22px;
+}
+.cw-mini .cw-fav img {
+  width: 64%;
+  height: 64%;
+}
 
 /* ════════════════════════════════════════════════════════════
    FRAME 3 — Reveal
    ════════════════════════════════════════════════════════════ */
 .f3-bg {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 45%, var(--peach-soft) 0%, var(--peach) 50%, var(--peach) 100%);
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    var(--peach-soft) 0%,
+    var(--peach) 50%,
+    var(--peach) 100%
+  );
 }
 .f3-rays {
-  position: absolute; inset: 0;
-  background:
-    repeating-conic-gradient(
-      from 0deg at 50% 50%,
-      rgba(255, 255, 255, 0) 0deg,
-      rgba(255, 255, 255, 0) 14deg,
-      rgba(255, 255, 255, 0.10) 15deg,
-      rgba(255, 255, 255, 0) 16deg
-    );
-  mask-image: radial-gradient(circle at 50% 50%, transparent 8%, black 30%, transparent 80%);
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(255, 255, 255, 0) 0deg,
+    rgba(255, 255, 255, 0) 14deg,
+    rgba(255, 255, 255, 0.1) 15deg,
+    rgba(255, 255, 255, 0) 16deg
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 8%,
+    black 30%,
+    transparent 80%
+  );
 }
 /* Text stack lives inside the merged F2/F3 scene, anchored under the logo
    (which is positioned absolutely at the centre of the canvas). */
@@ -288,7 +442,8 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, 0);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 24px;
   margin-top: 120px;
@@ -314,8 +469,14 @@ body {
    FRAME 4 — Lasso
    ════════════════════════════════════════════════════════════ */
 .f4-bg {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, var(--peach-soft) 0%, var(--peach) 60%, var(--peach) 100%);
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    var(--peach-soft) 0%,
+    var(--peach) 60%,
+    var(--peach) 100%
+  );
 }
 
 /* Black noir zone on the LEFT half of F4 — appears via a radial Circle Iris
@@ -324,8 +485,10 @@ body {
    .f4-bg but BELOW the chaos wall content (which has its own stacking). */
 .f4-noir-zone {
   position: absolute;
-  left: 0; top: 0;
-  width: 888px; height: 890px;
+  left: 0;
+  top: 0;
+  width: 888px;
+  height: 890px;
   background: #02000e;
   clip-path: circle(0% at 50% 50%);
   z-index: 1;
@@ -334,13 +497,19 @@ body {
 
 .f4-left {
   position: absolute;
-  left: 0; top: 0; width: 888px; height: 890px;
+  left: 0;
+  top: 0;
+  width: 888px;
+  height: 890px;
   padding: 60px 50px;
   z-index: 2;
 }
 .f4-right {
   position: absolute;
-  right: 0; top: 0; width: 888px; height: 890px;
+  right: 0;
+  top: 0;
+  width: 888px;
+  height: 890px;
   padding: 60px 50px;
 }
 .f4-eyebrow {
@@ -351,7 +520,10 @@ body {
   text-transform: uppercase;
   margin-bottom: 36px;
 }
-.f4-eyebrow-right { color: var(--peach-deep); text-align: right; }
+.f4-eyebrow-right {
+  color: var(--peach-deep);
+  text-align: right;
+}
 .f4-wall {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -364,8 +536,8 @@ body {
 .f4-window.f4-popup {
   width: 100%;
   max-width: 720px;
-  background: #0b0a12;            /* extension --ds-bg */
-  border: 1px solid #25223a;      /* extension --ds-border */
+  background: #0b0a12; /* extension --ds-bg */
+  border: 1px solid #25223a; /* extension --ds-border */
   border-radius: 20px;
   overflow: hidden;
   box-shadow:
@@ -376,20 +548,20 @@ body {
 .f4-popup-header {
   padding: 24px 24px 14px;
   text-align: center;
-  border-bottom: 1px solid #1c1a2b;   /* --ds-border-soft */
+  border-bottom: 1px solid #1c1a2b; /* --ds-border-soft */
 }
 .f4-popup-title {
   font-family: 'Fraunces', serif;
   font-weight: 700;
   font-size: 26px;
   letter-spacing: -0.02em;
-  color: #ffffff;                 /* --ds-ink */
+  color: #ffffff; /* --ds-ink */
   line-height: 1.15;
 }
 .f4-popup-count {
   font-family: 'Geist', sans-serif;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
+  color: rgba(255, 255, 255, 0.55); /* --ds-muted */
   margin-top: 8px;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
@@ -402,7 +574,8 @@ body {
   gap: 8px;
 }
 .f4-url-row {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   gap: 12px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.04);
@@ -426,20 +599,24 @@ body {
   letter-spacing: -0.005em;
 }
 .f4-url-check {
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: rgba(255, 198, 176, 0.15);
   color: var(--peach);
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 198, 176, 0.30);
+  border: 1px solid rgba(255, 198, 176, 0.3);
 }
 .f4-url-fav {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 7px;
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   font-family: 'Fraunces', serif;
   font-weight: 800;
   font-size: 16px;
@@ -447,28 +624,50 @@ body {
   overflow: hidden;
 }
 .f4-url-fav img {
-  width: 62%; height: 62%; object-fit: contain; display: block;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  display: block;
   filter: brightness(0) invert(1);
 }
-.f4-url-fav.b-booking      { background: var(--brand-booking); }
-.f4-url-fav.b-tripadvisor  { background: var(--brand-tripadvisor); }
-.f4-url-fav.b-tripadvisor img { filter: none; }
-.f4-url-fav.b-airbnb       { background: var(--brand-airbnb); }
-.f4-url-fav.b-reddit       { background: var(--brand-reddit); }
-.f4-url-fav.b-expedia      { background: var(--brand-expedia); }
-.f4-url-fav.b-expedia img  { filter: brightness(0); }
-.f4-url-fav.b-hotels       { background: var(--brand-hotels); }
+.f4-url-fav.b-booking {
+  background: var(--brand-booking);
+}
+.f4-url-fav.b-tripadvisor {
+  background: var(--brand-tripadvisor);
+}
+.f4-url-fav.b-tripadvisor img {
+  filter: none;
+}
+.f4-url-fav.b-airbnb {
+  background: var(--brand-airbnb);
+}
+.f4-url-fav.b-reddit {
+  background: var(--brand-reddit);
+}
+.f4-url-fav.b-expedia {
+  background: var(--brand-expedia);
+}
+.f4-url-fav.b-expedia img {
+  filter: brightness(0);
+}
+.f4-url-fav.b-hotels {
+  background: var(--brand-hotels);
+}
 .f4-url-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
-  white-space: nowrap; overflow: hidden;
+  color: rgba(255, 255, 255, 0.55); /* --ds-muted */
+  white-space: nowrap;
+  overflow: hidden;
   letter-spacing: 0.01em;
 }
 /* Magnetic threads connecting chrome chaos to the Sofia window. */
 .f4-threads {
-  position: absolute; inset: 0;
-  width: 1776px; height: 890px;
+  position: absolute;
+  inset: 0;
+  width: 1776px;
+  height: 890px;
   pointer-events: none;
   z-index: 4;
 }
@@ -518,7 +717,9 @@ body {
   color: var(--ink-soft);
   text-align: center;
   padding: 18px 36px 36px;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .f6-cap-line {
   display: inline-flex;
@@ -563,7 +764,11 @@ body {
   transform: translate(20px, 12px) scale(0.85);
   pointer-events: none;
 }
-.f6-cap-cursor svg { width: 28px; height: 36px; display: block; }
+.f6-cap-cursor svg {
+  width: 28px;
+  height: 36px;
+  display: block;
+}
 .f6-cap-cursor-tag {
   font-family: 'Geist', sans-serif;
   font-style: normal;
@@ -586,7 +791,7 @@ body {
   border-radius: 999px;
   background: var(--ink);
   color: var(--peach-soft);
-  border: 1px solid rgba(2, 0, 14, 0.20);
+  border: 1px solid rgba(2, 0, 14, 0.2);
   cursor: pointer;
   opacity: 0;
   transform: scale(0.92);
@@ -603,7 +808,7 @@ body {
 .macos-notif {
   position: absolute;
   top: 28px;
-  left: 1328px;   /* 1776 canvas − 28 right padding − 420 width */
+  left: 1328px; /* 1776 canvas − 28 right padding − 420 width */
   width: 420px;
   background: rgba(28, 28, 30, 0.86);
   -webkit-backdrop-filter: blur(28px);
@@ -616,7 +821,8 @@ body {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
   opacity: 0;
 }
 .macos-notif-icon {
@@ -626,8 +832,15 @@ body {
   flex-shrink: 0;
   overflow: hidden;
 }
-.macos-notif-icon svg { width: 38px; height: 38px; display: block; }
-.macos-notif-content { flex: 1; min-width: 0; }
+.macos-notif-icon svg {
+  width: 38px;
+  height: 38px;
+  display: block;
+}
+.macos-notif-content {
+  flex: 1;
+  min-width: 0;
+}
 .macos-notif-header {
   display: flex;
   justify-content: space-between;
@@ -654,7 +867,10 @@ body {
   margin-bottom: 2px;
   letter-spacing: -0.005em;
 }
-.macos-notif-trust { color: #ff8a3d; font-weight: 700; }
+.macos-notif-trust {
+  color: #ff8a3d;
+  font-weight: 700;
+}
 .macos-notif-body {
   font-size: 13px;
   font-weight: 400;
@@ -674,14 +890,21 @@ body {
 }
 .f5-confetti-piece {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   opacity: 0;
   will-change: transform, opacity;
   transform-origin: 50% 50%;
 }
-.f5-confetti-piece.sq { border-radius: 1px; }
-.f5-confetti-piece.rb { border-radius: 1px; }
-.f5-confetti-piece.dot { border-radius: 50%; }
+.f5-confetti-piece.sq {
+  border-radius: 1px;
+}
+.f5-confetti-piece.rb {
+  border-radius: 1px;
+}
+.f5-confetti-piece.dot {
+  border-radius: 50%;
+}
 
 #f4-ptr {
   position: absolute;
@@ -692,7 +915,8 @@ body {
 
 .f4-caption {
   position: absolute;
-  bottom: 56px; left: 50%;
+  bottom: 56px;
+  left: 50%;
   transform: translateX(-50%);
   font-family: 'Fraunces', serif;
   font-style: italic;
@@ -714,33 +938,47 @@ body {
 /* F5/F6 background — peach reveal stays so the dark window pops
    against the rest of the video's warm palette. */
 .f5-bg {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, var(--peach-soft) 0%, var(--peach) 80%);
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    var(--peach-soft) 0%,
+    var(--peach) 80%
+  );
 }
 /* Sofia popup window — ported from the extension design system
    (--ds-bg, --ds-border, Fraunces serif headline). Dark ink card
    floating on the peach reveal, same family as the F4 popup. */
 .f5-window {
   position: absolute;
-  top: 80px; left: 120px; right: 120px; bottom: 120px;
-  background: #0b0a12;            /* --ds-bg */
-  border: 1px solid #25223a;      /* --ds-border */
+  top: 80px;
+  left: 120px;
+  right: 120px;
+  bottom: 120px;
+  background: #0b0a12; /* --ds-bg */
+  border: 1px solid #25223a; /* --ds-border */
   border-radius: 22px;
   overflow: hidden;
   box-shadow:
     0 40px 96px rgba(11, 10, 18, 0.42),
     0 0 0 1px rgba(255, 198, 176, 0.05) inset;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .f5-win-bar {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   gap: 22px;
   padding: 22px 30px;
-  border-bottom: 1px solid #1c1a2b;   /* --ds-border-soft */
+  border-bottom: 1px solid #1c1a2b; /* --ds-border-soft */
 }
-.f5-win-dots { display: flex; gap: 7px; }
+.f5-win-dots {
+  display: flex;
+  gap: 7px;
+}
 .f5-win-dots i {
-  width: 11px; height: 11px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: rgba(255, 198, 176, 0.35);
   display: block;
@@ -749,7 +987,7 @@ body {
   font-family: 'Fraunces', serif;
   font-weight: 700;
   font-size: 22px;
-  color: #ffffff;                 /* --ds-ink */
+  color: #ffffff; /* --ds-ink */
   letter-spacing: -0.015em;
   flex: 1;
 }
@@ -757,7 +995,7 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.30em;
+  letter-spacing: 0.3em;
   color: #0b0a12;
   background: var(--peach);
   padding: 6px 12px;
@@ -779,15 +1017,22 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 18px 20px 16px;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   transition: all 0.2s ease;
 }
-.f5-card-head { display: flex; align-items: flex-start; gap: 14px; }
+.f5-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
 .f5-fav {
-  width: 44px; height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 9px;
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   font-family: 'Fraunces', serif;
   font-weight: 800;
   font-size: 20px;
@@ -795,63 +1040,102 @@ body {
   overflow: hidden;
 }
 .f5-fav img {
-  width: 64%; height: 64%; object-fit: contain; display: block;
+  width: 64%;
+  height: 64%;
+  object-fit: contain;
+  display: block;
   filter: brightness(0) invert(1);
 }
-.f5-fav.b-booking      { background: var(--brand-booking); }
-.f5-fav.b-tripadvisor  { background: var(--brand-tripadvisor); }
-.f5-fav.b-tripadvisor img { filter: none; }
-.f5-fav.b-airbnb       { background: var(--brand-airbnb); }
-.f5-fav.b-reddit       { background: var(--brand-reddit); }
-.f5-tw { flex: 1; min-width: 0; }
+.f5-fav.b-booking {
+  background: var(--brand-booking);
+}
+.f5-fav.b-tripadvisor {
+  background: var(--brand-tripadvisor);
+}
+.f5-fav.b-tripadvisor img {
+  filter: none;
+}
+.f5-fav.b-airbnb {
+  background: var(--brand-airbnb);
+}
+.f5-fav.b-reddit {
+  background: var(--brand-reddit);
+}
+.f5-tw {
+  flex: 1;
+  min-width: 0;
+}
 .f5-title {
   font-family: 'Geist', sans-serif;
   font-size: 17px;
   font-weight: 600;
-  color: #ffffff;                 /* --ds-ink */
+  color: #ffffff; /* --ds-ink */
   line-height: 1.3;
   letter-spacing: -0.005em;
 }
 .f5-host {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
+  color: rgba(255, 255, 255, 0.55); /* --ds-muted */
   margin-top: 5px;
   letter-spacing: 0.01em;
 }
 .f5-bottom {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
-.f5-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.f5-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .f5-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px; font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.55);
   background: rgba(255, 255, 255, 0.04);
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  letter-spacing: 0.10em;
+  letter-spacing: 0.1em;
 }
 .f5-verb {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 700;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--ink);
   padding: 5px 11px;
   border-radius: 6px;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.1em;
 }
-.f5-verb.trusted     { background: var(--trusted); }
-.f5-verb.distrusted  { background: var(--distrusted); }
-.f5-verb.work        { background: var(--work); }
-.f5-verb.learning    { background: var(--learning); }
-.f5-verb.fun         { background: var(--fun); }
-.f5-verb.inspiration { background: var(--inspiration); }
-.f5-verb.buying      { background: var(--buying); }
-.f5-verb.music       { background: var(--music); }
+.f5-verb.trusted {
+  background: var(--trusted);
+}
+.f5-verb.distrusted {
+  background: var(--distrusted);
+}
+.f5-verb.work {
+  background: var(--work);
+}
+.f5-verb.learning {
+  background: var(--learning);
+}
+.f5-verb.fun {
+  background: var(--fun);
+}
+.f5-verb.inspiration {
+  background: var(--inspiration);
+}
+.f5-verb.buying {
+  background: var(--buying);
+}
+.f5-verb.music {
+  background: var(--music);
+}
 /* Card highlighted (validated) — peach accent over dark popup */
 .f5-card.validated {
   border-color: rgba(255, 198, 176, 0.45);
@@ -868,15 +1152,21 @@ body {
 /* Cursors with curator labels */
 .cursor-curator {
   position: absolute;
-  width: 26px; height: 32px;
+  width: 26px;
+  height: 32px;
   pointer-events: none;
   z-index: 30;
-  filter: drop-shadow(0 4px 8px rgba(2, 0, 14, 0.30));
+  filter: drop-shadow(0 4px 8px rgba(2, 0, 14, 0.3));
 }
-.cursor-curator svg { width: 100%; height: 100%; display: block; }
+.cursor-curator svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .curator-label {
   position: absolute;
-  top: 32px; left: 18px;
+  top: 32px;
+  left: 18px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
@@ -892,16 +1182,24 @@ body {
    FRAME 6 — Social validation (re-uses f5 styles)
    ════════════════════════════════════════════════════════════ */
 .f6-bg {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, var(--peach-soft) 0%, var(--peach) 80%);
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    var(--peach-soft) 0%,
+    var(--peach) 80%
+  );
 }
-.f6-grid { position: relative; }
+.f6-grid {
+  position: relative;
+}
 
 /* Floating +1 vote indicator */
 .vote-pop {
   position: absolute;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 34px; font-weight: 700;
+  font-size: 34px;
+  font-weight: 700;
   color: var(--trusted);
   pointer-events: none;
   z-index: 28;
@@ -927,34 +1225,41 @@ body {
   position: relative;
 }
 .vote-stack .vote-mav {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 2px solid #0b0a12;
   margin-left: -10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px; font-weight: 700;
+  font-size: 12px;
+  font-weight: 700;
   color: #0b0a12;
   display: inline-flex;
-  align-items: center; justify-content: center;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(2, 0, 14, 0.18);
   opacity: 0;
   transform: scale(0.4);
   box-sizing: border-box;
 }
-.vote-stack .vote-mav:first-child { margin-left: 0; }
-
+.vote-stack .vote-mav:first-child {
+  margin-left: 0;
+}
 
 /* ════════════════════════════════════════════════════════════
    FRAME 7 — New search (Google SERP with Sofia cards on top)
    ════════════════════════════════════════════════════════════ */
 .f7-bg {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background: var(--peach);
 }
 .f7-stage {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   padding: 60px 100px 40px;
 }
@@ -965,7 +1270,8 @@ body {
   margin-bottom: 72px;
 }
 .f7-brand-mark {
-  width: 56px; height: 56px;
+  width: 56px;
+  height: 56px;
   display: block;
 }
 .f7-brand-wordmark {
@@ -977,8 +1283,10 @@ body {
   color: var(--ink);
 }
 .f7-bar {
-  display: flex; align-items: center;
-  width: 820px; height: 68px;
+  display: flex;
+  align-items: center;
+  width: 820px;
+  height: 68px;
   border-radius: 999px;
   border: 1px solid rgba(122, 58, 30, 0.18);
   background: var(--bg);
@@ -987,7 +1295,7 @@ body {
   font-family: 'Geist', sans-serif;
   font-size: 20px;
   margin-bottom: 56px;
-  box-shadow: 0 6px 24px rgba(122, 58, 30, 0.10);
+  box-shadow: 0 6px 24px rgba(122, 58, 30, 0.1);
 }
 /* Stop the text span from growing — keeps the caret pinned to the end of
    the typed query instead of being pushed to the far right of the bar. */
@@ -1003,46 +1311,64 @@ body {
 .f7-results {
   width: 100%;
   max-width: 1480px;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 32px;
 }
 .f7-section-eyebrow {
-  display: flex; align-items: center; gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.30em;
+  letter-spacing: 0.3em;
   color: var(--peach-deep);
   margin-bottom: 14px;
 }
-.f7-section-logo { width: 22px; height: 22px; }
+.f7-section-logo {
+  width: 22px;
+  height: 22px;
+}
 .f7-vanilla-eyebrow {
   color: var(--muted);
   margin-top: 18px;
 }
 .f7-sofia-section {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 .f7-srp-card {
   background: var(--bg);
-  border: 1px solid rgba(122, 58, 30, 0.20);
+  border: 1px solid rgba(122, 58, 30, 0.2);
   border-radius: 14px;
   padding: 18px 22px;
   box-shadow: 0 6px 22px rgba(122, 58, 30, 0.08);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   opacity: 0;
 }
-.f7-srp-head { display: flex; align-items: center; gap: 14px; }
-.f7-srp-meta { flex: 1; min-width: 0; }
+.f7-srp-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.f7-srp-meta {
+  flex: 1;
+  min-width: 0;
+}
 .f7-srp-host {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.02em;
 }
-.f7-srp-host strong { color: var(--peach-deep); font-weight: 700; }
+.f7-srp-host strong {
+  color: var(--peach-deep);
+  font-weight: 700;
+}
 .f7-srp-title {
   font-family: 'Geist', sans-serif;
   font-size: 22px;
@@ -1051,25 +1377,37 @@ body {
   margin-top: 4px;
   line-height: 1.25;
 }
-.f7-srp-pill { flex-shrink: 0; }
-.f7-srp-foot {
-  display: flex; align-items: center; gap: 16px;
+.f7-srp-pill {
+  flex-shrink: 0;
 }
-.f7-srp-avatars { display: flex; align-items: center; }
+.f7-srp-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.f7-srp-avatars {
+  display: flex;
+  align-items: center;
+}
 .mav {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 2px solid var(--bg);
   margin-left: -8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 700;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--ink);
   background: var(--peach);
   display: inline-flex;
-  align-items: center; justify-content: center;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
-.mav:first-child { margin-left: 0; }
+.mav:first-child {
+  margin-left: 0;
+}
 .mav.more {
   background: rgba(2, 0, 14, 0.08);
   color: var(--muted);
@@ -1081,7 +1419,8 @@ body {
   color: var(--ink);
 }
 .f7-vanilla {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   opacity: 0.55;
   filter: grayscale(0.4);
@@ -1090,7 +1429,8 @@ body {
   padding: 12px 18px;
   background: rgba(255, 255, 255, 0.55);
   border-radius: 8px;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
 }
 .f7-van-host {
@@ -1111,21 +1451,27 @@ body {
 /* F8 closing — full-black brand sign-off, peach starburst + serif wordmark.
    Matches the Claude Code closing-card composition. */
 .f8-bg {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background: var(--bg-dark);
 }
 .f8-center {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 48px;
 }
 .f8-mark-row {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   gap: 36px;
 }
 .f8-mark {
-  width: 140px; height: 140px;
+  width: 140px;
+  height: 140px;
   display: block;
   /* Logo SVG is ink #02000e — invert to white so it reads on the dark #0a0a0a closing card */
   filter: brightness(0) invert(1);
@@ -1137,7 +1483,9 @@ body {
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--ink-on-dark);
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .f8-tagline {
   font-family: 'Fraunces', serif;

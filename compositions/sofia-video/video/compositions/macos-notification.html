@@ -18,10 +18,12 @@
       body {
         width: 1776px;
         height: 890px;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
+          sans-serif;
       }
 
-      [data-composition-id="macos-notification"] .notification-card {
+      [data-composition-id='macos-notification'] .notification-card {
         position: absolute;
         top: 28px;
         right: 28px;
@@ -39,7 +41,7 @@
         align-items: flex-start;
       }
 
-      [data-composition-id="macos-notification"] .app-icon {
+      [data-composition-id='macos-notification'] .app-icon {
         width: 38px;
         height: 38px;
         border-radius: 9px;
@@ -47,25 +49,25 @@
         overflow: hidden;
       }
 
-      [data-composition-id="macos-notification"] .app-icon svg {
+      [data-composition-id='macos-notification'] .app-icon svg {
         width: 38px;
         height: 38px;
         display: block;
       }
 
-      [data-composition-id="macos-notification"] .notification-content {
+      [data-composition-id='macos-notification'] .notification-content {
         flex: 1;
         min-width: 0;
       }
 
-      [data-composition-id="macos-notification"] .notification-header {
+      [data-composition-id='macos-notification'] .notification-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 3px;
       }
 
-      [data-composition-id="macos-notification"] .app-name {
+      [data-composition-id='macos-notification'] .app-name {
         font-size: 12.5px;
         font-weight: 600;
         color: rgba(255, 255, 255, 0.55);
@@ -73,13 +75,13 @@
         letter-spacing: 0.04em;
       }
 
-      [data-composition-id="macos-notification"] .time-label {
+      [data-composition-id='macos-notification'] .time-label {
         font-size: 12.5px;
         font-weight: 400;
         color: rgba(255, 255, 255, 0.4);
       }
 
-      [data-composition-id="macos-notification"] .notification-title {
+      [data-composition-id='macos-notification'] .notification-title {
         font-size: 15.5px;
         font-weight: 600;
         color: #ffffff;
@@ -88,14 +90,14 @@
         letter-spacing: -0.005em;
       }
 
-      [data-composition-id="macos-notification"] .notification-body {
+      [data-composition-id='macos-notification'] .notification-body {
         font-size: 13px;
         font-weight: 400;
         color: rgba(255, 255, 255, 0.62);
         line-height: 1.35;
       }
 
-      [data-composition-id="macos-notification"] .trust-amount {
+      [data-composition-id='macos-notification'] .trust-amount {
         color: #ff8a3d;
         font-weight: 600;
       }
@@ -119,19 +121,40 @@
       >
         <div class="app-icon">
           <!-- Ambire-style favicon: deep ink + signature orange A mark -->
-          <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            viewBox="0 0 38 38"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <linearGradient id="ambire-bg" x1="0" y1="0" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="ambire-bg"
+                x1="0"
+                y1="0"
+                x2="38"
+                y2="38"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop offset="0%" stop-color="#1a1f3a" />
                 <stop offset="100%" stop-color="#0b0e1f" />
               </linearGradient>
-              <linearGradient id="ambire-a" x1="0" y1="0" x2="0" y2="38" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="ambire-a"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="38"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop offset="0%" stop-color="#ff8a3d" />
                 <stop offset="100%" stop-color="#ff5e1f" />
               </linearGradient>
             </defs>
             <rect width="38" height="38" rx="9" fill="url(#ambire-bg)" />
-            <path d="M19 8 L29 28 L25.2 28 L23.4 24.3 L14.6 24.3 L12.8 28 L9 28 Z M19 14.4 L16.2 21 L21.8 21 Z" fill="url(#ambire-a)" />
+            <path
+              d="M19 8 L29 28 L25.2 28 L23.4 24.3 L14.6 24.3 L12.8 28 L9 28 Z M19 14.4 L16.2 21 L21.8 21 Z"
+              fill="url(#ambire-a)"
+            />
           </svg>
         </div>
         <div class="notification-content">
@@ -139,48 +162,67 @@
             <span class="app-name">Ambire Wallet</span>
             <span class="time-label">now</span>
           </div>
-          <div class="notification-title">alice.eth spent <span class="trust-amount">10 TRUST</span></div>
-          <div class="notification-body">Reinforced your post on Sofia · r/Thailand itinerary</div>
+          <div class="notification-title">
+            alice.eth spent <span class="trust-amount">10 TRUST</span>
+          </div>
+          <div class="notification-body">
+            Reinforced your post on Sofia · r/Thailand itinerary
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      window.__timelines = window.__timelines || {};
-
-      (function () {
-        const tl = gsap.timeline({ paused: true });
-        const notification = document.getElementById("notification");
+      window.__timelines = window.__timelines || {}
+      ;(function () {
+        const tl = gsap.timeline({ paused: true })
+        const notification = document.getElementById('notification')
 
         // Start off-screen to the right + faint blur
-        gsap.set(notification, { x: 460, opacity: 0, filter: "blur(8px)" });
+        gsap.set(notification, { x: 460, opacity: 0, filter: 'blur(8px)' })
 
         // Slide-in with snap
-        tl.to(notification, {
-          x: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.55,
-          ease: "expo.out",
-        }, 0.10);
+        tl.to(
+          notification,
+          {
+            x: 0,
+            opacity: 1,
+            filter: 'blur(0px)',
+            duration: 0.55,
+            ease: 'expo.out',
+          },
+          0.1,
+        )
 
         // Subtle settle — small bounce-back
-        tl.fromTo(notification,
+        tl.fromTo(
+          notification,
           { scale: 1 },
-          { scale: 1.015, duration: 0.10, ease: "power2.out", yoyo: true, repeat: 1 },
-          0.55);
+          {
+            scale: 1.015,
+            duration: 0.1,
+            ease: 'power2.out',
+            yoyo: true,
+            repeat: 1,
+          },
+          0.55,
+        )
 
         // Slide-out to the right
-        tl.to(notification, {
-          x: 460,
-          opacity: 0,
-          filter: "blur(6px)",
-          duration: 0.40,
-          ease: "power3.in",
-        }, 2.15);
+        tl.to(
+          notification,
+          {
+            x: 460,
+            opacity: 0,
+            filter: 'blur(6px)',
+            duration: 0.4,
+            ease: 'power3.in',
+          },
+          2.15,
+        )
 
-        window.__timelines["macos-notification"] = tl;
-      })();
+        window.__timelines['macos-notification'] = tl
+      })()
     </script>
   </body>
 </html>
