@@ -15,7 +15,7 @@
  * the consumer sets `--echoes-bento-bg` inline and lets the existing
  * CSS handle it. That pattern stays cleaner for DS-card decoration.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   getUrlPreview,
   type UrlPreview as UrlPreviewData,
@@ -67,6 +67,17 @@ export function UrlPreview({
       ? getUrlPreview(undefined, domain || extractHost(url))
       : data
 
+  // Fade-in tracker. Resets whenever the effective URL changes so a
+  // sync→async upgrade still triggers the opacity transition (the
+  // async result swaps in once the proxy resolves). `complete` on a
+  // freshly-mounted img is true when the browser already has the
+  // resource cached — start visible in that case so cached previews
+  // don't blink.
+  const [loaded, setLoaded] = useState(false)
+  useEffect(() => {
+    setLoaded(false)
+  }, [effective.url])
+
   if (variant === 'card') {
     const isThumb = effective.kind === 'thumb'
     return (
@@ -83,6 +94,10 @@ export function UrlPreview({
           src={effective.url}
           alt={alt ?? effective.alt}
           loading="lazy"
+          className={loaded ? 'up-img-loaded' : 'up-img-loading'}
+          onLoad={(e) => {
+            if (e.currentTarget.complete) setLoaded(true)
+          }}
           onError={() => setErrored(true)}
         />
       </div>
@@ -97,7 +112,16 @@ export function UrlPreview({
       width={size}
       height={size}
       loading="lazy"
-      className={['up-thumb', className].filter(Boolean).join(' ')}
+      className={[
+        'up-thumb',
+        loaded ? 'up-img-loaded' : 'up-img-loading',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      onLoad={(e) => {
+        if (e.currentTarget.complete) setLoaded(true)
+      }}
       onError={() => setErrored(true)}
     />
   )

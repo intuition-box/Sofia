@@ -4,6 +4,7 @@ import { Share2, Users, TrendingUp, TrendingDown } from 'lucide-react'
 import type { TopClaim } from '@/hooks/useTopClaims'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { FaviconWrapper } from '@0xsofia/design-system'
+import { UrlPreview } from '@/components/UrlPreview'
 import {
   INTENTION_COLORS_BY_LABEL,
   intentionBadgeStyle,
@@ -49,12 +50,18 @@ function TopClaimCard({
   return (
     <>
       <Card
-        className="tc-card"
+        className="tc-card tc-card--has-thumb"
         style={{ cursor: 'pointer' }}
         onClick={() => setBoardOpen(true)}
       >
+        <UrlPreview
+          variant="card"
+          url={claim.objectUrl}
+          domain={domain}
+          className="tc-thumb"
+          alt={claim.objectLabel}
+        />
         <div className="tc-header">
-          {favicon && <FaviconWrapper size={20} src={favicon} alt={domain} />}
           <span className="tc-title">{claim.objectLabel}</span>
         </div>
 
