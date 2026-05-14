@@ -47,6 +47,13 @@ export default function CircleCardStats({
         </span>
         <span className="cr-card-stat-label">Votes</span>
       </div>
+      <div className="cr-card-stat">
+        <span className="cr-card-stat-num">
+          {isLoading ? '—' : stats.activeMemberCount}
+          <span className="cr-card-stat-pulse" aria-hidden="true" />
+        </span>
+        <span className="cr-card-stat-label">Live · 7d</span>
+      </div>
     </div>
   )
 }
