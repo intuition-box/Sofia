@@ -1798,9 +1798,9 @@
   scrollbar-width: thin;
 }
 .crd-te-card {
-  flex: 0 0 280px;
-  width: 280px;
-  padding: 14px;
+  flex: 0 0 360px;
+  width: 360px;
+  padding: 18px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border-soft);
   border-left: 4px solid var(--circle-color, var(--ds-accent));
@@ -1808,7 +1808,7 @@
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   transition:
     transform 0.15s ease,
@@ -1833,7 +1833,7 @@
 }
 .crd-te-title {
   font-family: 'Geist', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ds-ink);
   margin: 0;
@@ -1842,7 +1842,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.35;
-  min-height: 38px;
+  min-height: 42px;
 }
 .crd-te-meta {
   display: flex;
