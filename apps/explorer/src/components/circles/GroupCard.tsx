@@ -89,11 +89,6 @@ export default function GroupCard({ group }: GroupCardProps) {
         <p className="cr-group-desc">{group.description}</p>
       )}
 
-      <CircleCardStats
-        memberCount={group.memberCount}
-        addresses={addresses}
-      />
-
       {avatarMembers.length > 0 && (
         <div className="cr-avatars">
           {avatarMembers.map((m) => (
@@ -102,6 +97,11 @@ export default function GroupCard({ group }: GroupCardProps) {
           {extra > 0 && <span className="mav more">+{extra}</span>}
         </div>
       )}
+
+      <CircleCardStats
+        memberCount={group.memberCount}
+        addresses={addresses}
+      />
     </button>
   )
 }

@@ -60,14 +60,14 @@ export default function TrustCircleCard({
         will shape your feed.
       </p>
 
-      <CircleCardStats memberCount={members.length} addresses={addresses} />
-
       <div className="cr-avatars">
         {visible.map((a) => (
           <MemberAvatar key={a.termId} member={a} />
         ))}
         {extra > 0 && <span className="mav more">+{extra}</span>}
       </div>
+
+      <CircleCardStats memberCount={members.length} addresses={addresses} />
 
       <div className="cr-hover-actions">
         <span className="cr-btn-sm" onClick={(e) => e.stopPropagation()}>
