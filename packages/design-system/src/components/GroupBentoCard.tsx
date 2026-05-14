@@ -118,11 +118,7 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     <>
       {headerImage ? (
         <div className="group-bento-thumb">
-          <img
-            src={headerImage}
-            alt={headerImageAlt ?? ''}
-            loading="lazy"
-          />
+          <img src={headerImage} alt={headerImageAlt ?? ''} loading="lazy" />
         </div>
       ) : null}
       <div className="group-bento-header">

@@ -12,7 +12,7 @@ interface CircleMembersCardProps {
   onViewAll?: () => void
 }
 
-const MAX_STACK = 5
+const MAX_STACK = 10
 
 export default function CircleMembersCard({
   members,

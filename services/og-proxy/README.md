@@ -17,7 +17,7 @@ Returns:
   "image": "https://example.com/og.png",
   "title": "Article title",
   "width": 1200,
-  "height": 630
+  "height": 630,
 }
 ```
 
@@ -71,9 +71,9 @@ Rebuild the explorer. Done.
 
 ## Env vars
 
-| Name | Default | Purpose |
-|------|---------|---------|
-| `PORT` | `8787` | HTTP port the server binds to |
+| Name   | Default | Purpose                       |
+| ------ | ------- | ----------------------------- |
+| `PORT` | `8787`  | HTTP port the server binds to |
 
 The defaults are fine for Coolify — only override if you have a
 collision.
@@ -81,6 +81,7 @@ collision.
 ## Safety notes
 
 The service validates every target URL before fetching:
+
 - only `http://` and `https://` schemes
 - blocks `localhost`, `0.0.0.0`, `::1`, and RFC1918 private ranges
 - caps upstream body at 2 MB, bails as soon as `</head>` is reached

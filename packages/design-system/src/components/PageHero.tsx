@@ -11,6 +11,8 @@ export interface PageHeroProps extends HTMLAttributes<HTMLDivElement> {
   background?: string
   /** Drop the decorative rotated square. */
   hideDeco?: boolean
+  /** Optional icon rendered to the left of the title. */
+  icon?: ReactNode
 }
 
 /**
@@ -27,6 +29,7 @@ export function PageHero({
   children,
   background,
   hideDeco,
+  icon,
   className,
   style,
   ...rest
@@ -35,7 +38,10 @@ export function PageHero({
   const resolvedStyle = background ? { ...style, background } : style
   return (
     <div className={cls} style={resolvedStyle} {...rest}>
-      <h1 className="ph-title">{title}</h1>
+      <h1 className="ph-title">
+        {icon ? <span className="ph-icon">{icon}</span> : null}
+        {title}
+      </h1>
       {description ? <p className="ph-description">{description}</p> : null}
       {children}
       {hideDeco ? null : <div className="ph-deco" aria-hidden="true" />}

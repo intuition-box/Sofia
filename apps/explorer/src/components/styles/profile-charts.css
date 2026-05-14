@@ -409,53 +409,158 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Radar verb chips ────────────────────────────────────────────── */
-/* Ported from proto profile-charts.css:150-191. */
+/* ── Radar focus dropdown ───────────────────────────────────────── */
+/* Replaces the wrap-flow pill row; mirrors the /circles filter
+   dropdowns so the explorer chrome stays consistent. */
 
 .pc-radar-verbs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
   margin-top: -4px;
   margin-bottom: 12px;
+  /* Pull the trigger back over the wrap's left padding so the
+     dropdown hugs the column edge without dragging the radar with
+     it. Falls back to 0 when the wrap padding collapses on mobile. */
+  margin-left: -54px;
   z-index: 3;
   align-self: flex-start;
 }
-.pc-radar-verb {
+@media (max-width: 900px) {
+  .pc-radar-verbs {
+    margin-left: 0;
+  }
+}
+.pc-radar-filter-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
   background: var(--ds-card);
-  color: var(--ds-muted);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  border: 1px solid var(--ds-border);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  min-width: 210px;
+  font-family: inherit;
 }
-.pc-radar-verb:hover {
-  border-color: var(--verb-color, var(--ds-ink-soft));
-  color: var(--verb-color, var(--ds-ink));
+.pc-radar-filter-trigger:hover {
+  border-color: var(--ds-ink-soft);
 }
-.pc-radar-verb.active {
-  background: color-mix(
-    in srgb,
-    var(--verb-color, var(--ds-accent)) 14%,
-    var(--ds-card)
-  );
-  border-color: var(--verb-color, var(--ds-accent));
-  color: var(--verb-color, var(--ds-accent-ink));
+.pc-radar-filter-trigger[data-state='open'] {
+  border-color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
-.pc-radar-verb-emoji {
-  font-size: 11px;
-  line-height: 1;
-  text-transform: none;
+.pc-radar-filter-trigger__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transform: translateY(-1px);
+  transition: opacity 0.2s ease;
+}
+.pc-radar-filter-trigger:hover .pc-radar-filter-trigger__dot {
+  opacity: 0.65;
+}
+.pc-radar-filter-trigger__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.pc-radar-filter-trigger__value {
   font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-radar-filter-trigger__chev {
+  color: var(--ds-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.pc-radar-filter-trigger[data-state='open'] .pc-radar-filter-trigger__chev {
+  transform: rotate(180deg);
+}
+.pc-radar-filter-pop {
+  width: 240px !important;
+  padding: 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--ds-card);
+  border-color: var(--ds-border) !important;
+  transform-origin: top left;
+}
+.pc-radar-filter-pop__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.pc-radar-filter-pop__cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.pc-radar-filter-pop__cell:hover {
+  background: var(--ds-bg-subtle);
+}
+.pc-radar-filter-pop__cell.is-active {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.pc-radar-filter-pop__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pc-radar-filter-pop__emoji {
+  font-size: 12px;
+  line-height: 1;
+}
+.pc-radar-filter-pop__reset {
+  align-self: flex-end;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.pc-radar-filter-pop__reset:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
 }
 
 /* ── Radar chart ────────────────────────────────────────────────── */
@@ -468,8 +573,16 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 440px;
-  padding: 4px 10px 10px;
+  /* Bigger left padding so the radar shifts to the right of the
+     focus dropdown trigger (the dropdown sits in the top-left
+     corner of this wrap). Right padding stays slim. */
+  padding: 4px 10px 10px 64px;
   overflow: visible;
+}
+@media (max-width: 900px) {
+  .pc-radar-wrap {
+    padding-left: 10px;
+  }
 }
 .pc-radar {
   width: 100%;
@@ -691,6 +804,193 @@
   flex-direction: column;
   justify-content: center;
   gap: 14px;
+}
+/* `all topics` overview gets a right-side rail with compact interest
+   pills, turning the panel into a 2-column grid. The left column keeps
+   the score hero; the right column shows the user's selected topics. */
+.pc-details.has-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.pc-details-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .pc-details.has-side {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Compact interest rail */
+.pc-details-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
+  border-left: 1px dashed var(--ds-border-soft);
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .pc-details-side {
+    padding-left: 0;
+    padding-top: 12px;
+    border-left: none;
+    border-top: 1px dashed var(--ds-border-soft);
+  }
+}
+.pc-details-side-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.pc-details-side-edit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.15s ease;
+}
+.pc-details-side-edit:hover {
+  color: var(--ds-ink);
+}
+.pc-details-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pc-interest-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-muted)) 8%,
+    var(--ds-card)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--pill-color, var(--ds-border)) 22%, transparent);
+  min-width: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.pc-interest-pill:hover {
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-muted)) 16%,
+    var(--ds-card)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-border)) 45%,
+    transparent
+  );
+}
+.pc-interest-pill-main {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.pc-interest-pill-main:disabled {
+  cursor: default;
+}
+.pc-interest-pill-main:not(:disabled):hover {
+  transform: translateX(1px);
+}
+.pc-interest-pill-main:focus-visible {
+  outline: 2px solid var(--pill-color, var(--ds-accent));
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+.pc-interest-pill-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-interest-pill-score {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.pc-interest-pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.pc-interest-pill-remove:hover {
+  background: color-mix(in srgb, var(--ds-ink) 8%, transparent);
+  color: var(--ds-ink);
+}
+.pc-interest-pill--add,
+.pc-interest-pill--empty {
+  background: transparent;
+  border: 1px dashed var(--ds-border);
+  color: var(--ds-muted);
+  cursor: pointer;
+  grid-template-columns: auto 1fr;
+}
+.pc-interest-pill--add {
+  text-align: left;
+  font: inherit;
+}
+.pc-interest-pill--add:hover {
+  border-color: var(--ds-ink-soft, var(--ds-ink));
+  color: var(--ds-ink);
+}
+.pc-interest-pill-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 10px;
+  line-height: 1;
 }
 
 .pc-details-head {

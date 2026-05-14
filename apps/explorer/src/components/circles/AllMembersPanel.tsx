@@ -9,8 +9,8 @@ import { Link } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import type { Address } from 'viem'
-import { UserPlus } from 'lucide-react'
 import MemberAvatar from './MemberAvatar'
+import TrustMemberButton from './TrustMemberButton'
 
 const shortAddress = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`
 
@@ -71,19 +71,11 @@ export default function AllMembersPanel({
           </button>
         </div>
 
-        <button
-          type="button"
-          className="crd-members-invite-btn"
-          onClick={() => {
-            // TODO: wire to real invite flow once available.
-            // Placeholder: copy a prefilled share link to clipboard.
-            const url = `${window.location.origin}/circles/trust?invite=1`
-            navigator.clipboard?.writeText(url).catch(() => {})
-          }}
-        >
-          <UserPlus className="h-4 w-4" />
-          Add a member
-        </button>
+        {/* "Add a member" CTA is intentionally hidden until the invite
+            backend exists. When it ships, render an inline compact
+            search (avatar row + click-to-add), not the wide CTA pill
+            we had before. See crd-members-invite-btn rule in
+            circles.css for the old visual reference. */}
 
         <div className="crd-members-list">
           {members.length === 0 ? (
@@ -97,7 +89,7 @@ export default function AllMembersPanel({
                 ? shortAddress(m.walletAddress)
                 : ''
               const displayName = ens && ens !== shortAddr ? ens : m.label
-              const inner = (
+              const info = (
                 <>
                   <MemberAvatar member={m} />
                   <div className="crd-member-info">
@@ -108,20 +100,22 @@ export default function AllMembersPanel({
                   </div>
                 </>
               )
-              // Whole row navigates to the member's public profile when
-              // we have a resolved wallet. Members without one render as
-              // a plain <div> — clicking nothing is the right default.
-              return m.walletAddress ? (
-                <Link
-                  key={m.termId}
-                  to={`/profile/${m.walletAddress}`}
-                  className="crd-member-row crd-member-row--link"
-                >
-                  {inner}
-                </Link>
-              ) : (
+              // Outer div hosts the nav target + the action button as
+              // siblings so the Trust action doesn't get swallowed by
+              // the row-wide profile link.
+              return (
                 <div key={m.termId} className="crd-member-row">
-                  {inner}
+                  {m.walletAddress ? (
+                    <Link
+                      to={`/profile/${m.walletAddress}`}
+                      className="crd-member-row__main crd-member-row--link"
+                    >
+                      {info}
+                    </Link>
+                  ) : (
+                    <div className="crd-member-row__main">{info}</div>
+                  )}
+                  <TrustMemberButton member={m} />
                 </div>
               )
             })

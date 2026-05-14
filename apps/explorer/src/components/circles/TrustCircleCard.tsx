@@ -3,9 +3,12 @@
  * circle. Clicks route to `/circles/trust` for the detail view. Hover
  * reveals Invite / Leave stubs (non-functional for now).
  */
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import MemberAvatar from './MemberAvatar'
+import CircleCardStats from './CircleCardStats'
 
 interface TrustCircleCardProps {
   members: TrustCircleAccount[]
@@ -19,8 +22,21 @@ export default function TrustCircleCard({
   loading,
 }: TrustCircleCardProps) {
   const navigate = useNavigate()
+  const { addresses: linkedWallets } = useLinkedWallets()
   const visible = members.slice(0, MAX_AVATARS)
   const extra = Math.max(0, members.length - MAX_AVATARS)
+  // Mirror buildTrustCircle: the feed roster is the union of the
+  // viewer's own linked wallets + every account they trust. Without
+  // the linked wallets the card's stats miss the viewer's own
+  // activity and the number drifts from the detail page (PR #487).
+  const addresses = useMemo(() => {
+    const set = new Set<string>()
+    for (const w of linkedWallets) set.add(w.toLowerCase())
+    for (const m of members) {
+      if (m.walletAddress) set.add(m.walletAddress.toLowerCase())
+    }
+    return [...set]
+  }, [linkedWallets, members])
 
   return (
     <button
@@ -43,6 +59,12 @@ export default function TrustCircleCard({
               : `${members.length} member${members.length === 1 ? '' : 's'}`}
           </div>
         </div>
+        <div className="cr-avatars cr-avatars--head">
+          {visible.map((a) => (
+            <MemberAvatar key={a.termId} member={a} />
+          ))}
+          {extra > 0 && <span className="mav more">+{extra}</span>}
+        </div>
         <span className="cr-role cr-role-owner">owner</span>
       </div>
 
@@ -51,21 +73,7 @@ export default function TrustCircleCard({
         will shape your feed.
       </p>
 
-      <div className="cr-avatars">
-        {visible.map((a) => (
-          <MemberAvatar key={a.termId} member={a} />
-        ))}
-        {extra > 0 && <span className="mav more">+{extra}</span>}
-      </div>
-
-      <div className="cr-hover-actions">
-        <span className="cr-btn-sm" onClick={(e) => e.stopPropagation()}>
-          Invite
-        </span>
-        <span className="cr-btn-sm danger" onClick={(e) => e.stopPropagation()}>
-          Leave
-        </span>
-      </div>
+      <CircleCardStats addresses={addresses} />
     </button>
   )
 }

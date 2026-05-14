@@ -13,9 +13,7 @@ import { useTopClaims } from '../hooks/useTopClaims'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
-import InterestsGrid, {
-  MAX_INTERESTS,
-} from '../components/profile/InterestsGrid'
+import { MAX_INTERESTS } from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
@@ -176,8 +174,8 @@ export default function ProfilePage() {
           </span>
           <span className="pp-context-banner-text">
             <strong>{untaggedCerts.length}</strong> URL
-            {untaggedCerts.length === 1 ? '' : 's'} without context — give
-            them topics to grow your reputation
+            {untaggedCerts.length === 1 ? '' : 's'} without context — give them
+            topics to grow your reputation
           </span>
           <span className="pp-context-banner-cta">
             Open Context Manager
@@ -187,20 +185,10 @@ export default function ProfilePage() {
       )}
 
       <div className="pp-sections">
-        {/* Interests */}
-        <section className="pp-section">
-          <SectionH2>{isViewingAs ? 'Interests' : 'My Interests'}</SectionH2>
-          <InterestsGrid
-            selectedTopics={selectedTopics}
-            topicScores={topicScores}
-            onAddTopic={
-              isViewingAs ? undefined : () => navigate('/profile/topics')
-            }
-            onRemoveTopic={isViewingAs ? undefined : removeTopic}
-          />
-        </section>
-
-        {/* Profile charts — radar + details + calendar + top platforms + top claim */}
+        {/* Profile charts — radar + details (with inline interest pills)
+            + calendar + top platforms + top claim. The Overview details
+            panel now embeds the compact interest rail directly, so we
+            no longer render a standalone My Interests section. */}
         <ProfileCharts
           topClaims={topClaims}
           claimsLoading={claimsLoading}
@@ -210,6 +198,13 @@ export default function ProfilePage() {
           selectedCategories={selectedCategories}
           topicScores={topicScores}
           addresses={myAddresses}
+          onAddInterest={
+            isViewingAs ? undefined : () => navigate('/profile/topics')
+          }
+          onRemoveInterest={isViewingAs ? undefined : removeTopic}
+          onSelectInterest={(topicId) =>
+            navigate(`/profile/interest/${topicId}`)
+          }
         />
 
         {/* Echoes */}

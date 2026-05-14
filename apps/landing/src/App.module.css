@@ -443,8 +443,12 @@
   transition: transform 700ms cubic-bezier(0.65, 0, 0.35, 1) var(--enter-delay);
 }
 
-.peach .zone[data-anim='wipe'] { --zone-wipe-color: #02000e; }
-.dark  .zone[data-anim='wipe'] { --zone-wipe-color: var(--color-accent); }
+.peach .zone[data-anim='wipe'] {
+  --zone-wipe-color: #02000e;
+}
+.dark .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--color-accent);
+}
 
 /* Wipe zone — content hidden at rest; the long staggered entrance
    sits on [data-active] below. Default short transition makes exit

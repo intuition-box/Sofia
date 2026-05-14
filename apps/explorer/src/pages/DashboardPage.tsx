@@ -8,13 +8,12 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Search, X, XCircle } from 'lucide-react'
+import { Search, X, XCircle, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
 import { PageHero } from '@0xsofia/design-system'
 import PredicatePicker from '../components/PredicatePicker'
-import CircleCard from '../components/CircleCard'
 import FeedCard from '../components/home/FeedCard'
 import { EmptyFeedState } from '../components/EmptyFeedState'
 import { FeedCardSkeleton } from '../components/FeedCardSkeleton'
@@ -244,6 +243,7 @@ export default function DashboardPage() {
         background={pc.color}
         title={pc.title}
         description={pc.subtitle}
+        icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
         {/* Tiles view — default. Shows the interest masonry built from the

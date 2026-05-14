@@ -10,7 +10,7 @@
  */
 
 const AUTH_PAGE_URL =
-  process.env.PLASMO_PUBLIC_AUTH_URL || 'https://doc.sofia.intuition.box/auth'
+  process.env.PLASMO_PUBLIC_AUTH_URL || 'https://sofia.intuition.box/auth'
 
 /**
  * Build the full auth URL with callback parameters

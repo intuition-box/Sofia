@@ -16,6 +16,11 @@ import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import {
+  computeStars,
+  computeStarsFromTrust,
+  starTier,
+} from '@/services/circleFeedSort'
+import {
   displayLabelToIntentionType,
   INTENTION_CONFIG,
 } from '@/config/intentions'
@@ -42,20 +47,20 @@ interface CircleFeedCardProps {
    * updates instantly after a deposit without waiting for a refetch.
    */
   livePositionTermIds?: ReadonlySet<string>
+  /**
+   * Personalized-trust score from the circle's anchors to this item's
+   * certifier, fetched via `useCircleCertifierScores`. When defined
+   * and > 0, the star badge buckets this MCP score instead of the
+   * local support-count heuristic. Falls back gracefully when the MCP
+   * is loading or the score is 0.
+   */
+  mcpScore?: number
 }
 
 const VERB_CLASS_BY_LABEL: Record<string, string> = Object.fromEntries(
   Object.values(INTENTION_CONFIG).map((v) => [v.label, v.cssClass]),
 )
 
-/** Proto `computeStars(supports)` — buckets 1..5. */
-function computeStars(supports: number): number {
-  if (supports >= 20) return 5
-  if (supports >= 14) return 4
-  if (supports >= 9) return 3
-  if (supports >= 5) return 2
-  return 1
-}
 function starLabel(stars: number): string {
   if (stars >= 5) return 'Highly recommended'
   if (stars >= 4) return 'Recommended'
@@ -69,6 +74,7 @@ export default function CircleFeedCard({
   certifierName,
   onDeposit,
   livePositionTermIds,
+  mcpScore,
 }: CircleFeedCardProps) {
   const { topicById } = useTaxonomy()
   const host = item.domain || (item.url ? extractDomain(item.url) : '')
@@ -106,7 +112,13 @@ export default function CircleFeedCard({
       userOpposed = true
     }
   }
-  const stars = computeStars(supports)
+  // MCP-driven stars when the circle's anchors trust the certifier;
+  // otherwise fall back to the local support-count heuristic so the
+  // card stays usable when MCP is loading, errors out, or returns 0.
+  const stars =
+    mcpScore !== undefined && mcpScore > 0
+      ? computeStarsFromTrust(mcpScore)
+      : computeStars(supports)
   const totalVotes = supports + opposes
 
   const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
@@ -130,10 +142,19 @@ export default function CircleFeedCard({
       rel="noopener noreferrer"
     >
       <div className="fc-star-badge" title={starLabel(stars)}>
-        <Star size={14} fill="currentColor" strokeWidth={0} />
-        <span className="fc-star-num">{stars}</span>
+        <div className="fc-star-row" aria-label={`${stars} out of 5`}>
+          {[1, 2, 3, 4, 5].map((slot) => (
+            <Star
+              key={slot}
+              size={11}
+              fill="currentColor"
+              strokeWidth={0}
+              className={`fc-star fc-star--${starTier(slot, stars)}`}
+            />
+          ))}
+        </div>
         <div className="fc-star-tip">
-          <strong>{starLabel(stars)}</strong> · {totalVotes} endorsed
+          <strong>{starLabel(stars)}</strong> · {totalVotes} votes
         </div>
       </div>
 

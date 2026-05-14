@@ -25,6 +25,21 @@
     'SOFT' 30,
     'opsz' 144;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ph-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-icon > svg {
+  width: 56px;
+  height: 56px;
+  stroke-width: 2;
 }
 
 .ph-description {

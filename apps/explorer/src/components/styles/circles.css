@@ -30,6 +30,13 @@
   animation: pf-fadein 0.4s ease both;
 }
 
+/* Spacing wrapper on top of the shared .crd-feed-filters chrome so
+   the filter row has its own margin block separate from the hero. */
+.cr-list-filters {
+  margin: 16px 0 20px;
+}
+/* Legacy filter chrome — kept for any usage that still references it,
+   but the /circles page now reuses .crd-feed-filters + popovers. */
 .cr-filters {
   display: flex;
   flex-direction: column;
@@ -127,16 +134,16 @@
 
 .cr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: 28px;
 }
 
 /* Two-line description on the discover-groups cards. Truncated to
    keep the card height aligned with TrustCircleCard. */
 .cr-group-desc {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--ds-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -311,8 +318,8 @@
   position: relative;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
-  padding: 18px 20px 16px;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -334,12 +341,12 @@
 .cr-card-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 .cr-card-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   background: #ffffff;
   border: 1px solid var(--ds-border-soft);
   flex-shrink: 0;
@@ -361,7 +368,7 @@
 }
 .cr-name {
   font-family: 'Fraunces', serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.015em;
@@ -375,9 +382,9 @@
 }
 .cr-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ds-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   margin-top: 2px;
 }
 .cr-role {
@@ -400,9 +407,86 @@
   border: 1px solid var(--ds-border);
 }
 
+/* Bento stats row inside each /circles card — three mini cells sit
+   between the description and the avatar row, separated by a hair-line
+   divider so the trio reads as one cohesive block, not three buttons.
+   Numbers in Fraunces serif (echoes the detail-page hero), labels in
+   mono uppercase for the dashboard rhythm. */
+.cr-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border-soft);
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+  margin: 4px 0;
+}
+.cr-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  position: relative;
+}
+.cr-card-stat:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  background: var(--ds-border-soft);
+}
+.cr-card-stat-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cr-card-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+/* Live pulse dot — same animation rhythm as the hero stats so the
+   live indicator reads consistently across surfaces. */
+.cr-card-stat-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--trusted, #6dd4a0);
+  animation: crd-hero-pulse 1.8s ease-in-out infinite;
+}
+
 .cr-avatars {
   display: flex;
   align-items: center;
+}
+/* Compact avatar stack inlined next to the card title — smaller
+   bubbles + tighter overlap so the stack sits in the header without
+   crowding the name. */
+.cr-avatars--head {
+  flex-shrink: 0;
+}
+.cr-avatars--head .mav {
+  width: 24px;
+  height: 24px;
+  margin-left: -6px;
+  font-size: 9px;
+  border-width: 2px;
 }
 .cr-avatars .mav {
   width: 34px;
@@ -531,6 +615,10 @@
   align-items: stretch;
   gap: 32px;
   border-left: 4px solid var(--circle-color, var(--ds-accent));
+  /* Subtle inset top accent in the circle color — anti-flat detail
+     that ties the card to its circle without screaming. */
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 18%, transparent);
 }
 .crd-hero-left {
   flex: 1;
@@ -697,6 +785,71 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* ── Hero stats (absorbed from CircleStatsStrip) ────────────────────
+   Three numbers in a 3-col grid above the actions panel. Uniform size
+   + uniform alignment so the labels sit on the same baseline. The
+   "live" count has a pulsing dot to read as a real-time indicator
+   rather than a frozen counter. */
+.crd-hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ds-border);
+}
+.crd-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+.crd-hero-stat:nth-child(2) {
+  align-items: center;
+}
+.crd-hero-stat:last-child {
+  align-items: flex-end;
+}
+.crd-hero-stat__num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -0.01em;
+  font-size: 26px;
+}
+.crd-hero-stat__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-hero-stat__pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--trusted, #6dd4a0);
+  animation: crd-hero-pulse 1.8s ease-in-out infinite;
+}
+@keyframes crd-hero-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
+  }
+}
 .crd-actions-head {
   display: flex;
   align-items: center;
@@ -785,14 +938,25 @@
 /* Info row: members card + top topics */
 .crd-info-row {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 1.1fr 1.1fr 0.8fr;
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
   margin: 0 0 22px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+  .crd-info-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .crd-info-row > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 720px) {
   .crd-info-row {
     grid-template-columns: 1fr;
+  }
+  .crd-info-row > :last-child {
+    grid-column: auto;
   }
 }
 
@@ -825,18 +989,20 @@
   gap: 10px;
 }
 .crd-members-stack {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
 }
 .crd-members-stack .mav {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   color: #02000e;
-  margin-left: -10px;
-  border: 2px solid var(--ds-card);
+  margin-left: 0;
+  border: 1px solid var(--ds-card);
   border-radius: 50%;
   flex-shrink: 0;
   display: inline-flex;
@@ -845,9 +1011,151 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-.crd-members-stack .mav:first-child {
-  margin-left: 0;
+/* ── CircleMostActiveCard ───────────────────────────────────────────
+   Mini leaderboard next to Members. Rank is in Fraunces serif so it
+   reads as a "ledger" column rather than a chart axis. Pixel bars
+   (▮▯) keep the visual pixel-art-ish without gradients. */
+.crd-active-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
 }
+.crd-active-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.crd-active-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-active-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+}
+.crd-active-tab {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.04em;
+}
+.crd-active-tab:hover {
+  color: var(--ds-ink);
+}
+.crd-active-tab.is-active {
+  background: var(--ds-ink);
+  color: var(--ds-card);
+}
+.crd-active-empty {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ds-muted);
+  padding: 8px 0;
+}
+.crd-active-empty-cta {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--ds-ink);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  cursor: pointer;
+}
+.crd-active-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crd-active-row {
+  display: grid;
+  grid-template-columns: 22px 34px 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 2px 10px;
+  align-items: center;
+}
+.crd-active-rank {
+  grid-row: 1 / span 2;
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--ds-muted);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.crd-active-row .mav {
+  grid-row: 1 / span 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--ds-card);
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #02000e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.crd-active-name {
+  grid-column: 3;
+  grid-row: 1;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.crd-active-count {
+  grid-column: 4;
+  grid-row: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
+.crd-active-bar {
+  grid-column: 3 / span 2;
+  grid-row: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--circle-color, var(--ds-accent));
+  line-height: 1;
+}
+.crd-active-bar-rest {
+  color: var(--ds-border);
+}
+
 .crd-members-more {
   padding: 6px 12px;
   font-family: 'JetBrains Mono', monospace;
@@ -867,7 +1175,7 @@
   border-color: var(--ds-ink);
 }
 .crd-view-all {
-  margin-top: 12px;
+  margin-top: auto;
   width: 100%;
   justify-content: center;
   padding: 7px 14px;
@@ -896,38 +1204,51 @@
   flex-direction: column;
   gap: 14px;
 }
+/* Zero out the cr-section-head margins inherited from the Discover
+   groups rule (line 148) — the card already provides its own padding
+   + gap so the inherited 32/12 push the label down inside the card. */
+.crd-topics-section > .cr-section-head {
+  margin: 0;
+}
+/* Same scoping for the Actions budget label inside the hero. */
+.crd-hero-actions > .cr-section-head {
+  margin: 0;
+}
+/* Distribute rows vertically when the stretched card has extra height
+   so the bottom doesn't feel like a void below a top-pinned label.
+   space-between pushes rows to fill the full height — first stays at
+   the top, last at the bottom, the rest spread evenly. */
 .cr-topics-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  flex: 1;
+  justify-content: space-between;
 }
 .cr-topics-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 10px;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
   align-items: center;
+  padding: 4px 0;
 }
 .cr-topics-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .cr-topics-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ds-muted);
   font-weight: 600;
-}
-.cr-topics-bar {
-  grid-column: 1 / -1;
-  height: 3px;
-  background: var(--ds-border-soft);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.cr-topics-fill {
-  height: 100%;
-  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+  min-width: 24px;
 }
 
 /* All-members slide-in panel.
@@ -1049,12 +1370,23 @@
 .crd-member-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 8px;
+  gap: 10px;
+  padding: 6px 4px;
   border-radius: 8px;
+}
+.crd-member-row__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
   transition: background 0.15s ease;
 }
-.crd-member-row:hover {
+.crd-member-row__main.crd-member-row--link:hover {
   background: var(--ds-bg-subtle);
 }
 .crd-member-row .mav {
@@ -1064,6 +1396,59 @@
   margin: 0;
   border: none;
   flex-shrink: 0;
+}
+/* Trust this member — small pill action sitting at the end of each
+   row in AllMembersPanel. Neutral by default so the "Trusted"
+   state (solid green) keeps the on-chain confirmation visually
+   distinctive. */
+.crd-trust-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+.crd-trust-btn:hover:not(:disabled) {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+.crd-trust-btn.is-queued {
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  background: transparent;
+}
+/* On-chain confirmation — solid green pill, read-only. Overrides the
+   generic disabled opacity so the "Trusted" state stays visually
+   strong instead of fading out. */
+.crd-trust-btn.is-trusted {
+  background: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+  color: #02000e;
+  cursor: default;
+}
+.crd-trust-btn.is-trusted:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.crd-trust-btn:disabled:not(.is-trusted) {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .crd-member-info {
   display: flex;
@@ -1136,6 +1521,423 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+.cfs-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cfs-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+/* ── Filter dropdowns (verb + topic) ────────────────────────────── */
+.crd-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  min-width: 180px;
+  font-family: inherit;
+}
+.crd-filter-trigger--wide {
+  min-width: 210px;
+}
+.crd-filter-trigger:hover {
+  border-color: var(--ds-ink-soft);
+}
+.crd-filter-trigger[data-state='open'] {
+  border-color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+.crd-filter-trigger__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transform: translateY(-1px);
+  transition: opacity 0.2s ease;
+}
+.crd-filter-trigger:hover .crd-filter-trigger__dot {
+  opacity: 0.65;
+}
+.crd-filter-trigger__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-filter-trigger__value {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crd-filter-trigger__chev {
+  color: var(--ds-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.crd-filter-trigger[data-state='open'] .crd-filter-trigger__chev {
+  transform: rotate(180deg);
+}
+
+/* Popover content — override radix default w-72 + p-4 with our own. */
+.crd-filter-pop {
+  width: 320px !important;
+  padding: 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--ds-card);
+  border-color: var(--ds-border) !important;
+  transform-origin: top left;
+}
+.crd-filter-pop--topics {
+  width: 360px !important;
+}
+.crd-filter-pop__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.crd-filter-pop__cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.crd-filter-pop__cell:hover {
+  background: var(--ds-bg-subtle);
+}
+.crd-filter-pop__cell.is-active {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.crd-filter-pop__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.crd-filter-pop__reset {
+  align-self: flex-end;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.crd-filter-pop__reset:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+}
+
+/* ── CircleStatsStrip ───────────────────────────────────────────── */
+.crd-stats-strip {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  border-left: 4px solid var(--circle-color, var(--ds-accent));
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.crd-stat {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+.crd-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.crd-stat-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--trusted, #6dd4a0);
+  animation: crd-stat-pulse 1.8s ease-in-out infinite;
+}
+@keyframes crd-stat-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
+  }
+}
+.crd-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-stat-divider {
+  width: 1px;
+  height: 34px;
+  background: var(--ds-border);
+  flex-shrink: 0;
+}
+
+/* ── CircleFeedConnectCta — non-auth empty state ───────────────────
+   Replaces the dead-end "No certifications yet" placeholder with an
+   invitation card. Two CTAs side-by-side so the visitor lands on one
+   of the two entry points (wallet connect or extension install) with
+   one click. */
+.crd-feed-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 32px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-left: 4px solid var(--circle-color, var(--ds-accent));
+  max-width: 540px;
+  margin: 8px auto;
+}
+.crd-feed-cta__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: color-mix(
+    in srgb,
+    var(--circle-color, var(--ds-accent)) 12%,
+    transparent
+  );
+  color: var(--circle-color, var(--ds-accent));
+}
+.crd-feed-cta__title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  margin: 4px 0 0;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+}
+.crd-feed-cta__lede {
+  font-size: 13px;
+  color: var(--ds-muted);
+  line-height: 1.5;
+  max-width: 420px;
+  margin: 0;
+}
+.crd-feed-cta__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.crd-feed-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+.crd-feed-cta__btn:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+}
+.crd-feed-cta__btn--primary {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+.crd-feed-cta__btn--primary:hover {
+  background: var(--ds-ink);
+  border-color: var(--ds-ink);
+  opacity: 0.88;
+}
+.crd-feed-cta__arrow {
+  transition: transform 0.15s ease;
+}
+.crd-feed-cta__btn:hover .crd-feed-cta__arrow {
+  transform: translateX(2px);
+}
+
+/* ── CircleTopEngagedStrip ──────────────────────────────────────── */
+.crd-top-engaged {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.crd-top-engaged-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crd-top-engaged-title {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ds-ink);
+  font-weight: 500;
+  margin: 0;
+  flex-shrink: 0;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+}
+.crd-top-engaged-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--ds-border);
+}
+.crd-top-engaged-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+}
+.crd-te-card {
+  flex: 0 0 360px;
+  width: 360px;
+  padding: 18px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-left: 4px solid var(--circle-color, var(--ds-accent));
+  border-radius: 14px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+  color: inherit;
+}
+.crd-te-card:hover {
+  transform: translateY(-3px) rotate(-0.6deg);
+  border-color: var(--circle-color, var(--ds-accent));
+  box-shadow: 0 14px 32px -10px
+    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
+}
+.crd-te-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+}
+.crd-te-title {
+  font-family: 'Geist', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  min-height: 42px;
+}
+.crd-te-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.crd-te-stars {
+  display: inline-flex;
+  gap: 1px;
+  line-height: 0;
+}
+.crd-te-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  font-weight: 600;
 }
 .crd-user-filter-label {
   font-family: 'JetBrains Mono', monospace;
@@ -1397,52 +2199,24 @@
   color: var(--ds-ink);
 }
 
-/* View more / Show less — uses the shared `.pf-btn` pill recipe so it
-   sits in the same family as the other neutral pills in the app. */
-.cc-view-more {
-  align-self: flex-start;
-  margin-top: 8px;
-  display: inline-flex;
+/* Theme picker — 2-col grid of cell-style toggles. Each cell has a
+   color dot on the left, the theme label center-left, and a check on
+   the right when active. Easier to scan than a wrap-flow pill row. */
+.cc-topics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.cc-topics-empty {
+  grid-column: 1 / -1;
+}
+.cc-topic-cell {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--ds-border);
-  border-radius: 999px;
-  background: var(--ds-card);
-  color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.cc-view-more:hover {
-  border-color: var(--ds-ink);
-  transform: translateY(-1px);
-}
-.cc-view-more-icon {
-  transition: transform 0.15s ease;
-  color: var(--ds-muted);
-}
-.cc-view-more:hover .cc-view-more-icon {
-  color: var(--ds-ink);
-}
-.cc-view-more-icon--up {
-  transform: rotate(180deg);
-}
-
-/* Theme picker — wrapping pill list, single selection. */
-.cc-topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.cc-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
@@ -1450,21 +2224,69 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
 }
-.cc-topic:hover {
+.cc-topic-cell:hover {
   border-color: var(--ds-ink-soft);
 }
-.cc-topic.is-active {
+.cc-topic-cell.is-active {
   border-color: var(--cc-topic-color);
-  background: color-mix(in srgb, var(--cc-topic-color) 16%, var(--ds-bg));
-  color: var(--ds-ink);
+  background: color-mix(in srgb, var(--cc-topic-color) 14%, var(--ds-bg));
+}
+.cc-topic-cell.is-active .cc-topic-check {
+  color: var(--cc-topic-color);
+}
+.cc-topic-label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cc-topic-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* Single toggle row that flips between "View N more themes" and
+   "Show less". Sits at the bottom of the grid, full-width, dashed
+   so it reads as a continuation of the picker rather than a CTA. */
+.cc-topics-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.cc-topics-toggle:hover {
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+.cc-topics-toggle-icon {
+  transition: transform 0.15s ease;
+}
+.cc-topics-toggle-icon--up {
+  transform: rotate(180deg);
 }
 
 /* Member input + chip list. */
@@ -1653,17 +2475,52 @@
   color: var(--ds-ink);
 }
 
-/* Footer actions — sit just below the form. */
+/* Sticky footer — pinned to the bottom of the scrolling drawer so the
+   primary action is always reachable, with a card-tinted background +
+   top border so it reads as a separate slab from the form. */
 .cc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  bottom: -8px;
+  margin: 4px -24px -8px;
+  padding: 14px 24px;
+  background: color-mix(in srgb, var(--ds-card) 96%, transparent);
+  border-top: 1px solid var(--ds-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2;
+}
+.cc-actions-summary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  min-height: 14px;
+  line-height: 1.4;
+}
+.cc-actions-summary-recap strong {
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
+.cc-actions-summary-error {
+  color: var(--distrusted, #e87c7c);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+.cc-actions-buttons {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  padding-top: 12px;
-  margin-top: 4px;
-  border-top: 1px solid var(--ds-border);
 }
 .cc-btn {
-  padding: 9px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-family: 'Geist', sans-serif;
   font-size: 13px;
@@ -1674,23 +2531,31 @@
 }
 .cc-btn-ghost {
   background: transparent;
-  border-color: var(--ds-border);
-  color: var(--ds-ink);
+  border-color: transparent;
+  color: var(--ds-muted);
+  padding: 10px 12px;
 }
 .cc-btn-ghost:hover {
-  border-color: var(--ds-ink);
+  color: var(--ds-ink);
 }
 .cc-btn-primary {
   background: var(--ds-ink);
   color: var(--ds-bg);
+  border-color: var(--ds-ink);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ds-ink) 30%, transparent);
 }
 .cc-btn-primary:hover:not(:disabled) {
   background: var(--ds-accent);
+  border-color: var(--ds-accent);
   color: var(--ds-on-accent, var(--ds-ink));
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ds-accent) 35%, transparent);
 }
 .cc-btn-primary:disabled {
-  opacity: 0.4;
+  background: var(--ds-bg-subtle, var(--ds-bg));
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  box-shadow: none;
   cursor: not-allowed;
 }
 

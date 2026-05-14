@@ -33,6 +33,7 @@ COPY packages/graphql/package.json ./packages/graphql/
 COPY packages/design-system/package.json ./packages/design-system/
 COPY services/mastra/package.json ./services/mastra/
 COPY services/mcp-server/package.json ./services/mcp-server/
+COPY services/og-proxy/package.json ./services/og-proxy/
 
 RUN bun install --frozen-lockfile
 
@@ -48,7 +49,5 @@ RUN rm -f /etc/nginx/conf.d/default.conf
 COPY apps/landing/nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /repo/apps/landing/dist /usr/share/nginx/html
-
-EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

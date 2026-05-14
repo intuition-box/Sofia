@@ -143,19 +143,54 @@ export async function fetchEigentrustRanking(
   }
 }
 
+/**
+ * Compute personalized trust from one or more anchor addresses to a
+ * target address. The MCP server accepts a comma-separated address
+ * list for "group anchor" mode — the score reflects how much that
+ * group of anchors collectively trusts the target.
+ *
+ * Optional `predicates` filter the relation types considered (e.g.
+ *   ["trusts","follow","visits for work",…,"distrust"]
+ * ). Unknown predicate names are ignored server-side.
+ */
 export async function fetchPersonalizedTrust(
-  fromAddress: string,
+  fromAddress: string | readonly string[],
   toAddress: string,
+  predicates?: readonly string[],
 ): Promise<PersonalizedTrustResult | null> {
+  const fromArg = Array.isArray(fromAddress)
+    ? fromAddress.join(',')
+    : fromAddress
+  const args: Record<string, unknown> = {
+    fromAddress: fromArg,
+    toAddress,
+  }
+  if (predicates && predicates.length > 0) {
+    args.predicates = [...predicates]
+  }
   try {
     return await mcpCall<PersonalizedTrustResult>(
       'compute_personalized_trust',
-      {
-        fromAddress,
-        toAddress,
-      },
+      args,
     )
   } catch {
     return null
   }
 }
+
+/**
+ * Predicate set Sofia uses end-to-end in the feed — mirrors the
+ * intention taxonomy. Passing this explicitly to the MCP lets the
+ * server scope the score to relations Sofia actually surfaces.
+ */
+export const SOFIA_TRUST_PREDICATES: readonly string[] = [
+  'trusts',
+  'follow',
+  'visits for work',
+  'visits for learning',
+  'visits for fun',
+  'visits for inspiration',
+  'visits for buying',
+  'visits for music',
+  'distrust',
+]

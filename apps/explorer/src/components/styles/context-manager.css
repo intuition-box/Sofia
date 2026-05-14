@@ -138,9 +138,29 @@
   border: 1px solid var(--ds-border);
   transition: all 0.15s ease;
 }
+.ctx-card--has-thumb {
+  overflow: hidden;
+}
 .ctx-card:hover {
   border-color: var(--ds-ink-soft);
   transform: translateY(-1px);
+}
+
+/* Header thumb — bleeds to the card's inner border via negative
+   margins + calc width (matches .ctx-card padding: 14px). Top corners
+   match the card's 12px radius. Netflix-style image zoom on hover
+   stays clipped by the card's overflow:hidden. */
+.ctx-card .ctx-card-thumb.up-card {
+  width: calc(100% + 28px);
+  margin: -14px -14px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
+}
+.ctx-card--has-thumb .ctx-card-thumb.up-card img {
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.ctx-card--has-thumb:hover .ctx-card-thumb.up-card img {
+  transform: scale(1.05);
 }
 .ctx-card--active {
   background: color-mix(in srgb, var(--ds-accent) 8%, var(--ds-card));
@@ -208,11 +228,12 @@
     var(--ctx-tag-color, var(--ds-accent)) 16%,
     var(--ds-bg-subtle)
   );
-  border: 1px solid color-mix(
-    in srgb,
-    var(--ctx-tag-color, var(--ds-accent)) 40%,
-    var(--ds-border)
-  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--ctx-tag-color, var(--ds-accent)) 40%,
+      var(--ds-border)
+    );
   color: var(--ds-ink);
   font-family: 'Geist', sans-serif;
   font-size: 11px;

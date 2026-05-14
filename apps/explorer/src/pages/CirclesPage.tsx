@@ -8,6 +8,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
@@ -40,6 +41,7 @@ export default function CirclesPage() {
 // ── List view ────────────────────────────────────────────────────────
 
 function CirclesListSection() {
+  const { authenticated } = usePrivy()
   const { addresses } = useLinkedWallets()
   const { accounts: trustMembers, loading: trustLoading } =
     useTrustCircle(addresses)
@@ -69,18 +71,24 @@ function CirclesListSection() {
     <div className="pf-view cr-page">
       <PageHero
         title="Circles"
-        description="Explore the circles whose signals shape your feed and dive into yours."
+        description={
+          authenticated
+            ? 'Explore the circles whose signals shape your feed and dive into yours.'
+            : 'Discover the circles shaping signal on Sofia — connect to join, create, or dive in.'
+        }
       />
 
       <CirclesFilters />
 
-      <div className="cr-grid">
-        <CreateCircleCard onClick={() => setCreateOpen(true)} />
-        <TrustCircleCard members={trustMembers} loading={trustLoading} />
-        {joinedGroups.map((g) => (
-          <GroupCard key={g.termId} group={g} />
-        ))}
-      </div>
+      {authenticated && (
+        <div className="cr-grid">
+          <CreateCircleCard onClick={() => setCreateOpen(true)} />
+          <TrustCircleCard members={trustMembers} loading={trustLoading} />
+          {joinedGroups.map((g) => (
+            <GroupCard key={g.termId} group={g} />
+          ))}
+        </div>
+      )}
 
       <DiscoverGroupsSection
         groups={discoverGroups}
@@ -99,9 +107,9 @@ function CirclesListSection() {
 interface DiscoverGroupsSectionProps {
   groups: ReturnType<typeof useGroups>['groups']
   isLoading: boolean
-  /** Total group count across joined + not-joined. The sub-line in the
-   *  header reflects the whole on-chain set, not just the not-joined
-   *  filter (otherwise it would silently shrink as users join groups). */
+  /** Total group count across joined + not-joined. Kept on the prop
+   *  so the empty-state copy can distinguish "0 groups exist" from
+   *  "you've joined them all". */
   totalCount: number
 }
 
@@ -114,11 +122,6 @@ function DiscoverGroupsSection({
     <>
       <div className="cr-section-head">
         <h2 className="cr-section-title">Discover groups</h2>
-        <span className="cr-section-sub">
-          {isLoading
-            ? 'Loading…'
-            : `${totalCount} group${totalCount === 1 ? '' : 's'} on-chain`}
-        </span>
       </div>
       {isLoading && groups.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading groups…</p>

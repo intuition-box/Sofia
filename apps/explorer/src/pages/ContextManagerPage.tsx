@@ -29,6 +29,7 @@ interface DomainGroup {
   certs: Array<{
     termId: string
     title: string
+    url: string
     domain: string
     favicon: string
     intentionLabel: string
@@ -56,6 +57,7 @@ export default function ContextManagerPage() {
       const row = {
         termId: c.termId,
         title,
+        url,
         domain,
         favicon: domain ? getFaviconUrl(domain) : '',
         intentionLabel,
@@ -116,8 +118,8 @@ export default function ContextManagerPage() {
           <Tags className="h-10 w-10 text-muted-foreground" />
           <p className="ctx-empty-title">All tagged up.</p>
           <p className="ctx-empty-sub">
-            Every certification you own already has at least one topic
-            context. Keep certifying to grow your reputation.
+            Every certification you own already has at least one topic context.
+            Keep certifying to grow your reputation.
           </p>
         </div>
       ) : (
@@ -137,6 +139,7 @@ export default function ContextManagerPage() {
                     key={row.termId}
                     certTermId={row.termId}
                     title={row.title}
+                    url={row.url}
                     domain={row.domain}
                     favicon={row.favicon}
                     intentionLabel={row.intentionLabel}

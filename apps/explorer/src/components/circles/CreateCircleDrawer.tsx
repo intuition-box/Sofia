@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, Search, X } from 'lucide-react'
 import { type AccountAtom, useSearchAccounts } from '@/hooks/useSearchAccounts'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { useCart, type CircleDraft } from '@/hooks/useCart'
@@ -345,9 +345,9 @@ export default function CreateCircleDrawer({
                 </button>
               )}
             </div>
-            <div className="cc-topics">
+            <div className="cc-topics-grid">
               {visibleTopics.length === 0 && (
-                <span className="cc-help">
+                <span className="cc-help cc-topics-empty">
                   No theme matches “{topicQuery}”.
                 </span>
               )}
@@ -357,7 +357,7 @@ export default function CreateCircleDrawer({
                   <button
                     type="button"
                     key={t.id}
-                    className={`cc-topic${active ? ' is-active' : ''}`}
+                    className={`cc-topic-cell${active ? ' is-active' : ''}`}
                     style={
                       active
                         ? ({
@@ -371,34 +371,49 @@ export default function CreateCircleDrawer({
                     <span
                       className="cc-topic-dot"
                       style={{ background: t.color }}
+                      aria-hidden="true"
                     />
-                    {t.label}
+                    <span className="cc-topic-label">{t.label}</span>
+                    {active && (
+                      <Check
+                        className="cc-topic-check h-3 w-3"
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
                 )
               })}
             </div>
-            {hiddenTopicCount > 0 && (
+            {(hiddenTopicCount > 0 ||
+              (topicsExpanded &&
+                !topicQuery &&
+                filteredTopics.length > TOPIC_PREVIEW_COUNT)) && (
               <button
                 type="button"
-                className="cc-view-more"
-                onClick={() => setTopicsExpanded(true)}
+                className="cc-topics-toggle"
+                onClick={() => setTopicsExpanded((v) => !v)}
+                aria-expanded={topicsExpanded}
               >
-                View {hiddenTopicCount} more
-                <ChevronDown className="cc-view-more-icon h-3.5 w-3.5" />
+                {topicsExpanded ? (
+                  <>
+                    Show less
+                    <ChevronDown
+                      className="cc-topics-toggle-icon cc-topics-toggle-icon--up h-3.5 w-3.5"
+                      aria-hidden="true"
+                    />
+                  </>
+                ) : (
+                  <>
+                    View {hiddenTopicCount} more theme
+                    {hiddenTopicCount === 1 ? '' : 's'}
+                    <ChevronDown
+                      className="cc-topics-toggle-icon h-3.5 w-3.5"
+                      aria-hidden="true"
+                    />
+                  </>
+                )}
               </button>
             )}
-            {topicsExpanded &&
-              !topicQuery &&
-              filteredTopics.length > TOPIC_PREVIEW_COUNT && (
-                <button
-                  type="button"
-                  className="cc-view-more"
-                  onClick={() => setTopicsExpanded(false)}
-                >
-                  Show less
-                  <ChevronDown className="cc-view-more-icon cc-view-more-icon--up h-3.5 w-3.5" />
-                </button>
-              )}
           </fieldset>
 
           <div className="cc-field">
@@ -498,28 +513,40 @@ export default function CreateCircleDrawer({
             )}
           </div>
 
-          <div className="cc-actions">
-            <button
-              type="button"
-              className="cc-btn cc-btn-ghost"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="cc-btn cc-btn-primary"
-              disabled={!canSubmit}
-              title={validationError ?? undefined}
-            >
-              Add to cart
-            </button>
-          </div>
-          {validationError && (
-            <p className="cc-help" style={{ textAlign: 'right', marginTop: 4 }}>
-              {validationError}
-            </p>
-          )}
+          <footer className="cc-actions">
+            <div className="cc-actions-summary" aria-live="polite">
+              {validationError ? (
+                <span className="cc-actions-summary-error">
+                  {validationError}
+                </span>
+              ) : (
+                <span className="cc-actions-summary-recap">
+                  <strong>{draft.topicIds.length}</strong> theme
+                  {draft.topicIds.length === 1 ? '' : 's'}
+                  {' · '}
+                  <strong>{draft.members.length}</strong> member
+                  {draft.members.length === 1 ? '' : 's'}
+                </span>
+              )}
+            </div>
+            <div className="cc-actions-buttons">
+              <button
+                type="button"
+                className="cc-btn cc-btn-ghost"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="cc-btn cc-btn-primary"
+                disabled={!canSubmit}
+                title={validationError ?? undefined}
+              >
+                Add to cart
+              </button>
+            </div>
+          </footer>
         </form>
       </aside>
     </>

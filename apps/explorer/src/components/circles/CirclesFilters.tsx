@@ -1,69 +1,23 @@
 /**
- * CirclesFilters — topic + sort chips above the grid. UI-only until we
- * have more than one real circle; interactions update local state but
- * don't filter the list yet.
+ * CirclesFilters — topic dropdown + sort toggle above the /circles
+ * grid. Shares the same chrome as the feed filters on /circles/:id so
+ * both pages read as one consistent surface. UI-only until the list
+ * grid actually filters; interactions update local state for now.
  */
 import { useState } from 'react'
-import { useTaxonomy } from '@/hooks/useTaxonomy'
-import TopicBadge from '@/components/profile/TopicBadge'
-
-const SORT_OPTIONS = [
-  { id: 'activity', label: 'Active today' },
-  { id: 'size', label: 'Members' },
-  { id: 'trust', label: 'TRUST locked' },
-] as const
+import CircleTopicFilterDropdown, {
+  type TopicFilterId,
+} from './CircleTopicFilterDropdown'
+import CirclesSortToggle, { type CirclesSortId } from './CirclesSortToggle'
 
 export default function CirclesFilters() {
-  const { topics } = useTaxonomy()
-  const [topic, setTopic] = useState<string>('all')
-  const [sort, setSort] = useState<string>('activity')
+  const [topic, setTopic] = useState<TopicFilterId>('all')
+  const [sort, setSort] = useState<CirclesSortId>('activity')
 
   return (
-    <div className="cr-filters">
-      <div className="cr-filter-group">
-        <span className="cr-filter-label">Topic</span>
-        <div className="cr-chips">
-          <button
-            type="button"
-            className={`cr-chip${topic === 'all' ? ' active' : ''}`}
-            onClick={() => setTopic('all')}
-          >
-            All
-          </button>
-          {topics.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`cr-chip${topic === t.id ? ' active' : ''}`}
-              onClick={() => setTopic(t.id)}
-            >
-              <TopicBadge
-                topicId={t.id}
-                color={t.color}
-                size={16}
-                title={t.label}
-              />
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="cr-filter-group">
-        <span className="cr-filter-label">Sort by</span>
-        <div className="cr-chips">
-          {SORT_OPTIONS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={`cr-chip${sort === s.id ? ' active' : ''}`}
-              onClick={() => setSort(s.id)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="crd-feed-filters cr-list-filters">
+      <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
+      <CirclesSortToggle active={sort} onChange={setSort} />
     </div>
   )
 }

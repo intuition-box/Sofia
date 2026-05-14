@@ -12,13 +12,13 @@ Clean re-implementation of the landing's scroll deck. Replaces
 
 ## Files
 
-| File | Role |
-|------|------|
-| `Deck.tsx` | Sticky container + GSAP timeline + state machine (inlined) |
-| `Deck.module.css` | Layout (sticky pin, slide grid, hex, plate) + in-deck section compaction overrides |
-| `SharedPlate.tsx` | Plate A overlay (shared element between slide 0 and 1) |
-| `SharedPlate.module.css` | Plate A inner styles (tags etc) |
-| `types.ts` | Shared TypeScript types |
+| File                     | Role                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| `Deck.tsx`               | Sticky container + GSAP timeline + state machine (inlined)                         |
+| `Deck.module.css`        | Layout (sticky pin, slide grid, hex, plate) + in-deck section compaction overrides |
+| `SharedPlate.tsx`        | Plate A overlay (shared element between slide 0 and 1)                             |
+| `SharedPlate.module.css` | Plate A inner styles (tags etc)                                                    |
+| `types.ts`               | Shared TypeScript types                                                            |
 
 ## How states map to visuals
 

@@ -262,15 +262,21 @@
 }
 
 .bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-stats,
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-progress {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-progress {
   display: none;
 }
 
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-title {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-title {
   font-size: 13px;
   line-height: 1.25;
 }
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-favicon {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-favicon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -279,7 +285,9 @@
   font-size: 9px;
   padding: 3px 7px;
 }
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .certification-dots {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .certification-dots {
   justify-content: flex-start;
 }
 
@@ -313,10 +321,76 @@
   transition: border-color 0.15s ease;
 }
 
+.bento-grid-3 .group-bento-card {
+  transition:
+    border-color 0.18s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
 .bento-grid-3 .group-bento-card:hover {
   border-color: var(--ds-ink-soft) !important;
-  transform: none;
-  box-shadow: none;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.4);
+}
+
+/* Image zoom on hover — Netflix-style preview pull-up on the thumb
+   header. The scale on the inner <img> stays clipped by the card's
+   overflow:hidden so it doesn't push past the bandeau. */
+.bento-grid-3 .group-bento-thumb img {
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.bento-grid-3 .group-bento-card:hover .group-bento-thumb img {
+  transform: scale(1.05);
+}
+
+/* Stagger fade-in on first paint — each bento card animates in with
+   a small delay relative to its DOM position so the grid "deploys"
+   instead of slamming in. Caps at 10 to keep the visible window
+   snappy; later cards just appear at the same time as #10. */
+.bento-grid-3 .bento-card {
+  animation: bento-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+.bento-grid-3 .bento-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.bento-grid-3 .bento-card:nth-child(2) {
+  animation-delay: 50ms;
+}
+.bento-grid-3 .bento-card:nth-child(3) {
+  animation-delay: 100ms;
+}
+.bento-grid-3 .bento-card:nth-child(4) {
+  animation-delay: 150ms;
+}
+.bento-grid-3 .bento-card:nth-child(5) {
+  animation-delay: 200ms;
+}
+.bento-grid-3 .bento-card:nth-child(6) {
+  animation-delay: 250ms;
+}
+.bento-grid-3 .bento-card:nth-child(7) {
+  animation-delay: 300ms;
+}
+.bento-grid-3 .bento-card:nth-child(8) {
+  animation-delay: 350ms;
+}
+.bento-grid-3 .bento-card:nth-child(9) {
+  animation-delay: 400ms;
+}
+.bento-grid-3 .bento-card:nth-child(10) {
+  animation-delay: 450ms;
+}
+
+@keyframes bento-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Bigger, more legible favicon (extension uses 24px; we bump for the
@@ -719,6 +793,26 @@
     color-mix(in oklab, var(--foreground) 30%, transparent);
 }
 
+/* TopClaim with a URL preview header — image bleeds to the card
+   edges (matches the .tc-card padding via negative margins) with
+   matching top-corner radius. Bottom of the card stays padded for
+   the title + stats + actions bandeau. */
+.tc-card--has-thumb {
+  overflow: hidden;
+}
+.tc-card .tc-thumb.up-card {
+  width: calc(100% + 32px);
+  margin: -14px -16px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
+}
+.tc-card--has-thumb .tc-thumb.up-card img {
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.tc-card--has-thumb:hover .tc-thumb.up-card img {
+  transform: scale(1.05);
+}
+
 .tc-header {
   display: flex;
   align-items: center;
@@ -963,6 +1057,7 @@
   z-index: 2;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 20px;
 }
 .pp-public-hero-text {
@@ -970,6 +1065,57 @@
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  flex: 1;
+}
+
+/* Primary "Trust this account" action sitting at the right end of the
+   public-profile hero row. Three visual states mirror the smaller
+   TrustMemberButton in AllMembersPanel (idle / queued / trusted)
+   but at a larger size so the action reads as the page's main call
+   to action. */
+.pp-trust-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  margin-left: auto;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid var(--ds-ink, #1a1620);
+  background: var(--ds-ink, #1a1620);
+  color: var(--ds-bg, #ffffff);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+.pp-trust-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.pp-trust-btn--queued {
+  background: transparent;
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+}
+.pp-trust-btn--trusted {
+  background: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+  color: #02000e;
+  cursor: default;
+}
+.pp-trust-btn--trusted:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.pp-trust-btn:disabled:not(.pp-trust-btn--trusted) {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .pp-public-hero-text .ph-title {
   margin: 0;
