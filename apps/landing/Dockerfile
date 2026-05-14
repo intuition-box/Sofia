@@ -18,7 +18,9 @@ WORKDIR /repo
 # top of this stage (visible in the build logs), so we don't redeclare
 # them here — a second `ARG X=` with empty default would override the
 # Coolify-injected value with an empty string.
+
 ENV VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID \
+    VITE_PRIVY_CLIENT_ID=$VITE_PRIVY_CLIENT_ID \
     VITE_DOCS_URL=$VITE_DOCS_URL
 
 COPY package.json bun.lock tsconfig.base.json ./
