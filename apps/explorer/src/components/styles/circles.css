@@ -1286,12 +1286,23 @@
 .crd-member-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 8px;
+  gap: 10px;
+  padding: 6px 4px;
   border-radius: 8px;
+}
+.crd-member-row__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
   transition: background 0.15s ease;
 }
-.crd-member-row:hover {
+.crd-member-row__main.crd-member-row--link:hover {
   background: var(--ds-bg-subtle);
 }
 .crd-member-row .mav {
@@ -1301,6 +1312,45 @@
   margin: 0;
   border: none;
   flex-shrink: 0;
+}
+/* Trust this member — small pill action sitting at the end of each
+   row in AllMembersPanel. Stays subtle by default (--trusted color at
+   low intensity) and flips to a "queued" muted look once the intent
+   is in the cart. */
+.crd-trust-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--trusted, #6dd4a0) 50%, transparent);
+  background: color-mix(in srgb, var(--trusted, #6dd4a0) 10%, transparent);
+  color: var(--trusted, #6dd4a0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+.crd-trust-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--trusted, #6dd4a0) 22%, transparent);
+  border-color: var(--trusted, #6dd4a0);
+}
+.crd-trust-btn.is-queued {
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  background: transparent;
+}
+.crd-trust-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .crd-member-info {
   display: flex;
