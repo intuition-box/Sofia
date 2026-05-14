@@ -27,9 +27,10 @@
 }
 
 .logo {
+  display: block;
   width: 64px;
   height: 64px;
-  margin-bottom: 1.25rem;
+  margin: 0 auto 1.25rem;
   object-fit: contain;
 }
 
