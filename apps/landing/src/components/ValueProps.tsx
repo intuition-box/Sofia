@@ -13,7 +13,7 @@ const PROPS: Prop[] = [
   {
     num: '01',
     name: 'Personal upside',
-    desc: "What you do online has value. Sofia lets you turn it into an asset — share without sharing: you publish the proof, you keep the details.",
+    desc: 'What you do online has value. Sofia lets you turn it into an asset — share without sharing: you publish the proof, you keep the details.',
   },
   {
     num: '02',

@@ -19,9 +19,7 @@ export function useSectionEnter<T extends HTMLElement = HTMLElement>() {
     const root = ref.current
     if (!root) return
 
-    const corners = root.querySelectorAll<SVGPathElement>(
-      '[data-corner-path]',
-    )
+    const corners = root.querySelectorAll<SVGPathElement>('[data-corner-path]')
     const rule = root.querySelector<HTMLElement>('[data-section-rule]')
     const metaL = root.querySelector<HTMLElement>('[data-meta-l]')
     const metaR = root.querySelector<HTMLElement>('[data-meta-r]')
@@ -56,11 +54,7 @@ export function useSectionEnter<T extends HTMLElement = HTMLElement>() {
     if (metaR)
       tl.to(metaR, { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }, 0.2)
     if (body)
-      tl.to(
-        body,
-        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
-        0.35,
-      )
+      tl.to(body, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.35)
 
     return () => {
       tl.scrollTrigger?.kill()

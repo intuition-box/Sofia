@@ -25,10 +25,7 @@ export function engagementScore(item: CircleItem): number {
   return raw + decay
 }
 
-export function sortFeed(
-  items: CircleItem[],
-  sort: FeedSortId,
-): CircleItem[] {
+export function sortFeed(items: CircleItem[], sort: FeedSortId): CircleItem[] {
   if (sort === 'recent') {
     return [...items].sort(
       (a, b) =>

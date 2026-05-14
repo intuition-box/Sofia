@@ -46,9 +46,7 @@ export function contextCartId(certTermId: string, topicSlug: string): string {
  * topic slug isn't in the local taxonomy so callers can short-circuit
  * without throwing.
  */
-export function buildContextCartItem(
-  input: AddContextInput,
-): CartItem | null {
+export function buildContextCartItem(input: AddContextInput): CartItem | null {
   const {
     certTermId,
     topicSlug,

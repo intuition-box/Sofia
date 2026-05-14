@@ -40,12 +40,11 @@
   place-items: center;
   gap: 8px;
   color: var(--color-text-dim);
-  background:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0 18px,
-      rgba(255, 255, 255, 0.025) 18px 19px
-    );
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0 18px,
+    rgba(255, 255, 255, 0.025) 18px 19px
+  );
 }
 
 .placeholderTag {

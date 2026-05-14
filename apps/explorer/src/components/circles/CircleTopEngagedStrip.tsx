@@ -45,8 +45,7 @@ export default function CircleTopEngagedStrip({
           const { supports, opposes } = aggregateCounts(item)
           const stars = computeStars(supports)
           const host = item.domain || (item.url ? extractDomain(item.url) : '')
-          const href =
-            item.url && item.url.startsWith('http') ? item.url : '#'
+          const href = item.url && item.url.startsWith('http') ? item.url : '#'
           return (
             <a
               key={item.id}
@@ -65,10 +64,7 @@ export default function CircleTopEngagedStrip({
               />
               <p className="crd-te-title">{item.title || host}</p>
               <div className="crd-te-meta">
-                <div
-                  className="crd-te-stars"
-                  aria-label={`${stars} out of 5`}
-                >
+                <div className="crd-te-stars" aria-label={`${stars} out of 5`}>
                   {[1, 2, 3, 4, 5].map((slot) => (
                     <Star
                       key={slot}

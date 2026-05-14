@@ -29,9 +29,7 @@ export default function CircleStatsStrip({ stats }: CircleStatsStripProps) {
       </div>
       <div className="crd-stat-divider" aria-hidden="true" />
       <div className="crd-stat">
-        <span className="crd-stat-value">
-          {formatCount(stats.voteCount)}
-        </span>
+        <span className="crd-stat-value">{formatCount(stats.voteCount)}</span>
         <span className="crd-stat-label">Votes</span>
       </div>
       <div className="crd-stat-divider" aria-hidden="true" />

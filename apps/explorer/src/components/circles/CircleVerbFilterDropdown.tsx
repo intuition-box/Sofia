@@ -63,7 +63,8 @@ export default function CircleVerbFilterDropdown({
   onChange,
 }: CircleVerbFilterDropdownProps) {
   const [open, setOpen] = useState(false)
-  const activeVerb = active === 'all' ? null : VERBS.find((v) => v.id === active)
+  const activeVerb =
+    active === 'all' ? null : VERBS.find((v) => v.id === active)
   const activeLabel = activeVerb ? activeVerb.label : 'All'
   const dotColor = activeVerb ? activeVerb.color : 'var(--ds-muted, #888)'
 

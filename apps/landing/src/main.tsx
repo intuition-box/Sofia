@@ -33,48 +33,48 @@ createRoot(document.getElementById('root')!).render(
                 component so any external link still resolves. */}
             <Route path="/" element={<NewLayout />} />
             <Route path="/newlayout" element={<NewLayout />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/auth/logout" element={<AuthLogout />} />
-          <Route
-            path="/auth/discord"
-            element={<OAuthInitiate platform="discord" />}
-          />
-          <Route
-            path="/auth/discord/callback"
-            element={<OAuthCallback platform="discord" />}
-          />
-          <Route
-            path="/auth/spotify"
-            element={<OAuthInitiate platform="spotify" />}
-          />
-          <Route
-            path="/auth/spotify/callback"
-            element={<OAuthCallback platform="spotify" />}
-          />
-          <Route
-            path="/auth/twitch"
-            element={<OAuthInitiate platform="twitch" />}
-          />
-          <Route
-            path="/auth/twitch/callback"
-            element={<OAuthCallback platform="twitch" />}
-          />
-          <Route
-            path="/auth/twitter"
-            element={<OAuthInitiate platform="twitter" />}
-          />
-          <Route
-            path="/auth/twitter/callback"
-            element={<OAuthCallback platform="twitter" />}
-          />
-          <Route
-            path="/auth/youtube"
-            element={<OAuthInitiate platform="youtube" />}
-          />
-          <Route
-            path="/auth/youtube/callback"
-            element={<OAuthCallback platform="youtube" />}
-          />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/logout" element={<AuthLogout />} />
+            <Route
+              path="/auth/discord"
+              element={<OAuthInitiate platform="discord" />}
+            />
+            <Route
+              path="/auth/discord/callback"
+              element={<OAuthCallback platform="discord" />}
+            />
+            <Route
+              path="/auth/spotify"
+              element={<OAuthInitiate platform="spotify" />}
+            />
+            <Route
+              path="/auth/spotify/callback"
+              element={<OAuthCallback platform="spotify" />}
+            />
+            <Route
+              path="/auth/twitch"
+              element={<OAuthInitiate platform="twitch" />}
+            />
+            <Route
+              path="/auth/twitch/callback"
+              element={<OAuthCallback platform="twitch" />}
+            />
+            <Route
+              path="/auth/twitter"
+              element={<OAuthInitiate platform="twitter" />}
+            />
+            <Route
+              path="/auth/twitter/callback"
+              element={<OAuthCallback platform="twitter" />}
+            />
+            <Route
+              path="/auth/youtube"
+              element={<OAuthInitiate platform="youtube" />}
+            />
+            <Route
+              path="/auth/youtube/callback"
+              element={<OAuthCallback platform="youtube" />}
+            />
           </Routes>
         </BrowserRouter>
       </SmoothScroll>

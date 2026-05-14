@@ -86,9 +86,9 @@ export function Deck({
      leaving the stage keeps its last sub-state (e.g. S.06 stays in
      COMMUNITY reveal while it slides out, instead of flashing back
      to its CONTRIBUTOR base for a beat). Default is 0 if missing. */
-  const [slideSubStates, setSlideSubStates] = useState<
-    Record<number, number>
-  >({})
+  const [slideSubStates, setSlideSubStates] = useState<Record<number, number>>(
+    {},
+  )
   const subState = slideSubStates[state] ?? 0
   const subStateRef = useRef(0)
   subStateRef.current = subState
@@ -280,17 +280,36 @@ export function Deck({
     }
 
     window.addEventListener('wheel', onWheel, { passive: false, capture: true })
-    window.addEventListener('touchstart', onTouchStart, { passive: true, capture: true })
-    window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true })
-    window.addEventListener('touchend', onTouchEnd, { passive: false, capture: true })
+    window.addEventListener('touchstart', onTouchStart, {
+      passive: true,
+      capture: true,
+    })
+    window.addEventListener('touchmove', onTouchMove, {
+      passive: false,
+      capture: true,
+    })
+    window.addEventListener('touchend', onTouchEnd, {
+      passive: false,
+      capture: true,
+    })
     window.addEventListener('keydown', onKey, { passive: false, capture: true })
 
     function detachAll() {
-      window.removeEventListener('wheel', onWheel, { capture: true } as AddEventListenerOptions)
-      window.removeEventListener('touchstart', onTouchStart, { capture: true } as AddEventListenerOptions)
-      window.removeEventListener('touchmove', onTouchMove, { capture: true } as AddEventListenerOptions)
-      window.removeEventListener('touchend', onTouchEnd, { capture: true } as AddEventListenerOptions)
-      window.removeEventListener('keydown', onKey, { capture: true } as AddEventListenerOptions)
+      window.removeEventListener('wheel', onWheel, {
+        capture: true,
+      } as AddEventListenerOptions)
+      window.removeEventListener('touchstart', onTouchStart, {
+        capture: true,
+      } as AddEventListenerOptions)
+      window.removeEventListener('touchmove', onTouchMove, {
+        capture: true,
+      } as AddEventListenerOptions)
+      window.removeEventListener('touchend', onTouchEnd, {
+        capture: true,
+      } as AddEventListenerOptions)
+      window.removeEventListener('keydown', onKey, {
+        capture: true,
+      } as AddEventListenerOptions)
     }
 
     function evaluateActivity() {
@@ -403,7 +422,6 @@ export function Deck({
             </DeckCtx.Provider>
           </div>
         ))}
-
       </div>
     </div>
   )

@@ -21,8 +21,8 @@ export default function CircleFeedConnectCta() {
       </span>
       <h3 className="crd-feed-cta__title">See what this circle certifies</h3>
       <p className="crd-feed-cta__lede">
-        Connect your wallet to browse the curated feed, certify URLs and
-        emit trust signals that shape what surfaces here.
+        Connect your wallet to browse the curated feed, certify URLs and emit
+        trust signals that shape what surfaces here.
       </p>
       <div className="crd-feed-cta__actions">
         <button

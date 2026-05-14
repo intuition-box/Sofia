@@ -37,8 +37,8 @@ export function Hero() {
           </h1>
 
           <p className={`lede ${styles.lede}`}>
-            Your time online becomes a record only you can sign — kept
-            forever, rewarded by the people who follow you.
+            Your time online becomes a record only you can sign — kept forever,
+            rewarded by the people who follow you.
           </p>
 
           <div className={styles.cta}>

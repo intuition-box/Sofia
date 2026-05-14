@@ -165,8 +165,12 @@
   will-change: left, opacity;
 }
 
-.sharedPlate[data-state='0'] { left: 75%; }
-.sharedPlate[data-state='1'] { left: 25%; }
+.sharedPlate[data-state='0'] {
+  left: 75%;
+}
+.sharedPlate[data-state='1'] {
+  left: 25%;
+}
 .sharedPlate:not([data-state='0']):not([data-state='1']) {
   left: 25%;
   opacity: 0;

@@ -11,16 +11,16 @@
 
 ### 1.1 Stack déjà en place
 
-| Couche | Choix actuel | État |
-|--------|--------------|------|
-| Framework | Vite + React 18 (`apps/landing`) | ✅ |
-| Router | `react-router-dom` v7 (route `/` + auth) | ✅ |
-| Smooth scroll | `Lenis` (wrapper `lib/animation/SmoothScroll.tsx`) | ✅ |
-| Animations scroll | `GSAP` + `ScrollTrigger` (wrapper `lib/animation/gsap.ts`) | ✅ |
-| Styling | CSS modules + tokens globaux (`global.css`) | ✅ |
-| Web3 | Privy (`WalletProvider`) — hors scope landing | ✅ |
-| Lottie / SVG | Pas encore intégré | À ajouter quand on aura des assets |
-| Three.js | Pas utilisé | À éviter sauf scène 3D justifiée |
+| Couche            | Choix actuel                                               | État                               |
+| ----------------- | ---------------------------------------------------------- | ---------------------------------- |
+| Framework         | Vite + React 18 (`apps/landing`)                           | ✅                                 |
+| Router            | `react-router-dom` v7 (route `/` + auth)                   | ✅                                 |
+| Smooth scroll     | `Lenis` (wrapper `lib/animation/SmoothScroll.tsx`)         | ✅                                 |
+| Animations scroll | `GSAP` + `ScrollTrigger` (wrapper `lib/animation/gsap.ts`) | ✅                                 |
+| Styling           | CSS modules + tokens globaux (`global.css`)                | ✅                                 |
+| Web3              | Privy (`WalletProvider`) — hors scope landing              | ✅                                 |
+| Lottie / SVG      | Pas encore intégré                                         | À ajouter quand on aura des assets |
+| Three.js          | Pas utilisé                                                | À éviter sauf scène 3D justifiée   |
 
 Conclusion : **la stack visée par le brief est déjà installée**. Pas de
 migration framework, pas de réinstallation lib. On a tout pour faire du
@@ -96,13 +96,13 @@ plus utilisés depuis le refacto HexDeck. À nettoyer ou réintégrer.
 
 ## 2. Stack technique recommandée
 
-| Besoin | Choix | Justification |
-|--------|-------|---------------|
-| Master timeline + scrub + pin | **GSAP + ScrollTrigger** | Référence industrie. Déjà installé. Plugin `ScrollTrigger` gère pin, scrub, snap, callbacks, refresh sur resize. Pas d'alternative crédible à ce niveau. |
-| Smooth scroll | **Lenis** | Déjà installé. Élimine les irrégularités du wheel natif, indispensable pour que le scrub se sente fluide. |
+| Besoin                             | Choix                                                                                                               | Justification                                                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Master timeline + scrub + pin      | **GSAP + ScrollTrigger**                                                                                            | Référence industrie. Déjà installé. Plugin `ScrollTrigger` gère pin, scrub, snap, callbacks, refresh sur resize. Pas d'alternative crédible à ce niveau.                 |
+| Smooth scroll                      | **Lenis**                                                                                                           | Déjà installé. Élimine les irrégularités du wheel natif, indispensable pour que le scrub se sente fluide.                                                                |
 | Animations légères / illustrations | **Lottie** (via `lottie-web` ou `@lottiefiles/react-lottie-player`) quand un asset existe ; sinon **SVG avec GSAP** | Lottie pour les anims complexes designées dans After Effects. SVG+GSAP pour les morphs simples gérés dans le code. Pas de Framer Motion (pas adapté à du scrub continu). |
-| Scènes 3D | **Three.js** uniquement si une scène le justifie (ex. un atom qui pivote en 3D) | Coût bundle + WebGL non systématique. À demander explicitement par scène. |
-| Composant scène | **Refactor de l'infra `storyboard/` existante en `<Scene>` React** | Réutiliser ce qui est posé, finir le wiring, pas réinventer. |
+| Scènes 3D                          | **Three.js** uniquement si une scène le justifie (ex. un atom qui pivote en 3D)                                     | Coût bundle + WebGL non systématique. À demander explicitement par scène.                                                                                                |
+| Composant scène                    | **Refactor de l'infra `storyboard/` existante en `<Scene>` React**                                                  | Réutiliser ce qui est posé, finir le wiring, pas réinventer.                                                                                                             |
 
 ### Alternatives écartées
 
@@ -120,51 +120,55 @@ plus utilisés depuis le refacto HexDeck. À nettoyer ou réintégrer.
 
 ### 3.1 Mapping trame ↔ implémentation
 
-| # | Trame narrative | Où | Mécanisme scroll-driven |
-|---|-----------------|------|------------------------|
-| 1 | Le constat | **Vertical pinned, avant le deck** | Une donnée utilisateur (avatar) est aspirée et fragmentée par des logos plateformes qui convergent. Le scroll comprime + dissout l'avatar dans les logos. |
-| 2 | L'idée | **Vertical pinned, avant le deck** | Les fragments se recomposent en cristal/atom hexagonal qui prend la couleur Sofia. Le hex devient l'objet narratif central, transmis ensuite au HexDeck. |
-| 3 | Le mécanisme | **HexDeck — Hero + ValueProps** | (Existant) Pose du produit. À aligner sur "Sofia Mark transforme l'activité en preuves". |
-| 4 | Le collectif | **HexDeck — Carousel + Features** | (Existant) Le graphe partagé. Carousel = preuves qui circulent. Features = pourquoi ça compte. |
-| 5 | Les personas | **HexDeck — Values** | (Existant) À recadrer en triptyque Travailleur / Rêveur / Chercheur de tendances. |
-| 6 | La vision | **HexDeck — Team** *ou* **Vertical pinned, après le deck** | Décision à prendre : soit on garde Team dernier slide et la vision est diffuse, soit on **sort la vision du deck** et on en fait une scène verticale dédiée après le deck (mon penchant). |
-| 7 | L'appel à l'action | **Vertical pinned, après le deck** | Le hex du deck explose en N atoms qui se déposent dans l'icône d'une extension navigateur. Scroll = installation visuelle. CTA "Installer l'extension" se révèle au climax. |
+| #   | Trame narrative    | Où                                                         | Mécanisme scroll-driven                                                                                                                                                                   |
+| --- | ------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Le constat         | **Vertical pinned, avant le deck**                         | Une donnée utilisateur (avatar) est aspirée et fragmentée par des logos plateformes qui convergent. Le scroll comprime + dissout l'avatar dans les logos.                                 |
+| 2   | L'idée             | **Vertical pinned, avant le deck**                         | Les fragments se recomposent en cristal/atom hexagonal qui prend la couleur Sofia. Le hex devient l'objet narratif central, transmis ensuite au HexDeck.                                  |
+| 3   | Le mécanisme       | **HexDeck — Hero + ValueProps**                            | (Existant) Pose du produit. À aligner sur "Sofia Mark transforme l'activité en preuves".                                                                                                  |
+| 4   | Le collectif       | **HexDeck — Carousel + Features**                          | (Existant) Le graphe partagé. Carousel = preuves qui circulent. Features = pourquoi ça compte.                                                                                            |
+| 5   | Les personas       | **HexDeck — Values**                                       | (Existant) À recadrer en triptyque Travailleur / Rêveur / Chercheur de tendances.                                                                                                         |
+| 6   | La vision          | **HexDeck — Team** _ou_ **Vertical pinned, après le deck** | Décision à prendre : soit on garde Team dernier slide et la vision est diffuse, soit on **sort la vision du deck** et on en fait une scène verticale dédiée après le deck (mon penchant). |
+| 7   | L'appel à l'action | **Vertical pinned, après le deck**                         | Le hex du deck explose en N atoms qui se déposent dans l'icône d'une extension navigateur. Scroll = installation visuelle. CTA "Installer l'extension" se révèle au climax.               |
 
 ### 3.2 Acte 1 (vertical pinné, avant deck) — détaillé
 
 **Scène 1 — "Tu produis, ils captent"**
-- *Pinné* : section 100vh contenant un avatar utilisateur central et une grille de logos plateformes (X, Insta, TikTok, LinkedIn, YouTube).
-- *Transformation pilotée par scroll* :
+
+- _Pinné_ : section 100vh contenant un avatar utilisateur central et une grille de logos plateformes (X, Insta, TikTok, LinkedIn, YouTube).
+- _Transformation pilotée par scroll_ :
   - 0–30% : les logos sont dispersés, l'avatar est net.
   - 30–60% : les logos convergent vers l'avatar, des "lignes d'aspiration" SVG apparaissent.
   - 60–90% : l'avatar se fragmente en pixels qui se déplacent vers les logos.
   - 90–100% : l'avatar a disparu, les logos brillent, chiffre "0 €" affiché.
-- *Texte* : titre + sous-titre qui se révèlent au fil du scroll.
+- _Texte_ : titre + sous-titre qui se révèlent au fil du scroll.
 
 **Scène 2 — "Et si chaque interaction t'appartenait"**
-- *Pinné* : même 100vh. Les pixels dispersés à la fin de la scène 1
+
+- _Pinné_ : même 100vh. Les pixels dispersés à la fin de la scène 1
   reviennent au centre et se cristallisent.
-- *Transformation* :
+- _Transformation_ :
   - 0–40% : les pixels convergent du bord vers le centre.
   - 40–70% : ils s'agencent en hexagone, prennent la couleur peach Sofia.
   - 70–100% : le hex se stabilise, un label "ton patrimoine numérique" apparaît, le hex commence à tourner doucement.
-- *Pont vers HexDeck* : à la sortie de la scène 2, le hex est aligné
+- _Pont vers HexDeck_ : à la sortie de la scène 2, le hex est aligné
   pixel-perfect avec la position de départ du hex du HexDeck.
   Visuellement on enchaîne sans rupture.
 
 ### 3.3 Acte 3 (vertical pinné, après deck) — détaillé
 
 **Scène 6 (optionnelle) — "La vision"**
-- *Pinné* : 100vh. Trois piliers (Patrimoine, Souveraineté, Second cerveau).
-- *Transformation* :
+
+- _Pinné_ : 100vh. Trois piliers (Patrimoine, Souveraineté, Second cerveau).
+- _Transformation_ :
   - 0–33% : le pilier "Patrimoine" se compose (icône + texte).
   - 33–66% : "Souveraineté".
   - 66–100% : "Second cerveau".
 - Pas d'objet hex ici, c'est une scène respiration.
 
 **Scène 7 — "Installe l'extension"**
-- *Pinné* : 100vh. Le hex sortant du deck est central, intact.
-- *Transformation* :
+
+- _Pinné_ : 100vh. Le hex sortant du deck est central, intact.
+- _Transformation_ :
   - 0–25% : le hex se fissure en N atoms.
   - 25–60% : les atoms se déplacent vers une mockup de barre d'outils navigateur en bas/à droite.
   - 60–85% : ils se condensent dans l'icône extension Sofia.
@@ -208,8 +212,9 @@ SCROLL  │ SCÈNES                                       │ HEX ÉTAT
 
 Distance totale de scroll = 100vh (Acte 1.1) + 100vh (Acte 1.2) +
 3.3vh (deck, valeur actuelle) + 100vh (Acte 3.1) + 100vh (Acte 3.2)
-+ flow FAQ/Footer ≈ ~7–8 viewports de pinned content + flow normal.
-À calibrer après prototype, c'est l'ordre de grandeur Apple-like.
+
+- flow FAQ/Footer ≈ ~7–8 viewports de pinned content + flow normal.
+  À calibrer après prototype, c'est l'ordre de grandeur Apple-like.
 
 ---
 
@@ -222,6 +227,7 @@ réécrire. Elle a déjà la bonne forme : master timeline pinnée,
 slots proportionnels, méthode `build(ctx)` par stage.
 
 Mais elle a deux limites pour notre cas :
+
 - elle suppose **toutes les scènes dans un seul container pinné**,
   alors qu'on veut **plusieurs containers pinnés indépendants**
   (avant le deck, après le deck) — la classe `Storyboard` actuelle
@@ -290,14 +296,14 @@ scènes gèrent leur animation interne.
 
 ### 5.1 Risques connus
 
-| Risque | Mitigation |
-|--------|------------|
-| Layout shift pendant le pin | Toujours `pinSpacing: true`. Pre-calc des heights. `invalidateOnRefresh: true` sur resize. |
-| Scrub saccadé | Animer **uniquement** des propriétés composées au GPU : `transform`, `opacity`, `clip-path`, `filter`. Jamais `top/left/width/height` au scroll. |
-| `will-change` qui plombe la RAM | Le poser **uniquement pendant la scène active**, le retirer à la fin (via callbacks ScrollTrigger `onEnter`/`onLeaveBack`). |
-| Refresh ScrollTrigger pendant le resize iOS (barre URL) | Déjà géré par Lenis + `invalidateOnRefresh`. Tester quand même. |
-| Lottie + scrub lourd | Si on en a, charger les Lottie en `lazy`, et n'en avoir qu'une par scène pinnée à la fois. |
-| Préférence reduced-motion | Hook `prefers-reduced-motion` qui désactive scrub + pin et bascule sur un fallback statique (sections empilées, opacity-only fade-in). À implémenter dans `<Scene>`. |
+| Risque                                                  | Mitigation                                                                                                                                                           |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout shift pendant le pin                             | Toujours `pinSpacing: true`. Pre-calc des heights. `invalidateOnRefresh: true` sur resize.                                                                           |
+| Scrub saccadé                                           | Animer **uniquement** des propriétés composées au GPU : `transform`, `opacity`, `clip-path`, `filter`. Jamais `top/left/width/height` au scroll.                     |
+| `will-change` qui plombe la RAM                         | Le poser **uniquement pendant la scène active**, le retirer à la fin (via callbacks ScrollTrigger `onEnter`/`onLeaveBack`).                                          |
+| Refresh ScrollTrigger pendant le resize iOS (barre URL) | Déjà géré par Lenis + `invalidateOnRefresh`. Tester quand même.                                                                                                      |
+| Lottie + scrub lourd                                    | Si on en a, charger les Lottie en `lazy`, et n'en avoir qu'une par scène pinnée à la fois.                                                                           |
+| Préférence reduced-motion                               | Hook `prefers-reduced-motion` qui désactive scrub + pin et bascule sur un fallback statique (sections empilées, opacity-only fade-in). À implémenter dans `<Scene>`. |
 
 ### 5.2 Budget
 
@@ -430,7 +436,7 @@ apps/landing/
 
 ---
 
-*Fin du document. Quand tu as tranché les 8 questions du §8 on peut
+_Fin du document. Quand tu as tranché les 8 questions du §8 on peut
 attaquer une scène à la fois — je propose de commencer par l'Acte 1
 puisque c'est l'amorce narrative et qu'elle pose le pattern qu'on
-appliquera à l'Acte 3.*
+appliquera à l'Acte 3._

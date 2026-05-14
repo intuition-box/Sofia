@@ -17,14 +17,14 @@ const VIDEOS: VideoBlock[] = [
     tag: 'V.01',
     title: 'Driving a vision',
     caption:
-      'Why Sofia exists, where it\'s going, and how you can be part of it. Six minutes for the full pitch.',
+      "Why Sofia exists, where it's going, and how you can be part of it. Six minutes for the full pitch.",
     src: '',
   },
   {
     tag: 'V.02',
     title: 'Sofia in 90 seconds',
     caption:
-      'The quick tour: what you see in the extension, what ends up on your profile, and why it\'s yours.',
+      "The quick tour: what you see in the extension, what ends up on your profile, and why it's yours.",
     src: '',
   },
 ]

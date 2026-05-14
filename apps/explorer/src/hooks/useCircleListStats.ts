@@ -11,10 +11,7 @@
  */
 import { useMemo } from 'react'
 import { useCircleFeed } from './useCircleFeed'
-import {
-  computeCircleStats,
-  type CircleStats,
-} from '@/services/circleStats'
+import { computeCircleStats, type CircleStats } from '@/services/circleStats'
 
 export interface CircleListStats {
   stats: CircleStats

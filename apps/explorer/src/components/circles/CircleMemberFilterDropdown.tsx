@@ -32,7 +32,8 @@ export default function CircleMemberFilterDropdown({
     active === 'all'
       ? null
       : members.find(
-          (m) => (m.walletAddress ?? m.termId).toLowerCase() ===
+          (m) =>
+            (m.walletAddress ?? m.termId).toLowerCase() ===
             active.toLowerCase(),
         )
   const activeLabel = activeMember ? activeMember.label : 'All members'
