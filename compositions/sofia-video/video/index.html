@@ -208,25 +208,69 @@
           </div>
         </div>
 
-        <!-- RIGHT half: clean Sofia window with URL list (glassmorphism) -->
+        <!-- RIGHT half: Sofia extension popup (dark theme, ported from
+             OnboardingBookmarkSelectPage). Floats on top of the peach
+             reveal panel so the contrast with the chaos windows is sharp. -->
         <div class="f4-right" id="f4-right">
-          <div class="f4-eyebrow f4-eyebrow-right">SOFIA</div>
-          <div class="f4-window" id="f4-window">
-            <div class="f4-win-bar">
-              <span class="f4-win-dots"><i></i><i></i><i></i></span>
-              <span class="f4-win-title">Thailand Trips Circle</span>
+          <div class="f4-eyebrow f4-eyebrow-right">SOFIA · EXTENSION</div>
+          <div class="f4-window f4-popup" id="f4-window">
+            <div class="f4-popup-header">
+              <div class="f4-popup-title">Thailand Trips Circle</div>
+              <div class="f4-popup-count" id="f4-popup-count">0 / 6 selected</div>
             </div>
             <div class="f4-win-body" id="f4-win-body">
-              <div class="f4-url-row" id="f4-url-0"><span class="f4-url-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-0-text"></span></div>
-              <div class="f4-url-row" id="f4-url-1"><span class="f4-url-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-1-text"></span></div>
-              <div class="f4-url-row" id="f4-url-2"><span class="f4-url-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-2-text"></span></div>
-              <div class="f4-url-row" id="f4-url-3"><span class="f4-url-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-3-text"></span></div>
-              <div class="f4-url-row" id="f4-url-4"><span class="f4-url-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-4-text"></span></div>
-              <div class="f4-url-row" id="f4-url-5"><span class="f4-url-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></span><span class="f4-url-text" id="f4-url-5-text"></span></div>
+              <div class="f4-url-row" id="f4-url-0">
+                <span class="f4-url-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">booking.com</span>
+                  <span class="f4-url-text" id="f4-url-0-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="f4-url-row" id="f4-url-1">
+                <span class="f4-url-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">tripadvisor.com</span>
+                  <span class="f4-url-text" id="f4-url-1-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="f4-url-row" id="f4-url-2">
+                <span class="f4-url-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">airbnb.com</span>
+                  <span class="f4-url-text" id="f4-url-2-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="f4-url-row" id="f4-url-3">
+                <span class="f4-url-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">reddit.com</span>
+                  <span class="f4-url-text" id="f4-url-3-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="f4-url-row" id="f4-url-4">
+                <span class="f4-url-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">hotels.com</span>
+                  <span class="f4-url-text" id="f4-url-4-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="f4-url-row" id="f4-url-5">
+                <span class="f4-url-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></span>
+                <div class="f4-url-meta">
+                  <span class="f4-url-domain">expedia.com</span>
+                  <span class="f4-url-text" id="f4-url-5-text"></span>
+                </div>
+                <span class="f4-url-check" aria-hidden="true">✓</span>
+              </div>
             </div>
-            <!-- Validate button — user clicks it to commit the gathered URLs. -->
+            <!-- Import CTA — primary peach pill, full width like the extension. -->
             <div class="f4-validate-bar">
-              <button class="f4-validate-btn" id="f4-validate-btn">Import</button>
+              <button class="f4-validate-btn" id="f4-validate-btn">Import 6 selected</button>
             </div>
           </div>
         </div>
@@ -401,7 +445,22 @@
               </div>
             </div>
           </div>
-          <div class="f6-caption" id="f6-caption" style="font-size: 130pxp; font-style: normal">Now, the community votes.</div>
+          <div class="f6-caption" id="f6-caption">
+            <span class="f6-cap-line">
+              <span class="f6-cap-word">Now,</span>
+              <span class="f6-cap-word">the</span>
+              <span class="f6-cap-word f6-cap-highlight" id="f6-cap-community">
+                <span class="f6-cap-hl-bg" aria-hidden="true"></span>
+                community
+              </span>
+              <span class="f6-cap-word">votes.</span>
+            </span>
+            <!-- Figma-style multiplayer cursor lands after the last word -->
+            <span class="f6-cap-cursor" id="f6-cap-cursor" aria-hidden="true">
+              <svg viewBox="0 0 22 28"><path d="M2 2 L20 14 L12 16 L8 24 Z" fill="#ffc6b0" stroke="#02000e" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              <span class="f6-cap-cursor-tag">you.eth</span>
+            </span>
+          </div>
         </div>
 
 <!-- No curator cursors — avatars just appear in the vote-stacks beside each TRUSTED pill -->

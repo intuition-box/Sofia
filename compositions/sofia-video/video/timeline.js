@@ -394,6 +394,8 @@ GATHER.forEach((g, i) => {
   for (let j = 0; j <= g.url.length; j++) {
     tl.set(g.txt, { textContent: g.url.slice(0, j) }, t + 0.36 + j * 0.010);
   }
+  // 3b. Selection counter ticks up in sync with the row landing
+  tl.set('#f4-popup-count', { textContent: `${i + 1} / 6 selected` }, t + 0.32);
 
   // 4. Sofia panel flashes peach on arrival
   tl.fromTo('#f4-window',
@@ -628,12 +630,30 @@ tl.to('.f6-grid .f5-card', {
   duration: 0.55, ease: 'power3.out', stagger: 0.08
 }, F6 + 0.15);
 
-// "Now, the community votes." — big Fraunces caption below the cards,
-// announces the social validation beat as F6 opens.
-gsap.set('#f6-caption', { opacity: 0, y: 24, filter: 'blur(8px)' });
-tl.to('#f6-caption',
-  { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.65, ease: 'power3.out' },
-  F6 + 0.45);
+// "Now, the community votes." — Figma-style reveal :
+//   1. words spring up with stagger + blur clearing
+//   2. peach selection rectangle wipes in behind "community"
+//   3. multiplayer cursor (you.eth) drops in beside the line
+const CAP_AT = F6 + 0.45;
+gsap.set('.f6-cap-word', { opacity: 0, y: 40, filter: 'blur(10px)' });
+gsap.set('#f6-cap-community .f6-cap-hl-bg', { scaleX: 0, transformOrigin: 'left center' });
+gsap.set('#f6-cap-cursor', { opacity: 0, x: 20, y: 12, scale: 0.85 });
+
+// 1. Words slide-up + un-blur with stagger
+tl.to('.f6-cap-word',
+  { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55, ease: 'back.out(1.6)', stagger: 0.08 },
+  CAP_AT);
+
+// 2. Figma selection highlight sweeps in behind "community"
+//    (lands as the word itself settles)
+tl.to('#f6-cap-community .f6-cap-hl-bg',
+  { scaleX: 1, duration: 0.45, ease: 'power3.inOut' },
+  CAP_AT + 0.30);
+
+// 3. you.eth multiplayer cursor drops in last
+tl.to('#f6-cap-cursor',
+  { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.40, ease: 'back.out(1.8)' },
+  CAP_AT + 0.85);
 
 // Curator identity (color + initial) — used for the avatar fill, no cursor.
 const CURATOR_DATA = {
