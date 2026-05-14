@@ -15,6 +15,7 @@
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
@@ -25,6 +26,7 @@ import CircleMembersCard from './CircleMembersCard'
 import CircleMostActiveCard from './CircleMostActiveCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
+import CircleFeedConnectCta from './CircleFeedConnectCta'
 import AllMembersPanel from './AllMembersPanel'
 import CircleJoinOverlay from './CircleJoinOverlay'
 import type { CircleData } from '@/types/circle'
@@ -76,6 +78,11 @@ export default function CircleDetailView({
     topTopicSlugs,
   )
   const stats = useMemo(() => computeCircleStats(feedItems), [feedItems])
+  const { authenticated } = usePrivy()
+  // Non-auth visitor landing on a locked group: the blurred-feed
+  // teaser doesn't help — turn the whole activity slot into a
+  // Connect / Install Sofia CTA so the visitor has a clear next step.
+  const showConnectCta = locked && !authenticated
   const [allMembersOpen, setAllMembersOpen] = useState(false)
 
   const effectiveColor = colorOverride ?? circle.color
@@ -136,17 +143,22 @@ export default function CircleDetailView({
 
       {/* Activity feed — the only section gated for non-members. The
           `aria-hidden` mirrors the visual blur so assistive tech sees
-          the same surface as a sighted viewer. */}
-      <div
-        className={locked ? 'crd-feed-locked' : undefined}
-        aria-hidden={locked}
-      >
-        <CircleFeedSection
-          addresses={circle.addresses}
-          circleName={circle.name}
-          members={circle.members}
-        />
-      </div>
+          the same surface as a sighted viewer. Non-auth visitors get
+          a Connect/Install CTA in place of the blurred teaser. */}
+      {showConnectCta ? (
+        <CircleFeedConnectCta />
+      ) : (
+        <div
+          className={locked ? 'crd-feed-locked' : undefined}
+          aria-hidden={locked}
+        >
+          <CircleFeedSection
+            addresses={circle.addresses}
+            circleName={circle.name}
+            members={circle.members}
+          />
+        </div>
+      )}
 
       <AllMembersPanel
         open={allMembersOpen}
