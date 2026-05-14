@@ -97,10 +97,7 @@ export default function GroupCard({ group }: GroupCardProps) {
         <p className="cr-group-desc">{group.description}</p>
       )}
 
-      <CircleCardStats
-        memberCount={group.memberCount}
-        addresses={addresses}
-      />
+      <CircleCardStats addresses={addresses} />
     </button>
   )
 }

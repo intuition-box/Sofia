@@ -10,9 +10,6 @@
 import { useCircleListStats } from '@/hooks/useCircleListStats'
 
 interface CircleCardStatsProps {
-  /** Total member count of the circle (passed in because it lives on
-   *  GroupEntry / trust members list, not in the feed payload). */
-  memberCount: number
   /** Wallet addresses driving the feed query — Trust ring members
    *  or group members. Empty array OK; the stat cells render `—`. */
   addresses: readonly string[]
@@ -23,18 +20,11 @@ function formatCount(n: number): string {
   return String(n)
 }
 
-export default function CircleCardStats({
-  memberCount,
-  addresses,
-}: CircleCardStatsProps) {
+export default function CircleCardStats({ addresses }: CircleCardStatsProps) {
   const { stats, isLoading } = useCircleListStats(addresses)
 
   return (
     <div className="cr-card-stats" role="group" aria-label="Circle activity">
-      <div className="cr-card-stat">
-        <span className="cr-card-stat-num">{formatCount(memberCount)}</span>
-        <span className="cr-card-stat-label">Members</span>
-      </div>
       <div className="cr-card-stat">
         <span className="cr-card-stat-num">
           {isLoading ? '—' : formatCount(stats.postCount)}

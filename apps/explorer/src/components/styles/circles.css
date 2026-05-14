@@ -414,7 +414,7 @@
    mono uppercase for the dashboard rhythm. */
 .cr-card-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
   border-radius: 10px;
   border: 1px solid var(--ds-border-soft);

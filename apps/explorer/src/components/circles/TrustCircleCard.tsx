@@ -66,7 +66,7 @@ export default function TrustCircleCard({
         will shape your feed.
       </p>
 
-      <CircleCardStats memberCount={members.length} addresses={addresses} />
+      <CircleCardStats addresses={addresses} />
 
       <div className="cr-hover-actions">
         <span className="cr-btn-sm" onClick={(e) => e.stopPropagation()}>
