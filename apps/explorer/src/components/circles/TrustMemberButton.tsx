@@ -6,7 +6,7 @@
  * to the public profile when clicked elsewhere.
  */
 import type { MouseEvent } from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Check } from 'lucide-react'
 import { useTrustMember } from '@/hooks/useTrustMember'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 
@@ -15,7 +15,8 @@ interface TrustMemberButtonProps {
 }
 
 export default function TrustMemberButton({ member }: TrustMemberButtonProps) {
-  const { trust, inCart, disabledReason, disabledHint } = useTrustMember(member)
+  const { trust, inCart, alreadyTrusted, disabledReason, disabledHint } =
+    useTrustMember(member)
 
   const handleClick = (e: MouseEvent) => {
     e.preventDefault()
@@ -23,8 +24,27 @@ export default function TrustMemberButton({ member }: TrustMemberButtonProps) {
     trust()
   }
 
+  // Trusted on-chain — solid green badge, no interaction. Read-only
+  // confirmation that the user already emitted the triple in the past.
+  if (alreadyTrusted) {
+    return (
+      <button
+        type="button"
+        className="crd-trust-btn is-trusted"
+        disabled
+        aria-label="You trust this member"
+        title="You trust this member on-chain"
+      >
+        <Check className="h-3 w-3" aria-hidden="true" />
+        <span>Trusted</span>
+      </button>
+    )
+  }
+
   const label = inCart ? 'Queued' : 'Trust'
-  const title = disabledHint ?? (inCart ? 'In cart — submit to emit' : 'Trust this member')
+  const title =
+    disabledHint ??
+    (inCart ? 'In cart — submit to emit' : 'Trust this member')
 
   return (
     <button

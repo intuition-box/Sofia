@@ -1348,7 +1348,20 @@
   border-color: var(--ds-border);
   background: transparent;
 }
-.crd-trust-btn:disabled {
+/* On-chain confirmation — solid green pill, read-only. Overrides the
+   generic disabled opacity so the "Trusted" state stays visually
+   strong instead of fading out. */
+.crd-trust-btn.is-trusted {
+  background: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+  color: #02000e;
+  cursor: default;
+}
+.crd-trust-btn.is-trusted:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.crd-trust-btn:disabled:not(.is-trusted) {
   opacity: 0.4;
   cursor: not-allowed;
 }

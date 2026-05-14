@@ -13,6 +13,8 @@ import { useCallback, useMemo } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { useUserAccountAtom } from './useUserAccountAtom'
 import { useCart } from './useCart'
+import { useLinkedWallets } from './useLinkedWallets'
+import { useTrustCircle } from './useTrustCircle'
 import {
   buildTrustCartItem,
   trustCartId,
@@ -28,6 +30,10 @@ export interface UseTrustMemberResult {
   /** True when an item with the same `trustCartId(termId)` is already
    *  queued — the button swaps its label for a "queued" hint. */
   inCart: boolean
+  /** True when the member is already in the user's on-chain trust ring
+   *  (their wallet appears in `useTrustCircle`). The button switches to
+   *  a solid "Trusted" state and the click is a no-op. */
+  alreadyTrusted: boolean
   /** Reason the trust button must be disabled, if any. */
   disabledReason: TrustBlockedReason | null
   /** Pre-mapped UX string for `disabledReason`. */
@@ -52,6 +58,11 @@ export function useTrustMember(
     isLoading: accountAtomLoading,
   } = useUserAccountAtom(userWallet)
   const cart = useCart()
+  // User's existing trust ring — used to flip the button to "Trusted"
+  // once the member is already an anchor. Shares the same useTrustCircle
+  // cache as the NavSidebar / CircleDetailView so this read is free.
+  const { addresses: userWallets } = useLinkedWallets()
+  const { accounts: trustedAccounts } = useTrustCircle(userWallets)
 
   const memberTermId = member?.termId ?? null
 
@@ -60,6 +71,14 @@ export function useTrustMember(
     const id = trustCartId(memberTermId)
     return cart.items.some((i) => i.id === id)
   }, [cart.items, memberTermId])
+
+  const alreadyTrusted = useMemo(() => {
+    if (!member?.walletAddress) return false
+    const target = member.walletAddress.toLowerCase()
+    return trustedAccounts.some(
+      (a) => a.walletAddress?.toLowerCase() === target,
+    )
+  }, [trustedAccounts, member])
 
   const disabledReason = useMemo<TrustBlockedReason | null>(() => {
     if (!authenticated) return 'no-wallet'
@@ -70,7 +89,7 @@ export function useTrustMember(
 
   const trust = useCallback(() => {
     if (!member || !memberTermId || !userAccountAtomId) return
-    if (disabledReason) return
+    if (disabledReason || alreadyTrusted) return
     if (inCart) {
       cart.open()
       return
@@ -84,11 +103,20 @@ export function useTrustMember(
     if (!item) return
     cart.addItem(item)
     cart.open()
-  }, [member, memberTermId, userAccountAtomId, disabledReason, inCart, cart])
+  }, [
+    member,
+    memberTermId,
+    userAccountAtomId,
+    disabledReason,
+    alreadyTrusted,
+    inCart,
+    cart,
+  ])
 
   return {
     trust,
     inCart,
+    alreadyTrusted,
     disabledReason,
     disabledHint: disabledReason ? REASON_HINT[disabledReason] : null,
   }
