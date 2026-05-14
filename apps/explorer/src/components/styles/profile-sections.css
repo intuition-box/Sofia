@@ -44,32 +44,42 @@
   gap: 14px;
 }
 
-/* ── My Impact in Circles — top profile stats row ────────────────── */
+/* ── My Impact in Circles — compact stats strip ─────────────────── */
+.pp-impact {
+  align-items: center;
+}
 .pp-impact-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  padding: 18px 24px;
-  border-radius: 14px;
+  grid-template-columns: repeat(4, auto);
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 12px 24px;
+  border-radius: 999px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  align-items: stretch;
+  max-width: fit-content;
 }
 .pp-impact-stat {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
   gap: 8px;
-  align-items: flex-start;
   position: relative;
-  padding: 0 12px;
 }
-.pp-impact-stat:not(:first-child) {
-  border-left: 1px solid var(--ds-border-soft);
+.pp-impact-stat:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 18px;
+  background: var(--ds-border-soft);
 }
 .pp-impact-num {
   font-family: 'Fraunces', serif;
   font-weight: 800;
-  font-size: 32px;
+  font-size: 22px;
   color: var(--ds-ink);
   line-height: 1;
   font-variation-settings:
@@ -79,7 +89,7 @@
 }
 .pp-impact-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ds-muted);
@@ -96,21 +106,19 @@
   color: var(--ds-muted);
   font-weight: 600;
   border: 1px solid var(--ds-border);
-  padding: 2px 6px;
+  padding: 1px 6px;
   border-radius: 999px;
-  align-self: flex-start;
-  margin-top: 2px;
 }
 @media (max-width: 720px) {
   .pp-impact-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, auto);
+    gap: 14px 24px;
+    border-radius: 14px;
+    padding: 14px 20px;
   }
-  .pp-impact-stat:not(:first-child) {
-    border-left: none;
-  }
-  .pp-impact-stat:nth-child(odd) {
-    padding-left: 0;
+  .pp-impact-stat:nth-child(odd):not(:first-child)::before,
+  .pp-impact-stat:nth-child(2)::before {
+    display: none;
   }
 }
 

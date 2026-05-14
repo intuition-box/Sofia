@@ -63,9 +63,12 @@ export default function CircleImpactSection({
           <span className="pp-impact-num">{formatCount(positions.size)}</span>
           <span className="pp-impact-label">Votes</span>
         </div>
-        <div className="pp-impact-stat pp-impact-stat--coming">
+        <div
+          className="pp-impact-stat pp-impact-stat--coming"
+          title="Gold sponsored — lands with the Boost feature"
+        >
           <span className="pp-impact-num">—</span>
-          <span className="pp-impact-label">Gold sponsored</span>
+          <span className="pp-impact-label">Gold</span>
           <span className="pp-impact-soon">soon</span>
         </div>
       </div>
