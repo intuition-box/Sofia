@@ -134,8 +134,8 @@
 
 .cr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: 28px;
 }
 
 /* Two-line description on the discover-groups cards. Truncated to
@@ -318,8 +318,8 @@
   position: relative;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
-  padding: 22px 22px 20px;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -341,12 +341,12 @@
 .cr-card-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 .cr-card-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   background: #ffffff;
   border: 1px solid var(--ds-border-soft);
   flex-shrink: 0;
@@ -368,7 +368,7 @@
 }
 .cr-name {
   font-family: 'Fraunces', serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.015em;
@@ -442,7 +442,7 @@
 .cr-card-stat-num {
   font-family: 'Fraunces', serif;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 24px;
   color: var(--ds-ink);
   line-height: 1;
   font-variation-settings:
