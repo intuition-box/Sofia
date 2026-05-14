@@ -88,7 +88,7 @@ export default function CircleTopTopicsCard({
             <TopicBadge
               topicId={r.id}
               color={r.color}
-              size={16}
+              size={22}
               title={r.label}
             />
             <span className="cr-topics-label">{r.label}</span>

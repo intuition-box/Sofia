@@ -1120,19 +1120,26 @@
   flex-direction: column;
   gap: 14px;
 }
+/* Distribute rows vertically when the stretched card has extra height
+   so the bottom doesn't feel like a void below a top-pinned label.
+   space-between pushes rows to fill the full height — first stays at
+   the top, last at the bottom, the rest spread evenly. */
 .cr-topics-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  justify-content: space-between;
 }
 .cr-topics-row {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
+  padding: 4px 0;
 }
 .cr-topics-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ds-ink);
   overflow: hidden;
