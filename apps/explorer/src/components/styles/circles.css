@@ -1656,6 +1656,103 @@
   flex-shrink: 0;
 }
 
+/* ── CircleFeedConnectCta — non-auth empty state ───────────────────
+   Replaces the dead-end "No certifications yet" placeholder with an
+   invitation card. Two CTAs side-by-side so the visitor lands on one
+   of the two entry points (wallet connect or extension install) with
+   one click. */
+.crd-feed-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 32px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-left: 4px solid var(--circle-color, var(--ds-accent));
+  max-width: 540px;
+  margin: 8px auto;
+}
+.crd-feed-cta__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: color-mix(
+    in srgb,
+    var(--circle-color, var(--ds-accent)) 12%,
+    transparent
+  );
+  color: var(--circle-color, var(--ds-accent));
+}
+.crd-feed-cta__title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ds-ink);
+  margin: 4px 0 0;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+}
+.crd-feed-cta__lede {
+  font-size: 13px;
+  color: var(--ds-muted);
+  line-height: 1.5;
+  max-width: 420px;
+  margin: 0;
+}
+.crd-feed-cta__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.crd-feed-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+.crd-feed-cta__btn:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+}
+.crd-feed-cta__btn--primary {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+.crd-feed-cta__btn--primary:hover {
+  background: var(--ds-ink);
+  border-color: var(--ds-ink);
+  opacity: 0.88;
+}
+.crd-feed-cta__arrow {
+  transition: transform 0.15s ease;
+}
+.crd-feed-cta__btn:hover .crd-feed-cta__arrow {
+  transform: translateX(2px);
+}
+
 /* ── CircleTopEngagedStrip ──────────────────────────────────────── */
 .crd-top-engaged {
   display: flex;

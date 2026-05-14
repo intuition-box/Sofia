@@ -40,6 +40,7 @@ import CircleTopicFilterDropdown, {
 import CircleMemberFilterDropdown from './CircleMemberFilterDropdown'
 import CircleFeedSort from './CircleFeedSort'
 import CircleTopEngagedStrip from './CircleTopEngagedStrip'
+import CircleFeedConnectCta from './CircleFeedConnectCta'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
@@ -212,6 +213,11 @@ export default function CircleFeedSection({
           message="Couldn't load the feed."
           hint="Check your connection and refresh the page."
         />
+      ) : shown.length === 0 && !authenticated && verb === 'all' ? (
+        // Non-auth visitor + empty feed: turn the dead-end message into
+        // a CTA so the page reads as an invitation rather than a
+        // wall. Authenticated users still see the regular empty state.
+        <CircleFeedConnectCta />
       ) : shown.length === 0 ? (
         <EmptyFeedState
           gridClassName="masonry-grid crd-feed"
