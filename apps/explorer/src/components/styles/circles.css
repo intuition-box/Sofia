@@ -968,35 +968,31 @@
 .cr-topics-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .cr-topics-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 10px;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
   align-items: center;
 }
 .cr-topics-label {
   font-size: 12px;
   font-weight: 600;
   color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .cr-topics-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ds-muted);
   font-weight: 600;
-}
-.cr-topics-bar {
-  grid-column: 1 / -1;
-  height: 3px;
-  background: var(--ds-border-soft);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.cr-topics-fill {
-  height: 100%;
-  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+  min-width: 24px;
 }
 
 /* All-members slide-in panel.

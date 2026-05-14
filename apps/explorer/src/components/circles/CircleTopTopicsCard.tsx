@@ -73,6 +73,12 @@ export default function CircleTopTopicsCard({
   // so a circle with fewer signals still gets readable proportions.
   const max = rows.reduce((m, r) => Math.max(m, r.count), 0) || 1
 
+  // `circleColor` and `max` are no longer used now that the bar visual
+  // is gone — kept in the props signature for backward compat with
+  // callers (CircleDetailView still passes them).
+  void max
+  void circleColor
+
   return (
     <div className="crd-topics-section">
       <div className="cr-section-head">Top topics</div>
@@ -82,20 +88,11 @@ export default function CircleTopTopicsCard({
             <TopicBadge
               topicId={r.id}
               color={r.color}
-              size={20}
+              size={16}
               title={r.label}
             />
             <span className="cr-topics-label">{r.label}</span>
             <span className="cr-topics-num">{r.count}</span>
-            <div className="cr-topics-bar">
-              <div
-                className="cr-topics-fill"
-                style={{
-                  width: `${(r.count / max) * 100}%`,
-                  background: circleColor,
-                }}
-              />
-            </div>
           </div>
         ))}
         {rows.length === 0 && (
