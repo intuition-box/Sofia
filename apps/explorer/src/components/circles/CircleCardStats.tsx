@@ -43,9 +43,9 @@ export default function CircleCardStats({
       </div>
       <div className="cr-card-stat">
         <span className="cr-card-stat-num">
-          {isLoading ? '—' : stats.activeMemberCount}
+          {isLoading ? '—' : formatCount(stats.voteCount)}
         </span>
-        <span className="cr-card-stat-label">Active · 7d</span>
+        <span className="cr-card-stat-label">Votes</span>
       </div>
     </div>
   )
