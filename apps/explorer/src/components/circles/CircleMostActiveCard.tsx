@@ -8,10 +8,7 @@
 import { useMemo, useState } from 'react'
 import type { CircleItem } from '@/services/circleService'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import {
-  computeMostActive,
-  type ActivityWindow,
-} from '@/services/circleStats'
+import { computeMostActive, type ActivityWindow } from '@/services/circleStats'
 import MemberAvatar from './MemberAvatar'
 
 interface CircleMostActiveCardProps {

@@ -118,8 +118,8 @@ export default function ContextManagerPage() {
           <Tags className="h-10 w-10 text-muted-foreground" />
           <p className="ctx-empty-title">All tagged up.</p>
           <p className="ctx-empty-sub">
-            Every certification you own already has at least one topic
-            context. Keep certifying to grow your reputation.
+            Every certification you own already has at least one topic context.
+            Keep certifying to grow your reputation.
           </p>
         </div>
       ) : (

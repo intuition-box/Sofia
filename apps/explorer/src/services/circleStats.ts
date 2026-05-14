@@ -31,10 +31,7 @@ export function computeCircleStats(items: CircleItem[]): CircleStats {
     for (const v of Object.values(item.intentionVaults)) {
       voteCount += v.supportCount + v.opposeCount
     }
-    if (
-      new Date(item.timestamp).getTime() >= cutoff &&
-      item.certifierAddress
-    ) {
+    if (new Date(item.timestamp).getTime() >= cutoff && item.certifierAddress) {
       activeCertifiers.add(item.certifierAddress.toLowerCase())
     }
   }

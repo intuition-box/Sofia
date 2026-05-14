@@ -186,12 +186,10 @@ function validateTarget(raw: string): ValidTarget | InvalidTarget {
     const [a, b] = [parseInt(v4[1], 10), parseInt(v4[2], 10)]
     if (a === 10) return { ok: false, reason: 'Forbidden host' }
     if (a === 127) return { ok: false, reason: 'Forbidden host' }
-    if (a === 192 && b === 168)
-      return { ok: false, reason: 'Forbidden host' }
+    if (a === 192 && b === 168) return { ok: false, reason: 'Forbidden host' }
     if (a === 172 && b >= 16 && b <= 31)
       return { ok: false, reason: 'Forbidden host' }
-    if (a === 169 && b === 254)
-      return { ok: false, reason: 'Forbidden host' }
+    if (a === 169 && b === 254) return { ok: false, reason: 'Forbidden host' }
   }
   return { ok: true, url }
 }
@@ -205,7 +203,10 @@ interface OgPayload {
   height?: number
 }
 
-async function resolveOg(target: URL, proxyOriginUrl: string): Promise<CacheEntry> {
+async function resolveOg(
+  target: URL,
+  proxyOriginUrl: string,
+): Promise<CacheEntry> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS)
   let res: Response
@@ -485,10 +486,15 @@ function wrapText(text: string, maxChars: number, maxLines: number): string[] {
     }
   }
   if (current && lines.length < maxLines) lines.push(current)
-  if (lines.length === maxLines && words.join(' ').length > lines.join(' ').length) {
+  if (
+    lines.length === maxLines &&
+    words.join(' ').length > lines.join(' ').length
+  ) {
     const last = lines[maxLines - 1]
     lines[maxLines - 1] =
-      last.length > maxChars - 1 ? last.slice(0, maxChars - 1) + '…' : last + '…'
+      last.length > maxChars - 1
+        ? last.slice(0, maxChars - 1) + '…'
+        : last + '…'
   }
   return lines
 }

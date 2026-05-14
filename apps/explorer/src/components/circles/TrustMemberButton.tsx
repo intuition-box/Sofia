@@ -43,8 +43,7 @@ export default function TrustMemberButton({ member }: TrustMemberButtonProps) {
 
   const label = inCart ? 'Queued' : 'Trust'
   const title =
-    disabledHint ??
-    (inCart ? 'In cart — submit to emit' : 'Trust this member')
+    disabledHint ?? (inCart ? 'In cart — submit to emit' : 'Trust this member')
 
   return (
     <button

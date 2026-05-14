@@ -63,9 +63,7 @@ export default function CircleTopTopicsCard({
       return { id, label: topic.label, color: topic.color, count }
     })
     .filter(
-      (
-        x,
-      ): x is { id: string; label: string; color: string; count: number } =>
+      (x): x is { id: string; label: string; color: string; count: number } =>
         x !== null,
     )
 

@@ -6,11 +6,7 @@
  */
 import type { UrlPreview } from './urlPreview'
 
-const VIMEO_HOSTS = new Set([
-  'vimeo.com',
-  'www.vimeo.com',
-  'player.vimeo.com',
-])
+const VIMEO_HOSTS = new Set(['vimeo.com', 'www.vimeo.com', 'player.vimeo.com'])
 
 export function isVimeoUrl(url: string): boolean {
   try {
@@ -38,8 +34,7 @@ export async function fetchVimeoPreview(
   const data = (await res.json()) as VimeoOembed
   const thumb = data.thumbnail_url_with_play_button ?? data.thumbnail_url
   if (!thumb) return null
-  const ratio =
-    data.width && data.height ? data.width / data.height : 16 / 9
+  const ratio = data.width && data.height ? data.width / data.height : 16 / 9
   return {
     url: thumb,
     kind: 'thumb',

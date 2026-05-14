@@ -13,10 +13,7 @@
  *    second visit boots with previews ready
  */
 import { useQuery } from '@tanstack/react-query'
-import {
-  fetchAsyncUrlPreview,
-  hasAsyncProvider,
-} from '@/utils/asyncUrlPreview'
+import { fetchAsyncUrlPreview, hasAsyncProvider } from '@/utils/asyncUrlPreview'
 import type { UrlPreview } from '@/utils/urlPreview'
 
 // Injected into the React Query key so that flipping the OG proxy env

@@ -545,7 +545,8 @@ export function IsoStack({
     const start = REVEAL_START + order * REVEAL_STRIDE
     return Math.max(0, Math.min(1, (t - start) / REVEAL_FADE))
   }
-  const allRevealed = t > REVEAL_START + (layers.length - 1) * REVEAL_STRIDE + REVEAL_FADE
+  const allRevealed =
+    t > REVEAL_START + (layers.length - 1) * REVEAL_STRIDE + REVEAL_FADE
 
   const cx = 215
   const cy = 130

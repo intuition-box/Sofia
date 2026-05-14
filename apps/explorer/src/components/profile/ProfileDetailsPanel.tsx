@@ -7,7 +7,14 @@
  *   - topic id   → focused topic stats from `topics`
  *   - verb id    → intent label + colour from `focusMeta`; per-verb breakdown
  *                  isn't computed yet so numbers stay aggregated.
+ *
+ * In `'all'` mode the panel can also render a compact "Interests" rail on
+ * the right (small chip rows + add/remove). It replaces the standalone
+ * `<InterestsGrid>` section that used to sit at the top of the profile
+ * page, keeping topic management inline with the score overview.
  */
+import { X } from 'lucide-react'
+import TopicBadge from './TopicBadge'
 
 export interface ProfileTopicStats {
   id: string
@@ -29,6 +36,13 @@ export interface ProfileDetailsFocusMeta {
   emoji: string
   color: string
   kind: 'topic' | 'verb'
+}
+
+export interface InterestPill {
+  id: string
+  label: string
+  color: string
+  score: number
 }
 
 interface ProfileDetailsPanelProps {
@@ -54,6 +68,20 @@ interface ProfileDetailsPanelProps {
   generalCertCount?: number
   /** Points awarded per cert (defaults to 5 to match scoring service). */
   pointsPerCert?: number
+  /**
+   * Compact interest pills rendered alongside the overview metrics when
+   * the panel is in 'all' mode. Caller resolves taxonomy + score so the
+   * panel stays presentational.
+   */
+  interestPills?: InterestPill[]
+  /** Max slot count for the rail; empty slots become "+ Pick" buttons. */
+  interestSlots?: number
+  /** Fires when the user clicks `+ Pick` or `Edit interests`. */
+  onAddInterest?: () => void
+  /** Fires when the user clicks the × on a pill. Omit to hide remove UI. */
+  onRemoveInterest?: (topicId: string) => void
+  /** Fires when the user clicks the body of a pill (label/score). */
+  onSelectInterest?: (topicId: string) => void
 }
 
 export default function ProfileDetailsPanel({
@@ -64,6 +92,11 @@ export default function ProfileDetailsPanel({
   verbCertCounts,
   generalCertCount = 0,
   pointsPerCert = 5,
+  interestPills,
+  interestSlots = 3,
+  onAddInterest,
+  onRemoveInterest,
+  onSelectInterest,
 }: ProfileDetailsPanelProps) {
   const isAll = topicFilter === 'all' || !focusMeta
   const isVerb = !isAll && focusMeta?.kind === 'verb'
@@ -88,15 +121,6 @@ export default function ProfileDetailsPanel({
   const verbCertCount =
     isVerb && verbCertCounts ? (verbCertCounts[topicFilter] ?? 0) : 0
 
-  const categoriesCount = useAggregate
-    ? topics.reduce((a, s) => a + s.categoriesCount, 0)
-    : (selectedTopic?.categoriesCount ?? 0)
-  const platformsCount = useAggregate
-    ? topics.reduce((a, s) => a + s.platformsCount, 0)
-    : (selectedTopic?.platformsCount ?? 0)
-  const signals = useAggregate
-    ? topics.reduce((a, s) => a + s.signals, 0)
-    : (selectedTopic?.signals ?? 0)
   const generalScore = generalCertCount * pointsPerCert
   const score = isVerb
     ? verbCertCount * pointsPerCert
@@ -120,56 +144,128 @@ export default function ProfileDetailsPanel({
       ? 'Intent Score'
       : 'Topic Score'
 
+  const showInterests = isAll && interestPills !== undefined
+  const emptySlotCount = showInterests
+    ? Math.max(0, interestSlots - (interestPills?.length ?? 0))
+    : 0
+
   return (
-    <div className="pc-details" style={{ ['--topic-color' as string]: color }}>
-      <div className="pc-details-head">
-        <span className="pc-kicker">{kicker}</span>
-        {!isAll && (
-          <button
-            type="button"
-            className="pc-details-clear"
-            onClick={onClearFilter}
-          >
-            Clear filter
-          </button>
-        )}
-      </div>
-      <div className="pc-details-title">{label}</div>
-      <div className="pc-details-hero">
-        <span className="pc-details-score">{score}</span>
-        <span className="pc-details-score-label">{scoreLabel}</span>
-      </div>
-      <div className="pc-details-list">
-        <div className="pc-details-row">
-          <span className="pc-details-row-label">Categories</span>
-          <span className="pc-details-row-value">{categoriesCount}</span>
+    <div
+      className={`pc-details${showInterests ? ' has-side' : ''}`}
+      style={{ ['--topic-color' as string]: color }}
+    >
+      <div className="pc-details-main">
+        <div className="pc-details-head">
+          <span className="pc-kicker">{kicker}</span>
+          {!isAll && (
+            <button
+              type="button"
+              className="pc-details-clear"
+              onClick={onClearFilter}
+            >
+              Clear filter
+            </button>
+          )}
         </div>
-        <div className="pc-details-row">
-          <span className="pc-details-row-label">Certified platforms</span>
-          <span className="pc-details-row-value">{platformsCount}</span>
-        </div>
-        <div className="pc-details-row">
-          <span className="pc-details-row-label">Signals</span>
-          <span className="pc-details-row-value">{signals}</span>
+        <div className="pc-details-title">{label}</div>
+        <div className="pc-details-hero">
+          <span className="pc-details-score">{score}</span>
+          <span className="pc-details-score-label">{scoreLabel}</span>
         </div>
         {pnl !== null && (
-          <div className="pc-details-row">
-            <span className="pc-details-row-label">Trust P&L</span>
-            <span
-              className="pc-details-row-value"
-              style={{
-                color:
-                  pnl >= 0
-                    ? 'var(--trusted, #6dd4a0)'
-                    : 'var(--distrusted, #e87c7c)',
-              }}
-            >
-              {pnl >= 0 ? '+' : ''}
-              {pnl.toFixed(1)} T
-            </span>
+          <div className="pc-details-list">
+            <div className="pc-details-row">
+              <span className="pc-details-row-label">Trust P&L</span>
+              <span
+                className="pc-details-row-value"
+                style={{
+                  color:
+                    pnl >= 0
+                      ? 'var(--trusted, #6dd4a0)'
+                      : 'var(--distrusted, #e87c7c)',
+                }}
+              >
+                {pnl >= 0 ? '+' : ''}
+                {pnl.toFixed(1)} T
+              </span>
+            </div>
           </div>
         )}
       </div>
+
+      {showInterests && (
+        <div className="pc-details-side">
+          <div className="pc-details-side-head">
+            <span className="pc-kicker">Interests</span>
+            {onAddInterest && (interestPills?.length ?? 0) > 0 && (
+              <button
+                type="button"
+                className="pc-details-side-edit"
+                onClick={onAddInterest}
+              >
+                Edit
+              </button>
+            )}
+          </div>
+          <div className="pc-details-side-list">
+            {(interestPills ?? []).map((p) => (
+              <div
+                key={p.id}
+                className="pc-interest-pill"
+                style={{ ['--pill-color' as string]: p.color }}
+              >
+                <button
+                  type="button"
+                  className="pc-interest-pill-main"
+                  onClick={
+                    onSelectInterest ? () => onSelectInterest(p.id) : undefined
+                  }
+                  disabled={!onSelectInterest}
+                  aria-label={`Open ${p.label} details`}
+                >
+                  <TopicBadge
+                    topicId={p.id}
+                    color={p.color}
+                    size={14}
+                    title={p.label}
+                  />
+                  <span className="pc-interest-pill-label">{p.label}</span>
+                  <span className="pc-interest-pill-score">{p.score}</span>
+                </button>
+                {onRemoveInterest && (
+                  <button
+                    type="button"
+                    className="pc-interest-pill-remove"
+                    onClick={() => onRemoveInterest(p.id)}
+                    aria-label={`Remove ${p.label}`}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {Array.from({ length: emptySlotCount }).map((_, i) =>
+              onAddInterest ? (
+                <button
+                  key={`add-${i}`}
+                  type="button"
+                  className="pc-interest-pill pc-interest-pill--add"
+                  onClick={onAddInterest}
+                >
+                  <span className="pc-interest-pill-plus">+</span>
+                  <span className="pc-interest-pill-label">Pick interest</span>
+                </button>
+              ) : (
+                <div
+                  key={`empty-${i}`}
+                  className="pc-interest-pill pc-interest-pill--empty"
+                  aria-hidden="true"
+                />
+              ),
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -107,9 +107,9 @@ function CirclesListSection() {
 interface DiscoverGroupsSectionProps {
   groups: ReturnType<typeof useGroups>['groups']
   isLoading: boolean
-  /** Total group count across joined + not-joined. The sub-line in the
-   *  header reflects the whole on-chain set, not just the not-joined
-   *  filter (otherwise it would silently shrink as users join groups). */
+  /** Total group count across joined + not-joined. Kept on the prop
+   *  so the empty-state copy can distinguish "0 groups exist" from
+   *  "you've joined them all". */
   totalCount: number
 }
 
@@ -122,11 +122,6 @@ function DiscoverGroupsSection({
     <>
       <div className="cr-section-head">
         <h2 className="cr-section-title">Discover groups</h2>
-        <span className="cr-section-sub">
-          {isLoading
-            ? 'Loading…'
-            : `${totalCount} group${totalCount === 1 ? '' : 's'} on-chain`}
-        </span>
       </div>
       {isLoading && groups.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading groups…</p>

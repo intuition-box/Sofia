@@ -121,20 +121,35 @@ interface Circle {
 
 const CIRCLES: Circle[] = ANGLES.map((angIdx, i) => {
   const p = ringPos(angIdx)
-  return { id: i, angIdx, name: ENS[i], cx: p.cx, cy: p.cy, r: R_BIG, nR: NR, ang: p.ang }
+  return {
+    id: i,
+    angIdx,
+    name: ENS[i],
+    cx: p.cx,
+    cy: p.cy,
+    r: R_BIG,
+    nR: NR,
+    ang: p.ang,
+  }
 })
 
 const FRAMES = [
   { name: 'DUAD', sub: '2 nuclei · dialogue', members: [0, 1] },
   { name: 'TRIAD', sub: '3 nuclei · trust circle', members: [0, 1, 2] },
   { name: 'QUARTET', sub: '4 nuclei · expansion', members: [0, 1, 2, 3] },
-  { name: 'MESH', sub: '6 nuclei · ring + diagonals', members: [0, 1, 2, 3, 4, 5] },
+  {
+    name: 'MESH',
+    sub: '6 nuclei · ring + diagonals',
+    members: [0, 1, 2, 3, 4, 5],
+  },
 ]
 
 type Edge = [number, number, number, number]
 
 function buildEdges(memberIds: number[]): Edge[] {
-  const sorted = [...memberIds].sort((a, b) => CIRCLES[a].angIdx - CIRCLES[b].angIdx)
+  const sorted = [...memberIds].sort(
+    (a, b) => CIRCLES[a].angIdx - CIRCLES[b].angIdx,
+  )
   const edges: Edge[] = []
   for (let i = 0; i < sorted.length; i++) {
     if (sorted.length === 2 && i === 1) break
@@ -280,7 +295,9 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
   const vis = CIRCLES.map((c) => circleVisibility(c.id, cycle))
 
   const P = CIRCLES.map(projectOrbit)
-  const drawOrder = CIRCLES.map((_, i) => i).sort((a, b) => P[b].depth - P[a].depth)
+  const drawOrder = CIRCLES.map((_, i) => i).sort(
+    (a, b) => P[b].depth - P[a].depth,
+  )
   const labels = buildLabels(P)
 
   /* Track per-edge activity so each circle can show a brief peach
@@ -411,7 +428,14 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
           const breath = 0.035 + act * 0.22
           overlaps.push(
             <g key={`ov${j}`} clipPath={`url(#seq-clip-${variant}-${i})`}>
-              <ellipse cx={pj.x} cy={pj.y} rx={pj.rx} ry={pj.ry} fill={pal.HL} fillOpacity={breath} />
+              <ellipse
+                cx={pj.x}
+                cy={pj.y}
+                rx={pj.rx}
+                ry={pj.ry}
+                fill={pal.HL}
+                fillOpacity={breath}
+              />
             </g>,
           )
         }
@@ -455,7 +479,9 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
       <g stroke={pal.HL} strokeOpacity="0.12" strokeWidth="0.6">
         {edges.map(([f, to], k) => {
           if (vis[f] < 0.5 || vis[to] < 0.5) return null
-          return <line key={k} x1={P[f].x} y1={P[f].y} x2={P[to].x} y2={P[to].y} />
+          return (
+            <line key={k} x1={P[f].x} y1={P[f].y} x2={P[to].x} y2={P[to].y} />
+          )
         })}
       </g>
 
@@ -477,9 +503,24 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
         })
         return (
           <g key={k}>
-            <line x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} stroke={pal.HL} strokeOpacity="0.10" strokeWidth="0.6" />
+            <line
+              x1={pa.x}
+              y1={pa.y}
+              x2={pb.x}
+              y2={pb.y}
+              stroke={pal.HL}
+              strokeOpacity="0.10"
+              strokeWidth="0.6"
+            />
             {trail.map((q, j) => (
-              <circle key={j} cx={q.x} cy={q.y} r="1.3" fill={pal.HL} fillOpacity={q.op} />
+              <circle
+                key={j}
+                cx={q.x}
+                cy={q.y}
+                r="1.3"
+                fill={pal.HL}
+                fillOpacity={q.op}
+              />
             ))}
             <circle cx={x} cy={y} r="5" fill={pal.HL} fillOpacity={op * 0.18} />
             <circle cx={x} cy={y} r="2.2" fill={pal.HL} fillOpacity={op} />
@@ -542,7 +583,14 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
         const L = labels[i]
         return (
           <g key={`L${i}`} opacity={vis[i]}>
-            <line x1={L.line[0]} y1={L.line[1]} x2={L.line[2]} y2={L.line[3]} stroke={pal.FG_DIM} strokeWidth="0.5" />
+            <line
+              x1={L.line[0]}
+              y1={L.line[1]}
+              x2={L.line[2]}
+              y2={L.line[3]}
+              stroke={pal.FG_DIM}
+              strokeWidth="0.5"
+            />
             <text
               x={L.x}
               y={L.y}
@@ -561,12 +609,23 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
       {/* Header — FIG tag, frame index, frame description, and a row
           of step dots so the viewer can read where the sequence is. */}
       <g fontFamily="JetBrains Mono, ui-monospace, monospace">
-        <text x="20" y="30" fontSize="8" fill={pal.FG_DIM} letterSpacing="0.22em">
-          FIG · V.06 ·{' '}
-          {String(idx + 1).padStart(2, '0')}/
+        <text
+          x="20"
+          y="30"
+          fontSize="8"
+          fill={pal.FG_DIM}
+          letterSpacing="0.22em"
+        >
+          FIG · V.06 · {String(idx + 1).padStart(2, '0')}/
           {String(FRAMES.length).padStart(2, '0')} · {frame.name}
         </text>
-        <text x="20" y="42" fontSize="7" fill={pal.FG_FAINT} letterSpacing="0.18em">
+        <text
+          x="20"
+          y="42"
+          fontSize="7"
+          fill={pal.FG_FAINT}
+          letterSpacing="0.18em"
+        >
           {frame.sub.toUpperCase()} · ORBIT
         </text>
         <g transform="translate(540, 28)">
@@ -584,7 +643,14 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
 
       {/* Progress bar at the bottom — fills across the full loop. */}
       <g>
-        <rect x="20" y="582" width="560" height="2" fill={pal.FG_FAINT} opacity="0.3" />
+        <rect
+          x="20"
+          y="582"
+          width="560"
+          height="2"
+          fill={pal.FG_FAINT}
+          opacity="0.3"
+        />
         <rect
           x="20"
           y="582"

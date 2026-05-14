@@ -170,4 +170,3 @@ function MemberCard({ member, index }: { member: TeamMember; index: number }) {
     </article>
   )
 }
-

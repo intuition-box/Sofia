@@ -148,11 +148,7 @@ export default function UntaggedCertCard({
             {queuedTopics.size === 0 ? 'Add topics' : 'Edit topics'}
           </button>
         </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="ctx-popover"
-          sideOffset={6}
-        >
+        <PopoverContent align="start" className="ctx-popover" sideOffset={6}>
           <p className="ctx-popover-title">Tag this URL with…</p>
           <div className="ctx-popover-list">
             {SOFIA_TOPICS.map((topic) => {
@@ -165,7 +161,9 @@ export default function UntaggedCertCard({
                   onClick={() => toggle(topic.id, topic.label, topic.color)}
                   style={
                     active
-                      ? ({ ['--ctx-tag-color' as string]: topic.color } as React.CSSProperties)
+                      ? ({
+                          ['--ctx-tag-color' as string]: topic.color,
+                        } as React.CSSProperties)
                       : undefined
                   }
                 >

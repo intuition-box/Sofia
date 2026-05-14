@@ -62,15 +62,15 @@
 /* SectionHead compact mode when rendered inside a deck slide. Targets
    CSS Modules hashed class names of the form `SectionHead_head__xxx`
    via attribute-contains selector. */
-.slide :global(header[class*="head"]) {
+.slide :global(header[class*='head']) {
   margin-bottom: 12px !important;
 }
-.slide :global(header[class*="head"]) :is(h1, h2) {
+.slide :global(header[class*='head']) :is(h1, h2) {
   font-size: clamp(1.4rem, 2vw, 2rem) !important;
   line-height: 1.1 !important;
   margin: 4px 0 6px !important;
 }
-.slide :global(header[class*="head"]) p {
+.slide :global(header[class*='head']) p {
   font-size: 0.85rem !important;
   line-height: 1.4 !important;
   max-width: 60ch;

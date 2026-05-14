@@ -125,11 +125,7 @@ export function HexDeck({
       tl.to({}, { duration: 1 - horizontalRatio }, horizontalRatio)
 
       if (hex) {
-        tl.to(
-          hex,
-          { rotate: 240, ease: 'none', duration: horizontalRatio },
-          0,
-        )
+        tl.to(hex, { rotate: 240, ease: 'none', duration: horizontalRatio }, 0)
         for (let i = 1; i < N; i++) {
           const boundary = ((i - 1) / (N - 1)) * horizontalRatio
           tl.to(

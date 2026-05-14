@@ -42,8 +42,8 @@ function VisionBlock() {
           <p>
             Sofia isn't a new social network, nor another feed reader. It's an
             instrument that turns your attention into a shared signal without
-            renting it out. You decide what's worth keeping, you sign it, and
-            it becomes permanent proof nothing and no one can rewrite.
+            renting it out. You decide what's worth keeping, you sign it, and it
+            becomes permanent proof nothing and no one can rewrite.
           </p>
           <p>
             Over time, these proofs draw a map of who cares about what, who
@@ -69,4 +69,3 @@ function VisionBlock() {
     </article>
   )
 }
-

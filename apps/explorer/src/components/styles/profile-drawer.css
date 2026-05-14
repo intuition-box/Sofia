@@ -278,64 +278,67 @@
   transform: translateX(3px);
 }
 
-/* ── Discovery badges ────────────────────────────────────────────── */
+/* ── Circle impact stats ─────────────────────────────────────────── */
 
-.pd-badge-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
+.pd-impact-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  gap: 0;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
 }
-.pd-badge-card {
+.pd-impact-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  flex: 1;
-  padding: 12px 4px;
-  border-radius: 12px;
-  /* Slightly lighter than the surrounding card, no border. The badge
-     color still tints the surface enough to read at a glance. */
-  background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
-  border: 0;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-  text-align: center;
-  transition:
-    background 120ms ease,
-    transform 120ms ease;
+  position: relative;
+  padding: 0 4px;
 }
-.pd-badge-card:hover {
-  background: color-mix(in srgb, var(--badge-color) 14%, var(--ds-card));
-  transform: translateY(-1px);
+.pd-impact-cell:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 24px;
+  background: var(--ds-border-soft);
 }
-.pd-badge-card:focus-visible {
-  outline: 2px solid var(--badge-color);
-  outline-offset: 2px;
+.pd-impact-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.015em;
 }
-.pd-badge-card:active {
-  transform: translateY(0);
-}
-.pd-badge-icon {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-.pd-badge-label {
+.pd-impact-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
+  font-weight: 600;
 }
-.pd-badge-value {
-  font-family: 'Fraunces', serif;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--ds-ink);
+.pd-impact-cell--coming .pd-impact-num {
+  color: var(--ds-muted);
+}
+.pd-impact-soon {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+  border: 1px solid var(--ds-border);
+  padding: 1px 5px;
+  border-radius: 999px;
 }
 
 /* ── Trust Circle (explorer extra) ───────────────────────────────── */

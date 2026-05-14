@@ -137,9 +137,7 @@ export default function LastActivitySection({
         skeletonCount={6}
         renderSkeleton={() => <ActivityCardSkeleton />}
         message={
-          trimmed
-            ? `No echoes match “${searchQuery}”.`
-            : 'No activity yet.'
+          trimmed ? `No echoes match “${searchQuery}”.` : 'No activity yet.'
         }
         hint={
           trimmed

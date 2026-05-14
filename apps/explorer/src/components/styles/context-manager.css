@@ -228,11 +228,12 @@
     var(--ctx-tag-color, var(--ds-accent)) 16%,
     var(--ds-bg-subtle)
   );
-  border: 1px solid color-mix(
-    in srgb,
-    var(--ctx-tag-color, var(--ds-accent)) 40%,
-    var(--ds-border)
-  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--ctx-tag-color, var(--ds-accent)) 40%,
+      var(--ds-border)
+    );
   color: var(--ds-ink);
   font-family: 'Geist', sans-serif;
   font-size: 11px;

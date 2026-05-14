@@ -134,16 +134,16 @@
 
 .cr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: 28px;
 }
 
 /* Two-line description on the discover-groups cards. Truncated to
    keep the card height aligned with TrustCircleCard. */
 .cr-group-desc {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--ds-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -318,8 +318,8 @@
   position: relative;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
-  padding: 18px 20px 16px;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -341,12 +341,12 @@
 .cr-card-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 .cr-card-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   background: #ffffff;
   border: 1px solid var(--ds-border-soft);
   flex-shrink: 0;
@@ -368,7 +368,7 @@
 }
 .cr-name {
   font-family: 'Fraunces', serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.015em;
@@ -382,9 +382,9 @@
 }
 .cr-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ds-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   margin-top: 2px;
 }
 .cr-role {
@@ -407,9 +407,86 @@
   border: 1px solid var(--ds-border);
 }
 
+/* Bento stats row inside each /circles card — three mini cells sit
+   between the description and the avatar row, separated by a hair-line
+   divider so the trio reads as one cohesive block, not three buttons.
+   Numbers in Fraunces serif (echoes the detail-page hero), labels in
+   mono uppercase for the dashboard rhythm. */
+.cr-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border-soft);
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+  margin: 4px 0;
+}
+.cr-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  position: relative;
+}
+.cr-card-stat:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  background: var(--ds-border-soft);
+}
+.cr-card-stat-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cr-card-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+/* Live pulse dot — same animation rhythm as the hero stats so the
+   live indicator reads consistently across surfaces. */
+.cr-card-stat-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--trusted, #6dd4a0);
+  animation: crd-hero-pulse 1.8s ease-in-out infinite;
+}
+
 .cr-avatars {
   display: flex;
   align-items: center;
+}
+/* Compact avatar stack inlined next to the card title — smaller
+   bubbles + tighter overlap so the stack sits in the header without
+   crowding the name. */
+.cr-avatars--head {
+  flex-shrink: 0;
+}
+.cr-avatars--head .mav {
+  width: 24px;
+  height: 24px;
+  margin-left: -6px;
+  font-size: 9px;
+  border-width: 2px;
 }
 .cr-avatars .mav {
   width: 34px;
@@ -1642,10 +1719,12 @@
 @keyframes crd-stat-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
   }
 }
 .crd-stat-label {
@@ -1820,9 +1899,8 @@
 .crd-te-card:hover {
   transform: translateY(-3px) rotate(-0.6deg);
   border-color: var(--circle-color, var(--ds-accent));
-  box-shadow:
-    0 14px 32px -10px
-      color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
+  box-shadow: 0 14px 32px -10px
+    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
 }
 .crd-te-thumb {
   width: 100%;
