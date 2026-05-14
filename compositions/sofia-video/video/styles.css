@@ -9,7 +9,7 @@
   --bg-dark: #0b0a12;
   --ink: #02000e;
   --ink-soft: #1a1727;
-  --ink-on-dark: #f5f3ff;
+  --ink-on-dark: #ffffff;
   --muted: rgba(2, 0, 14, 0.55);
   --muted-soft: rgba(2, 0, 14, 0.35);
   --border: rgba(2, 0, 14, 0.10);
@@ -383,13 +383,13 @@ body {
   font-weight: 700;
   font-size: 26px;
   letter-spacing: -0.02em;
-  color: #f5f3ff;                 /* --ds-ink */
+  color: #ffffff;                 /* --ds-ink */
   line-height: 1.15;
 }
 .f4-popup-count {
   font-family: 'Geist', sans-serif;
   font-size: 13px;
-  color: #8f8ca8;                 /* --ds-muted */
+  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
   margin-top: 8px;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
@@ -422,7 +422,7 @@ body {
   font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #f5f3ff;
+  color: #ffffff;
   letter-spacing: -0.005em;
 }
 .f4-url-check {
@@ -461,7 +461,7 @@ body {
 .f4-url-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12.5px;
-  color: #8f8ca8;                 /* --ds-muted */
+  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
   white-space: nowrap; overflow: hidden;
   letter-spacing: 0.01em;
 }
@@ -472,38 +472,40 @@ body {
   pointer-events: none;
   z-index: 4;
 }
-/* Import CTA — full-width primary pill, ported from .onboarding-btn-primary.
-   Ink button by default, peach on the click pulse. */
+/* Import CTA — full-width primary pill, ported from the extension's
+   .core-primary-btn (CoreComponents.css). Geist 14px bold, radius 8px,
+   white bg + black fg. Click pulse swaps to peach. */
 .f4-validate-bar {
   padding: 16px 18px 20px;
   border-top: 1px solid #1c1a2b;
 }
 .f4-validate-btn {
   width: 100%;
-  font-family: 'Fraunces', serif;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 13px 20px;
-  border-radius: 12px;
-  background: #f5f3ff;            /* --btn-primary-bg = --ds-ink */
-  color: #0b0a12;                 /* --btn-primary-fg = --ds-bg */
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #000000;
   border: none;
   cursor: pointer;
   opacity: 0;
   transform: scale(0.96);
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   transition: none;
 }
 .f4-validate-btn.clicked {
   background: var(--peach);
-  color: #1a0a04;
+  color: #000000;
 }
 
 .f5-publish-bar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 18px 36px 28px;
+  padding: 18px 30px 26px;
+  border-top: 1px solid #1c1a2b;
 }
 .f6-caption {
   position: relative;
@@ -709,48 +711,57 @@ body {
 /* ════════════════════════════════════════════════════════════
    FRAME 5 — Validation (Sofia panel fullscreen)
    ════════════════════════════════════════════════════════════ */
+/* F5/F6 background — peach reveal stays so the dark window pops
+   against the rest of the video's warm palette. */
 .f5-bg {
   position: absolute; inset: 0;
   background: radial-gradient(ellipse at center, var(--peach-soft) 0%, var(--peach) 80%);
 }
+/* Sofia popup window — ported from the extension design system
+   (--ds-bg, --ds-border, Fraunces serif headline). Dark ink card
+   floating on the peach reveal, same family as the F4 popup. */
 .f5-window {
   position: absolute;
   top: 80px; left: 120px; right: 120px; bottom: 120px;
-  background: rgba(255, 255, 255, 0.62);
-  backdrop-filter: blur(32px) saturate(140%);
-  -webkit-backdrop-filter: blur(32px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 24px;
+  background: #0b0a12;            /* --ds-bg */
+  border: 1px solid #25223a;      /* --ds-border */
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 40px 96px rgba(122, 58, 30, 0.22);
+  box-shadow:
+    0 40px 96px rgba(11, 10, 18, 0.42),
+    0 0 0 1px rgba(255, 198, 176, 0.05) inset;
   display: flex; flex-direction: column;
 }
 .f5-win-bar {
   display: flex; align-items: center;
   gap: 22px;
-  padding: 22px 32px;
-  background: rgba(255, 255, 255, 0.55);
-  border-bottom: 1px solid rgba(122, 58, 30, 0.10);
+  padding: 22px 30px;
+  border-bottom: 1px solid #1c1a2b;   /* --ds-border-soft */
 }
-.f5-win-dots { display: flex; gap: 8px; }
-.f5-win-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--peach-deep); opacity: 0.55; display: block; }
+.f5-win-dots { display: flex; gap: 7px; }
+.f5-win-dots i {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 198, 176, 0.35);
+  display: block;
+}
 .f5-win-title {
   font-family: 'Fraunces', serif;
-  font-weight: 800;
-  font-size: 24px;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 22px;
+  color: #ffffff;                 /* --ds-ink */
+  letter-spacing: -0.015em;
   flex: 1;
 }
 .f5-win-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.30em;
-  color: var(--ink);
+  color: #0b0a12;
   background: var(--peach);
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 .f5-grid {
   flex: 1;
@@ -764,12 +775,12 @@ body {
   padding: 36px;
 }
 .f5-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 22px 24px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 18px 20px 16px;
   display: flex; flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   transition: all 0.2s ease;
 }
 .f5-card-head { display: flex; align-items: flex-start; gap: 14px; }
@@ -795,32 +806,34 @@ body {
 .f5-tw { flex: 1; min-width: 0; }
 .f5-title {
   font-family: 'Geist', sans-serif;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  color: var(--ink);
+  color: #ffffff;                 /* --ds-ink */
   line-height: 1.3;
+  letter-spacing: -0.005em;
 }
 .f5-host {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);                 /* --ds-muted */
   margin-top: 5px;
+  letter-spacing: 0.01em;
 }
 .f5-bottom {
   display: flex; align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
-  border-top: 1px solid rgba(2, 0, 14, 0.06);
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .f5-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .f5-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 700;
-  color: var(--ink);
-  background: var(--bg);
-  padding: 5px 11px;
+  font-size: 10.5px; font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 5px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   letter-spacing: 0.10em;
 }
 .f5-verb {
@@ -839,14 +852,17 @@ body {
 .f5-verb.inspiration { background: var(--inspiration); }
 .f5-verb.buying      { background: var(--buying); }
 .f5-verb.music       { background: var(--music); }
-/* Card highlighted (validated) */
+/* Card highlighted (validated) — peach accent over dark popup */
 .f5-card.validated {
-  border-color: var(--peach-deep);
-  box-shadow: 0 14px 36px -18px rgba(122, 58, 30, 0.55);
+  border-color: rgba(255, 198, 176, 0.45);
+  background: rgba(255, 198, 176, 0.06);
+  box-shadow: 0 14px 36px -18px rgba(255, 198, 176, 0.35);
   transform: translateY(-3px);
 }
 .f5-card.glow {
-  box-shadow: 0 0 0 2px var(--peach), 0 20px 48px -16px rgba(122, 58, 30, 0.45);
+  box-shadow:
+    0 0 0 2px var(--peach),
+    0 20px 48px -16px rgba(255, 198, 176, 0.55);
 }
 
 /* Cursors with curator labels */
@@ -913,11 +929,11 @@ body {
 .vote-stack .vote-mav {
   width: 32px; height: 32px;
   border-radius: 50%;
-  border: 2px solid var(--bg);
+  border: 2px solid #0b0a12;
   margin-left: -10px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px; font-weight: 700;
-  color: var(--ink);
+  color: #0b0a12;
   display: inline-flex;
   align-items: center; justify-content: center;
   flex-shrink: 0;
