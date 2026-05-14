@@ -149,7 +149,7 @@ let handlersRegistered = false
 // in scripts/post-build.js).
 const ALLOWED_EXTERNAL_ORIGINS = (() => {
   const origins = [
-    'https://doc.sofia.intuition.box',
+    'https://sofia.intuition.box',
     'http://localhost:3000',
     'http://localhost:5174'
   ]

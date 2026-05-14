@@ -74,7 +74,7 @@
       "matches": [
         "http://localhost:3000/*",
         "http://localhost:5174/*",
-        "https://doc.sofia.intuition.box/*"
+        "https://sofia.intuition.box/*"
       ]
     },
     "side_panel": {
