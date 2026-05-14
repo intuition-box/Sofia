@@ -1137,6 +1137,21 @@
   gap: 8px;
   flex-shrink: 0;
 }
+.cfs-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cfs-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
 .crd-user-filter-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;

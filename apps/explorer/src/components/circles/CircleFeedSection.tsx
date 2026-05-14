@@ -23,6 +23,7 @@ import {
   INTENTION_COLORS,
 } from '@/config/intentions'
 import type { CircleItem } from '@/services/circleService'
+import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import {
   Select,
@@ -39,6 +40,7 @@ import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
 import CircleTopicFilter, {
   type TopicFilterId,
 } from './CircleTopicFilter'
+import CircleFeedSort from './CircleFeedSort'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
@@ -58,6 +60,7 @@ export default function CircleFeedSection({
   const [verb, setVerb] = useState<VerbFilterId>('all')
   const [topic, setTopic] = useState<TopicFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
+  const [sort, setSort] = useState<FeedSortId>('engagement')
 
   const { authenticated } = usePrivy()
   const cart = useCart()
@@ -128,7 +131,7 @@ export default function CircleFeedSection({
   )
 
   const filtered = useMemo(() => {
-    return items
+    const base = items
       .filter((item) => {
         if (verb === 'all') return true
         return item.intentions.some(
@@ -146,7 +149,8 @@ export default function CircleFeedSection({
           memberFilter.toLowerCase()
         )
       })
-  }, [items, verb, topic, memberFilter])
+    return sortFeed(base, sort)
+  }, [items, verb, topic, memberFilter, sort])
 
   const shown = filtered.slice(0, MAX_SHOWN)
 
@@ -168,6 +172,8 @@ export default function CircleFeedSection({
         <CircleVerbFilter active={verb} onChange={setVerb} />
         <div className="crd-feed-filters-divider" aria-hidden="true" />
         <CircleTopicFilter active={topic} onChange={setTopic} />
+        <div className="crd-feed-filters-divider" aria-hidden="true" />
+        <CircleFeedSort active={sort} onChange={setSort} />
         <div className="crd-feed-filters-divider" aria-hidden="true" />
         <div className="crd-user-filter">
           <label className="crd-user-filter-label" htmlFor="crd-user-filter">
