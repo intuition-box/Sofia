@@ -13,8 +13,8 @@ import {
 } from '@privy-io/react-auth'
 
 // Aligned on the Explorer Privy app — same allowlist (localhost + prod).
-const PRIVY_APP_ID =
-  import.meta.env.VITE_PRIVY_APP_ID ?? 'cmmey7hlx01110clgylcc1ulc'
+const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID
+const PRIVY_CLIENT_ID = import.meta.env.VITE_PRIVY_CLIENT_ID
 
 interface WalletContextValue {
   address: string | null
@@ -148,6 +148,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   return (
     <PrivyProvider
       appId={PRIVY_APP_ID}
+      clientId={PRIVY_CLIENT_ID}
       config={{
         appearance: { theme: 'dark', accentColor: '#ffffff' },
         loginMethods: ['wallet'],
