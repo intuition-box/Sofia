@@ -4,10 +4,10 @@ import { URLS } from '../lib/config/urls'
 import styles from './Navbar.module.css'
 
 const NAV_LINKS = [
-  { label: 'Manifesto', href: URLS.docs.manifesto },
-  { label: 'Docs', href: URLS.docs.intro },
   { label: 'Explorer', href: URLS.external.board },
-  { label: 'Discord', href: URLS.external.discord },
+  { label: 'Docs', href: URLS.docs.intro },
+  { label: 'Chronicles', href: URLS.blog.index },
+  { label: 'Manifesto', href: URLS.docs.manifesto },
 ]
 
 export function Navbar() {
