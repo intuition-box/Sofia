@@ -1,15 +1,19 @@
 /**
- * TopicBadge — a small coloured disc with the topic's emoji inside.
+ * TopicBadge — a small coloured disc with a monochrome Material
+ * Symbols glyph inside.
  *
  * Reusable visual primitive: same silhouette in the Context Manager
  * popover, the ProfileDrawer score legend, the Interests grid, etc.
  * Keeps the rendering rule in one place so any future tweak
- * (size, emoji fallback, ring on hover) propagates everywhere.
+ * (size, icon fallback, ring on hover) propagates everywhere.
+ *
+ * Uses the Google Material Symbols Outlined webfont (loaded in
+ * `index.html`). The glyph name comes from `getTopicIcon(slug)`.
  */
-import { getTopicEmoji } from '@/config/topicEmoji'
+import { getTopicIcon } from '@/config/topicEmoji'
 
 interface TopicBadgeProps {
-  /** Topic slug — used to resolve the emoji + as a stable test hook. */
+  /** Topic slug — used to resolve the icon + as a stable test hook. */
   topicId: string
   /** Background colour of the disc. Usually the topic's color from
    *  the taxonomy; pass `var(--ds-muted)` when no colour is known. */
@@ -31,7 +35,11 @@ export default function TopicBadge({
   className,
   title,
 }: TopicBadgeProps) {
-  const emoji = getTopicEmoji(topicId) || '📌'
+  const icon = getTopicIcon(topicId)
+  // Glyph fills ~60% of the disc — same optical weight as the old
+  // emoji rendering, but the icon is a stroked monochrome so we land
+  // on the navbar's lucide visual family.
+  const glyphSize = Math.round(size * 0.6)
   return (
     <span
       className={`topic-badge${className ? ` ${className}` : ''}`}
@@ -39,12 +47,16 @@ export default function TopicBadge({
         background: color,
         width: size,
         height: size,
-        fontSize: Math.round(size * 0.5),
       }}
       title={title ?? topicId}
       aria-hidden="true"
     >
-      {emoji}
+      <span
+        className="material-symbols-outlined topic-badge-glyph"
+        style={{ fontSize: glyphSize }}
+      >
+        {icon}
+      </span>
     </span>
   )
 }

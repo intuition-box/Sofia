@@ -542,6 +542,16 @@
   font-size: 12px;
   line-height: 1;
 }
+.pc-radar-filter-pop__glyph {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
 .pc-radar-filter-pop__reset {
   align-self: flex-end;
   padding: 4px 10px;
@@ -592,6 +602,60 @@
   overflow: visible;
   flex: 1;
 }
+
+/* Technical-drawing chrome around the EditorialRadar — mono ticker
+   above (dot + plate label + focus state) and a coord-style caption
+   below (n = N topics · M intents · θ value). Mirrors the
+   `.lp-meta-tag` / `.lp-visual-meta` look used on the login page. */
+.pc-radar-meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
+  /* Bleed past the wrap's left padding so the meta lines align
+     flush-left with the focus dropdown trigger (same -54px pull).
+     Right padding stays at 0 so the trailing label sits flush. */
+  margin-left: -54px;
+}
+@media (max-width: 900px) {
+  .pc-radar-meta {
+    margin-left: 0;
+  }
+}
+.pc-radar-meta--top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  margin-bottom: 6px;
+}
+.pc-radar-meta--bottom {
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  margin-top: 6px;
+}
+.pc-radar-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.pc-radar-meta-right {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.pc-radar-meta-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ds-accent, #ffc6b0);
+  display: inline-block;
+  flex-shrink: 0;
+}
 .pc-radar-label {
   cursor: pointer;
   transition: transform 0.18s ease;
@@ -610,20 +674,30 @@
     drop-shadow(0 0 10px color-mix(in srgb, #6dd4a0 25%, transparent));
 }
 .pc-radar-label-bg {
-  fill: var(--ds-card);
-  stroke: var(--ds-border);
+  /* Disc keeps the topic colour as its solid fill; the inner glyph
+     reads as white on top. Hover/active just thickens the ring so
+     the colour stays consistent across states. */
+  fill: var(--topic-color, var(--ds-muted));
+  stroke: color-mix(in srgb, var(--topic-color, var(--ds-muted)) 60%, #02000e);
   stroke-width: 1;
   transition: all 0.18s ease;
 }
 .pc-radar-label:hover .pc-radar-label-bg,
 .pc-radar-label.active .pc-radar-label-bg {
-  fill: color-mix(
-    in srgb,
-    var(--topic-color, var(--ds-muted)) 18%,
-    var(--ds-card)
-  );
-  stroke: var(--topic-color, var(--ds-muted));
+  stroke: #ffffff;
   stroke-width: 2;
+}
+/* Rim glyph (Material Symbols Outlined). Same family/variation axes
+   as the TopicBadge inner glyph so the radar reads as the same icon
+   pack the rest of the profile uses. Solid black on top of the
+   coloured disc regardless of focus state. */
+.pc-radar-label-glyph {
+  fill: #02000e;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 600,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 .pc-radar-half-label {

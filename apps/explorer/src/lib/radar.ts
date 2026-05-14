@@ -24,6 +24,10 @@ export interface RadarAxis {
   id: string
   label: string
   emoji: string
+  /** Optional Material Symbols Outlined glyph name. Renderers prefer
+   *  this over `emoji` so the radar reads as monochrome black icons
+   *  on coloured discs (same family as the navbar/lucide icons). */
+  icon?: string
   color: string
 }
 
@@ -42,36 +46,42 @@ export const RADAR_VERBS: readonly RadarAxis[] = [
     id: 'work',
     label: INTENTION_CONFIG.work.label,
     emoji: '💼',
+    icon: 'work',
     color: INTENTION_CONFIG.work.color,
   },
   {
     id: 'learning',
     label: INTENTION_CONFIG.learning.label,
     emoji: '📚',
+    icon: 'school',
     color: INTENTION_CONFIG.learning.color,
   },
   {
     id: 'inspiration',
     label: INTENTION_CONFIG.inspiration.label,
     emoji: '✨',
+    icon: 'auto_awesome',
     color: INTENTION_CONFIG.inspiration.color,
   },
   {
     id: 'fun',
     label: INTENTION_CONFIG.fun.label,
     emoji: '🎮',
+    icon: 'sports_esports',
     color: INTENTION_CONFIG.fun.color,
   },
   {
     id: 'buying',
     label: INTENTION_CONFIG.buying.label,
     emoji: '🛍️',
+    icon: 'shopping_bag',
     color: INTENTION_CONFIG.buying.color,
   },
   {
     id: 'music',
     label: INTENTION_CONFIG.music.label,
     emoji: '🎵',
+    icon: 'headphones',
     color: INTENTION_CONFIG.music.color,
   },
 ]

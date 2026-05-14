@@ -33,9 +33,12 @@ import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import { useTopPlatformStats } from '@/hooks/useTopPlatformStats'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
-import RadarChart from './RadarChart'
+import EditorialRadar, { type EditorialRadarAxis } from './EditorialRadar'
 import TopPlatforms from './TopPlatforms'
 import ProfileDetailsPanel, { type InterestPill } from './ProfileDetailsPanel'
+import { RADAR_VERBS } from '@/lib/radar'
+import { getTopicIcon, getTopicShortLabel } from '@/config/topicEmoji'
+import RadarPills from './radar/RadarPills'
 import ProfileClaimCard, { deriveClaimBadge } from './ProfileClaimCard'
 import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'
@@ -88,9 +91,9 @@ export default function ProfileCharts({
     setFocus,
     topicAxes,
     verbAxes,
-    displayedSeries,
     pillItems,
     verbCertCounts,
+    axisValuesForFocus,
   } = useRadarFocus(selectedTopics, topicById, addresses)
 
   const topicStats = useProfileTopicStats({
@@ -152,6 +155,61 @@ export default function ProfileCharts({
       .filter((p): p is InterestPill => p !== null)
   }, [onAddInterest, selectedTopics, topicScores, topicById])
 
+  // Build editorial radar axes — user's selected topics (top hemisphere,
+  // pill colour = topic colour) followed by the 6 RADAR_VERBS (lower
+  // hemisphere, pill colour = intention colour). Both halves share a
+  // single max-normalisation so the polygon stays comparable across
+  // axes. `axisValuesForFocus` reshapes the cert counts symmetrically:
+  // a verb click pulls the topic axes to that verb's per-topic
+  // breakdown (and vice-versa for topic clicks).
+  const editorialAxes = useMemo<EditorialRadarAxis[]>(() => {
+    const counts = axisValuesForFocus
+    let max = 0
+    for (const id of selectedTopics) {
+      const v = counts[id] ?? 0
+      if (v > max) max = v
+    }
+    for (const v of RADAR_VERBS) {
+      const c = counts[v.id] ?? 0
+      if (c > max) max = c
+    }
+    const norm = (n: number) => (max > 0 ? n / max : 0)
+
+    const topicAxesEd: EditorialRadarAxis[] = selectedTopics
+      .map((id): EditorialRadarAxis | null => {
+        const topic = topicById(id)
+        if (!topic) return null
+        return {
+          id,
+          label: getTopicShortLabel(id, topic.label),
+          color: topic.color ?? '#a78bdb',
+          value: norm(counts[id] ?? 0),
+          icon: getTopicIcon(id),
+        }
+      })
+      .filter((x): x is EditorialRadarAxis => x !== null)
+
+    const verbAxesEd: EditorialRadarAxis[] = RADAR_VERBS.map((v) => ({
+      id: v.id,
+      label: v.label.toUpperCase(),
+      color: v.color,
+      value: norm(counts[v.id] ?? 0),
+      icon: v.icon,
+    }))
+
+    return [...topicAxesEd, ...verbAxesEd]
+  }, [selectedTopics, topicById, axisValuesForFocus])
+
+  // Focused axis's colour — drives the polygon stroke + fill so the
+  // radar visually echoes the filter pill that's currently active.
+  const focusColor = useMemo<string | undefined>(() => {
+    if (focus === 'all') return undefined
+    return (
+      topicAxes.find((a) => a.id === focus)?.color ??
+      verbAxes.find((a) => a.id === focus)?.color
+    )
+  }, [focus, topicAxes, verbAxes])
+
   // Resolve the focused axis (topic OR verb) into meta for the
   // details panel — the panel needs label + colour to render the
   // title, whether a topic or an intent is currently focused.
@@ -183,18 +241,38 @@ export default function ProfileCharts({
       <div className="pc-grid">
         {/* Main: radar + details + calendar (wide) */}
         <div className="pc-card pc-card-wide pc-main">
-          <RadarChart
-            topAxes={topicAxes}
-            bottomAxes={verbAxes}
-            series={displayedSeries}
-            pillItems={pillItems}
-            seriesFilter={focus}
-            onSeriesFilterChange={setFocus}
-            axisFilter={focus}
-            onAxisFilterChange={setFocus}
-            topLabel="interests"
-            bottomLabel="intents"
-          />
+          <div className="pc-radar-wrap">
+            <div className="pc-radar-meta pc-radar-meta--top">
+              <span className="pc-radar-meta-left">
+                <span className="pc-radar-meta-dot" aria-hidden="true" />
+                Plate · Topics × Intentions
+              </span>
+              <span className="pc-radar-meta-right">
+                {focus === 'all'
+                  ? 'Polar field · all axes'
+                  : (focusMeta?.label ?? focus)}
+              </span>
+            </div>
+            <RadarPills
+              items={pillItems}
+              seriesFilter={focus}
+              onFocus={setFocus}
+            />
+            <EditorialRadar
+              axes={editorialAxes}
+              activeId={focus}
+              accentColor={focusColor}
+              onAxisClick={(id) => setFocus(focus === id ? 'all' : id)}
+            />
+            <div className="pc-radar-meta pc-radar-meta--bottom">
+              <span>
+                n = {selectedTopics.length} topic
+                {selectedTopics.length === 1 ? '' : 's'} · {RADAR_VERBS.length}{' '}
+                intents
+              </span>
+              <span>θ · static</span>
+            </div>
+          </div>
           <div className="pc-main-right">
             <ProfileDetailsPanel
               topics={topicStats}

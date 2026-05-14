@@ -91,7 +91,16 @@ export default function RadarPills({
                   style={{ background: s.color }}
                   aria-hidden="true"
                 />
-                <span className="pc-radar-filter-pop__emoji">{s.emoji}</span>
+                {s.icon ? (
+                  <span
+                    className="material-symbols-outlined pc-radar-filter-pop__glyph"
+                    aria-hidden="true"
+                  >
+                    {s.icon}
+                  </span>
+                ) : (
+                  <span className="pc-radar-filter-pop__emoji">{s.emoji}</span>
+                )}
                 {s.label}
               </button>
             ))}
