@@ -14,7 +14,7 @@ import {
 
 // Aligned on the Explorer Privy app — same allowlist (localhost + prod).
 const PRIVY_APP_ID =
-  import.meta.env.VITE_PRIVY_APP_ID ?? 'cmmey7hlx01110clgylcc1ulc'
+  import.meta.env.VITE_PRIVY_APP_ID 
 
 interface WalletContextValue {
   address: string | null

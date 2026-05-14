@@ -13,9 +13,9 @@ interface CirclesSortToggleProps {
 }
 
 const SORTS: { id: CirclesSortId; label: string }[] = [
-  { id: 'activity', label: 'Active today' },
-  { id: 'size', label: 'Members' },
-  { id: 'trust', label: 'TRUST locked' },
+  { id: 'activity', label: 'Most active' },
+  { id: 'size', label: 'Most members' },
+  { id: 'trust', label: 'Most TRUST' },
 ]
 
 export default function CirclesSortToggle({
