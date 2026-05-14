@@ -303,14 +303,11 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/circles"
-                  element={
-                    <ProtectedRoute>
-                      <CirclesPage />
-                    </ProtectedRoute>
-                  }
-                />
+                {/* Circles routes are PUBLIC — a visitor can browse the
+                    on-chain groups and their members without connecting.
+                    Join + create actions surface a Connect CTA via the
+                    locked overlay when no wallet is linked. */}
+                <Route path="/circles" element={<CirclesPage />} />
                 {/* Legacy redirect — older share links pointed to
                     `/circles/group/:termId`. The unified detail page
                     lives at `/circles/:id` now. */}
@@ -318,14 +315,7 @@ export default function App() {
                   path="/circles/group/:id"
                   element={<LegacyGroupRedirect />}
                 />
-                <Route
-                  path="/circles/:id"
-                  element={
-                    <ProtectedRoute>
-                      <CirclesPage />
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/circles/:id" element={<CirclesPage />} />
                 <Route
                   path="/compose"
                   element={
