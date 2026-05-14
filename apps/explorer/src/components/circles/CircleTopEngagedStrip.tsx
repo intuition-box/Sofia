@@ -1,8 +1,10 @@
 /**
- * CircleTopEngagedStrip — horizontal strip of the top 4 URLs in the
- * circle by engagement score. Sits between the stats ribbon and the
- * full feed. Cards reuse the same star-tier palette as `CircleFeedCard`
- * so the visual scale is consistent across the page.
+ * CircleTopEngagedStrip — "Hot picks" strip of the top 4 URLs in the
+ * circle by engagement score. Rendered inside CircleFeedSection just
+ * below the filter row so it reads as the curated header of the feed
+ * rather than a separate band. Cards reuse the same star-tier palette
+ * as `CircleFeedCard` so the visual scale is consistent across the
+ * page.
  */
 import { Star } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
@@ -34,7 +36,10 @@ export default function CircleTopEngagedStrip({
 
   return (
     <section className="crd-top-engaged">
-      <h3 className="crd-top-engaged-title">Hot this week</h3>
+      <div className="crd-top-engaged-head">
+        <h3 className="crd-top-engaged-title">Hot picks</h3>
+        <div className="crd-top-engaged-rule" aria-hidden="true" />
+      </div>
       <div className="crd-top-engaged-strip">
         {items.map((item, idx) => {
           const { supports, opposes } = aggregateCounts(item)

@@ -19,16 +19,12 @@ import { ArrowLeft } from 'lucide-react'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
-import {
-  computeCircleStats,
-  computeTopEngaged,
-} from '@/services/circleStats'
+import { computeCircleStats } from '@/services/circleStats'
 import CircleDetailHero from './CircleDetailHero'
 import CircleMembersCard from './CircleMembersCard'
 import CircleMostActiveCard from './CircleMostActiveCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
-import CircleTopEngagedStrip from './CircleTopEngagedStrip'
 import AllMembersPanel from './AllMembersPanel'
 import CircleJoinOverlay from './CircleJoinOverlay'
 import type { CircleData } from '@/types/circle'
@@ -80,10 +76,6 @@ export default function CircleDetailView({
     topTopicSlugs,
   )
   const stats = useMemo(() => computeCircleStats(feedItems), [feedItems])
-  const topEngaged = useMemo(
-    () => computeTopEngaged(feedItems, 4),
-    [feedItems],
-  )
   const [allMembersOpen, setAllMembersOpen] = useState(false)
 
   const effectiveColor = colorOverride ?? circle.color
@@ -149,7 +141,6 @@ export default function CircleDetailView({
         className={locked ? 'crd-feed-locked' : undefined}
         aria-hidden={locked}
       >
-        {!locked && <CircleTopEngagedStrip items={topEngaged} />}
         <CircleFeedSection
           addresses={circle.addresses}
           circleName={circle.name}

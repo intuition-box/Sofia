@@ -24,6 +24,7 @@ import {
 } from '@/config/intentions'
 import type { CircleItem } from '@/services/circleService'
 import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
+import { computeTopEngaged } from '@/services/circleStats'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import PredicatePicker from '@/components/PredicatePicker'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
@@ -37,6 +38,7 @@ import CircleTopicFilterDropdown, {
 } from './CircleTopicFilterDropdown'
 import CircleMemberFilterDropdown from './CircleMemberFilterDropdown'
 import CircleFeedSort from './CircleFeedSort'
+import CircleTopEngagedStrip from './CircleTopEngagedStrip'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedSectionProps {
@@ -126,6 +128,8 @@ export default function CircleFeedSection({
     [predicatePicker, cart],
   )
 
+  const topEngaged = useMemo(() => computeTopEngaged(items, 4), [items])
+
   const filtered = useMemo(() => {
     const base = items
       .filter((item) => {
@@ -174,6 +178,8 @@ export default function CircleFeedSection({
         />
         <CircleFeedSort active={sort} onChange={setSort} />
       </div>
+
+      <CircleTopEngagedStrip items={topEngaged} />
 
       {loading ? (
         <EmptyFeedState
