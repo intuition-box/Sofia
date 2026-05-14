@@ -12,7 +12,7 @@ export interface PageColorConfig {
 export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/feed': {
     color: '#ffc6b0',
-    title: 'Home',
+    title: 'Explore',
     subtitle:
       'Discover URLs certified by the whole community and add your own signals.',
     glow: 'rgba(255,198,176,0.4)',

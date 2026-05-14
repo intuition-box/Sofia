@@ -125,7 +125,7 @@ export function NavSidebar({
     public: boolean
   }[] = [
     { to: '/circles', icon: Users, label: 'Circles', public: false },
-    { to: '/feed', icon: Home, label: 'Home', public: true },
+    { to: '/feed', icon: Globe, label: 'Explore', public: true },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
   ]
