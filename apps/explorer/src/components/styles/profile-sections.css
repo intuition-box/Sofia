@@ -44,6 +44,76 @@
   gap: 14px;
 }
 
+/* ── My Impact in Circles — top profile stats row ────────────────── */
+.pp-impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 18px 24px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  align-items: stretch;
+}
+.pp-impact-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  position: relative;
+  padding: 0 12px;
+}
+.pp-impact-stat:not(:first-child) {
+  border-left: 1px solid var(--ds-border-soft);
+}
+.pp-impact-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.015em;
+}
+.pp-impact-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.pp-impact-stat--coming .pp-impact-num {
+  color: var(--ds-muted);
+}
+.pp-impact-soon {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+  border: 1px solid var(--ds-border);
+  padding: 2px 6px;
+  border-radius: 999px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+@media (max-width: 720px) {
+  .pp-impact-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .pp-impact-stat:not(:first-child) {
+    border-left: none;
+  }
+  .pp-impact-stat:nth-child(odd) {
+    padding-left: 0;
+  }
+}
+
 /* ── Public profile stats ── */
 .pub-stats-grid {
   display: grid;
