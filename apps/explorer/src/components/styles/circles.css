@@ -1824,28 +1824,6 @@
     0 14px 32px -10px
       color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
 }
-/* Big editorial-style rank — Fraunces serif numeral hovering above
-   the thumbnail in the circle's accent color. Drives the "top chart"
-   feel without consuming horizontal space (overlay positioning). */
-.crd-te-rank {
-  position: absolute;
-  top: 10px;
-  left: 18px;
-  font-family: 'Fraunces', serif;
-  font-size: 44px;
-  font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  color: var(--circle-color, var(--ds-accent));
-  text-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.45),
-    0 0 1px rgba(0, 0, 0, 0.6);
-  z-index: 3;
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
-  pointer-events: none;
-}
 .crd-te-thumb {
   width: 100%;
   aspect-ratio: 16 / 9;
