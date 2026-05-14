@@ -67,15 +67,6 @@ export default function TrustCircleCard({
       </p>
 
       <CircleCardStats addresses={addresses} />
-
-      <div className="cr-hover-actions">
-        <span className="cr-btn-sm" onClick={(e) => e.stopPropagation()}>
-          Invite
-        </span>
-        <span className="cr-btn-sm danger" onClick={(e) => e.stopPropagation()}>
-          Leave
-        </span>
-      </div>
     </button>
   )
 }

@@ -142,8 +142,8 @@
    keep the card height aligned with TrustCircleCard. */
 .cr-group-desc {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--ds-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -382,9 +382,9 @@
 }
 .cr-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ds-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   margin-top: 2px;
 }
 .cr-role {
@@ -442,7 +442,7 @@
 .cr-card-stat-num {
   font-family: 'Fraunces', serif;
   font-weight: 800;
-  font-size: 24px;
+  font-size: 28px;
   color: var(--ds-ink);
   line-height: 1;
   font-variation-settings:
@@ -455,7 +455,7 @@
 }
 .cr-card-stat-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
