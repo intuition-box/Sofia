@@ -47,8 +47,18 @@ export function useCircleTopicCounts(
     refetchOnWindowFocus: false,
   })
 
+  // PersistQueryClient JSON-serializes the cache, so a Map rehydrates as
+  // a plain object and loses `.get`. Normalize back to Map on every read
+  // so consumers can keep relying on the Map interface.
+  const counts: CircleTopicCounts =
+    data instanceof Map
+      ? data
+      : data && typeof data === 'object'
+        ? new Map(Object.entries(data as Record<string, number>))
+        : EMPTY
+
   return {
-    counts: data ?? EMPTY,
+    counts,
     isLoading: enabled && isLoading,
     error: error
       ? error instanceof Error
