@@ -9,6 +9,7 @@
  */
 import type { ReactNode } from 'react'
 import { Zap } from 'lucide-react'
+import type { CircleStats } from '@/services/circleStats'
 
 interface CircleDetailHeroProps {
   name: string
@@ -25,6 +26,15 @@ interface CircleDetailHeroProps {
    *  actions-budget panel. Used today by non-member groups to surface
    *  the Join CTA without taking a row of its own below the hero. */
   cta?: ReactNode
+  /** Aggregate metrics rendered above the Actions Budget block — posts,
+   *  votes, and 7-day active members. Omit for locked / non-member
+   *  views so the page doesn't leak cumulative volume. */
+  stats?: CircleStats
+}
+
+function formatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
+  return String(n)
 }
 
 export default function CircleDetailHero({
@@ -37,6 +47,7 @@ export default function CircleDetailHero({
   onColorChange,
   colorOptions,
   cta,
+  stats,
 }: CircleDetailHeroProps) {
   const total = sponsorClaimsLeft + 2000
   const pct = Math.min(100, Math.round((sponsorClaimsLeft / total) * 100))
@@ -109,6 +120,33 @@ export default function CircleDetailHero({
       {cta && <div className="crd-hero-cta">{cta}</div>}
 
       <div className="crd-hero-right">
+        {stats && (
+          <div
+            className="crd-hero-stats"
+            role="group"
+            aria-label="Circle activity"
+          >
+            <div className="crd-hero-stat">
+              <span className="crd-hero-stat__num">
+                {formatCount(stats.postCount)}
+              </span>
+              <span className="crd-hero-stat__label">posts</span>
+            </div>
+            <div className="crd-hero-stat">
+              <span className="crd-hero-stat__num">
+                {formatCount(stats.voteCount)}
+              </span>
+              <span className="crd-hero-stat__label">votes</span>
+            </div>
+            <div className="crd-hero-stat">
+              <span className="crd-hero-stat__num">
+                {stats.activeMemberCount}
+                <span className="crd-hero-stat__pulse" aria-hidden="true" />
+              </span>
+              <span className="crd-hero-stat__label">live</span>
+            </div>
+          </div>
+        )}
         <div className="crd-hero-actions">
           <div className="cr-section-head">Actions budget</div>
           <div className="crd-actions-big">
