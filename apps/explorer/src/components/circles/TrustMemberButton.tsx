@@ -15,8 +15,18 @@ interface TrustMemberButtonProps {
 }
 
 export default function TrustMemberButton({ member }: TrustMemberButtonProps) {
-  const { trust, inCart, alreadyTrusted, disabledReason, disabledHint } =
-    useTrustMember(member)
+  const {
+    trust,
+    inCart,
+    alreadyTrusted,
+    isSelf,
+    disabledReason,
+    disabledHint,
+  } = useTrustMember(member)
+
+  // The row is one of the viewer's own linked wallets — trusting
+  // yourself doesn't make sense. Hide the button entirely.
+  if (isSelf) return null
 
   const handleClick = (e: MouseEvent) => {
     e.preventDefault()

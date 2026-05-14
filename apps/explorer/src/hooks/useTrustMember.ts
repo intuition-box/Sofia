@@ -34,6 +34,10 @@ export interface UseTrustMemberResult {
    *  (their wallet appears in `useTrustCircle`). The button switches to
    *  a solid "Trusted" state and the click is a no-op. */
   alreadyTrusted: boolean
+  /** True when the member IS one of the viewer's own linked wallets —
+   *  trusting yourself doesn't make sense, so callers should hide the
+   *  button entirely in that case. */
+  isSelf: boolean
   /** Reason the trust button must be disabled, if any. */
   disabledReason: TrustBlockedReason | null
   /** Pre-mapped UX string for `disabledReason`. */
@@ -80,6 +84,12 @@ export function useTrustMember(
     )
   }, [trustedAccounts, member])
 
+  const isSelf = useMemo(() => {
+    if (!member?.walletAddress) return false
+    const target = member.walletAddress.toLowerCase()
+    return userWallets.some((w) => w.toLowerCase() === target)
+  }, [userWallets, member])
+
   const disabledReason = useMemo<TrustBlockedReason | null>(() => {
     if (!authenticated) return 'no-wallet'
     if (accountAtomLoading) return 'loading'
@@ -117,6 +127,7 @@ export function useTrustMember(
     trust,
     inCart,
     alreadyTrusted,
+    isSelf,
     disabledReason,
     disabledHint: disabledReason ? REASON_HINT[disabledReason] : null,
   }
