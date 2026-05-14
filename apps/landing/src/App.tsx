@@ -245,7 +245,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         }}
       >
         <a
-          href="https://explorer.sofia.intuition.box"
+          href="https://explore.sofia.intuition.box"
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-primary"
@@ -370,14 +370,14 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
     <ValueCard
       tag="Angle 03"
       title="Collective intelligence"
-      desc="What thousands of people watch, read, and certify becomes a shared signal. A living map of what deserves attention, built together."
+      desc="What thousands of people watch, read, and Mark becomes a shared signal. A living map of what deserves attention, built together."
     />
   ),
   9: () => (
     <ValueCard
       tag="Angle 04"
       title="Social leverage"
-      desc="Your community's signals — follows, certifies, trust votes — give weight to what you publish. The social side isn't decoration, it's the multiplier."
+      desc="Your community's signals — follows, Marks, trust votes — give weight to what you publish. The social side isn't decoration, it's the multiplier."
     />
   ),
   /* Zone 11 — S.04 left tall. Plate A · polar radar (Topics × Intentions).
@@ -454,7 +454,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
       title="Explorer"
       desc="A home for everything you've kept. Browse it by topic, by intention, by mood. See what people you trust are reading right now, and find the voices worth following on subjects you actually care about — without scrolling through everyone else's noise."
       cta={{
-        href: 'https://explorer.sofia.intuition.box',
+        href: 'https://explore.sofia.intuition.box',
         label: 'Open the Explorer',
       }}
     />
@@ -930,7 +930,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         {[
           {
             handle: 'anniepro',
-            role: 'Early certifier',
+            role: 'Early marker',
             quote:
               'Sofia lets you own and train the AI that represents you. Capture what you trust, store it transparently, use it to power smarter decisions and identity online.',
           },
@@ -956,7 +956,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
             handle: 'omni6nt',
             role: 'Web3 explorer',
             quote:
-              'A web extension that lets you certify websites based on what you use them for, stored on Intuition. A way to promote safe exploring on the web.',
+              'A web extension that lets you Mark websites based on what you use them for, stored on Intuition. A way to promote safe exploring on the web.',
           },
         ].map((v) => (
           <article
@@ -1060,7 +1060,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
     <ValueCard
       tag="Value 01"
       title="Digital Sovereignty"
-      desc="The user writes and certifies their own digital history on-chain. Online activity becomes a strategic asset — not a passive trace harvested by someone else."
+      desc="The user writes and Marks their own digital history on-chain. Online activity becomes a strategic asset — not a passive trace harvested by someone else."
       tripleId="0xf1b04a678cf6b6bb9150357e6d1a96a83ec45016d542f4201564deed37dbc363"
     />
   ),
@@ -1076,7 +1076,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
     <ValueCard
       tag="Value 03"
       title="Contribution-Based Power"
-      desc="Influence is earned, not bought. Decentralised governance routes weight to the people who build, certify, and show up — not the people who paid the most to get in."
+      desc="Influence is earned, not bought. Decentralised governance routes weight to the people who build, Mark, and show up — not the people who paid the most to get in."
       tripleId="0x9c113944ab2d277c651f3816a02f45d25157566a52176a88ac3f50169827ac97"
     />
   ),
@@ -1136,7 +1136,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
       },
       {
         q: 'How does Sofia work?',
-        a: 'A browser extension tracks your activity locally on your device. You decide what to keep and certify it as verified proof on Intuition — everything stays local until you choose to publish.',
+        a: 'A browser extension tracks your activity locally on your device. You decide what to keep and Mark it as verified proof on Intuition — everything stays local until you choose to publish.',
       },
       {
         q: 'Is my data safe?',
@@ -1166,7 +1166,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           <>
             Connect to the{' '}
             <a
-              href="https://explorer.sofia.intuition.box"
+              href="https://explore.sofia.intuition.box"
               target="_blank"
               rel="noreferrer noopener"
               style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -1327,7 +1327,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           }}
         >
           <a
-            href="https://explorer.sofia.intuition.box"
+            href="https://explore.sofia.intuition.box"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"
