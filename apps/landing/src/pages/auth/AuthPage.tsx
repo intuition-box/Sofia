@@ -196,11 +196,7 @@ export function AuthPage() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img
-          src="/img/sofiaLogo.png"
-          alt="Sofia"
-          className={`${styles.logo} logo-invert`}
-        />
+        <img src="/img/logoWhite.svg" alt="Sofia" className={styles.logo} />
         <p className={styles.subtitle}>Secure Wallet Connection</p>
 
         {status === 'loading' && (
