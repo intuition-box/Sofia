@@ -19,10 +19,16 @@ import { ArrowLeft } from 'lucide-react'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
+import {
+  computeCircleStats,
+  computeTopEngaged,
+} from '@/services/circleStats'
 import CircleDetailHero from './CircleDetailHero'
 import CircleMembersCard from './CircleMembersCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
+import CircleStatsStrip from './CircleStatsStrip'
+import CircleTopEngagedStrip from './CircleTopEngagedStrip'
 import AllMembersPanel from './AllMembersPanel'
 import CircleJoinOverlay from './CircleJoinOverlay'
 import type { CircleData } from '@/types/circle'
@@ -73,6 +79,11 @@ export default function CircleDetailView({
     circle.addresses,
     topTopicSlugs,
   )
+  const stats = useMemo(() => computeCircleStats(feedItems), [feedItems])
+  const topEngaged = useMemo(
+    () => computeTopEngaged(feedItems, 4),
+    [feedItems],
+  )
   const [allMembersOpen, setAllMembersOpen] = useState(false)
 
   const effectiveColor = colorOverride ?? circle.color
@@ -112,6 +123,12 @@ export default function CircleDetailView({
         }
       />
 
+      {/* Stats strip — aggregate signals/endorsements/active count.
+          Sits between the hero and the members/topics row so the page
+          reads as a live dashboard for the circle. Locked groups hide
+          it so non-members don't see the cumulative volume. */}
+      {!locked && <CircleStatsStrip stats={stats} />}
+
       {/* Members card + Top Topics stay fully accessible — even for
           non-members. They surface enough of the circle's identity
           (who's in, which topics are hot) to inform the Join decision
@@ -136,6 +153,7 @@ export default function CircleDetailView({
         className={locked ? 'crd-feed-locked' : undefined}
         aria-hidden={locked}
       >
+        {!locked && <CircleTopEngagedStrip items={topEngaged} />}
         <CircleFeedSection
           addresses={circle.addresses}
           circleName={circle.name}

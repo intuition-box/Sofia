@@ -37,3 +37,26 @@ export function sortFeed(
   }
   return [...items].sort((a, b) => engagementScore(b) - engagementScore(a))
 }
+
+/** Bucket a raw support count into the 1..5 star scale used by feed
+ *  cards, the top-engaged strip, and any other star renderer that
+ *  wants to read off the same thresholds. */
+export function computeStars(supports: number): number {
+  if (supports >= 20) return 5
+  if (supports >= 14) return 4
+  if (supports >= 9) return 3
+  if (supports >= 5) return 2
+  return 1
+}
+
+/** Tier color for slot `n` of a star bar at level `stars`.
+ *  gold for 1..3, orange for 4, red for 5; muted for unreached slots. */
+export function starTier(
+  slot: number,
+  stars: number,
+): 'gold' | 'orange' | 'red' | 'muted' {
+  if (slot > stars) return 'muted'
+  if (slot <= 3) return 'gold'
+  if (slot === 4) return 'orange'
+  return 'red'
+}

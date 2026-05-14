@@ -15,6 +15,7 @@ import type { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
+import { computeStars, starTier } from '@/services/circleFeedSort'
 import {
   displayLabelToIntentionType,
   INTENTION_CONFIG,
@@ -48,29 +49,12 @@ const VERB_CLASS_BY_LABEL: Record<string, string> = Object.fromEntries(
   Object.values(INTENTION_CONFIG).map((v) => [v.label, v.cssClass]),
 )
 
-/** Proto `computeStars(supports)` — buckets 1..5. */
-function computeStars(supports: number): number {
-  if (supports >= 20) return 5
-  if (supports >= 14) return 4
-  if (supports >= 9) return 3
-  if (supports >= 5) return 2
-  return 1
-}
 function starLabel(stars: number): string {
   if (stars >= 5) return 'Highly recommended'
   if (stars >= 4) return 'Recommended'
   if (stars >= 3) return 'Moderate'
   if (stars >= 2) return 'Low engagement'
   return 'New'
-}
-/** Tier color per slot — gold for 1..3, orange for 4, red for 5.
- *  Slots above `stars` render muted so the bar still reads as a fixed
- *  5-step scale. */
-function starTier(slot: number, stars: number): 'gold' | 'orange' | 'red' | 'muted' {
-  if (slot > stars) return 'muted'
-  if (slot <= 3) return 'gold'
-  if (slot === 4) return 'orange'
-  return 'red'
 }
 
 export default function CircleFeedCard({
