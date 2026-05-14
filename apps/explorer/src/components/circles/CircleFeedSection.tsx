@@ -25,21 +25,17 @@ import {
 import type { CircleItem } from '@/services/circleService'
 import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import PredicatePicker from '@/components/PredicatePicker'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import CircleFeedCard from './CircleFeedCard'
-import CircleVerbFilter, { type VerbFilterId } from './CircleVerbFilter'
-import CircleTopicFilter, {
+import CircleVerbFilterDropdown, {
+  type VerbFilterId,
+} from './CircleVerbFilterDropdown'
+import CircleTopicFilterDropdown, {
   type TopicFilterId,
-} from './CircleTopicFilter'
+} from './CircleTopicFilterDropdown'
+import CircleMemberFilterDropdown from './CircleMemberFilterDropdown'
 import CircleFeedSort from './CircleFeedSort'
 import '@/components/styles/feed-card.css'
 
@@ -169,34 +165,14 @@ export default function CircleFeedSection({
       <h2 className="crd-feed-title">Certified by {circleName}</h2>
 
       <div className="crd-feed-filters">
-        <CircleVerbFilter active={verb} onChange={setVerb} />
-        <div className="crd-feed-filters-divider" aria-hidden="true" />
-        <CircleTopicFilter active={topic} onChange={setTopic} />
-        <div className="crd-feed-filters-divider" aria-hidden="true" />
+        <CircleVerbFilterDropdown active={verb} onChange={setVerb} />
+        <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
+        <CircleMemberFilterDropdown
+          active={memberFilter}
+          onChange={setMemberFilter}
+          members={members}
+        />
         <CircleFeedSort active={sort} onChange={setSort} />
-        <div className="crd-feed-filters-divider" aria-hidden="true" />
-        <div className="crd-user-filter">
-          <label className="crd-user-filter-label" htmlFor="crd-user-filter">
-            Member
-          </label>
-          <Select value={memberFilter} onValueChange={setMemberFilter}>
-            <SelectTrigger
-              id="crd-user-filter"
-              className="crd-user-filter-select"
-              aria-label="Filter by member"
-            >
-              <SelectValue placeholder="All members" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All members</SelectItem>
-              {members.map((m) => (
-                <SelectItem key={m.termId} value={m.walletAddress ?? m.termId}>
-                  {m.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {loading ? (
