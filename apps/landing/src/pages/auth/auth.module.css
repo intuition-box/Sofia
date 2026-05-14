@@ -1,195 +1,292 @@
+/**
+ * Authentication page — Chrome extension wallet handshake.
+ *
+ * Editorial layout: serif headline, mono affordances (address, status),
+ * a single button pattern (ink → peach hover) shared by every CTA.
+ */
+
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background: var(--color-bg);
+  min-height: calc(100vh - var(--nav-h));
+  padding: 4rem 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .card {
   background: var(--color-bg-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 3rem;
+  padding: 3rem 2.75rem;
   text-align: center;
-  min-width: 320px;
-  max-width: 420px;
+  width: 100%;
+  max-width: 500px;
   box-shadow: var(--shadow-lg);
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 1rem;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1.25rem;
   object-fit: contain;
 }
 
 .subtitle {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  margin-bottom: 2rem;
+  color: var(--color-text-muted) !important;
   font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 0 0 2rem;
+}
+
+.text {
+  color: var(--color-text) !important;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+}
+
+.subtext {
+  color: var(--color-text-muted) !important;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-border);
-  border-top: 3px solid var(--color-text);
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
+  animation: spin 0.9s linear infinite;
+  margin: 0.5rem auto 1.25rem;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
 
+.successHeading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  color: var(--color-text) !important;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
 .checkmark {
-  font-size: 3rem;
-  color: var(--color-success);
-  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .errorIcon {
-  font-size: 3rem;
+  font-size: 2.25rem;
   color: var(--color-error);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.text {
-  color: var(--color-text);
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem;
-  font-family: var(--font-mono);
-  font-weight: 600;
-}
-
-.subtext {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  margin: 0;
-  font-family: var(--font-mono);
+.walletRow {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 1rem 0 1.25rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .walletAddress {
-  background: var(--color-bg);
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: var(--color-text);
-  margin: 1rem 0;
-  word-break: break-all;
-  border: 1px solid var(--color-border);
+  color: var(--color-text) !important;
 }
 
-.btn {
-  margin-top: 1.5rem;
-  padding: 0.875rem 2rem;
+.walletRow .disconnectBtn {
+  flex: 0 0 auto;
+  margin: 0;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted) !important;
+}
+
+.walletRow .disconnectBtn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text) !important;
+}
+
+/* ── Buttons — single pattern, ink default, peach on hover ─────── */
+
+.btn,
+.claimBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.75rem;
   background: var(--color-btn-primary);
-  color: var(--color-on-primary);
-  border: none;
-  border-radius: var(--radius-xl);
+  color: var(--color-bg) !important;
+  border: 1px solid var(--color-btn-primary);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.25s;
-  font-family: var(--font-mono);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.btn:hover {
-  background: var(--color-btn-primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-btn-hover);
-}
-
-.claimBtn {
-  margin-top: 1.5rem;
-  padding: 12px 24px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: linear-gradient(
-    135deg,
-    #d790c7 0%,
-    #d37cbf 20%,
-    #ffc6b0 50%,
-    #ffa7b1 80%,
-    #cea2fd 100%
-  );
-  background-size: 200% 200%;
-  animation: orb-gradient 20s ease infinite;
-  color: #000;
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-@keyframes orb-gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
+.btn:hover,
 .claimBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.4);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+  margin-top: 1.25rem;
+}
+
+.buttonGroup > * {
+  margin-top: 0 !important;
+  margin-left: 0 !important;
 }
 
 .closeBtn,
 .disconnectBtn {
   margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
+  padding: 0.45rem 1.25rem;
   background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  border-radius: var(--radius-xl);
+  color: var(--color-text-muted) !important;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font-mono);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
 }
 
 .closeBtn:hover,
 .disconnectBtn:hover {
-  border-color: var(--color-border-hover);
-  color: var(--color-text);
+  color: var(--color-text) !important;
+  border-color: var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+/* ── Secured by Privy ──────────────────────────────────────────── */
+
+.privyMention {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 2rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  letter-spacing: 0.04em;
+}
+
+.privyMention a {
+  color: var(--color-text-muted) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.privyMention a:hover {
+  color: var(--color-text) !important;
 }
 
 .instructions {
-  margin-top: 1.5rem;
-  padding: 1rem;
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
   background: var(--color-bg);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
 }
 
 .instructionsText {
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  color: var(--color-text-muted) !important;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.55;
   margin: 0;
-  font-family: var(--font-mono);
 }
 
-@media screen and (max-width: 480px) {
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 2.5rem 1rem;
+  }
+
   .card {
     padding: 2rem 1.5rem;
-    min-width: 280px;
+  }
+
+  .text {
+    font-size: 1.4rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .buttonGroup > * {
+    width: 100%;
+    margin-left: 0 !important;
   }
 }

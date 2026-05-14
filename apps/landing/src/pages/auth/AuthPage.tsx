@@ -206,7 +206,8 @@ export function AuthPage() {
         {status === 'loading' && (
           <>
             <div className={styles.spinner} />
-            <p className={styles.text}>Connecting...</p>
+            <p className={styles.text}>Connecting…</p>
+            <p className={styles.subtext}>Opening your wallet provider.</p>
           </>
         )}
 
@@ -230,19 +231,24 @@ export function AuthPage() {
               The extension needs a signed message to verify ownership of your
               wallet. {siweError}
             </p>
-            <button className={styles.btn} onClick={retrySiwe}>
-              Retry signature
-            </button>
-            <button className={styles.disconnectBtn} onClick={handleDisconnect}>
-              Disconnect
-            </button>
+            <div className={styles.buttonGroup}>
+              <button className={styles.btn} onClick={retrySiwe}>
+                Retry signature
+              </button>
+              <button
+                className={styles.disconnectBtn}
+                onClick={handleDisconnect}
+              >
+                Disconnect
+              </button>
+            </div>
           </>
         )}
 
         {status === 'success' && address && !siweError && !hasSent && (
           <>
             <div className={styles.spinner} />
-            <p className={styles.text}>Waiting for signature...</p>
+            <p className={styles.text}>Waiting for signature…</p>
             <p className={styles.subtext}>
               Sign the message in your wallet to complete the connection.
             </p>
@@ -251,10 +257,19 @@ export function AuthPage() {
 
         {status === 'success' && address && hasSent && (
           <>
-            <div className={styles.checkmark}>✓</div>
-            <p className={styles.text}>Wallet Connected!</p>
-            <div className={styles.walletAddress}>
-              {address.slice(0, 6)}...{address.slice(-4)}
+            <p className={styles.successHeading}>
+              <span className={styles.checkmark}>✓</span> Wallet Connected
+            </p>
+            <div className={styles.walletRow}>
+              <div className={styles.walletAddress}>
+                {address.slice(0, 6)}…{address.slice(-4)}
+              </div>
+              <button
+                className={styles.disconnectBtn}
+                onClick={handleDisconnect}
+              >
+                Disconnect
+              </button>
             </div>
 
             {claimStatus === 'idle' && (
@@ -281,10 +296,6 @@ export function AuthPage() {
                 </p>
               </div>
             )}
-
-            <button className={styles.disconnectBtn} onClick={handleDisconnect}>
-              Disconnect
-            </button>
           </>
         )}
 
@@ -298,6 +309,13 @@ export function AuthPage() {
             </button>
           </>
         )}
+
+        <p className={styles.privyMention}>
+          Secured by{' '}
+          <a href="https://privy.io" target="_blank" rel="noreferrer">
+            Privy
+          </a>
+        </p>
       </div>
     </div>
   )
