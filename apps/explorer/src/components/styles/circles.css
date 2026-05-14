@@ -1120,6 +1120,16 @@
   flex-direction: column;
   gap: 14px;
 }
+/* Zero out the cr-section-head margins inherited from the Discover
+   groups rule (line 148) — the card already provides its own padding
+   + gap so the inherited 32/12 push the label down inside the card. */
+.crd-topics-section > .cr-section-head {
+  margin: 0;
+}
+/* Same scoping for the Actions budget label inside the hero. */
+.crd-hero-actions > .cr-section-head {
+  margin: 0;
+}
 /* Distribute rows vertically when the stretched card has extra height
    so the bottom doesn't feel like a void below a top-pinned label.
    space-between pushes rows to fill the full height — first stays at
