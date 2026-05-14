@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import type { GroupEntry } from '@/services/groupsService'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import MemberAvatar from './MemberAvatar'
+import CircleCardStats from './CircleCardStats'
 
 interface GroupCardProps {
   group: GroupEntry
@@ -46,6 +47,13 @@ export default function GroupCard({ group }: GroupCardProps) {
   }, [group.memberships])
 
   const extra = Math.max(0, group.memberCount - avatarMembers.length)
+  const addresses = useMemo(
+    () =>
+      group.memberships
+        .map((m) => m.member.walletAddress)
+        .filter((w): w is string => !!w),
+    [group.memberships],
+  )
 
   return (
     <button
@@ -80,6 +88,11 @@ export default function GroupCard({ group }: GroupCardProps) {
       {group.description && (
         <p className="cr-group-desc">{group.description}</p>
       )}
+
+      <CircleCardStats
+        memberCount={group.memberCount}
+        addresses={addresses}
+      />
 
       {avatarMembers.length > 0 && (
         <div className="cr-avatars">

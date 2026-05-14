@@ -134,7 +134,7 @@
 
 .cr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 24px;
 }
 
@@ -319,7 +319,7 @@
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
   border-radius: 14px;
-  padding: 18px 20px 16px;
+  padding: 22px 22px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -405,6 +405,58 @@
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
   border: 1px solid var(--ds-border);
+}
+
+/* Bento stats row inside each /circles card — three mini cells sit
+   between the description and the avatar row, separated by a hair-line
+   divider so the trio reads as one cohesive block, not three buttons.
+   Numbers in Fraunces serif (echoes the detail-page hero), labels in
+   mono uppercase for the dashboard rhythm. */
+.cr-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border-soft);
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+  margin: 4px 0;
+}
+.cr-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  position: relative;
+}
+.cr-card-stat:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  background: var(--ds-border-soft);
+}
+.cr-card-stat-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+  letter-spacing: -0.01em;
+}
+.cr-card-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
 }
 
 .cr-avatars {

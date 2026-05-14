@@ -3,9 +3,11 @@
  * circle. Clicks route to `/circles/trust` for the detail view. Hover
  * reveals Invite / Leave stubs (non-functional for now).
  */
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import MemberAvatar from './MemberAvatar'
+import CircleCardStats from './CircleCardStats'
 
 interface TrustCircleCardProps {
   members: TrustCircleAccount[]
@@ -21,6 +23,13 @@ export default function TrustCircleCard({
   const navigate = useNavigate()
   const visible = members.slice(0, MAX_AVATARS)
   const extra = Math.max(0, members.length - MAX_AVATARS)
+  const addresses = useMemo(
+    () =>
+      members
+        .map((m) => m.walletAddress)
+        .filter((w): w is string => !!w),
+    [members],
+  )
 
   return (
     <button
@@ -50,6 +59,8 @@ export default function TrustCircleCard({
         This is your personal circle — add people you trust and their signals
         will shape your feed.
       </p>
+
+      <CircleCardStats memberCount={members.length} addresses={addresses} />
 
       <div className="cr-avatars">
         {visible.map((a) => (
