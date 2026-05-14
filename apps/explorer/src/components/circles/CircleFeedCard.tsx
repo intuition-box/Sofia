@@ -135,7 +135,7 @@ export default function CircleFeedCard({
           ))}
         </div>
         <div className="fc-star-tip">
-          <strong>{starLabel(stars)}</strong> · {totalVotes} endorsed
+          <strong>{starLabel(stars)}</strong> · {totalVotes} votes
         </div>
       </div>
 

@@ -27,7 +27,6 @@ import CircleDetailHero from './CircleDetailHero'
 import CircleMembersCard from './CircleMembersCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
-import CircleStatsStrip from './CircleStatsStrip'
 import CircleTopEngagedStrip from './CircleTopEngagedStrip'
 import AllMembersPanel from './AllMembersPanel'
 import CircleJoinOverlay from './CircleJoinOverlay'
@@ -106,6 +105,7 @@ export default function CircleDetailView({
         memberCount={Math.max(1, circle.members.length)}
         onColorChange={onColorChange}
         colorOptions={colorOptions}
+        stats={!locked ? stats : undefined}
         // Non-member CTA lives inside the hero's middle slot so the
         // page doesn't grow a separate banner row above the activity
         // feed. The hero is the only thing the user reads first; the
@@ -122,12 +122,6 @@ export default function CircleDetailView({
           ) : undefined
         }
       />
-
-      {/* Stats strip — aggregate signals/endorsements/active count.
-          Sits between the hero and the members/topics row so the page
-          reads as a live dashboard for the circle. Locked groups hide
-          it so non-members don't see the cumulative volume. */}
-      {!locked && <CircleStatsStrip stats={stats} />}
 
       {/* Members card + Top Topics stay fully accessible — even for
           non-members. They surface enough of the circle's identity

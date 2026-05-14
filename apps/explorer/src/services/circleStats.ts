@@ -10,18 +10,18 @@ const ACTIVE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 
 export interface CircleStats {
   postCount: number
-  endorsementCount: number
+  voteCount: number
   activeMemberCount: number
 }
 
 export function computeCircleStats(items: CircleItem[]): CircleStats {
   const cutoff = Date.now() - ACTIVE_WINDOW_MS
   const activeCertifiers = new Set<string>()
-  let endorsementCount = 0
+  let voteCount = 0
 
   for (const item of items) {
     for (const v of Object.values(item.intentionVaults)) {
-      endorsementCount += v.supportCount + v.opposeCount
+      voteCount += v.supportCount + v.opposeCount
     }
     if (
       new Date(item.timestamp).getTime() >= cutoff &&
@@ -33,7 +33,7 @@ export function computeCircleStats(items: CircleItem[]): CircleStats {
 
   return {
     postCount: items.length,
-    endorsementCount,
+    voteCount,
     activeMemberCount: activeCertifiers.size,
   }
 }
