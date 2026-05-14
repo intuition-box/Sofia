@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useWalletConnection } from '../hooks/useWalletConnection'
+import { URLS } from '../lib/config/urls'
 import styles from './Navbar.module.css'
 
 const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'How it works', href: '#how' },
-  { label: 'Product', href: '#showcase' },
-  { label: 'Values', href: '#values' },
-  { label: 'Team', href: '#team' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'Manifesto', href: URLS.docs.manifesto },
+  { label: 'Docs', href: URLS.docs.intro },
+  { label: 'Explorer', href: URLS.external.board },
+  { label: 'Discord', href: URLS.external.discord },
 ]
 
 export function Navbar() {
@@ -39,7 +38,12 @@ export function Navbar() {
       <ul className={`${styles.menu} ${open ? styles.menuOpen : ''}`}>
         {NAV_LINKS.map((link) => (
           <li key={link.href}>
-            <a href={link.href} onClick={() => setOpen(false)}>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+            >
               {link.label}
             </a>
           </li>
