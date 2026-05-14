@@ -25,6 +25,7 @@ import {
 } from '@/services/circleStats'
 import CircleDetailHero from './CircleDetailHero'
 import CircleMembersCard from './CircleMembersCard'
+import CircleMostActiveCard from './CircleMostActiveCard'
 import CircleTopTopicsCard from './CircleTopTopicsCard'
 import CircleFeedSection from './CircleFeedSection'
 import CircleTopEngagedStrip from './CircleTopEngagedStrip'
@@ -123,15 +124,16 @@ export default function CircleDetailView({
         }
       />
 
-      {/* Members card + Top Topics stay fully accessible — even for
-          non-members. They surface enough of the circle's identity
-          (who's in, which topics are hot) to inform the Join decision
-          without giving away the activity feed. */}
+      {/* Members card + Most Active + Top Topics — 3-col info strip.
+          Members and Most Active share the available oxygen (1.1fr
+          each); Top Topics rétrécit (0.8fr). All three stay accessible
+          for non-members so the circle's identity reads at a glance. */}
       <div className="crd-info-row">
         <CircleMembersCard
           members={circle.members}
           onViewAll={() => setAllMembersOpen(true)}
         />
+        <CircleMostActiveCard items={feedItems} members={circle.members} />
         <CircleTopTopicsCard
           topicIds={topTopicSlugs}
           circleColor={effectiveColor}
