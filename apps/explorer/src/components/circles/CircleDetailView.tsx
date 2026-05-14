@@ -108,10 +108,11 @@ export default function CircleDetailView({
         stats={!locked ? stats : undefined}
         // Non-member CTA lives inside the hero's middle slot so the
         // page doesn't grow a separate banner row above the activity
-        // feed. The hero is the only thing the user reads first; the
-        // join action belongs there.
+        // feed. Hidden when the bottom Connect CTA is already on
+        // screen (non-auth case) so the visitor doesn't see two
+        // competing prompts.
         cta={
-          locked && onJoin ? (
+          locked && onJoin && !showConnectCta ? (
             <CircleJoinOverlay
               circleName={circle.name}
               inCart={joinInCart}
