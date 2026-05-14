@@ -1843,13 +1843,11 @@ function layoutClass(layout: SlideLayout) {
 function PlaceholderSlide({
   code,
   label,
-  meta,
   variant,
   zoneStart,
   layout,
   revealLayout,
   revealLabel,
-  revealMeta,
   revealVariant,
   wipeIndex = 0,
   revealWipeIndex = -1,
@@ -1863,14 +1861,11 @@ function PlaceholderSlide({
   const { subState, isActive } = useDeckSubState()
   const revealed = subState >= 1
   const activeLabel = revealed && revealLabel ? revealLabel : label
-  const activeMeta = revealed && revealMeta ? revealMeta : meta
   /* Applied to the placeholder (frame strips) so the meta/bottom
      strips flip ink with the active bg. The content zones use their
      own per-layer variant class on `.zones` so they stay stable. */
   const activeVariant = revealed && revealVariant ? revealVariant : variant
-  const baseLast = zoneStart + baseAreas.length - 1
   const revealStart = zoneStart + baseAreas.length
-  const revealLast = revealStart + revealAreas.length - 1
   return (
     <section
       className={`${styles.placeholder} ${styles[activeVariant]}`}
@@ -1939,7 +1934,7 @@ function PlaceholderSlide({
                 ['--zone-extra-delay' as never]: `${extraDelay}ms`,
               }
               if (anim === 'wipe' && wipeColor) {
-                zoneStyle['--zone-wipe-color' as never] = wipeColor
+                zoneStyle['--zone-wipe-color' as never] = wipeColor as never
               }
               return (
                 <div
@@ -1993,7 +1988,8 @@ function PlaceholderSlide({
                   ['--zone-extra-delay' as never]: `${extraDelay}ms`,
                 }
                 if (anim === 'wipe' && wipeColor) {
-                  revealZoneStyle['--zone-wipe-color' as never] = wipeColor
+                  revealZoneStyle['--zone-wipe-color' as never] =
+                    wipeColor as never
                 }
                 return (
                   <div

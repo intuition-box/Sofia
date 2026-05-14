@@ -77,7 +77,6 @@ export function PlateA({ ink = 'dark' }: PlateAProps) {
 
   const inkHex = ink === 'light' ? '#f5e9d8' : '#0a0a0a'
   const dim = ink === 'light' ? 'rgba(245,233,216,0.55)' : 'rgba(10,10,10,0.55)'
-  const line = ink === 'light' ? 'rgba(245,233,216,0.35)' : 'rgba(10,10,10,0.35)'
   const grid = ink === 'light' ? 'rgba(245,233,216,0.3)' : 'rgba(10,10,10,0.3)'
   const lattice =
     ink === 'light' ? 'rgba(245,233,216,0.22)' : 'rgba(10,10,10,0.22)'
@@ -351,24 +350,3 @@ function PillLabel({
   )
 }
 
-function Corner({
-  pos,
-  ink,
-}: {
-  pos: 'tl' | 'tr' | 'bl' | 'br'
-  ink: string
-}) {
-  const base = {
-    position: 'absolute' as const,
-    width: 14,
-    height: 14,
-    border: `1.5px solid ${ink}`,
-  }
-  const offsets: Record<typeof pos, React.CSSProperties> = {
-    tl: { top: -1, left: -1, borderRight: 0, borderBottom: 0 },
-    tr: { top: -1, right: -1, borderLeft: 0, borderBottom: 0 },
-    bl: { bottom: -1, left: -1, borderRight: 0, borderTop: 0 },
-    br: { bottom: -1, right: -1, borderLeft: 0, borderTop: 0 },
-  }
-  return <span style={{ ...base, ...offsets[pos] }} aria-hidden="true" />
-}
