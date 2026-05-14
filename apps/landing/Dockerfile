@@ -13,11 +13,11 @@ FROM oven/bun:1 AS build
 
 WORKDIR /repo
 
-# Vite inlines build-time env vars into the bundle. Coolify passes them
-# via --build-arg in "Build-time variables".
-ARG VITE_PRIVY_APP_ID=
-ARG VITE_DOCS_URL=
-
+# Vite inlines build-time env vars into the bundle. Coolify injects
+# build-args declared in "Build-time variables" automatically at the
+# top of this stage (visible in the build logs), so we don't redeclare
+# them here — a second `ARG X=` with empty default would override the
+# Coolify-injected value with an empty string.
 ENV VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID \
     VITE_DOCS_URL=$VITE_DOCS_URL
 
