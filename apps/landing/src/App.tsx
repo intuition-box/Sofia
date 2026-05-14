@@ -343,6 +343,36 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
      Both contexts render the animation; the active slide variant
      (peach on base, dark on reveal) flips the palette automatically. */
   3: (variant) => <CirclesSequence variant={variant} />,
+  /* Zone 4 — Sofia hero video. 31s loop showing chaos search →
+     curated Sofia results. Lives on the right-tall vector slot. */
+  4: (variant) => (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        borderRadius: 20,
+        background: variant === 'peach' ? 'rgba(255, 198, 176, 0.30)' : 'rgba(2, 0, 14, 0.30)',
+      }}
+    >
+      <video
+        src="/sofia-hero.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+        }}
+      />
+    </div>
+  ),
   /* Zone 5 — WHY SOFIA reveal banner. Section-head pattern lifted
      from `ValueProps.tsx`: eyebrow + Fraunces title with italic
      emphasis + lede paragraph. Sits on the dark slab so default
