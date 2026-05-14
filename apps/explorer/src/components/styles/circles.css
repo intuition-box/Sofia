@@ -2199,52 +2199,24 @@
   color: var(--ds-ink);
 }
 
-/* View more / Show less — uses the shared `.pf-btn` pill recipe so it
-   sits in the same family as the other neutral pills in the app. */
-.cc-view-more {
-  align-self: flex-start;
-  margin-top: 8px;
-  display: inline-flex;
+/* Theme picker — 2-col grid of cell-style toggles. Each cell has a
+   color dot on the left, the theme label center-left, and a check on
+   the right when active. Easier to scan than a wrap-flow pill row. */
+.cc-topics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.cc-topics-empty {
+  grid-column: 1 / -1;
+}
+.cc-topic-cell {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--ds-border);
-  border-radius: 999px;
-  background: var(--ds-card);
-  color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.cc-view-more:hover {
-  border-color: var(--ds-ink);
-  transform: translateY(-1px);
-}
-.cc-view-more-icon {
-  transition: transform 0.15s ease;
-  color: var(--ds-muted);
-}
-.cc-view-more:hover .cc-view-more-icon {
-  color: var(--ds-ink);
-}
-.cc-view-more-icon--up {
-  transform: rotate(180deg);
-}
-
-/* Theme picker — wrapping pill list, single selection. */
-.cc-topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.cc-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
@@ -2252,21 +2224,69 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
 }
-.cc-topic:hover {
+.cc-topic-cell:hover {
   border-color: var(--ds-ink-soft);
 }
-.cc-topic.is-active {
+.cc-topic-cell.is-active {
   border-color: var(--cc-topic-color);
-  background: color-mix(in srgb, var(--cc-topic-color) 16%, var(--ds-bg));
-  color: var(--ds-ink);
+  background: color-mix(in srgb, var(--cc-topic-color) 14%, var(--ds-bg));
+}
+.cc-topic-cell.is-active .cc-topic-check {
+  color: var(--cc-topic-color);
+}
+.cc-topic-label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cc-topic-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* Single toggle row that flips between "View N more themes" and
+   "Show less". Sits at the bottom of the grid, full-width, dashed
+   so it reads as a continuation of the picker rather than a CTA. */
+.cc-topics-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.cc-topics-toggle:hover {
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+.cc-topics-toggle-icon {
+  transition: transform 0.15s ease;
+}
+.cc-topics-toggle-icon--up {
+  transform: rotate(180deg);
 }
 
 /* Member input + chip list. */
@@ -2455,17 +2475,52 @@
   color: var(--ds-ink);
 }
 
-/* Footer actions — sit just below the form. */
+/* Sticky footer — pinned to the bottom of the scrolling drawer so the
+   primary action is always reachable, with a card-tinted background +
+   top border so it reads as a separate slab from the form. */
 .cc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  bottom: -8px;
+  margin: 4px -24px -8px;
+  padding: 14px 24px;
+  background: color-mix(in srgb, var(--ds-card) 96%, transparent);
+  border-top: 1px solid var(--ds-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2;
+}
+.cc-actions-summary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  min-height: 14px;
+  line-height: 1.4;
+}
+.cc-actions-summary-recap strong {
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
+.cc-actions-summary-error {
+  color: var(--distrusted, #e87c7c);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+.cc-actions-buttons {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  padding-top: 12px;
-  margin-top: 4px;
-  border-top: 1px solid var(--ds-border);
 }
 .cc-btn {
-  padding: 9px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-family: 'Geist', sans-serif;
   font-size: 13px;
@@ -2476,23 +2531,31 @@
 }
 .cc-btn-ghost {
   background: transparent;
-  border-color: var(--ds-border);
-  color: var(--ds-ink);
+  border-color: transparent;
+  color: var(--ds-muted);
+  padding: 10px 12px;
 }
 .cc-btn-ghost:hover {
-  border-color: var(--ds-ink);
+  color: var(--ds-ink);
 }
 .cc-btn-primary {
   background: var(--ds-ink);
   color: var(--ds-bg);
+  border-color: var(--ds-ink);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ds-ink) 30%, transparent);
 }
 .cc-btn-primary:hover:not(:disabled) {
   background: var(--ds-accent);
+  border-color: var(--ds-accent);
   color: var(--ds-on-accent, var(--ds-ink));
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ds-accent) 35%, transparent);
 }
 .cc-btn-primary:disabled {
-  opacity: 0.4;
+  background: var(--ds-bg-subtle, var(--ds-bg));
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
