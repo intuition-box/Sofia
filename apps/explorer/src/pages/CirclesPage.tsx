@@ -8,6 +8,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
@@ -40,6 +41,7 @@ export default function CirclesPage() {
 // ── List view ────────────────────────────────────────────────────────
 
 function CirclesListSection() {
+  const { authenticated } = usePrivy()
   const { addresses } = useLinkedWallets()
   const { accounts: trustMembers, loading: trustLoading } =
     useTrustCircle(addresses)
@@ -69,18 +71,24 @@ function CirclesListSection() {
     <div className="pf-view cr-page">
       <PageHero
         title="Circles"
-        description="Explore the circles whose signals shape your feed and dive into yours."
+        description={
+          authenticated
+            ? 'Explore the circles whose signals shape your feed and dive into yours.'
+            : 'Discover the circles shaping signal on Sofia — connect to join, create, or dive in.'
+        }
       />
 
       <CirclesFilters />
 
-      <div className="cr-grid">
-        <CreateCircleCard onClick={() => setCreateOpen(true)} />
-        <TrustCircleCard members={trustMembers} loading={trustLoading} />
-        {joinedGroups.map((g) => (
-          <GroupCard key={g.termId} group={g} />
-        ))}
-      </div>
+      {authenticated && (
+        <div className="cr-grid">
+          <CreateCircleCard onClick={() => setCreateOpen(true)} />
+          <TrustCircleCard members={trustMembers} loading={trustLoading} />
+          {joinedGroups.map((g) => (
+            <GroupCard key={g.termId} group={g} />
+          ))}
+        </div>
+      )}
 
       <DiscoverGroupsSection
         groups={discoverGroups}
