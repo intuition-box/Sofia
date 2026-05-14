@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './Instruments.module.css'
 
 /**
@@ -395,18 +395,76 @@ const ISO_PALETTE: Record<
   },
 }
 
-export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
-  const p = ISO_PALETTE[mode]
+export function IsoStack({
+  mode = 'dark',
+  plateFill,
+  plateFillTop,
+  plateStroke,
+  dotFill,
+  dotFills,
+}: {
+  mode?: DiagramMode
+  /** Override the side (non-top) plate fill. */
+  plateFill?: string
+  /** Override the top plate fill. Falls back to `plateFill` if only
+   *  one override is provided. */
+  plateFillTop?: string
+  /** Override the plate outline colour — replaces the per-layer
+   *  accent stroke with a single colour for a flat, mono look. */
+  plateStroke?: string
+  /** Override the colour of the scattered dots inside each plate.
+   *  Defaults to the layer accent colour. */
+  dotFill?: string
+  /** Optional palette to vary dot colours within a plate. When set,
+   *  each dot picks one of these colours pseudo-randomly (seeded by
+   *  its index) so the rhombuses get a salt-and-pepper read instead
+   *  of a monochrome one. Overrides `dotFill` when both are set. */
+  dotFills?: string[]
+} = {}) {
+  const base = ISO_PALETTE[mode]
+  const p = {
+    ...base,
+    plateFill: plateFill ?? base.plateFill,
+    plateFillTop: plateFillTop ?? plateFill ?? base.plateFillTop,
+  }
   const [t, setT] = useState(0)
+  /* Restart the reveal timer when the host slide enters the viewport.
+   * Plates are mounted off-screen via transform: translate3d on the
+   * parent slide; IntersectionObserver therefore can't see them.
+   * Instead we watch the closest `[data-deck-slide]` ancestor for the
+   * `data-active` attribute flip via MutationObserver — when the slide
+   * becomes active, t is reset to 0 and the rAF loop counts up so the
+   * 5 plates fade in after the diagonal wipe finishes (~700ms). */
+  const wrapperRef = useRef<SVGSVGElement>(null)
   useEffect(() => {
+    const wrapper = wrapperRef.current
+    const slide = wrapper?.closest('[data-deck-slide]') as HTMLElement | null
     let raf = 0
-    const start = performance.now()
-    const loop = () => {
-      setT((performance.now() - start) / 1000)
-      raf = requestAnimationFrame(loop)
+    let startedAt = 0
+    let active = slide?.dataset.active === 'true'
+    const tick = () => {
+      if (active) setT((performance.now() - startedAt) / 1000)
+      raf = requestAnimationFrame(tick)
     }
-    loop()
-    return () => cancelAnimationFrame(raf)
+    const begin = () => {
+      startedAt = performance.now()
+      setT(0)
+    }
+    if (active) begin()
+    raf = requestAnimationFrame(tick)
+    let mo: MutationObserver | null = null
+    if (slide) {
+      mo = new MutationObserver(() => {
+        const next = slide.dataset.active === 'true'
+        if (next && !active) begin()
+        active = next
+      })
+      mo.observe(slide, { attributes: true, attributeFilter: ['data-active'] })
+    }
+    return () => {
+      cancelAnimationFrame(raf)
+      mo?.disconnect()
+    }
   }, [])
 
   const iso = (x: number, y: number, z: number): [number, number] => [
@@ -417,67 +475,77 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
   /* Per-layer accent colors. In `light` mode (peach background) the
      pastel pinks/peaches collide with the surface, so we swap to darker
      ink-tinted variants that stay readable. */
-  const LAYER_COLORS: Record<DiagramMode, string[]> = {
-    dark: ['#A6AF6B', '#cea2fd', '#ffa7b1', '#ffc6b0', '#F59E0B', '#945941'],
-    light: ['#5d6234', '#4a3a8a', '#a83042', '#8a3818', '#7a4a04', '#3a1f12'],
-  }
-  const lc = LAYER_COLORS[mode]
+  /* Per-layer intention colours — sourced from packages/design-system
+   * theme tokens (--learning / --work / --inspiration / --fun /
+   * --trusted). Used as the rhombus fill (low-opacity tint) AND the
+   * outline / dot accent so the whole stack reads as an intention map. */
+  const lc = ['#5cc4d6', '#7bade0', '#a78bdb', '#e4b95a', '#6dd4a0']
+  /* Z-axis runs LOW (top of screen) → HIGH (bottom of screen) thanks to
+     the iso projection inverting Y. The stack now reads top-to-bottom:
+     BROWSING → EXTENSION → PUBLIC LEDGER → COLLECTIVE → TRUSTED. Dots
+     density increases as we go down (6 → 22) so the funnel widens
+     toward the trusted circle at the bottom. */
   const layers: Layer[] = [
     {
-      z: 250,
+      z: 0,
       tag: 'L.01',
-      name: 'EXTENSION',
-      sub: 'capture · echoes · bookmarks',
+      name: 'BROWSING ACTIVITY',
+      sub: 'pages · sessions · echoes',
       color: lc[0],
       dots: 6,
-      detail: 'chromium · local storage',
+      detail: 'your data · stays local',
     },
     {
-      z: 200,
+      z: 62.5,
       tag: 'L.02',
-      name: 'PHALA TEE',
-      sub: 'encrypt · attest · zero-trust',
+      name: 'EXTENSION',
+      sub: 'capture · summarize · sign',
       color: lc[1],
-      dots: 9,
-      detail: 'tee · sealed compute',
+      dots: 10,
+      detail: 'chromium · local-first agent',
     },
     {
-      z: 150,
+      z: 125,
       tag: 'L.03',
-      name: 'AGENT',
-      sub: 'intentions · topics · pulse',
+      name: 'PUBLIC LEDGER',
+      sub: 'signed · permanent · yours',
       color: lc[2],
-      dots: 13,
-      detail: 'mastra · gaianet · qwen2.5',
+      dots: 14,
+      detail: 'a record nobody can rewrite',
     },
     {
-      z: 100,
+      z: 187.5,
       tag: 'L.04',
-      name: 'CERTIFY',
-      sub: '[you] → [intention] → [page]',
+      name: 'COLLECTIVE INTELLIGENCE',
+      sub: 'resonance · ranking · trends',
       color: lc[3],
-      dots: 17,
-      detail: 'triples · signed · on-chain',
+      dots: 18,
+      detail: 'aggregated signal · network',
     },
     {
-      z: 50,
+      z: 250,
       tag: 'L.05',
-      name: 'EXPLORER',
-      sub: 'resonance · vote · trending',
-      color: lc[4],
-      dots: 21,
-      detail: 'circle feed · claims · leaderboards',
-    },
-    {
-      z: 0,
-      tag: 'L.06',
-      name: 'CIRCLES',
+      name: 'TRUSTED CIRCLE',
       sub: 'follow · stake · reputation',
-      color: lc[5],
-      dots: 25,
-      detail: 'trust graph · TRUST · XP · gold',
+      color: lc[4],
+      dots: 22,
+      detail: 'your people · your weighting',
     },
   ]
+
+  const REVEAL_START = 0.3
+  const REVEAL_STRIDE = 0.55
+  const REVEAL_FADE = 0.4
+  /* Reveal order: top of screen first → bottom of screen last.
+     With the inverted z values (L.01 at top, L.05 at bottom) and the
+     array ordered top → bottom, the reveal index matches the array
+     index directly. */
+  const layerOpacity = (i: number) => {
+    const order = i
+    const start = REVEAL_START + order * REVEAL_STRIDE
+    return Math.max(0, Math.min(1, (t - start) / REVEAL_FADE))
+  }
+  const allRevealed = t > REVEAL_START + (layers.length - 1) * REVEAL_STRIDE + REVEAL_FADE
 
   const cx = 215
   const cy = 130
@@ -496,7 +564,8 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
     dots,
     idx,
     isTop,
-  }: Layer & { idx: number; isTop: boolean }) => {
+    opacity,
+  }: Layer & { idx: number; isTop: boolean; opacity: number }) => {
     const tl = pt(-W, -W, z)
     const tr = pt(W, -W, z)
     const br = pt(W, W, z)
@@ -514,11 +583,17 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
     const labelX = right[0] + 22
     const labelY = right[1] + 2
     return (
-      <g>
+      <g opacity={opacity} style={{ transition: 'opacity 0.2s linear' }}>
+        {/* Rhombus interior — tinted with the layer's intention colour
+            at low opacity so it reads as a coloured face on the slab
+            without overpowering the dots / outline. Overrideable from
+            outside via plateFill / plateFillTop if a flat look is
+            needed for a specific instance. */}
         <path
           d={path}
-          fill={isTop ? p.plateFillTop : p.plateFill}
-          stroke={color}
+          fill={plateFill ?? color}
+          fillOpacity={plateFill ? 1 : 0.18}
+          stroke={plateStroke ?? color}
           strokeWidth={isTop ? 1.2 : 1}
           strokeLinejoin="miter"
         />
@@ -538,7 +613,14 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
           const drift = Math.sin(t * 0.6 + i + idx) * 3
           const driftY = Math.cos(t * 0.5 + i * 1.3 + idx) * 3
           const [x, y] = pt(dx + drift, dy + driftY, z)
-          return <circle key={i} cx={x} cy={y} r="1.4" fill={color} />
+          /* Vary dot colour from a provided palette using a stable
+             hash of plate idx + dot idx so the salt-and-pepper
+             distribution is consistent across renders. */
+          const dotColor =
+            dotFills && dotFills.length > 0
+              ? dotFills[(i * 31 + idx * 17) % dotFills.length]
+              : (dotFill ?? color)
+          return <circle key={i} cx={x} cy={y} r="1.4" fill={dotColor} />
         })}
         <line
           x1={right[0]}
@@ -585,8 +667,7 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
           y={labelY + 28}
           fontFamily="JetBrains Mono, monospace"
           fontSize="6.5"
-          fill={color}
-          fillOpacity="0.7"
+          fill={p.fgDim}
           letterSpacing="0.14em"
         >
           {detail}
@@ -598,13 +679,16 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
   const spineTop = pt(0, 0, 250)
   const spineBot = pt(0, 0, 0)
 
+  /* Travel dots flow top → bottom: u=0 starts at z=0 (top of screen),
+     u=1 ends at z=250 (bottom of screen). */
   const travelDots = [0, 0.2, 0.4, 0.6, 0.8].map((off) => {
     const u = (off + ((t * 0.16) % 1)) % 1
-    return { p: pt(0, 0, 250 - u * 250), u }
+    return { p: pt(0, 0, u * 250), u }
   })
 
   return (
     <svg
+      ref={wrapperRef}
       viewBox="0 0 540 540"
       className={styles.svg}
       xmlns="http://www.w3.org/2000/svg"
@@ -648,25 +732,24 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
           <path d="M 0 0 L 8 4 L 0 8 z" fill={PEACH} />
         </marker>
       </defs>
-      <g stroke={p.framePath} strokeWidth="0.75" fill="none">
-        <path d="M 8 8 L 24 8 M 8 8 L 8 24" />
-        <path d="M 532 8 L 516 8 M 532 8 L 532 24" />
-        <path d="M 8 532 L 24 532 M 8 532 L 8 516" />
-        <path d="M 532 532 L 516 532 M 532 532 L 532 516" />
-      </g>
-
-      <g stroke={p.framePath} strokeWidth="0.5" fill="none">
-        <path d="M 26 70 L 26 470" markerEnd="url(#iso-arr)" />
-      </g>
-      <g
-        transform="translate(18, 270) rotate(-90)"
-        fontFamily="JetBrains Mono, monospace"
-        fontSize="8.5"
-        fill={p.flowText}
-        textAnchor="middle"
-        letterSpacing="0.25em"
-      >
-        <text>FLOW · CAPTURE → PROOF → CHAIN</text>
+      {/* Fig V.06-style inline header — single FIG tag top-left + step
+          dots top-right. No sub label (would duplicate the per-layer
+          L.01–L.06 captions rendered next to each rhombus). */}
+      <g fontFamily="JetBrains Mono, monospace">
+        <text x="20" y="30" fontSize="8" fill={p.fgDim} letterSpacing="0.22em">
+          FIG · D · 01/01 · ISO STACK
+        </text>
+        <g transform="translate(480, 28)">
+          {[0, 1, 2].map((k) => (
+            <circle
+              key={k}
+              cx={k * 14 - 28}
+              cy={0}
+              r="3"
+              fill={k === 0 ? p.fg : p.fgFaint}
+            />
+          ))}
+        </g>
       </g>
 
       <line
@@ -680,93 +763,38 @@ export function IsoStack({ mode = 'dark' }: { mode?: DiagramMode } = {}) {
       />
 
       {layers.map((L, i) => (
-        <Plate key={i} {...L} idx={i} isTop={i === 0} />
-      ))}
-
-      {travelDots.map(({ p: pos, u }, i) => (
-        <circle
+        <Plate
           key={i}
-          cx={pos[0]}
-          cy={pos[1]}
-          r="2.5"
-          fill={p.travel}
-          opacity={0.4 + u * 0.6}
+          {...L}
+          idx={i}
+          isTop={i === 0}
+          opacity={layerOpacity(i)}
         />
       ))}
 
-      <g
-        transform="translate(40, 36)"
-        fontFamily="JetBrains Mono, monospace"
-        fontSize="8.5"
-        fill={p.fg}
-        letterSpacing="0.2em"
-      >
-        <text>FIG.D · SOFIA SYSTEM TOPOLOGY</text>
-        <text y="12" fontSize="7" fill={p.fgDim} letterSpacing="0.18em">
-          6 LAYERS · ISOMETRIC 30°
-        </text>
-      </g>
+      {allRevealed &&
+        travelDots.map(({ p: pos, u }, i) => (
+          <circle
+            key={i}
+            cx={pos[0]}
+            cy={pos[1]}
+            r="2.5"
+            fill={p.travel}
+            opacity={0.4 + u * 0.6}
+          />
+        ))}
 
-      <g
-        fontFamily="JetBrains Mono, monospace"
-        fontSize="7"
-        fill={p.fgFaint}
-        letterSpacing="0.18em"
-      >
-        <text x="40" y="500">
-          [A] LOCAL · NEVER LEAVES BROWSER
-        </text>
-        <text x="40" y="514">
-          [B] AGENT · LOCAL-FIRST · YOU APPROVE
-        </text>
-        <text x="40" y="528">
-          [C] CHAIN · INTUITION · PERMANENT
-        </text>
-      </g>
-
-      <g
-        transform="translate(380, 488)"
-        fontFamily="JetBrains Mono, monospace"
-        fontSize="7.5"
-        fill={p.fgSoft}
-      >
+      {/* Bottom progress bar — same chassis as Fig V.06. */}
+      <g>
         <rect
-          x="0"
-          y="0"
-          width="148"
-          height="34"
-          fill="none"
-          stroke={p.block}
-          strokeWidth="0.5"
+          x="20"
+          y="522"
+          width="500"
+          height="2"
+          fill={p.fgFaint}
+          opacity="0.3"
         />
-        <line
-          x1="48"
-          y1="0"
-          x2="48"
-          y2="34"
-          stroke={p.block}
-          strokeWidth="0.5"
-        />
-        <line
-          x1="0"
-          y1="17"
-          x2="148"
-          y2="17"
-          stroke={p.block}
-          strokeWidth="0.5"
-        />
-        <text x="5" y="12">
-          DWG
-        </text>
-        <text x="53" y="12">
-          SOFIA-STACK-002
-        </text>
-        <text x="5" y="29">
-          REV
-        </text>
-        <text x="53" y="29">
-          B.0 · ISO 30°
-        </text>
+        <rect x="20" y="522" width={500 * 0.5} height="2" fill={p.fg} />
       </g>
     </svg>
   )

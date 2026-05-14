@@ -9,17 +9,31 @@
   background: var(--color-accent);
   color: #02000e;
   width: 100%;
-  min-height: 0;
+  min-height: calc(100vh - var(--nav-h, 64px));
   margin-top: var(--nav-h, 64px); /* push Hero below the fixed navbar */
-  overflow: hidden;
+  /* overflow visible so the radar can scale past the section bounds
+     during the pin. The fixed navbar sits on z-index 100 and covers
+     anything overflowing upward. */
+  overflow: visible;
   isolation: isolate;
+  /* Explicit z-index 1 keeps the hero's stacking context above the
+     default page flow but below the navbar (z-index 100) so the
+     scaling radar never escapes above it. */
+  z-index: 1;
+}
+
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - var(--nav-h, 64px));
 }
 
 .body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: stretch;
-  min-height: 0;
+  min-height: calc(100vh - var(--nav-h, 64px));
 }
 
 /* ── LEFT — copy zone ─────────────────────────────────── */
@@ -132,8 +146,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  /* Allow the radar to spill past the column when the scroll-zoom
+     scales it toward the viewport center. The hero owns clipping. */
+  overflow: visible;
   padding: 32px;
+  /* Sits above .copyZone so the scaling radar paints over the copy
+     column as it drifts left. */
+  z-index: 2;
+}
+
+.copyZone {
+  /* Explicit position+z-index keeps copyZone below visualZone during
+     the dive. Without `position`, z-index would be ignored. */
+  position: relative;
+  z-index: 1;
 }
 
 /* Diagram sits directly on the peach Hero — TopicsIntentions is rendered
@@ -143,6 +169,24 @@
   width: 100%;
   max-width: 760px;
   aspect-ratio: 1;
+  will-change: transform;
+}
+
+.zoomReadout {
+  position: absolute;
+  bottom: 14px;
+  right: 18px;
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.65);
+  background: rgba(255, 255, 255, 0.55);
+  padding: 5px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .diagram > svg {

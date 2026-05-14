@@ -1,0 +1,145 @@
+/**
+ * ValueProps (S.0A) — Hero-mirror layout.
+ *
+ * Two-column grid: Plate A on the left, "Why Sofia" copy + 2x2 angles
+ * grid on the right. Inside the HexDeck the section is forced to
+ * 100vh and `justify-content: center` (see HexDeck.module.css), so we
+ * just need the two columns to stretch the available height.
+ */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  /* Force the single row to use the full layout height. Without this
+     the row sizes to its content (auto) and the inner 2x2 grid grows
+     past the slide's 100vh budget — even when the layout is flex: 1. */
+  grid-template-rows: 1fr;
+  gap: 32px;
+  align-items: stretch;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Left — Plate A ───────────────────────────────────── */
+
+.plateZone {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  min-width: 0;
+}
+
+.plate {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: transparent !important;
+}
+
+.plateBody {
+  aspect-ratio: auto !important;
+  flex: 1 1 auto !important;
+  min-height: 420px;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.plateBody svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block;
+}
+
+/* ── Right — copy + angles grid ───────────────────────── */
+
+.contentZone {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* Force two equal rows so the grid uses the height assigned by its
+     flex parent (flex: 1) instead of growing with content. Combined
+     with min-height: 0 + overflow: hidden on the cards below, this
+     keeps the whole section inside 100vh. */
+  grid-template-rows: repeat(2, 1fr);
+  gap: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  border-left: 1px solid rgba(0, 0, 0, 0.18);
+  flex: 1;
+  min-height: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 14px 14px;
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  background: var(--color-accent);
+  transition: background 0.25s var(--ease-out);
+  min-height: 0;
+  /* Clip if description happens to be longer than the available cell
+     height — better than letting the slide crop the whole section. */
+  overflow: hidden;
+}
+
+.card:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+  color: #02000e;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+}
+
+.desc {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.72);
+  margin: 0;
+  flex: 1;
+}
+
+/* ── Responsive — only collapse on truly narrow viewports.
+ *
+ * In the HexDeck the slide is locked to 100vh so collapsing the 2-col
+ * layout would stack the plate placeholder above the copy and bust the
+ * vertical budget. We keep 2-col until mobile width.
+ */
+
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

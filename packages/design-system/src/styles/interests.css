@@ -189,33 +189,50 @@
 }
 
 .ig-card-reveal-cta {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  margin-top: 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.85;
+  color: var(--topic-color, var(--ds-ink));
+  background: var(--ds-on-accent, #fff);
+  border: 1px solid color-mix(in srgb, var(--ds-on-accent, #fff) 70%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px -8px rgb(0 0 0 / 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
-/* ── Remove button — visible only on card hover ─────────────────────── */
+.ig-card:hover .ig-card-reveal-cta {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgb(0 0 0 / 0.45);
+}
+
+/* ── Delete button — always visible, danger-tinted ──────────────────── */
 
 .ig-card-remove {
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   line-height: 0;
-  border-radius: 50%;
-  background: var(--ds-card);
-  color: var(--ds-muted);
-  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--distrusted) 10%, var(--ds-card));
+  color: var(--distrusted);
+  border: 1px solid color-mix(in srgb, var(--distrusted) 35%, var(--ds-border));
   cursor: pointer;
-  opacity: 0;
+  opacity: 1;
   transition: all 0.18s ease;
   z-index: 3;
 }
@@ -224,14 +241,16 @@
   display: block;
 }
 
-.ig-card:hover .ig-card-remove {
-  opacity: 1;
+.ig-card-remove:hover {
+  color: var(--ds-card);
+  border-color: var(--distrusted);
+  background: var(--distrusted);
+  transform: scale(1.05);
 }
 
-.ig-card-remove:hover {
-  color: var(--distrusted);
-  border-color: var(--distrusted);
-  background: color-mix(in srgb, var(--distrusted) 12%, var(--ds-card));
+.ig-card-remove:focus-visible {
+  outline: 2px solid var(--distrusted);
+  outline-offset: 2px;
 }
 
 /* ── Add-interest card ──────────────────────────────────────────────── */

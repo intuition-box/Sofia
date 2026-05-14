@@ -1,0 +1,179 @@
+/**
+ * Deck — sticky pin + two-step trigger choreography.
+ *
+ * Layout:
+ *   .region       Block in document flow, reserves 100vh of scroll.
+ *   .stage        position: sticky, top: 0, overflow: hidden.
+ *   .bgLayer      Holds N background slabs, one per slide.
+ *   .bgBlock      One slab. Parallelogram clip-path with 60° angled
+ *                 left AND right edges (both overshoot the bounding
+ *                 rect) so adjacent slabs tile perfectly during the
+ *                 wipe and the active slab fully covers the stage at
+ *                 rest. With alternating peach/dark slab colours, the
+ *                 wipe is always a visible colour change.
+ *   .slide        One slide of content. Translates on the Y axis only
+ *                 (step 2): the active slide is at translateY(0), the
+ *                 next slide is parked at +100% (below the stage), the
+ *                 previous slide is at -100% (above).
+ *
+ * The choreography per trigger:
+ *   t = 0          state change committed
+ *   t = 0–step1    bgBlocks slide horizontally, angled border sweeps
+ *   t = step1      bg has settled; content starts moving
+ *   t = step1–total  slide content slides in vertically
+ */
+
+.region {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  /* Fallback bg under the slabs (matches slide 0's variant). Visible
+     only in the triangular sliver that the first slab's angled left
+     edge leaves uncovered — by matching the colour, the sliver is
+     invisible at rest. */
+  background: var(--color-accent);
+  isolation: isolate;
+}
+
+/* ── Background slabs (step 1) ───────────────────────────── */
+
+.bgLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bgLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 57.7vh = 100vh / tan(60°). Used by both the slab geometry (extra
+     width via negative left/right insets) and — implicitly — by the
+     translate, since the slab's own 100% width equals the stage width
+     plus 2 × hex-shift, so `translateX(100%)` is exactly one slab. */
+  --hex-shift: 57.7vh;
+  overflow: hidden;
+}
+
+.bgBlock {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Slab extends past the stage on BOTH sides by hex-shift. With
+     skewX(-30deg) applied (origin top-left), the slab becomes a real
+     parallelogram with 60° angled left and right edges that fully
+     cover the stage at rest. We can't simulate this with clip-path
+     alone — clip is bounded by the element's box, so corners that
+     would overshoot are silently truncated. Skewing the element
+     itself avoids the issue and gives us a parallelogram-shaped
+     paint region for the background colour. */
+  left: calc(-1 * var(--hex-shift));
+  right: calc(-1 * var(--hex-shift));
+  transform-origin: top left;
+  will-change: transform;
+}
+
+.bgBlock[data-bg='peach'] {
+  background: var(--color-accent);
+}
+.bgBlock[data-bg='dark'] {
+  background: var(--color-bg);
+}
+
+/* ── Content slides (step 2) ─────────────────────────────── */
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding-top: var(--nav-h, 64px);
+  overflow: hidden;
+  z-index: 1;
+  will-change: transform;
+}
+
+.slide > * {
+  width: 100%;
+  height: 100%;
+  margin-top: 0 !important;
+}
+
+/* Section compaction so each section fits 100vh - navbar. */
+
+.slide :global(section) {
+  padding-top: clamp(16px, 2vh, 32px) !important;
+  padding-bottom: clamp(16px, 2vh, 32px) !important;
+  min-height: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Slide-own background is transparent — the bgBlock paints the
+     colour. Without this, the section would cover the angled wipe. */
+  background: transparent !important;
+}
+
+.slide :global(section) > div {
+  min-height: 0 !important;
+}
+
+.slide :global(.container) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide :global(header[class*='head']) {
+  margin-bottom: 12px !important;
+}
+.slide :global(header[class*='head']) :is(h1, h2) {
+  font-size: clamp(1.4rem, 2vw, 2rem) !important;
+  line-height: 1.1 !important;
+  margin: 4px 0 6px !important;
+}
+.slide :global(header[class*='head']) p {
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  max-width: 60ch;
+}
+
+/* ── Shared plate A — overlay above the stack ─────────────
+ *
+ * Stays as an animated overlay since it's the shared element between
+ * slides 0 and 1.
+ */
+
+.sharedPlate {
+  position: absolute;
+  top: calc(var(--nav-h, 64px) + (100vh - var(--nav-h, 64px)) / 2);
+  transform: translate(-50%, -50%);
+  width: min(45%, calc(100vh - var(--nav-h, 64px) - 4vh));
+  aspect-ratio: 1;
+  max-width: 760px;
+  pointer-events: none;
+  z-index: 3;
+  will-change: left, opacity;
+}
+
+.sharedPlate[data-state='0'] { left: 75%; }
+.sharedPlate[data-state='1'] { left: 25%; }
+.sharedPlate:not([data-state='0']):not([data-state='1']) {
+  left: 25%;
+  opacity: 0;
+}
+
+@media (max-width: 720px) {
+  .sharedPlate {
+    display: none;
+  }
+}

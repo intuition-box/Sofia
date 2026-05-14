@@ -6,8 +6,8 @@ import type {
   ReactNode,
 } from 'react'
 
-/** Inline X icon — keeps the package free of any icon library peerDep. */
-function XIcon({ size = 12 }: { size?: number }) {
+/** Inline trash icon — keeps the package free of any icon library peerDep. */
+function TrashIcon({ size = 14 }: { size?: number }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -16,13 +16,16 @@ function XIcon({ size = 12 }: { size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M18 6 6 18" />
-      <path d="M6 6l12 12" />
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
     </svg>
   )
 }
@@ -115,7 +118,7 @@ export function InterestCard(props: InterestCardProps) {
           aria-label={`Remove ${topicLabel}`}
           title={`Remove ${topicLabel}`}
         >
-          <XIcon size={12} />
+          <TrashIcon size={14} />
         </button>
       ) : null}
 

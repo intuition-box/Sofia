@@ -206,6 +206,23 @@ button {
   border-color: var(--color-text);
 }
 
+/* ── /newlayout deck overrides ─────────────────────────────────────
+ * The deck (apps/landing/src/pages/NewLayout.tsx) tags each slide
+ * with [data-deck-slide][data-variant]. Buttons inside dark slabs
+ * hover to deep-ink black; peach slabs hover to the brand peach.
+ * Attribute selectors beat plain classes and these rules sit later
+ * in the cascade, so no !important needed. */
+[data-deck-slide][data-variant='dark'] .btn-secondary:hover {
+  background: #02000e !important;
+  border-color: #02000e !important;
+  color: #f5e9d8 !important;
+}
+[data-deck-slide][data-variant='peach'] .btn-secondary:hover {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  color: #02000e !important;
+}
+
 .btn-arrow,
 .btn .arrow {
   width: 13px;

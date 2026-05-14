@@ -25,7 +25,7 @@ export function Footer() {
       <div className={styles.inner}>
         <div className={styles.top}>
           <div className={styles.brand}>
-            <img src="/img/sofiaLogo.png" alt="Sofia" className="logo-invert" />
+            <img src="/img/logo-black.png" alt="Sofia" className="logo-invert" />
             <p>
               From surfing the web to owning it. Your actions become your
               identity, not your claims.

@@ -3,23 +3,91 @@
  * advisors strip (3-col grid sharing 1px borders).
  */
 
+/* ── Traction strip — 4 mono chips above the team grid ───── */
+
+.traction {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin: 16px 0 20px;
+  border-top: 1px solid var(--color-border-soft);
+  border-left: 1px solid var(--color-border-soft);
+}
+
+.tractionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 14px;
+  border-right: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
+  background: var(--color-bg-alt);
+}
+
+.tractionTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+
+.tractionValue {
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1;
+  color: var(--color-text);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  font-variant-numeric: tabular-nums;
+}
+
+.tractionLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 720px) {
+  .traction {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .traction {
+    grid-template-columns: 1fr;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-  margin-bottom: 80px;
+  grid-template-rows: 1fr;
+  gap: 20px;
+  margin-bottom: 0;
+  /* Consume remaining slide height so Core cards can flex to fit. */
+  flex: 1;
+  min-height: 0;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 36px 32px;
+  gap: 14px;
+  padding: 22px 22px;
   border: 1px solid var(--color-border-soft);
   background: var(--color-bg-alt);
   transition:
     border-color 0.25s,
     transform 0.3s;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .card:hover {
@@ -113,6 +181,186 @@
   margin: 0;
 }
 
+/* ── Voices (community testimonials) ──────────────────── */
+
+.voicesHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  margin-top: 16px;
+}
+
+.voicesEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.voicesEyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-soft);
+}
+
+.voicesMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--color-accent-ink);
+}
+
+.voicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 80px;
+}
+
+.voice {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 22px 18px;
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition:
+    border-color 0.25s,
+    transform 0.3s,
+    background 0.25s;
+}
+
+.voice:hover {
+  border-color: var(--voice-accent, var(--color-border));
+  transform: translateY(-2px);
+}
+
+.voice::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 2px solid var(--voice-accent);
+  pointer-events: none;
+  opacity: 0.85;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.voiceHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.voiceAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.voiceMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.voiceHandle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.voiceRole {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.voiceTag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--voice-accent);
+  border: 1px solid var(--voice-accent);
+  padding: 3px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.voiceQuote {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--color-text);
+  margin: 0;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+}
+
+.voiceFoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.voiceSource {
+  color: var(--color-accent-ink);
+}
+
+.voiceDot {
+  opacity: 0.5;
+}
+
+@media (max-width: 1000px) {
+  .voicesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .voicesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Advisors ─────────────────────────────────────────── */
 
 .advHeader {
@@ -141,6 +389,13 @@
   background: var(--color-border-soft);
 }
 
+.advHeaderMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--color-accent-ink);
+}
+
 .advGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -152,40 +407,57 @@
 .adv {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 24px 24px 28px;
+  align-items: stretch;
+  gap: 16px;
+  padding: 26px 26px 24px;
   border-right: 1px solid var(--color-border-soft);
   border-bottom: 1px solid var(--color-border-soft);
-  transition: background 0.25s;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
   color: inherit;
   text-decoration: none;
 }
 
 .adv:hover {
   background: var(--color-bg-alt);
+  border-color: var(--color-accent);
+}
+
+.advHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.advHeadMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .advAvatar {
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--color-border);
-  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .advRole {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-accent-ink);
 }
 
 .advName {
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: -0.018em;
   color: var(--color-text);
@@ -195,8 +467,51 @@
 }
 
 .advCo {
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
   color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.advQuote {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text);
+  padding-left: 14px;
+  border-left: 1px solid var(--color-accent);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+  margin: 0;
+}
+
+.advTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.advTag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-soft);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.adv:hover .advTag {
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
 }
 
 @media (max-width: 780px) {
