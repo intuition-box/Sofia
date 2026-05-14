@@ -24,6 +24,7 @@ import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
 import { useTopClaims } from '@/hooks/useTopClaims'
 import { useEnsNames } from '@/hooks/useEnsNames'
+import ProfileTrustButton from '@/components/profile/ProfileTrustButton'
 import { useTrustScore } from '@/hooks/useTrustScore'
 import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
@@ -210,6 +211,11 @@ export default function PublicProfilePage() {
               <p className="ph-description">{heroDescription}</p>
             )}
           </div>
+          <ProfileTrustButton
+            walletAddress={walletAddress}
+            displayName={displayName || shortAddress}
+            avatarUrl={ensAvatar}
+          />
         </div>
         <div className="ph-deco" aria-hidden="true" />
       </div>
