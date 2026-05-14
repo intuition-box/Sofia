@@ -26,7 +26,8 @@ export default function RadarPills({
   onFocus,
 }: RadarPillsProps) {
   const [open, setOpen] = useState(false)
-  const active = seriesFilter === 'all' ? null : items.find((i) => i.id === seriesFilter)
+  const active =
+    seriesFilter === 'all' ? null : items.find((i) => i.id === seriesFilter)
   const activeLabel = active ? active.label : 'All'
   const dotColor = active ? active.color : 'var(--ds-muted, #888)'
 
@@ -50,7 +51,9 @@ export default function RadarPills({
               aria-hidden="true"
             />
             <span className="pc-radar-filter-trigger__label">Focus</span>
-            <span className="pc-radar-filter-trigger__value">{activeLabel}</span>
+            <span className="pc-radar-filter-trigger__value">
+              {activeLabel}
+            </span>
             <ChevronDown size={12} className="pc-radar-filter-trigger__chev" />
           </button>
         </PopoverTrigger>

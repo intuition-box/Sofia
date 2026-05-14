@@ -174,8 +174,8 @@ export default function ProfilePage() {
           </span>
           <span className="pp-context-banner-text">
             <strong>{untaggedCerts.length}</strong> URL
-            {untaggedCerts.length === 1 ? '' : 's'} without context — give
-            them topics to grow your reputation
+            {untaggedCerts.length === 1 ? '' : 's'} without context — give them
+            topics to grow your reputation
           </span>
           <span className="pp-context-banner-cta">
             Open Context Manager

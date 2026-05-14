@@ -262,15 +262,21 @@
 }
 
 .bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-stats,
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-progress {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-progress {
   display: none;
 }
 
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-title {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-title {
   font-size: 13px;
   line-height: 1.25;
 }
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .group-bento-favicon {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .group-bento-favicon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -279,7 +285,9 @@
   font-size: 9px;
   padding: 3px 7px;
 }
-.bento-grid-3 .group-bento-card.group-bento-card--with-thumb .certification-dots {
+.bento-grid-3
+  .group-bento-card.group-bento-card--with-thumb
+  .certification-dots {
   justify-content: flex-start;
 }
 
@@ -343,16 +351,36 @@
 .bento-grid-3 .bento-card {
   animation: bento-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
 }
-.bento-grid-3 .bento-card:nth-child(1) { animation-delay: 0ms; }
-.bento-grid-3 .bento-card:nth-child(2) { animation-delay: 50ms; }
-.bento-grid-3 .bento-card:nth-child(3) { animation-delay: 100ms; }
-.bento-grid-3 .bento-card:nth-child(4) { animation-delay: 150ms; }
-.bento-grid-3 .bento-card:nth-child(5) { animation-delay: 200ms; }
-.bento-grid-3 .bento-card:nth-child(6) { animation-delay: 250ms; }
-.bento-grid-3 .bento-card:nth-child(7) { animation-delay: 300ms; }
-.bento-grid-3 .bento-card:nth-child(8) { animation-delay: 350ms; }
-.bento-grid-3 .bento-card:nth-child(9) { animation-delay: 400ms; }
-.bento-grid-3 .bento-card:nth-child(10) { animation-delay: 450ms; }
+.bento-grid-3 .bento-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.bento-grid-3 .bento-card:nth-child(2) {
+  animation-delay: 50ms;
+}
+.bento-grid-3 .bento-card:nth-child(3) {
+  animation-delay: 100ms;
+}
+.bento-grid-3 .bento-card:nth-child(4) {
+  animation-delay: 150ms;
+}
+.bento-grid-3 .bento-card:nth-child(5) {
+  animation-delay: 200ms;
+}
+.bento-grid-3 .bento-card:nth-child(6) {
+  animation-delay: 250ms;
+}
+.bento-grid-3 .bento-card:nth-child(7) {
+  animation-delay: 300ms;
+}
+.bento-grid-3 .bento-card:nth-child(8) {
+  animation-delay: 350ms;
+}
+.bento-grid-3 .bento-card:nth-child(9) {
+  animation-delay: 400ms;
+}
+.bento-grid-3 .bento-card:nth-child(10) {
+  animation-delay: 450ms;
+}
 
 @keyframes bento-card-enter {
   from {

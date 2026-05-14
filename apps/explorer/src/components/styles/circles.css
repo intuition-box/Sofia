@@ -1719,10 +1719,12 @@
 @keyframes crd-stat-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--trusted, #6dd4a0) 0%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--trusted, #6dd4a0) 25%, transparent);
   }
 }
 .crd-stat-label {
@@ -1897,9 +1899,8 @@
 .crd-te-card:hover {
   transform: translateY(-3px) rotate(-0.6deg);
   border-color: var(--circle-color, var(--ds-accent));
-  box-shadow:
-    0 14px 32px -10px
-      color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
+  box-shadow: 0 14px 32px -10px
+    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
 }
 .crd-te-thumb {
   width: 100%;

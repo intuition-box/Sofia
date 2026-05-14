@@ -35,9 +35,7 @@ import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
 import RadarChart from './RadarChart'
 import TopPlatforms from './TopPlatforms'
-import ProfileDetailsPanel, {
-  type InterestPill,
-} from './ProfileDetailsPanel'
+import ProfileDetailsPanel, { type InterestPill } from './ProfileDetailsPanel'
 import ProfileClaimCard, { deriveClaimBadge } from './ProfileClaimCard'
 import { getFaviconUrl } from '@/utils/favicon'
 import { extractDomain } from '@/utils/formatting'

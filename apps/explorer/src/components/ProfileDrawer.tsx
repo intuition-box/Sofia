@@ -161,7 +161,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         }
     const events: Event[] = []
     for (const c of profile.certs) {
-      if (c.certifiedAt) events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
+      if (c.certifiedAt)
+        events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
     }
     for (const ca of profile.contextAdditions) {
       const cert = certByTerm.get(ca.certTermId)

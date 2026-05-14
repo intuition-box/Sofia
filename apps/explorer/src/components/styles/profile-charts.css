@@ -876,8 +876,13 @@
   gap: 4px;
   padding: 4px 6px 4px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--pill-color, var(--ds-muted)) 8%, var(--ds-card));
-  border: 1px solid color-mix(in srgb, var(--pill-color, var(--ds-border)) 22%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-muted)) 8%,
+    var(--ds-card)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--pill-color, var(--ds-border)) 22%, transparent);
   min-width: 0;
   transition:
     background 0.15s ease,
@@ -885,8 +890,16 @@
     transform 0.15s ease;
 }
 .pc-interest-pill:hover {
-  background: color-mix(in srgb, var(--pill-color, var(--ds-muted)) 16%, var(--ds-card));
-  border-color: color-mix(in srgb, var(--pill-color, var(--ds-border)) 45%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-muted)) 16%,
+    var(--ds-card)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--pill-color, var(--ds-border)) 45%,
+    transparent
+  );
 }
 .pc-interest-pill-main {
   display: grid;
