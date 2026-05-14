@@ -11,7 +11,7 @@ export const URLS = {
     index: `${DOCS_BASE}/blog`,
   },
   external: {
-    board: 'https://explore.sofia.intuition.box/',
+    board: 'https://explorer.sofia.intuition.box/',
     discord: 'https://discord.gg/sofia3',
     github: 'https://github.com/intuition-box',
     x: 'https://x.com/0xsofia3',

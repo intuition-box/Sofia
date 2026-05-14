@@ -245,7 +245,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         }}
       >
         <a
-          href="https://explore.sofia.intuition.box"
+          href="https://explorer.sofia.intuition.box"
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-primary"
@@ -454,7 +454,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
       title="Explorer"
       desc="A home for everything you've kept. Browse it by topic, by intention, by mood. See what people you trust are reading right now, and find the voices worth following on subjects you actually care about — without scrolling through everyone else's noise."
       cta={{
-        href: 'https://explore.sofia.intuition.box',
+        href: 'https://explorer.sofia.intuition.box',
         label: 'Open the Explorer',
       }}
     />
@@ -1166,7 +1166,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           <>
             Connect to the{' '}
             <a
-              href="https://explore.sofia.intuition.box"
+              href="https://explorer.sofia.intuition.box"
               target="_blank"
               rel="noreferrer noopener"
               style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -1327,7 +1327,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
           }}
         >
           <a
-            href="https://explore.sofia.intuition.box"
+            href="https://explorer.sofia.intuition.box"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"
