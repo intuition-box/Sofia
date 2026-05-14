@@ -48,7 +48,6 @@ const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
 const BillingPage = lazy(() => import('./pages/BillingPage'))
-const TripleDetailPage = lazy(() => import('./pages/TripleDetailPage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
@@ -213,7 +212,6 @@ export default function App() {
                   path="/profile/:address"
                   element={<PublicProfilePage />}
                 />
-                <Route path="/triple/:id" element={<TripleDetailPage />} />
                 <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
                 {/* Protected routes */}
