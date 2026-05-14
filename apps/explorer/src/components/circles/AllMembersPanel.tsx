@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import type { Address } from 'viem'
-import { UserPlus } from 'lucide-react'
 import MemberAvatar from './MemberAvatar'
 import TrustMemberButton from './TrustMemberButton'
 
@@ -72,19 +71,11 @@ export default function AllMembersPanel({
           </button>
         </div>
 
-        <button
-          type="button"
-          className="crd-members-invite-btn"
-          onClick={() => {
-            // TODO: wire to real invite flow once available.
-            // Placeholder: copy a prefilled share link to clipboard.
-            const url = `${window.location.origin}/circles/trust?invite=1`
-            navigator.clipboard?.writeText(url).catch(() => {})
-          }}
-        >
-          <UserPlus className="h-4 w-4" />
-          Add a member
-        </button>
+        {/* "Add a member" CTA is intentionally hidden until the invite
+            backend exists. When it ships, render an inline compact
+            search (avatar row + click-to-add), not the wide CTA pill
+            we had before. See crd-members-invite-btn rule in
+            circles.css for the old visual reference. */}
 
         <div className="crd-members-list">
           {members.length === 0 ? (
