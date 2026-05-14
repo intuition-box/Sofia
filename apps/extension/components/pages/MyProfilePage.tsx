@@ -1,5 +1,6 @@
-import { useState, useTransition, Suspense, lazy } from 'react'
+import { useState, useTransition, Suspense, lazy, useEffect } from 'react'
 import SofiaLoader from '../ui/SofiaLoader'
+import { useRouter } from '../layout/RouterProvider'
 import '../styles/Global.css'
 import '../styles/CorePage.css'
 
@@ -12,10 +13,20 @@ const ConnectTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
 type MyProfileTab = 'Echoes' | 'Bookmarks' | 'History' | 'Connect'
 
 const MyProfilePage = () => {
-  const [activeGraphTab, setActiveGraphTab] = useState<MyProfileTab>('Echoes')
+  const { myProfileIntent } = useRouter()
+  const [activeGraphTab, setActiveGraphTab] = useState<MyProfileTab>(
+    (myProfileIntent?.initialTab as MyProfileTab | undefined) ?? 'Echoes'
+  )
   const [expandedHistoryTriplet, setExpandedHistoryTriplet] =
     useState<{ tripletId: string } | null>(null)
   const [, startTransition] = useTransition()
+
+  // Switch to the requested tab whenever a new navigation intent lands.
+  useEffect(() => {
+    if (myProfileIntent?.initialTab) {
+      setActiveGraphTab(myProfileIntent.initialTab as MyProfileTab)
+    }
+  }, [myProfileIntent])
 
   return (
     <div className="page">

@@ -3,9 +3,9 @@
  *
  * Layout adapted from Claude Design sketch `ext-login-b3.html` and the
  * explorer's `/` LandingPage. 50/50 vertical split:
- *   - Top half  : peach (--ds-accent) plate with the same SVG identity-graph
- *                 (`TopicsIntentions mode="light"`) used on the explorer's
- *                 visual side. Sofia mark + version pinned at the top.
+ *   - Top half  : peach (--ds-accent) plate with the same animated
+ *                 CirclesSequence SVG used on the landing hero. Sofia mark
+ *                 + version pinned at the top.
  *   - Bottom half: ink (--ds-ink) panel with eyebrow / headline / lede /
  *                  paper-pill connect button + Privy/Terms/Privacy footer
  *                  (mirrors `.lp-btn-primary` on the explorer login).
@@ -18,7 +18,7 @@
 import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks'
 import packageJson from '~/package.json'
 import sofiaIcon from '../../assets/icon-light-32.png'
-import { TopicsIntentions } from '../ui/TopicsIntentions'
+import { CirclesSequence } from '../ui/CirclesSequence'
 import '../styles/HomePage.css'
 
 export default function HomePage() {
@@ -47,7 +47,7 @@ export default function HomePage() {
         </div>
 
         <div className="hp-diagram-stage" aria-hidden="true">
-          <TopicsIntentions mode="light" />
+          <CirclesSequence variant="peach" />
         </div>
       </div>
 

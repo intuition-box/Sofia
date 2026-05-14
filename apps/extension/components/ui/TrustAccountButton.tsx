@@ -12,8 +12,8 @@ interface TrustAccountButtonProps {
   onSuccess?: () => void
   /** Visible button label (default: "Trust"). Accepts ReactNode so callers can include an icon. */
   label?: ReactNode
-  /** Pre-selected weight option in the modal (default: 'default' / 0.5 TRUST) */
-  initialWeight?: 'minimum' | 'default' | 'strong' | 'high' | 'max'
+  /** Pre-selected weight option in the modal (default: 'medium' / 0.5 TRUST) */
+  initialWeight?: 'light' | 'medium' | 'strong'
   /** Extra className appended to the button */
   className?: string
 }

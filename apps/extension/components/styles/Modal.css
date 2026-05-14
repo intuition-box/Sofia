@@ -1814,3 +1814,319 @@
   margin: 2px 0 0 0;
   font-style: italic;
 }
+/* ============================================================
+ * WeightModal — refonte 2026-05-14
+ * 3 presets (Light / Medium / Strong), platform/title at top,
+ * collapsible breakdown.
+ * ============================================================ */
+
+/* ----- Triplet card (new hierarchy) ----- */
+
+.weight-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.weight-item__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.weight-item__favicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  object-fit: cover;
+}
+
+.weight-item__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.weight-item__platform {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.2;
+}
+
+.weight-item__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weight-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.weight-item__intention,
+.weight-item__topic {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+/* ----- 3-preset row (Light / Medium / Strong) ----- */
+
+.weight-item__presets,
+.weight-apply-all__presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.weight-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease,
+    color 120ms ease, transform 120ms ease;
+}
+
+.weight-preset:hover:not(:disabled):not(.is-selected) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.weight-preset.is-selected {
+  background: linear-gradient(
+    180deg,
+    rgba(123, 184, 255, 0.18),
+    rgba(123, 184, 255, 0.08)
+  );
+  border-color: rgba(123, 184, 255, 0.55);
+  color: #eaf2ff;
+}
+
+.weight-preset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.weight-preset__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.weight-preset__value {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.weight-preset--compact {
+  padding: 8px 6px;
+}
+
+.weight-preset--compact .weight-preset__label {
+  font-size: 11px;
+}
+
+/* ----- Per-item platform pool slider (collapsible) ----- */
+
+.weight-item__pp {
+  margin-top: 2px;
+}
+
+.weight-item__pp summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  list-style: none;
+  padding: 4px 0;
+}
+
+.weight-item__pp summary::marker,
+.weight-item__pp summary::-webkit-details-marker {
+  display: none;
+}
+
+.weight-item__pp summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 4px;
+  transition: transform 120ms ease;
+}
+
+.weight-item__pp[open] summary::before {
+  content: "▾ ";
+}
+
+.weight-item__pp .pp-item-slider {
+  margin-top: 8px;
+}
+
+/* ----- Apply-all bar (3 presets globally) ----- */
+
+.weight-apply-all {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.weight-apply-all__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ----- Total + collapsible breakdown ----- */
+
+.weight-total {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.weight-total__primary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-total__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.weight-total__row--total {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.weight-total__row--balance {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.weight-total__row--balance.is-insufficient {
+  color: #ff7a7a;
+  font-weight: 600;
+}
+
+.weight-total__row--sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  padding-left: 12px;
+}
+
+.weight-total__row--fees {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.weight-total__details {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-total__details summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.weight-total__details summary::marker,
+.weight-total__details summary::-webkit-details-marker {
+  display: none;
+}
+
+.weight-total__details summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.weight-total__details[open] summary::before {
+  content: "▾ ";
+}
+
+.weight-total__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.weight-total__note {
+  margin: 4px 0 0 0;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+}
+
+/* Phase 3a — Success handoff: WeightModal hands its body off to BatchRewardContent
+ * with a soft cross-fade so the user perceives a single continuous modal,
+ * not a "weight → reward" two-modal sequence.
+ */
+.modal-body--success-handoff {
+  animation: weightModalSuccessHandoff 320ms ease-out;
+}
+
+@keyframes weightModalSuccessHandoff {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

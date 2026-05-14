@@ -108,7 +108,7 @@ const UserStatsTab = ({
         <div className="stats-empty">
           <div className="empty-icon">🔍</div>
           <h3>No discoveries yet</h3>
-          <p>This user hasn't certified any pages yet.</p>
+          <p>This user hasn't Marked any pages yet.</p>
         </div>
       </div>
     )

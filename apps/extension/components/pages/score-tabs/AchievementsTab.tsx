@@ -371,8 +371,8 @@ const AchievementsTab = ({
           )}
           {renderDailyAction(
             dailyCertQuest,
-            "DAILY CERTIFICATION",
-            "Certify a page today",
+            "DAILY MARK",
+            "Mark a page today",
             certDays
           )}
         </div>

@@ -7,16 +7,20 @@ import { useState, useEffect, useRef } from 'react'
 import { useIntentionGroups, type SortOption } from '../../../hooks'
 import type { IntentionType } from '../../../types/intentionCategories'
 import { INTENTION_CONFIG } from '../../../types/intentionCategories'
+import { useRouter } from '../../layout/RouterProvider'
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
 import GroupManagerModal from '../../modals/GroupManagerModal'
 import SofiaLoader from '../../ui/SofiaLoader'
+import { getExplorerHomeUrl } from '../../../lib/utils'
 import { userSettingsService } from '~/lib/database'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
 import '../../styles/CategoryStyles.css'
 import '../../styles/CircleFeedTab.css'
+
+const HIGHLIGHT_DURATION_MS = 3200
 
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
@@ -25,6 +29,8 @@ const EchoesTab = () => {
   const [managerInitialFilter, setManagerInitialFilter] = useState<'all' | 'inactive'>('all')
   const [cleanupBannerDismissed, setCleanupBannerDismissed] = useState(false)
   const [inactiveCount, setInactiveCount] = useState(0)
+  const [highlightDomains, setHighlightDomains] = useState<Set<string>>(new Set())
+  const { myProfileIntent, setMyProfileIntent } = useRouter()
   const {
     groups,
     selectedGroup,
@@ -39,6 +45,43 @@ const EchoesTab = () => {
     refreshGroup,
     deleteGroup
   } = useIntentionGroups()
+
+  // Phase 4: consume navigation intent set by CartDrawer post-tx.
+  //   - highlightDomain (mono) → auto-open GroupDetailView for that domain.
+  //   - highlightDomains (multi) → set a transient highlight set so each freshly-Marked
+  //     bento card gets a "drop-in staggered" entrance.
+  // We clear the intent once consumed so navigating back to the tab feels normal.
+  const intentConsumedRef = useRef(false)
+  useEffect(() => {
+    if (intentConsumedRef.current) return
+    if (!myProfileIntent) return
+    if (groups.length === 0) return
+
+    if (myProfileIntent.highlightDomain) {
+      const target = groups.find(
+        (g) => g.domain === myProfileIntent.highlightDomain
+      )
+      if (target) {
+        intentConsumedRef.current = true
+        selectGroup(target.id)
+        setMyProfileIntent(null)
+      }
+      return
+    }
+
+    if (myProfileIntent.highlightDomains && myProfileIntent.highlightDomains.length > 0) {
+      intentConsumedRef.current = true
+      setHighlightDomains(new Set(myProfileIntent.highlightDomains))
+      setMyProfileIntent(null)
+    }
+  }, [groups, myProfileIntent, selectGroup, setMyProfileIntent])
+
+  // Auto-clear the highlight set once the entrance animation has run its course.
+  useEffect(() => {
+    if (highlightDomains.size === 0) return
+    const t = setTimeout(() => setHighlightDomains(new Set()), HIGHLIGHT_DURATION_MS)
+    return () => clearTimeout(t)
+  }, [highlightDomains])
 
   // Auto-delete groups with 0 active URLs (use ref to avoid infinite loop)
   const deletedGroupsRef = useRef(new Set<string>())
@@ -102,7 +145,7 @@ const EchoesTab = () => {
     const confirmed = window.confirm(
       `Delete "${group.domain}"?\n\n` +
       `⚠️ This will only remove the group from your local view.\n` +
-      `Your on-chain certifications will remain on the blockchain and won't be affected.`
+      `Your on-chain Marks will remain on the blockchain and won't be affected.`
     )
 
     if (confirmed) {
@@ -256,6 +299,13 @@ const EchoesTab = () => {
           >
             Manage
           </button>
+          <button
+            className="sort-btn gm-manage-btn echoes-open-sofia-btn"
+            onClick={() => chrome.tabs.create({ url: getExplorerHomeUrl(), active: true })}
+            title="Open my profile on Sofia"
+          >
+            Open on Sofia ↗
+          </button>
         </div>
 
         {filteredGroups.length === 0 ? (
@@ -264,15 +314,24 @@ const EchoesTab = () => {
           </div>
         ) : (
           <div className="bento-grid">
-            {filteredGroups.map((group) => (
-              <GroupBentoCard
-                key={group.id}
-                group={group}
-                onClick={() => selectGroup(group.id)}
-                onDelete={handleDeleteGroup}
-                size="small"
-              />
-            ))}
+            {(() => {
+              let staggerIndex = 0
+              return filteredGroups.map((group) => {
+                const fresh = highlightDomains.has(group.domain)
+                const order = fresh ? staggerIndex++ : 0
+                return (
+                  <GroupBentoCard
+                    key={group.id}
+                    group={group}
+                    onClick={() => selectGroup(group.id)}
+                    onDelete={handleDeleteGroup}
+                    size="small"
+                    isHighlighted={fresh}
+                    highlightOrder={order}
+                  />
+                )
+              })
+            })()}
           </div>
         )}
       </div>

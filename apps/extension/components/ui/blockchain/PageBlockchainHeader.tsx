@@ -146,8 +146,8 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
         <div className="restricted-page-warning">
           <span className="warning-icon">⚠️</span>
           <div className="warning-content">
-            <strong>Page not certifiable</strong>
-            <p>{restrictionMessage || "This page cannot be certified"}</p>
+            <strong>Page cannot be Marked</strong>
+            <p>{restrictionMessage || "This page cannot be Marked"}</p>
             <p className="restricted-page-hint">
               Navigate to an HTTPS page to sign transactions — e.g.{" "}
               <a
