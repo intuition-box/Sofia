@@ -282,6 +282,22 @@ tl.set('#f2-sweep', { opacity: 0 }, F2 + 4.0);
    and stacks above later scenes via its z-index. Set every
    non-final scene to hidden at its exact end-time.
    ──────────────────────────────────────────────────────────── */
+// Scenes are visible by default — framework's class="clip" doesn't manage
+// exit. We hide every non-active scene at page load and explicitly toggle
+// display at each window boundary, so only the right scene paints at a
+// given timestamp.
+gsap.set(
+  ['#f2-chaos', '#f4-lasso', '#f5-validate', '#f6-social', '#f7-newsearch', '#f8-close'],
+  { display: 'none' }
+);
+// SHOW at scene start
+tl.set('#f2-chaos',     { display: 'block' }, 4.61);
+tl.set('#f4-lasso',     { display: 'block' }, 8.5);
+tl.set('#f5-validate',  { display: 'block' }, 12.0);
+tl.set('#f6-social',    { display: 'block' }, 15.86);
+tl.set('#f7-newsearch', { display: 'block' }, 24.0);
+tl.set('#f8-close',     { display: 'block' }, 28.0);
+// HIDE at scene end
 tl.set('#f1-search',    { display: 'none' }, 4.5);
 tl.set('#f2-chaos',     { display: 'none' }, 4.61 + 3.9);   // 8.51
 tl.set('#f4-lasso',     { display: 'none' }, 8.5 + 3.0);    // 11.5
