@@ -6,6 +6,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import MemberAvatar from './MemberAvatar'
 import CircleCardStats from './CircleCardStats'
 
@@ -21,15 +22,21 @@ export default function TrustCircleCard({
   loading,
 }: TrustCircleCardProps) {
   const navigate = useNavigate()
+  const { addresses: linkedWallets } = useLinkedWallets()
   const visible = members.slice(0, MAX_AVATARS)
   const extra = Math.max(0, members.length - MAX_AVATARS)
-  const addresses = useMemo(
-    () =>
-      members
-        .map((m) => m.walletAddress)
-        .filter((w): w is string => !!w),
-    [members],
-  )
+  // Mirror buildTrustCircle: the feed roster is the union of the
+  // viewer's own linked wallets + every account they trust. Without
+  // the linked wallets the card's stats miss the viewer's own
+  // activity and the number drifts from the detail page (PR #487).
+  const addresses = useMemo(() => {
+    const set = new Set<string>()
+    for (const w of linkedWallets) set.add(w.toLowerCase())
+    for (const m of members) {
+      if (m.walletAddress) set.add(m.walletAddress.toLowerCase())
+    }
+    return [...set]
+  }, [linkedWallets, members])
 
   return (
     <button
