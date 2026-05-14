@@ -30,6 +30,13 @@
   animation: pf-fadein 0.4s ease both;
 }
 
+/* Spacing wrapper on top of the shared .crd-feed-filters chrome so
+   the filter row has its own margin block separate from the hero. */
+.cr-list-filters {
+  margin: 16px 0 20px;
+}
+/* Legacy filter chrome — kept for any usage that still references it,
+   but the /circles page now reuses .crd-feed-filters + popovers. */
 .cr-filters {
   display: flex;
   flex-direction: column;
