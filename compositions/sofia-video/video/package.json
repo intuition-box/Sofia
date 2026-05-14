@@ -1,0 +1,14 @@
+{
+  "name": "video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.6.5 preview",
+    "check": "npx --yes hyperframes@0.6.5 lint && npx --yes hyperframes@0.6.5 validate && npx --yes hyperframes@0.6.5 inspect",
+    "render": "npx --yes hyperframes@0.6.5 render",
+    "publish": "npx --yes hyperframes@0.6.5 publish"
+  },
+  "dependencies": {
+    "@hyperframes/shader-transitions": "^0.6.5"
+  }
+}
