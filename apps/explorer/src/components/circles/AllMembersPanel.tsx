@@ -11,6 +11,7 @@ import { useEnsNames } from '@/hooks/useEnsNames'
 import type { Address } from 'viem'
 import { UserPlus } from 'lucide-react'
 import MemberAvatar from './MemberAvatar'
+import TrustMemberButton from './TrustMemberButton'
 
 const shortAddress = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`
 
@@ -97,7 +98,7 @@ export default function AllMembersPanel({
                 ? shortAddress(m.walletAddress)
                 : ''
               const displayName = ens && ens !== shortAddr ? ens : m.label
-              const inner = (
+              const info = (
                 <>
                   <MemberAvatar member={m} />
                   <div className="crd-member-info">
@@ -108,20 +109,22 @@ export default function AllMembersPanel({
                   </div>
                 </>
               )
-              // Whole row navigates to the member's public profile when
-              // we have a resolved wallet. Members without one render as
-              // a plain <div> — clicking nothing is the right default.
-              return m.walletAddress ? (
-                <Link
-                  key={m.termId}
-                  to={`/profile/${m.walletAddress}`}
-                  className="crd-member-row crd-member-row--link"
-                >
-                  {inner}
-                </Link>
-              ) : (
+              // Outer div hosts the nav target + the action button as
+              // siblings so the Trust action doesn't get swallowed by
+              // the row-wide profile link.
+              return (
                 <div key={m.termId} className="crd-member-row">
-                  {inner}
+                  {m.walletAddress ? (
+                    <Link
+                      to={`/profile/${m.walletAddress}`}
+                      className="crd-member-row__main crd-member-row--link"
+                    >
+                      {info}
+                    </Link>
+                  ) : (
+                    <div className="crd-member-row__main">{info}</div>
+                  )}
+                  <TrustMemberButton member={m} />
                 </div>
               )
             })

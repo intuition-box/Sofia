@@ -1286,12 +1286,23 @@
 .crd-member-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 8px;
+  gap: 10px;
+  padding: 6px 4px;
   border-radius: 8px;
+}
+.crd-member-row__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
   transition: background 0.15s ease;
 }
-.crd-member-row:hover {
+.crd-member-row__main.crd-member-row--link:hover {
   background: var(--ds-bg-subtle);
 }
 .crd-member-row .mav {
@@ -1301,6 +1312,59 @@
   margin: 0;
   border: none;
   flex-shrink: 0;
+}
+/* Trust this member — small pill action sitting at the end of each
+   row in AllMembersPanel. Neutral by default so the "Trusted"
+   state (solid green) keeps the on-chain confirmation visually
+   distinctive. */
+.crd-trust-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-ink-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+.crd-trust-btn:hover:not(:disabled) {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+.crd-trust-btn.is-queued {
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  background: transparent;
+}
+/* On-chain confirmation — solid green pill, read-only. Overrides the
+   generic disabled opacity so the "Trusted" state stays visually
+   strong instead of fading out. */
+.crd-trust-btn.is-trusted {
+  background: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+  color: #02000e;
+  cursor: default;
+}
+.crd-trust-btn.is-trusted:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.crd-trust-btn:disabled:not(.is-trusted) {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .crd-member-info {
   display: flex;
