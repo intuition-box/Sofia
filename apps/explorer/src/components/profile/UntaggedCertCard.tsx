@@ -21,11 +21,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { UrlPreview } from '@/components/UrlPreview'
 import TopicBadge from './TopicBadge'
 
 interface UntaggedCertCardProps {
   certTermId: string
   title: string
+  url: string
   domain: string
   favicon: string
   intentionLabel: string
@@ -36,6 +38,7 @@ const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
 export default function UntaggedCertCard({
   certTermId,
   title,
+  url,
   domain,
   favicon,
   intentionLabel,
@@ -80,8 +83,15 @@ export default function UntaggedCertCard({
 
   return (
     <div
-      className={`ctx-card${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
+      className={`ctx-card ctx-card--has-thumb${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
     >
+      <UrlPreview
+        variant="card"
+        url={url}
+        domain={domain}
+        className="ctx-card-thumb"
+        alt={title || domain}
+      />
       <div className="ctx-card-head">
         {favicon ? (
           <img

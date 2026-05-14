@@ -313,10 +313,56 @@
   transition: border-color 0.15s ease;
 }
 
+.bento-grid-3 .group-bento-card {
+  transition:
+    border-color 0.18s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
 .bento-grid-3 .group-bento-card:hover {
   border-color: var(--ds-ink-soft) !important;
-  transform: none;
-  box-shadow: none;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.4);
+}
+
+/* Image zoom on hover — Netflix-style preview pull-up on the thumb
+   header. The scale on the inner <img> stays clipped by the card's
+   overflow:hidden so it doesn't push past the bandeau. */
+.bento-grid-3 .group-bento-thumb img {
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.bento-grid-3 .group-bento-card:hover .group-bento-thumb img {
+  transform: scale(1.05);
+}
+
+/* Stagger fade-in on first paint — each bento card animates in with
+   a small delay relative to its DOM position so the grid "deploys"
+   instead of slamming in. Caps at 10 to keep the visible window
+   snappy; later cards just appear at the same time as #10. */
+.bento-grid-3 .bento-card {
+  animation: bento-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+.bento-grid-3 .bento-card:nth-child(1) { animation-delay: 0ms; }
+.bento-grid-3 .bento-card:nth-child(2) { animation-delay: 50ms; }
+.bento-grid-3 .bento-card:nth-child(3) { animation-delay: 100ms; }
+.bento-grid-3 .bento-card:nth-child(4) { animation-delay: 150ms; }
+.bento-grid-3 .bento-card:nth-child(5) { animation-delay: 200ms; }
+.bento-grid-3 .bento-card:nth-child(6) { animation-delay: 250ms; }
+.bento-grid-3 .bento-card:nth-child(7) { animation-delay: 300ms; }
+.bento-grid-3 .bento-card:nth-child(8) { animation-delay: 350ms; }
+.bento-grid-3 .bento-card:nth-child(9) { animation-delay: 400ms; }
+.bento-grid-3 .bento-card:nth-child(10) { animation-delay: 450ms; }
+
+@keyframes bento-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Bigger, more legible favicon (extension uses 24px; we bump for the
@@ -717,6 +763,26 @@
   border-color: color-mix(in oklab, var(--foreground) 22%, var(--border));
   box-shadow: 0 10px 24px -16px
     color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+
+/* TopClaim with a URL preview header — image bleeds to the card
+   edges (matches the .tc-card padding via negative margins) with
+   matching top-corner radius. Bottom of the card stays padded for
+   the title + stats + actions bandeau. */
+.tc-card--has-thumb {
+  overflow: hidden;
+}
+.tc-card .tc-thumb.up-card {
+  width: calc(100% + 32px);
+  margin: -14px -16px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
+}
+.tc-card--has-thumb .tc-thumb.up-card img {
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.tc-card--has-thumb:hover .tc-thumb.up-card img {
+  transform: scale(1.05);
 }
 
 .tc-header {

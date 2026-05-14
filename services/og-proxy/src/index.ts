@@ -32,14 +32,12 @@ import { cors } from 'hono/cors'
 
 const PORT = parseInt(process.env.PORT ?? '8787', 10)
 const SUCCESS_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
-const FAILURE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 const CACHE_MAX_ENTRIES = 5000
 const UPSTREAM_TIMEOUT_MS = 8000
 const MAX_HTML_BYTES = 2 * 1024 * 1024
 
 const SUCCESS_CACHE_HEADER =
   'public, max-age=604800, stale-while-revalidate=86400'
-const FAILURE_CACHE_HEADER = 'public, max-age=300'
 
 // ── L1 cache + in-flight dedup ───────────────────────────────────────
 
@@ -240,21 +238,29 @@ async function resolveOg(target: URL, proxyOriginUrl: string): Promise<CacheEntr
     })
   } catch {
     clearTimeout(timer)
-    return failureEntry({ error: 'Fetch failed' }, 502)
+    // Network / timeout / DNS — couldn't even reach upstream. Generate
+    // a fallback card with just the hostname so the client never has
+    // to fall back to a tiny favicon. Cached shorter than a real OG
+    // hit (1h) so the site has a chance to recover.
+    return generatedFallbackEntry(target, proxyOriginUrl)
   }
   clearTimeout(timer)
   if (!res.ok) {
-    return failureEntry({ error: `Upstream ${res.status}` }, 502)
+    // 4xx / 5xx / 403 (Cloudflare bot challenge, auth wall, etc.).
+    // Same idea — generated card keeps the explorer's grid uniform.
+    return generatedFallbackEntry(target, proxyOriginUrl)
   }
   const contentType = res.headers.get('content-type') ?? ''
   if (!contentType.includes('html')) {
-    return failureEntry({ error: 'Not an HTML page' }, 415)
+    // Direct image / PDF / JSON endpoint — no meta to parse. Generate
+    // a fallback card using the hostname.
+    return generatedFallbackEntry(target, proxyOriginUrl)
   }
 
   // Stream the body and bail out if it exceeds the cap — we only need
   // the `<head>` so this protects against giant pages.
   const reader = res.body?.getReader()
-  if (!reader) return failureEntry({ error: 'Empty body' }, 502)
+  if (!reader) return generatedFallbackEntry(target, proxyOriginUrl)
   const decoder = new TextDecoder('utf-8')
   let html = ''
   let read = 0
@@ -298,12 +304,31 @@ function successEntry(payload: OgPayload): CacheEntry {
   }
 }
 
-function failureEntry(body: unknown, status: number): CacheEntry {
+/** Generated SVG fallback — used when we can't read OG tags off the
+ *  upstream (fetch failed, non-HTML, 4xx/5xx, body capped, etc.).
+ *  Returns a 200 with the /render URL so the client treats it like
+ *  any other success. Cached for 1h so transient upstream failures
+ *  get retried eventually, but Cloudflare-locked sites don't hammer
+ *  the proxy on every page load. */
+function generatedFallbackEntry(
+  target: URL,
+  proxyOriginUrl: string,
+): CacheEntry {
+  const params = new URLSearchParams({
+    domain: target.hostname,
+    title: target.hostname,
+  })
+  const payload: OgPayload = {
+    image: `${proxyOriginUrl}/render?${params.toString()}`,
+    title: target.hostname,
+    width: 1200,
+    height: 630,
+  }
   return {
-    body: JSON.stringify(body),
-    status,
-    cacheControl: FAILURE_CACHE_HEADER,
-    expiresAt: Date.now() + FAILURE_TTL_MS,
+    body: JSON.stringify(payload),
+    status: 200,
+    cacheControl: 'public, max-age=3600, stale-while-revalidate=600',
+    expiresAt: Date.now() + 60 * 60 * 1000,
   }
 }
 

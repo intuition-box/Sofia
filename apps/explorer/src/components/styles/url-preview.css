@@ -67,3 +67,17 @@
   flex-shrink: 0;
   display: block;
 }
+
+/* ── Fade-in on load ───────────────────────────────────────────────
+   Cards mount instantly with the sync favicon / GitHub / YouTube
+   thumb. When the async OG-proxy resolves and React swaps in the
+   upgraded image, the new <img> fades from 0 → 1 over 280ms so the
+   transition feels smooth instead of a hard pop. Same treatment on
+   the thumb mini variant. */
+.up-img-loading {
+  opacity: 0;
+}
+.up-img-loaded {
+  opacity: 1;
+  transition: opacity 0.28s ease;
+}

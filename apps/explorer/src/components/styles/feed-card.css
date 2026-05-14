@@ -20,6 +20,33 @@
   height: fit-content;
   text-decoration: none;
   color: inherit;
+  /* Stagger fade-in on grid mount — each card animates in with a
+     small delay relative to its DOM position. Caps at 12 entries so
+     deeply-loaded feeds don't stall their visual arrival. */
+  animation: feed-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+.feed-card:nth-child(1) { animation-delay: 0ms; }
+.feed-card:nth-child(2) { animation-delay: 40ms; }
+.feed-card:nth-child(3) { animation-delay: 80ms; }
+.feed-card:nth-child(4) { animation-delay: 120ms; }
+.feed-card:nth-child(5) { animation-delay: 160ms; }
+.feed-card:nth-child(6) { animation-delay: 200ms; }
+.feed-card:nth-child(7) { animation-delay: 240ms; }
+.feed-card:nth-child(8) { animation-delay: 280ms; }
+.feed-card:nth-child(9) { animation-delay: 320ms; }
+.feed-card:nth-child(10) { animation-delay: 360ms; }
+.feed-card:nth-child(11) { animation-delay: 400ms; }
+.feed-card:nth-child(12) { animation-delay: 440ms; }
+
+@keyframes feed-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .feed-card:hover {
   border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
@@ -44,8 +71,8 @@
   overflow: hidden;
 }
 
-/* Header image — bleeds to the card's inner border via negative margins
-   + calc width. Top corners match the card's 12px radius. */
+/* Header image — bleeds to the card's inner border via negative
+   margins + calc width. Top corners match the card's 12px radius. */
 .feed-card .fc-thumb.up-card,
 .fc .fc-thumb.up-card {
   width: calc(100% + 40px);
@@ -54,12 +81,19 @@
   aspect-ratio: 16 / 9;
 }
 
-/* When the card already shows a header, suppress the tiny favicon
-   inside .fc-head so the brand icon doesn't appear twice. The title +
-   host text stay — they carry the actual information. */
+/* When the card shows a header image, bump the bandeau favicon +
+   title sizes so the site identity remains the visual anchor next to
+   the thumb. */
 .feed-card--has-header .fc-favicon,
 .fc--has-header .fc-favicon {
-  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.feed-card--has-header .fc-title,
+.fc--has-header .fc-title {
+  font-size: 16px;
+  line-height: 1.3;
 }
 .feed-card--has-header .fc-head,
 .fc--has-header .fc-head {
