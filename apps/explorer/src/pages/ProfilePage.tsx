@@ -17,7 +17,6 @@ import InterestsGrid, {
   MAX_INTERESTS,
 } from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
-import CircleImpactSection from '../components/profile/CircleImpactSection'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -188,30 +187,6 @@ export default function ProfilePage() {
       )}
 
       <div className="pp-sections">
-        {/* My impact in Circles — top of the page so the circle footprint
-            reads before anything else. Hidden in view-as mode since the
-            data shape (positions, joined groups) is wired to the current
-            user's wallets, not the wallet being inspected. */}
-        {!isViewingAs && (
-          <CircleImpactSection
-            addresses={myAddresses}
-            certsCount={profile.certs.length}
-          />
-        )}
-
-        {/* Interests */}
-        <section className="pp-section">
-          <SectionH2>{isViewingAs ? 'Interests' : 'My Interests'}</SectionH2>
-          <InterestsGrid
-            selectedTopics={selectedTopics}
-            topicScores={topicScores}
-            onAddTopic={
-              isViewingAs ? undefined : () => navigate('/profile/topics')
-            }
-            onRemoveTopic={isViewingAs ? undefined : removeTopic}
-          />
-        </section>
-
         {/* Profile charts — radar + details + calendar + top platforms + top claim */}
         <ProfileCharts
           topClaims={topClaims}
@@ -223,6 +198,21 @@ export default function ProfilePage() {
           topicScores={topicScores}
           addresses={myAddresses}
         />
+
+        {/* Interests — sits below the calendar so the page leads with
+            on-chain footprint (charts + activity) before asking the
+            user to curate their topic list. */}
+        <section className="pp-section">
+          <SectionH2>{isViewingAs ? 'Interests' : 'My Interests'}</SectionH2>
+          <InterestsGrid
+            selectedTopics={selectedTopics}
+            topicScores={topicScores}
+            onAddTopic={
+              isViewingAs ? undefined : () => navigate('/profile/topics')
+            }
+            onRemoveTopic={isViewingAs ? undefined : removeTopic}
+          />
+        </section>
 
         {/* Echoes */}
         <section className="pp-section">

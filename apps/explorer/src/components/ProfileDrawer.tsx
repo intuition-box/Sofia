@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
-import { useTrustedReceived } from '../hooks/useTrustedReceived'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
@@ -17,7 +16,8 @@ import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
-import { computeDiscoveryBuckets } from '../services/userOnChainProfileService'
+import { useGroups } from '@/hooks/useGroups'
+import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -33,6 +33,11 @@ import './styles/profile-drawer.css'
 interface ProfileDrawerProps {
   isOpen: boolean
   onClose: () => void
+}
+
+function formatStatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
+  return String(n)
 }
 
 // ── Pie chart helper ───────────────────────────────────────────────────
@@ -103,9 +108,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
-  const { count: trustedCount } = useTrustedReceived(
-    linkedAddresses.length > 0 ? linkedAddresses : undefined,
-  )
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
@@ -127,12 +129,21 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // surfaces here — visits_for_* + trusts + distrust — sorted by recency
   // so the panel reads as a true activity feed and not just a trust log.
   const { profile } = useUserOnChainProfile(linkedAddresses)
-  // Pioneer/Explorer/Contributor — derive from the master cert list so the
-  // numbers match the /scores page exactly (single source of truth).
-  const discoveryBuckets = useMemo(
-    () => computeDiscoveryBuckets(profile.certs),
-    [profile.certs],
-  )
+  // Circle impact stats — Trust Circle is implicit (+1) and we add every
+  // on-chain group the user is the subject of an `is_member_of` claim in.
+  const { groups } = useGroups()
+  const positions = useUserPositionTermIds(linkedAddresses)
+  const circlesCount = useMemo(() => {
+    if (linkedAddresses.length === 0) return 1
+    const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
+    const joined = groups.filter((g) =>
+      g.memberships.some((m) => {
+        const w = m.member.walletAddress?.toLowerCase()
+        return w !== undefined && userWallets.has(w)
+      }),
+    )
+    return 1 + joined.length
+  }, [groups, linkedAddresses])
   // Merge cert events (initial certification with a verb) and context
   // additions (later "in context of <topic>" stakes) into one feed so
   // tagging activity isn't invisible just because the underlying cert
@@ -388,53 +399,40 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             <span className="pd-ts-view-arrow">→</span>
           </button>
 
-          {/* Discovery badges */}
+          {/* Circle impact — the footprint that used to live atop the
+              profile page (CircleImpactSection). Reads better here, next
+              to identity and ahead of activity. */}
           <div className="pd-section">
-            <p className="pd-section-title">Discovery</p>
-            <div className="pd-badge-row">
-              {[
-                {
-                  label: 'Pioneer',
-                  value: discoveryBuckets.pioneer.length,
-                  icon: '/badges/pioneer.png',
-                  color: '#e4b95a',
-                  to: '/scores/badges/pioneer',
-                },
-                {
-                  label: 'Explorer',
-                  value: discoveryBuckets.explorer.length,
-                  icon: '/badges/explorer.png',
-                  color: '#5cc4d6',
-                  to: '/scores/badges/explorer',
-                },
-                {
-                  label: 'Contributor',
-                  value: discoveryBuckets.contributor.length,
-                  icon: '/badges/contributor.png',
-                  color: '#a78bdb',
-                  to: '/scores/badges/contributor',
-                },
-                {
-                  label: 'Trusted',
-                  value: trustedCount,
-                  icon: '/badges/trust.png',
-                  color: '#6dd4a0',
-                  to: '/scores',
-                },
-              ].map((b) => (
-                <button
-                  key={b.label}
-                  type="button"
-                  className="pd-badge-card"
-                  style={{ ['--badge-color' as string]: b.color }}
-                  onClick={() => navigate(b.to)}
-                  title={`View ${b.label} details`}
-                >
-                  <img src={b.icon} alt={b.label} className="pd-badge-icon" />
-                  <span className="pd-badge-label">{b.label}</span>
-                  <span className="pd-badge-value">{b.value}</span>
-                </button>
-              ))}
+            <p className="pd-section-title">Circle impact</p>
+            <div
+              className="pd-impact-row"
+              role="group"
+              aria-label="My impact in circles"
+            >
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">{circlesCount}</span>
+                <span className="pd-impact-label">Circles</span>
+              </div>
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">
+                  {formatStatCount(profile.certs.length)}
+                </span>
+                <span className="pd-impact-label">Posts</span>
+              </div>
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">
+                  {formatStatCount(positions.size)}
+                </span>
+                <span className="pd-impact-label">Votes</span>
+              </div>
+              <div
+                className="pd-impact-cell pd-impact-cell--coming"
+                title="Gold sponsored — lands with the Boost feature"
+              >
+                <span className="pd-impact-num">—</span>
+                <span className="pd-impact-label">Gold</span>
+                <span className="pd-impact-soon">soon</span>
+              </div>
             </div>
           </div>
 
