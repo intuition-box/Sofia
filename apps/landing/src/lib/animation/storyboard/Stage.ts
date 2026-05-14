@@ -1,4 +1,6 @@
-import type { gsap } from 'gsap'
+/// <reference types="gsap" />
+
+type Timeline = gsap.core.Timeline
 
 /**
  * Read-only window into the master timeline assigned by the
@@ -16,7 +18,7 @@ export interface StageContext {
   /** Total number of stages in the storyboard. */
   total: number
   /** Master GSAP timeline. Stage adds tweens at `slot.start`. */
-  master: gsap.core.Timeline
+  master: Timeline
   /** Progress range owned by this stage on the master. */
   slot: { start: number; end: number; duration: number }
 }

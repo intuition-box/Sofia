@@ -38,7 +38,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       }}
       ref={lenisRef}
     >
-      {children}
+      {children as never}
     </ReactLenis>
   )
 }

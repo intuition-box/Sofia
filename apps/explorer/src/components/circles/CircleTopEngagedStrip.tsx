@@ -56,7 +56,7 @@ export default function CircleTopEngagedStrip({
               rel="noopener noreferrer"
               title={item.title || host}
             >
-              <span className="crd-te-rank">#{idx + 1}</span>
+              <span className="crd-te-rank">{idx + 1}</span>
               <UrlPreview
                 variant="card"
                 url={item.url}

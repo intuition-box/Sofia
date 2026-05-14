@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { gsap, ScrollTrigger } from '../lib/animation/gsap'
+import { gsap } from '../lib/animation/gsap'
 
 /**
  * Section entry animation — "blueprint draw-in".
