@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const subtitle = searchParams.get('subtitle') || DEFAULT_SUBTITLE
   const eyebrow = (searchParams.get('eyebrow') || DEFAULT_EYEBROW).toUpperCase()
 
-  const logoSrc = 'https://sofia-og.vercel.app/sofia-logo.png'
+  // Self-reference the deployment's origin so the logo loads from whichever
+  // domain serves this route (Coolify og.sofia.intuition.box in prod, localhost in dev).
+  const logoSrc = `${req.nextUrl.origin}/sofia-logo.png`
 
   // Design-system dark tokens (theme.css):
   //   bg #0b0a12, card #13121f, border #25223a,

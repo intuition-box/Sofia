@@ -114,7 +114,7 @@ const config: Config = {
   themeConfig: {
     // OG image served by apps/og (Next.js + @vercel/og).
     // Route source: apps/og/app/api/og/doc/route.tsx — accepts ?title=&subtitle=&eyebrow= for per-page overrides.
-    image: 'https://sofia-og.vercel.app/api/og/doc',
+    image: 'https://og.sofia.intuition.box/api/og/doc',
     metadata: [
       {
         name: 'keywords',
