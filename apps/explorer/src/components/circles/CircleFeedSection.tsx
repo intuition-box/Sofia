@@ -18,6 +18,7 @@ import { useEnsNames } from '@/hooks/useEnsNames'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
+import { useCircleCertifierScores } from '@/hooks/useCircleCertifierScores'
 import {
   displayLabelToIntentionType,
   INTENTION_COLORS,
@@ -130,6 +131,21 @@ export default function CircleFeedSection({
 
   const topEngaged = useMemo(() => computeTopEngaged(items, 4), [items])
 
+  // Unique certifier addresses from the loaded feed — fed into the MCP
+  // batch hook so we get one personalized-trust call per distinct
+  // certifier rather than per feed event.
+  const uniqueCertifiers = useMemo(() => {
+    const s = new Set<string>()
+    for (const item of items) {
+      if (item.certifierAddress) s.add(item.certifierAddress.toLowerCase())
+    }
+    return Array.from(s)
+  }, [items])
+  const { scores: mcpScores } = useCircleCertifierScores(
+    uniqueCertifiers,
+    addresses,
+  )
+
   const filtered = useMemo(() => {
     const base = items
       .filter((item) => {
@@ -226,6 +242,11 @@ export default function CircleFeedSection({
                 certifierAvatar={av}
                 onDeposit={authenticated ? handleDeposit : undefined}
                 livePositionTermIds={livePositionTermIds}
+                mcpScore={
+                  item.certifierAddress
+                    ? mcpScores.get(item.certifierAddress.toLowerCase())
+                    : undefined
+                }
               />
             )
           })}

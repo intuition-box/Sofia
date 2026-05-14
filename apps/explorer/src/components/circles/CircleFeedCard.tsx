@@ -15,7 +15,11 @@ import type { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { computeStars, starTier } from '@/services/circleFeedSort'
+import {
+  computeStars,
+  computeStarsFromTrust,
+  starTier,
+} from '@/services/circleFeedSort'
 import {
   displayLabelToIntentionType,
   INTENTION_CONFIG,
@@ -43,6 +47,14 @@ interface CircleFeedCardProps {
    * updates instantly after a deposit without waiting for a refetch.
    */
   livePositionTermIds?: ReadonlySet<string>
+  /**
+   * Personalized-trust score from the circle's anchors to this item's
+   * certifier, fetched via `useCircleCertifierScores`. When defined
+   * and > 0, the star badge buckets this MCP score instead of the
+   * local support-count heuristic. Falls back gracefully when the MCP
+   * is loading or the score is 0.
+   */
+  mcpScore?: number
 }
 
 const VERB_CLASS_BY_LABEL: Record<string, string> = Object.fromEntries(
@@ -62,6 +74,7 @@ export default function CircleFeedCard({
   certifierName,
   onDeposit,
   livePositionTermIds,
+  mcpScore,
 }: CircleFeedCardProps) {
   const { topicById } = useTaxonomy()
   const host = item.domain || (item.url ? extractDomain(item.url) : '')
@@ -99,7 +112,13 @@ export default function CircleFeedCard({
       userOpposed = true
     }
   }
-  const stars = computeStars(supports)
+  // MCP-driven stars when the circle's anchors trust the certifier;
+  // otherwise fall back to the local support-count heuristic so the
+  // card stays usable when MCP is loading, errors out, or returns 0.
+  const stars =
+    mcpScore !== undefined && mcpScore > 0
+      ? computeStarsFromTrust(mcpScore)
+      : computeStars(supports)
   const totalVotes = supports + opposes
 
   const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
