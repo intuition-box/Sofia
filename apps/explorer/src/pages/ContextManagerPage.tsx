@@ -29,6 +29,7 @@ interface DomainGroup {
   certs: Array<{
     termId: string
     title: string
+    url: string
     domain: string
     favicon: string
     intentionLabel: string
@@ -56,6 +57,7 @@ export default function ContextManagerPage() {
       const row = {
         termId: c.termId,
         title,
+        url,
         domain,
         favicon: domain ? getFaviconUrl(domain) : '',
         intentionLabel,
@@ -137,6 +139,7 @@ export default function ContextManagerPage() {
                     key={row.termId}
                     certTermId={row.termId}
                     title={row.title}
+                    url={row.url}
                     domain={row.domain}
                     favicon={row.favicon}
                     intentionLabel={row.intentionLabel}
