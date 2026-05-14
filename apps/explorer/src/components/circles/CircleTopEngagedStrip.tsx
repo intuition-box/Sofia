@@ -41,7 +41,7 @@ export default function CircleTopEngagedStrip({
         <div className="crd-top-engaged-rule" aria-hidden="true" />
       </div>
       <div className="crd-top-engaged-strip">
-        {items.map((item, idx) => {
+        {items.map((item) => {
           const { supports, opposes } = aggregateCounts(item)
           const stars = computeStars(supports)
           const host = item.domain || (item.url ? extractDomain(item.url) : '')
@@ -56,7 +56,6 @@ export default function CircleTopEngagedStrip({
               rel="noopener noreferrer"
               title={item.title || host}
             >
-              <span className="crd-te-rank">{idx + 1}</span>
               <UrlPreview
                 variant="card"
                 url={item.url}
