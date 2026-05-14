@@ -137,14 +137,15 @@ export default function CartDrawer({
                     </p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <span
-                        className="font-semibold px-1.5 py-[1px] leading-none"
+                        className="font-semibold px-2 py-[3px]"
                         style={{
-                          fontSize: 8,
+                          fontSize: 9,
+                          lineHeight: 1.1,
                           backgroundColor: `${color}20`,
                           borderWidth: '1px',
                           borderStyle: 'solid',
                           borderColor: `${color}40`,
-                          borderRadius: '4px',
+                          borderRadius: '6px',
                         }}
                       >
                         {item.intention}
