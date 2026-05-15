@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     10,
   )
 
-  const logoSrc = 'https://sofia-og.vercel.app/sofia-logo.png'
+  const logoSrc = 'https://og.sofia.intuition.box/sofia-logo.png'
 
   // Status-dependent colors
   const statusColor =

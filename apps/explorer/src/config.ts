@@ -40,7 +40,8 @@ export const PRIVY_CLIENT_ID = import.meta.env.VITE_PRIVY_CLIENT_ID as string
 
 // ── OG Image Service ──
 export const OG_BASE_URL =
-  (import.meta.env.VITE_OG_BASE_URL as string) || 'https://sofia-og.vercel.app'
+  (import.meta.env.VITE_OG_BASE_URL as string) ||
+  'https://og.sofia.intuition.box'
 
 // ── MCP Trust Engine ──
 export const MCP_TRUST_URL =

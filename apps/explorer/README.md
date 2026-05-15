@@ -29,7 +29,7 @@ bun run build       # tsc -b && vite build → dist/
 ```env
 VITE_PRIVY_APP_ID=        # Privy app ID for Web3 auth
 VITE_PRIVY_CLIENT_ID=     # Privy client ID
-VITE_OG_BASE_URL=         # OG image service URL (default: sofia-og.vercel.app)
+VITE_OG_BASE_URL=         # OG image service URL (default: og.sofia.intuition.box)
 VITE_MCP_TRUST_URL=       # MCP Trust Engine URL (default: https://mcp-trust.intuition.box)
 ```
 
@@ -167,7 +167,7 @@ Graph-based trust scores powered by the Intuition MCP Trust Engine. Composite sc
 
 ### Profile Sharing
 
-OG image generation via `sofia-og.vercel.app` with reputation stats, plus Twitter/X share intent.
+OG image generation via `og.sofia.intuition.box` (Coolify-hosted Next.js service in `apps/og`) with reputation stats, plus Twitter/X share intent.
 
 ## Platform Atoms
 

@@ -1,7 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://sofia-og.vercel.app/s/*"],
+  matches: ["https://og.sofia.intuition.box/s/*"],
   all_frames: false,
   run_at: "document_idle"
 }

@@ -17,7 +17,7 @@ import "../styles/Modal.css"
 import "../styles/BatchRewardModal.css"
 
 const logger = createHookLogger("BatchRewardModal")
-const OG_BASE_URL = "https://sofia-og.vercel.app"
+const OG_BASE_URL = "https://og.sofia.intuition.box"
 
 const goldRewardVideoUrl = chrome.runtime.getURL("assets/bggoldreward.mp4")
 const goldReward50VideoUrl = chrome.runtime.getURL(
