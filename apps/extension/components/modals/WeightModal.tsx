@@ -1,35 +1,39 @@
-import { useState, useEffect, useMemo } from "react"
+import { UserBadge } from "@0xsofia/design-system"
+import { useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
-import { useBalance } from "wagmi"
 import { formatUnits, getAddress } from "viem"
+import { useBalance } from "wagmi"
+
+import {
+  GS_FEE_DENOMINATOR,
+  PP_FEE_DENOMINATOR,
+  useFeeEstimate,
+  useGlobalStake,
+  useGoldSystem,
+  usePlatformPool,
+  useWalletFromStorage
+} from "~/hooks"
+import type { ModalTriplet } from "~/hooks"
+import { EXPLORER_URLS } from "~/lib/config/chainConfig"
+import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import { createHookLogger, getFaviconUrl } from "~/lib/utils"
+import { getIntentionBadge } from "~/types/intentionCategories"
 
 import SofiaLoader from "../ui/SofiaLoader"
 import {
-  useWalletFromStorage,
-  useGoldSystem,
-  useFeeEstimate,
-  useGlobalStake,
-  GS_FEE_DENOMINATOR,
-  usePlatformPool,
-  PP_FEE_DENOMINATOR
-} from "~/hooks"
-import type { ModalTriplet } from "~/hooks"
-import { UserBadge } from "@0xsofia/design-system"
-import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { createHookLogger } from "~/lib/utils"
-import WeightItem from "./weight/WeightItem"
-import WeightTotal from "./weight/WeightTotal"
-import WeightActions from "./weight/WeightActions"
-import WeightApplyAllBar from "./weight/WeightApplyAllBar"
-import WeightSuccessCard from "./weight/WeightSuccessCard"
-import {
-  weightOptions,
+  DEFAULT_WEIGHT,
   formatTrust,
   getWeightValue,
-  DEFAULT_WEIGHT,
-  type WeightOptionId,
-  type DiscoveryReward
+  weightOptions,
+  type DiscoveryReward,
+  type WeightOptionId
 } from "./weight/types"
+import WeightActions from "./weight/WeightActions"
+import WeightApplyAllBar from "./weight/WeightApplyAllBar"
+import WeightItem from "./weight/WeightItem"
+import WeightSuccessCard from "./weight/WeightSuccessCard"
+import WeightTotal from "./weight/WeightTotal"
+
 import "../styles/Modal.css"
 
 const logger = createHookLogger("WeightModal")
@@ -132,9 +136,7 @@ const WeightModal = ({
     setUserPercentage: setPPPercentage,
     detectPlatformFromUrl
   } = usePlatformPool()
-  const [ppPerPlatform, setPpPerPlatform] = useState<Record<string, number>>(
-    {}
-  )
+  const [ppPerPlatform, setPpPerPlatform] = useState<Record<string, number>>({})
 
   const setPpForSlug = (slug: string, pct: number) => {
     setPpPerPlatform((prev) => ({ ...prev, [slug]: pct }))
@@ -167,9 +169,7 @@ const WeightModal = ({
   const { totalGold } = useGoldSystem()
   const { estimate } = useFeeEstimate()
 
-  const checksumAddress = walletAddress
-    ? getAddress(walletAddress)
-    : undefined
+  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
   const { data: balanceData } = useBalance({ address: checksumAddress })
 
   const userBalance = balanceData
@@ -402,6 +402,19 @@ const WeightModal = ({
 
   const showSuccessHandoff = transactionSuccess && !!successContent
 
+  // The editable weight-selection step is rendered as the "Amplify" editorial
+  // ticket (B3 basket · V5 hex). Processing / error / success / reward paths
+  // keep their existing markup untouched.
+  const showAmpForm =
+    isFormState &&
+    !isProcessing &&
+    !showSuccessHandoff &&
+    !(rewardClaimed && discoveryReward)
+
+  const ampDateStr = new Date()
+    .toLocaleDateString("fr-FR")
+    .replace(/\//g, " · ")
+
   return createPortal(
     <div className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
       <div className="modal-content">
@@ -412,192 +425,546 @@ const WeightModal = ({
             {successContent}
           </div>
         )}
-        {!(rewardClaimed && discoveryReward) && !showSuccessHandoff && (
-          <>
-            <div className="modal-body">
-              {isFormState && (
-                <p className="modal-description">
+        {!(rewardClaimed && discoveryReward) &&
+          !showSuccessHandoff &&
+          !showAmpForm && (
+            <>
+              <div className="modal-body">
+                {isFormState && (
+                  <p className="modal-description">
+                    {fixedDeposit != null
+                      ? "Review the cost breakdown before confirming."
+                      : "Set your deposit, allocate to pools, review fees and confirm."}
+                  </p>
+                )}
+
+                {isFormState && fixedDeposit == null && activeCount > 1 && (
+                  <WeightApplyAllBar
+                    activeCount={activeCount}
+                    globalWeight={globalWeight}
+                    isProcessing={isProcessing}
+                    onApplyAll={handleApplyAll}
+                  />
+                )}
+
+                {!(transactionSuccess && discoveryReward) && (
+                  <div className="modal-triplets-list">
+                    {triplets.map((triplet, index) => {
+                      if (removedIndices.has(index)) return null
+                      return (
+                        <WeightItem
+                          key={triplet.id}
+                          triplet={triplet}
+                          index={index}
+                          selectedWeight={selectedWeights[index]}
+                          isFormState={isFormState}
+                          isProcessing={isProcessing}
+                          fixedDeposit={fixedDeposit}
+                          showRemoveButton={triplets.length > 1}
+                          canRemove={activeCount > 1}
+                          ppEnabled={ppEnabled}
+                          detectPlatformFromUrl={detectPlatformFromUrl}
+                          getPpForSlug={getPpForSlug}
+                          onPpChange={setPpForSlug}
+                          onWeightSelect={handleWeightSelection}
+                          onRemove={() => {
+                            setRemovedIndices((prev) =>
+                              new Set(prev).add(index)
+                            )
+                            onRemoveTriplet?.(triplet.id)
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                )}
+
+                {isFormState && curveSelector && (
+                  <div className="curve-selector">
+                    <span className="curve-selector-label">Bonding curve:</span>
+                    <div className="curve-toggle">
+                      <button
+                        className={`curve-toggle-btn ${curveSelector.selected === "linear" ? "active" : ""}`}
+                        onClick={() => curveSelector.onChange("linear")}
+                        disabled={isProcessing}>
+                        Linear
+                      </button>
+                      <button
+                        className={`curve-toggle-btn ${curveSelector.selected === "progressive" ? "active" : ""}`}
+                        onClick={() => curveSelector.onChange("progressive")}
+                        disabled={isProcessing}>
+                        Progressive
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isFormState && gsEnabled && (
+                  <div className="gs-slider-section">
+                    <div className="gs-slider-header">
+                      <span className="gs-slider-label">Beta Season Pool</span>
+                      <span className="gs-slider-value">
+                        {gsPercentage / 1000}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={50000}
+                      step={1000}
+                      value={gsPercentage}
+                      onChange={(e) => setGsPercentage(Number(e.target.value))}
+                      className="gs-slider-input"
+                      style={
+                        {
+                          "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
+                        } as React.CSSProperties
+                      }
+                      disabled={isProcessing}
+                    />
+                    <div className="gs-slider-breakdown">
+                      <div className="gs-slider-breakdown-item">
+                        <span className="gs-slider-breakdown-label">
+                          Signal
+                        </span>
+                        <span className="gs-slider-breakdown-value">
+                          {formatTrust(breakdown.signalAmount)} TRUST
+                        </span>
+                      </div>
+                      <div className="gs-slider-breakdown-item">
+                        <span className="gs-slider-breakdown-label">
+                          Beta Season Pool
+                        </span>
+                        <span className="gs-slider-breakdown-value pool">
+                          {formatTrust(breakdown.poolAmount)} TRUST
+                        </span>
+                      </div>
+                    </div>
+                    {breakdown.belowMinimum && (
+                      <span className="gs-slider-minimum-hint">
+                        Below minimum — pool contribution skipped
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {isFormState && (
+                  <WeightTotal
+                    breakdown={breakdown}
+                    userBalance={userBalance}
+                    gsEnabled={gsEnabled}
+                    gsPercentage={gsPercentage}
+                    hasPlatforms={hasPlatforms}
+                    platformLabel={platformLabel}
+                    fixedDeposit={fixedDeposit}
+                  />
+                )}
+
+                {transactionSuccess && (
+                  <WeightSuccessCard
+                    transactionHash={transactionHash}
+                    createdCount={createdCount}
+                    depositCount={depositCount}
+                    showXpAnimation={showXpAnimation}
+                    discoveryReward={discoveryReward}
+                    rewardClaimed={rewardClaimed}
+                    onClaimReward={onClaimReward}
+                    positionBoard={positionBoard}
+                  />
+                )}
+
+                {transactionError && !transactionSuccess && (
+                  <div className="modal-error-section">
+                    <div className="modal-error-icon">❌</div>
+                    <div className="modal-error-text">
+                      <p className="modal-error-title">Transaction Failed</p>
+                      <p className="modal-error-message">
+                        {parseErrorMessage(transactionError)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {isProcessing && !transactionSuccess && (
+                  <>
+                    <div className="modal-processing-section">
+                      <SofiaLoader size={60} />
+                      <div className="modal-processing-text">
+                        <p className="modal-processing-title">Creating</p>
+                        <p className="modal-processing-step">
+                          {processingStep}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="modal-processing-warning">
+                      Do not close or navigate away from this tab
+                    </div>
+                  </>
+                )}
+
+                {!rewardClaimed && !(transactionSuccess && discoveryReward) && (
+                  <WeightActions
+                    isProcessing={isProcessing}
+                    transactionSuccess={transactionSuccess}
+                    transactionError={transactionError}
+                    submitLabel={submitLabel}
+                    breakdown={breakdown}
+                    userBalance={userBalance}
+                    activeCount={activeCount}
+                    onClose={handleClose}
+                    onSubmit={handleSubmit}
+                  />
+                )}
+              </div>
+            </>
+          )}
+
+        {showAmpForm && (
+          <div className="amp b3 b3--v5">
+            <div className="b3-bg b3-bg--v5" aria-hidden="true">
+              <div className="b3-bg-hex b3-bg-hex--1" />
+              <div className="b3-bg-hex b3-bg-hex--2" />
+              <div className="b3-bg-hex b3-bg-hex--3" />
+              <div className="b3-bg-grain" />
+            </div>
+
+            <div className="b3-ticket">
+              <div className="b3-stub">
+                <div className="b3-stub-row">
+                  <span className="b3-stub-k">ITEMS</span>
+                  <span className="b3-stub-v">
+                    {activeCount}/{triplets.length}
+                  </span>
+                </div>
+                <div className="b3-stub-row">
+                  <span className="b3-stub-k">DATE</span>
+                  <span className="b3-stub-v">{ampDateStr}</span>
+                </div>
+              </div>
+              <div className="b3-perf" />
+
+              <div className="b3-body">
+                <div className="b3-headline">
+                  <span className="b3-drop">A</span>
+                  <h1 className="b3-h1">mplify.</h1>
+                </div>
+                <p className="b3-sub">
                   {fixedDeposit != null
                     ? "Review the cost breakdown before confirming."
-                    : "Set your deposit, allocate to pools, review fees and confirm."}
+                    : "Compose your basket — pick a strength for each mark."}
                 </p>
-              )}
 
-              {isFormState && fixedDeposit == null && activeCount > 1 && (
-                <WeightApplyAllBar
-                  activeCount={activeCount}
-                  globalWeight={globalWeight}
-                  isProcessing={isProcessing}
-                  onApplyAll={handleApplyAll}
-                />
-              )}
+                {fixedDeposit == null && activeCount > 1 && (
+                  <div className="b3-presets">
+                    <span className="b3-presets-k">QUICK</span>
+                    {weightOptions.map((o) => (
+                      <button
+                        key={o.id}
+                        className="b3-preset"
+                        type="button"
+                        disabled={isProcessing}
+                        onClick={() => handleApplyAll(o.id)}>
+                        All · {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {!(transactionSuccess && discoveryReward) && (
-                <div className="modal-triplets-list">
+                <div className="b3-basket">
                   {triplets.map((triplet, index) => {
-                    if (removedIndices.has(index)) return null
+                    const on = !removedIndices.has(index)
+                    const sel = selectedWeights[index]
+                    const name = triplet.description || triplet.triplet.object
+                    const badge = getIntentionBadge(triplet.intention)
+                    const topic = triplet.interestContext
+                      ? TOPIC_LABELS[triplet.interestContext]
+                      : null
+                    const topicColor = triplet.interestContext
+                      ? TOPIC_COLORS[triplet.interestContext] || "#888"
+                      : null
+                    const canToggleOff = activeCount > 1
+                    const lockedSingle = triplets.length <= 1
+                    const toggle = () => {
+                      if (lockedSingle || isProcessing) return
+                      if (on) {
+                        if (!canToggleOff) return
+                        setRemovedIndices((prev) => new Set(prev).add(index))
+                        onRemoveTriplet?.(triplet.id)
+                      } else {
+                        setRemovedIndices((prev) => {
+                          const next = new Set(prev)
+                          next.delete(index)
+                          return next
+                        })
+                      }
+                    }
+                    const rowTrust = on ? getWeightValue(sel) : 0
                     return (
-                      <WeightItem
-                        key={triplet.id}
-                        triplet={triplet}
-                        index={index}
-                        selectedWeight={selectedWeights[index]}
-                        isFormState={isFormState}
-                        isProcessing={isProcessing}
-                        fixedDeposit={fixedDeposit}
-                        showRemoveButton={triplets.length > 1}
-                        canRemove={activeCount > 1}
-                        ppEnabled={ppEnabled}
-                        detectPlatformFromUrl={detectPlatformFromUrl}
-                        getPpForSlug={getPpForSlug}
-                        onPpChange={setPpForSlug}
-                        onWeightSelect={handleWeightSelection}
-                        onRemove={() => {
-                          setRemovedIndices((prev) =>
-                            new Set(prev).add(index)
-                          )
-                          onRemoveTriplet?.(triplet.id)
-                        }}
-                      />
+                      <div
+                        className={`b3-row${on ? " is-on" : ""}`}
+                        key={triplet.id}>
+                        <button
+                          className="b3-check"
+                          role="checkbox"
+                          aria-checked={on}
+                          aria-label={on ? "Deselect mark" : "Select mark"}
+                          type="button"
+                          disabled={lockedSingle || (on && !canToggleOff)}
+                          onClick={toggle}>
+                          {on && (
+                            <svg
+                              width="11"
+                              height="11"
+                              viewBox="0 0 24 24"
+                              fill="none">
+                              <path
+                                d="M5 12l4 4L19 6"
+                                stroke="#f5ead3"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </button>
+
+                        <img
+                          src={getFaviconUrl(triplet.url, 32)}
+                          alt=""
+                          className="b3-row-fav"
+                          onError={(e) => {
+                            ;(e.target as HTMLImageElement).style.visibility =
+                              "hidden"
+                          }}
+                        />
+
+                        <div className="b3-row-meta">
+                          <div className="b3-row-kicker">
+                            {triplet.triplet.predicate}
+                          </div>
+                          <div className="b3-row-name" title={name}>
+                            {name}
+                          </div>
+                          <div className="b3-row-sub" title={triplet.url}>
+                            {hostFromUrl(triplet.url)}
+                          </div>
+                          {(badge || topic) && (
+                            <div className="b3-row-tags">
+                              {badge && (
+                                <span
+                                  className="amp-tag"
+                                  style={
+                                    {
+                                      "--tag-color": badge.color,
+                                      "--tag-pastel": badge.color
+                                    } as React.CSSProperties
+                                  }>
+                                  {badge.label}
+                                </span>
+                              )}
+                              {topic && topicColor && (
+                                <span
+                                  className="amp-tag"
+                                  style={
+                                    {
+                                      "--tag-color": topicColor,
+                                      "--tag-pastel": topicColor
+                                    } as React.CSSProperties
+                                  }>
+                                  {topic}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="b3-row-right">
+                          <div className="b3-row-trust">
+                            <span className="b3-row-trust-val">
+                              {fixedDeposit != null
+                                ? "—"
+                                : formatTrust(rowTrust)}
+                            </span>
+                            <span className="b3-row-trust-unit">TRUST</span>
+                          </div>
+                          {fixedDeposit == null && (
+                            <div
+                              className="b3-tiers"
+                              role="radiogroup"
+                              aria-disabled={!on}>
+                              {weightOptions.map((o) => (
+                                <button
+                                  key={o.id}
+                                  role="radio"
+                                  aria-checked={sel === o.id}
+                                  type="button"
+                                  className={`b3-tier${
+                                    sel === o.id ? " is-on" : ""
+                                  }`}
+                                  disabled={!on || isProcessing}
+                                  onClick={() =>
+                                    on && handleWeightSelection(index, o.id)
+                                  }>
+                                  <span className="b3-tier-label">
+                                    {o.label}
+                                  </span>
+                                  <span className="b3-tier-value">
+                                    {o.value}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )
                   })}
                 </div>
-              )}
 
-              {isFormState && curveSelector && (
-                <div className="curve-selector">
-                  <span className="curve-selector-label">Bonding curve:</span>
-                  <div className="curve-toggle">
-                    <button
-                      className={`curve-toggle-btn ${curveSelector.selected === "linear" ? "active" : ""}`}
-                      onClick={() => curveSelector.onChange("linear")}
-                      disabled={isProcessing}>
-                      Linear
-                    </button>
-                    <button
-                      className={`curve-toggle-btn ${curveSelector.selected === "progressive" ? "active" : ""}`}
-                      onClick={() => curveSelector.onChange("progressive")}
-                      disabled={isProcessing}>
-                      Progressive
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {isFormState && gsEnabled && (
-                <div className="gs-slider-section">
-                  <div className="gs-slider-header">
-                    <span className="gs-slider-label">Beta Season Pool</span>
-                    <span className="gs-slider-value">
-                      {gsPercentage / 1000}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={50000}
-                    step={1000}
-                    value={gsPercentage}
-                    onChange={(e) => setGsPercentage(Number(e.target.value))}
-                    className="gs-slider-input"
-                    style={
-                      {
-                        "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
-                      } as React.CSSProperties
-                    }
-                    disabled={isProcessing}
-                  />
-                  <div className="gs-slider-breakdown">
-                    <div className="gs-slider-breakdown-item">
-                      <span className="gs-slider-breakdown-label">Signal</span>
-                      <span className="gs-slider-breakdown-value">
-                        {formatTrust(breakdown.signalAmount)} TRUST
+                {curveSelector && (
+                  <div className="b3-extra">
+                    <div className="curve-selector">
+                      <span className="curve-selector-label">
+                        Bonding curve:
                       </span>
-                    </div>
-                    <div className="gs-slider-breakdown-item">
-                      <span className="gs-slider-breakdown-label">
-                        Beta Season Pool
-                      </span>
-                      <span className="gs-slider-breakdown-value pool">
-                        {formatTrust(breakdown.poolAmount)} TRUST
-                      </span>
+                      <div className="curve-toggle">
+                        <button
+                          className={`curve-toggle-btn ${
+                            curveSelector.selected === "linear" ? "active" : ""
+                          }`}
+                          onClick={() => curveSelector.onChange("linear")}
+                          disabled={isProcessing}>
+                          Linear
+                        </button>
+                        <button
+                          className={`curve-toggle-btn ${
+                            curveSelector.selected === "progressive"
+                              ? "active"
+                              : ""
+                          }`}
+                          onClick={() => curveSelector.onChange("progressive")}
+                          disabled={isProcessing}>
+                          Progressive
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  {breakdown.belowMinimum && (
-                    <span className="gs-slider-minimum-hint">
-                      Below minimum — pool contribution skipped
-                    </span>
+                )}
+
+                {gsEnabled && (
+                  <div className="b3-extra">
+                    <div className="gs-slider-section">
+                      <div className="gs-slider-header">
+                        <span className="gs-slider-label">
+                          Beta Season Pool
+                        </span>
+                        <span className="gs-slider-value">
+                          {gsPercentage / 1000}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={50000}
+                        step={1000}
+                        value={gsPercentage}
+                        onChange={(e) =>
+                          setGsPercentage(Number(e.target.value))
+                        }
+                        className="gs-slider-input"
+                        style={
+                          {
+                            "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
+                          } as React.CSSProperties
+                        }
+                        disabled={isProcessing}
+                      />
+                      <div className="gs-slider-breakdown">
+                        <div className="gs-slider-breakdown-item">
+                          <span className="gs-slider-breakdown-label">
+                            Signal
+                          </span>
+                          <span className="gs-slider-breakdown-value">
+                            {formatTrust(breakdown.signalAmount)} TRUST
+                          </span>
+                        </div>
+                        <div className="gs-slider-breakdown-item">
+                          <span className="gs-slider-breakdown-label">
+                            Beta Season Pool
+                          </span>
+                          <span className="gs-slider-breakdown-value pool">
+                            {formatTrust(breakdown.poolAmount)} TRUST
+                          </span>
+                        </div>
+                      </div>
+                      {breakdown.belowMinimum && (
+                        <span className="gs-slider-minimum-hint">
+                          Below minimum — pool contribution skipped
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="b3-ledger">
+                  <div className="b3-ledger-row">
+                    <span>Subtotal</span>
+                    <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
+                  </div>
+                  {breakdown.poolAmount > 0 && (
+                    <div className="b3-ledger-row">
+                      <span>Beta Season Pool</span>
+                      <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
+                    </div>
                   )}
-                </div>
-              )}
-
-              {isFormState && (
-                <WeightTotal
-                  breakdown={breakdown}
-                  userBalance={userBalance}
-                  gsEnabled={gsEnabled}
-                  gsPercentage={gsPercentage}
-                  hasPlatforms={hasPlatforms}
-                  platformLabel={platformLabel}
-                  fixedDeposit={fixedDeposit}
-                />
-              )}
-
-              {transactionSuccess && (
-                <WeightSuccessCard
-                  transactionHash={transactionHash}
-                  createdCount={createdCount}
-                  depositCount={depositCount}
-                  showXpAnimation={showXpAnimation}
-                  discoveryReward={discoveryReward}
-                  rewardClaimed={rewardClaimed}
-                  onClaimReward={onClaimReward}
-                  positionBoard={positionBoard}
-                />
-              )}
-
-              {transactionError && !transactionSuccess && (
-                <div className="modal-error-section">
-                  <div className="modal-error-icon">❌</div>
-                  <div className="modal-error-text">
-                    <p className="modal-error-title">Transaction Failed</p>
-                    <p className="modal-error-message">
-                      {parseErrorMessage(transactionError)}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {isProcessing && !transactionSuccess && (
-                <>
-                  <div className="modal-processing-section">
-                    <SofiaLoader size={60} />
-                    <div className="modal-processing-text">
-                      <p className="modal-processing-title">Creating</p>
-                      <p className="modal-processing-step">{processingStep}</p>
+                  {breakdown.platformPoolAmount > 0 && (
+                    <div className="b3-ledger-row">
+                      <span>{platformLabel}</span>
+                      <span>
+                        {formatTrust(breakdown.platformPoolAmount)} TRUST
+                      </span>
                     </div>
+                  )}
+                  <div className="b3-ledger-row">
+                    <span>Fees</span>
+                    <span>{formatTrust(breakdown.totalFees)} TRUST</span>
                   </div>
-                  <div className="modal-processing-warning">
-                    Do not close or navigate away from this tab
+                  <div className="b3-ledger-row b3-ledger-total">
+                    <span>Total deposit</span>
+                    <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
                   </div>
-                </>
-              )}
+                  <div className="b3-ledger-row b3-ledger-row--muted">
+                    <span>Your balance</span>
+                    <span>{formatTrust(userBalance)} TRUST</span>
+                  </div>
+                </div>
 
-              {!rewardClaimed && !(transactionSuccess && discoveryReward) && (
-                <WeightActions
-                  isProcessing={isProcessing}
-                  transactionSuccess={transactionSuccess}
-                  transactionError={transactionError}
-                  submitLabel={submitLabel}
-                  breakdown={breakdown}
-                  userBalance={userBalance}
-                  activeCount={activeCount}
-                  onClose={handleClose}
-                  onSubmit={handleSubmit}
-                />
-              )}
+                <div className="b3-actions">
+                  <button
+                    className="b3-btn"
+                    type="button"
+                    onClick={handleClose}
+                    disabled={isProcessing}>
+                    Cancel
+                  </button>
+                  <button
+                    className="b3-btn b3-btn--primary"
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={
+                      isProcessing ||
+                      breakdown.totalEstimate > userBalance ||
+                      activeCount === 0
+                    }>
+                    {submitLabel || "Amplify"}
+                    <span className="b3-btn-amt">
+                      {formatTrust(breakdown.totalEstimate)} T
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
-          </>
+          </div>
         )}
 
         {rewardClaimed && discoveryReward && (
@@ -665,8 +1032,7 @@ const WeightModal = ({
                 <div className="rc-tiers">
                   <div className="rc-tiers-k">Tier ladder</div>
                   {TIER_ORDER.map((tier) => {
-                    const earned =
-                      discoveryReward.status.toLowerCase() === tier
+                    const earned = discoveryReward.status.toLowerCase() === tier
                     return (
                       <div
                         className={`rc-tier${earned ? " is-earned" : ""}`}
