@@ -280,6 +280,151 @@ query GetUserCertsAlltime(
   }
 }
 
+# Sofia circle activity — every Sofia-labeled triple any trusted
+# wallet has actively endorsed, all-time.
+#
+# Mirrors the proven `GetUserCertsAlltime` pattern (Echoes): we
+# filter triples by their predicate label (the 6 visits-for-* verbs
+# + trusts + distrust) instead of trying to identify Sofia data via
+# the proxy `creator` field — predicate labels are stable across
+# proxy redeploys and never disappear after the cert.
+#
+# Each returned triple carries `trustedPositions` (one row per
+# trust-circle member who staked on it) so the service can expand a
+# single triple into N feed cards — one per (member, triple) pair.
+# Vault counts come from `term.vaults` for the support/oppose
+# tallies on the card and from `counter_term.vaults` for the oppose
+# side.
+query GetSofiaCircleActivity(
+  $trustedWallets: [String!]!
+  $userAddresses: [String!] = []
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: { account_id: { _in: $trustedWallets }, shares: { _gt: "0" } }
+    }
+    # Chronological — newest cert triples first. Matches the
+    # `events.created_at: desc` ordering the old query used so page
+    # 1 still reads "what just happened" rather than an arbitrary
+    # term_id-hash sample (which misses the engagement heavy-hitters
+    # on big trust circles).
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    counter_term_id
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      ...AtomMetadata
+    }
+    # Trust-circle positions on this triple — one row per certifier
+    # member, carrying the timestamp the service uses to render the
+    # "X ago" label on each feed card.
+    trustedPositions: positions(
+      where: { account_id: { _in: $trustedWallets }, shares: { _gt: "0" } }
+    ) {
+      account_id
+      created_at
+      shares
+      account {
+        id
+        label
+        image
+      }
+    }
+    # Vaults on the positive term + the counter term — ALL curves
+    # (not filtered to curve 1) so `position_count` matches the sum
+    # the old events query was returning. Sofia certs split shares
+    # across the linear (votes) and progressive (creation) curves;
+    # filtering to one curve halved the support counts and made the
+    # star rating + hot-picks fall apart.
+    term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
+# Aggregate stats for the /circles list card — total cert count,
+# total endorsements, and distinct depositors in the last 7 days.
+# Side-steps the paginated feed so the small "Posts / Votes / Live"
+# tiles always show all-time numbers even when the user never
+# scrolls past page 0 of the feed.
+query GetSofiaCircleListStats(
+  $trustedWallets: [String!]!
+  $predicateLabels: [String!]!
+  $sevenDaysAgo: timestamptz!
+) {
+  # Posts → distinct Sofia certs any trusted wallet still endorses.
+  posts: triples_aggregate(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: { account_id: { _in: $trustedWallets }, shares: { _gt: "0" } }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  # Votes → total active endorsements (positions with shares > 0)
+  # on those Sofia certs by the trusted wallets.
+  votes: positions_aggregate(
+    where: {
+      account_id: { _in: $trustedWallets }
+      shares: { _gt: "0" }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  # Live · 7d → trusted positions created in the last 7 days. We
+  # pull `account_id` so the caller dedupes client-side (the
+  # indexer's `distinct_on` is not generally available on
+  # positions_aggregate).
+  recent: positions(
+    where: {
+      account_id: { _in: $trustedWallets }
+      shares: { _gt: "0" }
+      created_at: { _gte: $sevenDaysAgo }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+  ) {
+    account_id
+  }
+}
+
+# Legacy events-based variant — kept until callers switch, then to
+# be removed. Filters 200 most recent indexer events by Sofia proxy
+# receiver, then post-processes. Suffers from a sparse hit-rate
+# because the indexer-wide firehose is far larger than Sofia's
+# activity.
 query GetSofiaTrustedActivity(
   $trustedWallets: [String!]!
   $proxy: String!

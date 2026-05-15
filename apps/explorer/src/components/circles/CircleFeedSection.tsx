@@ -10,7 +10,7 @@
  * `useEnsNames` call. Verb filter is client-side over the first page
  * of `useCircleFeed` results.
  */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import type { Address } from 'viem'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
@@ -56,6 +56,28 @@ export default function CircleFeedSection({
 }: CircleFeedSectionProps) {
   const { items, loading, loadingMore, hasMore, loadMore, error } =
     useCircleFeed(addresses)
+
+  // Infinite scroll — a sentinel div at the foot of the masonry
+  // triggers `loadMore` automatically as soon as it enters the
+  // viewport. The manual "Load more" pill below stays as a fallback
+  // (keyboard users, no-IntersectionObserver fallback, etc.) and
+  // doubles as a visual end-of-feed marker while loading.
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const node = sentinelRef.current
+    if (!node) return
+    if (!hasMore) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) loadMore()
+      },
+      { rootMargin: '600px 0px' }, // pre-fetch a bit early so the
+      // user never sees an empty bottom while the next page is in
+      // flight.
+    )
+    obs.observe(node)
+    return () => obs.disconnect()
+  }, [hasMore, loadMore])
   const [verb, setVerb] = useState<VerbFilterId>('all')
   const [topic, setTopic] = useState<TopicFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
@@ -271,6 +293,11 @@ export default function CircleFeedSection({
               >
                 {loadingMore ? 'Loading…' : 'Load more'}
               </button>
+              <div
+                ref={sentinelRef}
+                className="crd-feed-loadmore-sentinel"
+                aria-hidden="true"
+              />
             </div>
           )}
         </>

@@ -4,7 +4,11 @@ import { fetchCircleFeed, type CircleItem } from '../services/circleService'
 import { fetchWithRetry } from '../utils/fetchRetry'
 import { useLinkedWallets } from './useLinkedWallets'
 
-const BATCH_SIZE = 200
+// First-page size bumped from 200 → 1000 once we switched to the
+// positions-table query: each row is a (user, triple) endorsement
+// scoped to Sofia-proxy-created triples, so we want a wide net up
+// front and let pagination scroll for the long tail.
+const BATCH_SIZE = 1000
 
 /**
  * Activity authored by the circle's roster.
@@ -50,7 +54,13 @@ export function useCircleFeed(certifierWallets: string[] | undefined) {
   useEffect(() => {
     setExtra([])
     offsetRef.current = BATCH_SIZE
-    setHasMore((initial?.length ?? 0) >= BATCH_SIZE)
+    // Optimistic `hasMore` — the service does dedup + grouping
+    // between the indexer page (BATCH_SIZE triples) and `items`
+    // (one card per (user, URL)), so `items.length >= BATCH_SIZE`
+    // is no longer a reliable end-of-stream signal. We trust the
+    // indexer to flip us to "done" when `loadMore` comes back
+    // empty (handled below).
+    setHasMore((initial?.length ?? 0) > 0)
   }, [initial])
 
   const loadMore = useCallback(async () => {

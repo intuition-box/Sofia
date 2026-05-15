@@ -1516,6 +1516,18 @@
   opacity: 0.6;
   cursor: progress;
 }
+/* Invisible sentinel target for the IntersectionObserver-based
+   infinite scroll. Zero visual footprint — the observer's
+   `rootMargin: '600px 0px'` pre-triggers `loadMore` well before the
+   sentinel scrolls into view, so the user never hits the bottom of
+   the feed without a fresh page already being in flight. */
+.crd-feed-loadmore-sentinel {
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
 .crd-feed-title {
   font-family: 'Fraunces', serif;
   font-size: 26px;
@@ -1927,18 +1939,8 @@
   flex-direction: column;
   gap: 12px;
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.2s ease;
   position: relative;
   color: inherit;
-}
-.crd-te-card:hover {
-  transform: translateY(-3px) rotate(-0.6deg);
-  border-color: var(--circle-color, var(--ds-accent));
-  box-shadow: 0 14px 32px -10px
-    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
 }
 .crd-te-thumb {
   width: 100%;
