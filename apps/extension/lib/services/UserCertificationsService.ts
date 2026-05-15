@@ -9,6 +9,7 @@
  * - lib/config/predicateConstants.ts: predicate constants
  */
 
+import { getAddress } from "viem"
 import { intuitionGraphqlClient } from "../clients/graphql-client"
 import {
   ALL_PREDICATE_IDS,
@@ -146,13 +147,25 @@ class UserCertificationsServiceClass {
         positions?: Array<{ shares: string }>
       }
 
+      // Indexer stores EIP-55 checksum addresses but some old data may be lowercase.
+      // Pass both forms in `_in` filter to catch all positions.
+      let checksumAddr: string
+      try {
+        checksumAddr = getAddress(walletAddress)
+      } catch {
+        checksumAddr = walletAddress
+      }
+      const userAddresses = Array.from(
+        new Set([checksumAddr, walletAddress.toLowerCase()])
+      )
+
       const triples =
         await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
           UserAllCertificationsDocument,
           {
             predicateIds: ALL_PREDICATE_IDS,
             predicateLabels: ALL_PREDICATE_LABELS,
-            userAddresses: walletAddress.toLowerCase()
+            userAddresses
           },
           "triples",
           100,
