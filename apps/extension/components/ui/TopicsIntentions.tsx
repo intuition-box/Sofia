@@ -164,24 +164,64 @@ export function TopicsIntentions({
       }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx={cx} cy={cy} r={Rt} fill="none" stroke={c.ring} strokeWidth="0.75" />
-      <circle cx={cx} cy={cy} r={Rt - 12} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={Ri}
-        fill="none"
-        stroke={c.accentDashed}
-        strokeWidth="0.5"
-        strokeDasharray="2 3"
-      />
-      <circle cx={cx} cy={cy} r={Ri - 50} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
-      <circle cx={cx} cy={cy} r={Ri - 90} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
-      {ticks}
+      {/* ── Animated rotor: only the radar geometry zooms / pivots.
+           Text annotations live OUTSIDE this group so they stay put. ── */}
+      <g className="ti-rotor">
+        <circle cx={cx} cy={cy} r={Rt} fill="none" stroke={c.ring} strokeWidth="0.75" />
+        <circle cx={cx} cy={cy} r={Rt - 12} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={Ri}
+          fill="none"
+          stroke={c.accentDashed}
+          strokeWidth="0.5"
+          strokeDasharray="2 3"
+        />
+        <circle cx={cx} cy={cy} r={Ri - 50} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+        <circle cx={cx} cy={cy} r={Ri - 90} fill="none" stroke={c.ringFaint} strokeWidth="0.5" />
+        {ticks}
 
-      <line x1={cx} y1={cy - Rt - 4} x2={cx} y2={cy + Rt + 4} stroke={c.axis} strokeWidth="0.5" />
-      <line x1={cx - Rt - 4} y1={cy} x2={cx + Rt + 4} y2={cy} stroke={c.axis} strokeWidth="0.5" />
+        <line x1={cx} y1={cy - Rt - 4} x2={cx} y2={cy + Rt + 4} stroke={c.axis} strokeWidth="0.5" />
+        <line x1={cx - Rt - 4} y1={cy} x2={cx + Rt + 4} y2={cy} stroke={c.axis} strokeWidth="0.5" />
 
+        {topics.map((t) => (
+          <circle
+            key={'d' + t.name}
+            cx={cx + Math.cos(rad(t.a)) * Rt}
+            cy={cy + Math.sin(rad(t.a)) * Rt}
+            r="2"
+            fill={c.fg}
+          />
+        ))}
+
+        <polygon
+          points={pts.map((p) => p.xy.map((n) => n.toFixed(1)).join(',')).join(' ')}
+          fill={c.accentFill}
+          stroke={c.accent}
+          strokeWidth="1"
+        />
+        {pts.map((p, i) => (
+          <circle key={'m' + i} cx={p.xy[0]} cy={p.xy[1]} r="3" fill={c.accent} />
+        ))}
+
+        <g transform={`rotate(${ang} ${cx} ${cy})`}>
+          <line
+            x1={cx}
+            y1={cy}
+            x2={cx}
+            y2={cy - Rt}
+            stroke={c.accentLine}
+            strokeWidth="0.75"
+          />
+          <circle cx={cx} cy={cy - Rt} r="2" fill={c.accent} />
+        </g>
+
+        <circle cx={cx} cy={cy} r="6" fill={c.accent} />
+        <circle cx={cx} cy={cy} r="2" fill={c.centerInner} />
+      </g>
+
+      {/* ── Static annotations: never transformed by the rotor. ── */}
       {topics.map((t) => {
         const x = cx + Math.cos(rad(t.a)) * (Rt + 16)
         const y = cy + Math.sin(rad(t.a)) * (Rt + 16)
@@ -204,29 +244,12 @@ export function TopicsIntentions({
           </text>
         )
       })}
-      {topics.map((t) => (
-        <circle
-          key={'d' + t.name}
-          cx={cx + Math.cos(rad(t.a)) * Rt}
-          cy={cy + Math.sin(rad(t.a)) * Rt}
-          r="2"
-          fill={c.fg}
-        />
-      ))}
-
-      <polygon
-        points={pts.map((p) => p.xy.map((n) => n.toFixed(1)).join(',')).join(' ')}
-        fill={c.accentFill}
-        stroke={c.accent}
-        strokeWidth="1"
-      />
       {pts.map((p, i) => {
         const it = intentions[i]
         const lx = cx + Math.cos(rad(it.a)) * (Ri - 4)
         const ly = cy + Math.sin(rad(it.a)) * (Ri - 4)
         return (
-          <g key={i}>
-            <circle cx={p.xy[0]} cy={p.xy[1]} r="3" fill={c.accent} />
+          <g key={'l' + i}>
             <text
               x={lx}
               y={ly - 4}
@@ -252,39 +275,29 @@ export function TopicsIntentions({
         )
       })}
 
-      <g transform={`rotate(${ang} ${cx} ${cy})`}>
-        <line
-          x1={cx}
-          y1={cy}
-          x2={cx}
-          y2={cy - Rt}
-          stroke={c.accentLine}
-          strokeWidth="0.75"
-        />
-        <circle cx={cx} cy={cy - Rt} r="2" fill={c.accent} />
-      </g>
-
-      <circle cx={cx} cy={cy} r="6" fill={c.accent} />
-      <circle cx={cx} cy={cy} r="2" fill={c.centerInner} />
-
-      <g
-        transform="translate(14, 462)"
+      {/* Pinned to the extreme left / right edges of the viewBox. */}
+      <text
+        x={2}
+        y={474}
         fontFamily="JetBrains Mono, monospace"
         fontSize="8"
         fill={c.fgDim}
         letterSpacing="0.15em"
+        textAnchor="start"
       >
-        <text>n = 14 topics · 6 intentions</text>
-      </g>
-      <g
-        transform="translate(380, 462)"
+        n = 14 topics · 6 intentions
+      </text>
+      <text
+        x={478}
+        y={474}
         fontFamily="JetBrains Mono, monospace"
         fontSize="8"
         fill={c.fgDim}
         letterSpacing="0.15em"
+        textAnchor="end"
       >
-        <text>θ · {Math.round(ang)}°</text>
-      </g>
+        θ · {Math.round(ang)}°
+      </text>
     </svg>
   )
 }
