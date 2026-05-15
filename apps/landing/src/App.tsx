@@ -408,7 +408,10 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         justifyContent: 'center',
         overflow: 'hidden',
         borderRadius: 20,
-        background: variant === 'peach' ? 'rgba(255, 198, 176, 0.30)' : 'rgba(2, 0, 14, 0.30)',
+        background:
+          variant === 'peach'
+            ? 'rgba(255, 198, 176, 0.30)'
+            : 'rgba(2, 0, 14, 0.30)',
       }}
     >
       <video
@@ -417,7 +420,12 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         muted
         loop
         playsInline
-        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          display: 'block',
+        }}
       />
     </div>
   ),
