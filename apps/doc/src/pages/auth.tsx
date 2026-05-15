@@ -132,8 +132,8 @@ export default function Auth(): JSX.Element {
               <div className={styles.errorIcon}>✕</div>
               <p className={styles.text}>Signature Required</p>
               <p className={styles.subtext}>
-                The extension needs a signed message to verify ownership of
-                your wallet. User rejected the request.
+                The extension needs a signed message to verify ownership of your
+                wallet. User rejected the request.
               </p>
               <div className={styles.buttonGroup}>
                 <button className={styles.btn}>Retry signature</button>
