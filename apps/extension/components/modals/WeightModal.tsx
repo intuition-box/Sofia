@@ -14,6 +14,7 @@ import {
   PP_FEE_DENOMINATOR
 } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
+import { UserBadge } from "@0xsofia/design-system"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
 import WeightItem from "./weight/WeightItem"
@@ -32,10 +33,17 @@ import {
 import "../styles/Modal.css"
 
 const logger = createHookLogger("WeightModal")
-const goldRewardVideoUrl = chrome.runtime.getURL("assets/bggoldreward.mp4")
-const goldReward50VideoUrl = chrome.runtime.getURL(
-  "assets/bggoldreward50.mp4"
-)
+
+const TIER_ORDER = ["pioneer", "explorer", "contributor"] as const
+type RewardTier = (typeof TIER_ORDER)[number]
+
+const hostFromUrl = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
 
 interface WeightModalProps {
   isOpen: boolean
@@ -229,6 +237,10 @@ const WeightModal = ({
     estimateOptions?.needsContextPredicateAtom ?? false
 
   const activeCount = triplets.length - removedIndices.size
+  const keptTriplets = useMemo(
+    () => triplets.filter((_, i) => !removedIndices.has(i)),
+    [triplets, removedIndices]
+  )
   const breakdown = useMemo(() => {
     let totalTrust = 0
     if (fixedDeposit != null) {
@@ -589,49 +601,130 @@ const WeightModal = ({
         )}
 
         {rewardClaimed && discoveryReward && (
-          <div className="reward-claimed-overlay">
-            <video
-              className="reward-claimed-bg-video"
-              src={
-                discoveryReward.gold >= 25
-                  ? goldReward50VideoUrl
-                  : goldRewardVideoUrl
-              }
-              autoPlay
-              muted
-              loop
-              playsInline
-            />
-            <div className="reward-claimed-content">
-              <div className="reward-claimed-top">
-                <h2 className="reward-claimed-title">
-                  Reward
-                  <br />
-                  Claimed!
-                </h2>
-                <p className="reward-claimed-subtitle">
-                  {discoveryReward.gold} Gold added to your balance
-                </p>
+          <div className="rc">
+            <div className="rc-ember" />
+            <div className="rc-ticket">
+              <div className="rc-stub">
+                <div className="rc-stub-row">
+                  <span className="rc-stub-k">N°</span>
+                  <span className="rc-stub-v">
+                    {transactionHash
+                      ? transactionHash.slice(2, 10).toUpperCase()
+                      : "—"}
+                  </span>
+                </div>
+                <div className="rc-stub-row">
+                  <span className="rc-stub-k">DATE</span>
+                  <span className="rc-stub-v">
+                    {new Date()
+                      .toLocaleDateString("fr-FR")
+                      .replace(/\//g, " · ")}
+                  </span>
+                </div>
               </div>
+              <div className="rc-perf" />
 
-              <div className="reward-claimed-bottom">
-                <p className="reward-claimed-total">
-                  Total: {totalGold} Gold
+              <div className="rc-body">
+                <div className="rc-headline">
+                  <span className="rc-drop">M</span>
+                  <h1 className="rc-h1">
+                    ark
+                    <br />
+                    captured.
+                  </h1>
+                </div>
+                <p className="rc-sub">
+                  {keptTriplets.length === 1
+                    ? "Awarded for marking one page."
+                    : `Awarded for marking ${keptTriplets.length} pages.`}
                 </p>
-                <button
-                  className="reward-continue-btn"
-                  onClick={handleClose}>
-                  Continue Building
-                </button>
-                {transactionHash && (
+
+                <div className="rc-marks">
+                  {keptTriplets.map((t) => (
+                    <div className="rc-mark" key={t.id}>
+                      <span className="rc-mark-verb">
+                        {t.triplet.predicate}
+                      </span>
+                      <span className="rc-mark-obj" title={t.triplet.object}>
+                        {t.description || t.triplet.object}
+                      </span>
+                      <span className="rc-mark-meta">
+                        {t.interestContext && (
+                          <span className="rc-mark-ctx">
+                            {t.interestContext}
+                          </span>
+                        )}
+                        <span className="rc-mark-host">
+                          {hostFromUrl(t.url)}
+                        </span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rc-tiers">
+                  <div className="rc-tiers-k">Tier ladder</div>
+                  {TIER_ORDER.map((tier) => {
+                    const earned =
+                      discoveryReward.status.toLowerCase() === tier
+                    return (
+                      <div
+                        className={`rc-tier${earned ? " is-earned" : ""}`}
+                        key={tier}>
+                        <UserBadge tier={tier as RewardTier} size={16} />
+                        <span className="rc-tier-label">
+                          {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                        </span>
+                        <span className="rc-tier-state">
+                          {earned ? "earned" : "locked"}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="rc-ledger">
+                  <div className="rc-ledger-row">
+                    <span>Gold reward</span>
+                    <span>+ {discoveryReward.gold} G</span>
+                  </div>
+                  <div className="rc-ledger-row rc-ledger-total">
+                    <span>Balance</span>
+                    <span>{totalGold.toLocaleString()} G</span>
+                  </div>
+                </div>
+
+                <div className="rc-actions">
+                  {transactionHash ? (
+                    <a
+                      className="rc-btn rc-btn--primary"
+                      href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      View my Echo →
+                    </a>
+                  ) : (
+                    <button
+                      className="rc-btn rc-btn--primary"
+                      onClick={handleClose}>
+                      View my Echo →
+                    </button>
+                  )}
                   <a
-                    href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                    className="rc-btn"
+                    href={`https://x.com/intent/tweet?text=${encodeURIComponent(
+                      `Just marked ${keptTriplets.length} page${
+                        keptTriplets.length === 1 ? "" : "s"
+                      } on Sofia and earned ${discoveryReward.gold} Gold.`
+                    )}`}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    className="reward-view-tx-link">
-                    View Transaction →
+                    rel="noopener noreferrer">
+                    Share on X
                   </a>
-                )}
+                  <button className="rc-btn" onClick={handleClose}>
+                    Done
+                  </button>
+                </div>
               </div>
             </div>
           </div>
