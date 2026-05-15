@@ -1,4 +1,5 @@
-import { UserBadge } from "@0xsofia/design-system"
+import { UserBadge, VerbTag } from "@0xsofia/design-system"
+import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
 import { useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { formatUnits, getAddress } from "viem"
@@ -17,8 +18,12 @@ import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
-import { getIntentionBadge } from "~/types/intentionCategories"
+import { INTENTION_CONFIG } from "~/types/intentionCategories"
+import type { IntentionType } from "~/types/intentionCategories"
 
+import contributorBadge from "../ui/img/badges/contributor.png"
+import explorerBadge from "../ui/img/badges/explorer.png"
+import pioneerBadge from "../ui/img/badges/pioneer.png"
 import SofiaLoader from "../ui/SofiaLoader"
 import {
   DEFAULT_WEIGHT,
@@ -40,6 +45,12 @@ const logger = createHookLogger("WeightModal")
 
 const TIER_ORDER = ["pioneer", "explorer", "contributor"] as const
 type RewardTier = (typeof TIER_ORDER)[number]
+
+const BADGE_IMAGES: Record<UserBadgeTier, string> = {
+  pioneer: pioneerBadge,
+  explorer: explorerBadge,
+  contributor: contributorBadge
+}
 
 const hostFromUrl = (url: string): string => {
   try {
@@ -398,18 +409,24 @@ const WeightModal = ({
 
   const isFormState = !transactionSuccess && !transactionError
 
-  if (!isOpen || triplets.length === 0) return null
-
   const showSuccessHandoff = transactionSuccess && !!successContent
+
+  // The cart is cleared as soon as the tx succeeds (validated URLs leave the
+  // cart immediately). The reward handoff renders from its own snapshot, so
+  // an empty `triplets` must NOT unmount the modal while a success/reward
+  // surface is active — only bail when there's genuinely nothing to show.
+  const keepOpenForReward =
+    showSuccessHandoff || (rewardClaimed && !!discoveryReward)
+
+  if (!isOpen || (triplets.length === 0 && !keepOpenForReward)) return null
 
   // The editable weight-selection step is rendered as the "Amplify" editorial
   // ticket (B3 basket · V5 hex). Processing / error / success / reward paths
   // keep their existing markup untouched.
+  // Processing stays inside the Amplify ticket (loading overlay below) —
+  // we no longer fall back to the legacy dark modal-body during a tx.
   const showAmpForm =
-    isFormState &&
-    !isProcessing &&
-    !showSuccessHandoff &&
-    !(rewardClaimed && discoveryReward)
+    isFormState && !showSuccessHandoff && !(rewardClaimed && discoveryReward)
 
   const ampDateStr = new Date()
     .toLocaleDateString("fr-FR")
@@ -628,6 +645,17 @@ const WeightModal = ({
               <div className="b3-bg-grain" />
             </div>
 
+            {isProcessing && (
+              <div className="b3-loading" role="status" aria-live="polite">
+                <SofiaLoader size={120} />
+                <p className="b3-loading-title">Amplifying</p>
+                <p className="b3-loading-step">{processingStep}</p>
+                <p className="b3-loading-warn">
+                  Do not close or navigate away from this tab
+                </p>
+              </div>
+            )}
+
             <div className="b3-ticket">
               <div className="b3-stub">
                 <div className="b3-stub-row">
@@ -675,7 +703,18 @@ const WeightModal = ({
                     const on = !removedIndices.has(index)
                     const sel = selectedWeights[index]
                     const name = triplet.description || triplet.triplet.object
-                    const badge = getIntentionBadge(triplet.intention)
+                    const intentKey = triplet.intention
+                      ? (((triplet.intention as string) in INTENTION_CONFIG
+                          ? triplet.intention
+                          : triplet.intention.replace(
+                              /^for_/,
+                              ""
+                            )) as IntentionType)
+                      : null
+                    const intentEntry =
+                      intentKey && intentKey in INTENTION_CONFIG
+                        ? INTENTION_CONFIG[intentKey]
+                        : null
                     const topic = triplet.interestContext
                       ? TOPIC_LABELS[triplet.interestContext]
                       : null
@@ -684,6 +723,10 @@ const WeightModal = ({
                       : null
                     const canToggleOff = activeCount > 1
                     const lockedSingle = triplets.length <= 1
+                    const platform =
+                      ppEnabled && fixedDeposit == null
+                        ? detectPlatformFromUrl(triplet.url)
+                        : null
                     const toggle = () => {
                       if (lockedSingle || isProcessing) return
                       if (on) {
@@ -699,6 +742,11 @@ const WeightModal = ({
                       }
                     }
                     const rowTrust = on ? getWeightValue(sel) : 0
+                    const ppFraction = platform
+                      ? getPpForSlug(platform.slug) / PP_FEE_DENOMINATOR
+                      : 0
+                    const platAmt = on ? rowTrust * ppFraction : 0
+                    const urlAmt = on ? rowTrust - platAmt : 0
                     return (
                       <div
                         className={`b3-row${on ? " is-on" : ""}`}
@@ -748,19 +796,13 @@ const WeightModal = ({
                           <div className="b3-row-sub" title={triplet.url}>
                             {hostFromUrl(triplet.url)}
                           </div>
-                          {(badge || topic) && (
+                          {(intentEntry || topic) && (
                             <div className="b3-row-tags">
-                              {badge && (
-                                <span
-                                  className="amp-tag"
-                                  style={
-                                    {
-                                      "--tag-color": badge.color,
-                                      "--tag-pastel": badge.color
-                                    } as React.CSSProperties
-                                  }>
-                                  {badge.label}
-                                </span>
+                              {intentEntry && (
+                                <VerbTag
+                                  intent={intentKey as IntentionSlug}
+                                  label={intentEntry.label}
+                                />
                               )}
                               {topic && topicColor && (
                                 <span
@@ -816,6 +858,71 @@ const WeightModal = ({
                             </div>
                           )}
                         </div>
+
+                        {platform && fixedDeposit == null && (
+                          <div className={`b3-dest${on ? "" : " is-off"}`}>
+                            <div className="b3-dest-line">
+                              <span className="b3-dest-tag b3-dest-tag--url">
+                                URL
+                              </span>
+                              <span
+                                className="b3-dest-where"
+                                title={triplet.url}>
+                                {hostFromUrl(triplet.url)} · this page
+                              </span>
+                              <span className="b3-dest-amt">
+                                {formatTrust(urlAmt)} T
+                              </span>
+                            </div>
+                            <div className="b3-dest-line">
+                              <span className="b3-dest-tag b3-dest-tag--domain">
+                                DOMAIN
+                              </span>
+                              <span className="b3-dest-where">
+                                {platform.label} · whole platform
+                              </span>
+                              <span className="b3-dest-ctl">
+                                <input
+                                  type="range"
+                                  min={0}
+                                  max={100000}
+                                  step={1000}
+                                  value={getPpForSlug(platform.slug)}
+                                  onChange={(e) =>
+                                    setPpForSlug(
+                                      platform.slug,
+                                      Number(e.target.value)
+                                    )
+                                  }
+                                  disabled={!on || isProcessing}
+                                  aria-label={`${platform.label} share`}
+                                  className="b3-dest-range"
+                                  style={
+                                    {
+                                      "--pp-fill": `${
+                                        getPpForSlug(platform.slug) / 1000
+                                      }%`
+                                    } as React.CSSProperties
+                                  }
+                                />
+                                <span className="b3-dest-pct">
+                                  {(getPpForSlug(platform.slug) / 1000).toFixed(
+                                    0
+                                  )}
+                                  %
+                                </span>
+                              </span>
+                              <span className="b3-dest-amt">
+                                {formatTrust(platAmt)} T
+                              </span>
+                            </div>
+                            <div className="b3-dest-scale" aria-hidden="true">
+                              <span>0</span>
+                              <span>50</span>
+                              <span>100</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -1037,7 +1144,11 @@ const WeightModal = ({
                       <div
                         className={`rc-tier${earned ? " is-earned" : ""}`}
                         key={tier}>
-                        <UserBadge tier={tier as RewardTier} size={16} />
+                        <UserBadge
+                          tier={tier as RewardTier}
+                          iconUrl={BADGE_IMAGES[tier as RewardTier]}
+                          size={32}
+                        />
                         <span className="rc-tier-label">
                           {tier.charAt(0).toUpperCase() + tier.slice(1)}
                         </span>
