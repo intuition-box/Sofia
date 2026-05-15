@@ -25,6 +25,22 @@ export interface FirstClaimData {
   url: string
 }
 
+export type MyProfileTabKey = 'Echoes' | 'Bookmarks' | 'History' | 'Connect'
+
+/**
+ * Transient navigation hint consumed by MyProfilePage / EchoesTab on mount.
+ * Set by callers that navigate to 'my-profile' with a specific target
+ * (Phase 4: post-tx redirect from CartDrawer).
+ */
+export interface MyProfileIntent {
+  /** Which sub-tab to activate. Defaults to whatever MyProfilePage chooses. */
+  initialTab?: MyProfileTabKey
+  /** Mono case: auto-select this group's domain inside EchoesTab. */
+  highlightDomain?: string
+  /** Multi case: animate these domains as freshly-arrived bento cards. */
+  highlightDomains?: string[]
+}
+
 interface RouterContextType {
   currentPage: Page
   navigateTo: (page: Page, data?: any) => void
@@ -40,6 +56,8 @@ interface RouterContextType {
   setOnboardingBookmarks: (bookmarks: BookmarkData[]) => void
   firstClaimData: FirstClaimData | null
   setFirstClaimData: (data: FirstClaimData | null) => void
+  myProfileIntent: MyProfileIntent | null
+  setMyProfileIntent: (intent: MyProfileIntent | null) => void
 }
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined)
@@ -60,6 +78,7 @@ export const RouterProvider = ({
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [onboardingBookmarks, setOnboardingBookmarks] = useState<BookmarkData[]>([])
   const [firstClaimData, setFirstClaimData] = useState<FirstClaimData | null>(null)
+  const [myProfileIntent, setMyProfileIntent] = useState<MyProfileIntent | null>(null)
 
   const navigateTo = (page: Page, data?: any) => {
     setCurrentPage(page)
@@ -161,7 +180,9 @@ export const RouterProvider = ({
     onboardingBookmarks,
     setOnboardingBookmarks,
     firstClaimData,
-    setFirstClaimData
+    setFirstClaimData,
+    myProfileIntent,
+    setMyProfileIntent
   }
 
   return (

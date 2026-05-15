@@ -77,7 +77,7 @@ function useAccountActionButton({
         accountTermId={account.termId}
         accountLabel={account.label}
         label={<><UserPlus size={12} /> add</>}
-        initialWeight="minimum"
+        initialWeight="light"
         className="explorer-add-btn"
         onSuccess={() => {
           followStatus.refetch()

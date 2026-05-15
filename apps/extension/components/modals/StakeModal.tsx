@@ -7,6 +7,7 @@ import XpAnimation from '../ui/XpAnimation'
 import { useWalletFromStorage } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
+import { getTripleUrl } from '../../lib/utils'
 import '../styles/Modal.css'
 
 const logger = createHookLogger('StakeModal')
@@ -172,7 +173,7 @@ const StakeModal = ({
           {/* Triple Display - WeightModal style */}
           <div
             className="modal-triplet-info clickable"
-            onClick={() => window.open(`https://portal.intuition.systems/explore/triple/${tripleId}?tab=positions`, '_blank')}
+            onClick={() => window.open(getTripleUrl(tripleId), '_blank')}
             title="View on Intuition Portal"
           >
             <p>

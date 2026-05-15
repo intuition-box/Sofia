@@ -441,3 +441,176 @@
   height: 14px;
   filter: invert(1);
 }
+
+/* ============================================================
+ * Phase 3b — Mark claim cards inside the reward animation
+ * Foreground: the actual Mark(s) the user just created.
+ * Background: existing goldreward video (untouched).
+ * ============================================================ */
+
+.mark-claim-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto 16px;
+}
+
+.mark-claim-list.is-multi {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mark-claim-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  animation: markClaimCardEnter 380ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.mark-claim-list.is-single .mark-claim-card {
+  padding: 14px 16px;
+}
+
+.mark-claim-card:nth-child(1) { animation-delay: 60ms; }
+.mark-claim-card:nth-child(2) { animation-delay: 140ms; }
+.mark-claim-card:nth-child(3) { animation-delay: 220ms; }
+.mark-claim-card:nth-child(4) { animation-delay: 300ms; }
+.mark-claim-card:nth-child(5) { animation-delay: 380ms; }
+.mark-claim-card:nth-child(6) { animation-delay: 460ms; }
+
+@keyframes markClaimCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mark-claim-card__favicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  object-fit: cover;
+}
+
+.mark-claim-card__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.mark-claim-card__platform {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.2;
+}
+
+.mark-claim-card__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mark-claim-card__reward {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.mark-claim-card__tier {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.mark-claim-card__tier--pioneer {
+  background: linear-gradient(135deg, #f5b94a, #e07b00);
+}
+
+.mark-claim-card__tier--explorer {
+  background: linear-gradient(135deg, #7bb8ff, #4a7ec9);
+}
+
+.mark-claim-card__tier--contributor {
+  background: linear-gradient(135deg, #9aa3ad, #6c7480);
+}
+
+.mark-claim-card__gold {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd86b;
+}
+
+.mark-claim-card--more {
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(0, 0, 0, 0.2);
+  border-style: dashed;
+}
+
+/* Summary + actions */
+
+.reward-claimed-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 16px;
+}
+
+.reward-claimed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.reward-continue-btn--primary {
+  background: linear-gradient(135deg, #ffd86b, #f5a623);
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.reward-continue-btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.reward-continue-btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.reward-continue-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}

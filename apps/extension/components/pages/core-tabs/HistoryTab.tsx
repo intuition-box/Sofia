@@ -5,6 +5,7 @@ import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { BondingCurveChart } from '../../charts/BondingCurveChart'
 import { getAddress } from 'viem'
+import { getTripleUrl, getAtomUrl } from '~/lib/utils'
 import ArrowTopRightIcon from '../../ui/icons/arrow-top-right-thick.svg'
 import LinkVariantIcon from '../../ui/icons/link-variant.svg'
 import '../../styles/CoreComponents.css'
@@ -107,7 +108,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
   }, [triplets, sortBy, searchQuery, redeemedIds])
 
   const handleViewOnPortal = (tripletId: string) => {
-    window.open(`https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`, '_blank')
+    window.open(getTripleUrl(tripletId), '_blank')
   }
 
   const handleStakeClick = (triplet: typeof triplets[0], curve: 1 | 2 = 2) => {
@@ -326,7 +327,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                         </a>
                       ) : (
                         <a
-                          href={`https://portal.intuition.systems/explore/atom/${tripletItem.objectTermId}`}
+                          href={getAtomUrl(tripletItem.objectTermId)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="history-detail-link"

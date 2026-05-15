@@ -23,7 +23,7 @@ import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intent
 import { TOPIC_LABELS, TOPIC_COLORS } from '~/lib/config/topicConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
+import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus, getProfilePlatformUrl } from '~/lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
@@ -140,7 +140,7 @@ const UrlRow = ({
                     key={certInfo.type}
                     className="cert-badge on-chain"
                     style={{ backgroundColor: certInfo.color }}
-                    title={`Certified as ${certInfo.label} (on-chain)`}
+                    title={`Marked as ${certInfo.label} (on-chain)`}
                   >
                     {certInfo.label}
                   </span>
@@ -153,7 +153,7 @@ const UrlRow = ({
                       key={`ctx-${slug}`}
                       className="cert-badge cert-badge--context"
                       style={{ backgroundColor: color }}
-                      title={`Certified in context of ${label}`}
+                      title={`Marked in context of ${label}`}
                     >
                       {label}
                     </span>
@@ -634,6 +634,18 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           />
           <h2 className="group-detail-domain">{group.domain}</h2>
         </div>
+        <button
+          className="pf-btn group-detail-view-on-sofia"
+          onClick={() =>
+            chrome.tabs.create({
+              url: getProfilePlatformUrl(group.domain),
+              active: true
+            })
+          }
+          title={`View all my ${group.domain} Marks on Sofia`}
+        >
+          View all my {group.domain} Marks on Sofia ↗
+        </button>
       </div>
 
       {/* Level Progress — sits above the stats, single source of level info */}

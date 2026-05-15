@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "edits": [
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": ".f3-center",
+        "selectorIndex": 0
+      },
+      "x": -8,
+      "y": 302,
+      "updatedAt": "2026-05-13T21:39:36.451Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#cw-6",
+        "id": "cw-6"
+      },
+      "x": -17,
+      "y": 8,
+      "updatedAt": "2026-05-13T22:26:42.529Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#s1",
+        "id": "s1"
+      },
+      "x": -55,
+      "y": 10,
+      "updatedAt": "2026-05-13T22:57:59.760Z"
+    },
+    {
+      "kind": "box-size",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#s1",
+        "id": "s1"
+      },
+      "width": 1677,
+      "height": 860,
+      "updatedAt": "2026-05-13T22:58:02.049Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#scene1",
+        "id": "scene1"
+      },
+      "x": 20,
+      "y": 49,
+      "updatedAt": "2026-05-13T22:58:03.172Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#composition",
+        "id": "composition"
+      },
+      "x": 25,
+      "y": -8,
+      "updatedAt": "2026-05-13T22:58:05.337Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#f3-intro",
+        "id": "f3-intro"
+      },
+      "x": 8,
+      "y": 35,
+      "updatedAt": "2026-05-13T23:12:29.967Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#f3-sub",
+        "id": "f3-sub"
+      },
+      "x": 8,
+      "y": 50,
+      "updatedAt": "2026-05-13T23:13:16.124Z"
+    },
+    {
+      "kind": "rotation",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#s2",
+        "id": "s2"
+      },
+      "angle": -0.7,
+      "updatedAt": "2026-05-13T23:13:37.149Z"
+    },
+    {
+      "kind": "box-size",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#s2",
+        "id": "s2"
+      },
+      "width": 1338,
+      "height": 774,
+      "updatedAt": "2026-05-13T23:13:39.996Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#scene2",
+        "id": "scene2"
+      },
+      "x": -70,
+      "y": 122,
+      "updatedAt": "2026-05-13T23:13:44.473Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "compositions/transitions-radial.html",
+        "selector": "#s2",
+        "id": "s2"
+      },
+      "x": 265,
+      "y": 2,
+      "updatedAt": "2026-05-13T23:13:51.698Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#lcw-2",
+        "id": "lcw-2"
+      },
+      "x": -2,
+      "y": 296,
+      "updatedAt": "2026-05-14T12:10:03.082Z"
+    },
+    {
+      "kind": "box-size",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#f2-logo",
+        "id": "f2-logo"
+      },
+      "width": 243,
+      "height": 218,
+      "updatedAt": "2026-05-14T14:00:31.115Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#f3-logo",
+        "id": "f3-logo"
+      },
+      "x": 4,
+      "y": 86,
+      "updatedAt": "2026-05-14T14:11:26.487Z"
+    },
+    {
+      "kind": "path-offset",
+      "target": {
+        "sourceFile": "index.html",
+        "selector": "#f2-logo",
+        "id": "f2-logo"
+      },
+      "x": -9,
+      "y": -53,
+      "updatedAt": "2026-05-14T14:59:16.003Z"
+    }
+  ]
+}

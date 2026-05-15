@@ -6,11 +6,21 @@ import { useCart, useCartSubmit } from "~/hooks"
 import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
+import { useRouter } from "../layout/RouterProvider"
 import WeightModal from "../modals/WeightModal"
-import BatchRewardModal from "../modals/BatchRewardModal"
+import BatchRewardContent from "../modals/reward/BatchRewardContent"
+import "../styles/BatchRewardModal.css"
 import type { ModalTriplet } from "~/hooks"
 import type { CartItemRecord } from "~/lib/database"
 import "../styles/CartDrawer.css"
+
+const hostFromUrl = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -21,11 +31,11 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { items, count, atomsToCreate, removeFromCart, clearCart } = useCart()
   const { submitCart, submitting, result, error, reset, clearSubmittedItems } =
     useCartSubmit()
+  const { navigateTo, setMyProfileIntent } = useRouter()
   const [showWeightModal, setShowWeightModal] = useState(false)
-  const [showBatchReward, setShowBatchReward] = useState(false)
   const submittedItemsRef = useRef<CartItemRecord[]>([])
 
-  if (!isOpen && !showBatchReward) return null
+  if (!isOpen) return null
 
   const handleCertifyAll = () => {
     // Save a snapshot of items before submission
@@ -40,21 +50,52 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     await submitCart(items, weight ?? undefined)
   }
 
-  const handleWeightClose = () => {
+  /**
+   * Closes the WeightModal. When the tx succeeded, BatchRewardContent has been
+   * rendered inside the modal (Phase 3a stitching) and the user has now dismissed it
+   * via Done — so we also clear the submitted items and close the cart drawer.
+   * On cancel/error we just close the weight modal and keep the cart open.
+   */
+  const handleWeightClose = async () => {
     setShowWeightModal(false)
     if (result?.success) {
-      // TX succeeded → open batch reward modal
-      setShowBatchReward(true)
+      await clearSubmittedItems()
+      submittedItemsRef.current = []
+      onClose()
     }
     reset()
   }
 
-  const handleBatchRewardClose = async () => {
-    setShowBatchReward(false)
-    // Clear cart after all rewards claimed
+  /**
+   * Primary CTA on the post-tx reward screen.
+   * Mono: navigate to MyProfile › Echoes and auto-open the matching group.
+   * Multi: navigate to MyProfile › Echoes (bento) and highlight every freshly-Marked domain.
+   * In both cases we clean up cart state and close the drawer, like a normal close.
+   */
+  const handleViewEchoes = async () => {
+    const submitted = submittedItemsRef.current
+    const uniqueDomains = Array.from(
+      new Set(submitted.map((item) => hostFromUrl(item.url)))
+    ).filter((d) => d.length > 0)
+
+    if (uniqueDomains.length === 1) {
+      setMyProfileIntent({
+        initialTab: "Echoes",
+        highlightDomain: uniqueDomains[0]
+      })
+    } else if (uniqueDomains.length > 1) {
+      setMyProfileIntent({
+        initialTab: "Echoes",
+        highlightDomains: uniqueDomains
+      })
+    }
+
+    setShowWeightModal(false)
     await clearSubmittedItems()
     submittedItemsRef.current = []
+    reset()
     onClose()
+    navigateTo("my-profile")
   }
 
   // Build modal triplets for WeightModal
@@ -76,7 +117,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   return (
     <>
       {/* Cart Drawer */}
-      {isOpen && !showBatchReward && (
+      {isOpen && (
         <div
           className="cart-drawer-overlay"
           onClick={(e) => {
@@ -206,7 +247,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                 ? `Vote All (${count})`
                 : hasVotes
                   ? `Submit All (${count})`
-                  : `Certify All (${count})`
+                  : `Mark All (${count})`
 
               return (
                 <div className="cart-drawer__footer">
@@ -234,17 +275,15 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         </div>
       )}
 
-      {/* WeightModal for shared weight selection */}
-      {showWeightModal &&
+      {/* WeightModal — stitched with BatchRewardContent on success (Phase 3a) */}
+      {showWeightModal && (
         <WeightModal
           isOpen={showWeightModal}
           triplets={modalTriplets}
           isProcessing={submitting}
           transactionSuccess={result?.success ?? false}
           transactionError={error || undefined}
-          transactionHash={
-            result?.txHash || undefined
-          }
+          transactionHash={result?.txHash || undefined}
           createdCount={result?.createdCount ?? 0}
           depositCount={result?.depositCount ?? 0}
           isIntentionCertification={true}
@@ -255,18 +294,20 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             newPredicateAtomCount: atomsToCreate.newPredicateAtoms,
             needsContextPredicateAtom: atomsToCreate.needsContextPredicateAtom
           }}
+          successContent={
+            <BatchRewardContent
+              items={submittedItemsRef.current}
+              txHash={result?.txHash}
+              onClose={handleWeightClose}
+              onViewEchoes={handleViewEchoes}
+              enabled={!!result?.success}
+            />
+          }
           onRemoveTriplet={(tripletId) => removeFromCart(tripletId)}
           onClose={handleWeightClose}
           onSubmit={handleWeightSubmit}
-        />}
-
-      {/* Batch Reward Modal — claim all + receipt card */}
-      <BatchRewardModal
-        isOpen={showBatchReward}
-        items={submittedItemsRef.current}
-        txHash={result?.txHash}
-        onClose={handleBatchRewardClose}
-      />
+        />
+      )}
     </>
   )
 }
@@ -286,7 +327,9 @@ export const CartFab = ({
   return (
     <button className="cart-fab" onClick={onClick} aria-label="Open cart">
       <ShoppingCart size={20} className="cart-fab__icon" strokeWidth={2} />
-      <span className="cart-fab__badge">{count}</span>
+      <span key={count} className="cart-fab__badge">
+        {count}
+      </span>
     </button>
   )
 }

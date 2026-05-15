@@ -1353,3 +1353,64 @@
   font-style: italic;
   color: #1a1a1a;
 }
+/* ============================================================
+ * Phase 4b — Fresh Mark highlight on EchoesTab bento cards
+ * Drop-in staggered entrance + 2s pulse, then back to normal.
+ * Stagger index is taken from --fresh-stagger-index (set by JS) or
+ * falls back to a small constant when absent.
+ * ============================================================ */
+
+.group-bento-card.is-fresh-mark {
+  animation:
+    freshMarkDropIn 480ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+    freshMarkPulse 2000ms ease-out 480ms;
+  animation-delay: calc(var(--fresh-stagger-index, 0) * 100ms), calc(var(--fresh-stagger-index, 0) * 100ms + 480ms);
+}
+
+@keyframes freshMarkDropIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes freshMarkPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 8px rgba(255, 216, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 216, 107, 0);
+  }
+}
+
+/* Phase 5b — "View all my <domain> Marks on Sofia" CTA inside GroupDetailView header */
+.group-detail-view-on-sofia {
+  margin-top: 12px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-text-muted, rgba(255, 255, 255, 0.65));
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.group-detail-view-on-sofia:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ds-text, #fff);
+  border-color: rgba(255, 255, 255, 0.22);
+}

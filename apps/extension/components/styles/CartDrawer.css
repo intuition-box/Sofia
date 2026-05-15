@@ -442,3 +442,48 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* ============================================================
+ * Add-to-cart feedback — Phase 1a (2026-05-14)
+ * Card flash on add + badge pulse on count change.
+ * ============================================================ */
+
+/* Pulse animation replayed every time the badge mounts (key={count}). */
+.cart-fab__badge {
+  animation: cartBadgePulse 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+@keyframes cartBadgePulse {
+  0% {
+    transform: scale(0.7);
+  }
+  55% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Card flash on successful add-to-cart. */
+.blockchain-card.blockchain-card--cart-burst {
+  animation: cartCardBurst 420ms ease-out;
+}
+
+@keyframes cartCardBurst {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+  35% {
+    transform: scale(1.012);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}

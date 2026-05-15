@@ -617,7 +617,7 @@ const OnboardingClaimModal = ({
                 {txLoading
                   ? "Processing..."
                   : step === 5
-                    ? "Certify"
+                    ? "Mark"
                     : "Continue"}
               </button>
             )}

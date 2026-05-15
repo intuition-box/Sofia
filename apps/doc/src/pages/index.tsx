@@ -79,7 +79,7 @@ export default function Home(): React.ReactElement {
             />
             <DocCard
               title="Features"
-              description="Echoes, intentions, certifications, bookmarks and the rest of the toolkit."
+              description="Echoes, intentions, Marks, bookmarks and the rest of the toolkit."
               href="/docs/features/echoes"
               icon="◑"
             />
