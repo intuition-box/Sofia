@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@0xsofia/graphql', () => ({
-  useGetSofiaTrustedActivityQuery: { fetcher: vi.fn() },
+  useGetSofiaCircleActivityQuery: { fetcher: vi.fn() },
   useGetFollowingCountQuery: { fetcher: vi.fn() },
 }))
 
@@ -12,7 +12,7 @@ vi.mock('@/services/feedProcessing', () => ({
 
 // eslint-disable-next-line import/first
 import {
-  useGetSofiaTrustedActivityQuery,
+  useGetSofiaCircleActivityQuery,
   useGetFollowingCountQuery,
 } from '@0xsofia/graphql'
 // eslint-disable-next-line import/first
@@ -21,7 +21,7 @@ import { processEvents } from '@/services/feedProcessing'
 import { fetchCircleFeed, fetchFollowingCount } from '@/services/circleService'
 
 const mockedActivityFetcher =
-  useGetSofiaTrustedActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
+  useGetSofiaCircleActivityQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 const mockedFollowingFetcher =
   useGetFollowingCountQuery.fetcher as unknown as ReturnType<typeof vi.fn>
 const mockedProcess = processEvents as unknown as ReturnType<typeof vi.fn>
