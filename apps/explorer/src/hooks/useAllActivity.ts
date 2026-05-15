@@ -4,7 +4,10 @@ import { fetchAllActivity } from '../services/activityService'
 import { fetchWithRetry } from '../utils/fetchRetry'
 import type { CircleItem } from '../services/circleService'
 
-const BATCH_SIZE = 200
+// Aligned with `useCircleFeed` so /home and /circles share the same
+// first-page density. The user pays one big fetch up-front then
+// scrolls smoothly through the long tail.
+const BATCH_SIZE = 1000
 
 /**
  * Infinite-scrolling activity feed. The first page is persisted by React Query

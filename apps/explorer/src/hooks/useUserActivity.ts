@@ -22,7 +22,9 @@ import { fetchUserActivity } from '../services/domainActivityService'
 import { fetchWithRetry } from '../utils/fetchRetry'
 import type { CircleItem } from '../services/circleService'
 
-const BATCH_SIZE = 200
+// Aligned with `useCircleFeed` + `useAllActivity` so every feed
+// surface shares the same first-page density.
+const BATCH_SIZE = 1000
 
 export function useUserActivity(addresses: string[] | undefined) {
   const normalized = addresses ? [...addresses].sort() : []
