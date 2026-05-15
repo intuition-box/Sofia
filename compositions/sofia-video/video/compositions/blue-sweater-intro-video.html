@@ -31,7 +31,7 @@
         overflow: hidden;
         background: var(--bg);
         color: var(--ink);
-        font-family: 'Helvetica Neue', Arial, sans-serif;
+        font-family: "Helvetica Neue", Arial, sans-serif;
       }
 
       #root {
@@ -119,7 +119,7 @@
       }
 
       .wordmark .brand-x {
-        font-family: Georgia, 'Times New Roman', serif;
+        font-family: Georgia, "Times New Roman", serif;
         font-size: 0.84em;
         font-weight: 400;
         letter-spacing: -0.02em;
@@ -454,7 +454,7 @@
 
       .panel-plus::before,
       .panel-plus::after {
-        content: '';
+        content: "";
         position: absolute;
         left: 50%;
         top: 50%;
@@ -587,15 +587,11 @@
       }
 
       .social-card::before {
-        content: '';
+        content: "";
         position: absolute;
         inset: 0 0 auto;
         height: 150px;
-        background: linear-gradient(
-          135deg,
-          rgba(20, 134, 184, 0.14),
-          rgba(200, 95, 69, 0.12)
-        );
+        background: linear-gradient(135deg, rgba(20, 134, 184, 0.14), rgba(200, 95, 69, 0.12));
       }
 
       .social-x {
@@ -842,9 +838,8 @@
 
             <div class="input-panel panel-full">
               <div id="promptText" class="prompt-text">
-                Recommend one X creator who actively explores AI technology and,
-                like me, is building an AI startup. I want someone practical,
-                curious, and worth following.
+                Recommend one X creator who actively explores AI technology and, like me, is
+                building an AI startup. I want someone practical, curious, and worth following.
               </div>
               <div class="panel-plus"></div>
               <div class="model">
@@ -868,11 +863,7 @@
               <div class="thinking-line">
                 <span class="claude-star" aria-hidden="true">
                   <svg viewBox="-50 -50 100 100">
-                    <g
-                      stroke="currentColor"
-                      stroke-width="8"
-                      stroke-linecap="round"
-                    >
+                    <g stroke="currentColor" stroke-width="8" stroke-linecap="round">
                       <line x1="0" y1="-38" x2="0" y2="38" />
                       <line x1="-38" y1="0" x2="38" y2="0" />
                       <line x1="-27" y1="-27" x2="27" y2="27" />
@@ -967,171 +958,104 @@
     </div>
 
     <script>
-      window.__timelines = window.__timelines || {}
+      window.__timelines = window.__timelines || {};
 
-      const promptEl = document.querySelector('#promptText')
-      const promptText = promptEl.textContent.replace(/\s+/g, ' ').trim()
-      promptEl.textContent = ''
+      const promptEl = document.querySelector("#promptText");
+      const promptText = promptEl.textContent.replace(/\s+/g, " ").trim();
+      promptEl.textContent = "";
       for (const char of promptText) {
-        const span = document.createElement('span')
-        span.textContent = char
-        promptEl.appendChild(span)
+        const span = document.createElement("span");
+        span.textContent = char;
+        promptEl.appendChild(span);
       }
 
-      const tl = gsap.timeline({
-        paused: true,
-        defaults: { ease: 'power3.out' },
-      })
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
 
-      tl.set(['#warmup', '#intro', '#burst', '#brand', '#ui'], { opacity: 0 })
-      tl.set('#cursor', {
-        x: 690,
-        y: 846,
-        rotation: -8,
-        scale: 0.72,
-        opacity: 0,
-      })
-      tl.set('.panel-full', { opacity: 0 })
-      tl.set('.panel-thinking', { opacity: 0 })
-      tl.set('.prompt-text span', { opacity: 0 })
-      tl.set('#sendFull', { opacity: 0, scale: 0.84 })
-      tl.set(['.selection-box', '.intro-remnant', '.frag', '.final-wordmark'], {
-        opacity: 0,
-      })
-      tl.set(['.x-result', '.social-card'], { opacity: 0 })
-      tl.set('.x-trigger', { scale: 1 })
+      tl.set(["#warmup", "#intro", "#burst", "#brand", "#ui"], { opacity: 0 });
+      tl.set("#cursor", { x: 690, y: 846, rotation: -8, scale: 0.72, opacity: 0 });
+      tl.set(".panel-full", { opacity: 0 });
+      tl.set(".panel-thinking", { opacity: 0 });
+      tl.set(".prompt-text span", { opacity: 0 });
+      tl.set("#sendFull", { opacity: 0, scale: 0.84 });
+      tl.set([".selection-box", ".intro-remnant", ".frag", ".final-wordmark"], { opacity: 0 });
+      tl.set([".x-result", ".social-card"], { opacity: 0 });
+      tl.set(".x-trigger", { scale: 1 });
 
-      tl.to('#warmup', { opacity: 1, duration: 0.01 }, 0)
+      tl.to("#warmup", { opacity: 1, duration: 0.01 }, 0);
       tl.fromTo(
-        '#warmBlock',
-        { x: -820, scaleX: 0.42, opacity: 0, filter: 'blur(14px)' },
-        {
-          x: -25,
-          scaleX: 1,
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.22,
-          ease: 'power2.out',
-        },
+        "#warmBlock",
+        { x: -820, scaleX: 0.42, opacity: 0, filter: "blur(14px)" },
+        { x: -25, scaleX: 1, opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "power2.out" },
         0.02,
-      )
+      );
       tl.to(
-        '#warmBlock',
-        {
-          x: 620,
-          opacity: 0,
-          filter: 'blur(18px)',
-          duration: 0.24,
-          ease: 'power2.in',
-        },
+        "#warmBlock",
+        { x: 620, opacity: 0, filter: "blur(18px)", duration: 0.24, ease: "power2.in" },
         0.25,
-      )
-      tl.to('#warmup', { opacity: 0, duration: 0.08 }, 0.4)
+      );
+      tl.to("#warmup", { opacity: 0, duration: 0.08 }, 0.4);
 
-      tl.to('#intro', { opacity: 1, duration: 0.1 }, 0.44)
+      tl.to("#intro", { opacity: 1, duration: 0.1 }, 0.44);
       tl.fromTo(
-        '#introTitle',
-        { opacity: 0, y: 26, filter: 'blur(10px)' },
-        {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.46,
-          ease: 'expo.out',
-        },
+        "#introTitle",
+        { opacity: 0, y: 26, filter: "blur(10px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.46, ease: "expo.out" },
         0.48,
-      )
-      tl.to('#cursor', { opacity: 1, duration: 0.12 }, 0.44)
+      );
+      tl.to("#cursor", { opacity: 1, duration: 0.12 }, 0.44);
       tl.to(
-        '#cursor',
-        {
-          x: 942,
-          y: 604,
-          rotation: -3,
-          duration: 0.36,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 942, y: 604, rotation: -3, duration: 0.36, ease: "power2.inOut", overwrite: "auto" },
         0.44,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 982,
-          y: 642,
-          rotation: -6,
-          duration: 0.24,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 982, y: 642, rotation: -6, duration: 0.24, ease: "power2.inOut", overwrite: "auto" },
         1.28,
-      )
+      );
       tl.to(
-        '#introTitle',
-        {
-          opacity: 0.26,
-          filter: 'blur(4px)',
-          duration: 0.03,
-          ease: 'power2.in',
-        },
+        "#introTitle",
+        { opacity: 0.26, filter: "blur(4px)", duration: 0.03, ease: "power2.in" },
         1.43,
-      )
+      );
       tl.fromTo(
-        '.intro-remnant',
-        { opacity: 0, x: 0, y: 0, filter: 'blur(2px)' },
+        ".intro-remnant",
+        { opacity: 0, x: 0, y: 0, filter: "blur(2px)" },
         {
           opacity: 0.32,
           x: (index) => [-22, 8, 32, -10][index],
           y: (index) => [-10, 5, -18, 28][index],
-          filter: 'blur(7px)',
+          filter: "blur(7px)",
           duration: 0.055,
           stagger: 0.004,
-          ease: 'power2.out',
+          ease: "power2.out",
         },
         1.435,
-      )
+      );
       tl.to(
-        '#introTitle',
-        {
-          opacity: 0,
-          y: -8,
-          filter: 'blur(10px)',
-          duration: 0.08,
-          ease: 'power2.in',
-        },
+        "#introTitle",
+        { opacity: 0, y: -8, filter: "blur(10px)", duration: 0.08, ease: "power2.in" },
         1.47,
-      )
+      );
       tl.to(
-        '.intro-remnant',
-        { opacity: 0, filter: 'blur(11px)', duration: 0.07, ease: 'power2.in' },
+        ".intro-remnant",
+        { opacity: 0, filter: "blur(11px)", duration: 0.07, ease: "power2.in" },
         1.49,
-      )
-      tl.to('#intro', { opacity: 0, duration: 0.06 }, 1.56)
+      );
+      tl.to("#intro", { opacity: 0, duration: 0.06 }, 1.56);
 
-      tl.to('#burst', { opacity: 1, duration: 0.02 }, 1.4)
+      tl.to("#burst", { opacity: 1, duration: 0.02 }, 1.4);
       tl.fromTo(
-        '.burst-star',
+        ".burst-star",
         { opacity: 0, scale: 0.08, rotation: -20 },
-        {
-          opacity: 1,
-          scale: 0.16,
-          rotation: -6,
-          duration: 0.08,
-          ease: 'power2.out',
-        },
+        { opacity: 1, scale: 0.16, rotation: -6, duration: 0.08, ease: "power2.out" },
         1.43,
-      )
+      );
       tl.to(
-        '.burst-star',
-        {
-          scale: 1,
-          rotation: 0,
-          duration: 0.42,
-          ease: 'expo.out',
-          overwrite: 'auto',
-        },
+        ".burst-star",
+        { scale: 1, rotation: 0, duration: 0.42, ease: "expo.out", overwrite: "auto" },
         1.55,
-      )
+      );
       const blockPaths = [
         {
           source: [-1, 28],
@@ -1178,12 +1102,12 @@
           release: [-92, -87],
           fade: 2.33,
         },
-      ]
-      gsap.utils.toArray('.burst-block').forEach((block, index) => {
-        const path = blockPaths[index]
+      ];
+      gsap.utils.toArray(".burst-block").forEach((block, index) => {
+        const path = blockPaths[index];
         if (!path) {
-          tl.set(block, { opacity: 0 })
-          return
+          tl.set(block, { opacity: 0 });
+          return;
         }
         tl.set(
           block,
@@ -1192,22 +1116,22 @@
             y: path.source[1],
             scale: 0.78,
             rotation: index % 2 ? 3 : -3,
-            filter: 'blur(8px)',
+            filter: "blur(8px)",
           },
           1.45,
-        )
+        );
         tl.to(
           block,
           {
             opacity: 1,
             scale: 1,
             rotation: 0,
-            filter: 'blur(0px)',
+            filter: "blur(0px)",
             duration: 0.055,
-            ease: 'power3.out',
+            ease: "power3.out",
           },
           1.455,
-        )
+        );
         tl.to(
           block,
           {
@@ -1215,10 +1139,10 @@
             y: path.scatter[1],
             rotation: index % 2 ? 2 : -2,
             duration: 0.2,
-            ease: 'sine.out',
+            ease: "sine.out",
           },
           1.5,
-        )
+        );
         tl.to(
           block,
           {
@@ -1226,21 +1150,15 @@
             y: path.drift[1],
             rotation: index % 2 ? 1 : -1,
             duration: 0.2,
-            ease: 'sine.inOut',
+            ease: "sine.inOut",
           },
           1.7,
-        )
+        );
         tl.to(
           block,
-          {
-            x: path.select[0],
-            y: path.select[1],
-            rotation: 0,
-            duration: 0.2,
-            ease: 'sine.inOut',
-          },
+          { x: path.select[0], y: path.select[1], rotation: 0, duration: 0.2, ease: "sine.inOut" },
           1.9,
-        )
+        );
         tl.to(
           block,
           {
@@ -1248,12 +1166,12 @@
             y: path.squeeze[1],
             scale: 1,
             rotation: 0,
-            filter: 'blur(0.6px)',
+            filter: "blur(0.6px)",
             duration: 0.07,
-            ease: 'sine.inOut',
+            ease: "sine.inOut",
           },
           2.1,
-        )
+        );
         tl.to(
           block,
           {
@@ -1261,125 +1179,77 @@
             y: path.release[1],
             scale: 0.84,
             rotation: 0,
-            filter: 'blur(1.5px)',
+            filter: "blur(1.5px)",
             duration: 0.05,
-            ease: 'sine.inOut',
+            ease: "sine.inOut",
           },
           2.17,
-        )
+        );
         tl.to(
           block,
-          {
-            opacity: 0,
-            scale: 0.38,
-            filter: 'blur(7px)',
-            duration: 0.05,
-            ease: 'power2.in',
-          },
+          { opacity: 0, scale: 0.38, filter: "blur(7px)", duration: 0.05, ease: "power2.in" },
           path.fade,
-        )
-      })
+        );
+      });
       tl.to(
-        '#cursor',
-        {
-          x: 1540,
-          y: 112,
-          rotation: -9,
-          duration: 0.26,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1540, y: 112, rotation: -9, duration: 0.26, ease: "power2.inOut", overwrite: "auto" },
         1.56,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 380,
-          y: 252,
-          rotation: -7,
-          duration: 0.16,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 380, y: 252, rotation: -7, duration: 0.16, ease: "power2.inOut", overwrite: "auto" },
         1.82,
-      )
+      );
       tl.fromTo(
-        '.selection-box',
-        {
-          opacity: 0,
-          scaleX: 0.06,
-          scaleY: 0.1,
-          x: 0,
-          y: 0,
-          filter: 'blur(3px)',
-        },
+        ".selection-box",
+        { opacity: 0, scaleX: 0.06, scaleY: 0.1, x: 0, y: 0, filter: "blur(3px)" },
         {
           opacity: 1,
           scaleX: 1,
           scaleY: 1,
           x: 42,
           y: 52,
-          filter: 'blur(0px)',
+          filter: "blur(0px)",
           duration: 0.18,
-          ease: 'power2.out',
+          ease: "power2.out",
         },
         1.96,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 930,
-          y: 478,
-          rotation: -4,
-          duration: 0.14,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 930, y: 478, rotation: -4, duration: 0.14, ease: "power2.inOut", overwrite: "auto" },
         1.96,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 1168,
-          y: 560,
-          rotation: -4,
-          duration: 0.14,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1168, y: 560, rotation: -4, duration: 0.14, ease: "power2.inOut", overwrite: "auto" },
         2.12,
-      )
+      );
       tl.to(
-        '.selection-box',
-        {
-          x: 220,
-          y: 158,
-          width: 640,
-          height: 190,
-          duration: 0.2,
-          ease: 'power2.inOut',
-        },
+        ".selection-box",
+        { x: 220, y: 158, width: 640, height: 190, duration: 0.2, ease: "power2.inOut" },
         2.16,
-      )
+      );
       tl.to(
-        '.burst-star',
+        ".burst-star",
         {
           x: 118,
           y: -62,
           scale: 0.16,
           opacity: 0.45,
           duration: 0.18,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
+          ease: "power2.inOut",
+          overwrite: "auto",
         },
         2.12,
-      )
+      );
 
-      tl.to('#brand', { opacity: 1, duration: 0.04 }, 2.08)
+      tl.to("#brand", { opacity: 1, duration: 0.04 }, 2.08);
 
       const fragmentMotion = [
         {
-          selector: '.frag-alg',
+          selector: ".frag-alg",
           from: [112, -118, 4],
           carry: [88, -96],
           settle: [20, -24],
@@ -1387,7 +1257,7 @@
           visible: 1,
         },
         {
-          selector: '.frag-row',
+          selector: ".frag-row",
           from: [-12, 78, 5],
           carry: [-22, 56],
           settle: [-8, 18],
@@ -1395,7 +1265,7 @@
           visible: 1,
         },
         {
-          selector: '.frag-x',
+          selector: ".frag-x",
           from: [38, 70, 7],
           carry: [18, 48],
           settle: [6, 14],
@@ -1403,7 +1273,7 @@
           visible: 0.82,
         },
         {
-          selector: '.frag-clau',
+          selector: ".frag-clau",
           from: [-82, -108, 4],
           carry: [-54, -78],
           settle: [-18, -18],
@@ -1411,14 +1281,14 @@
           visible: 1,
         },
         {
-          selector: '.frag-de',
+          selector: ".frag-de",
           from: [62, 22, 5],
           carry: [38, 12],
           settle: [12, 4],
           lock: [0, 0],
           visible: 1,
         },
-      ]
+      ];
 
       fragmentMotion.forEach((piece, index) => {
         tl.fromTo(
@@ -1435,169 +1305,114 @@
             x: piece.carry[0],
             y: piece.carry[1],
             scale: 1,
-            filter: 'blur(1.2px)',
+            filter: "blur(1.2px)",
             duration: 0.16,
-            ease: 'sine.out',
-            overwrite: 'auto',
+            ease: "sine.out",
+            overwrite: "auto",
           },
           2.12 + index * 0.004,
-        )
+        );
         tl.to(
           piece.selector,
           {
             x: piece.settle[0],
             y: piece.settle[1],
             opacity: piece.visible,
-            filter: 'blur(0.35px)',
+            filter: "blur(0.35px)",
             duration: 0.28,
-            ease: 'power3.out',
-            overwrite: 'auto',
+            ease: "power3.out",
+            overwrite: "auto",
           },
           2.28 + index * 0.003,
-        )
+        );
         tl.to(
           piece.selector,
           {
             opacity: 0,
             x: piece.settle[0] + [8, -6, 2, -8, 6][index],
             y: piece.settle[1] + [-6, 7, 4, -5, 3][index],
-            filter: 'blur(4px)',
+            filter: "blur(4px)",
             duration: 0.14,
-            ease: 'power2.out',
-            overwrite: 'auto',
+            ease: "power2.out",
+            overwrite: "auto",
           },
           2.31 + index * 0.002,
-        )
-      })
+        );
+      });
 
       tl.fromTo(
-        '.final-wordmark',
-        { opacity: 0, x: -12, y: 8, scale: 0.995, filter: 'blur(5px)' },
+        ".final-wordmark",
+        { opacity: 0, x: -12, y: 8, scale: 0.995, filter: "blur(5px)" },
         {
           opacity: 1,
           x: 0,
           y: 0,
           scale: 1,
-          filter: 'blur(0px)',
+          filter: "blur(0px)",
           duration: 0.24,
-          ease: 'power4.out',
-          overwrite: 'auto',
+          ease: "power4.out",
+          overwrite: "auto",
         },
         2.38,
-      )
+      );
+      tl.to(".burst-star", { opacity: 0, duration: 0.12, ease: "power2.in" }, 2.32);
       tl.to(
-        '.burst-star',
-        { opacity: 0, duration: 0.12, ease: 'power2.in' },
-        2.32,
-      )
-      tl.to(
-        '.selection-box',
-        { opacity: 0, filter: 'blur(5px)', duration: 0.16, ease: 'power2.in' },
+        ".selection-box",
+        { opacity: 0, filter: "blur(5px)", duration: 0.16, ease: "power2.in" },
         2.33,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 1256,
-          y: 587,
-          rotation: -3,
-          duration: 0.3,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1256, y: 587, rotation: -3, duration: 0.3, ease: "power2.inOut", overwrite: "auto" },
         2.34,
-      )
+      );
+      tl.to("#burst", { opacity: 0, filter: "blur(6px)", duration: 0.14, ease: "power2.in" }, 2.58);
+      tl.to("#cursor", { opacity: 0, duration: 0.13, ease: "power2.in" }, 2.86);
+      tl.set("#cursor", { opacity: 0 }, 3.0);
       tl.to(
-        '#burst',
-        { opacity: 0, filter: 'blur(6px)', duration: 0.14, ease: 'power2.in' },
-        2.58,
-      )
-      tl.to('#cursor', { opacity: 0, duration: 0.13, ease: 'power2.in' }, 2.86)
-      tl.set('#cursor', { opacity: 0 }, 3.0)
-      tl.to(
-        '#brand',
-        {
-          opacity: 0,
-          y: 26,
-          filter: 'blur(9px)',
-          duration: 0.22,
-          ease: 'power2.in',
-        },
+        "#brand",
+        { opacity: 0, y: 26, filter: "blur(9px)", duration: 0.22, ease: "power2.in" },
         2.9,
-      )
+      );
 
-      tl.to('#ui', { opacity: 1, duration: 0.08 }, 3.02)
+      tl.to("#ui", { opacity: 1, duration: 0.08 }, 3.02);
       tl.fromTo(
-        '.input-stack',
-        { opacity: 0, scale: 0.88, y: 92, filter: 'blur(14px)' },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.66,
-          ease: 'expo.out',
-        },
+        ".input-stack",
+        { opacity: 0, scale: 0.88, y: 92, filter: "blur(14px)" },
+        { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", duration: 0.66, ease: "expo.out" },
         3.05,
-      )
+      );
       tl.fromTo(
-        '.star-panel',
+        ".star-panel",
         { opacity: 0, scale: 0.5, rotation: -16 },
-        {
-          opacity: 1,
-          scale: 1,
-          rotation: 0,
-          duration: 0.38,
-          ease: 'power3.out',
-        },
+        { opacity: 1, scale: 1, rotation: 0, duration: 0.38, ease: "power3.out" },
         3.18,
-      )
+      );
+      tl.fromTo(".placeholder", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.34 }, 3.3);
       tl.fromTo(
-        '.placeholder',
-        { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.34 },
-        3.3,
-      )
-      tl.fromTo(
-        '.panel-empty .panel-plus, .panel-empty .model',
+        ".panel-empty .panel-plus, .panel-empty .model",
         { opacity: 0, y: 10 },
         { opacity: 1, y: 0, duration: 0.3, stagger: 0.06 },
         3.42,
-      )
+      );
 
+      tl.to(".panel-empty", { opacity: 0, duration: 0.18, ease: "power2.inOut" }, 4.12);
+      tl.to(".panel-full", { opacity: 1, duration: 0.18, ease: "power2.inOut" }, 4.12);
       tl.to(
-        '.panel-empty',
-        { opacity: 0, duration: 0.18, ease: 'power2.inOut' },
-        4.12,
-      )
-      tl.to(
-        '.panel-full',
-        { opacity: 1, duration: 0.18, ease: 'power2.inOut' },
-        4.12,
-      )
-      tl.to(
-        '.input-stack',
-        { scale: 1.32, x: 300, y: -100, duration: 0.26, ease: 'power2.inOut' },
+        ".input-stack",
+        { scale: 1.32, x: 300, y: -100, duration: 0.26, ease: "power2.inOut" },
         4.14,
-      )
-      tl.to(
-        '.input-stack',
-        { scale: 1, x: 0, y: 0, duration: 0.74, ease: 'power2.inOut' },
-        4.92,
-      )
+      );
+      tl.to(".input-stack", { scale: 1, x: 0, y: 0, duration: 0.74, ease: "power2.inOut" }, 4.92);
 
       tl.to(
-        '.prompt-text span',
-        { opacity: 1, duration: 0.01, stagger: { amount: 2.85 }, ease: 'none' },
+        ".prompt-text span",
+        { opacity: 1, duration: 0.01, stagger: { amount: 2.85 }, ease: "none" },
         4.18,
-      )
-      tl.to(
-        '#sendFull',
-        { opacity: 1, scale: 1, duration: 0.24, ease: 'power3.out' },
-        7.32,
-      )
+      );
+      tl.to("#sendFull", { opacity: 1, scale: 1, duration: 0.24, ease: "power3.out" }, 7.32);
       tl.fromTo(
-        '#cursor',
+        "#cursor",
         { x: 1328, y: 900, rotation: -6, scale: 1, opacity: 0 },
         {
           x: 1530,
@@ -1606,185 +1421,103 @@
           scale: 1,
           opacity: 1,
           duration: 0.48,
-          ease: 'power2.inOut',
+          ease: "power2.inOut",
         },
         6.92,
-      )
+      );
       tl.to(
-        '#cursor',
-        { x: 1512, y: 620, rotation: -5, duration: 0.5, ease: 'power2.inOut' },
+        "#cursor",
+        { x: 1512, y: 620, rotation: -5, duration: 0.5, ease: "power2.inOut" },
         7.44,
-      )
+      );
 
+      tl.to("#sendFull", { scale: 0.86, duration: 0.08, ease: "power2.in", overwrite: "auto" }, 7.9);
+      tl.to("#sendFull", { scale: 1, duration: 0.14, ease: "back.out(1.7)", overwrite: "auto" }, 7.98);
+      tl.to(".panel-full", { opacity: 0, duration: 0.16, ease: "power2.inOut" }, 8.15);
+      tl.to(".panel-thinking", { opacity: 1, duration: 0.18, ease: "power2.inOut" }, 8.15);
+      tl.set(".thinking-line", { opacity: 0 }, 8.24);
       tl.to(
-        '#sendFull',
-        { scale: 0.86, duration: 0.08, ease: 'power2.in', overwrite: 'auto' },
-        7.9,
-      )
-      tl.to(
-        '#sendFull',
-        { scale: 1, duration: 0.14, ease: 'back.out(1.7)', overwrite: 'auto' },
-        7.98,
-      )
-      tl.to(
-        '.panel-full',
-        { opacity: 0, duration: 0.16, ease: 'power2.inOut' },
-        8.15,
-      )
-      tl.to(
-        '.panel-thinking',
-        { opacity: 1, duration: 0.18, ease: 'power2.inOut' },
-        8.15,
-      )
-      tl.set('.thinking-line', { opacity: 0 }, 8.24)
-      tl.to(
-        '.thinking-line',
-        { opacity: 1, duration: 0.3, ease: 'power3.out', overwrite: 'auto' },
+        ".thinking-line",
+        { opacity: 1, duration: 0.3, ease: "power3.out", overwrite: "auto" },
         8.25,
-      )
+      );
+      tl.to("#cursor", { x: 1554, y: 620, rotation: -5, duration: 0.28, ease: "power2.out" }, 7.94);
       tl.to(
-        '#cursor',
-        { x: 1554, y: 620, rotation: -5, duration: 0.28, ease: 'power2.out' },
-        7.94,
-      )
-      tl.to(
-        '.thinking-line',
-        { opacity: 0, duration: 0.18, ease: 'power2.inOut', overwrite: 'auto' },
+        ".thinking-line",
+        { opacity: 0, duration: 0.18, ease: "power2.inOut", overwrite: "auto" },
         8.64,
-      )
+      );
       tl.fromTo(
-        '.x-result',
+        ".x-result",
         { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.28, ease: 'power3.out' },
+        { opacity: 1, y: 0, duration: 0.28, ease: "power3.out" },
         8.82,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 365,
-          y: 418,
-          rotation: -6,
-          duration: 0.58,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 365, y: 418, rotation: -6, duration: 0.58, ease: "power2.inOut", overwrite: "auto" },
         8.74,
-      )
+      );
       tl.to(
-        '.x-trigger',
+        ".x-trigger",
         {
           keyframes: [
-            { scale: 0.88, duration: 0.08, ease: 'power2.in' },
-            { scale: 1, duration: 0.14, ease: 'back.out(1.7)' },
+            { scale: 0.88, duration: 0.08, ease: "power2.in" },
+            { scale: 1, duration: 0.14, ease: "back.out(1.7)" },
           ],
-          overwrite: 'auto',
+          overwrite: "auto",
         },
         9.34,
-      )
+      );
+      tl.to(".x-result", { opacity: 0, y: -8, duration: 0.18, ease: "power2.inOut" }, 9.5);
       tl.to(
-        '.x-result',
-        { opacity: 0, y: -8, duration: 0.18, ease: 'power2.inOut' },
-        9.5,
-      )
-      tl.to(
-        '.input-stack',
+        ".input-stack",
         {
           opacity: 0,
           scale: 0.93,
           y: 26,
-          filter: 'blur(12px)',
+          filter: "blur(12px)",
           duration: 0.4,
-          ease: 'power3.inOut',
+          ease: "power3.inOut",
         },
         9.5,
-      )
+      );
       tl.to(
-        '.star-panel',
-        {
-          opacity: 0,
-          scale: 0.72,
-          rotation: 12,
-          duration: 0.28,
-          ease: 'power2.inOut',
-        },
+        ".star-panel",
+        { opacity: 0, scale: 0.72, rotation: 12, duration: 0.28, ease: "power2.inOut" },
         9.5,
-      )
+      );
       tl.fromTo(
-        '.social-card',
-        { opacity: 0, y: 34, scale: 0.88, filter: 'blur(12px)' },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          filter: 'blur(0px)',
-          duration: 0.6,
-          ease: 'expo.out',
-        },
+        ".social-card",
+        { opacity: 0, y: 34, scale: 0.88, filter: "blur(12px)" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "expo.out" },
         9.86,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 1408,
-          y: 246,
-          rotation: -5,
-          duration: 0.42,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1408, y: 246, rotation: -5, duration: 0.42, ease: "power2.inOut", overwrite: "auto" },
         9.96,
-      )
+      );
       tl.to(
-        '#cursor',
-        {
-          x: 1242,
-          y: 446,
-          rotation: -5,
-          duration: 0.36,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1242, y: 446, rotation: -5, duration: 0.36, ease: "power2.inOut", overwrite: "auto" },
         10.5,
-      )
+      );
+      tl.to(".follow-button", { scale: 0.9, duration: 0.08, ease: "power2.in" }, 10.88);
       tl.to(
-        '.follow-button',
-        { scale: 0.9, duration: 0.08, ease: 'power2.in' },
-        10.88,
-      )
-      tl.to(
-        '.follow-button',
-        {
-          scale: 1,
-          backgroundColor: '#2f2f2f',
-          duration: 0.28,
-          ease: 'elastic.out(1, 0.45)',
-        },
+        ".follow-button",
+        { scale: 1, backgroundColor: "#2f2f2f", duration: 0.28, ease: "elastic.out(1, 0.45)" },
         10.96,
-      )
+      );
+      tl.to(".follow-label-follow", { opacity: 0, duration: 0.08, ease: "none" }, 10.96);
+      tl.to(".follow-label-following", { opacity: 1, duration: 0.08, ease: "none" }, 10.99);
       tl.to(
-        '.follow-label-follow',
-        { opacity: 0, duration: 0.08, ease: 'none' },
-        10.96,
-      )
-      tl.to(
-        '.follow-label-following',
-        { opacity: 1, duration: 0.08, ease: 'none' },
-        10.99,
-      )
-      tl.to(
-        '#cursor',
-        {
-          x: 1286,
-          y: 472,
-          rotation: -5,
-          duration: 0.16,
-          ease: 'power2.out',
-          overwrite: 'auto',
-        },
+        "#cursor",
+        { x: 1286, y: 472, rotation: -5, duration: 0.16, ease: "power2.out", overwrite: "auto" },
         11,
-      )
+      );
 
-      window.__timelines['blue-sweater-intro-video'] = tl
+      window.__timelines["blue-sweater-intro-video"] = tl;
     </script>
   </body>
 </html>

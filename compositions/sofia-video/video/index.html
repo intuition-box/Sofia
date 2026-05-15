@@ -1,55 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
     <title>Sofia — Browse with trust</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,800;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,800;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@hyperframes/shader-transitions@0.6.5/dist/index.global.js"></script>
   </head>
   <body>
-    <div
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="31.0"
-      data-width="1776"
-      data-height="890"
-    >
+    <div id="root" data-composition-id="main" data-start="0" data-duration="31.0" data-width="1776" data-height="890">
       <!-- Ambient soundtrack — discreet bed under the whole video. -->
-
+      
       <!-- ════════════════════════════════════════════════════
            FRAME 1 — The search (0 → 2.5s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f1-search"
-        class="scene clip"
-        data-start="0"
-        data-duration="4.5"
-        data-track-index="1"
-        style="z-index: 50"
-      >
+      <div id="f1-search" class="scene clip" data-start="0" data-duration="4.5" data-track-index="1" style="z-index: 51">
         <div class="f1-bg"></div>
         <div class="f1-stage" id="f1-stage">
           <div class="f1-google" style="opacity: 1">
-            <span style="color: #4285f4">G</span
-            ><span style="color: #ea4335">o</span
-            ><span style="color: #fbbc05">o</span
-            ><span style="color: #4285f4">g</span
-            ><span style="color: #34a853">l</span
-            ><span style="color: #ea4335">e</span>
+            <span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>
           </div>
           <div class="f1-bar">
             <span class="f1-bar-icon">⌕</span>
-            <span class="f1-bar-text" id="f1-text"></span
-            ><span class="f1-bar-cursor" id="f1-cursor"></span>
+            <span class="f1-bar-text" id="f1-text"></span><span class="f1-bar-cursor" id="f1-cursor"></span>
             <span class="f1-bar-mic">●</span>
           </div>
         </div>
@@ -59,14 +36,7 @@
       <!-- ════════════════════════════════════════════════════
            FRAME 2 — The chaos (2.5 → 6s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f2-chaos"
-        class="scene clip"
-        data-start="4.61"
-        data-duration="3.9"
-        data-track-index="0"
-        style="z-index: 50"
-      >
+      <div id="f2-chaos" class="scene clip" data-start="4.61" data-duration="3.9" data-track-index="0" style="z-index: 52">
         <div class="f2-bg"></div>
         <!-- Peach iris overlay — grows from circle(0%) at the centre to fill F2,
              painting the black chaos peach. Sits above all F2 content so it
@@ -74,167 +44,44 @@
         <div class="f2-iris-peach" id="f2-iris-peach"></div>
         <!-- Sofia logo growing inside F2 — gravity well behind/between the chrome chaos.
              Sits at z-index 1 (above f2-bg, below the chrome windows .cw at default stacking). -->
-        <svg
-          class="f2-logo"
-          id="f2-logo"
-          width="698"
-          height="696"
-          viewBox="0 0 698 696"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style="z-index: 42"
-        >
+        <svg class="f2-logo" id="f2-logo" width="698" height="696" viewBox="0 0 698 696" fill="none" xmlns="http://www.w3.org/2000/svg" style="z-index: 42">
           <g filter="url(#f2-logo-filter0)">
-            <path
-              class="f2-logo-path"
-              id="f2-logo-p0"
-              d="M127.754 320.87V286.709C127.755 252.461 127.754 225.932 179.483 207.94L350.054 133L698 285.875V524.148L350.054 696L0 546.863L0 480.507L339.656 624.533C346.079 627.359 353.409 627.257 359.751 624.255L622.734 499.774C631.209 495.763 636.614 487.214 636.614 477.824V343.067C636.614 333.463 630.963 324.76 622.198 320.87L359.745 204.39C353.572 201.651 346.54 201.615 340.341 204.292L232.631 250.806C199.278 264.642 189.141 277.017 189.14 286.709V346.222L127.754 320.87Z"
-              fill="black"
-              stroke="black"
-              stroke-width="3"
-              stroke-linejoin="round"
-            />
+            <path class="f2-logo-path" id="f2-logo-p0" d="M127.754 320.87V286.709C127.755 252.461 127.754 225.932 179.483 207.94L350.054 133L698 285.875V524.148L350.054 696L0 546.863L0 480.507L339.656 624.533C346.079 627.359 353.409 627.257 359.751 624.255L622.734 499.774C631.209 495.763 636.614 487.214 636.614 477.824V343.067C636.614 333.463 630.963 324.76 622.198 320.87L359.745 204.39C353.572 201.651 346.54 201.615 340.341 204.292L232.631 250.806C199.278 264.642 189.141 277.017 189.14 286.709V346.222L127.754 320.87Z" fill="black" stroke="black" stroke-width="3" stroke-linejoin="round"/>
           </g>
           <g filter="url(#f2-logo-filter1)">
-            <path
-              class="f2-logo-path"
-              id="f2-logo-p1"
-              d="M570.246 375.13V409.291C570.245 443.539 570.246 470.068 518.517 488.06L347.946 563L0 410.125V171.852L347.946 0L698 149.137V215.493L358.344 71.4669C351.921 68.6409 344.591 68.7428 338.249 71.745L75.2657 196.226C66.7914 200.237 61.3862 208.786 61.3862 218.176V352.933C61.3864 362.537 67.0374 371.24 75.802 375.13L338.255 491.61C344.428 494.349 351.46 494.385 357.659 491.708L465.369 445.194C498.722 431.358 508.859 418.983 508.86 409.291V349.778L570.246 375.13Z"
-              fill="black"
-              stroke="black"
-              stroke-width="3"
-              stroke-linejoin="round"
-            />
+            <path class="f2-logo-path" id="f2-logo-p1" d="M570.246 375.13V409.291C570.245 443.539 570.246 470.068 518.517 488.06L347.946 563L0 410.125V171.852L347.946 0L698 149.137V215.493L358.344 71.4669C351.921 68.6409 344.591 68.7428 338.249 71.745L75.2657 196.226C66.7914 200.237 61.3862 208.786 61.3862 218.176V352.933C61.3864 362.537 67.0374 371.24 75.802 375.13L338.255 491.61C344.428 494.349 351.46 494.385 357.659 491.708L465.369 445.194C498.722 431.358 508.859 418.983 508.86 409.291V349.778L570.246 375.13Z" fill="black" stroke="black" stroke-width="3" stroke-linejoin="round"/>
           </g>
-          <path
-            class="f2-logo-path"
-            id="f2-logo-p2"
-            d="M346.817 271.053C348.195 270.388 349.803 270.391 351.179 271.062L444.69 316.631C446.409 317.469 447.5 319.213 447.5 321.126V360.903C447.5 362.8 446.426 364.534 444.727 365.379L351.216 411.898C349.819 412.592 348.179 412.596 346.78 411.907L252.291 365.374C250.582 364.533 249.5 362.794 249.5 360.889V321.139C249.5 319.22 250.599 317.47 252.328 316.636L346.817 271.053Z"
-            fill="black"
-            stroke="black"
-            stroke-width="3"
-            stroke-linejoin="round"
-          />
-          <path
-            class="f2-logo-gem"
-            id="f2-logo-gem-r"
-            d="M350.5 366.526L447.228 320.662V369.162L350.5 417.526V366.526Z"
-            fill="#696767"
-          />
-          <path
-            class="f2-logo-gem"
-            id="f2-logo-gem-l"
-            d="M351 366.928L249 321V369.568L351 418V366.928Z"
-            fill="#B7B7B7"
-          />
+          <path class="f2-logo-path" id="f2-logo-p2" d="M346.817 271.053C348.195 270.388 349.803 270.391 351.179 271.062L444.69 316.631C446.409 317.469 447.5 319.213 447.5 321.126V360.903C447.5 362.8 446.426 364.534 444.727 365.379L351.216 411.898C349.819 412.592 348.179 412.596 346.78 411.907L252.291 365.374C250.582 364.533 249.5 362.794 249.5 360.889V321.139C249.5 319.22 250.599 317.47 252.328 316.636L346.817 271.053Z" fill="black" stroke="black" stroke-width="3" stroke-linejoin="round"/>
+          <path class="f2-logo-gem" id="f2-logo-gem-r" d="M350.5 366.526L447.228 320.662V369.162L350.5 417.526V366.526Z" fill="#696767"/>
+          <path class="f2-logo-gem" id="f2-logo-gem-l" d="M351 366.928L249 321V369.568L351 418V366.928Z" fill="#B7B7B7"/>
           <defs>
-            <filter
-              id="f2-logo-filter0"
-              x="0"
-              y="133"
-              width="698"
-              height="563"
-              filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB"
-            >
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feBlend
-                mode="normal"
-                in="SourceGraphic"
-                in2="BackgroundImageFix"
-                result="shape"
-              />
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="2 2"
-                stitchTiles="stitch"
-                numOctaves="3"
-                result="noise"
-                seed="5171"
-              />
-              <feColorMatrix
-                in="noise"
-                type="luminanceToAlpha"
-                result="alphaNoise"
-              />
+            <filter id="f2-logo-filter0" x="0" y="133" width="698" height="563" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+              <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+              <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="5171" />
+              <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
               <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-                <feFuncA
-                  type="discrete"
-                  tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
-                />
+                <feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
               </feComponentTransfer>
-              <feComposite
-                operator="in"
-                in2="shape"
-                in="coloredNoise1"
-                result="noise1Clipped"
-              />
-              <feFlood
-                flood-color="rgba(255, 255, 255, 0.16)"
-                result="color1Flood"
-              />
-              <feComposite
-                operator="in"
-                in2="noise1Clipped"
-                in="color1Flood"
-                result="color1"
-              />
+              <feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+              <feFlood flood-color="rgba(255, 255, 255, 0.16)" result="color1Flood" />
+              <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
               <feMerge result="effect1_noise_138_228">
                 <feMergeNode in="shape" />
                 <feMergeNode in="color1" />
               </feMerge>
             </filter>
-            <filter
-              id="f2-logo-filter1"
-              x="0"
-              y="0"
-              width="698"
-              height="563"
-              filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB"
-            >
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feBlend
-                mode="normal"
-                in="SourceGraphic"
-                in2="BackgroundImageFix"
-                result="shape"
-              />
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="2 2"
-                stitchTiles="stitch"
-                numOctaves="3"
-                result="noise"
-                seed="5171"
-              />
-              <feColorMatrix
-                in="noise"
-                type="luminanceToAlpha"
-                result="alphaNoise"
-              />
+            <filter id="f2-logo-filter1" x="0" y="0" width="698" height="563" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+              <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+              <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="5171" />
+              <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
               <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-                <feFuncA
-                  type="discrete"
-                  tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
-                />
+                <feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
               </feComponentTransfer>
-              <feComposite
-                operator="in"
-                in2="shape"
-                in="coloredNoise1"
-                result="noise1Clipped"
-              />
-              <feFlood
-                flood-color="rgba(255, 255, 255, 0.16)"
-                result="color1Flood"
-              />
-              <feComposite
-                operator="in"
-                in2="noise1Clipped"
-                in="color1Flood"
-                result="color1"
-              />
+              <feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+              <feFlood flood-color="rgba(255, 255, 255, 0.16)" result="color1Flood" />
+              <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
               <feMerge result="effect1_noise_138_228">
                 <feMergeNode in="shape" />
                 <feMergeNode in="color1" />
@@ -245,424 +92,84 @@
         <div class="f2-stage" id="f2-stage">
           <!-- 10 chrome windows burst from center, deterministic placements -->
           <div class="cw" id="cw-0" data-brand="booking">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">booking.com/thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-booking">
-                <img
-                  src="assets/logos/booking.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">booking.com/thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-1" data-brand="tripadvisor">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">tripadvisor.com/hotels</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-tripadvisor">
-                <img
-                  src="assets/logos/tripadvisor.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">tripadvisor.com/hotels</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-2" data-brand="expedia">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">expedia.com/Thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-expedia">
-                <img
-                  src="assets/logos/expedia.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">expedia.com/Thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-3" data-brand="hotels">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">hotels.com/thailand-deals</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-hotels">
-                <img
-                  src="assets/logos/hotels.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">hotels.com/thailand-deals</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-4" data-brand="airbnb">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">airbnb.com/s/Thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-airbnb">
-                <img
-                  src="assets/logos/airbnb.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">airbnb.com/s/Thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-5" data-brand="trivago">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">trivago.com/thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-trivago">
-                <img
-                  src="assets/logos/trivago.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">trivago.com/thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-trivago"><img src="assets/logos/trivago.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-6" data-brand="facebook">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">facebook.com/groups/thailand-travelers</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-facebook">
-                <img
-                  src="assets/logos/facebook.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">facebook.com/groups/thailand-travelers</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-facebook"><img src="assets/logos/facebook.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-7" data-brand="reddit">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">reddit.com/r/ThailandTourism</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-reddit">
-                <img
-                  src="assets/logos/reddit.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">reddit.com/r/ThailandTourism</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-8" data-brand="marriott">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">marriott.com/hotels/thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-marriott">
-                <img
-                  src="assets/logos/marriott.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">marriott.com/hotels/thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-marriott"><img src="assets/logos/marriott.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-9" data-brand="youtube">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">youtube.com/watch?v=thailand-2026</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-youtube">
-                <img
-                  src="assets/logos/youtube.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">youtube.com/watch?v=thailand-2026</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-youtube"><img src="assets/logos/youtube.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-10" data-brand="tiktok">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">tiktok.com/@thailand-travel</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-tiktok">
-                <img
-                  src="assets/logos/tiktok.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">tiktok.com/@thailand-travel</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-tiktok"><img src="assets/logos/tiktok.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-11" data-brand="quora">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">quora.com/best-thailand-hotel</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-quora">
-                <img
-                  src="assets/logos/quora.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">quora.com/best-thailand-hotel</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-quora"><img src="assets/logos/quora.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-12" data-brand="trivago2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">trivago.com/cheap-hotels</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-trivago">
-                <img
-                  src="assets/logos/trivago.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">trivago.com/cheap-hotels</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-trivago"><img src="assets/logos/trivago.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-13" data-brand="booking2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">booking.com/best-deals</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-booking">
-                <img
-                  src="assets/logos/booking.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">booking.com/best-deals</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-14" data-brand="airbnb2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">airbnb.com/phuket</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-airbnb">
-                <img
-                  src="assets/logos/airbnb.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">airbnb.com/phuket</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-15" data-brand="tiktok">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">tiktok.com/@thailandtravel</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-tiktok">
-                <img
-                  src="assets/logos/tiktok.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">tiktok.com/@thailandtravel</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-tiktok"><img src="assets/logos/tiktok.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-16" data-brand="reddit2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">reddit.com/r/SoloTravel</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-reddit">
-                <img
-                  src="assets/logos/reddit.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">reddit.com/r/SoloTravel</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-17" data-brand="hotels2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">hotels.com/krabi-island</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-hotels">
-                <img
-                  src="assets/logos/hotels.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">hotels.com/krabi-island</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-18" data-brand="facebook2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">facebook.com/marketplace/thailand</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-facebook">
-                <img
-                  src="assets/logos/facebook.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">facebook.com/marketplace/thailand</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-facebook"><img src="assets/logos/facebook.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
           <div class="cw" id="cw-19" data-brand="expedia2">
-            <div class="cw-bar">
-              <span class="cw-dots"><i></i><i></i><i></i></span
-              ><span class="cw-url">expedia.com/Bangkok-Hotels</span
-              ><span class="cw-x">×</span>
-            </div>
-            <div class="cw-content">
-              <div class="cw-fav b-expedia">
-                <img
-                  src="assets/logos/expedia.svg"
-                  alt=""
-                  crossorigin="anonymous"
-                />
-              </div>
-              <div class="cw-meta">
-                <div class="cw-h"></div>
-                <div class="cw-l"></div>
-                <div class="cw-l short"></div>
-              </div>
-            </div>
+            <div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">expedia.com/Bangkok-Hotels</span><span class="cw-x">×</span></div>
+            <div class="cw-content"><div class="cw-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></div><div class="cw-meta"><div class="cw-h"></div><div class="cw-l"></div><div class="cw-l short"></div></div></div>
           </div>
         </div>
         <!-- ── Reveal layer (was F3) — peach bg, rays, headline + sub, sits
@@ -671,9 +178,7 @@
         <div class="f3-rays" id="f3-rays"></div>
         <div class="f3-text" id="f3-text-stack">
           <div class="f3-intro" id="f3-intro">Introducing Sofia</div>
-          <div class="f3-sub" id="f3-sub">
-            collective intelligence for the web
-          </div>
+          <div class="f3-sub" id="f3-sub">collective intelligence for the web</div>
         </div>
         <!-- ── End-of-F2 diagonal sweep — a vivid learning-cyan band wipes
              across the screen right→left to punctuate the reveal beat. -->
@@ -683,14 +188,7 @@
       <!-- ════════════════════════════════════════════════════
            FRAME 4 — The lasso (8.5 → 14.5s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f4-lasso"
-        class="scene clip"
-        data-start="8.5"
-        data-duration="3"
-        data-track-index="2"
-        style="z-index: 49"
-      >
+      <div id="f4-lasso" class="scene clip" data-start="8.5" data-duration="3" data-track-index="2" style="z-index: 50">
         <div class="f4-bg"></div>
         <!-- Black noir zone — appears via Circle Iris reveal at F4 start. -->
         <div class="f4-noir-zone" id="f4-noir"></div>
@@ -699,126 +197,14 @@
         <div class="f4-left" id="f4-left">
           <div class="f4-eyebrow">CHAOS</div>
           <div class="f4-wall" id="f4-wall">
-            <div class="cw cw-mini" id="lcw-0">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">booking.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-booking">
-                  <img
-                    src="assets/logos/booking.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-1">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">tripadvisor.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-tripadvisor">
-                  <img
-                    src="assets/logos/tripadvisor.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-2">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">airbnb.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-airbnb">
-                  <img
-                    src="assets/logos/airbnb.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-3">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">reddit.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-reddit">
-                  <img
-                    src="assets/logos/reddit.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-4">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">hotels.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-hotels">
-                  <img
-                    src="assets/logos/hotels.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-5">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">expedia.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-expedia">
-                  <img
-                    src="assets/logos/expedia.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-6">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">facebook.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-facebook">
-                  <img
-                    src="assets/logos/facebook.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="cw cw-mini" id="lcw-7">
-              <div class="cw-bar">
-                <span class="cw-dots"><i></i><i></i><i></i></span
-                ><span class="cw-url">marriott.com</span>
-              </div>
-              <div class="cw-content">
-                <div class="cw-fav b-marriott">
-                  <img
-                    src="assets/logos/marriott.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
-              </div>
-            </div>
+            <div class="cw cw-mini" id="lcw-0"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">booking.com</span></div><div class="cw-content"><div class="cw-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-1"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">tripadvisor.com</span></div><div class="cw-content"><div class="cw-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-2"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">airbnb.com</span></div><div class="cw-content"><div class="cw-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-3"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">reddit.com</span></div><div class="cw-content"><div class="cw-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-4"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">hotels.com</span></div><div class="cw-content"><div class="cw-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-5"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">expedia.com</span></div><div class="cw-content"><div class="cw-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-6"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">facebook.com</span></div><div class="cw-content"><div class="cw-fav b-facebook"><img src="assets/logos/facebook.svg" alt="" crossorigin="anonymous"></div></div></div>
+            <div class="cw cw-mini" id="lcw-7"><div class="cw-bar"><span class="cw-dots"><i></i><i></i><i></i></span><span class="cw-url">marriott.com</span></div><div class="cw-content"><div class="cw-fav b-marriott"><img src="assets/logos/marriott.svg" alt="" crossorigin="anonymous"></div></div></div>
           </div>
         </div>
 
@@ -830,18 +216,11 @@
           <div class="f4-window f4-popup" id="f4-window">
             <div class="f4-popup-header">
               <div class="f4-popup-title">Top Thailand hotels</div>
-              <div class="f4-popup-count" id="f4-popup-count">
-                0 / 6 selected
-              </div>
+              <div class="f4-popup-count" id="f4-popup-count">0 / 6 selected</div>
             </div>
             <div class="f4-win-body" id="f4-win-body">
               <div class="f4-url-row" id="f4-url-0">
-                <span class="f4-url-fav b-booking"
-                  ><img
-                    src="assets/logos/booking.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">booking.com</span>
                   <span class="f4-url-text" id="f4-url-0-text"></span>
@@ -849,12 +228,7 @@
                 <span class="f4-url-check" aria-hidden="true">✓</span>
               </div>
               <div class="f4-url-row" id="f4-url-1">
-                <span class="f4-url-fav b-tripadvisor"
-                  ><img
-                    src="assets/logos/tripadvisor.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">tripadvisor.com</span>
                   <span class="f4-url-text" id="f4-url-1-text"></span>
@@ -862,12 +236,7 @@
                 <span class="f4-url-check" aria-hidden="true">✓</span>
               </div>
               <div class="f4-url-row" id="f4-url-2">
-                <span class="f4-url-fav b-airbnb"
-                  ><img
-                    src="assets/logos/airbnb.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">airbnb.com</span>
                   <span class="f4-url-text" id="f4-url-2-text"></span>
@@ -875,12 +244,7 @@
                 <span class="f4-url-check" aria-hidden="true">✓</span>
               </div>
               <div class="f4-url-row" id="f4-url-3">
-                <span class="f4-url-fav b-reddit"
-                  ><img
-                    src="assets/logos/reddit.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">reddit.com</span>
                   <span class="f4-url-text" id="f4-url-3-text"></span>
@@ -888,12 +252,7 @@
                 <span class="f4-url-check" aria-hidden="true">✓</span>
               </div>
               <div class="f4-url-row" id="f4-url-4">
-                <span class="f4-url-fav b-hotels"
-                  ><img
-                    src="assets/logos/hotels.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-hotels"><img src="assets/logos/hotels.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">hotels.com</span>
                   <span class="f4-url-text" id="f4-url-4-text"></span>
@@ -901,12 +260,7 @@
                 <span class="f4-url-check" aria-hidden="true">✓</span>
               </div>
               <div class="f4-url-row" id="f4-url-5">
-                <span class="f4-url-fav b-expedia"
-                  ><img
-                    src="assets/logos/expedia.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                /></span>
+                <span class="f4-url-fav b-expedia"><img src="assets/logos/expedia.svg" alt="" crossorigin="anonymous"></span>
                 <div class="f4-url-meta">
                   <span class="f4-url-domain">expedia.com</span>
                   <span class="f4-url-text" id="f4-url-5-text"></span>
@@ -916,38 +270,23 @@
             </div>
             <!-- Import CTA — primary peach pill, full width like the extension. -->
             <div class="f4-validate-bar">
-              <button class="f4-validate-btn" id="f4-validate-btn">
-                Import 6 selected
-              </button>
+              <button class="f4-validate-btn" id="f4-validate-btn">Import 6 selected</button>
             </div>
           </div>
         </div>
 
-        <!-- Cursor (peach pointer) — drifts to the Valider button and clicks. -->
-        <div class="cursor-curator" id="f4-ptr">
-          <svg viewBox="0 0 22 28">
-            <path
-              d="M2 2 L20 14 L12 16 L8 24 Z"
-              fill="#ffc6b0"
-              stroke="#02000e"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-            />
-          </svg>
+        <!-- Cursor (peach pointer + you.eth tag) — drifts to the Import
+             button and clicks. Figma-style multiplayer cursor. -->
+        <div class="cursor-curator c-you" id="f4-ptr">
+          <svg viewBox="0 0 22 28"><path d="M2 2 L20 14 L12 16 L8 24 Z" fill="#ffc6b0" stroke="#02000e" stroke-width="1.8" stroke-linejoin="round" /></svg>
+          <span class="curator-label">you.eth</span>
         </div>
       </div>
 
       <!-- ════════════════════════════════════════════════════
            FRAME 5 — Validation (14.5 → 19s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f5-validate"
-        class="scene clip"
-        data-start="12.0"
-        data-duration="4"
-        data-track-index="2"
-        style="z-index: 49"
-      >
+      <div id="f5-validate" class="scene clip" data-start="12.0" data-duration="4" data-track-index="2" style="z-index: 50">
         <div class="f5-bg"></div>
         <div class="f5-window" id="f5-window">
           <div class="f5-win-bar">
@@ -958,17 +297,9 @@
           <div class="f5-grid">
             <div class="f5-card" id="f5-c-0">
               <div class="f5-card-head">
-                <div class="f5-fav b-booking">
-                  <img
-                    src="assets/logos/booking.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Best last-minute deals · 21 nights, 4 islands
-                  </div>
+                  <div class="f5-title">Best last-minute deals · 21 nights, 4 islands</div>
                   <div class="f5-host">booking.com/thailand-deals</div>
                 </div>
               </div>
@@ -981,17 +312,9 @@
             </div>
             <div class="f5-card" id="f5-c-1">
               <div class="f5-card-head">
-                <div class="f5-fav b-tripadvisor">
-                  <img
-                    src="assets/logos/tripadvisor.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Real Thai itineraries from people who lived there
-                  </div>
+                  <div class="f5-title">Real Thai itineraries from people who lived there</div>
                   <div class="f5-host">tripadvisor.com/thailand</div>
                 </div>
               </div>
@@ -1004,17 +327,9 @@
             </div>
             <div class="f5-card" id="f5-c-2">
               <div class="f5-card-head">
-                <div class="f5-fav b-airbnb">
-                  <img
-                    src="assets/logos/airbnb.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Where I actually stayed in Chiang Mai · $18/night
-                  </div>
+                  <div class="f5-title">Where I actually stayed in Chiang Mai · $18/night</div>
                   <div class="f5-host">airbnb.com/rooms/chiang-mai</div>
                 </div>
               </div>
@@ -1027,26 +342,16 @@
             </div>
             <div class="f5-card" id="f5-c-3">
               <div class="f5-card-head">
-                <div class="f5-fav b-reddit">
-                  <img
-                    src="assets/logos/reddit.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    r/Thailand : 3-week itinerary that actually worked
-                  </div>
+                  <div class="f5-title">r/Thailand : 3-week itinerary that actually worked</div>
                   <div class="f5-host">reddit.com/r/ThailandTourism</div>
                 </div>
               </div>
               <div class="f5-bottom">
                 <div class="f5-tags">
                   <span class="f5-tag">COMMUNITY</span>
-                  <span class="f5-verb distrusted" id="f5-c-3-pill"
-                    >DISTRUSTED</span
-                  >
+                  <span class="f5-verb distrusted" id="f5-c-3-pill">DISTRUSTED</span>
                 </div>
               </div>
             </div>
@@ -1059,30 +364,16 @@
         <div class="f5-confetti" id="f5-confetti" aria-hidden="true"></div>
         <!-- User cursor (peach) -->
         <div class="cursor-curator c-you" id="f5-ptr">
-          <svg viewBox="0 0 22 28">
-            <path
-              d="M2 2 L20 14 L12 16 L8 24 Z"
-              fill="#ffc6b0"
-              stroke="#02000e"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <svg viewBox="0 0 22 28"><path d="M2 2 L20 14 L12 16 L8 24 Z" fill="#ffc6b0" stroke="#02000e" stroke-width="1.8" stroke-linejoin="round" /></svg>
           <span class="curator-label">you.eth</span>
         </div>
+
       </div>
 
       <!-- ════════════════════════════════════════════════════
            FRAME 6 — Social validation (19 → 24.5s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f6-social"
-        class="scene clip"
-        data-start="15.86"
-        data-duration="9.6"
-        data-track-index="3"
-        style="z-index: 48"
-      >
+      <div id="f6-social" class="scene clip" data-start="15.86" data-duration="9.6" data-track-index="3" style="z-index: 49">
         <div class="f6-bg"></div>
         <div class="f5-window" id="f6-window">
           <div class="f5-win-bar">
@@ -1093,17 +384,9 @@
           <div class="f5-grid f6-grid" id="f6-grid">
             <div class="f5-card" id="f6-c-0" data-rank="2">
               <div class="f5-card-head">
-                <div class="f5-fav b-booking">
-                  <img
-                    src="assets/logos/booking.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Best last-minute deals · 21 nights, 4 islands
-                  </div>
+                  <div class="f5-title">Best last-minute deals · 21 nights, 4 islands</div>
                   <div class="f5-host">booking.com/thailand-deals</div>
                 </div>
               </div>
@@ -1115,56 +398,27 @@
                 </div>
               </div>
             </div>
-            <div
-              class="f5-card"
-              id="f6-c-1"
-              data-rank="0"
-              style="
-                border-width: 2px;
-                border-color: rgb(0, 0, 0);
-                border-style: solid;
-              "
-            >
+            <div class="f5-card" id="f6-c-1" data-rank="0" style="border-width: 2px; border-color: rgb(0, 0, 0); border-style: solid">
               <div class="f5-card-head">
-                <div class="f5-fav b-tripadvisor">
-                  <img
-                    src="assets/logos/tripadvisor.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Real Thai itineraries from people who lived there
-                  </div>
+                  <div class="f5-title">Real Thai itineraries from people who lived there</div>
                   <div class="f5-host">tripadvisor.com/thailand</div>
                 </div>
               </div>
               <div class="f5-bottom">
                 <div class="f5-tags">
                   <span class="f5-tag">ITINERARY</span>
-                  <span
-                    class="f5-verb trusted"
-                    style="text-align: center; line-height: 1.2; z-index: 1"
-                    >TRUSTED</span
-                  >
+                  <span class="f5-verb trusted" style="text-align: center; line-height: 1.2; z-index: 1">TRUSTED</span>
                   <div class="vote-stack" id="f6-c-1-stack"></div>
                 </div>
               </div>
             </div>
             <div class="f5-card" id="f6-c-2" data-rank="1">
               <div class="f5-card-head">
-                <div class="f5-fav b-airbnb">
-                  <img
-                    src="assets/logos/airbnb.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    Where I actually stayed in Chiang Mai · $18/night
-                  </div>
+                  <div class="f5-title">Where I actually stayed in Chiang Mai · $18/night</div>
                   <div class="f5-host">airbnb.com/rooms/chiang-mai</div>
                 </div>
               </div>
@@ -1178,17 +432,9 @@
             </div>
             <div class="f5-card" id="f6-c-3" data-rank="3">
               <div class="f5-card-head">
-                <div class="f5-fav b-reddit">
-                  <img
-                    src="assets/logos/reddit.svg"
-                    alt=""
-                    crossorigin="anonymous"
-                  />
-                </div>
+                <div class="f5-fav b-reddit"><img src="assets/logos/reddit.svg" alt="" crossorigin="anonymous"></div>
                 <div class="f5-tw">
-                  <div class="f5-title">
-                    r/Thailand : 3-week itinerary that actually worked
-                  </div>
+                  <div class="f5-title">r/Thailand : 3-week itinerary that actually worked</div>
                   <div class="f5-host">reddit.com/r/ThailandTourism</div>
                 </div>
               </div>
@@ -1205,42 +451,19 @@
             <span class="f6-cap-line">
               <span class="f6-cap-word">Now,</span>
               <span class="f6-cap-word">the</span>
-              <span class="f6-cap-word f6-cap-highlight" id="f6-cap-community">
-                <span class="f6-cap-hl-bg" aria-hidden="true"></span>
-                community
-              </span>
-              <span class="f6-cap-word">votes.</span>
-            </span>
-            <!-- Figma-style multiplayer cursor lands after the last word -->
-            <span class="f6-cap-cursor" id="f6-cap-cursor" aria-hidden="true">
-              <svg viewBox="0 0 22 28">
-                <path
-                  d="M2 2 L20 14 L12 16 L8 24 Z"
-                  fill="#ffc6b0"
-                  stroke="#02000e"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <span class="f6-cap-cursor-tag">you.eth</span>
+              <span class="f6-cap-word">community</span>
+              <span class="f6-cap-word f6-cap-accent">votes.</span>
             </span>
           </div>
         </div>
 
-        <!-- No curator cursors — avatars just appear in the vote-stacks beside each TRUSTED pill -->
+<!-- No curator cursors — avatars just appear in the vote-stacks beside each TRUSTED pill -->
       </div>
 
       <!-- ════════════════════════════════════════════════════
            FRAME 7 — The new search (24.5 → 31s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f7-newsearch"
-        class="scene clip"
-        data-start="24.0"
-        data-duration="4"
-        data-track-index="2"
-        style="z-index: 49"
-      >
+      <div id="f7-newsearch" class="scene clip" data-start="24" data-duration="4" data-track-index="1" style="z-index: 51">
         <div class="f7-bg"></div>
         <div class="f1-flash" id="f7-flash"></div>
         <div class="f7-stage">
@@ -1249,158 +472,93 @@
           </div>
           <div class="f7-bar" id="f7-bar-el">
             <span class="f1-bar-icon">⌕</span>
-            <span class="f1-bar-text" id="f7-text"></span
-            ><span class="f1-bar-cursor" id="f7-cursor"></span>
+            <span class="f1-bar-text" id="f7-text"></span><span class="f1-bar-cursor" id="f7-cursor"></span>
           </div>
           <div class="f7-results">
             <div class="f7-sofia-section" id="f7-sofia-section">
               <div class="f7-section-eyebrow">
-                <img src="logo-black.svg" alt="" class="f7-section-logo" />
+                <img src="logo-black.svg" alt="" class="f7-section-logo">
                 <span>TOP THAILAND HOTELS · 3 RESULTS</span>
               </div>
               <div class="f7-srp-card" id="f7-srp-0">
+                <!-- Snake border — single black light-segment orbiting the
+                     card via a rotating conic-gradient on a frosted glass
+                     pad. Cleaner than SVG dasharray for stretched paths. -->
+                <div class="f7-srp-snake-wrap" id="f7-srp-snake-wrap" aria-hidden="true">
+                  <div class="f7-srp-snake-ring" id="f7-srp-snake-ring"></div>
+                </div>
+                <!-- Like button — lives ON the card. you.eth cursor clicks it. -->
+                <button class="f7-like-btn" id="f7-thumb" aria-label="Like">
+                  <svg class="f7-thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 10v12"/>
+                    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7"/>
+                  </svg>
+                </button>
                 <div class="f7-srp-head">
-                  <div class="f5-fav b-tripadvisor">
-                    <img
-                      src="assets/logos/tripadvisor.svg"
-                      alt=""
-                      crossorigin="anonymous"
-                    />
-                  </div>
+                  <div class="f5-fav b-tripadvisor"><img src="assets/logos/tripadvisor.svg" alt="" crossorigin="anonymous"></div>
                   <div class="f7-srp-meta">
-                    <div class="f7-srp-host">
-                      tripadvisor.com · <strong>9 endorsements</strong>
-                    </div>
-                    <div class="f7-srp-title">
-                      Real Thai itineraries from people who lived there
-                    </div>
+                    <div class="f7-srp-host">tripadvisor.com · <strong>9 endorsements</strong></div>
+                    <div class="f7-srp-title">Real Thai itineraries from people who lived there</div>
                   </div>
-                  <div class="f7-srp-pill">
-                    <span class="f5-verb trusted">TRUSTED</span>
-                  </div>
+                  <div class="f7-srp-pill"><span class="f5-verb trusted">TRUSTED</span></div>
                 </div>
                 <div class="f7-srp-foot">
-                  <div class="f7-srp-avatars">
-                    <span class="mav">A</span><span class="mav">M</span
-                    ><span class="mav">J</span><span class="mav more">+6</span>
-                  </div>
-                  <div class="f7-srp-snip">
-                    "The only itinerary that survived contact with reality." —
-                    alice.eth
-                  </div>
+                  <div class="f7-srp-avatars"><span class="mav">A</span><span class="mav">M</span><span class="mav">J</span><span class="mav more">+6</span></div>
+                  <div class="f7-srp-snip">"The only itinerary that survived contact with reality." — alice.eth</div>
                 </div>
               </div>
               <div class="f7-srp-card" id="f7-srp-1">
                 <div class="f7-srp-head">
-                  <div class="f5-fav b-airbnb">
-                    <img
-                      src="assets/logos/airbnb.svg"
-                      alt=""
-                      crossorigin="anonymous"
-                    />
-                  </div>
+                  <div class="f5-fav b-airbnb"><img src="assets/logos/airbnb.svg" alt="" crossorigin="anonymous"></div>
                   <div class="f7-srp-meta">
-                    <div class="f7-srp-host">
-                      airbnb.com · <strong>7 endorsements</strong>
-                    </div>
-                    <div class="f7-srp-title">
-                      Where I actually stayed in Chiang Mai · $18/night
-                    </div>
+                    <div class="f7-srp-host">airbnb.com · <strong>7 endorsements</strong></div>
+                    <div class="f7-srp-title">Where I actually stayed in Chiang Mai · $18/night</div>
                   </div>
-                  <div class="f7-srp-pill">
-                    <span class="f5-verb buying">BUYING</span>
-                  </div>
+                  <div class="f7-srp-pill"><span class="f5-verb buying">BUYING</span></div>
                 </div>
                 <div class="f7-srp-foot">
-                  <div class="f7-srp-avatars">
-                    <span class="mav">M</span><span class="mav">S</span
-                    ><span class="mav">N</span><span class="mav more">+4</span>
-                  </div>
-                  <div class="f7-srp-snip">
-                    "Booked it twice, would book again." — marie.eth
-                  </div>
+                  <div class="f7-srp-avatars"><span class="mav">M</span><span class="mav">S</span><span class="mav">N</span><span class="mav more">+4</span></div>
+                  <div class="f7-srp-snip">"Booked it twice, would book again." — marie.eth</div>
                 </div>
               </div>
               <div class="f7-srp-card" id="f7-srp-2">
                 <div class="f7-srp-head">
-                  <div class="f5-fav b-booking">
-                    <img
-                      src="assets/logos/booking.svg"
-                      alt=""
-                      crossorigin="anonymous"
-                    />
-                  </div>
+                  <div class="f5-fav b-booking"><img src="assets/logos/booking.svg" alt="" crossorigin="anonymous"></div>
                   <div class="f7-srp-meta">
-                    <div class="f7-srp-host">
-                      booking.com · <strong>5 endorsements</strong>
-                    </div>
-                    <div class="f7-srp-title">
-                      Best last-minute deals · 21 nights, 4 islands
-                    </div>
+                    <div class="f7-srp-host">booking.com · <strong>5 endorsements</strong></div>
+                    <div class="f7-srp-title">Best last-minute deals · 21 nights, 4 islands</div>
                   </div>
-                  <div class="f7-srp-pill">
-                    <span class="f5-verb buying">BUYING</span>
-                  </div>
+                  <div class="f7-srp-pill"><span class="f5-verb buying">BUYING</span></div>
                 </div>
                 <div class="f7-srp-foot">
-                  <div class="f7-srp-avatars">
-                    <span class="mav">S</span><span class="mav">J</span
-                    ><span class="mav">N</span>
-                  </div>
-                  <div class="f7-srp-snip">
-                    "Real prices, no upsell carousel." — sam.eth
-                  </div>
+                  <div class="f7-srp-avatars"><span class="mav">S</span><span class="mav">J</span><span class="mav">N</span></div>
+                  <div class="f7-srp-snip">"Real prices, no upsell carousel." — sam.eth</div>
                 </div>
               </div>
             </div>
             <div class="f7-vanilla" id="f7-vanilla">
-              <div class="f7-section-eyebrow f7-vanilla-eyebrow">
-                <span>OTHER RESULTS</span>
-              </div>
-              <div class="f7-van-row">
-                <span class="f7-van-host">expedia.com › Thailand</span
-                ><span class="f7-van-title"
-                  >Best Thailand vacation packages — book now and save 20%</span
-                >
-              </div>
-              <div class="f7-van-row">
-                <span class="f7-van-host">agoda.com › thailand-hotels</span
-                ><span class="f7-van-title"
-                  >Cheap hotels in Thailand from $9 · 1,247 deals</span
-                >
-              </div>
-              <div class="f7-van-row">
-                <span class="f7-van-host">trivago.com › thailand</span
-                ><span class="f7-van-title"
-                  >Compare 2,000+ hotels in Thailand on Trivago</span
-                >
-              </div>
+              <div class="f7-section-eyebrow f7-vanilla-eyebrow"><span>OTHER RESULTS</span></div>
+              <div class="f7-van-row"><span class="f7-van-host">expedia.com › Thailand</span><span class="f7-van-title">Best Thailand vacation packages — book now and save 20%</span></div>
+              <div class="f7-van-row"><span class="f7-van-host">agoda.com › thailand-hotels</span><span class="f7-van-title">Cheap hotels in Thailand from $9 · 1,247 deals</span></div>
+              <div class="f7-van-row"><span class="f7-van-host">trivago.com › thailand</span><span class="f7-van-title">Compare 2,000+ hotels in Thailand on Trivago</span></div>
             </div>
           </div>
+        </div>
+        <!-- you.eth cursor — clicks the like button on the card. -->
+        <div class="cursor-curator c-you" id="f7-like-cursor">
+          <svg viewBox="0 0 22 28"><path d="M2 2 L20 14 L12 16 L8 24 Z" fill="#ffc6b0" stroke="#02000e" stroke-width="1.8" stroke-linejoin="round" /></svg>
+          <span class="curator-label">you.eth</span>
         </div>
       </div>
 
       <!-- ════════════════════════════════════════════════════
            FRAME 8 — Closing (31 → 35s)
            ════════════════════════════════════════════════════ -->
-      <div
-        id="f8-close"
-        class="scene clip"
-        data-start="28.0"
-        data-duration="3"
-        data-track-index="2"
-        style="z-index: 46"
-      >
+      <div id="f8-close" class="scene clip" data-start="28.0" data-duration="3" data-track-index="2" style="z-index: 47">
         <div class="f8-bg"></div>
         <div class="f8-center">
           <div class="f8-mark-row">
-            <img
-              class="f8-mark"
-              id="f8-mark"
-              src="logo-black.svg"
-              alt="Sofia"
-              style="z-index: 1"
-            />
+            <img class="f8-mark" id="f8-mark" src="logo-black.svg" alt="Sofia" style="z-index: 1">
             <span class="f8-wordmark" id="f8-wordmark">Sofia</span>
           </div>
           <div class="f8-tagline" id="f8-tagline">Browse with trust.</div>
@@ -1416,43 +574,22 @@
         data-start="16.3"
         data-duration="2.75"
         data-track-index="5"
-        style="z-index: 90"
+        style="z-index: 45"
       >
         <div class="macos-notif-icon">
-          <svg
-            viewBox="0 0 38 38"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient
-                id="ambire-bg"
-                x1="0"
-                y1="0"
-                x2="38"
-                y2="38"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="ambire-bg" x1="0" y1="0" x2="38" y2="38" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#1a1f3a" />
                 <stop offset="100%" stop-color="#0b0e1f" />
               </linearGradient>
-              <linearGradient
-                id="ambire-a"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="38"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="ambire-a" x1="0" y1="0" x2="0" y2="38" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#ff8a3d" />
                 <stop offset="100%" stop-color="#ff5e1f" />
               </linearGradient>
             </defs>
             <rect width="38" height="38" rx="9" fill="url(#ambire-bg)" />
-            <path
-              d="M19 8 L29 28 L25.2 28 L23.4 24.3 L14.6 24.3 L12.8 28 L9 28 Z M19 14.4 L16.2 21 L21.8 21 Z"
-              fill="url(#ambire-a)"
-            />
+            <path d="M19 8 L29 28 L25.2 28 L23.4 24.3 L14.6 24.3 L12.8 28 L9 28 Z M19 14.4 L16.2 21 L21.8 21 Z" fill="url(#ambire-a)" />
           </svg>
         </div>
         <div class="macos-notif-content">
@@ -1460,19 +597,15 @@
             <span class="macos-notif-app">Ambire Wallet</span>
             <span class="macos-notif-time">now</span>
           </div>
-          <div class="macos-notif-title">
-            alice.eth spent <span class="macos-notif-trust">10 TRUST</span>
-          </div>
-          <div class="macos-notif-body">
-            Reinforced your post on Sofia · r/Thailand itinerary
-          </div>
+          <div class="macos-notif-title">alice.eth spent <span class="macos-notif-trust">10 TRUST</span></div>
+          <div class="macos-notif-body">Reinforced your post on Sofia · r/Thailand itinerary</div>
         </div>
       </div>
     </div>
 
     <script>
       // Linter hint — actual registration happens in timeline.js once gsap is loaded.
-      window.__timelines = window.__timelines || {}
+      window.__timelines = window.__timelines || {};
     </script>
     <script src="timeline.js"></script>
   </body>
