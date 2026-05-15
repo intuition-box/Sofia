@@ -1,0 +1,86 @@
+name: Contracts CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/contracts/**"
+      - ".github/workflows/contracts.yml"
+  pull_request:
+    paths:
+      - "packages/contracts/**"
+      - ".github/workflows/contracts.yml"
+
+jobs:
+  test:
+    name: Compile, lint, test, coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/contracts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: .
+        run: bun install --frozen-lockfile
+
+      - name: Lint (Solhint)
+        run: bun run lint
+
+      - name: Compile
+        run: bun run compile
+
+      - name: Test
+        run: bun run test
+
+      - name: Coverage
+        run: bun run coverage
+        continue-on-error: true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-coverage
+          path: packages/contracts/coverage/
+
+  slither:
+    name: Slither static analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/contracts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: .
+        run: bun install --frozen-lockfile
+
+      - name: Install Slither
+        run: pip install slither-analyzer
+
+      - name: Compile
+        run: bun run compile
+
+      - name: Run Slither
+        run: bun run slither
+        continue-on-error: true

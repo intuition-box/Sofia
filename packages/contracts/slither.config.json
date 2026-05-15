@@ -1,0 +1,10 @@
+{
+  "detectors_to_exclude": "naming-convention,solc-version,pragma",
+  "filter_paths": "node_modules,artifacts,cache,typechain-types,test",
+  "exclude_informational": false,
+  "exclude_low": false,
+  "exclude_medium": false,
+  "exclude_high": false,
+  "exclude_optimization": true,
+  "disable_color": true
+}
