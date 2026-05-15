@@ -4,7 +4,7 @@ import styles from './Footer.module.css'
 const RESOURCES = [
   { label: 'Manifesto', href: URLS.docs.manifesto },
   { label: 'Docs', href: URLS.docs.intro },
-  { label: 'Blog', href: '#chronicles' },
+  { label: 'Blog', href: URLS.blog.index },
 ]
 
 const COMMUNITY = [
@@ -15,8 +15,8 @@ const COMMUNITY = [
 ]
 
 const LEGAL = [
-  { label: 'Privacy', href: 'https://sofia.intuition.box/privacy' },
-  { label: 'Terms', href: 'https://sofia.intuition.box/terms' },
+  { label: 'Privacy', href: URLS.docs.privacy },
+  { label: 'Terms', href: URLS.docs.terms },
 ]
 
 export function Footer() {

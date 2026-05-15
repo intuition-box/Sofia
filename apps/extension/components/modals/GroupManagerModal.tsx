@@ -24,7 +24,7 @@ interface GroupManagerModalProps {
 
 const FILTER_OPTIONS: { value: ManagerFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "uncertified", label: "Uncertified" },
+  { value: "uncertified", label: "Unmarked" },
   { value: "empty", label: "Empty" },
   { value: "inactive", label: "Inactive" }
 ]
@@ -266,7 +266,7 @@ const GroupManagerModal = ({
             <div className="gm-confirm">
               <span className="gm-confirm-text">
                 {confirmAction === "groups"
-                  ? `Clean ${manager.selectedGroupIds.size} group${manager.selectedGroupIds.size > 1 ? "s" : ""}? Groups with certified URLs will keep them, only uncertified URLs are removed.`
+                  ? `Clean ${manager.selectedGroupIds.size} group${manager.selectedGroupIds.size > 1 ? "s" : ""}? Groups with Marked URLs will keep them, only unmarked URLs are removed.`
                   : `Remove ${manager.selectedUrlKeys.size} URL${manager.selectedUrlKeys.size > 1 ? "s" : ""}?`}
               </span>
               <button

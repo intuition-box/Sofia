@@ -147,3 +147,97 @@
 .qc-icon {
   font-size: 18px;
 }
+
+/* ============================================================
+ * TripleDetailPage — Phase 5c (2026-05-14)
+ * ============================================================ */
+
+.triple-detail__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--ds-text-muted, rgba(0, 0, 0, 0.6));
+}
+
+.triple-detail__state h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text, #1a1a1a);
+  margin: 0;
+}
+
+.triple-detail__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--ds-bg-elevated, #fff);
+  border: 1px solid var(--ds-border, rgba(0, 0, 0, 0.12));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.triple-detail__retry:hover {
+  background: var(--ds-bg-hover, rgba(0, 0, 0, 0.04));
+}
+
+.triple-detail__positions {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.triple-detail__position {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ds-bg-elevated, #fff);
+  border: 1px solid var(--ds-border, rgba(0, 0, 0, 0.08));
+}
+
+.triple-detail__rank {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ds-text-muted, rgba(0, 0, 0, 0.5));
+  min-width: 28px;
+}
+
+.triple-detail__label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triple-detail__shares {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-muted, rgba(0, 0, 0, 0.65));
+}
+
+.triple-detail__intuition-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--ds-text-muted, rgba(0, 0, 0, 0.55));
+  text-decoration: none;
+}
+
+.triple-detail__intuition-link:hover {
+  color: var(--ds-text, #1a1a1a);
+  text-decoration: underline;
+}

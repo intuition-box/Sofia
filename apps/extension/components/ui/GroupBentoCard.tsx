@@ -15,9 +15,16 @@ interface GroupBentoCardProps {
   onClick: () => void
   onDelete?: (groupId: string) => void
   size?: 'small' | 'tall'
+  /** When true, applies the post-tx drop-in animation (Phase 4b multi-Mark highlight). */
+  isHighlighted?: boolean
+  /**
+   * Position of this card among the highlighted set. Drives the stagger delay
+   * via the --fresh-stagger-index CSS custom property. Ignored when isHighlighted=false.
+   */
+  highlightOrder?: number
 }
 
-const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
+const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighted = false, highlightOrder = 0 }: GroupBentoCardProps) => {
   const { domain, activeUrlCount, totalAttentionTime, urls } = group
 
   // Get active URLs for on-chain query (include OAuth URLs for correct count)
@@ -49,8 +56,13 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   return (
     <div
-      className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}`}
+      className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}${isHighlighted ? ' is-fresh-mark' : ''}`}
       onClick={onClick}
+      style={
+        isHighlighted
+          ? ({ '--fresh-stagger-index': highlightOrder } as React.CSSProperties)
+          : undefined
+      }
     >
       {/* Header with domain info */}
       <div className="group-bento-header">

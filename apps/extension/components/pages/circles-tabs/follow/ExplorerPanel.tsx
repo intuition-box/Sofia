@@ -62,7 +62,7 @@ function TopAccountTrustAction({
       accountTermId={termId}
       accountLabel={label}
       label={<><UserPlus size={12} /> add</>}
-      initialWeight="minimum"
+      initialWeight="light"
       className="explorer-add-btn"
       onSuccess={() => {
         logger.debug('Trust triple created from explorer top accounts')

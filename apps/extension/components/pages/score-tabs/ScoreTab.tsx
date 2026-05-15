@@ -97,7 +97,7 @@ const ScoreTab = ({ trustedByCount, level = 1, totalXP = 0 }: ScoreTabProps) => 
         <div className="stats-empty">
           <div className="empty-icon">🔍</div>
           <h3>No discoveries yet</h3>
-          <p>Start exploring and certifying pages to earn discovery Gold!</p>
+          <p>Start exploring and Marking pages to earn discovery Gold!</p>
         </div>
       </div>
     )

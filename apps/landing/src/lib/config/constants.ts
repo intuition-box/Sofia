@@ -16,7 +16,7 @@ export const VALUES_DATA = [
     id: 1,
     name: 'Digital Sovereignty',
     description:
-      'The user writes and certifies their own digital history on the blockchain. We value online activity to transform a passive trace into a strategic asset.',
+      'The user writes and Marks their own digital history on the blockchain. We value online activity to transform a passive trace into a strategic asset.',
     tripleId:
       '0xf1b04a678cf6b6bb9150357e6d1a96a83ec45016d542f4201564deed37dbc363' as `0x${string}`,
   },

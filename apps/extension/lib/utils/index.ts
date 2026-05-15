@@ -58,3 +58,6 @@ export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE } from './pageBloc
 // Debate / Claim Helpers
 export { formatTrust } from './formatTrust'
 export { calcPercentage } from './calcPercentage'
+
+// Sofia Explorer deep-links (Phase 5b)
+export { getTripleUrl, getAtomUrl, getProfilePlatformUrl, getExplorerHomeUrl } from './sofiaExplorerUrls'

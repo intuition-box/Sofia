@@ -78,7 +78,7 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
         <div className="bookmark-empty-state">
           <p>No bookmarks yet</p>
           <p className="bookmark-empty-subtext">
-            This user hasn't certified any URLs on-chain yet.
+            This user hasn't Marked any URLs on-chain yet.
           </p>
         </div>
       </div>

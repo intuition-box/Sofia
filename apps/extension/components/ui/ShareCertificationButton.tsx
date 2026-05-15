@@ -50,7 +50,7 @@ const ShareCertificationButton = ({
 
       const title = pageTitle || pageUrl
       const tweetText =
-        `I just certified "${title}" as ${userStatus}` +
+        `I just Marked "${title}" as ${userStatus}` +
         ` #${userRank} on @0xSofia`
 
       const intentUrl =

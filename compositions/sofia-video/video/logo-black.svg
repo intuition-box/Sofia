@@ -1,0 +1,45 @@
+<svg width="698" height="696" viewBox="0 0 698 696" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_n_138_228)">
+<path d="M127.754 320.87V286.709C127.755 252.461 127.754 225.932 179.483 207.94L350.054 133L698 285.875V524.148L350.054 696L0 546.863L0 480.507L339.656 624.533C346.079 627.359 353.409 627.257 359.751 624.255L622.734 499.774C631.209 495.763 636.614 487.214 636.614 477.824V343.067C636.614 333.463 630.963 324.76 622.198 320.87L359.745 204.39C353.572 201.651 346.54 201.615 340.341 204.292L232.631 250.806C199.278 264.642 189.141 277.017 189.14 286.709V346.222L127.754 320.87Z" fill="black"/>
+</g>
+<g filter="url(#filter1_n_138_228)">
+<path d="M570.246 375.13V409.291C570.245 443.539 570.246 470.068 518.517 488.06L347.946 563L0 410.125V171.852L347.946 0L698 149.137V215.493L358.344 71.4669C351.921 68.6409 344.591 68.7428 338.249 71.745L75.2657 196.226C66.7914 200.237 61.3862 208.786 61.3862 218.176V352.933C61.3864 362.537 67.0374 371.24 75.802 375.13L338.255 491.61C344.428 494.349 351.46 494.385 357.659 491.708L465.369 445.194C498.722 431.358 508.859 418.983 508.86 409.291V349.778L570.246 375.13Z" fill="black"/>
+</g>
+<path d="M346.817 271.053C348.195 270.388 349.803 270.391 351.179 271.062L444.69 316.631C446.409 317.469 447.5 319.213 447.5 321.126V360.903C447.5 362.8 446.426 364.534 444.727 365.379L351.216 411.898C349.819 412.592 348.179 412.596 346.78 411.907L252.291 365.374C250.582 364.533 249.5 362.794 249.5 360.889V321.139C249.5 319.22 250.599 317.47 252.328 316.636L346.817 271.053Z" fill="black"/>
+<path d="M350.5 366.526L447.228 320.662V369.162L350.5 417.526V366.526Z" fill="#696767"/>
+<path d="M351 366.928L249 321V369.568L351 418V366.928Z" fill="#B7B7B7"/>
+<defs>
+<filter id="filter0_n_138_228" x="0" y="133" width="698" height="563" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="5171" />
+<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
+<feComponentTransfer in="alphaNoise" result="coloredNoise1">
+<feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+</feComponentTransfer>
+<feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+<feFlood flood-color="rgba(255, 255, 255, 0.16)" result="color1Flood" />
+<feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
+<feMerge result="effect1_noise_138_228">
+<feMergeNode in="shape" />
+<feMergeNode in="color1" />
+</feMerge>
+</filter>
+<filter id="filter1_n_138_228" x="0" y="0" width="698" height="563" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="5171" />
+<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
+<feComponentTransfer in="alphaNoise" result="coloredNoise1">
+<feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+</feComponentTransfer>
+<feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+<feFlood flood-color="rgba(255, 255, 255, 0.16)" result="color1Flood" />
+<feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
+<feMerge result="effect1_noise_138_228">
+<feMergeNode in="shape" />
+<feMergeNode in="color1" />
+</feMerge>
+</filter>
+</defs>
+</svg>

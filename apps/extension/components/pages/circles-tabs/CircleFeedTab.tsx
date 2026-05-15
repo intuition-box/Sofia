@@ -649,15 +649,15 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
       {/* Empty: no intention certifications */}
       {!loading && trustedWallets.length > 0 && feedItems.length === 0 && (
         <div className="circle-empty">
-          <h3>No Certifications Yet</h3>
-          <p>Your circle hasn't certified any pages yet.</p>
+          <h3>No Marks Yet</h3>
+          <p>Your circle hasn't Marked any pages yet.</p>
         </div>
       )}
 
       {/* Empty: no results for filter */}
       {!loading && feedItems.length > 0 && filteredItems.length === 0 && (
         <div className="circle-empty">
-          <p>No {INTENTION_CONFIG[activeFilter as IntentionType]?.label || ''} certifications from your circle.</p>
+          <p>No {INTENTION_CONFIG[activeFilter as IntentionType]?.label || ''} Marks from your circle.</p>
         </div>
       )}
 
@@ -725,7 +725,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                           className={`circle-action-btn circle-support-btn ${hasSupported || inCartSupport ? 'voted' : ''}`}
                           onClick={(e) => handleSupport(e, group)}
                           disabled={supportDisabled}
-                          title={inCartSupport ? "In cart" : "Support this certification"}
+                          title={inCartSupport ? "In cart" : "Support this Mark"}
                           aria-label="Support"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -737,7 +737,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                           className={`circle-action-btn circle-oppose-btn ${hasOpposed || inCartOppose ? 'voted' : ''}`}
                           onClick={(e) => handleOppose(e, group)}
                           disabled={opposeDisabled}
-                          title={inCartOppose ? "In cart" : "Oppose this certification"}
+                          title={inCartOppose ? "In cart" : "Oppose this Mark"}
                           aria-label="Oppose"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

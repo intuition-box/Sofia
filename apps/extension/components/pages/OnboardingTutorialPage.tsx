@@ -28,21 +28,21 @@ const STEPS: TutorialStep[] = [
     screenshot: screenshotGroup
   },
   {
-    title: 'Certify on-chain',
+    title: 'Mark on-chain',
     description:
-      'Inside each group, you can certify URLs on-chain. This creates a verifiable attestation of your engagement with that content.',
+      'Inside each group, you can Mark URLs on-chain. This creates a verifiable attestation of your engagement with that content.',
     screenshot: screenshotDetail
   },
   {
     title: 'Earn Gold & Level Up',
     description:
-      'Each certification earns you Gold. Spend Gold to level up your groups and unlock higher attestation weight. Complete quests to earn public XP and build your on-chain reputation.',
+      'Each Mark earns you Gold. Spend Gold to level up your groups and unlock higher attestation weight. Complete quests to earn public XP and build your on-chain reputation.',
     screenshot: screenshotGold
   },
   {
     title: 'Your Profile',
     description:
-      'Track your level, XP progress, and discovery badges in your profile. See your stats grow as you certify, explore, and contribute to the knowledge graph.',
+      'Track your level, XP progress, and discovery badges in your profile. See your stats grow as you Mark, explore, and contribute to the knowledge graph.',
     screenshot: screenshotProfile
   },
   // --- Bloc 2: Gamification (quests, streaks) ---
@@ -55,7 +55,7 @@ const STEPS: TutorialStep[] = [
   {
     title: 'Streaks & Leaderboard',
     description:
-      'Certify or vote every day to build your streak. Compete with other users on the global leaderboard and climb the rankings by maintaining daily activity.',
+      'Mark or vote every day to build your streak. Compete with other users on the global leaderboard and climb the rankings by maintaining daily activity.',
     screenshot: screenshotStreak
   },
   // --- Bloc 3: AI (pulse, interests) ---
@@ -68,27 +68,27 @@ const STEPS: TutorialStep[] = [
   {
     title: 'Interest Analysis',
     description:
-      'Your certifications build a verifiable on-chain profile. This data is analyzed to generate a map of your interests and intentions, creating a unique digital identity.',
+      'Your Marks build a verifiable on-chain profile. This data is analyzed to generate a map of your interests and intentions, creating a unique digital identity.',
     screenshot: screenshotInterest
   },
   // --- Bloc 4: Social (community, circle, chat) ---
   {
     title: 'Connect with Friends',
     description:
-      'Follow and trust your friends to discover what they certify. Connect your social accounts (X, Discord, YouTube, Twitch, Spotify) to verify your identity and unlock social quests.',
+      'Follow and trust your friends to discover what they Mark. Connect your social accounts (X, Discord, YouTube, Twitch, Spotify) to verify your identity and unlock social quests.',
     screenshot: screenshotCommunity
   },
   {
     title: 'Circle & Voting',
     description:
-      'See what your trust circle is certifying in the Circle feed. Like or dislike their certifications to express your opinion and contribute to content curation.',
+      'See what your trust circle is Marking in the Circle feed. Like or dislike their Marks to express your opinion and contribute to content curation.',
     screenshot: screenshotCircle
   },
   // --- Bloc 5: Onboarding final ---
   {
     title: 'Select & Import',
     description:
-      'Next, select the bookmarks you want to import locally. These URLs reflect your browsing habits. Once imported, certify them on-chain to affirm your intentions and link them to your profile.',
+      'Next, select the bookmarks you want to import locally. These URLs reflect your browsing habits. Once imported, Mark them on-chain to affirm your intentions and link them to your profile.',
     screenshot: screenshotSelect
   }
 ]

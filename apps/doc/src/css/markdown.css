@@ -10,6 +10,7 @@
 
 .theme-doc-markdown {
   max-width: var(--doc-max-content);
+  margin: 0 auto;
   font-size: 1rem;
   line-height: 1.72;
   color: var(--ds-ink-soft);

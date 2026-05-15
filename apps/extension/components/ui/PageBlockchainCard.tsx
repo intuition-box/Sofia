@@ -18,7 +18,7 @@ import {
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
-import { getFaviconUrl } from "~/lib/utils"
+import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
 import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import {
   INTENTION_CONFIG,
@@ -113,6 +113,7 @@ const PageBlockchainCard = () => {
   // Cart
   const cart = useCart()
   const [cartToast, setCartToast] = useState<string | null>(null)
+  const [isBursting, setIsBursting] = useState(false)
 
   const cartIntentionsForPage = useMemo(() => {
     if (!currentUrl) return [] as IntentionPurpose[]
@@ -165,6 +166,7 @@ const PageBlockchainCard = () => {
       )
       if (added) {
         setCartToast("Added to cart")
+        setIsBursting(true)
       } else {
         setCartToast("Already in cart")
       }
@@ -195,6 +197,7 @@ const PageBlockchainCard = () => {
       )
       if (added) {
         setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
+        setIsBursting(true)
       } else {
         setCartToast("Already in cart")
       }
@@ -209,6 +212,13 @@ const PageBlockchainCard = () => {
     return () => clearTimeout(timer)
   }, [cartToast])
 
+  // Reset cart-burst animation flag once the animation has played
+  useEffect(() => {
+    if (!isBursting) return
+    const t = setTimeout(() => setIsBursting(false), 450)
+    return () => clearTimeout(t)
+  }, [isBursting])
+
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(true)
 
@@ -217,14 +227,14 @@ const PageBlockchainCard = () => {
 
   const handleTripletClick = (tripletId: string) => {
     chrome.tabs.create({
-      url: `https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`,
+      url: getTripleUrl(tripletId),
       active: false
     })
   }
 
   return (
     <div
-      className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""}`}
+      className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""} ${isBursting ? "blockchain-card--cart-burst" : ""}`}
     >
       {/* Skeleton: first load or retrying */}
       {status === "loading" && <PageBlockchainSkeleton />}
