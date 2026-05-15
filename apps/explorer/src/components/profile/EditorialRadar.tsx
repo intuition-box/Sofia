@@ -84,15 +84,6 @@ function axisPoint(angle: number, radius: number) {
   }
 }
 
-function regularPolygonPoints(total: number, fracRadius: number): string {
-  const parts: string[] = []
-  for (let i = 0; i < total; i++) {
-    const p = axisPoint(axisAngle(i, total), R * fracRadius)
-    parts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`)
-  }
-  return parts.join(' ')
-}
-
 export default function EditorialRadar({
   axes,
   activeId,
@@ -134,11 +125,11 @@ export default function EditorialRadar({
         strokeWidth="1"
       />
 
-      {/* Concentric lattice polygons (20/40/60/80 %), regenerated
-          from the axis count so any N axes lines up cleanly. */}
+      {/* Concentric lattice rings (20/40/60/80 %) — circles so the
+          grid stays smooth regardless of axis count. */}
       <g fill="none" stroke={c.lattice} strokeWidth="0.6">
         {RING_LEVELS.map((frac) => (
-          <polygon key={frac} points={regularPolygonPoints(total, frac)} />
+          <circle key={frac} cx={CX} cy={CY} r={R * frac} />
         ))}
       </g>
 
@@ -159,21 +150,22 @@ export default function EditorialRadar({
       </g>
 
       {/* Ring scale labels — only on the top vertical spoke so the
-          plate stays uncluttered. */}
+          plate stays uncluttered. Sit just above each ring so the
+          glyph doesn't overlap the lattice line. */}
       <g fontSize="7" fill={c.ringLabel} textAnchor="end">
-        <text x={236} y={208}>
+        <text x={232} y={201}>
           20
         </text>
-        <text x={236} y={173}>
+        <text x={232} y={166}>
           40
         </text>
-        <text x={236} y={138}>
+        <text x={232} y={131}>
           60
         </text>
-        <text x={236} y={103}>
+        <text x={232} y={96}>
           80
         </text>
-        <text x={236} y={68}>
+        <text x={232} y={61}>
           100
         </text>
       </g>
