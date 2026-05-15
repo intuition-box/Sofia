@@ -13,13 +13,16 @@
  * Host component owns the surrounding overlay and is responsible for calling onClose.
  */
 
-import { UserBadge } from "@0xsofia/design-system"
-import type { UserBadgeTier } from "@0xsofia/design-system"
-import { useEffect, useRef, useState } from "react"
+import { UserBadge, VerbTag } from "@0xsofia/design-system"
+import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
 
 import { useBatchRewards, useGoldSystem } from "~/hooks"
+import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
+import { INTENTION_CONFIG } from "~/types/intentionCategories"
+import type { IntentionType } from "~/types/intentionCategories"
 
 import contributorBadge from "../../ui/img/badges/contributor.png"
 import explorerBadge from "../../ui/img/badges/explorer.png"
@@ -245,6 +248,27 @@ const BatchRewardContent = ({
             {rewards.slice(0, isSingle ? 1 : 8).map((reward) => {
               const item = reward.item
               const title = item.pageTitle || item.normalizedUrl
+              // Same intent/topic resolution as the Amplify rows so the verb
+              // ("visited", …) renders via the DS <VerbTag> and the context
+              // pill matches it 1:1.
+              const intentKey = item.intention
+                ? (((item.intention as string) in INTENTION_CONFIG
+                    ? item.intention
+                    : (item.intention as string).replace(
+                        /^for_/,
+                        ""
+                      )) as IntentionType)
+                : null
+              const intentEntry =
+                intentKey && intentKey in INTENTION_CONFIG
+                  ? INTENTION_CONFIG[intentKey]
+                  : null
+              const topic = item.interestContext
+                ? TOPIC_LABELS[item.interestContext]
+                : null
+              const topicColor = item.interestContext
+                ? TOPIC_COLORS[item.interestContext] || "#888"
+                : null
               return (
                 <div className="rc-mark" key={item.id}>
                   <img
@@ -256,26 +280,39 @@ const BatchRewardContent = ({
                         "hidden"
                     }}
                   />
-                  <span className="rc-mark-verb">{item.predicateName}</span>
-                  <span className="rc-mark-obj" title={title}>
-                    {truncate(title, isSingle ? 56 : 36)}
-                  </span>
-                  <span className="rc-mark-meta">
-                    {item.interestContext && (
-                      <span className="rc-mark-ctx">
-                        {item.interestContext}
-                      </span>
-                    )}
+                  <div className="rc-mark-main">
+                    <div className="rc-mark-tags">
+                      {intentEntry && (
+                        <VerbTag
+                          intent={intentKey as IntentionSlug}
+                          label={intentEntry.label}
+                        />
+                      )}
+                      {topic && topicColor && (
+                        <span
+                          className="rc-mark-ctx"
+                          style={
+                            { "--tag-color": topicColor } as CSSProperties
+                          }>
+                          {topic}
+                        </span>
+                      )}
+                    </div>
+                    <span className="rc-mark-title" title={title}>
+                      {truncate(title, isSingle ? 64 : 48)}
+                    </span>
                     <span className="rc-mark-host">
                       {hostFromUrl(item.url)}
                     </span>
-                  </span>
+                  </div>
                 </div>
               )
             })}
             {!isSingle && rewards.length > 8 && (
               <div className="rc-mark rc-mark--more">
-                <span className="rc-mark-obj">+{rewards.length - 8} more</span>
+                <span className="rc-mark-title">
+                  +{rewards.length - 8} more
+                </span>
               </div>
             )}
           </div>
