@@ -21,7 +21,7 @@ import {
   type RadarSeries,
   type SeriesFilter,
 } from '@/lib/radar'
-import { getTopicEmoji } from '@/config/topicEmoji'
+import { getTopicEmoji, getTopicIcon } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { OnChainTopic } from '@/services/taxonomyService'
@@ -36,6 +36,22 @@ interface RadarFocusResult {
   /** Per-verb total cert counts — fed into ProfileDetailsPanel for the
    *  per-verb score when a verb pill is focused. */
   verbCertCounts: Record<string, number>
+  /** Per-verb counts reflecting the current focus:
+   *  - `focus === 'all'`     → aggregate verb totals
+   *  - `focus === verbId`    → same aggregate (the polygon doesn't
+   *                             change shape; only the rim label flips)
+   *  - `focus === topicId`   → per-verb counts within that topic
+   *  Used by `EditorialRadar` to drive its polygon. */
+  intentionValuesForFocus: Record<string, number>
+  /** Per-axis values (topics + verbs) reflecting the current focus.
+   *  Symmetric across both halves of the radar:
+   *  - `focus === 'all'`   → topic totals + verb totals
+   *  - `focus === topicId` → that topic spikes; verb axes get the
+   *                           per-verb breakdown inside the topic
+   *  - `focus === verbId`  → that verb spikes; topic axes get the
+   *                           per-topic breakdown of that verb
+   *  Keys are axis ids (topic slug or verb id). */
+  axisValuesForFocus: Record<string, number>
 }
 
 export function useRadarFocus(
@@ -51,18 +67,19 @@ export function useRadarFocus(
 
   const topicAxes = useMemo<RadarAxis[]>(
     () =>
-      selectedTopics
-        .map((id) => {
-          const topic = topicById(id)
-          if (!topic) return null
-          return {
+      selectedTopics.flatMap<RadarAxis>((id) => {
+        const topic = topicById(id)
+        if (!topic) return []
+        return [
+          {
             id,
             label: topic.label,
             emoji: getTopicEmoji(id) || '📌',
+            icon: getTopicIcon(id),
             color: topic.color ?? getIntentionColor('inspiration'),
-          }
-        })
-        .filter((x): x is RadarAxis => x !== null),
+          },
+        ]
+      }),
     [selectedTopics, topicById],
   )
 
@@ -128,6 +145,47 @@ export function useRadarFocus(
     return out
   }, [verbAxes, buckets])
 
+  const intentionValuesForFocus = useMemo<Record<string, number>>(() => {
+    // Topic focus: distribute that topic's certs across the 6 verbs.
+    const isTopicFocus =
+      focus !== 'all' && !verbAxes.some((v) => v.id === focus)
+    if (isTopicFocus) {
+      const out: Record<string, number> = {}
+      for (const v of verbAxes) out[v.id] = buckets.get(focus, v.id)
+      return out
+    }
+    // 'all' or verb focus: aggregate verb totals.
+    return verbCertCounts
+  }, [focus, verbAxes, buckets, verbCertCounts])
+
+  // Symmetric per-axis values for the editorial radar polygon. Topic
+  // and verb clicks both reshape the polygon: topic focus pulls the
+  // verb axes to the in-topic breakdown, verb focus pulls the topic
+  // axes to the per-topic breakdown of that verb. 'all' falls back
+  // to raw totals on each side.
+  const axisValuesForFocus = useMemo<Record<string, number>>(() => {
+    const out: Record<string, number> = {}
+    const isVerbFocus = focus !== 'all' && verbAxes.some((v) => v.id === focus)
+    const isTopicFocus =
+      focus !== 'all' && !isVerbFocus && topicAxes.some((t) => t.id === focus)
+
+    if (isTopicFocus) {
+      for (const t of topicAxes) {
+        out[t.id] = t.id === focus ? buckets.getTopicTotal(t.id) : 0
+      }
+      for (const v of verbAxes) out[v.id] = buckets.get(focus, v.id)
+    } else if (isVerbFocus) {
+      for (const t of topicAxes) out[t.id] = buckets.get(t.id, focus)
+      for (const v of verbAxes) {
+        out[v.id] = v.id === focus ? buckets.getVerbTotal(v.id) : 0
+      }
+    } else {
+      for (const t of topicAxes) out[t.id] = buckets.getTopicTotal(t.id)
+      for (const v of verbAxes) out[v.id] = buckets.getVerbTotal(v.id)
+    }
+    return out
+  }, [focus, topicAxes, verbAxes, buckets])
+
   return {
     focus,
     setFocus,
@@ -136,5 +194,7 @@ export function useRadarFocus(
     displayedSeries,
     pillItems,
     verbCertCounts,
+    intentionValuesForFocus,
+    axisValuesForFocus,
   }
 }

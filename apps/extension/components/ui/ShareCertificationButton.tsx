@@ -3,7 +3,7 @@ import xIcon from "../ui/social/x.svg"
 import { createHookLogger } from "~/lib/utils"
 
 const logger = createHookLogger("ShareCertificationButton")
-const OG_BASE_URL = "https://sofia-og.vercel.app"
+const OG_BASE_URL = "https://og.sofia.intuition.box"
 
 interface ShareCertificationButtonProps {
   pageUrl: string

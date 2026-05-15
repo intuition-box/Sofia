@@ -1,23 +1,25 @@
 # Certifications fetched per-circle for the Compose → Perspective pipeline.
 #
 # Returns every `visits_for_*` triple where at least one of the given wallets
-# holds shares > 0 on the support vault (curve 1 — linear). The query also
-# carries both vaults' aggregate stats so the Contrast mode can rank URLs by
-# the |support − oppose| signal gap across picks.
+# holds shares > 0 on the support vault. The query also carries both vaults'
+# aggregate stats so the Contrast mode can rank URLs by the
+# |support − oppose| signal gap across picks.
 #
-# `predicateIds` is parameterised on purpose: callers pick which intention
-# kinds are in scope (e.g. only Work + Learning, or every intention). The
-# topic filter is applied client-side using the existing `GetCertTopicLinks`
-# query (see `circle.graphql`) so this query stays cheap and reusable.
+# `predicateLabels` is parameterised on purpose: callers pick which intention
+# kinds are in scope (e.g. only Work + Learning, or every intention). Label-
+# based filtering catches Music + Buying which were missing from the old
+# id-based `PREDICATE_IDS` constant set. The topic filter is applied
+# client-side using the existing `GetCertTopicLinks` query (see
+# `circle.graphql`) so this query stays cheap and reusable.
 query GetPerspectiveCerts(
   $wallets: [String!]!
-  $predicateIds: [String!]!
-  $limit: Int = 500
+  $predicateLabels: [String!]!
+  $limit: Int = 1000
   $offset: Int = 0
 ) {
   triples(
     where: {
-      predicate_id: { _in: $predicateIds }
+      predicate: { label: { _in: $predicateLabels } }
       positions: { account_id: { _in: $wallets }, shares: { _gt: "0" } }
     }
     limit: $limit

@@ -224,7 +224,7 @@ Click intention/trust/distrust pill
   → BatchRewardModal: sequential reward claiming
     → Per-page discovery tier (Pioneer/Explorer/Contributor)
     → Gold animation overlay (video)
-    → Share on X (OG image via sofia-og.vercel.app)
+    → Share on X (OG image via og.sofia.intuition.box)
     → Continue to next reward
 ```
 

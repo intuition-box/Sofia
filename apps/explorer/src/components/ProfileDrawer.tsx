@@ -176,7 +176,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       })
     }
     events.sort((a, b) => (b.ts > a.ts ? 1 : -1))
-    return events.slice(0, 10).map((e) => {
+    // Up from 10 → 30 so the drawer surfaces a richer activity tail.
+    // The list scrolls inside the drawer's outer `overflow-y: auto`
+    // (the inner `max-height` was removed in Phase A) so there's no
+    // visual cap on display either — the user just sees more by
+    // scrolling.
+    return events.slice(0, 30).map((e) => {
       const c = e.cert
       const url = c.objectUrl || ''
       const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
@@ -335,6 +340,43 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           </div>
 
+          {/* Circle impact — sits right under the banner so identity +
+              footprint read together before any of the analytic
+              surfaces (score donut, last activity). */}
+          <div className="pd-section">
+            <p className="pd-section-title">Circle impact</p>
+            <div
+              className="pd-impact-row"
+              role="group"
+              aria-label="My impact in circles"
+            >
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">{circlesCount}</span>
+                <span className="pd-impact-label">Circles</span>
+              </div>
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">
+                  {formatStatCount(profile.certs.length)}
+                </span>
+                <span className="pd-impact-label">Posts</span>
+              </div>
+              <div className="pd-impact-cell">
+                <span className="pd-impact-num">
+                  {formatStatCount(positions.size)}
+                </span>
+                <span className="pd-impact-label">Votes</span>
+              </div>
+              <div
+                className="pd-impact-cell pd-impact-cell--coming"
+                title="Gold sponsored — lands with the Boost feature"
+              >
+                <span className="pd-impact-num">—</span>
+                <span className="pd-impact-label">Gold</span>
+                <span className="pd-impact-soon">soon</span>
+              </div>
+            </div>
+          </div>
+
           {/* Topic Score pie chart */}
           <div className="pd-topic-score">
             <span className="pd-section-title">Score</span>
@@ -399,43 +441,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             <span>{percentileLabel}</span>
             <span className="pd-ts-view-arrow">→</span>
           </button>
-
-          {/* Circle impact — the footprint that used to live atop the
-              profile page (CircleImpactSection). Reads better here, next
-              to identity and ahead of activity. */}
-          <div className="pd-section">
-            <p className="pd-section-title">Circle impact</p>
-            <div
-              className="pd-impact-row"
-              role="group"
-              aria-label="My impact in circles"
-            >
-              <div className="pd-impact-cell">
-                <span className="pd-impact-num">{circlesCount}</span>
-                <span className="pd-impact-label">Circles</span>
-              </div>
-              <div className="pd-impact-cell">
-                <span className="pd-impact-num">
-                  {formatStatCount(profile.certs.length)}
-                </span>
-                <span className="pd-impact-label">Posts</span>
-              </div>
-              <div className="pd-impact-cell">
-                <span className="pd-impact-num">
-                  {formatStatCount(positions.size)}
-                </span>
-                <span className="pd-impact-label">Votes</span>
-              </div>
-              <div
-                className="pd-impact-cell pd-impact-cell--coming"
-                title="Gold sponsored — lands with the Boost feature"
-              >
-                <span className="pd-impact-num">—</span>
-                <span className="pd-impact-label">Gold</span>
-                <span className="pd-impact-soon">soon</span>
-              </div>
-            </div>
-          </div>
 
           {/* Last Activity — support/oppose only for now. */}
           {lastActivity.length > 0 && (

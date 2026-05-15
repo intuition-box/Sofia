@@ -36,11 +36,12 @@ Same query params as `/api/og`. This page is what gets shared on X — Twitter's
 
 ## Deploy
 
-```bash
-vercel deploy --prod
-```
+Deployed on Coolify as `img-preview-generator` at `https://og.sofia.intuition.box`.
+Build via the `Dockerfile` in this folder.
 
-Then update `OG_BASE_URL` in the extension's `InterestTab.tsx` with the production URL.
+The `OG_BASE_URL` constant defaults to `https://og.sofia.intuition.box` in both
+the extension and the explorer, and can be overridden via `VITE_OG_BASE_URL`
+(explorer build-time variable in Coolify).
 
 ## How it works
 

@@ -103,8 +103,61 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-left: 16px;
+  /* Top/bottom padding mirrors `.pc-radar-wrap` (4 / 10) so the
+     technical mono ticker bars on the right column align with the
+     radar's top + bottom tickers on the left. The bottom meta uses
+     `margin-top: auto` so it sticks to the bottom of this column
+     regardless of how short the inner content runs. */
+  padding: 4px 0 10px 16px;
   border-left: 1px dashed var(--ds-border-soft);
+}
+
+/* Technical mono ticker chrome — top + bottom bordered bands echoing
+   the radar's `.pc-radar-meta--top/--bottom`. Wraps the right panel
+   (Overview + Interests + Activity) so the right column reads as the
+   same kind of technical document the radar plate evokes. Mirrors the
+   landing's PLATE `.head` / `.foot` pattern. */
+.pc-panel-meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
+}
+.pc-panel-meta--top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+}
+.pc-panel-meta--bottom {
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  /* Pushed to the bottom of `.pc-main-right` so the `frame` ticker
+     aligns horizontally with the radar's bottom ticker on the left,
+     regardless of how short the right column's content runs. */
+  margin-top: auto;
+}
+.pc-panel-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.pc-panel-meta-right {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.pc-panel-meta-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ds-accent, #ffc6b0);
+  display: inline-block;
+  flex-shrink: 0;
 }
 .pc-main-cal {
   display: flex;
@@ -415,8 +468,10 @@
 
 .pc-radar-verbs {
   display: flex;
-  margin-top: -4px;
-  margin-bottom: 12px;
+  /* Breathing room below the PLATE ticker so the dropdown sits a
+     touch lower and doesn't crowd the mono header. */
+  margin-top: 16px;
+  margin-bottom: 16px;
   /* Pull the trigger back over the wrap's left padding so the
      dropdown hugs the column edge without dragging the radar with
      it. Falls back to 0 when the wrap padding collapses on mobile. */
@@ -542,6 +597,16 @@
   font-size: 12px;
   line-height: 1;
 }
+.pc-radar-filter-pop__glyph {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
 .pc-radar-filter-pop__reset {
   align-self: flex-end;
   padding: 4px 10px;
@@ -592,6 +657,60 @@
   overflow: visible;
   flex: 1;
 }
+
+/* Technical-drawing chrome around the EditorialRadar — mono ticker
+   above (dot + plate label + focus state) and a coord-style caption
+   below (n = N topics · M intents · θ value). Mirrors the
+   `.lp-meta-tag` / `.lp-visual-meta` look used on the login page. */
+.pc-radar-meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
+  /* Bleed past the wrap's left padding so the meta lines align
+     flush-left with the focus dropdown trigger (same -54px pull).
+     Right padding stays at 0 so the trailing label sits flush. */
+  margin-left: -54px;
+}
+@media (max-width: 900px) {
+  .pc-radar-meta {
+    margin-left: 0;
+  }
+}
+.pc-radar-meta--top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  margin-bottom: 6px;
+}
+.pc-radar-meta--bottom {
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  margin-top: 6px;
+}
+.pc-radar-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.pc-radar-meta-right {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.pc-radar-meta-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ds-accent, #ffc6b0);
+  display: inline-block;
+  flex-shrink: 0;
+}
 .pc-radar-label {
   cursor: pointer;
   transition: transform 0.18s ease;
@@ -610,20 +729,30 @@
     drop-shadow(0 0 10px color-mix(in srgb, #6dd4a0 25%, transparent));
 }
 .pc-radar-label-bg {
-  fill: var(--ds-card);
-  stroke: var(--ds-border);
+  /* Disc keeps the topic colour as its solid fill; the inner glyph
+     reads as white on top. Hover/active just thickens the ring so
+     the colour stays consistent across states. */
+  fill: var(--topic-color, var(--ds-muted));
+  stroke: color-mix(in srgb, var(--topic-color, var(--ds-muted)) 60%, #02000e);
   stroke-width: 1;
   transition: all 0.18s ease;
 }
 .pc-radar-label:hover .pc-radar-label-bg,
 .pc-radar-label.active .pc-radar-label-bg {
-  fill: color-mix(
-    in srgb,
-    var(--topic-color, var(--ds-muted)) 18%,
-    var(--ds-card)
-  );
-  stroke: var(--topic-color, var(--ds-muted));
+  stroke: #ffffff;
   stroke-width: 2;
+}
+/* Rim glyph (Material Symbols Outlined). Same family/variation axes
+   as the TopicBadge inner glyph so the radar reads as the same icon
+   pack the rest of the profile uses. Solid black on top of the
+   coloured disc regardless of focus state. */
+.pc-radar-label-glyph {
+  fill: #02000e;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 600,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 .pc-radar-half-label {

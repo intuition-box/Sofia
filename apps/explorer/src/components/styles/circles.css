@@ -420,7 +420,11 @@
   border: 1px solid var(--ds-border-soft);
   overflow: hidden;
   background: var(--ds-bg-subtle);
-  margin: 4px 0;
+  /* Pinned to the bottom of the card so every card in the /circles
+     grid aligns its stats row on the same baseline, regardless of
+     how long the description above it runs. */
+  margin: 4px 0 0;
+  margin-top: auto;
 }
 .cr-card-stat {
   display: flex;
@@ -1478,6 +1482,52 @@
   flex-direction: column;
   gap: 16px;
 }
+
+/* "Load more" trigger at the foot of the circle feed grid. Reveals
+   when `useCircleFeed.hasMore` flips and pulls the next 200-item
+   page. Sits centred so it reads as a continuation rather than a
+   secondary CTA. */
+.crd-feed-loadmore {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 8px;
+}
+.crd-feed-loadmore-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: transparent;
+  border: 1px dashed var(--ds-border);
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.crd-feed-loadmore-btn:hover:not(:disabled) {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+}
+.crd-feed-loadmore-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+/* Invisible sentinel target for the IntersectionObserver-based
+   infinite scroll. Zero visual footprint — the observer's
+   `rootMargin: '600px 0px'` pre-triggers `loadMore` well before the
+   sentinel scrolls into view, so the user never hits the bottom of
+   the feed without a fresh page already being in flight. */
+.crd-feed-loadmore-sentinel {
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
 .crd-feed-title {
   font-family: 'Fraunces', serif;
   font-size: 26px;
@@ -1889,18 +1939,8 @@
   flex-direction: column;
   gap: 12px;
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.2s ease;
   position: relative;
   color: inherit;
-}
-.crd-te-card:hover {
-  transform: translateY(-3px) rotate(-0.6deg);
-  border-color: var(--circle-color, var(--ds-accent));
-  box-shadow: 0 14px 32px -10px
-    color-mix(in srgb, var(--circle-color, var(--ds-accent)) 35%, transparent);
 }
 .crd-te-thumb {
   width: 100%;

@@ -1,7 +1,7 @@
 /**
  * CircleMostActiveCard — leaderboard of the circle's most active
  * members inside a configurable time window (7d / 30d / all). Renders
- * 4 rows with a Fraunces-serif rank, an avatar, the member label and
+ * 5 rows with a Fraunces-serif rank, an avatar, the member label and
  * a pixel bar (▮▮▮) whose length scales with the count. Sits next to
  * the Members card in the 3-col info row.
  */
@@ -28,10 +28,10 @@ export default function CircleMostActiveCard({
   items,
   members,
 }: CircleMostActiveCardProps) {
-  const [window, setWindow] = useState<ActivityWindow>('7d')
+  const [window, setWindow] = useState<ActivityWindow>('all')
 
   const ranked = useMemo(
-    () => computeMostActive(items, members, window, 4),
+    () => computeMostActive(items, members, window, 5),
     [items, members, window],
   )
   const max = ranked.reduce((m, r) => Math.max(m, r.count), 0) || 1

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   const interests = parseInterests(searchParams.get('interests'))
   const displayName = searchParams.get('name') || truncateWallet(wallet)
 
-  const logoSrc = 'https://sofia-og.vercel.app/sofia-logo.png'
+  const logoSrc = 'https://og.sofia.intuition.box/sofia-logo.png'
 
   return new ImageResponse(
     <div

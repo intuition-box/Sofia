@@ -288,18 +288,18 @@
 /* ── Topic picker popover ────────────────────────────────────────── */
 
 .ctx-popover {
-  width: 260px;
-  padding: 10px;
+  width: 320px;
+  padding: 12px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
 }
 .ctx-popover-title {
-  margin: 4px 6px 8px;
+  margin: 4px 8px 10px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
   font-weight: 600;
@@ -307,21 +307,22 @@
 .ctx-popover-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: 320px;
+  gap: 3px;
+  max-height: 380px;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 .ctx-popover-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
   font-family: 'Geist', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ds-ink-soft);
   text-align: left;

@@ -10,7 +10,7 @@
  * `useEnsNames` call. Verb filter is client-side over the first page
  * of `useCircleFeed` results.
  */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import type { Address } from 'viem'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
@@ -49,14 +49,35 @@ interface CircleFeedSectionProps {
   members: TrustCircleAccount[]
 }
 
-const MAX_SHOWN = 24
-
 export default function CircleFeedSection({
   addresses,
   circleName,
   members,
 }: CircleFeedSectionProps) {
-  const { items, loading, error } = useCircleFeed(addresses)
+  const { items, loading, loadingMore, hasMore, loadMore, error } =
+    useCircleFeed(addresses)
+
+  // Infinite scroll — a sentinel div at the foot of the masonry
+  // triggers `loadMore` automatically as soon as it enters the
+  // viewport. The manual "Load more" pill below stays as a fallback
+  // (keyboard users, no-IntersectionObserver fallback, etc.) and
+  // doubles as a visual end-of-feed marker while loading.
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const node = sentinelRef.current
+    if (!node) return
+    if (!hasMore) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) loadMore()
+      },
+      { rootMargin: '600px 0px' }, // pre-fetch a bit early so the
+      // user never sees an empty bottom while the next page is in
+      // flight.
+    )
+    obs.observe(node)
+    return () => obs.disconnect()
+  }, [hasMore, loadMore])
   const [verb, setVerb] = useState<VerbFilterId>('all')
   const [topic, setTopic] = useState<TopicFilterId>('all')
   const [memberFilter, setMemberFilter] = useState<string>('all')
@@ -169,7 +190,11 @@ export default function CircleFeedSection({
     return sortFeed(base, sort)
   }, [items, verb, topic, memberFilter, sort])
 
-  const shown = filtered.slice(0, MAX_SHOWN)
+  // No client-side cap any more — the masonry shows the full filtered
+  // feed and the user pulls more pages via the Load more trigger
+  // below. Stale `MAX_SHOWN = 24` was dropping 88% of the data
+  // `useCircleFeed` had already paid for.
+  const shown = filtered
 
   // Batch ENS resolution for all certifiers visible in this slice.
   const certifierAddresses = useMemo(() => {
@@ -235,28 +260,47 @@ export default function CircleFeedSection({
           }
         />
       ) : (
-        <div className="masonry-grid crd-feed">
-          {shown.map((item) => {
-            const addr = item.certifierAddress as Address | undefined
-            const name = addr ? getDisplay(addr) : item.certifier
-            const av = addr ? getAvatar(addr) : ''
-            return (
-              <CircleFeedCard
-                key={item.id}
-                item={item}
-                certifierName={name}
-                certifierAvatar={av}
-                onDeposit={authenticated ? handleDeposit : undefined}
-                livePositionTermIds={livePositionTermIds}
-                mcpScore={
-                  item.certifierAddress
-                    ? mcpScores.get(item.certifierAddress.toLowerCase())
-                    : undefined
-                }
+        <>
+          <div className="masonry-grid crd-feed">
+            {shown.map((item) => {
+              const addr = item.certifierAddress as Address | undefined
+              const name = addr ? getDisplay(addr) : item.certifier
+              const av = addr ? getAvatar(addr) : ''
+              return (
+                <CircleFeedCard
+                  key={item.id}
+                  item={item}
+                  certifierName={name}
+                  certifierAvatar={av}
+                  onDeposit={authenticated ? handleDeposit : undefined}
+                  livePositionTermIds={livePositionTermIds}
+                  mcpScore={
+                    item.certifierAddress
+                      ? mcpScores.get(item.certifierAddress.toLowerCase())
+                      : undefined
+                  }
+                />
+              )
+            })}
+          </div>
+          {hasMore && (
+            <div className="crd-feed-loadmore">
+              <button
+                type="button"
+                className="crd-feed-loadmore-btn"
+                onClick={loadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Loading…' : 'Load more'}
+              </button>
+              <div
+                ref={sentinelRef}
+                className="crd-feed-loadmore-sentinel"
+                aria-hidden="true"
               />
-            )
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       {predicatePicker && (

@@ -1,6 +1,9 @@
 /**
- * RadarRimLabel — a single clickable emoji badge at the rim of the radar,
- * pinned along the axis direction.
+ * RadarRimLabel — a single clickable badge at the rim of the radar,
+ * pinned along the axis direction. Renders the Material Symbols
+ * Outlined glyph (`axis.icon`) when available so the rim icons read
+ * as monochrome black pictograms; falls back to the emoji glyph
+ * (`axis.emoji`) for any axis that hasn't been wired yet.
  */
 import type { PositionedAxis } from '@/lib/radar'
 
@@ -36,15 +39,29 @@ export default function RadarRimLabel({
       onMouseLeave={(e) => onHover?.(null, e)}
     >
       <circle r="15" className="pc-radar-label-bg" />
-      <text
-        x="0"
-        y="0"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize="14"
-      >
-        {axis.emoji}
-      </text>
+      {axis.icon ? (
+        <text
+          x="0"
+          y="0"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontFamily="Material Symbols Outlined"
+          fontSize="18"
+          className="pc-radar-label-glyph"
+        >
+          {axis.icon}
+        </text>
+      ) : (
+        <text
+          x="0"
+          y="0"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize="14"
+        >
+          {axis.emoji}
+        </text>
+      )}
     </g>
   )
 }

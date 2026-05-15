@@ -7,8 +7,6 @@ import type { CircleItem } from './circleService'
 import type { TrustCircleAccount } from './trustCircleService'
 import { engagementScore } from './circleFeedSort'
 
-const ACTIVE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
-
 export type ActivityWindow = '7d' | '30d' | 'all'
 
 export interface MemberActivity {
@@ -20,27 +18,6 @@ export interface CircleStats {
   postCount: number
   voteCount: number
   activeMemberCount: number
-}
-
-export function computeCircleStats(items: CircleItem[]): CircleStats {
-  const cutoff = Date.now() - ACTIVE_WINDOW_MS
-  const activeCertifiers = new Set<string>()
-  let voteCount = 0
-
-  for (const item of items) {
-    for (const v of Object.values(item.intentionVaults)) {
-      voteCount += v.supportCount + v.opposeCount
-    }
-    if (new Date(item.timestamp).getTime() >= cutoff && item.certifierAddress) {
-      activeCertifiers.add(item.certifierAddress.toLowerCase())
-    }
-  }
-
-  return {
-    postCount: items.length,
-    voteCount,
-    activeMemberCount: activeCertifiers.size,
-  }
 }
 
 export function computeTopEngaged(
