@@ -20,7 +20,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
-import { computeCircleStats } from '@/services/circleStats'
+import { useCircleListStats } from '@/hooks/useCircleListStats'
 import CircleDetailHero from './CircleDetailHero'
 import CircleMembersCard from './CircleMembersCard'
 import CircleMostActiveCard from './CircleMostActiveCard'
@@ -77,7 +77,11 @@ export default function CircleDetailView({
     circle.addresses,
     topTopicSlugs,
   )
-  const stats = useMemo(() => computeCircleStats(feedItems), [feedItems])
+  // Source of truth: same aggregate query as the /circles cards so the
+  // hero numbers (Posts / Votes / Live) match the card a click earlier.
+  // `useCircleFeed` only loads page 0, so deriving totals from
+  // `feedItems` was severely undercounting on busy circles.
+  const { stats } = useCircleListStats(circle.addresses)
   const { authenticated } = usePrivy()
   // Non-auth visitor landing on a locked group: the blurred-feed
   // teaser doesn't help — turn the whole activity slot into a
