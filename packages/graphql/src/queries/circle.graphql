@@ -280,6 +280,76 @@ query GetUserCertsAlltime(
   }
 }
 
+# Sofia global feed — every Sofia-labeled triple anyone has actively
+# endorsed, all-time. Same shape as `GetSofiaCircleActivity` but
+# without the trusted-wallet position filter, so it drives the /home
+# All Activity feed (and any future "everyone on Sofia" surface)
+# through the unified `useSofiaFeed` hook.
+query GetSofiaGlobalFeed(
+  $userAddresses: [String!] = []
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      # At least one active position so we don't surface dead triples
+      positions: { shares: { _gt: "0" } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    counter_term_id
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      ...AtomMetadata
+    }
+    # Top recent endorser per triple — single row keyed by created_at
+    # so the feed card has a certifier identity to render.
+    recentPositions: positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: desc }
+      limit: 1
+    ) {
+      account_id
+      created_at
+      shares
+      account {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
 # Sofia circle activity — every Sofia-labeled triple any trusted
 # wallet has actively endorsed, all-time.
 #
