@@ -72,11 +72,6 @@
     transform: translateY(0);
   }
 }
-.feed-card:hover {
-  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
-  transform: translateY(-2px);
-  z-index: 10;
-}
 
 /* Cards with a real content thumbnail (e.g. YouTube) get a 16:9 image
    bleeding to the card edges at the top. We can't undo the padding on

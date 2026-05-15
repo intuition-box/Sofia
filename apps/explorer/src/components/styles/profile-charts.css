@@ -103,8 +103,61 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-left: 16px;
+  /* Top/bottom padding mirrors `.pc-radar-wrap` (4 / 10) so the
+     technical mono ticker bars on the right column align with the
+     radar's top + bottom tickers on the left. The bottom meta uses
+     `margin-top: auto` so it sticks to the bottom of this column
+     regardless of how short the inner content runs. */
+  padding: 4px 0 10px 16px;
   border-left: 1px dashed var(--ds-border-soft);
+}
+
+/* Technical mono ticker chrome — top + bottom bordered bands echoing
+   the radar's `.pc-radar-meta--top/--bottom`. Wraps the right panel
+   (Overview + Interests + Activity) so the right column reads as the
+   same kind of technical document the radar plate evokes. Mirrors the
+   landing's PLATE `.head` / `.foot` pattern. */
+.pc-panel-meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
+}
+.pc-panel-meta--top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+}
+.pc-panel-meta--bottom {
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
+  /* Pushed to the bottom of `.pc-main-right` so the `frame` ticker
+     aligns horizontally with the radar's bottom ticker on the left,
+     regardless of how short the right column's content runs. */
+  margin-top: auto;
+}
+.pc-panel-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.pc-panel-meta-right {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.pc-panel-meta-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ds-accent, #ffc6b0);
+  display: inline-block;
+  flex-shrink: 0;
 }
 .pc-main-cal {
   display: flex;
@@ -415,8 +468,10 @@
 
 .pc-radar-verbs {
   display: flex;
-  margin-top: -4px;
-  margin-bottom: 12px;
+  /* Breathing room below the PLATE ticker so the dropdown sits a
+     touch lower and doesn't crowd the mono header. */
+  margin-top: 16px;
+  margin-bottom: 16px;
   /* Pull the trigger back over the wrap's left padding so the
      dropdown hugs the column edge without dragging the radar with
      it. Falls back to 0 when the wrap padding collapses on mobile. */

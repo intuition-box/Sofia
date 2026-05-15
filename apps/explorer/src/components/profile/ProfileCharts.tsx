@@ -247,11 +247,6 @@ export default function ProfileCharts({
                 <span className="pc-radar-meta-dot" aria-hidden="true" />
                 Plate · Topics × Intentions
               </span>
-              <span className="pc-radar-meta-right">
-                {focus === 'all'
-                  ? 'Polar field · all axes'
-                  : (focusMeta?.label ?? focus)}
-              </span>
             </div>
             <RadarPills
               items={pillItems}
@@ -274,6 +269,12 @@ export default function ProfileCharts({
             </div>
           </div>
           <div className="pc-main-right">
+            <div className="pc-panel-meta pc-panel-meta--top">
+              <span className="pc-panel-meta-left">
+                <span className="pc-panel-meta-dot" aria-hidden="true" />
+                Readout · Overview × Activity
+              </span>
+            </div>
             <ProfileDetailsPanel
               topics={topicStats}
               topicFilter={focus === 'all' ? 'all' : focus}
@@ -289,6 +290,10 @@ export default function ProfileCharts({
             />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />
+            </div>
+            <div className="pc-panel-meta pc-panel-meta--bottom">
+              <span>frame = 26w × 7d</span>
+              <span>θ · sync</span>
             </div>
           </div>
         </div>
