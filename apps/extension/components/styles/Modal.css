@@ -1483,13 +1483,15 @@
   background: rgba(42, 26, 10, 0.08);
 }
 .rc-btn--primary {
-  background: #2a1a0a;
-  color: #f3ead7;
+  background: #fff;
+  color: #2a1a0a;
+  border-color: #2a1a0a;
   flex: 1.6;
 }
 .rc-btn--primary:hover {
-  background: #3a2510;
-  color: #f3ead7;
+  background: var(--ds-accent, #ffc6b0);
+  color: #2a1a0a;
+  border-color: var(--ds-accent, #ffc6b0);
 }
 
 /* ========== GLOBAL STAKE SLIDER ========== */
