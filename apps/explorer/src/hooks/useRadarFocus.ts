@@ -67,19 +67,19 @@ export function useRadarFocus(
 
   const topicAxes = useMemo<RadarAxis[]>(
     () =>
-      selectedTopics
-        .map((id) => {
-          const topic = topicById(id)
-          if (!topic) return null
-          return {
+      selectedTopics.flatMap<RadarAxis>((id) => {
+        const topic = topicById(id)
+        if (!topic) return []
+        return [
+          {
             id,
             label: topic.label,
             emoji: getTopicEmoji(id) || '📌',
             icon: getTopicIcon(id),
             color: topic.color ?? getIntentionColor('inspiration'),
-          }
-        })
-        .filter((x): x is RadarAxis => x !== null),
+          },
+        ]
+      }),
     [selectedTopics, topicById],
   )
 
