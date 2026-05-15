@@ -281,6 +281,12 @@ const BatchRewardContent = ({
                     }}
                   />
                   <div className="rc-mark-main">
+                    <span className="rc-mark-title" title={title}>
+                      {truncate(title, isSingle ? 64 : 48)}
+                    </span>
+                    <span className="rc-mark-host">
+                      {hostFromUrl(item.url)}
+                    </span>
                     <div className="rc-mark-tags">
                       {intentEntry && (
                         <VerbTag
@@ -294,16 +300,11 @@ const BatchRewardContent = ({
                           style={
                             { "--tag-color": topicColor } as CSSProperties
                           }>
+                          <span className="rc-mark-ctx-dot" />
                           {topic}
                         </span>
                       )}
                     </div>
-                    <span className="rc-mark-title" title={title}>
-                      {truncate(title, isSingle ? 64 : 48)}
-                    </span>
-                    <span className="rc-mark-host">
-                      {hostFromUrl(item.url)}
-                    </span>
                   </div>
                 </div>
               )

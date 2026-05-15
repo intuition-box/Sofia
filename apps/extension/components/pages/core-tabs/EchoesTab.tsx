@@ -324,13 +324,13 @@ const EchoesTab = () => {
           </div>
           <button
             className="sort-btn gm-manage-btn"
+            style={{ marginLeft: "auto" }}
             onClick={() => handleOpenManager("all")}
             title="Manage groups">
             Manage
           </button>
           <button
             className="sort-btn gm-manage-btn echoes-open-sofia-btn"
-            style={{ marginLeft: "auto" }}
             onClick={() =>
               chrome.tabs.create({ url: getProfileUrl(), active: true })
             }
