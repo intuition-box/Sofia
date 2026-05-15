@@ -5,7 +5,8 @@ export const URLS = {
   docs: {
     intro: DOCS_BASE,
     manifesto: `${DOCS_BASE}/docs/litepaper/introduction`,
-    privacy: `${DOCS_BASE}/docs/litepaper/privacy`,
+    privacy: `${DOCS_BASE}/privacy`,
+    terms: `${DOCS_BASE}/terms`,
   },
   blog: {
     index: `${DOCS_BASE}/blog`,

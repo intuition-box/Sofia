@@ -16,7 +16,7 @@ const COMMUNITY = [
 
 const LEGAL = [
   { label: 'Privacy', href: URLS.docs.privacy },
-  { label: 'Terms', href: URLS.docs.privacy },
+  { label: 'Terms', href: URLS.docs.terms },
 ]
 
 export function Footer() {
