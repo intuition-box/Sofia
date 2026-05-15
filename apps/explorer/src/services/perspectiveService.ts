@@ -15,21 +15,39 @@
  */
 
 import { getAddress } from 'viem'
-import { useGetPerspectiveCertsQuery } from '@0xsofia/graphql'
-import { GRAPHQL_URL, PREDICATE_IDS } from '@/config'
+import {
+  useGetPerspectiveCertsQuery,
+  type GetPerspectiveCertsQuery,
+} from '@0xsofia/graphql'
+import { GRAPHQL_URL } from '@/config'
 import { LABEL_TO_INTENTION } from '@/config/intentions'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 
-/** Predicate ids that count as a "certification" for the Compose pipeline.
+/** Predicate labels that count as a "certification" for the Compose
+ *  pipeline. Label-based filtering instead of id-based so Music and
+ *  Buying are included (their predicate IDs aren't in
+ *  `config.PREDICATE_IDS` because they were added later, and the old
+ *  id-based filter silently dropped every Music/Buying cert).
  *  Trust/distrust intentionally excluded — those are people-to-people
  *  signals, not URL claims. */
-const PERSPECTIVE_PREDICATE_IDS: string[] = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
+const PERSPECTIVE_PREDICATE_LABELS: string[] = [
+  'visits for work',
+  'visits for learning',
+  'visits for learning ', // legacy trailing-space variant
+  'visits for fun',
+  'visits for inspiration',
+  'visits for buying',
+  'visits for music',
 ]
+
+/** Page size for the alltime loop. Bumped from the legacy 500 cap so
+ *  a circle's full cert history fits in 1-2 pages on first call. */
+const PAGE_SIZE = 1000
+
+/** Safety cap on the loop — 50 pages × 1000 = 50 000 certs, far past
+ *  any plausible circle size today. */
+const MAX_PAGES = 50
 
 export interface PerspectiveCert {
   /** Cert triple term_id. */
@@ -103,13 +121,14 @@ function normaliseIntention(label: string | null | undefined): string {
  * vouching for the same URL collapse into a single row whose
  * `certifierWallets` lists them.
  *
- * No pagination beyond the GraphQL `limit` arg — callers expecting
- * very large circles should chunk their wallet set.
+ * Paginates the indexer alltime — calls the query in a loop until a
+ * short page comes back. Previously hard-capped to 500 rows per
+ * circle which silently dropped the long tail on large trust
+ * circles.
  */
 export async function fetchPerspectiveCertifications(
   wallets: string[],
   topicAtomIds: string[] = [],
-  limit: number = 500,
 ): Promise<PerspectiveCert[]> {
   if (wallets.length === 0) return []
 
@@ -128,15 +147,23 @@ export async function fetchPerspectiveCertifications(
   }
   if (checksumWallets.length === 0) return []
 
-  const data = await useGetPerspectiveCertsQuery.fetcher({
-    wallets: checksumWallets,
-    predicateIds: PERSPECTIVE_PREDICATE_IDS,
-    limit,
-    offset: 0,
-  })()
+  // Alltime loop — fetch pages until the indexer returns less than a
+  // full page or we hit the safety cap.
+  const rawTriples: GetPerspectiveCertsQuery['triples'] = []
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const data = await useGetPerspectiveCertsQuery.fetcher({
+      wallets: checksumWallets,
+      predicateLabels: PERSPECTIVE_PREDICATE_LABELS,
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    })()
+    const rows = data.triples ?? []
+    rawTriples.push(...rows)
+    if (rows.length < PAGE_SIZE) break
+  }
 
   const lowerWallets = new Set(wallets.map((w) => w.toLowerCase()))
-  let certs: PerspectiveCert[] = (data.triples ?? []).map((triple) => {
+  let certs: PerspectiveCert[] = rawTriples.map((triple) => {
     const obj = triple.object
     const thing = obj?.value?.thing
     const url = thing?.url ?? ''
