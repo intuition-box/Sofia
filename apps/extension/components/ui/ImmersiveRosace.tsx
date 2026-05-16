@@ -21,7 +21,7 @@ const PALETTE = [
   "#a78bdb", // inspiration
   "#6dd4a0", // trusted
   "#ff9ec2", // social
-  "#9fb1ff"  // play
+  "#9fb1ff" // play
 ]
 
 /* Deterministic pseudo-random so the layout is stable across renders. */
@@ -65,7 +65,17 @@ function buildField(count: number, seed = 17): RosaceDisc[] {
     const strokeWidth = 1.2 + depth * 1.4
     const pulseOffset = rand() * Math.PI * 2
     const pulseAmp = 0.04 + rand() * 0.08
-    discs.push({ cx, cy, r, color, opacity, strokeWidth, pulseOffset, pulseAmp, depth })
+    discs.push({
+      cx,
+      cy,
+      r,
+      color,
+      opacity,
+      strokeWidth,
+      pulseOffset,
+      pulseAmp,
+      depth
+    })
   }
   // Force a central anchor disc so the eye always lands on the middle.
   discs.push({
@@ -109,8 +119,7 @@ export function ImmersiveRosace() {
       viewBox="0 0 1200 1200"
       width="100%"
       height="100%"
-      preserveAspectRatio="xMidYMid slice"
-    >
+      preserveAspectRatio="xMidYMid slice">
       <defs>
         {/* Central radial glow so the deepest "tunnel" point feels lit. */}
         <radialGradient id="immersive-core" cx="50%" cy="50%" r="50%">
@@ -120,47 +129,59 @@ export function ImmersiveRosace() {
         </radialGradient>
       </defs>
 
-      <rect x="0" y="0" width="1200" height="1200" fill="url(#immersive-core)" />
+      <rect
+        x="0"
+        y="0"
+        width="1200"
+        height="1200"
+        fill="url(#immersive-core)"
+      />
 
-      {DISCS.map((d, i) => {
-        const pulse = 1 + Math.sin(t * 1.4 + d.pulseOffset) * d.pulseAmp
-        const r = d.r * pulse
-        const op = d.opacity * (0.78 + 0.22 * Math.sin(t * 0.9 + d.pulseOffset * 0.7))
-        return (
-          <circle
-            key={i}
-            cx={d.cx}
-            cy={d.cy}
-            r={r}
-            fill="none"
-            stroke={d.color}
-            strokeWidth={d.strokeWidth}
-            opacity={op}
-          />
-        )
-      })}
+      {/* Scale the rosace up around the centre so the login animation reads
+       *  larger / more immersive. The bg rect stays full-bleed; slice + this
+       *  group keep it edge-to-edge with no gaps. */}
+      <g transform="translate(600 600) scale(1.4) translate(-600 -600)">
+        {DISCS.map((d, i) => {
+          const pulse = 1 + Math.sin(t * 1.4 + d.pulseOffset) * d.pulseAmp
+          const r = d.r * pulse
+          const op =
+            d.opacity * (0.78 + 0.22 * Math.sin(t * 0.9 + d.pulseOffset * 0.7))
+          return (
+            <circle
+              key={i}
+              cx={d.cx}
+              cy={d.cy}
+              r={r}
+              fill="none"
+              stroke={d.color}
+              strokeWidth={d.strokeWidth}
+              opacity={op}
+            />
+          )
+        })}
 
-      {/* Subtle intersection accents: tiny coloured dots scattered on a
-       *  second seed so they don't overlap the disc centres exactly. */}
-      {Array.from({ length: 28 }).map((_, i) => {
-        const rand = mulberry32(91 + i)
-        const angle = rand() * Math.PI * 2
-        const radius = Math.pow(rand(), 0.6) * 540
-        const cx = 600 + Math.cos(angle) * radius
-        const cy = 600 + Math.sin(angle) * radius
-        const color = PALETTE[Math.floor(rand() * PALETTE.length)]
-        const pulse = 0.5 + Math.sin(t * 2.2 + i) * 0.5
-        return (
-          <circle
-            key={`dot-${i}`}
-            cx={cx}
-            cy={cy}
-            r={2.4 + pulse * 1.4}
-            fill={color}
-            opacity={0.35 + pulse * 0.45}
-          />
-        )
-      })}
+        {/* Subtle intersection accents: tiny coloured dots scattered on a
+         *  second seed so they don't overlap the disc centres exactly. */}
+        {Array.from({ length: 28 }).map((_, i) => {
+          const rand = mulberry32(91 + i)
+          const angle = rand() * Math.PI * 2
+          const radius = Math.pow(rand(), 0.6) * 540
+          const cx = 600 + Math.cos(angle) * radius
+          const cy = 600 + Math.sin(angle) * radius
+          const color = PALETTE[Math.floor(rand() * PALETTE.length)]
+          const pulse = 0.5 + Math.sin(t * 2.2 + i) * 0.5
+          return (
+            <circle
+              key={`dot-${i}`}
+              cx={cx}
+              cy={cy}
+              r={2.4 + pulse * 1.4}
+              fill={color}
+              opacity={0.35 + pulse * 0.45}
+            />
+          )
+        })}
+      </g>
     </svg>
   )
 }

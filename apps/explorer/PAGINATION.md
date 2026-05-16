@@ -33,6 +33,7 @@ without hand-rolling state for each one:
   surface — the user is going to scroll past the fold immediately.
 
 Reference implementations:
+
 - [`useCircleFeed.ts`](../apps/explorer/src/hooks/useCircleFeed.ts)
 - [`useUserActivity.ts`](../apps/explorer/src/hooks/useUserActivity.ts)
 
@@ -57,9 +58,9 @@ Reference consumer: [`CircleFeedSection.tsx`](../apps/explorer/src/components/ci
 
 ## Anti-pattern catalogue
 
-| Pattern | Why it's a smell |
-|---|---|
-| `const items = useCircleFeed(...)` then `items.slice(0, 24)` | Drops 88% of paid-for items, never invokes `loadMore`. |
-| Hook returns `hasMore` but no `loadMore` | UI consumer destructures `hasMore` thinking it can extend, can't. |
-| Local `useState<Item[]>([])` + manual offset in a consumer | Reinvents the hook contract per-card; cache + dedupe are ad hoc. |
-| `BATCH_SIZE = 24` on a feed hook | Triggers a Load-more click after every screenful — UX cliff. |
+| Pattern                                                      | Why it's a smell                                                  |
+| ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `const items = useCircleFeed(...)` then `items.slice(0, 24)` | Drops 88% of paid-for items, never invokes `loadMore`.            |
+| Hook returns `hasMore` but no `loadMore`                     | UI consumer destructures `hasMore` thinking it can extend, can't. |
+| Local `useState<Item[]>([])` + manual offset in a consumer   | Reinvents the hook contract per-card; cache + dedupe are ad hoc.  |
+| `BATCH_SIZE = 24` on a feed hook                             | Triggers a Load-more click after every screenful — UX cliff.      |

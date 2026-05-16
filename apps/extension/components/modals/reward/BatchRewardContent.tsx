@@ -7,27 +7,38 @@
  * Flow: `loading` → auto-claim → `animation` (single screen). The user no longer
  * has to click "Claim All Rewards" — the gold is claimed automatically as soon as
  * the rewards are computed. The animation phase shows the Mark(s) the user just
- * created alongside the gold animation backdrop.
+ * created on the editorial reward ticket (.rc — pure-CSS ember scene, no video).
  *
  * Owns its phase state and consumes useBatchRewards / useGoldSystem directly.
  * Host component owns the surrounding overlay and is responsible for calling onClose.
  */
 
-import { useEffect, useRef, useState } from "react"
+import { UserBadge, VerbTag } from "@0xsofia/design-system"
+import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
+
 import { useBatchRewards, useGoldSystem } from "~/hooks"
-import { getFaviconUrl, createHookLogger } from "~/lib/utils"
-import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import SofiaLoader from "../../ui/SofiaLoader"
-import xIcon from "../../ui/social/x.svg"
+import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
+import { createHookLogger, getFaviconUrl } from "~/lib/utils"
+import { INTENTION_CONFIG } from "~/types/intentionCategories"
+import type { IntentionType } from "~/types/intentionCategories"
+
+import contributorBadge from "../../ui/img/badges/contributor.png"
+import explorerBadge from "../../ui/img/badges/explorer.png"
+import pioneerBadge from "../../ui/img/badges/pioneer.png"
+import SofiaLoader from "../../ui/SofiaLoader"
+
+const BADGE_IMAGES: Record<UserBadgeTier, string> = {
+  pioneer: pioneerBadge,
+  explorer: explorerBadge,
+  contributor: contributorBadge
+}
 
 const logger = createHookLogger("BatchRewardContent")
 const OG_BASE_URL = "https://sofia-og.vercel.app"
 
-const goldRewardVideoUrl = chrome.runtime.getURL("assets/bggoldreward.mp4")
-const goldReward50VideoUrl = chrome.runtime.getURL(
-  "assets/bggoldreward50.mp4"
-)
+const TIER_ORDER = ["pioneer", "explorer", "contributor"] as const
 
 type Phase = "loading" | "animation"
 
@@ -109,6 +120,9 @@ const BatchRewardContent = ({
     (r) => r.tier === "Contributor"
   ).length
 
+  const tierCount = (tier: (typeof TIER_ORDER)[number]): number =>
+    rewards.filter((r) => r.tier.toLowerCase() === tier).length
+
   const handleClose = () => {
     reset()
     setPhase("loading")
@@ -148,9 +162,7 @@ const BatchRewardContent = ({
 
       const tierParts: string[] = []
       if (pioneerCount > 0)
-        tierParts.push(
-          `${pioneerCount} Pioneer${pioneerCount > 1 ? "s" : ""}`
-        )
+        tierParts.push(`${pioneerCount} Pioneer${pioneerCount > 1 ? "s" : ""}`)
       if (explorerCount > 0)
         tierParts.push(
           `${explorerCount} Explorer${explorerCount > 1 ? "s" : ""}`
@@ -183,131 +195,184 @@ const BatchRewardContent = ({
 
   const isSingle = rewards.length === 1
 
-  return (
-    <>
-      {phase === "loading" && (
-        <div className="batch-reward__loading">
-          <SofiaLoader size={60} />
-          <p className="batch-reward__loading-text">Capturing your Marks…</p>
+  // Same surface/visual as the Amplify processing loader (.amp .b3-loading) so
+  // the loading → reward transition has zero style jump.
+  if (phase === "loading") {
+    return (
+      <div className="amp b3">
+        <div className="b3-loading" role="status" aria-live="polite">
+          <SofiaLoader size={120} />
+          <p className="b3-loading-title">Capturing</p>
+          <p className="b3-loading-step">your Marks…</p>
         </div>
-      )}
+      </div>
+    )
+  }
 
-      {phase === "animation" && (
-        <div className="reward-claimed-overlay">
-          <video
-            className="reward-claimed-bg-video"
-            src={
-              totalGoldInBatch >= 50
-                ? goldReward50VideoUrl
-                : goldRewardVideoUrl
-            }
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-          <div className="reward-claimed-content">
-            <div className="reward-claimed-top">
-              <h2 className="reward-claimed-title">
-                {isSingle ? "Mark captured!" : "Marks captured!"}
-              </h2>
-              <p className="reward-claimed-subtitle">
-                +{totalGoldInBatch} Gold added to your balance
-              </p>
-            </div>
-
-            {/* Mark cards — what the user just created (Phase 3b) */}
-            <div
-              className={`mark-claim-list ${isSingle ? "is-single" : "is-multi"}`}>
-              {rewards.slice(0, isSingle ? 1 : 6).map((reward) => {
-                const title =
-                  reward.item.pageTitle || reward.item.normalizedUrl
-                const platform = hostFromUrl(reward.item.url)
-                return (
-                  <div key={reward.item.id} className="mark-claim-card">
-                    <img
-                      src={
-                        reward.item.faviconUrl ||
-                        getFaviconUrl(reward.item.url, 40)
-                      }
-                      alt=""
-                      className="mark-claim-card__favicon"
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).style.visibility =
-                          "hidden"
-                      }}
-                    />
-                    <div className="mark-claim-card__body">
-                      <span className="mark-claim-card__platform">
-                        {platform}
-                      </span>
-                      <span
-                        className="mark-claim-card__title"
-                        title={title}>
-                        {truncate(title, isSingle ? 64 : 32)}
-                      </span>
-                    </div>
-                    <div className="mark-claim-card__reward">
-                      <span
-                        className={`mark-claim-card__tier mark-claim-card__tier--${reward.tier.toLowerCase()}`}>
-                        {reward.tier}
-                      </span>
-                      <span className="mark-claim-card__gold">
-                        +{reward.gold}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-              {!isSingle && rewards.length > 6 && (
-                <div className="mark-claim-card mark-claim-card--more">
-                  <span>+{rewards.length - 6} more</span>
-                </div>
-              )}
-            </div>
-
-            {/* Compact summary: total + share */}
-            <div className="reward-claimed-summary">
-              <p className="reward-claimed-total">Total: {totalGold} Gold</p>
-              <button
-                className="batch-receipt__share-btn"
-                onClick={handleShare}
-                disabled={isSharing}>
-                <img
-                  src={xIcon}
-                  alt="X"
-                  className="batch-receipt__share-icon"
-                />
-                {isSharing ? "Sharing…" : "Share on X"}
-              </button>
-            </div>
-
-            <div className="reward-claimed-actions">
-              <button
-                className="reward-continue-btn reward-continue-btn--primary"
-                onClick={handleViewEchoes}>
-                {isSingle ? "View my Echo" : "View my Echoes"}
-              </button>
-              <button
-                className="reward-continue-btn reward-continue-btn--ghost"
-                onClick={handleClose}>
-                Done
-              </button>
-            </div>
-
-            {txHash && (
-              <a
-                href={`${EXPLORER_URLS.TRANSACTION}${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="reward-view-tx-link">
-                View transaction →
-              </a>
-            )}
+  return (
+    <div className="rc">
+      <div className="rc-ember" />
+      <div className="rc-ticket">
+        <div className="rc-stub">
+          <div className="rc-stub-row">
+            <span className="rc-stub-k">N°</span>
+            <span className="rc-stub-v">
+              {txHash ? txHash.slice(2, 10).toUpperCase() : "—"}
+            </span>
+          </div>
+          <div className="rc-stub-row">
+            <span className="rc-stub-k">DATE</span>
+            <span className="rc-stub-v">
+              {new Date().toLocaleDateString("fr-FR").replace(/\//g, " · ")}
+            </span>
           </div>
         </div>
-      )}
-    </>
+        <div className="rc-perf" />
+
+        <div className="rc-body">
+          <div className="rc-headline">
+            <span className="rc-drop">M</span>
+            <h1 className="rc-h1">
+              {isSingle ? "ark" : "arks"}
+              <br />
+              captured.
+            </h1>
+          </div>
+          <p className="rc-sub">
+            {isSingle
+              ? "Awarded for marking one page."
+              : `Awarded for marking ${rewards.length} pages.`}
+          </p>
+
+          <div className="rc-marks">
+            {rewards.slice(0, isSingle ? 1 : 8).map((reward) => {
+              const item = reward.item
+              const title = item.pageTitle || item.normalizedUrl
+              // Same intent/topic resolution as the Amplify rows so the verb
+              // ("visited", …) renders via the DS <VerbTag> and the context
+              // pill matches it 1:1.
+              const intentKey = item.intention
+                ? (((item.intention as string) in INTENTION_CONFIG
+                    ? item.intention
+                    : (item.intention as string).replace(
+                        /^for_/,
+                        ""
+                      )) as IntentionType)
+                : null
+              const intentEntry =
+                intentKey && intentKey in INTENTION_CONFIG
+                  ? INTENTION_CONFIG[intentKey]
+                  : null
+              const topic = item.interestContext
+                ? TOPIC_LABELS[item.interestContext]
+                : null
+              const topicColor = item.interestContext
+                ? TOPIC_COLORS[item.interestContext] || "#888"
+                : null
+              return (
+                <div className="rc-mark" key={item.id}>
+                  <img
+                    src={item.faviconUrl || getFaviconUrl(item.url, 32)}
+                    alt=""
+                    className="rc-mark-fav"
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).style.visibility =
+                        "hidden"
+                    }}
+                  />
+                  <div className="rc-mark-main">
+                    <span className="rc-mark-title" title={title}>
+                      {truncate(title, isSingle ? 64 : 48)}
+                    </span>
+                    <span className="rc-mark-host">
+                      {hostFromUrl(item.url)}
+                    </span>
+                    <div className="rc-mark-tags">
+                      {intentEntry && (
+                        <VerbTag
+                          intent={intentKey as IntentionSlug}
+                          label={intentEntry.label}
+                        />
+                      )}
+                      {topic && topicColor && (
+                        <span
+                          className="rc-mark-ctx"
+                          style={
+                            { "--tag-color": topicColor } as CSSProperties
+                          }>
+                          <span className="rc-mark-ctx-dot" />
+                          {topic}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+            {!isSingle && rewards.length > 8 && (
+              <div className="rc-mark rc-mark--more">
+                <span className="rc-mark-title">
+                  +{rewards.length - 8} more
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="rc-tiers">
+            <div className="rc-tiers-k">Tier ladder</div>
+            {TIER_ORDER.map((tier) => {
+              const count = tierCount(tier)
+              const earned = count > 0
+              return (
+                <div
+                  className={`rc-tier${earned ? " is-earned" : ""}`}
+                  key={tier}>
+                  <UserBadge
+                    tier={tier}
+                    iconUrl={BADGE_IMAGES[tier]}
+                    size={32}
+                  />
+                  <span className="rc-tier-label">
+                    {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                  </span>
+                  <span className="rc-tier-state">
+                    {earned ? `${count} earned` : "locked"}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="rc-ledger">
+            <div className="rc-ledger-row">
+              <span>Gold earned</span>
+              <span>+ {totalGoldInBatch} G</span>
+            </div>
+            <div className="rc-ledger-row rc-ledger-total">
+              <span>Balance</span>
+              <span>{totalGold.toLocaleString()} G</span>
+            </div>
+          </div>
+
+          <div className="rc-actions">
+            <button
+              className="rc-btn rc-btn--primary"
+              onClick={handleViewEchoes}>
+              {isSingle ? "View my Echo →" : "View my Echoes →"}
+            </button>
+            <button
+              className="rc-btn"
+              onClick={handleShare}
+              disabled={isSharing}>
+              {isSharing ? "Sharing…" : "Share on X"}
+            </button>
+            <button className="rc-btn" onClick={handleClose}>
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

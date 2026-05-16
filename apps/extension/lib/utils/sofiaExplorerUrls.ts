@@ -30,3 +30,8 @@ export const getProfilePlatformUrl = (domain: string): string =>
 
 /** Root URL of Sofia Explorer. */
 export const getExplorerHomeUrl = (): string => `${base}/feed`
+
+/** URL to the signed-in user's own profile in Sofia Explorer.
+ *  Verified against apps/explorer routing: the route is `/profile`
+ *  (App.tsx + ProfilePage), not `/profil`. */
+export const getProfileUrl = (): string => `${base}/profile`
