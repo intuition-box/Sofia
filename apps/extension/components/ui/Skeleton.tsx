@@ -110,42 +110,51 @@ export const PageBlockchainSkeleton = ({
     </div>
 
     {/* Stats on this page */}
-    <div className="extended-metrics-panel blockchain-skeleton__metrics">
-      <div className="section-header">
-        <span className="section-title">Stats on this page</span>
-        <div className="scope-toggle">
-          <button className="scope-btn active" disabled>
-            Domain
-          </button>
-          <button className="scope-btn" disabled>
-            Page
-          </button>
-          <button className="scope-btn" disabled>
-            Certifiers
-          </button>
-          <button className="scope-btn" disabled>
-            Signals
-          </button>
+    <PageStatsSkeleton />
+  </div>
+)
+
+/**
+ * Stats-only skeleton. Rendered standalone in PageBlockchainCard so the
+ * website header + "Actions on this page" show immediately (tab-derived,
+ * fast) and only the Stats panel waits on the on-chain data.
+ */
+export const PageStatsSkeleton = () => (
+  <div className="extended-metrics-panel blockchain-skeleton__metrics">
+    <div className="section-header">
+      <span className="section-title">Stats on this page</span>
+      <div className="scope-toggle">
+        <button className="scope-btn active" disabled>
+          Domain
+        </button>
+        <button className="scope-btn" disabled>
+          Page
+        </button>
+        <button className="scope-btn" disabled>
+          Certifiers
+        </button>
+        <button className="scope-btn" disabled>
+          Signals
+        </button>
+      </div>
+    </div>
+    <div className="blockchain-skeleton__bars">
+      {[
+        { label: 56, count: 18 },
+        { label: 70, count: 18 },
+        { label: 44, count: 18 },
+        { label: 64, count: 18 },
+        { label: 36, count: 18 },
+        { label: 76, count: 18 },
+        { label: 56, count: 18 },
+        { label: 50, count: 18 }
+      ].map((row, idx) => (
+        <div key={idx} className="blockchain-skeleton__bar-row">
+          <SkeletonPill width={row.label} height={20} />
+          <div className="blockchain-skeleton__bar" />
+          <SkeletonLine width={row.count} height={11} />
         </div>
-      </div>
-      <div className="blockchain-skeleton__bars">
-        {[
-          { label: 56, count: 18 },
-          { label: 70, count: 18 },
-          { label: 44, count: 18 },
-          { label: 64, count: 18 },
-          { label: 36, count: 18 },
-          { label: 76, count: 18 },
-          { label: 56, count: 18 },
-          { label: 50, count: 18 }
-        ].map((row, idx) => (
-          <div key={idx} className="blockchain-skeleton__bar-row">
-            <SkeletonPill width={row.label} height={20} />
-            <div className="blockchain-skeleton__bar" />
-            <SkeletonLine width={row.count} height={11} />
-          </div>
-        ))}
-      </div>
+      ))}
     </div>
   </div>
 )

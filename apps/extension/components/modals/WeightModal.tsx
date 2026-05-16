@@ -18,7 +18,10 @@ import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
-import { INTENTION_CONFIG } from "~/types/intentionCategories"
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType
+} from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
 import contributorBadge from "../ui/img/badges/contributor.png"
@@ -428,10 +431,6 @@ const WeightModal = ({
   const showAmpForm =
     isFormState && !showSuccessHandoff && !(rewardClaimed && discoveryReward)
 
-  const ampDateStr = new Date()
-    .toLocaleDateString("fr-FR")
-    .replace(/\//g, " · ")
-
   return createPortal(
     <div className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
       <div className="modal-content">
@@ -657,20 +656,6 @@ const WeightModal = ({
             )}
 
             <div className="b3-ticket">
-              <div className="b3-stub">
-                <div className="b3-stub-row">
-                  <span className="b3-stub-k">ITEMS</span>
-                  <span className="b3-stub-v">
-                    {activeCount}/{triplets.length}
-                  </span>
-                </div>
-                <div className="b3-stub-row">
-                  <span className="b3-stub-k">DATE</span>
-                  <span className="b3-stub-v">{ampDateStr}</span>
-                </div>
-              </div>
-              <div className="b3-perf" />
-
               <div className="b3-body">
                 <div className="b3-headline">
                   <span className="b3-drop">A</span>
@@ -703,14 +688,16 @@ const WeightModal = ({
                     const on = !removedIndices.has(index)
                     const sel = selectedWeights[index]
                     const name = triplet.description || triplet.triplet.object
-                    const intentKey = triplet.intention
+                    const intentKey: IntentionType | null = triplet.intention
                       ? (((triplet.intention as string) in INTENTION_CONFIG
                           ? triplet.intention
                           : triplet.intention.replace(
                               /^for_/,
                               ""
                             )) as IntentionType)
-                      : null
+                      : // Trust / distrust rows carry no `intention` —
+                        // resolve the verb from the predicate label.
+                        predicateLabelToIntentionType(triplet.triplet.predicate)
                     const intentEntry =
                       intentKey && intentKey in INTENTION_CONFIG
                         ? INTENTION_CONFIG[intentKey]
@@ -719,7 +706,8 @@ const WeightModal = ({
                       ? TOPIC_LABELS[triplet.interestContext]
                       : null
                     const topicColor = triplet.interestContext
-                      ? TOPIC_COLORS[triplet.interestContext] || "#888"
+                      ? TOPIC_COLORS[triplet.interestContext] ||
+                        "var(--ds-muted)"
                       : null
                     const canToggleOff = activeCount > 1
                     const lockedSingle = triplets.length <= 1
@@ -767,7 +755,7 @@ const WeightModal = ({
                               fill="none">
                               <path
                                 d="M5 12l4 4L19 6"
-                                stroke="#f5ead3"
+                                stroke="var(--ds-on-accent)"
                                 strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -787,9 +775,6 @@ const WeightModal = ({
                         />
 
                         <div className="b3-row-meta">
-                          <div className="b3-row-kicker">
-                            {triplet.triplet.predicate}
-                          </div>
                           <div className="b3-row-name" title={name}>
                             {name}
                           </div>

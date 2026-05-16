@@ -11,7 +11,7 @@
   padding: 12px 16px;
   transition: all 0.3s ease;
   margin-bottom: 5px;
-  margin-top: 28px
+  margin-top: 28px;
 }
 
 .search-input {
@@ -40,7 +40,7 @@
 
 /* Trending Section Styles */
 .trending-section {
-  border-top: none
+  border-top: none;
 }
 
 .trending-section .section-title {
@@ -153,8 +153,6 @@
   grid-row: span 2;
 }
 
-
-
 .bento-mega {
   grid-column: span 2;
   grid-row: span 3;
@@ -189,21 +187,21 @@
     gap: 10px;
     grid-auto-rows: 130px;
   }
-  
+
   .bento-mega {
     grid-column: span 2;
     grid-row: span 1;
   }
-  
+
   .bento-tall {
     grid-column: span 1;
     grid-row: span 2;
   }
-  
+
   .bento-title {
     font-size: 12px;
   }
-  
+
   .bento-mega .bento-title {
     font-size: 14px;
   }
@@ -237,7 +235,7 @@
 
 .group-bento-card.can-level-up::before,
 .group-bento-card.can-level-up::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 100%;
   height: 2px;
@@ -266,13 +264,21 @@
 }
 
 @keyframes bento-star-top {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes bento-star-bottom {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(-100%); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 .group-bento-header {
@@ -294,7 +300,7 @@
 }
 
 .group-bento-title {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   color: var(--ds-ink);
   font-size: 15px;
   font-weight: 600;
@@ -470,7 +476,7 @@
   border: 1px solid var(--ds-border);
   border-radius: 8px;
   background: var(--ds-card);
-  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ds-ink);
@@ -503,7 +509,7 @@
 }
 
 .group-detail-domain {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   color: var(--ds-ink);
   font-size: 32px;
   font-weight: 700;
@@ -514,7 +520,10 @@
 }
 
 /* Level colors for detail view */
-.group-detail-level.level-1  { background: var(--ds-muted);     color: #000; }
+.group-detail-level.level-1 {
+  background: var(--ds-muted);
+  color: #000;
+}
 .group-detail-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -561,7 +570,7 @@
 .stat-number {
   display: block;
   color: #000;
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -570,7 +579,7 @@
 
 .stat-text {
   color: rgba(0, 0, 0, 0.7);
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 600;
@@ -595,7 +604,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -644,7 +653,9 @@
   border-radius: 12px;
   padding: 0;
   border: 1px dashed var(--ds-border);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .url-row:hover {
@@ -736,7 +747,7 @@
 .url-date,
 .url-duration {
   color: var(--ds-muted);
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   letter-spacing: 0.04em;
 }
@@ -756,7 +767,9 @@
   width: 24px;
   height: 24px;
   color: var(--ds-muted);
-  transition: transform 0.18s ease, color 0.15s ease;
+  transition:
+    transform 0.18s ease,
+    color 0.15s ease;
 }
 
 .url-row-main:hover .url-chevron {
@@ -780,7 +793,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .remove-btn:hover:not(:disabled) {
@@ -804,7 +820,7 @@
   padding: 5px 11px;
   border-radius: 6px;
   color: #000;
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
@@ -815,9 +831,12 @@
   border: none;
 }
 
+/* Topic/context badge — same size & font as the verb badge, but the
+   topic color applies to the text + border instead of the background
+   (color + borderColor injected inline from the topic palette). */
 .cert-badge--context {
-  font-size: 9px;
-  padding: 4px 9px;
+  background: transparent;
+  border: 1px solid currentColor;
 }
 
 .empty-urls {
@@ -852,7 +871,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -936,7 +955,7 @@
 }
 
 .history-detail-link {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   color: var(--ds-muted);
   text-decoration: none;
@@ -953,7 +972,7 @@
 
 .url-row.expanded {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 198, 176, 0.30);
+  border-color: rgba(255, 198, 176, 0.3);
 }
 
 .menu-dots-btn .dot {
@@ -977,7 +996,7 @@
 
 /* Subtitle above the intention pills */
 .url-expanded-subtitle {
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
@@ -1015,7 +1034,7 @@
 
 .url-expanded-section .interest-context__label {
   display: block;
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
@@ -1034,22 +1053,24 @@
   display: inline-block;
   padding: 8px 16px;
   background: var(--btn-primary-bg);
-  
+
   border: none;
   border-radius: 28px;
   color: var(--btn-primary-fg);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 700;
-  
+
   cursor: pointer;
   text-transform: lowercase;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .oauth-predicate-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.60);
+  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.6);
 }
 
 .oauth-predicate-btn:disabled {
@@ -1077,7 +1098,7 @@
   background: var(--ds-card);
   border: 1px solid var(--ds-accent);
   border-radius: 8px;
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   color: var(--ds-ink);
   line-height: 1.4;
@@ -1109,7 +1130,9 @@
   padding: 2px 6px;
   border-radius: 4px;
   flex-shrink: 0;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .level-up-success-inline .dismiss-btn:hover {
@@ -1218,7 +1241,7 @@
 }
 
 .level-up-error .error-text {
-  color: #EF4444;
+  color: #ef4444;
   font-size: 13px;
   font-weight: 500;
 }
@@ -1280,7 +1303,7 @@
 }
 
 .amplify-error .error-text {
-  color: #EF4444;
+  color: #ef4444;
   font-size: 13px;
   flex: 1;
 }
@@ -1300,7 +1323,14 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 18px;
-  background: linear-gradient(135deg, #B8860B 0%, #DAA520 25%, #FFD700 50%, #DAA520 75%, #B8860B 100%);
+  background: linear-gradient(
+    135deg,
+    #b8860b 0%,
+    #daa520 25%,
+    #ffd700 50%,
+    #daa520 75%,
+    #b8860b 100%
+  );
   background-size: 200% 100%;
   border: 1px solid rgba(255, 215, 0, 0.5);
   border-radius: 12px;
@@ -1309,14 +1339,22 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 2px 8px rgba(218, 165, 32, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   animation: goldShimmer 3s ease infinite;
 }
 
 @keyframes goldShimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .level-up-integrated-btn:hover:not(:disabled) {
@@ -1331,7 +1369,7 @@
 }
 
 .level-up-integrated-btn .level-up-text {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -1342,7 +1380,7 @@
   padding: 4px 10px;
   background: rgba(0, 0, 0, 0.18);
   border-radius: 6px;
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -1364,7 +1402,8 @@
   animation:
     freshMarkDropIn 480ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
     freshMarkPulse 2000ms ease-out 480ms;
-  animation-delay: calc(var(--fresh-stagger-index, 0) * 100ms), calc(var(--fresh-stagger-index, 0) * 100ms + 480ms);
+  animation-delay: calc(var(--fresh-stagger-index, 0) * 100ms),
+    calc(var(--fresh-stagger-index, 0) * 100ms + 480ms);
 }
 
 @keyframes freshMarkDropIn {
@@ -1406,7 +1445,10 @@
   padding: 6px 12px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
 .group-detail-view-on-sofia:hover {

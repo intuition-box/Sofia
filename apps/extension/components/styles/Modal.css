@@ -34,6 +34,23 @@
   pointer-events: auto;
 }
 
+/* Amplify (.amp.b3) and Mark-captured (.rc) take the full screen —
+   drop the overlay padding and the modal-content frame/size caps. */
+.modal-overlay:has(.amp.b3),
+.modal-overlay:has(.rc) {
+  padding: 0;
+}
+.modal-content:has(.amp.b3),
+.modal-content:has(.rc) {
+  max-width: none;
+  max-height: none;
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+
 @keyframes modalAppear {
   from {
     opacity: 0;
@@ -1207,17 +1224,15 @@
 .rc {
   position: relative;
   z-index: 10;
-  margin: -24px;
-  min-height: 560px;
-  border-radius: 24px;
+  margin: 0;
+  min-height: 100vh;
+  border-radius: 0;
   overflow: hidden;
-  background: #0a0a0a;
+  background: var(--ds-bg-subtle);
   isolation: isolate;
   animation: rcAppear 0.4s ease-out;
-  --peach-1: #ffe9df;
-  --peach-2: #ffc6b0;
-  --peach-3: #ffaa8a;
-  --peach-4: #e87a52;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes rcAppear {
@@ -1229,53 +1244,15 @@
   }
 }
 
-/* Ember scene — replaces the old gold <video>, pure CSS */
+/* Flat surface — same as the cart drawer (var(--ds-card)) */
 .rc-ember {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(
-    120% 80% at 50% 100%,
-    rgba(232, 122, 82, 0.14),
-    #0a0a0a 50%,
-    #050505 100%
-  );
+  background: var(--ds-card);
 }
 .rc-ember::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-      2px 2px at 12% 80%,
-      rgba(255, 160, 60, 0.9),
-      transparent 60%
-    ),
-    radial-gradient(
-      1.5px 1.5px at 78% 60%,
-      rgba(255, 200, 120, 0.9),
-      transparent 60%
-    ),
-    radial-gradient(
-      1.2px 1.2px at 30% 40%,
-      rgba(255, 140, 40, 0.7),
-      transparent 60%
-    ),
-    radial-gradient(
-      1.6px 1.6px at 62% 30%,
-      rgba(255, 170, 80, 0.8),
-      transparent 60%
-    ),
-    radial-gradient(
-      2px 2px at 88% 90%,
-      rgba(255, 210, 140, 0.7),
-      transparent 60%
-    ),
-    radial-gradient(
-      1.4px 1.4px at 22% 18%,
-      rgba(255, 180, 90, 0.5),
-      transparent 60%
-    );
-  animation: rcEmberRise 7s linear infinite;
+  display: none;
 }
 @keyframes rcEmberRise {
   from {
@@ -1295,13 +1272,12 @@
   position: relative;
   z-index: 2;
   margin: 18px;
-  background: #141414;
-  color: #ffffff;
+  flex: 1;
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
   border-radius: 6px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 30px 60px -10px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
   font-family: "Inter Tight", "Geist", sans-serif;
@@ -1363,31 +1339,21 @@
 
 .rc-headline {
   display: flex;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: baseline;
 }
-.rc-drop {
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 900;
-  font-variation-settings:
-    "SOFT" 30,
-    "opsz" 144;
-  font-size: 70px;
-  line-height: 0.82;
-  letter-spacing: -0.06em;
-  color: #ffffff;
-}
+/* Single-line title, uniform size for every character. */
 .rc-h1 {
   font-family: "Fraunces", Georgia, serif;
   font-weight: 900;
   font-variation-settings:
     "SOFT" 30,
     "opsz" 144;
-  font-size: 40px;
-  line-height: 0.88;
+  font-size: 38px;
+  line-height: 1;
   letter-spacing: -0.035em;
-  margin: 4px 0 0 -2px;
-  color: #ffffff;
+  margin: 0;
+  color: var(--ds-ink);
+  white-space: nowrap;
 }
 .rc-sub {
   font-family: "Fraunces", Georgia, serif;
@@ -1403,6 +1369,7 @@
   gap: 6px;
   max-height: 240px;
   overflow-y: auto;
+  margin-top: 28px;
   margin-bottom: 12px;
 }
 .rc-mark {
@@ -1436,38 +1403,30 @@
   gap: 6px;
   flex-wrap: wrap;
 }
-/* Context pill — identical shape to the DS <VerbTag> ("visited" …) so the
- * two read as one matched family; background is the topic color. */
-/* Interest pill — same design as the explorer's .pc-interest-pill
- * (soft topic-tinted rounded pill + colored badge dot + mono uppercase
- * label), adapted to the dark .rc ticket and driven by the topic color. */
+/* Topic pill — same size & font as the DS <VerbTag> (.fc-verb-tag), but
+   the topic color applies to the text + border, not the background. */
 .rc-mark-ctx {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px 4px 8px;
-  border-radius: 999px;
-  background: color-mix(
-    in srgb,
-    var(--tag-color, var(--peach-3)) 16%,
-    transparent
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--tag-color, var(--peach-3)) 42%, transparent);
+  padding: 5px 11px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--tag-color, var(--ds-accent));
   font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--tag-color, var(--ds-accent));
   white-space: nowrap;
 }
 .rc-mark-ctx-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--tag-color, var(--peach-3));
+  background: var(--tag-color, var(--ds-accent));
   flex: 0 0 auto;
 }
 .rc-mark-title {
@@ -1574,7 +1533,7 @@
   gap: 6px;
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1px solid var(--ds-border);
 }
 .rc-btn {
   flex: 1;
@@ -1608,9 +1567,9 @@
   flex: 1.6;
 }
 .rc-btn--primary:hover {
-  background: var(--peach-3);
+  background: var(--ds-accent);
   color: #0a0a0a;
-  border-color: var(--peach-3);
+  border-color: var(--ds-accent);
 }
 
 /* ========== GLOBAL STAKE SLIDER ========== */
@@ -2466,21 +2425,17 @@
 .amp.b3 {
   position: relative;
   z-index: 10;
-  margin: -24px;
-  min-height: 560px;
-  border-radius: 24px;
+  margin: 0;
+  height: 100vh;
+  border-radius: 0;
   overflow: hidden;
   isolation: isolate;
   display: flex;
   align-items: stretch;
   justify-content: center;
   font-family: "Inter Tight", system-ui, sans-serif;
-  background: #0a0a0a;
+  background: var(--ds-bg-subtle);
   animation: rcAppear 0.4s ease-out;
-  --peach-1: #ffe9df;
-  --peach-2: #ffc6b0;
-  --peach-3: #ffaa8a;
-  --peach-4: #e87a52;
 }
 
 .amp .b3-bg {
@@ -2490,12 +2445,11 @@
   overflow: hidden;
 }
 .amp .b3-bg--v5 {
-  background: linear-gradient(160deg, #0a0a0a 0%, #050505 100%);
+  /* Flat surface — same as the cart drawer (var(--ds-card)) */
+  background: var(--ds-card);
 }
 .amp .b3-bg--v5 .b3-bg-hex {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.05);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  display: none;
 }
 .amp .b3-bg-hex--1 {
   width: 360px;
@@ -2521,26 +2475,26 @@
   background: rgba(255, 255, 255, 0.03);
 }
 .amp .b3-bg-grain {
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
-  opacity: 0.08;
-  mix-blend-mode: screen;
+  display: none;
 }
 
 /* Music / topic / intention tag */
+/* Topic tag — same size & font as the DS <VerbTag> (.fc-verb-tag), but
+   the topic color applies to the text + border, not the background. */
 .amp .amp-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  background: color-mix(in oklab, var(--tag-pastel) 22%, transparent);
-  border: 1px solid color-mix(in oklab, var(--tag-pastel) 60%, transparent);
-  color: color-mix(in oklab, var(--tag-color) 72%, white);
-  font-family: "Inter Tight", sans-serif;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--tag-color, var(--ds-accent));
+  color: var(--tag-color, var(--ds-accent));
 }
 
 /* Ticket (foreground, parchment) */
@@ -2549,15 +2503,15 @@
   z-index: 2;
   margin: 18px;
   flex: 1;
-  background: #141414;
-  color: #ffffff;
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 30px 60px -10px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
 }
 .amp .b3-stub {
   padding: 12px 22px 10px;
@@ -2613,6 +2567,12 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex: 1;
+  /* Long baskets scroll inside the body so the actions stay reachable.
+     margin-top:auto on .b3-actions still pins them to the bottom when
+     the content is short. */
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* Headline */
@@ -2646,10 +2606,11 @@
   color: #ffffff;
 }
 .amp .b3-sub {
-  font-family: "Fraunces", Georgia, serif;
-  font-style: italic;
-  font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.65);
+  font-family: "Geist", sans-serif;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-muted);
   margin: 0;
 }
 
@@ -2728,13 +2689,13 @@
   bottom: 12px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--peach-3);
+  background: var(--ds-accent);
 }
 .amp .b3-check {
   width: 22px;
   height: 22px;
   border-radius: 5px;
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border: 1.5px solid var(--ds-border);
   background: transparent;
   display: flex;
   align-items: center;
@@ -2747,8 +2708,8 @@
     border-color 0.12s;
 }
 .amp .b3-row.is-on .b3-check {
-  background: var(--peach-4);
-  border-color: var(--peach-4);
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 .amp .b3-check:disabled {
   cursor: default;
@@ -2759,11 +2720,14 @@
   border-radius: 8px;
   object-fit: cover;
   flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  background: var(--ds-border-soft);
+  box-shadow: 0 0 0 1px var(--ds-border);
 }
 .amp .b3-row-meta {
   min-width: 0;
+  /* Bottom-align with .b3-row-right so the verb/topic tags share a
+     baseline with the light/medium/strong tier pills. */
+  align-self: end;
 }
 .amp .b3-row-kicker {
   font-family: "JetBrains Mono", monospace;
@@ -2778,11 +2742,11 @@
 }
 .amp .b3-row-name {
   font-size: 14px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--ds-ink);
   margin-top: 3px;
-  letter-spacing: -0.01em;
-  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -0.005em;
+  font-family: "Geist", sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2808,6 +2772,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+  align-self: end;
 }
 .amp .b3-row-trust {
   display: inline-flex;
@@ -2859,7 +2824,7 @@
   background: rgba(255, 255, 255, 0.06);
 }
 .amp .b3-tier.is-on {
-  background: var(--peach-3);
+  background: var(--ds-accent);
   color: #0a0a0a;
 }
 .amp .b3-tier-label {
@@ -2901,7 +2866,7 @@
   color: #ffffff;
 }
 .amp .b3-extra .gs-slider-breakdown-value.pool {
-  color: var(--peach-4);
+  color: var(--ds-accent);
 }
 /* Beta Season Pool slider — peach thumb that clearly stands out on
    parchment (overrides the legacy gold-on-dark .gs-slider-input). */
@@ -2909,8 +2874,8 @@
   height: 6px;
   background: linear-gradient(
     to right,
-    var(--peach-4) 0%,
-    var(--peach-3) var(--gs-fill-pct, 40%),
+    var(--ds-accent) 0%,
+    var(--ds-accent) var(--gs-fill-pct, 40%),
     rgba(255, 255, 255, 0.16) var(--gs-fill-pct, 40%),
     rgba(255, 255, 255, 0.16) 100%
   );
@@ -2918,7 +2883,7 @@
 .amp .b3-extra .gs-slider-input::-webkit-slider-thumb {
   width: 22px;
   height: 22px;
-  background: var(--peach-4);
+  background: var(--ds-accent);
   border: 3px solid #141414;
   box-shadow:
     0 2px 9px rgba(232, 122, 82, 0.6),
@@ -2933,7 +2898,7 @@
 .amp .b3-extra .gs-slider-input::-moz-range-thumb {
   width: 22px;
   height: 22px;
-  background: var(--peach-4);
+  background: var(--ds-accent);
   border: 3px solid #141414;
   box-shadow: 0 2px 9px rgba(232, 122, 82, 0.6);
 }
@@ -2976,15 +2941,15 @@
 .amp .b3-actions {
   display: flex;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.85);
+  border-top: 1px solid var(--ds-border);
 }
 .amp .b3-btn {
   height: 48px;
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--ds-border);
   background: transparent;
-  color: #ffffff;
+  color: var(--ds-ink);
   font-family: "Inter Tight", sans-serif;
   font-weight: 700;
   font-size: 13.5px;
@@ -3010,7 +2975,7 @@
   gap: 10px;
 }
 .amp .b3-btn--primary:hover:not(:disabled) {
-  background: var(--peach-3);
+  background: var(--ds-accent);
   color: #000000;
 }
 .amp .b3-btn--primary:disabled,
@@ -3186,7 +3151,7 @@
   font-family: "JetBrains Mono", monospace;
   font-size: 10.5px;
   letter-spacing: 0.04em;
-  color: var(--peach-4);
+  color: var(--ds-accent);
   margin: 8px 0 0;
 }
 /* Loader: white stroke on the dark overlay, larger, soft light glow. */
