@@ -397,6 +397,38 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
       desc="Your community's signals — follows, Marks, trust votes — give weight to what you publish. The social side isn't decoration, it's the multiplier."
     />
   ),
+  /* Zone 10 — Sofia hero video demo. Auto-plays muted on loop. */
+  10: (variant) => (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        borderRadius: 20,
+        background:
+          variant === 'peach'
+            ? 'rgba(255, 198, 176, 0.30)'
+            : 'rgba(2, 0, 14, 0.30)',
+      }}
+    >
+      <video
+        src="/sofia-hero.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          display: 'block',
+        }}
+      />
+    </div>
+  ),
   /* Zone 11 — S.04 left tall. Plate A · polar radar (Topics × Intentions).
      Top-aligned so the plate's frame top edge sits flush with the
      "Personal upside" banner title in zone 12. */

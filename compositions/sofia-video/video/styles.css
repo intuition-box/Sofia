@@ -709,17 +709,23 @@ body {
 .f6-caption {
   position: relative;
   font-family: 'Fraunces', serif;
-  font-style: italic;
+  font-style: normal;
   font-weight: 500;
   font-size: 130px;
   line-height: 1.05;
   letter-spacing: -0.03em;
-  color: var(--ink-soft);
+  color: #ffffff;
   text-align: center;
   padding: 18px 36px 36px;
   font-variation-settings:
     'SOFT' 30,
     'opsz' 144;
+}
+/* "votes." emphasis — peach italic. The rest of the line stays
+   white roman so only the verb pops. */
+.f6-cap-accent {
+  color: var(--peach);
+  font-style: italic;
 }
 .f6-cap-line {
   display: inline-flex;
@@ -735,71 +741,23 @@ body {
   filter: blur(10px);
   will-change: transform, opacity, filter;
 }
-/* Figma-style selection highlight on "community" — a peach rectangle
-   that wipes in behind the word once it has settled. */
-.f6-cap-highlight {
-  position: relative;
-  padding: 0 6px;
-}
-.f6-cap-hl-bg {
-  position: absolute;
-  inset: 14% -2% 12% -2%;
-  background: var(--peach);
-  border-radius: 6px;
-  z-index: -1;
-  transform: scaleX(0);
-  transform-origin: left center;
-  will-change: transform;
-}
-/* Multiplayer cursor — peach arrow + you.eth tag, drops in after the
-   text has finished setting. Mimics Figma's live-collab indicator. */
-.f6-cap-cursor {
-  position: absolute;
-  right: 8%;
-  bottom: 18%;
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0;
-  opacity: 0;
-  transform: translate(20px, 12px) scale(0.85);
-  pointer-events: none;
-}
-.f6-cap-cursor svg {
-  width: 28px;
-  height: 36px;
-  display: block;
-}
-.f6-cap-cursor-tag {
-  font-family: 'Geist', sans-serif;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: 0;
-  color: var(--peach-soft);
-  background: var(--ink);
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin: 22px 0 0 -4px;
-  white-space: nowrap;
-  line-height: 1;
-}
 .f5-publish-btn {
-  font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 600;
-  padding: 14px 34px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--peach-soft);
-  border: 1px solid rgba(2, 0, 14, 0.2);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #000000;
+  border: none;
   cursor: pointer;
   opacity: 0;
   transform: scale(0.92);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 .f5-publish-btn.clicked {
-  background: var(--peach-deep);
-  color: var(--peach-soft);
+  background: var(--peach);
+  color: #000000;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1155,7 +1113,7 @@ body {
   width: 26px;
   height: 32px;
   pointer-events: none;
-  z-index: 30;
+  z-index: 80;
   filter: drop-shadow(0 4px 8px rgba(2, 0, 14, 0.3));
 }
 .cursor-curator svg {
@@ -1340,6 +1298,7 @@ body {
   gap: 14px;
 }
 .f7-srp-card {
+  position: relative;
   background: var(--bg);
   border: 1px solid rgba(122, 58, 30, 0.2);
   border-radius: 14px;
@@ -1349,6 +1308,59 @@ body {
   flex-direction: column;
   gap: 12px;
   opacity: 0;
+}
+/* @property declared so GSAP can tween the rotation cleanly. */
+@property --snake-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Snake glass pad — a frosted ring around the card. The actual snake
+   sits on top of this so the trail reads as "light over glass". */
+.f7-srp-snake-wrap {
+  position: absolute;
+  inset: -8px;
+  border-radius: 22px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  /* Border-only mask: keep the ring, punch out the centre. */
+  padding: 8px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-sizing: border-box;
+}
+
+/* The rotating snake itself — conic gradient with a single black
+   wedge that orbits via --snake-angle. */
+.f7-srp-snake-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  --snake-angle: 0deg;
+  background: conic-gradient(
+    from var(--snake-angle),
+    transparent 0deg,
+    rgba(0, 0, 0, 0) 0deg,
+    rgba(0, 0, 0, 0.85) 22deg,
+    rgba(0, 0, 0, 0) 50deg,
+    transparent 360deg
+  );
+  /* Border-only: punch out the centre so only the ring shows. */
+  padding: 2px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: blur(0.5px) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
 }
 .f7-srp-head {
   display: flex;
@@ -1424,6 +1436,40 @@ body {
   gap: 14px;
   opacity: 0.55;
   filter: grayscale(0.4);
+}
+
+/* Thumbs-up "like" — pops in next to the winning SRP card when the
+   you.eth cursor clicks it. Lucide thumbs-up in a peach circle. */
+/* Like button — sits ON the SRP card, JUST LEFT of the TRUSTED pill.
+   The you.eth cursor clicks it directly. */
+.f7-like-btn {
+  position: absolute;
+  top: 18px;
+  right: 132px; /* sits to the left of the TRUSTED pill */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: #000000;
+  border: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow:
+    0 10px 28px rgba(255, 198, 176, 0.55),
+    0 0 0 3px rgba(255, 198, 176, 0.25);
+}
+.f7-thumb-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+  /* Lucide thumbs-up: visible bounds in the 24×24 viewBox are
+     x:7→22, y:5.88→22 — icon's optical center is offset right+down
+     by ~(2.5, 1.94). Shift the SVG up+left so the glyph re-centers
+     inside the peach circle. */
+  transform: translate(-3px, -2.5px);
 }
 .f7-van-row {
   padding: 12px 18px;

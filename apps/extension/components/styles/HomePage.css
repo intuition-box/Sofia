@@ -85,6 +85,46 @@
   display: block;
 }
 
+/* Only the radar geometry zooms / pivots. The text annotations live
+ * outside .ti-rotor in the SVG, so they stay pinned to the edges while
+ * the rosace breathes. transform-box: fill-box makes the group rotate /
+ * scale around its own bounding-box center, not the SVG (0,0) origin. */
+.hp-diagram-stage > svg .ti-rotor {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hpDiagramDrift 9s ease-in-out infinite;
+}
+
+/* Choreographed 4-beat loop (not a breathing in/out):
+ *   1. zoom in           (scale up, no yaw)
+ *   2. pivot one way     (hold zoom, yaw right)
+ *   3. pivot back across  (hold zoom, yaw left)
+ *   4. zoom out          (scale down, yaw settles)
+ */
+@keyframes hpDiagramDrift {
+  0% {
+    transform: scale(1) rotateY(0deg);
+  }
+  22% {
+    transform: scale(1.18) rotateY(0deg);
+  }
+  48% {
+    transform: scale(1.18) rotateY(16deg);
+  }
+  74% {
+    transform: scale(1.18) rotateY(-16deg);
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-diagram-stage > svg {
+    animation: none;
+  }
+}
+
 /* ── Bottom half — near-black + copy + connect button ─ */
 
 .hp-auth {

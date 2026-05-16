@@ -376,6 +376,10 @@ tl.set('#f1-search', { display: 'none' }, 4.5)
 tl.set('#f2-chaos', { display: 'none' }, 4.61 + 3.9) // 8.51
 tl.set('#f4-lasso', { display: 'none' }, 8.5 + 3.0) // 11.5
 tl.set('#f5-validate', { display: 'none' }, 12.0 + 4.0) // 16.0
+// Belt-and-suspenders: explicitly hide the F5 cursor BEFORE the F6 wipe
+// fires (15.40) so its you.eth label can't bleed onto the F6 caption
+// during the scene overlap.
+tl.set('#f5-ptr', { opacity: 0 }, 15.3)
 tl.set('#f6-social', { display: 'none' }, 15.86 + 9.6) // 25.46
 tl.set('#f7-newsearch', { display: 'none' }, 24.0 + 4.0) // 28.0
 
@@ -629,8 +633,8 @@ tl.to(
   '#f4-validate-btn',
   {
     scale: 1,
-    backgroundColor: 'var(--peach-deep)',
-    color: 'var(--peach-soft)',
+    backgroundColor: 'var(--peach)',
+    color: '#000000',
     duration: 0.14,
     ease: 'power2.inOut',
   },
@@ -723,12 +727,7 @@ function tagCard(t, cardId) {
   tl.fromTo(
     cardId,
     { borderColor: 'rgba(2,0,14,0.10)', y: 0 },
-    {
-      borderColor: 'var(--peach-deep)',
-      y: -3,
-      duration: 0.18,
-      ease: 'expo.out',
-    },
+    { borderColor: 'var(--peach)', y: -3, duration: 0.18, ease: 'expo.out' },
     t + 0.22,
   )
   // 4. TRUSTED pill pops in — blur+scale
@@ -788,8 +787,8 @@ tl.to(
   '#f5-publish-btn',
   {
     scale: 1,
-    backgroundColor: 'var(--peach-deep)',
-    color: 'var(--peach-soft)',
+    backgroundColor: 'var(--peach)',
+    color: '#000000',
     duration: 0.14,
     ease: 'power2.inOut',
   },
@@ -944,13 +943,9 @@ tl.to(
 //   3. multiplayer cursor (you.eth) drops in beside the line
 const CAP_AT = F6 + 0.45
 gsap.set('.f6-cap-word', { opacity: 0, y: 40, filter: 'blur(10px)' })
-gsap.set('#f6-cap-community .f6-cap-hl-bg', {
-  scaleX: 0,
-  transformOrigin: 'left center',
-})
-gsap.set('#f6-cap-cursor', { opacity: 0, x: 20, y: 12, scale: 0.85 })
 
-// 1. Words slide-up + un-blur with stagger
+// Words slide-up + un-blur with stagger — "votes." is the last word,
+// so it lands last and reads as the punchline.
 tl.to(
   '.f6-cap-word',
   {
@@ -964,20 +959,9 @@ tl.to(
   CAP_AT,
 )
 
-// 2. Figma selection highlight sweeps in behind "community"
-//    (lands as the word itself settles)
-tl.to(
-  '#f6-cap-community .f6-cap-hl-bg',
-  { scaleX: 1, duration: 0.45, ease: 'power3.inOut' },
-  CAP_AT + 0.3,
-)
-
-// 3. you.eth multiplayer cursor drops in last
-tl.to(
-  '#f6-cap-cursor',
-  { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.4, ease: 'back.out(1.8)' },
-  CAP_AT + 0.85,
-)
+//   word #4 starts at CAP_AT + 3*0.08, lasts 0.55s → lands at CAP_AT + 0.79
+const VOTES_LAND = CAP_AT + 0.82
+// (Continuous shake + scale ramp set up further down — needs VOTE_SEQUENCE.)
 
 // Curator identity (color + initial) — used for the avatar fill, no cursor.
 const CURATOR_DATA = {
@@ -1031,6 +1015,90 @@ const VOTE_SEQUENCE = [
   { card: '#f6-c-1', curator: 'jules', t: F6 + 5.5 },
   { card: '#f6-c-1', curator: 'sam', t: F6 + 6.1 },
 ]
+
+/* ─────────────────────────────────────────────────────────────
+   "votes." continuous tremble — intensifies with each vote.
+   Each vote also bumps the word's scale so the punchline visibly
+   grows as the social validation accumulates. End-state at last
+   vote: ~1.34x scale + ~14px shake amplitude.
+   ───────────────────────────────────────────────────────────── */
+function shakeKeyframes(amp, duration) {
+  // Deterministic pseudo-random shake — alternates direction with
+  // varying magnitude so it reads as natural jitter (no Math.random).
+  const stepDur = 0.045
+  const steps = Math.max(4, Math.floor(duration / stepDur))
+  const pattern = [
+    1, -0.92, 0.82, -0.71, 0.88, -0.65, 0.55, -0.78, 0.95, -0.5, 0.6, -0.4,
+  ]
+  const kf = []
+  for (let i = 0; i < steps; i++) {
+    const s = pattern[i % pattern.length]
+    const sx = i % 2 === 0 ? 1.1 : 0.9
+    const sy = i % 3 === 0 ? -1 : 1
+    kf.push({
+      x: amp * s * sx,
+      y: amp * 0.5 * s * sy,
+      rotation: amp * 0.32 * s,
+      duration: stepDur,
+    })
+  }
+  return kf
+}
+
+// Very faint shake at the initial landing (before any vote arrives)
+tl.to(
+  '.f6-cap-accent',
+  {
+    keyframes: shakeKeyframes(1.2, VOTE_SEQUENCE[0].t - VOTES_LAND),
+    ease: 'none',
+    overwrite: 'auto',
+  },
+  VOTES_LAND,
+)
+
+// Each vote: scale-up pulse + shake whose amplitude follows an
+// exponential curve — barely visible at vote 1, intense at vote 9.
+// Caption fades out at 24.0s so the F7 search beat opens clean.
+const CAPTION_OUT = 24.0
+const TOTAL_VOTES = VOTE_SEQUENCE.length
+VOTE_SEQUENCE.forEach((v, i) => {
+  const idx = i + 1
+  const t01 = idx / TOTAL_VOTES // 1/9 → 1
+  // Exponential ramp: shake ~1.5px at vote 1, ~18px at vote 9.
+  const amp = 1.5 + Math.pow(t01, 1.8) * 17
+  // Scale: ~1.01 at vote 1, ~1.45 at vote 9.
+  const scaleVal = 1 + Math.pow(t01, 1.6) * 0.45
+  const nextT = i + 1 < TOTAL_VOTES ? VOTE_SEQUENCE[i + 1].t : CAPTION_OUT - 0.2
+  const dur = Math.max(0.1, nextT - v.t)
+  // Punchy scale bump at the vote moment.
+  tl.to(
+    '.f6-cap-accent',
+    {
+      scale: scaleVal,
+      duration: 0.22,
+      ease: 'back.out(2)',
+      transformOrigin: '50% 50%',
+    },
+    v.t,
+  )
+  // Shake at higher amplitude until the next vote replaces this tween.
+  tl.to(
+    '.f6-cap-accent',
+    {
+      keyframes: shakeKeyframes(amp, dur),
+      ease: 'none',
+      overwrite: 'auto',
+    },
+    v.t,
+  )
+})
+
+// Caption disappears at 24.0s — F7 "new search" beat starts clean.
+tl.to(
+  '#f6-caption',
+  { opacity: 0, duration: 0.35, ease: 'power2.in' },
+  CAPTION_OUT - 0.35,
+)
 
 // Track cumulative count per card so we know which slot is filling.
 const RUNNING = { '#f6-c-0': 0, '#f6-c-1': 0, '#f6-c-2': 0, '#f6-c-3': 0 }
@@ -1335,36 +1403,160 @@ tl.to(
   F7 + 0.85,
 )
 
+// Snake border — single black wedge orbits the card via a rotating
+// conic-gradient on a frosted glass pad. Cleaner than SVG dasharray
+// for stretched paths. Two full laps over 1.85s.
+gsap.set('#f7-srp-snake-wrap', { opacity: 0 })
+gsap.set('#f7-srp-snake-ring', { '--snake-angle': '0deg' })
+tl.to(
+  '#f7-srp-snake-wrap',
+  {
+    opacity: 1,
+    duration: 0.25,
+    ease: 'power2.out',
+  },
+  F7 + 0.85,
+)
+tl.to(
+  '#f7-srp-snake-ring',
+  {
+    '--snake-angle': '720deg',
+    duration: 1.85,
+    ease: 'none',
+  },
+  F7 + 0.85,
+)
+// Snake + glass fade out on click — replaced by the like glow.
+tl.to(
+  '#f7-srp-snake-wrap',
+  {
+    opacity: 0,
+    duration: 0.25,
+    ease: 'power2.in',
+  },
+  F7 + 2.78,
+)
+
+// Emphasis pop — fires right after the slide-in completes so the
+// "new search" beat opens with the winning result spotlighted.
+tl.to(
+  '#f7-srp-0',
+  {
+    scale: 1.06,
+    boxShadow:
+      '0 0 0 3px var(--peach), 0 24px 60px -18px rgba(255, 198, 176, 0.55)',
+    duration: 0.2,
+    ease: 'back.out(2)',
+    transformOrigin: '50% 50%',
+  },
+  F7 + 1.3,
+)
+tl.to(
+  '#f7-srp-0',
+  {
+    scale: 1,
+    boxShadow: '0 6px 22px rgba(122, 58, 30, 0.08)',
+    duration: 0.4,
+    ease: 'power3.out',
+  },
+  F7 + 1.55,
+)
+
+/* ────────────────────────────────────────────────────────────────
+   F7 like animation — you.eth cursor drifts onto the winning card,
+   clicks it, and a lucide thumbs-up icon pops in beside the card.
+   ──────────────────────────────────────────────────────────── */
+// Use left/top like the other working cursors (f5-ptr, f4-ptr).
+gsap.set('#f7-like-cursor', { left: 1500, top: 760, opacity: 0, scale: 1 })
+// Like button is visible on the card from the start (it's a real button,
+// not a popup). The cursor drifts onto it, clicks, and it reacts.
+gsap.set('#f7-thumb', {
+  scale: 1,
+  rotation: 0,
+  backgroundColor: 'var(--peach)',
+  transformOrigin: '50% 50%',
+})
+
+// 1. Cursor appears from the bottom-right corner
+tl.to(
+  '#f7-like-cursor',
+  { opacity: 1, duration: 0.18, ease: 'power2.out' },
+  F7 + 1.9,
+)
+// 2. Cursor drifts ONTO the like button (just LEFT of the TRUSTED pill).
+//    Button is at right:132 + width:60, so its centre on the canvas
+//    (card spans ~148→1628) sits around x ≈ 1628 - 132 - 30 = 1466.
+tl.to(
+  '#f7-like-cursor',
+  { left: 1466, top: 410, duration: 0.55, ease: 'power3.inOut' },
+  F7 + 2.05,
+)
+// 3. Click pulse
+tl.to(
+  '#f7-like-cursor',
+  { scale: 0.82, duration: 0.06, ease: 'power2.in' },
+  F7 + 2.7,
+)
+tl.to(
+  '#f7-like-cursor',
+  { scale: 1, duration: 0.1, ease: 'power2.out' },
+  F7 + 2.78,
+)
+
+// 4. Like button reacts to the click — scale pop + peach glow ramp.
+tl.to(
+  '#f7-thumb',
+  {
+    keyframes: [
+      { scale: 0.88, duration: 0.06 },
+      { scale: 1.2, duration: 0.14 },
+      { scale: 1.08, duration: 0.18 },
+    ],
+    ease: 'none',
+  },
+  F7 + 2.74,
+)
+// Glow / "liked" state stays till F7 ends.
+tl.to(
+  '#f7-thumb',
+  {
+    boxShadow:
+      '0 14px 36px rgba(255, 198, 176, 0.7), 0 0 0 6px rgba(255, 198, 176, 0.35)',
+    duration: 0.3,
+    ease: 'power2.out',
+  },
+  F7 + 2.78,
+)
+
+// 5. Card itself reacts to the click — quick squish + bounce + rocking
+//    sway to sell the "i just got liked" payoff.
+tl.to(
+  '#f7-srp-0',
+  {
+    keyframes: [
+      { scale: 0.96, y: 2, rotation: 0, duration: 0.06 },
+      { scale: 1.04, y: -6, rotation: -0.8, duration: 0.1 },
+      { scale: 1.01, y: 0, rotation: 0.6, duration: 0.1 },
+      { scale: 1, y: 0, rotation: 0, duration: 0.1 },
+    ],
+    ease: 'none',
+    transformOrigin: '50% 50%',
+  },
+  F7 + 2.74,
+)
+
 /* ──────────────────────────────────────────────────────────────
    FRAME 8 — Closing brand card (32 → 35s)
    Solid dark, peach starburst spins in beside the serif wordmark.
    ──────────────────────────────────────────────────────────── */
 const F8 = 28.0
 
-gsap.set('#f8-mark', {
-  opacity: 0,
-  scale: 0.7,
-  y: 40,
-  filter: 'blur(14px)',
-  transformOrigin: '50% 50%',
-})
+// Mark appears DIRECTLY in white (CSS filter brightness/invert kept intact —
+// no blur entry that would temporarily wash it back to black).
+gsap.set('#f8-mark', { opacity: 1, scale: 1, y: 0, transformOrigin: '50% 50%' })
 gsap.set('#f8-wordmark', { opacity: 0, x: -32, filter: 'blur(10px)' })
 gsap.set('#f8-tagline', { opacity: 0, y: 32, filter: 'blur(10px)' })
 gsap.set('#f8-cta', { opacity: 0, y: 18, filter: 'blur(6px)' })
-
-// Sofia mark pops in with overshoot — back.out gives the brand entrance bite.
-tl.to(
-  '#f8-mark',
-  {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    duration: 0.75,
-    ease: 'back.out(1.5)',
-  },
-  F8 + 0.1,
-)
 
 // Wordmark slides in from left, settling next to the mark.
 tl.to(

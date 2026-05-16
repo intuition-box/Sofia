@@ -34,7 +34,7 @@
         data-start="0"
         data-duration="4.5"
         data-track-index="1"
-        style="z-index: 50"
+        style="z-index: 51"
       >
         <div class="f1-bg"></div>
         <div class="f1-stage" id="f1-stage">
@@ -65,7 +65,7 @@
         data-start="4.61"
         data-duration="3.9"
         data-track-index="0"
-        style="z-index: 50"
+        style="z-index: 52"
       >
         <div class="f2-bg"></div>
         <!-- Peach iris overlay — grows from circle(0%) at the centre to fill F2,
@@ -689,7 +689,7 @@
         data-start="8.5"
         data-duration="3"
         data-track-index="2"
-        style="z-index: 49"
+        style="z-index: 50"
       >
         <div class="f4-bg"></div>
         <!-- Black noir zone — appears via Circle Iris reveal at F4 start. -->
@@ -923,8 +923,9 @@
           </div>
         </div>
 
-        <!-- Cursor (peach pointer) — drifts to the Valider button and clicks. -->
-        <div class="cursor-curator" id="f4-ptr">
+        <!-- Cursor (peach pointer + you.eth tag) — drifts to the Import
+             button and clicks. Figma-style multiplayer cursor. -->
+        <div class="cursor-curator c-you" id="f4-ptr">
           <svg viewBox="0 0 22 28">
             <path
               d="M2 2 L20 14 L12 16 L8 24 Z"
@@ -934,6 +935,7 @@
               stroke-linejoin="round"
             />
           </svg>
+          <span class="curator-label">you.eth</span>
         </div>
       </div>
 
@@ -946,7 +948,7 @@
         data-start="12.0"
         data-duration="4"
         data-track-index="2"
-        style="z-index: 49"
+        style="z-index: 50"
       >
         <div class="f5-bg"></div>
         <div class="f5-window" id="f5-window">
@@ -1081,7 +1083,7 @@
         data-start="15.86"
         data-duration="9.6"
         data-track-index="3"
-        style="z-index: 48"
+        style="z-index: 49"
       >
         <div class="f6-bg"></div>
         <div class="f5-window" id="f6-window">
@@ -1205,24 +1207,8 @@
             <span class="f6-cap-line">
               <span class="f6-cap-word">Now,</span>
               <span class="f6-cap-word">the</span>
-              <span class="f6-cap-word f6-cap-highlight" id="f6-cap-community">
-                <span class="f6-cap-hl-bg" aria-hidden="true"></span>
-                community
-              </span>
-              <span class="f6-cap-word">votes.</span>
-            </span>
-            <!-- Figma-style multiplayer cursor lands after the last word -->
-            <span class="f6-cap-cursor" id="f6-cap-cursor" aria-hidden="true">
-              <svg viewBox="0 0 22 28">
-                <path
-                  d="M2 2 L20 14 L12 16 L8 24 Z"
-                  fill="#ffc6b0"
-                  stroke="#02000e"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <span class="f6-cap-cursor-tag">you.eth</span>
+              <span class="f6-cap-word">community</span>
+              <span class="f6-cap-word f6-cap-accent">votes.</span>
             </span>
           </div>
         </div>
@@ -1236,10 +1222,10 @@
       <div
         id="f7-newsearch"
         class="scene clip"
-        data-start="24.0"
+        data-start="24"
         data-duration="4"
-        data-track-index="2"
-        style="z-index: 49"
+        data-track-index="1"
+        style="z-index: 51"
       >
         <div class="f7-bg"></div>
         <div class="f1-flash" id="f7-flash"></div>
@@ -1259,6 +1245,33 @@
                 <span>TOP THAILAND HOTELS · 3 RESULTS</span>
               </div>
               <div class="f7-srp-card" id="f7-srp-0">
+                <!-- Snake border — single black light-segment orbiting the
+                     card via a rotating conic-gradient on a frosted glass
+                     pad. Cleaner than SVG dasharray for stretched paths. -->
+                <div
+                  class="f7-srp-snake-wrap"
+                  id="f7-srp-snake-wrap"
+                  aria-hidden="true"
+                >
+                  <div class="f7-srp-snake-ring" id="f7-srp-snake-ring"></div>
+                </div>
+                <!-- Like button — lives ON the card. you.eth cursor clicks it. -->
+                <button class="f7-like-btn" id="f7-thumb" aria-label="Like">
+                  <svg
+                    class="f7-thumb-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M7 10v12" />
+                    <path
+                      d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7"
+                    />
+                  </svg>
+                </button>
                 <div class="f7-srp-head">
                   <div class="f5-fav b-tripadvisor">
                     <img
@@ -1378,6 +1391,19 @@
             </div>
           </div>
         </div>
+        <!-- you.eth cursor — clicks the like button on the card. -->
+        <div class="cursor-curator c-you" id="f7-like-cursor">
+          <svg viewBox="0 0 22 28">
+            <path
+              d="M2 2 L20 14 L12 16 L8 24 Z"
+              fill="#ffc6b0"
+              stroke="#02000e"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="curator-label">you.eth</span>
+        </div>
       </div>
 
       <!-- ════════════════════════════════════════════════════
@@ -1389,7 +1415,7 @@
         data-start="28.0"
         data-duration="3"
         data-track-index="2"
-        style="z-index: 46"
+        style="z-index: 47"
       >
         <div class="f8-bg"></div>
         <div class="f8-center">
@@ -1416,7 +1442,7 @@
         data-start="16.3"
         data-duration="2.75"
         data-track-index="5"
-        style="z-index: 90"
+        style="z-index: 45"
       >
         <div class="macos-notif-icon">
           <svg
