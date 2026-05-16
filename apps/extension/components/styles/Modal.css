@@ -1225,7 +1225,7 @@
   position: relative;
   z-index: 10;
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
   border-radius: 0;
   overflow: hidden;
   background: var(--ds-bg-subtle);
@@ -1280,6 +1280,8 @@
   box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   font-family: "Inter Tight", "Geist", sans-serif;
 }
 
@@ -1335,6 +1337,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 .rc-headline {
@@ -1363,11 +1366,15 @@
   margin: 6px 0 12px;
 }
 
+/* Marks list fills the available height (many tx visible) and scrolls
+   internally; the tier ladder + ledger (Balance) + actions sit just
+   below it, pinned near the bottom. */
 .rc-marks {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 240px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   margin-top: 28px;
   margin-bottom: 12px;
