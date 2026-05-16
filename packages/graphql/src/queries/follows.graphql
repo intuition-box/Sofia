@@ -312,10 +312,18 @@ query GetMyFollowing(
 
 # Query for user's trust circle (I -> TRUSTS -> Account)
 # Returns triples where user has positions on ANY curve (1 or 2)
+#
+# Paginated: callers loop $limit/$offset until a short page comes back.
+# Mirrors the explorer's GetPerspectiveCerts pagination shape — a stable
+# `order_by: { term_id: asc }` keeps offsets consistent across pages so
+# the long tail (certs since October) is no longer dropped by the
+# indexer's default row cap.
 query GetMyTrustCircle(
   $subjectId: String!
   $predicateId: String!
   $walletAddresses: [String!]!
+  $limit: Int = 1000
+  $offset: Int = 0
 ) {
   triples(
     where: {
@@ -331,6 +339,9 @@ query GetMyTrustCircle(
         }
       ]
     }
+    limit: $limit
+    offset: $offset
+    order_by: { term_id: asc }
   ) {
     term_id
     created_at

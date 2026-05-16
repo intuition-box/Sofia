@@ -36,7 +36,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-bottom: 1px solid color-mix(in srgb, var(--ds-on-accent) 18%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--ds-on-accent) 18%, transparent);
 }
 
 .hp-meta-row {
@@ -44,7 +45,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px 0;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -74,20 +75,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Minimal gutter only — the diagram should fill its half of the screen.
-   * This block lives *inside* the fixed 50% .hp-visual, so growing the SVG
-   * here never pushes the auth panel or anything else on the page. */
-  padding: 0 4px;
-  perspective: 1200px;
-  overflow: hidden;
+  padding: 4px 8px 8px;
 }
 .hp-diagram-stage > svg {
   width: 100%;
   height: 100%;
-  /* Fill the whole top half. preserveAspectRatio on the SVG keeps it
-   * centered; overflow on .hp-visual clips any drift overshoot. */
-  max-width: none;
-  max-height: none;
+  max-width: 480px;
+  max-height: 480px;
   display: block;
 }
 
@@ -146,7 +140,7 @@
 }
 
 .hp-eyebrow {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -155,13 +149,15 @@
 
 .hp-headline {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-weight: 800;
   font-size: 58px;
   line-height: 0.98;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    "SOFT" 30,
+    "opsz" 144;
 }
 .hp-headline em {
   font-style: italic;
@@ -170,7 +166,7 @@
 
 .hp-lede {
   margin: 0 0 8px;
-  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.45;
   color: color-mix(in srgb, var(--ds-ink) 70%, transparent);
@@ -195,7 +191,7 @@
   width: 100%;
   padding: 12px 18px;
   border-radius: var(--btn-primary-radius, 8px);
-  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -232,7 +228,7 @@
 }
 .hp-btn-arrow {
   margin-left: auto;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 14px;
   color: inherit;
 }
@@ -267,7 +263,7 @@
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
   text-align: center;

@@ -4,60 +4,115 @@
  */
 
 // Logging
-export { logger, createHookLogger, createServiceLogger } from './logger'
+export { logger, createHookLogger, createServiceLogger } from "./logger"
 
 // URL & Content
-export { normalizeUrl } from './normalizeUrl'
-export { cleanTitle, getDisplayTitle } from './cleanTitle'
-export { isRestrictedUrl } from './pageRestriction'
-export type { RestrictionInfo } from './pageRestriction'
-export { parseSofiaMessage } from './parseSofiaMessage'
+export { normalizeUrl } from "./normalizeUrl"
+export { cleanTitle, getDisplayTitle } from "./cleanTitle"
+export { isRestrictedUrl } from "./pageRestriction"
+export type { RestrictionInfo } from "./pageRestriction"
+export { parseSofiaMessage } from "./parseSofiaMessage"
 
 // Web3 & Identity
-export { getEnsAvatar, batchResolveEns } from './ensUtils'
-export { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, convertIpfsToHttp, normalizeAvatarUrl, getInitials } from './avatar'
+export { getEnsAvatar, batchResolveEns } from "./ensUtils"
+export {
+  isValidImageUrl,
+  shouldShowDiceBearAvatar,
+  generateDiceBearAvatar,
+  convertIpfsToHttp,
+  normalizeAvatarUrl,
+  getInitials
+} from "./avatar"
 
 // IPFS
-export { batchFetchIPFS } from './ipfsCache'
+export { batchFetchIPFS } from "./ipfsCache"
 
 // Quest & Storage Helpers
-export { calculateLevelFromXP, calculateXPForNextLevel, getClaimId, computeQuestStatuses } from './questStatusHelpers'
-export { getWalletKey } from './storageKeyUtils'
+export {
+  calculateLevelFromXP,
+  calculateXPForNextLevel,
+  getClaimId,
+  computeQuestStatuses
+} from "./questStatusHelpers"
+export { getWalletKey } from "./storageKeyUtils"
 
 // Cache & Async
-export { refetchWithBackoff, debounce } from './refetchUtils'
+export { refetchWithBackoff, debounce } from "./refetchUtils"
 
 // Level System (Groups/Echoes)
-export { calculateLevel, calculateLevelProgress } from './levelCalculation'
+export { calculateLevel, calculateLevelProgress } from "./levelCalculation"
 
 // Domain Utilities
-export { normalizeDomain, extractDomain, shouldExcludeDomain } from './domainUtils'
+export {
+  normalizeDomain,
+  extractDomain,
+  shouldExcludeDomain
+} from "./domainUtils"
 
 // Formatters
-export { getFaviconUrl, formatDuration, formatShortDate, formatBalance, formatRelativeTime, shortenAddress } from './formatters'
+export {
+  getFaviconUrl,
+  formatDuration,
+  formatShortDate,
+  formatBalance,
+  formatRelativeTime,
+  shortenAddress
+} from "./formatters"
 
 // Certification Helpers
-export { intentionToCertification, trustToCertification, getEffectiveCertStatus, calculateDominantCertification, sumCertifications } from './certificationHelpers'
+export {
+  intentionToCertification,
+  trustToCertification,
+  getEffectiveCertStatus,
+  calculateDominantCertification,
+  sumCertifications
+} from "./certificationHelpers"
 
 // Discovery Calculations
-export { buildPagePositionMap, calculateDiscoveryRanking, calculateDiscoveryGold, buildDiscoveryStats } from './discoveryUtils'
+export {
+  buildPagePositionMap,
+  calculateDiscoveryRanking,
+  calculateDiscoveryGold,
+  buildDiscoveryStats
+} from "./discoveryUtils"
 
 // Streak Calculations
-export { calculateStreaks, extractUserActivityDates } from './streakUtils'
+export { calculateStreaks, extractUserActivityDates } from "./streakUtils"
 
 // Fee Calculation
-export { estimateCertificationCost } from './feeCalculation'
+export { estimateCertificationCost } from "./feeCalculation"
 
 // Page Certification Compute (pure functions)
-export { computeDiscoveryData, computeIntentionStats, computeTrustCounts, computePagePositions } from './pageCertificationCompute'
-export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResult, RankedPosition, PagePositionsResult } from './pageCertificationCompute'
+export {
+  computeDiscoveryData,
+  computeIntentionStats,
+  computeTrustCounts,
+  computePagePositions
+} from "./pageCertificationCompute"
+export type {
+  CertTriple,
+  DiscoveryResult,
+  IntentionStatsResult,
+  TrustCountsResult,
+  RankedPosition,
+  PagePositionsResult
+} from "./pageCertificationCompute"
 
 // Page Blockchain Reducer (pure function)
-export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE } from './pageBlockchainReducer'
+export {
+  pageBlockchainReducer,
+  PAGE_BLOCKCHAIN_INITIAL_STATE
+} from "./pageBlockchainReducer"
 
 // Debate / Claim Helpers
-export { formatTrust } from './formatTrust'
-export { calcPercentage } from './calcPercentage'
+export { formatTrust } from "./formatTrust"
+export { calcPercentage } from "./calcPercentage"
 
 // Sofia Explorer deep-links (Phase 5b)
-export { getTripleUrl, getAtomUrl, getProfilePlatformUrl, getExplorerHomeUrl } from './sofiaExplorerUrls'
+export {
+  getTripleUrl,
+  getAtomUrl,
+  getProfilePlatformUrl,
+  getExplorerHomeUrl,
+  getProfileUrl
+} from "./sofiaExplorerUrls"

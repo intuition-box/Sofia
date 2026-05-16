@@ -9,6 +9,10 @@
  * - lib/config/predicateConstants.ts: predicate constants
  */
 
+import { UserAllCertificationsDocument } from "@0xsofia/graphql"
+import { getAddress } from "viem"
+
+import type { IntentionPurpose } from "../../types/discovery"
 import { intuitionGraphqlClient } from "../clients/graphql-client"
 import {
   ALL_PREDICATE_IDS,
@@ -17,14 +21,21 @@ import {
   PREDICATE_LABEL_TO_INTENTION,
   TRUST_LABEL_TO_TYPE
 } from "../config/predicateConstants"
+import { ATOM_ID_TO_TOPIC } from "../config/topicConfig"
+import { normalizeUrl } from "../utils"
 import { createServiceLogger } from "../utils/logger"
 import { txEventBus } from "./TxEventBus"
-import { normalizeUrl } from "../utils"
-import { UserAllCertificationsDocument } from "@0xsofia/graphql"
-import { ATOM_ID_TO_TOPIC } from "../config/topicConfig"
-import type { IntentionPurpose } from "../../types/discovery"
 
 const logger = createServiceLogger("UserCertificationsService")
+
+/**
+ * Pagination tuning — mirrors the explorer's `perspectiveService`
+ * (PAGE_SIZE = 1000, MAX_PAGES = 50 → 50 000 cap). The previous
+ * 100 × 100 (10 000) cap silently dropped the long tail of group
+ * certifications since October.
+ */
+const PAGE_SIZE = 1000
+const MAX_PAGES = 50
 
 // ── Types ──
 
@@ -41,7 +52,7 @@ export interface CertificationEntry {
   trustPredicates: string[]
   isRootDomain: boolean
   triples: TripleDetail[]
-  interestContexts: string[]  // topic slugs from nested "in context of" triples
+  interestContexts: string[] // topic slugs from nested "in context of" triples
 }
 
 export interface CertificationsStoreState {
@@ -86,7 +97,10 @@ class UserCertificationsServiceClass {
       .get(["walletAddress"])
       .then((result) => {
         if (result.walletAddress) {
-          this.state = { ...this.state, walletAddress: result.walletAddress.toLowerCase() }
+          this.state = {
+            ...this.state,
+            walletAddress: result.walletAddress.toLowerCase()
+          }
         }
       })
       .catch(() => {})
@@ -94,7 +108,10 @@ class UserCertificationsServiceClass {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "session" && changes.walletAddress) {
         const wallet = changes.walletAddress.newValue || null
-        this.state = { ...this.state, walletAddress: wallet ? wallet.toLowerCase() : null }
+        this.state = {
+          ...this.state,
+          walletAddress: wallet ? wallet.toLowerCase() : null
+        }
       }
     })
 
@@ -146,17 +163,29 @@ class UserCertificationsServiceClass {
         positions?: Array<{ shares: string }>
       }
 
+      // Indexer stores EIP-55 checksum addresses but some old data may be lowercase.
+      // Pass both forms in `_in` filter to catch all positions.
+      let checksumAddr: string
+      try {
+        checksumAddr = getAddress(walletAddress)
+      } catch {
+        checksumAddr = walletAddress
+      }
+      const userAddresses = Array.from(
+        new Set([checksumAddr, walletAddress.toLowerCase()])
+      )
+
       const triples =
         await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
           UserAllCertificationsDocument,
           {
             predicateIds: ALL_PREDICATE_IDS,
             predicateLabels: ALL_PREDICATE_LABELS,
-            userAddresses: walletAddress.toLowerCase()
+            userAddresses
           },
           "triples",
-          100,
-          100
+          PAGE_SIZE,
+          MAX_PAGES
         )
       logger.info("Fetched user certifications (paginated)", {
         count: triples.length
@@ -182,8 +211,7 @@ class UserCertificationsServiceClass {
         const predicateLabel = triple.predicate?.label || ""
 
         const intention = PREDICATE_LABEL_TO_INTENTION[predicateLabel]
-        const isOAuthPredicate =
-          OAUTH_PREDICATE_LABELS.includes(predicateLabel)
+        const isOAuthPredicate = OAUTH_PREDICATE_LABELS.includes(predicateLabel)
         const isTrustPredicate = predicateLabel in TRUST_LABEL_TO_TYPE
 
         logger.debug("Processing triple:", {
@@ -334,14 +362,25 @@ class UserCertificationsServiceClass {
       // and predicate is "in context of"
       // Use subject_id (not subject { term_id }) because the subject is a
       // nested triple, not a regular atom — subject join returns null for triples.
+      //
+      // Paginated with the same PAGE_SIZE/MAX_PAGES loop convention as
+      // the cert fetch above — the old single `limit: 500` shot dropped
+      // the long tail of context triples for users with many certs. A
+      // stable `order_by: { term_id: asc }` keeps offsets consistent.
       const CONTEXT_QUERY = `
-        query GetContextTriples($subjectTermIds: [String!]!) {
+        query GetContextTriples(
+          $subjectTermIds: [String!]!
+          $limit: Int!
+          $offset: Int!
+        ) {
           triples(
             where: {
               subject_id: { _in: $subjectTermIds }
               predicate: { label: { _eq: "in context of" } }
             }
-            limit: 500
+            limit: $limit
+            offset: $offset
+            order_by: { term_id: asc }
           ) {
             subject_id
             object { term_id label }
@@ -349,12 +388,23 @@ class UserCertificationsServiceClass {
         }
       `
 
-      const data = await intuitionGraphqlClient.request(
-        CONTEXT_QUERY,
-        { subjectTermIds: allTermIds }
-      )
+      interface ContextTriple {
+        subject_id?: string
+        object?: { term_id?: string; label?: string }
+      }
 
-      const contextTriples = data.triples || []
+      const contextTriples: ContextTriple[] = []
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const data = await intuitionGraphqlClient.request(CONTEXT_QUERY, {
+          subjectTermIds: allTermIds,
+          limit: PAGE_SIZE,
+          offset: page * PAGE_SIZE
+        })
+        const rows: ContextTriple[] = data.triples || []
+        contextTriples.push(...rows)
+        if (rows.length < PAGE_SIZE) break
+      }
+
       logger.debug("Context triples fetched", { count: contextTriples.length })
 
       for (const ct of contextTriples) {

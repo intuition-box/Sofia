@@ -28,7 +28,7 @@
 }
 
 .stats-section .stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -41,7 +41,7 @@
 }
 
 .stats-section .stat-label {
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -50,7 +50,7 @@
 }
 
 .stats-section .stat-sublabel {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   color: var(--ds-muted);
   margin-top: 2px;
@@ -100,12 +100,12 @@
 }
 
 .connect-button.discord:hover {
-  background-color: #5865F2;
+  background-color: #5865f2;
   border-color: #4752c450;
 }
 
 .connect-button.discord.connected {
-  background-color: #5865F2;
+  background-color: #5865f2;
   border-color: #4752c450;
 }
 
@@ -146,9 +146,9 @@
   border-color: var(--trusted, #22c55e);
 }
 
-
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
   }
   50% {
@@ -163,7 +163,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
@@ -187,13 +187,15 @@
   border: 1px solid var(--ds-border);
   border-radius: 999px;
   color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   padding: 6px 14px;
   line-height: 1;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .quest-refresh-btn-inline:hover:not(:disabled) {
@@ -251,7 +253,8 @@
   width: 24px;
   height: 24px;
   flex-shrink: 0;
-  filter: brightness(0) saturate(100%) invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%) contrast(100%);
+  filter: brightness(0) saturate(100%) invert(50%) sepia(0%) saturate(0%)
+    hue-rotate(0deg) brightness(50%) contrast(100%);
 }
 
 /* Search functionality styles */
@@ -302,7 +305,7 @@
 
 /* ========== CLAIM XP BUTTON ========== */
 .claim-xp-button {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
   border: none;
   border-radius: 8px;
   color: #1a1a1a;
@@ -333,7 +336,11 @@
 }
 
 .badge-item {
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.2) 0%, rgba(72, 187, 120, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(72, 187, 120, 0.2) 0%,
+    rgba(72, 187, 120, 0.1) 100%
+  );
   border: 1px solid rgba(72, 187, 120, 0.4);
   color: #48bb78;
   font-size: 10px;
@@ -346,13 +353,21 @@
 }
 
 .badge-item:hover {
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.3) 0%, rgba(72, 187, 120, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(72, 187, 120, 0.3) 0%,
+    rgba(72, 187, 120, 0.2) 100%
+  );
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
 }
 
 .badge-more {
-  background: linear-gradient(135deg, rgba(160, 160, 160, 0.2) 0%, rgba(160, 160, 160, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(160, 160, 160, 0.2) 0%,
+    rgba(160, 160, 160, 0.1) 100%
+  );
   border-color: rgba(160, 160, 160, 0.4);
   color: #a0a0a0;
 }
@@ -393,7 +408,7 @@
   border: none;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -443,7 +458,7 @@
 }
 
 .stats-error {
-  color: #F87171;
+  color: #f87171;
 }
 
 .stats-error button {
@@ -451,7 +466,7 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  color: #F87171;
+  color: #f87171;
   cursor: pointer;
 }
 
@@ -501,13 +516,18 @@
 }
 
 .discovery-badge-item:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   top: 10%;
   height: 80%;
   width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.15), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
 }
 
 .badge-icon-wrapper {
@@ -531,14 +551,14 @@
 }
 
 .badge-label {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .badge-count {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -572,7 +592,8 @@
 .xp-level-badge svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 0 6px var(--badge-color)) drop-shadow(0 0 12px var(--badge-color));
+  filter: drop-shadow(0 0 6px var(--badge-color))
+    drop-shadow(0 0 12px var(--badge-color));
 }
 
 .xp-level-badge-text {
@@ -582,13 +603,13 @@
   align-items: center;
   justify-content: center;
   color: #000;
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 700;
 }
 
 .xp-progress-text {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -619,7 +640,7 @@
 }
 
 .mechanism-title {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -628,7 +649,7 @@
 }
 
 .mechanism-content {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
@@ -776,12 +797,12 @@
 .streak-hub-card {
   display: flex;
   gap: 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(234, 182, 122, 0.2);
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
-  margin-top: 15px
+  margin-top: 15px;
 }
 
 .streak-hub-left {
@@ -792,7 +813,8 @@
   gap: 6px;
   min-width: 120px;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 14px 10px;
 }
@@ -804,37 +826,40 @@
 }
 
 .streak-hub-days {
-  font-family: 'Geist', sans-serif;
-  font-size: 22px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--ds-ink);
+  color: #ffffff;
   line-height: 1;
   text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .streak-hub-progress {
   width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .streak-hub-progress-fill {
   height: 100%;
-  background: #ffffff;
+  background: linear-gradient(90deg, #ffaa8a 0%, #e87a52 100%);
   border-radius: 4px;
   transition: width 0.5s ease;
   min-width: 2px;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px rgba(255, 170, 138, 0.5);
 }
 
 .streak-hub-progress-pct {
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
   text-align: center;
+  letter-spacing: 0.06em;
 }
 
 .streak-hub-right {
@@ -854,12 +879,12 @@
 }
 
 .streak-hub-action-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.16em;
   text-align: center;
 }
 
@@ -870,13 +895,17 @@
   border-radius: var(--btn-primary-radius, 8px);
   background: var(--btn-primary-bg);
   color: var(--btn-primary-fg);
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  letter-spacing: 0.1em;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .streak-hub-claim-btn:hover:not(:disabled) {
@@ -898,17 +927,19 @@
 }
 
 .streak-hub-subtitle {
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.45);
   text-align: center;
+  letter-spacing: 0.04em;
 }
 
 .streak-hub-week {
   display: flex;
   align-items: center;
   gap: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 3px;
   width: 100%;
@@ -916,7 +947,7 @@
 
 .streak-hub-pill {
   display: flex;
-  background: rgba(34, 197, 94, 0.25);
+  background: color-mix(in oklab, #ffaa8a 22%, transparent);
   border-radius: 10px;
   gap: 0;
 }
@@ -932,30 +963,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Geist', sans-serif;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   background: transparent;
   color: rgba(255, 255, 255, 0.35);
 }
 
 .streak-hub-day.active {
-  background: rgba(34, 197, 94, 0.25);
-  color: #4ade80;
-  font-size: 13px;
+  background: color-mix(in oklab, #ffaa8a 22%, transparent);
+  color: color-mix(in oklab, #ffaa8a 75%, white);
+  font-size: 12px;
   font-weight: 800;
 }
 
 .streak-hub-day.today {
-  background: rgba(255, 170, 0, 0.2);
-  border: 1.5px solid rgba(255, 170, 0, 0.7);
-  color: #ffaa00;
+  background: color-mix(in oklab, #ffc6b0 18%, transparent);
+  border: 1px solid color-mix(in oklab, #ffaa8a 55%, transparent);
+  color: color-mix(in oklab, #ffc6b0 78%, white);
   font-size: 12px;
   font-weight: 800;
 }
 
 .streak-hub-day.missed {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.2);
 }
 
@@ -988,7 +1020,7 @@
 }
 
 .achievements-section-label {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -999,7 +1031,12 @@
 /* Separator between daily and other quests */
 .achievements-separator {
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
   margin: 16px 0;
 }
 
@@ -1075,7 +1112,14 @@
 
 .achievement-type-badge.oauth,
 .achievement-type-badge.social-link {
-  background: linear-gradient(135deg, #f87171, #facc15, #34d399, #60a5fa, #c084fc);
+  background: linear-gradient(
+    135deg,
+    #f87171,
+    #facc15,
+    #34d399,
+    #60a5fa,
+    #c084fc
+  );
 }
 
 .achievement-type-badge.follow {
@@ -1107,7 +1151,7 @@
 }
 
 .achievement-type-badge.gold {
-  background: linear-gradient(135deg, #FFD700, #DAA520);
+  background: linear-gradient(135deg, #ffd700, #daa520);
 }
 
 /* Card info area */
@@ -1158,7 +1202,14 @@
 
 .achievement-xp.oauth,
 .achievement-xp.social-link {
-  background: linear-gradient(135deg, #f87171, #facc15, #34d399, #60a5fa, #c084fc);
+  background: linear-gradient(
+    135deg,
+    #f87171,
+    #facc15,
+    #34d399,
+    #60a5fa,
+    #c084fc
+  );
 }
 
 .achievement-xp.follow {
@@ -1190,7 +1241,7 @@
 }
 
 .achievement-xp.gold {
-  background: linear-gradient(135deg, #FFD700, #DAA520);
+  background: linear-gradient(135deg, #ffd700, #daa520);
 }
 
 /* Locked achievements */
@@ -1242,22 +1293,28 @@
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
 }
 
 /* Claimable achievements (golden glow) */
 .achievement-card.claimable {
   border-color: rgba(255, 215, 0, 0.5);
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.15);
+  box-shadow:
+    0 0 10px rgba(255, 215, 0, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.15);
   animation: achievement-glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes achievement-glow {
   from {
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2), 0 0 16px rgba(255, 215, 0, 0.1);
+    box-shadow:
+      0 0 8px rgba(255, 215, 0, 0.2),
+      0 0 16px rgba(255, 215, 0, 0.1);
   }
   to {
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4), 0 0 24px rgba(255, 215, 0, 0.2);
+    box-shadow:
+      0 0 12px rgba(255, 215, 0, 0.4),
+      0 0 24px rgba(255, 215, 0, 0.2);
   }
 }
 
@@ -1267,12 +1324,12 @@
   padding: 6px 10px;
   border: none;
   border-radius: 6px;
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #ffd700, #ffa500);
   color: #0f1420;
 }
 
@@ -1347,7 +1404,7 @@
 }
 
 .season-pool-title {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -1370,7 +1427,7 @@
 }
 
 .season-pool-label {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -1379,14 +1436,14 @@
 }
 
 .season-pool-value {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
 
 .season-pool-pct {
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 11px;
   font-weight: 500;
 }
@@ -1412,7 +1469,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.75);
-  font-family: 'Geist', sans-serif;
+  font-family: "Geist", sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -1446,27 +1503,27 @@
   background: var(--btn-primary-bg);
   color: #000;
   cursor: pointer;
-  
+
   border: none;
   border-radius: 7px;
   justify-content: center;
   align-items: center;
   gap: 8px;
   padding: 4px clamp(2px, 10vw, 284px);
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 14px;
   font-weight: 700;
   transition: all 1s;
   display: flex;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(255, 198, 176, 0.40);
+  box-shadow: 0 8px 32px rgba(255, 198, 176, 0.4);
   width: 100%;
   max-width: 608px;
 }
 
 .interest-analyze-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1484,7 +1541,7 @@
 }
 
 .interest-analyze-btn:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.60);
+  box-shadow: 0 12px 48px rgba(255, 198, 176, 0.6);
   transform: translateY(-2px);
 }
 

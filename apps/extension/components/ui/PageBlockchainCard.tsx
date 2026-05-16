@@ -1,38 +1,41 @@
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
-import { useRouter } from "../layout/RouterProvider"
+
 import {
-  usePageBlockchainData,
+  getCertificationForUrl,
+  useCart,
+  useCertificationModal,
+  useCredibilityAnalysis,
+  useDiscoveryReward,
   useDiscoveryScore,
   useFavicon,
-  useDiscoveryReward,
-  useCredibilityAnalysis,
-  useCertificationModal,
-  useUserCertifications,
-  getCertificationForUrl,
-  useWalletFromStorage,
-  useTrustCircle,
+  usePageBlockchainData,
   usePagePositions,
-  useCart,
-  useTopicInterests
+  useTopicInterests,
+  useTrustCircle,
+  useUserCertifications,
+  useWalletFromStorage
 } from "~/hooks"
+import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
-import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
-import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType
 } from "~/types/intentionCategories"
+
+import { useRouter } from "../layout/RouterProvider"
 import WeightModal from "../modals/WeightModal"
+import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
+import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
+import { CartToast } from "./CartDrawer"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import { InterestContextSelector } from "./InterestContextSelector"
-import { CartToast } from "./CartDrawer"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageBlockchainSkeleton } from "./Skeleton"
-import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
+
 import "../styles/PageBlockchainCard.css"
 
 const PageBlockchainCard = () => {
@@ -82,17 +85,28 @@ const PageBlockchainCard = () => {
     [trustCircleAccounts]
   )
 
-  const { positions, userPosition, totalPositions } =
-    usePagePositions(
-      certTriples,
-      pageAtomIds,
-      walletAddress,
-      trustCircleAddresses
-    )
+  const { positions, userPosition, totalPositions } = usePagePositions(
+    certTriples,
+    pageAtomIds,
+    walletAddress,
+    trustCircleAddresses
+  )
 
-  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry, certifiedContexts } = useMemo(() => {
+  const {
+    certifiedIntentions,
+    alreadyTrusted,
+    alreadyDistrusted,
+    certEntry,
+    certifiedContexts
+  } = useMemo(() => {
     if (!currentUrl || certifications.size === 0)
-      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null, certifiedContexts: [] as string[] }
+      return {
+        certifiedIntentions: [] as IntentionPurpose[],
+        alreadyTrusted: false,
+        alreadyDistrusted: false,
+        certEntry: null,
+        certifiedContexts: [] as string[]
+      }
     const entry = getCertificationForUrl(certifications, currentUrl)
     return {
       certifiedIntentions: entry?.intentions ?? [],
@@ -118,28 +132,28 @@ const PageBlockchainCard = () => {
   const cartIntentionsForPage = useMemo(() => {
     if (!currentUrl) return [] as IntentionPurpose[]
     return cart.items
-      .filter(item => item.url === currentUrl && item.intention)
-      .map(item => item.intention) as IntentionPurpose[]
+      .filter((item) => item.url === currentUrl && item.intention)
+      .map((item) => item.intention) as IntentionPurpose[]
   }, [cart.items, currentUrl])
 
   const trustInCart = useMemo(() => {
     if (!currentUrl) return false
     return cart.items.some(
-      item => item.url === currentUrl && item.predicateName === "trusts"
+      (item) => item.url === currentUrl && item.predicateName === "trusts"
     )
   }, [cart.items, currentUrl])
 
   const distrustInCart = useMemo(() => {
     if (!currentUrl) return false
     return cart.items.some(
-      item => item.url === currentUrl && item.predicateName === "distrust"
+      (item) => item.url === currentUrl && item.predicateName === "distrust"
     )
   }, [cart.items, currentUrl])
 
   // Cart items for the current page (used for the live sentence + validate)
   const cartItemsForPage = useMemo(() => {
     if (!currentUrl) return [] as typeof cart.items
-    return cart.items.filter(item => item.url === currentUrl)
+    return cart.items.filter((item) => item.url === currentUrl)
   }, [cart.items, currentUrl])
 
   const handleAddToCart = useCallback(
@@ -148,7 +162,8 @@ const PageBlockchainCard = () => {
       const predicateName = INTENTION_PREDICATES[intention]
       // Toggle: if already queued, remove instead of re-adding
       const existing = cart.items.find(
-        item => item.url === currentUrl && item.predicateName === predicateName
+        (item) =>
+          item.url === currentUrl && item.predicateName === predicateName
       )
       if (existing) {
         await cart.removeFromCart(existing.id)
@@ -179,11 +194,13 @@ const PageBlockchainCard = () => {
       if (!currentUrl) return
       // Toggle: if already queued, remove instead of re-adding
       const existing = cart.items.find(
-        item => item.url === currentUrl && item.predicateName === predicate
+        (item) => item.url === currentUrl && item.predicateName === predicate
       )
       if (existing) {
         await cart.removeFromCart(existing.id)
-        setCartToast(`Removed ${predicate === "trusts" ? "Trust" : "Distrust"} from cart`)
+        setCartToast(
+          `Removed ${predicate === "trusts" ? "Trust" : "Distrust"} from cart`
+        )
         return
       }
       const favicon = getFaviconUrl(currentUrl, 128)
@@ -196,7 +213,9 @@ const PageBlockchainCard = () => {
         selectedContext
       )
       if (added) {
-        setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
+        setCartToast(
+          `Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`
+        )
         setIsBursting(true)
       } else {
         setCartToast("Already in cart")
@@ -234,10 +253,37 @@ const PageBlockchainCard = () => {
 
   return (
     <div
-      className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""} ${isBursting ? "blockchain-card--cart-burst" : ""}`}
-    >
-      {/* Skeleton: first load or retrying */}
-      {status === "loading" && <PageBlockchainSkeleton />}
+      className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""} ${isBursting ? "blockchain-card--cart-burst" : ""}`}>
+      {/* Skeleton: first load or retrying. Share-on-X + Preview are kept
+          as the real components (empty state) instead of shimmer — the
+          page URL is tab-derived so they're usable before data loads. */}
+      {status === "loading" && (
+        <PageBlockchainSkeleton
+          shareSlot={
+            currentUrl && !isRestricted ? (
+              <ShareCertificationButton
+                pageUrl={currentUrl}
+                pageTitle={pageTitle}
+                userStatus={null}
+                userRank={null}
+                totalPositions={0}
+              />
+            ) : undefined
+          }
+          previewSlot={
+            currentUrl && !isRestricted ? (
+              <div className="cert-section live-sentence-section">
+                <div className="cert-section-title">Preview</div>
+                <div className="live-sentence">
+                  <span className="live-sentence__placeholder">
+                    Pick an intention to start building your signal…
+                  </span>
+                </div>
+              </div>
+            ) : undefined
+          }
+        />
+      )}
 
       {/* Persistent error after retries */}
       {status === "error" && (
@@ -247,8 +293,7 @@ const PageBlockchainCard = () => {
           </span>
           <button
             className="blockchain-card__notice-retry"
-            onClick={fetchDataForCurrentPage}
-          >
+            onClick={fetchDataForCurrentPage}>
             Retry
           </button>
         </div>
@@ -265,9 +310,7 @@ const PageBlockchainCard = () => {
             totalCertifications={totalCertifications}
             isRestricted={isRestricted}
             restrictionMessage={restrictionMessage}
-            onToggleMetrics={() =>
-              setShowExtendedMetrics(!showExtendedMetrics)
-            }
+            onToggleMetrics={() => setShowExtendedMetrics(!showExtendedMetrics)}
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
@@ -334,10 +377,24 @@ const PageBlockchainCard = () => {
                         )
                       }
                       if (alreadyTrusted && !trustInCart) {
-                        cart.addToCart(currentUrl, pageTitle, "trusts", null, favicon, slug)
+                        cart.addToCart(
+                          currentUrl,
+                          pageTitle,
+                          "trusts",
+                          null,
+                          favicon,
+                          slug
+                        )
                       }
                       if (alreadyDistrusted && !distrustInCart) {
-                        cart.addToCart(currentUrl, pageTitle, "distrust", null, favicon, slug)
+                        cart.addToCart(
+                          currentUrl,
+                          pageTitle,
+                          "distrust",
+                          null,
+                          favicon,
+                          slug
+                        )
                       }
                     }}
                     disabled={modal.intentionState.loading}
@@ -369,9 +426,13 @@ const PageBlockchainCard = () => {
                       for (const item of cartItemsForPage) {
                         if (seen.has(item.predicateName)) continue
                         seen.add(item.predicateName)
-                        const type = predicateLabelToIntentionType(item.predicateName)
+                        const type = predicateLabelToIntentionType(
+                          item.predicateName
+                        )
                         if (item.predicateName.startsWith(`${VERB_PREFIX} `)) {
-                          const tail = item.predicateName.slice(VERB_PREFIX.length + 1)
+                          const tail = item.predicateName.slice(
+                            VERB_PREFIX.length + 1
+                          )
                           visitTails.push({
                             label: tail,
                             color: type
@@ -391,10 +452,12 @@ const PageBlockchainCard = () => {
                       const contexts = Array.from(
                         new Set(
                           cartItemsForPage
-                            .map(i => i.interestContext)
-                            .filter((c): c is string => !!c && !!TOPIC_LABELS[c])
+                            .map((i) => i.interestContext)
+                            .filter(
+                              (c): c is string => !!c && !!TOPIC_LABELS[c]
+                            )
                         )
-                      ).map(slug => ({
+                      ).map((slug) => ({
                         label: TOPIC_LABELS[slug],
                         color: TOPIC_COLORS[slug] || "var(--ds-accent)"
                       }))
@@ -405,12 +468,14 @@ const PageBlockchainCard = () => {
                         items.map((it, idx) => (
                           <span key={`${it.label}-${idx}`}>
                             {idx > 0 && (
-                              <span className="live-sentence__connector"> and </span>
+                              <span className="live-sentence__connector">
+                                {" "}
+                                and{" "}
+                              </span>
                             )}
                             <span
                               className="live-sentence__token"
-                              style={{ color: it.color }}
-                            >
+                              style={{ color: it.color }}>
                               {it.label}
                             </span>
                           </span>
@@ -430,8 +495,7 @@ const PageBlockchainCard = () => {
                           <span
                             key={`v-trust-${idx}`}
                             className="live-sentence__token"
-                            style={{ color: tv.color }}
-                          >
+                            style={{ color: tv.color }}>
                             {tv.label}
                           </span>
                         )
@@ -443,16 +507,23 @@ const PageBlockchainCard = () => {
                           {verbNodes.map((node, idx) => (
                             <span key={`vn-${idx}`}>
                               {idx > 0 && (
-                                <span className="live-sentence__connector"> and </span>
+                                <span className="live-sentence__connector">
+                                  {" "}
+                                  and{" "}
+                                </span>
                               )}
                               {node}
                             </span>
                           ))}{" "}
-                          <span className="live-sentence__object">{object}</span>
+                          <span className="live-sentence__object">
+                            {object}
+                          </span>
                           {visitTails.length > 0 && (
                             <>
                               {" "}
-                              <span className="live-sentence__connector">for</span>{" "}
+                              <span className="live-sentence__connector">
+                                for
+                              </span>{" "}
                               {renderColored(visitTails)}
                             </>
                           )}
@@ -476,8 +547,7 @@ const PageBlockchainCard = () => {
                   disabled={cartItemsForPage.length === 0}
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent("sofia:open-cart"))
-                  }}
-                >
+                  }}>
                   Validate
                 </button>
               </div>
@@ -528,13 +598,15 @@ const PageBlockchainCard = () => {
             transactionSuccess={modal.intentionState.success}
             transactionError={modal.intentionState.error || undefined}
             transactionHash={modal.intentionState.transactionHash || undefined}
-            createdCount={modal.intentionState.operationType === "created" ? 1 : 0}
-            depositCount={modal.intentionState.operationType === "deposit" ? 1 : 0}
+            createdCount={
+              modal.intentionState.operationType === "created" ? 1 : 0
+            }
+            depositCount={
+              modal.intentionState.operationType === "deposit" ? 1 : 0
+            }
             isIntentionCertification={!!modal.modalTriplets[0]?.intention}
             discoveryReward={reward.discoveryReward}
-            onClaimReward={() =>
-              reward.handleClaimReward(claimDiscoveryGold)
-            }
+            onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
             rewardClaimed={reward.rewardClaimed}
             showXpAnimation={true}
             positionBoard={

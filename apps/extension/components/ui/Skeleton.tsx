@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import "../styles/Skeleton.css"
 
 interface SkeletonLineProps {
@@ -5,10 +7,7 @@ interface SkeletonLineProps {
   height?: number
 }
 
-const SkeletonLine = ({
-  width = "100%",
-  height = 12
-}: SkeletonLineProps) => (
+const SkeletonLine = ({ width = "100%", height = 12 }: SkeletonLineProps) => (
   <div className="skeleton-line" style={{ width, height }} />
 )
 
@@ -28,12 +27,24 @@ const SkeletonPill = ({
   />
 )
 
+interface PageBlockchainSkeletonProps {
+  /** Real Share-on-X button rendered in place during loading (instead of
+   *  a shimmer placeholder) when the host can supply it. */
+  shareSlot?: ReactNode
+  /** Real Preview (live-sentence) section, in its empty state. */
+  previewSlot?: ReactNode
+}
+
 /**
  * Skeleton mirroring PageBlockchainCard layout 1:1.
  * Section titles + scope toggle are rendered with the real text so the
- * skeleton-to-content swap doesn't reflow them.
+ * skeleton-to-content swap doesn't reflow them. `shareSlot`/`previewSlot`
+ * let the host keep the real Share-on-X + Preview visible during loading.
  */
-export const PageBlockchainSkeleton = () => (
+export const PageBlockchainSkeleton = ({
+  shareSlot,
+  previewSlot
+}: PageBlockchainSkeletonProps = {}) => (
   <div className="blockchain-skeleton">
     {/* Website header — StarBorder wrapper + salmon surface */}
     <div className="blockchain-skeleton__star-border">
@@ -47,8 +58,8 @@ export const PageBlockchainSkeleton = () => (
       </div>
     </div>
 
-    {/* Share button */}
-    <div className="blockchain-skeleton__share" />
+    {/* Share button — real component during loading when provided */}
+    {shareSlot ?? <div className="blockchain-skeleton__share" />}
 
     {/* Actions panel */}
     <div className="actions-panel blockchain-skeleton__actions">
@@ -80,15 +91,22 @@ export const PageBlockchainSkeleton = () => (
         </div>
       </div>
 
-      {/* Preview + Validate */}
-      <div className="cert-section">
-        <div className="cert-section-title">Preview</div>
-        <div className="blockchain-skeleton__sentence">
-          <SkeletonLine width="92%" height={11} />
-          <SkeletonLine width="68%" height={11} />
+      {/* Preview — real (empty) section during loading when provided */}
+      {previewSlot ? (
+        <>
+          {previewSlot}
+          <div className="blockchain-skeleton__validate" />
+        </>
+      ) : (
+        <div className="cert-section">
+          <div className="cert-section-title">Preview</div>
+          <div className="blockchain-skeleton__sentence">
+            <SkeletonLine width="92%" height={11} />
+            <SkeletonLine width="68%" height={11} />
+          </div>
+          <div className="blockchain-skeleton__validate" />
         </div>
-        <div className="blockchain-skeleton__validate" />
-      </div>
+      )}
     </div>
 
     {/* Stats on this page */}
@@ -96,10 +114,18 @@ export const PageBlockchainSkeleton = () => (
       <div className="section-header">
         <span className="section-title">Stats on this page</span>
         <div className="scope-toggle">
-          <button className="scope-btn active" disabled>Domain</button>
-          <button className="scope-btn" disabled>Page</button>
-          <button className="scope-btn" disabled>Certifiers</button>
-          <button className="scope-btn" disabled>Signals</button>
+          <button className="scope-btn active" disabled>
+            Domain
+          </button>
+          <button className="scope-btn" disabled>
+            Page
+          </button>
+          <button className="scope-btn" disabled>
+            Certifiers
+          </button>
+          <button className="scope-btn" disabled>
+            Signals
+          </button>
         </div>
       </div>
       <div className="blockchain-skeleton__bars">

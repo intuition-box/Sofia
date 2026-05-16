@@ -1,17 +1,26 @@
-import { useState, useCallback } from "react"
-import { useCreateTripleOnChain } from "./useCreateTripleOnChain"
-import { useWeightOnChain } from "./useWeightOnChain"
-import { useWalletFromStorage } from "./useWalletFromStorage"
-import { cartService, questTrackingService, goldService, txEventBus, BlockchainService } from "~/lib/services"
-import { createHookLogger } from "~/lib/utils"
+import { useCallback, useState } from "react"
+
 import { TOPIC_ATOM_IDS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
+import {
+  BlockchainService,
+  cartService,
+  goldService,
+  questTrackingService,
+  txEventBus
+} from "~/lib/services"
+import { createHookLogger } from "~/lib/utils"
 import type { BatchTripleResult } from "~/types/blockchain"
+
+import { useCreateTripleOnChain } from "./useCreateTripleOnChain"
+import { useWalletFromStorage } from "./useWalletFromStorage"
+import { useWeightOnChain } from "./useWeightOnChain"
 
 const logger = createHookLogger("useCartSubmit")
 
 export const useCartSubmit = () => {
-  const { createTriplesBatch, createContextTriplesBatch } = useCreateTripleOnChain()
+  const { createTriplesBatch, createContextTriplesBatch } =
+    useCreateTripleOnChain()
   const { depositWithPool } = useWeightOnChain()
   const { walletAddress } = useWalletFromStorage()
   const [submitting, setSubmitting] = useState(false)
@@ -29,7 +38,7 @@ export const useCartSubmit = () => {
       // batch they never assembled.
       const submitter = walletAddress.toLowerCase()
       const orphan = items.find(
-        item => item.walletAddress.toLowerCase() !== submitter
+        (item) => item.walletAddress.toLowerCase() !== submitter
       )
       if (orphan) {
         const msg = "Cart wallet mismatch — refresh the cart"
@@ -48,7 +57,7 @@ export const useCartSubmit = () => {
       setVoteCount(0)
 
       try {
-        const certItems = items.filter(item => !item.voteAction)
+        const certItems = items.filter((item) => !item.voteAction)
         const voteItems = cartService.getVoteItems(items)
         let batchResult: BatchTripleResult | null = null
 
@@ -79,9 +88,10 @@ export const useCartSubmit = () => {
           // A poisoned indexer or stale cart entry could otherwise route TRUST
           // into an attacker-controlled vault. Single multicall3 roundtrip.
           const termIds = voteItems
-            .map(v => v.tripleTermId)
+            .map((v) => v.tripleTermId)
             .filter((id): id is string => !!id)
-          const existsMap = await BlockchainService.checkTriplesExistByTermIds(termIds)
+          const existsMap =
+            await BlockchainService.checkTriplesExistByTermIds(termIds)
 
           for (const vote of voteItems) {
             if (!vote.tripleTermId) continue
@@ -102,7 +112,8 @@ export const useCartSubmit = () => {
                 // Track vote for Gold
                 try {
                   await questTrackingService.recordVoteActivity()
-                  const dailyCount = await questTrackingService.getDailyVoteCount()
+                  const dailyCount =
+                    await questTrackingService.getDailyVoteCount()
                   await goldService.addVoteGold(walletAddress, dailyCount)
                 } catch {
                   // Non-critical
@@ -123,8 +134,8 @@ export const useCartSubmit = () => {
         // 3. Process interest context triples (TX2 — nested triples)
         if (batchResult?.success) {
           const contextItems = certItems
-            .filter(item => item.interestContext)
-            .map(item => {
+            .filter((item) => item.interestContext)
+            .map((item) => {
               // Look up the triple vault by stable input key. Indexing into
               // `batchResult.results` positionally is wrong: the service
               // reorders entries (created first, then deposits) after dedup.
@@ -141,16 +152,23 @@ export const useCartSubmit = () => {
                 ? { certTripleVaultId: tripleVaultId, topicTermId }
                 : null
             })
-            .filter(Boolean) as { certTripleVaultId: string; topicTermId: string }[]
+            .filter(Boolean) as {
+            certTripleVaultId: string
+            topicTermId: string
+          }[]
 
           if (contextItems.length > 0) {
             try {
-              logger.info("Submitting context triples", { count: contextItems.length })
+              logger.info("Submitting context triples", {
+                count: contextItems.length
+              })
               await createContextTriplesBatch(contextItems)
               logger.info("Context triples submitted successfully")
             } catch (ctxError) {
               // Non-blocking: cert succeeded, context is bonus
-              logger.warn("Context triples failed (non-blocking)", { error: ctxError })
+              logger.warn("Context triples failed (non-blocking)", {
+                error: ctxError
+              })
             }
           }
         }
@@ -163,12 +181,19 @@ export const useCartSubmit = () => {
             for (let i = 0; i < certItems.length; i++) {
               questTrackingService.recordCertificationActivity()
             }
+            // URLs are now validated on-chain — empty the cart immediately
+            // (incl. items that were already in the cart before this run).
+            // The reward screen renders from its own snapshot, so this is safe.
+            await cartService.clearCart(walletAddress)
             logger.info("Cart batch submitted successfully", {
               created: batchResult.createdCount,
               deposited: batchResult.depositCount,
               votes: votesSucceeded
             })
-            txEventBus.emit("batch_certification", batchResult.results[0]?.txHash)
+            txEventBus.emit(
+              "batch_certification",
+              batchResult.results[0]?.txHash
+            )
           } else {
             setError("Some certifications failed. Check results.")
             logger.error("Cart batch partially failed", {
@@ -185,6 +210,7 @@ export const useCartSubmit = () => {
             depositCount: votesSucceeded
           })
           if (votesSucceeded > 0) {
+            await cartService.clearCart(walletAddress)
             logger.info("Vote-only cart submitted", { votes: votesSucceeded })
             txEventBus.emit("vote")
           }
@@ -212,5 +238,13 @@ export const useCartSubmit = () => {
     setError(null)
   }, [])
 
-  return { submitCart, submitting, result, error, reset, clearSubmittedItems, voteCount }
+  return {
+    submitCart,
+    submitting,
+    result,
+    error,
+    reset,
+    clearSubmittedItems,
+    voteCount
+  }
 }

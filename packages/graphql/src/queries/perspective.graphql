@@ -28,6 +28,7 @@ query GetPerspectiveCerts(
   ) {
     term_id
     counter_term_id
+    created_at
     predicate {
       term_id
       label

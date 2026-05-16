@@ -3,33 +3,40 @@
  * Displays intention groups as a bento grid with detail view
  */
 
-import { useState, useEffect, useRef } from 'react'
-import { useIntentionGroups, type SortOption } from '../../../hooks'
-import type { IntentionType } from '../../../types/intentionCategories'
-import { INTENTION_CONFIG } from '../../../types/intentionCategories'
-import { useRouter } from '../../layout/RouterProvider'
-import GroupBentoCard from '../../ui/GroupBentoCard'
-import GroupDetailView from '../../ui/GroupDetailView'
-import GroupManagerModal from '../../modals/GroupManagerModal'
-import SofiaLoader from '../../ui/SofiaLoader'
-import { getExplorerHomeUrl } from '../../../lib/utils'
-import { userSettingsService } from '~/lib/database'
-import '../../styles/CoreComponents.css'
-import '../../styles/CorePage.css'
-import '../../styles/CommonPage.css'
-import '../../styles/CategoryStyles.css'
-import '../../styles/CircleFeedTab.css'
+import { useEffect, useRef, useState } from "react"
+
+import { userSettingsService } from "~/lib/database"
+
+import { useIntentionGroups, type SortOption } from "../../../hooks"
+import { getProfileUrl } from "../../../lib/utils"
+import type { IntentionType } from "../../../types/intentionCategories"
+import { INTENTION_CONFIG } from "../../../types/intentionCategories"
+import { useRouter } from "../../layout/RouterProvider"
+import GroupManagerModal from "../../modals/GroupManagerModal"
+import GroupBentoCard from "../../ui/GroupBentoCard"
+import GroupDetailView from "../../ui/GroupDetailView"
+import SofiaLoader from "../../ui/SofiaLoader"
+
+import "../../styles/CoreComponents.css"
+import "../../styles/CorePage.css"
+import "../../styles/CommonPage.css"
+import "../../styles/CategoryStyles.css"
+import "../../styles/CircleFeedTab.css"
 
 const HIGHLIGHT_DURATION_MS = 3200
 
 const EchoesTab = () => {
-  const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [certFilter, setCertFilter] = useState<IntentionType | "all">("all")
+  const [searchQuery, setSearchQuery] = useState("")
   const [showManager, setShowManager] = useState(false)
-  const [managerInitialFilter, setManagerInitialFilter] = useState<'all' | 'inactive'>('all')
+  const [managerInitialFilter, setManagerInitialFilter] = useState<
+    "all" | "inactive"
+  >("all")
   const [cleanupBannerDismissed, setCleanupBannerDismissed] = useState(false)
   const [inactiveCount, setInactiveCount] = useState(0)
-  const [highlightDomains, setHighlightDomains] = useState<Set<string>>(new Set())
+  const [highlightDomains, setHighlightDomains] = useState<Set<string>>(
+    new Set()
+  )
   const { myProfileIntent, setMyProfileIntent } = useRouter()
   const {
     groups,
@@ -69,7 +76,10 @@ const EchoesTab = () => {
       return
     }
 
-    if (myProfileIntent.highlightDomains && myProfileIntent.highlightDomains.length > 0) {
+    if (
+      myProfileIntent.highlightDomains &&
+      myProfileIntent.highlightDomains.length > 0
+    ) {
       intentConsumedRef.current = true
       setHighlightDomains(new Set(myProfileIntent.highlightDomains))
       setMyProfileIntent(null)
@@ -79,14 +89,23 @@ const EchoesTab = () => {
   // Auto-clear the highlight set once the entrance animation has run its course.
   useEffect(() => {
     if (highlightDomains.size === 0) return
-    const t = setTimeout(() => setHighlightDomains(new Set()), HIGHLIGHT_DURATION_MS)
+    const t = setTimeout(
+      () => setHighlightDomains(new Set()),
+      HIGHLIGHT_DURATION_MS
+    )
     return () => clearTimeout(t)
   }, [highlightDomains])
 
   // Auto-delete groups with 0 active URLs (use ref to avoid infinite loop)
   const deletedGroupsRef = useRef(new Set<string>())
   useEffect(() => {
-    const emptyGroups = groups.filter(g => g.activeUrlCount === 0 && !g.isVirtualGroup && !g.urls.some(u => u.oauthPredicate) && !deletedGroupsRef.current.has(g.id))
+    const emptyGroups = groups.filter(
+      (g) =>
+        g.activeUrlCount === 0 &&
+        !g.isVirtualGroup &&
+        !g.urls.some((u) => u.oauthPredicate) &&
+        !deletedGroupsRef.current.has(g.id)
+    )
     if (emptyGroups.length === 0) return
     for (const group of emptyGroups) {
       deletedGroupsRef.current.add(group.id)
@@ -97,55 +116,64 @@ const EchoesTab = () => {
   // Auto-cleanup: detect inactive groups and show banner
   useEffect(() => {
     let cancelled = false
-    userSettingsService.getSettings().then(settings => {
+    userSettingsService.getSettings().then((settings) => {
       if (cancelled || !settings.autoCleanup) return
-      const cutoff = Date.now() - settings.autoCleanupInactiveDays * 24 * 60 * 60 * 1000
-      const inactive = groups.filter(g =>
-        !g.isVirtualGroup &&
-        g.level <= settings.autoCleanupMinLevel &&
-        g.certifiedCount === 0 &&
-        g.updatedAt < cutoff
+      const cutoff =
+        Date.now() - settings.autoCleanupInactiveDays * 24 * 60 * 60 * 1000
+      const inactive = groups.filter(
+        (g) =>
+          !g.isVirtualGroup &&
+          g.level <= settings.autoCleanupMinLevel &&
+          g.certifiedCount === 0 &&
+          g.updatedAt < cutoff
       )
       setInactiveCount(inactive.length)
     })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [groups])
 
-  const handleOpenManager = (filter: 'all' | 'inactive' = 'all') => {
+  const handleOpenManager = (filter: "all" | "inactive" = "all") => {
     setManagerInitialFilter(filter)
     setShowManager(true)
   }
 
   const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'level', label: 'Level' },
-    { value: 'urls', label: 'URLs' },
-    { value: 'alphabetic', label: 'A-Z' },
-    { value: 'recent', label: 'Recent' }
+    { value: "level", label: "Level" },
+    { value: "urls", label: "URLs" },
+    { value: "alphabetic", label: "A-Z" },
+    { value: "recent", label: "Recent" }
   ]
 
   // Filter out ENS names (.eth) and wallet addresses (0x)
-  const baseGroups = groups.filter(g =>
-    !g.domain.endsWith('.eth') && !g.domain.startsWith('0x')
+  const baseGroups = groups.filter(
+    (g) => !g.domain.endsWith(".eth") && !g.domain.startsWith("0x")
   )
 
   // Filter by certification type
-  const certFilteredGroups = certFilter === 'all'
-    ? baseGroups
-    : baseGroups.filter(g => (g.certificationBreakdown[certFilter] || 0) > 0)
+  const certFilteredGroups =
+    certFilter === "all"
+      ? baseGroups
+      : baseGroups.filter(
+          (g) => (g.certificationBreakdown[certFilter] || 0) > 0
+        )
 
   // Filter by search query
   const filteredGroups = searchQuery.trim()
-    ? certFilteredGroups.filter(g => g.domain.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? certFilteredGroups.filter((g) =>
+        g.domain.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : certFilteredGroups
 
   const handleDeleteGroup = async (groupId: string) => {
-    const group = groups.find(g => g.id === groupId)
+    const group = groups.find((g) => g.id === groupId)
     if (!group) return
 
     const confirmed = window.confirm(
       `Delete "${group.domain}"?\n\n` +
-      `⚠️ This will only remove the group from your local view.\n` +
-      `Your on-chain Marks will remain on the blockchain and won't be affected.`
+        `⚠️ This will only remove the group from your local view.\n` +
+        `Your on-chain Marks will remain on the blockchain and won't be affected.`
     )
 
     if (confirmed) {
@@ -223,8 +251,7 @@ const EchoesTab = () => {
             {searchQuery && (
               <button
                 className="category-search-clear"
-                onClick={() => setSearchQuery('')}
-              >
+                onClick={() => setSearchQuery("")}>
                 x
               </button>
             )}
@@ -234,43 +261,44 @@ const EchoesTab = () => {
         {/* Filter chips — All + intention filters */}
         <div className="echoes-filter-row">
           <button
-            className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setCertFilter('all')}
-          >
+            className={`circle-chip ${certFilter === "all" ? "active" : ""}`}
+            onClick={() => setCertFilter("all")}>
             All
           </button>
-          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-            ([type, config]) => (
-              <button
-                key={type}
-                className={`circle-chip ${certFilter === type ? 'active' : ''}`}
-                onClick={() => setCertFilter(type)}
-              >
-                <span
-                  className="circle-chip-dot"
-                  aria-hidden="true"
-                  style={{ background: config.color }}
-                />
-                {config.label}
-              </button>
-            )
-          )}
+          {(
+            Object.entries(INTENTION_CONFIG) as [
+              IntentionType,
+              { label: string; color: string }
+            ][]
+          ).map(([type, config]) => (
+            <button
+              key={type}
+              className={`circle-chip ${certFilter === type ? "active" : ""}`}
+              onClick={() => setCertFilter(type)}>
+              <span
+                className="circle-chip-dot"
+                aria-hidden="true"
+                style={{ background: config.color }}
+              />
+              {config.label}
+            </button>
+          ))}
         </div>
 
         {/* Inactive groups cleanup banner */}
         {inactiveCount > 0 && !cleanupBannerDismissed && (
           <div className="gm-cleanup-banner">
-            <span>{inactiveCount} inactive group{inactiveCount > 1 ? 's' : ''} found</span>
+            <span>
+              {inactiveCount} inactive group{inactiveCount > 1 ? "s" : ""} found
+            </span>
             <button
               className="gm-cleanup-review"
-              onClick={() => handleOpenManager('inactive')}
-            >
+              onClick={() => handleOpenManager("inactive")}>
               Review
             </button>
             <button
               className="gm-cleanup-dismiss"
-              onClick={() => setCleanupBannerDismissed(true)}
-            >
+              onClick={() => setCleanupBannerDismissed(true)}>
               &times;
             </button>
           </div>
@@ -279,32 +307,35 @@ const EchoesTab = () => {
         {/* Sort toggle + Manage — same row right above the bento grid;
             toggle on the left, Manage button pinned to the far right. */}
         <div className="echoes-sort-row">
-          <div className="scope-toggle echoes-sort-toggle" role="group" aria-label="Sort groups by">
-            {sortOptions.map(option => (
+          <div
+            className="scope-toggle echoes-sort-toggle"
+            role="group"
+            aria-label="Sort groups by">
+            {sortOptions.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
+                className={`scope-btn ${sortBy === option.value ? "active" : ""}`}
                 aria-pressed={sortBy === option.value}
-                onClick={() => setSortBy(option.value)}
-              >
+                onClick={() => setSortBy(option.value)}>
                 {option.label}
               </button>
             ))}
           </div>
           <button
             className="sort-btn gm-manage-btn"
-            onClick={() => handleOpenManager('all')}
-            title="Manage groups"
-          >
+            style={{ marginLeft: "auto" }}
+            onClick={() => handleOpenManager("all")}
+            title="Manage groups">
             Manage
           </button>
           <button
             className="sort-btn gm-manage-btn echoes-open-sofia-btn"
-            onClick={() => chrome.tabs.create({ url: getExplorerHomeUrl(), active: true })}
-            title="Open my profile on Sofia"
-          >
-            Open on Sofia ↗
+            onClick={() =>
+              chrome.tabs.create({ url: getProfileUrl(), active: true })
+            }
+            title="Open my profile on Explorer">
+            Open on Explorer ↗
           </button>
         </div>
 

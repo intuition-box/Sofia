@@ -5,19 +5,23 @@
  * Used by the UI to display and interact with domain-based groups
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
-import type { IntentionGroupWithStats, SortOption } from '~types/groups'
-import type { CertificationType } from '~lib/services'
-import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
-import { messageBus } from '~/lib/services'
-import { createHookLogger } from '../lib/utils/logger'
-import { normalizeDomain, shouldExcludeDomain } from '../lib/utils/domainUtils'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
+import { messageBus } from "~/lib/services"
+import type { CertificationType } from "~lib/services"
+import type { GroupUrlRecord, IntentionGroupRecord } from "~types/database"
+import type { IntentionGroupWithStats, SortOption } from "~types/groups"
+
+import { normalizeDomain, shouldExcludeDomain } from "../lib/utils/domainUtils"
+import { createHookLogger } from "../lib/utils/logger"
+import {
+  useOnChainIntentionGroups,
+  type OnChainUrl
+} from "./useOnChainIntentionGroups"
 
 export type { IntentionGroupWithStats, SortOption }
 
-const logger = createHookLogger('useIntentionGroups')
-
+const logger = createHookLogger("useIntentionGroups")
 
 interface UseIntentionGroupsResult {
   groups: IntentionGroupWithStats[]
@@ -28,7 +32,11 @@ interface UseIntentionGroupsResult {
   setSortBy: (sort: SortOption) => void
   loadGroups: () => Promise<void>
   selectGroup: (groupId: string | null) => void
-  certifyUrl: (groupId: string, url: string, certification: CertificationType) => Promise<boolean>
+  certifyUrl: (
+    groupId: string,
+    url: string,
+    certification: CertificationType
+  ) => Promise<boolean>
   removeUrl: (groupId: string, url: string) => Promise<boolean>
   refreshGroup: (groupId: string) => Promise<void>
   deleteGroup: (groupId: string) => Promise<boolean>
@@ -37,22 +45,46 @@ interface UseIntentionGroupsResult {
 /**
  * Sort groups based on selected option
  */
-function sortGroups(groups: IntentionGroupWithStats[], sortBy: SortOption): IntentionGroupWithStats[] {
+/**
+ * Real recency signal for a group.
+ *
+ * `updatedAt` is unreliable for sorting: virtual (on-chain-only) groups are
+ * rebuilt with `updatedAt = Date.now()` on every load, so every virtual group
+ * shares ~the same timestamp and always floats above local groups regardless
+ * of actual activity — which is why the "Recent" filter looked broken.
+ *
+ * Instead we use the most recent URL activity in the group (`addedAt`, which
+ * is the on-chain `certifiedAt` for on-chain URLs and the real local add time
+ * otherwise). This is stable across reloads and meaningful across both group
+ * kinds. Falls back to updatedAt/createdAt when a group has no URLs.
+ */
+function latestActivity(g: IntentionGroupWithStats): number {
+  let latest = 0
+  for (const u of g.urls || []) {
+    if (typeof u.addedAt === "number" && u.addedAt > latest) latest = u.addedAt
+  }
+  return latest || g.updatedAt || g.createdAt || 0
+}
+
+function sortGroups(
+  groups: IntentionGroupWithStats[],
+  sortBy: SortOption
+): IntentionGroupWithStats[] {
   return [...groups].sort((a, b) => {
     switch (sortBy) {
-      case 'level':
+      case "level":
         // Higher level first, then by URL count
         if (b.level !== a.level) return b.level - a.level
         return b.activeUrlCount - a.activeUrlCount
-      case 'urls':
+      case "urls":
         // More URLs first
         return b.activeUrlCount - a.activeUrlCount
-      case 'alphabetic':
+      case "alphabetic":
         // A-Z by domain
         return a.domain.localeCompare(b.domain)
-      case 'recent':
-        // Most recently updated first
-        return b.updatedAt - a.updatedAt
+      case "recent":
+        // Most recent on-chain / local URL activity first
+        return latestActivity(b) - latestActivity(a)
       default:
         return 0
     }
@@ -62,9 +94,11 @@ function sortGroups(groups: IntentionGroupWithStats[], sortBy: SortOption): Inte
 /**
  * Calculate stats for a group
  */
-function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithStats {
-  const activeUrls = group.urls.filter(u => !u.removed && !u.oauthPredicate)
-  const certifiedUrls = activeUrls.filter(u => u.certification)
+function calculateGroupStats(
+  group: IntentionGroupRecord
+): IntentionGroupWithStats {
+  const activeUrls = group.urls.filter((u) => !u.removed && !u.oauthPredicate)
+  const certifiedUrls = activeUrls.filter((u) => u.certification)
 
   const breakdown: Record<CertificationType, number> = {
     work: 0,
@@ -97,16 +131,28 @@ function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithSta
  */
 export const useIntentionGroups = (): UseIntentionGroupsResult => {
   const [localGroups, setLocalGroups] = useState<IntentionGroupWithStats[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<IntentionGroupWithStats | null>(null)
+  const [selectedGroup, setSelectedGroup] =
+    useState<IntentionGroupWithStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<SortOption>('level') // Default: sort by level
+  const [sortBy, setSortBy] = useState<SortOption>("level") // Default: sort by level
 
   // Fetch on-chain intention groups
-  const { groups: onChainGroups, loading: onChainLoading, refetch: refetchOnChain } = useOnChainIntentionGroups()
+  const {
+    groups: onChainGroups,
+    loading: onChainLoading,
+    refetch: refetchOnChain
+  } = useOnChainIntentionGroups()
 
   // Track groups that need level persistence (to avoid side effects in useMemo)
-  const pendingLevelUpdatesRef = useRef<Array<{ groupId: string; domain: string; level: number; certifiedCount: number }>>([])
+  const pendingLevelUpdatesRef = useRef<
+    Array<{
+      groupId: string
+      domain: string
+      level: number
+      certifiedCount: number
+    }>
+  >([])
 
   /**
    * Load all groups from background service (local IndexedDB)
@@ -120,22 +166,26 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       // shared MessageResponse contract (it's specific to this handler). Cast
       // through unknown to a narrower local shape.
       const response = (await messageBus.sendMessageWithRetry({
-        type: 'GET_INTENTION_GROUPS',
-      })) as unknown as { success: boolean; groups?: IntentionGroupRecord[]; error?: string }
+        type: "GET_INTENTION_GROUPS"
+      })) as unknown as {
+        success: boolean
+        groups?: IntentionGroupRecord[]
+        error?: string
+      }
 
       if (response.success && response.groups) {
         // Filter out excluded domains (auth pages, system pages, etc.)
         const filteredGroups = response.groups.filter(
-          (g: IntentionGroupRecord) => !shouldExcludeDomain(g.domain),
+          (g: IntentionGroupRecord) => !shouldExcludeDomain(g.domain)
         )
         const groupsWithStats = filteredGroups.map(calculateGroupStats)
         setLocalGroups(groupsWithStats)
       } else {
-        setError(response.error || 'Failed to load groups')
+        setError(response.error || "Failed to load groups")
       }
     } catch (err) {
-      logger.error('Error loading groups', err)
-      setError(err instanceof Error ? err.message : 'Failed to load groups')
+      logger.error("Error loading groups", err)
+      setError(err instanceof Error ? err.message : "Failed to load groups")
     } finally {
       setIsLoading(false)
     }
@@ -151,9 +201,21 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     const merged = new Map<string, IntentionGroupWithStats>()
 
     // DEBUG: Log inputs
-    logger.debug(`MERGE START - localGroups: ${localGroups.length}, onChainGroups: ${onChainGroups.length}`)
-    logger.debug('Local groups', localGroups.map(g => ({ domain: g.domain, level: g.level, id: g.id })))
-    logger.debug('On-chain groups', onChainGroups.map(g => ({ domain: g.domain, level: g.level, certifiedCount: g.certifiedCount })))
+    logger.debug(
+      `MERGE START - localGroups: ${localGroups.length}, onChainGroups: ${onChainGroups.length}`
+    )
+    logger.debug(
+      "Local groups",
+      localGroups.map((g) => ({ domain: g.domain, level: g.level, id: g.id }))
+    )
+    logger.debug(
+      "On-chain groups",
+      onChainGroups.map((g) => ({
+        domain: g.domain,
+        level: g.level,
+        certifiedCount: g.certifiedCount
+      }))
+    )
 
     // 1. Add all local groups first (using normalized domain as key)
     for (const local of localGroups) {
@@ -162,11 +224,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (existing) {
         // Merge URLs from duplicate domain (e.g., www.youtube.com into youtube.com)
         for (const url of local.urls) {
-          if (!existing.urls.find(u => u.url === url.url)) {
+          if (!existing.urls.find((u) => u.url === url.url)) {
             existing.urls.push(url)
           }
         }
-        existing.activeUrlCount = existing.urls.filter(u => !u.removed).length
+        existing.activeUrlCount = existing.urls.filter((u) => !u.removed).length
       } else {
         merged.set(normalizedDomain, {
           ...local,
@@ -182,15 +244,20 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (shouldExcludeDomain(onChain.domain)) continue
 
       const existing = merged.get(onChain.domain)
-      logger.debug(`Looking for ${onChain.domain} (level ${onChain.level}) -> found: ${existing ? `yes (local level ${existing.level})` : 'no'}`)
+      logger.debug(
+        `Looking for ${onChain.domain} (level ${onChain.level}) -> found: ${existing ? `yes (local level ${existing.level})` : "no"}`
+      )
 
       if (existing) {
         // CASE 1: Domain exists locally → enrich with on-chain URLs
         for (const onChainUrl of onChain.urls) {
           // Normalize URLs for comparison
-          const normalizedOnChainUrl = onChainUrl.url.replace(/\/$/, '').toLowerCase()
-          const localUrl = existing.urls.find(u =>
-            u.url.replace(/\/$/, '').toLowerCase() === normalizedOnChainUrl
+          const normalizedOnChainUrl = onChainUrl.url
+            .replace(/\/$/, "")
+            .toLowerCase()
+          const localUrl = existing.urls.find(
+            (u) =>
+              u.url.replace(/\/$/, "").toLowerCase() === normalizedOnChainUrl
           )
 
           if (localUrl) {
@@ -203,7 +270,9 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
               url: onChainUrl.url,
               title: onChainUrl.label,
               domain: onChain.domain,
-              addedAt: onChainUrl.certifiedAt ? Date.parse(onChainUrl.certifiedAt) : Date.now(),
+              addedAt: onChainUrl.certifiedAt
+                ? Date.parse(onChainUrl.certifiedAt)
+                : Date.now(),
               attentionTime: 0,
               certification: null,
               removed: false,
@@ -214,13 +283,20 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         }
 
         // Recalculate stats after enrichment
-        const activeUrls = existing.urls.filter(u => !u.removed)
+        const activeUrls = existing.urls.filter((u) => !u.removed)
         existing.activeUrlCount = activeUrls.length
-        existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
+        existing.certifiedCount = activeUrls.filter((u) => u.isOnChain).length
 
         // Recalculate certification breakdown from on-chain data
         const breakdown: Record<CertificationType, number> = {
-          work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, music: 0, trusted: 0, distrusted: 0
+          work: 0,
+          learning: 0,
+          fun: 0,
+          inspiration: 0,
+          buying: 0,
+          music: 0,
+          trusted: 0,
+          distrusted: 0
         }
         for (const url of activeUrls) {
           const cert = url.onChainCertification
@@ -233,7 +309,9 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         // predicateHistory only determines if level-up (predicate generation) is available
         const correctLevel = onChain.level
         if (existing.level !== correctLevel) {
-          logger.info(`Syncing group.level for ${existing.domain}: ${existing.level} -> ${correctLevel} (on-chain: ${onChain.level})`)
+          logger.info(
+            `Syncing group.level for ${existing.domain}: ${existing.level} -> ${correctLevel} (on-chain: ${onChain.level})`
+          )
           existing.level = correctLevel
           pendingLevelUpdatesRef.current.push({
             groupId: existing.id,
@@ -242,7 +320,6 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
             certifiedCount: onChain.certifiedCount
           })
         }
-
       } else {
         // CASE 2: Domain exists ONLY on-chain → create "virtual" group
         const virtualGroup: IntentionGroupWithStats = {
@@ -265,7 +342,16 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           level: onChain.level,
           activeUrlCount: onChain.urls.length,
           certifiedCount: onChain.certifiedCount,
-          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, music: 0, trusted: 0, distrusted: 0 },
+          certificationBreakdown: {
+            work: 0,
+            learning: 0,
+            fun: 0,
+            inspiration: 0,
+            buying: 0,
+            music: 0,
+            trusted: 0,
+            distrusted: 0
+          },
           isVirtualGroup: true,
           currentPredicate: null,
           predicateHistory: [],
@@ -304,164 +390,185 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
 
     // Persist each level update
     for (const update of updates) {
-      chrome.runtime.sendMessage({
-        type: 'UPDATE_GROUP_LEVEL',
-        groupId: update.groupId,
-        level: update.level,
-        certifiedCount: update.certifiedCount
-      }).then(response => {
-        if (response?.success) {
-          logger.info(`Persisted level ${update.level} for ${update.domain}`)
-        } else {
-          logger.warn(`Failed to persist level for ${update.domain}`, response?.error)
-        }
-      }).catch(err => {
-        logger.warn(`Error persisting level for ${update.domain}`, err)
-      })
+      chrome.runtime
+        .sendMessage({
+          type: "UPDATE_GROUP_LEVEL",
+          groupId: update.groupId,
+          level: update.level,
+          certifiedCount: update.certifiedCount
+        })
+        .then((response) => {
+          if (response?.success) {
+            logger.info(`Persisted level ${update.level} for ${update.domain}`)
+          } else {
+            logger.warn(
+              `Failed to persist level for ${update.domain}`,
+              response?.error
+            )
+          }
+        })
+        .catch((err) => {
+          logger.warn(`Error persisting level for ${update.domain}`, err)
+        })
     }
   }, [mergedGroups]) // Run when mergedGroups changes
 
   /**
    * Select a group to view details
    */
-  const selectGroup = useCallback((groupId: string | null) => {
-    if (groupId === null) {
-      setSelectedGroup(null)
-      return
-    }
+  const selectGroup = useCallback(
+    (groupId: string | null) => {
+      if (groupId === null) {
+        setSelectedGroup(null)
+        return
+      }
 
-    const group = mergedGroups.find(g => g.id === groupId)
-    setSelectedGroup(group || null)
-  }, [mergedGroups])
+      const group = mergedGroups.find((g) => g.id === groupId)
+      setSelectedGroup(group || null)
+    },
+    [mergedGroups]
+  )
 
   /**
    * Refresh a specific group's data
    */
-  const refreshGroup = useCallback(async (groupId: string) => {
-    try {
-      // For virtual (on-chain only) groups, just reload both sources
-      if (groupId.startsWith('onchain-')) {
-        await loadGroups()
-        await refetchOnChain()
-        return
-      }
-
-      // Fetch fresh local data FIRST (includes new predicate after level-up)
-      // This must happen before refetchOnChain() to avoid mergedGroups
-      // overwriting selectedGroup with stale local data
-      const response = await chrome.runtime.sendMessage({
-        type: 'GET_GROUP_DETAILS',
-        groupId
-      })
-
-      if (response.success && response.group) {
-        const groupWithStats = calculateGroupStats(response.group)
-
-        // Update local groups so mergedGroups uses fresh data
-        setLocalGroups(prev => prev.map(g =>
-          g.id === groupId ? groupWithStats : g
-        ))
-
-        // Update selected if this is the selected group
-        if (selectedGroup?.id === groupId) {
-          setSelectedGroup(groupWithStats)
+  const refreshGroup = useCallback(
+    async (groupId: string) => {
+      try {
+        // For virtual (on-chain only) groups, just reload both sources
+        if (groupId.startsWith("onchain-")) {
+          await loadGroups()
+          await refetchOnChain()
+          return
         }
-      }
 
-      // Refresh on-chain AFTER local state is updated
-      await refetchOnChain()
-    } catch (err) {
-      logger.error('Error refreshing group', err)
-    }
-  }, [selectedGroup?.id, loadGroups, refetchOnChain])
+        // Fetch fresh local data FIRST (includes new predicate after level-up)
+        // This must happen before refetchOnChain() to avoid mergedGroups
+        // overwriting selectedGroup with stale local data
+        const response = await chrome.runtime.sendMessage({
+          type: "GET_GROUP_DETAILS",
+          groupId
+        })
+
+        if (response.success && response.group) {
+          const groupWithStats = calculateGroupStats(response.group)
+
+          // Update local groups so mergedGroups uses fresh data
+          setLocalGroups((prev) =>
+            prev.map((g) => (g.id === groupId ? groupWithStats : g))
+          )
+
+          // Update selected if this is the selected group
+          if (selectedGroup?.id === groupId) {
+            setSelectedGroup(groupWithStats)
+          }
+        }
+
+        // Refresh on-chain AFTER local state is updated
+        await refetchOnChain()
+      } catch (err) {
+        logger.error("Error refreshing group", err)
+      }
+    },
+    [selectedGroup?.id, loadGroups, refetchOnChain]
+  )
 
   /**
    * Certify a URL in a group
    */
-  const certifyUrl = useCallback(async (
-    groupId: string,
-    url: string,
-    certification: CertificationType
-  ): Promise<boolean> => {
-    try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'CERTIFY_URL',
-        groupId,
-        url,
-        certification
-      })
+  const certifyUrl = useCallback(
+    async (
+      groupId: string,
+      url: string,
+      certification: CertificationType
+    ): Promise<boolean> => {
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: "CERTIFY_URL",
+          groupId,
+          url,
+          certification
+        })
 
-      if (response.success) {
-        // Refresh the group to get updated stats
-        await refreshGroup(groupId)
-        return true
-      } else {
-        logger.error('Certification failed', response.error)
+        if (response.success) {
+          // Refresh the group to get updated stats
+          await refreshGroup(groupId)
+          return true
+        } else {
+          logger.error("Certification failed", response.error)
+          return false
+        }
+      } catch (err) {
+        logger.error("Error certifying URL", err)
         return false
       }
-    } catch (err) {
-      logger.error('Error certifying URL', err)
-      return false
-    }
-  }, [refreshGroup])
+    },
+    [refreshGroup]
+  )
 
   /**
    * Remove a URL from a group
    */
-  const removeUrl = useCallback(async (groupId: string, url: string): Promise<boolean> => {
-    try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'REMOVE_URL_FROM_GROUP',
-        groupId,
-        url
-      })
+  const removeUrl = useCallback(
+    async (groupId: string, url: string): Promise<boolean> => {
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: "REMOVE_URL_FROM_GROUP",
+          groupId,
+          url
+        })
 
-      if (response.success) {
-        await refreshGroup(groupId)
-        return true
-      } else {
-        logger.error('Remove URL failed', response.error)
+        if (response.success) {
+          await refreshGroup(groupId)
+          return true
+        } else {
+          logger.error("Remove URL failed", response.error)
+          return false
+        }
+      } catch (err) {
+        logger.error("Error removing URL", err)
         return false
       }
-    } catch (err) {
-      logger.error('Error removing URL', err)
-      return false
-    }
-  }, [refreshGroup])
+    },
+    [refreshGroup]
+  )
 
   /**
    * Delete a group entirely
    */
-  const deleteGroup = useCallback(async (groupId: string): Promise<boolean> => {
-    try {
-      // Virtual groups (on-chain only) cannot be deleted locally
-      if (groupId.startsWith('onchain-')) {
-        logger.warn('Cannot delete on-chain only groups')
-        return false
-      }
-
-      const response = await chrome.runtime.sendMessage({
-        type: 'DELETE_GROUP',
-        groupId
-      })
-
-      if (response.success) {
-        // Remove from local state
-        setLocalGroups(prev => prev.filter(g => g.id !== groupId))
-        // Clear selection if this was the selected group
-        if (selectedGroup?.id === groupId) {
-          setSelectedGroup(null)
+  const deleteGroup = useCallback(
+    async (groupId: string): Promise<boolean> => {
+      try {
+        // Virtual groups (on-chain only) cannot be deleted locally
+        if (groupId.startsWith("onchain-")) {
+          logger.warn("Cannot delete on-chain only groups")
+          return false
         }
-        return true
-      } else {
-        logger.error('Delete group failed', response.error)
+
+        const response = await chrome.runtime.sendMessage({
+          type: "DELETE_GROUP",
+          groupId
+        })
+
+        if (response.success) {
+          // Remove from local state
+          setLocalGroups((prev) => prev.filter((g) => g.id !== groupId))
+          // Clear selection if this was the selected group
+          if (selectedGroup?.id === groupId) {
+            setSelectedGroup(null)
+          }
+          return true
+        } else {
+          logger.error("Delete group failed", response.error)
+          return false
+        }
+      } catch (err) {
+        logger.error("Error deleting group", err)
         return false
       }
-    } catch (err) {
-      logger.error('Error deleting group', err)
-      return false
-    }
-  }, [selectedGroup?.id])
+    },
+    [selectedGroup?.id]
+  )
 
   /**
    * Load groups on mount
@@ -475,8 +582,8 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
    */
   useEffect(() => {
     const handleMessage = (message: any) => {
-      if (message.type === 'GROUPS_UPDATED') {
-        logger.info('Received GROUPS_UPDATED, refreshing...')
+      if (message.type === "GROUPS_UPDATED") {
+        logger.info("Received GROUPS_UPDATED, refreshing...")
         loadGroups()
       }
     }
@@ -490,8 +597,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   // Update selected group when merged groups change
   useEffect(() => {
     if (selectedGroup) {
-      const updated = mergedGroups.find(g => g.id === selectedGroup.id)
-      if (updated && JSON.stringify(updated) !== JSON.stringify(selectedGroup)) {
+      const updated = mergedGroups.find((g) => g.id === selectedGroup.id)
+      if (
+        updated &&
+        JSON.stringify(updated) !== JSON.stringify(selectedGroup)
+      ) {
         setSelectedGroup(updated)
       }
     }
