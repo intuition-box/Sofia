@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useWalletConnection } from '../../lib/web3/PrivyContext'
+import { useWalletConnection } from '../lib/services/WalletProvider'
 import { sendToExtension, DEFAULT_EXTENSION_ID } from './oauthConfig'
 import styles from './auth.module.css'
 

@@ -11,9 +11,9 @@ import {
 } from 'react'
 import { ScrollTrigger } from '../lib/animation/gsap'
 import type { SlideBg } from './types'
-import styles from './Deck.module.css'
+import styles from './SceneStack.module.css'
 
-interface DeckProps {
+interface SceneStackProps {
   children: ReactNode
   /** Background variant per slide, in source order. */
   bgs?: SlideBg[]
@@ -28,7 +28,7 @@ interface DeckProps {
   step2Ms?: number
   /** Per-slide sub-state count. `subStates[i] = n` means slide `i`
    *  has `n` reveal stages on top of its base layout. Children read
-   *  their current sub-state via `useDeckSubState()`. */
+   *  their current sub-state via `useSceneSubState()`. */
   subStates?: number[]
   /** Per-slide string code used to build deep-link anchor IDs. With
    *  `slideCodes[i] = "S.01"` and a sub-state count of 1, two anchors
@@ -38,16 +38,16 @@ interface DeckProps {
 
 /** Context exposing the active slide index and sub-state to children
  *  so a slide can render progressively as the user sub-scrolls. */
-const DeckCtx = createContext({ slideIdx: 0, subState: 0, isActive: false })
+const SceneStackCtx = createContext({ slideIdx: 0, subState: 0, isActive: false })
 
-export function useDeckSubState() {
-  return useContext(DeckCtx)
+export function useSceneSubState() {
+  return useContext(SceneStackCtx)
 }
 
 const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
 
 /**
- * Deck — scroll-trigger slide deck with two-step transition.
+ * SceneStack — scroll-trigger slide stack with two-step transition.
  *
  * The deck reserves N × 100vh of vertical space, where N is the total
  * number of stages (sum of slides + sub-states). Each stage gets an
@@ -65,7 +65,7 @@ const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
  * ScrollTrigger consumes its scroll events via the wiring in
  * `SmoothScroll.tsx`.
  */
-export function Deck({
+export function SceneStack({
   children,
   bgs,
   revealBgs,
@@ -73,7 +73,7 @@ export function Deck({
   step2Ms = 220,
   subStates = [],
   slideCodes = [],
-}: DeckProps) {
+}: SceneStackProps) {
   const slides = Children.toArray(children)
   const N = slides.length
 
@@ -223,14 +223,14 @@ export function Deck({
               transform: `translate3d(0, ${(i - slideIdx) * 100}%, 0)`,
               transition: `transform ${step2Ms}ms ${EASE} ${step1Ms}ms`,
             }}>
-            <DeckCtx.Provider
+            <SceneStackCtx.Provider
               value={{
                 slideIdx: i,
                 subState: slideSubStates[i] ?? 0,
                 isActive: i === slideIdx,
               }}>
               {child}
-            </DeckCtx.Provider>
+            </SceneStackCtx.Provider>
           </div>
         ))}
       </div>

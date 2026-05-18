@@ -1,14 +1,11 @@
 import { useEffect, useRef } from 'react'
 
-/* Plate A — Radar / polar field.
- * Port of the V2 micrographics study "Sofia Slide Plate A.html".
- * 11 axes (3 topics + 8 intentions). Three concentric polygons breathe
- * along each axis via requestAnimationFrame; one set of 11 dots tracks
- * the outermost polygon.
- *
- * The component is self-contained: it owns the SVG and the rAF loop,
- * tears down the loop on unmount, and inherits ink colour from the
- * parent (so it reads correctly on both peach and dark slabs). */
+/* TopicsRadar — animated polar/radar field. 11 axes (3 topics + 8
+ * intentions). Concentric polygons breathe along each axis via
+ * requestAnimationFrame; one set of 11 dots tracks the outermost
+ * polygon. Self-contained: owns the SVG + rAF loop, tears down on
+ * unmount, inherits ink colour from the parent so it reads correctly
+ * on both peach and dark slabs. */
 
 const ANGLES = [
   90, 150, 191.25, 213.75, 236.25, 258.75, 281.25, 303.75, 326.25, 348.75, 30,
@@ -23,13 +20,13 @@ const POLYS = [
   },
 ] as const
 
-interface PlateAProps {
+interface TopicsRadarProps {
   /** Ink palette — defaults to deep-ink for peach slabs. Pass `light`
    *  when rendering on a dark slab so the strokes/labels stay readable. */
   ink?: 'dark' | 'light'
 }
 
-export function PlateA({ ink = 'dark' }: PlateAProps) {
+export function TopicsRadar({ ink = 'dark' }: TopicsRadarProps) {
   const polyRefs = useRef<(SVGPolygonElement | null)[]>([])
   const dotRefs = useRef<(SVGCircleElement | null)[]>([])
 

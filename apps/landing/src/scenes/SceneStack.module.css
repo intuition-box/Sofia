@@ -1,5 +1,5 @@
 /**
- * Deck — N-stage scroll-trigger pin + two-step trigger choreography.
+ * SceneStack — N-stage scroll-trigger pin + two-step trigger choreography.
  *
  * Layout:
  *   .region       Block in document flow, reserves `var(--stages)`×
@@ -26,7 +26,7 @@
 .region {
   position: relative;
   width: 100%;
-  /* --stages + --stage-gap are injected inline by Deck.tsx.
+  /* --stages + --stage-gap are injected inline by SceneStack.tsx.
      Total scroll = (N - 1) gaps + one stage worth of sticky time at
      the end so the last stage stays pinned for a beat before it lets
      the page release into the footer. */

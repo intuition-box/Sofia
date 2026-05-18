@@ -1,91 +1,16 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type CSSProperties,
-} from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Navbar } from './components/Navbar'
 import { Footer } from './components/Footer'
 import { Arrow } from './components/Arrow'
 import { CirclesSequence } from './components/CirclesSequence'
-import { IsoStack } from './components/Instruments'
-import { PlateA } from './components/PlateA'
-import hexStyles from './components/HexSplit.module.css'
+import { HexSplit } from './components/HexSplit'
+import { IsoStack } from './components/IsoStack'
+import { TopicsRadar } from './components/TopicsRadar'
 import { URLS } from './lib/config/urls'
 import { useVoteStats } from './hooks/useVoteStats'
 import { useVoting } from './hooks/useVoting'
-import { Deck, useDeckSubState } from './proto/Deck'
+import { SceneStack, useSceneSubState } from './scenes/SceneStack'
 import styles from './App.module.css'
-
-/* AnimatedHexSplit — variant of `components/HexSplit.tsx` that drives
- * the spread / rotation locally instead of from page scroll. It watches
- * the closest `[data-deck-slide]` ancestor's `data-active` attribute:
- * when the slide becomes active, it waits the wipe duration (~700ms),
- * then animates --hex-spread from 0 → max and --hex-rot from 0 → 60deg
- * over ~1.4s with an ease-out curve. Resets when the slide leaves. */
-function AnimatedHexSplit({ size, color }: { size?: string; color?: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const host = ref.current
-    const slide = host?.closest('[data-deck-slide]') as HTMLElement | null
-    if (!host || !slide) return
-    const DELAY = 700 /* wait for the diagonal wipe to clear */
-    const DURATION = 1400
-    let raf = 0
-    let timer: ReturnType<typeof setTimeout> | null = null
-    const max = Math.max(window.innerWidth * 0.4, 480)
-    const setVars = (p: number) => {
-      host.style.setProperty('--hex-spread', `${p * max}px`)
-      host.style.setProperty('--hex-rot', `${p * 60}deg`)
-    }
-    const animate = () => {
-      const start = performance.now()
-      const tick = () => {
-        const elapsed = performance.now() - start
-        const t = Math.min(1, elapsed / DURATION)
-        /* easeOutCubic */
-        const p = 1 - Math.pow(1 - t, 3)
-        setVars(p)
-        if (t < 1) raf = requestAnimationFrame(tick)
-      }
-      raf = requestAnimationFrame(tick)
-    }
-    const begin = () => {
-      setVars(0)
-      timer = setTimeout(animate, DELAY)
-    }
-    const reset = () => {
-      cancelAnimationFrame(raf)
-      if (timer) clearTimeout(timer)
-      setVars(0)
-    }
-    let active = slide.dataset.active === 'true'
-    if (active) begin()
-    const mo = new MutationObserver(() => {
-      const next = slide.dataset.active === 'true'
-      if (next && !active) begin()
-      if (!next && active) reset()
-      active = next
-    })
-    mo.observe(slide, { attributes: true, attributeFilter: ['data-active'] })
-    return () => {
-      cancelAnimationFrame(raf)
-      if (timer) clearTimeout(timer)
-      mo.disconnect()
-    }
-  }, [])
-  const style: CSSProperties = {
-    ...(size ? ({ ['--hex-size' as never]: size } as CSSProperties) : {}),
-    ...(color ? ({ ['--hex-color' as never]: color } as CSSProperties) : {}),
-  }
-  return (
-    <div ref={ref} className={hexStyles.host} style={style} aria-hidden="true">
-      <div className={`${hexStyles.hex} ${hexStyles.l}`} />
-      <div className={`${hexStyles.hex} ${hexStyles.r}`} />
-    </div>
-  )
-}
 
 /* Deck button — drop-in replacement for the global `.btn.btn-secondary`
  * anchors. The deck needs a variant-aware hover (black on dark slabs,
@@ -442,7 +367,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         justifyContent: 'flex-start',
       }}
     >
-      <PlateA ink={variant === 'dark' ? 'light' : 'dark'} />
+      <TopicsRadar ink={variant === 'dark' ? 'light' : 'dark'} />
     </div>
   ),
   /* Zone 12 — S.04 PRODUCT preview banner. Picks up the storyboard
@@ -1332,7 +1257,7 @@ const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
         textAlign: 'center',
       }}
     >
-      <AnimatedHexSplit size="520px" color="rgba(0,0,0,0.05)" />
+      <HexSplit size="520px" color="rgba(0,0,0,0.05)" />
       <div
         style={{
           position: 'relative',
@@ -1901,7 +1826,7 @@ function PlaceholderSlide({
 }: PlaceholderSlideProps) {
   const baseAreas = LAYOUT_AREAS[layout]
   const revealAreas = revealLayout ? LAYOUT_AREAS[revealLayout] : []
-  const { subState, isActive } = useDeckSubState()
+  const { subState, isActive } = useSceneSubState()
   const revealed = subState >= 1
   const activeLabel = revealed && revealLabel ? revealLabel : label
   /* Applied to the placeholder (frame strips) so the meta/bottom
@@ -2270,11 +2195,11 @@ export default function App() {
   return (
     <>
       <Navbar />
-      {/* Deck reserves N × 100vh of scroll space (one stage per slide
-          + one extra per sub-state). ScrollTrigger snaps the active
-          stage; the sticky stage layer paints the layout. Footer
-          follows in normal flow after the last snap stage. */}
-      <Deck
+      {/* SceneStack reserves N × 100vh of scroll space (one stage per
+          scene + one extra per sub-state). ScrollTrigger snaps the
+          active stage; the sticky stage layer paints the layout.
+          Footer follows in normal flow after the last snap stage. */}
+      <SceneStack
         bgs={[...VARIANTS]}
         revealBgs={REVEAL_BGS}
         subStates={SUB_STATES}
@@ -2293,7 +2218,7 @@ export default function App() {
             />
           )
         })}
-      </Deck>
+      </SceneStack>
       <Footer />
     </>
   )

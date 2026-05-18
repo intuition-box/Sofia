@@ -1,9 +1,12 @@
-export type OAuthPlatform =
-  | 'discord'
-  | 'spotify'
-  | 'twitch'
-  | 'twitter'
-  | 'youtube'
+export const OAUTH_PLATFORMS = [
+  'discord',
+  'spotify',
+  'twitch',
+  'twitter',
+  'youtube',
+] as const
+
+export type OAuthPlatform = (typeof OAUTH_PLATFORMS)[number]
 
 const BASE_URL = 'https://sofia.intuition.box'
 const SOFIA_API_URL = 'https://sofia-api.maxime-moodz.workers.dev'
