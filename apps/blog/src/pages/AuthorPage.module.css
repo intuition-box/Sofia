@@ -1,0 +1,131 @@
+/**
+ * AuthorPage / TagPage — shared layout. Hero header showing the
+ * filter target (author or tag) + the matching post list using the
+ * shared PostCard. Visually mirrors BlogIndex with a tighter hero.
+ */
+
+.hero {
+  padding: 72px 0 40px;
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 28px;
+}
+
+.heroInner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.heroEyebrow {
+  margin-bottom: 16px;
+}
+
+.authorRow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0 0 16px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.authorIdent {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2rem, 1.4rem + 2vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  color: var(--color-text);
+}
+
+.role {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+}
+
+.socials {
+  margin-top: 18px;
+  display: flex;
+  gap: 14px;
+}
+
+.socials a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  color: var(--color-text-muted);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.socials a:hover {
+  color: var(--color-text);
+  border-color: var(--color-text);
+}
+
+.tagDesc {
+  margin: 0 0 12px;
+  max-width: 60ch;
+}
+
+.list {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 80px;
+}
+
+.empty {
+  padding: 80px var(--gutter);
+  text-align: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.backLink:hover {
+  color: var(--color-accent);
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 48px 0 28px;
+  }
+  .avatar {
+    width: 56px;
+    height: 56px;
+  }
+}

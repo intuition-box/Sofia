@@ -1,0 +1,259 @@
+/**
+ * .prose — typography rules for rendered MDX article bodies.
+ *
+ * Scoped to a single `.prose` wrapper so MDX content gets sensible
+ * defaults (heading sizes, paragraph spacing, list indentation, code
+ * blocks) without leaking into navbar / footer / index card text.
+ *
+ * Mirrors the landing's Fraunces + Geist + JetBrains Mono trio so the
+ * blog feels like an extension of the landing, not a separate brand.
+ */
+
+.prose {
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px — comfortable reading */
+  line-height: 1.75;
+  color: var(--color-text);
+  max-width: 68ch;
+  margin: 0 auto;
+}
+
+/* ── Headings — Fraunces display family, italic accents via em. ─── */
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  line-height: 1.15;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+}
+
+.prose h1 em,
+.prose h2 em,
+.prose h3 em {
+  font-style: italic;
+  color: var(--color-accent-ink);
+}
+
+.prose h1 {
+  font-size: clamp(2rem, 1.5rem + 1.6vw, 2.6rem);
+  margin: 2.4em 0 0.6em;
+}
+.prose h2 {
+  font-size: clamp(1.55rem, 1.2rem + 1.2vw, 2.05rem);
+  margin: 2em 0 0.5em;
+}
+.prose h3 {
+  font-size: clamp(1.25rem, 1.05rem + 0.6vw, 1.5rem);
+  margin: 1.6em 0 0.45em;
+}
+.prose h4 {
+  font-size: 1.1rem;
+  margin: 1.4em 0 0.35em;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* First heading in the body gets no top margin — the article header
+   already provides the spacing. */
+.prose > h1:first-child,
+.prose > h2:first-child,
+.prose > h3:first-child {
+  margin-top: 0;
+}
+
+/* ── Heading anchors — rehype-autolink-headings wraps each heading
+   in an `<a class="heading-anchor">`. Reset the anchor styling and
+   reveal a soft `#` glyph on hover. */
+
+.prose .heading-anchor {
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+}
+
+.prose .heading-anchor:hover::before {
+  content: '#';
+  position: absolute;
+  left: -1.2em;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.85em;
+  top: 0.2em;
+}
+
+/* ── Paragraphs + body text. ────────────────────────────────────── */
+
+.prose p {
+  margin: 0 0 1.2em;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+/* Inline links — peach accent, underline on hover so the affordance
+   stays subtle without colour noise. */
+
+.prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 198, 176, 0.35);
+  text-underline-offset: 3px;
+  transition:
+    text-decoration-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+/* ── Lists. ─────────────────────────────────────────────────────── */
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.2em;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0 0 0.4em;
+}
+
+.prose li > p {
+  margin: 0 0 0.4em;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose ul ul,
+.prose ol ol,
+.prose ul ol,
+.prose ol ul {
+  margin: 0.4em 0 0.4em 1em;
+}
+
+/* ── Blockquotes. ───────────────────────────────────────────────── */
+
+.prose blockquote {
+  margin: 1.4em 0;
+  padding: 0.6em 0 0.6em 1.2em;
+  border-left: 2px solid var(--color-accent);
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+/* ── Code. ──────────────────────────────────────────────────────── */
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+}
+
+.prose pre {
+  margin: 1.4em 0;
+  padding: 1em 1.2em;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  line-height: 1.55;
+}
+
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* ── Images. ────────────────────────────────────────────────────── */
+
+.prose img {
+  margin: 1.6em auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-soft);
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Horizontal rule. ───────────────────────────────────────────── */
+
+.prose hr {
+  margin: 2.4em 0;
+  border: none;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+/* ── Tables. ────────────────────────────────────────────────────── */
+
+.prose table {
+  width: 100%;
+  margin: 1.6em 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6em 0.9em;
+  border-bottom: 1px solid var(--color-border-soft);
+  text-align: left;
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* ── Mobile prose ────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .prose {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .prose pre {
+    padding: 0.85em 1em;
+  }
+  .prose blockquote {
+    padding-left: 1em;
+  }
+}

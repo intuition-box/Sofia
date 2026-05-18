@@ -1,0 +1,53 @@
+/**
+ * BlogIndex — landing page for the blog. Hero header (eyebrow + Fraunces
+ * display title + lede) followed by the flat list of posts. Posts use
+ * the shared `.PostCard` row layout.
+ */
+
+.hero {
+  padding: 80px 0 56px;
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 32px;
+}
+
+.heroInner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.heroEyebrow {
+  margin-bottom: 18px;
+}
+
+.heroTitle {
+  margin: 0 0 20px;
+}
+
+.heroLede {
+  max-width: 60ch;
+}
+
+.list {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 80px;
+}
+
+.empty {
+  padding: 80px var(--gutter);
+  text-align: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 56px 0 36px;
+  }
+  .heroTitle {
+    margin-bottom: 14px;
+  }
+}

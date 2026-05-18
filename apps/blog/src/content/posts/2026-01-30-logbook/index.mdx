@@ -7,6 +7,13 @@ authors: [Samuel, Maxime]
 ---
 
 import ImageCarousel from '@site/src/components/ImageCarousel'
+import startOnboarding from './start-onboarding.png'
+import onboarding from './onboarding.png'
+import certifyOnboarding from './certify-onboarding-.png'
+import proofAnalysysOnboarding from './proof-analysys-onboarding.png'
+import connectFriendOnboarding from './connect-your-friend-on-boarding.png'
+import bookmarkOnboarding from './bookmarkonboarding.png'
+import selectBookmarkTab from './select-bookmark-tab.png'
 
 This week, we shipped full multi-wallet support — Sofia now discovers wallet providers via EIP-6963 (MIPD) and bridges multiple wallets (Rabby, MetaMask, etc.) and isolates all user data (tokens, bookmarks, quests, XP) per wallet address. We also securing postMessage origins, enforcing HTTPS for transactions, and adding crypto-based OAuth state. On the UX side, a complete onboarding flow with tutorial slides and bookmark selection is now live, alongside a new URL normalization layer that strips tracking params and uses page titles as atom names. Finally, we cleaned up the EchoesTab by excluding follow triples from group cards, fixed group levels from on-chain data, and removed legacy dead code.
 
@@ -30,28 +37,13 @@ This week, we shipped full multi-wallet support — Sofia now discovers wallet p
 
 <ImageCarousel
   images={[
-    { src: require('./start-onboarding.png').default, alt: 'Onboarding start' },
-    { src: require('./onboarding.png').default, alt: 'Onboarding' },
-    {
-      src: require('./certify-onboarding-.png').default,
-      alt: 'Certify onboarding',
-    },
-    {
-      src: require('./proof-analysys-onboarding.png').default,
-      alt: 'Proof analysis onboarding',
-    },
-    {
-      src: require('./connect-your-friend-on-boarding.png').default,
-      alt: 'Connect your friend onboarding',
-    },
-    {
-      src: require('./bookmarkonboarding.png').default,
-      alt: 'Bookmark onboarding',
-    },
-    {
-      src: require('./select-bookmark-tab.png').default,
-      alt: 'Select bookmark tab',
-    },
+    { src: startOnboarding, alt: 'Onboarding start' },
+    { src: onboarding, alt: 'Onboarding' },
+    { src: certifyOnboarding, alt: 'Certify onboarding' },
+    { src: proofAnalysysOnboarding, alt: 'Proof analysis onboarding' },
+    { src: connectFriendOnboarding, alt: 'Connect your friend onboarding' },
+    { src: bookmarkOnboarding, alt: 'Bookmark onboarding' },
+    { src: selectBookmarkTab, alt: 'Select bookmark tab' },
   ]}
 />
 
