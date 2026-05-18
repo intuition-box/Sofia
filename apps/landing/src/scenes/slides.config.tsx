@@ -1,4 +1,5 @@
 import { LAYOUT_AREAS, type PlaceholderSlideProps } from './PlaceholderSlide'
+import zoneStyles from './zones.module.css'
 
 export type SlideConfig = Omit<PlaceholderSlideProps, 'variant' | 'zoneStart'>
 
@@ -29,14 +30,14 @@ export const SLIDES: SlideConfig[] = [
        right-tall). The diagonal slab balaie le graphic à l'entrée de
        slide, le catch phrase + partners cascadent en slide-up. */
     wipeIndex: 2,
-    wipeColor: '#e4b95a' /* fun · jaune */,
+    wipeColor: 'fun' /* jaune */,
   },
   {
     code: 'S.03',
     label: 'INSTRUMENT',
     meta: 'CAROUSEL',
     layout: 'single',
-    wipeColor: '#6dd4a0' /* trusted · vert */,
+    wipeColor: 'trusted' /* vert */,
   },
   /* S.04 — 11 (left tall) lands first with its diagonal wipe, then
      12/13/14 cascade in after a 700ms beat. */
@@ -46,7 +47,7 @@ export const SLIDES: SlideConfig[] = [
     meta: 'PREVIEW',
     layout: 'left-banner-pair-right',
     revealDelay: 700,
-    wipeColor: '#5cc4d6' /* learning · turquoise */,
+    wipeColor: 'learning' /* turquoise */,
   },
   /* S.05 — VISION. Quad of feature cards on the left/middle (15-18),
      Plate D vector graphic (IsoStack) on the right tall slot (19),
@@ -61,28 +62,14 @@ export const SLIDES: SlideConfig[] = [
     meta: 'FEATURES',
     layout: 'quad-banner-tall-right',
     wipeIndex: 4,
-    wipeColor: '#a78bdb' /* inspiration · violet */,
+    wipeColor: 'inspiration' /* violet */,
     headerContent: (
-      <div style={{ width: '100%', textAlign: 'left' }}>
-        <h2
-          className="h-section"
-          style={{
-            margin: '0 0 8px',
-            fontSize: 'clamp(1.4rem, 1rem + 1.4vw, 2rem)',
-            lineHeight: 1.15,
-          }}
-        >
+      <div className={zoneStyles.s05BannerRoot}>
+        <h2 className={`h-section ${zoneStyles.s05BannerTitle}`}>
           You are the hero of your own story.{' '}
           <em>Sofia ensures you finally own the pen.</em>
         </h2>
-        <p
-          className="lede"
-          style={{
-            margin: 0,
-            fontSize: 'clamp(0.82rem, 0.7rem + 0.4vw, 1rem)',
-            maxWidth: 'none',
-          }}
-        >
+        <p className={`lede ${zoneStyles.s05BannerLede}`}>
           Sofia turns every meaningful action you take online — what you read,
           certify, back — into a verifiable proof only you own. Identity becomes
           lived, not declared.
@@ -104,7 +91,7 @@ export const SLIDES: SlideConfig[] = [
     revealLabel: 'COMMUNITY',
     wipeIndex: 1,
     revealDelay: 700,
-    wipeColor: '#e4b95a' /* fun · jaune (cycle) */,
+    wipeColor: 'fun' /* jaune (cycle) */,
   },
   /* S.07 — 25 (left tall) lands first with its wipe, then the 2×2
      quad 26/27/28/29 cascade in after a beat. */
@@ -114,21 +101,21 @@ export const SLIDES: SlideConfig[] = [
     meta: '04 PRINCIPLES',
     layout: 'left-quad-right',
     revealDelay: 700,
-    wipeColor: '#7bade0' /* work · bleu (cycle) */,
+    wipeColor: 'work' /* bleu (cycle) */,
   },
   {
     code: 'S.08',
     label: 'LOOKUPS',
     meta: 'Q&A',
     layout: 'two-col-narrow-left',
-    wipeColor: '#6dd4a0' /* trusted · vert (cycle) */,
+    wipeColor: 'trusted' /* vert (cycle) */,
   },
   {
     code: 'S.09',
     label: 'CTA',
     meta: 'JOIN',
     layout: 'single',
-    wipeColor: '#5cc4d6' /* learning · turquoise (cycle) */,
+    wipeColor: 'learning' /* turquoise (cycle) */,
   },
 ]
 

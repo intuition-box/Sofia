@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useSceneSubState } from './SceneStack'
 import { ZONE_LABELS, ZONE_NODES } from './zones'
 import styles from '../App.module.css'
@@ -18,6 +18,12 @@ export type SlideLayout =
   | 'quad'
   | 'quad-tall-right'
   | 'quad-banner-tall-right'
+
+/** Semantic wipe-tint names. Each maps to an `--intent-*` token in
+ *  variables.css. Slides pick one to colour their diagonal entrance
+ *  slab — kept as a constrained set so the deck stays palette-coherent
+ *  and the CSS module can resolve it without runtime values. */
+export type WipeTint = 'fun' | 'trusted' | 'learning' | 'inspiration' | 'work'
 
 export interface PlaceholderSlideProps {
   code: string
@@ -51,8 +57,9 @@ export interface PlaceholderSlideProps {
    *  (no wipe on reveals — they all use scale-fade). */
   revealWipeIndex?: number
   /** Extra delay (ms) added to every non-wipe base zone. Lets the
-   *  wipe zone land first, then the rest cascade in after a beat. */
-  revealDelay?: number
+   *  wipe zone land first, then the rest cascade in after a beat.
+   *  Bounded to the values handled by CSS (currently 0 and 700). */
+  revealDelay?: 0 | 700
   /** Per-revealIdx number override. Use to make a reveal zone display
    *  the same number/label as a base zone (e.g. S.01 reveal idx 0
    *  mirrors base zone 3 so the swap reads as "3 slides left"). */
@@ -61,11 +68,9 @@ export interface PlaceholderSlideProps {
    *  grid. Lets a slide carry a paragraph of intro copy ABOVE its
    *  zone layout without consuming a zone number. */
   headerContent?: ReactNode
-  /** Hex colour applied to the section's diagonal wipe slab. When set,
-   *  it overrides the default peach/dark mapping via inline
-   *  `--zone-wipe-color` on the lead zone. Used to flag each slide
-   *  with a distinct intention colour. */
-  wipeColor?: string
+  /** Wipe slab tint. Semantic enum mapped to an `--intent-*` token in
+   *  variables.css so the deck colour palette stays a closed set. */
+  wipeColor?: WipeTint
 }
 
 export const LAYOUT_AREAS: Record<SlideLayout, string[]> = {
@@ -144,13 +149,19 @@ export function PlaceholderSlide({
      own per-layer variant class on `.zones` so they stay stable. */
   const activeVariant = revealed && revealVariant ? revealVariant : variant
   const revealStart = zoneStart + baseAreas.length
+  /* Lead zone (no extra delay) = the wipe zone if there is one;
+     otherwise idx 0. The other zones cascade in after `revealDelay`. */
+  const baseLeadIdx = wipeIndex >= 0 ? wipeIndex : 0
+  const revealLeadIdx = revealWipeIndex >= 0 ? revealWipeIndex : 0
   return (
     <section
       className={`${styles.placeholder} ${styles[activeVariant]}`}
       data-active={isActive ? 'true' : 'false'}
       data-deck-slide="true"
       data-variant={activeVariant}
-    >
+      data-base-variant={variant}
+      data-wipe-tint={wipeColor}
+      data-reveal-delay={revealDelay > 0 ? String(revealDelay) : undefined}>
       <div className={styles.frame}>
         <div className={styles.metaStrip}>
           <span>
@@ -164,8 +175,7 @@ export function PlaceholderSlide({
             in this slot, above the grid. */}
         {headerContent && layout !== 'quad-banner-tall-right' && (
           <div
-            className={`${styles.header} ${variant === 'peach' ? 'on-peach' : ''}`}
-          >
+            className={`${styles.header} ${variant === 'peach' ? 'on-peach' : ''}`}>
             {headerContent}
           </div>
         )}
@@ -173,13 +183,12 @@ export function PlaceholderSlide({
         <div className={styles.contentArea}>
           <div
             className={`${styles.zones} ${styles[layoutClass(layout)]} ${styles[variant]} ${variant === 'peach' ? 'on-peach' : ''}`}
-            data-hidden={revealed ? 'true' : 'false'}
-          >
+            data-hidden={revealed ? 'true' : 'false'}>
             {/* In-grid banner: layouts that declare an `h` grid area
                 host headerContent as a normal grid cell so the tall
                 right column ('e') keeps its full-slide span. */}
             {headerContent && layout === 'quad-banner-tall-right' && (
-              <div className={styles.gridBanner} style={{ gridArea: 'h' }}>
+              <div className={styles.gridBanner} data-grid-area="h">
                 {headerContent}
               </div>
             )}
@@ -190,35 +199,21 @@ export function PlaceholderSlide({
                  + fade. wipeIndex = -1 disables the wipe entirely on
                  this slide. */
               const anim = idx === wipeIndex ? 'wipe' : 'slide-up'
-              /* Lead zone (no extra delay) = the wipe zone if there is
-                 one; otherwise the first zone. The other zones cascade
-                 in after `revealDelay`. */
-              const leadIdx = wipeIndex >= 0 ? wipeIndex : 0
-              const extraDelay = idx === leadIdx ? 0 : revealDelay
+              const role = idx === baseLeadIdx ? 'lead' : 'cascade'
               /* Use the BASE variant (not activeVariant) — base zones
                  fade out as a layer, they shouldn't flip palette mid
                  fade-out otherwise the catch phrase + partner logos
                  turn the wrong colour for a beat. */
               const customNode = ZONE_NODES[n]?.(variant)
-              /* Apply the per-slide wipe colour only on the actual
-                 wipe zone — the inline CSS var beats the default
-                 peach/dark mapping in the cascade. */
-              const zoneStyle: CSSProperties = {
-                gridArea: area,
-                ['--zone-i' as never]: idx,
-                ['--zone-extra-delay' as never]: `${extraDelay}ms`,
-              }
-              if (anim === 'wipe' && wipeColor) {
-                zoneStyle['--zone-wipe-color' as never] = wipeColor as never
-              }
               return (
                 <div
                   key={n}
                   className={styles.zone}
                   data-anim={anim}
                   data-custom={customNode ? 'true' : 'false'}
-                  style={zoneStyle}
-                >
+                  data-grid-area={area}
+                  data-zone-i={idx}
+                  data-zone-role={role}>
                   {customNode ? (
                     <div className={styles.zoneContent}>{customNode}</div>
                   ) : (
@@ -237,11 +232,19 @@ export function PlaceholderSlide({
           {revealLayout && (
             <div
               className={`${styles.zones} ${styles[layoutClass(revealLayout)]} ${styles.revealZones} ${styles[revealVariant ?? variant]} ${(revealVariant ?? variant) === 'peach' ? 'on-peach' : ''}`}
-              data-revealed={revealed ? 'true' : 'false'}
-            >
+              data-revealed={revealed ? 'true' : 'false'}>
               {revealAreas.map((area, idx) => {
                 const n = revealStart + idx
                 const displayN = revealNumOverride?.[idx] ?? n
+                /* When a reveal slot mirrors a base zone (via
+                   revealNumOverride pointing to a number < revealStart),
+                   it intentionally re-renders the same content in a
+                   different grid position so the desktop crossfade
+                   reads as a graphic sliding from right to left. On
+                   mobile, base + reveal coexist stacked — so a mirror
+                   would appear twice. Tag it with data-mirror-of-base
+                   so CSS can hide the duplicate at <=899px. */
+                const mirrorsBase = displayN < revealStart
                 /* Reveal zones get their dedicated variant (e.g. dark
                    on the WHY SOFIA reveal of S.01) — stable across the
                    crossfade, no palette flip mid-transition. */
@@ -255,26 +258,18 @@ export function PlaceholderSlide({
                    otherwise the default 'scale' fade. */
                 const isRevealWipe =
                   revealWipeIndex >= 0 && idx === revealWipeIndex
-                const revealLeadIdx = revealWipeIndex >= 0 ? revealWipeIndex : 0
-                const extraDelay = idx === revealLeadIdx ? 0 : revealDelay
+                const role = idx === revealLeadIdx ? 'lead' : 'cascade'
                 const anim = isRevealWipe ? 'wipe' : 'scale'
-                const revealZoneStyle: CSSProperties = {
-                  gridArea: area,
-                  ['--zone-i' as never]: idx,
-                  ['--zone-extra-delay' as never]: `${extraDelay}ms`,
-                }
-                if (anim === 'wipe' && wipeColor) {
-                  revealZoneStyle['--zone-wipe-color' as never] =
-                    wipeColor as never
-                }
                 return (
                   <div
                     key={n}
                     className={styles.zone}
                     data-anim={anim}
                     data-custom={customNode ? 'true' : 'false'}
-                    style={revealZoneStyle}
-                  >
+                    data-grid-area={area}
+                    data-zone-i={idx}
+                    data-zone-role={role}
+                    data-mirror-of-base={mirrorsBase ? 'true' : 'false'}>
                     {customNode ? (
                       <div className={styles.zoneContent}>{customNode}</div>
                     ) : (

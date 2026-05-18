@@ -333,8 +333,7 @@ button {
 }
 
 /* ── Responsive ───────────────────────────────────────── */
-@media (max-width: 640px) {
-  .container {
-    padding: 0 24px;
-  }
-}
+/* .container picks up --gutter from variables.css; the breakpoint
+   cascade there (16px @ <=640px, 24px @ <=900px, 48px desktop)
+   handles the scaling. Kept as a tap-target reminder for future
+   per-element overrides. */

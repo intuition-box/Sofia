@@ -9,13 +9,20 @@ import { OpenCard } from '../components/cards/OpenCard'
 import { ProductCard } from '../components/cards/ProductCard'
 import { ValueCard } from '../components/cards/ValueCard'
 import { URLS } from '../lib/config/urls'
+import styles from './zones.module.css'
 
 /* Per-zone custom content. When a zone number has an entry here, the
    placeholder renders the node returned by this function instead of
    the default "<num> / <label>" skeleton text — used to inject real
    graphics or composed content into specific zones while leaving the
    rest of the deck as a wireframe. The function receives the active
-   slide variant so the node can pick palette tokens that match. */
+   slide variant so the node can pick palette tokens that match.
+
+   Per-zone layout lives in `zones.module.css` so the deck can react to
+   viewport changes via media queries. Variant-dependent values that
+   genuinely need JS (e.g. background colour from a runtime token)
+   stay inline; all static layout is class-driven. */
+
 /* Pulled verbatim from `Hero.tsx` so we keep a single source of
    truth on partner identities. */
 const PARTNERS = [
@@ -41,45 +48,11 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 1 — the cover catch phrase. Headline + Hero's two CTAs
      (Open Explorer + Read the docs) pulled verbatim from `Hero.tsx`. */
   1: (variant) => (
-    <div
-      className={variant === 'peach' ? 'on-peach' : ''}
-      style={{
-        width: '100%',
-        height: '100%',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        /* space-between separates the h1 (top of cell) from the CTA
-         * row (bottom of cell). Buttons get flex-shrink:0 so they
-         * stay rendered; h1 gets flex-shrink:1 so it yields space on
-         * short viewports rather than pushing the buttons out. */
-        justifyContent: 'space-between',
-        gap: 24,
-        minHeight: 0,
-      }}
-    >
-      <h1
-        className="h-display"
-        style={{
-          fontSize: 'clamp(3rem, 4vh + 6vw, 8.8rem)',
-          lineHeight: 1.05,
-          paddingTop: '0.08em',
-          paddingBottom: '0.05em',
-          margin: 0,
-          flexShrink: 1,
-          minHeight: 0,
-        }}
-      >
+    <div className={`${styles.heroRoot} ${variant === 'peach' ? 'on-peach' : ''}`}>
+      <h1 className={`h-display ${styles.heroTitle}`}>
         From surfing the web to <em>owning&nbsp;it.</em>
       </h1>
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          flexWrap: 'wrap',
-          flexShrink: 0,
-        }}
-      >
+      <div className={styles.heroActions}>
         <a
           href="https://explorer.sofia.intuition.box"
           target="_blank"
@@ -104,30 +77,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      deep ink on the peach slab; Phala keeps its native lime + dark
      because flattening would erase the inner "P". */
   2: (variant) => (
-    <div
-      className={variant === 'peach' ? 'on-peach' : ''}
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        justifyContent: 'flex-end',
-        gap: 16,
-      }}
-    >
+    <div className={`${styles.partnersRoot} ${variant === 'peach' ? 'on-peach' : ''}`}>
       <span className="eyebrow">Built with</span>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 28,
-          flexWrap: 'wrap',
-          justifyContent: 'flex-start',
-        }}
-      >
+      <div className={styles.partnersList}>
         {PARTNERS.map((p) => {
           const isPhala = p.name === 'Phala'
+          const shouldFlatten = !isPhala && variant === 'peach'
           return (
             <a
               key={p.name}
@@ -135,20 +90,14 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               target="_blank"
               rel="noopener noreferrer"
               aria-label={p.name}
-              style={{ opacity: 0.78, display: 'inline-flex' }}
+              className={styles.partnerLink}
             >
               <img
                 src={p.logo}
                 alt={p.name}
-                style={{
-                  height: isPhala ? 'auto' : 28,
-                  maxHeight: 28,
-                  maxWidth: isPhala ? 90 : undefined,
-                  width: 'auto',
-                  display: 'block',
-                  filter:
-                    isPhala || variant === 'dark' ? 'none' : 'brightness(0)',
-                }}
+                className={styles.partnerLogo}
+                data-phala={isPhala ? 'true' : 'false'}
+                data-flatten={shouldFlatten ? 'true' : 'false'}
               />
             </a>
           )
@@ -167,17 +116,11 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      emphasis + lede paragraph. Sits on the dark slab so default
      `var(--color-text)` ink is correct without any modifier. */
   5: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
-      <h2
-        className="h-section"
-        style={{
-          margin: '0 0 14px',
-          fontSize: 'clamp(1.8rem, 1.4rem + 3.4vw, 9.2rem)',
-        }}
-      >
+    <div className={styles.sectionHead}>
+      <h2 className={`h-section ${styles.sectionHeadTitle}`}>
         Four angles, <em>one promise.</em>
       </h2>
-      <p className="lede" style={{ maxWidth: '60ch' }}>
+      <p className={`lede ${styles.sectionHeadLede}`}>
         Sofia answers four real needs — personal, group, watch, and collective
         intelligence. No jargon, no posturing: what you actually get from using
         it.
@@ -216,35 +159,22 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
       desc="Your community's signals — follows, Marks, trust votes — give weight to what you publish. The social side isn't decoration, it's the multiplier."
     />
   ),
-  /* Zone 10 — Sofia hero video demo. Auto-plays muted on loop. */
+  /* Zone 10 — Sofia hero video demo. Auto-plays muted on loop. A poster
+     image stands in on iOS when autoPlay is denied (Low Power Mode,
+     muted toggle off in Safari) so we never show a black rectangle.
+     TODO: ship /sofia-hero-poster.jpg (first frame of the demo, ~50ko
+     JPG/WebP) — browsers ignore the attribute gracefully if missing
+     but the fallback won't render. */
   10: (variant) => (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        borderRadius: 20,
-        background:
-          variant === 'peach'
-            ? 'rgba(255, 198, 176, 0.30)'
-            : 'rgba(2, 0, 14, 0.30)',
-      }}
-    >
+    <div className={styles.videoFrame} data-variant={variant}>
       <video
         src="/sofia-hero.mp4"
+        poster="/sofia-hero-poster.jpg"
         autoPlay
         muted
         loop
         playsInline
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
+        preload="metadata"
       />
     </div>
   ),
@@ -252,15 +182,7 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      Top-aligned so the plate's frame top edge sits flush with the
      "Personal upside" banner title in zone 12. */
   11: (variant) => (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-      }}
-    >
+    <div className={styles.radarFrame}>
       <TopicsRadar ink={variant === 'dark' ? 'light' : 'dark'} />
     </div>
   ),
@@ -270,25 +192,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      (Acte 4). Headline + lede + a stat row that echoes the Acte 4
      counters without faking a data tableau. */
   12: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
+    <div className={styles.sectionHead}>
       <span className="eyebrow">Product · P.00</span>
-      <h2
-        className="h-section"
-        style={{
-          margin: '6px 0 12px',
-          fontSize: 'clamp(1.8rem, 1.4rem + 3.4vw, 9.2rem)',
-          lineHeight: 1.02,
-        }}
-      >
+      <h2 className={`h-section ${styles.sectionHeadTitleTight}`}>
         One gesture. <em>Your web, mapped.</em>
       </h2>
-      <p
-        className="lede"
-        style={{
-          margin: 0,
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.sectionHeadLedeWide}`}>
         Mark a page with how it served you — for learning, for work, for
         inspiration — and Sofia remembers. Months later, your reading still has
         shape: which articles taught you something, which podcasts shifted your
@@ -390,34 +299,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 20 — S.06 CONTRIBUTOR base, top-left (2fr height). The two
      core builders pulled from `Team.tsx` with avatar mini + handle. */
   20: () => (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-      }}
-    >
+    <div className={styles.teamRoot}>
       <span className="eyebrow">Team · Core</span>
-      <h2
-        className="h-section"
-        style={{
-          margin: '12px 0 18px',
-          fontSize: 'clamp(1.6rem, 1.2rem + 2.4vw, 3.2rem)',
-        }}
-      >
+      <h2 className={`h-section ${styles.teamTitle}`}>
         Two builders, <em>one open repo.</em>
       </h2>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18,
-          alignItems: 'flex-start',
-        }}
-      >
+      <div className={styles.teamList}>
         {[
           {
             name: 'Samuel Chauche',
@@ -435,71 +322,25 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               "10 years as a music producer showed me how streaming platforms manipulate discovery — fake artists, paid algorithms, real creators buried. We're building the alternative.",
           },
         ].map((m) => (
-          <div
-            key={m.name}
-            style={{
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <img
-                src={m.avatar}
-                alt={m.name}
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  display: 'block',
-                }}
-              />
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  lineHeight: 1.2,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 'clamp(1rem, 0.85rem + 0.5vw, 1.25rem)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {m.name}
-                </span>
-                <span
-                  className="eyebrow"
-                  style={{ fontSize: 11, marginTop: 4 }}
-                >
+          <div key={m.name} className={styles.teamMember}>
+            <div className={styles.teamHead}>
+              <img src={m.avatar} alt={m.name} className={styles.teamAvatar} />
+              <div className={styles.teamIdentity}>
+                <span className={styles.teamName}>{m.name}</span>
+                <span className={`eyebrow ${styles.teamHandle}`}>
                   {m.handle}
                 </span>
               </div>
             </div>
-            <p
-              className="lede"
-              style={{
-                margin: 0,
-                fontSize: 'clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem)',
-                lineHeight: 1.5,
-              }}
-            >
-              “{m.quote}”
-            </p>
+            <p className={`lede ${styles.teamQuote}`}>“{m.quote}”</p>
           </div>
         ))}
       </div>
       <SceneBtn
         href="https://doc.sofia.intuition.box/docs/about"
         variant="peach"
-        style={{
-          marginTop: 16,
-          padding: '8px 14px',
-          fontSize: '0.78rem',
-          alignSelf: 'flex-start',
-        }}
+        size="sm"
+        anchor="team-cta"
       >
         About the team <Arrow />
       </SceneBtn>
@@ -510,63 +351,34 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      first with a diagonal wipe, then Core (idx 0) and Advisors
      (idx 2) cascade in after the revealDelay beat. */
   21: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
+    <div className={styles.grantRoot}>
       <span className="eyebrow">Backed by</span>
-      <h2
-        className="h-section"
-        style={{
-          margin: '12px 0 16px',
-          fontSize: 'clamp(1.6rem, 1.2rem + 2.4vw, 3.2rem)',
-        }}
-      >
+      <h2 className={`h-section ${styles.grantTitle}`}>
         Intuition · <em>20K grant.</em>
       </h2>
-      <p
-        className="lede"
-        style={{
-          margin: '0 0 12px',
-          fontSize: 'clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem)',
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.grantPara}`}>
         Sofia is built on Intuition — the protocol where every meaningful action
         becomes a verifiable record owned by the person who made it. The
         alignment is structural, not commercial: the same infrastructure that
         secures your trail is the one we ship on, and Intuition's builder grant
         carries us through the early miles.
       </p>
-      <p
-        className="lede"
-        style={{
-          margin: '0 0 18px',
-          fontSize: 'clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem)',
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.grantPara} ${styles.grantParaLast}`}>
         DAO-oriented from day one. Decisions, treasury, and rewards live
         on-chain — contributors who ship and users who curate get TRUST in
         return, and the community owns the roadmap as Sofia grows.
       </p>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
+      <div className={styles.grantCtaRow}>
         <SceneBtn
           href="https://portal.intuition.systems/"
           variant="peach"
-          style={{ padding: '8px 14px', fontSize: '0.78rem' }}
-        >
+          size="sm">
           portal.intuition.systems <Arrow />
         </SceneBtn>
         <SceneBtn
           href="https://app.colony.io/invite/sofia/d3c7b0a4-d168-477c-a176-2b5c4eca68da"
           variant="peach"
-          style={{ padding: '8px 14px', fontSize: '0.78rem' }}
-        >
+          size="sm">
           Join the DAO <Arrow />
         </SceneBtn>
       </div>
@@ -575,26 +387,9 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 22 — S.06 base, BOTTOM RIGHT of the `left-stack-right`
      layout. Three advisors with avatar + role + company + handle. */
   22: () => (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-      }}
-    >
+    <div className={styles.advisorsRoot}>
       <span className="eyebrow">Team · Advisors</span>
-      <div
-        style={{
-          marginTop: 12,
-          display: 'flex',
-          gap: 16,
-          flexWrap: 'wrap',
-          alignItems: 'flex-start',
-        }}
-      >
+      <div className={styles.advisorsList}>
         {[
           {
             name: 'Jeremie Olivier',
@@ -618,53 +413,19 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
             avatar: 'https://unavatar.io/twitter/0xbilly',
           },
         ].map((a) => (
-          <div
-            key={a.name}
-            style={{
-              flex: '1 1 180px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div key={a.name} className={styles.advisorCard}>
+            <div className={styles.advisorHead}>
               <img
                 src={a.avatar}
                 alt={a.name}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
-                  display: 'block',
-                }}
+                className={styles.advisorAvatar}
               />
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  lineHeight: 1.2,
-                }}
-              >
-                <span
-                  className="eyebrow"
-                  style={{ fontSize: 9, marginBottom: 2 }}
-                >
+              <div className={styles.advisorIdentity}>
+                <span className={`eyebrow ${styles.advisorCompany}`}>
                   {a.company}
                 </span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>
-                  {a.name}
-                </span>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.65,
-                    fontFamily: 'var(--font-mono)',
-                    letterSpacing: '0.04em',
-                    marginTop: 2,
-                  }}
-                >
-                  {a.handle}
-                </span>
+                <span className={styles.advisorName}>{a.name}</span>
+                <span className={styles.advisorHandle}>{a.handle}</span>
               </div>
             </div>
           </div>
@@ -673,38 +434,16 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
     </div>
   ),
   /* Zone 23 — S.06 reveal (COMMUNITY), top-left (2fr). Headline
-     metric: 10K on-chain interactions — proof the community shows
+     metric: 13K on-chain interactions — proof the community shows
      up, beyond the team. */
   23: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
+    <div className={styles.statRoot}>
       <span className="eyebrow">T.02</span>
-      <div
-        style={{
-          marginTop: 12,
-          fontFamily: 'var(--font-mono)',
-          fontSize: 'clamp(2.6rem, 1.6rem + 4vw, 6rem)',
-          fontWeight: 600,
-          lineHeight: 1,
-        }}
-      >
-        13K
-      </div>
-      <h3
-        className="h-section"
-        style={{
-          margin: '10px 0 8px',
-          fontSize: 'clamp(1.1rem, 0.9rem + 0.7vw, 1.6rem)',
-        }}
-      >
+      <div className={styles.statFigure}>13K</div>
+      <h3 className={`h-section ${styles.statTitle}`}>
         On-chain interactions, <em>and counting.</em>
       </h3>
-      <p
-        className="lede"
-        style={{
-          margin: 0,
-          fontSize: 'clamp(0.78rem, 0.7rem + 0.35vw, 1rem)',
-        }}
-      >
+      <p className={`lede ${styles.statLede}`}>
         Every certify, every vote, every trust signal lives on Intuition —
         public, permanent, replayable. Our users aren't a metric; they're the
         network.
@@ -713,55 +452,16 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   ),
   /* Zone 24 — S.06 reveal, bottom-left (1fr). Community reward
      narrative: TRUST distributed back to the people who showed up.
-     Figure sized to match zone 23 (13K) for visual parity. */
+     Absolute-positioned on desktop to fit the compact 1fr cell;
+     mobile resets to static flow (see zones.module.css). */
   24: () => (
-    /* Absolute positioning anchors the wrapper to the top-left of
-       the .zoneContent slot. Compact spacing so the full block
-       (label, figure, title, lede) fits inside the 1fr bottom-left
-       cell of stack-left-tall-right at typical viewports. */
-    <div
-      style={{
-        position: 'absolute',
-        top: 2,
-        left: 28,
-        right: 28,
-        bottom: 4,
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        gap: 6,
-      }}
-    >
+    <div className={styles.statRootAbsolute}>
       <span className="eyebrow">T.03</span>
-      <div
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 'clamp(2rem, 1.2rem + 3vw, 4.4rem)',
-          fontWeight: 600,
-          lineHeight: 0.95,
-        }}
-      >
-        2 500 TRUST
-      </div>
-      <h3
-        className="h-section"
-        style={{
-          margin: 0,
-          fontSize: 'clamp(1rem, 0.85rem + 0.6vw, 1.4rem)',
-          lineHeight: 1.15,
-        }}
-      >
+      <div className={styles.statFigureTight}>2 500 TRUST</div>
+      <h3 className={`h-section ${styles.statTitleTight}`}>
         Distributed to <em>the community.</em>
       </h3>
-      <p
-        className="lede"
-        style={{
-          margin: 0,
-          fontSize: 'clamp(0.75rem, 0.68rem + 0.25vw, 0.95rem)',
-          lineHeight: 1.35,
-        }}
-      >
+      <p className={`lede ${styles.statLedeTight}`}>
         Distributed to the early certifiers, curators, and contributors who
         carried Sofia through its first miles — every signal recorded on
         Intuition, every contributor identified by their wallet. No team
@@ -773,24 +473,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 25 — S.06 reveal, right tall (wipe lead). Community voices:
      a couple of testimonials lifted from `Team.tsx`. */
   25: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
+    <div className={styles.voicesRoot}>
       <span className="eyebrow">Voices</span>
-      <h2
-        className="h-section"
-        style={{
-          margin: '12px 0 18px',
-          fontSize: 'clamp(1.6rem, 1.2rem + 2vw, 2.8rem)',
-        }}
-      >
+      <h2 className={`h-section ${styles.voicesTitle}`}>
         Heard from the people <em>who showed up.</em>
       </h2>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}
-      >
+      <div className={styles.voicesList}>
         {[
           {
             handle: 'anniepro',
@@ -823,55 +511,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               'A web extension that lets you Mark websites based on what you use them for, stored on Intuition. A way to promote safe exploring on the web.',
           },
         ].map((v) => (
-          <article
-            key={v.handle}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4,
-              paddingBottom: 16,
-              borderBottom: '1px solid rgba(128,128,128,0.25)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'baseline',
-                gap: 8,
-                flexWrap: 'wrap',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '0.82rem',
-                  fontWeight: 500,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                @{v.handle}
-              </span>
-              <span
-                style={{
-                  fontSize: 9,
-                  opacity: 0.6,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {v.role}
-              </span>
+          <article key={v.handle} className={styles.voiceItem}>
+            <div className={styles.voiceHead}>
+              <span className={styles.voiceHandle}>@{v.handle}</span>
+              <span className={styles.voiceRole}>{v.role}</span>
             </div>
-            <p
-              className="lede"
-              style={{
-                margin: 0,
-                fontSize: 'clamp(0.78rem, 0.7rem + 0.35vw, 0.95rem)',
-                lineHeight: 1.45,
-              }}
-            >
-              {v.quote}
-            </p>
+            <p className={`lede ${styles.voiceQuote}`}>{v.quote}</p>
           </article>
         ))}
       </div>
@@ -880,15 +525,8 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 26 — S.07 left tall. Intro to the doctrine: this is the
      community-staked values manifesto. Tone: declarative, on-chain. */
   26: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
-      <h2
-        className="h-display"
-        style={{
-          margin: '0 0 18px',
-          fontSize: 'clamp(2rem, 1.4rem + 3vw, 4.4rem)',
-          lineHeight: 0.95,
-        }}
-      >
+    <div className={styles.sectionHead}>
+      <h2 className={`h-display ${styles.valuesIntroTitle}`}>
         Values{' '}
         <em>
           the community
@@ -896,26 +534,12 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
           staked into existence.
         </em>
       </h2>
-      <p
-        className="lede"
-        style={{
-          margin: '0 0 12px',
-          fontSize: 'clamp(0.9rem, 0.78rem + 0.45vw, 1.15rem)',
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.valuesIntroPara}`}>
         Sofia doesn&apos;t pick its principles — you do. Each value below was
         surfaced and ranked by the people who staked TRUST on the ones they
         believe in most.
       </p>
-      <p
-        className="lede"
-        style={{
-          margin: 0,
-          fontSize: 'clamp(0.9rem, 0.78rem + 0.45vw, 1.15rem)',
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.valuesIntroPara} ${styles.valuesIntroParaLast}`}>
         The more conviction behind a value, the more weight it carries in the
         protocol. No board vote, no manifesto written in a back room — just
         signal recorded on Intuition.
@@ -960,36 +584,18 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
   /* Zone 31 — S.08 narrow left. Q&A intro: brand the FAQ slab as a
      reference desk, set expectations, point to the open channels. */
   31: () => (
-    <div style={{ width: '100%', textAlign: 'left' }}>
-      <h2
-        className="h-display"
-        style={{
-          margin: '0 0 16px',
-          fontSize: 'clamp(1.8rem, 1.3rem + 2.4vw, 3.6rem)',
-          lineHeight: 0.95,
-        }}
-      >
+    <div className={styles.sectionHead}>
+      <h2 className={`h-display ${styles.faqIntroTitle}`}>
         Frequently <em>asked.</em>
       </h2>
-      <p
-        className="lede"
-        style={{
-          margin: '0 0 14px',
-          fontSize: 'clamp(0.85rem, 0.74rem + 0.4vw, 1.05rem)',
-          maxWidth: 'none',
-        }}
-      >
+      <p className={`lede ${styles.faqIntroPara}`}>
         Short answers to the questions that come up most. Need something we
         didn&apos;t cover? Ask us directly.
       </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        <SceneBtn
-          href="https://discord.gg/sofia3"
-          variant="peach"
-          style={{ fontSize: '0.85rem' }}
-        >
+      <div className={styles.faqIntroCtaRow}>
+        <SceneBtn href="https://discord.gg/sofia3" variant="peach">
           Ask on Discord{' '}
-          <span aria-hidden="true" style={{ marginLeft: 4 }}>
+          <span aria-hidden="true" className={styles.faqDiscordArrow}>
             ↗
           </span>
         </SceneBtn>
@@ -1017,7 +623,6 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               href="https://github.com/intuition-box"
               target="_blank"
               rel="noreferrer noopener"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               open-source
             </a>
@@ -1038,7 +643,6 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               href="https://explorer.sofia.intuition.box"
               target="_blank"
               rel="noreferrer noopener"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               Explorer
             </a>{' '}
@@ -1048,7 +652,6 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               href="https://doc.sofia.intuition.box/docs/extension"
               target="_blank"
               rel="noreferrer noopener"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               browser extension
             </a>
@@ -1065,7 +668,6 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
               href="https://discord.gg/sofia3"
               target="_blank"
               rel="noreferrer noopener"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               Discord
             </a>{' '}
@@ -1075,61 +677,17 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
       },
     ]
     return (
-      <div style={{ width: '100%', textAlign: 'left' }}>
-        <dl
-          style={{
-            margin: 0,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            columnGap: 28,
-            rowGap: 18,
-          }}
-        >
+      <div className={styles.sectionHead}>
+        <dl className={styles.faqList}>
           {items.map((it, i) => (
-            <div
-              key={it.q}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-                paddingBottom: 16,
-                borderBottom: '1px solid rgba(128,128,128,0.35)',
-              }}
-            >
-              <dt
-                style={{
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: 8,
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 'clamp(0.92rem, 0.8rem + 0.45vw, 1.2rem)',
-                  fontWeight: 500,
-                  lineHeight: 1.25,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 10,
-                    opacity: 0.55,
-                    letterSpacing: '0.14em',
-                  }}
-                >
+            <div key={it.q} className={styles.faqItem}>
+              <dt className={styles.faqQuestion}>
+                <span className={styles.faqNum}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span>{it.q}</span>
               </dt>
-              <dd
-                className="lede"
-                style={{
-                  margin: 0,
-                  fontSize: 'clamp(0.82rem, 0.72rem + 0.35vw, 1rem)',
-                  lineHeight: 1.5,
-                  opacity: 0.9,
-                  maxWidth: '48ch',
-                }}
-              >
-                {it.a}
-              </dd>
+              <dd className={`lede ${styles.faqAnswer}`}>{it.a}</dd>
             </div>
           ))}
         </dl>
@@ -1140,61 +698,16 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      CTA exactly (eyebrow + h-display + lede + two buttons) with the
      HexSplit hexagon decoration painted behind. */
   33: () => (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-      }}
-    >
-      <HexSplit size="520px" color="rgba(0,0,0,0.05)" />
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 18,
-          maxWidth: 720,
-          padding: '0 24px',
-        }}
-      >
+    <div className={styles.ctaRoot}>
+      <HexSplit />
+      <div className={styles.ctaInner}>
         <span className="eyebrow">Beta · Open</span>
-        <h2
-          className="h-display"
-          style={{
-            margin: 0,
-            fontSize: 'clamp(2.6rem, 2vh + 6vw, 7.2rem)',
-            lineHeight: 1,
-          }}
-        >
-          Join the movement.
-        </h2>
-        <p
-          className="lede"
-          style={{
-            margin: 0,
-            fontSize: 'clamp(0.95rem, 0.82rem + 0.45vw, 1.15rem)',
-            maxWidth: '52ch',
-          }}
-        >
+        <h2 className={`h-display ${styles.ctaTitle}`}>Join the movement.</h2>
+        <p className={`lede ${styles.ctaLede}`}>
           Your browsing history is your identity — not a PFP, not a token.
           It&apos;s what you actually do, verified on-chain.
         </p>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 12,
-            justifyContent: 'center',
-            marginTop: 6,
-          }}
-        >
+        <div className={styles.ctaActions}>
           <a
             href="https://explorer.sofia.intuition.box"
             target="_blank"

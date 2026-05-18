@@ -1,14 +1,23 @@
 /**
- * HexSplit — scroll-driven decoration. Two hexagons centered over the
- * section, that spread outward and rotate as the section is scrolled
- * past the viewport. Drives the visual energy of How / Comparison / CTA.
- *
- * Variables set inline by the React component:
- *   --hex-size  : edge length of each hex (default 420px)
- *   --hex-color : fill color (default rgba(0,0,0,.05))
- *   --hex-spread: lateral offset px (animated)
- *   --hex-rot   : extra rotation deg (animated)
+ * HexSplit — two hexagons that spread outward and rotate when the
+ * closest `[data-deck-slide]` ancestor becomes active. Pure CSS:
+ * @property declarations make --hex-spread / --hex-rot animatable, and
+ * a transition fires on the descendant selector below as soon as
+ * data-active flips. No JS animation loop — the deck owns the trigger
+ * via data-attributes.
  */
+
+@property --hex-spread {
+  syntax: '<length>';
+  initial-value: 0px;
+  inherits: false;
+}
+
+@property --hex-rot {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
 
 .host {
   position: absolute;
@@ -16,32 +25,61 @@
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
+  --hex-size: 520px;
+  --hex-color: rgba(0, 0, 0, 0.05);
+  --hex-spread: 0px;
+  --hex-rot: 0deg;
 }
 
 .hex {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--hex-size, 420px);
+  width: var(--hex-size);
   aspect-ratio: 1;
-  background: var(--hex-color, rgba(0, 0, 0, 0.05));
+  background: var(--hex-color);
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
   will-change: transform;
+  transition:
+    --hex-spread 1400ms cubic-bezier(0.215, 0.61, 0.355, 1) 700ms,
+    --hex-rot 1400ms cubic-bezier(0.215, 0.61, 0.355, 1) 700ms,
+    transform 1400ms cubic-bezier(0.215, 0.61, 0.355, 1) 700ms;
 }
 
 .l {
-  transform: translate(calc(-50% - var(--hex-spread, 0px)), -50%)
-    rotate(calc(-12deg - var(--hex-rot, 0deg)));
+  transform: translate(calc(-50% - var(--hex-spread)), -50%)
+    rotate(calc(-12deg - var(--hex-rot)));
 }
 
 .r {
-  transform: translate(calc(-50% + var(--hex-spread, 0px)), -50%)
-    rotate(calc(18deg + var(--hex-rot, 0deg)));
+  transform: translate(calc(-50% + var(--hex-spread)), -50%)
+    rotate(calc(18deg + var(--hex-rot)));
+}
+
+/* Animate when the owning deck slide is active. Targets the closest
+   `[data-deck-slide][data-active='true']` ancestor — fires whether the
+   trigger comes from the desktop snap or the mobile IntersectionObserver,
+   so the choreography stays consistent across modes. */
+[data-deck-slide][data-active='true'] .host {
+  --hex-spread: max(40vw, 480px);
+  --hex-rot: 60deg;
+}
+
+@media (max-width: 640px) {
+  .host {
+    --hex-size: 320px;
+  }
+  [data-deck-slide][data-active='true'] .host {
+    --hex-spread: 40vw;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .l,
-  .r {
-    transform: translate(-50%, -50%) rotate(0deg);
+  .hex {
+    transition: none;
+  }
+  [data-deck-slide][data-active='true'] .host {
+    --hex-spread: 0px;
+    --hex-rot: 0deg;
   }
 }

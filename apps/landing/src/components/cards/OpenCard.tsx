@@ -1,6 +1,7 @@
 import { Arrow } from '../Arrow'
 import { PrimaryBtn } from '../buttons/PrimaryBtn'
 import { SceneBtn } from '../buttons/SceneBtn'
+import styles from './Card.module.css'
 
 interface OpenCardProps {
   tag: string
@@ -21,34 +22,12 @@ interface OpenCardProps {
  */
 export function OpenCard({ tag, title, desc, cta, ctaPrimary }: OpenCardProps) {
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        textAlign: 'left',
-      }}>
+    <div className={styles.shell}>
       <span className="eyebrow">{tag}</span>
-      <h3
-        className="h-section"
-        style={{
-          margin: '10px 0 8px',
-          fontSize: 'clamp(1.1rem, 0.9rem + 0.9vw, 1.9rem)',
-          lineHeight: 1.1,
-        }}>
-        {title}
-      </h3>
-      <p
-        className="lede"
-        style={{
-          margin: 0,
-          fontSize: 'clamp(0.78rem, 0.7rem + 0.35vw, 1rem)',
-        }}>
-        {desc}
-      </p>
+      <h3 className={`h-section ${styles.title}`}>{title}</h3>
+      <p className={`lede ${styles.desc}`}>{desc}</p>
       {cta && (
-        <div style={{ marginTop: 12 }}>
+        <div className={styles.cta}>
           {ctaPrimary ? (
             <PrimaryBtn href={cta.href}>
               {cta.label} <Arrow />
@@ -58,7 +37,7 @@ export function OpenCard({ tag, title, desc, cta, ctaPrimary }: OpenCardProps) {
               href={cta.href}
               variant="dark"
               hoverFill="white"
-              style={{ padding: '8px 14px', fontSize: '0.78rem' }}>
+              size="sm">
               {cta.label} <Arrow />
             </SceneBtn>
           )}

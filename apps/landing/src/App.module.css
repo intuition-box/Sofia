@@ -37,12 +37,12 @@
 .frame {
   flex: 1;
   position: relative;
-  margin: 24px;
+  margin: var(--frame-margin);
   border: 1px solid rgba(128, 128, 128, 0.55);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px 32px;
+  padding: var(--frame-padding-y) var(--frame-padding-x);
   min-width: 0;
   min-height: 0;
 }
@@ -117,7 +117,7 @@
   position: absolute;
   inset: 0;
   display: grid;
-  gap: 16px;
+  gap: var(--zone-gap);
   min-height: 0;
   min-width: 0;
   transition: opacity 220ms cubic-bezier(0.65, 0, 0.35, 1);
@@ -373,6 +373,77 @@
   --enter-delay: calc(440ms + var(--zone-i) * 80ms + var(--zone-extra-delay));
 }
 
+/* ── Per-zone CSS-variable bindings driven by data-attributes ──
+ *
+ * The PlaceholderSlide component picks a zone's grid position, cascade
+ * index, and entrance delay role via data-attributes. CSS resolves
+ * those to the numeric values the entrance choreography needs, so the
+ * JSX stays free of inline styles — everything declarative.
+ *
+ * `data-grid-area` maps a layout slot letter (a-f, h) to the CSS
+ * `grid-area` it should occupy. Layout shapes are defined by the
+ * `.layout_*` classes above.
+ */
+
+.zone[data-grid-area='a'] { grid-area: a; }
+.zone[data-grid-area='b'] { grid-area: b; }
+.zone[data-grid-area='c'] { grid-area: c; }
+.zone[data-grid-area='d'] { grid-area: d; }
+.zone[data-grid-area='e'] { grid-area: e; }
+.zone[data-grid-area='f'] { grid-area: f; }
+/* The `h` cell (header banner inside the grid) is rendered as
+   .gridBanner, not .zone — but kept here for completeness if the
+   shape ever changes. */
+.gridBanner[data-grid-area='h'] { grid-area: h; }
+
+/* `data-zone-i` resolves the cascade index used by --enter-delay.
+   LAYOUT_AREAS in PlaceholderSlide.tsx caps at 6 zones (left-quintet-
+   right + reveal), so we cover 0–5 explicitly. */
+.zone[data-zone-i='0'] { --zone-i: 0; }
+.zone[data-zone-i='1'] { --zone-i: 1; }
+.zone[data-zone-i='2'] { --zone-i: 2; }
+.zone[data-zone-i='3'] { --zone-i: 3; }
+.zone[data-zone-i='4'] { --zone-i: 4; }
+.zone[data-zone-i='5'] { --zone-i: 5; }
+
+/* `data-zone-role` flags the lead zone (no extra delay) vs cascade
+   zones (extra delay = the slide's --reveal-delay token). The slide
+   sets --reveal-delay on its root when revealDelay > 0; falls back
+   to 0ms when unset so non-cascading slides stay snappy. */
+.zone[data-zone-role='lead'] { --zone-extra-delay: 0ms; }
+.zone[data-zone-role='cascade'] {
+  --zone-extra-delay: var(--reveal-delay, 0ms);
+}
+
+/* `data-wipe-tint` picks the slab colour for the diagonal entrance
+   wipe. Each slide configures a single tint via its `wipeColor` prop;
+   the slide root inherits the matching --intent token down to the wipe
+   zone. When no tint is configured, the .peach/.dark fallbacks below
+   set sensible defaults (#02000e on peach, --color-accent on dark). */
+
+.placeholder[data-wipe-tint='fun'] .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--intent-fun);
+}
+.placeholder[data-wipe-tint='trusted'] .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--intent-trusted);
+}
+.placeholder[data-wipe-tint='learning'] .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--intent-learning);
+}
+.placeholder[data-wipe-tint='inspiration'] .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--intent-inspiration);
+}
+.placeholder[data-wipe-tint='work'] .zone[data-anim='wipe'] {
+  --zone-wipe-color: var(--intent-work);
+}
+
+/* `data-reveal-delay` on .placeholder propagates the cascade beat
+   (extra delay added to non-lead zones). Bounded set so we enumerate
+   the values used in slides.config.tsx. */
+.placeholder[data-reveal-delay='700'] {
+  --reveal-delay: 700ms;
+}
+
 /* slide-up (default for non-first zones) — hidden state. The fast
    default transition is what plays on EXIT (slide leaving): a quick
    200ms fade-out so the dots/cards don't linger across the bg wipe.
@@ -547,4 +618,159 @@
 
 .dark .revealCard {
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Mobile flow (<= 899px) ────────────────────────────────
+ *
+ * The deck stops behaving like a fixed-height stage and lets each
+ * slide grow to its content. All grid layouts collapse to a single
+ * column so zones stack vertically, the absolute-positioned reveal
+ * layer becomes a sibling block below the base zones (both visible),
+ * and zones get a sensible min-height so they don't visually collapse.
+ *
+ * Intra-slide entrance animations still play (wipe / slide-up /
+ * scale), gated by `data-active` flipped by IntersectionObserver in
+ * SceneStack.tsx as each .placeholder scrolls into view.
+ */
+
+@media (max-width: 899px) {
+  .placeholder {
+    height: auto;
+    min-height: 100vh;
+  }
+  /* Drop the frame chrome on mobile — the deck's signature outline +
+     margin reads as "card on a slab" on desktop, but on a portrait
+     viewport it competes with the content for breathing room AND
+     prevents per-layer backgrounds from going edge-to-edge. The
+     metaStrip sits inside the placeholder, painted by .placeholder's
+     own bg. Each .zones layer carries its own padding so it reads as
+     a full-bleed section. */
+  .frame {
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-height: auto;
+    overflow: hidden;
+  }
+  .metaStrip {
+    padding: 14px var(--gutter);
+  }
+  /* The placeholder paints the BASE variant's bg via data-base-variant
+     (set by PlaceholderSlide.tsx). This colours the meta strip and any
+     gap before/after the .zones layers. Each .zones / .revealZones
+     layer then paints its OWN variant bg on top, allowing the same
+     slide to host two stacked colours (e.g. S.01 HERO peach → WHY
+     SOFIA dark) the way the desktop crossfade did. */
+  .placeholder[data-base-variant='peach'] {
+    background: var(--color-accent);
+    color: #02000e;
+  }
+  .placeholder[data-base-variant='dark'] {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  /* The content area no longer needs to be a positioned box — the
+     zones grid below flows naturally and pushes the frame height. */
+  .contentArea {
+    position: static;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  /* Every layout collapses to a single column. We override grid-template
+     wholesale (areas removed, auto-flow row) so the .zone selectors
+     keep working but ignore the original 2/3-column shape. */
+  .zones {
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--zone-gap);
+    padding: 36px var(--gutter);
+  }
+  /* Per-layer backgrounds — each .zones / .revealZones layer paints
+     its own colour edge-to-edge so two layers stacked vertically can
+     carry the same desktop palette split (e.g. HERO peach above WHY
+     SOFIA dark, with a clean horizontal seam between them). */
+  .zones.peach,
+  .revealZones.peach {
+    background: var(--color-accent);
+    color: #02000e;
+  }
+  .zones.dark,
+  .revealZones.dark {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  /* Each zone gets enough breathing room to host real content without
+     collapsing flat. min-height keeps the wipe slab visible on entry
+     and gives the cards room for typography clamps. */
+  .zone {
+    min-height: 50vh;
+  }
+  /* The custom-content zones (typography-heavy) sit on auto height so
+     they only consume what they need — a 50vh hero next to a 50vh
+     partner strip would be too long otherwise. */
+  .zone[data-custom='true'] {
+    min-height: auto;
+  }
+  /* .zoneContent uses absolute positioning on desktop so SVGs stretch
+     to fill the zone. On mobile we want it to flow with the rest, so
+     it switches to static and the zone grows to its content. */
+  .zoneContent {
+    position: static;
+    padding: 24px 0;
+  }
+  /* Wireframe zones (no custom content) keep a centred presentation. */
+  .zoneInner {
+    padding: 32px 0;
+  }
+  /* Base + reveal layers coexist vertically. The base no longer fades
+     when the reveal arrives — they're both fully visible, ordered
+     normally in the flow. */
+  .zones[data-hidden='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .revealZones {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .revealZones[data-revealed='false'] .zone .zoneInner,
+  .revealZones[data-revealed='false'] .zone .zoneContent {
+    opacity: 1;
+    transform: none;
+  }
+  .revealZones[data-revealed='false'] .zone[data-anim='wipe']::after {
+    transform: skewX(-30deg) translateX(160%);
+  }
+  /* In-grid banner cell — drops the grid-area anchor on mobile so the
+     banner just sits as a normal block at the top of the flow. */
+  .gridBanner {
+    grid-area: auto !important;
+    padding: 0;
+  }
+  /* Reveal zones that intentionally mirror a base zone (via
+     revealNumOverride pointing to a number < revealStart) would render
+     the same content twice in mobile flow mode, because base + reveal
+     coexist stacked instead of crossfading. Hide them — the base copy
+     remains visible. See PlaceholderSlide.tsx `mirrorsBase`. */
+  .zone[data-mirror-of-base='true'] {
+    display: none;
+  }
+}
+
+/* ── Smallest viewports (<= 640px) — final tightening. */
+@media (max-width: 640px) {
+  .zone {
+    min-height: 40vh;
+  }
+  .placeholder {
+    min-height: auto;
+  }
+  .frame {
+    min-height: auto;
+  }
 }
