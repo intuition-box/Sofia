@@ -48,7 +48,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
   // Progress toward next level (same baseLevel as DetailView). The
   // level is fully automatic — it tracks certifiedCount; there is no
   // Gold-spend "Level Up" action anymore.
-  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
+  const { progressPercent } = calculateLevelProgress(certifiedCount, displayLevel)
 
   return (
     <div
@@ -90,12 +90,8 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
         )}
       </div>
 
-      {/* Stats — includes level badge */}
+      {/* Stats — Level moved under the progress bar below */}
       <div className="group-bento-stats">
-        <div className="stat-item">
-          <span className="stat-value">{displayLevel}</span>
-          <span className="stat-label">Level</span>
-        </div>
         <div className="stat-item">
           <span className="stat-value">{activeUrlCount}</span>
           <span className="stat-label">URLs</span>
@@ -110,7 +106,8 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
         </div>
       </div>
 
-      {/* Level progress bar - shows progress toward next level */}
+      {/* Level progress bar — current level sits right under the bar
+          (replaces the old certs-to-next label). */}
       <div className="group-bento-progress">
         <div className="progress-bar-container">
           <div
@@ -120,13 +117,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
             }}
           />
         </div>
-        <span className="progress-label">
-          {onChainLoading
-            ? '...'
-            : xpToNextLevel > 0
-              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
-              : 'Max level!'}
-        </span>
+        <span className="progress-label">Level {displayLevel}</span>
       </div>
 
       {/* Certification breakdown dots - ONLY show on-chain certifications */}

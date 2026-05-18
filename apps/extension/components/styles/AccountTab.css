@@ -424,6 +424,14 @@
   color: var(--ds-ink);
 }
 
+/* Score page tab bar — selected tab = peach, same as the Echoes /
+   Bookmarks / History page tabs. Scoped to .score-toolbar so other
+   .sub-tabs rows keep their default selection style. */
+.score-toolbar .sub-tab.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
 /* Claimable indicator — dashed border (mirrors explorer "create new circle"
    card) instead of yellow breathing glow. */
 .sub-tab.has-claimable,
