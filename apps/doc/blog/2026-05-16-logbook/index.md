@@ -39,7 +39,7 @@ primary. ENS resolution stays pinned to the primary wallet, so the name
 displayed at the top of the interface remains stable even as users connect
 or disconnect addresses below.
 
-The edge case that bit us during testing — linking a new wallet *after*
+The edge case that bit us during testing — linking a new wallet _after_
 having certified pages with the old one — now resolves correctly: the new
 score reconstitutes itself the next time the profile loads.
 
