@@ -13,35 +13,15 @@ replaced our polling with real-time data. This logbook covers the whole arc.
 
 ## One repository, finally
 
-Sofia used to live in three separate repositories: the Chrome extension, the
-AI backend, and the knowledge-graph server. Sharing types between them was a
+Sofia used to live in four separate repositories: the Chrome extension, the
+explorer,the landing and the documentation . Sharing types between them was a
 recurring source of drift, and onboarding a new contributor meant cloning
 three projects, installing three sets of dependencies, and hoping the
 versions lined up.
 
 That ended this month. Everything now lives in a single workspace, with a
 shared GraphQL package that the apps consume directly. Codegen happens once,
-in one place. The landing page, the OG image service, the AI agents, and the
-knowledge-graph server were all folded in as well. One clone, one install,
-and the whole stack is running locally.
-
-## Multi-wallet, end to end
-
-A Sofia identity is no longer tied to a single address. Users can link
-multiple wallets through Privy, and their profile, certifications, trust
-circle, and discovery score all aggregate across every connected address.
-
-The interesting part was the on-chain side. Every query that filtered by
-"the user's address" had to learn to filter by "any of the user's addresses",
-and every service that computed something per-user had to learn the union.
-The trust circle is now the union of all linked wallets, not just the
-primary. ENS resolution stays pinned to the primary wallet, so the name
-displayed at the top of the interface remains stable even as users connect
-or disconnect addresses below.
-
-The edge case that bit us during testing — linking a new wallet _after_
-having certified pages with the old one — now resolves correctly: the new
-score reconstitutes itself the next time the profile loads.
+in one place. One clone, one install, and the whole stack is running locally.
 
 ## A shared design language
 
@@ -85,7 +65,7 @@ visualization, which was confusing for users coming from the design
 specs), and the interest page was slimmed down to its essentials —
 back, hero, platforms, and certified items.
 
-## Real-time, at last
+## Real-time, websocket live
 
 Sofia's extension used to poll for the data that needed to feel alive — vote
 positions, quest progress, the daily streak. Polling worked, but it created
