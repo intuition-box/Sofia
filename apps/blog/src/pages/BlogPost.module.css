@@ -1,0 +1,70 @@
+/**
+ * BlogPost — single article view. Hero header centred above a narrow
+ * .prose column. The hero spans the wider .container-wide; the body
+ * sits inside the narrower .container so long-form reading width stays
+ * comfortable.
+ */
+
+.article {
+  padding: 56px 0 80px;
+}
+
+.header {
+  max-width: var(--maxw);
+  margin: 0 auto 24px;
+  padding: 0 var(--gutter);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 32px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.backLink:hover {
+  color: var(--color-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 1.4rem + 2.8vw, 4rem);
+  line-height: 1.05;
+}
+
+.body {
+  padding: 0 var(--gutter);
+}
+
+.notFound {
+  padding: 120px var(--gutter);
+  text-align: center;
+}
+
+.notFoundTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
+  margin: 0 0 12px;
+}
+
+.notFoundLink {
+  display: inline-block;
+  margin-top: 24px;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .article {
+    padding: 32px 0 60px;
+  }
+}

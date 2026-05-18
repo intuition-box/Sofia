@@ -88,22 +88,11 @@ const config: Config = {
           editUrl:
             'https://github.com/intuition-box/sofiachronicles/blob/main/blog/',
         },
-        blog: {
-          showReadingTime: true,
-          blogTitle: 'Sofia Chronicles',
-          blogSidebarTitle: 'Last Articles',
-          blogSidebarCount: 'ALL',
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        // The Chronicles blog moved to its own app — apps/blog/ — and is
+        // served at blog.sofia.intuition.box. Disabling the Docusaurus
+        // blog preset means /blog no longer resolves locally; the navbar
+        // / footer link points to the subdomain instead (see below).
+        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -161,7 +150,7 @@ const config: Config = {
           ],
         },
         {
-          to: '/blog',
+          href: 'https://blog.sofia.intuition.box',
           label: 'Chronicles',
           position: 'right',
         },
@@ -175,7 +164,7 @@ const config: Config = {
           items: [
             { label: 'Documentation', to: '/docs/intro' },
             { label: 'About us', to: '/docs/about' },
-            { label: 'Chronicles', to: '/blog' },
+            { label: 'Chronicles', href: 'https://blog.sofia.intuition.box' },
           ],
         },
         {

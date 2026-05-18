@@ -1,0 +1,73 @@
+/**
+ * Navbar — fixed dark bar with Sofia brand on the left and a compact
+ * link set on the right. Lifted from apps/landing so the blog reads as
+ * an extension of the same site chrome.
+ */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 14px var(--gutter);
+  background: #000;
+  border-bottom: 1px solid var(--color-border-soft);
+  height: var(--nav-h);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo img {
+  height: 24px;
+  width: auto;
+  filter: invert(1);
+  display: block;
+}
+
+.brandSep {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.right a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.right a:hover {
+  color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+  .brandSep {
+    display: none;
+  }
+  .right {
+    gap: 16px;
+  }
+  .right a:nth-child(n + 2) {
+    display: none;
+  }
+}

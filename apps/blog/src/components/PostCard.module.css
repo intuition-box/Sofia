@@ -1,0 +1,123 @@
+/**
+ * PostCard — index list item. Soft border + peach hover accent so the
+ * deck-style monochrome read keeps continuity with the landing without
+ * being noisy.
+ */
+
+.card {
+  display: block;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--color-border-soft);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.card:last-child {
+  border-bottom: none;
+}
+
+.card:hover {
+  border-bottom-color: var(--color-border);
+}
+
+.card:hover .title {
+  color: var(--color-accent);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.authors {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.authorAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.022em;
+  color: var(--color-text);
+  margin: 0 0 12px;
+  transition: color var(--duration-fast) var(--ease-out);
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 30;
+}
+
+.excerpt {
+  margin: 0 0 14px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  max-width: 70ch;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 4px 10px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 9999px;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.tag:hover {
+  color: var(--color-text);
+  border-color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 22px 0;
+  }
+  .title {
+    font-size: clamp(1.35rem, 6vw, 1.8rem);
+  }
+  .excerpt {
+    font-size: 0.92rem;
+  }
+}
