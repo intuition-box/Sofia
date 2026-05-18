@@ -1,8 +1,8 @@
 {
   "name": "extension",
-  "displayName": "Sofia BETA",
-  "version": "0.6.0",
-  "description": "Transform your browsing into structured knowledge on the blockchain. AI-powered insights and web3 integration.",
+  "displayName": "Sofia",
+  "version": "1.0.0",
+  "description": "Mark the web with one click. Your signals become collective intelligence — no one owns the data, not even us.",
   "author": "me",
   "scripts": {
     "dev": "plasmo dev",

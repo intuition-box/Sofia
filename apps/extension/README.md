@@ -52,12 +52,12 @@ Sofia is a Chrome extension that tracks your browsing, lets you certify URLs wit
     ▼
     ┌──────────┐         ┌──────────┐         ┌──────────┐
     │ Level Up │────────▶│  XP &    │────────▶│ Interest │
-    │ (Gold)   │         │  Quests  │         │(Analysis)│
+    │          │         │  Quests  │         │(Analysis)│
     └──────────┘         └──────────┘         └──────────┘
          │                    │                    │
          ▼                    ▼                    ▼
-    Spend Gold to        Complete quests     AI analyzes your
-    level up domains     to earn XP and      certifications to
+                         Complete quests     AI analyzes your
+    Level up domains     to earn XP and      certifications to
     and generate AI      unlock badges       build your interest
     predicates                               profile
 ```
@@ -87,7 +87,7 @@ Sofia is a Chrome extension that tracks your browsing, lets you certify URLs wit
         ▼                       ▼
  ┌──────────────┐     ┌─────────────────┐
  │ Sofia-Mastra │     │   Intuition     │
- │ (AI Agents)  │     │   Blockchain    │
+ │              │     │   Blockchain    │
  │ Port 4111    │     │ (MultiVault +   │
  │              │     │  Fee Proxy)     │
  └──────┬───────┘     └─────────────────┘
@@ -635,4 +635,4 @@ MIT
 
 ---
 
-**Sofia v0.5.1 BETA** - Built with Mastra, GaiaNet & Intuition
+**Sofia v1.0.0** - Built with Mastra, GaiaNet & Intuition
