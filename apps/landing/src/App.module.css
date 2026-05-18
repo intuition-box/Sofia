@@ -91,18 +91,6 @@
   color: var(--color-accent) !important;
 }
 
-/* ValueCard pill ("Support" stake button OR "See on Intuition" link) —
-   hover flips to solid black slab with light ink. !important is needed
-   because the pill carries inline-style background/color (transparent
-   / inherit) that would otherwise beat external CSS at equal
-   specificity. */
-.placeholder a:hover .valuePill,
-.valuePill:hover {
-  background: #02000e !important;
-  border-color: #02000e !important;
-  color: #f5e9d8 !important;
-}
-
 /* In-grid banner cell — used by layouts that declare an `h` area
    (e.g. quad-banner-tall-right). Matches the .zoneContent padding
    so the banner text starts at the same X as the card text below. */

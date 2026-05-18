@@ -1,4 +1,4 @@
-import type { PlaceholderSlideProps } from './PlaceholderSlide'
+import { LAYOUT_AREAS, type PlaceholderSlideProps } from './PlaceholderSlide'
 
 export type SlideConfig = Omit<PlaceholderSlideProps, 'variant' | 'zoneStart'>
 
@@ -164,3 +164,19 @@ export const REVEAL_BGS: ((typeof VARIANTS)[number] | undefined)[] = [
   undefined, // S.08
   undefined, // S.09
 ]
+
+/* Zone numbers are globally unique across the whole stack. Each slide
+   contributes its layout's zone count (+ its reveal layout's count if
+   present). Precomputed once at module load so the App component can
+   stay a pure render function — no `let cursor` mutated during map. */
+export const SLIDE_ZONE_STARTS: number[] = (() => {
+  const starts: number[] = []
+  let cursor = 1
+  for (const s of SLIDES) {
+    starts.push(cursor)
+    cursor +=
+      LAYOUT_AREAS[s.layout].length +
+      (s.revealLayout ? LAYOUT_AREAS[s.revealLayout].length : 0)
+  }
+  return starts
+})()

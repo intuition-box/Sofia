@@ -1,19 +1,16 @@
 import { Navbar } from './components/Navbar'
 import { Footer } from './components/Footer'
 import { SceneStack } from './scenes/SceneStack'
-import {
-  LAYOUT_AREAS,
-  PlaceholderSlide,
-} from './scenes/PlaceholderSlide'
+import { PlaceholderSlide } from './scenes/PlaceholderSlide'
 import {
   REVEAL_BGS,
   SLIDES,
+  SLIDE_ZONE_STARTS,
   SUB_STATES,
   VARIANTS,
 } from './scenes/slides.config'
 
 export default function App() {
-  let zoneCursor = 1
   return (
     <>
       <Navbar />
@@ -26,20 +23,14 @@ export default function App() {
         revealBgs={REVEAL_BGS}
         subStates={SUB_STATES}
         slideCodes={SLIDES.map((s) => s.code)}>
-        {SLIDES.map((s, i) => {
-          const zoneStart = zoneCursor
-          zoneCursor +=
-            LAYOUT_AREAS[s.layout].length +
-            (s.revealLayout ? LAYOUT_AREAS[s.revealLayout].length : 0)
-          return (
-            <PlaceholderSlide
-              key={s.code}
-              {...s}
-              variant={VARIANTS[i]}
-              zoneStart={zoneStart}
-            />
-          )
-        })}
+        {SLIDES.map((s, i) => (
+          <PlaceholderSlide
+            key={s.code}
+            {...s}
+            variant={VARIANTS[i]}
+            zoneStart={SLIDE_ZONE_STARTS[i]}
+          />
+        ))}
       </SceneStack>
       <Footer />
     </>

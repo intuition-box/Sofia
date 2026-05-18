@@ -1,11 +1,6 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useVoteStats } from '../../hooks/useVoteStats'
 import { useVoting } from '../../hooks/useVoting'
-/* Cross-import: the `valuePill` rule lives in App.module.css because
- * its hover effect cascades from `.placeholder a:hover` (the slide
- * wrapper class). Re-importing the same module here yields the same
- * scoped class, so the parent-hover selector keeps working. */
-import appStyles from '../../App.module.css'
 
 interface ValueCardProps {
   tag: string
@@ -19,11 +14,39 @@ interface ValueCardProps {
   tripleId?: `0x${string}`
 }
 
+const PILL_BASE: CSSProperties = {
+  marginTop: 10,
+  alignSelf: 'flex-start',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '6px 12px',
+  border: '1px solid currentColor',
+  borderRadius: 999,
+  fontSize: 11,
+  fontWeight: 500,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  fontFamily: 'var(--font-mono)',
+  background: 'transparent',
+  color: 'inherit',
+  transition:
+    'background 160ms ease, color 160ms ease, border-color 160ms ease',
+}
+
+const PILL_HOVER: CSSProperties = {
+  background: '#02000e',
+  borderColor: '#02000e',
+  color: '#f5e9d8',
+}
+
 /**
  * ValueCard — compact card used inside reveal-cell zones: eyebrow tag,
  * big mono TRUST figure (community conviction), then h-section title +
  * lede description. When `tripleId` is provided, switches to live mode
- * with on-chain vote stats and a real staking button.
+ * with on-chain vote stats and a real staking button. Pill hover is
+ * driven by React state on the wrapper so we don't need a parent-class
+ * cascade from App.module.css.
  */
 export function ValueCard({
   tag,
@@ -43,6 +66,7 @@ export function ValueCard({
   const { depositFor, isConnected } = useVoting()
   const [voting, setVoting] = useState(false)
   const [voteErr, setVoteErr] = useState<string | null>(null)
+  const [hovered, setHovered] = useState(false)
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -58,11 +82,17 @@ export function ValueCard({
     }
   }
   const liveTrust = tripleId ? (isLoading ? '…' : forDisplay) : trust
+  const pillStyle: CSSProperties = {
+    ...PILL_BASE,
+    ...(hovered ? PILL_HOVER : null),
+  }
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer noopener"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         width: '100%',
         height: '100%',
@@ -132,50 +162,12 @@ export function ValueCard({
           type="button"
           onClick={handleVote}
           disabled={voting}
-          className={appStyles.valuePill}
-          style={{
-            marginTop: 10,
-            alignSelf: 'flex-start',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 12px',
-            border: '1px solid currentColor',
-            borderRadius: 999,
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-mono)',
-            background: 'transparent',
-            color: 'inherit',
-            cursor: voting ? 'progress' : 'pointer',
-            transition:
-              'background 160ms ease, color 160ms ease, border-color 160ms ease',
-          }}>
+          style={{ ...pillStyle, cursor: voting ? 'progress' : 'pointer' }}>
           {voting ? 'Signing…' : isConnected ? 'Support' : 'Connect to vote'}
           <span aria-hidden="true">↑</span>
         </button>
       ) : href ? (
-        <span
-          className={appStyles.valuePill}
-          style={{
-            marginTop: 10,
-            alignSelf: 'flex-start',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 12px',
-            border: '1px solid currentColor',
-            borderRadius: 999,
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-mono)',
-            transition:
-              'background 160ms ease, color 160ms ease, border-color 160ms ease',
-          }}>
+        <span style={pillStyle}>
           See on Intuition <span aria-hidden="true">↗</span>
         </span>
       ) : null}
