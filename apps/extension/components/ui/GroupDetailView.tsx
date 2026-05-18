@@ -7,6 +7,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from "~/lib/config/filterOptions"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CertificationType } from "~/lib/services"
 import type { UserTopicPosition } from "~/lib/services/TopicPositionsService"
@@ -52,8 +56,10 @@ import type { IntentionPurpose } from "../../types/discovery"
 import { INTENTION_PREDICATES } from "../../types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { CartToast } from "./CartDrawer"
+import FilterDropdown from "./FilterDropdown"
 import { InterestContextSelector } from "./InterestContextSelector"
 
+import "../styles/CategoryStyles.css"
 import "../styles/IntentionBubbleSelector.css"
 
 const logger = createHookLogger("GroupDetailView")
@@ -340,9 +346,11 @@ const GroupDetailView = ({
   onRefresh
 }: GroupDetailViewProps) => {
   const [processingUrls, setProcessingUrls] = useState<Set<string>>(new Set())
-  const [filter, setFilter] = useState<
-    "all" | "uncertified" | CertificationType
-  >("all")
+  const [verbFilter, setVerbFilter] = useState<"all" | CertificationType>(
+    "all"
+  )
+  const [topicFilter, setTopicFilter] = useState<string>("all")
+  const [uncertifiedOnly, setUncertifiedOnly] = useState(false)
   const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(
     null
   )
@@ -539,9 +547,17 @@ const GroupDetailView = ({
     if (url.removed) return false
     const status = getEffectiveCertStatus(url, getUrlCertification(url.url))
 
-    if (filter === "all") return true
-    if (filter === "uncertified") return !status.isCertified
-    return status.labels.includes(filter)
+    if (uncertifiedOnly && status.isCertified) return false
+    if (verbFilter !== "all" && !status.labels.includes(verbFilter)) {
+      return false
+    }
+    if (
+      topicFilter !== "all" &&
+      !getCertifiedContexts(url.url).includes(topicFilter)
+    ) {
+      return false
+    }
+    return true
   })
 
   // Sort by most recent first
@@ -844,41 +860,31 @@ const GroupDetailView = ({
         </div>
       </div>
 
-      {/* Certification Filter */}
-      <div className="filter-section">
+      {/* Verb + Topic filter dropdowns — same coherent system as
+          EchoesTab / BookmarkTab / History / My Trust Circles and the
+          explorer. Topic uses the on-chain "in context of" data from
+          useUserCertifications. The Uncertified toggle is kept here:
+          it's view-specific and ties to the "To certify" stat. */}
+      <div className="echoes-filter-row">
+        <FilterDropdown
+          label="Verbs"
+          value={verbFilter}
+          onChange={(id) => setVerbFilter(id as "all" | CertificationType)}
+          options={VERB_FILTER_OPTIONS}
+        />
+        <FilterDropdown
+          label="Topics"
+          value={topicFilter}
+          onChange={setTopicFilter}
+          options={TOPIC_FILTER_OPTIONS}
+          wide
+        />
         <button
-          className={`filter-btn ${filter === "all" ? "active" : ""}`}
-          onClick={() => setFilter("all")}>
-          All ({group.activeUrlCount})
-        </button>
-        <button
-          className={`filter-btn filter-btn--uncertified ${filter === "uncertified" ? "active" : ""}`}
-          onClick={() => setFilter("uncertified")}>
+          type="button"
+          className={`filter-btn filter-btn--uncertified ${uncertifiedOnly ? "active" : ""}`}
+          onClick={() => setUncertifiedOnly((v) => !v)}>
           Uncertified ({uncertifiedCount})
         </button>
-        {CERTIFICATION_LIST.map((cert) => {
-          // Count from Pipeline 2 + Pipeline 1 fallback
-          let count = 0
-          for (const u of group.urls) {
-            if (u.removed) continue
-            const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
-            if (status.labels.includes(cert.type)) count++
-          }
-          if (count === 0) return null
-          return (
-            <button
-              key={cert.type}
-              className={`filter-btn ${filter === cert.type ? "active" : ""}`}
-              onClick={() => setFilter(cert.type)}>
-              <span
-                className="filter-btn-dot"
-                aria-hidden="true"
-                style={{ background: cert.color }}
-              />
-              {cert.label} ({count})
-            </button>
-          )
-        })}
       </div>
 
       {/* URL List */}

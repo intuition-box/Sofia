@@ -1,11 +1,24 @@
 import { useState, useMemo } from 'react'
-import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage, useRedeemTriple } from '~/hooks'
+import {
+  getCertificationForUrl,
+  useIntuitionTriplets,
+  useRedeemTriple,
+  useUserCertifications,
+  useWalletFromStorage,
+  useWeightOnChain
+} from '~/hooks'
 import BookmarkButton from '../../ui/BookmarkButton'
+import FilterDropdown from '../../ui/FilterDropdown'
 import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { BondingCurveChart } from '../../charts/BondingCurveChart'
 import { getAddress } from 'viem'
 import { getTripleUrl, getAtomUrl } from '~/lib/utils'
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from '~/lib/config/filterOptions'
+import { TOPIC_COLORS, TOPIC_LABELS } from '~/lib/config/topicConfig'
 import ArrowTopRightIcon from '../../ui/icons/arrow-top-right-thick.svg'
 import LinkVariantIcon from '../../ui/icons/link-variant.svg'
 import '../../styles/CoreComponents.css'
@@ -14,6 +27,7 @@ import '../../styles/CommonPage.css'
 import '../../styles/CategoryStyles.css'
 import { createHookLogger, getFaviconUrl } from '~/lib/utils'
 import { predicateLabelToIntentionType } from '~/types/intentionCategories'
+import type { IntentionType } from '~/types/intentionCategories'
 import { VerbTag } from '@0xsofia/design-system'
 
 const logger = createHookLogger('HistoryTab')
@@ -53,6 +67,12 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
 
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [searchQuery, setSearchQuery] = useState('')
+  const [verbFilter, setVerbFilter] = useState<IntentionType | 'all'>('all')
+  const [topicFilter, setTopicFilter] = useState<string>('all')
+
+  // On-chain "in context of" topics — same source EchoesTab / Bookmark /
+  // the explorer feed use, so the Verb + Topic filters stay coherent.
+  const { certifications } = useUserCertifications(address)
 
   // Redeem state
   const [redeemingIds, setRedeemingIds] = useState<Set<string>>(() => new Set())
@@ -91,6 +111,21 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
       )
     }
 
+    if (verbFilter !== 'all') {
+      filtered = filtered.filter(
+        triplet =>
+          predicateLabelToIntentionType(triplet.triplet.predicate) === verbFilter
+      )
+    }
+
+    if (topicFilter !== 'all') {
+      filtered = filtered.filter(triplet => {
+        if (!triplet.url) return false
+        const entry = getCertificationForUrl(certifications, triplet.url)
+        return entry?.interestContexts?.includes(topicFilter) ?? false
+      })
+    }
+
     switch (sortBy) {
       case 'highest-shares':
         return filtered.sort((a, b) => (b.position?.offsetProgressive || 0) - (a.position?.offsetProgressive || 0))
@@ -105,7 +140,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
       default:
         return filtered
     }
-  }, [triplets, sortBy, searchQuery, redeemedIds])
+  }, [triplets, sortBy, searchQuery, redeemedIds, verbFilter, topicFilter, certifications])
 
   const handleViewOnPortal = (tripletId: string) => {
     window.open(getTripleUrl(tripletId), '_blank')
@@ -198,12 +233,36 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
         </div>
       </div>
 
+      {/* Verb + Topic filter dropdowns — same coherent system as
+          EchoesTab / BookmarkTab / My Trust Circles and the explorer.
+          Topic uses the on-chain "in context of" data from
+          useUserCertifications. */}
+      <div className="echoes-filter-row">
+        <FilterDropdown
+          label="Verbs"
+          value={verbFilter}
+          onChange={(id) => setVerbFilter(id as IntentionType | 'all')}
+          options={VERB_FILTER_OPTIONS}
+        />
+        <FilterDropdown
+          label="Topics"
+          value={topicFilter}
+          onChange={setTopicFilter}
+          options={TOPIC_FILTER_OPTIONS}
+          wide
+        />
+      </div>
+
       {filteredAndSortedTriplets.length > 0 ? (
         <div className="history-list">
           {filteredAndSortedTriplets.map((tripletItem) => {
             const isExpanded = expandedTriplet?.tripletId === tripletItem.id
             const intent = predicateLabelToIntentionType(tripletItem.triplet.predicate)
             const titleLabel = tripletItem.triplet.object || tripletItem.url || ''
+            const contexts = tripletItem.url
+              ? getCertificationForUrl(certifications, tripletItem.url)
+                  ?.interestContexts ?? []
+              : []
 
             return (
               <div
@@ -234,6 +293,20 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                       {intent && (
                         <VerbTag intent={intent} label={intent} />
                       )}
+                      {contexts.map((slug) => {
+                        const label = TOPIC_LABELS[slug] || slug
+                        const color = TOPIC_COLORS[slug] || 'var(--ds-accent)'
+                        return (
+                          <span
+                            key={`ctx-${slug}`}
+                            className="cert-badge cert-badge--context"
+                            style={{ color, borderColor: color }}
+                            title={`Marked in context of ${label}`}
+                          >
+                            {label}
+                          </span>
+                        )
+                      })}
                       {tripletItem.timestamp ? (
                         <span className="url-date">
                           {new Date(tripletItem.timestamp).toLocaleDateString('en-US', {

@@ -67,3 +67,29 @@ export const TOPIC_COLORS: Record<string, string> = {
 export const ATOM_ID_TO_TOPIC = new Map(
   Object.entries(TOPIC_ATOM_IDS).map(([slug, id]) => [id, slug])
 )
+
+// Google Material Symbols (Outlined) glyph name per topic — ported 1:1
+// from sofia-explorer (src/config/topicEmoji.ts → TOPIC_ICON) so the
+// in-dot pictogram reads identically to the explorer's TopicBadge.
+export const TOPIC_ICON: Record<string, string> = {
+  "tech-dev": "terminal",
+  "design-creative": "palette",
+  "music-audio": "music_note",
+  "gaming": "sports_esports",
+  "web3-crypto": "currency_bitcoin",
+  "science": "science",
+  "sport-health": "fitness_center",
+  "video-cinema": "movie",
+  "entrepreneurship": "rocket_launch",
+  "performing-arts": "theater_comedy",
+  "nature-environment": "forest",
+  "food-lifestyle": "restaurant",
+  "literature": "menu_book",
+  "personal-dev": "psychology"
+}
+
+const DEFAULT_TOPIC_ICON = "label"
+
+export function getTopicIcon(slug: string): string {
+  return TOPIC_ICON[slug] ?? DEFAULT_TOPIC_ICON
+}

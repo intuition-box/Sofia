@@ -1,0 +1,207 @@
+/* FilterDropdown — extension port of the explorer .crd-filter-* chrome.
+   Same look, extension DS tokens, self-anchored panel (no Radix portal). */
+
+.ext-filter {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.ext-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  min-width: 180px;
+  font-family: inherit;
+}
+.ext-filter-trigger--wide {
+  min-width: 210px;
+}
+.ext-filter-trigger:hover {
+  border-color: var(--ds-ink-soft);
+}
+.ext-filter-trigger[aria-expanded="true"] {
+  border-color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+
+.ext-filter-trigger__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transform: translateY(-1px);
+  transition: opacity 0.2s ease;
+}
+/* Topic options carry an icon → grow the disc into a TopicBadge-style
+   pictogram, same silhouette as the explorer. */
+.ext-filter-trigger__dot.has-icon {
+  width: 20px;
+  height: 20px;
+  transform: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.ext-filter-trigger:hover .ext-filter-trigger__dot {
+  opacity: 0.65;
+}
+.ext-filter-trigger__label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.ext-filter-trigger__value {
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ext-filter-trigger__chev {
+  color: var(--ds-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.ext-filter-trigger[aria-expanded="true"] .ext-filter-trigger__chev {
+  transform: rotate(180deg);
+}
+
+.ext-filter-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  width: 320px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.55);
+  transform-origin: top left;
+  animation: extFilterPop 0.14s ease-out;
+}
+.ext-filter-trigger--wide + .ext-filter-pop,
+.ext-filter:has(.ext-filter-trigger--wide) .ext-filter-pop {
+  width: 360px;
+}
+@keyframes extFilterPop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ext-filter-pop__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.ext-filter-pop__cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.ext-filter-pop__cell:hover {
+  background: var(--ds-bg-subtle);
+}
+.ext-filter-pop__cell.is-active {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.ext-filter-pop__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ext-filter-pop__dot.has-icon {
+  width: 22px;
+  height: 22px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* Monochrome pictogram inside the disc — Material Symbols Outlined,
+   same family + variation axes as the explorer's .topic-badge-glyph.
+   Dark ink on the pastel topic color reads in both themes. */
+.ext-filter-glyph {
+  font-family: "Material Symbols Outlined", sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  color: var(--ds-on-accent);
+}
+.ext-filter-trigger__dot.has-icon .ext-filter-glyph {
+  font-size: 13px;
+}
+.ext-filter-pop__dot.has-icon .ext-filter-glyph {
+  font-size: 14px;
+}
+.ext-filter-pop__reset {
+  align-self: flex-end;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.ext-filter-pop__reset:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+}

@@ -7,12 +7,22 @@ import { useEffect, useRef, useState } from "react"
 
 import { userSettingsService } from "~/lib/database"
 
-import { useIntentionGroups, type SortOption } from "../../../hooks"
+import {
+  getCertificationForUrl,
+  useIntentionGroups,
+  useUserCertifications,
+  useWalletFromStorage,
+  type SortOption
+} from "../../../hooks"
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from "../../../lib/config/filterOptions"
 import { getProfileUrl } from "../../../lib/utils"
 import type { IntentionType } from "../../../types/intentionCategories"
-import { INTENTION_CONFIG } from "../../../types/intentionCategories"
 import { useRouter } from "../../layout/RouterProvider"
 import GroupManagerModal from "../../modals/GroupManagerModal"
+import FilterDropdown from "../../ui/FilterDropdown"
 import GroupBentoCard from "../../ui/GroupBentoCard"
 import GroupDetailView from "../../ui/GroupDetailView"
 import SofiaLoader from "../../ui/SofiaLoader"
@@ -27,7 +37,10 @@ const HIGHLIGHT_DURATION_MS = 3200
 
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | "all">("all")
+  const [topicFilter, setTopicFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const { walletAddress } = useWalletFromStorage()
+  const { certifications } = useUserCertifications(walletAddress)
   const [showManager, setShowManager] = useState(false)
   const [managerInitialFilter, setManagerInitialFilter] = useState<
     "all" | "inactive"
@@ -151,7 +164,7 @@ const EchoesTab = () => {
     (g) => !g.domain.endsWith(".eth") && !g.domain.startsWith("0x")
   )
 
-  // Filter by certification type
+  // Filter by certification type (verb)
   const certFilteredGroups =
     certFilter === "all"
       ? baseGroups
@@ -159,12 +172,27 @@ const EchoesTab = () => {
           (g) => (g.certificationBreakdown[certFilter] || 0) > 0
         )
 
+  // Filter by topic — keep groups with ≥1 active URL whose on-chain
+  // certification carries the selected topic in its "in context of"
+  // triples (CertificationEntry.interestContexts). Same topic semantics
+  // and slug palette as the explorer feed — one coherent system.
+  const topicFilteredGroups =
+    topicFilter === "all"
+      ? certFilteredGroups
+      : certFilteredGroups.filter((g) =>
+          (g.urls || []).some((u) => {
+            if (u.removed || u.oauthPredicate) return false
+            const entry = getCertificationForUrl(certifications, u.url)
+            return entry?.interestContexts?.includes(topicFilter) ?? false
+          })
+        )
+
   // Filter by search query
   const filteredGroups = searchQuery.trim()
-    ? certFilteredGroups.filter((g) =>
+    ? topicFilteredGroups.filter((g) =>
         g.domain.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : certFilteredGroups
+    : topicFilteredGroups
 
   const handleDeleteGroup = async (groupId: string) => {
     const group = groups.find((g) => g.id === groupId)
@@ -258,31 +286,24 @@ const EchoesTab = () => {
           </div>
         </div>
 
-        {/* Filter chips — All + intention filters */}
+        {/* Verb + Topic filter dropdowns (ported from the explorer
+            circles feed; replaces the old intention chip row). Topic
+            uses the on-chain "in context of" data from
+            useUserCertifications — coherent with the explorer. */}
         <div className="echoes-filter-row">
-          <button
-            className={`circle-chip ${certFilter === "all" ? "active" : ""}`}
-            onClick={() => setCertFilter("all")}>
-            All
-          </button>
-          {(
-            Object.entries(INTENTION_CONFIG) as [
-              IntentionType,
-              { label: string; color: string }
-            ][]
-          ).map(([type, config]) => (
-            <button
-              key={type}
-              className={`circle-chip ${certFilter === type ? "active" : ""}`}
-              onClick={() => setCertFilter(type)}>
-              <span
-                className="circle-chip-dot"
-                aria-hidden="true"
-                style={{ background: config.color }}
-              />
-              {config.label}
-            </button>
-          ))}
+          <FilterDropdown
+            label="Verbs"
+            value={certFilter}
+            onChange={(id) => setCertFilter(id as IntentionType | "all")}
+            options={VERB_FILTER_OPTIONS}
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
         </div>
 
         {/* Inactive groups cleanup banner */}

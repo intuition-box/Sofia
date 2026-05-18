@@ -10,7 +10,17 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { getAddress } from "viem"
 
-import { useCart, useIntentionCategories, useWalletFromStorage } from "~/hooks"
+import {
+  getCertificationForUrl,
+  useCart,
+  useIntentionCategories,
+  useUserCertifications,
+  useWalletFromStorage
+} from "~/hooks"
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from "~/lib/config/filterOptions"
 import { PREDICATE_IDS, SUBJECT_IDS } from "~/lib/config/constants"
 import { batchResolveEns, createHookLogger, getFaviconUrl } from "~/lib/utils"
 import type { IntentionType } from "~/types/intentionCategories"
@@ -23,6 +33,7 @@ import { useRouter } from "../../layout/RouterProvider"
 import Avatar from "../../ui/Avatar"
 import CategoryCard from "../../ui/CategoryCard"
 import CategoryDetailView from "../../ui/CategoryDetailView"
+import FilterDropdown from "../../ui/FilterDropdown"
 import SofiaLoader from "../../ui/SofiaLoader"
 
 import "../../styles/CircleFeedTab.css"
@@ -117,7 +128,11 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
   const { navigateTo } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<"all" | IntentionType>("all")
-  const [filtersExpanded, setFiltersExpanded] = useState(false)
+  const [topicFilter, setTopicFilter] = useState<string>("all")
+
+  // On-chain "in context of" topics — same source the explorer feed and
+  // EchoesTab use, so the Verb + Topic filters stay coherent everywhere.
+  const { certifications } = useUserCertifications(address)
   const [viewState, setViewState] = useState<ViewState>({ type: "feed" })
   const [feedItems, setFeedItems] = useState<CircleFeedItem[]>([])
   const [trustedWallets, setTrustedWallets] = useState<string[]>([])
@@ -426,13 +441,24 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     return [...groups.values()]
   }, [feedItems])
 
-  // Filter grouped items by active category
+  // Filter grouped items by verb (intention type) then by topic. Topic
+  // keeps groups whose page carries the selected "in context of" slug
+  // on-chain — same semantics as EchoesTab / the explorer feed.
   const filteredItems = useMemo(() => {
-    if (activeFilter === "all") return groupedItems
-    return groupedItems.filter((group) =>
-      group.intentions.some((i) => i.intentionType === activeFilter)
-    )
-  }, [groupedItems, activeFilter])
+    let result = groupedItems
+    if (activeFilter !== "all") {
+      result = result.filter((group) =>
+        group.intentions.some((i) => i.intentionType === activeFilter)
+      )
+    }
+    if (topicFilter !== "all") {
+      result = result.filter((group) => {
+        const entry = getCertificationForUrl(certifications, group.pageUrl)
+        return entry?.interestContexts?.includes(topicFilter) ?? false
+      })
+    }
+    return result
+  }, [groupedItems, activeFilter, topicFilter, certifications])
 
   // Step 4: Check user's existing positions on feed triples (support/oppose state)
   const allTripleIds = useMemo(() => {
@@ -742,54 +768,25 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
             </button>
           </div>
         </div>
-        {(() => {
-          const intentionEntries = Object.entries(INTENTION_CONFIG) as [
-            IntentionType,
-            { label: string; color: string }
-          ][]
-          const visibleEntries = filtersExpanded
-            ? intentionEntries
-            : intentionEntries.slice(0, 3)
-          const hiddenCount = intentionEntries.length - visibleEntries.length
-          return (
-            <div className="circle-category-chips">
-              <button
-                className={`circle-chip ${activeFilter === "all" ? "active" : ""}`}
-                onClick={() => setActiveFilter("all")}>
-                All
-              </button>
-              {visibleEntries.map(([type, config]) => (
-                <button
-                  key={type}
-                  className={`circle-chip ${activeFilter === type ? "active" : ""}`}
-                  onClick={() => setActiveFilter(type)}>
-                  <span
-                    className="circle-chip-dot"
-                    aria-hidden="true"
-                    style={{ background: config.color }}
-                  />
-                  {config.label}
-                </button>
-              ))}
-              {hiddenCount > 0 && (
-                <button
-                  type="button"
-                  className="circle-chip circle-chip-more"
-                  onClick={() => setFiltersExpanded(true)}>
-                  +{hiddenCount} more
-                </button>
-              )}
-              {filtersExpanded && intentionEntries.length > 3 && (
-                <button
-                  type="button"
-                  className="circle-chip circle-chip-more"
-                  onClick={() => setFiltersExpanded(false)}>
-                  Show less
-                </button>
-              )}
-            </div>
-          )
-        })()}
+        {/* Verb + Topic filter dropdowns — same coherent system as
+            EchoesTab / BookmarkTab and the explorer circles feed. Topic
+            uses the on-chain "in context of" data from
+            useUserCertifications. */}
+        <div className="echoes-filter-row">
+          <FilterDropdown
+            label="Verbs"
+            value={activeFilter}
+            onChange={(id) => setActiveFilter(id as "all" | IntentionType)}
+            options={VERB_FILTER_OPTIONS}
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
+        </div>
       </div>
 
       {/* Loading */}
