@@ -286,9 +286,45 @@ const EchoesTab = () => {
           </div>
         </div>
 
-        {/* Verb + Topic filter dropdowns (ported from the explorer
-            circles feed; replaces the old intention chip row). Topic
-            uses the on-chain "in context of" data from
+        {/* Sort pills + Manage / Open-on-Explorer — one line directly
+            under the search bar. Pills on the left, actions pinned to
+            the far right. */}
+        <div className="echoes-sort-row">
+          <div
+            className="scope-toggle echoes-sort-toggle"
+            role="group"
+            aria-label="Sort groups by">
+            {sortOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`scope-btn ${sortBy === option.value ? "active" : ""}`}
+                aria-pressed={sortBy === option.value}
+                onClick={() => setSortBy(option.value)}>
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <div className="echoes-actions">
+            <button
+              className="sort-btn gm-manage-btn"
+              onClick={() => handleOpenManager("all")}
+              title="Manage groups">
+              Manage
+            </button>
+            <button
+              className="sort-btn gm-manage-btn echoes-open-sofia-btn"
+              onClick={() =>
+                chrome.tabs.create({ url: getProfileUrl(), active: true })
+              }
+              title="Open my profile on Explorer">
+              Open on Explorer ↗
+            </button>
+          </div>
+        </div>
+
+        {/* Verb + Topic filter dropdowns — own row below the sort line.
+            Topic uses the on-chain "in context of" data from
             useUserCertifications — coherent with the explorer. */}
         <div className="echoes-filter-row">
           <FilterDropdown
@@ -324,42 +360,6 @@ const EchoesTab = () => {
             </button>
           </div>
         )}
-
-        {/* Sort toggle + Manage — same row right above the bento grid;
-            toggle on the left, Manage button pinned to the far right. */}
-        <div className="echoes-sort-row">
-          <div
-            className="scope-toggle echoes-sort-toggle"
-            role="group"
-            aria-label="Sort groups by">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`scope-btn ${sortBy === option.value ? "active" : ""}`}
-                aria-pressed={sortBy === option.value}
-                onClick={() => setSortBy(option.value)}>
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <div className="echoes-actions">
-            <button
-              className="sort-btn gm-manage-btn"
-              onClick={() => handleOpenManager("all")}
-              title="Manage groups">
-              Manage
-            </button>
-            <button
-              className="sort-btn gm-manage-btn echoes-open-sofia-btn"
-              onClick={() =>
-                chrome.tabs.create({ url: getProfileUrl(), active: true })
-              }
-              title="Open my profile on Explorer">
-              Open on Explorer ↗
-            </button>
-          </div>
-        </div>
 
         {filteredGroups.length === 0 ? (
           <div className="groups-empty">

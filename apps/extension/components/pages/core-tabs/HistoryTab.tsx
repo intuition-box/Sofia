@@ -201,8 +201,9 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
 
   return (
     <div className="triples-container">
-      {/* Search + sort toolbar — same pattern as EchoesTab */}
-      <div className="category-toolbar">
+      {/* Search bar — own row, full width (same layout as EchoesTab,
+          consistent across the whole extension). */}
+      <div className="echoes-search-row">
         <div className="category-search-container">
           <input
             type="text"
@@ -220,17 +221,26 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
             </button>
           )}
         </div>
-        <div className="sort-buttons">
-          {SORT_OPTIONS.map(option => (
-            <button
-              key={option.value}
-              className={`sort-btn ${sortBy === option.value ? 'active' : ''}`}
-              onClick={() => setSortBy(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+      </div>
+
+      {/* Sort pills — directly under the search bar; same shared
+          segmented control as EchoesTab. */}
+      <div
+        className="scope-toggle echoes-sort-toggle"
+        role="group"
+        aria-label="Sort history by"
+      >
+        {SORT_OPTIONS.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            className={`scope-btn ${sortBy === option.value ? 'active' : ''}`}
+            aria-pressed={sortBy === option.value}
+            onClick={() => setSortBy(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       {/* Verb + Topic filter dropdowns — same coherent system as

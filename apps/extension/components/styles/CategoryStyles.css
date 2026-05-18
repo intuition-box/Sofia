@@ -254,12 +254,13 @@
   margin: 12px 0 16px;
 }
 
-/* Echoes search row — search input takes the full row */
+/* Echoes search row — search input takes the full row. Tight bottom
+   margin: the sort pills sit just below it (no stacked gap). */
 .echoes-search-row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .echoes-search-row .category-search-container {
@@ -267,13 +268,15 @@
   min-width: 0;
 }
 
-/* Sort toggle + Manage row — toggle on the left, Manage pinned to the right */
+/* Sort pills + Manage / Open-on-Explorer — one line directly under
+   the search bar (no top margin so it hugs the search row; 8px bottom
+   separates it from the Verbs/Topics row). */
 .echoes-sort-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin: 8px 0;
+  margin: 0 0 8px 0;
 }
 
 .echoes-sort-row .echoes-sort-toggle {
@@ -297,7 +300,8 @@
   margin-left: auto;
 }
 
-/* Filter chips row — All + intention chips, wraps */
+/* Filter row — Verbs + Topics dropdowns on their own line below the
+   sort/actions line. Wraps when the popup is too narrow. */
 .echoes-filter-row {
   display: flex;
   flex-wrap: wrap;
@@ -313,10 +317,12 @@
   line-height: 1.4;
 }
 
-/* Sort toggle — segmented control sitting just above the bento grid. */
+/* Sort toggle — segmented control sitting directly under the search
+   bar. No top margin (hugs the search row, ~6px gap from its bottom
+   margin); 8px bottom separates it from the Verbs/Topics row. */
 .echoes-sort-toggle {
   width: fit-content;
-  margin: 8px 0;
+  margin: 0 0 8px 0;
   background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
   border-radius: 999px;
