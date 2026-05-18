@@ -1,23 +1,23 @@
 /**
- * Deck — sticky pin + two-step trigger choreography.
+ * Deck — N-stage scroll-trigger pin + two-step trigger choreography.
  *
  * Layout:
- *   .region       Block in document flow, reserves 100vh of scroll.
- *   .stage        position: sticky, top: 0, overflow: hidden.
+ *   .region       Block in document flow, reserves `var(--stages)`×
+ *                 100vh of vertical space. Each stage gets a 100vh
+ *                 anchor marker so deep-links resolve natively.
+ *   .snapMarker   Invisible 100vh anchor — one per stage. The active
+ *                 stage is derived from scroll progress by
+ *                 ScrollTrigger; layout is painted by the sticky
+ *                 `.stage` on top.
+ *   .stage        position: sticky, top: 0, overflow: hidden. Stays
+ *                 pinned while the user scrolls through the markers.
  *   .bgLayer      Holds N background slabs, one per slide.
- *   .bgBlock      One slab. Parallelogram clip-path with 60° angled
- *                 left AND right edges (both overshoot the bounding
- *                 rect) so adjacent slabs tile perfectly during the
- *                 wipe and the active slab fully covers the stage at
- *                 rest. With alternating peach/dark slab colours, the
- *                 wipe is always a visible colour change.
- *   .slide        One slide of content. Translates on the Y axis only
- *                 (step 2): the active slide is at translateY(0), the
- *                 next slide is parked at +100% (below the stage), the
- *                 previous slide is at -100% (above).
+ *   .bgBlock      One slab. Parallelogram via skewX(-30deg) so adjacent
+ *                 slabs tile flush during the 60° wipe.
+ *   .slide        One slide of content. Translates on the Y axis only.
  *
- * The choreography per trigger:
- *   t = 0          state change committed
+ * The choreography per stage change:
+ *   t = 0          state change committed (driven by ScrollTrigger)
  *   t = 0–step1    bgBlocks slide horizontally, angled border sweeps
  *   t = step1      bg has settled; content starts moving
  *   t = step1–total  slide content slides in vertically
@@ -26,7 +26,24 @@
 .region {
   position: relative;
   width: 100%;
-  height: 100vh;
+  /* --stages + --stage-gap are injected inline by Deck.tsx.
+     Total scroll = (N - 1) gaps + one stage worth of sticky time at
+     the end so the last stage stays pinned for a beat before it lets
+     the page release into the footer. */
+  height: calc((var(--stages, 1) - 1) * var(--stage-gap, 100vh) + 100vh);
+  overscroll-behavior: contain;
+}
+
+/* Anchor markers — absolutely positioned so they don't push the sticky
+   `.stage` out of the flow. They only exist as deep-link targets; the
+   N × 100vh scroll space is reserved by .region's explicit height. */
+.snapMarker {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+  scroll-margin-top: var(--nav-h, 64px);
 }
 
 .stage {

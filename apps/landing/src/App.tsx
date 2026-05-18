@@ -2199,20 +2199,19 @@ const SLIDES: SlideConfig[] = [
 /* subStates[i] = number of sub-triggers on slide i before forwarding
    to the next slide. A slide with a revealLayout gets 1 sub-state. */
 const SUB_STATES = SLIDES.map((s) => (s.revealLayout ? 1 : 0))
-/* S.10 isn't a placeholder — it's the real <Footer /> component. */
 
 /* Alternating peach / dark — every trigger flips the slab colour so
-   the 60° wipe between two slides is always a visible colour change. */
+   the 60° wipe between two slides is always a visible colour change.
+   One entry per SLIDES element (the footer lives outside the deck). */
 const VARIANTS = [
-  'peach',
-  'peach',
-  'dark',
-  'peach',
-  'dark',
-  'peach',
-  'dark',
-  'peach',
-  'dark',
+  'peach', // S.01
+  'peach', // S.03
+  'dark', // S.04
+  'peach', // S.05
+  'dark', // S.06
+  'peach', // S.07
+  'dark', // S.08
+  'peach', // S.09
 ] as const
 
 /* Reveal-state background per slide. Index matches the SLIDES order
@@ -2271,14 +2270,15 @@ export default function App() {
   return (
     <>
       <Navbar />
-      {/* `pinned` keeps the deck always active — first / last slides
-          are end-stops, no vertical scroll on this page. */}
+      {/* Deck reserves N × 100vh of scroll space (one stage per slide
+          + one extra per sub-state). ScrollTrigger snaps the active
+          stage; the sticky stage layer paints the layout. Footer
+          follows in normal flow after the last snap stage. */}
       <Deck
         bgs={[...VARIANTS]}
         revealBgs={REVEAL_BGS}
-        pinned
         subStates={SUB_STATES}
-      >
+        slideCodes={SLIDES.map((s) => s.code)}>
         {SLIDES.map((s, i) => {
           const zoneStart = zoneCursor
           zoneCursor +=
@@ -2293,11 +2293,8 @@ export default function App() {
             />
           )
         })}
-        {/* S.09 — the real Footer component. */}
-        <div key="footer" className={styles.footerSlide}>
-          <Footer />
-        </div>
       </Deck>
+      <Footer />
     </>
   )
 }
