@@ -222,6 +222,7 @@ const ScoreTab = ({ trustedByCount, level = 1, totalXP = 0 }: ScoreTabProps) => 
           <p>Be the <span className="highlight-pioneer">1st</span> to certify a page = <strong>Pioneer</strong> (+{DISCOVERY_GOLD_REWARDS.PIONEER} Gold)</p>
           <p>Be among <span className="highlight-explorer">2-10th</span> = <strong>Explorer</strong> (+{DISCOVERY_GOLD_REWARDS.EXPLORER} Gold)</p>
           <p>Be <span className="highlight-contributor">11th+</span> = <strong>Contributor</strong> (+{DISCOVERY_GOLD_REWARDS.CONTRIBUTOR} Gold)</p>
+          <p>Certifying pages earns <strong>Gold</strong>. To earn <strong>XP</strong>, complete <strong>quests</strong>.</p>
         </div>
       </div>
 
