@@ -39,14 +39,12 @@ import {
   useDiscoveryScore,
   useGroupOnChainCertifications,
   useIntentionCertify,
-  useLevelUp,
   usePageDiscovery,
   useRedeemTriple,
   useTopicInterests,
   useUserCertifications,
   useWalletFromStorage,
   type IntentionGroupWithStats,
-  type LevelUpPreview,
   type UrlCertificationStatus
 } from "../../hooks"
 import { intuitionGraphqlClient } from "../../lib/clients/graphql-client"
@@ -351,9 +349,6 @@ const GroupDetailView = ({
   )
   const [topicFilter, setTopicFilter] = useState<string>("all")
   const [uncertifiedOnly, setUncertifiedOnly] = useState(false)
-  const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(
-    null
-  )
 
   // Cart
   const cart = useCart()
@@ -388,15 +383,6 @@ const GroupDetailView = ({
     getUrlCertification,
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
-
-  // Level up hook
-  const {
-    levelUp,
-    preview: previewLevelUp,
-    loading: levelUpLoading,
-    result: levelUpResult,
-    reset: resetLevelUp
-  } = useLevelUp()
 
   // Redeem hook (for removing on-chain positions)
   const { redeemAllPositions } = useRedeemTriple()
@@ -498,49 +484,15 @@ const GroupDetailView = ({
     return Math.max(p2Count, p1Count, group.certifiedCount)
   }, [onChainStats, group.urls, group.certifiedCount])
 
-  // Level from on-chain certifications (auto up/down, no local fallback)
+  // Level from on-chain certifications — fully automatic: it tracks
+  // certifiedCount up/down. No Gold, no manual "Level Up" action.
   const currentLevel = calculateLevel(certifiedCount)
-
-  // Fetch level up preview when group changes
-  useEffect(() => {
-    const fetchPreview = async () => {
-      const preview = await previewLevelUp(group.id, currentLevel)
-      setLevelUpPreview(preview)
-    }
-    fetchPreview()
-  }, [group.id, group.level, currentLevel, previewLevelUp])
-
-  // Handle level up
-  const handleLevelUp = async () => {
-    // Always pass certification breakdown from UI (has on-chain data)
-    const result = await levelUp(
-      group.id,
-      group.certificationBreakdown,
-      currentLevel
-    )
-    if (result.success) {
-      // Refresh the preview after successful level up
-      const newPreview = await previewLevelUp(group.id, currentLevel)
-      setLevelUpPreview(newPreview)
-      // Refresh the group to get updated predicate
-      if (onRefresh) {
-        await onRefresh()
-      }
-    }
-  }
 
   // Progress toward NEXT level threshold
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(
     certifiedCount,
     currentLevel
   )
-
-  // Level Up available when on-chain level exceeds highest level with a generated predicate
-  const highestPredicateLevel =
-    group.predicateHistory?.length > 0
-      ? Math.max(...group.predicateHistory.map((h) => h.toLevel))
-      : 0
-  const canLevelUp = currentLevel > 1 && currentLevel > highestPredicateLevel
 
   // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
   const filteredUrls = group.urls.filter((url) => {
@@ -734,7 +686,8 @@ const GroupDetailView = ({
 
   return (
     <div className="group-detail-view">
-      {/* Header — back button on top row, domain title (large) below */}
+      {/* Header — back button, then the domain title with the
+          Explorer link aligned to the right of the same line. */}
       <div className="group-detail-header">
         <button className="pf-btn back-btn" onClick={onBack}>
           <svg
@@ -760,103 +713,50 @@ const GroupDetailView = ({
               ;(e.target as HTMLImageElement).style.display = "none"
             }}
           />
-          <h2 className="group-detail-domain">{group.domain}</h2>
-        </div>
-        <button
-          className="pf-btn group-detail-view-on-sofia"
-          onClick={() =>
-            chrome.tabs.create({
-              url: getProfilePlatformUrl(group.domain),
-              active: true
-            })
-          }
-          title={`View all my ${group.domain} Marks on Sofia`}>
-          View all my {group.domain} Marks on Sofia ↗
-        </button>
-      </div>
-
-      {/* Level Progress — sits above the stats, single source of level info */}
-      <div
-        className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? "ready-to-level-up" : ""}`}>
-        {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
+          <h2 className="group-detail-domain">
+            <a
+              href={`https://${group.domain}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Open ${group.domain}`}>
+              {group.domain}
+            </a>
+          </h2>
           <button
-            className="level-up-integrated-btn"
-            onClick={handleLevelUp}
-            disabled={levelUpLoading}>
-            {levelUpLoading ? (
-              <span className="loading-text">Generating signal...</span>
-            ) : (
-              <>
-                <span className="level-up-text">
-                  Level Up to {levelUpPreview.nextLevel}
-                </span>
-                <span className="level-up-cost">
-                  {levelUpPreview.cost} Gold
-                </span>
-              </>
-            )}
+            className="sort-btn gm-manage-btn echoes-open-sofia-btn"
+            onClick={() =>
+              chrome.tabs.create({
+                url: getProfilePlatformUrl(group.domain),
+                active: true
+              })
+            }
+            title={`View ${group.domain} on Explorer`}>
+            View on Explorer ↗
           </button>
-        ) : (
-          <>
-            <div className="level-progress-header">
-              <span className="level-label">Level {currentLevel}</span>
-              <span className="level-xp">
-                {onChainLoading
-                  ? "..."
-                  : xpToNextLevel > 0
-                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? "s" : ""} to Level ${currentLevel + 1}`
-                    : "Max level!"}
-              </span>
-            </div>
-            <div className="progress-bar-container level-bar">
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${progressPercent}%`,
-                  background: "var(--ds-accent)"
-                }}
-              />
-            </div>
-            {levelUpResult?.success && (
-              <div className="level-up-success-inline">
-                <span className="success-icon" aria-hidden="true">
-                  🎉
-                </span>
-                <span className="success-text">
-                  Level Up — new identity:{" "}
-                  <strong>
-                    I {levelUpResult.newPredicate} {group.domain}
-                  </strong>
-                </span>
-                <button
-                  className="dismiss-btn"
-                  onClick={resetLevelUp}
-                  aria-label="Dismiss">
-                  ×
-                </button>
-              </div>
-            )}
-          </>
-        )}
+        </div>
       </div>
 
-      {/* Stats Summary */}
-      <div className="group-detail-stats">
-        <div className="stat-card">
-          <span className="stat-number">{group.activeUrlCount}</span>
-          <span className="stat-text">URLs</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-number">
-            {onChainLoading ? "..." : certifiedCount}
+      {/* Level — fully automatic: it tracks the on-chain certification
+          count up and down. No Gold, no manual "Level Up" action. */}
+      <div className="level-progress-section">
+        <div className="level-progress-header">
+          <span className="level-label">Level {currentLevel}</span>
+          <span className="level-xp">
+            {onChainLoading
+              ? "..."
+              : xpToNextLevel > 0
+                ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? "s" : ""} to Level ${currentLevel + 1}`
+                : "Max level!"}
           </span>
-          <span className="stat-text">On-chain</span>
         </div>
-        <div className="stat-card highlight">
-          <span className="stat-number">
-            {onChainLoading ? "..." : uncertifiedCount}
-          </span>
-          <span className="stat-text">To certify</span>
+        <div className="progress-bar-container level-bar">
+          <div
+            className="progress-bar-fill"
+            style={{
+              width: `${progressPercent}%`,
+              background: "var(--ds-accent)"
+            }}
+          />
         </div>
       </div>
 
@@ -925,27 +825,6 @@ const GroupDetailView = ({
           ))
         )}
       </div>
-
-      {/* Level Up error stays inline (success message moved into the
-          progress section above); no other ambient hints needed here. */}
-      {levelUpResult?.error && !levelUpResult.success && (
-        <div className="level-up-section">
-          <div className="level-up-error">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{levelUpResult.error}</span>
-            {levelUpResult.required &&
-              levelUpResult.available !== undefined && (
-                <span className="error-detail">
-                  Need {levelUpResult.required} Gold, have{" "}
-                  {levelUpResult.available} Gold
-                </span>
-              )}
-            <button className="dismiss-btn" onClick={resetLevelUp}>
-              ×
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Cart toast notification */}
       <CartToast message={cartToast} />

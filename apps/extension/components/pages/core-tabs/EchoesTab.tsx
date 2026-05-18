@@ -307,8 +307,8 @@ const EchoesTab = () => {
               onClick={() =>
                 chrome.tabs.create({ url: getProfileUrl(), active: true })
               }
-              title="Open my profile on Explorer">
-              Open on Explorer ↗
+              title="View my profile on Explorer">
+              View on Explorer ↗
             </button>
           </div>
         </div>

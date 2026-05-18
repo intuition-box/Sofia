@@ -45,18 +45,14 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
   // Level from on-chain certifications (auto up/down, no local fallback)
   const displayLevel = calculateLevel(certifiedCount)
 
-  // Progress toward next level (same baseLevel as DetailView)
+  // Progress toward next level (same baseLevel as DetailView). The
+  // level is fully automatic — it tracks certifiedCount; there is no
+  // Gold-spend "Level Up" action anymore.
   const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
-
-  // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
-  const highestPredicateLevel = group.predicateHistory?.length > 0
-    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
-    : 0
-  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
 
   return (
     <div
-      className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}${isHighlighted ? ' is-fresh-mark' : ''}`}
+      className={`bento-card bento-${size} group-bento-card${isHighlighted ? ' is-fresh-mark' : ''}`}
       onClick={onClick}
       style={
         isHighlighted
@@ -125,13 +121,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
           />
         </div>
         <span className="progress-label">
-          {onChainLoading ? '...' : (
-            canLevelUp
-              ? `Level Up to ${displayLevel}!`
-              : xpToNextLevel > 0
-                ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
-                : 'Max level!'
-          )}
+          {onChainLoading
+            ? '...'
+            : xpToNextLevel > 0
+              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
+              : 'Max level!'}
         </span>
       </div>
 

@@ -2441,7 +2441,9 @@
   align-items: stretch;
   justify-content: center;
   font-family: "Inter Tight", system-ui, sans-serif;
-  background: var(--ds-bg-subtle);
+  /* Flat --ds-card surface — matches the reward phase (.b3-bg--v5) and
+     the cart drawer, so the "Capturing…" loader has no bg jump. */
+  background: var(--ds-card);
   animation: rcAppear 0.4s ease-out;
 }
 
