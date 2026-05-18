@@ -29,12 +29,11 @@ import { useRouter } from "../layout/RouterProvider"
 import WeightModal from "../modals/WeightModal"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import { CartToast } from "./CartDrawer"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import { InterestContextSelector } from "./InterestContextSelector"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
-import { PageBlockchainSkeleton } from "./Skeleton"
+import { PageStatsSkeleton } from "./Skeleton"
 
 import "../styles/PageBlockchainCard.css"
 
@@ -126,7 +125,6 @@ const PageBlockchainCard = () => {
 
   // Cart
   const cart = useCart()
-  const [cartToast, setCartToast] = useState<string | null>(null)
   const [isBursting, setIsBursting] = useState(false)
 
   const cartIntentionsForPage = useMemo(() => {
@@ -167,7 +165,6 @@ const PageBlockchainCard = () => {
       )
       if (existing) {
         await cart.removeFromCart(existing.id)
-        setCartToast("Removed from cart")
         return
       }
       const favicon = getFaviconUrl(currentUrl, 128)
@@ -180,10 +177,7 @@ const PageBlockchainCard = () => {
         selectedContext
       )
       if (added) {
-        setCartToast("Added to cart")
         setIsBursting(true)
-      } else {
-        setCartToast("Already in cart")
       }
     },
     [currentUrl, pageTitle, cart, selectedContext]
@@ -198,9 +192,6 @@ const PageBlockchainCard = () => {
       )
       if (existing) {
         await cart.removeFromCart(existing.id)
-        setCartToast(
-          `Removed ${predicate === "trusts" ? "Trust" : "Distrust"} from cart`
-        )
         return
       }
       const favicon = getFaviconUrl(currentUrl, 128)
@@ -213,23 +204,11 @@ const PageBlockchainCard = () => {
         selectedContext
       )
       if (added) {
-        setCartToast(
-          `Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`
-        )
         setIsBursting(true)
-      } else {
-        setCartToast("Already in cart")
       }
     },
     [currentUrl, pageTitle, cart, selectedContext]
   )
-
-  // Auto-dismiss toast
-  useEffect(() => {
-    if (!cartToast) return
-    const timer = setTimeout(() => setCartToast(null), 1500)
-    return () => clearTimeout(timer)
-  }, [cartToast])
 
   // Reset cart-burst animation flag once the animation has played
   useEffect(() => {
@@ -254,37 +233,6 @@ const PageBlockchainCard = () => {
   return (
     <div
       className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""} ${isBursting ? "blockchain-card--cart-burst" : ""}`}>
-      {/* Skeleton: first load or retrying. Share-on-X + Preview are kept
-          as the real components (empty state) instead of shimmer — the
-          page URL is tab-derived so they're usable before data loads. */}
-      {status === "loading" && (
-        <PageBlockchainSkeleton
-          shareSlot={
-            currentUrl && !isRestricted ? (
-              <ShareCertificationButton
-                pageUrl={currentUrl}
-                pageTitle={pageTitle}
-                userStatus={null}
-                userRank={null}
-                totalPositions={0}
-              />
-            ) : undefined
-          }
-          previewSlot={
-            currentUrl && !isRestricted ? (
-              <div className="cert-section live-sentence-section">
-                <div className="cert-section-title">Preview</div>
-                <div className="live-sentence">
-                  <span className="live-sentence__placeholder">
-                    Pick an intention to start building your signal…
-                  </span>
-                </div>
-              </div>
-            ) : undefined
-          }
-        />
-      )}
-
       {/* Persistent error after retries */}
       {status === "error" && (
         <div className="blockchain-card__notice">
@@ -299,8 +247,9 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
-      {/* Main content: ready or refreshing (stale data visible) */}
-      {isReady && currentUrl && (
+      {/* Header + Actions render as soon as the tab URL is known — these
+          are fast/tab-derived. Only Stats waits on the on-chain data. */}
+      {currentUrl && (
         <div className="website-header-section">
           <PageBlockchainHeader
             currentUrl={currentUrl}
@@ -556,6 +505,16 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
+      {/* Stats panel — the only section that waits on the on-chain data.
+          Shows a skeleton while loading, real panel once ready. */}
+      {status === "loading" && !isRestricted && (
+        <div className="credibility-content">
+          <div className="credibility-analysis">
+            <PageStatsSkeleton />
+          </div>
+        </div>
+      )}
+
       {/* Extended Panel */}
       {isReady && analysis && (
         <div className="credibility-content">
@@ -585,9 +544,6 @@ const PageBlockchainCard = () => {
           </div>
         </div>
       )}
-
-      {/* Cart toast notification */}
-      <CartToast message={cartToast} />
 
       {modal.showWeightModal &&
         createPortal(

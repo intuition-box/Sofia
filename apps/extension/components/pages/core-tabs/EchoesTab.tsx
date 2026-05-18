@@ -322,21 +322,22 @@ const EchoesTab = () => {
               </button>
             ))}
           </div>
-          <button
-            className="sort-btn gm-manage-btn"
-            style={{ marginLeft: "auto" }}
-            onClick={() => handleOpenManager("all")}
-            title="Manage groups">
-            Manage
-          </button>
-          <button
-            className="sort-btn gm-manage-btn echoes-open-sofia-btn"
-            onClick={() =>
-              chrome.tabs.create({ url: getProfileUrl(), active: true })
-            }
-            title="Open my profile on Explorer">
-            Open on Explorer ↗
-          </button>
+          <div className="echoes-actions">
+            <button
+              className="sort-btn gm-manage-btn"
+              onClick={() => handleOpenManager("all")}
+              title="Manage groups">
+              Manage
+            </button>
+            <button
+              className="sort-btn gm-manage-btn echoes-open-sofia-btn"
+              onClick={() =>
+                chrome.tabs.create({ url: getProfileUrl(), active: true })
+              }
+              title="Open my profile on Explorer">
+              Open on Explorer ↗
+            </button>
+          </div>
         </div>
 
         {filteredGroups.length === 0 ? (

@@ -4,41 +4,70 @@
  * Shows on-chain certification status and allows creating new certifications
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
-import {
-  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp,
-  useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
-  useTopicInterests, useUserCertifications, useWalletFromStorage, getCertificationForUrl,
-  type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
-} from '../../hooks'
-import type { UserTopicPosition } from '~/lib/services/TopicPositionsService'
-import type { CertificationEntry } from '~/lib/services/UserCertificationsService'
-import { InterestContextSelector } from './InterestContextSelector'
-import type { GroupUrlRecord } from '~types/database'
-import type { CertificationType } from '~/lib/services'
-import type { IntentionPurpose } from '../../types/discovery'
-import { INTENTION_PREDICATES } from '../../types/discovery'
-import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
-import { TOPIC_LABELS, TOPIC_COLORS } from '~/lib/config/topicConfig'
-import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
-import WeightModal from '../modals/WeightModal'
-import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus, getProfilePlatformUrl } from '~/lib/utils'
-import { createHookLogger } from '../../lib/utils/logger'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
-const logger = createHookLogger('GroupDetailView')
-import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
-import { CartToast } from './CartDrawer'
-import '../styles/IntentionBubbleSelector.css'
+import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import type { CertificationType } from "~/lib/services"
+import type { UserTopicPosition } from "~/lib/services/TopicPositionsService"
+import type { CertificationEntry } from "~/lib/services/UserCertificationsService"
+import {
+  calculateLevel,
+  calculateLevelProgress,
+  formatDuration,
+  formatShortDate,
+  getEffectiveCertStatus,
+  getFaviconUrl,
+  getProfilePlatformUrl,
+  intentionToCertification
+} from "~/lib/utils"
+import {
+  CERTIFICATION_LIST,
+  INTENTION_ITEMS,
+  TRUST_ITEMS
+} from "~/types/intentionCategories"
+import type { GroupUrlRecord } from "~types/database"
+
+import {
+  getCertificationForUrl,
+  useCart,
+  useDiscoveryReward,
+  useDiscoveryScore,
+  useGroupOnChainCertifications,
+  useIntentionCertify,
+  useLevelUp,
+  usePageDiscovery,
+  useRedeemTriple,
+  useTopicInterests,
+  useUserCertifications,
+  useWalletFromStorage,
+  type IntentionGroupWithStats,
+  type LevelUpPreview,
+  type UrlCertificationStatus
+} from "../../hooks"
+import { intuitionGraphqlClient } from "../../lib/clients/graphql-client"
+import { cleanTitle, getDisplayTitle } from "../../lib/utils/cleanTitle"
+import { createHookLogger } from "../../lib/utils/logger"
+import type { IntentionPurpose } from "../../types/discovery"
+import { INTENTION_PREDICATES } from "../../types/discovery"
+import WeightModal from "../modals/WeightModal"
+import { CartToast } from "./CartDrawer"
+import { InterestContextSelector } from "./InterestContextSelector"
+
+import "../styles/IntentionBubbleSelector.css"
+
+const logger = createHookLogger("GroupDetailView")
 
 interface GroupDetailViewProps {
   group: IntentionGroupWithStats
   onBack: () => void
-  onCertifyUrl: (url: string, certification: CertificationType) => Promise<boolean>
+  onCertifyUrl: (
+    url: string,
+    certification: CertificationType
+  ) => Promise<boolean>
   onRemoveUrl: (url: string) => Promise<boolean>
   onRefresh?: () => Promise<void>
 }
-
 
 // URL Row Component
 const UrlRow = ({
@@ -56,8 +85,16 @@ const UrlRow = ({
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
-  onAddToCart: (intention: IntentionPurpose, title?: string, context?: string | null) => void
-  onAddTrustToCart: (predicateName: string, title?: string, context?: string | null) => void
+  onAddToCart: (
+    intention: IntentionPurpose,
+    title?: string,
+    context?: string | null
+  ) => void
+  onAddTrustToCart: (
+    predicateName: string,
+    title?: string,
+    context?: string | null
+  ) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
@@ -78,7 +115,7 @@ const UrlRow = ({
     // not already in the cart.
     if (!slug) return
     for (const certLabel of allCertLabels) {
-      const intentionItem = INTENTION_ITEMS.find(i => i.type === certLabel)
+      const intentionItem = INTENTION_ITEMS.find((i) => i.type === certLabel)
       if (intentionItem) {
         const predicateName = INTENTION_PREDICATES[intentionItem.key]
         if (!cartPredicates.includes(predicateName)) {
@@ -86,7 +123,7 @@ const UrlRow = ({
         }
         continue
       }
-      const trustItem = TRUST_ITEMS.find(t => t.type === certLabel)
+      const trustItem = TRUST_ITEMS.find((t) => t.type === certLabel)
       if (trustItem && !cartPredicates.includes(trustItem.predicateLabel)) {
         onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slug)
       }
@@ -98,71 +135,75 @@ const UrlRow = ({
     getEffectiveCertStatus(urlRecord, onChainStatus)
 
   const allCertInfos = allCertLabels
-    .map(label => CERTIFICATION_LIST.find(c => c.type === label))
+    .map((label) => CERTIFICATION_LIST.find((c) => c.type === label))
     .filter(Boolean) as typeof CERTIFICATION_LIST
 
   const canToggle = !urlRecord.removed && !isProcessing
   const handleToggle = () => {
     if (!canToggle) return
-    setIsExpanded(prev => !prev)
+    setIsExpanded((prev) => !prev)
   }
 
   return (
-    <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
+    <div
+      className={`url-row ${urlRecord.removed ? "removed" : ""} ${isExpanded ? "expanded" : ""} ${isCertifiedOnChain ? "on-chain" : ""}`}>
       <div
         className="url-row-main"
         onClick={handleToggle}
-        role={canToggle ? 'button' : undefined}
+        role={canToggle ? "button" : undefined}
         tabIndex={canToggle ? 0 : undefined}
         onKeyDown={(e) => {
-          if (canToggle && (e.key === 'Enter' || e.key === ' ')) {
+          if (canToggle && (e.key === "Enter" || e.key === " ")) {
             e.preventDefault()
             handleToggle()
           }
         }}
-        style={{ cursor: canToggle ? 'pointer' : 'default' }}
-      >
+        style={{ cursor: canToggle ? "pointer" : "default" }}>
         <div className="url-info">
           <a
             href={urlRecord.url}
             target="_blank"
             rel="noopener noreferrer"
             className="url-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
+            onClick={(e) => e.stopPropagation()}>
+            {urlRecord.title
+              ? getDisplayTitle(urlRecord.title, urlRecord.url)
+              : urlRecord.url}
           </a>
           <div className="url-meta">
-            {((isCertifiedOnChain && allCertInfos.length > 0) || certifiedContexts.length > 0) && (
+            {((isCertifiedOnChain && allCertInfos.length > 0) ||
+              certifiedContexts.length > 0) && (
               <div className="cert-badges">
                 {allCertInfos.map((certInfo) => (
                   <span
                     key={certInfo.type}
                     className="cert-badge on-chain"
                     style={{ backgroundColor: certInfo.color }}
-                    title={`Marked as ${certInfo.label} (on-chain)`}
-                  >
+                    title={`Marked as ${certInfo.label} (on-chain)`}>
                     {certInfo.label}
                   </span>
                 ))}
                 {certifiedContexts.map((slug) => {
                   const label = TOPIC_LABELS[slug] || slug
-                  const color = TOPIC_COLORS[slug] || 'var(--ds-accent)'
+                  const color = TOPIC_COLORS[slug] || "var(--ds-accent)"
                   return (
                     <span
                       key={`ctx-${slug}`}
                       className="cert-badge cert-badge--context"
-                      style={{ backgroundColor: color }}
-                      title={`Marked in context of ${label}`}
-                    >
+                      style={{ color, borderColor: color }}
+                      title={`Marked in context of ${label}`}>
                       {label}
                     </span>
                   )
                 })}
               </div>
             )}
-            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
-            <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
+            <span className="url-date">
+              {formatShortDate(urlRecord.addedAt)}
+            </span>
+            <span className="url-duration">
+              {formatDuration(urlRecord.attentionTime)}
+            </span>
           </div>
         </div>
 
@@ -170,10 +211,17 @@ const UrlRow = ({
           {!urlRecord.removed && (
             <>
               <span
-                className={`url-chevron ${isExpanded ? 'expanded' : ''}`}
-                aria-hidden="true"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                className={`url-chevron ${isExpanded ? "expanded" : ""}`}
+                aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
               </span>
@@ -185,8 +233,7 @@ const UrlRow = ({
                 }}
                 disabled={isProcessing}
                 title="Remove URL"
-                aria-label="Remove URL"
-              >
+                aria-label="Remove URL">
                 ×
               </button>
             </>
@@ -206,8 +253,7 @@ const UrlRow = ({
                   onOAuthCertify(urlRecord)
                   setIsExpanded(false)
                 }}
-                disabled={isProcessing}
-              >
+                disabled={isProcessing}>
                 {urlRecord.oauthPredicate}
               </button>
             )}
@@ -215,20 +261,30 @@ const UrlRow = ({
               const isAlreadyCertified = allCertLabels.includes(type)
               const isInCart = cartPredicates.includes(predicateLabel)
               const canDepositContext = isAlreadyCertified && !!selectedContext
-              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
+              const canAdd =
+                !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={type}
-                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? "certified" : ""} ${isInCart ? "in-cart" : ""}`}
                   onClick={() => {
                     if (canAdd) {
-                      onAddTrustToCart(predicateLabel, urlRecord.title, selectedContext)
+                      onAddTrustToCart(
+                        predicateLabel,
+                        urlRecord.title,
+                        selectedContext
+                      )
                     }
                   }}
                   disabled={isProcessing || !canAdd}
-                  title={canDepositContext ? 'Deposit + add context' : undefined}
-                >
-                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
+                  title={
+                    canDepositContext ? "Deposit + add context" : undefined
+                  }>
+                  {isInCart
+                    ? `${label} ✓`
+                    : canDepositContext
+                      ? `+ ${label}`
+                      : label}
                 </button>
               )
             })}
@@ -237,20 +293,26 @@ const UrlRow = ({
               const predicateName = INTENTION_PREDICATES[key]
               const isInCart = cartPredicates.includes(predicateName)
               const canDepositContext = isAlreadyCertified && !!selectedContext
-              const canAdd = !isInCart && (!isAlreadyCertified || canDepositContext)
+              const canAdd =
+                !isInCart && (!isAlreadyCertified || canDepositContext)
               return (
                 <button
                   key={key}
-                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? "certified" : ""} ${isInCart ? "in-cart" : ""}`}
                   onClick={() => {
                     if (canAdd) {
                       onAddToCart(key, urlRecord.title, selectedContext)
                     }
                   }}
                   disabled={isProcessing || !canAdd}
-                  title={canDepositContext ? 'Deposit + add context' : undefined}
-                >
-                  {isInCart ? `${label} ✓` : canDepositContext ? `+ ${label}` : label}
+                  title={
+                    canDepositContext ? "Deposit + add context" : undefined
+                  }>
+                  {isInCart
+                    ? `${label} ✓`
+                    : canDepositContext
+                      ? `+ ${label}`
+                      : label}
                 </button>
               )
             })}
@@ -270,10 +332,20 @@ const UrlRow = ({
   )
 }
 
-const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }: GroupDetailViewProps) => {
+const GroupDetailView = ({
+  group,
+  onBack,
+  onCertifyUrl,
+  onRemoveUrl,
+  onRefresh
+}: GroupDetailViewProps) => {
   const [processingUrls, setProcessingUrls] = useState<Set<string>>(new Set())
-  const [filter, setFilter] = useState<'all' | 'uncertified' | CertificationType>('all')
-  const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(null)
+  const [filter, setFilter] = useState<
+    "all" | "uncertified" | CertificationType
+  >("all")
+  const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(
+    null
+  )
 
   // Cart
   const cart = useCart()
@@ -286,7 +358,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const getCertifiedContexts = useCallback(
     (url: string): string[] => {
       if (certifications.size === 0) return []
-      const entry: CertificationEntry | null = getCertificationForUrl(certifications, url)
+      const entry: CertificationEntry | null = getCertificationForUrl(
+        certifications,
+        url
+      )
       return entry?.interestContexts ?? []
     },
     [certifications]
@@ -294,7 +369,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
   const activeUrls = useMemo(
-    () => group.urls.filter(u => !u.removed).map(u => u.url),
+    () => group.urls.filter((u) => !u.removed).map((u) => u.url),
     [group.urls]
   )
 
@@ -324,12 +399,13 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const [pendingCertification, setPendingCertification] = useState<{
     url: string
     intention: IntentionPurpose
-    oauthPredicate?: string  // For OAuth URLs, use this predicate directly instead of intention
-    title?: string           // Page title for atom name
+    oauthPredicate?: string // For OAuth URLs, use this predicate directly instead of intention
+    title?: string // Page title for atom name
   } | null>(null)
 
   // Discovery reward hooks (same pattern as PageBlockchainCard)
-  const { claimDiscoveryGold, refetch: refetchDiscoveryScore } = useDiscoveryScore()
+  const { claimDiscoveryGold, refetch: refetchDiscoveryScore } =
+    useDiscoveryScore()
   const reward = useDiscoveryReward()
   const {
     totalCertifications: pendingUrlCertCount,
@@ -378,8 +454,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   // Get cart predicates for a specific URL
   const getCartPredicatesForUrl = (url: string): string[] => {
     return cart.items
-      .filter(item => item.url === url)
-      .map(item => item.predicateName)
+      .filter((item) => item.url === url)
+      .map((item) => item.predicateName)
   }
 
   // Auto-dismiss cart toast
@@ -408,8 +484,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     // Count from Pipeline 2 (useGroupOnChainCertifications)
     const p2Count = onChainStats?.certifiedCount ?? 0
     // Count from Pipeline 1 fallback (urlRecord.onChainCertification)
-    const p1Count = group.urls.filter(u =>
-      !u.removed && u.isOnChain && u.onChainCertification
+    const p1Count = group.urls.filter(
+      (u) => !u.removed && u.isOnChain && u.onChainCertification
     ).length
     return Math.max(p2Count, p1Count, group.certifiedCount)
   }, [onChainStats, group.urls, group.certifiedCount])
@@ -429,7 +505,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   // Handle level up
   const handleLevelUp = async () => {
     // Always pass certification breakdown from UI (has on-chain data)
-    const result = await levelUp(group.id, group.certificationBreakdown, currentLevel)
+    const result = await levelUp(
+      group.id,
+      group.certificationBreakdown,
+      currentLevel
+    )
     if (result.success) {
       // Refresh the preview after successful level up
       const newPreview = await previewLevelUp(group.id, currentLevel)
@@ -442,21 +522,25 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }
 
   // Progress toward NEXT level threshold
-  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(
+    certifiedCount,
+    currentLevel
+  )
 
   // Level Up available when on-chain level exceeds highest level with a generated predicate
-  const highestPredicateLevel = group.predicateHistory?.length > 0
-    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
-    : 0
+  const highestPredicateLevel =
+    group.predicateHistory?.length > 0
+      ? Math.max(...group.predicateHistory.map((h) => h.toLevel))
+      : 0
   const canLevelUp = currentLevel > 1 && currentLevel > highestPredicateLevel
 
   // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
-  const filteredUrls = group.urls.filter(url => {
+  const filteredUrls = group.urls.filter((url) => {
     if (url.removed) return false
     const status = getEffectiveCertStatus(url, getUrlCertification(url.url))
 
-    if (filter === 'all') return true
-    if (filter === 'uncertified') return !status.isCertified
+    if (filter === "all") return true
+    if (filter === "uncertified") return !status.isCertified
     return status.labels.includes(filter)
   })
 
@@ -464,12 +548,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const sortedUrls = [...filteredUrls].sort((a, b) => b.addedAt - a.addedAt)
 
   // Calculate uncertified count using Pipeline 2 + Pipeline 1 fallback
-  const uncertifiedCount = group.urls.filter(u => {
+  const uncertifiedCount = group.urls.filter((u) => {
     if (u.removed) return false
     const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
     return !status.isCertified
   }).length
-
 
   // Handle OAuth certification - uses predicate from OAuth extraction
   const handleOAuthCertify = (urlRecord: GroupUrlRecord) => {
@@ -479,7 +562,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     const triplet = {
       id: `oauth-${urlRecord.oauthPredicate}-${Date.now()}`,
       triplet: {
-        subject: 'I',
+        subject: "I",
         predicate: urlRecord.oauthPredicate,
         object: cleanTitle(urlRecord.title)
       },
@@ -490,7 +573,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     // Store OAuth predicate to use the correct predicate on-chain
     setPendingCertification({
       url: urlRecord.url,
-      intention: 'for_fun', // Fallback only
+      intention: "for_fun", // Fallback only
       oauthPredicate: urlRecord.oauthPredicate,
       title: urlRecord.title
     })
@@ -500,32 +583,45 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Handle modal submit - create on-chain triple
   const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
-    if (!pendingCertification || !customWeights || customWeights.length === 0) return
+    if (!pendingCertification || !customWeights || customWeights.length === 0)
+      return
 
     const { url, intention, oauthPredicate, title } = pendingCertification
 
     // Capture pre-certification count BEFORE the transaction
     prevDiscoveryTotalRef.current = pendingUrlCertCount
 
-    setProcessingUrls(prev => new Set(prev).add(url))
+    setProcessingUrls((prev) => new Set(prev).add(url))
 
     try {
       const weight = customWeights[0] || undefined
 
       // Use OAuth predicate if available, otherwise use intention predicate
       if (oauthPredicate) {
-        await certifyWithCustomPredicate(url, oauthPredicate, undefined, title, weight as bigint | undefined)
+        await certifyWithCustomPredicate(
+          url,
+          oauthPredicate,
+          undefined,
+          title,
+          weight as bigint | undefined
+        )
       } else {
-        await certifyWithIntention(url, intention, title, weight as bigint | undefined)
+        await certifyWithIntention(
+          url,
+          intention,
+          title,
+          weight as bigint | undefined
+        )
       }
 
       // Also update local database
-      const certification = oauthPredicate || intentionToCertification[intention]
+      const certification =
+        oauthPredicate || intentionToCertification[intention]
       await onCertifyUrl(url, certification as CertificationType)
 
       // Wait for GraphQL indexer to process the transaction before refetching
       // The indexer typically needs 2-5 seconds to index new transactions
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise((resolve) => setTimeout(resolve, 3000))
 
       // Clear GraphQL cache to force fresh data
       intuitionGraphqlClient.clearCache()
@@ -545,9 +641,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         await onRefresh()
       }
     } catch (error) {
-      logger.error('Certification failed', error)
+      logger.error("Certification failed", error)
     } finally {
-      setProcessingUrls(prev => {
+      setProcessingUrls((prev) => {
         const newSet = new Set(prev)
         newSet.delete(url)
         return newSet
@@ -568,13 +664,20 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     const onChainStatus = getUrlCertification(url)
 
     // If URL is certified on-chain, redeem positions first
-    if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
-      const confirmed = confirm('This will redeem your position and withdraw your stake. Continue?')
+    if (
+      onChainStatus?.isCertifiedOnChain &&
+      onChainStatus.tripleDetails?.length
+    ) {
+      const confirmed = confirm(
+        "This will redeem your position and withdraw your stake. Continue?"
+      )
       if (!confirmed) return
 
-      setProcessingUrls(prev => new Set(prev).add(url))
+      setProcessingUrls((prev) => new Set(prev).add(url))
       try {
-        const tripleVaultIds = onChainStatus.tripleDetails.map(t => t.tripleTermId)
+        const tripleVaultIds = onChainStatus.tripleDetails.map(
+          (t) => t.tripleTermId
+        )
         const result = await redeemAllPositions(tripleVaultIds)
 
         if (!result.success) {
@@ -586,12 +689,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         await onRemoveUrl(url)
 
         // Wait for indexer then refresh on-chain data
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise((resolve) => setTimeout(resolve, 3000))
         intuitionGraphqlClient.clearCache()
         await refetchOnChain()
         if (onRefresh) await onRefresh()
       } finally {
-        setProcessingUrls(prev => {
+        setProcessingUrls((prev) => {
           const newSet = new Set(prev)
           newSet.delete(url)
           return newSet
@@ -601,11 +704,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     }
 
     // Not certified on-chain: just remove locally
-    setProcessingUrls(prev => new Set(prev).add(url))
+    setProcessingUrls((prev) => new Set(prev).add(url))
     try {
       await onRemoveUrl(url)
     } finally {
-      setProcessingUrls(prev => {
+      setProcessingUrls((prev) => {
         const newSet = new Set(prev)
         newSet.delete(url)
         return newSet
@@ -618,7 +721,16 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       {/* Header — back button on top row, domain title (large) below */}
       <div className="group-detail-header">
         <button className="pf-btn back-btn" onClick={onBack}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true">
             <path d="m15 18-6-6 6-6" />
           </svg>
           Back to my Echoes
@@ -629,7 +741,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             alt=""
             className="group-detail-favicon"
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none'
+              ;(e.target as HTMLImageElement).style.display = "none"
             }}
           />
           <h2 className="group-detail-domain">{group.domain}</h2>
@@ -642,26 +754,29 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               active: true
             })
           }
-          title={`View all my ${group.domain} Marks on Sofia`}
-        >
+          title={`View all my ${group.domain} Marks on Sofia`}>
           View all my {group.domain} Marks on Sofia ↗
         </button>
       </div>
 
       {/* Level Progress — sits above the stats, single source of level info */}
-      <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
+      <div
+        className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? "ready-to-level-up" : ""}`}>
         {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
           <button
             className="level-up-integrated-btn"
             onClick={handleLevelUp}
-            disabled={levelUpLoading}
-          >
+            disabled={levelUpLoading}>
             {levelUpLoading ? (
               <span className="loading-text">Generating signal...</span>
             ) : (
               <>
-                <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
-                <span className="level-up-cost">{levelUpPreview.cost} Gold</span>
+                <span className="level-up-text">
+                  Level Up to {levelUpPreview.nextLevel}
+                </span>
+                <span className="level-up-cost">
+                  {levelUpPreview.cost} Gold
+                </span>
               </>
             )}
           </button>
@@ -670,11 +785,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             <div className="level-progress-header">
               <span className="level-label">Level {currentLevel}</span>
               <span className="level-xp">
-                {onChainLoading ? '...' : (
-                  xpToNextLevel > 0
-                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to Level ${currentLevel + 1}`
-                    : 'Max level!'
-                )}
+                {onChainLoading
+                  ? "..."
+                  : xpToNextLevel > 0
+                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? "s" : ""} to Level ${currentLevel + 1}`
+                    : "Max level!"}
               </span>
             </div>
             <div className="progress-bar-container level-bar">
@@ -682,22 +797,25 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
                 className="progress-bar-fill"
                 style={{
                   width: `${progressPercent}%`,
-                  background: 'var(--ds-accent)'
+                  background: "var(--ds-accent)"
                 }}
               />
             </div>
             {levelUpResult?.success && (
               <div className="level-up-success-inline">
-                <span className="success-icon" aria-hidden="true">🎉</span>
+                <span className="success-icon" aria-hidden="true">
+                  🎉
+                </span>
                 <span className="success-text">
-                  Level Up — new identity:{' '}
-                  <strong>I {levelUpResult.newPredicate} {group.domain}</strong>
+                  Level Up — new identity:{" "}
+                  <strong>
+                    I {levelUpResult.newPredicate} {group.domain}
+                  </strong>
                 </span>
                 <button
                   className="dismiss-btn"
                   onClick={resetLevelUp}
-                  aria-label="Dismiss"
-                >
+                  aria-label="Dismiss">
                   ×
                 </button>
               </div>
@@ -713,11 +831,15 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           <span className="stat-text">URLs</span>
         </div>
         <div className="stat-card">
-          <span className="stat-number">{onChainLoading ? '...' : certifiedCount}</span>
+          <span className="stat-number">
+            {onChainLoading ? "..." : certifiedCount}
+          </span>
           <span className="stat-text">On-chain</span>
         </div>
         <div className="stat-card highlight">
-          <span className="stat-number">{onChainLoading ? '...' : uncertifiedCount}</span>
+          <span className="stat-number">
+            {onChainLoading ? "..." : uncertifiedCount}
+          </span>
           <span className="stat-text">To certify</span>
         </div>
       </div>
@@ -725,18 +847,16 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       {/* Certification Filter */}
       <div className="filter-section">
         <button
-          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
+          className={`filter-btn ${filter === "all" ? "active" : ""}`}
+          onClick={() => setFilter("all")}>
           All ({group.activeUrlCount})
         </button>
         <button
-          className={`filter-btn filter-btn--uncertified ${filter === 'uncertified' ? 'active' : ''}`}
-          onClick={() => setFilter('uncertified')}
-        >
+          className={`filter-btn filter-btn--uncertified ${filter === "uncertified" ? "active" : ""}`}
+          onClick={() => setFilter("uncertified")}>
           Uncertified ({uncertifiedCount})
         </button>
-        {CERTIFICATION_LIST.map(cert => {
+        {CERTIFICATION_LIST.map((cert) => {
           // Count from Pipeline 2 + Pipeline 1 fallback
           let count = 0
           for (const u of group.urls) {
@@ -748,9 +868,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           return (
             <button
               key={cert.type}
-              className={`filter-btn ${filter === cert.type ? 'active' : ''}`}
-              onClick={() => setFilter(cert.type)}
-            >
+              className={`filter-btn ${filter === cert.type ? "active" : ""}`}
+              onClick={() => setFilter(cert.type)}>
               <span
                 className="filter-btn-dot"
                 aria-hidden="true"
@@ -769,20 +888,33 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             <p>No URLs match the filter</p>
           </div>
         ) : (
-          sortedUrls.map(urlRecord => (
+          sortedUrls.map((urlRecord) => (
             <UrlRow
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onAddToCart={(intention, title, context) => handleAddToCart(urlRecord.url, intention, title, context)}
-              onAddTrustToCart={(predicateName, title, context) => handleAddTrustToCart(urlRecord.url, predicateName, title, context)}
+              onAddToCart={(intention, title, context) =>
+                handleAddToCart(urlRecord.url, intention, title, context)
+              }
+              onAddTrustToCart={(predicateName, title, context) =>
+                handleAddTrustToCart(
+                  urlRecord.url,
+                  predicateName,
+                  title,
+                  context
+                )
+              }
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
-              isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
+              isProcessing={
+                processingUrls.has(urlRecord.url) || intentionLoading
+              }
               cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
               topInterests={topInterests}
               certifiedContexts={getCertifiedContexts(urlRecord.url)}
-              onContextChange={(context) => cart.updateContextForUrl(urlRecord.url, context)}
+              onContextChange={(context) =>
+                cart.updateContextForUrl(urlRecord.url, context)
+              }
             />
           ))
         )}
@@ -795,12 +927,16 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           <div className="level-up-error">
             <span className="error-icon">⚠️</span>
             <span className="error-text">{levelUpResult.error}</span>
-            {levelUpResult.required && levelUpResult.available !== undefined && (
-              <span className="error-detail">
-                Need {levelUpResult.required} Gold, have {levelUpResult.available} Gold
-              </span>
-            )}
-            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
+            {levelUpResult.required &&
+              levelUpResult.available !== undefined && (
+                <span className="error-detail">
+                  Need {levelUpResult.required} Gold, have{" "}
+                  {levelUpResult.available} Gold
+                </span>
+              )}
+            <button className="dismiss-btn" onClick={resetLevelUp}>
+              ×
+            </button>
           </div>
         </div>
       )}
@@ -809,26 +945,27 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       <CartToast message={cartToast} />
 
       {/* Weight Modal for on-chain certification (trust/distrust/oauth) */}
-      {showWeightModal && createPortal(
-        <WeightModal
-          isOpen={showWeightModal}
-          triplets={modalTriplets}
-          isProcessing={intentionLoading}
-          transactionSuccess={intentionSuccess}
-          transactionError={intentionError || undefined}
-          transactionHash={intentionTxHash || undefined}
-          createdCount={intentionOperationType === 'created' ? 1 : 0}
-          depositCount={intentionOperationType === 'deposit' ? 1 : 0}
-          isIntentionCertification={true}
-          showXpAnimation={true}
-          discoveryReward={intentionSuccess ? reward.discoveryReward : null}
-          onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
-          rewardClaimed={reward.rewardClaimed}
-          onClose={handleModalClose}
-          onSubmit={handleModalSubmit}
-        />,
-        document.body
-      )}
+      {showWeightModal &&
+        createPortal(
+          <WeightModal
+            isOpen={showWeightModal}
+            triplets={modalTriplets}
+            isProcessing={intentionLoading}
+            transactionSuccess={intentionSuccess}
+            transactionError={intentionError || undefined}
+            transactionHash={intentionTxHash || undefined}
+            createdCount={intentionOperationType === "created" ? 1 : 0}
+            depositCount={intentionOperationType === "deposit" ? 1 : 0}
+            isIntentionCertification={true}
+            showXpAnimation={true}
+            discoveryReward={intentionSuccess ? reward.discoveryReward : null}
+            onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
+            rewardClaimed={reward.rewardClaimed}
+            onClose={handleModalClose}
+            onSubmit={handleModalSubmit}
+          />,
+          document.body
+        )}
     </div>
   )
 }

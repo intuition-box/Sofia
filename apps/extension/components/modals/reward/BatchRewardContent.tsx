@@ -21,7 +21,10 @@ import { useBatchRewards, useGoldSystem } from "~/hooks"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
-import { INTENTION_CONFIG } from "~/types/intentionCategories"
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType
+} from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
 import contributorBadge from "../../ui/img/badges/contributor.png"
@@ -76,7 +79,6 @@ export interface BatchRewardContentProps {
 
 const BatchRewardContent = ({
   items,
-  txHash,
   onClose,
   onViewEchoes,
   enabled
@@ -213,37 +215,10 @@ const BatchRewardContent = ({
     <div className="rc">
       <div className="rc-ember" />
       <div className="rc-ticket">
-        <div className="rc-stub">
-          <div className="rc-stub-row">
-            <span className="rc-stub-k">N°</span>
-            <span className="rc-stub-v">
-              {txHash ? txHash.slice(2, 10).toUpperCase() : "—"}
-            </span>
-          </div>
-          <div className="rc-stub-row">
-            <span className="rc-stub-k">DATE</span>
-            <span className="rc-stub-v">
-              {new Date().toLocaleDateString("fr-FR").replace(/\//g, " · ")}
-            </span>
-          </div>
-        </div>
-        <div className="rc-perf" />
-
         <div className="rc-body">
           <div className="rc-headline">
-            <span className="rc-drop">M</span>
-            <h1 className="rc-h1">
-              {isSingle ? "ark" : "arks"}
-              <br />
-              captured.
-            </h1>
+            <h1 className="rc-h1">{isSingle ? "Mark" : "Marks"} captured.</h1>
           </div>
-          <p className="rc-sub">
-            {isSingle
-              ? "Awarded for marking one page."
-              : `Awarded for marking ${rewards.length} pages.`}
-          </p>
-
           <div className="rc-marks">
             {rewards.slice(0, isSingle ? 1 : 8).map((reward) => {
               const item = reward.item
@@ -251,14 +226,16 @@ const BatchRewardContent = ({
               // Same intent/topic resolution as the Amplify rows so the verb
               // ("visited", …) renders via the DS <VerbTag> and the context
               // pill matches it 1:1.
-              const intentKey = item.intention
+              const intentKey: IntentionType | null = item.intention
                 ? (((item.intention as string) in INTENTION_CONFIG
                     ? item.intention
                     : (item.intention as string).replace(
                         /^for_/,
                         ""
                       )) as IntentionType)
-                : null
+                : // Trust / distrust marks carry no `intention` — resolve the
+                  // verb from the predicate name ("trusts" → "trusted").
+                  predicateLabelToIntentionType(item.predicateName)
               const intentEntry =
                 intentKey && intentKey in INTENTION_CONFIG
                   ? INTENTION_CONFIG[intentKey]
@@ -267,7 +244,7 @@ const BatchRewardContent = ({
                 ? TOPIC_LABELS[item.interestContext]
                 : null
               const topicColor = item.interestContext
-                ? TOPIC_COLORS[item.interestContext] || "#888"
+                ? TOPIC_COLORS[item.interestContext] || "var(--ds-muted)"
                 : null
               return (
                 <div className="rc-mark" key={item.id}>
@@ -318,30 +295,27 @@ const BatchRewardContent = ({
             )}
           </div>
 
-          <div className="rc-tiers">
-            <div className="rc-tiers-k">Tier ladder</div>
-            {TIER_ORDER.map((tier) => {
-              const count = tierCount(tier)
-              const earned = count > 0
-              return (
-                <div
-                  className={`rc-tier${earned ? " is-earned" : ""}`}
-                  key={tier}>
-                  <UserBadge
-                    tier={tier}
-                    iconUrl={BADGE_IMAGES[tier]}
-                    size={32}
-                  />
-                  <span className="rc-tier-label">
-                    {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                  </span>
-                  <span className="rc-tier-state">
-                    {earned ? `${count} earned` : "locked"}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+          {TIER_ORDER.some((tier) => tierCount(tier) > 0) && (
+            <div className="rc-tiers">
+              <div className="rc-tiers-k">Tier ladder</div>
+              {TIER_ORDER.filter((tier) => tierCount(tier) > 0).map((tier) => {
+                const count = tierCount(tier)
+                return (
+                  <div className="rc-tier is-earned" key={tier}>
+                    <UserBadge
+                      tier={tier}
+                      iconUrl={BADGE_IMAGES[tier]}
+                      size={32}
+                    />
+                    <span className="rc-tier-label">
+                      {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                    </span>
+                    <span className="rc-tier-state">{count} earned</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           <div className="rc-ledger">
             <div className="rc-ledger-row">
