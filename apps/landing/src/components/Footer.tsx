@@ -41,7 +41,9 @@ export function Footer() {
             <ul className={styles.links}>
               {RESOURCES.map((l) => (
                 <li key={l.label}>
-                  <a href={l.href}>{l.label}</a>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.label}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -65,7 +67,9 @@ export function Footer() {
             <ul className={styles.links}>
               {LEGAL.map((l) => (
                 <li key={l.label}>
-                  <a href={l.href}>{l.label}</a>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.label}
+                  </a>
                 </li>
               ))}
             </ul>

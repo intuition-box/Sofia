@@ -8,8 +8,8 @@ import {
   BLOCKCHAIN_CONFIG,
 } from '@site/src/lib/config/chainConfig'
 import { STAKE_AMOUNT, CURVE_ID } from '@site/src/lib/config/constants'
-import { parseContractError } from '@site/src/lib/web3/utils'
-import { useWalletConnection } from './useWalletConnection'
+import { parseContractError } from '@site/src/lib/services/contractErrors'
+import { useWalletConnection } from '@site/src/lib/services/WalletProvider'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

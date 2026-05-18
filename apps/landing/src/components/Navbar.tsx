@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useWalletConnection } from '../hooks/useWalletConnection'
+import { useWalletConnection } from '../lib/services/WalletProvider'
 import { URLS } from '../lib/config/urls'
 import styles from './Navbar.module.css'
 
