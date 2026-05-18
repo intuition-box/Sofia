@@ -24,6 +24,7 @@ ENV VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID \
     VITE_DOCS_URL=$VITE_DOCS_URL
 
 COPY package.json bun.lock tsconfig.base.json ./
+COPY apps/blog/package.json ./apps/blog/
 COPY apps/explorer/package.json ./apps/explorer/
 COPY apps/extension/package.json ./apps/extension/
 COPY apps/landing/package.json ./apps/landing/
