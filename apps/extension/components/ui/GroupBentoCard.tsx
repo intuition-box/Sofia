@@ -45,18 +45,14 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
   // Level from on-chain certifications (auto up/down, no local fallback)
   const displayLevel = calculateLevel(certifiedCount)
 
-  // Progress toward next level (same baseLevel as DetailView)
-  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
-
-  // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
-  const highestPredicateLevel = group.predicateHistory?.length > 0
-    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
-    : 0
-  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
+  // Progress toward next level (same baseLevel as DetailView). The
+  // level is fully automatic — it tracks certifiedCount; there is no
+  // Gold-spend "Level Up" action anymore.
+  const { progressPercent } = calculateLevelProgress(certifiedCount, displayLevel)
 
   return (
     <div
-      className={`bento-card bento-${size} group-bento-card${canLevelUp ? ' can-level-up' : ''}${isHighlighted ? ' is-fresh-mark' : ''}`}
+      className={`bento-card bento-${size} group-bento-card${isHighlighted ? ' is-fresh-mark' : ''}`}
       onClick={onClick}
       style={
         isHighlighted
@@ -94,12 +90,8 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
         )}
       </div>
 
-      {/* Stats — includes level badge */}
+      {/* Stats — Level moved under the progress bar below */}
       <div className="group-bento-stats">
-        <div className="stat-item">
-          <span className="stat-value">{displayLevel}</span>
-          <span className="stat-label">Level</span>
-        </div>
         <div className="stat-item">
           <span className="stat-value">{activeUrlCount}</span>
           <span className="stat-label">URLs</span>
@@ -114,7 +106,8 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
         </div>
       </div>
 
-      {/* Level progress bar - shows progress toward next level */}
+      {/* Level progress bar — current level sits right under the bar
+          (replaces the old certs-to-next label). */}
       <div className="group-bento-progress">
         <div className="progress-bar-container">
           <div
@@ -124,15 +117,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small', isHighlighte
             }}
           />
         </div>
-        <span className="progress-label">
-          {onChainLoading ? '...' : (
-            canLevelUp
-              ? `Level Up to ${displayLevel}!`
-              : xpToNextLevel > 0
-                ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
-                : 'Max level!'
-          )}
-        </span>
+        <span className="progress-label">Level {displayLevel}</span>
       </div>
 
       {/* Certification breakdown dots - ONLY show on-chain certifications */}

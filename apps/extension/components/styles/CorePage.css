@@ -86,6 +86,13 @@
   letter-spacing: 0.06em;
 }
 
+/* Selected tab = peach (overrides the DS default ink/bg). Scoped to
+   the page-level tab bar so other .pf-sort-btn rows are untouched. */
+.core-page-tabs .pf-sort-btn.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
 /* Contenu des pages */
 .page-content {
   background: transparent;

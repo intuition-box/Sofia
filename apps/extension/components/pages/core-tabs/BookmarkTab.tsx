@@ -1,7 +1,19 @@
 import { useState, useMemo } from 'react'
-import { useBookmarks, useIntentionCategories, useIntuitionTriplets } from '../../../hooks'
+import {
+  getCertificationForUrl,
+  useBookmarks,
+  useIntentionCategories,
+  useIntuitionTriplets,
+  useUserCertifications,
+  useWalletFromStorage
+} from '../../../hooks'
 import SofiaLoader from '../../ui/SofiaLoader'
 import CategoryDetailView from '../../ui/CategoryDetailView'
+import FilterDropdown from '../../ui/FilterDropdown'
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from '../../../lib/config/filterOptions'
 import type { IntentionCategory, IntentionType } from '../../../types/intentionCategories'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -54,6 +66,13 @@ const BookmarkTab = () => {
   const [isAddingSignal, setIsAddingSignal] = useState(false)
   const [signalSearchQuery, setSignalSearchQuery] = useState('')
   const [showAllBookmarks, setShowAllBookmarks] = useState(false)
+  const [verbFilter, setVerbFilter] = useState<IntentionType | 'all'>('all')
+  const [topicFilter, setTopicFilter] = useState<string>('all')
+
+  // On-chain "in context of" topics — same source the explorer feed uses,
+  // so the Verb + Topic filters stay coherent across extension and explorer.
+  const { walletAddress } = useWalletFromStorage()
+  const { certifications } = useUserCertifications(walletAddress)
 
   // Virtual "All Bookmarks" category — aggregates all on-chain URLs
   const allBookmarksCategory: IntentionCategory | null = useMemo(() => {
@@ -67,6 +86,25 @@ const BookmarkTab = () => {
       urlCount: allUrls.length
     }
   }, [showAllBookmarks, categories])
+
+  // Verb + Topic filter over the on-chain categories. Verb matches the
+  // category's intention type; Topic keeps categories with ≥1 URL whose
+  // on-chain certification carries the selected "in context of" slug.
+  const filteredCategories = useMemo(() => {
+    let result = categories
+    if (verbFilter !== 'all') {
+      result = result.filter(cat => cat.id === verbFilter)
+    }
+    if (topicFilter !== 'all') {
+      result = result.filter(cat =>
+        cat.urls.some(u => {
+          const entry = getCertificationForUrl(certifications, u.url)
+          return entry?.interestContexts?.includes(topicFilter) ?? false
+        })
+      )
+    }
+    return result
+  }, [categories, verbFilter, topicFilter, certifications])
 
   const selectList = (listId: string | null) => {
     setSelectedListId(listId)
@@ -189,6 +227,7 @@ const BookmarkTab = () => {
             setShowAllBookmarks(false)
           }}
           onRedeem={refetchCategories}
+          walletAddress={walletAddress}
         />
       </div>
     )
@@ -212,7 +251,26 @@ const BookmarkTab = () => {
 
         {/* Categories as bookmark cards - Only show when no list is selected and not viewing all */}
         {!selectedListId && !showAllBookmarks && (
-          <div className="lists-grid">
+          <>
+            {/* Verb + Topic filter dropdowns — same coherent system as
+                EchoesTab and the explorer circles feed. Topic uses the
+                on-chain "in context of" data from useUserCertifications. */}
+            <div className="echoes-filter-row">
+              <FilterDropdown
+                label="Verbs"
+                value={verbFilter}
+                onChange={(id) => setVerbFilter(id as IntentionType | 'all')}
+                options={VERB_FILTER_OPTIONS}
+              />
+              <FilterDropdown
+                label="Topics"
+                value={topicFilter}
+                onChange={setTopicFilter}
+                options={TOPIC_FILTER_OPTIONS}
+                wide
+              />
+            </div>
+            <div className="lists-grid">
             {/* New list ghost card — top 1, dashed border, matches explorer cr-card-new */}
             <button
               type="button"
@@ -286,7 +344,7 @@ const BookmarkTab = () => {
               </>
             ) : (
               <>
-                {categories.map((category) => {
+                {filteredCategories.map((category) => {
                   const categoryDomains = [...new Set(
                     category.urls.map(u => u.domain)
                   )]
@@ -335,7 +393,8 @@ const BookmarkTab = () => {
                 })}
               </>
             )}
-          </div>
+            </div>
+          </>
         )}
 
         {/* Header for manual list view */}

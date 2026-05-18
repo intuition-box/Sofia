@@ -5,8 +5,15 @@
  */
 
 import { useState, useMemo } from "react"
-import { useRedeemTriple } from "../../hooks"
+import {
+  getCertificationForUrl,
+  useRedeemTriple,
+  useUserCertifications
+} from "../../hooks"
+import { TOPIC_FILTER_OPTIONS } from "~/lib/config/filterOptions"
+import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionCategory, CategoryUrl } from "../../types/intentionCategories"
+import FilterDropdown from "./FilterDropdown"
 
 type SortBy = "date-desc" | "date-asc" | "domain" | "shares"
 
@@ -21,6 +28,9 @@ interface CategoryDetailViewProps {
   category: IntentionCategory
   onBack: () => void
   onRedeem?: () => void
+  /** Wallet whose certifications back the Topic filter (the profile
+   *  owner). When omitted the Topic filter has no data to match. */
+  walletAddress?: string
 }
 
 const formatDate = (dateStr: string): string => {
@@ -37,11 +47,15 @@ const formatDate = (dateStr: string): string => {
 const CategoryUrlRow = ({
   url,
   isRedeeming,
-  onRedeem
+  onRedeem,
+  canRedeem
 }: {
   url: CategoryUrl
   isRedeeming: boolean
   onRedeem: (termId: string, urlStr: string) => void
+  /** False when viewing another user's profile — you can't redeem
+   *  someone else's position, so the button is hidden. */
+  canRedeem: boolean
 }) => {
   return (
     <div className="url-row on-chain">
@@ -69,7 +83,7 @@ const CategoryUrlRow = ({
             )}
           </div>
         </div>
-        {url.termId && (
+        {canRedeem && url.termId && (
           <button
             className="url-redeem-btn"
             onClick={(e) => {
@@ -88,14 +102,29 @@ const CategoryUrlRow = ({
   )
 }
 
-const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewProps) => {
+const CategoryDetailView = ({
+  category,
+  onBack,
+  onRedeem,
+  walletAddress
+}: CategoryDetailViewProps) => {
   const { label, color, urls, urlCount } = category
   const { redeemPosition } = useRedeemTriple()
+
+  // On-chain "in context of" topics for the profile owner — same
+  // source as Echoes / BookmarkTab so the Topic filter stays coherent.
+  const { certifications } = useUserCertifications(walletAddress)
+
+  // No onRedeem handler → we're viewing another user's profile (read
+  // only): hide the sort pills and the per-URL Redeem button (you
+  // can't redeem someone else's position). Search + the Domain/Topic
+  // dropdowns stay available.
+  const isReadOnly = !onRedeem
 
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortBy>("date-desc")
   const [domainFilter, setDomainFilter] = useState<string | null>(null)
-  const [domainsExpanded, setDomainsExpanded] = useState(false)
+  const [topicFilter, setTopicFilter] = useState<string>("all")
   const [redeemingUrls, setRedeemingUrls] = useState<Set<string>>(() => new Set())
   const [redeemedUrls, setRedeemedUrls] = useState<Set<string>>(() => new Set())
 
@@ -122,6 +151,18 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
     return [...new Set(urls.map((u) => u.domain))].sort()
   }, [urls])
 
+  // FilterDropdown options for the Domain dropdown ("All" is implicit).
+  // Favicon instead of a colored dot.
+  const domainOptions = useMemo(
+    () =>
+      uniqueDomains.map((d) => ({
+        id: d,
+        label: d,
+        iconUrl: getFaviconUrl(d, 32)
+      })),
+    [uniqueDomains]
+  )
+
   const displayedUrls = useMemo(() => {
     let filtered = redeemedUrls.size > 0
       ? urls.filter(u => !redeemedUrls.has(u.url))
@@ -139,6 +180,13 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
 
     if (domainFilter) {
       filtered = filtered.filter((u) => u.domain === domainFilter)
+    }
+
+    if (topicFilter !== "all") {
+      filtered = filtered.filter((u) => {
+        const entry = getCertificationForUrl(certifications, u.url)
+        return entry?.interestContexts?.includes(topicFilter) ?? false
+      })
     }
 
     const sorted = [...filtered]
@@ -174,9 +222,17 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
     }
 
     return sorted
-  }, [urls, searchQuery, domainFilter, sortBy, redeemedUrls])
+  }, [
+    urls,
+    searchQuery,
+    domainFilter,
+    topicFilter,
+    sortBy,
+    redeemedUrls,
+    certifications
+  ])
 
-  const isFiltered = searchQuery || domainFilter
+  const isFiltered = searchQuery || domainFilter || topicFilter !== "all"
 
   return (
     <div className="category-detail">
@@ -224,69 +280,45 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
               </button>
             )}
           </div>
-          <div className="sort-buttons">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                className={`sort-btn ${sortBy === option.value ? "active" : ""}`}
-                onClick={() => setSortBy(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          {!isReadOnly && (
+            <div className="sort-buttons">
+              {sortOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className={`sort-btn ${sortBy === option.value ? "active" : ""}`}
+                  onClick={() => setSortBy(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Domain filter chips — show 4 (All + 3) collapsed, "+N more" expands */}
-      {uniqueDomains.length > 1 && (() => {
-        const visibleDomains = domainsExpanded
-          ? uniqueDomains
-          : uniqueDomains.slice(0, 3)
-        const hiddenCount = uniqueDomains.length - visibleDomains.length
-        return (
-        <div className="circle-filter-group">
-          <span className="circle-filter-label">Domain</span>
-          <div className="circle-category-chips">
-            <button
-              className={`circle-chip ${domainFilter === null ? "active" : ""}`}
-              onClick={() => setDomainFilter(null)}
-            >
-              All
-            </button>
-            {visibleDomains.map((domain) => (
-              <button
-                key={domain}
-                className={`circle-chip ${domainFilter === domain ? "active" : ""}`}
-                onClick={() =>
-                  setDomainFilter(domainFilter === domain ? null : domain)
-                }
-              >
-                {domain}
-              </button>
-            ))}
-            {hiddenCount > 0 && (
-              <button
-                type="button"
-                className="circle-chip circle-chip-more"
-                onClick={() => setDomainsExpanded(true)}
-              >
-                +{hiddenCount} more
-              </button>
-            )}
-            {domainsExpanded && uniqueDomains.length > 3 && (
-              <button
-                type="button"
-                className="circle-chip circle-chip-more"
-                onClick={() => setDomainsExpanded(false)}
-              >
-                Show less
-              </button>
-            )}
-          </div>
+      {/* Domain + Topic filter dropdowns — same FilterDropdown system
+          as Echoes. Domain options come from this category's URLs;
+          Topic uses the profile owner's on-chain "in context of"
+          data. */}
+      {urls.length > 0 && (
+        <div className="echoes-filter-row">
+          <FilterDropdown
+            label="Domain"
+            value={domainFilter ?? "all"}
+            onChange={(id) => setDomainFilter(id === "all" ? null : id)}
+            options={domainOptions}
+            wide
+            singleColumn
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
         </div>
-        )
-      })()}
+      )}
 
       {/* Result count when filtered */}
       {isFiltered && (
@@ -314,6 +346,7 @@ const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewPr
               url={url}
               isRedeeming={redeemingUrls.has(url.url)}
               onRedeem={handleRedeem}
+              canRedeem={!isReadOnly}
             />
           ))
         )}

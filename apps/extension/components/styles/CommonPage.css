@@ -225,62 +225,6 @@
   border-color: var(--ds-ink-soft);
 }
 
-/* Cards ready to level up — point lumineux qui circule en continu
-   sur les bordures top/bottom. Scroll unidirectionnel (pas alternate)
-   pour éviter l'effet "respiration" des aller-retours. */
-.group-bento-card.can-level-up {
-  position: relative;
-  overflow: hidden;
-}
-
-.group-bento-card.can-level-up::before,
-.group-bento-card.can-level-up::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  pointer-events: none;
-  z-index: 2;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    transparent 40%,
-    var(--ds-accent) 50%,
-    transparent 60%,
-    transparent 100%
-  );
-}
-
-.group-bento-card.can-level-up::before {
-  top: 0;
-  left: 0;
-  animation: bento-star-top 4s linear infinite;
-}
-
-.group-bento-card.can-level-up::after {
-  bottom: 0;
-  left: 0;
-  animation: bento-star-bottom 4s linear infinite;
-}
-
-@keyframes bento-star-top {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes bento-star-bottom {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-
 .group-bento-header {
   display: flex;
   align-items: flex-start;
@@ -396,7 +340,7 @@
 
 .progress-bar-container {
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ds-accent-soft);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -404,7 +348,7 @@
 .progress-bar-fill {
   height: 100%;
   border-radius: 2px;
-  background: var(--ds-ink-soft);
+  background: var(--ds-accent);
   transition: width 0.3s ease;
 }
 
@@ -419,16 +363,6 @@
   min-height: 16px;
   line-height: 16px;
   display: block;
-}
-
-/* When the bento card is ready to level up, slightly emphasize the label
-   without injecting an accent color (border style already conveys it). */
-.group-bento-card.can-level-up .progress-label {
-  color: var(--ds-ink);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .certification-dots {
@@ -490,7 +424,7 @@
 }
 
 .group-detail-title-section {
-  flex: 1;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -517,6 +451,20 @@
   line-height: 1.1;
   margin: 0;
   word-break: break-word;
+}
+
+/* The big domain title is a link to the site itself — inherits the
+   heading style, reveals it's clickable on hover. */
+.group-detail-domain a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.group-detail-domain a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--ds-accent);
 }
 
 /* Level colors for detail view */
@@ -1087,59 +1035,6 @@
   border: 1px solid var(--ds-border-soft);
 }
 
-/* Inline level-up success — sits just under the progress bar.
-   Compact, dismissible, replaces the bottom .level-up-section banner. */
-.level-up-success-inline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 8px 10px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-accent);
-  border-radius: 8px;
-  font-family: "Geist", sans-serif;
-  font-size: 12px;
-  color: var(--ds-ink);
-  line-height: 1.4;
-}
-
-.level-up-success-inline .success-icon {
-  font-size: 14px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.level-up-success-inline .success-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.level-up-success-inline .success-text strong {
-  font-weight: 700;
-  color: var(--ds-accent);
-}
-
-.level-up-success-inline .dismiss-btn {
-  background: transparent;
-  border: none;
-  color: var(--ds-muted);
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-}
-
-.level-up-success-inline .dismiss-btn:hover {
-  color: var(--ds-ink);
-  background: var(--ds-bg-subtle);
-}
-
 .level-progress-header {
   display: flex;
   justify-content: space-between;
@@ -1174,99 +1069,6 @@
 
 .cert-badge.on-chain {
   box-shadow: none;
-}
-
-/* ========== LEVEL UP SECTION ========== */
-
-.level-up-section {
-  margin-top: 16px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.level-up-btn .loading-text {
-  font-style: italic;
-}
-
-.level-up-success {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
-
-.level-up-success .success-icon {
-  font-size: 20px;
-}
-
-.level-up-success .success-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.level-up-success .success-title {
-  color: var(--ds-ink);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.level-up-success .success-predicate {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-  font-style: italic;
-}
-
-.level-up-error {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 10px;
-  margin-bottom: 12px;
-  position: relative;
-}
-
-.level-up-error .error-icon {
-  font-size: 16px;
-}
-
-.level-up-error .error-text {
-  color: #ef4444;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.level-up-error .error-detail {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-}
-
-.dismiss-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.dismiss-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
 }
 
 .amplify-btn .loading-text {
@@ -1308,89 +1110,6 @@
   flex: 1;
 }
 
-/* ========== INTEGRATED LEVEL UP BUTTON (when XP bar is full) ========== */
-
-.level-progress-section.ready-to-level-up {
-  background: transparent;
-  border-color: transparent;
-  padding: 0;
-}
-
-.level-up-integrated-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
-  background: linear-gradient(
-    135deg,
-    #b8860b 0%,
-    #daa520 25%,
-    #ffd700 50%,
-    #daa520 75%,
-    #b8860b 100%
-  );
-  background-size: 200% 100%;
-  border: 1px solid rgba(255, 215, 0, 0.5);
-  border-radius: 12px;
-  color: #1a1a1a;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow:
-    0 2px 8px rgba(218, 165, 32, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  animation: goldShimmer 3s ease infinite;
-}
-
-@keyframes goldShimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.level-up-integrated-btn:hover:not(:disabled) {
-  filter: brightness(1.05);
-}
-
-.level-up-integrated-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-  animation: none;
-}
-
-.level-up-integrated-btn .level-up-text {
-  font-family: "Fraunces", serif;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.level-up-integrated-btn .level-up-cost {
-  padding: 4px 10px;
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 6px;
-  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.level-up-integrated-btn .loading-text {
-  font-style: italic;
-  color: #1a1a1a;
-}
 /* ============================================================
  * Phase 4b — Fresh Mark highlight on EchoesTab bento cards
  * Drop-in staggered entrance + 2s pulse, then back to normal.
@@ -1433,26 +1152,7 @@
   }
 }
 
-/* Phase 5b — "View all my <domain> Marks on Sofia" CTA inside GroupDetailView header */
-.group-detail-view-on-sofia {
-  margin-top: 12px;
-  align-self: flex-start;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ds-text-muted, rgba(255, 255, 255, 0.65));
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.group-detail-view-on-sofia:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--ds-text, #fff);
-  border-color: rgba(255, 255, 255, 0.22);
-}
+/* "View on Explorer" CTA in GroupDetailView reuses the Echoes button
+   style (.sort-btn .gm-manage-btn). .gm-manage-btn already pins it to
+   the far right of the title row via margin-left:auto — no extra
+   positioning rule needed. */

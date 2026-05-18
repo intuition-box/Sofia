@@ -5,8 +5,19 @@
  * Shows on-chain intention categories (certified URLs) for any wallet.
  */
 
-import { useIntentionCategories } from "~/hooks"
+import { useMemo, useState } from "react"
+import {
+  getCertificationForUrl,
+  useIntentionCategories,
+  useUserCertifications
+} from "~/hooks"
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from "~/lib/config/filterOptions"
+import type { IntentionType } from "~/types/intentionCategories"
 import CategoryDetailView from "../../ui/CategoryDetailView"
+import FilterDropdown from "../../ui/FilterDropdown"
 import SofiaLoader from "../../ui/SofiaLoader"
 import "../../styles/BookmarkStyles.css"
 import "../../styles/CategoryStyles.css"
@@ -24,6 +35,13 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
     selectCategory
   } = useIntentionCategories(walletAddress)
 
+  const [verbFilter, setVerbFilter] = useState<IntentionType | "all">("all")
+  const [topicFilter, setTopicFilter] = useState<string>("all")
+
+  // This user's on-chain "in context of" topics — same source as
+  // Echoes / BookmarkTab so the Verb + Topic filters stay coherent.
+  const { certifications } = useUserCertifications(walletAddress)
+
   // Detail view for selected category
   if (selectedCategory) {
     return (
@@ -31,6 +49,7 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
         <CategoryDetailView
           category={selectedCategory}
           onBack={() => selectCategory(null)}
+          walletAddress={walletAddress}
         />
       </div>
     )
@@ -90,9 +109,48 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
     0
   )
 
+  // Verb + Topic filter over the categories — same coherent system as
+  // Echoes / BookmarkTab. Verb = the category's intention type; Topic
+  // keeps categories with ≥1 URL whose on-chain certification carries
+  // the selected "in context of" slug. Plain const (not a hook) so it
+  // stays below the early returns without breaking rules-of-hooks.
+  const filteredCategories = (() => {
+    let result = activeCategories
+    if (verbFilter !== "all") {
+      result = result.filter(c => c.id === verbFilter)
+    }
+    if (topicFilter !== "all") {
+      result = result.filter(c =>
+        c.urls.some(u => {
+          const entry = getCertificationForUrl(certifications, u.url)
+          return entry?.interestContexts?.includes(topicFilter) ?? false
+        })
+      )
+    }
+    return result
+  })()
+
   return (
     <div className="bookmarks-container">
       <div className="lists-section">
+        {/* Verb + Topic filter dropdowns — same coherent system as
+            Echoes / BookmarkTab and the explorer. Topic uses this
+            user's on-chain "in context of" data. */}
+        <div className="echoes-filter-row">
+          <FilterDropdown
+            label="Verbs"
+            value={verbFilter}
+            onChange={id => setVerbFilter(id as IntentionType | "all")}
+            options={VERB_FILTER_OPTIONS}
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
+        </div>
         <div className="lists-grid">
           {/* All bookmarks summary card */}
           <div className="bookmark-card active">
@@ -139,7 +197,7 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
           </div>
 
           {/* Category cards */}
-          {activeCategories.map(category => {
+          {filteredCategories.map(category => {
             const categoryDomains = [
               ...new Set(category.urls.map(u => u.domain))
             ]

@@ -7,12 +7,21 @@ import { useEffect, useRef, useState } from "react"
 
 import { userSettingsService } from "~/lib/database"
 
-import { useIntentionGroups, type SortOption } from "../../../hooks"
+import {
+  getCertificationForUrl,
+  useIntentionGroups,
+  useUserCertifications,
+  useWalletFromStorage
+} from "../../../hooks"
+import {
+  TOPIC_FILTER_OPTIONS,
+  VERB_FILTER_OPTIONS
+} from "../../../lib/config/filterOptions"
 import { getProfileUrl } from "../../../lib/utils"
 import type { IntentionType } from "../../../types/intentionCategories"
-import { INTENTION_CONFIG } from "../../../types/intentionCategories"
 import { useRouter } from "../../layout/RouterProvider"
 import GroupManagerModal from "../../modals/GroupManagerModal"
+import FilterDropdown from "../../ui/FilterDropdown"
 import GroupBentoCard from "../../ui/GroupBentoCard"
 import GroupDetailView from "../../ui/GroupDetailView"
 import SofiaLoader from "../../ui/SofiaLoader"
@@ -27,7 +36,10 @@ const HIGHLIGHT_DURATION_MS = 3200
 
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | "all">("all")
+  const [topicFilter, setTopicFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const { walletAddress } = useWalletFromStorage()
+  const { certifications } = useUserCertifications(walletAddress)
   const [showManager, setShowManager] = useState(false)
   const [managerInitialFilter, setManagerInitialFilter] = useState<
     "all" | "inactive"
@@ -43,8 +55,6 @@ const EchoesTab = () => {
     selectedGroup,
     isLoading,
     error,
-    sortBy,
-    setSortBy,
     loadGroups,
     selectGroup,
     certifyUrl,
@@ -139,19 +149,12 @@ const EchoesTab = () => {
     setShowManager(true)
   }
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: "level", label: "Level" },
-    { value: "urls", label: "URLs" },
-    { value: "alphabetic", label: "A-Z" },
-    { value: "recent", label: "Recent" }
-  ]
-
   // Filter out ENS names (.eth) and wallet addresses (0x)
   const baseGroups = groups.filter(
     (g) => !g.domain.endsWith(".eth") && !g.domain.startsWith("0x")
   )
 
-  // Filter by certification type
+  // Filter by certification type (verb)
   const certFilteredGroups =
     certFilter === "all"
       ? baseGroups
@@ -159,12 +162,27 @@ const EchoesTab = () => {
           (g) => (g.certificationBreakdown[certFilter] || 0) > 0
         )
 
+  // Filter by topic — keep groups with ≥1 active URL whose on-chain
+  // certification carries the selected topic in its "in context of"
+  // triples (CertificationEntry.interestContexts). Same topic semantics
+  // and slug palette as the explorer feed — one coherent system.
+  const topicFilteredGroups =
+    topicFilter === "all"
+      ? certFilteredGroups
+      : certFilteredGroups.filter((g) =>
+          (g.urls || []).some((u) => {
+            if (u.removed || u.oauthPredicate) return false
+            const entry = getCertificationForUrl(certifications, u.url)
+            return entry?.interestContexts?.includes(topicFilter) ?? false
+          })
+        )
+
   // Filter by search query
   const filteredGroups = searchQuery.trim()
-    ? certFilteredGroups.filter((g) =>
+    ? topicFilteredGroups.filter((g) =>
         g.domain.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : certFilteredGroups
+    : topicFilteredGroups
 
   const handleDeleteGroup = async (groupId: string) => {
     const group = groups.find((g) => g.id === groupId)
@@ -258,31 +276,41 @@ const EchoesTab = () => {
           </div>
         </div>
 
-        {/* Filter chips — All + intention filters */}
-        <div className="echoes-filter-row">
-          <button
-            className={`circle-chip ${certFilter === "all" ? "active" : ""}`}
-            onClick={() => setCertFilter("all")}>
-            All
-          </button>
-          {(
-            Object.entries(INTENTION_CONFIG) as [
-              IntentionType,
-              { label: string; color: string }
-            ][]
-          ).map(([type, config]) => (
+        {/* Verb + Topic dropdowns share one line with Manage /
+            Open-on-Explorer. The `--actions` modifier shrinks the
+            dropdowns so all four fit — Echoes only; the other pages
+            keep the default-size dropdowns. Topic uses the on-chain
+            "in context of" data from useUserCertifications. */}
+        <div className="echoes-filter-row echoes-filter-row--actions">
+          <FilterDropdown
+            label="Verbs"
+            value={certFilter}
+            onChange={(id) => setCertFilter(id as IntentionType | "all")}
+            options={VERB_FILTER_OPTIONS}
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
+          <div className="echoes-actions">
             <button
-              key={type}
-              className={`circle-chip ${certFilter === type ? "active" : ""}`}
-              onClick={() => setCertFilter(type)}>
-              <span
-                className="circle-chip-dot"
-                aria-hidden="true"
-                style={{ background: config.color }}
-              />
-              {config.label}
+              className="sort-btn gm-manage-btn"
+              onClick={() => handleOpenManager("all")}
+              title="Manage groups">
+              Manage
             </button>
-          ))}
+            <button
+              className="sort-btn gm-manage-btn echoes-open-sofia-btn"
+              onClick={() =>
+                chrome.tabs.create({ url: getProfileUrl(), active: true })
+              }
+              title="View my profile on Explorer">
+              View on Explorer ↗
+            </button>
+          </div>
         </div>
 
         {/* Inactive groups cleanup banner */}
@@ -303,42 +331,6 @@ const EchoesTab = () => {
             </button>
           </div>
         )}
-
-        {/* Sort toggle + Manage — same row right above the bento grid;
-            toggle on the left, Manage button pinned to the far right. */}
-        <div className="echoes-sort-row">
-          <div
-            className="scope-toggle echoes-sort-toggle"
-            role="group"
-            aria-label="Sort groups by">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`scope-btn ${sortBy === option.value ? "active" : ""}`}
-                aria-pressed={sortBy === option.value}
-                onClick={() => setSortBy(option.value)}>
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <div className="echoes-actions">
-            <button
-              className="sort-btn gm-manage-btn"
-              onClick={() => handleOpenManager("all")}
-              title="Manage groups">
-              Manage
-            </button>
-            <button
-              className="sort-btn gm-manage-btn echoes-open-sofia-btn"
-              onClick={() =>
-                chrome.tabs.create({ url: getProfileUrl(), active: true })
-              }
-              title="Open my profile on Explorer">
-              Open on Explorer ↗
-            </button>
-          </div>
-        </div>
 
         {filteredGroups.length === 0 ? (
           <div className="groups-empty">
