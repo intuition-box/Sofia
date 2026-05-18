@@ -123,6 +123,21 @@
   overflow-y: auto;
   scrollbar-width: thin;
 }
+/* Single-column variant — used by the Domain filter (long values,
+   one per row instead of the 2-col Topics grid). */
+.ext-filter-pop__grid--single {
+  grid-template-columns: 1fr;
+}
+
+/* Favicon swatch — replaces the colored dot for image-backed options
+   (Domain). Sized to sit where the dot would. */
+.ext-filter-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .ext-filter-pop__cell {
   display: inline-flex;
   align-items: center;

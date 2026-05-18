@@ -227,6 +227,7 @@ const BookmarkTab = () => {
             setShowAllBookmarks(false)
           }}
           onRedeem={refetchCategories}
+          walletAddress={walletAddress}
         />
       </div>
     )

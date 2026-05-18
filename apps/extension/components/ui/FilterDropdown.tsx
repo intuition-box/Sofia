@@ -20,6 +20,9 @@ export interface FilterOption {
    *  the monochrome pictogram — same silhouette as the explorer's
    *  TopicBadge. Verbs leave this unset → plain small dot. */
   icon?: string
+  /** Image URL (e.g. a favicon). When set it replaces the colored dot
+   *  entirely with the image — used by the Domain filter. */
+  iconUrl?: string
 }
 
 interface FilterDropdownProps {
@@ -32,6 +35,9 @@ interface FilterDropdownProps {
   options: FilterOption[]
   /** Wider trigger for long values (topics). */
   wide?: boolean
+  /** Render the options panel as a single column instead of the
+   *  default 2-column grid (used by the Domain filter). */
+  singleColumn?: boolean
 }
 
 const MUTED = "var(--ds-muted, #888)"
@@ -61,12 +67,42 @@ function Dot({
   )
 }
 
+/** Favicon image when `iconUrl` is set (Domain filter), otherwise the
+ *  colored Dot (verbs/topics/All). */
+function Swatch({
+  base,
+  color,
+  icon,
+  iconUrl
+}: {
+  base: string
+  color: string
+  icon?: string
+  iconUrl?: string
+}) {
+  if (iconUrl) {
+    return (
+      <img
+        src={iconUrl}
+        alt=""
+        aria-hidden="true"
+        className="ext-filter-favicon"
+        onError={(e) => {
+          ;(e.target as HTMLImageElement).style.visibility = "hidden"
+        }}
+      />
+    )
+  }
+  return <Dot base={base} color={color} icon={icon} />
+}
+
 export default function FilterDropdown({
   label,
   value,
   onChange,
   options,
-  wide = false
+  wide = false,
+  singleColumn = false
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -106,10 +142,11 @@ export default function FilterDropdown({
         aria-label={`Filter by ${label.toLowerCase()}`}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}>
-        <Dot
+        <Swatch
           base="ext-filter-trigger__dot"
           color={dotColor}
           icon={activeOption?.icon}
+          iconUrl={activeOption?.iconUrl}
         />
         <span className="ext-filter-trigger__label">{label}</span>
         <span className="ext-filter-trigger__value">{activeLabel}</span>
@@ -118,7 +155,8 @@ export default function FilterDropdown({
 
       {open && (
         <div className="ext-filter-pop" role="listbox">
-          <div className="ext-filter-pop__grid">
+          <div
+            className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>
             <button
               type="button"
               className={`ext-filter-pop__cell${value === "all" ? " is-active" : ""}`}
@@ -132,10 +170,11 @@ export default function FilterDropdown({
                 type="button"
                 className={`ext-filter-pop__cell${value === o.id ? " is-active" : ""}`}
                 onClick={() => handleSelect(o.id)}>
-                <Dot
+                <Swatch
                   base="ext-filter-pop__dot"
                   color={o.color ?? MUTED}
                   icon={o.icon}
+                  iconUrl={o.iconUrl}
                 />
                 {o.label}
               </button>
