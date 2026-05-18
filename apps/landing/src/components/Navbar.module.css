@@ -239,9 +239,15 @@
   transform: translateY(-5px) rotate(-45deg);
 }
 
+/* Backdrop — sits behind the drawer and dims the rest of the page.
+   Clicking it closes the menu (handler in Navbar.tsx). Anchored to the
+   navbar height so the bar itself stays interactive above it. */
 .overlay {
   position: fixed;
-  inset: 56px 0 0;
+  top: var(--nav-h, 64px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 90;
 }
@@ -255,16 +261,29 @@
   .nav {
     grid-template-columns: 1fr auto;
   }
+  /* Mobile drawer — anchored to the right edge of the screen, slides
+     in below the navbar. Width caps at 320px so it doesn't dominate
+     the viewport on large phones / small tablets, but takes 80% on
+     narrow phones (<= 400px) so tap targets stay comfortable. */
   .menu.menuOpen {
     display: flex;
     position: fixed;
-    inset: 56px 0 0;
+    top: var(--nav-h, 64px);
+    right: 0;
+    bottom: 0;
+    width: min(80vw, 320px);
     flex-direction: column;
     background: var(--color-bg);
+    border-left: 1px solid var(--color-border-soft);
     padding: 32px var(--gutter);
     z-index: 95;
     gap: 24px;
     align-items: flex-start;
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.35);
+  }
+  .menu.menuOpen a {
+    font-size: 1rem;
+    color: var(--color-text);
   }
   .burger {
     display: inline-flex;

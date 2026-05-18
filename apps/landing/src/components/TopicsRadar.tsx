@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import styles from './TopicsRadar.module.css'
 
 /* TopicsRadar — animated polar/radar field. 11 axes (3 topics + 8
  * intentions). Concentric polygons breathe along each axis via
@@ -83,16 +84,7 @@ export function TopicsRadar({ ink = 'dark' }: TopicsRadarProps) {
   const fillBase = ink === 'light' ? '245,233,216' : '10,10,10'
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: 600,
-        aspectRatio: '1 / 1',
-        fontFamily: 'var(--font-mono)',
-        color: inkHex,
-      }}
-    >
+    <div className={styles.host} data-ink={ink}>
       {/* Single SVG canvas — no external border, no corner ticks, no
           header/footer bars. Chrome (FIG tag + sub label + progress bar)
           lives inline inside the SVG, matching the Fig V.06 chassis. */}
@@ -103,7 +95,7 @@ export function TopicsRadar({ ink = 'dark' }: TopicsRadarProps) {
            header (top) and progress bar (bottom). */
         viewBox="-25 -30 500 500"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: '100%', height: 'auto' }}
+        className={styles.svg}
       >
         {/* Outer ring */}
         <circle

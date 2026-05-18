@@ -1,0 +1,26 @@
+/**
+ * TopicsRadar — animated polar/radar field. The component owns the
+ * SVG + rAF animation loop; this module owns the layout chassis (host
+ * frame + ink palette) so the JSX stays free of inline styles.
+ */
+
+.host {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 1 / 1;
+  font-family: var(--font-mono);
+}
+
+.host[data-ink='light'] {
+  color: #f5e9d8;
+}
+
+.host[data-ink='dark'] {
+  color: #0a0a0a;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+}

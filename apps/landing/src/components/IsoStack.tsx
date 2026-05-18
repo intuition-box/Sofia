@@ -251,7 +251,7 @@ export function IsoStack({
     const labelX = right[0] + 22
     const labelY = right[1] + 2
     return (
-      <g opacity={opacity} style={{ transition: 'opacity 0.2s linear' }}>
+      <g opacity={opacity} className={styles.plate}>
         <path
           d={path}
           fill={plateFill ?? color}

@@ -12,6 +12,7 @@
  * correctly on both slab variants.
  */
 import { useEffect, useState } from 'react'
+import styles from './CirclesSequence.module.css'
 
 interface CirclesSequenceProps {
   /** Palette to render in. Matches the deck slide variants. */
@@ -558,7 +559,7 @@ export function CirclesSequence({ variant = 'dark' }: CirclesSequenceProps) {
               r={nR + 6 * p.nScale}
               fill={nucleusColor}
               fillOpacity={(involved ? 0.55 : 0.4) * vis[i]}
-              style={{ mixBlendMode: 'lighten' }}
+              className={styles.haloLighten}
             />
             <path
               d={hex(p.x, p.y, nR, 0)}

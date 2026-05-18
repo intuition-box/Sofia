@@ -1,0 +1,12 @@
+/**
+ * CirclesSequence — animated SVG. The component owns the geometry +
+ * animation loop; this module exposes the few reusable visual hooks
+ * that would otherwise need inline styles.
+ */
+
+/* Nucleus halo — additive blending so overlapping halos brighten
+ *  rather than just stacking opacity. Applied to the underlying disc
+ *  behind each hexagonal nucleus. */
+.haloLighten {
+  mix-blend-mode: lighten;
+}

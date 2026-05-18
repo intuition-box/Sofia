@@ -1,0 +1,722 @@
+/**
+ * zones.module.css — Per-zone classes for the deck's custom content.
+ *
+ * Most zones in `zones.tsx` carry their layout via inline styles. We
+ * extract the patterns that need to respond to viewport changes into
+ * this module so a single mobile media query can flip them all to a
+ * stacked single-column shape without touching the markup.
+ *
+ * Naming follows the zone number for clarity: `.zoneN_role`.
+ *
+ * The deck's `data-active` / `data-revealed` choreography is owned by
+ * App.module.css — this file only adjusts intra-zone composition.
+ */
+
+/* ── Zone 1 — hero (catch phrase + CTA stack) ─────────────────── */
+
+.heroRoot {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  /* space-between separates the h1 (top of cell) from the CTA row
+     (bottom of cell). Buttons get flex-shrink:0 so they stay rendered;
+     h1 gets flex-shrink:1 so it yields space on short viewports rather
+     than pushing the buttons out. */
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 0;
+}
+
+.heroTitle {
+  font-size: clamp(3rem, 4vh + 6vw, 8.8rem);
+  line-height: 1.05;
+  padding-top: 0.08em;
+  padding-bottom: 0.05em;
+  margin: 0;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.heroActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: clamp(2.4rem, 8vw, 3.6rem);
+  }
+  .heroActions {
+    width: 100%;
+  }
+  /* Buttons stretch to full width on the narrowest viewports so the
+     CTA stack reads as a clear vertical column instead of two small
+     pills floating against the slab. */
+  .heroActions > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Zone 2 — partner logos ──────────────────────────────────── */
+
+.partnersRoot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.partnersList {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.partnerLink {
+  opacity: 0.78;
+  display: inline-flex;
+}
+
+.partnerLogo {
+  height: 28px;
+  max-height: 28px;
+  width: auto;
+  display: block;
+}
+
+.partnerLogo[data-phala='true'] {
+  height: auto;
+  max-width: 90px;
+}
+
+/* On dark slabs, monochrome logos stay native. On peach, brightness(0)
+   flattens them to deep ink so they read at uniform weight. Phala keeps
+   its native palette because flattening would erase the inner "P". */
+.partnerLogo[data-flatten='true'] {
+  filter: brightness(0);
+}
+
+@media (max-width: 899px) {
+  .partnersRoot {
+    justify-content: flex-start;
+  }
+  .partnersList {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .partnersList {
+    gap: 16px 24px;
+  }
+  .partnerLogo {
+    height: 22px;
+    max-height: 22px;
+  }
+  .partnerLogo[data-phala='true'] {
+    max-width: 72px;
+  }
+}
+
+/* ── Section heads (zones 5, 12) — eyebrow + h2 + lede ─────────── */
+
+.sectionHead {
+  width: 100%;
+  text-align: left;
+}
+
+.sectionHeadTitle {
+  margin: 0 0 14px;
+  font-size: clamp(1.8rem, 1.4rem + 3.4vw, 9.2rem);
+}
+
+.sectionHeadTitleTight {
+  margin: 6px 0 12px;
+  font-size: clamp(1.8rem, 1.4rem + 3.4vw, 9.2rem);
+  line-height: 1.02;
+}
+
+.sectionHeadLede {
+  max-width: 60ch;
+}
+
+.sectionHeadLedeWide {
+  margin: 0;
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .sectionHeadTitle,
+  .sectionHeadTitleTight {
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+    line-height: 1.1;
+  }
+}
+
+/* ── Zone 10 — hero video ────────────────────────────────────── */
+
+.videoFrame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(2, 0, 14, 0.3);
+}
+
+.videoFrame[data-variant='peach'] {
+  background: rgba(255, 198, 176, 0.3);
+}
+
+.videoFrame video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 899px) {
+  .videoFrame {
+    aspect-ratio: 16 / 10;
+    height: auto;
+  }
+}
+
+/* ── Zone 11 — TopicsRadar wrapper ───────────────────────────── */
+
+.radarFrame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+@media (max-width: 899px) {
+  .radarFrame {
+    aspect-ratio: 1;
+    height: auto;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── Zone 20 — Core builders ─────────────────────────────────── */
+
+.teamRoot {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.teamTitle {
+  margin: 12px 0 18px;
+  font-size: clamp(1.6rem, 1.2rem + 2.4vw, 3.2rem);
+}
+
+.teamList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.teamMember {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teamHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.teamAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: block;
+}
+
+.teamIdentity {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.teamName {
+  font-size: clamp(1rem, 0.85rem + 0.5vw, 1.25rem);
+  font-weight: 500;
+}
+
+.teamHandle {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.teamQuote {
+  margin: 0;
+  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .teamAvatar {
+    width: 44px;
+    height: 44px;
+  }
+  .teamTitle {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+}
+
+/* ── Zone 21 — Backed by (grant copy) ────────────────────────── */
+
+.grantRoot {
+  width: 100%;
+  text-align: left;
+}
+
+.grantTitle {
+  margin: 12px 0 16px;
+  font-size: clamp(1.6rem, 1.2rem + 2.4vw, 3.2rem);
+}
+
+.grantPara {
+  margin: 0 0 12px;
+  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem);
+  max-width: none;
+}
+
+.grantParaLast {
+  margin: 0 0 18px;
+}
+
+.grantCtaRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .grantTitle {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+  .grantCtaRow > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Zone 31 — Discord arrow (FAQ intro CTA) ─────────────────── */
+
+.faqDiscordArrow {
+  margin-left: 4px;
+}
+
+/* ── Zone 22 — Advisors strip ────────────────────────────────── */
+
+.advisorsRoot {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.advisorsList {
+  margin-top: 12px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.advisorCard {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.advisorHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.advisorAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: block;
+}
+
+.advisorIdentity {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.advisorCompany {
+  font-size: 9px;
+  margin-bottom: 2px;
+}
+
+.advisorName {
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.advisorHandle {
+  font-size: 0.7rem;
+  opacity: 0.65;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* ── Zones 23 / 24 — Community stats (figure + title + lede) ─── */
+
+.statRoot {
+  width: 100%;
+  text-align: left;
+}
+
+.statFigure {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: clamp(2.6rem, 1.6rem + 4vw, 6rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.statTitle {
+  margin: 10px 0 8px;
+  font-size: clamp(1.1rem, 0.9rem + 0.7vw, 1.6rem);
+}
+
+.statLede {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.7rem + 0.35vw, 1rem);
+}
+
+/* Zone 24 variant — uses absolute positioning on desktop to anchor in
+   the compact 1fr bottom-left cell. Mobile resets to static flow. */
+.statRootAbsolute {
+  position: absolute;
+  top: 2px;
+  left: 28px;
+  right: 28px;
+  bottom: 4px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.statFigureTight {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 1.2rem + 3vw, 4.4rem);
+  font-weight: 600;
+  line-height: 0.95;
+}
+
+.statTitleTight {
+  margin: 0;
+  font-size: clamp(1rem, 0.85rem + 0.6vw, 1.4rem);
+  line-height: 1.15;
+}
+
+.statLedeTight {
+  margin: 0;
+  font-size: clamp(0.75rem, 0.68rem + 0.25vw, 0.95rem);
+  line-height: 1.35;
+}
+
+@media (max-width: 899px) {
+  .statRootAbsolute {
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+  }
+}
+
+/* ── Zone 25 — Voices (testimonials list) ────────────────────── */
+
+.voicesRoot {
+  width: 100%;
+  text-align: left;
+}
+
+.voicesTitle {
+  margin: 12px 0 18px;
+  font-size: clamp(1.6rem, 1.2rem + 2vw, 2.8rem);
+}
+
+.voicesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voiceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.voiceHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+}
+
+.voiceHandle {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.voiceRole {
+  font-size: 9px;
+  opacity: 0.6;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.voiceQuote {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.7rem + 0.35vw, 0.95rem);
+  line-height: 1.45;
+}
+
+/* ── Zone 26 — Values intro ──────────────────────────────────── */
+
+.valuesIntroTitle {
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 1.4rem + 3vw, 4.4rem);
+  line-height: 0.95;
+}
+
+.valuesIntroPara {
+  margin: 0 0 12px;
+  font-size: clamp(0.9rem, 0.78rem + 0.45vw, 1.15rem);
+  max-width: none;
+}
+
+.valuesIntroParaLast {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .valuesIntroTitle {
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+  }
+}
+
+/* ── Zone 31 — FAQ intro ─────────────────────────────────────── */
+
+.faqIntroTitle {
+  margin: 0 0 16px;
+  font-size: clamp(1.8rem, 1.3rem + 2.4vw, 3.6rem);
+  line-height: 0.95;
+}
+
+.faqIntroPara {
+  margin: 0 0 14px;
+  font-size: clamp(0.85rem, 0.74rem + 0.4vw, 1.05rem);
+  max-width: none;
+}
+
+.faqIntroCtaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Zone 32 — FAQ list ──────────────────────────────────────── */
+
+.faqList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 28px;
+  row-gap: 18px;
+}
+
+.faqItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+.faqQuestion {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: clamp(0.92rem, 0.8rem + 0.45vw, 1.2rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.faqNum {
+  font-size: 10px;
+  opacity: 0.55;
+  letter-spacing: 0.14em;
+}
+
+.faqAnswer {
+  margin: 0;
+  font-size: clamp(0.82rem, 0.72rem + 0.35vw, 1rem);
+  line-height: 1.5;
+  opacity: 0.9;
+  max-width: 48ch;
+}
+
+.faqAnswer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+@media (max-width: 899px) {
+  .faqList {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 14px;
+  }
+  .faqAnswer {
+    max-width: none;
+  }
+}
+
+/* ── Zone 33 — Closing CTA ───────────────────────────────────── */
+
+.ctaRoot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ctaInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 720px;
+  padding: 0 24px;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-size: clamp(2.6rem, 2vh + 6vw, 7.2rem);
+  line-height: 1;
+}
+
+.ctaLede {
+  margin: 0;
+  font-size: clamp(0.95rem, 0.82rem + 0.45vw, 1.15rem);
+  max-width: 52ch;
+}
+
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+@media (max-width: 899px) {
+  .ctaRoot {
+    height: auto;
+    min-height: 60vh;
+    padding: 48px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .ctaTitle {
+    font-size: clamp(2.2rem, 9vw, 3.6rem);
+  }
+  .ctaInner {
+    padding: 0 16px;
+  }
+  .ctaActions {
+    width: 100%;
+  }
+  .ctaActions > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Generic helpers used across multiple zones ──────────────── */
+
+.fullWidth {
+  width: 100%;
+  text-align: left;
+}
+
+/* ── S.05 in-grid banner — headerContent rendered inside the
+ *  layout's `h` cell. Title + lede stack with tight spacing so the
+ *  banner reads as a single block above the Vision cards quad. */
+
+.s05BannerRoot {
+  width: 100%;
+  text-align: left;
+}
+
+.s05BannerTitle {
+  margin: 0 0 8px;
+  font-size: clamp(1.4rem, 1rem + 1.4vw, 2rem);
+  line-height: 1.15;
+}
+
+.s05BannerLede {
+  margin: 0;
+  font-size: clamp(0.82rem, 0.7rem + 0.4vw, 1rem);
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .s05BannerTitle {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+  }
+}

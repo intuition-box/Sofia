@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from 'react'
 import { ScrollTrigger } from '../lib/animation/gsap'
@@ -20,12 +19,13 @@ interface SceneStackProps {
   /** Optional reveal-state background per slide. When set on slide
    *  `i`, a second slab paints the reveal colour on top of the base
    *  slab as soon as that slide's sub-state goes ≥ 1 — same 60°
-   *  diagonal wipe as a slide-to-slide transition. */
+   *  diagonal wipe as a slide-to-slide transition.
+   *
+   *  Note: reveal backgrounds only apply in desktop snap mode. In
+   *  mobile flow mode there's no sub-state — base and reveal zones
+   *  stack vertically — so each slide paints a single bg via its
+   *  base variant. */
   revealBgs?: (SlideBg | undefined)[]
-  /** Duration (ms) of step 1: background slab + angled border wipe. */
-  step1Ms?: number
-  /** Duration (ms) of step 2: content slides over the new background. */
-  step2Ms?: number
   /** Per-slide sub-state count. `subStates[i] = n` means slide `i`
    *  has `n` reveal stages on top of its base layout. Children read
    *  their current sub-state via `useSceneSubState()`. */
@@ -44,10 +44,12 @@ export function useSceneSubState() {
   return useContext(SceneStackCtx)
 }
 
-const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
+const MOBILE_BREAKPOINT = '(max-width: 899px)'
 
 /**
  * SceneStack — scroll-trigger slide stack with two-step transition.
+ *
+ * ── Desktop (>= 900px) — pinned scroll-snap deck.
  *
  * The deck reserves N × 100vh of vertical space, where N is the total
  * number of stages (sum of slides + sub-states). Each stage gets an
@@ -64,13 +66,29 @@ const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
  * Lenis stays untouched — it drives smooth scroll globally, and
  * ScrollTrigger consumes its scroll events via the wiring in
  * `SmoothScroll.tsx`.
+ *
+ * ── Mobile (<= 899px) — vertical flow with per-slide entrance.
+ *
+ * The pin/snap mechanic doesn't translate to touch (kinetic scroll
+ * mismatches break the snap timing). On mobile we drop scroll-jacking
+ * entirely: each slide flows vertically at its natural height, base
+ * and reveal layers stack instead of crossfading (see App.module.css
+ * mobile overrides), and an IntersectionObserver flips `isActive` on
+ * each slide as it scrolls into view — so the intra-slide entrance
+ * animations (wipe / slide-up / scale) still play in sequence.
+ *
+ * ── Styling convention.
+ *
+ * Layout, transforms, transitions, and per-stage offsets are all
+ * driven by data-attributes resolved in `SceneStack.module.css`. No
+ * inline styles anywhere — index values map to CSS custom-property
+ * bindings (`data-slide-i='2'` → `--slide-i: 2`) and the transform
+ * math runs in pure CSS.
  */
 export function SceneStack({
   children,
   bgs,
   revealBgs,
-  step1Ms = 220,
-  step2Ms = 220,
   subStates = [],
   slideCodes = [],
 }: SceneStackProps) {
@@ -106,10 +124,34 @@ export function SceneStack({
   const [slideSubStates, setSlideSubStates] = useState<Record<number, number>>(
     {},
   )
+  /* Mobile mode — per-slide active flag, driven by IntersectionObserver.
+     Slides stay active once they've entered the viewport so leaving and
+     re-entering doesn't replay the entrance. */
+  const [activeMobileSlides, setActiveMobileSlides] = useState<Set<number>>(
+    () => new Set(),
+  )
+
+  /* Layout mode tracked in JS so the context can return the right
+     `isActive` for each slide and we can opt out of the desktop-only
+     transforms. SSR-safe: assume desktop until hydration. */
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia(MOBILE_BREAKPOINT).matches
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia(MOBILE_BREAKPOINT)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const regionRef = useRef<HTMLDivElement>(null)
 
+  /* Desktop — pinned snap deck. Only active in desktop mode. */
   useEffect(() => {
+    if (isMobile) return
     if (!regionRef.current || totalStages < 2) return
 
     let lastStageIdx = -1
@@ -150,89 +192,131 @@ export function SceneStack({
     return () => {
       st.kill()
     }
-  }, [stages, totalStages])
+  }, [isMobile, stages, totalStages])
+
+  /* Mobile — pre-reveal every sub-state so base + reveal zones can
+     coexist stacked (no crossfade), then observe each slide for the
+     entrance animation cue. */
+  useEffect(() => {
+    if (!isMobile || !regionRef.current) return
+
+    const allRevealed: Record<number, number> = {}
+    for (let i = 0; i < N; i++) {
+      allRevealed[i] = subStates[i] ?? 0
+    }
+    setSlideSubStates(allRevealed)
+
+    const slideEls =
+      regionRef.current.querySelectorAll<HTMLElement>('[data-slide-idx]')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          const idx = Number(entry.target.getAttribute('data-slide-idx'))
+          setActiveMobileSlides((prev) => {
+            if (prev.has(idx)) return prev
+            const next = new Set(prev)
+            next.add(idx)
+            return next
+          })
+        }
+      },
+      /* 15 % visible is enough to fire the entrance — feels responsive
+         without firing too early on long slides with content far down. */
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+    )
+    slideEls.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [isMobile, N, subStates])
 
   return (
     <div
       ref={regionRef}
       className={styles.region}
-      style={
-        {
-          ['--stages' as string]: totalStages,
-          /* Per-stage scroll travel. Tweak here to make the snap feel
-             tighter or longer without touching CSS. */
-          ['--stage-gap' as string]: '60vh',
-        } as CSSProperties
-      }>
-      {/* Anchor markers — one zero-height anchor per stage, positioned
-          absolutely at the snap point so deep-links resolve natively.
-          They're out of flow so the sticky `.stage` stays at the top
-          of the region. */}
-      {stages.map((stage, i) => (
-        <div
-          key={stage.anchorId}
-          id={stage.anchorId}
-          className={styles.snapMarker}
-          style={{ top: `calc(${i} * var(--stage-gap))` }}
-          data-stage-slide={stage.slideIdx}
-          data-stage-sub={stage.sub}
-        />
-      ))}
-
-      <div className={styles.stage}>
-        {/* Background slabs — step 1. */}
-        <div className={styles.bgLayer}>
-          {slides.map((_, i) => (
-            <div
-              key={`base-${i}`}
-              className={styles.bgBlock}
-              data-bg={bgs?.[i] ?? 'peach'}
-              style={{
-                transform: `translate3d(${(i - slideIdx) * 100}%, 0, 0) skewX(-30deg)`,
-                transition: `transform ${step1Ms}ms ${EASE}`,
-              }}
-            />
-          ))}
-          {/* Reveal slabs — parked off-screen right; slide to 0 when
-              the owning slide is active and its sub-state ≥ 1. */}
-          {slides.map((_, i) => {
-            const revealBg = revealBgs?.[i]
-            if (!revealBg) return null
-            const sub = slideSubStates[i] ?? 0
-            const showing = i === slideIdx && sub >= 1
-            return (
-              <div
-                key={`reveal-${i}`}
-                className={styles.bgBlock}
-                data-bg={revealBg}
-                style={{
-                  transform: `translate3d(${showing ? 0 : 100}%, 0, 0) skewX(-30deg)`,
-                  transition: `transform ${step1Ms}ms ${EASE}`,
-                }}
-              />
-            )
-          })}
-        </div>
-
-        {/* Content slides — step 2, delayed by step1Ms. */}
-        {slides.map((child, i) => (
+      data-mode={isMobile ? 'mobile' : 'desktop'}
+      data-stages={totalStages}>
+      {/* Anchor markers — desktop deep-link targets. Hidden on mobile
+          where each slide is its own scrollable block (use slide id
+          instead if you need a deep-link there). */}
+      {!isMobile &&
+        stages.map((stage, i) => (
           <div
-            key={i}
-            className={styles.slide}
-            style={{
-              transform: `translate3d(0, ${(i - slideIdx) * 100}%, 0)`,
-              transition: `transform ${step2Ms}ms ${EASE} ${step1Ms}ms`,
-            }}>
-            <SceneStackCtx.Provider
-              value={{
-                slideIdx: i,
-                subState: slideSubStates[i] ?? 0,
-                isActive: i === slideIdx,
-              }}>
-              {child}
-            </SceneStackCtx.Provider>
-          </div>
+            key={stage.anchorId}
+            id={stage.anchorId}
+            className={styles.snapMarker}
+            data-stage-i={i}
+            data-stage-slide={stage.slideIdx}
+            data-stage-sub={stage.sub}
+          />
         ))}
+
+      <div className={styles.stage} data-active-slide={slideIdx}>
+        {/* Background slabs — desktop only. The horizontal slide of the
+            slabs is the visual signature of the snap deck; on mobile
+            each slide paints its own bg via .placeholder color rules
+            (see App.module.css). */}
+        {!isMobile && (
+          <div className={styles.bgLayer}>
+            {slides.map((_, i) => (
+              <div
+                key={`base-${i}`}
+                className={styles.bgBlock}
+                data-bg={bgs?.[i] ?? 'peach'}
+                data-bg-i={i}
+              />
+            ))}
+            {/* Reveal slabs — parked off-screen right; slide to 0 when
+                the owning slide is active and its sub-state ≥ 1. */}
+            {slides.map((_, i) => {
+              const revealBg = revealBgs?.[i]
+              if (!revealBg) return null
+              const sub = slideSubStates[i] ?? 0
+              const showing = i === slideIdx && sub >= 1
+              return (
+                <div
+                  key={`reveal-${i}`}
+                  className={`${styles.bgBlock} ${styles.bgBlockReveal}`}
+                  data-bg={revealBg}
+                  data-showing={showing ? 'true' : 'false'}
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {/* Content slides — translated vertically by the active-slide
+            offset on desktop, statically stacked on mobile. The
+            translate math runs in CSS via the --slide-i / --active-slide
+            variables resolved from data-attributes.
+
+            `data-slide-bg` only paints in mobile mode (see
+            SceneStack.module.css mobile rules) and gets used by slides
+            without a reveal layer. Slides WITH a reveal split their
+            background per layer — each .zones paints its own colour
+            (see App.module.css mobile rules) so HERO can stay peach
+            while WHY SOFIA goes dark inside the same slide. */}
+        {slides.map((child, i) => {
+          const isActive = isMobile
+            ? activeMobileSlides.has(i)
+            : i === slideIdx
+          return (
+            <div
+              key={i}
+              className={styles.slide}
+              data-slide-idx={i}
+              data-slide-i={i}
+              data-slide-bg={bgs?.[i] ?? 'peach'}>
+              <SceneStackCtx.Provider
+                value={{
+                  slideIdx: i,
+                  subState: slideSubStates[i] ?? 0,
+                  isActive,
+                }}>
+                {child}
+              </SceneStackCtx.Provider>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

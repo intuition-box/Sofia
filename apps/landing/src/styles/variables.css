@@ -14,6 +14,22 @@
   --maxw: 1240px;
   --gutter: 48px;
   --nav-h: 64px;
+  /* Deck frame paddings — consumed by .frame in App.module.css.
+     Tokenised so a single breakpoint cascade can scale every slide
+     surface without touching the deck CSS. */
+  --frame-margin: 24px;
+  --frame-padding-y: 24px;
+  --frame-padding-x: 32px;
+  --zone-gap: 16px;
+
+  /* ── Breakpoints (reference only — used as values in @media) ── */
+  --bp-tablet: 900px;
+  --bp-mobile: 640px;
+
+  /* ── Scene deck timing — owned by SceneStack.module.css. */
+  --stage-gap: 60vh;
+  --scene-step1-ms: 220ms;
+  --scene-step2-ms: 220ms;
 
   /* ── Radius ─────────────────────────────────────────── */
   --radius-sm: calc(var(--ds-radius) - 4px); /* 6px  */
@@ -52,6 +68,15 @@
   --color-success: var(--trusted, #22c55e);
   --color-error: var(--distrusted, #ef4444);
 
+  /* ── Intent tints — used as the wipe slab colour on each slide.
+     Each slide picks one via its `wipeColor` config; the slide's
+     [data-wipe-tint] attribute resolves to the matching token. */
+  --intent-fun: #e4b95a;
+  --intent-trusted: #6dd4a0;
+  --intent-learning: #5cc4d6;
+  --intent-inspiration: #a78bdb;
+  --intent-work: #7bade0;
+
   /* ── Effects ────────────────────────────────────────── */
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
 
@@ -60,4 +85,26 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-fast: 0.2s;
   --duration-normal: 0.35s;
+}
+
+/* ── Tablet (<= 900px) — drop gutters + frame spacing one notch. */
+@media (max-width: 900px) {
+  :root {
+    --gutter: 24px;
+    --frame-margin: 12px;
+    --frame-padding-y: 18px;
+    --frame-padding-x: 20px;
+    --zone-gap: 20px;
+  }
+}
+
+/* ── Mobile (<= 640px) — tightest spacing, the deck stacks vertically. */
+@media (max-width: 640px) {
+  :root {
+    --gutter: 16px;
+    --frame-margin: 8px;
+    --frame-padding-y: 14px;
+    --frame-padding-x: 14px;
+    --zone-gap: 24px;
+  }
 }

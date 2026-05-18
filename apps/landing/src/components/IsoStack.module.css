@@ -10,3 +10,10 @@
   max-width: 100%;
   max-height: 100%;
 }
+
+/* Per-plate group — opacity is driven by the React rAF reveal loop via
+   the `opacity` SVG attribute. The transition lives here so the
+   component stays free of inline styles. */
+.plate {
+  transition: opacity 0.2s linear;
+}

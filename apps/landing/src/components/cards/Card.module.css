@@ -1,0 +1,153 @@
+/**
+ * Card.module.css — shared visual primitives for the deck's three card
+ * components (OpenCard, ProductCard, ValueCard). One set of tokens for
+ * the eyebrow / h3 clamp / lede so the four S.05 VISION cards and the
+ * two S.04 PRODUCT cards render at identical scale.
+ */
+
+/* ── Shared shell — full-cell flex column. ───────────────────── */
+
+.shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.title {
+  margin: 10px 0 8px;
+  font-size: clamp(1.1rem, 0.9rem + 0.9vw, 1.9rem);
+  line-height: 1.1;
+}
+
+.desc {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.7rem + 0.35vw, 1rem);
+}
+
+/* ── CTA row — sits under the lede. Variants for OpenCard
+ *  (margin-top 12) and ProductCard (margin-top 10). */
+
+.cta {
+  margin-top: 12px;
+}
+
+.ctaCompact {
+  margin-top: 10px;
+}
+
+/* ── ValueCard — extends .shell with eyebrow + TRUST figure +
+ *  bottom pill. Bigger TRUST figure on top, then h-section title, lede,
+ *  and either a staking button or "See on Intuition" pill. */
+
+.valueShell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+}
+
+.valueShell[data-linkable='true'] {
+  cursor: pointer;
+}
+
+.valueTrustRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+  line-height: 0.95;
+}
+
+.valueTrustFigure {
+  font-family: var(--font-mono);
+  font-size: clamp(1.8rem, 1.2rem + 2.2vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.valueTrustUnit {
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 0.6rem + 0.25vw, 0.9rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.valueTitle {
+  margin: 6px 0 4px;
+  font-size: clamp(1rem, 0.85rem + 0.7vw, 1.6rem);
+  line-height: 1.1;
+}
+
+.valueDesc {
+  margin: 0;
+  font-size: clamp(0.75rem, 0.68rem + 0.3vw, 0.95rem);
+  line-height: 1.4;
+}
+
+/* ── Pill — bottom CTA on ValueCard (vote or "See on Intuition").
+ *  Hover handled by CSS :hover. Two markups (button or span) share the
+ *  same .pill class. */
+
+.pill {
+  margin-top: 10px;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.pill:hover {
+  background: #02000e;
+  border-color: #02000e;
+  color: #f5e9d8;
+}
+
+.pill:disabled {
+  cursor: progress;
+}
+
+/* `data-vote-state="signing"` flips the cursor while the staking tx is
+   in flight. Kept declarative so no inline style is needed. */
+.pill[data-vote-state='signing'] {
+  cursor: progress;
+}
+
+.valueErr {
+  margin: 0;
+  font-size: 11px;
+  color: #e87c7c;
+  font-family: var(--font-mono);
+}
+
+/* ── Mobile — slightly smaller pill / tighter margins. */
+
+@media (max-width: 640px) {
+  .title {
+    font-size: clamp(1rem, 5vw, 1.4rem);
+  }
+  .valueTrustFigure {
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+  }
+}

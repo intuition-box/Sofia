@@ -1,0 +1,96 @@
+/**
+ * SceneBtn — variant-aware outline pill, drop-in replacement for the
+ * global `.btn.btn-secondary` anchors used inside the deck.
+ *
+ * Variants composed via data-attributes so the markup stays declarative
+ * and no JS state is needed for hover.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+/* ── Resting state — ink colour drives the border + text. ────── */
+
+.btn[data-ink='light'] {
+  color: #f5e9d8;
+  border-color: #f5e9d8;
+}
+.btn[data-ink='dark'] {
+  color: #02000e;
+  border-color: #02000e;
+}
+
+/* ── Resting fill — outline-only by default, optional white slab. */
+
+.btn[data-rest-fill='transparent'] {
+  background: transparent;
+}
+.btn[data-rest-fill='white'] {
+  background: #ffffff;
+}
+
+/* ── Hover state — fills the pill, lifts 1px. ──────────────── */
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Explicit hover override — white pill, deep-ink text. */
+.btn[data-hover-fill='white']:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #02000e;
+}
+
+/* Explicit hover override — peach pill, deep-ink text. */
+.btn[data-hover-fill='peach']:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #02000e;
+}
+
+/* Default hover — derived from the slide variant when no explicit
+   hoverFill is set. peach slab → peach pill; dark slab → ink pill. */
+.btn[data-variant='peach']:not([data-hover-fill]):hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #02000e;
+}
+.btn[data-variant='dark']:not([data-hover-fill]):hover {
+  background: #02000e;
+  border-color: #02000e;
+  color: #f5e9d8;
+}
+
+/* ── Size modifier — used by zones that want a compact pill (zones
+ *  20 / 21 grant CTA row). Modifier picked via data-size to keep the
+ *  surface area of variants flat. */
+
+.btn[data-size='sm'] {
+  padding: 8px 14px;
+  font-size: 0.78rem;
+}
+
+/* Zone 20 — "About the team" CTA sits below the team list with a
+ *  small top gap to space it from the quote. */
+.btn[data-anchor='team-cta'] {
+  margin-top: 16px;
+  align-self: flex-start;
+}
