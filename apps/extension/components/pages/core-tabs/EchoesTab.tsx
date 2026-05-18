@@ -11,8 +11,7 @@ import {
   getCertificationForUrl,
   useIntentionGroups,
   useUserCertifications,
-  useWalletFromStorage,
-  type SortOption
+  useWalletFromStorage
 } from "../../../hooks"
 import {
   TOPIC_FILTER_OPTIONS,
@@ -56,8 +55,6 @@ const EchoesTab = () => {
     selectedGroup,
     isLoading,
     error,
-    sortBy,
-    setSortBy,
     loadGroups,
     selectGroup,
     certifyUrl,
@@ -151,13 +148,6 @@ const EchoesTab = () => {
     setManagerInitialFilter(filter)
     setShowManager(true)
   }
-
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: "level", label: "Level" },
-    { value: "urls", label: "URLs" },
-    { value: "alphabetic", label: "A-Z" },
-    { value: "recent", label: "Recent" }
-  ]
 
   // Filter out ENS names (.eth) and wallet addresses (0x)
   const baseGroups = groups.filter(
@@ -286,25 +276,25 @@ const EchoesTab = () => {
           </div>
         </div>
 
-        {/* Sort pills + Manage / Open-on-Explorer — one line directly
-            under the search bar. Pills on the left, actions pinned to
-            the far right. */}
-        <div className="echoes-sort-row">
-          <div
-            className="scope-toggle echoes-sort-toggle"
-            role="group"
-            aria-label="Sort groups by">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`scope-btn ${sortBy === option.value ? "active" : ""}`}
-                aria-pressed={sortBy === option.value}
-                onClick={() => setSortBy(option.value)}>
-                {option.label}
-              </button>
-            ))}
-          </div>
+        {/* Verb + Topic dropdowns share one line with Manage /
+            Open-on-Explorer. The `--actions` modifier shrinks the
+            dropdowns so all four fit — Echoes only; the other pages
+            keep the default-size dropdowns. Topic uses the on-chain
+            "in context of" data from useUserCertifications. */}
+        <div className="echoes-filter-row echoes-filter-row--actions">
+          <FilterDropdown
+            label="Verbs"
+            value={certFilter}
+            onChange={(id) => setCertFilter(id as IntentionType | "all")}
+            options={VERB_FILTER_OPTIONS}
+          />
+          <FilterDropdown
+            label="Topics"
+            value={topicFilter}
+            onChange={setTopicFilter}
+            options={TOPIC_FILTER_OPTIONS}
+            wide
+          />
           <div className="echoes-actions">
             <button
               className="sort-btn gm-manage-btn"
@@ -321,25 +311,6 @@ const EchoesTab = () => {
               Open on Explorer ↗
             </button>
           </div>
-        </div>
-
-        {/* Verb + Topic filter dropdowns — own row below the sort line.
-            Topic uses the on-chain "in context of" data from
-            useUserCertifications — coherent with the explorer. */}
-        <div className="echoes-filter-row">
-          <FilterDropdown
-            label="Verbs"
-            value={certFilter}
-            onChange={(id) => setCertFilter(id as IntentionType | "all")}
-            options={VERB_FILTER_OPTIONS}
-          />
-          <FilterDropdown
-            label="Topics"
-            value={topicFilter}
-            onChange={setTopicFilter}
-            options={TOPIC_FILTER_OPTIONS}
-            wide
-          />
         </div>
 
         {/* Inactive groups cleanup banner */}

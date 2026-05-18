@@ -310,6 +310,45 @@
   margin-bottom: 12px;
 }
 
+/* Echoes only: --actions packs Verbs + Topics + Manage +
+   Open-on-Explorer onto one line. The two dropdowns shrink (share the
+   free space, value text ellipsizes) while the action buttons keep
+   their size and stay pinned right. Other pages don't use this
+   modifier, so their dropdowns keep the default 180/210px width. */
+.echoes-filter-row--actions {
+  flex-wrap: nowrap;
+}
+
+.echoes-filter-row--actions .ext-filter {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.echoes-filter-row--actions .ext-filter-trigger,
+.echoes-filter-row--actions .ext-filter-trigger--wide {
+  min-width: 0;
+  width: 100%;
+  padding: 6px 8px;
+  gap: 6px;
+}
+
+.echoes-filter-row--actions .ext-filter-trigger__label {
+  letter-spacing: 0.08em;
+}
+
+.echoes-filter-row--actions .echoes-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.echoes-filter-row--actions .gm-manage-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .echoes-filter-row .circle-chip {
   padding: 5px 10px;
   font-size: 11px;
