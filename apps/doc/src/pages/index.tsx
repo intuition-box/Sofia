@@ -30,7 +30,7 @@ export default function Home(): React.ReactElement {
               </Link>
               <Link
                 className="button button--outline button--primary button--lg"
-                to="/blog"
+                href="https://blog.sofia.intuition.box"
               >
                 Chronicles
               </Link>
