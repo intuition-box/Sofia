@@ -4,6 +4,7 @@ slug: logbook-16-01
 title: Logbook 16/01
 
 authors: [Samuel, Maxime]
+tags: [trust-reputation, community, ai-agents, gamification]
 ---
 
 During this development cycle, we focused on strengthening Sofia's core mechanics and finalizing several key systems. The main effort went into improving discovery logic, intention classification, and social linking, while stabilizing authentication and agent infrastructure.

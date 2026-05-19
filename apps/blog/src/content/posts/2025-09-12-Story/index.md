@@ -4,6 +4,7 @@ slug: From idea to reality
 title: The Story of Sofia
 
 authors: [Samuel, Maxime]
+tags: [vision, ai-agents, blockchain, trust-reputation]
 ---
 
 ## From Frustration to an Innovation

@@ -4,6 +4,7 @@ slug: logbook-23-01
 title: Logbook 23/01
 
 authors: [Samuel, Maxime]
+tags: [gamification, trust-reputation, ai-agents, architecture]
 ---
 
 {/* truncate */}

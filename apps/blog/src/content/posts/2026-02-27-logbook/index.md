@@ -2,6 +2,7 @@
 slug: logbook-27-02
 title: Logbook 27/02
 authors: [Samuel, Maxime]
+tags: [blockchain, design-ui, architecture, milestones]
 ---
 
 Big week on Sofia — we unified the transaction confirmation screen across the entire app, launched the **Beta Season Pool** (a shared vault funded by every certification), overhauled bookmarks with search and sorting, and shipped a major performance boost cutting the app's initial load by 535 KB. Page-level blockchain stats also got a full rewrite for better accuracy.

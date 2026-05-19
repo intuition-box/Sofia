@@ -4,6 +4,7 @@ slug: logbook-21-11
 title: Logbook 21/11
 
 authors: [Samuel, Maxime]
+tags: [infrastructure, milestones]
 ---
 
 This week has been focused on measuring and preparing for our Alpha launch.

@@ -4,6 +4,7 @@ slug: logbook-24-10
 title: Logbook 24/10
 
 authors: [Samuel, Maxime]
+tags: [infrastructure, design-ui, trust-reputation, milestones]
 ---
 
 This week we completed managed hosting, opened the first round of public testing, and introduced several key improvements to the Trust system and account experience.

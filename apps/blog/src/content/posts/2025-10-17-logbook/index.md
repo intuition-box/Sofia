@@ -4,6 +4,7 @@ slug: logbook-17-10
 title: Logbook 17/10
 
 authors: [Samuel, Maxime]
+tags: [community, ai-agents, design-ui, milestones]
 ---
 
 This week marked a major milestone for Sofia: our first public demo at Intuition's X Space, alongside significant improvements across recommendation intelligence, UI/UX redesign, and community expansion.

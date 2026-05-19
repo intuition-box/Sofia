@@ -4,6 +4,7 @@ slug: logbook-31-10
 title: Logbook 31/10
 
 authors: [Samuel, Maxime]
+tags: [infrastructure, trust-reputation, community, design-ui]
 ---
 
 This week was filled with significant progress across multiple fronts — from UI/UX refinements and feature implementations to infrastructure milestones and team methodology improvements. We're also navigating some technical challenges that are teaching us valuable lessons about building complex systems.

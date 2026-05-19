@@ -2,6 +2,7 @@
 slug: logbook-20-03
 title: Logbook 20/03
 authors: [Samuel, Maxime]
+tags: [explorer, design-ui, architecture, milestones]
 ---
 
     In one week, we went from zero to a fully functional behavioral

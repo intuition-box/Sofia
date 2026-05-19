@@ -1,19 +1,67 @@
-facebook:
-  label: Gaia
-  permalink: /gaia
-  description: gaia tag description
+# Blog tag taxonomy.
+# Schema (consumed by src/lib/tags.ts):
+#   <id>:
+#     label: string        — display name
+#     permalink: /path     — tag page URL (leading "/" stripped at load)
+#     description: string  — shown on the tag page
+# Post frontmatter references tags by <id>: `tags: [design-ui, blockchain]`.
 
-hello:
-  label: Intuition
-  permalink: /Intuition
-  description: Intuition tag description
+design-ui:
+  label: Design & UI/UX
+  permalink: /tags/design-ui
+  description: Interface redesigns, the design system, CSS work, the homepage orb, and UX flows.
 
-docusaurus:
-  label: Sofia
-  permalink: /Sofia
-  description: Sofia tag description
+blockchain:
+  label: Blockchain & Intuition
+  permalink: /tags/blockchain
+  description: On-chain work on the Intuition protocol — triples, atoms, curves, vaults, smart contracts, gas.
 
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+architecture:
+  label: Architecture & Refactoring
+  permalink: /tags/architecture
+  description: Codebase structure — monorepo, service/hook refactors, cleanup, the GraphQL package, performance.
+
+ai-agents:
+  label: AI & Agents
+  permalink: /tags/ai-agents
+  description: The AI stack — Pulse, Ollama, ElizaOS, Mastra, MCP, GaiaNet — recommendations and the chatbot.
+
+trust-reputation:
+  label: Trust & Reputation
+  permalink: /tags/trust-reputation
+  description: Trust/Distrust signals, reputation scoring, Proof of Human, and discovery roles.
+
+infrastructure:
+  label: Infrastructure & Deployment
+  permalink: /tags/infrastructure
+  description: Hosting, Phala TEE, Docker, mainnet deployments, Cloudflare, and the build pipeline.
+
+community:
+  label: Community & Social
+  permalink: /tags/community
+  description: Discord, public demos, the Circle Feed, social identity, and sharing on X.
+
+milestones:
+  label: Milestones & Releases
+  permalink: /tags/milestones
+  description: Alpha/Beta launches, version releases, grants, and conference events.
+
+security:
+  label: Security & Auth
+  permalink: /tags/security
+  description: OAuth hardening, Privy authentication, encryption, and TEE token storage.
+
+gamification:
+  label: Gamification
+  permalink: /tags/gamification
+  description: Quests, XP, Gold, streaks, badges, and leaderboards.
+
+explorer:
+  label: Sofia Explorer
+  permalink: /tags/explorer
+  description: The standalone Sofia Explorer dashboard application.
+
+vision:
+  label: Vision & Story
+  permalink: /tags/vision
+  description: The founding story, mission, and product vision behind Sofia.

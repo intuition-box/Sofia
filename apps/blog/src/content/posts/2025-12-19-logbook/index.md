@@ -4,6 +4,7 @@ slug: logbook-19-12
 title: Logbook 19/12
 
 authors: [Samuel, Maxime]
+tags: [security, ai-agents, trust-reputation, infrastructure]
 ---
 
 This week was dedicated to core infrastructure migration, authentication hardening, and on-chain verification foundations. We completed the migration of the extension authentication system to Privy, removing internal session wallets in favor of a secure external HTTPS flow. In parallel, the stack was fully migrated from ElizaOS to Mastra, improving modularity, performance, and agent orchestration while simplifying networking through an HTTP-based architecture. OAuth flows were secured via an external landing page backed by Cloudflare Workers, and the first version of our on-chain Proof of Human attestation system was implemented with gas abstraction for users.
