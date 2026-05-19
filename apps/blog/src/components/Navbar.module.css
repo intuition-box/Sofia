@@ -1,73 +1,137 @@
-/**
- * Navbar — fixed dark bar with Sofia brand on the left and a compact
- * link set on the right. Lifted from apps/landing so the blog reads as
- * an extension of the same site chrome.
- */
-
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+.nv {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 14px var(--gutter);
-  background: #000;
-  border-bottom: 1px solid var(--color-border-soft);
-  height: var(--nav-h);
+  gap: 28px;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11, 10, 18, 0.72);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.left {
+  display: flex;
+  align-items: center;
+}
+.links {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: flex-end;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  text-decoration: none;
 }
-
-.logo img {
-  height: 24px;
-  width: auto;
-  filter: invert(1);
+.mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
   display: block;
+  flex-shrink: 0;
 }
-
-.brandSep {
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 9999px;
-}
-
-.right {
+.brandText {
   display: flex;
-  align-items: center;
-  gap: 22px;
+  flex-direction: column;
+}
+.name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1;
+}
+.name em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.domain {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+  line-height: 1;
 }
 
-.right a {
-  font-size: 0.875rem;
+.link {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-soft);
   font-weight: 500;
-  color: var(--color-text-muted);
-  transition: color var(--duration-fast) var(--ease-out);
+  letter-spacing: -0.01em;
+  padding: 6px 2px;
+  position: relative;
+  transition: color var(--t-fast) var(--ease);
+}
+.link:hover {
+  color: var(--ink);
+}
+.active {
+  color: var(--ink);
+}
+.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -21px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
 }
 
-.right a:hover {
-  color: var(--color-text);
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  border: none;
+  transition: transform var(--t-fast) var(--ease);
+}
+.cta:hover {
+  transform: translateY(-1px);
+}
+.ctaIcon {
+  width: 14px;
+  height: 14px;
 }
 
-@media (max-width: 640px) {
-  .brandSep {
+@media (max-width: 768px) {
+  .nv {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+  .links {
     display: none;
   }
-  .right {
-    gap: 16px;
-  }
-  .right a:nth-child(n + 2) {
+  .domain {
     display: none;
+  }
+  .cta {
+    padding: 7px 12px;
+    font-size: 12px;
   }
 }

@@ -1,9 +1,10 @@
 ---
 slug: logbook-05-12
 
-title: Logbook 05/12
+title: 'Sofia Fee Proxy contract on mainnet'
 
 authors: [Samuel, Maxime]
+tags: [blockchain, architecture, milestones]
 ---
 
 This week, we achieved a major milestone by deploying the **Sofia Fee Proxy Contract** on Intuition Mainnet, enabling Sofia to collect transaction fees while maintaining full protocol compatibility. We enhanced user features with improved SignalTab functionality, image support for triples, and better transaction feedback. Multiple bug fixes improved the stability of the orb visualization, chat, activity feed, and follow system.

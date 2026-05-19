@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import { resolveAuthors } from './authors'
 import { resolveTags } from './tags'
-import type { Post, PostFrontmatter } from './types'
+import type { Post, PostFrontmatter, PostKind } from './types'
 
 /**
  * Posts loader — discovers every `index.md` / `index.mdx` under
@@ -83,6 +83,17 @@ function folderFromPath(filePath: string): string {
   return segments[segments.length - 2] ?? ''
 }
 
+/** Derive the post archetype. The founding Story is the only post
+ *  tagged `vision`; a monthly recap titles itself "… Month in Review". */
+function deriveKind(fm: PostFrontmatter, slug: string): PostKind {
+  const tags = fm.tags ?? []
+  if (tags.includes('vision') || slug === 'from-idea-to-reality') {
+    return 'story'
+  }
+  if (/month in review/i.test(fm.title ?? '')) return 'monthly'
+  return 'logbook'
+}
+
 /* ── Build the resolved post list at module load. ───────────────── */
 
 function buildPosts(): Post[] {
@@ -91,13 +102,15 @@ function buildPosts(): Post[] {
     const folder = folderFromPath(filePath)
     const fm = mod.frontmatter ?? ({ title: folder } as PostFrontmatter)
     const date = extractDate(folder)
+    const slug = deriveSlug(folder, fm.slug)
     /* Prefer an author-written `description:` over the auto-extracted
        excerpt — explicit beats implicit. The excerpt plugin returns
        an empty string when both the truncate marker and the first
        paragraph are missing, so this fallback chain never throws. */
     const excerpt = fm.description ?? excerptModules[filePath] ?? ''
     out.push({
-      slug: deriveSlug(folder, fm.slug),
+      slug,
+      kind: deriveKind(fm, slug),
       title: fm.title,
       date,
       dateLabel: formatDate(date),
@@ -132,4 +145,26 @@ export function postsByAuthor(authorId: string): Post[] {
 /** Posts tagged with a given tag id. */
 export function postsByTag(tagId: string): Post[] {
   return POSTS.filter((p) => p.tags.some((t) => t.id === tagId))
+}
+
+/* ── Archetype selectors (POSTS is sorted newest-first). ────────── */
+
+/** The founding Story, if present. */
+export function getStory(): Post | undefined {
+  return POSTS.find((p) => p.kind === 'story')
+}
+
+/** The most recent Monthly Review, if present. */
+export function getMonthlyReview(): Post | undefined {
+  return POSTS.find((p) => p.kind === 'monthly')
+}
+
+/** The most recent weekly logbook. */
+export function getLatestLogbook(): Post | undefined {
+  return POSTS.find((p) => p.kind === 'logbook')
+}
+
+/** Every weekly logbook, newest first. */
+export function logbooks(): Post[] {
+  return POSTS.filter((p) => p.kind === 'logbook')
 }

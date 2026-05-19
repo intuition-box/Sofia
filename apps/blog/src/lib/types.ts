@@ -27,6 +27,8 @@ export interface Author {
   title?: string
   url?: string
   imageUrl?: string
+  /** Short prose bio shown on the author page. */
+  bio?: string
   /** Optional custom permalink for the author page. Defaults to
    *  `/blog/authors/<id>`. */
   permalink?: string
@@ -45,11 +47,19 @@ export interface Tag {
   description?: string
 }
 
+/** Post archetype — drives the index hero treatment + card kicker.
+ *  `story`   → the founding narrative (tagged `vision`).
+ *  `monthly` → a "Month in Review" recap.
+ *  `logbook` → a regular weekly entry. */
+export type PostKind = 'story' | 'monthly' | 'logbook'
+
 /** A loaded post ready for rendering. Resolved authors / tags are
  *  attached so the UI doesn't need to look them up itself. */
 export interface Post {
   /** Slug used in `/blog/:slug`. Derived from frontmatter or folder. */
   slug: string
+  /** Archetype derived at load time (see {@link PostKind}). */
+  kind: PostKind
   title: string
   /** ISO date extracted from the folder name (YYYY-MM-DD prefix). */
   date: string

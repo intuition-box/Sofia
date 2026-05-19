@@ -1,7 +1,8 @@
 ---
 slug: logbook-13-03
-title: Logbook 13/03
+title: 'Position Board & Share to X'
 authors: [Samuel, Maxime]
+tags: [blockchain, community, design-ui, gamification]
 ---
 
 This week we shipped the **Position Board** — after certifying a page, you now see exactly who else certified it, their rank, and their avatar. We also added a **Share to X** button so you can tweet your certifications directly, moved streaks fully on-chain, and released **Sofia Extension v0.3.0**.

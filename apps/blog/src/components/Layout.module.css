@@ -1,18 +1,18 @@
 /**
- * Layout — global shell wrapping every route. Pushes content below
- * the fixed navbar via padding-top, leaves the footer to flex-grow
- * pin at the bottom (see #root in global.css).
+ * Layout — the single shell around every route. The navbar is sticky
+ * (in normal flow, no offset needed); the footer pins to the bottom
+ * on short pages via its own margin-top:auto.
  */
 
 .shell {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: var(--nav-h);
   min-height: 100vh;
 }
 
 .main {
   flex: 1;
-  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
 }

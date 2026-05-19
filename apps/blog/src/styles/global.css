@@ -1,5 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Geist:wght@300..900&family=Fraunces:opsz,wght@9..144,400..900&display=swap');
-@import '@0xsofia/design-system/theme.css';
+/* ============================================================
+   SOFIA · CHRONICLES — global layer
+
+   Tokens + base reset + the genuinely cross-cutting utilities
+   the design uses on every page (container, eyebrow, display
+   headings, mono/muted helpers). Component-specific rules live
+   in co-located *.module.css files (CSS Modules).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..900,30..100;1,9..144,200..900,30..100&family=Geist:wght@300..700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300..700&display=swap');
 @import './variables.css';
 @import './prose.css';
 
@@ -17,21 +25,26 @@ html {
 }
 
 body {
-  font-family: var(--font-body);
-  color: var(--color-text);
-  background: var(--color-bg);
-  line-height: 1.6;
-  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg);
+  background-image: radial-gradient(
+    circle,
+    var(--grid-dot) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  background-attachment: fixed;
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  position: relative;
-  overflow-x: hidden;
   min-height: 100vh;
 }
 
 #root {
-  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -56,155 +69,159 @@ button {
   color: inherit;
 }
 
-::selection {
-  background: var(--color-accent);
-  color: var(--color-on-accent);
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
-/* ── Scrollbar (hidden) ───────────────────────────────── */
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
 
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
 }
-
 * {
   scrollbar-width: none;
 }
 
-/* ── Layout ───────────────────────────────────────────── */
+/* ── Containers ───────────────────────────────────────── */
 .container {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
   width: 100%;
+  max-width: var(--w-wide);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+.container--narrow {
+  max-width: var(--w-content);
+}
+.container--read {
+  max-width: var(--w-read);
 }
 
-.container-wide {
-  max-width: var(--maxw-wide);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-  width: 100%;
-}
-
-/* ── Typography (shared from landing) ──────────────────── */
-
+/* ── Eyebrow (mono header) ────────────────────────────── */
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  color: var(--color-accent-ink);
-}
-
-.eyebrow::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.h-display {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(2.6rem, 2rem + 4vw, 6rem);
-  line-height: 0.96;
-  letter-spacing: -0.038em;
-  font-variation-settings:
-    'opsz' 144,
-    'SOFT' 30;
-  margin: 0;
-  color: var(--color-text);
-}
-
-.h-display em {
-  font-style: italic;
-  font-weight: 500;
-  color: var(--color-accent-ink);
-}
-
-.h-section {
-  font-family: var(--font-heading);
-  font-weight: 500;
-  font-size: clamp(1.8rem, 1.2rem + 2vw, 3rem);
-  line-height: 1.05;
-  letter-spacing: -0.028em;
-  font-variation-settings:
-    'opsz' 144,
-    'SOFT' 30;
-  margin: 0;
-  color: var(--color-text);
-}
-
-.h-section em {
-  font-style: italic;
-  color: var(--color-accent-ink);
-}
-
-.lede {
-  font-family: var(--font-body);
-  font-size: clamp(1rem, 0.92rem + 0.25vw, 1.125rem);
-  line-height: 1.55;
-  color: var(--color-text-muted);
-  max-width: 60ch;
-}
-
-/* ── Buttons ──────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
   gap: 10px;
-  padding: 11px 22px;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.005em;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    transform var(--duration-normal) var(--ease-out);
+  font-family: var(--mono);
+  font-size: var(--t-mono-xs);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.btn:hover {
-  transform: translateY(-1px);
+.eyebrow b {
+  color: var(--ink);
+  font-weight: 600;
 }
-
-.btn-primary {
-  background: var(--color-text);
-  color: var(--color-bg);
-  border-color: var(--color-text);
-}
-.btn-primary:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-on-accent);
+.eyebrow .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 198, 176, 0.14);
 }
 
-.btn-secondary {
-  background: transparent;
-  color: var(--color-text);
-  border-color: var(--color-border);
+/* ── Display headlines ────────────────────────────────── */
+.h-disp {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: var(--t-display-lg);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0;
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  margin-top: 20px;
 }
-.btn-secondary:hover {
-  background: var(--color-bg-alt);
-  border-color: var(--color-text);
+.h-disp em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
+}
+.h-disp--lg {
+  font-size: var(--t-display-lg);
+}
+.h-disp--md {
+  font-size: 56px;
+  line-height: 1;
 }
 
-/* ── Reduced motion ────────────────────────────────────── */
+.h-1 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: var(--t-h1);
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.05;
+}
+.h-2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-h2);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+.h-3 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-h3);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ── Misc utilities ───────────────────────────────────── */
+.muted {
+  color: var(--muted);
+}
+.mono {
+  font-family: var(--mono);
+}
+.tab-nums {
+  font-variant-numeric: tabular-nums;
+}
+.divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  height: 1px;
+}
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 20px 0;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 18px;
+  }
+  .h-disp {
+    font-size: 38px;
+  }
+  .h-disp--md {
+    font-size: 36px;
+  }
+  .h-disp--lg {
+    font-size: 56px;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

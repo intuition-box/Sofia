@@ -21,7 +21,7 @@
   z-index: 10;
   line-height: 1;
   padding: 0.25rem 0.5rem;
-  transition: color var(--duration-fast) var(--ease-out);
+  transition: color var(--t-fast) var(--ease);
 }
 
 .closeButton:hover {
@@ -41,7 +41,7 @@
   max-width: 90vw;
   max-height: 85vh;
   object-fit: contain;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   user-select: none;
 }
 
@@ -62,8 +62,8 @@
   justify-content: center;
   z-index: 10;
   transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
   line-height: 1;
   padding: 0;
 }
@@ -89,7 +89,7 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
   user-select: none;
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   letter-spacing: 0.12em;
 }
 

@@ -1,7 +1,8 @@
 ---
 slug: logbook-10-04
-title: Logbook 10/04
+title: 'EthCC[9] & the Wispear hackathon'
 authors: [Samuel, Maxime]
+tags: [community, milestones, explorer]
 ---
 
 We spent the week at EthCC[9] in Cannes, met a ton of inspiring people, and shipped

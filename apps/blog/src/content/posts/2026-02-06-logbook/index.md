@@ -1,9 +1,10 @@
 ---
 slug: logbook-06-02
 
-title: Logbook 06/02
+title: 'Account tabs, Bookmark V2 & GraphQL cleanup'
 
 authors: [Samuel, Maxime]
+tags: [design-ui, architecture, blockchain]
 ---
 
 This week, we refactored the Account page into a tabbed layout with Stats, Quests and Achievements, shipped Bookmark V2 with on-chain certified badges, fixed on-chain certification sync issues, centralized all GraphQL queries into @0xsofia/graphql, built a Sofia Fee Proxy dashboard, and cleaned up legacy code (Ollama, WebSocket, YouTube/Google restrictions).

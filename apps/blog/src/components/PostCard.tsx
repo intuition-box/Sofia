@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Post } from '~/lib/types'
+import { parseDate } from '~/lib/format'
+import { Tag } from './Tag'
 import styles from './PostCard.module.css'
 
 interface PostCardProps {
@@ -7,47 +9,39 @@ interface PostCardProps {
 }
 
 /**
- * PostCard — single row in the blog index. Date · authors · title ·
- * excerpt · tag chips. Authors render with a 18px avatar mini-stack so
- * the human side reads at a glance.
+ * PostCard — one row in any post list. The title is the real link; a
+ * stretched ::after makes the whole card navigate to the post, while
+ * the tag chips sit above the overlay so they remain independently
+ * clickable (→ tag page). No nested anchors.
  */
 export function PostCard({ post }: PostCardProps) {
+  const { day } = parseDate(post.date)
   return (
-    <Link to={`/${post.slug}`} className={styles.card} aria-label={post.title}>
-      <div className={styles.metaRow}>
-        <span>{post.dateLabel}</span>
-        {post.authors.length > 0 && (
-          <>
-            <span className={styles.dot} aria-hidden="true" />
-            <span className={styles.authors}>
-              {post.authors.map((a) => (
-                <span key={a.id}>
-                  {a.imageUrl && (
-                    <img
-                      src={a.imageUrl}
-                      alt=""
-                      className={styles.authorAvatar}
-                      loading="lazy"
-                    />
-                  )}{' '}
-                  {a.name}
-                </span>
-              ))}
-            </span>
-          </>
+    <article className={styles.pc}>
+      <div className={styles.date}>
+        <span className={styles.day}>{day}</span>
+      </div>
+
+      <div className={styles.body}>
+        {post.kind !== 'logbook' && (
+          <div className={styles.kicker}>
+            {post.kind === 'story' ? 'Founding story' : 'Monthly review'}
+          </div>
+        )}
+        <h3 className={styles.title}>
+          <Link to={`/${post.slug}`} className={styles.titleLink}>
+            {post.title}
+          </Link>
+        </h3>
+        {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
+        {post.tags.length > 0 && (
+          <div className={styles.tags}>
+            {post.tags.map((t) => (
+              <Tag key={t.id} tag={t} size="xs" />
+            ))}
+          </div>
         )}
       </div>
-      <h2 className={styles.title}>{post.title}</h2>
-      {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
-      {post.tags.length > 0 && (
-        <div className={styles.tagRow}>
-          {post.tags.map((t) => (
-            <span key={t.id} className={styles.tag}>
-              {t.label}
-            </span>
-          ))}
-        </div>
-      )}
-    </Link>
+    </article>
   )
 }

@@ -1,9 +1,10 @@
 ---
 slug: logbook-02-12
 
-title: Logbook 02-12
+title: 'Curve system upgrade & Gaianet deployment'
 
 authors: [Samuel, Maxime]
+tags: [blockchain, ai-agents, infrastructure, milestones]
 ---
 
 This week, we successfully completed a major Curve System Upgrade, separating support (Curve 1) from financial investment (Curve 2) and implementing new logic for triples creation, including automatic deposit for existing signals. We introduced the dedicated Shares Modal and dynamic success messaging, alongside key social features like extended activity tracking, on-chain Follow functionality, and ENS resolution.

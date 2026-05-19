@@ -1,9 +1,10 @@
 ---
 slug: logbook-03-10
 
-title: Logbook 03/10
+title: 'CSS refactor & the universal-subject architecture'
 
 authors: [Samuel, Maxime]
+tags: [blockchain, design-ui, architecture]
 ---
 
 This week we pushed SofIA’s front-end and blockchain layers further.  

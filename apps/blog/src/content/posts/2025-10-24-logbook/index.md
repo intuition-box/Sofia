@@ -1,9 +1,10 @@
 ---
 slug: logbook-24-10
 
-title: Logbook 24/10
+title: 'Managed hosting & "Trust this site"'
 
 authors: [Samuel, Maxime]
+tags: [infrastructure, design-ui, trust-reputation, milestones]
 ---
 
 This week we completed managed hosting, opened the first round of public testing, and introduced several key improvements to the Trust system and account experience.
@@ -42,6 +43,7 @@ We’ve reimagined the **Account page** to make it more intuitive and social:
 - Refined interactions and improved UI consistency  
   ![Account Page](./2.png)
   ![Activity Page](./3.png)
+  ![Trust Circle](./4.png)
 
 ---
 

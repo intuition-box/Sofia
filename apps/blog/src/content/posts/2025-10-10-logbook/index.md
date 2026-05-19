@@ -1,9 +1,10 @@
 ---
 slug: logbook-10-10
 
-title: Logbook 10/10
+title: 'The Ollama recommendation engine'
 
 authors: [Samuel, Maxime]
+tags: [ai-agents, blockchain, architecture]
 ---
 
 This week we expanded SofIA’s intelligence layer by integrating Ollama for personalized recommendations and strengthening the search and indexing system for blockchain data.

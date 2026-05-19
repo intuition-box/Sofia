@@ -4,6 +4,8 @@ slug: From idea to reality
 title: The Story of Sofia
 
 authors: [Samuel, Maxime]
+tags: [vision, ai-agents, blockchain, trust-reputation]
+description: "Why the web exhausts instead of enriches — and what we set out to build instead."
 ---
 
 ## From Frustration to an Innovation

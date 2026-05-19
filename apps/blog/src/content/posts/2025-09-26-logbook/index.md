@@ -1,9 +1,10 @@
 ---
 slug: logbook-26-09
 
-title: Logbook 26/09
+title: 'Indexer groundwork & modular hooks'
 
 authors: [Samuel, Maxime]
+tags: [blockchain, architecture, ai-agents, security]
 ---
 
 During this week we pushed SofIA’s architecture further, laying the groundwork for the indexer and cleaning up our core stack. We improved gas fee handling and contract interaction, refactored our hooks and state management to be fully modular, and optimized batch atom creation to avoid duplicate blockchain transactions.

@@ -1,21 +1,41 @@
-import { Link } from 'react-router-dom'
-import styles from './BlogPost.module.css'
+import { Link, useLocation } from 'react-router-dom'
+import { getLatestLogbook } from '~/lib/posts'
+import styles from './NotFound.module.css'
 
 /**
- * NotFound — generic 404 for unknown routes. Mirrors the BlogPost
- * not-found block so the visual treatment is consistent across the
- * blog's error states.
+ * NotFound — the designed 404. Also reused as the fallback when a
+ * `/:slug`, `/tags/:id` or `/authors/:id` lookup misses, so the
+ * error treatment is consistent everywhere.
  */
 export function NotFound() {
+  const { pathname } = useLocation()
+  const latest = getLatestLogbook()
+
   return (
-    <div className={styles.notFound}>
-      <h1 className={styles.notFoundTitle}>Page not found.</h1>
-      <p className="lede">
-        The URL you followed doesn&apos;t match any blog route.
+    <div className={styles.nf}>
+      <div className={styles.glyph}>404</div>
+      <h1 className={`h-disp h-disp--md ${styles.title}`}>
+        <em>Lost</em> in the graph.
+      </h1>
+      <p className={`muted ${styles.msg}`}>
+        This page doesn&apos;t exist — maybe it never did, maybe it was
+        unpublished. When in doubt, start from the most recent logbook.
       </p>
-      <Link to="/" className={styles.notFoundLink}>
-        ← Back to all posts
-      </Link>
+      <div className={styles.actions}>
+        {latest && (
+          <Link to={`/${latest.slug}`} className={styles.ctaPrimary}>
+            ← Read the latest logbook
+          </Link>
+        )}
+        <Link to="/" className={styles.ctaGhost}>
+          Browse all posts
+        </Link>
+      </div>
+      <div className={styles.readout}>
+        <span>requested · /{pathname.replace(/^\//, '') || 'unknown'}</span>
+        <span className={styles.dim}>·</span>
+        <span>error 404</span>
+      </div>
     </div>
   )
 }

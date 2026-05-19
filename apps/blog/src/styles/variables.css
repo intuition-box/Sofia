@@ -1,89 +1,79 @@
 /* ============================================================
-   SOFIA BLOG TOKENS
+   SOFIA · CHRONICLES — design tokens
 
-   Mirrors apps/landing — same DS aliases, same typography, same
-   intent tints — so the blog reads as a continuation of the landing
-   chrome (navbar look, peach accents, Fraunces display italics).
-
-   The blog is dark-only — `<html data-theme="dark">` is hardcoded in
-   index.html so the DS dark tokens apply at root.
+   Ported 1:1 from the Claude Design handoff (Sofia · Chronicles).
+   Dark only. Peach accent. Fraunces / Geist / JetBrains Mono.
+   The blog is dark-only — `<html data-theme="dark">` is hardcoded
+   in index.html; these tokens are the single source of truth.
    ============================================================ */
 
 :root {
-  /* ── Layout ─────────────────────────────────────────── */
-  --maxw: 880px; /* narrower than landing — long-form reading width */
-  --maxw-wide: 1240px; /* used for hero + index grid */
-  --gutter: 48px;
-  --nav-h: 64px;
+  /* ── Surface (dark) ─────────────────────────────────── */
+  --bg: #0b0a12;
+  --bg-2: #121120;
+  --card: #13121f;
+  --card-2: #181628;
+  --border: #25223a;
+  --border-soft: #1c1a2b;
 
-  /* ── Breakpoints (reference only — used as values in @media) ── */
-  --bp-tablet: 900px;
-  --bp-mobile: 640px;
+  /* ── Text ───────────────────────────────────────────── */
+  --ink: #f5f3ff;
+  --ink-soft: #e5e2f5;
+  --muted: #8f8ca8;
+  --muted-soft: #55526c;
 
-  /* ── Radius ─────────────────────────────────────────── */
-  --radius-sm: calc(var(--ds-radius) - 4px); /* 6px  */
-  --radius-md: var(--ds-radius); /* 10px */
-  --radius-lg: calc(var(--ds-radius) + 4px); /* 14px */
-  --radius-xl: calc(var(--ds-radius) + 10px); /* 20px */
-  --radius-pill: 9999px;
+  /* ── Decoration ─────────────────────────────────────── */
+  --grid-dot: rgba(255, 255, 255, 0.04);
+  --noise: rgba(255, 255, 255, 0.02);
 
-  /* ── Typography ─────────────────────────────────────── */
-  --font-body:
-    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    sans-serif;
-  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* ── Accent (peach) ─────────────────────────────────── */
+  --accent: #ffc6b0;
+  --accent-soft: rgba(255, 198, 176, 0.12);
+  --accent-ink: #ffc6b0;
+  --on-accent: #0b0a12;
 
-  /* ── Colors — DS aliases ────────────────────────────── */
-  --color-bg: var(--ds-bg);
-  --color-bg-alt: var(--ds-bg-subtle);
+  /* ── Intent tints — tag scent vocabulary ────────────── */
+  --fun: #e4b95a; /* amber */
+  --trusted: #6dd4a0; /* green */
+  --learning: #5cc4d6; /* cyan */
+  --inspiration: #a78bdb; /* violet */
+  --work: #7bade0; /* blue */
+  --music: #e0896a; /* orange */
+  --buying: #d98cb3; /* pink */
+  --distrusted: #e87c7c; /* coral */
 
-  --color-text: var(--ds-ink);
-  --color-text-muted: var(--ds-muted);
-  --color-text-dim: var(--ds-muted-soft);
+  /* ── Shape ──────────────────────────────────────────── */
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-sm: 6px;
 
-  --color-border: var(--ds-border);
-  --color-border-soft: var(--ds-border-soft);
-  --color-border-hover: var(--ds-ink);
+  /* ── Type families ──────────────────────────────────── */
+  --display: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-accent: var(--ds-accent);
-  --color-accent-ink: var(--ds-accent-ink);
-  --color-on-accent: var(--ds-on-accent);
+  /* ── Type scale ─────────────────────────────────────── */
+  --t-mono-xs: 10px;
+  --t-mono-sm: 11px;
+  --t-mono: 12px;
+  --t-body-sm: 13px;
+  --t-body: 15px;
+  --t-body-lg: 17px;
+  --t-lede: 20px;
+  --t-h3: 22px;
+  --t-h2: 28px;
+  --t-h1: 40px;
+  --t-display: 64px;
+  --t-display-lg: 96px;
 
-  --color-btn-primary: var(--ds-ink);
-  --color-btn-primary-hover: var(--ds-accent);
-
-  /* Status — DS predicate colors. */
-  --color-success: var(--trusted, #22c55e);
-  --color-error: var(--distrusted, #ef4444);
-
-  /* ── Intent tints — for tag chips, post category accents. */
-  --intent-fun: #e4b95a;
-  --intent-trusted: #6dd4a0;
-  --intent-learning: #5cc4d6;
-  --intent-inspiration: #a78bdb;
-  --intent-work: #7bade0;
-
-  /* ── Effects ────────────────────────────────────────── */
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  /* ── Containers ─────────────────────────────────────── */
+  --w-read: 880px; /* article body — per brief */
+  --w-content: 1080px; /* index lists */
+  --w-wide: 1240px; /* full page */
 
   /* ── Motion ─────────────────────────────────────────── */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 0.2s;
-  --duration-normal: 0.35s;
-}
-
-/* ── Tablet (<= 900px) — gutters drop one notch. */
-@media (max-width: 900px) {
-  :root {
-    --gutter: 24px;
-  }
-}
-
-/* ── Mobile (<= 640px) — tightest spacing. */
-@media (max-width: 640px) {
-  :root {
-    --gutter: 16px;
-  }
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --t-fast: 120ms;
+  --t-med: 220ms;
+  --t-slow: 360ms;
 }

@@ -1,7 +1,8 @@
 ---
 slug: logbook-06-03
-title: Logbook 06/03
+title: 'The Vote Tab & guided first claim'
 authors: [Samuel, Maxime]
+tags: [community, design-ui, trust-reputation]
 ---
 
 This week we shipped the **Vote Tab** — a brand new section in Resonance where you can support or oppose curated claims and lists. We also made it easier for new users to get started with a guided first claim experience, and improved stability and performance across the app.

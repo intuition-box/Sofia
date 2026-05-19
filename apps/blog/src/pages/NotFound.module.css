@@ -1,0 +1,95 @@
+.nf {
+  flex: 1;
+  min-height: 68vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  position: relative;
+}
+
+.glyph {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(120px, 26vw, 220px);
+  line-height: 0.9;
+  color: var(--accent);
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 80px rgba(255, 198, 176, 0.18);
+}
+
+.title {
+  margin-top: 8px;
+}
+
+.msg {
+  margin-top: 12px;
+  max-width: 460px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: transform var(--t-fast) var(--ease);
+}
+.ctaPrimary:hover {
+  transform: translateY(-1px);
+}
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.ctaGhost:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+.readout {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dim {
+  opacity: 0.5;
+}

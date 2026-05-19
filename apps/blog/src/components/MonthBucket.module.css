@@ -1,0 +1,31 @@
+.mb {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.month {
+  font-family: var(--display);
+  font-weight: 600;
+  font-style: italic;
+  font-size: var(--t-h2);
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+}
+
+.year {
+  font-family: var(--mono);
+  font-size: var(--t-mono);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--t-mono-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
