@@ -1,5 +1,5 @@
 .head {
-  padding: 52px 0 24px;
+  padding: 20px 40px;
 }
 .back {
   font-family: var(--mono);
@@ -15,10 +15,15 @@
 
 .titleRow {
   margin-top: 22px;
+}
+.title {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
+  font-size: clamp(46px, 8vw, 76px);
+  margin: 0;
+  line-height: 1;
 }
 .swatch {
   width: 12px;
@@ -28,8 +33,8 @@
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent);
   flex-shrink: 0;
 }
-.title {
-  font-size: clamp(46px, 8vw, 76px);
+.label {
+  display: inline;
 }
 .desc {
   margin-top: 14px;
@@ -60,7 +65,7 @@
 
 @media (max-width: 768px) {
   .head {
-    padding: 36px 0 18px;
+    padding: 20px 18px;
   }
   .titleRow {
     gap: 14px;

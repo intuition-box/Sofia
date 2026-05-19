@@ -35,14 +35,16 @@ export function TagPage() {
           ← All posts
         </Link>
         <div className={styles.titleRow}>
-          <span
-            className={styles.swatch}
-            style={{ '--c': accent } as CSSProperties}
-            aria-hidden="true"
-          />
           <h1 className={`h-disp ${styles.title}`}>
-            <span style={{ color: accent } as CSSProperties}>#</span>
-            {tag.label}
+            <span
+              className={styles.swatch}
+              style={{ '--c': accent } as CSSProperties}
+              aria-hidden="true"
+            />
+            <span className={styles.label}>
+              <span style={{ color: accent } as CSSProperties}>#</span>
+              {tag.label}
+            </span>
           </h1>
         </div>
         <p className={`muted ${styles.desc}`}>
