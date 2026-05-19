@@ -61,6 +61,40 @@ function extractExcerptText(raw: string): string {
     .slice(0, 280)
 }
 
+interface MdNode {
+  type: string
+  value?: string
+  children?: MdNode[]
+}
+
+/* The Docusaurus-style truncate marker line is only used to cut the
+   index excerpt — it must never render in the article body. Markdown
+   in `md` format keeps it as literal text (and may split the asterisks
+   into emphasis), so drop any paragraph whose text, once stripped of
+   braces / slashes / asterisks / spaces, is exactly "truncate". */
+function remarkStripTruncate() {
+  const flatten = (node: MdNode): string =>
+    node.type === 'text'
+      ? (node.value ?? '')
+      : (node.children ?? []).map(flatten).join('')
+  const strip = (node: MdNode): void => {
+    if (!node.children) return
+    node.children = node.children.filter((child) => {
+      if (
+        child.type === 'paragraph' &&
+        flatten(child)
+          .replace(/[{}\/*\s]/g, '')
+          .toLowerCase() === 'truncate'
+      ) {
+        return false
+      }
+      strip(child)
+      return true
+    })
+  }
+  return (tree: MdNode) => strip(tree)
+}
+
 function mdxExcerpt(): Plugin {
   const SUFFIX = '?excerpt'
   return {
@@ -98,6 +132,7 @@ export default defineConfig({
           remarkFrontmatter,
           [remarkMdxFrontmatter, { name: 'frontmatter' }],
           remarkGfm,
+          remarkStripTruncate,
         ],
         rehypePlugins: [
           rehypeSlug,
@@ -110,7 +145,7 @@ export default defineConfig({
           ],
         ],
       }),
-    },
+    } as Plugin,
     react(),
   ],
   resolve: {

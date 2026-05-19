@@ -21,6 +21,7 @@ interface RawAuthor {
   title?: string
   url?: string
   image_url?: string
+  bio?: string
   page?: boolean | { permalink?: string }
   socials?: {
     x?: string
@@ -40,6 +41,7 @@ function normalize(id: string, raw: RawAuthor): Author {
     title: raw.title,
     url: raw.url,
     imageUrl: raw.image_url,
+    bio: raw.bio,
     permalink,
     socials: raw.socials,
   }
@@ -51,6 +53,9 @@ const parsed = yaml.load(authorsRaw) as Record<string, RawAuthor>
 export const AUTHORS: Record<string, Author> = Object.fromEntries(
   Object.entries(parsed).map(([id, raw]) => [id, normalize(id, raw)]),
 )
+
+/** Every author, in authors.yml declaration order. */
+export const ALL_AUTHORS: Author[] = Object.values(AUTHORS)
 
 /** Resolve a list of author IDs to full Author objects. Unknown IDs
  *  are dropped silently with a console warning — a missing author

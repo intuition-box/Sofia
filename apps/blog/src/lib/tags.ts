@@ -49,3 +49,29 @@ export function findTagByRoute(idOrPermalink: string): Tag | undefined {
     (t) => t.id === idOrPermalink || t.permalink === idOrPermalink,
   )
 }
+
+/**
+ * Tag → intent-tint token. The design assigns each tag one of the
+ * Sofia "predicate" colors so a tag reads as a consistent visual
+ * scent across cards, chips and the tag page. Unknown ids fall back
+ * to the peach accent.
+ */
+const TAG_INTENT: Record<string, string> = {
+  'design-ui': 'inspiration',
+  blockchain: 'work',
+  architecture: 'learning',
+  'ai-agents': 'fun',
+  'trust-reputation': 'trusted',
+  milestones: 'accent',
+  infrastructure: 'music',
+  community: 'buying',
+  security: 'distrusted',
+  gamification: 'fun',
+  explorer: 'trusted',
+  vision: 'inspiration',
+}
+
+/** CSS custom-property reference for a tag's color, e.g. `var(--work)`. */
+export function tagColorVar(tagId: string): string {
+  return `var(--${TAG_INTENT[tagId] ?? 'accent'})`
+}

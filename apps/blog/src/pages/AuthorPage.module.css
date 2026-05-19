@@ -1,131 +1,110 @@
-/**
- * AuthorPage / TagPage — shared layout. Hero header showing the
- * filter target (author or tag) + the matching post list using the
- * shared PostCard. Visually mirrors BlogIndex with a tighter hero.
- */
-
-.hero {
-  padding: 72px 0 40px;
-  border-bottom: 1px solid var(--color-border-soft);
-  margin-bottom: 28px;
+.head {
+  padding: 52px 0 28px;
 }
-
-.heroInner {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-}
-
-.heroEyebrow {
-  margin-bottom: 16px;
-}
-
-.authorRow {
-  display: flex;
+.identity {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
   align-items: center;
-  gap: 18px;
-  margin: 0 0 16px;
 }
-
-.avatar {
-  width: 72px;
-  height: 72px;
+.avatar,
+.avatarFallback {
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  flex-shrink: 0;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 10px 44px -14px var(--accent);
+}
+.avatarFallback {
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--display);
+  font-weight: 600;
+  font-style: italic;
+  font-size: 56px;
+  letter-spacing: -0.04em;
+  font-variation-settings: 'SOFT' 60;
 }
 
-.authorIdent {
-  display: flex;
-  flex-direction: column;
+.name {
+  margin-top: 14px;
+  font-size: clamp(44px, 7vw, 72px);
 }
-
-.title {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-weight: 500;
-  font-size: clamp(2rem, 1.4rem + 2vw, 3.2rem);
-  line-height: 1.05;
-  letter-spacing: -0.028em;
-  color: var(--color-text);
+.bio {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 64ch;
 }
-
-.role {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-top: 6px;
-}
-
-.socials {
+.metaLine {
   margin-top: 18px;
   display: flex;
-  gap: 14px;
-}
-
-.socials a {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 6px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 9999px;
-  color: var(--color-text-muted);
-  transition:
-    color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
-}
-
-.socials a:hover {
-  color: var(--color-text);
-  border-color: var(--color-text);
-}
-
-.tagDesc {
-  margin: 0 0 12px;
-  max-width: 60ch;
-}
-
-.list {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--gutter) 80px;
-}
-
-.empty {
-  padding: 80px var(--gutter);
-  text-align: center;
-  font-family: var(--font-mono);
-  letter-spacing: 0.14em;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-}
-
-.backLink {
-  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: 24px;
-  transition: color var(--duration-fast) var(--ease-out);
+  color: var(--muted);
+}
+.strong {
+  color: var(--ink);
+}
+.dim {
+  opacity: 0.5;
+}
+.socials {
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.socials a {
+  color: var(--muted);
+  transition: color var(--t-fast) var(--ease);
+}
+.socials a:hover {
+  color: var(--accent);
 }
 
-.backLink:hover {
-  color: var(--color-accent);
+.listSection {
+  padding-top: 14px;
+  padding-bottom: 56px;
+}
+.listTitle {
+  margin-bottom: 4px;
+}
+.empty {
+  padding: 40px 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
 }
 
-@media (max-width: 640px) {
-  .hero {
-    padding: 48px 0 28px;
+@media (max-width: 768px) {
+  .head {
+    padding: 36px 0 20px;
   }
-  .avatar {
-    width: 56px;
-    height: 56px;
+  .identity {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .avatar,
+  .avatarFallback {
+    width: 88px;
+    height: 88px;
+  }
+  .avatarFallback {
+    font-size: 40px;
   }
 }

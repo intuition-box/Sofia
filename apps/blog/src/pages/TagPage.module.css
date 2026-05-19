@@ -1,0 +1,68 @@
+.head {
+  padding: 52px 0 24px;
+}
+.back {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--t-fast) var(--ease);
+}
+.back:hover {
+  color: var(--ink);
+}
+
+.titleRow {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--c);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent);
+  flex-shrink: 0;
+}
+.title {
+  font-size: clamp(46px, 8vw, 76px);
+}
+.desc {
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 68ch;
+}
+.codeTag {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.listSection {
+  padding-top: 12px;
+  padding-bottom: 56px;
+}
+.empty {
+  padding: 40px 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 768px) {
+  .head {
+    padding: 36px 0 18px;
+  }
+  .titleRow {
+    gap: 14px;
+  }
+}
