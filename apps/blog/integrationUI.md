@@ -66,19 +66,20 @@ convention is fragile. Fix in the new front: slug with year, or full date.
 (2026-01-30 imports 7 of its 10 PNGs.) Either a missed insertion (missing content?)
 or dead weight to remove.
 
-### 🟡 MEDIUM — `src/content/authors.yml` hygiene
-- `url: sofia.intuition.box` has no `https://` scheme → renders as a broken
-  relative link.
-- Inconsistent author-page config: Maxime `page: true`, Samuel
-  `page: { permalink: /all-Samuel-Chauche-articles }`. The new front must honor
-  the custom permalink.
-- Avatars are external GitHub URLs (third-party load; perf/privacy).
+### ✅ RESOLVED — `src/content/authors.yml` hygiene
+Fixed on `blog/newUI` (2026-05-19):
+- `url:` is now absolute (`https://sofia.intuition.box`) for both authors.
+- Author-page config unified to `page: true` for both → consistent
+  `/authors/<id>` URLs. Samuel's legacy `/all-Samuel-Chauche-articles`
+  permalink was dropped (Docusaurus relic, off the `/authors/:id` scheme).
+- Avatars: kept on GitHub by explicit decision (third-party load accepted;
+  not self-hosted).
 
-### 🟡 MEDIUM — Perishable external links (inherited by the new front)
+### 🟡 MEDIUM — Perishable external links (inherited by the new front) 
 - Expired X broadcast: `src/content/posts/2025-10-17-logbook/index.md:30` (`x.com/i/broadcasts/...`)
 - Fragile Pinata gateway: `src/content/posts/2025-12-05-logbook/index.md:103`
 - "Early Access" Tally form (2025-10-24 & 2025-10-31) — likely closed
-- Phala deep-links (2025-10-31, 2025-11-14) — rot-prone
+- Phala deep-links (2025-10-31, 2025-11-14) — rot-prone 
 
 ---
 
@@ -120,13 +121,13 @@ not be broken by the new front.
 
 ## 6. Pre-relaunch checklist (prioritized)
 
-1. **Decide on tags**: real taxonomy + re-tag the 28 articles, OR delete
-   `tags.yml` + tag routes. *(blocking if the new front has tag navigation)*
+1. ~~**Decide on tags**: real taxonomy + re-tag the 28 articles.~~
+   ✅ Done on `blog/newUI`: 12-tag taxonomy, all 28 posts tagged.
 2. **Year-qualified slugs** to prevent future collisions.
 3. **Add `description` + `image`** to articles if the new design wants
    SEO / OG / thumbnails.
 4. Remove the 5 orphaned images (or insert them if it was an oversight).
-5. Fix "ElisaOS→ElizaOS" + the founding-story typos; fix the author `url:`
-   (`https://`).
+5. Fix "ElisaOS→ElizaOS" + the founding-story typos. *(Author `url:` +
+   page-config ✅ done on `blog/newUI`.)*
 6. Audit external links (X broadcast, Tally, Pinata, Phala).
 7. Guarantee `ImageCarousel` + `@site/src` alias support in the new front.

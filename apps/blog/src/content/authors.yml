@@ -1,7 +1,18 @@
+# Blog authors.
+# Schema (consumed by src/lib/authors.ts):
+#   <id>:
+#     name: string        — display name
+#     title: string       — role
+#     url: string          — homepage (absolute, with scheme)
+#     image_url: string    — avatar URL
+#     page: true           — enables the author page at /authors/<id>
+#     socials: { x, linkedin, github }
+# Post frontmatter references authors by <id>: `authors: [Samuel, Maxime]`.
+
 Maxime:
   name: Maxime Saint-Joannis
   title: Co-founder
-  url: sofia.intuition.box
+  url: https://sofia.intuition.box
   image_url: https://avatars.githubusercontent.com/u/193876743?v=4
   page: true
   socials:
@@ -12,11 +23,9 @@ Maxime:
 Samuel:
   name: Samuel Chauche
   title: Co-founder
-  url: sofia.intuition.box
+  url: https://sofia.intuition.box
   image_url: https://avatars.githubusercontent.com/u/193877792?s=400&u=b40a4d61b73ba9be24d01694392ac4cb700f82a6&v=4
-  page:
-    # customize the url of the author page at /blog/authors/<permalink>
-    permalink: '/all-Samuel-Chauche-articles'
+  page: true
   socials:
     x: Passive_Records
     linkedin: Samuel-Chauche
