@@ -15,6 +15,9 @@ import proofAnalysysOnboarding from './proof-analysys-onboarding.png'
 import connectFriendOnboarding from './connect-your-friend-on-boarding.png'
 import bookmarkOnboarding from './bookmarkonboarding.png'
 import selectBookmarkTab from './select-bookmark-tab.png'
+import bookmarkCollection from './bookmark-collection.png'
+import multiWallet from './multiwallet.png'
+import designHomeCard from './design-home-card.png'
 
 This week, we shipped full multi-wallet support — Sofia now discovers wallet providers via EIP-6963 (MIPD) and bridges multiple wallets (Rabby, MetaMask, etc.) and isolates all user data (tokens, bookmarks, quests, XP) per wallet address. We also securing postMessage origins, enforcing HTTPS for transactions, and adding crypto-based OAuth state. On the UX side, a complete onboarding flow with tutorial slides and bookmark selection is now live, alongside a new URL normalization layer that strips tracking params and uses page titles as atom names. Finally, we cleaned up the EchoesTab by excluding follow triples from group cards, fixed group levels from on-chain data, and removed legacy dead code.
 
@@ -28,6 +31,8 @@ This week, we shipped full multi-wallet support — Sofia now discovers wallet p
 - Full storage isolation per wallet: each wallet gets its own storage space for user identity
 - OAuth predicate IDs in chainConfig: OAuth predicates now count towards group levels
 - Connect/disconnect wallet: local data cleared when a new wallet is detected
+
+<img src={multiWallet} alt="Multi-wallet selection via Privy — MetaMask, Coinbase, Rainbow, Base, Rabby" />
 
 ## Security Hardening
 
@@ -45,12 +50,15 @@ This week, we shipped full multi-wallet support — Sofia now discovers wallet p
     { src: connectFriendOnboarding, alt: 'Connect your friend onboarding' },
     { src: bookmarkOnboarding, alt: 'Bookmark onboarding' },
     { src: selectBookmarkTab, alt: 'Select bookmark tab' },
+    { src: bookmarkCollection, alt: 'Bookmark collection' },
   ]}
 />
 
 - Tutorial slides + bookmark selection during onboarding
 - Blur card, new slide, dark background, tutorial replay button, UI refinements for trust and intention pills buttons
 - Pills refactoring: updated pill sizing
+
+<img src={designHomeCard} alt="Redesigned claim card with trust/distrust actions and intention pills" />
 
 ## URL Normalization & Atom Naming
 

@@ -43,6 +43,7 @@ We’ve reimagined the **Account page** to make it more intuitive and social:
 - Refined interactions and improved UI consistency  
   ![Account Page](./2.png)
   ![Activity Page](./3.png)
+  ![Trust Circle](./4.png)
 
 ---
 

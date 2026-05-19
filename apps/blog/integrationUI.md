@@ -56,15 +56,20 @@ across different years (this is an ongoing weekly blog) would make one article
 **unreachable** at `/blog/:slug`. The 28 current posts are unique, but the
 convention is fragile. Fix in the new front: slug with year, or full date.
 
-### 🟡 MEDIUM — 5 orphaned image assets (shipped, never displayed)
-- `src/content/posts/2025-10-24-logbook/4.png` (post references 1, 2, 3 only)
-- `src/content/posts/2025-12-19-logbook/mastra.svg` (post is `.md`, zero references)
-- `src/content/posts/2026-01-30-logbook/bookmark-collection.png`
-- `src/content/posts/2026-01-30-logbook/design-home-card.png`
-- `src/content/posts/2026-01-30-logbook/mutliwallet.png`
+### ✅ RESOLVED — 5 orphaned image assets
+Fixed on `blog/newUI` (2026-05-19). Each was reviewed visually:
+- `2025-10-24/4.png` (Follow → Trust Circle UI) → **inserted** in the
+  "UI / UX Enhancements" section.
+- `2026-01-30/multiwallet.png` (was `mutliwallet.png`, typo renamed; Privy
+  wallet picker) → **inserted** in the "Multi-Wallet Support" section.
+- `2026-01-30/bookmark-collection.png` → **added as the 8th slide** of the
+  existing onboarding `<ImageCarousel>`.
+- `2026-01-30/design-home-card.png` (claim card w/ pills) → **inserted** in
+  the "Onboarding Flow" section next to the pills bullets.
+- `2025-12-19/mastra.svg` (Mastra wordmark, decorative; `currentColor` would
+  render invisible on the dark theme) → **deleted**.
 
-(2026-01-30 imports 7 of its 10 PNGs.) Either a missed insertion (missing content?)
-or dead weight to remove.
+Result: 0 orphans on these folders; only genuine dead weight removed.
 
 ### ✅ RESOLVED — `src/content/authors.yml` hygiene
 Fixed on `blog/newUI` (2026-05-19):
@@ -126,7 +131,8 @@ not be broken by the new front.
 2. **Year-qualified slugs** to prevent future collisions.
 3. **Add `description` + `image`** to articles if the new design wants
    SEO / OG / thumbnails.
-4. Remove the 5 orphaned images (or insert them if it was an oversight).
+4. ~~Remove the 5 orphaned images (or insert them if it was an oversight).~~
+   ✅ Done on `blog/newUI`: 4 inserted, 1 (mastra.svg) deleted.
 5. Fix "ElisaOS→ElizaOS" + the founding-story typos. *(Author `url:` +
    page-config ✅ done on `blog/newUI`.)*
 6. Audit external links (X broadcast, Tally, Pinata, Phala).
