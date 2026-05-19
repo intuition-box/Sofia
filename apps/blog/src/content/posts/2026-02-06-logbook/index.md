@@ -1,7 +1,7 @@
 ---
 slug: logbook-06-02
 
-title: Logbook 06/02
+title: 'Account tabs, Bookmark V2 & GraphQL cleanup'
 
 authors: [Samuel, Maxime]
 tags: [design-ui, architecture, blockchain]

@@ -1,7 +1,7 @@
 ---
 slug: logbook-26-09
 
-title: Logbook 26/09
+title: 'Indexer groundwork & modular hooks'
 
 authors: [Samuel, Maxime]
 tags: [blockchain, architecture, ai-agents, security]

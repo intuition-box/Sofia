@@ -1,6 +1,6 @@
 ---
 slug: logbook-06-03
-title: Logbook 06/03
+title: 'The Vote Tab & guided first claim'
 authors: [Samuel, Maxime]
 tags: [community, design-ui, trust-reputation]
 ---

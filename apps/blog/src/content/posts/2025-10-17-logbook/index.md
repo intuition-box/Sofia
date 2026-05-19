@@ -1,7 +1,7 @@
 ---
 slug: logbook-17-10
 
-title: Logbook 17/10
+title: 'First public demo & community launch'
 
 authors: [Samuel, Maxime]
 tags: [community, ai-agents, design-ui, milestones]

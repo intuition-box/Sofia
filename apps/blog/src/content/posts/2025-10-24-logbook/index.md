@@ -1,7 +1,7 @@
 ---
 slug: logbook-24-10
 
-title: Logbook 24/10
+title: 'Managed hosting & "Trust this site"'
 
 authors: [Samuel, Maxime]
 tags: [infrastructure, design-ui, trust-reputation, milestones]

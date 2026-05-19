@@ -1,6 +1,6 @@
 ---
 slug: logbook-20-02
-title: Logbook 20/02
+title: 'On-chain streaks & leaderboard'
 authors: [Samuel, Maxime]
 tags: [gamification, blockchain, architecture, design-ui]
 ---

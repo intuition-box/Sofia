@@ -1,7 +1,7 @@
 ---
 slug: logbook-21-11
 
-title: Logbook 21/11
+title: 'Measuring for the Alpha launch'
 
 authors: [Samuel, Maxime]
 tags: [infrastructure, milestones]

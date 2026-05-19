@@ -5,15 +5,22 @@
 #     title: string       — role
 #     url: string          — homepage (absolute, with scheme)
 #     image_url: string    — avatar URL
+#     bio: string          — short prose bio shown on /authors/<id>
 #     page: true           — enables the author page at /authors/<id>
 #     socials: { x, linkedin, github }
 # Post frontmatter references authors by <id>: `authors: [Samuel, Maxime]`.
+#
+# NOTE: bios below are short factual placeholders — edit freely.
 
 Maxime:
-  name: Maxime Saint-Joannis
+  name: wieedze.eth
   title: Co-founder
   url: https://sofia.intuition.box
   image_url: https://avatars.githubusercontent.com/u/193876743?v=4
+  bio: >-
+    Co-founder of Sofia. Maxime works on the agent layer and the
+    frontend — how LLMs read your signals, how the extension surfaces
+    them, and how the explorer makes them legible.
   page: true
   socials:
     x: MoodzMaxime
@@ -21,10 +28,14 @@ Maxime:
     github: Wieedze
 
 Samuel:
-  name: Samuel Chauche
+  name: passive-records.box
   title: Co-founder
   url: https://sofia.intuition.box
   image_url: https://avatars.githubusercontent.com/u/193877792?s=400&u=b40a4d61b73ba9be24d01694392ac4cb700f82a6&v=4
+  bio: >-
+    Co-founder of Sofia. Samuel focuses on the trust and protocol
+    side — the on-chain attestation pipeline and the integration with
+    the Intuition protocol.
   page: true
   socials:
     x: Passive_Records

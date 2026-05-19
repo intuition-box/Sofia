@@ -1,7 +1,7 @@
 ---
 slug: logbook-02-12
 
-title: Logbook 02-12
+title: 'Curve system upgrade & Gaianet deployment'
 
 authors: [Samuel, Maxime]
 tags: [blockchain, ai-agents, infrastructure, milestones]

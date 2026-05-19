@@ -1,8 +1,9 @@
 ---
 slug: logbook-16-05
-title: Logbook 16/05 — A Month in Review
+title: 'A Month in Review'
 authors: [Samuel, Maxime]
 tags: [architecture, design-ui, explorer, infrastructure]
+description: "One repo, end-to-end multi-wallet, a shared design language, real-time data — the densest month yet."
 ---
 
 The last four weeks have been the densest stretch of work Sofia has seen this

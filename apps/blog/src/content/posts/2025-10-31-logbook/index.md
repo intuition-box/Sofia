@@ -1,7 +1,7 @@
 ---
 slug: logbook-31-10
 
-title: Logbook 31/10
+title: 'First TEE on Phala Network'
 
 authors: [Samuel, Maxime]
 tags: [infrastructure, trust-reputation, community, design-ui]

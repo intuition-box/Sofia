@@ -1,6 +1,6 @@
 ---
 slug: logbook-20-03
-title: Logbook 20/03
+title: 'Sofia Explorer dashboard launch'
 authors: [Samuel, Maxime]
 tags: [explorer, design-ui, architecture, milestones]
 ---

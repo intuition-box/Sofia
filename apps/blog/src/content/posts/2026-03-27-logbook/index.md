@@ -1,6 +1,6 @@
 ---
 slug: logbook-27-03
-title: Logbook 27/03
+title: 'Explorer goes mobile & Extension v0.6.0'
 authors: [Samuel, Maxime]
 tags: [explorer, design-ui, blockchain, architecture]
 ---

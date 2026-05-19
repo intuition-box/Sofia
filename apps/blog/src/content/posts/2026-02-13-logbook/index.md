@@ -1,7 +1,7 @@
 ---
 slug: logbook-13-02
 
-title: Logbook 13/02
+title: 'Dual currency, Circle Feed voting & profile redesign'
 
 authors: [Samuel, Maxime]
 tags: [architecture, gamification, community, design-ui]

@@ -1,7 +1,7 @@
 ---
 slug: logbook-19-12
 
-title: Logbook 19/12
+title: 'ElizaOS → Mastra migration & Proof of Human'
 
 authors: [Samuel, Maxime]
 tags: [security, ai-agents, trust-reputation, infrastructure]

@@ -1,6 +1,6 @@
 ---
 slug: logbook-13-03
-title: Logbook 13/03
+title: 'Position Board & Share to X'
 authors: [Samuel, Maxime]
 tags: [blockchain, community, design-ui, gamification]
 ---

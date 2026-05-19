@@ -1,7 +1,7 @@
 ---
 slug: logbook-16-01
 
-title: Logbook 16/01
+title: 'Discovery, intentions & social identity'
 
 authors: [Samuel, Maxime]
 tags: [trust-reputation, community, ai-agents, gamification]

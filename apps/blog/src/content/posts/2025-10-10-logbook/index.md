@@ -1,7 +1,7 @@
 ---
 slug: logbook-10-10
 
-title: Logbook 10/10
+title: 'The Ollama recommendation engine'
 
 authors: [Samuel, Maxime]
 tags: [ai-agents, blockchain, architecture]

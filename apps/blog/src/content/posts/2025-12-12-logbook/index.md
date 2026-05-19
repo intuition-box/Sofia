@@ -1,7 +1,7 @@
 ---
 slug: logbook-12-12
 
-title: Logbook 12/12
+title: 'MCP server & Privy authentication'
 
 authors: [Samuel, Maxime]
 tags: [security, blockchain, ai-agents, trust-reputation]

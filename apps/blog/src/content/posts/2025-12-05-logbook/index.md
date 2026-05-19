@@ -1,7 +1,7 @@
 ---
 slug: logbook-05-12
 
-title: Logbook 05/12
+title: 'Sofia Fee Proxy contract on mainnet'
 
 authors: [Samuel, Maxime]
 tags: [blockchain, architecture, milestones]

@@ -1,7 +1,7 @@
 ---
 slug: logbook-14-11
 
-title: Logbook 14/11
+title: 'Mainnet migration & in-orb chatbot'
 
 authors: [Samuel, Maxime]
 tags: [infrastructure, blockchain, ai-agents, design-ui]

@@ -1,6 +1,6 @@
 ---
 slug: logbook-10-04
-title: Logbook 10/04
+title: 'EthCC[9] & the Wispear hackathon'
 authors: [Samuel, Maxime]
 tags: [community, milestones, explorer]
 ---

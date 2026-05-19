@@ -1,7 +1,7 @@
 ---
 slug: logbook-19-09
 
-title: Logbook 19/09
+title: 'OAuth, Pulse agent & the extension stack'
 
 authors: [Samuel, Maxime]
 tags: [ai-agents, security, architecture, design-ui]

@@ -1,6 +1,6 @@
 ---
 slug: logbook-17-04
-title: Logbook 17/04
+title: 'Real reputation scoring goes live'
 authors: [Samuel, Maxime]
 tags: [trust-reputation, security, infrastructure, community]
 ---

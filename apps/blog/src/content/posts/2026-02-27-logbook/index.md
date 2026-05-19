@@ -1,6 +1,6 @@
 ---
 slug: logbook-27-02
-title: Logbook 27/02
+title: 'Beta Season Pool & the unified confirmation screen'
 authors: [Samuel, Maxime]
 tags: [blockchain, design-ui, architecture, milestones]
 ---
