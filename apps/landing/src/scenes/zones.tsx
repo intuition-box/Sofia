@@ -62,7 +62,7 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
           Open Explorer <Arrow />
         </a>
         <SceneBtn
-          href="https://doc.sofia.intuition.box"
+          href={URLS.docs.home}
           variant="peach"
           ink="dark"
           hoverFill="white"

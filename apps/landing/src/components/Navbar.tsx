@@ -5,7 +5,7 @@ import styles from './Navbar.module.css'
 
 const NAV_LINKS = [
   { label: 'Explorer', href: URLS.external.board },
-  { label: 'Docs', href: URLS.docs.intro },
+  { label: 'Docs', href: URLS.docs.home },
   { label: 'Chronicles', href: URLS.blog.index },
   { label: 'Manifesto', href: URLS.docs.manifesto },
 ]

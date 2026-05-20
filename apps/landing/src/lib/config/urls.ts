@@ -3,6 +3,7 @@ const DOCS_BASE =
 
 export const URLS = {
   docs: {
+    home: DOCS_BASE,
     intro: `${DOCS_BASE}/docs/intro`,
     manifesto: `${DOCS_BASE}/docs/manifesto`,
     litepaper: `${DOCS_BASE}/docs/litepaper/introduction`,
