@@ -89,6 +89,12 @@
      `!important` overrides the global solid border set on
      `[data-slot="dropdown-menu-content"]` in design-system.css. */
   border: 1px dashed var(--ds-ink) !important;
+  /* Lift above .nav-sidebar (z-index 100 on mobile drawer). The Radix
+     Portal renders the menu at document.body level so its default
+     `z-50` ends up SIDE-by-side with the nav-sidebar in the global
+     stacking order — without this bump the menu paints behind the
+     68px nav column on mobile + tablet. */
+  z-index: 110 !important;
 }
 
 /* User header — avatar + name/email. */
