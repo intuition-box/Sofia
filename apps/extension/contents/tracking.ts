@@ -11,19 +11,18 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-// Function to check if tracking is enabled
+// Function to check if tracking is enabled.
+// Opt-in by design: collection only happens after the user explicitly
+// enables tracking in onboarding or Settings. Any non-`true` storage
+// value (null, undefined, false, "false", or read error) returns false
+// so a default install never collects anything.
 async function isTrackingEnabled(): Promise<boolean> {
   try {
     const enabled: boolean | string | null = await storage.get("tracking_enabled")
-    // Handle different possible types
-    if (enabled === false || enabled === "false") {
-      return false
-    }
-    // Default to true if not set or any other value
-    return true
+    return enabled === true || enabled === "true"
   } catch (error) {
     logger.error("Error checking tracking status", error)
-    return true // Default to enabled on error
+    return false
   }
 }
 

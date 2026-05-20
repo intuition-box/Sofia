@@ -61,39 +61,83 @@ A small button lives in your browser. When a page is useful, click it
 and say why. That's it. Sofia remembers the verb, the intention, the
 context. No forms, no fields, no organizing.
 
-PRIVATE BY DESIGN.
-Your browsing stays yours. Only what you choose to Mark becomes a
-public signal — and even those are addressed to your wallet, not to us.
-We don't store, sell, or read your history. We don't have a server
-watching your tabs.
 
-OWNED BY THE COMMUNITY.
+— DATA SOFIA HANDLES —
+
+Browsing tracking is OFF by default. You explicitly opt in during
+onboarding (or in Settings). Until you do, Sofia collects nothing.
+
+When you turn tracking ON, Sofia records — locally on your device,
+never transmitted to any server:
+  • URLs of pages you visit (tracking parameters like utm_*, fbclid
+    are stripped)
+  • Page title and basic metadata (description, OG type, headings)
+  • Time spent on each page
+  Sensitive pages (login, banking, checkout, auth, CAPTCHA, ads) are
+  always excluded.
+
+When you click "Mark" on a page (one-shot, per-page action):
+  • The page URL and title are written on-chain via your wallet
+    signature. Published under your wallet address — public by design.
+
+When you connect a wallet:
+  • Your wallet address (read via EIP-6963) and provider name
+    (MetaMask, Rabby...). Never your private keys, seed phrase, or
+    balances.
+
+When you opt in to a social account (X, GitHub, YouTube, Spotify,
+Twitch, Discord):
+  • Read-only profile data per the OAuth scopes you approve. Tokens
+    stored locally, isolated per wallet, revocable anytime.
+
+Sofia operates no analytics server, no tracking pixels, no ad network.
+No data is sold or shared with third parties.
+
+Full Privacy Policy: https://doc.sofia.intuition.box/privacy
+
+
+— OWNED BY THE COMMUNITY —
 Every Mark is a verifiable record on the Intuition protocol. The
 roadmap is steered on-chain by contributors via Colony DAO. The code,
 the contracts, the data shapes — all open source. Fork it, audit it,
 contribute.
 
-BUILT IN PUBLIC.
+— BUILT IN PUBLIC —
 We expose our decisions, our doubts, our trade-offs. Read the public
 build log (Chronicles), join the Discord, talk to the team. What you
 see running is what's published.
 
 —
 
-Free. No ads. No tracking. No data sale. We ship every two weeks.
+Free. No ads. No tracking by default. No data sale. We ship every two
+weeks.
 
 Open the Explorer: https://explorer.sofia.intuition.box
 Read the docs: https://doc.sofia.intuition.box
+Privacy policy: https://doc.sofia.intuition.box/privacy
 Join the DAO: https://app.colony.io/sofia
 GitHub: https://github.com/intuition-box/Sofia
 ```
+
+## Privacy policy URL (CRITICAL — Chrome Store field)
+
+```
+https://doc.sofia.intuition.box/privacy
+```
+
+⚠️ Do NOT use `https://sofia.intuition.box/privacy/` — that path falls
+back to the landing SPA and returns the home page, not a privacy policy.
+The Google reviewer will reject ("Purple Nickel" / Personal or Sensitive
+User Data policy violation) if the URL does not return a real privacy
+policy document.
 
 ## Single-purpose statement (Google review)
 
 > Sofia lets users mark web pages with their intention (learning, work,
 > inspiration, trust…) and publishes those marks as verifiable records on
 > the Intuition blockchain, feeding a collective knowledge graph the user
-> consents to share.
+> consents to share. Browsing tracking is off by default and requires
+> explicit opt-in during onboarding.
 
 ## Permission justifications
 

@@ -10,13 +10,16 @@ export default function Privacy(): React.ReactElement {
           <article className="privacy-page">
             <h1>Privacy Policy</h1>
             <p>
-              <strong>Last updated: January 30, 2026</strong>
+              <strong>Last updated: May 18, 2026</strong>
             </p>
 
             <h2>1. Introduction</h2>
             <p>
-              Sofia is a browser extension that helps users transform their
-              browsing activity into structured knowledge and on-chain signals.
+              Sofia is a browser extension that lets users Mark the web pages
+              they read with an intention (learning, work, inspiration, trust…)
+              and publish those Marks as verifiable records on the Intuition
+              blockchain. Sofia does not run any AI model, recommendation
+              engine, or content-analysis service.
             </p>
             <p>
               This Privacy Policy explains what data we collect, how and why we
@@ -40,9 +43,12 @@ export default function Privacy(): React.ReactElement {
 
             <h2>2. Data We Collect</h2>
 
-            <h3>2.1 Browsing Activity (Optional &amp; User-Controlled)</h3>
+            <h3>2.1 Browsing Activity (Off by Default, User Opt-In)</h3>
             <p>
-              When browsing tracking is enabled by the user, Sofia may collect:
+              Browsing tracking is <strong>disabled by default</strong>. Sofia
+              collects nothing until the user explicitly enables tracking
+              during onboarding or in Settings. When the user opts in, Sofia
+              collects:
             </p>
             <ul>
               <li>
@@ -180,16 +186,18 @@ export default function Privacy(): React.ReactElement {
             </p>
 
             <h2>4. How We Use Your Data</h2>
-            <p>Sofia processes data for the following purposes:</p>
+            <p>Sofia processes data locally for the following purposes:</p>
             <ul>
-              <li>Local page analysis and theme classification</li>
-              <li>URL normalization and metadata cleanup</li>
-              <li>AI-assisted theme extraction and recommendations</li>
+              <li>URL normalization and metadata cleanup before display</li>
+              <li>Grouping browsed URLs by domain into Echoes intention groups</li>
+              <li>Building the Marks the user explicitly publishes on-chain</li>
               <li>Quest progression and XP tracking</li>
-              <li>Intention group matching and level progression</li>
               <li>Grouping browsing activity into temporary sessions</li>
             </ul>
-            <p>Session data is cleared when the browser restarts.</p>
+            <p>
+              Sofia performs no AI inference, no recommendation, and no content
+              analysis. Session data is cleared when the browser restarts.
+            </p>
 
             <h2>5. Data Storage and Retention</h2>
 
@@ -251,31 +259,19 @@ export default function Privacy(): React.ReactElement {
               personal data is transmitted.
             </p>
 
-            <h3>6.3 AI Processing Service</h3>
-            <p>
-              Page URLs, titles, keywords, and descriptions may be sent to
-              Sofia's AI service for:
-            </p>
-            <ul>
-              <li>Theme extraction</li>
-              <li>Content recommendations</li>
-              <li>Chatbot interactions</li>
-            </ul>
-            <p>Wallet addresses may be included to personalize results.</p>
-
-            <h3>6.4 OAuth Platform APIs</h3>
+            <h3>6.3 OAuth Platform APIs</h3>
             <p>
               When connected, Sofia communicates with the respective platform
               APIs to retrieve the data described in Section 2.4.
             </p>
 
-            <h3>6.5 Authentication (Privy)</h3>
+            <h3>6.4 Authentication (Privy)</h3>
             <p>
               Wallet authentication is handled via Privy. Authentication tokens
               and wallet connection metadata are exchanged securely.
             </p>
 
-            <h3>6.6 IPFS</h3>
+            <h3>6.5 IPFS</h3>
             <p>
               Metadata for published signals may be stored on IPFS, a
               decentralized and public storage network.

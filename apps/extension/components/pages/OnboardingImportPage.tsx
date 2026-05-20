@@ -1,16 +1,28 @@
 import { useState } from 'react'
+import { Storage } from '@plasmohq/storage'
 import { useRouter } from '../layout/RouterProvider'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import welcomeLogo from '../ui/icons/welcomeLogo.png'
 import '../styles/OnboardingStyles.css'
+
+const storage = new Storage()
 
 const OnboardingImportPage = () => {
   const { navigateTo, setOnboardingBookmarks } = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showSkipMessage, setShowSkipMessage] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [trackingConsent, setTrackingConsent] = useState(false)
 
-  const handleImport = () => {
+  // Persist the user's consent choice before moving on. Tracking starts
+  // collecting URL visits only when this flag is explicitly true.
+  const persistConsent = async () => {
+    await storage.set('tracking_enabled', trackingConsent)
+    await storage.set('tracking_consent_seen', true)
+  }
+
+  const handleImport = async () => {
+    await persistConsent()
     setIsLoading(true)
     setError(null)
     chrome.runtime.sendMessage({ type: 'FETCH_BOOKMARKS' }, (response) => {
@@ -26,7 +38,8 @@ const OnboardingImportPage = () => {
     })
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await persistConsent()
     setShowSkipMessage(true)
     setTimeout(() => {
       navigateTo('mark')
@@ -59,6 +72,29 @@ const OnboardingImportPage = () => {
           <p className="onboarding-description">
             Would you like to import your browser bookmarks? They will be organized into intention groups by domain, ready to be certified on-chain.
           </p>
+
+          <label className="onboarding-consent">
+            <input
+              type="checkbox"
+              checked={trackingConsent}
+              onChange={(e) => setTrackingConsent(e.target.checked)}
+            />
+            <span className="onboarding-consent-text">
+              <strong>Enable browsing tracking</strong> — Sofia will record
+              the URLs and titles of pages you visit, locally on your device,
+              so it can suggest pages to Mark and group them into Echoes.
+              Sensitive pages (banking, auth, checkout) are always excluded.
+              You can turn this off anytime in Settings.
+              <a
+                href="https://doc.sofia.intuition.box/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy policy
+              </a>
+            </span>
+          </label>
+
           {error && <p className="onboarding-error">{error}</p>}
         </div>
 

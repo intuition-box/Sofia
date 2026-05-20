@@ -39,26 +39,37 @@ const SidePanelContent = () => {
   // Automatic page management based on connection state
   useEffect(() => {
     if (authenticated && walletAddress && currentPage === 'home') {
-      // Check if connected from external auth page (landing page)
-      // If so, skip onboarding-import and go to home-connected — wait for FIRST_CLAIM
-      chrome.storage.session.get('pending_external_auth').then(result => {
-        if (result.pending_external_auth) {
+      // Onboarding is gated by consent, not by groups. Until the user has
+      // explicitly accepted or declined browsing tracking we must route
+      // them through onboarding-import — Chrome Web Store policy requires
+      // consent before any data collection (including external-auth paths
+      // that previously skipped onboarding).
+      chrome.storage.sync.get('tracking_consent_seen').then(({ tracking_consent_seen }) => {
+        if (!tracking_consent_seen) {
           chrome.storage.session.remove('pending_external_auth')
-          navigateTo('mark')
+          navigateTo('onboarding-import')
           setOnboardingChecked(true)
           return
         }
-        // Internal connection — check if user has local groups
-        IntentionGroupsService.getAllGroups().then(groups => {
-          if (groups.length === 0) {
-            navigateTo('onboarding-import')
-          } else {
+
+        chrome.storage.session.get('pending_external_auth').then(result => {
+          if (result.pending_external_auth) {
+            chrome.storage.session.remove('pending_external_auth')
             navigateTo('mark')
+            setOnboardingChecked(true)
+            return
           }
-          setOnboardingChecked(true)
-        }).catch(() => {
-          navigateTo('mark')
-          setOnboardingChecked(true)
+          IntentionGroupsService.getAllGroups().then(groups => {
+            if (groups.length === 0) {
+              navigateTo('onboarding-import')
+            } else {
+              navigateTo('mark')
+            }
+            setOnboardingChecked(true)
+          }).catch(() => {
+            navigateTo('mark')
+            setOnboardingChecked(true)
+          })
         })
       })
     } else if (!authenticated && currentPage !== 'home') {
