@@ -45,6 +45,7 @@ ENV VITE_GRAPHQL_WS_URL=$VITE_GRAPHQL_WS_URL \
 # files must be present before --frozen-lockfile. Listed explicitly since
 # Docker COPY flattens wildcards.
 COPY package.json bun.lock tsconfig.base.json ./
+COPY apps/blog/package.json ./apps/blog/
 COPY apps/explorer/package.json ./apps/explorer/
 COPY apps/extension/package.json ./apps/extension/
 COPY apps/landing/package.json ./apps/landing/

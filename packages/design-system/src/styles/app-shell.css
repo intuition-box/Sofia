@@ -10,6 +10,13 @@
  *       <aside class="app-right-rail">…</aside>   (optional)
  *     </div>
  *   </body>
+ *
+ * NOTE: apps/explorer doesn't use this grid layout — it has its own
+ * margin-based shell in apps/explorer/src/components/styles/layout.css.
+ * Mobile responsiveness for explorer lives in
+ * apps/explorer/src/components/styles/mobile-shell.css. Keep this file
+ * unchanged so any future app adopting the `.app` grid still gets a
+ * consistent baseline.
  */
 
 .app {

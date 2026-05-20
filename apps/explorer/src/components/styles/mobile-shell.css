@@ -1,0 +1,186 @@
+/**
+ * Mobile shell — responsive cascade for the explorer's margin-based
+ * desktop layout. Layered on top of `layout.css` (which owns the
+ * desktop / `.nav-collapsed` rules) and only kicks in below 1280px.
+ *
+ * Breakpoint tiers:
+ *   desktop  ≥1280px   nav 290 + main + rail 290           (layout.css default)
+ *   laptop   1024–1279 nav 290 + main, rail → drawer       (right-open class)
+ *   tablet    768–1023 nav 68  + main, no rail by default
+ *   mobile     <768    main full-width, nav + rail off-canvas drawers,
+ *                       + top header (56px) + bottom-nav (64px)
+ *
+ * Chrome heights + drawer widths are tokenised so future tuning is a
+ * single edit. The mobile chrome elements (.app-mobile-header,
+ * .app-bottom-nav, .app-drawer-overlay) are rendered always in the
+ * markup but display: none-d at desktop sizes.
+ */
+
+:root {
+  --app-mobile-header-h: 56px;
+  --app-bottom-nav-h: 64px;
+  --app-drawer-w: 280px;
+  --app-right-drawer-w: 320px;
+  --app-drawer-overlay: rgba(0, 0, 0, 0.5);
+  --app-drawer-shadow: -12px 0 32px rgba(0, 0, 0, 0.35);
+  --app-drawer-shadow-left: 12px 0 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Mobile chrome elements default to hidden on desktop. */
+.app-mobile-header,
+.app-bottom-nav,
+.app-drawer-overlay {
+  display: none;
+}
+
+/* ── Laptop (1024–1279px): right-rail drops to drawer ──────────────
+ *
+ * The desktop layout reserves 290px on the right for the RightSidebar
+ * (.rs-aside). At laptop widths, the rail becomes a drawer-on-demand:
+ * the .rs-aside is already position: fixed (see layout.css) so we
+ * just transform it off-canvas and reveal via .right-open. */
+
+@media (max-width: 1279px) {
+  .main-content {
+    margin-right: 0 !important;
+  }
+  .rs-aside {
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    width: var(--app-right-drawer-w);
+    box-shadow: var(--app-drawer-shadow);
+  }
+  .right-open .rs-aside {
+    transform: translateX(0);
+  }
+  /* ProfileDrawer / CartDrawer margin overrides in layout.css can
+     skip too — at this size, all right-side drawers float over the
+     content instead of pushing it. */
+  body:has(.pd-aside.pd-open) .main-content,
+  body:has(.cd-aside.cd-open) .main-content {
+    margin-right: 0;
+  }
+}
+
+/* ── Tablet (768–1023px): nav forced collapsed ─────────────────────
+ *
+ * Reclaims content width without dropping the rail entirely (rail is
+ * already a drawer from the laptop block above). The .nav-collapsed
+ * modifier becomes implicit. */
+
+@media (max-width: 1023px) {
+  .main-content {
+    margin-left: 68px !important;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* ── Mobile (<768px): nav + rail become off-canvas drawers ─────────
+ *
+ * The NavSidebar (.nav-sidebar) and RightSidebar (.rs-aside) both
+ * become full-height fixed drawers, slid in via .nav-open / .right-open
+ * on the root wrapper. The .main-content drops all horizontal margin
+ * and gains top/bottom padding for the mobile chrome bars. */
+
+@media (max-width: 767px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-top: calc(var(--app-mobile-header-h) + 16px);
+    padding-bottom: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom) + 16px);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* NavSidebar — off-canvas drawer from the left. The component still
+     paints its full 290px / 68px content; mobile just overrides the
+     positioning to slide it in/out of the viewport. */
+  .nav-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: var(--app-drawer-w) !important;
+    height: 100vh !important;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: var(--app-drawer-shadow-left);
+  }
+  .nav-open .nav-sidebar {
+    transform: translateX(0);
+  }
+
+  /* RightSidebar — already fixed; force off-canvas + drawer width. */
+  .rs-aside {
+    width: min(var(--app-right-drawer-w), 88vw) !important;
+    transform: translateX(100%);
+  }
+  .right-open .rs-aside {
+    transform: translateX(0);
+  }
+
+  /* Mobile header — fixed at top, holds burger + logo + right-rail
+     button + cart button. Rendered by MobileHeader.tsx. */
+  .app-mobile-header {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--app-mobile-header-h);
+    z-index: 90;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    padding: 0 16px;
+  }
+
+  /* Bottom-nav — fixed at bottom, 5 primary routes + centred FAB.
+     Includes iOS safe-area inset for the home indicator. */
+  .app-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 90;
+    background: var(--background);
+    border-top: 1px solid var(--border);
+    align-items: stretch;
+    justify-content: space-around;
+  }
+
+  /* Drawer overlay — dims the page when either drawer is open and
+     dismisses on click. Sits under the drawer (z-index 95 vs 100). */
+  .app-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--app-drawer-overlay);
+    z-index: 95;
+  }
+  .nav-open .app-drawer-overlay,
+  .right-open .app-drawer-overlay {
+    display: block;
+  }
+
+  /* Profile / Cart drawers — at mobile sizes they should also become
+     full-width sheets rather than 333/350px overlays. Their existing
+     animations keep working; we just widen them. */
+  body:has(.pd-aside.pd-open) .main-content,
+  body:has(.cd-aside.cd-open) .main-content {
+    margin-right: 0;
+  }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .nav-sidebar,
+  .rs-aside {
+    transition: none;
+  }
+}
