@@ -195,11 +195,12 @@ export default function App() {
   }
 
   /* On tablet/mobile, the desktop nav-collapse preference doesn't apply —
-     the shell either forces 68px (tablet) or full drawer (mobile) via
-     mobile-shell.css. Pass the effective collapsed flag to NavSidebar so
-     its internal label/icon state matches what's visible. */
+     the shell forces 68px (tablet + mobile drawer) via mobile-shell.css.
+     Pass collapsed=true to NavSidebar at those sizes so its labels stay
+     hidden and the rail reads as icon-only — matches the visual width
+     we're constraining the drawer to. */
   const effectiveNavCollapsed =
-    sidebar.isMobile ? false : sidebar.isDesktop ? navCollapsed : true
+    sidebar.isDesktop ? navCollapsed : true
 
   /* Desktop / large-tablet: render the right rail as a real grid sibling.
      Below the laptop breakpoint mobile-shell.css turns it into a drawer

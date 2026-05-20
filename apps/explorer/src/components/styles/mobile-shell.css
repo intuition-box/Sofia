@@ -19,7 +19,14 @@
 :root {
   --app-mobile-header-h: 56px;
   --app-bottom-nav-h: 64px;
-  --app-drawer-w: 280px;
+  /* Mobile nav drawer = same width as the desktop collapsed rail
+     (icon-only column). Wider drawer (240–280) is the usual mobile
+     pattern but with the bottom-nav carrying the primary routes the
+     side rail only needs to surface the secondary actions (cart,
+     notifications, theme, …) — those are icons in their own right,
+     so we match the collapsed width instead of wasting horizontal
+     real estate on labels that aren't there. */
+  --app-drawer-w: 68px;
   --app-right-drawer-w: 320px;
   --app-drawer-overlay: rgba(0, 0, 0, 0.5);
   --app-drawer-shadow: -12px 0 32px rgba(0, 0, 0, 0.35);
