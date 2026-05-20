@@ -115,7 +115,9 @@
 
   /* NavSidebar — off-canvas drawer from the left. The component still
      paints its full 290px / 68px content; mobile just overrides the
-     positioning to slide it in/out of the viewport. */
+     positioning to slide it in/out of the viewport. overflow-x is
+     clipped so any internal label/circle that hasn't been hidden by
+     the .nav-collapsed rules can't bleed beyond the 68px column. */
   .nav-sidebar {
     position: fixed !important;
     top: 0 !important;
@@ -124,6 +126,7 @@
     width: var(--app-drawer-w) !important;
     height: 100vh !important;
     z-index: 100;
+    overflow-x: hidden !important;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     box-shadow: var(--app-drawer-shadow-left);

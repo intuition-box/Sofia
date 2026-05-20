@@ -216,7 +216,14 @@ export default function App() {
       <div
         className={[
           'relative min-h-screen bg-background',
-          navCollapsed ? 'nav-collapsed' : '',
+          /* Drive the .nav-collapsed root class from the EFFECTIVE state,
+             not just the user preference: tablet + mobile drawer also need
+             the DS' `.nav-collapsed .nav-sidebar` selectors to fire (those
+             are the rules that actually hide labels, hide circle names,
+             collapse the toolbar, etc.). Without this the nav stays at
+             68px in width but its inner content overflows because labels
+             still render at expanded sizing. */
+          effectiveNavCollapsed ? 'nav-collapsed' : '',
           sidebar.leftOpen ? 'nav-open' : '',
           sidebar.rightOpen ? 'right-open' : '',
         ]
