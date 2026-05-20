@@ -6,9 +6,11 @@ import {
   useParams,
   Navigate,
 } from 'react-router-dom'
-import { usePrivy } from '@privy-io/react-auth'
+import { usePrivy, useLogin } from '@privy-io/react-auth'
 import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
+import { MobileHeader } from './components/MobileHeader'
+import { BottomNav } from './components/BottomNav'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import WeightModal from './components/WeightModal'
@@ -51,6 +53,7 @@ const BillingPage = lazy(() => import('./pages/BillingPage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
+import './components/styles/mobile-shell.css'
 
 function InterestsHydrationBoundary() {
   useInterestsHydration()
@@ -84,6 +87,8 @@ export default function App() {
   const isStandalone = location.pathname.startsWith('/settings')
   const cart = useCart()
   const sidebar = useSidebarState()
+  const { ready: privyReady, authenticated } = usePrivy()
+  const { login } = useLogin()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =
     useNavCollapse()
   // Routes that surface the ProfileDrawer on the right rail.
@@ -107,7 +112,51 @@ export default function App() {
   useEffect(() => {
     window.scrollTo(0, 0)
     setProfileDrawerOpen(false)
+    /* Close mobile drawers on navigation — tapping a nav link should
+       always feel like it "did something" (page changed AND drawer
+       dismissed), not strand the user looking at the drawer over the
+       new page. */
+    sidebar.closeLeft()
+    sidebar.closeRight()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname])
+
+  /* ESC closes whichever drawer is open on mobile. Only registers when
+     a drawer is actually open so we don't fight other ESC handlers
+     (modals, autocompletes) at rest. */
+  useEffect(() => {
+    if (!sidebar.leftOpen && !sidebar.rightOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      sidebar.closeLeft()
+      sidebar.closeRight()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [sidebar])
+
+  /* Lock body scroll while a drawer is open so the page underneath
+     doesn't move when the user scrolls inside the drawer. Restores
+     the previous overflow on cleanup. */
+  useEffect(() => {
+    const anyOpen = sidebar.leftOpen || sidebar.rightOpen
+    if (!anyOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [sidebar.leftOpen, sidebar.rightOpen])
+
+  const handleAuthRequired = useCallback(() => {
+    if (!privyReady) return
+    login()
+  }, [privyReady, login])
+
+  const closeAllDrawers = useCallback(() => {
+    sidebar.closeLeft()
+    sidebar.closeRight()
+  }, [sidebar])
 
   const handleCartSubmit = useCallback(() => {
     cart.close()
@@ -145,23 +194,81 @@ export default function App() {
     )
   }
 
+  /* On tablet/mobile, the desktop nav-collapse preference doesn't apply —
+     the shell forces 68px (tablet + mobile drawer) via mobile-shell.css.
+     Pass collapsed=true to NavSidebar at those sizes so its labels stay
+     hidden and the rail reads as icon-only — matches the visual width
+     we're constraining the drawer to. */
+  const effectiveNavCollapsed =
+    sidebar.isDesktop ? navCollapsed : true
+
+  /* Desktop / large-tablet: render the right rail as a real grid sibling.
+     Below the laptop breakpoint mobile-shell.css turns it into a drawer
+     so we still want the markup mounted — the rail toggle in the mobile
+     header opens it via `right-open`. Pages tagged full-width or the
+     profile/cart-open states still suppress the rail entirely. */
+  const showRightSidebar = !isFullWidthPage && !isProfilePage && !cartOpen
+
+  const cartItemCount = cart.items.length
+
   return (
     <RightRailProvider>
       <div
-        className={`relative min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}
-      >
+        className={[
+          'relative min-h-screen bg-background',
+          /* Drive the .nav-collapsed root class from the EFFECTIVE state,
+             not just the user preference: tablet + mobile drawer also need
+             the DS' `.nav-collapsed .nav-sidebar` selectors to fire (those
+             are the rules that actually hide labels, hide circle names,
+             collapse the toolbar, etc.). Without this the nav stays at
+             68px in width but its inner content overflows because labels
+             still render at expanded sizing. */
+          effectiveNavCollapsed ? 'nav-collapsed' : '',
+          sidebar.leftOpen ? 'nav-open' : '',
+          sidebar.rightOpen ? 'right-open' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}>
         {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
         <RealtimeSyncBoundary />
         {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
         <InterestsHydrationBoundary />
         <WsStatusBadge />
+
+        {/* Mobile chrome — fixed top header + bottom nav. Both are
+            hidden via CSS on desktop; rendering them unconditionally
+            keeps the markup stable across breakpoints so route changes
+            on viewport resize don't blow away component state. */}
+        <MobileHeader
+          onMenuClick={sidebar.toggleLeft}
+          onRightRailClick={
+            showRightSidebar ? sidebar.toggleRight : undefined
+          }
+          onCartClick={cart.toggle}
+          cartCount={cartItemCount}
+          hideRightRailButton={!showRightSidebar}
+        />
+        <BottomNav
+          authenticated={authenticated}
+          onAuthRequired={handleAuthRequired}
+        />
+
+        {/* Drawer overlay — dims the page when either side drawer is
+            open and dismisses on click. CSS-hidden by default, shown
+            via .nav-open / .right-open on the wrapper. */}
+        <div
+          className="app-drawer-overlay"
+          onClick={closeAllDrawers}
+          aria-hidden="true"
+        />
+
         <NavSidebar
           onCartClick={cart.toggle}
-          collapsed={navCollapsed}
+          collapsed={effectiveNavCollapsed}
           onToggleCollapse={toggleNavCollapsed}
         />
-        {isFullWidthPage || !sidebar.isDesktop ? null : (
+        {showRightSidebar && (
           <RightSidebar hidden={isProfilePage || cartOpen} />
         )}
 
