@@ -53,12 +53,25 @@
   .right-open .rs-aside {
     transform: translateX(0);
   }
-  /* ProfileDrawer / CartDrawer margin overrides in layout.css can
-     skip too — at this size, all right-side drawers float over the
-     content instead of pushing it. */
+  /* ProfileDrawer / CartDrawer margin overrides in layout.css would
+     push the main content sideways at sub-desktop widths and leave the
+     profile column squished to the left half of the viewport. Override
+     with !important so they're guaranteed to lose to the responsive
+     reset — even with their `body:has(...)` higher specificity, the
+     !important flag wins against rules without one. */
   body:has(.pd-aside.pd-open) .main-content,
   body:has(.cd-aside.cd-open) .main-content {
-    margin-right: 0;
+    margin-right: 0 !important;
+  }
+  /* ProfilePage's .pf-view container reserves implicit max-width via
+     its children (TopicsRadar SVG, ProfileCharts grids). Force it
+     full-width on sub-desktop so the page consumes whatever
+     .main-content provides instead of shrink-wrapping the widest
+     child. */
+  .pf-view,
+  .pf-view.pf-home {
+    width: 100%;
+    max-width: none;
   }
 }
 
