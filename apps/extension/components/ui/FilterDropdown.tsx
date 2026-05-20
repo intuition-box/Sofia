@@ -7,7 +7,8 @@
  * like CircleFeedSection in the explorer.
  */
 import { ChevronDown } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 import "../styles/FilterDropdown.css"
 
@@ -105,13 +106,44 @@ export default function FilterDropdown({
   singleColumn = false
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false)
+  const [popRect, setPopRect] = useState<{
+    top: number
+    left: number
+    width: number
+  } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const popRef = useRef<HTMLDivElement>(null)
 
-  // Close on outside click / Escape.
+  // Recompute the popover anchor from the trigger's bounding box every
+  // time the dropdown opens (and on scroll/resize while open). The
+  // popover lives in a body-level portal so it escapes the parents'
+  // stacking contexts (backdrop-filter on .actions-panel /
+  // .extended-metrics-panel each create one, which clamped z-index).
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return
+    const place = () => {
+      const r = triggerRef.current!.getBoundingClientRect()
+      setPopRect({ top: r.bottom + 6, left: r.left, width: r.width })
+    }
+    place()
+    window.addEventListener("scroll", place, true)
+    window.addEventListener("resize", place)
+    return () => {
+      window.removeEventListener("scroll", place, true)
+      window.removeEventListener("resize", place)
+    }
+  }, [open])
+
+  // Close on outside click / Escape. Outside = neither the root (the
+  // trigger's container) nor the portaled popover.
   useEffect(() => {
     if (!open) return
     const onDown = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (rootRef.current?.contains(t)) return
+      if (popRef.current?.contains(t)) return
+      setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false)
@@ -134,9 +166,57 @@ export default function FilterDropdown({
     setOpen(false)
   }
 
+  const popover =
+    open && popRect ? (
+      <div
+        ref={popRef}
+        className={`ext-filter-pop ext-filter-pop--portaled${wide ? " ext-filter-pop--wide" : ""}`}
+        role="listbox"
+        style={{
+          top: popRect.top,
+          left: popRect.left,
+          minWidth: popRect.width,
+        }}>
+        <div
+          className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>
+          <button
+            type="button"
+            className={`ext-filter-pop__cell${value === "all" ? " is-active" : ""}`}
+            onClick={() => handleSelect("all")}>
+            <Dot base="ext-filter-pop__dot" color={MUTED} />
+            All
+          </button>
+          {options.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              className={`ext-filter-pop__cell${value === o.id ? " is-active" : ""}`}
+              onClick={() => handleSelect(o.id)}>
+              <Swatch
+                base="ext-filter-pop__dot"
+                color={o.color ?? MUTED}
+                icon={o.icon}
+                iconUrl={o.iconUrl}
+              />
+              {o.label}
+            </button>
+          ))}
+        </div>
+        {value !== "all" && (
+          <button
+            type="button"
+            className="ext-filter-pop__reset"
+            onClick={() => handleSelect("all")}>
+            Reset
+          </button>
+        )}
+      </div>
+    ) : null
+
   return (
     <div className="ext-filter" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         className={`ext-filter-trigger${wide ? " ext-filter-trigger--wide" : ""}`}
         aria-label={`Filter by ${label.toLowerCase()}`}
@@ -153,43 +233,7 @@ export default function FilterDropdown({
         <ChevronDown size={12} className="ext-filter-trigger__chev" />
       </button>
 
-      {open && (
-        <div className="ext-filter-pop" role="listbox">
-          <div
-            className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>
-            <button
-              type="button"
-              className={`ext-filter-pop__cell${value === "all" ? " is-active" : ""}`}
-              onClick={() => handleSelect("all")}>
-              <Dot base="ext-filter-pop__dot" color={MUTED} />
-              All
-            </button>
-            {options.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                className={`ext-filter-pop__cell${value === o.id ? " is-active" : ""}`}
-                onClick={() => handleSelect(o.id)}>
-                <Swatch
-                  base="ext-filter-pop__dot"
-                  color={o.color ?? MUTED}
-                  icon={o.icon}
-                  iconUrl={o.iconUrl}
-                />
-                {o.label}
-              </button>
-            ))}
-          </div>
-          {value !== "all" && (
-            <button
-              type="button"
-              className="ext-filter-pop__reset"
-              onClick={() => handleSelect("all")}>
-              Reset
-            </button>
-          )}
-        </div>
-      )}
+      {popover && createPortal(popover, document.body)}
     </div>
   )
 }

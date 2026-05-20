@@ -101,8 +101,21 @@
   animation: extFilterPop 0.14s ease-out;
 }
 .ext-filter-trigger--wide + .ext-filter-pop,
-.ext-filter:has(.ext-filter-trigger--wide) .ext-filter-pop {
+.ext-filter:has(.ext-filter-trigger--wide) .ext-filter-pop,
+.ext-filter-pop--wide {
   width: 360px;
+}
+
+/* Portaled variant — the popover is rendered at document.body level so
+   it escapes the parent stacking contexts (e.g. .actions-panel and
+   .extended-metrics-panel each create one via backdrop-filter, which
+   used to clip z-index on the absolute popover). Inline coordinates
+   come from getBoundingClientRect; we just need fixed positioning and
+   a top-of-stack z-index. Width still comes from the base rule
+   (320px, or 360px for wide via the inline minWidth bump). */
+.ext-filter-pop--portaled {
+  position: fixed;
+  z-index: 9990;
 }
 @keyframes extFilterPop {
   from {
@@ -119,9 +132,15 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 4px;
-  max-height: 300px;
+  max-height: 480px;
   overflow-y: auto;
-  scrollbar-width: thin;
+  /* Hide the scrollbar — the 480px ceiling fits the 14 topics (+ All)
+     in a 2-col grid without overflow. Scrollbar still kicks in if a
+     consumer passes more options than that. */
+  scrollbar-width: none;
+}
+.ext-filter-pop__grid::-webkit-scrollbar {
+  display: none;
 }
 /* Single-column variant — used by the Domain filter (long values,
    one per row instead of the 2-col Topics grid). */

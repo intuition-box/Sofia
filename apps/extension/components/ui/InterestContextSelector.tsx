@@ -1,52 +1,69 @@
-import { memo } from "react"
-import type { UserTopicPosition } from "~/lib/services/TopicPositionsService"
-import "../styles/InterestContextSelector.css"
+import { memo, useMemo } from "react"
+import FilterDropdown, { type FilterOption } from "./FilterDropdown"
+import {
+  TOPIC_ATOM_IDS,
+  TOPIC_LABELS,
+  TOPIC_COLORS,
+  TOPIC_ICON,
+} from "~/lib/config/topicConfig"
 
 interface InterestContextSelectorProps {
-  interests: UserTopicPosition[]
   selectedContext: string | null
   onSelectContext: (slug: string | null) => void
   disabled?: boolean
+  /** Topics already attached as on-chain context for the current page.
+   *  Currently unused visually (FilterDropdown has no per-option marker
+   *  slot) but kept so callers can keep passing the data; we can wire a
+   *  checkmark glyph here once FilterDropdown grows a status hint. */
   certifiedContexts?: string[]
 }
 
-export const InterestContextSelector = memo(({
-  interests,
-  selectedContext,
-  onSelectContext,
-  disabled = false,
-  certifiedContexts = [],
-}: InterestContextSelectorProps) => {
-  if (interests.length === 0) return null
+export const InterestContextSelector = memo(
+  ({
+    selectedContext,
+    onSelectContext,
+    disabled = false,
+  }: InterestContextSelectorProps) => {
+    // Source of truth = the explorer's 14 topics (topicConfig). We expose
+    // all of them, in config declaration order, so the context picker is
+    // not gated on the user having staked positions yet.
+    const options = useMemo<FilterOption[]>(
+      () =>
+        Object.keys(TOPIC_ATOM_IDS).map((slug) => ({
+          id: slug,
+          label: TOPIC_LABELS[slug] ?? slug,
+          color: TOPIC_COLORS[slug] ?? "#888888",
+          icon: TOPIC_ICON[slug],
+        })),
+      [],
+    )
 
-  const handleClick = (slug: string) => {
-    if (disabled) return
-    onSelectContext(selectedContext === slug ? null : slug)
-  }
+    if (disabled) {
+      // FilterDropdown has no disabled state; render the trigger frame
+      // with a muted dimming when the parent flow is processing.
+      return (
+        <div style={{ opacity: 0.55, pointerEvents: "none" }}>
+          <FilterDropdown
+            label="In context of"
+            value={selectedContext ?? "all"}
+            onChange={() => undefined}
+            options={options}
+            wide
+          />
+        </div>
+      )
+    }
 
-  return (
-    <div className="interest-context">
-      <span className="interest-context__label">in context of</span>
-      <div className="interest-context__buttons">
-        {interests.map(({ topicSlug, label, color }) => {
-          const isSelected = selectedContext === topicSlug
-          const isCertified = certifiedContexts.includes(topicSlug)
-          const isInCart = isSelected && !isCertified
-          return (
-            <button
-              key={topicSlug}
-              className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""} ${isCertified ? "interest-context__btn--certified" : ""} ${isInCart ? "interest-context__btn--in-cart" : ""}`}
-              onClick={() => handleClick(topicSlug)}
-              disabled={disabled}
-              style={{ '--topic-color': color } as React.CSSProperties}
-            >
-              {isInCart ? `+ ${label}` : label}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-})
+    return (
+      <FilterDropdown
+        label="In context of"
+        value={selectedContext ?? "all"}
+        onChange={(id) => onSelectContext(id === "all" ? null : id)}
+        options={options}
+        wide
+      />
+    )
+  },
+)
 
 export default InterestContextSelector

@@ -980,22 +980,6 @@
   gap: 6px;
 }
 
-.url-expanded-section .interest-context__label {
-  display: block;
-  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
-}
-
-.url-expanded-section .interest-context__btn {
-  padding: 6px 12px;
-  font-size: 11px;
-}
-
 /* OAuth Predicate Button */
 .oauth-predicate-btn {
   display: inline-block;
