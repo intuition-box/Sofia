@@ -11,7 +11,6 @@ import {
   useFavicon,
   usePageBlockchainData,
   usePagePositions,
-  useTopicInterests,
   useTrustCircle,
   useUserCertifications,
   useWalletFromStorage
@@ -119,8 +118,9 @@ const PageBlockchainCard = () => {
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
 
-  // Topic interests (from Sofia Explorer)
-  const { topInterests, hasInterests } = useTopicInterests()
+  // Context picker is always rendered: it draws from the 14 topics in
+  // topicConfig, not the user's staked positions. Topic positions are
+  // no longer needed here.
   const [selectedContext, setSelectedContext] = useState<string | null>(null)
 
   // Cart
@@ -299,13 +299,10 @@ const PageBlockchainCard = () => {
                   allowDepositContext={!!selectedContext}
                 />
               </div>
-              {hasInterests && (
-                <div className="cert-section">
-                  <div className="cert-section-title">In context of</div>
-                  <InterestContextSelector
-                    interests={topInterests}
-                    selectedContext={selectedContext}
-                    onSelectContext={(slug) => {
+              <div className="cert-section">
+                <InterestContextSelector
+                  selectedContext={selectedContext}
+                  onSelectContext={(slug) => {
                       setSelectedContext(slug)
                       if (!currentUrl) return
                       cart.updateContextForUrl(currentUrl, slug)
@@ -346,11 +343,10 @@ const PageBlockchainCard = () => {
                         )
                       }
                     }}
-                    disabled={modal.intentionState.loading}
-                    certifiedContexts={certifiedContexts}
-                  />
-                </div>
-              )}
+                  disabled={modal.intentionState.loading}
+                  certifiedContexts={certifiedContexts}
+                />
+              </div>
 
               {/* Live-built sentence — reflects what will be committed */}
               <div className="cert-section live-sentence-section">

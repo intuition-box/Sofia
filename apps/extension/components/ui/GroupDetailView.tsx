@@ -13,7 +13,6 @@ import {
 } from "~/lib/config/filterOptions"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CertificationType } from "~/lib/services"
-import type { UserTopicPosition } from "~/lib/services/TopicPositionsService"
 import type { CertificationEntry } from "~/lib/services/UserCertificationsService"
 import {
   calculateLevel,
@@ -41,7 +40,6 @@ import {
   useIntentionCertify,
   usePageDiscovery,
   useRedeemTriple,
-  useTopicInterests,
   useUserCertifications,
   useWalletFromStorage,
   type IntentionGroupWithStats,
@@ -83,7 +81,6 @@ const UrlRow = ({
   onRemove,
   isProcessing,
   cartPredicates,
-  topInterests,
   certifiedContexts,
   onContextChange
 }: {
@@ -103,7 +100,6 @@ const UrlRow = ({
   onRemove: () => void
   isProcessing: boolean
   cartPredicates: string[]
-  topInterests: UserTopicPosition[]
   certifiedContexts: string[]
   onContextChange: (context: string | null) => void
 }) => {
@@ -321,15 +317,12 @@ const UrlRow = ({
               )
             })}
           </div>
-          {topInterests.length > 0 && (
-            <InterestContextSelector
-              interests={topInterests}
-              selectedContext={selectedContext}
-              onSelectContext={handleSelectContext}
-              disabled={isProcessing}
-              certifiedContexts={certifiedContexts}
-            />
-          )}
+          <InterestContextSelector
+            selectedContext={selectedContext}
+            onSelectContext={handleSelectContext}
+            disabled={isProcessing}
+            certifiedContexts={certifiedContexts}
+          />
         </div>
       )}
     </div>
@@ -354,9 +347,11 @@ const GroupDetailView = ({
   const cart = useCart()
   const [cartToast, setCartToast] = useState<string | null>(null)
 
-  // Topic interests + per-URL certifications (for "in context of")
+  // Per-URL certifications used to surface already-certified contexts
+  // in the InterestContextSelector. Topic options come from topicConfig
+  // (all 14 topics) so the selector no longer depends on the user
+  // having on-chain positions.
   const { walletAddress } = useWalletFromStorage()
-  const { topInterests } = useTopicInterests()
   const { certifications } = useUserCertifications(walletAddress)
   const getCertifiedContexts = useCallback(
     (url: string): string[] => {
@@ -816,7 +811,6 @@ const GroupDetailView = ({
                 processingUrls.has(urlRecord.url) || intentionLoading
               }
               cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
-              topInterests={topInterests}
               certifiedContexts={getCertifiedContexts(urlRecord.url)}
               onContextChange={(context) =>
                 cart.updateContextForUrl(urlRecord.url, context)
