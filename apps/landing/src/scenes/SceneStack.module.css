@@ -27,6 +27,37 @@
  * All transforms run in pure CSS — no inline styles on the JSX side.
  */
 
+/* ── @property registrations ───────────────────────────────
+ *
+ * Without @property, custom-property changes flow through `calc()` in
+ * transform/translate without being treated as animatable transitions
+ * by all engines — some browsers (Safari notably) snap to the new
+ * computed value instead of interpolating. Registering the indices as
+ * integers ties them to the property-animation pipeline so the
+ * transition on `transform` always fires.
+ *
+ * `--active-slide` lives on .stage and is inherited down to every
+ * slide / bg block. The others (`--slide-i`, `--bg-i`) are per-element
+ * (set via data-attribute selectors below). */
+
+@property --active-slide {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --slide-i {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@property --bg-i {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
 .region {
   position: relative;
   width: 100%;

@@ -5,6 +5,14 @@
  * a transition fires on the descendant selector below as soon as
  * data-active flips. No JS animation loop — the deck owns the trigger
  * via data-attributes.
+ *
+ * The animated variables live ON the .hex elements (not on .host) so
+ * the transition declared on .hex picks up the value changes: an
+ * @property registration with `inherits: false` (which we want, to
+ * avoid leaking sub-pixel registered properties down arbitrary trees)
+ * means children don't see a parent's value, so binding the property
+ * + transition + active-state value on the same element is the only
+ * way the engine wires up the animation.
  */
 
 @property --hex-spread {
@@ -27,8 +35,6 @@
   z-index: 0;
   --hex-size: 520px;
   --hex-color: rgba(0, 0, 0, 0.05);
-  --hex-spread: 0px;
-  --hex-rot: 0deg;
 }
 
 .hex {
@@ -40,6 +46,10 @@
   background: var(--hex-color);
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
   will-change: transform;
+  /* Animated vars OWNED by .hex (see file header). The transition
+     watches these directly. */
+  --hex-spread: 0px;
+  --hex-rot: 0deg;
   transition:
     --hex-spread 1400ms cubic-bezier(0.215, 0.61, 0.355, 1) 700ms,
     --hex-rot 1400ms cubic-bezier(0.215, 0.61, 0.355, 1) 700ms,
@@ -56,11 +66,10 @@
     rotate(calc(18deg + var(--hex-rot)));
 }
 
-/* Animate when the owning deck slide is active. Targets the closest
-   `[data-deck-slide][data-active='true']` ancestor — fires whether the
-   trigger comes from the desktop snap or the mobile IntersectionObserver,
-   so the choreography stays consistent across modes. */
-[data-deck-slide][data-active='true'] .host {
+/* Animate when the owning deck slide is active. Targets the .hex
+   descendants directly (not .host) so the property change happens on
+   the element that owns the @property + transition. */
+[data-deck-slide][data-active='true'] .hex {
   --hex-spread: max(40vw, 480px);
   --hex-rot: 60deg;
 }
@@ -69,7 +78,7 @@
   .host {
     --hex-size: 320px;
   }
-  [data-deck-slide][data-active='true'] .host {
+  [data-deck-slide][data-active='true'] .hex {
     --hex-spread: 40vw;
   }
 }
@@ -78,7 +87,7 @@
   .hex {
     transition: none;
   }
-  [data-deck-slide][data-active='true'] .host {
+  [data-deck-slide][data-active='true'] .hex {
     --hex-spread: 0px;
     --hex-rot: 0deg;
   }
