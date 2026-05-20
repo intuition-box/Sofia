@@ -5,6 +5,7 @@ import { PrivyProvider } from '@privy-io/react-auth'
 import { BrowserRouter } from 'react-router-dom'
 import { configureClient } from '@0xsofia/graphql'
 import { PRIVY_APP_ID, GRAPHQL_URL, GRAPHQL_WS_URL } from '../config'
+import { intuitionChain } from './contracts/chainConfig'
 import { CartProvider } from '../hooks/useCart'
 import { ViewAsProvider } from '../hooks/useViewAs'
 
@@ -80,6 +81,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
       appId={PRIVY_APP_ID}
       config={{
         loginMethods: ['wallet', 'google'],
+        /* Intuition mainnet (chain ID 1155) is the only chain the
+           explorer ever transactions against — RPC + indexer in
+           ../config.ts both point at mainnet.intuition. Without this
+           list, Privy v3 falls back to its built-in list (Ethereum,
+           Base, Polygon, …) which doesn't include 1155, and any tx
+           submission throws "Unsupported chainId: 1155". Declaring
+           `supportedChains` AND `defaultChain` is needed: the former
+           gates the runtime guard, the latter sets the auto-switch
+           target after wallet connection so users don't sit on the
+           wrong network. */
+        defaultChain: intuitionChain,
+        supportedChains: [intuitionChain],
         // Themed against @0xsofia/design-system: ink panel (--ds-ink),
         // peach CTA (--ds-accent), Sofia wordmark logo.
         appearance: {
