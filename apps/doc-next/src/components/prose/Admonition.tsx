@@ -35,9 +35,7 @@ export function Admonition({
 }) {
   const meta = MAP[kind] ?? MAP.note
   return (
-    <div
-      className="adm"
-      style={{ ['--adm-c' as string]: `var(--${meta.c})` }}>
+    <div className="adm" data-kind={kind}>
       <span className="adm-ico">{meta.ico}</span>
       <div className="adm-body">
         <span className="title">{title ?? meta.label}</span>

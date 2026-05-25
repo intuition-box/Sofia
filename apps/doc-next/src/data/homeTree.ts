@@ -69,8 +69,3 @@ export const HOME_TREE_COLS: HomeTreeCol[] = [
     ],
   },
 ]
-
-export const HOME_TREE_TOTAL = HOME_TREE_COLS.reduce(
-  (s, c) => s + c.items.length,
-  0,
-)

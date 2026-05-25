@@ -125,7 +125,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
                     className={`search-result ${
                       idx === activeIdx ? 'active' : ''
                     }`}
-                    style={{ ['--r-c' as string]: 'var(--accent)' }}
+                    data-color="accent"
                     onMouseEnter={() => setActive(idx)}
                     onClick={() => {
                       navigate(docPath(r.id))
@@ -147,10 +147,10 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
             <kbd>↑</kbd>
             <kbd>↓</kbd>
             <span>navigate</span>
-            <span style={{ margin: '0 8px', opacity: 0.4 }}>·</span>
+            <span className="search-foot-sep">·</span>
             <kbd>↵</kbd>
             <span>open</span>
-            <span style={{ margin: '0 8px', opacity: 0.4 }}>·</span>
+            <span className="search-foot-sep">·</span>
             <kbd>ESC</kbd>
             <span>close</span>
           </div>

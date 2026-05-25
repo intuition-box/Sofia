@@ -36,7 +36,7 @@ export function Drawer({
       />
       <div className="drawer-panel" role="dialog" aria-label="Navigation">
         <div className="drawer-head">
-          <div className="dnv-name" style={{ fontSize: 17 }}>
+          <div className="dnv-name">
             Sofia <em>Docs</em>
           </div>
           <button

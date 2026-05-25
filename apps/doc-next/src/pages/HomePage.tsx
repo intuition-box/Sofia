@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { HOME_TREE_COLS } from '~/data/homeTree'
 
@@ -14,9 +13,7 @@ export function HomePage() {
     <div className="shell shell--full">
       {/* MASTHEAD */}
       <section className="dh-mast">
-        <div
-          className="doc-eyebrow"
-          style={{ ['--eb-c']: 'var(--accent)' } as CSSProperties}>
+        <div className="doc-eyebrow" data-color="accent">
           <span className="dot" /> <b>SOFIA · DOCS</b> · DECEMBER 2025
         </div>
         <h1 className="dh-title">

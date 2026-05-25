@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TREE } from '~/data/tree'
 import { docPath } from '~/lib/paths'
-import type { TreeItem } from '~/lib/types'
+import type { ColorKey, TreeItem } from '~/lib/types'
 import { ChevronIcon } from './icons'
 
 /**
@@ -20,10 +20,10 @@ function TreeItemLink({
 }: {
   item: TreeItem
   activeId?: string
-  sectionColor: string
+  sectionColor: ColorKey
   onNavigate?: () => void
 }) {
-  const tagC = item.tag ? `var(--${item.tag})` : sectionColor
+  const color = item.tag ?? sectionColor
   const isActive = item.id === activeId
 
   return (
@@ -33,28 +33,9 @@ function TreeItemLink({
         onClick={onNavigate}
         className={`tree-item ${isActive ? 'active' : ''}`}
         aria-current={isActive ? 'page' : undefined}
-        style={{ ['--ti-c' as string]: tagC }}>
-        {item.tag && (
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: 50,
-              background: tagC,
-              flexShrink: 0,
-            }}
-          />
-        )}
-        <span
-          style={{
-            flex: 1,
-            minWidth: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}>
-          {item.label}
-        </span>
+        data-color={color}>
+        {item.tag && <span className="tree-item-dot" />}
+        <span className="tree-item-label">{item.label}</span>
         {item.badge && (
           <span className={`badge ${item.badge}`}>{item.badge}</span>
         )}
@@ -86,7 +67,7 @@ function TreeSectionBlock({
 }: {
   sectionId: string
   title: string
-  color: string
+  color: ColorKey
   items: TreeItem[]
   activeId?: string
   onNavigate?: () => void
@@ -96,14 +77,13 @@ function TreeSectionBlock({
       it.id === activeId || it.items?.some((s) => s.id === activeId),
   )
   const [open, setOpen] = useState(true)
-  const c = `var(--${color})`
 
   return (
     <div className="tree-section">
       <button
         type="button"
         className={`tree-title ${open ? 'open' : ''}`}
-        style={{ ['--ts-c' as string]: c }}
+        data-color={color}
         aria-expanded={open}
         aria-controls={`tree-sec-${sectionId}`}
         onClick={() => setOpen((v) => !v)}>
@@ -121,7 +101,7 @@ function TreeSectionBlock({
               key={it.id}
               item={it}
               activeId={activeId}
-              sectionColor={c}
+              sectionColor={color}
               onNavigate={onNavigate}
             />
           ))}

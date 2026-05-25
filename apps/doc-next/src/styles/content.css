@@ -11,12 +11,15 @@
 
 .mdoc-card-grid {
   display: grid;
-  grid-template-columns: repeat(
-    var(--mdoc-cols, 2),
-    minmax(0, 1fr)
-  );
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin: 22px 0 0;
+}
+.mdoc-card-grid[data-cols='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mdoc-card-grid[data-cols='4'] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .mdoc-card-link {
@@ -153,6 +156,19 @@
    claim, and the body indented to match. Single column, scoped
    to the .mfst-prose article in ManifestoPage.
    ─────────────────────────────────────────────────────────────*/
+
+/* Page-level layout (extracted from former inline styles). */
+.mfst-hero {
+  padding-bottom: 22px;
+}
+.mfst-essay {
+  padding-top: 16px;
+  padding-bottom: 40px;
+}
+.mfst-title {
+  margin-top: 18px;
+  font-size: 88px;
+}
 .mfst-prose {
   /* Full container width — the essay reads edge-to-edge with the
      section's 32px gutters, no reading-column cap. */

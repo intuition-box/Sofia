@@ -19,14 +19,14 @@ export function BrandMark({
 }) {
   const { theme } = useTheme()
   const src = theme === 'light' ? '/img/logo-black.png' : '/img/logoWhite.svg'
+  const cls = className ? `brand-mark ${className}` : 'brand-mark'
   return (
     <img
       src={src}
       alt="Sofia"
       width={size}
       height={size}
-      className={className}
-      style={{ width: size, height: size, display: 'block' }}
+      className={cls}
     />
   )
 }

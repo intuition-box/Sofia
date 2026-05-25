@@ -663,6 +663,23 @@
   color: var(--adm-c);
   margin-bottom: 4px;
 }
+/* Map the admonition kind to its predicate color — kept in CSS so
+   the JSX only sets `data-kind`. */
+.adm[data-kind='note'] {
+  --adm-c: var(--accent);
+}
+.adm[data-kind='info'] {
+  --adm-c: var(--learning);
+}
+.adm[data-kind='tip'] {
+  --adm-c: var(--trusted);
+}
+.adm[data-kind='warning'] {
+  --adm-c: var(--fun);
+}
+.adm[data-kind='danger'] {
+  --adm-c: var(--distrusted);
+}
 
 /* ── TOC (right rail) ─────────────────────────────────── */
 .toc {
@@ -1063,6 +1080,114 @@
 .drawer-panel .tree {
   position: static;
   max-height: none;
+}
+
+/* ── DATA-COLOR BINDING ───────────────────────────────────────
+   Any element carrying `data-color="<predicate>"` (or "accent")
+   exposes that color as every variant variable the children might
+   read (--eb-c for eyebrow dots, --th-c for thesis stripes,
+   --r-c for search-result kinds, --ts-c / --ti-c for tree, …).
+   Replaces a forest of inline `style={{ '--eb-c': … }}` setters
+   that were peppered through the pages.
+   ─────────────────────────────────────────────────────────── */
+[data-color='accent'] {
+  --eb-c: var(--accent);
+  --th-c: var(--accent);
+  --r-c: var(--accent);
+  --ts-c: var(--accent);
+  --ti-c: var(--accent);
+  --ch-c: var(--accent);
+  --dc-c: var(--accent);
+  --e-c: var(--accent);
+  --p-c: var(--accent);
+}
+[data-color='trusted'] {
+  --eb-c: var(--trusted);
+  --th-c: var(--trusted);
+  --r-c: var(--trusted);
+  --ts-c: var(--trusted);
+  --ti-c: var(--trusted);
+  --ch-c: var(--trusted);
+  --dc-c: var(--trusted);
+  --e-c: var(--trusted);
+  --p-c: var(--trusted);
+}
+[data-color='distrusted'] {
+  --eb-c: var(--distrusted);
+  --th-c: var(--distrusted);
+  --r-c: var(--distrusted);
+  --ts-c: var(--distrusted);
+  --ti-c: var(--distrusted);
+  --ch-c: var(--distrusted);
+  --dc-c: var(--distrusted);
+  --e-c: var(--distrusted);
+  --p-c: var(--distrusted);
+}
+[data-color='work'] {
+  --eb-c: var(--work);
+  --th-c: var(--work);
+  --r-c: var(--work);
+  --ts-c: var(--work);
+  --ti-c: var(--work);
+  --ch-c: var(--work);
+  --dc-c: var(--work);
+  --e-c: var(--work);
+  --p-c: var(--work);
+}
+[data-color='learning'] {
+  --eb-c: var(--learning);
+  --th-c: var(--learning);
+  --r-c: var(--learning);
+  --ts-c: var(--learning);
+  --ti-c: var(--learning);
+  --ch-c: var(--learning);
+  --dc-c: var(--learning);
+  --e-c: var(--learning);
+  --p-c: var(--learning);
+}
+[data-color='fun'] {
+  --eb-c: var(--fun);
+  --th-c: var(--fun);
+  --r-c: var(--fun);
+  --ts-c: var(--fun);
+  --ti-c: var(--fun);
+  --ch-c: var(--fun);
+  --dc-c: var(--fun);
+  --e-c: var(--fun);
+  --p-c: var(--fun);
+}
+[data-color='inspiration'] {
+  --eb-c: var(--inspiration);
+  --th-c: var(--inspiration);
+  --r-c: var(--inspiration);
+  --ts-c: var(--inspiration);
+  --ti-c: var(--inspiration);
+  --ch-c: var(--inspiration);
+  --dc-c: var(--inspiration);
+  --e-c: var(--inspiration);
+  --p-c: var(--inspiration);
+}
+[data-color='buying'] {
+  --eb-c: var(--buying);
+  --th-c: var(--buying);
+  --r-c: var(--buying);
+  --ts-c: var(--buying);
+  --ti-c: var(--buying);
+  --ch-c: var(--buying);
+  --dc-c: var(--buying);
+  --e-c: var(--buying);
+  --p-c: var(--buying);
+}
+[data-color='music'] {
+  --eb-c: var(--music);
+  --th-c: var(--music);
+  --r-c: var(--music);
+  --ts-c: var(--music);
+  --ti-c: var(--music);
+  --ch-c: var(--music);
+  --dc-c: var(--music);
+  --e-c: var(--music);
+  --p-c: var(--music);
 }
 
 /* ── DOC HOME — clear documentation index, not a landing ───── */
@@ -1635,6 +1760,58 @@
   .lp-chapter-body p {
     font-size: 15px;
   }
+}
+
+/* ── UTILITIES (extracted from former inline styles) ────────── */
+.brand-mark {
+  display: block;
+}
+.dft-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dnv-name--sm {
+  font-size: 16px;
+}
+.search-foot-sep {
+  margin: 0 8px;
+  opacity: 0.4;
+}
+
+/* 404 page — owns its own page-specific layout. */
+.notfound-title {
+  font-size: 44px;
+  margin-top: 8px;
+}
+.notfound-lede {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.notfound-cta-row {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.notfound-debug {
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.notfound-debug-sep {
+  opacity: 0.4;
 }
 
 /* ── Real-viewport responsive (not just the mock's data-mobile) ── */

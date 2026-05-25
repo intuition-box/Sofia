@@ -9,11 +9,9 @@ export function Footer() {
   return (
     <footer className="dft">
       <div className="dft-col dft-brand">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="dft-brand-row">
           <BrandMark size={26} />
-          <span className="dnv-name" style={{ fontSize: 16 }}>
-            Sofia
-          </span>
+          <span className="dnv-name dnv-name--sm">Sofia</span>
         </div>
         <p className="dft-tagline">
           A browser extension that turns web browsing into private,

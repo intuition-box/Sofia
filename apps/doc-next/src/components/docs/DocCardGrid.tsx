@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 /**
  * `@site/src/components/docs/DocCardGrid` — API-compatible with the
@@ -15,9 +15,7 @@ export default function DocCardGrid({
   columns = 2,
 }: DocCardGridProps) {
   return (
-    <div
-      className="mdoc-card-grid"
-      style={{ ['--mdoc-cols']: columns } as CSSProperties}>
+    <div className="mdoc-card-grid" data-cols={columns}>
       {children}
     </div>
   )

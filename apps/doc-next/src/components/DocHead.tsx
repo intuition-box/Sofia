@@ -22,9 +22,7 @@ export function DocHead({
 }: DocHeadProps) {
   return (
     <header className="doc-head">
-      <div
-        className="doc-eyebrow"
-        style={{ ['--eb-c' as string]: `var(--${eyebrowColor})` }}>
+      <div className="doc-eyebrow" data-color={eyebrowColor}>
         <span className="dot" />
         {eyebrow}
       </div>

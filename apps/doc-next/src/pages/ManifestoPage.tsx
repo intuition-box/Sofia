@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type { ColorKey } from '~/lib/types'
 import { Tree } from '~/components/Tree'
 
@@ -74,13 +74,11 @@ export function ManifestoPage() {
 
       <main className="content">
         {/* HERO — doc-grammar masthead */}
-        <section style={{ paddingBottom: 22 }}>
-          <div
-            className="doc-eyebrow"
-            style={{ ['--eb-c']: 'var(--accent)' } as CSSProperties}>
+        <section className="mfst-hero">
+          <div className="doc-eyebrow" data-color="accent">
             <span className="dot" /> <b>MANIFESTO</b> · DECEMBER 2025
           </div>
-          <h1 className="doc-title" style={{ marginTop: 18, fontSize: 88 }}>
+          <h1 className="doc-title mfst-title">
             The web sells you <em>stars</em>.
             <br />
             We sell you <em>verbs</em>.
@@ -88,7 +86,7 @@ export function ManifestoPage() {
         </section>
 
         {/* ESSAY — opener + 7 numbered theses + signature */}
-        <section style={{ paddingTop: 16, paddingBottom: 40 }}>
+        <section className="mfst-essay">
           <article className="prose mfst-prose">
             <p className="mfst-opener">
               <span className="mfst-drop">T</span>he open web pretends trust
@@ -104,7 +102,7 @@ export function ManifestoPage() {
               <section
                 key={t.n}
                 className="mfst-thesis"
-                style={{ ['--th-c']: `var(--${t.c})` } as CSSProperties}>
+                data-color={t.c}>
                 <h2 className="mfst-h">
                   <span className="mfst-h-n">§{t.n}</span>
                   <span className="mfst-h-claim">{t.claim}</span>
