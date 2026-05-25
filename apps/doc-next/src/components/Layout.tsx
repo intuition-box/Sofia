@@ -5,6 +5,7 @@ import {
   THEME_STORAGE_KEY,
   readInitialTheme,
 } from '~/hooks/useTheme'
+import { activeIdFromPath } from '~/lib/paths'
 import { NavBar } from './NavBar'
 import { Footer } from './Footer'
 import { Drawer } from './Drawer'
@@ -30,15 +31,9 @@ export function Layout() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  /* Active doc id for the tree / drawer highlight — `/docs/<id>`,
-     or the special pages mapped back to their tree id. */
-  const activeId = pathname.startsWith('/docs/')
-    ? pathname.slice('/docs/'.length)
-    : pathname === '/manifesto'
-      ? 'manifesto'
-      : pathname === '/architecture'
-        ? 'architecture/overview'
-        : undefined
+  // Active doc id for the tree / drawer highlight — `/docs/<id>`,
+  // or the special pages mapped back to their tree id (see paths.ts).
+  const activeId = activeIdFromPath(pathname)
 
   const setTheme = useCallback((t: 'light' | 'dark') => {
     setThemeState(t)

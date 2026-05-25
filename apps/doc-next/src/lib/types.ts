@@ -50,12 +50,6 @@ export interface TreeSection {
   items: TreeItem[]
 }
 
-export interface Predicate {
-  name: PredicateKey
-  hex: string
-  desc: string
-}
-
 export interface TocEntry {
   label: string
   href?: string

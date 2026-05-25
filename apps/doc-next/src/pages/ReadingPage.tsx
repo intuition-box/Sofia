@@ -5,7 +5,7 @@ import { DocHead } from '~/components/DocHead'
 import { Toc } from '~/components/Toc'
 import { Pager } from '~/components/Pager'
 import { MdxProvider } from '~/components/MdxProvider'
-import { useToc } from '~/components/useToc'
+import { useToc } from '~/hooks/useToc'
 import { DOC_BY_ID, neighbours } from '~/data/tree'
 import { getDoc } from '~/lib/docs'
 import { docPath } from '~/lib/paths'
@@ -58,7 +58,6 @@ export function ReadingPage({ docId }: { docId?: string }) {
           eyebrow={<b>{sectionTitle.toUpperCase()}</b>}
           eyebrowColor="accent"
           title={label}
-          lede={frontmatter.description}
         />
 
         <MdxProvider>

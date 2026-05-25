@@ -10,7 +10,6 @@ import { Layout } from '~/components/Layout'
 import { HomePage } from '~/pages/HomePage'
 import { ReadingPage } from '~/pages/ReadingPage'
 import { ManifestoPage } from '~/pages/ManifestoPage'
-import { LitepaperPage } from '~/pages/LitepaperPage'
 import { NotFoundPage } from '~/pages/NotFoundPage'
 import '~/styles/global.css'
 
@@ -36,7 +35,12 @@ createRoot(document.getElementById('root')!).render(
 
           {/* Special editorial pages */}
           <Route path="/manifesto" element={<ManifestoPage />} />
-          <Route path="/litepaper" element={<LitepaperPage />} />
+          <Route
+            path="/litepaper"
+            element={
+              <Navigate to="/docs/litepaper/introduction" replace />
+            }
+          />
           <Route
             path="/architecture"
             element={<ReadingPage docId="architecture/overview" />}

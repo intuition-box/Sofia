@@ -8,6 +8,14 @@
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..900,30..100;1,9..144,200..900,30..100&family=Geist:wght@300..700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300..700&display=swap');
+
+/* Single source of truth for surface / text / accent tokens (--ds-*)
+   and the shared predicate vocabulary (--trusted / --work / …) —
+   variables.css bridges the unprefixed local names to these. The
+   active theme follows <html data-theme>, which useTheme keeps in
+   sync with the .docs-app theme-class. */
+@import '@0xsofia/design-system/theme.css';
+
 @import './variables.css';
 @import './app.css';
 @import './prose.css';

@@ -1,3 +1,5 @@
+import { BrandMark } from './BrandMark'
+
 /**
  * Footer — ported from the design `Footer`. Three columns + a mono
  * status line. Links mirror the real Docusaurus footer config
@@ -8,11 +10,7 @@ export function Footer() {
     <footer className="dft">
       <div className="dft-col dft-brand">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            className="dnv-mark"
-            style={{ width: 26, height: 26, fontSize: 13 }}>
-            S
-          </span>
+          <BrandMark size={26} />
           <span className="dnv-name" style={{ fontSize: 16 }}>
             Sofia
           </span>
@@ -38,7 +36,6 @@ export function Footer() {
       </div>
       <div className="dft-bottom">
         <span>© 2024 — {new Date().getFullYear()} · Sofia, built on Intuition</span>
-        <span>docs.sofia.intuition.box · status · operational</span>
       </div>
     </footer>
   )

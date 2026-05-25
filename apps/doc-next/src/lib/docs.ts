@@ -35,11 +35,11 @@ function idFromPath(filePath: string): string {
     .replace(/\.(md|mdx)$/, '')
 }
 
-/* AI Features is hidden (product decision): keep the source files
-   but make the routes unreachable so /docs/ai-features/* 404s.
-   Reversible — drop this prefix to bring the section back (and
-   re-add it to ~/data/tree). */
-const HIDDEN_PREFIXES = ['ai-features/']
+/* Hidden routes (product decisions): the source MDX is kept but
+   `/docs/<prefix>...` 404s and the entries are dropped from the
+   sidebar / home tree. Drop a prefix here + re-add it to
+   ~/data/tree (and ~/data/homeTree) to bring it back. */
+const HIDDEN_PREFIXES = ['ai-features/', 'ecosystem/gaianet']
 
 export const DOCS: Record<string, Doc> = Object.fromEntries(
   Object.entries(modules)

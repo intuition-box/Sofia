@@ -20,9 +20,9 @@ export const TREE: TreeSection[] = [
     color: 'accent',
     items: [
       { id: 'intro', label: 'What is Sofia?' },
-      { id: 'manifesto', label: 'Manifesto', badge: 'editorial' },
-      { id: 'about', label: 'About us' },
       { id: 'features/getting-started', label: 'Getting Started' },
+      { id: 'manifesto', label: 'Manifesto' },
+      { id: 'about', label: 'About us' },
     ],
   },
   {
@@ -108,9 +108,11 @@ export const TREE: TreeSection[] = [
     id: 'ecosystem',
     title: 'Ecosystem',
     color: 'buying',
+    /* GaiaNet hidden (product decision) — source kept under
+       content/docs/ecosystem/gaianet.md, route 404'd via the
+       prefix filter in ~/lib/docs. Drop both to bring it back. */
     items: [
       { id: 'ecosystem/phala', label: 'Phala' },
-      { id: 'ecosystem/gaianet', label: 'GaiaNet' },
       { id: 'ecosystem/mastra', label: 'Mastra' },
       { id: 'ecosystem/intuition', label: 'Intuition' },
     ],

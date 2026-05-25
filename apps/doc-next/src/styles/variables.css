@@ -1,76 +1,46 @@
 /* ============================================================
    SOFIA · DOCUMENTATION — design tokens
 
-   Ported 1:1 from the Claude Design handoff (Sofia · Docs).
-   Values match @0xsofia/design-system. Light + dark are BOTH
-   intentional — the active theme is set by `.theme-light` /
-   `.theme-dark` on the `.docs-app` root (see useTheme).
-   Predicate colors travel as a real structural motif, not
-   decoration.
+   Surface / text / accent values come from the workspace package
+   `@0xsofia/design-system` (imported in global.css, exposes
+   `--ds-*`). This file bridges those to the unprefixed names the
+   rest of the app's CSS uses, so the design system is the single
+   source of truth — change a color there and every Sofia app
+   (docs, blog, explorer, OG) picks it up.
+
+   The 8 predicate colors (--trusted / --work / …) come straight
+   from the DS unprefixed — no bridge needed.
+
+   What stays local: tokens the DS doesn't own (typography stack,
+   shape, motion, --shadow-pop, --card-2).
+
+   The active theme is driven by `<html data-theme>` (kept in sync
+   by useTheme); .theme-light / .theme-dark on .docs-app scope the
+   local overrides that depend on the theme.
    ============================================================ */
 
-.theme-light {
-  /* ── Surface ────────────────────────────────────────── */
-  --bg: #ffffff;
-  --bg-subtle: #f7f6f2;
-  --card: #ffffff;
-  --border: #ececf0;
-  --border-soft: #f3f2f5;
-
-  /* ── Text ───────────────────────────────────────────── */
-  --ink: #02000e;
-  --ink-soft: #1a1727;
-  --muted: #6b6880;
-  --muted-soft: #a8a5bb;
-
-  /* ── Decoration ─────────────────────────────────────── */
-  --grid-dot: rgba(10, 10, 10, 0.045);
-
-  /* ── Accent (peach) ─────────────────────────────────── */
-  --accent: #ffc6b0;
-  --accent-soft: #ffe9df;
-  --accent-ink: #7a3a1e;
-  --on-accent: #02000e;
-
-  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.02);
-  --shadow-pop: 0 16px 40px -16px rgba(0, 0, 0, 0.18);
-}
-
-.theme-dark {
-  --bg: #0b0a12;
-  --bg-subtle: #121120;
-  --card: #13121f;
-  --border: #25223a;
-  --border-soft: #1c1a2b;
-
-  --ink: #f5f3ff;
-  --ink-soft: #e5e2f5;
-  --muted: #8f8ca8;
-  --muted-soft: #55526c;
-
-  --grid-dot: rgba(255, 255, 255, 0.04);
-
-  --accent: #ffc6b0;
-  --accent-soft: rgba(255, 198, 176, 0.12);
-  --accent-ink: #ffc6b0;
-  --on-accent: #0b0a12;
-
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
-  --shadow-pop: 0 16px 44px -16px rgba(0, 0, 0, 0.55);
-}
-
-/* Predicate vocabulary + type / shape / motion — theme-invariant */
 .theme-light,
 .theme-dark {
-  --trusted: #6dd4a0;
-  --distrusted: #e87c7c;
-  --work: #7bade0;
-  --learning: #5cc4d6;
-  --fun: #e4b95a;
-  --inspiration: #a78bdb;
-  --buying: #d98cb3;
-  --music: #e0896a;
+  /* ── Bridged from @0xsofia/design-system ──────────────── */
+  --bg: var(--ds-bg);
+  --bg-subtle: var(--ds-bg-subtle);
+  --card: var(--ds-card);
+  --border: var(--ds-border);
+  --border-soft: var(--ds-border-soft);
 
+  --ink: var(--ds-ink);
+  --ink-soft: var(--ds-ink-soft);
+  --muted: var(--ds-muted);
+  --muted-soft: var(--ds-muted-soft);
+
+  --accent: var(--ds-accent);
+  --accent-soft: var(--ds-accent-soft);
+  --accent-ink: var(--ds-accent-ink);
+  --on-accent: var(--ds-on-accent);
+
+  --shadow-card: var(--ds-shadow-card);
+
+  /* ── Type, shape, motion (local — not in DS) ──────────── */
   --display: 'Fraunces', 'Times New Roman', serif;
   --sans: 'Geist', 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -86,4 +56,15 @@
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
   --t-fast: 120ms;
   --t-med: 220ms;
+}
+
+/* ── Per-theme local overrides (the DS doesn't own these) ── */
+.theme-light {
+  --card-2: #f3f2f5;
+  --shadow-pop: 0 16px 40px -16px rgba(0, 0, 0, 0.18);
+}
+
+.theme-dark {
+  --card-2: #181628;
+  --shadow-pop: 0 16px 44px -16px rgba(0, 0, 0, 0.55);
 }

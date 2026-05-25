@@ -1,14 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
   BurgerIcon,
-  CaretIcon,
   ExtIcon,
-  GithubIcon,
   InstallIcon,
   MoonIcon,
   SearchIcon,
   SunIcon,
 } from './icons'
+import { BrandMark } from './BrandMark'
 
 interface NavBarProps {
   theme: 'light' | 'dark'
@@ -25,9 +24,11 @@ interface NavBarProps {
  */
 export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
   const { pathname } = useLocation()
-  const active = pathname.startsWith('/litepaper')
-    ? 'litepaper'
-    : 'docs'
+  const docsActive =
+    pathname === '/' ||
+    pathname.startsWith('/docs') ||
+    pathname === '/manifesto' ||
+    pathname === '/architecture'
 
   return (
     <nav className="dnv">
@@ -39,39 +40,19 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
           <BurgerIcon />
         </button>
         <Link className="dnv-brand" to="/">
-          <span className="dnv-mark">S</span>
-          <span>
-            <div className="dnv-name">
-              Sofia <em>Docs</em>
-            </div>
-            <div className="dnv-tag">docs.sofia.intuition.box</div>
-          </span>
+          <BrandMark size={32} />
+          <div className="dnv-name">
+            Sofia <em>Docs</em>
+          </div>
         </Link>
       </div>
 
       <div className="dnv-links">
         <Link
-          className={`dnv-link ${active === 'docs' ? 'active' : ''}`}
+          className={`dnv-link ${docsActive ? 'active' : ''}`}
           to="/docs/intro">
           Docs
-          <CaretIcon />
         </Link>
-        <Link className="dnv-link" to="/docs/features/getting-started">
-          Guides
-        </Link>
-        <Link
-          className={`dnv-link ${active === 'litepaper' ? 'active' : ''}`}
-          to="/litepaper">
-          Litepaper
-        </Link>
-        <a
-          className="dnv-link"
-          href="https://discord.gg/sofia3"
-          target="_blank"
-          rel="noreferrer">
-          Community
-          <CaretIcon />
-        </a>
         <a
           className="dnv-link"
           href="https://blog.sofia.intuition.box"
@@ -115,20 +96,12 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
           </button>
         </div>
         <a
-          className="dnv-iconbtn"
-          aria-label="GitHub"
-          href="https://github.com/intuition-box"
-          target="_blank"
-          rel="noreferrer">
-          <GithubIcon />
-        </a>
-        <a
           className="dnv-cta"
-          href="https://sofia.intuition.box"
+          href="https://explorer.sofia.intuition.box"
           target="_blank"
           rel="noreferrer">
           <InstallIcon />
-          Install
+          Open Explorer
         </a>
       </div>
     </nav>

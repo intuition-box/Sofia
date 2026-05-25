@@ -10,11 +10,7 @@ A **Certification** is the act of committing a page visit to the blockchain with
 
 ## Certification Flow
 
-<img
-  src={require('./img/certification-flow.png').default}
-  alt="Certification Flow"
-  style={{ maxWidth: '80%' }}
-/>
+![Certification Flow](./img/certification-flow.png)
 
 ## Certification Details
 

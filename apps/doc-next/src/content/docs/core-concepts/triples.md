@@ -8,11 +8,7 @@ description: How Atoms connect through Triples with depositing and redeeming
 
 ## Anatomy of a Triple
 
-<img
-  src={require('./img/Anatomy of triple.png').default}
-  alt="Anatomy of a Triple"
-  style={{ maxWidth: '80%' }}
-/>
+![Anatomy of a Triple](./img/Anatomy of triple.png)
 
 ## Example Triples in Sofia
 

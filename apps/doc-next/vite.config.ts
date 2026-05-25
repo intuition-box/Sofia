@@ -90,6 +90,42 @@ function remarkAdmonitions() {
   }
 }
 
+/* Rewrite the docs' relative markdown links (`[text](../x/y.md)`)
+   to absolute SPA routes (`/docs/x/y`). Otherwise the browser
+   tries to fetch the literal `.md` URL and falls through to a
+   404. Hash fragments are preserved. External / mailto / already-
+   absolute links pass through untouched. */
+function remarkDocLinks() {
+  return (tree: AnyNode, file: { path?: string }) => {
+    const filePath = file.path ?? ''
+    const relDir = path
+      .relative(CONTENT_DIR, path.dirname(filePath))
+      .split(path.sep)
+      .filter(Boolean)
+      .join('/')
+    walk(tree, (node) => {
+      if (node.type !== 'link' || !node.url) return
+      const url = node.url
+      if (
+        /^([a-z]+:)?\/\//i.test(url) ||
+        url.startsWith('/') ||
+        url.startsWith('mailto:') ||
+        url.startsWith('#')
+      ) {
+        return
+      }
+      const hashIdx = url.indexOf('#')
+      const bare = hashIdx >= 0 ? url.slice(0, hashIdx) : url
+      const hash = hashIdx >= 0 ? url.slice(hashIdx) : ''
+      if (!bare) return
+      let resolved = path.posix.normalize(path.posix.join(relDir, bare))
+      resolved = resolved.replace(/\.mdx?$/i, '')
+      resolved = resolved.replace(/^(\.\.\/)+/, '')
+      node.url = `/docs/${resolved}${hash}`
+    })
+  }
+}
+
 /* Rewrite the docs' relative image URLs to the copied public asset
    path. Co-located `./img/x.png` (and nested `./img/intro/x.png`)
    map under the doc's dir; Docusaurus `../../static/img/x.png`
@@ -127,6 +163,11 @@ export default defineConfig({
     {
       enforce: 'pre',
       ...mdx({
+        /* Per-extension format: `.md` uses commonmark (the safe
+           default for ported docs that may contain markdown the
+           strict MDX parser would reject), `.mdx` uses full MDX
+           (imports, JSX, expressions). The one doc that needs
+           components — intro — is intro.mdx for that reason. */
         format: 'detect',
         providerImportSource: '@mdx-js/react',
         remarkPlugins: [
@@ -136,6 +177,7 @@ export default defineConfig({
           remarkDirective,
           remarkAdmonitions,
           remarkDocImages,
+          remarkDocLinks,
         ],
         rehypePlugins: [
           rehypeSlug,
