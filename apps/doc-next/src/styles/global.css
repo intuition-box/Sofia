@@ -1,0 +1,67 @@
+/* ============================================================
+   SOFIA · DOCUMENTATION — global entry
+
+   Font face + token + component + prose layers, plus the minimal
+   html/body reset. The themed surface (bg, grid dots, ink) lives
+   on the `.docs-app` root (variables.css / app.css) so light and
+   dark are both intentional. Mirrors apps/blog's global.css order.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..900,30..100;1,9..144,200..900,30..100&family=Geist:wght@300..700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300..700&display=swap');
+@import './variables.css';
+@import './app.css';
+@import './prose.css';
+@import './content.css';
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  min-height: 100vh;
+  font-family:
+    'Geist', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fallback page background before the themed `.docs-app` paints,
+   keyed off the html data-theme attribute set in index.html. */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  background: #0b0a12;
+  color: #f5f3ff;
+}
+html[data-theme='light'],
+html[data-theme='light'] body {
+  background: #ffffff;
+  color: #02000e;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

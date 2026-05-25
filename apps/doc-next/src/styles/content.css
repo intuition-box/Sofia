@@ -1,0 +1,142 @@
+/* ============================================================
+   SOFIA · DOCUMENTATION — migrated MDX maison components
+
+   Styling for the `@site/src/components/docs/*` shims (DocCard,
+   DocCardGrid, StatBox) that the 41 ported docs `import`. Class
+   names are namespaced `mdoc-*` so they never collide with the
+   design's own `.doc-card` / `.stat-box`. Restyled on the design
+   tokens (variables.css). Lives outside `.prose` flow but inside
+   `.docs-app` so the theme tokens resolve.
+   ============================================================ */
+
+.mdoc-card-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--mdoc-cols, 2),
+    minmax(0, 1fr)
+  );
+  gap: 14px;
+  margin: 22px 0 0;
+}
+
+.mdoc-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.mdoc-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-top: 3px solid var(--accent);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--t-fast),
+    border-color var(--t-fast),
+    box-shadow var(--t-fast);
+  position: relative;
+}
+.mdoc-card-link:hover .mdoc-card {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--ink-soft));
+  box-shadow: var(--shadow-pop);
+}
+.mdoc-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  color: var(--ink);
+}
+.mdoc-card-title-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.mdoc-card-desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.mdoc-card-arrow {
+  width: 16px;
+  height: 16px;
+  margin-top: auto;
+  color: var(--accent-ink);
+}
+.theme-dark .mdoc-card-arrow {
+  color: var(--accent);
+}
+
+/* StatBox — a single tile; docs place several side by side, often
+   inside a DocCardGrid, so it just fills its grid cell. */
+.mdoc-stat {
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mdoc-stat-value {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: 'SOFT' 30;
+}
+.mdoc-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The migrated docs keep their markdown `# Title` (content is never
+   stripped), but the page already shows that title in the DocHead /
+   editorial cover — Docusaurus hid the first h1 for the same reason.
+   Hide it here so it isn't doubled. The text stays in the source
+   and the DOM (just not painted). */
+.content .prose > h1:first-of-type,
+.manifesto-body > h1:first-of-type {
+  display: none;
+}
+
+/* Manifesto — drop cap on the first paragraph of the real body
+   (design editorial treatment applied via CSS, content untouched). */
+.manifesto-body > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--display);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 96px;
+  line-height: 0.82;
+  padding: 8px 14px 0 0;
+  color: var(--accent-ink);
+  font-variation-settings: 'SOFT' 100, 'opsz' 144;
+}
+.theme-dark .manifesto-body > p:first-of-type::first-letter {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .mdoc-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,261 @@
+/**
+ * .prose — rendered MDX article body.
+ *
+ * Visual language ported 1:1 from the Claude Design handoff
+ * (`docs/styles.css` .prose), extended — like the sibling
+ * apps/blog/prose.css — to cover every construct the real 41
+ * docs use that the design prototype's sample body did not:
+ * h1, h4, tables, hr, the rehype-autolink `.heading-anchor`,
+ * inline images, and the recovered <ImageCarousel>. The design
+ * only styled h2/h3/p/ul/a/code/blockquote.
+ */
+
+.prose {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  max-width: var(--w-read);
+}
+.prose > * + * {
+  margin-top: 18px;
+}
+.prose > *:first-child {
+  margin-top: 0;
+}
+
+/* ── Headings — Fraunces display ─────────────────────────────────── */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  scroll-margin-top: 100px;
+  position: relative;
+}
+.prose h1 {
+  font-size: 34px;
+  margin: 48px 0 0;
+}
+.prose h2 {
+  font-size: 30px;
+  margin: 44px 0 0;
+}
+.prose h3 {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  margin: 30px 0 0;
+}
+.prose h4 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 24px 0 0;
+}
+.prose h1 em,
+.prose h2 em,
+.prose h3 em {
+  font-style: italic;
+  color: var(--accent-ink);
+}
+.theme-dark .prose h1 em,
+.theme-dark .prose h2 em,
+.theme-dark .prose h3 em {
+  color: var(--accent);
+}
+
+/* The design's hover-anchor `#` affordance, kept for the manual
+   <span className="anchor">#</span> usage; rehype-autolink wraps
+   real heading text in <a class="heading-anchor"> instead. */
+.prose h2 .anchor,
+.prose h3 .anchor {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--muted-soft);
+  font-family: var(--mono);
+  font-size: 0.62em;
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+.prose h2:hover .anchor,
+.prose h3:hover .anchor {
+  opacity: 1;
+}
+.prose .heading-anchor {
+  color: inherit;
+  text-decoration: none;
+}
+.prose .heading-anchor:hover::before {
+  content: '#';
+  position: absolute;
+  left: -0.9em;
+  top: 0.05em;
+  color: var(--accent-ink);
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 0.62em;
+}
+.theme-dark .prose .heading-anchor:hover::before {
+  color: var(--accent);
+}
+
+/* ── Body text ───────────────────────────────────────────────────── */
+.prose p {
+  margin: 0;
+}
+.prose strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.prose em {
+  font-style: italic;
+}
+.prose a:not(.heading-anchor) {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--accent-ink) 40%,
+    transparent
+  );
+}
+.theme-dark .prose a:not(.heading-anchor) {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.prose a:not(.heading-anchor):hover {
+  text-decoration-color: currentColor;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────── */
+.prose ul,
+.prose ol {
+  margin: 0;
+  padding-left: 22px;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li {
+  margin-bottom: 6px;
+}
+.prose li > p {
+  margin: 0 0 6px;
+}
+.prose ul ul,
+.prose ol ol,
+.prose ul ol,
+.prose ol ul {
+  margin: 6px 0 6px 1em;
+}
+
+/* ── Code ────────────────────────────────────────────────────────── */
+.prose code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--accent-ink);
+}
+.theme-dark .prose code {
+  color: var(--accent);
+}
+.prose pre {
+  margin: 18px 0 0;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink-soft);
+  font-size: inherit;
+}
+
+/* ── Blockquote ──────────────────────────────────────────────────── */
+.prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 22px;
+  margin: 0;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink);
+  font-variation-settings: 'SOFT' 50, 'opsz' 144;
+}
+.prose blockquote p {
+  margin: 0;
+}
+
+/* ── Images ──────────────────────────────────────────────────────── */
+.prose img {
+  margin: 22px 0 0;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+/* ── Horizontal rule ─────────────────────────────────────────────── */
+.prose hr {
+  margin: 30px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+.prose table {
+  width: 100%;
+  margin: 22px 0 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+.prose th,
+.prose td {
+  padding: 0.6em 0.9em;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+}
+.prose th {
+  font-family: var(--mono);
+  font-size: 0.74em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .prose {
+    font-size: 16px;
+  }
+  .prose pre {
+    padding: 14px 16px;
+  }
+  .prose blockquote {
+    padding-left: 16px;
+  }
+}
