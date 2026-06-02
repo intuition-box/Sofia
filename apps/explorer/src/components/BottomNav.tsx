@@ -16,7 +16,13 @@ interface BottomNavItem {
 const NAV_ITEMS: BottomNavItem[] = [
   { to: '/feed', label: 'Explore', icon: Globe },
   { to: '/circles', label: 'Circles', icon: Users, authRequired: true },
-  { to: '/compose', label: 'Compose', icon: Layers, primary: true, authRequired: true },
+  {
+    to: '/compose',
+    label: 'Compose',
+    icon: Layers,
+    primary: true,
+    authRequired: true,
+  },
   { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { to: '/profile', label: 'Profile', icon: User, authRequired: true },
 ]
@@ -39,7 +45,10 @@ interface BottomNavProps {
  * Styling chassis comes from `.app-bottom-nav` in app-shell.css; this
  * component owns the per-item content and active-route highlighting.
  */
-export function BottomNav({ authenticated = false, onAuthRequired }: BottomNavProps) {
+export function BottomNav({
+  authenticated = false,
+  onAuthRequired,
+}: BottomNavProps) {
   return (
     <nav className="app-bottom-nav" aria-label="Primary">
       {NAV_ITEMS.map((item) => {
@@ -58,7 +67,8 @@ export function BottomNav({ authenticated = false, onAuthRequired }: BottomNavPr
               type="button"
               onClick={onAuthRequired}
               aria-label={`${item.label} (login required)`}
-              className={`${baseCls} ${inkCls}`}>
+              className={`${baseCls} ${inkCls}`}
+            >
               <Icon size={20} strokeWidth={1.8} />
               <span>{item.label}</span>
             </button>
@@ -76,7 +86,8 @@ export function BottomNav({ authenticated = false, onAuthRequired }: BottomNavPr
               aria-label={item.label}
               className={({ isActive }) =>
                 `${baseCls} ${isActive ? 'text-accent' : inkCls}`
-              }>
+              }
+            >
               <span className="relative -mt-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-on-accent shadow-lg ring-4 ring-background transition-transform group-hover:scale-105">
                 <Icon size={22} strokeWidth={2.2} />
               </span>
@@ -92,7 +103,8 @@ export function BottomNav({ authenticated = false, onAuthRequired }: BottomNavPr
             aria-label={item.label}
             className={({ isActive }) =>
               `${baseCls} ${isActive ? 'text-accent' : inkCls}`
-            }>
+            }
+          >
             <Icon size={20} strokeWidth={1.8} />
             <span>{item.label}</span>
           </NavLink>
