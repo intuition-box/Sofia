@@ -4,7 +4,7 @@
  */
 
 .pf-section-h2 {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.03em;

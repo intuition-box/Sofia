@@ -154,7 +154,7 @@
 }
 
 .category-detail-name {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   color: var(--ds-ink);
   font-size: 28px;
   font-weight: 700;

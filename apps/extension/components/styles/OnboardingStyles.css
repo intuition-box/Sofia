@@ -27,7 +27,7 @@
 }
 
 .onboarding-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   color: var(--ds-ink);
   font-size: 28px;
   font-weight: 700;
@@ -57,7 +57,7 @@
   padding: 12px 16px;
   border: none;
   border-radius: 12px;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

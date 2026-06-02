@@ -910,7 +910,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pc-plat-count {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -1069,7 +1069,7 @@
   text-overflow: ellipsis;
 }
 .pc-interest-pill-score {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 13px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -1153,7 +1153,7 @@
 }
 
 .pc-details-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -1168,7 +1168,7 @@
   flex-wrap: wrap;
 }
 .pc-details-score {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 52px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -1291,7 +1291,7 @@
   gap: 2px;
 }
 .pf-claim-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.015em;

@@ -54,7 +54,7 @@
 }
 
 .leaderboard-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.015em;

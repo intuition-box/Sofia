@@ -170,7 +170,7 @@ body {
   
   /* Typographie */
   --font-family-primary: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Fraunces', serif;
+  --font-family-display: var(--ds-font-display);
   --font-family-mono: 'JetBrains Mono', monospace;
   --font-size-xs: 10px;
   --font-size-sm: 12px;

@@ -34,7 +34,7 @@
 }
 .composer-head h2 {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.025em;
@@ -108,7 +108,7 @@
   align-items: baseline;
   gap: 10px;
   padding: 0 4px 14px;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -206,7 +206,7 @@
   justify-content: space-between;
 }
 .who-card .who-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.015em;
@@ -297,7 +297,7 @@
   gap: 10px;
   min-width: 0;
   flex: 1;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.015em;
@@ -402,7 +402,7 @@
   padding: 28px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);

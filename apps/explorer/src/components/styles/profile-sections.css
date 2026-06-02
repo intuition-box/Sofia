@@ -1142,7 +1142,7 @@
   display: block;
 }
 .pp-public-hero-initials {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 32px;
   color: rgba(0, 0, 0, 0.7);

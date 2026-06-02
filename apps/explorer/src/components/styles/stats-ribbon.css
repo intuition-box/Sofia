@@ -123,7 +123,7 @@
   background: #f5d58a;
 }
 .sr-hero-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: clamp(64px, 10vw, 132px);
   line-height: 0.88;
@@ -198,7 +198,7 @@
   color: var(--ds-muted);
 }
 .sr-cell-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 38px;
   line-height: 1;

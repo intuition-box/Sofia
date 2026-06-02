@@ -40,6 +40,12 @@
 
   /* Shape */
   --ds-radius: 10px;
+
+  /* Typography — single source of truth for the display/heading face.
+   * Every app + component references this var instead of hardcoding the
+   * family. Swapping the display font = changing this one line (plus the
+   * per-app Google Fonts loader URL). */
+  --ds-font-display: 'Fraunces', serif;
 }
 
 /* Dark selectors:

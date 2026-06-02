@@ -48,7 +48,7 @@
 .profile-page .tab.active {
   color: var(--color-text-primary);
   font-weight: 500;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
 }
 
 .profile-page .tab.active::after {

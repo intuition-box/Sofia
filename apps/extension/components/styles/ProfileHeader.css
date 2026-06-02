@@ -80,7 +80,7 @@
 }
 
 .profile-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -217,7 +217,7 @@
   color: #e5e7eb;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;

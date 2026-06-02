@@ -71,7 +71,7 @@
 }
 
 .pf-interest-header-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -101,7 +101,7 @@
 }
 
 .pf-interest-header-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.04em;

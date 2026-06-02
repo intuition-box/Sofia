@@ -135,7 +135,7 @@
   gap: 4px;
 }
 .ps-rank {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 76px;
   line-height: 0.85;
@@ -292,7 +292,7 @@
   color: var(--ds-muted);
 }
 .ps-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 26px;
   line-height: 1;
@@ -315,7 +315,7 @@
   text-align: center;
 }
 .ps-empty-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 900;
   letter-spacing: -0.02em;

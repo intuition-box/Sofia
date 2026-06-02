@@ -48,7 +48,7 @@
   --radius-sm: 6px;
 
   /* ── Type families ──────────────────────────────────── */
-  --display: 'Fraunces', 'Times New Roman', serif;
+  --display: var(--ds-font-display);
   --sans: 'Geist', 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 

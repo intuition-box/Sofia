@@ -244,7 +244,7 @@
 }
 
 .group-bento-title {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   color: var(--ds-ink);
   font-size: 15px;
   font-weight: 600;
@@ -443,7 +443,7 @@
 }
 
 .group-detail-domain {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   color: var(--ds-ink);
   font-size: 32px;
   font-weight: 700;
@@ -518,7 +518,7 @@
 .stat-number {
   display: block;
   color: #000;
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;

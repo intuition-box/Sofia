@@ -104,7 +104,7 @@
   padding: 40px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -224,7 +224,7 @@
 }
 .sp-pedestal-name {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.015em;
@@ -432,7 +432,7 @@
   gap: 1px;
 }
 .sp-row-trust-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 800;
   color: var(--ds-ink);

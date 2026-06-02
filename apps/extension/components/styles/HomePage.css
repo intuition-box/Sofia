@@ -149,7 +149,7 @@
 
 .hp-headline {
   margin: 0;
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 58px;
   line-height: 0.98;

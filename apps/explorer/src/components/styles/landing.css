@@ -131,7 +131,7 @@
 }
 
 .lp-headline {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 500;
   font-size: 150px;
   line-height: 0.98;
@@ -429,7 +429,7 @@
 }
 
 .lp-feature-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 400;
   font-size: 20px;
   color: #02000e;

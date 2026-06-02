@@ -173,7 +173,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   font-weight: 800;
   color: var(--ds-ink);

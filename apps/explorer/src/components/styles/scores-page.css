@@ -39,7 +39,7 @@
   gap: 4px;
 }
 .pf-ts-header-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -81,7 +81,7 @@
 }
 
 .pf-ts-header-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -135,7 +135,7 @@
 }
 .pf-trust-topic-label {
   flex: 1;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -145,7 +145,7 @@
   white-space: nowrap;
 }
 .pf-trust-topic-score {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -212,7 +212,7 @@
   gap: 2px;
 }
 .pf-badge-head-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -410,7 +410,7 @@
   color: var(--ds-muted, #6b6880);
 }
 .sp-pool-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 500;
   color: var(--ds-ink, #02000e);
@@ -427,7 +427,7 @@
   font-size: 14px;
 }
 .sp-pool-empty-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   color: var(--ds-ink, #02000e);
   margin-bottom: 4px;
@@ -459,7 +459,7 @@
   color: var(--ds-muted, #6b6880);
 }
 .sp-pool-rank-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 44px;
   font-weight: 500;
   color: var(--ds-ink, #02000e);

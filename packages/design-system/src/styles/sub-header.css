@@ -65,7 +65,7 @@
   text-overflow: ellipsis;
 }
 .pf-sub-crumb:last-child {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -110,7 +110,7 @@
 }
 
 .pf-sub-pill-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;

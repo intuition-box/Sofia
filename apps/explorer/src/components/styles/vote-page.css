@@ -25,7 +25,7 @@
   padding: 40px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -206,7 +206,7 @@
 
 .vp-claim-title {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -408,7 +408,7 @@
 
 .vp-mini-title {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 800;
   line-height: 1.3;

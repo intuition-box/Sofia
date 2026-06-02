@@ -41,7 +41,7 @@
   --shadow-card: var(--ds-shadow-card);
 
   /* ── Type, shape, motion (local — not in DS) ──────────── */
-  --display: 'Fraunces', 'Times New Roman', serif;
+  --display: var(--ds-font-display);
   --sans: 'Geist', 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 

@@ -78,7 +78,7 @@
   gap: 2px;
 }
 .pd-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -181,7 +181,7 @@
   gap: 2px;
 }
 .pd-ts-pie-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -308,7 +308,7 @@
   background: var(--ds-border-soft);
 }
 .pd-impact-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 22px;
   line-height: 1;

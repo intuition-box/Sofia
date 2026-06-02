@@ -62,7 +62,7 @@
 }
 
 .cart-drawer__title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -343,7 +343,7 @@
 }
 
 .cart-drawer__empty-text {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
