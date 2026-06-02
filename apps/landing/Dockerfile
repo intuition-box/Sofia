@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1-labs
 # Sofia Landing — Coolify deployment.
 #
 # Static SPA (Vite + React) served via nginx. Same workspace-aware
@@ -23,18 +24,11 @@ ENV VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID \
     VITE_PRIVY_CLIENT_ID=$VITE_PRIVY_CLIENT_ID \
     VITE_DOCS_URL=$VITE_DOCS_URL
 
-COPY package.json bun.lock tsconfig.base.json ./
-COPY apps/blog/package.json ./apps/blog/
-COPY apps/explorer/package.json ./apps/explorer/
-COPY apps/extension/package.json ./apps/extension/
-COPY apps/landing/package.json ./apps/landing/
-COPY apps/doc/package.json ./apps/doc/
-COPY apps/og/package.json ./apps/og/
-COPY packages/graphql/package.json ./packages/graphql/
-COPY packages/design-system/package.json ./packages/design-system/
-COPY services/mastra/package.json ./services/mastra/
-COPY services/mcp-server/package.json ./services/mcp-server/
-COPY services/og-proxy/package.json ./services/og-proxy/
+# Workspace manifests — bun.lock pins every workspace, so every package.json
+# must be present before --frozen-lockfile. `--parents` keeps the directory
+# structure and globs all workspaces, so adding a new app/package/service
+# never breaks this list again.
+COPY --parents package.json bun.lock tsconfig.base.json apps/*/package.json packages/*/package.json services/*/package.json ./
 
 RUN bun install --frozen-lockfile
 
