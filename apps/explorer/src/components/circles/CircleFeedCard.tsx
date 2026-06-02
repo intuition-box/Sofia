@@ -176,6 +176,7 @@ export default function CircleFeedCard({
 
       {certifierName ? (
         <div className="fc-cert">
+          <span className="fc-cert-label">Certified by</span>
           {certifierAvatar ? (
             <img
               src={certifierAvatar}
@@ -191,7 +192,6 @@ export default function CircleFeedCard({
               {certifierName.slice(0, 1).toUpperCase()}
             </span>
           )}
-          <span className="fc-cert-label">Certified by</span>
           {item.certifierAddress ? (
             // The outer card is already an <a> so we can't nest another
             // link. Treat the certifier name as a "navigate on click"
