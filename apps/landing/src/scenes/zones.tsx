@@ -269,7 +269,7 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
       title="Chronicles"
       desc="A public build log — every two weeks, what was done, what was tried, what was scrapped. No pitch, no dressed-up roadmap — just what the team actually shipped."
       cta={{
-        href: 'https://doc.sofia.intuition.box/blog',
+        href: 'https://blog.sofia.intuition.box',
         label: 'Read the blog',
       }}
     />

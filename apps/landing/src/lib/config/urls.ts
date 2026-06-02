@@ -1,6 +1,9 @@
 const DOCS_BASE =
   import.meta.env.VITE_DOCS_URL ?? 'https://doc.sofia.intuition.box'
 
+const BLOG_BASE =
+  import.meta.env.VITE_BLOG_URL ?? 'https://blog.sofia.intuition.box'
+
 export const URLS = {
   docs: {
     home: DOCS_BASE,
@@ -11,7 +14,7 @@ export const URLS = {
     terms: `${DOCS_BASE}/terms`,
   },
   blog: {
-    index: `${DOCS_BASE}/blog`,
+    index: BLOG_BASE,
   },
   external: {
     board: 'https://explorer.sofia.intuition.box/',
