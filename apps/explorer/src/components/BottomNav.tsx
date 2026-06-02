@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { Globe, Users, Layers, Trophy, User, type LucideIcon } from 'lucide-react'
+import { Globe, Users, Layers, Trophy, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface BottomNavItem {
   to: string
