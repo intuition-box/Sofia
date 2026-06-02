@@ -201,8 +201,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           // Surface the topic as a structured payload so the row can
           // render a coloured <TopicBadge> inline instead of dropping
           // a raw emoji into the action-label string.
-          actionPrefix: 'Tagged',
-          actionSuffix: 'on',
+          // Tagging activity carries no intention verb — just the topic
+          // chip (same chip as the Echoes cards).
+          verb: null as { label: string; cssClass: string } | null,
           topic: e.topicSlug
             ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
             : null,
@@ -211,16 +212,22 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
-      // Action verb per intention — keeps the row scannable. Trust /
-      // distrust read as social signals; visits_for_* read as topical
-      // marks. Fallback to "Certified" so any future predicate the
-      // indexer surfaces still renders something coherent.
-      let actionPrefix = 'Certified'
-      if (intentionLower === 'trusts') actionPrefix = 'Trusted'
-      else if (isOppose) actionPrefix = 'Distrusted'
+      // Verb chip per intention — same colored-pill language as the
+      // Echoes cards. `cssClass` maps to the intent palette; an empty
+      // class falls back to the neutral accent for unknown predicates.
+      let verb: { label: string; cssClass: string } | null = {
+        label: 'Certified',
+        cssClass: '',
+      }
+      if (intentionLower === 'trusts')
+        verb = { label: 'Trusted', cssClass: 'trusted' }
+      else if (isOppose) verb = { label: 'Distrusted', cssClass: 'distrusted' }
       else if (intentionLower.startsWith('visits for ')) {
-        const tail = intentionLower.slice('visits for '.length)
-        actionPrefix = `Marked for ${tail}`
+        const tail = intentionLower.slice('visits for '.length).trim()
+        verb = {
+          label: tail.charAt(0).toUpperCase() + tail.slice(1),
+          cssClass: tail,
+        }
       }
       return {
         id: c.termId,
@@ -230,9 +237,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         favicon,
         timestamp: e.ts,
         isOppose,
-        actionPrefix,
-        actionSuffix: '',
-        topic: null,
+        verb,
+        topic: null as { id: string; label: string; color: string } | null,
       }
     })
   }, [profile, topicById])
@@ -469,21 +475,26 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       </span>
                       <span className="pd-la-text">
                         <span className="pd-la-title">
-                          {a.actionPrefix}{' '}
-                          {a.topic && (
-                            <>
+                          {a.verb ? (
+                            <span
+                              className={`pd-la-verb ${a.verb.cssClass}`.trim()}
+                            >
+                              {a.verb.label}
+                            </span>
+                          ) : null}
+                          {a.topic ? (
+                            <span className="pd-la-topic">
                               <TopicBadge
                                 topicId={a.topic.id}
                                 color={a.topic.color || 'var(--ds-muted)'}
-                                size={14}
+                                size={13}
                                 title={a.topic.label}
-                              />{' '}
+                              />
                               <span className="pd-la-topic-label">
                                 {a.topic.label}
-                              </span>{' '}
-                            </>
-                          )}
-                          {a.actionSuffix ? `${a.actionSuffix} ` : ''}
+                              </span>
+                            </span>
+                          ) : null}
                           <strong>{a.title}</strong>
                         </span>
                         <span className="pd-la-sub">

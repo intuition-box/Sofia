@@ -566,6 +566,74 @@ a.pd-la-row:hover {
   font-weight: 700;
   color: var(--ds-ink);
 }
+
+/* Verb + topic rendered as the SAME chips as the Echoes cards:
+   a filled intent-colored verb pill + a topic disc-chip, instead of
+   plain action text + a bare badge. */
+.pd-la-verb {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #02000e;
+  background: var(--ds-accent);
+  vertical-align: middle;
+}
+.pd-la-verb.trusted {
+  background: #22c55e;
+}
+.pd-la-verb.distrusted {
+  background: #ef4444;
+}
+.pd-la-verb.work {
+  background: #3b82f6;
+}
+.pd-la-verb.learning {
+  background: #06b6d4;
+}
+.pd-la-verb.fun {
+  background: #f59e0b;
+}
+.pd-la-verb.inspiration {
+  background: #8b5cf6;
+}
+.pd-la-verb.buying {
+  background: #ec4899;
+}
+.pd-la-verb.music {
+  background: #ff5722;
+}
+
+.pd-la-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  padding: 2px 8px 2px 3px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  vertical-align: middle;
+}
+.pd-la-topic .topic-badge {
+  flex-shrink: 0;
+}
+.pd-la-topic-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ds-ink);
+}
 .pd-la-sub {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
