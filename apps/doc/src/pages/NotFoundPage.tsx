@@ -13,17 +13,15 @@ export function NotFoundPage() {
           <em>Lost</em> in the graph.
         </h1>
         <p className="notfound-lede">
-          This page doesn't exist — or doesn't anymore. If you followed
-          an old link it's likely a pre-refonte URL; the redirects are
-          in place for the known ones. Otherwise, back to the root.
+          This page doesn't exist — or doesn't anymore. If you followed an old
+          link it's likely a pre-refonte URL; the redirects are in place for the
+          known ones. Otherwise, back to the root.
         </p>
         <div className="notfound-cta-row">
           <Link className="dnv-cta" to="/">
             ← Back to Docs home
           </Link>
-          <Link
-            className="dnv-cta dnv-cta--ghost"
-            to="/docs/intro">
+          <Link className="dnv-cta dnv-cta--ghost" to="/docs/intro">
             Open documentation
           </Link>
         </div>

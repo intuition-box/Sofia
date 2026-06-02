@@ -27,7 +27,8 @@ export function ProductCard({ tag, title, desc, cta }: ProductCardProps) {
           variant="dark"
           ink="light"
           hoverFill="peach"
-          size="sm">
+          size="sm"
+        >
           {cta.label} <Arrow />
         </SceneBtn>
       </div>

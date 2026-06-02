@@ -3,7 +3,7 @@ slug: logbook-16-05
 title: 'A Month in Review'
 authors: [Samuel, Maxime]
 tags: [architecture, design-ui, explorer, infrastructure]
-description: "One repo, end-to-end multi-wallet, a shared design language, real-time data — the densest month yet."
+description: 'One repo, end-to-end multi-wallet, a shared design language, real-time data — the densest month yet.'
 ---
 
 The last four weeks have been the densest stretch of work Sofia has seen this
@@ -11,7 +11,7 @@ year. We moved everything into a single workspace, shipped end-to-end multi
 wallet support, gave the frontend its own design language, and finally
 replaced our polling with real-time data. This logbook covers the whole arc.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## One repository, finally
 

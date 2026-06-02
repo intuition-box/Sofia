@@ -110,7 +110,9 @@
   font-style: italic;
   font-size: 17px;
   letter-spacing: -0.04em;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 .dnv-name {
   font-family: var(--display);
@@ -560,7 +562,9 @@
   letter-spacing: -0.03em;
   color: var(--ink);
   margin: 0 0 16px;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   text-wrap: balance;
 }
 .doc-title em {
@@ -580,7 +584,9 @@
   line-height: 1.5;
   color: var(--ink-soft);
   margin: 0 0 22px;
-  font-variation-settings: 'SOFT' 60, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 60,
+    'opsz' 144;
 }
 
 .doc-meta {
@@ -955,7 +961,8 @@
   font-family: var(--mono);
   font-weight: 700;
   font-size: 10px;
-  border: 1px solid color-mix(in srgb, var(--r-c, var(--accent)) 30%, var(--border));
+  border: 1px solid
+    color-mix(in srgb, var(--r-c, var(--accent)) 30%, var(--border));
 }
 .search-result .name {
   font-size: 14px;
@@ -1015,7 +1022,9 @@
   line-height: 0.9;
   color: var(--accent);
   letter-spacing: -0.05em;
-  font-variation-settings: 'SOFT' 100, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 100,
+    'opsz' 144;
   text-shadow: 0 0 80px rgba(255, 198, 176, 0.2);
 }
 .notfound-body {
@@ -1243,7 +1252,9 @@
   letter-spacing: -0.03em;
   color: var(--ink);
   margin: 0 0 18px;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   text-wrap: balance;
 }
 .dh-title em {
@@ -1412,7 +1423,9 @@
   line-height: 1.05;
   color: var(--ink);
   margin: 10px 0 0;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
 }
 
 /* CONTENT TREE — flat index by section */

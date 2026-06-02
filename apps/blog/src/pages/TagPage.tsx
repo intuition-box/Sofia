@@ -55,7 +55,8 @@ export function TagPage() {
               Every week we touched{' '}
               <code
                 className={styles.codeTag}
-                style={{ color: accent } as CSSProperties}>
+                style={{ color: accent } as CSSProperties}
+              >
                 {tag.id}
               </code>
               . Newest first.

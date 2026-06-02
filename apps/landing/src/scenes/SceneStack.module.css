@@ -71,21 +71,51 @@
      height = (stages - 1) × --stage-gap + 100vh
    which gives one stage worth of sticky time at the end so the last
    stage stays pinned before the page releases into the footer. */
-.region[data-stages='2'] { height: calc(1 * var(--stage-gap) + 100vh); }
-.region[data-stages='3'] { height: calc(2 * var(--stage-gap) + 100vh); }
-.region[data-stages='4'] { height: calc(3 * var(--stage-gap) + 100vh); }
-.region[data-stages='5'] { height: calc(4 * var(--stage-gap) + 100vh); }
-.region[data-stages='6'] { height: calc(5 * var(--stage-gap) + 100vh); }
-.region[data-stages='7'] { height: calc(6 * var(--stage-gap) + 100vh); }
-.region[data-stages='8'] { height: calc(7 * var(--stage-gap) + 100vh); }
-.region[data-stages='9'] { height: calc(8 * var(--stage-gap) + 100vh); }
-.region[data-stages='10'] { height: calc(9 * var(--stage-gap) + 100vh); }
-.region[data-stages='11'] { height: calc(10 * var(--stage-gap) + 100vh); }
-.region[data-stages='12'] { height: calc(11 * var(--stage-gap) + 100vh); }
-.region[data-stages='13'] { height: calc(12 * var(--stage-gap) + 100vh); }
-.region[data-stages='14'] { height: calc(13 * var(--stage-gap) + 100vh); }
-.region[data-stages='15'] { height: calc(14 * var(--stage-gap) + 100vh); }
-.region[data-stages='16'] { height: calc(15 * var(--stage-gap) + 100vh); }
+.region[data-stages='2'] {
+  height: calc(1 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='3'] {
+  height: calc(2 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='4'] {
+  height: calc(3 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='5'] {
+  height: calc(4 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='6'] {
+  height: calc(5 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='7'] {
+  height: calc(6 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='8'] {
+  height: calc(7 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='9'] {
+  height: calc(8 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='10'] {
+  height: calc(9 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='11'] {
+  height: calc(10 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='12'] {
+  height: calc(11 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='13'] {
+  height: calc(12 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='14'] {
+  height: calc(13 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='15'] {
+  height: calc(14 * var(--stage-gap) + 100vh);
+}
+.region[data-stages='16'] {
+  height: calc(15 * var(--stage-gap) + 100vh);
+}
 
 /* Anchor markers — absolutely positioned so they don't push the sticky
    `.stage` out of the flow. They only exist as deep-link targets; the
@@ -101,22 +131,54 @@
 
 /* Per-stage top offset — pre-computed to avoid inline `top: calc(...)`.
    Bump the upper bound when adding stages. */
-.snapMarker[data-stage-i='0'] { top: 0; }
-.snapMarker[data-stage-i='1'] { top: calc(1 * var(--stage-gap)); }
-.snapMarker[data-stage-i='2'] { top: calc(2 * var(--stage-gap)); }
-.snapMarker[data-stage-i='3'] { top: calc(3 * var(--stage-gap)); }
-.snapMarker[data-stage-i='4'] { top: calc(4 * var(--stage-gap)); }
-.snapMarker[data-stage-i='5'] { top: calc(5 * var(--stage-gap)); }
-.snapMarker[data-stage-i='6'] { top: calc(6 * var(--stage-gap)); }
-.snapMarker[data-stage-i='7'] { top: calc(7 * var(--stage-gap)); }
-.snapMarker[data-stage-i='8'] { top: calc(8 * var(--stage-gap)); }
-.snapMarker[data-stage-i='9'] { top: calc(9 * var(--stage-gap)); }
-.snapMarker[data-stage-i='10'] { top: calc(10 * var(--stage-gap)); }
-.snapMarker[data-stage-i='11'] { top: calc(11 * var(--stage-gap)); }
-.snapMarker[data-stage-i='12'] { top: calc(12 * var(--stage-gap)); }
-.snapMarker[data-stage-i='13'] { top: calc(13 * var(--stage-gap)); }
-.snapMarker[data-stage-i='14'] { top: calc(14 * var(--stage-gap)); }
-.snapMarker[data-stage-i='15'] { top: calc(15 * var(--stage-gap)); }
+.snapMarker[data-stage-i='0'] {
+  top: 0;
+}
+.snapMarker[data-stage-i='1'] {
+  top: calc(1 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='2'] {
+  top: calc(2 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='3'] {
+  top: calc(3 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='4'] {
+  top: calc(4 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='5'] {
+  top: calc(5 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='6'] {
+  top: calc(6 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='7'] {
+  top: calc(7 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='8'] {
+  top: calc(8 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='9'] {
+  top: calc(9 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='10'] {
+  top: calc(10 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='11'] {
+  top: calc(11 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='12'] {
+  top: calc(12 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='13'] {
+  top: calc(13 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='14'] {
+  top: calc(14 * var(--stage-gap));
+}
+.snapMarker[data-stage-i='15'] {
+  top: calc(15 * var(--stage-gap));
+}
 
 .stage {
   position: sticky;
@@ -135,18 +197,42 @@
 /* `data-active-slide` exposes the currently active slide index to all
    descendants as a CSS variable. Children that need to position
    themselves relative to the active slide consume `--active-slide`. */
-.stage[data-active-slide='0'] { --active-slide: 0; }
-.stage[data-active-slide='1'] { --active-slide: 1; }
-.stage[data-active-slide='2'] { --active-slide: 2; }
-.stage[data-active-slide='3'] { --active-slide: 3; }
-.stage[data-active-slide='4'] { --active-slide: 4; }
-.stage[data-active-slide='5'] { --active-slide: 5; }
-.stage[data-active-slide='6'] { --active-slide: 6; }
-.stage[data-active-slide='7'] { --active-slide: 7; }
-.stage[data-active-slide='8'] { --active-slide: 8; }
-.stage[data-active-slide='9'] { --active-slide: 9; }
-.stage[data-active-slide='10'] { --active-slide: 10; }
-.stage[data-active-slide='11'] { --active-slide: 11; }
+.stage[data-active-slide='0'] {
+  --active-slide: 0;
+}
+.stage[data-active-slide='1'] {
+  --active-slide: 1;
+}
+.stage[data-active-slide='2'] {
+  --active-slide: 2;
+}
+.stage[data-active-slide='3'] {
+  --active-slide: 3;
+}
+.stage[data-active-slide='4'] {
+  --active-slide: 4;
+}
+.stage[data-active-slide='5'] {
+  --active-slide: 5;
+}
+.stage[data-active-slide='6'] {
+  --active-slide: 6;
+}
+.stage[data-active-slide='7'] {
+  --active-slide: 7;
+}
+.stage[data-active-slide='8'] {
+  --active-slide: 8;
+}
+.stage[data-active-slide='9'] {
+  --active-slide: 9;
+}
+.stage[data-active-slide='10'] {
+  --active-slide: 10;
+}
+.stage[data-active-slide='11'] {
+  --active-slide: 11;
+}
 
 /* ── Background slabs (step 1) ───────────────────────────── */
 
@@ -188,22 +274,47 @@
       0
     )
     skewX(-30deg);
-  transition: transform var(--scene-step1-ms) var(--ease-in-out, cubic-bezier(0.65, 0, 0.35, 1));
+  transition: transform var(--scene-step1-ms)
+    var(--ease-in-out, cubic-bezier(0.65, 0, 0.35, 1));
 }
 
 /* Per-block index — enumerate up to 12 slides. */
-.bgBlock[data-bg-i='0'] { --bg-i: 0; }
-.bgBlock[data-bg-i='1'] { --bg-i: 1; }
-.bgBlock[data-bg-i='2'] { --bg-i: 2; }
-.bgBlock[data-bg-i='3'] { --bg-i: 3; }
-.bgBlock[data-bg-i='4'] { --bg-i: 4; }
-.bgBlock[data-bg-i='5'] { --bg-i: 5; }
-.bgBlock[data-bg-i='6'] { --bg-i: 6; }
-.bgBlock[data-bg-i='7'] { --bg-i: 7; }
-.bgBlock[data-bg-i='8'] { --bg-i: 8; }
-.bgBlock[data-bg-i='9'] { --bg-i: 9; }
-.bgBlock[data-bg-i='10'] { --bg-i: 10; }
-.bgBlock[data-bg-i='11'] { --bg-i: 11; }
+.bgBlock[data-bg-i='0'] {
+  --bg-i: 0;
+}
+.bgBlock[data-bg-i='1'] {
+  --bg-i: 1;
+}
+.bgBlock[data-bg-i='2'] {
+  --bg-i: 2;
+}
+.bgBlock[data-bg-i='3'] {
+  --bg-i: 3;
+}
+.bgBlock[data-bg-i='4'] {
+  --bg-i: 4;
+}
+.bgBlock[data-bg-i='5'] {
+  --bg-i: 5;
+}
+.bgBlock[data-bg-i='6'] {
+  --bg-i: 6;
+}
+.bgBlock[data-bg-i='7'] {
+  --bg-i: 7;
+}
+.bgBlock[data-bg-i='8'] {
+  --bg-i: 8;
+}
+.bgBlock[data-bg-i='9'] {
+  --bg-i: 9;
+}
+.bgBlock[data-bg-i='10'] {
+  --bg-i: 10;
+}
+.bgBlock[data-bg-i='11'] {
+  --bg-i: 11;
+}
 
 /* Reveal slabs — parked off-screen right at rest, slide to 0 when the
    owning slide is active and its sub-state ≥ 1. The `data-showing`
@@ -243,18 +354,42 @@
     var(--ease-in-out, cubic-bezier(0.65, 0, 0.35, 1)) var(--scene-step1-ms);
 }
 
-.slide[data-slide-i='0'] { --slide-i: 0; }
-.slide[data-slide-i='1'] { --slide-i: 1; }
-.slide[data-slide-i='2'] { --slide-i: 2; }
-.slide[data-slide-i='3'] { --slide-i: 3; }
-.slide[data-slide-i='4'] { --slide-i: 4; }
-.slide[data-slide-i='5'] { --slide-i: 5; }
-.slide[data-slide-i='6'] { --slide-i: 6; }
-.slide[data-slide-i='7'] { --slide-i: 7; }
-.slide[data-slide-i='8'] { --slide-i: 8; }
-.slide[data-slide-i='9'] { --slide-i: 9; }
-.slide[data-slide-i='10'] { --slide-i: 10; }
-.slide[data-slide-i='11'] { --slide-i: 11; }
+.slide[data-slide-i='0'] {
+  --slide-i: 0;
+}
+.slide[data-slide-i='1'] {
+  --slide-i: 1;
+}
+.slide[data-slide-i='2'] {
+  --slide-i: 2;
+}
+.slide[data-slide-i='3'] {
+  --slide-i: 3;
+}
+.slide[data-slide-i='4'] {
+  --slide-i: 4;
+}
+.slide[data-slide-i='5'] {
+  --slide-i: 5;
+}
+.slide[data-slide-i='6'] {
+  --slide-i: 6;
+}
+.slide[data-slide-i='7'] {
+  --slide-i: 7;
+}
+.slide[data-slide-i='8'] {
+  --slide-i: 8;
+}
+.slide[data-slide-i='9'] {
+  --slide-i: 9;
+}
+.slide[data-slide-i='10'] {
+  --slide-i: 10;
+}
+.slide[data-slide-i='11'] {
+  --slide-i: 11;
+}
 
 .slide > * {
   width: 100%;

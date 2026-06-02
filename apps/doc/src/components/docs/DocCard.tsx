@@ -23,7 +23,8 @@ const ArrowIcon = () => (
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
-    aria-hidden="true">
+    aria-hidden="true"
+  >
     <line x1="3" y1="11" x2="11" y2="3" />
     <polyline points="5 3 11 3 11 9" />
   </svg>

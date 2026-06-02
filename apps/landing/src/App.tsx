@@ -22,7 +22,8 @@ export default function App() {
         bgs={[...VARIANTS]}
         revealBgs={REVEAL_BGS}
         subStates={SUB_STATES}
-        slideCodes={SLIDES.map((s) => s.code)}>
+        slideCodes={SLIDES.map((s) => s.code)}
+      >
         {SLIDES.map((s, i) => (
           <PlaceholderSlide
             key={s.code}

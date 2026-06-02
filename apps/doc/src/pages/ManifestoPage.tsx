@@ -63,7 +63,7 @@ const THESES: {
     n: '07',
     c: 'music',
     claim: 'We will get half of this wrong.',
-    body: "We publish the Chronicles every Thursday because being seen building badly in public is better than being unseen building well. The manifesto is a direction, not a contract — and the lightly-revised footer at the bottom of this page is the only honest version of an essay that hopes to age in the open.",
+    body: 'We publish the Chronicles every Thursday because being seen building badly in public is better than being unseen building well. The manifesto is a direction, not a contract — and the lightly-revised footer at the bottom of this page is the only honest version of an essay that hopes to age in the open.',
   },
 ]
 
@@ -89,20 +89,16 @@ export function ManifestoPage() {
         <section className="mfst-essay">
           <article className="prose mfst-prose">
             <p className="mfst-opener">
-              <span className="mfst-drop">T</span>he open web pretends trust
-              is a one-tap action. Five stars on Amazon, ten on the App
-              Store, an upvote on Reddit. None of it survives contact with
-              reality — not because people are dishonest, but because no
-              one has anything to lose by lying. We started Sofia from a
-              different premise. What follows is the short version, in
-              seven theses.
+              <span className="mfst-drop">T</span>he open web pretends trust is
+              a one-tap action. Five stars on Amazon, ten on the App Store, an
+              upvote on Reddit. None of it survives contact with reality — not
+              because people are dishonest, but because no one has anything to
+              lose by lying. We started Sofia from a different premise. What
+              follows is the short version, in seven theses.
             </p>
 
             {THESES.map((t) => (
-              <section
-                key={t.n}
-                className="mfst-thesis"
-                data-color={t.c}>
+              <section key={t.n} className="mfst-thesis" data-color={t.c}>
                 <h2 className="mfst-h">
                   <span className="mfst-h-n">§{t.n}</span>
                   <span className="mfst-h-claim">{t.claim}</span>

@@ -38,7 +38,11 @@ interface SceneStackProps {
 
 /** Context exposing the active slide index and sub-state to children
  *  so a slide can render progressively as the user sub-scrolls. */
-const SceneStackCtx = createContext({ slideIdx: 0, subState: 0, isActive: false })
+const SceneStackCtx = createContext({
+  slideIdx: 0,
+  subState: 0,
+  isActive: false,
+})
 
 export function useSceneSubState() {
   return useContext(SceneStackCtx)
@@ -234,7 +238,8 @@ export function SceneStack({
       ref={regionRef}
       className={styles.region}
       data-mode={isMobile ? 'mobile' : 'desktop'}
-      data-stages={totalStages}>
+      data-stages={totalStages}
+    >
       {/* Anchor markers — desktop deep-link targets. Hidden on mobile
           where each slide is its own scrollable block (use slide id
           instead if you need a deep-link there). */}
@@ -296,22 +301,22 @@ export function SceneStack({
             (see App.module.css mobile rules) so HERO can stay peach
             while WHY SOFIA goes dark inside the same slide. */}
         {slides.map((child, i) => {
-          const isActive = isMobile
-            ? activeMobileSlides.has(i)
-            : i === slideIdx
+          const isActive = isMobile ? activeMobileSlides.has(i) : i === slideIdx
           return (
             <div
               key={i}
               className={styles.slide}
               data-slide-idx={i}
               data-slide-i={i}
-              data-slide-bg={bgs?.[i] ?? 'peach'}>
+              data-slide-bg={bgs?.[i] ?? 'peach'}
+            >
               <SceneStackCtx.Provider
                 value={{
                   slideIdx: i,
                   subState: slideSubStates[i] ?? 0,
                   isActive,
-                }}>
+                }}
+              >
                 {child}
               </SceneStackCtx.Provider>
             </div>

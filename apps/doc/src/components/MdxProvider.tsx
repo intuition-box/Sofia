@@ -44,7 +44,8 @@ function SpaLink({
     <a
       href={href}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      {...rest}>
+      {...rest}
+    >
       {children}
     </a>
   )

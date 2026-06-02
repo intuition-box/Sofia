@@ -31,9 +31,9 @@ export function BlogIndex() {
           Sofia <em>Chronicles.</em>
         </h1>
         <p className={`muted ${styles.lede}`}>
-          A browser extension that learns who you trust, built on the
-          Intuition protocol. {authorNames} publish a logbook every week —
-          what shipped, what stalled, what we learned along the way.
+          A browser extension that learns who you trust, built on the Intuition
+          protocol. {authorNames} publish a logbook every week — what shipped,
+          what stalled, what we learned along the way.
         </p>
         <div className={styles.byline}>
           <div className={styles.bylineWho}>

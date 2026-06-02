@@ -108,7 +108,9 @@
     margin-left: 0 !important;
     margin-right: 0 !important;
     padding-top: calc(var(--app-mobile-header-h) + 16px);
-    padding-bottom: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom) + 16px);
+    padding-bottom: calc(
+      var(--app-bottom-nav-h) + env(safe-area-inset-bottom) + 16px
+    );
     padding-left: 16px;
     padding-right: 16px;
   }

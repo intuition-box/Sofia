@@ -52,7 +52,7 @@ src/content/posts/2026-05-22-my-post/
 slug: my-post
 title: A clear, declarative title
 authors: [Maxime]
-tags: [docusaurus]   # optional, ids must exist in tags.yml
+tags: [docusaurus] # optional, ids must exist in tags.yml
 description: Optional excerpt override
 ---
 ```

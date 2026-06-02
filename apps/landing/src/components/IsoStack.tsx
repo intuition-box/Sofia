@@ -297,7 +297,8 @@ export function IsoStack({
           fontFamily="JetBrains Mono, monospace"
           fontSize="7.5"
           fill={p.fgSoft}
-          letterSpacing="0.18em">
+          letterSpacing="0.18em"
+        >
           {tag}
         </text>
         <text
@@ -307,7 +308,8 @@ export function IsoStack({
           fontSize="11"
           fontWeight="500"
           fill={p.fg}
-          letterSpacing="0.14em">
+          letterSpacing="0.14em"
+        >
           {name}
         </text>
         <text
@@ -316,7 +318,8 @@ export function IsoStack({
           fontFamily="JetBrains Mono, monospace"
           fontSize="7"
           fill={p.fgDim}
-          letterSpacing="0.1em">
+          letterSpacing="0.1em"
+        >
           {sub}
         </text>
         <text
@@ -325,7 +328,8 @@ export function IsoStack({
           fontFamily="JetBrains Mono, monospace"
           fontSize="6.5"
           fill={p.fgDim}
-          letterSpacing="0.14em">
+          letterSpacing="0.14em"
+        >
           {detail}
         </text>
       </g>
@@ -345,13 +349,15 @@ export function IsoStack({
       ref={wrapperRef}
       viewBox="0 0 540 540"
       className={styles.svg}
-      xmlns="http://www.w3.org/2000/svg">
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <defs>
         <pattern
           id="iso-grid"
           width="20"
           height="20"
-          patternUnits="userSpaceOnUse">
+          patternUnits="userSpaceOnUse"
+        >
           <path
             d="M 20 0 L 0 0 0 20"
             fill="none"
@@ -363,7 +369,8 @@ export function IsoStack({
           id="iso-grid-fine"
           width="4"
           height="4"
-          patternUnits="userSpaceOnUse">
+          patternUnits="userSpaceOnUse"
+        >
           <path
             d="M 4 0 L 0 0 0 4"
             fill="none"
@@ -378,7 +385,8 @@ export function IsoStack({
           refY="4"
           markerWidth="6"
           markerHeight="6"
-          orient="auto">
+          orient="auto"
+        >
           <path d="M 0 0 L 8 4 L 0 8 z" fill={PEACH} />
         </marker>
       </defs>

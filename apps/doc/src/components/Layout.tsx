@@ -25,9 +25,7 @@ import { SearchOverlay } from './SearchOverlay'
  */
 export function Layout() {
   const { pathname } = useLocation()
-  const [theme, setThemeState] = useState<'light' | 'dark'>(
-    readInitialTheme,
-  )
+  const [theme, setThemeState] = useState<'light' | 'dark'>(readInitialTheme)
   const [searchOpen, setSearchOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -88,9 +86,7 @@ export function Layout() {
           onClose={() => setDrawerOpen(false)}
           activeId={activeId}
         />
-        {searchOpen && (
-          <SearchOverlay onClose={() => setSearchOpen(false)} />
-        )}
+        {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
       </div>
     </ThemeContext.Provider>
   )

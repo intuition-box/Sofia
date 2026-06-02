@@ -19,4 +19,3 @@ export function activeIdFromPath(pathname: string): string | undefined {
   if (pathname === '/architecture') return 'architecture/overview'
   return undefined
 }
-

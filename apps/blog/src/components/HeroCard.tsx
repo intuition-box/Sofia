@@ -23,7 +23,8 @@ export function HeroCard({ post }: HeroCardProps) {
   return (
     <article
       className={`${styles.hero} ${isStory ? styles.kindStory : ''}`}
-      style={{ '--tag-c': accent } as CSSProperties}>
+      style={{ '--tag-c': accent } as CSSProperties}
+    >
       <span className={styles.pin}>
         <span className={styles.pinDot} aria-hidden="true" />
         {isStory ? 'Founding story · pinned' : 'Monthly review'}

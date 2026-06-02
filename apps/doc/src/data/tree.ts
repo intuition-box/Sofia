@@ -122,7 +122,11 @@ export const TREE: TreeSection[] = [
     title: 'Known Issues',
     color: 'distrusted',
     items: [
-      { id: 'known-issues/transactions', label: 'Transactions', badge: 'draft' },
+      {
+        id: 'known-issues/transactions',
+        label: 'Transactions',
+        badge: 'draft',
+      },
       {
         id: 'known-issues/social-verification',
         label: 'Social verification',

@@ -161,7 +161,8 @@ export function PlaceholderSlide({
       data-variant={activeVariant}
       data-base-variant={variant}
       data-wipe-tint={wipeColor}
-      data-reveal-delay={revealDelay > 0 ? String(revealDelay) : undefined}>
+      data-reveal-delay={revealDelay > 0 ? String(revealDelay) : undefined}
+    >
       <div className={styles.frame}>
         <div className={styles.metaStrip}>
           <span>
@@ -175,7 +176,8 @@ export function PlaceholderSlide({
             in this slot, above the grid. */}
         {headerContent && layout !== 'quad-banner-tall-right' && (
           <div
-            className={`${styles.header} ${variant === 'peach' ? 'on-peach' : ''}`}>
+            className={`${styles.header} ${variant === 'peach' ? 'on-peach' : ''}`}
+          >
             {headerContent}
           </div>
         )}
@@ -183,7 +185,8 @@ export function PlaceholderSlide({
         <div className={styles.contentArea}>
           <div
             className={`${styles.zones} ${styles[layoutClass(layout)]} ${styles[variant]} ${variant === 'peach' ? 'on-peach' : ''}`}
-            data-hidden={revealed ? 'true' : 'false'}>
+            data-hidden={revealed ? 'true' : 'false'}
+          >
             {/* In-grid banner: layouts that declare an `h` grid area
                 host headerContent as a normal grid cell so the tall
                 right column ('e') keeps its full-slide span. */}
@@ -213,7 +216,8 @@ export function PlaceholderSlide({
                   data-custom={customNode ? 'true' : 'false'}
                   data-grid-area={area}
                   data-zone-i={idx}
-                  data-zone-role={role}>
+                  data-zone-role={role}
+                >
                   {customNode ? (
                     <div className={styles.zoneContent}>{customNode}</div>
                   ) : (
@@ -232,7 +236,8 @@ export function PlaceholderSlide({
           {revealLayout && (
             <div
               className={`${styles.zones} ${styles[layoutClass(revealLayout)]} ${styles.revealZones} ${styles[revealVariant ?? variant]} ${(revealVariant ?? variant) === 'peach' ? 'on-peach' : ''}`}
-              data-revealed={revealed ? 'true' : 'false'}>
+              data-revealed={revealed ? 'true' : 'false'}
+            >
               {revealAreas.map((area, idx) => {
                 const n = revealStart + idx
                 const displayN = revealNumOverride?.[idx] ?? n
@@ -269,7 +274,8 @@ export function PlaceholderSlide({
                     data-grid-area={area}
                     data-zone-i={idx}
                     data-zone-role={role}
-                    data-mirror-of-base={mirrorsBase ? 'true' : 'false'}>
+                    data-mirror-of-base={mirrorsBase ? 'true' : 'false'}
+                  >
                     {customNode ? (
                       <div className={styles.zoneContent}>{customNode}</div>
                     ) : (

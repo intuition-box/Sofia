@@ -47,7 +47,8 @@ export default function Lightbox({
       <button
         className={styles.closeButton}
         onClick={onClose}
-        aria-label="Close">
+        aria-label="Close"
+      >
         &times;
       </button>
 
@@ -57,7 +58,8 @@ export default function Lightbox({
           e.stopPropagation()
           onPrev()
         }}
-        aria-label="Previous image">
+        aria-label="Previous image"
+      >
         &#8249;
       </button>
 
@@ -71,7 +73,8 @@ export default function Lightbox({
           e.stopPropagation()
           onNext()
         }}
-        aria-label="Next image">
+        aria-label="Next image"
+      >
         &#8250;
       </button>
 

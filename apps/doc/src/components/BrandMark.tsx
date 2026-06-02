@@ -21,12 +21,6 @@ export function BrandMark({
   const src = theme === 'light' ? '/img/logo-black.png' : '/img/logoWhite.svg'
   const cls = className ? `brand-mark ${className}` : 'brand-mark'
   return (
-    <img
-      src={src}
-      alt="Sofia"
-      width={size}
-      height={size}
-      className={cls}
-    />
+    <img src={src} alt="Sofia" width={size} height={size} className={cls} />
   )
 }

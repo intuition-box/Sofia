@@ -6,17 +6,9 @@ import type { ReactNode } from 'react'
  * info→learning, tip→trusted, warning→fun, danger→distrusted).
  * Ported from the design `Admonition` + `ADMONITION_MAP`.
  */
-export type AdmonitionKind =
-  | 'note'
-  | 'info'
-  | 'tip'
-  | 'warning'
-  | 'danger'
+export type AdmonitionKind = 'note' | 'info' | 'tip' | 'warning' | 'danger'
 
-const MAP: Record<
-  AdmonitionKind,
-  { c: string; label: string; ico: string }
-> = {
+const MAP: Record<AdmonitionKind, { c: string; label: string; ico: string }> = {
   note: { c: 'accent', label: 'Note', ico: 'i' },
   info: { c: 'learning', label: 'Info', ico: 'i' },
   tip: { c: 'trusted', label: 'Tip', ico: '✓' },

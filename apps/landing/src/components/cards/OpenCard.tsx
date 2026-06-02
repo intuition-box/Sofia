@@ -37,7 +37,8 @@ export function OpenCard({ tag, title, desc, cta, ctaPrimary }: OpenCardProps) {
               href={cta.href}
               variant="dark"
               hoverFill="white"
-              size="sm">
+              size="sm"
+            >
               {cta.label} <Arrow />
             </SceneBtn>
           )}

@@ -27,11 +27,11 @@ Schema actually used across all posts: **`slug`, `title`, `authors` — nothing 
 
 `PostFrontmatter` (`src/lib/types.ts`) also declares `tags`, `description`, `image`, but:
 
-| Field | Used by | Consequence for the new front |
-|---|---|---|
-| `tags` | **0 / 28** | The whole tag system + `/tag/*` routes are dead |
+| Field         | Used by    | Consequence for the new front                                                      |
+| ------------- | ---------- | ---------------------------------------------------------------------------------- |
+| `tags`        | **0 / 28** | The whole tag system + `/tag/*` routes are dead                                    |
 | `description` | **0 / 28** | No manual SEO/OG summary → everything relies on the auto-excerpt (first paragraph) |
-| `image` | **0 / 28** | No cover image → no usable thumbnail/hero for the index or OG cards |
+| `image`       | **0 / 28** | No cover image → no usable thumbnail/hero for the index or OG cards                |
 
 → A card-with-visual / per-article SEO / OG-image design requires **enriching the
 frontmatter first**. That is content work, not code.
@@ -44,12 +44,14 @@ lines 2/4/6), newer ones don't (lines 2/3/4). Parses fine either way — no acti
 ## 3. Data-integrity issues (by severity)
 
 ### 🔴 HIGH — `src/content/tags.yml` is Docusaurus migration junk
+
 4 placeholder tags: `facebook`→"Gaia", `hello`→"Intuition", `docusaurus`→"Sofia",
 `hola`→"Hola", with descriptions like "gaia tag description". **No article
 references any tag.** Decision required before relaunch: either a real taxonomy +
 re-tagging all 28 articles, or delete the tag system entirely (yml + routes).
 
 ### 🟠 HIGH — Slug collision risk
+
 Slugs are `logbook-DD-MM` with **no year** (`deriveSlug` in `src/lib/posts.ts`).
 `POSTS_BY_SLUG` silently overwrites duplicates → two logbooks on the same day/month
 across different years (this is an ongoing weekly blog) would make one article
@@ -57,7 +59,9 @@ across different years (this is an ongoing weekly blog) would make one article
 convention is fragile. Fix in the new front: slug with year, or full date.
 
 ### ✅ RESOLVED — 5 orphaned image assets
+
 Fixed on `blog/newUI` (2026-05-19). Each was reviewed visually:
+
 - `2025-10-24/4.png` (Follow → Trust Circle UI) → **inserted** in the
   "UI / UX Enhancements" section.
 - `2026-01-30/multiwallet.png` (was `mutliwallet.png`, typo renamed; Privy
@@ -72,7 +76,9 @@ Fixed on `blog/newUI` (2026-05-19). Each was reviewed visually:
 Result: 0 orphans on these folders; only genuine dead weight removed.
 
 ### ✅ RESOLVED — `src/content/authors.yml` hygiene
+
 Fixed on `blog/newUI` (2026-05-19):
+
 - `url:` is now absolute (`https://sofia.intuition.box`) for both authors.
 - Author-page config unified to `page: true` for both → consistent
   `/authors/<id>` URLs. Samuel's legacy `/all-Samuel-Chauche-articles`
@@ -80,11 +86,12 @@ Fixed on `blog/newUI` (2026-05-19):
 - Avatars: kept on GitHub by explicit decision (third-party load accepted;
   not self-hosted).
 
-### 🟡 MEDIUM — Perishable external links (inherited by the new front) 
+### 🟡 MEDIUM — Perishable external links (inherited by the new front)
+
 - Expired X broadcast: `src/content/posts/2025-10-17-logbook/index.md:30` (`x.com/i/broadcasts/...`)
 - Fragile Pinata gateway: `src/content/posts/2025-12-05-logbook/index.md:103`
 - "Early Access" Tally form (2025-10-24 & 2025-10-31) — likely closed
-- Phala deep-links (2025-10-31, 2025-11-14) — rot-prone 
+- Phala deep-links (2025-10-31, 2025-11-14) — rot-prone
 
 ---
 
@@ -133,7 +140,7 @@ not be broken by the new front.
    SEO / OG / thumbnails.
 4. ~~Remove the 5 orphaned images (or insert them if it was an oversight).~~
    ✅ Done on `blog/newUI`: 4 inserted, 1 (mastra.svg) deleted.
-5. Fix "ElisaOS→ElizaOS" + the founding-story typos. *(Author `url:` +
-   page-config ✅ done on `blog/newUI`.)*
+5. Fix "ElisaOS→ElizaOS" + the founding-story typos. _(Author `url:` +
+   page-config ✅ done on `blog/newUI`.)_
 6. Audit external links (X broadcast, Tally, Pinata, Phala).
 7. Guarantee `ImageCarousel` + `@site/src` alias support in the new front.

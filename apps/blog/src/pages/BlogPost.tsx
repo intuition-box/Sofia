@@ -59,7 +59,8 @@ export function BlogPost() {
               stroke="currentColor"
               strokeWidth="1.6"
               strokeLinecap="round"
-              aria-hidden="true">
+              aria-hidden="true"
+            >
               <path d="M10 3L5 8l5 5" />
             </svg>
           </Link>
@@ -108,7 +109,8 @@ export function BlogPost() {
                         href={`#${h.id}`}
                         className={`${styles.tocLink} ${
                           activeId === h.id ? styles.tocActive : ''
-                        }`}>
+                        }`}
+                      >
                         {String(i + 1).padStart(2, '0')}.&nbsp;&nbsp;{h.text}
                       </a>
                     </li>
@@ -135,7 +137,8 @@ export function BlogPost() {
               {next && (
                 <Link
                   to={`/${next.slug}`}
-                  className={`${styles.pnCard} ${styles.pnRight}`}>
+                  className={`${styles.pnCard} ${styles.pnRight}`}
+                >
                   <span className={styles.pnLabel}>Next →</span>
                   <span className={styles.pnTitle}>{next.title}</span>
                 </Link>

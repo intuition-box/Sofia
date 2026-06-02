@@ -32,7 +32,8 @@ export function AuthorStack({ authors, size = 22 }: AuthorStackProps) {
             key={a.id}
             className={styles.avatar}
             style={{ ...dim, fontSize: Math.max(10, size * 0.46) }}
-            aria-label={a.name}>
+            aria-label={a.name}
+          >
             {a.name.charAt(0)}
           </span>
         ),

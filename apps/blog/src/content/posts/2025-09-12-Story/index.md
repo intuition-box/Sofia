@@ -5,7 +5,7 @@ title: The Story of Sofia
 
 authors: [Samuel, Maxime]
 tags: [vision, ai-agents, blockchain, trust-reputation]
-description: "Why the web exhausts instead of enriches — and what we set out to build instead."
+description: 'Why the web exhausts instead of enriches — and what we set out to build instead.'
 ---
 
 ## From Frustration to an Innovation
@@ -18,7 +18,7 @@ After 30 minutes spent browsing meaningless ads, Instagram Reels, and random twe
 
 So we asked ourselves: why are algorithms optimized for retention, not relevance? Why can't our closest friends easily recommend what matters to us?
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Designing Sofia
 

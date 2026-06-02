@@ -42,7 +42,8 @@ export function MobileHeader({
         type="button"
         onClick={onMenuClick}
         aria-label="Open navigation menu"
-        className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted">
+        className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+      >
         <Menu size={20} />
       </button>
 
@@ -60,7 +61,8 @@ export function MobileHeader({
             type="button"
             onClick={onRightRailClick}
             aria-label="Open right panel"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted">
+            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+          >
             <PanelRight size={18} />
           </button>
         )}
@@ -69,12 +71,14 @@ export function MobileHeader({
             type="button"
             onClick={onCartClick}
             aria-label={`Open cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted">
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+          >
             <ShoppingCart size={18} />
             {cartCount > 0 && (
               <span
                 aria-hidden="true"
-                className="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-on-accent">
+                className="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-on-accent"
+              >
                 {cartCount > 99 ? '99+' : cartCount}
               </span>
             )}

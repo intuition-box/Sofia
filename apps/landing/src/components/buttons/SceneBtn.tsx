@@ -61,7 +61,8 @@ export function SceneBtn({
       data-rest-fill={restFill ?? 'transparent'}
       data-hover-fill={hoverFill}
       data-size={size}
-      data-anchor={anchor}>
+      data-anchor={anchor}
+    >
       {children}
     </a>
   )

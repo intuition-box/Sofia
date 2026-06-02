@@ -18,10 +18,9 @@ interface MdxModule {
   frontmatter?: DocFrontmatter
 }
 
-const modules = import.meta.glob<MdxModule>(
-  '../content/docs/**/*.{md,mdx}',
-  { eager: true },
-)
+const modules = import.meta.glob<MdxModule>('../content/docs/**/*.{md,mdx}', {
+  eager: true,
+})
 
 export interface Doc {
   id: string
@@ -30,9 +29,7 @@ export interface Doc {
 }
 
 function idFromPath(filePath: string): string {
-  return filePath
-    .replace(/^.*\/content\/docs\//, '')
-    .replace(/\.(md|mdx)$/, '')
+  return filePath.replace(/^.*\/content\/docs\//, '').replace(/\.(md|mdx)$/, '')
 }
 
 /* Hidden routes (product decisions): the source MDX is kept but

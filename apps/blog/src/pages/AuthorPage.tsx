@@ -68,8 +68,7 @@ export function AuthorPage() {
                 <>
                   <span className={styles.dim}>·</span>
                   <span>
-                    writing since{' '}
-                    <span className={styles.strong}>{since}</span>
+                    writing since <span className={styles.strong}>{since}</span>
                   </span>
                 </>
               )}
@@ -80,7 +79,8 @@ export function AuthorPage() {
                   <a
                     href={`https://x.com/${author.socials.x}`}
                     target="_blank"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     X ↗
                   </a>
                 )}
@@ -88,7 +88,8 @@ export function AuthorPage() {
                   <a
                     href={`https://linkedin.com/in/${author.socials.linkedin}`}
                     target="_blank"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     LinkedIn ↗
                   </a>
                 )}
@@ -96,7 +97,8 @@ export function AuthorPage() {
                   <a
                     href={`https://github.com/${author.socials.github}`}
                     target="_blank"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     GitHub ↗
                   </a>
                 )}

@@ -120,11 +120,7 @@
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--accent-ink) 40%,
-    transparent
-  );
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
 }
 .theme-dark .prose a:not(.heading-anchor) {
   color: var(--accent);
@@ -203,7 +199,9 @@
   font-size: 22px;
   line-height: 1.45;
   color: var(--ink);
-  font-variation-settings: 'SOFT' 50, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 50,
+    'opsz' 144;
 }
 .prose blockquote p {
   margin: 0;

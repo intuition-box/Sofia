@@ -9,13 +9,7 @@ export interface PagerLink {
  * Prev / next pager — ported from the design `Pager`, wired to
  * React Router so it walks the real tree's reading order.
  */
-export function Pager({
-  prev,
-  next,
-}: {
-  prev?: PagerLink
-  next?: PagerLink
-}) {
+export function Pager({ prev, next }: { prev?: PagerLink; next?: PagerLink }) {
   return (
     <nav className="pager" aria-label="Pagination">
       {prev ? (

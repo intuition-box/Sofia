@@ -39,10 +39,7 @@ export function Drawer({
           <div className="dnv-name">
             Sofia <em>Docs</em>
           </div>
-          <button
-            className="drawer-close"
-            aria-label="Close"
-            onClick={onClose}>
+          <button className="drawer-close" aria-label="Close" onClick={onClose}>
             <CloseIcon />
           </button>
         </div>

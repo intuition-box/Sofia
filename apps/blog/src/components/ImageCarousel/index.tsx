@@ -30,7 +30,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         <button
           className={`${styles.arrow} ${styles.arrowLeft}`}
           onClick={prev}
-          aria-label="Previous">
+          aria-label="Previous"
+        >
           ‹
         </button>
         <img
@@ -42,7 +43,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         <button
           className={`${styles.arrow} ${styles.arrowRight}`}
           onClick={next}
-          aria-label="Next">
+          aria-label="Next"
+        >
           ›
         </button>
       </div>

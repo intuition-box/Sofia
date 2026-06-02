@@ -11,7 +11,8 @@ export const CaretIcon = () => (
     fill="none"
     stroke="currentColor"
     strokeWidth="1.4"
-    strokeLinecap="round">
+    strokeLinecap="round"
+  >
     <path d="M2 4l3 3 3-3" />
   </svg>
 )
@@ -23,7 +24,8 @@ export const ExtIcon = () => (
     fill="none"
     stroke="currentColor"
     strokeWidth="1.4"
-    strokeLinecap="round">
+    strokeLinecap="round"
+  >
     <path d="M3 7L7 3M4 3h3v3" />
   </svg>
 )
@@ -35,7 +37,8 @@ export const ChevronIcon = () => (
     fill="none"
     stroke="currentColor"
     strokeWidth="1.4"
-    strokeLinecap="round">
+    strokeLinecap="round"
+  >
     <path d="M3 2l3 3-3 3" />
   </svg>
 )
@@ -47,7 +50,8 @@ export const SearchIcon = ({ size = 13 }: { size?: number }) => (
     viewBox="0 0 16 16"
     fill="none"
     stroke="currentColor"
-    strokeWidth="1.6">
+    strokeWidth="1.6"
+  >
     <circle cx="7" cy="7" r="5" />
     <path d="M11 11l3 3" strokeLinecap="round" />
   </svg>
@@ -60,7 +64,8 @@ export const SunIcon = () => (
     viewBox="0 0 16 16"
     fill="none"
     stroke="currentColor"
-    strokeWidth="1.5">
+    strokeWidth="1.5"
+  >
     <circle cx="8" cy="8" r="3" />
     <g strokeLinecap="round">
       <path d="M8 1.5v1.7M8 12.8v1.7M14.5 8h-1.7M3.2 8H1.5M12.6 3.4L11.4 4.6M4.6 11.4L3.4 12.6M12.6 12.6L11.4 11.4M4.6 4.6L3.4 3.4" />
@@ -87,7 +92,8 @@ export const InstallIcon = () => (
     viewBox="0 0 16 16"
     fill="none"
     stroke="currentColor"
-    strokeWidth="1.6">
+    strokeWidth="1.6"
+  >
     <rect x="2" y="3" width="12" height="10" rx="2" />
     <path d="M5 7h6M5 10h4" strokeLinecap="round" />
   </svg>
@@ -101,7 +107,8 @@ export const BurgerIcon = () => (
     fill="none"
     stroke="currentColor"
     strokeWidth="1.6"
-    strokeLinecap="round">
+    strokeLinecap="round"
+  >
     <path d="M2 4h12M2 8h12M2 12h12" />
   </svg>
 )
@@ -114,7 +121,8 @@ export const CloseIcon = () => (
     fill="none"
     stroke="currentColor"
     strokeWidth="1.6"
-    strokeLinecap="round">
+    strokeLinecap="round"
+  >
     <path d="M4 4l8 8M12 4l-8 8" />
   </svg>
 )
@@ -127,13 +135,25 @@ export const CopyIcon = () => (
 )
 
 export const XIcon = ({ size = 18 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 )
 
 export const LinkedInIcon = ({ size = 18 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
   </svg>
 )

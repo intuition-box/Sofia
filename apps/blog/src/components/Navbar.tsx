@@ -30,28 +30,32 @@ export function Navbar() {
       <div className={styles.links}>
         <Link
           to="/"
-          className={`${styles.link} ${onHome ? styles.active : ''}`}>
+          className={`${styles.link} ${onHome ? styles.active : ''}`}
+        >
           Chronicles
         </Link>
         <a
           className={styles.link}
           href="https://sofia.intuition.box"
           target="_blank"
-          rel="noopener noreferrer">
+          rel="noopener noreferrer"
+        >
           Landing
         </a>
         <a
           className={styles.link}
           href="https://doc.sofia.intuition.box"
           target="_blank"
-          rel="noopener noreferrer">
+          rel="noopener noreferrer"
+        >
           Docs
         </a>
         <a
           className={styles.link}
           href="https://explorer.sofia.intuition.box"
           target="_blank"
-          rel="noopener noreferrer">
+          rel="noopener noreferrer"
+        >
           Explorer
         </a>
       </div>
@@ -61,14 +65,16 @@ export function Navbar() {
           className={styles.cta}
           href="https://sofia.intuition.box"
           target="_blank"
-          rel="noopener noreferrer">
+          rel="noopener noreferrer"
+        >
           <svg
             className={styles.ctaIcon}
             viewBox="0 0 16 16"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.6"
-            aria-hidden="true">
+            aria-hidden="true"
+          >
             <rect x="2" y="3" width="12" height="10" rx="2" />
             <path d="M5 7h6M5 10h4" strokeLinecap="round" />
           </svg>

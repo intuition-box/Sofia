@@ -44,11 +44,16 @@ const PARTNERS = [
   { name: 'Phala', logo: '/img/partners/phala.svg', url: 'https://phala.com' },
 ]
 
-export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode> = {
+export const ZONE_NODES: Record<
+  number,
+  (variant: 'peach' | 'dark') => ReactNode
+> = {
   /* Zone 1 — the cover catch phrase. Headline + Hero's two CTAs
      (Open Explorer + Read the docs) pulled verbatim from `Hero.tsx`. */
   1: (variant) => (
-    <div className={`${styles.heroRoot} ${variant === 'peach' ? 'on-peach' : ''}`}>
+    <div
+      className={`${styles.heroRoot} ${variant === 'peach' ? 'on-peach' : ''}`}
+    >
       <h1 className={`h-display ${styles.heroTitle}`}>
         From surfing the web to <em>owning&nbsp;it.</em>
       </h1>
@@ -77,7 +82,9 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
      deep ink on the peach slab; Phala keeps its native lime + dark
      because flattening would erase the inner "P". */
   2: (variant) => (
-    <div className={`${styles.partnersRoot} ${variant === 'peach' ? 'on-peach' : ''}`}>
+    <div
+      className={`${styles.partnersRoot} ${variant === 'peach' ? 'on-peach' : ''}`}
+    >
       <span className="eyebrow">Built with</span>
       <div className={styles.partnersList}>
         {PARTNERS.map((p) => {
@@ -372,13 +379,15 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
         <SceneBtn
           href="https://portal.intuition.systems/"
           variant="peach"
-          size="sm">
+          size="sm"
+        >
           portal.intuition.systems <Arrow />
         </SceneBtn>
         <SceneBtn
           href="https://app.colony.io/invite/sofia/d3c7b0a4-d168-477c-a176-2b5c4eca68da"
           variant="peach"
-          size="sm">
+          size="sm"
+        >
           Join the DAO <Arrow />
         </SceneBtn>
       </div>
@@ -539,7 +548,9 @@ export const ZONE_NODES: Record<number, (variant: 'peach' | 'dark') => ReactNode
         surfaced and ranked by the people who staked TRUST on the ones they
         believe in most.
       </p>
-      <p className={`lede ${styles.valuesIntroPara} ${styles.valuesIntroParaLast}`}>
+      <p
+        className={`lede ${styles.valuesIntroPara} ${styles.valuesIntroParaLast}`}
+      >
         The more conviction behind a value, the more weight it carries in the
         protocol. No board vote, no manifesto written in a back room — just
         signal recorded on Intuition.

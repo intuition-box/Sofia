@@ -61,7 +61,8 @@ export function ValueCard({
       target="_blank"
       rel="noreferrer noopener"
       className={styles.valueShell}
-      data-linkable={href ? 'true' : 'false'}>
+      data-linkable={href ? 'true' : 'false'}
+    >
       <span className="eyebrow">{tag}</span>
       {liveTrust && (
         <div className={styles.valueTrustRow}>
@@ -81,7 +82,8 @@ export function ValueCard({
           onClick={handleVote}
           disabled={voting}
           className={styles.pill}
-          data-vote-state={voting ? 'signing' : 'idle'}>
+          data-vote-state={voting ? 'signing' : 'idle'}
+        >
           {voting ? 'Signing…' : isConnected ? 'Support' : 'Connect to vote'}
           <span aria-hidden="true">↑</span>
         </button>

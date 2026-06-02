@@ -91,7 +91,8 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
       aria-label="Search the docs"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose()
-      }}>
+      }}
+    >
       <div className="search-modal">
         <div className="search-input-row">
           <SearchIcon size={18} />
@@ -102,10 +103,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
             onChange={(e) => onQuery(e.target.value)}
             placeholder="Search the docs…"
           />
-          <button
-            className="esc"
-            onClick={onClose}
-            aria-label="Close search">
+          <button className="esc" onClick={onClose} aria-label="Close search">
             ESC
           </button>
         </div>
@@ -130,7 +128,8 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
                     onClick={() => {
                       navigate(docPath(r.id))
                       onClose()
-                    }}>
+                    }}
+                  >
                     <span className="kind">D</span>
                     <span className="name">{r.label}</span>
                     <span className="path">

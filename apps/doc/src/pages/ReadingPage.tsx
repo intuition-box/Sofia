@@ -67,12 +67,8 @@ export function ReadingPage({ docId }: { docId?: string }) {
         </MdxProvider>
 
         <Pager
-          prev={
-            prev ? { label: prev.label, to: docPath(prev.id) } : undefined
-          }
-          next={
-            next ? { label: next.label, to: docPath(next.id) } : undefined
-          }
+          prev={prev ? { label: prev.label, to: docPath(prev.id) } : undefined}
+          next={next ? { label: next.label, to: docPath(next.id) } : undefined}
         />
       </main>
 

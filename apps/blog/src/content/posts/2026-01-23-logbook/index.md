@@ -7,7 +7,7 @@ authors: [Samuel, Maxime]
 tags: [gamification, trust-reputation, ai-agents, architecture]
 ---
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## Discovery System and Profiles
 

@@ -24,21 +24,53 @@ export const HOME_TREE_COLS: HomeTreeCol[] = [
   {
     g: 'Getting started',
     items: [
-      { t: 'What is Sofia', d: 'The pitch, in two paragraphs.', to: '/docs/intro' },
+      {
+        t: 'What is Sofia',
+        d: 'The pitch, in two paragraphs.',
+        to: '/docs/intro',
+      },
       { t: 'Manifesto', d: "Why we don't trust stars.", to: '/manifesto' },
       { t: 'About us', d: 'Samuel & Maxime.', to: '/docs/about' },
-      { t: 'Getting started', d: 'Install, sign in, attest.', to: '/docs/features/getting-started' },
+      {
+        t: 'Getting started',
+        d: 'Install, sign in, attest.',
+        to: '/docs/features/getting-started',
+      },
     ],
   },
   {
     g: 'User guide',
     items: [
-      { t: 'Core concepts', d: 'Atoms, triples, predicates.', to: '/docs/core-concepts/atoms' },
-      { t: 'Features', d: 'What the extension does today.', to: '/docs/features/echoes' },
-      { t: 'Gamification', d: 'Currencies, levels, badges.', to: '/docs/gamification/currencies-levels' },
-      { t: 'Resonance', d: 'Discover through the network.', to: '/docs/resonance/circle-feed' },
-      { t: 'Social', d: 'Verification, following, trust.', to: '/docs/social/verification' },
-      { t: 'Known issues', d: 'Open bugs, workarounds.', to: '/docs/known-issues/transactions' },
+      {
+        t: 'Core concepts',
+        d: 'Atoms, triples, predicates.',
+        to: '/docs/core-concepts/atoms',
+      },
+      {
+        t: 'Features',
+        d: 'What the extension does today.',
+        to: '/docs/features/echoes',
+      },
+      {
+        t: 'Gamification',
+        d: 'Currencies, levels, badges.',
+        to: '/docs/gamification/currencies-levels',
+      },
+      {
+        t: 'Resonance',
+        d: 'Discover through the network.',
+        to: '/docs/resonance/circle-feed',
+      },
+      {
+        t: 'Social',
+        d: 'Verification, following, trust.',
+        to: '/docs/social/verification',
+      },
+      {
+        t: 'Known issues',
+        d: 'Open bugs, workarounds.',
+        to: '/docs/known-issues/transactions',
+      },
     ],
   },
   {
@@ -57,15 +89,27 @@ export const HOME_TREE_COLS: HomeTreeCol[] = [
   {
     g: 'Architecture',
     items: [
-      { t: 'System overview', d: 'One certification, end to end.', to: '/architecture' },
+      {
+        t: 'System overview',
+        d: 'One certification, end to end.',
+        to: '/architecture',
+      },
     ],
   },
   {
     g: 'Ecosystem',
     items: [
-      { t: 'Phala', d: 'Confidential compute partner.', to: '/docs/ecosystem/phala' },
+      {
+        t: 'Phala',
+        d: 'Confidential compute partner.',
+        to: '/docs/ecosystem/phala',
+      },
       { t: 'Mastra', d: 'Agent framework.', to: '/docs/ecosystem/mastra' },
-      { t: 'Intuition', d: 'The underlying protocol.', to: '/docs/ecosystem/intuition' },
+      {
+        t: 'Intuition',
+        d: 'The underlying protocol.',
+        to: '/docs/ecosystem/intuition',
+      },
     ],
   },
 ]

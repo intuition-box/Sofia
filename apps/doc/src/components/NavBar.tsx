@@ -36,7 +36,8 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
         <button
           className="dnv-iconbtn dnv-burger"
           onClick={onBurger}
-          aria-label="Open menu">
+          aria-label="Open menu"
+        >
           <BurgerIcon />
         </button>
         <Link className="dnv-brand" to="/">
@@ -50,14 +51,16 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
       <div className="dnv-links">
         <Link
           className={`dnv-link ${docsActive ? 'active' : ''}`}
-          to="/docs/intro">
+          to="/docs/intro"
+        >
           Docs
         </Link>
         <a
           className="dnv-link"
           href="https://blog.sofia.intuition.box"
           target="_blank"
-          rel="noreferrer">
+          rel="noreferrer"
+        >
           Chronicles
           <ExtIcon />
         </a>
@@ -67,7 +70,8 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
         <button
           className="dnv-search"
           onClick={onSearch}
-          aria-label="Search the docs">
+          aria-label="Search the docs"
+        >
           <SearchIcon />
           <span>Search the docs…</span>
           <span className="sc">
@@ -82,7 +86,8 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
             aria-label="Light theme"
             aria-selected={theme === 'light'}
             role="tab"
-            onClick={() => onTheme('light')}>
+            onClick={() => onTheme('light')}
+          >
             <SunIcon />
           </button>
           <button
@@ -91,7 +96,8 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
             aria-label="Dark theme"
             aria-selected={theme === 'dark'}
             role="tab"
-            onClick={() => onTheme('dark')}>
+            onClick={() => onTheme('dark')}
+          >
             <MoonIcon />
           </button>
         </div>
@@ -99,7 +105,8 @@ export function NavBar({ theme, onTheme, onSearch, onBurger }: NavBarProps) {
           className="dnv-cta"
           href="https://explorer.sofia.intuition.box"
           target="_blank"
-          rel="noreferrer">
+          rel="noreferrer"
+        >
           <InstallIcon />
           Open Explorer
         </a>

@@ -1,11 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { Globe, Users, Layers, Trophy, User } from 'lucide-react'
-import type { ComponentType } from 'react'
+import { Globe, Users, Layers, Trophy, User, type LucideIcon } from 'lucide-react'
 
 interface BottomNavItem {
   to: string
   label: string
-  icon: ComponentType<{ size?: number; strokeWidth?: number }>
+  icon: LucideIcon
   /** Visually raise this entry as a primary "compose" FAB. */
   primary?: boolean
   /** Hidden when the user isn't authenticated. The shell still renders

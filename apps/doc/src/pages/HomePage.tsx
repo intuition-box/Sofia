@@ -30,14 +30,16 @@ export function HomePage() {
             className="dnv-cta dnv-cta--ghost"
             href="https://discord.gg/sofia3"
             target="_blank"
-            rel="noreferrer">
+            rel="noreferrer"
+          >
             Community
           </a>
           <a
             className="dnv-cta dnv-cta--ghost"
             href="https://github.com/intuition-box"
             target="_blank"
-            rel="noreferrer">
+            rel="noreferrer"
+          >
             Report an issue
           </a>
         </div>

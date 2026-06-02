@@ -33,7 +33,8 @@ function TreeItemLink({
         onClick={onNavigate}
         className={`tree-item ${isActive ? 'active' : ''}`}
         aria-current={isActive ? 'page' : undefined}
-        data-color={color}>
+        data-color={color}
+      >
         {item.tag && <span className="tree-item-dot" />}
         <span className="tree-item-label">{item.label}</span>
         {item.badge && (
@@ -73,8 +74,7 @@ function TreeSectionBlock({
   onNavigate?: () => void
 }) {
   const containsActive = items.some(
-    (it) =>
-      it.id === activeId || it.items?.some((s) => s.id === activeId),
+    (it) => it.id === activeId || it.items?.some((s) => s.id === activeId),
   )
   const [open, setOpen] = useState(true)
 
@@ -86,12 +86,11 @@ function TreeSectionBlock({
         data-color={color}
         aria-expanded={open}
         aria-controls={`tree-sec-${sectionId}`}
-        onClick={() => setOpen((v) => !v)}>
+        onClick={() => setOpen((v) => !v)}
+      >
         <span className="dot" />
         <span>{title}</span>
-        <span className="num">
-          {String(items.length).padStart(2, '0')}
-        </span>
+        <span className="num">{String(items.length).padStart(2, '0')}</span>
         <ChevronIcon />
       </button>
       {(open || containsActive) && (

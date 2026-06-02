@@ -385,32 +385,60 @@
  * `.layout_*` classes above.
  */
 
-.zone[data-grid-area='a'] { grid-area: a; }
-.zone[data-grid-area='b'] { grid-area: b; }
-.zone[data-grid-area='c'] { grid-area: c; }
-.zone[data-grid-area='d'] { grid-area: d; }
-.zone[data-grid-area='e'] { grid-area: e; }
-.zone[data-grid-area='f'] { grid-area: f; }
+.zone[data-grid-area='a'] {
+  grid-area: a;
+}
+.zone[data-grid-area='b'] {
+  grid-area: b;
+}
+.zone[data-grid-area='c'] {
+  grid-area: c;
+}
+.zone[data-grid-area='d'] {
+  grid-area: d;
+}
+.zone[data-grid-area='e'] {
+  grid-area: e;
+}
+.zone[data-grid-area='f'] {
+  grid-area: f;
+}
 /* The `h` cell (header banner inside the grid) is rendered as
    .gridBanner, not .zone — but kept here for completeness if the
    shape ever changes. */
-.gridBanner[data-grid-area='h'] { grid-area: h; }
+.gridBanner[data-grid-area='h'] {
+  grid-area: h;
+}
 
 /* `data-zone-i` resolves the cascade index used by --enter-delay.
    LAYOUT_AREAS in PlaceholderSlide.tsx caps at 6 zones (left-quintet-
    right + reveal), so we cover 0–5 explicitly. */
-.zone[data-zone-i='0'] { --zone-i: 0; }
-.zone[data-zone-i='1'] { --zone-i: 1; }
-.zone[data-zone-i='2'] { --zone-i: 2; }
-.zone[data-zone-i='3'] { --zone-i: 3; }
-.zone[data-zone-i='4'] { --zone-i: 4; }
-.zone[data-zone-i='5'] { --zone-i: 5; }
+.zone[data-zone-i='0'] {
+  --zone-i: 0;
+}
+.zone[data-zone-i='1'] {
+  --zone-i: 1;
+}
+.zone[data-zone-i='2'] {
+  --zone-i: 2;
+}
+.zone[data-zone-i='3'] {
+  --zone-i: 3;
+}
+.zone[data-zone-i='4'] {
+  --zone-i: 4;
+}
+.zone[data-zone-i='5'] {
+  --zone-i: 5;
+}
 
 /* `data-zone-role` flags the lead zone (no extra delay) vs cascade
    zones (extra delay = the slide's --reveal-delay token). The slide
    sets --reveal-delay on its root when revealDelay > 0; falls back
    to 0ms when unset so non-cascading slides stay snappy. */
-.zone[data-zone-role='lead'] { --zone-extra-delay: 0ms; }
+.zone[data-zone-role='lead'] {
+  --zone-extra-delay: 0ms;
+}
 .zone[data-zone-role='cascade'] {
   --zone-extra-delay: var(--reveal-delay, 0ms);
 }

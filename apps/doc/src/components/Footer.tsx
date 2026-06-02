@@ -14,8 +14,8 @@ export function Footer() {
           <span className="dnv-name dnv-name--sm">Sofia</span>
         </div>
         <p className="dft-tagline">
-          A browser extension that turns web browsing into private,
-          user-owned, on-chain knowledge. Built on the Intuition protocol.
+          A browser extension that turns web browsing into private, user-owned,
+          on-chain knowledge. Built on the Intuition protocol.
         </p>
       </div>
       <div className="dft-col">
@@ -33,7 +33,9 @@ export function Footer() {
         <a href="/privacy">Privacy &amp; Terms</a>
       </div>
       <div className="dft-bottom">
-        <span>© 2024 — {new Date().getFullYear()} · Sofia, built on Intuition</span>
+        <span>
+          © 2024 — {new Date().getFullYear()} · Sofia, built on Intuition
+        </span>
       </div>
     </footer>
   )

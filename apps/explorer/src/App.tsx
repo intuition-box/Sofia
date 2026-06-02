@@ -199,8 +199,7 @@ export default function App() {
      Pass collapsed=true to NavSidebar at those sizes so its labels stay
      hidden and the rail reads as icon-only — matches the visual width
      we're constraining the drawer to. */
-  const effectiveNavCollapsed =
-    sidebar.isDesktop ? navCollapsed : true
+  const effectiveNavCollapsed = sidebar.isDesktop ? navCollapsed : true
 
   /* Desktop / large-tablet: render the right rail as a real grid sibling.
      Below the laptop breakpoint mobile-shell.css turns it into a drawer
@@ -228,7 +227,8 @@ export default function App() {
           sidebar.rightOpen ? 'right-open' : '',
         ]
           .filter(Boolean)
-          .join(' ')}>
+          .join(' ')}
+      >
         {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
         <RealtimeSyncBoundary />
@@ -242,9 +242,7 @@ export default function App() {
             on viewport resize don't blow away component state. */}
         <MobileHeader
           onMenuClick={sidebar.toggleLeft}
-          onRightRailClick={
-            showRightSidebar ? sidebar.toggleRight : undefined
-          }
+          onRightRailClick={showRightSidebar ? sidebar.toggleRight : undefined}
           onCartClick={cart.toggle}
           cartCount={cartItemCount}
           hideRightRailButton={!showRightSidebar}

@@ -18,7 +18,8 @@ export function PrimaryBtn({ href, children }: PrimaryBtnProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={styles.btn}>
+      className={styles.btn}
+    >
       {children}
     </a>
   )
