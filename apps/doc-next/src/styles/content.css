@@ -1,0 +1,314 @@
+/* ============================================================
+   SOFIA · DOCUMENTATION — migrated MDX maison components
+
+   Styling for the `@site/src/components/docs/*` shims (DocCard,
+   DocCardGrid, StatBox) that the 41 ported docs `import`. Class
+   names are namespaced `mdoc-*` so they never collide with the
+   design's own `.doc-card` / `.stat-box`. Restyled on the design
+   tokens (variables.css). Lives outside `.prose` flow but inside
+   `.docs-app` so the theme tokens resolve.
+   ============================================================ */
+
+.mdoc-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0 0;
+}
+.mdoc-card-grid[data-cols='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mdoc-card-grid[data-cols='4'] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mdoc-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.mdoc-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-top: 3px solid var(--accent);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--t-fast),
+    border-color var(--t-fast),
+    box-shadow var(--t-fast);
+  position: relative;
+}
+.mdoc-card-link:hover .mdoc-card {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--ink-soft));
+  box-shadow: var(--shadow-pop);
+}
+.mdoc-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  color: var(--ink);
+}
+.mdoc-card-title-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.mdoc-card-desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.mdoc-card-arrow {
+  width: 16px;
+  height: 16px;
+  margin-top: auto;
+  color: var(--accent-ink);
+}
+.theme-dark .mdoc-card-arrow {
+  color: var(--accent);
+}
+
+/* StatBox — a single tile; docs place several side by side, often
+   inside a DocCardGrid, so it just fills its grid cell. */
+.mdoc-stat {
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mdoc-stat-value {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: 'SOFT' 30;
+}
+.mdoc-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The migrated docs keep their markdown `# Title` (content is never
+   stripped), but the page already shows that title in the DocHead /
+   editorial cover — Docusaurus hid the first h1 for the same reason.
+   Hide it here so it isn't doubled. The text stays in the source
+   and the DOM (just not painted). */
+.content .prose > h1:first-of-type {
+  display: none;
+}
+
+/* Social-platform row (X / LinkedIn / GitHub) used in About. Each
+   anchor is a small circular target with the brand icon centered;
+   the row sits inline like a regular paragraph. */
+.social-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.social-row a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  background: var(--card);
+  text-decoration: none !important;
+  transition:
+    color var(--t-fast),
+    border-color var(--t-fast),
+    background var(--t-fast);
+}
+.social-row a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MANIFESTO — continuous essay, no cards. Ported 1:1 from the v4
+   Claude Design (.mfst-*): opener with drop cap, then seven
+   .mfst-thesis sections with a hanging mono numeral, a Fraunces
+   claim, and the body indented to match. Single column, scoped
+   to the .mfst-prose article in ManifestoPage.
+   ─────────────────────────────────────────────────────────────*/
+
+/* Page-level layout (extracted from former inline styles). */
+.mfst-hero {
+  padding-bottom: 22px;
+}
+.mfst-essay {
+  padding-top: 16px;
+  padding-bottom: 40px;
+}
+.mfst-title {
+  margin-top: 18px;
+  font-size: 88px;
+}
+.mfst-prose {
+  /* Full container width — the essay reads edge-to-edge with the
+     section's 32px gutters, no reading-column cap. */
+  max-width: none;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+.mfst-opener {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+  font-variation-settings: 'opsz' 144;
+}
+.mfst-drop {
+  float: left;
+  font-family: var(--display);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 88px;
+  line-height: 0.82;
+  padding: 8px 14px 0 0;
+  color: var(--accent);
+  font-variation-settings: 'SOFT' 100, 'opsz' 144;
+}
+
+.mfst-thesis {
+  margin-top: 56px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border-soft);
+  position: relative;
+}
+.mfst-thesis::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 56px;
+  height: 2px;
+  background: var(--th-c, var(--accent));
+}
+
+.mfst-h {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 22px;
+  align-items: baseline;
+  margin: 0 0 28px;
+}
+.mfst-h-n {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--th-c, var(--accent));
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-right: 14px;
+  border-right: 1px solid var(--border-soft);
+}
+.mfst-h-claim {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  text-wrap: balance;
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+}
+.mfst-h-claim em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--th-c, var(--accent));
+}
+
+.mfst-p {
+  /* Full-width body — no left indent. The header keeps its
+     hanging numeral + claim grid; the body just flows below
+     across the whole section. */
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.mfst-sig {
+  margin-top: 64px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.mfst-sig b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Manifesto · mobile */
+@media (max-width: 768px) {
+  .mdoc-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .mfst-prose {
+    font-size: 16px;
+  }
+  .mfst-opener {
+    font-size: 18px;
+  }
+  .mfst-drop {
+    font-size: 64px;
+    padding-right: 10px;
+  }
+  .mfst-h {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .mfst-h-n {
+    text-align: left;
+    padding-right: 0;
+    border-right: none;
+  }
+  .mfst-h-claim {
+    font-size: 26px;
+  }
+  .mfst-p {
+    margin-left: 0;
+    font-size: 15.5px;
+  }
+}
