@@ -13,7 +13,6 @@ import { MobileHeader } from './components/MobileHeader'
 import { BottomNav } from './components/BottomNav'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
-import WeightModal from './components/WeightModal'
 import { useCart } from './hooks/useCart'
 import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
@@ -100,7 +99,6 @@ export default function App() {
     location.pathname.startsWith('/leaderboard')
   const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
-  const [weightModalOpen, setWeightModalOpen] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -150,11 +148,6 @@ export default function App() {
     sidebar.closeLeft()
     sidebar.closeRight()
   }, [sidebar])
-
-  const handleCartSubmit = useCallback(() => {
-    cart.close()
-    setWeightModalOpen(true)
-  }, [cart])
 
   const handleDepositSuccess = useCallback(() => {
     cart.clear()
@@ -249,8 +242,7 @@ export default function App() {
           isOpen={cartOpen}
           onClose={cart.close}
           onRemove={cart.removeItem}
-          onClear={cart.clear}
-          onSubmit={handleCartSubmit}
+          onSuccess={handleDepositSuccess}
         />
 
         <ProfileDrawer
@@ -260,13 +252,6 @@ export default function App() {
             (sidebar.isDesktop || profileDrawerOpen)
           }
           onClose={() => setProfileDrawerOpen(false)}
-        />
-
-        <WeightModal
-          isOpen={weightModalOpen}
-          items={cart.items}
-          onClose={() => setWeightModalOpen(false)}
-          onSuccess={handleDepositSuccess}
         />
 
         <main

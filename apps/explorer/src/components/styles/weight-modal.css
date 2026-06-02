@@ -1,35 +1,7 @@
-/* ── WeightModal ── */
-
-/* Overlay */
-.wm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 16px;
-}
-
-.wm-overlay.wm-processing {
-  pointer-events: auto;
-}
-
-/* Content card */
-.wm-content {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 460px;
-  max-height: 85vh;
-  overflow-y: auto;
-  animation: wm-appear 0.2s ease-out;
-  display: flex;
-  flex-direction: column;
-}
+/* ── WeightModal ──
+ * The panel renders inline inside the cart aside (sidepanel) — there is
+ * no overlay or centered modal card anymore. The aside (.cd-aside) owns
+ * the slide-in shell + scroll; `.wm-body` is just the panel content. */
 
 @keyframes wm-appear {
   from {
@@ -64,6 +36,7 @@
 }
 
 .wm-triplet-card {
+  position: relative;
   background: var(--muted) / 30;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -71,6 +44,39 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Per-row remove — top-right, low-key until hovered. */
+.wm-triplet-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.wm-triplet-remove:hover:not(:disabled) {
+  opacity: 1;
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
+}
+
+.wm-triplet-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .wm-triplet-text {
@@ -313,4 +319,17 @@
   background: color-mix(in oklch, var(--destructive) 8%, transparent);
   border: 1px solid color-mix(in oklch, var(--destructive) 20%, transparent);
   border-radius: 12px;
+}
+
+/* Let the message column shrink so long, unbreakable values (raw viem
+   errors with chain ids / hex addresses) wrap inside the card instead of
+   overflowing the panel. */
+.wm-error-section > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.wm-error-section p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

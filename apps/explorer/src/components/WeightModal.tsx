@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePinThingMutation } from '@0xsofia/graphql'
@@ -9,8 +8,13 @@ import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
-import { HAS_TAG_PREDICATE_ID, TOPIC_ATOM_IDS } from '../config/atomIds'
-import { intentionBadgeStyle } from '../config/intentions'
+import {
+  ATOM_ID_TO_TOPIC,
+  HAS_TAG_PREDICATE_ID,
+  TOPIC_ATOM_IDS,
+} from '../config/atomIds'
+import { SOFIA_TOPICS } from '../config/taxonomy'
+import TopicBadge from './profile/TopicBadge'
 import {
   executeCreateTriplesBatch,
   MIN_SIGNAL_TRUST,
@@ -24,14 +28,63 @@ import {
 } from '../services/atomCreationService'
 import SofiaLoader from './ui/SofiaLoader'
 import './styles/weight-modal.css'
+import './styles/cart-amplify.css'
 
-const WEIGHT_OPTIONS = [0.01, 0.5, 1, 5, 10]
+/** Deposit strength presets — ported 1:1 from the extension's Amplify
+ *  ticket (Light / Medium / Strong). Medium (0.5) is the default and
+ *  matches the historical per-item default. */
+const WEIGHT_TIERS = [
+  { id: 'light', label: 'Light', value: 0.01 },
+  { id: 'medium', label: 'Medium', value: 0.5 },
+  { id: 'strong', label: 'Strong', value: 1 },
+] as const
+
+const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
+
+/** Turn a raw wallet/viem error into a single human-readable line — the
+ *  unmodified message dumps chain id, calldata and contract address, which
+ *  overflows the panel and means nothing to the user. */
+function humanizeTxError(raw?: string): string {
+  if (!raw) return 'Something went wrong. Please try again.'
+  const msg = String(raw)
+  if (/user rejected|rejected the request|user denied|denied transaction/i.test(msg))
+    return 'You rejected the transaction in your wallet.'
+  if (/insufficient funds|exceeds balance|insufficient balance/i.test(msg))
+    return 'Insufficient balance to cover this deposit.'
+  // Otherwise surface just the first line / sentence, trimmed.
+  const firstLine = msg.split('\n')[0].split('. ')[0].trim()
+  return firstLine.length > 160 ? `${firstLine.slice(0, 157)}…` : firstLine
+}
+
+/** Resolve the topic a cart item ultimately points to, if any — same
+ *  three paths the old CartDrawer covered (direct topic-atom deposit,
+ *  Context-Manager nested triple `context-<cert>-<slug>`, has_tag triple
+ *  whose objectId is the topic atom). Returns the taxonomy entry so the
+ *  row can show the topic's icon + label instead of a raw context string. */
+function resolveTopic(item: CartItem) {
+  const direct = ATOM_ID_TO_TOPIC.get(item.termId)
+  if (direct) return TOPIC_BY_ID.get(direct) ?? null
+  if (item.id.startsWith('context-')) {
+    const parts = item.id.split('-')
+    const slug = parts[parts.length - 1]
+    const meta = TOPIC_BY_ID.get(slug)
+    if (meta) return meta
+  }
+  if (item.objectId) {
+    const slug = ATOM_ID_TO_TOPIC.get(item.objectId)
+    if (slug) return TOPIC_BY_ID.get(slug) ?? null
+  }
+  return null
+}
 
 interface WeightModalProps {
   isOpen: boolean
   items: CartItem[]
   onClose: () => void
   onSuccess: () => void
+  /** Remove a single item from the cart. Renders a per-row remove
+   *  control in the form state when provided. */
+  onRemove?: (id: string) => void
 }
 
 export default function WeightModal({
@@ -39,6 +92,7 @@ export default function WeightModal({
   items,
   onClose,
   onSuccess,
+  onRemove,
 }: WeightModalProps) {
   const [weights, setWeights] = useState<number[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
@@ -167,12 +221,10 @@ export default function WeightModal({
     })
   }
 
-  const handleCustomChange = (index: number, value: string) => {
-    setCustomValues((prev) => {
-      const n = [...prev]
-      n[index] = value
-      return n
-    })
+  // Apply one tier to every row at once — the Amplify "QUICK" presets.
+  const handleApplyAll = (value: number) => {
+    setWeights(new Array(items.length).fill(value))
+    setCustomValues(new Array(items.length).fill(''))
   }
 
   // Cart items split by kind so we route to the right contract call:
@@ -343,7 +395,13 @@ export default function WeightModal({
       }
     }
 
-    if (allOk) onSuccess()
+    // NB: cart clearing is deferred to `handleClose` (the post-success
+    // "Close" tap). The panel now lives inside the cart aside, whose
+    // visibility is tied to `cart.isOpen` — and the cart auto-closes when
+    // it empties (useCart). Clearing here would collapse the aside before
+    // the success screen could render. We keep `allOk` so success state
+    // is reflected, and hand off the clear when the user dismisses.
+    void allOk
   }, [
     items,
     weights,
@@ -352,17 +410,21 @@ export default function WeightModal({
     authenticated,
     wallets,
     qc,
-    onSuccess,
     userAccountAtom.exists,
     userAccountAtom.termId,
     pinThing,
   ])
 
   const handleClose = () => {
+    // Capture before reset() nulls the result. On success the dismiss
+    // doubles as the cart-clear (onSuccess), which empties the cart and
+    // lets the aside auto-close. On cancel we just close, items intact.
+    const succeeded = txResult?.success ?? false
     reset()
     setCreateTripleResult(null)
     setCreateTripleProcessing(false)
-    onClose()
+    if (succeeded) onSuccess()
+    else onClose()
   }
 
   const formatTrust = (val: number): string => {
@@ -395,110 +457,154 @@ export default function WeightModal({
 
   if (!isOpen || items.length === 0) return null
 
-  return createPortal(
-    <div
-      className={`wm-overlay ${processing ? 'wm-processing' : ''}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !processing) handleClose()
-      }}
-    >
-      <div className="wm-content">
-        <div className="wm-body">
-          {/* Description — form state only */}
+  // Rendered inline inside the cart aside (the sidepanel) — no portal,
+  // no overlay. The aside owns the slide-in shell and scrolling; this is
+  // just the panel body: basket + weights + cost + actions + states.
+  return (
+    <div className="amp b3">
+      <div className="b3-ticket">
+        <div className="b3-body">
           {isFormState && (
-            <p className="wm-description">
-              Set your deposit amount and confirm.
-            </p>
-          )}
+            <>
+              <div className="b3-headline">
+                <span className="b3-drop">A</span>
+                <h1 className="b3-h1">mplify.</h1>
+              </div>
 
-          {/* Triplet cards — always visible except on success */}
-          {!txResult?.success && (
-            <div className="wm-triplets-list">
-              {items.map((item, index) => {
-                const color = item.intentionColor || '#888'
-                const isCustom = !!customValues[index]?.trim()
-                const currentValue = isCustom
-                  ? customValues[index] || ''
-                  : (weights[index] ?? 0.5)
+              {items.length > 1 && (
+                <div className="b3-presets">
+                  <span className="b3-presets-k">QUICK</span>
+                  {WEIGHT_TIERS.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className="b3-preset"
+                      disabled={processing}
+                      onClick={() => handleApplyAll(t.value)}
+                    >
+                      All · {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-                return (
-                  <div key={item.id} className="wm-triplet-card">
-                    {/* Centered triplet text */}
-                    <div className="wm-triplet-text">
-                      {item.favicon && (
+              <div className="b3-basket">
+                {items.map((item, index) => {
+                  const color = item.intentionColor || 'var(--ds-accent)'
+                  const rowTrust = getAmount(index)
+                  const topicMeta = resolveTopic(item)
+                  return (
+                    <div className="b3-row is-on" key={item.id}>
+                      {/* Check doubles as the remove control — clicking an
+                          active row drops it from the cart (the explorer has
+                          no on/off-but-kept state like the extension). */}
+                      <button
+                        className="b3-check"
+                        type="button"
+                        aria-label="Remove from cart"
+                        disabled={processing}
+                        onClick={() => onRemove?.(item.id)}
+                      >
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M5 12l4 4L19 6"
+                            stroke="var(--ds-on-accent)"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+
+                      {item.favicon ? (
                         <img
                           src={item.favicon}
                           alt=""
+                          className="b3-row-fav"
                           referrerPolicy="no-referrer"
-                          style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: 4,
-                            flexShrink: 0,
-                          }}
                           onError={(e) => {
-                            ;(e.target as HTMLImageElement).style.display =
-                              'none'
+                            ;(e.target as HTMLImageElement).style.visibility =
+                              'hidden'
                           }}
                         />
+                      ) : (
+                        <span className="b3-row-fav" aria-hidden="true" />
                       )}
-                      <span style={{ fontWeight: 500 }}>{item.title}</span>
-                      <span
-                        style={{
-                          ...intentionBadgeStyle(color),
-                          fontSize: 11,
-                          fontWeight: 600,
-                          padding: '2px 8px',
-                          borderRadius: 999,
-                        }}
-                      >
-                        {item.intention}
-                      </span>
-                    </div>
 
-                    {/* Amount input + pills — form state only */}
-                    {isFormState && (
-                      <div className="wm-amount-row">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.001"
-                          value={currentValue}
-                          onChange={(e) => {
-                            handleWeightSelect(index, 0) // clear preset
-                            handleCustomChange(index, e.target.value)
-                          }}
-                          onFocus={(e) => {
-                            handleCustomChange(index, String(currentValue))
-                            e.target.select()
-                          }}
-                          className="wm-amount-input"
-                          placeholder="0.01"
-                          disabled={processing}
-                        />
-                        <div className="wm-pills">
-                          {WEIGHT_OPTIONS.map((w) => (
-                            <button
-                              key={w}
-                              onClick={() => handleWeightSelect(index, w)}
-                              className={`wm-pill ${!isCustom && weights[index] === w ? 'wm-pill-active' : ''}`}
-                              disabled={processing}
-                            >
-                              {w}
-                            </button>
-                          ))}
+                      <div className="b3-row-meta">
+                        <div className="b3-row-name" title={item.title}>
+                          {item.title}
                         </div>
                       </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
 
-          {/* On-chain verification warning — form state only */}
-          {isFormState && missingTripleIds.length > 0 && (
-            <div className="wm-error-section" style={{ marginTop: 12 }}>
+                      <div className="b3-row-trust">
+                        <span className="b3-row-trust-val">
+                          {formatTrust(rowTrust)}
+                        </span>
+                        <span className="b3-row-trust-unit">TRUST</span>
+                      </div>
+
+                      {/* Tags get their own full-width line below the title so
+                          the topic label reads clearly and multiple contexts
+                          wrap cleanly instead of crowding the favicon. */}
+                      {topicMeta ? (
+                        // Topic-tagged item — show the topic's icon + label
+                        // only (drop the "Context > …" intention string).
+                        <div className="b3-row-tags">
+                          <span
+                            className="amp-tag amp-tag--topic"
+                            style={{
+                              ['--tag-color' as string]: topicMeta.color,
+                            }}
+                          >
+                            <TopicBadge
+                              topicId={topicMeta.id}
+                              color={topicMeta.color}
+                              size={14}
+                              title={topicMeta.label}
+                            />
+                            {topicMeta.label}
+                          </span>
+                        </div>
+                      ) : item.intention ? (
+                        <div className="b3-row-tags">
+                          <span
+                            className="amp-tag"
+                            style={{ ['--tag-color' as string]: color }}
+                          >
+                            {item.intention}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      <div className="b3-tiers" role="radiogroup">
+                        {WEIGHT_TIERS.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={weights[index] === t.value}
+                            className={`b3-tier${weights[index] === t.value ? ' is-on' : ''}`}
+                            disabled={processing}
+                            onClick={() => handleWeightSelect(index, t.value)}
+                          >
+                            <span className="b3-tier-label">{t.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* On-chain verification warning */}
+              {missingTripleIds.length > 0 && (
+                <div className="wm-error-section" style={{ marginTop: 12 }}>
               <span style={{ fontSize: 18 }}>⚠️</span>
               <div>
                 <p
@@ -518,96 +624,49 @@ export default function WeightModal({
             </div>
           )}
 
-          {/* Cost summary — form state only */}
-          {isFormState && (
-            <div className="wm-cost-summary">
-              <div className="wm-cost-row">
-                <span>Deposit</span>
-                <span style={{ fontWeight: 500 }}>
-                  {formatTrust(breakdown.deposit)} TRUST
-                </span>
-              </div>
-              {breakdown.totalFees > 0 && (
-                <>
-                  <div className="wm-cost-divider" />
-                  <div
-                    className="wm-cost-row"
-                    style={{ fontSize: 11, fontWeight: 600 }}
-                  >
+              {/* Ledger — deposit + fees + total + balance + signing target */}
+              <div className="b3-ledger">
+                <div className="b3-ledger-row">
+                  <span>Subtotal</span>
+                  <span>{formatTrust(breakdown.deposit)} TRUST</span>
+                </div>
+                {breakdown.totalFees > 0 && (
+                  <div className="b3-ledger-row">
                     <span>Fees</span>
                     <span>{formatTrust(breakdown.totalFees)} TRUST</span>
                   </div>
-                  {breakdown.sofiaFixedFee > 0 && (
-                    <div
-                      className="wm-cost-row"
-                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
-                    >
-                      <span>Sofia fixed fee</span>
-                      <span>{formatTrust(breakdown.sofiaFixedFee)} TRUST</span>
-                    </div>
-                  )}
-                  {breakdown.sofiaPercentFee > 0 && (
-                    <div
-                      className="wm-cost-row"
-                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
-                    >
-                      <span>Sofia % fee</span>
-                      <span>
-                        {formatTrust(breakdown.sofiaPercentFee)} TRUST
-                      </span>
-                    </div>
-                  )}
-                  {breakdown.tripleCreationCost > 0 && (
-                    <div
-                      className="wm-cost-row"
-                      style={{ fontSize: 11, paddingLeft: 12, opacity: 0.6 }}
-                    >
-                      <span>
-                        Triple creation
-                        {tripleCreateCount > 1 ? ` × ${tripleCreateCount}` : ''}
-                      </span>
-                      <span>
-                        {formatTrust(breakdown.tripleCreationCost)} TRUST
-                      </span>
-                    </div>
-                  )}
-                  <div className="wm-cost-divider" />
-                  <div className="wm-cost-row wm-cost-total">
-                    <span>Total</span>
-                    <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
-                  </div>
-                </>
-              )}
-              <div
-                className={`wm-cost-row wm-cost-balance ${balNum < breakdown.totalEstimate ? 'wm-cost-insufficient' : ''}`}
-              >
-                <span>Balance</span>
-                <span>
-                  {balance
-                    ? `${formatTrust(parseFloat(balance))} TRUST`
-                    : '...'}
-                </span>
-              </div>
-              <p className="wm-cost-note">* Estimated — actual may vary</p>
-              {/* Surface the contract the wallet popup will sign against, so
-                  a compromised bundle that swaps SOFIA_PROXY_ADDRESS can be
-                  caught by reading the address against a known reference. */}
-              <div
-                className="wm-cost-row"
-                style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}
-              >
-                <span>Signing against</span>
-                <a
-                  href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontFamily: 'monospace' }}
+                )}
+                <div className="b3-ledger-row b3-ledger-total">
+                  <span>Total deposit</span>
+                  <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                </div>
+                <div
+                  className={`b3-ledger-row b3-ledger-row--muted${balNum < breakdown.totalEstimate ? ' wm-cost-insufficient' : ''}`}
                 >
-                  {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
-                  {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
-                </a>
+                  <span>Your balance</span>
+                  <span>
+                    {balance
+                      ? `${formatTrust(parseFloat(balance))} TRUST`
+                      : '…'}
+                  </span>
+                </div>
+                {/* Surface the contract the wallet popup will sign against,
+                    so a compromised bundle that swaps SOFIA_PROXY_ADDRESS can
+                    be caught by reading the address against a known ref. */}
+                <div className="b3-ledger-row b3-ledger-row--muted">
+                  <span>Signing against</span>
+                  <a
+                    href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'inherit' }}
+                  >
+                    {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
+                    {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
+                  </a>
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Success state */}
@@ -661,7 +720,7 @@ export default function WeightModal({
                   Transaction Failed
                 </p>
                 <p className="text-xs text-destructive" style={{ margin: 0 }}>
-                  {txResult.error}
+                  {humanizeTxError(txResult.error)}
                 </p>
               </div>
             </div>
@@ -687,14 +746,15 @@ export default function WeightModal({
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="wm-actions">
-            <button className="wm-btn wm-btn-cancel" onClick={handleClose}>
+          {/* Footer actions */}
+          <div className="b3-actions">
+            <button className="b3-btn" type="button" onClick={handleClose}>
               {txResult ? 'Close' : 'Cancel'}
             </button>
             {!txResult && (
               <button
-                className="wm-btn wm-btn-submit"
+                className="b3-btn b3-btn--primary"
+                type="button"
                 onClick={handleSubmit}
                 disabled={
                   processing ||
@@ -705,15 +765,21 @@ export default function WeightModal({
                 }
               >
                 {processing
-                  ? 'Submitting...'
+                  ? 'Signing…'
                   : verifying
-                    ? 'Verifying on-chain...'
-                    : `Submit ${items.length} Deposit${items.length > 1 ? 's' : ''}`}
+                    ? 'Verifying…'
+                    : 'Sign'}
+                {!processing && !verifying && (
+                  <span className="b3-btn-amt">
+                    {formatTrust(breakdown.totalEstimate)} T
+                  </span>
+                )}
               </button>
             )}
             {txResult && !txResult.success && !processing && (
               <button
-                className="wm-btn wm-btn-submit"
+                className="b3-btn b3-btn--primary"
+                type="button"
                 onClick={() => {
                   reset()
                   setCreateTripleResult(null)
@@ -726,7 +792,6 @@ export default function WeightModal({
           </div>
         </div>
       </div>
-    </div>,
-    document.body,
+    </div>
   )
 }
