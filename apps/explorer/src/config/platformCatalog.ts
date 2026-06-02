@@ -10,6 +10,44 @@ import type {
   SignalConfidence,
 } from '../types/reputation'
 
+/**
+ * Platforms whose connection flow actually works end-to-end today. Two kinds:
+ *  - OAuth providers registered in `services/mastra` (`OAUTH_PROVIDERS`) WITH
+ *    credentials present in the backend `.env`.
+ *  - Wallet-based platforms that resolve from the user's linked wallet with no
+ *    third-party OAuth (signals fetched on-chain).
+ *
+ * NOTE: the platform CONNECT UI is hidden for now (the real connection flow
+ * isn't finished — wallet platforms fake an instant "connected" with no proof,
+ * and most OAuth providers aren't wired backend-side). This allowlist is kept
+ * for when we re-enable connections: gate the connect surfaces to these ids and
+ * extend the set as the backend lights up more providers. Not referenced while
+ * the feature is hidden.
+ */
+export const LIVE_PLATFORM_IDS = new Set<string>([
+  // OAuth — wired in services/mastra with credentials
+  'youtube',
+  'spotify',
+  'discord',
+  'twitch',
+  'github',
+  'coinbase',
+  // Wallet-based — connect from the linked wallet, signals read on-chain
+  'ens',
+  'lens',
+  'farcaster',
+  'aave',
+  'uniswap',
+  'snapshot',
+  'lido',
+  'the-graph',
+  'wallet-siwe',
+  'opensea',
+])
+
+/** True when the platform's connection flow is live (see LIVE_PLATFORM_IDS). */
+export const isLivePlatform = (id: string): boolean => LIVE_PLATFORM_IDS.has(id)
+
 export const PLATFORM_CATALOG: PlatformConfig[] = [
   // =========================================================================
   // DEVELOPPEMENT (17 plateformes)

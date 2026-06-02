@@ -105,8 +105,6 @@ export default function CircleDetailView({
         description={circle.description}
         createdAgo={circle.createdAgo}
         circleColor={effectiveColor}
-        sponsorClaimsLeft={circle.sponsorClaimsLeft ?? 0}
-        memberCount={Math.max(1, circle.members.length)}
         onColorChange={onColorChange}
         colorOptions={colorOptions}
         stats={!locked ? stats : undefined}

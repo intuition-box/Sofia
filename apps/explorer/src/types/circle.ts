@@ -32,9 +32,6 @@ export interface CircleData {
   /** Human-readable creation hint — "a long time ago" for trust, a relative
    *  date for groups. Pure display, never a Date object. */
   createdAgo: string
-  /** Sponsor budget placeholder. `null` when the circle has no sponsorship
-   *  concept (currently every kind — the Trust Circle's number is a mock). */
-  sponsorClaimsLeft: number | null
   /** True when the user can see the full content. Always `true` for the
    *  Trust Circle (it's local). For groups, computed by checking that one
    *  of the user's linked wallets matches a member subject's wallet. */

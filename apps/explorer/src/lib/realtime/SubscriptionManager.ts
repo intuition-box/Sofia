@@ -241,7 +241,7 @@ export class SubscriptionManager {
           console.error('[WS positions] error', err)
         },
         complete: () => {
-          console.log('[WS positions] complete')
+          if (import.meta.env.DEV) console.log('[WS positions] complete')
         },
       },
     )
@@ -280,7 +280,7 @@ export class SubscriptionManager {
             console.error('[WS tracked] error', err)
           },
           complete: () => {
-            console.log('[WS tracked] complete')
+            if (import.meta.env.DEV) console.log('[WS tracked] complete')
           },
         },
       )

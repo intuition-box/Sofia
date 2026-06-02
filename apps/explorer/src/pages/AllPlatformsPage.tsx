@@ -1,24 +1,21 @@
 /**
  * AllPlatformsPage (`/platforms`) — Platform Market browser.
  *
- * Two views share one filter bar:
- *   - List    : DEX-style rows (favicon, ticker, mcap, price, holders,
- *               P&L, Invest CTA). Topic colour accents the rank pill and
- *               the Invest button.
- *   - Connect : topic-grouped connector (reuses PlatformGrid).
+ * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Invest CTA).
+ * Topic colour accents the rank pill and the Invest button.
+ *
+ * NOTE: a "Connect" view (topic-grouped PlatformGrid connector) is hidden for
+ * now — the platform connection flow isn't finished. See LIVE_PLATFORM_IDS in
+ * platformCatalog.ts for re-enabling.
  */
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero } from '@0xsofia/design-system'
-import { List, PlugZap, Search, TrendingUp, X } from 'lucide-react'
+import { Search, TrendingUp, X } from 'lucide-react'
 import { formatEther } from 'viem'
-import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
-import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
-import PlatformGrid from '@/components/profile/PlatformGrid'
 import PlatformsRightRail from '@/components/platforms/PlatformsRightRail'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useProvideRightRail } from '@/contexts/RightRailContext'
@@ -29,7 +26,6 @@ import '@/components/styles/pages.css'
 import '@/components/styles/platform-market.css'
 
 type SortKey = 'mcap' | 'holders' | 'price' | 'name'
-type TabKey = 'list' | 'connect'
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'mcap', label: 'Market Cap' },
@@ -69,22 +65,11 @@ function formatShare(raw: string): string {
 }
 
 export default function AllPlatformsPage() {
-  const navigate = useNavigate()
   const { ranked, isLoading: marketsLoading } = usePlatformMarket()
   const { platformById } = usePlatformCatalog()
-  const {
-    getStatus,
-    getConnection,
-    connect,
-    disconnect,
-    startChallenge,
-    verifyChallengeCode,
-  } = usePlatformConnections()
-  const { selectedCategories } = useTopicSelection()
   const { user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const pc = PAGE_COLORS['/profile/platforms']
-  const [tab, setTab] = useState<TabKey>('list')
   const [sortBy, setSortBy] = useState<SortKey>('mcap')
   const [selectedMarket, setSelectedMarket] =
     useState<PlatformVaultData | null>(null)
@@ -111,90 +96,52 @@ export default function AllPlatformsPage() {
       />
 
       <div className="pm-filters">
+        <div className="pm-filter-group pm-filter-search">
+          <Search className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+          <input
+            type="search"
+            className="pm-search-input"
+            placeholder="Search platforms…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search platforms"
+          />
+          {query ? (
+            <button
+              type="button"
+              className="pm-search-clear"
+              onClick={() => setQuery('')}
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
+        </div>
         <div className="pm-filter-group">
-          <span className="pm-filter-label">View</span>
-          <div
-            className="pm-view-switcher"
-            role="tablist"
-            aria-label="View mode"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === 'list'}
-              className={`pm-view-btn${tab === 'list' ? ' active' : ''}`}
-              onClick={() => setTab('list')}
-            >
-              <List className="h-3.5 w-3.5" />
-              List
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === 'connect'}
-              className={`pm-view-btn${tab === 'connect' ? ' active' : ''}`}
-              onClick={() => setTab('connect')}
-            >
-              <PlugZap className="h-3.5 w-3.5" />
-              Connect
-            </button>
+          <span className="pm-filter-label">Sort by</span>
+          <div className="pm-chips">
+            {SORT_OPTIONS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                className={`pm-chip${sortBy === key ? ' active' : ''}`}
+                onClick={() => setSortBy(key)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
-
-        {tab === 'list' ? (
-          <>
-            <div className="pm-filter-group pm-filter-search">
-              <Search
-                className="pm-search-icon h-3.5 w-3.5"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                className="pm-search-input"
-                placeholder="Search platforms…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                aria-label="Search platforms"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  className="pm-search-clear"
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              ) : null}
-            </div>
-            <div className="pm-filter-group">
-              <span className="pm-filter-label">Sort by</span>
-              <div className="pm-chips">
-                {SORT_OPTIONS.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`pm-chip${sortBy === key ? ' active' : ''}`}
-                    onClick={() => setSortBy(key)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : null}
       </div>
 
-      {tab === 'list' ? (
-        marketsLoading ? (
-          <div className="pm-loader">
-            <SofiaLoader size={48} />
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="pm-empty">No platforms match your search.</div>
-        ) : (
-          <div className="pm-dex" role="table" aria-label="Platforms market">
+      {marketsLoading ? (
+        <div className="pm-loader">
+          <SofiaLoader size={48} />
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="pm-empty">No platforms match your search.</div>
+      ) : (
+        <div className="pm-dex" role="table" aria-label="Platforms market">
             <div className="pm-dex-head" role="row">
               <span role="columnheader">#</span>
               <span role="columnheader">Platform</span>
@@ -302,21 +249,7 @@ export default function AllPlatformsPage() {
             })}
           </div>
         )
-      ) : (
-        /* Connect tab: topic-grouped PlatformGrid with connect hooks. */
-        <div className="pm-topics">
-          <PlatformGrid
-            selectedCategories={selectedCategories}
-            getStatus={getStatus}
-            getConnection={getConnection}
-            onConnect={connect}
-            onDisconnect={disconnect}
-            onStartChallenge={startChallenge}
-            onVerifyChallenge={verifyChallengeCode}
-            onBack={() => navigate(-1)}
-          />
-        </div>
-      )}
+      }
 
       {selectedMarket && (
         <AtomDetailDialog

@@ -1,14 +1,12 @@
 /**
- * CircleDetailHero — big title + description on the left, actions-budget
- * panel on the right rail. `sponsorClaimsLeft` is a mock placeholder
- * until the sponsor primitive is live on-chain.
+ * CircleDetailHero — big title + description on the left, activity stats
+ * panel on the right rail.
  *
  * When `onColorChange` is provided, hovering/focusing the circle avatar
  * surfaces a small color picker — used today by the Trust Circle to let
  * the owner pick its accent color.
  */
 import type { ReactNode } from 'react'
-import { Zap } from 'lucide-react'
 import type { CircleStats } from '@/services/circleStats'
 
 interface CircleDetailHeroProps {
@@ -16,8 +14,6 @@ interface CircleDetailHeroProps {
   description: string
   createdAgo: string
   circleColor: string
-  sponsorClaimsLeft: number
-  memberCount: number
   /** Enables the hover color-picker overlay on the avatar. */
   onColorChange?: (color: string) => void
   /** Palette rendered inside the picker. Ignored when onColorChange is not set. */
@@ -42,19 +38,11 @@ export default function CircleDetailHero({
   description,
   createdAgo,
   circleColor,
-  sponsorClaimsLeft,
-  memberCount,
   onColorChange,
   colorOptions,
   cta,
   stats,
 }: CircleDetailHeroProps) {
-  const total = sponsorClaimsLeft + 2000
-  const pct = Math.min(100, Math.round((sponsorClaimsLeft / total) * 100))
-  const perMember = Math.max(
-    1,
-    Math.round(sponsorClaimsLeft / Math.max(1, memberCount)),
-  )
   const pickerEnabled =
     Boolean(onColorChange) && (colorOptions?.length ?? 0) > 0
 
@@ -147,24 +135,6 @@ export default function CircleDetailHero({
             </div>
           </div>
         )}
-        <div className="crd-hero-actions">
-          <div className="cr-section-head">Actions budget</div>
-          <div className="crd-actions-big">
-            {sponsorClaimsLeft.toLocaleString()}
-          </div>
-          <div className="crd-actions-sub">actions left this month</div>
-          <div className="crd-actions-bar">
-            <div className="crd-actions-fill" style={{ width: `${pct}%` }} />
-          </div>
-          <div className="crd-actions-meta">
-            <span>~{perMember} per member</span>
-            <span>resets in 16 days</span>
-          </div>
-          <button type="button" className="crd-get-more">
-            <Zap size={14} />
-            <span>Boost</span>
-          </button>
-        </div>
       </div>
     </div>
   )

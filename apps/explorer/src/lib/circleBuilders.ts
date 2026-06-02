@@ -39,7 +39,6 @@ export function buildTrustCircle(
     name?: string
     description?: string
     color?: string
-    sponsorClaimsLeft?: number | null
   } = {},
 ): CircleData {
   const addresses = new Set<string>()
@@ -59,7 +58,6 @@ export function buildTrustCircle(
     members: [...trustMembers],
     addresses: [...addresses],
     createdAgo: 'a long time ago',
-    sponsorClaimsLeft: options.sponsorClaimsLeft ?? 3200,
     // The Trust Circle is always "joined" — it IS the user's perspective.
     isMember: true,
   }
@@ -118,9 +116,6 @@ export function buildGroupCircle(
     // relative segment (e.g. "5d ago"). Empty when the indexer hasn't
     // returned a timestamp yet — hero hides the line in that case.
     createdAgo: group.createdAt ? timeAgo(group.createdAt) : '',
-    // Groups don't have a sponsor budget yet — Trust Circle's number is
-    // a UX placeholder, not a product reality, so we explicitly opt out.
-    sponsorClaimsLeft: null,
     isMember,
     joinAction: isMember ? undefined : { atomTermId: group.termId },
   }
