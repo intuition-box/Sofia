@@ -34,6 +34,9 @@ export interface IntentionGroupWithStats {
   currentPredicate: string | null
   level: number
   certificationBreakdown: Partial<Record<IntentionType, number>>
+  /** Topic slugs seen across the group's activities, ordered by
+   *  frequency desc. Powers the context chips on the Echoes card. */
+  topicSlugs: string[]
   urls: {
     /** Historically the domain — kept for back-compat with callers
      *  that read `.url`. New consumers should prefer `fullUrl`. */
@@ -99,6 +102,9 @@ export function buildIntentionGroups(
   const sort: EchoesSort = opts.sort ?? 'platform'
 
   const groups = new Map<string, IntentionGroupWithStats>()
+  // Per-group topic tallies, kept aside so the group's `topicSlugs`
+  // can be ordered by frequency once every activity is folded in.
+  const topicCounts = new Map<string, Map<string, number>>()
   for (const a of activities) {
     if (topicFilter !== 'all' && (!a.tags || !a.tags.includes(topicFilter)))
       continue
@@ -120,6 +126,7 @@ export function buildIntentionGroups(
         currentPredicate: null,
         level: 1,
         certificationBreakdown: {},
+        topicSlugs: [],
         urls: [],
       }
       groups.set(key, g)
@@ -127,6 +134,15 @@ export function buildIntentionGroups(
     g.activeUrlCount++
     if (a.isCertification) g.certifiedCount++
     g.totalAttentionTime += a.attentionSeconds ?? 0
+
+    if (a.tags && a.tags.length > 0) {
+      let counts = topicCounts.get(key)
+      if (!counts) {
+        counts = new Map<string, number>()
+        topicCounts.set(key, counts)
+      }
+      for (const t of a.tags) counts.set(t, (counts.get(t) ?? 0) + 1)
+    }
 
     for (const i of a.intents) {
       g.certificationBreakdown[i] = (g.certificationBreakdown[i] ?? 0) + 1
@@ -144,6 +160,12 @@ export function buildIntentionGroups(
     const dominant = pickDominantIntent(g)
     if (dominant) {
       g.currentPredicate = INTENTION_CONFIG[dominant]?.predicateLabel ?? null
+    }
+    const counts = topicCounts.get(g.id)
+    if (counts) {
+      g.topicSlugs = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([slug]) => slug)
     }
   }
 

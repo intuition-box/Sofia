@@ -97,6 +97,18 @@ export default function App() {
     location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
     location.pathname.startsWith('/leaderboard')
+  // The public profile (`/profile/:address`) shows SOMEONE ELSE's profile,
+  // so the connected user's ProfileDrawer rail is meaningless there — it
+  // must run rail-less. Distinguish it from the personal `/profile/*`
+  // sub-routes (topics, platform, interest, …) by their known segments.
+  const profileSubSegment = location.pathname.startsWith('/profile/')
+    ? location.pathname.split('/')[2]
+    : ''
+  const isPublicProfile =
+    profileSubSegment !== '' &&
+    !['context-manager', 'interest', 'topics', 'categories', 'platform'].includes(
+      profileSubSegment,
+    )
   const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
 
@@ -248,6 +260,7 @@ export default function App() {
         <ProfileDrawer
           isOpen={
             isProfilePage &&
+            !isPublicProfile &&
             !cartOpen &&
             (sidebar.isDesktop || profileDrawerOpen)
           }

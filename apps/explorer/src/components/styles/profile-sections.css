@@ -271,8 +271,8 @@
 .bento-grid-3
   .group-bento-card.group-bento-card--with-thumb
   .group-bento-title {
-  font-size: 13px;
-  line-height: 1.25;
+  font-size: 16px;
+  line-height: 1.3;
 }
 .bento-grid-3
   .group-bento-card.group-bento-card--with-thumb
@@ -401,18 +401,21 @@
   border-radius: 8px;
 }
 
-/* Match the extension's level pill — neutral surface, ink text (white on
-   dark theme). The DS injects `color: levelColor; background: levelColorAlpha`
-   inline (level-driven palette); !important is required to neutralize. */
-.bento-grid-3 .level-badge {
-  color: var(--ds-ink) !important;
-  background: color-mix(in srgb, var(--ds-ink) 8%, transparent) !important;
-  border: 1px solid var(--ds-border);
+/* Levels are not surfaced on the Echoes cards — hide the badge the DS
+   card always renders. The progress bar/label are already hidden in the
+   with-thumb variant, so this removes the last level-driven element. */
+.bento-grid-3 .group-bento-level {
+  display: none;
 }
 
 .bento-grid-3 .group-bento-title {
-  font-size: 15px;
+  /* Match the circle feed title (.fc-title in --has-header): Geist sans,
+     16px, weight 600 — instead of the DS display serif. */
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
 }
 
 .bento-grid-3 .group-bento-stats {
@@ -502,6 +505,174 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+/* ── Echoes card context + verb chips ───────────────────────────────
+   Mirrors the circle feed silhouette (.fc-tag / .fc-verb-tag) but
+   scaled down for the compact bento bandeau. Rendered as the card's
+   last child (GroupTags), so the DS with-thumb rules already give it
+   the 14px side padding + 12px bottom padding + 6px top margin. */
+.bento-grid-3 .group-bento-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bento-grid-3 .group-bento-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+}
+
+.bento-grid-3 .group-bento-tag .topic-badge {
+  flex-shrink: 0;
+}
+
+/* Verb pill — filled intent color + near-black text, same palette as
+   the feed cards' .fc-verb-tag. */
+.bento-grid-3 .group-bento-verb {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #02000e;
+  background: var(--ds-accent);
+}
+.bento-grid-3 .group-bento-verb.trusted {
+  background: #22c55e;
+}
+.bento-grid-3 .group-bento-verb.distrusted {
+  background: #ef4444;
+}
+.bento-grid-3 .group-bento-verb.work {
+  background: #3b82f6;
+}
+.bento-grid-3 .group-bento-verb.learning {
+  background: #06b6d4;
+}
+.bento-grid-3 .group-bento-verb.fun {
+  background: #f59e0b;
+}
+.bento-grid-3 .group-bento-verb.inspiration {
+  background: #8b5cf6;
+}
+.bento-grid-3 .group-bento-verb.buying {
+  background: #ec4899;
+}
+.bento-grid-3 .group-bento-verb.music {
+  background: #ff5722;
+}
+
+/* ── Echoes quick-filter bar (Top Platforms / Top Claims) ───────────
+   The old standalone Top Platforms / Top Claims cards now live here as
+   toggle chips that scope the bento grid below. Sits between the Echoes
+   head (title + search + sort tabs) and the grid. */
+.echoes-filterbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.echoes-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.echoes-filter-label {
+  margin-right: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.echoes-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.echoes-filter-chip:hover {
+  border-color: var(--ds-ink-soft);
+}
+.echoes-filter-chip.active {
+  border-color: var(--ds-ink);
+  background: var(--ds-ink);
+  color: var(--ds-card);
+}
+.echoes-filter-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+/* Claim chips carry the intent color as a leading dot. */
+.echoes-filter-chip.claim::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--ds-accent);
+}
+.echoes-filter-chip.claim.trusted::before {
+  background: #22c55e;
+}
+.echoes-filter-chip.claim.distrusted::before {
+  background: #ef4444;
+}
+.echoes-filter-chip.claim.work::before {
+  background: #3b82f6;
+}
+.echoes-filter-chip.claim.learning::before {
+  background: #06b6d4;
+}
+.echoes-filter-chip.claim.fun::before {
+  background: #f59e0b;
+}
+.echoes-filter-chip.claim.inspiration::before {
+  background: #8b5cf6;
+}
+.echoes-filter-chip.claim.buying::before {
+  background: #ec4899;
+}
+.echoes-filter-chip.claim.music::before {
+  background: #ff5722;
 }
 
 /* ── PlatformDetailPage toolbar ── */
@@ -1243,4 +1414,226 @@
     'wght' 500,
     'GRAD' 0,
     'opsz' 24;
+}
+
+/* ── PublicProfileAside (public profile right rail) ──────────────────
+   Same fixed 350px shell as the ProfileDrawer, but always-present and
+   filled with viewed-user info instead of the connected user's drawer. */
+.ppa-aside {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 350px;
+  height: 100vh;
+  z-index: 9999;
+  border-left: 1px solid var(--ds-border);
+  background: linear-gradient(
+    170deg,
+    color-mix(in oklab, var(--ds-accent) 6%, var(--ds-bg)) 0%,
+    var(--ds-bg) 60%
+  );
+  backdrop-filter: blur(20px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+.ppa-aside::-webkit-scrollbar {
+  width: 6px;
+}
+.ppa-aside::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 3px;
+}
+
+.ppa-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 28px 22px;
+}
+
+.ppa-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+/* Identity */
+.ppa-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ppa-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+}
+.ppa-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ppa-avatar-initials {
+  font-family: var(--ds-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.ppa-identity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ppa-name {
+  font-family: var(--ds-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ppa-addr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+
+/* Stats */
+.ppa-stats {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.ppa-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 2px;
+}
+.ppa-stat + .ppa-stat {
+  border-top: 1px solid var(--ds-border-soft);
+}
+.ppa-stat dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-muted);
+}
+.ppa-stat-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--ds-muted);
+}
+.ppa-stat dd {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.ppa-stat-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+/* Links + topics sections */
+.ppa-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ppa-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+/* Social buttons — a row of round icon buttons (mocked for now). */
+.ppa-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ppa-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+.ppa-social:hover {
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+  transform: translateY(-1px);
+}
+.ppa-social-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ppa-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ppa-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+}
+.ppa-topic .topic-badge {
+  flex-shrink: 0;
+}
+
+/* Mobile — fold the rail away; the page content already carries the
+   primary profile, the rail info is secondary. */
+@media (max-width: 1279px) {
+  .ppa-aside {
+    display: none;
+  }
 }

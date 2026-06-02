@@ -175,31 +175,6 @@
   }
 }
 
-/* ── Bottom row: Top Platforms + Top Claim ─────────────────────────── */
-
-.pc-platforms-claim-row {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 500px;
-  gap: 12px;
-}
-@media (max-width: 900px) {
-  .pc-platforms-claim-row {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-}
-.pc-platforms-claim-row > .pc-card {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.pc-claim-card-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
 /* ── Chart shell shared bits ──────────────────────────────────────── */
 
 .pc-chart-wrap {
@@ -793,137 +768,6 @@
   }
 }
 
-/* ── Top platforms list ─────────────────────────────────────────── */
-/* Ported from proto profile-charts.css:365-481. */
-
-.pc-platforms-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.pc-plat-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 22px 28px minmax(90px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  transition: all 0.18s ease;
-  overflow: hidden;
-}
-.pc-plat-row::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--plat-bar, 0%);
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--plat-color, var(--ds-muted)) 8%, transparent),
-    transparent
-  );
-  pointer-events: none;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.pc-plat-row:hover {
-  background: var(--ds-bg-subtle);
-  border-color: var(--ds-border-soft);
-}
-.pc-plat-row.pc-plat-top {
-  border-color: color-mix(
-    in srgb,
-    var(--plat-color, var(--ds-accent)) 25%,
-    transparent
-  );
-  background: color-mix(
-    in srgb,
-    var(--plat-color, var(--ds-accent)) 4%,
-    transparent
-  );
-}
-.pc-plat-rank {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--ds-muted);
-  font-variant-numeric: tabular-nums;
-  opacity: 0.7;
-}
-.pc-plat-top .pc-plat-rank {
-  color: var(--plat-color, var(--ds-accent));
-  opacity: 1;
-}
-.pc-plat-fav {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: #ffffff;
-  border: 1px solid var(--ds-border-soft);
-  padding: 3px;
-  object-fit: contain;
-  box-sizing: border-box;
-}
-.pc-plat-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.pc-plat-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ds-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.1;
-}
-.pc-plat-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--plat-color, var(--ds-muted));
-  line-height: 1;
-}
-.pc-plat-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--plat-color, var(--ds-muted));
-  box-shadow: 0 0 6px
-    color-mix(in srgb, var(--plat-color, var(--ds-muted)) 50%, transparent);
-}
-.pc-plat-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-variant-numeric: tabular-nums;
-}
-.pc-plat-count {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--ds-ink);
-  line-height: 1;
-}
-.pc-plat-delta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
 /* ── Details panel ───────────────────────────────────────────────── */
 /* Ported from proto profile-charts.css:247-361. */
 
@@ -1223,27 +1067,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Top Claim card (showcase inside ProfileCharts) ─────────────── */
+/* ── Claim card (ProfileClaimCard — used by Scores + Top Claims) ──── */
 /* Ported 1:1 from proto profile.css:143-307. */
-
-.pc-claim-card-wrap > .pc-claims-scroll {
-  flex: 1;
-  min-height: 0;
-}
-.pc-claims-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 2px;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.pc-claims-scroll::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
 
 .pf-claim-card {
   position: relative;

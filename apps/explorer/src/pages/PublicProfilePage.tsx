@@ -2,19 +2,22 @@
  * PublicProfilePage — read-only profile view for any wallet address or
  * ENS name. Accessible via `/profile/:address` (public, no auth gate).
  *
- * Mirrors the personal `ProfilePage` skeleton — same hero, interests
- * grid, ProfileCharts (radar + calendar + top platforms + top claim)
- * and Echoes section — so a visitor sees the same layout regardless
- * of whose wallet they're looking at. The only structural difference
- * is that the interests grid is rendered read-only (no add/remove)
- * and the topic selection is derived from the user's on-chain
- * positions instead of a local taxonomy preference.
+ * Mirrors the personal `ProfilePage` skeleton — same section order:
+ * ProfileCharts (radar + details with inline interest rail + calendar)
+ * followed by the Echoes section (search + sort tabs + bento grid with
+ * filter chips) — so a visitor sees the same layout regardless of whose
+ * wallet they're looking at. The structural differences are read-only:
+ * no add/remove interest affordances, the topic selection is derived
+ * from the user's on-chain positions instead of a local taxonomy
+ * preference, and the hero shows the viewed wallet rather than the
+ * connected user. The custom hero inlines the viewed user's ENS avatar.
  */
 
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
+import { Search, X } from 'lucide-react'
 import {
   SectionH2,
   EchoesSortTabs,
@@ -22,7 +25,6 @@ import {
 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
-import { useTopClaims } from '@/hooks/useTopClaims'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import ProfileTrustButton from '@/components/profile/ProfileTrustButton'
 import { useTrustScore } from '@/hooks/useTrustScore'
@@ -32,11 +34,10 @@ import { useSignals } from '@/hooks/useSignals'
 import { useAddressInterests } from '@/hooks/useAddressInterests'
 import { resolveEnsToAddress } from '@/services/ensService'
 import type { ConnectionStatus } from '@/types/reputation'
-import InterestsGrid, {
-  MAX_INTERESTS,
-} from '@/components/profile/InterestsGrid'
+import { MAX_INTERESTS } from '@/components/profile/InterestsGrid'
 import ProfileCharts from '@/components/profile/ProfileCharts'
 import LastActivitySection from '@/components/profile/LastActivitySection'
+import PublicProfileAside from '@/components/profile/PublicProfileAside'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -49,6 +50,7 @@ export default function PublicProfilePage() {
   const [resolving, setResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
   const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
+  const [echoesSearch, setEchoesSearch] = useState('')
 
   // Resolve ENS (`.eth` / `.box`) or validate the raw address. The
   // page renders only once `resolvedAddress` is set so downstream
@@ -87,9 +89,6 @@ export default function PublicProfilePage() {
   // ── On-chain data — single round of fetches the rest of the page reads.
   const { profile: onChainProfile, isLoading: onChainLoading } =
     useUserOnChainProfile(addresses.length > 0 ? addresses : undefined)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(
-    addresses.length > 0 ? addresses : undefined,
-  )
   const { score: trustScore } = useTrustScore(walletAddress)
   const { signals } = useSignals(walletAddress)
 
@@ -221,22 +220,13 @@ export default function PublicProfilePage() {
       </div>
 
       <div className="pp-sections">
-        {/* Interests — mirrors the personal-profile grid. Read-only:
-            no add / remove on someone else's profile. */}
-        <section className="pp-section">
-          <SectionH2>Interests</SectionH2>
-          <InterestsGrid
-            selectedTopics={selectedTopics}
-            topicScores={topicScores}
-          />
-        </section>
-
-        {/* Profile charts — radar + details + calendar + top platforms
-            + top claim. The component already accepts a foreign
+        {/* Profile charts — radar + details (with inline interest rail)
+            + calendar. Mirrors the personal profile: the Overview details
+            panel embeds the compact interest rail, so there's no standalone
+            Interests section. Read-only here — no add/remove affordances on
+            someone else's profile. The component already accepts a foreign
             `addresses` array (see prop docs) so no fork needed. */}
         <ProfileCharts
-          topClaims={topClaims}
-          claimsLoading={claimsLoading}
           walletAddress={walletAddress}
           hideplatformPositions
           selectedTopics={selectedTopics}
@@ -245,16 +235,45 @@ export default function PublicProfilePage() {
           addresses={addresses}
         />
 
-        {/* Echoes — same bento grid as the personal profile. */}
+        {/* Echoes — same bento grid + head (search + sort tabs) as the
+            personal profile. The filter chips + context/verb chips live
+            inside LastActivitySection. */}
         <section className="pp-section">
           <div className="pf-echoes-head">
-            <SectionH2>Echoes</SectionH2>
+            <div className="pf-echoes-head-left">
+              <SectionH2>Echoes</SectionH2>
+              <div className="pf-echoes-search">
+                <Search
+                  className="pf-echoes-search-icon h-3.5 w-3.5"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  className="pf-echoes-search-input"
+                  placeholder="Search echoes…"
+                  value={echoesSearch}
+                  onChange={(e) => setEchoesSearch(e.target.value)}
+                  aria-label="Search echoes"
+                />
+                {echoesSearch ? (
+                  <button
+                    type="button"
+                    className="pf-echoes-search-clear"
+                    onClick={() => setEchoesSearch('')}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
+            </div>
             <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={onChainLoading}
             sort={echoesSort}
+            searchQuery={echoesSearch}
             // Echo cards now route to /profile/platform/:domain?address=…
             // so visitors can drill into the viewed user's certs on a
             // given platform, just like the personal profile does for
@@ -263,6 +282,18 @@ export default function PublicProfilePage() {
           />
         </section>
       </div>
+
+      {/* Right rail — viewed-user info (replaces the connected user's
+          ProfileDrawer, which is meaningless on someone else's profile). */}
+      <PublicProfileAside
+        walletAddress={walletAddress}
+        displayName={displayName}
+        ensAvatar={ensAvatar}
+        shortAddress={shortAddress}
+        trustScore={trustScore}
+        certs={onChainProfile.certs}
+        certCountsByTopic={certCountsByTopic}
+      />
     </div>
   )
 }

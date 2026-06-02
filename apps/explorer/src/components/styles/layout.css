@@ -26,6 +26,13 @@ body:has(.pd-aside.pd-open) .main-content {
   margin-right: 350px;
 }
 
+/* PublicProfileAside — the public-profile right rail (also 350px). It's
+   always mounted on /profile/:address (no open/close state), so reserve
+   the same gutter whenever it's present. */
+body:has(.ppa-aside) .main-content {
+  margin-right: 350px;
+}
+
 /* CartDrawer is 333px wide (.cd-aside). When open, push the main's right
    margin so the cart never overlaps page content — mirrors ProfileDrawer.
    Specificity beats any `.main-content:has(.<page>)` full-width overrides. */

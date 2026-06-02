@@ -9,7 +9,6 @@ import { useReputationScores } from '../hooks/useReputationScores'
 import { useUserCertCountsByTopic } from '../hooks/useUserCertCountsByTopic'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '../hooks/useIntentionGroups'
-import { useTopClaims } from '../hooks/useTopClaims'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
@@ -75,9 +74,6 @@ export default function ProfilePage() {
   const echoesActivities = useMemo(
     () => userCertsToActivityInputs(profile.certs),
     [profile.certs],
-  )
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(
-    activityAddresses.length > 0 ? activityAddresses : undefined,
   )
   // Untagged-cert count feeds the Context Manager banner. Same cache
   // ProfileCharts already reads, so this is a derived value, not a
@@ -186,12 +182,10 @@ export default function ProfilePage() {
 
       <div className="pp-sections">
         {/* Profile charts — radar + details (with inline interest pills)
-            + calendar + top platforms + top claim. The Overview details
-            panel now embeds the compact interest rail directly, so we
-            no longer render a standalone My Interests section. */}
+            + calendar. The Overview details panel now embeds the compact
+            interest rail directly, so we no longer render a standalone
+            My Interests section. */}
         <ProfileCharts
-          topClaims={topClaims}
-          claimsLoading={claimsLoading}
           walletAddress={address}
           hideplatformPositions={isViewingAs}
           selectedTopics={selectedTopics}
