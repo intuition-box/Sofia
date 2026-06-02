@@ -10,7 +10,7 @@ export default function Privacy(): React.ReactElement {
           <article className="privacy-page">
             <h1>Privacy Policy</h1>
             <p>
-              <strong>Last updated: May 18, 2026</strong>
+              <strong>Last updated: June 2, 2026</strong>
             </p>
 
             <h2>1. Introduction</h2>
@@ -87,14 +87,9 @@ export default function Privacy(): React.ReactElement {
               Tracking can be disabled at any time in the extension settings.
             </p>
 
-            <h3>2.2 Browsing History and Bookmarks (Limited Access)</h3>
-            <p>Sofia uses Chrome's APIs with strict limits:</p>
+            <h3>2.2 Bookmarks (Limited Access)</h3>
+            <p>Sofia uses Chrome's bookmarks API with strict limits:</p>
             <ul>
-              <li>
-                <strong>History:</strong> Reads up to 300 recent URLs (URLs
-                only, no page content) to extract themes and match intention
-                groups
-              </li>
               <li>
                 <strong>Bookmarks:</strong> Reads up to 500 bookmarks (URL and
                 title only) during onboarding to initialize user preferences
@@ -280,9 +275,8 @@ export default function Privacy(): React.ReactElement {
             <h2>7. Chrome Permissions Justification</h2>
             <p>
               Sofia requests permissions strictly necessary for its
-              functionality, including: storage, history, tabs, activeTab,
-              sidePanel, bookmarks, identity, offscreen, scripting, and host
-              permissions (all URLs).
+              functionality, including: storage, tabs, sidePanel, bookmarks,
+              identity, offscreen, scripting, and host permissions (all URLs).
             </p>
             <p>
               Each permission is used solely for the purposes described in this
