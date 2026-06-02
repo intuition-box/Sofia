@@ -48,6 +48,7 @@ export const InterestContextSelector = memo(
             value={selectedContext ?? "all"}
             onChange={() => undefined}
             options={options}
+            placeholder="Choose"
             wide
           />
         </div>
@@ -60,6 +61,7 @@ export const InterestContextSelector = memo(
         value={selectedContext ?? "all"}
         onChange={(id) => onSelectContext(id === "all" ? null : id)}
         options={options}
+        placeholder="Choose"
         wide
       />
     )

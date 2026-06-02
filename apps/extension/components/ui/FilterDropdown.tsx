@@ -39,6 +39,11 @@ interface FilterDropdownProps {
   /** Render the options panel as a single column instead of the
    *  default 2-column grid (used by the Domain filter). */
   singleColumn?: boolean
+  /** When set, the dropdown has NO implicit "All" entry: the unset state
+   *  (value === "all") shows this placeholder text instead, the "All" cell
+   *  is dropped from the panel, and the bottom action reads "Clear
+   *  selection" — for pickers where a real choice is required. */
+  placeholder?: string
 }
 
 const MUTED = "var(--ds-muted, #888)"
@@ -103,7 +108,8 @@ export default function FilterDropdown({
   onChange,
   options,
   wide = false,
-  singleColumn = false
+  singleColumn = false,
+  placeholder
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false)
   const [popRect, setPopRect] = useState<{
@@ -124,7 +130,13 @@ export default function FilterDropdown({
     if (!open || !triggerRef.current) return
     const place = () => {
       const r = triggerRef.current!.getBoundingClientRect()
-      setPopRect({ top: r.bottom + 6, left: r.left, width: r.width })
+      // Popover width comes from CSS (320, or 360 when wide). Anchor to the
+      // trigger's left, but clamp so the panel never overflows the viewport
+      // right edge — the trigger can be narrow (side-by-side pickers) while
+      // the popover is wider, which used to push it off-screen.
+      const popW = wide ? 360 : 320
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - popW - 8))
+      setPopRect({ top: r.bottom + 6, left, width: r.width })
     }
     place()
     window.addEventListener("scroll", place, true)
@@ -133,7 +145,7 @@ export default function FilterDropdown({
       window.removeEventListener("scroll", place, true)
       window.removeEventListener("resize", place)
     }
-  }, [open])
+  }, [open, wide])
 
   // Close on outside click / Escape. Outside = neither the root (the
   // trigger's container) nor the portaled popover.
@@ -158,7 +170,10 @@ export default function FilterDropdown({
 
   const activeOption =
     value === "all" ? null : options.find((o) => o.id === value)
-  const activeLabel = activeOption ? activeOption.label : "All"
+  const showPlaceholder = !activeOption && placeholder != null
+  const activeLabel = activeOption
+    ? activeOption.label
+    : (placeholder ?? "All")
   const dotColor = activeOption?.color ?? MUTED
 
   const handleSelect = (id: string) => {
@@ -175,17 +190,18 @@ export default function FilterDropdown({
         style={{
           top: popRect.top,
           left: popRect.left,
-          minWidth: popRect.width,
         }}>
         <div
           className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>
-          <button
-            type="button"
-            className={`ext-filter-pop__cell${value === "all" ? " is-active" : ""}`}
-            onClick={() => handleSelect("all")}>
-            <Dot base="ext-filter-pop__dot" color={MUTED} />
-            All
-          </button>
+          {!placeholder && (
+            <button
+              type="button"
+              className={`ext-filter-pop__cell${value === "all" ? " is-active" : ""}`}
+              onClick={() => handleSelect("all")}>
+              <Dot base="ext-filter-pop__dot" color={MUTED} />
+              All
+            </button>
+          )}
           {options.map((o) => (
             <button
               key={o.id}
@@ -207,7 +223,7 @@ export default function FilterDropdown({
             type="button"
             className="ext-filter-pop__reset"
             onClick={() => handleSelect("all")}>
-            Reset
+            {placeholder ? "Clear selection" : "Reset"}
           </button>
         )}
       </div>
@@ -229,7 +245,10 @@ export default function FilterDropdown({
           iconUrl={activeOption?.iconUrl}
         />
         <span className="ext-filter-trigger__label">{label}</span>
-        <span className="ext-filter-trigger__value">{activeLabel}</span>
+        <span
+          className={`ext-filter-trigger__value${showPlaceholder ? " is-placeholder" : ""}`}>
+          {activeLabel}
+        </span>
         <ChevronDown size={12} className="ext-filter-trigger__chev" />
       </button>
 

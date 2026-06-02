@@ -131,6 +131,25 @@
   margin-top: 16px;
 }
 
+/* Intention + context pickers sit side by side as two matching dropdowns. */
+.cert-actions-row {
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+}
+.cert-actions-row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.cert-actions-row .ext-filter {
+  display: flex;
+  width: 100%;
+}
+.cert-actions-row .ext-filter-trigger {
+  width: 100%;
+  min-width: 0;
+}
+
 /* Same shape as .circle-filter-label */
 .cert-section-title {
   display: flex;
