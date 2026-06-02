@@ -487,6 +487,14 @@
  */
 
 @media (max-width: 899px) {
+  /* Slide-by-slide snap on touch — the document is the scrollport here
+     (.region is height:auto), so the snap container is <html>. Native
+     CSS snap (not the desktop GSAP scroll-jack) keeps the kinetic touch
+     feel intact. Lenis leaves touch scroll untouched (syncTouch off), so
+     it doesn't fight this. */
+  :global(html) {
+    scroll-snap-type: y mandatory;
+  }
   .region {
     height: auto !important;
     overscroll-behavior: auto;
@@ -519,6 +527,12 @@
     transform: none;
     transition: none;
     background: transparent;
+    /* One slide fills the screen and snaps to the top. 100dvh tracks the
+       shrinking viewport as the mobile URL bar hides; the 100vh line is a
+       fallback for browsers without dvh. */
+    scroll-snap-align: start;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
   .slide > * {
     height: auto;

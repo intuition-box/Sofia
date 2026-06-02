@@ -99,6 +99,16 @@
   color: var(--color-text-dim);
 }
 
+/* Matches the SceneStack mobile snap breakpoint (899px): once the slides
+   become scroll-snap targets, the footer needs its own snap point too,
+   otherwise `scroll-snap-type: mandatory` can make it hard to reach past
+   the last slide. */
+@media (max-width: 899px) {
+  .footer {
+    scroll-snap-align: start;
+  }
+}
+
 @media (max-width: 780px) {
   .top {
     grid-template-columns: 1fr 1fr;
