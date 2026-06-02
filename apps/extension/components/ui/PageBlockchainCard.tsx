@@ -21,6 +21,7 @@ import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import {
   INTENTION_CONFIG,
+  type IntentionType,
   predicateLabelToIntentionType
 } from "~/types/intentionCategories"
 
@@ -28,7 +29,7 @@ import { useRouter } from "../layout/RouterProvider"
 import WeightModal from "../modals/WeightModal"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import { IntentionSelector } from "./IntentionSelector"
 import { InterestContextSelector } from "./InterestContextSelector"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
@@ -122,6 +123,10 @@ const PageBlockchainCard = () => {
   // topicConfig, not the user's staked positions. Topic positions are
   // no longer needed here.
   const [selectedContext, setSelectedContext] = useState<string | null>(null)
+  // Single active intention picked in the dropdown (null = placeholder).
+  // Drives what's queued in the cart; switching/clearing toggles the cart.
+  const [selectedIntention, setSelectedIntention] =
+    useState<IntentionType | null>(null)
 
   // Cart
   const cart = useCart()
@@ -210,6 +215,42 @@ const PageBlockchainCard = () => {
     [currentUrl, pageTitle, cart, selectedContext]
   )
 
+  // Toggle the cart item for an intention type (trust verb or purpose).
+  // Both underlying handlers are toggles: calling them adds when absent,
+  // removes when already queued.
+  const toggleIntentionInCart = useCallback(
+    (type: IntentionType) => {
+      const cfg = INTENTION_CONFIG[type]
+      if (cfg.intentionPurpose) {
+        handleAddToCart(cfg.intentionPurpose as IntentionPurpose)
+      } else if (
+        cfg.predicateLabel === "trusts" ||
+        cfg.predicateLabel === "distrust"
+      ) {
+        handleAddTrustToCart(cfg.predicateLabel)
+      }
+    },
+    [handleAddToCart, handleAddTrustToCart]
+  )
+
+  // Dropdown pick: switch the single active intention. Removes the previous
+  // one from the cart (toggle off) before queueing the new pick.
+  const handleSelectIntention = useCallback(
+    (type: IntentionType) => {
+      if (!currentUrl || type === selectedIntention) return
+      if (selectedIntention) toggleIntentionInCart(selectedIntention)
+      toggleIntentionInCart(type)
+      setSelectedIntention(type)
+    },
+    [currentUrl, selectedIntention, toggleIntentionInCart]
+  )
+
+  // Clear the dropdown: drop the queued intention and reset to placeholder.
+  const handleClearIntention = useCallback(() => {
+    if (selectedIntention) toggleIntentionInCart(selectedIntention)
+    setSelectedIntention(null)
+  }, [selectedIntention, toggleIntentionInCart])
+
   // Reset cart-burst animation flag once the animation has played
   useEffect(() => {
     if (!isBursting) return
@@ -280,26 +321,13 @@ const PageBlockchainCard = () => {
           {!isRestricted && (
             <div className="actions-panel">
               <div className="actions-panel-title">Actions on this page</div>
-              <div className="cert-section">
-                <div className="cert-section-title">Intentions</div>
-                <IntentionBubbleSelector
-                  onBubbleClick={(intention: IntentionPurpose) => {
-                    if (!currentUrl) return
-                    handleAddToCart(intention)
-                  }}
-                  onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
+              <div className="cert-section cert-actions-row">
+                <IntentionSelector
+                  selected={selectedIntention}
+                  onSelect={handleSelectIntention}
+                  onClear={handleClearIntention}
                   disabled={modal.intentionState.loading}
-                  isEligible={true}
-                  certifiedIntentions={certifiedIntentions}
-                  cartIntentions={cartIntentionsForPage}
-                  alreadyTrusted={alreadyTrusted}
-                  alreadyDistrusted={alreadyDistrusted}
-                  trustInCart={trustInCart}
-                  distrustInCart={distrustInCart}
-                  allowDepositContext={!!selectedContext}
                 />
-              </div>
-              <div className="cert-section">
                 <InterestContextSelector
                   selectedContext={selectedContext}
                   onSelectContext={(slug) => {

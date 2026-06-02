@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useReputationScores } from '@/hooks/useReputationScores'
@@ -17,14 +16,7 @@ import LastActivitySection from '@/components/profile/LastActivitySection'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useMemo } from 'react'
-import {
-  InterestHero,
-  SectionTitle,
-  PlatformsGrid,
-  PlatformCard,
-  PlatformAddCard,
-  PlatformSkeleton,
-} from '@0xsofia/design-system'
+import { InterestHero, SectionTitle } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
@@ -34,7 +26,6 @@ export default function InterestPage() {
   const navigate = useNavigate()
   const { user } = usePrivy()
   const { topicById } = useTaxonomy()
-  const { getPlatformsByTopic } = usePlatformCatalog()
   const topic = topicId ? topicById(topicId) : undefined
 
   const { selectedTopics, selectedCategories } = useTopicSelection()
@@ -70,11 +61,6 @@ export default function InterestPage() {
     )
     return userCertsToActivityInputs(filtered)
   }, [onChainProfile.certs, topicId])
-
-  const platforms = topicId ? getPlatformsByTopic(topicId) : []
-  const connectedPlatforms = platforms.filter(
-    (p) => getStatus(p.id) === 'connected',
-  )
 
   if (!topic) {
     return (
@@ -130,33 +116,6 @@ export default function InterestPage() {
         explanation={topicScore?.explanation}
       />
       <div className="ip-sections">
-        {/* Platforms */}
-        <section className="ip-section">
-          <SectionTitle>
-            Platforms ({connectedPlatforms.length}/{platforms.length})
-          </SectionTitle>
-          <PlatformsGrid>
-            {connectedPlatforms.map((p) => (
-              <PlatformCard
-                key={p.id}
-                faviconSrc={`/favicons/${p.id}.png`}
-                name={p.name}
-                status="Connected"
-                connected
-              />
-            ))}
-            <PlatformAddCard
-              onClick={() => navigate(`/profile/interest/${topicId}/platforms`)}
-            />
-            {Array.from(
-              { length: Math.max(0, 11 - connectedPlatforms.length) },
-              (_, i) => (
-                <PlatformSkeleton key={`skel-${i}`} label="Connect platform" />
-              ),
-            )}
-          </PlatformsGrid>
-        </section>
-
         {/* Certified in this topic — same bento layout as the personal
             profile's Echoes section so visitors see a consistent
             language across the app. */}

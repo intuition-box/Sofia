@@ -6,8 +6,7 @@
  * circle atom + membership triple + N has_tag triples at submit time.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Check, ChevronDown, Search, X } from 'lucide-react'
+import { Check, ChevronDown, Search, X } from 'lucide-react'
 import { type AccountAtom, useSearchAccounts } from '@/hooks/useSearchAccounts'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { useCart, type CircleDraft } from '@/hooks/useCart'
@@ -29,7 +28,6 @@ interface DraftMember {
 interface DraftCircle {
   name: string
   description: string
-  actionsPerMonth: number
   /** Multi-select — each selected topic produces one (circle, has_tag,
    *  topic) triple alongside the membership triple at submit. */
   topicIds: string[]
@@ -39,7 +37,6 @@ interface DraftCircle {
 const EMPTY_DRAFT: DraftCircle = {
   name: '',
   description: '',
-  actionsPerMonth: 30,
   topicIds: [],
   members: [],
 }
@@ -50,7 +47,6 @@ export default function CreateCircleDrawer({
   open,
   onClose,
 }: CreateCircleDrawerProps) {
-  const navigate = useNavigate()
   const cart = useCart()
   const [draft, setDraft] = useState<DraftCircle>(EMPTY_DRAFT)
   const [topicQuery, setTopicQuery] = useState('')
@@ -124,7 +120,6 @@ export default function CreateCircleDrawer({
       return 'Name must be at least 3 characters'
     if (draft.description.trim().length < 10)
       return `Description must be at least 10 characters (${draft.description.trim().length}/10)`
-    if (draft.actionsPerMonth <= 0) return 'Pick a positive actions/month value'
     if (draft.topicIds.length < 1) return 'Select at least one theme'
     return null
   })()
@@ -260,56 +255,6 @@ export default function CreateCircleDrawer({
             />
             <span className="cc-help">{draft.description.length}/240</span>
           </label>
-
-          <div className="cc-field">
-            <div className="cc-slider-head">
-              <span className="cc-label">Actions per month</span>
-              <span className="cc-slider-value">{draft.actionsPerMonth}</span>
-            </div>
-            <input
-              type="range"
-              className="cc-slider"
-              min={1}
-              max={500}
-              step={1}
-              value={draft.actionsPerMonth}
-              onChange={(e) =>
-                setDraft((d) => ({
-                  ...d,
-                  actionsPerMonth: Number(e.target.value),
-                }))
-              }
-              style={
-                {
-                  ['--cc-slider-progress' as string]: `${((draft.actionsPerMonth - 1) / 499) * 100}%`,
-                } as React.CSSProperties
-              }
-              aria-valuemin={1}
-              aria-valuemax={500}
-              aria-valuenow={draft.actionsPerMonth}
-            />
-            <div className="cc-slider-scale">
-              <span>1</span>
-              <span>500</span>
-            </div>
-            <div className="cc-quota-row">
-              <span className="cc-help">
-                {/* TODO: wire to real subscription quota once available. */}
-                <strong className="cc-help-num">X</strong> actions left
-              </span>
-              <button
-                type="button"
-                className="cc-sub-cta"
-                onClick={() => {
-                  onClose()
-                  navigate('/settings/billing')
-                }}
-              >
-                <span className="cc-sub-cta-label">Manage subscription</span>
-                <ArrowUpRight className="cc-sub-cta-arrow h-3 w-3" />
-              </button>
-            </div>
-          </div>
 
           <fieldset className="cc-field cc-field-fieldset">
             <legend className="cc-label">

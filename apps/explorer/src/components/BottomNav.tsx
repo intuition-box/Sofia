@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Globe, Users, Layers, Trophy, User } from 'lucide-react'
+import { Globe, Users, Layers, User } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface BottomNavItem {
@@ -23,7 +23,6 @@ const NAV_ITEMS: BottomNavItem[] = [
     primary: true,
     authRequired: true,
   },
-  { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { to: '/profile', label: 'Profile', icon: User, authRequired: true },
 ]
 

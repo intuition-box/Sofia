@@ -12,7 +12,6 @@ import {
 } from '../hooks/useUserCertCountsByTopic'
 import { POINTS_PER_CERT } from '../services/reputationScoreService'
 import { useSignals } from '../hooks/useSignals'
-import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
@@ -21,8 +20,6 @@ import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Button } from './ui/button'
-import ShareProfileModal from './profile/ShareProfileModal'
 import TopicBadge from './profile/TopicBadge'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
@@ -109,7 +106,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     address ? [address as Address] : [],
   )
   const { selectedTopics, selectedCategories } = useTopicSelection()
-  const { getStatus, connectedCount } = usePlatformConnections()
+  const { getStatus } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
   const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
@@ -240,24 +237,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     })
   }, [profile, topicById])
 
-  const {
-    isModalOpen,
-    openShareModal,
-    closeShareModal,
-    shareUrl,
-    ogImageUrl,
-    isLoading: shareLoading,
-    error: shareError,
-    handleCopyLink,
-    handleShareOnX,
-    copied,
-  } = useShareProfile({
-    walletAddress: address,
-    topicScores,
-    connectedCount,
-    totalCertifications: profile.certs.length,
-  })
-
   if (!authenticated) return null
 
   const displayName = address ? getDisplay(address as Address) : ''
@@ -317,26 +296,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             <div className="pd-name-wrap">
               <p className="pd-name">{displayName}</p>
               <p className="pd-address">{shortAddr}</p>
-            </div>
-            <div className="pd-banner-actions">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={openShareModal}
-                disabled={shareLoading}
-                className="pd-share-btn"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="13"
-                  height="13"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                {shareLoading ? 'Sharing...' : 'Share on X'}
-              </Button>
             </div>
           </div>
 
@@ -541,18 +500,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           )}
         </div>
       </aside>
-
-      <ShareProfileModal
-        isOpen={isModalOpen}
-        onClose={closeShareModal}
-        shareUrl={shareUrl}
-        ogImageUrl={ogImageUrl}
-        isLoading={shareLoading}
-        error={shareError}
-        onCopyLink={handleCopyLink}
-        onShareOnX={handleShareOnX}
-        copied={copied}
-      />
     </>
   )
 }

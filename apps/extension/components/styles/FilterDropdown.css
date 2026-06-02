@@ -74,6 +74,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Unset state for placeholder-mode dropdowns (no "All" default). */
+.ext-filter-trigger__value.is-placeholder {
+  color: var(--ds-muted);
+  font-weight: 400;
+}
 .ext-filter-trigger__chev {
   color: var(--ds-muted);
   transition: transform 0.15s ease;

@@ -87,12 +87,6 @@ function RightSidebarContent() {
                         </Link>
                       )
                     })}
-                    <Link
-                      to="/leaderboard"
-                      className="text-xs text-center text-muted-foreground pt-1 block hover:opacity-80"
-                    >
-                      View full leaderboard →
-                    </Link>
                   </>
                 )}
               </CardContent>

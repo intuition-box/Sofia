@@ -32,9 +32,6 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const InterestPage = lazy(() => import('./pages/InterestPage'))
 const DomainSelectionPage = lazy(() => import('./pages/DomainSelectionPage'))
 const NicheSelectionPage = lazy(() => import('./pages/NicheSelectionPage'))
-const PlatformConnectionPage = lazy(
-  () => import('./pages/PlatformConnectionPage'),
-)
 const DomainNicheSelectionPage = lazy(
   () => import('./pages/DomainNicheSelectionPage'),
 )
@@ -49,7 +46,6 @@ const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
-const BillingPage = lazy(() => import('./pages/BillingPage'))
 import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
@@ -83,8 +79,6 @@ export default function App() {
   const location = useLocation()
   const isCallback = location.pathname === '/auth/callback'
   const isLanding = location.pathname === '/'
-  // Standalone routes — no NavSidebar / RightSidebar wrapper.
-  const isStandalone = location.pathname.startsWith('/settings')
   const cart = useCart()
   const sidebar = useSidebarState()
   const { ready: privyReady, authenticated } = usePrivy()
@@ -103,8 +97,7 @@ export default function App() {
     location.pathname.startsWith('/perspective') ||
     location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
-    location.pathname.startsWith('/leaderboard') ||
-    location.pathname.startsWith('/settings')
+    location.pathname.startsWith('/leaderboard')
   const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -173,25 +166,6 @@ export default function App() {
 
   if (isLanding) {
     return <LandingPage />
-  }
-
-  if (isStandalone) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route
-              path="/settings/billing"
-              element={
-                <ProtectedRoute>
-                  <BillingPage />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </Suspense>
-      </div>
-    )
   }
 
   /* On tablet/mobile, the desktop nav-collapse preference doesn't apply —
@@ -345,14 +319,6 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="/profile/interest/:topicId/platforms"
-                  element={
-                    <ProtectedRoute>
-                      <PlatformConnectionPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
                   path="/profile/interest/:topicId/categories"
                   element={
                     <ProtectedRoute>
@@ -450,14 +416,6 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <VotePage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings/billing"
-                  element={
-                    <ProtectedRoute>
-                      <BillingPage />
                     </ProtectedRoute>
                   }
                 />

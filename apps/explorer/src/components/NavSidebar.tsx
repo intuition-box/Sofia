@@ -14,11 +14,9 @@ import {
 import {
   Home,
   User,
-  Trophy,
   Flame,
   Vote,
   Globe,
-  Bell,
   Sun,
   Moon,
   Wallet,
@@ -26,16 +24,12 @@ import {
   ShoppingCart,
   Users,
   Layers,
-  Puzzle,
-  Check,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useMemo } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
-import { useExtensionInstalled } from '../hooks/useExtensionInstalled'
-import { CHROME_STORE_URL } from '../utils/sofiaDetect'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
@@ -97,7 +91,6 @@ export function NavSidebar({
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
-  const extensionInstalled = useExtensionInstalled()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -137,7 +130,6 @@ export function NavSidebar({
     public: boolean
   }[] = [
     { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
-    { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: true },
     { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
@@ -204,14 +196,6 @@ export function NavSidebar({
           {cart.count > 0 && (
             <span className="ns-tool-badge">{cart.count}</span>
           )}
-        </button>
-        <button
-          type="button"
-          className="ns-tool-btn"
-          aria-label="Notifications"
-          title="Notifications"
-        >
-          <Bell className="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -364,30 +348,6 @@ export function NavSidebar({
           pinned right below it. margin-top:auto on .ns-bottom pulls the
           whole group to the bottom of the rail. */}
       <div className="ns-bottom">
-        {extensionInstalled ? (
-          <button
-            type="button"
-            className="ns-extension-btn ns-extension-btn--installed"
-            disabled
-            aria-label="Extension installed"
-            title="Sofia extension installed"
-          >
-            <Check className="h-4 w-4" />
-            {!collapsed && <span>Extension installed</span>}
-          </button>
-        ) : (
-          <a
-            className="ns-extension-btn"
-            href={CHROME_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Download the Sofia extension"
-            title="Download the Sofia extension"
-          >
-            <Puzzle className="h-4 w-4" />
-            {!collapsed && <span>Download the extension</span>}
-          </a>
-        )}
         {ready && !authenticated && (
           <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
             <Wallet className="h-4 w-4 mr-1" />
