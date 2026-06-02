@@ -72,6 +72,7 @@ function starLabel(stars: number): string {
 export default function CircleFeedCard({
   item,
   certifierName,
+  certifierAvatar,
   onDeposit,
   livePositionTermIds,
   mcpScore,
@@ -175,6 +176,21 @@ export default function CircleFeedCard({
 
       {certifierName ? (
         <div className="fc-cert">
+          {certifierAvatar ? (
+            <img
+              src={certifierAvatar}
+              alt=""
+              className="fc-cert-avatar"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+              }}
+            />
+          ) : (
+            <span className="fc-cert-avatar fc-cert-avatar--fallback">
+              {certifierName.slice(0, 1).toUpperCase()}
+            </span>
+          )}
           <span className="fc-cert-label">Certified by</span>
           {item.certifierAddress ? (
             // The outer card is already an <a> so we can't nest another

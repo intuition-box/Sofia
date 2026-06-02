@@ -43,7 +43,23 @@ export default function FeedCard({
   onDeposit,
 }: FeedCardProps) {
   const shownName = isPrivate ? 'Someone' : displayName
-  const canSupport = Object.keys(item.intentionVaults).length > 0
+
+  // Aggregate position counts + the viewer's own stake across every
+  // intention vault — same rule as CircleFeedCard. `userSupported` /
+  // `userOpposed` come from the feed payload (useSofiaFeed passes the
+  // viewer's wallets), so a thumb the user has staked on stays lit
+  // across reloads instead of resetting on every render.
+  let supports = 0
+  let opposes = 0
+  let userSupported = false
+  let userOpposed = false
+  for (const v of Object.values(item.intentionVaults)) {
+    supports += v.supportCount
+    opposes += v.opposeCount
+    if (v.userSupported) userSupported = true
+    if (v.userOpposed) userOpposed = true
+  }
+  const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
   const canOppose = Object.values(item.intentionVaults).some(
     (v) => v.counterTermId,
   )
@@ -129,8 +145,15 @@ export default function FeedCard({
           <div className="fc-positions">
             <button
               type="button"
-              className="fc-pos support"
-              aria-label="Support"
+              className={`fc-pos support${userSupported ? ' active' : ''}`}
+              data-count={supports}
+              aria-label={`Support (${supports})`}
+              aria-pressed={userSupported}
+              title={
+                userSupported
+                  ? `You supported · ${supports} total`
+                  : `${supports} support`
+              }
               onClick={handlePos('support')}
               disabled={!canSupport}
             >
@@ -138,8 +161,15 @@ export default function FeedCard({
             </button>
             <button
               type="button"
-              className="fc-pos oppose"
-              aria-label="Oppose"
+              className={`fc-pos oppose${userOpposed ? ' active' : ''}`}
+              data-count={opposes}
+              aria-label={`Oppose (${opposes})`}
+              aria-pressed={userOpposed}
+              title={
+                userOpposed
+                  ? `You opposed · ${opposes} total`
+                  : `${opposes} oppose`
+              }
               onClick={handlePos('oppose')}
               disabled={!canOppose}
             >

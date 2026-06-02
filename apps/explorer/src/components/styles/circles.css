@@ -1924,7 +1924,13 @@
   gap: 10px;
   overflow-x: auto;
   padding: 2px 2px 8px;
-  scrollbar-width: thin;
+  /* Scrollbar hidden — the strip still scrolls (trackpad / drag) but the
+     bar itself is suppressed for a cleaner header. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.crd-top-engaged-strip::-webkit-scrollbar {
+  display: none;
 }
 .crd-te-card {
   flex: 0 0 360px;
