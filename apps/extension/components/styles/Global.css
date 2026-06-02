@@ -1,7 +1,7 @@
 /* Styles globaux et communs à toute l'application */
 
-/* Import Google Fonts (Geist + Fraunces + JetBrains Mono — same as DS) */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=block');
+/* Import Google Fonts (Geist + Frank Ruhl Libre + JetBrains Mono — same as DS) */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=block');
 
 /* Material Symbols Outlined — topic glyphs in filter dots, same family
    and variation axes as the explorer's TopicBadge. */

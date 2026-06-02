@@ -45,7 +45,7 @@
    * Every app + component references this var instead of hardcoding the
    * family. Swapping the display font = changing this one line (plus the
    * per-app Google Fonts loader URL). */
-  --ds-font-display: 'Fraunces', serif;
+  --ds-font-display: 'Frank Ruhl Libre', serif;
 }
 
 /* Dark selectors:
