@@ -92,6 +92,14 @@ async function fetchOgProxyPreview(
   if (!res.ok) return null
   const data = (await res.json()) as OgProxyResponse
   if (!data.image) return null
+  // The proxy fabricates an SVG placeholder card (its own `/render?…`
+  // endpoint) when the upstream page exposes no real og:image or the
+  // fetch was bot-gated (YouTube, Cloudflare, …). Those bake the site
+  // name + hostname onto a gradient — noise, not content. Treat them as
+  // "no preview" so the client falls back to its own brand-tinted
+  // gradient consistently. Real og:images (the site's own CDN URLs) pass
+  // through untouched.
+  if (/\/render\?/.test(data.image)) return null
   const ratio =
     data.width && data.height ? data.width / data.height : 1200 / 630
   return {

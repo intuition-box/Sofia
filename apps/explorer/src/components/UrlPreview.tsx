@@ -20,6 +20,7 @@ import {
   getUrlPreview,
   type UrlPreview as UrlPreviewData,
 } from '@/utils/urlPreview'
+import { getDomainColor } from '@/utils/domainColor'
 import { useUrlPreviewAsync } from '@/hooks/useUrlPreviewAsync'
 import './styles/url-preview.css'
 
@@ -80,13 +81,25 @@ export function UrlPreview({
 
   if (variant === 'card') {
     const isThumb = effective.kind === 'thumb'
+    // No real image resolved → render only a domain-tinted gradient that
+    // fades to black (no favicon, no text). Keeps OG/thumb fetching
+    // untouched: this branch is reached purely when nothing was found.
+    if (!isThumb) {
+      const host = domain || extractHost(url)
+      return (
+        <div
+          className={['up-card', 'up-card--favicon', className]
+            .filter(Boolean)
+            .join(' ')}
+          style={{ ['--up-fallback-color' as string]: getDomainColor(host) }}
+          role="img"
+          aria-label={alt ?? effective.alt}
+        />
+      )
+    }
     return (
       <div
-        className={[
-          'up-card',
-          isThumb ? 'up-card--thumb' : 'up-card--favicon',
-          className,
-        ]
+        className={['up-card', 'up-card--thumb', className]
           .filter(Boolean)
           .join(' ')}
       >
