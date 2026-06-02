@@ -307,7 +307,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: #02000e;
+  color: var(--intent-ink);
   padding: 5px 11px;
   border-radius: 6px;
   border: none;
@@ -319,28 +319,28 @@
   background: var(--ds-accent);
 }
 .fc-verb-tag.trusted {
-  background: #22c55e;
+  background: var(--intent-trusted);
 }
 .fc-verb-tag.distrusted {
-  background: #ef4444;
+  background: var(--intent-distrusted);
 }
 .fc-verb-tag.work {
-  background: #3b82f6;
+  background: var(--intent-work);
 }
 .fc-verb-tag.learning {
-  background: #06b6d4;
+  background: var(--intent-learning);
 }
 .fc-verb-tag.fun {
-  background: #f59e0b;
+  background: var(--intent-fun);
 }
 .fc-verb-tag.inspiration {
-  background: #8b5cf6;
+  background: var(--intent-inspiration);
 }
 .fc-verb-tag.buying {
-  background: #ec4899;
+  background: var(--intent-buying);
 }
 .fc-verb-tag.music {
-  background: #ff5722;
+  background: var(--intent-music);
 }
 
 /* Star badge (top-right of the card). 5-tier scale: gold (1..3),

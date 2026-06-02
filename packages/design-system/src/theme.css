@@ -79,11 +79,11 @@
 /* ── Sofia predicate colors (unprefixed — shared vocabulary) ── */
 /* Ported 1:1 from proto-explorer/src/styles.css:42-49.
    NOTE: these are the PASTEL versions used in ambient CSS (borders, soft
-   tints, .pf-platform-card.connected, .fc-verb-tag backgrounds). The VIVID
-   versions (#22c55e / #ef4444 / #3b82f6 / …) live in
-   INTENTION_CONFIG (src/taxonomy/intentions.ts) and are pulled via
-   `getIntentionColor()` whenever a pill, badge, or accent needs to read
-   confidently in a white bg. Mixing both is intentional — same mapping as
+   tints, .pf-platform-card.connected). The VIVID versions (#22c55e / … )
+   live in INTENTION_CONFIG (src/taxonomy/intentions.ts), are pulled via
+   `getIntentionColor()` in JS, and are also exposed below as the
+   `--intent-*` CSS tokens for class-based pills/chips. Mixing both is
+   intentional — same mapping as
    the proto. */
 :root,
 [data-theme='light'],
@@ -97,4 +97,20 @@
   --inspiration: #a78bdb;
   --buying: #d98cb3;
   --music: #e0896a;
+
+  /* VIVID intention palette — identical to INTENTION_HEX (src/palette.ts).
+     Tokenized so the 8 pill/badge hex values aren't re-hardcoded across
+     feed + profile CSS (.fc-verb-tag, .group-bento-verb, .pd-la-verb,
+     .echoes-filter-chip.claim). JS still reads them via INTENTION_CONFIG;
+     this is the CSS-class counterpart. */
+  --intent-trusted: #22c55e;
+  --intent-distrusted: #ef4444;
+  --intent-work: #3b82f6;
+  --intent-learning: #06b6d4;
+  --intent-fun: #f59e0b;
+  --intent-inspiration: #8b5cf6;
+  --intent-buying: #ec4899;
+  --intent-music: #ff5722;
+  /* Near-black ink for text sitting on a vivid pill. */
+  --intent-ink: #02000e;
 }

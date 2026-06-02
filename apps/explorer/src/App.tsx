@@ -50,6 +50,19 @@ import './components/styles/design-system.css'
 import './components/styles/layout.css'
 import './components/styles/mobile-shell.css'
 
+/**
+ * First path segment of every PERSONAL `/profile/*` route (see the route
+ * table below). Anything else under `/profile/<x>` is the public profile
+ * (`/profile/:address`). Kept beside the routes so the two stay in sync —
+ * adding a personal sub-route means adding its segment here too. */
+const PERSONAL_PROFILE_SEGMENTS = new Set([
+  'context-manager',
+  'interest',
+  'topics',
+  'categories',
+  'platform',
+])
+
 function InterestsHydrationBoundary() {
   useInterestsHydration()
   return null
@@ -106,9 +119,7 @@ export default function App() {
     : ''
   const isPublicProfile =
     profileSubSegment !== '' &&
-    !['context-manager', 'interest', 'topics', 'categories', 'platform'].includes(
-      profileSubSegment,
-    )
+    !PERSONAL_PROFILE_SEGMENTS.has(profileSubSegment)
   const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
 

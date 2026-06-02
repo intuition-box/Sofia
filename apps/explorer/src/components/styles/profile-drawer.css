@@ -582,33 +582,33 @@ a.pd-la-row:hover {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
-  color: #02000e;
+  color: var(--intent-ink);
   background: var(--ds-accent);
   vertical-align: middle;
 }
 .pd-la-verb.trusted {
-  background: #22c55e;
+  background: var(--intent-trusted);
 }
 .pd-la-verb.distrusted {
-  background: #ef4444;
+  background: var(--intent-distrusted);
 }
 .pd-la-verb.work {
-  background: #3b82f6;
+  background: var(--intent-work);
 }
 .pd-la-verb.learning {
-  background: #06b6d4;
+  background: var(--intent-learning);
 }
 .pd-la-verb.fun {
-  background: #f59e0b;
+  background: var(--intent-fun);
 }
 .pd-la-verb.inspiration {
-  background: #8b5cf6;
+  background: var(--intent-inspiration);
 }
 .pd-la-verb.buying {
-  background: #ec4899;
+  background: var(--intent-buying);
 }
 .pd-la-verb.music {
-  background: #ff5722;
+  background: var(--intent-music);
 }
 
 .pd-la-topic {

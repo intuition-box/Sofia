@@ -28,6 +28,7 @@ import type { UserCert } from '@/services/userOnChainProfileService'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import TopicBadge from '@/components/profile/TopicBadge'
+import type { TopicChip } from '@/types/profileChips'
 
 interface PublicProfileAsideProps {
   walletAddress?: string
@@ -108,7 +109,7 @@ export default function PublicProfileAside({
           if (!t) return null
           return { id: slug, label: t.label.split(' ')[0], color: t.color }
         })
-        .filter((x): x is { id: string; label: string; color: string } => !!x),
+        .filter((x): x is TopicChip => !!x),
     [certCountsByTopic, topicById],
   )
 
@@ -139,16 +140,15 @@ export default function PublicProfileAside({
           <p className="ppa-section-title">Socials</p>
           <div className="ppa-socials">
             {SOCIALS.map((s) => (
-              <a
+              <button
                 key={s.key}
+                type="button"
                 className="ppa-social"
-                href="#"
-                onClick={(e) => e.preventDefault()}
                 aria-label={s.label}
                 title={s.label}
               >
                 {s.node}
-              </a>
+              </button>
             ))}
           </div>
         </div>

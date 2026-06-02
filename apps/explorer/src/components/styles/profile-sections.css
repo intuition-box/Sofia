@@ -552,32 +552,32 @@
   line-height: 1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #02000e;
+  color: var(--intent-ink);
   background: var(--ds-accent);
 }
 .bento-grid-3 .group-bento-verb.trusted {
-  background: #22c55e;
+  background: var(--intent-trusted);
 }
 .bento-grid-3 .group-bento-verb.distrusted {
-  background: #ef4444;
+  background: var(--intent-distrusted);
 }
 .bento-grid-3 .group-bento-verb.work {
-  background: #3b82f6;
+  background: var(--intent-work);
 }
 .bento-grid-3 .group-bento-verb.learning {
-  background: #06b6d4;
+  background: var(--intent-learning);
 }
 .bento-grid-3 .group-bento-verb.fun {
-  background: #f59e0b;
+  background: var(--intent-fun);
 }
 .bento-grid-3 .group-bento-verb.inspiration {
-  background: #8b5cf6;
+  background: var(--intent-inspiration);
 }
 .bento-grid-3 .group-bento-verb.buying {
-  background: #ec4899;
+  background: var(--intent-buying);
 }
 .bento-grid-3 .group-bento-verb.music {
-  background: #ff5722;
+  background: var(--intent-music);
 }
 
 /* ── Echoes quick-filter bar (Top Platforms / Top Claims) ───────────
@@ -651,28 +651,28 @@
   background: var(--ds-accent);
 }
 .echoes-filter-chip.claim.trusted::before {
-  background: #22c55e;
+  background: var(--intent-trusted);
 }
 .echoes-filter-chip.claim.distrusted::before {
-  background: #ef4444;
+  background: var(--intent-distrusted);
 }
 .echoes-filter-chip.claim.work::before {
-  background: #3b82f6;
+  background: var(--intent-work);
 }
 .echoes-filter-chip.claim.learning::before {
-  background: #06b6d4;
+  background: var(--intent-learning);
 }
 .echoes-filter-chip.claim.fun::before {
-  background: #f59e0b;
+  background: var(--intent-fun);
 }
 .echoes-filter-chip.claim.inspiration::before {
-  background: #8b5cf6;
+  background: var(--intent-inspiration);
 }
 .echoes-filter-chip.claim.buying::before {
-  background: #ec4899;
+  background: var(--intent-buying);
 }
 .echoes-filter-chip.claim.music::before {
-  background: #ff5722;
+  background: var(--intent-music);
 }
 
 /* ── PlatformDetailPage toolbar ── */
@@ -1277,7 +1277,7 @@
 .pp-trust-btn--trusted {
   background: var(--trusted, #6dd4a0);
   border-color: var(--trusted, #6dd4a0);
-  color: #02000e;
+  color: var(--intent-ink);
   cursor: default;
 }
 .pp-trust-btn--trusted:disabled {
@@ -1394,7 +1394,7 @@
   flex-shrink: 0;
   line-height: 1;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-  color: #02000e;
+  color: var(--intent-ink);
 }
 .topic-badge-glyph {
   font-family: 'Material Symbols Outlined', sans-serif;
@@ -1590,7 +1590,7 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
-  text-decoration: none;
+  cursor: pointer;
   transition:
     border-color 0.15s ease,
     color 0.15s ease,

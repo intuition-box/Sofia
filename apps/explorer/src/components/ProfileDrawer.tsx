@@ -24,6 +24,7 @@ import TopicBadge from './profile/TopicBadge'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
+import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -203,7 +204,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           // a raw emoji into the action-label string.
           // Tagging activity carries no intention verb — just the topic
           // chip (same chip as the Echoes cards).
-          verb: null as { label: string; cssClass: string } | null,
+          verb: null as Verb | null,
           topic: e.topicSlug
             ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
             : null,
@@ -215,7 +216,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // Verb chip per intention — same colored-pill language as the
       // Echoes cards. `cssClass` maps to the intent palette; an empty
       // class falls back to the neutral accent for unknown predicates.
-      let verb: { label: string; cssClass: string } | null = {
+      let verb: Verb | null = {
         label: 'Certified',
         cssClass: '',
       }
@@ -238,7 +239,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         timestamp: e.ts,
         isOppose,
         verb,
-        topic: null as { id: string; label: string; color: string } | null,
+        topic: null as TopicChip | null,
       }
     })
   }, [profile, topicById])

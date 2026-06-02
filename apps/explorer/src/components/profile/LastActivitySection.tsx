@@ -15,6 +15,7 @@ import { useGroupPreview } from '@/hooks/useGroupPreview'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import TopicBadge from '@/components/profile/TopicBadge'
+import type { TopicChip } from '@/types/profileChips'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
 /** Topic-id → label + color resolver, sourced from `useTaxonomy`. */
@@ -85,7 +86,7 @@ function GroupTags({
       if (!t) return null
       return { id, label: t.label.split(' ')[0], color: t.color }
     })
-    .filter((x): x is { id: string; label: string; color: string } => !!x)
+    .filter((x): x is TopicChip => !!x)
     .slice(0, 2)
 
   const verbs = (Object.keys(group.certificationBreakdown) as IntentionType[])
