@@ -10,7 +10,7 @@
     "dev:explorer": "bun run --filter explorer dev",
     "dev:extension": "bun run --filter extension dev",
     "dev:og": "bun run --filter og-proxy dev",
-    "dev:doc": "bun run --filter doc start",
+    "dev:doc": "bun run --filter doc dev",
     "dev:landing": "bun run --filter landing dev",
     "dev:blog": "bun run --filter blog dev",
     "dev:mastra": "bun run --filter mastra dev",

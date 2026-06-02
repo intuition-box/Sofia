@@ -1,7 +1,12 @@
-import React from 'react'
+import type { ReactNode } from 'react'
 
+/**
+ * `@site/src/components/docs/DocCardGrid` — API-compatible with the
+ * old Docusaurus component (`children`, `columns?`). Migrated MDX
+ * uses it unchanged.
+ */
 interface DocCardGridProps {
-  children: React.ReactNode
+  children: ReactNode
   columns?: 2 | 3 | 4
 }
 
@@ -10,10 +15,7 @@ export default function DocCardGrid({
   columns = 2,
 }: DocCardGridProps) {
   return (
-    <div
-      className="doc-card-grid"
-      style={{ ['--doc-card-cols' as string]: columns }}
-    >
+    <div className="mdoc-card-grid" data-cols={columns}>
       {children}
     </div>
   )

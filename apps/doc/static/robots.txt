@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://doc.sofia.intuition.box/sitemap.xml

@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1-labs
 # Sofia Doc — Coolify deployment.
 #
-# Docusaurus static site. Build outputs to apps/doc/build/ (NOT dist/).
+# Static SPA (Vite + React + MDX) served via nginx. Same workspace-aware
+# pattern as apps/blog and apps/landing. (Replaced the old Docusaurus
+# site — same apps/doc/ path so Coolify needs no reconfig.)
 #
 # Build context : mono-repo root (core/).
 # Build command (local):
@@ -19,16 +21,14 @@ WORKDIR /repo
 # never breaks this list again.
 COPY --parents package.json bun.lock tsconfig.base.json apps/*/package.json packages/*/package.json services/*/package.json ./
 
-# Bun's tarball extraction is flaky in CI when fetching @next/swc-* native
-# binaries (transitive via apps/og workspace). Retry once on failure.
-RUN bun install --frozen-lockfile || bun install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
-# Doc imports @0xsofia/design-system tokens (custom.css → theme.css +
-# page-hero.css), so the package sources must be present at build.
+# Doc imports @0xsofia/design-system tokens, so the package sources must
+# be present at build.
 COPY packages/design-system/ ./packages/design-system/
 COPY apps/doc/ ./apps/doc/
 
-# Docusaurus emits to apps/doc/build/.
+# Vite emits to apps/doc/dist/.
 RUN bun run --filter doc build
 
 # ── Runtime stage ──────────────────────────────────────────────────
@@ -37,7 +37,7 @@ FROM nginx:alpine
 RUN rm -f /etc/nginx/conf.d/default.conf
 COPY apps/doc/nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=build /repo/apps/doc/build /usr/share/nginx/html
+COPY --from=build /repo/apps/doc/dist /usr/share/nginx/html
 
 EXPOSE 80
 
