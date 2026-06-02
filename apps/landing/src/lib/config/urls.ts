@@ -1,8 +1,10 @@
+// `||` (not `??`) so an empty build-arg from Coolify (VITE_DOCS_URL="")
+// still falls back to the default — `??` only catches null/undefined.
 const DOCS_BASE =
-  import.meta.env.VITE_DOCS_URL ?? 'https://doc.sofia.intuition.box'
+  import.meta.env.VITE_DOCS_URL || 'https://doc.sofia.intuition.box'
 
 const BLOG_BASE =
-  import.meta.env.VITE_BLOG_URL ?? 'https://blog.sofia.intuition.box'
+  import.meta.env.VITE_BLOG_URL || 'https://blog.sofia.intuition.box'
 
 export const URLS = {
   docs: {
