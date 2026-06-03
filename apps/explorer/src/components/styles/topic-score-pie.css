@@ -3,9 +3,16 @@
    focus-driven dim/hot state and a centre that swaps to the hovered topic. */
 .donut {
   position: relative;
-  width: 248px;
-  height: 248px;
-  max-width: 100%;
+  /* Fluid square: caps at 248px but shrinks with its column, keeping a
+     1:1 ratio (height was previously locked to 248px, which distorted the
+     ring and overflowed the score column on narrow viewports). The
+     container context lets the centre text scale with the donut. */
+  width: 100%;
+  max-width: 248px;
+  aspect-ratio: 1;
+  height: auto;
+  margin-inline: auto;
+  container-type: inline-size;
 }
 .donut-svg {
   width: 100%;
@@ -73,13 +80,15 @@
 .donut-num {
   font-family: var(--ds-font-display);
   font-weight: 700;
-  font-size: 46px;
+  /* Scales with the donut (container query inline size) so the total
+     never overflows the hole when the donut shrinks. */
+  font-size: clamp(26px, 19cqi, 46px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .donut-center.has-focus .donut-num {
-  font-size: 40px;
+  font-size: clamp(22px, 16cqi, 40px);
 }
 .donut-cap {
   font-family: 'JetBrains Mono', monospace;
