@@ -1,26 +1,24 @@
 /**
- * ProfileCharts — port of proto-explorer `renderProfileCharts`.
+ * ProfileCharts — the "Score & Activity" panel (Claude Design handoff).
  *
- * Layout:
- *   ┌───────────────────────────────────────────────┐
- *   │ pc-main (wide)                                 │
- *   │  ┌─────────────┐   ┌────────────────────────┐ │
- *   │  │ Radar chart │   │ Details panel          │ │
- *   │  │             │   │ + Activity calendar    │ │
- *   │  └─────────────┘   └────────────────────────┘ │
- *   └───────────────────────────────────────────────┘
+ * Layout: one wide card, two columns —
+ *   ┌──────────────────────────────────────────────┐
+ *   │ pc-main (wide)                                │
+ *   │  ┌────────────┐   ┌─────────────────────────┐ │
+ *   │  │ Score      │   │ Activity heatmap        │ │
+ *   │  │ donut      │   │ (topics + verbs)        │ │
+ *   │  └────────────┘   └─────────────────────────┘ │
+ *   └──────────────────────────────────────────────┘
  *
- * This file stays layout-only; all derivation lives in hooks:
- *   - `useRadarFocus`         → topic/verb axes + displayedSeries + focus
- *   - `useProfileTopicStats`  → stats for the details panel
- *   - `useCalendarSeries`     → per-topic calendar heat-map
+ * Layout-only; derivation lives in hooks:
+ *   - `useRadarFocus`     → `focus` (kept 'all'; feeds the calendar resolver)
+ *   - `useCalendarSeries` → per-topic + per-verb heat-map series
+ * A lifted `hoverTopic` cross-highlights the donut, its centre, and the
+ * heatmap off one topic id.
  */
 import { useMemo, useState } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { usePlatformConnections } from '@/hooks/usePlatformConnections'
-import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRadarFocus } from '@/hooks/useRadarFocus'
-import { useProfileTopicStats } from '@/hooks/useProfileTopicStats'
 import { useCalendarSeries } from '@/hooks/useCalendarSeries'
 import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
@@ -30,13 +28,9 @@ import TopicScorePie, { type TopicPieSlice } from './TopicScorePie'
 import '../styles/profile-charts.css'
 
 interface ProfileChartsProps {
-  walletAddress?: string
-  hideplatformPositions?: boolean
-  /** Selected topic slugs — drives the calendar legend + radar axes. */
+  /** Selected topic slugs — feed the calendar series resolver. */
   selectedTopics?: string[]
-  /** Selected category ids — used by the details panel stats. */
-  selectedCategories?: string[]
-  /** Topic reputation scores — fed into the details panel "Topic Score" row. */
+  /** Topic reputation scores — sized into the score-donut slices. */
   topicScores?: TopicScore[]
   /**
    * Linked-wallet addresses, unioned for the calendar heat-map. Pass
@@ -44,40 +38,23 @@ interface ProfileChartsProps {
    * for a public profile.
    */
   addresses?: readonly string[]
-  /** When provided, renders a "View details" button under the score donut
-   *  (personal profile → /scores). Omitted on the public profile, which
-   *  is read-only and has no scores page for the viewed wallet. */
+  /** When provided, hovering the donut centre reveals a "View details"
+   *  button (personal profile → /scores). Omitted on the public profile,
+   *  which is read-only and has no scores page for the viewed wallet. */
   onViewScores?: () => void
 }
 
 export default function ProfileCharts({
   selectedTopics = [],
-  selectedCategories = [],
   topicScores = [],
   addresses,
   onViewScores,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
-  const { getStatus } = usePlatformConnections()
-  const { getPlatformsByTopic } = usePlatformCatalog()
 
   // Radar removed — the score donut replaces it. We still read `focus`
-  // (stays 'all' with no pills) for the calendar / top-platforms / details
-  // overview, plus `verbCertCounts` for the details panel.
-  const { focus, verbCertCounts } = useRadarFocus(
-    selectedTopics,
-    topicById,
-    addresses,
-  )
-
-  const topicStats = useProfileTopicStats({
-    selectedTopics,
-    selectedCategories,
-    topicById,
-    topicScores,
-    getPlatformsByTopic,
-    getStatus,
-  })
+  // (stays 'all' with no pills) so the calendar series resolver behaves.
+  const { focus } = useRadarFocus(selectedTopics, topicById, addresses)
 
   const calendarSeries = useCalendarSeries(
     selectedTopics,
@@ -141,24 +118,13 @@ export default function ProfileCharts({
                   slices={pieSlices}
                   focus={hoverTopic}
                   setFocus={setHoverTopic}
+                  onViewDetails={onViewScores}
                 />
               ) : (
                 <p className="pc-score-empty">
                   Certify pages to build your score.
                 </p>
               )}
-              {onViewScores && pieSlices.length > 0 ? (
-                <button
-                  type="button"
-                  className="pc-score-view-btn"
-                  onClick={onViewScores}
-                >
-                  <span>View details</span>
-                  <span className="pc-score-view-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </button>
-              ) : null}
             </div>
           </div>
           <div className="pc-main-right">

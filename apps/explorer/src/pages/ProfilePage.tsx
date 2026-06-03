@@ -170,10 +170,7 @@ export default function ProfilePage() {
             interest rail directly, so we no longer render a standalone
             My Interests section. */}
         <ProfileCharts
-          walletAddress={address}
-          hideplatformPositions={isViewingAs}
           selectedTopics={selectedTopics}
-          selectedCategories={selectedCategories}
           topicScores={topicScores}
           addresses={myAddresses}
           onViewScores={isViewingAs ? undefined : () => navigate('/scores')}

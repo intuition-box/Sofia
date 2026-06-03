@@ -160,7 +160,10 @@ export default function ActivityCalendar({
                   totalDay,
                   rows: perTopic,
                 })
-                if (totalDay > 0) setFocus?.(dominant.id)
+                // Only write shared focus when the dominant topic actually
+                // changes — avoids re-rendering the donut + grid on every
+                // cell the mouse sweeps across within the same topic.
+                if (totalDay > 0 && dominant.id !== focus) setFocus?.(dominant.id)
               }
 
               return (
@@ -170,6 +173,11 @@ export default function ActivityCalendar({
                   style={cellStyle}
                   data-day={daysAgo}
                   data-count={totalDay}
+                  aria-label={
+                    totalDay > 0
+                      ? `${dominant.label}: ${totalDay} on ${dateStringForDaysAgo(daysAgo)}`
+                      : undefined
+                  }
                   onMouseEnter={handleEnter}
                   onMouseLeave={() => {
                     setTip(null)

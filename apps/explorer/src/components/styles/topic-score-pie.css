@@ -30,13 +30,45 @@
 
 .donut-center {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Sized to the donut hole only — the ring/segments sit outside it, so
+     segments stay hoverable while the centre itself is interactive
+     (hovering it swaps the total for the "View details" button). */
+  width: 56%;
+  height: 56%;
+  border-radius: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  pointer-events: none;
+  pointer-events: auto;
+}
+.donut-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+.donut-view-btn:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
 }
 .donut-num {
   font-family: var(--ds-font-display);

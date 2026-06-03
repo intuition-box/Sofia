@@ -222,10 +222,7 @@ export default function PublicProfilePage() {
             someone else's profile. The component already accepts a foreign
             `addresses` array (see prop docs) so no fork needed. */}
         <ProfileCharts
-          walletAddress={walletAddress}
-          hideplatformPositions
           selectedTopics={selectedTopics}
-          selectedCategories={selectedCategories}
           topicScores={topicScores}
           addresses={addresses}
         />
