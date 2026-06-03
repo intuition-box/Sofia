@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import type { Address } from 'viem'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Star, Activity } from 'lucide-react'
+import { Star } from 'lucide-react'
 import TrendingPages from './TrendingPages'
 import { useRightRailContent } from '@/contexts/RightRailContext'
 import { useTrustLeaderboard } from '@/hooks/useTrustLeaderboard'
@@ -94,21 +94,6 @@ function RightSidebarContent() {
 
             {/* Trending Pages */}
             <TrendingPages />
-
-            {/* Live Activity */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Activity from your trust circle will appear here.
-                </p>
-              </CardContent>
-            </Card>
           </>
         )}
       </div>

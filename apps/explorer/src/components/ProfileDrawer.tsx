@@ -325,14 +325,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                 </span>
                 <span className="pd-impact-label">Votes</span>
               </div>
-              <div
-                className="pd-impact-cell pd-impact-cell--coming"
-                title="Gold sponsored — lands with the Boost feature"
-              >
-                <span className="pd-impact-num">—</span>
-                <span className="pd-impact-label">Gold</span>
-                <span className="pd-impact-soon">soon</span>
-              </div>
             </div>
           </div>
 
