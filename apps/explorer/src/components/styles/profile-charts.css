@@ -89,9 +89,9 @@
 
 .pc-main {
   display: grid;
-  /* Narrower score column, wider activity column so the GitHub-style
-     calendar gets more room. */
-  grid-template-columns: 0.8fr 1.2fr;
+  /* Claude Design "Score & Activity": fixed score column, the activity
+     calendar takes the rest so it reads big and GitHub-like. */
+  grid-template-columns: 392px 1fr;
   gap: 24px;
   min-height: 280px;
 }
@@ -207,6 +207,9 @@
 .pc-cal-wrap {
   position: relative;
   --cal-0: var(--ds-border-soft);
+  /* Claude Design "Score & Activity" heatmap: fixed-size cells. */
+  --cell: 19px;
+  --cell-gap: 5px;
 }
 
 .pc-cal {
@@ -234,8 +237,8 @@
   grid-column: 2;
   grid-row: 1;
   display: grid;
-  grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
-  column-gap: 3px;
+  grid-template-columns: repeat(var(--cal-weeks, 18), var(--cell));
+  column-gap: var(--cell-gap);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
@@ -252,8 +255,8 @@
   grid-column: 1;
   grid-row: 2;
   display: grid;
-  grid-template-rows: repeat(7, minmax(0, 1fr));
-  row-gap: 3px;
+  grid-template-rows: repeat(7, var(--cell));
+  row-gap: var(--cell-gap);
   align-items: center;
   justify-items: end;
   font-family: 'JetBrains Mono', monospace;
@@ -268,37 +271,43 @@
   grid-column: 2;
   grid-row: 2;
   display: grid;
-  grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
-  grid-template-rows: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cal-weeks, 18), var(--cell));
+  grid-template-rows: repeat(7, var(--cell));
   grid-auto-flow: column;
-  column-gap: 3px;
-  row-gap: 3px;
-  aspect-ratio: calc(var(--cal-weeks, 18)) / 7;
-  width: 100%;
+  column-gap: var(--cell-gap);
+  row-gap: var(--cell-gap);
+  width: max-content;
 }
 
 .pc-cal-cell {
   width: 100%;
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--cal-0);
   transition:
-    transform 0.15s ease,
-    outline-color 0.15s ease;
+    transform 0.12s ease,
+    outline-color 0.12s ease,
+    opacity 0.16s ease;
   outline: 1px solid transparent;
 }
 .pc-cal-cell[data-day] {
   cursor: pointer;
 }
 .pc-cal-cell[data-day]:hover {
-  transform: scale(1.3);
+  transform: scale(1.22);
   outline-color: var(--ds-ink);
   outline-offset: 1px;
   z-index: 2;
   position: relative;
+  opacity: 1;
 }
 .pc-cal-cell.l0 {
   background: var(--cal-0);
+}
+/* Cross-highlight: active cells of non-focused topics dim (mirrors the
+   donut's dim state). */
+.pc-cal-cell.dim {
+  opacity: 0.18;
 }
 
 /* Days with multiple topics active get a tiny corner notch. */
@@ -612,7 +621,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 440px;
   padding: 4px 10px 10px;
   overflow: visible;
 }
@@ -624,8 +632,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex: 1;
   width: 100%;
   padding: 8px 0;
 }
@@ -642,29 +648,42 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 4px;
-  padding: 9px 18px;
+  gap: 9px;
+  margin-top: 22px;
+  padding: 11px 20px;
   border-radius: 999px;
   border: 1px solid var(--ds-border);
-  background: var(--ds-card);
-  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink-soft);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
+  /* Hidden at rest — revealed when hovering the donut block (pure CSS,
+     per the Claude Design spec). */
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
   transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+.pc-score-donut:hover .pc-score-view-btn,
+.pc-score-donut:focus-within .pc-score-view-btn {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .pc-score-view-btn:hover {
-  border-color: var(--ds-ink-soft);
-  transform: translateY(-1px);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
 }
 .pc-score-view-arrow {
-  color: var(--ds-muted);
+  color: inherit;
   font-weight: 600;
 }
 .pc-radar {

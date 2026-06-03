@@ -1,13 +1,14 @@
 /**
- * TopicScorePie — donut of the user's reputation split across topics.
- * Used by the ProfileCharts main panel. Ported from proto renderTopicPie.
+ * TopicScorePie — reputation donut, split across topics (+ a "No context"
+ * slice). Implements the Claude Design "Score & Activity" donut: a balanced
+ * ring of rounded segments with 3° gaps (no grey "other" arc), rotated so it
+ * starts at 12 o'clock. The centre shows the total; hovering a segment dims
+ * the rest, fattens the hovered one, and swaps the centre to that topic's
+ * score + name in its colour.
  *
- * Hovering a slice highlights it and swaps the donut centre to show that
- * slice's label + score (in the slice colour); the centre returns to the
- * total on mouse-out. This replaces the old below-the-donut legend list,
- * which got clipped by the card's `overflow: hidden`.
+ * `focus` is LIFTED to the parent (ProfileCharts) so the donut, the legend
+ * and the activity heatmap all cross-highlight off the same topic id.
  */
-import { useState } from 'react'
 import '../styles/topic-score-pie.css'
 
 export interface TopicPieSlice {
@@ -18,68 +19,72 @@ export interface TopicPieSlice {
   score: number
 }
 
-export default function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const realTotal = slices.reduce((a, s) => a + s.score, 0)
-  // When no topic has scored yet, fall back to equal slices so the ring
-  // still teases the colour breakdown.
-  const equalFallback = realTotal === 0 && slices.length > 0
-  const denom = equalFallback ? slices.length : realTotal
-  const r = 50
-  const C = 2 * Math.PI * r
-  let cursor = 0
+interface TopicScorePieProps {
+  slices: TopicPieSlice[]
+  focus: string | null
+  setFocus: (id: string | null) => void
+}
 
-  const active = activeId ? (slices.find((s) => s.id === activeId) ?? null) : null
+const R = 104
+const SW = 26
+const C = 2 * Math.PI * R
+const GAP_DEG = 0
+
+export default function TopicScorePie({
+  slices,
+  focus,
+  setFocus,
+}: TopicScorePieProps) {
+  const total = slices.reduce((a, s) => a + s.score, 0)
+  const gapLen = (GAP_DEG / 360) * C
+
+  // Build arc segments sized by share of total, each shortened by the gap.
+  let acc = 0
+  const segs = slices.map((s) => {
+    const len = total > 0 ? (s.score / total) * C : 0
+    const seg = { slice: s, dash: Math.max(0, len - gapLen), off: -acc }
+    acc += len
+    return seg
+  })
+
+  const focused = focus ? (slices.find((s) => s.id === focus) ?? null) : null
 
   return (
-    <div className="pd-ts-pie-wrap">
-      <svg className="pd-ts-pie" viewBox="0 0 120 120">
-        {slices.map((t) => {
-          const value = equalFallback ? 1 : t.score
-          const pct = denom > 0 ? value / denom : 0
-          const sliceLen = pct * C
-          const rest = C - sliceLen
-          const startDeg = -90 + (denom > 0 ? (cursor / denom) * 360 : 0)
-          cursor += value
-          const dimmed = activeId !== null && activeId !== t.id
-          return (
-            <circle
-              key={t.id}
-              className="pd-ts-slice"
-              cx={60}
-              cy={60}
-              r={r}
-              fill="none"
-              stroke={t.color}
-              strokeWidth={14}
-              strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
-              strokeOpacity={equalFallback ? 0.35 : dimmed ? 0.3 : 1}
-              transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
-              onMouseEnter={() => setActiveId(t.id)}
-              onMouseLeave={() =>
-                setActiveId((cur) => (cur === t.id ? null : cur))
-              }
-            />
-          )
-        })}
-        <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
+    <div className={`donut${focus ? ' dim' : ''}`}>
+      <svg className="donut-svg" viewBox="0 0 248 248">
+        {segs.map((s) => (
+          <circle
+            key={s.slice.id}
+            className={`donut-seg${focus === s.slice.id ? ' hot' : ''}`}
+            cx={124}
+            cy={124}
+            r={R}
+            fill="none"
+            stroke={s.slice.color}
+            strokeWidth={SW}
+            strokeLinecap="butt"
+            strokeDasharray={`${s.dash.toFixed(2)} ${(C - s.dash).toFixed(2)}`}
+            strokeDashoffset={s.off.toFixed(2)}
+            onMouseEnter={() => setFocus(s.slice.id)}
+            onMouseLeave={() => setFocus(null)}
+          />
+        ))}
       </svg>
-      <div className="pd-ts-pie-center">
-        {active ? (
+      <div className={`donut-center${focused ? ' has-focus' : ''}`}>
+        {focused ? (
           <>
-            <span className="pd-ts-pie-value" style={{ color: active.color }}>
-              {Math.round(active.score)}
-            </span>
-            <span className="pd-ts-pie-label pd-ts-pie-label--slice">
-              {active.label}
+            <span className="donut-num">{Math.round(focused.score)}</span>
+            <span
+              className="donut-focus-label"
+              style={{ color: focused.color }}
+            >
+              {focused.label}
             </span>
           </>
         ) : (
           <>
-            <span className="pd-ts-pie-value">{Math.round(realTotal)}</span>
-            <span className="pd-ts-pie-label">
-              {equalFallback ? 'build it up' : 'total'}
-            </span>
+            <span className="donut-num">{Math.round(total).toLocaleString()}</span>
+            <span className="donut-cap">Total signals</span>
           </>
         )}
       </div>

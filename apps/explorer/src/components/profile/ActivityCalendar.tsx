@@ -28,6 +28,11 @@ interface ActivityCalendarProps {
   topicSeries: CalendarTopicSeries[]
   /** Accent color for the radial backdrop. Defaults to `var(--ds-accent)`. */
   accent?: string
+  /** Shared cross-highlight topic id (donut ↔ heatmap ↔ legend). When set,
+   *  active cells / legend items of other topics dim. */
+  focus?: string | null
+  /** Setter for the shared focus — called on cell + legend hover. */
+  setFocus?: (id: string | null) => void
 }
 
 interface CalTooltipState {
@@ -41,6 +46,8 @@ interface CalTooltipState {
 export default function ActivityCalendar({
   topicSeries,
   accent = 'var(--ds-accent)',
+  focus = null,
+  setFocus,
 }: ActivityCalendarProps) {
   const months = useMemo(() => computeCalendarMonthLabels(), [])
   const wrapRef = useRef<HTMLDivElement | null>(null)
@@ -136,6 +143,10 @@ export default function ActivityCalendar({
               const classes = ['pc-cal-cell']
               classes.push(totalDay > 0 ? 'has-data' : 'l0')
               if (activeCount > 1) classes.push('multi')
+              // Cross-highlight: an active cell whose dominant topic isn't
+              // the focused one dims (mirrors the donut's dim state).
+              if (focus && totalDay > 0 && dominant.id !== focus)
+                classes.push('dim')
 
               const handleEnter = (e: React.MouseEvent<HTMLDivElement>) => {
                 // Viewport coords — the tooltip renders fixed so it's not
@@ -149,6 +160,7 @@ export default function ActivityCalendar({
                   totalDay,
                   rows: perTopic,
                 })
+                if (totalDay > 0) setFocus?.(dominant.id)
               }
 
               return (
@@ -159,7 +171,10 @@ export default function ActivityCalendar({
                   data-day={daysAgo}
                   data-count={totalDay}
                   onMouseEnter={handleEnter}
-                  onMouseLeave={() => setTip(null)}
+                  onMouseLeave={() => {
+                    setTip(null)
+                    setFocus?.(null)
+                  }}
                 />
               )
             })}
@@ -204,18 +219,6 @@ export default function ActivityCalendar({
             document.body,
           )}
 
-        <div className="pc-cal-legend">
-          {series.map((td) => (
-            <span
-              key={td.id}
-              className="pc-cal-legend-topic"
-              style={{ ['--leg-color' as string]: td.color }}
-            >
-              <span className="pc-cal-legend-dot" />
-              <span>{td.label}</span>
-            </span>
-          ))}
-        </div>
       </div>
     </div>
   )

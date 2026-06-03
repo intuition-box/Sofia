@@ -15,7 +15,7 @@
  *   - `useProfileTopicStats`  → stats for the details panel
  *   - `useCalendarSeries`     → per-topic calendar heat-map
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
@@ -26,7 +26,6 @@ import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
-import ProfileDetailsPanel from './ProfileDetailsPanel'
 import TopicScorePie, { type TopicPieSlice } from './TopicScorePie'
 import '../styles/profile-charts.css'
 
@@ -120,6 +119,10 @@ export default function ProfileCharts({
     return out
   }, [topicScores, topicById, certCounts.general])
 
+  // Shared cross-highlight topic id — the donut, the heatmap and the legend
+  // all read/write it so hovering one highlights that topic everywhere.
+  const [hoverTopic, setHoverTopic] = useState<string | null>(null)
+
   return (
     <section className="pc-section">
       <div className="pc-grid">
@@ -134,7 +137,11 @@ export default function ProfileCharts({
             </div>
             <div className="pc-score-donut">
               {pieSlices.length > 0 ? (
-                <TopicScorePie slices={pieSlices} />
+                <TopicScorePie
+                  slices={pieSlices}
+                  focus={hoverTopic}
+                  setFocus={setHoverTopic}
+                />
               ) : (
                 <p className="pc-score-empty">
                   Certify pages to build your score.
@@ -158,19 +165,15 @@ export default function ProfileCharts({
             <div className="pc-panel-meta pc-panel-meta--top">
               <span className="pc-panel-meta-left">
                 <span className="pc-panel-meta-dot" aria-hidden="true" />
-                Readout · Overview × Activity
+                Overview × Activity
               </span>
             </div>
-            <ProfileDetailsPanel
-              topics={topicStats}
-              topicFilter={focus === 'all' ? 'all' : focus}
-              onClearFilter={() => undefined}
-              verbCertCounts={verbCertCounts}
-              generalCertCount={certCounts.general}
-              pointsPerCert={POINTS_PER_CERT}
-            />
             <div className="pc-main-cal">
-              <ActivityCalendar topicSeries={calendarSeries} />
+              <ActivityCalendar
+                topicSeries={calendarSeries}
+                focus={hoverTopic}
+                setFocus={setHoverTopic}
+              />
             </div>
           </div>
         </div>
