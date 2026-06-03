@@ -14,15 +14,21 @@
  * heuristic if even that estimate fails. Over-estimating the *limit* is
  * harmless — the sender only pays for gas actually used.
  */
-import type { PublicClient } from 'viem'
-
 /**
  * `config` is the same object handed to `simulateContract` at each call site
  * (address/abi/functionName/args/value/account), so it is already type-checked
  * there; we type it loosely here only to dodge viem's deep generic inference.
+ *
+ * `publicClient` is typed structurally (just the one method we call) rather
+ * than as viem's `PublicClient`: the clients at the call sites carry an
+ * attached account whose type isn't assignable to the bare `PublicClient`
+ * account variance, and we don't need the full surface here.
  */
 export async function explicitGasLimit(
-  publicClient: PublicClient,
+  publicClient: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    estimateContractGas: (config: any) => Promise<bigint>
+  },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any,
   fallback: bigint,

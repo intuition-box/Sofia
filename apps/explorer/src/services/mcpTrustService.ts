@@ -167,9 +167,13 @@ export async function fetchPersonalizedTrust(
   predicates?: readonly string[],
 ): Promise<PersonalizedTrustResult | null> {
   // The engine indexes addresses lowercased; mixed-case (EIP-55) lookups miss.
-  const fromArg = Array.isArray(fromAddress)
-    ? fromAddress.map((a) => a.toLowerCase()).join(',')
-    : fromAddress.toLowerCase()
+  // `typeof` (not Array.isArray) so TS narrows the `readonly string[]` arm —
+  // Array.isArray's `any[]` guard doesn't narrow a readonly array out of the
+  // union, leaving `.toLowerCase()` on `string | readonly string[]`.
+  const fromArg =
+    typeof fromAddress === 'string'
+      ? fromAddress.toLowerCase()
+      : fromAddress.map((a) => a.toLowerCase()).join(',')
   const args: Record<string, unknown> = {
     fromAddress: fromArg,
     toAddress: toAddress.toLowerCase(),
