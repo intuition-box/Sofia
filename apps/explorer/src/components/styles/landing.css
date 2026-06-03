@@ -133,7 +133,9 @@
 .lp-headline {
   font-family: var(--ds-font-display);
   font-weight: 500;
-  font-size: 150px;
+  /* Fluid: caps at 137px on wide desktop (the size validated by hand),
+     scales down with the viewport so it never overflows on narrow screens. */
+  font-size: clamp(2.75rem, 9.5vw, 137px);
   line-height: 0.98;
   letter-spacing: -0.025em;
   color: #f5f3ff;
