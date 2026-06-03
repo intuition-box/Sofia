@@ -171,12 +171,9 @@
   flex-direction: column;
   gap: 10px;
   border-top: 1px dashed var(--ds-border-soft);
-  /* The heatmap is fixed-cell (max-content); when the column gets narrow
-     let it scroll horizontally instead of being clipped by the card's
-     `overflow:hidden`. Thin scrollbar comes from the global rule. */
+  /* The heatmap is now fluid (square cells in fraction columns) so it
+     fits the column at any width — just let it shrink. */
   min-width: 0;
-  overflow-x: auto;
-  padding-bottom: 2px;
 }
 @media (max-width: 900px) {
   .pc-main-right {
@@ -249,7 +246,9 @@
   grid-column: 2;
   grid-row: 1;
   display: grid;
-  grid-template-columns: repeat(var(--cal-weeks, 18), var(--cell));
+  /* Fluid columns — one fraction per week so the month labels track the
+     heatmap as it scales with the container. */
+  grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
   column-gap: var(--cell-gap);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -267,7 +266,9 @@
   grid-column: 1;
   grid-row: 2;
   display: grid;
-  grid-template-rows: repeat(7, var(--cell));
+  /* Fraction rows so the weekday labels stretch to match the now-fluid
+     heatmap row heights (driven by the square cells' aspect-ratio). */
+  grid-template-rows: repeat(7, 1fr);
   row-gap: var(--cell-gap);
   align-items: center;
   justify-items: end;
@@ -283,17 +284,20 @@
   grid-column: 2;
   grid-row: 2;
   display: grid;
-  grid-template-columns: repeat(var(--cal-weeks, 18), var(--cell));
-  grid-template-rows: repeat(7, var(--cell));
+  /* Fluid: one fraction per week, square cells via aspect-ratio. The grid
+     fills the available column width and the cells shrink with it, so the
+     heatmap stays fully responsive instead of overflowing at max-content. */
+  grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
+  grid-template-rows: repeat(7, auto);
   grid-auto-flow: column;
   column-gap: var(--cell-gap);
   row-gap: var(--cell-gap);
-  width: max-content;
+  width: 100%;
 }
 
 .pc-cal-cell {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1;
   border-radius: 4px;
   background: var(--cal-0);
   transition:
