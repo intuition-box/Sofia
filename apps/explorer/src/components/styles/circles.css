@@ -756,7 +756,7 @@
   font-size: 15px;
   line-height: 1.5;
   color: var(--ds-ink-soft);
-  max-width: 52ch;
+  max-width: 108ch;
 }
 
 .crd-hero-right {
