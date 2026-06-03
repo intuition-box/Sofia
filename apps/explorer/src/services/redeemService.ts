@@ -10,6 +10,7 @@ import {
   INTUITION_RPC_URL,
   MULTI_VAULT_ADDRESS,
   MultiVaultAbi,
+  explicitGasLimit,
 } from '../lib/contracts'
 import type { WalletDescriptor } from './depositService'
 
@@ -119,21 +120,22 @@ export async function redeemAtom(
   ] as const
 
   // Simulate first
-  await publicClient.simulateContract({
+  const simConfig = {
     address: MULTI_VAULT_ADDRESS,
     abi: MultiVaultAbi,
     functionName: 'redeem',
     args,
     account: address,
-  })
+  } as const
+
+  await publicClient.simulateContract(simConfig)
+
+  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
 
   const hash = await walletClient.writeContract({
-    address: MULTI_VAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'redeem',
-    args,
+    ...simConfig,
+    gas,
     chain: intuitionChain,
-    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -186,21 +188,26 @@ export async function redeemBatchAtoms(
     valid.map(() => 0n),
   ] as const
 
-  await publicClient.simulateContract({
+  const simConfig = {
     address: MULTI_VAULT_ADDRESS,
     abi: MultiVaultAbi,
     functionName: 'redeemBatch',
     args,
     account: address,
-  })
+  } as const
+
+  await publicClient.simulateContract(simConfig)
+
+  const gas = await explicitGasLimit(
+    publicClient,
+    simConfig,
+    BigInt(valid.length) * 500_000n + 1_000_000n,
+  )
 
   const hash = await walletClient.writeContract({
-    address: MULTI_VAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'redeemBatch',
-    args,
+    ...simConfig,
+    gas,
     chain: intuitionChain,
-    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })

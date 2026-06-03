@@ -10,6 +10,7 @@ import {
   INTUITION_RPC_URL,
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
+  explicitGasLimit,
 } from '../lib/contracts'
 
 // ---------------------------------------------------------------------------
@@ -239,23 +240,23 @@ export async function executeSingleDeposit(
     authorizationList: undefined,
   })
 
-  await publicClient.simulateContract({
+  const simConfig = {
     address: PROXY_ADDRESS,
     abi: SofiaFeeProxyAbi,
     functionName: 'deposit',
     args: [address, termId as `0x${string}`, 1n, 0n],
     value: totalCost,
     account: address,
-  })
+  } as const
+
+  await publicClient.simulateContract(simConfig)
+
+  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
 
   const hash = await client.writeContract({
-    address: PROXY_ADDRESS,
-    abi: SofiaFeeProxyAbi,
-    functionName: 'deposit',
-    args: [address, termId as `0x${string}`, 1n, 0n],
-    value: totalCost,
+    ...simConfig,
+    gas,
     chain: intuitionChain,
-    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -283,23 +284,27 @@ export async function executeBatchDeposit(
   const fee = await calculateFee(items.length, totalDeposit)
   const totalValue = totalDeposit + fee
 
-  await publicClient.simulateContract({
+  const simConfig = {
     address: PROXY_ADDRESS,
     abi: SofiaFeeProxyAbi,
     functionName: 'depositBatch',
     args: [address, termIds, curveIds, assets, minShares],
     value: totalValue,
     account: address,
-  })
+  } as const
+
+  await publicClient.simulateContract(simConfig)
+
+  const gas = await explicitGasLimit(
+    publicClient,
+    simConfig,
+    BigInt(items.length) * 600_000n + 1_000_000n,
+  )
 
   const hash = await client.writeContract({
-    address: PROXY_ADDRESS,
-    abi: SofiaFeeProxyAbi,
-    functionName: 'depositBatch',
-    args: [address, termIds, curveIds, assets, minShares],
-    value: totalValue,
+    ...simConfig,
+    gas,
     chain: intuitionChain,
-    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })

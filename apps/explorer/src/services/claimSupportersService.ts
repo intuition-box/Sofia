@@ -40,13 +40,16 @@ function toStaker(p: {
 
 /**
  * Fetch ordered support/oppose stakers for a set of claims (triple term_ids).
- * Returns a Map keyed by claim term_id; claims with no positions are absent.
+ * Returns a plain object keyed by claim term_id; claims with no positions are
+ * absent. A plain object (not a Map) is intentional: this result is cached by
+ * React Query and persisted to localStorage, and a Map does not survive JSON
+ * serialization (it round-trips to `{}`). The consuming hook rebuilds a Map.
  * Chunks are fired in parallel — the shared fetcher throttles concurrency.
  */
 export async function fetchClaimSupporters(
   claimTermIds: readonly string[],
-): Promise<Map<string, ClaimSupporters>> {
-  const out = new Map<string, ClaimSupporters>()
+): Promise<Record<string, ClaimSupporters>> {
+  const out: Record<string, ClaimSupporters> = {}
   const ids = [...new Set(claimTermIds)].filter(Boolean)
   if (ids.length === 0) return out
 
@@ -61,10 +64,10 @@ export async function fetchClaimSupporters(
 
   for (const data of results) {
     for (const triple of data.triples ?? []) {
-      out.set(triple.term_id, {
+      out[triple.term_id] = {
         support: (triple.support ?? []).map(toStaker),
         oppose: (triple.counter_term?.oppose ?? []).map(toStaker),
-      })
+      }
     }
   }
   return out

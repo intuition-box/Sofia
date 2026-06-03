@@ -171,6 +171,82 @@
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Constrain the whole /scores column to a readable width (bars were spanning
+   the full viewport on wide screens). Each direct child centres at the same
+   max-width so header, tabs and grids stay aligned. */
+.sp-page > * {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+/* Short explainer of the base + boost model, above the topic grid. */
+.sp-explainer {
+  margin: -4px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-ink-soft);
+}
+.sp-explainer strong {
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+
+/* Topic cards are buttons (click → breakdown). Reset button chrome + add the
+   clickable affordance — scoped to button so the verb cards (divs) are unaffected. */
+button.pf-trust-topic {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+button.pf-trust-topic:hover,
+button.pf-trust-topic.is-open {
+  border-color: var(--topic-color, var(--ds-border));
+}
+
+/* Per-topic breakdown revealed on click. */
+.sp-topic-detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ds-border);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sp-topic-detail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.sp-topic-detail-k {
+  color: var(--ds-ink-soft);
+}
+.sp-topic-detail-v {
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.sp-topic-detail-total {
+  margin-top: 2px;
+  padding-top: 7px;
+  border-top: 1px solid var(--ds-border-soft);
+}
+.sp-topic-detail-total .sp-topic-detail-v {
+  color: var(--topic-color, var(--ds-ink));
+}
+.sp-topic-detail-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+}
+
 /* ── Reputation by verb (grid of compact cards — same shape as topic) ── */
 
 .pf-verb-grid {

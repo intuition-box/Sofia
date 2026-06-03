@@ -45,6 +45,13 @@ let initPromise: Promise<void> | null = null
 
 const MCP_ENDPOINT = `${MCP_TRUST_URL}/mcp`
 
+// Per-call timeout. `compute_composite_score` recomputes a full EigenTrust pass
+// server-side, so under a burst (e.g. 48 followers) a single call can hang. A
+// hung fetch would never resolve/reject and would stall the whole batch
+// (Promise.all never settles → query stuck "loading" forever). Aborting turns
+// a hang into a catchable error → the caller falls back to 0. */
+const MCP_TIMEOUT_MS = 20_000
+
 function parseSSE(raw: string): unknown {
   // SSE format: "event: message\ndata: {json}\n\n"
   for (const line of raw.split('\n')) {
@@ -70,6 +77,7 @@ async function mcpPost(
     method: 'POST',
     headers,
     body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
+    signal: AbortSignal.timeout(MCP_TIMEOUT_MS),
   })
 
   const newSessionId = res.headers.get('mcp-session-id')
@@ -158,12 +166,13 @@ export async function fetchPersonalizedTrust(
   toAddress: string,
   predicates?: readonly string[],
 ): Promise<PersonalizedTrustResult | null> {
+  // The engine indexes addresses lowercased; mixed-case (EIP-55) lookups miss.
   const fromArg = Array.isArray(fromAddress)
-    ? fromAddress.join(',')
-    : fromAddress
+    ? fromAddress.map((a) => a.toLowerCase()).join(',')
+    : fromAddress.toLowerCase()
   const args: Record<string, unknown> = {
     fromAddress: fromArg,
-    toAddress,
+    toAddress: toAddress.toLowerCase(),
   }
   if (predicates && predicates.length > 0) {
     args.predicates = [...predicates]

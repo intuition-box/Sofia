@@ -22,6 +22,7 @@ import { useRadarFocus } from '@/hooks/useRadarFocus'
 import { useCalendarSeries } from '@/hooks/useCalendarSeries'
 import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
+import { INTENTION_CONFIG } from '@/config/intentions'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
 import TopicScorePie, { type TopicPieSlice } from './TopicScorePie'
@@ -42,6 +43,8 @@ interface ProfileChartsProps {
    *  button (personal profile → /scores). Omitted on the public profile,
    *  which is read-only and has no scores page for the viewed wallet. */
   onViewScores?: () => void
+  /** True while the trust boost is still loading — pulses the donut centre. */
+  refining?: boolean
 }
 
 export default function ProfileCharts({
@@ -49,6 +52,7 @@ export default function ProfileCharts({
   topicScores = [],
   addresses,
   onViewScores,
+  refining = false,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
 
@@ -83,6 +87,31 @@ export default function ProfileCharts({
           score: Math.round(s.score),
         }
       })
+    // Trust / distrust are full circle slices in their own right — they
+    // can't carry a topic context, so they live beside the topics rather
+    // than rotting in the "No context" bucket.
+    const trustedScore = certCounts.trusted * POINTS_PER_CERT
+    if (trustedScore > 0) {
+      out.push({
+        id: 'trusted',
+        label: INTENTION_CONFIG.trusted.label,
+        emoji: '',
+        color: INTENTION_CONFIG.trusted.color,
+        score: Math.round(trustedScore),
+      })
+    }
+    const distrustedScore = certCounts.distrusted * POINTS_PER_CERT
+    if (distrustedScore > 0) {
+      out.push({
+        id: 'distrusted',
+        label: INTENTION_CONFIG.distrusted.label,
+        emoji: '',
+        color: INTENTION_CONFIG.distrusted.color,
+        score: Math.round(distrustedScore),
+      })
+    }
+    // "No context" now only holds taggable certs not yet tagged, so it
+    // actually drains as the user adds context in the Context Manager.
     const generalScore = certCounts.general * POINTS_PER_CERT
     if (generalScore > 0) {
       out.push({
@@ -94,7 +123,13 @@ export default function ProfileCharts({
       })
     }
     return out
-  }, [topicScores, topicById, certCounts.general])
+  }, [
+    topicScores,
+    topicById,
+    certCounts.general,
+    certCounts.trusted,
+    certCounts.distrusted,
+  ])
 
   // Shared cross-highlight topic id — the donut, the heatmap and the legend
   // all read/write it so hovering one highlights that topic everywhere.
@@ -119,6 +154,7 @@ export default function ProfileCharts({
                   focus={hoverTopic}
                   setFocus={setHoverTopic}
                   onViewDetails={onViewScores}
+                  refining={refining}
                 />
               ) : (
                 <p className="pc-score-empty">
