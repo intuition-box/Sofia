@@ -552,33 +552,9 @@
   background: var(--vc, var(--ds-muted));
   flex-shrink: 0;
 }
-
-/* Topic chips — neutral `# Label`, set apart from the colored verbs by a
-   hairline separator (verbs carry intent color, topics stay neutral). */
-.fc-chips-sep {
-  width: 1px;
-  height: 14px;
-  background: var(--ds-border);
-  margin: 0 1px;
-  flex-shrink: 0;
-}
-.fc-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ds-ink-soft);
-  padding: 4px 9px;
-  border-radius: 7px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border);
-}
-.fc-topic .fc-hash {
-  color: var(--ds-muted-soft);
-}
+/* Topics reuse the shared <TopicPill> (.sf-topic-pill, styles/pills.css) —
+   black glyph on the topic color — so the feed cards match the topic pills
+   used across echoes / drawer / profile. */
 
 /* Masonry column layout (CSS columns — no JS needed). */
 /* Row-major grid (was CSS-columns masonry). Items flow left-to-right

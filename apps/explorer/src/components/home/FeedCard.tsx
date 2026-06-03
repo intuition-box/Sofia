@@ -62,7 +62,7 @@ export default function FeedCard({
     .slice(0, 2)
     .map((slug) => {
       const meta = SOFIA_TOPICS.find((t) => t.id === slug)
-      return { id: slug, label: meta?.label ?? slug }
+      return { id: slug, label: meta?.label ?? slug, color: meta?.color }
     })
 
   return (

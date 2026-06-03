@@ -22,6 +22,7 @@
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { UrlPreview } from '@/components/UrlPreview'
+import { TopicPill } from '@/components/profile/FeedPills'
 
 export interface FeedCardVerb {
   label: string
@@ -32,6 +33,8 @@ export interface FeedCardVerb {
 export interface FeedCardTopic {
   id: string
   label: string
+  /** Topic color from the taxonomy — drives the unified <TopicPill> fill. */
+  color?: string
 }
 
 interface FeedCardViewProps {
@@ -212,16 +215,13 @@ export default function FeedCardView({
               {v.label}
             </span>
           ))}
-          {verbs.length > 0 && topics.length > 0 && (
-            <span className="fc-chips-sep" aria-hidden="true" />
-          )}
           {topics.map((t) => (
-            <span key={t.id} className="fc-topic">
-              <span className="fc-hash" aria-hidden="true">
-                #
-              </span>
-              {t.label}
-            </span>
+            <TopicPill
+              key={t.id}
+              topicId={t.id}
+              color={t.color || 'var(--ds-muted)'}
+              label={t.label}
+            />
           ))}
         </div>
       </footer>

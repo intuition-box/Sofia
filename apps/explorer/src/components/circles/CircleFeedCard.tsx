@@ -65,9 +65,9 @@ export default function CircleFeedCard({
   const topics: FeedCardTopic[] = item.topicContexts
     .map((id) => {
       const t = topicById(id)
-      return t ? { id, label: t.label } : null
+      return t ? { id, label: t.label, color: t.color } : null
     })
-    .filter((t): t is FeedCardTopic => t !== null)
+    .filter((t): t is NonNullable<typeof t> => t !== null)
     .slice(0, 2)
 
   // Aggregated position counts and user state across all intention vaults.
