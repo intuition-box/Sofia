@@ -1,18 +1,7 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
-import { useTopicSelection } from '../hooks/useDomainSelection'
-import { usePlatformConnections } from '../hooks/usePlatformConnections'
-import { useReputationScores } from '../hooks/useReputationScores'
-import {
-  useUserCertCountsByTopic,
-  useUserCertCounts,
-} from '../hooks/useUserCertCountsByTopic'
-import { POINTS_PER_CERT } from '../services/reputationScoreService'
-import { useSignals } from '../hooks/useSignals'
-import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { useGroups } from '@/hooks/useGroups'
@@ -20,11 +9,8 @@ import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import TopicBadge from './profile/TopicBadge'
 import { TopicPill, VerbPill } from './profile/FeedPills'
-import TopicScorePie, { type TopicPieSlice } from './profile/TopicScorePie'
-import { getTopicEmoji } from '@/config/topicEmoji'
-import { getIntentionColor, INTENTION_COLORS } from '@/config/intentions'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
@@ -43,28 +29,12 @@ function formatStatCount(n: number): string {
 // ── Main component ────────────────────────────────────────────────────
 
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
-  const navigate = useNavigate()
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
-  const { selectedTopics, selectedCategories } = useTopicSelection()
-  const { getStatus } = usePlatformConnections()
-  const { score: trustScore } = useTrustScore(address || undefined)
-  const { signals } = useSignals(address || undefined)
-  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
-  const certCounts = useUserCertCounts(linkedAddresses)
-  const scores = useReputationScores(
-    getStatus,
-    selectedTopics,
-    selectedCategories,
-    trustScore,
-    signals,
-    certCountsByTopic,
-  )
-  const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
   // Activity comes from the master on-chain profile (alltime, paginated,
   // shared across the page via React Query dedupe). Every cert kind
@@ -193,45 +163,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
-  // Every topic is scored now (#521), so the donut shows only the topics the
-  // user actually has points in, strongest first — avoids a wheel of empty
-  // zero-score slices.
-  const pieSlices: TopicPieSlice[] = [...topicScores]
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .map((s) => {
-      const topic = topicById(s.topicId)
-      return {
-        id: s.topicId,
-        label: topic?.label ?? s.topicId,
-        emoji: getTopicEmoji(s.topicId) || '📌',
-        color: topic?.color ?? getIntentionColor('inspiration'),
-        score: Math.round(s.score),
-      }
-    })
-  // "General" sector for certs the user owns without an `in context of`
-  // nested triple. Counts toward the donut total so power users with
-  // mostly-untagged certs aren't stuck at zero.
-  const generalScore = certCounts.general * POINTS_PER_CERT
-  if (generalScore > 0) {
-    pieSlices.push({
-      id: 'general',
-      label: 'General',
-      emoji: '✨',
-      color: 'var(--ds-muted, #888)',
-      score: generalScore,
-    })
-  }
-
-  // Percentile derived from `trustScore` (0–100, where 100 = most trusted).
-  // We only show a percentile when the user actually has a non-zero score —
-  // a 0 here means "no eigentrust paths yet", which would otherwise render
-  // as the misleading "Top 100%".
-  const percentileLabel =
-    trustScore != null && trustScore > 0
-      ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
-      : 'View details'
-
   return (
     <>
       <aside className={`pd-aside ${isOpen ? 'pd-open' : ''}`}>
@@ -276,71 +207,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               </div>
             </div>
           </div>
-
-          {/* Topic Score pie chart */}
-          <div className="pd-topic-score">
-            <span className="pd-section-title">Score</span>
-            {pieSlices.length > 0 ? (
-              <>
-                <TopicScorePie slices={pieSlices} />
-                <div className="pd-ts-legend">
-                  {pieSlices.map((t) => {
-                    const inner = (
-                      <>
-                        <TopicBadge
-                          topicId={t.id}
-                          color={t.color}
-                          size={18}
-                          title={t.label}
-                        />
-                        <span className="pd-ts-legend-label">{t.label}</span>
-                        <span className="pd-ts-legend-val">{t.score}</span>
-                      </>
-                    )
-                    // The "general" slice is the only one with an
-                    // actionable next step — open the Context Manager
-                    // so the user can tag the URLs that landed in it.
-                    if (t.id === 'general') {
-                      return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          className="pd-ts-legend-item pd-ts-legend-item--link"
-                          style={{ ['--slice-color' as string]: t.color }}
-                          onClick={() => navigate('/profile/context-manager')}
-                          title="Add topic context to these certs"
-                        >
-                          {inner}
-                        </button>
-                      )
-                    }
-                    return (
-                      <span
-                        key={t.id}
-                        className="pd-ts-legend-item"
-                        style={{ ['--slice-color' as string]: t.color }}
-                      >
-                        {inner}
-                      </span>
-                    )
-                  })}
-                </div>
-              </>
-            ) : (
-              <p className="pd-ts-empty">
-                Certify pages to build your score breakdown.
-              </p>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className="pd-ts-view-btn"
-            onClick={() => navigate('/scores')}
-          >
-            <span>{percentileLabel}</span>
-            <span className="pd-ts-view-arrow">→</span>
-          </button>
 
           {/* Last Activity — support/oppose only for now. */}
           {lastActivity.length > 0 && (
@@ -418,6 +284,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                               topicId={a.topic.id}
                               color={a.topic.color || 'var(--ds-muted)'}
                               label={a.topic.label}
+                              iconOnly
                             />
                           ) : null}
                           <strong>{a.title}</strong>

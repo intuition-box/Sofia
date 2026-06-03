@@ -176,6 +176,7 @@ export default function ProfilePage() {
           selectedCategories={selectedCategories}
           topicScores={topicScores}
           addresses={myAddresses}
+          onViewScores={isViewingAs ? undefined : () => navigate('/scores')}
         />
 
         {/* Echoes */}

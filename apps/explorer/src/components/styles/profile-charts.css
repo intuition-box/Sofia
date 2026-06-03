@@ -108,8 +108,7 @@
      radar's top + bottom tickers on the left. The bottom meta uses
      `margin-top: auto` so it sticks to the bottom of this column
      regardless of how short the inner content runs. */
-  padding: 4px 0 10px 16px;
-  border-left: 1px dashed var(--ds-border-soft);
+  padding: 4px 0 10px 0px;
 }
 
 /* Technical mono ticker chrome — top + bottom bordered bands echoing
@@ -163,7 +162,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 16px;
   border-top: 1px dashed var(--ds-border-soft);
 }
 @media (max-width: 900px) {
@@ -617,8 +615,9 @@
   overflow: visible;
 }
 
-/* Score donut (replaces the radar) — circle on top, topic legend below. */
+/* Score donut (replaces the radar) — circle on top, topic legend on hover. */
 .pc-score-donut {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -628,42 +627,43 @@
   width: 100%;
   padding: 8px 0;
 }
-.pc-score-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  max-width: 240px;
-}
-.pc-score-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-.pc-score-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-.pc-score-legend-label {
-  flex: 1;
-  color: var(--ds-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pc-score-legend-val {
-  font-variant-numeric: tabular-nums;
-  color: var(--ds-muted);
-  font-weight: 600;
-}
+/* The per-topic breakdown now lives in the donut centre on slice hover
+   (TopicScorePie), so the old below-the-donut legend list is gone. */
 .pc-score-empty {
   color: var(--ds-muted);
   font-size: 12px;
   text-align: center;
   padding: 32px 0;
+}
+/* View-details pill under the score donut (personal profile → /scores). */
+.pc-score-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.pc-score-view-btn:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
+}
+.pc-score-view-arrow {
+  color: var(--ds-muted);
+  font-weight: 600;
 }
 .pc-radar {
   width: 100%;
@@ -692,13 +692,14 @@
   /* Bleed past the wrap's left padding so the meta lines align
      flush-left with the focus dropdown trigger (same -54px pull).
      Right padding stays at 0 so the trailing label sits flush. */
-  margin-left: -54px;
+
 }
 @media (max-width: 900px) {
   .pc-radar-meta {
     margin-left: 0;
   }
 }
+
 .pc-radar-meta--top {
   padding-bottom: 8px;
   border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);

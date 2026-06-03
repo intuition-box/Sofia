@@ -1,8 +1,9 @@
 /* TopicScorePie — shared donut (ProfileDrawer + ProfileCharts). */
 .pd-ts-pie-wrap {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: min(340px, 80%);
+  aspect-ratio: 1 / 1;
+  height: auto;
 }
 .pd-ts-pie {
   width: 100%;
@@ -12,6 +13,10 @@
     0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent)
   );
 }
+.pd-ts-slice {
+  cursor: pointer;
+  transition: stroke-opacity 0.16s ease;
+}
 .pd-ts-pie-center {
   position: absolute;
   inset: 0;
@@ -20,10 +25,13 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
+  /* Sits on top of the SVG — let pointer events fall through to the
+     slice <circle>s underneath so per-slice hover works. */
+  pointer-events: none;
 }
 .pd-ts-pie-value {
   font-family: 'Fraunces', serif;
-  font-size: 28px;
+  font-size: 44px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;

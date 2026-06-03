@@ -45,6 +45,10 @@ interface ProfileChartsProps {
    * for a public profile.
    */
   addresses?: readonly string[]
+  /** When provided, renders a "View details" button under the score donut
+   *  (personal profile → /scores). Omitted on the public profile, which
+   *  is read-only and has no scores page for the viewed wallet. */
+  onViewScores?: () => void
 }
 
 export default function ProfileCharts({
@@ -52,6 +56,7 @@ export default function ProfileCharts({
   selectedCategories = [],
   topicScores = [],
   addresses,
+  onViewScores,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
   const { getStatus } = usePlatformConnections()
@@ -84,24 +89,36 @@ export default function ProfileCharts({
   const certCounts = useUserCertCounts(addresses)
 
   // Donut slices — the topics the user actually scored in, strongest first.
-  // Replaces the radar; mirrors the ProfileDrawer score breakdown.
-  const pieSlices = useMemo<TopicPieSlice[]>(
-    () =>
-      [...topicScores]
-        .filter((s) => s.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map((s) => {
-          const topic = topicById(s.topicId)
-          return {
-            id: s.topicId,
-            label: topic?.label ?? s.topicId,
-            emoji: '',
-            color: topic?.color ?? 'var(--ds-muted)',
-            score: Math.round(s.score),
-          }
-        }),
-    [topicScores, topicById],
-  )
+  // Reputation comes from a cert's topic context (within a verb); certs
+  // with NO context aren't attributed to any topic, so they're surfaced as
+  // a single "General" slice — same rule the sidepanel donut used, so the
+  // donut total matches the All-Topics score.
+  const pieSlices = useMemo<TopicPieSlice[]>(() => {
+    const out: TopicPieSlice[] = [...topicScores]
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((s) => {
+        const topic = topicById(s.topicId)
+        return {
+          id: s.topicId,
+          label: topic?.label ?? s.topicId,
+          emoji: '',
+          color: topic?.color ?? 'var(--ds-muted)',
+          score: Math.round(s.score),
+        }
+      })
+    const generalScore = certCounts.general * POINTS_PER_CERT
+    if (generalScore > 0) {
+      out.push({
+        id: 'general',
+        label: 'General',
+        emoji: '✨',
+        color: 'var(--ds-muted)',
+        score: Math.round(generalScore),
+      })
+    }
+    return out
+  }, [topicScores, topicById, certCounts.general])
 
   return (
     <section className="pc-section">
@@ -117,33 +134,24 @@ export default function ProfileCharts({
             </div>
             <div className="pc-score-donut">
               {pieSlices.length > 0 ? (
-                <>
-                  <TopicScorePie slices={pieSlices} />
-                  <div className="pc-score-legend">
-                    {pieSlices.map((t) => (
-                      <div key={t.id} className="pc-score-legend-item">
-                        <span
-                          className="pc-score-legend-dot"
-                          style={{ background: t.color }}
-                          aria-hidden="true"
-                        />
-                        <span className="pc-score-legend-label">{t.label}</span>
-                        <span className="pc-score-legend-val">{t.score}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+                <TopicScorePie slices={pieSlices} />
               ) : (
                 <p className="pc-score-empty">
                   Certify pages to build your score.
                 </p>
               )}
-            </div>
-            <div className="pc-radar-meta pc-radar-meta--bottom">
-              <span>
-                n = {pieSlices.length} topic{pieSlices.length === 1 ? '' : 's'}
-              </span>
-              <span>θ · static</span>
+              {onViewScores && pieSlices.length > 0 ? (
+                <button
+                  type="button"
+                  className="pc-score-view-btn"
+                  onClick={onViewScores}
+                >
+                  <span>View details</span>
+                  <span className="pc-score-view-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </button>
+              ) : null}
             </div>
           </div>
           <div className="pc-main-right">
@@ -163,10 +171,6 @@ export default function ProfileCharts({
             />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />
-            </div>
-            <div className="pc-panel-meta pc-panel-meta--bottom">
-              <span>frame = 26w × 7d</span>
-              <span>θ · sync</span>
             </div>
           </div>
         </div>

@@ -155,23 +155,28 @@ export default function ProfileDetailsPanel({
       style={{ ['--topic-color' as string]: color }}
     >
       <div className="pc-details-main">
-        <div className="pc-details-head">
-          <span className="pc-kicker">{kicker}</span>
-          {!isAll && (
-            <button
-              type="button"
-              className="pc-details-clear"
-              onClick={onClearFilter}
-            >
-              Clear filter
-            </button>
-          )}
-        </div>
-        <div className="pc-details-title">{label}</div>
-        <div className="pc-details-hero">
-          <span className="pc-details-score">{score}</span>
-          <span className="pc-details-score-label">{scoreLabel}</span>
-        </div>
+        {/* On All-Topics the kicker ("Overview"), title ("All Topics") and
+            the total score are dropped — they duplicate the score donut.
+            Per-topic / per-verb focus keeps its header + score. */}
+        {!isAll && (
+          <>
+            <div className="pc-details-head">
+              <span className="pc-kicker">{kicker}</span>
+              <button
+                type="button"
+                className="pc-details-clear"
+                onClick={onClearFilter}
+              >
+                Clear filter
+              </button>
+            </div>
+            <div className="pc-details-title">{label}</div>
+            <div className="pc-details-hero">
+              <span className="pc-details-score">{score}</span>
+              <span className="pc-details-score-label">{scoreLabel}</span>
+            </div>
+          </>
+        )}
         {pnl !== null && (
           <div className="pc-details-list">
             <div className="pc-details-row">
