@@ -26,12 +26,8 @@ import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
 import type { TopicScore } from '@/types/reputation'
 import ActivityCalendar from './ActivityCalendar'
-import TopPlatforms from './TopPlatforms'
 import ProfileDetailsPanel from './ProfileDetailsPanel'
 import TopicScorePie, { type TopicPieSlice } from './TopicScorePie'
-import ProfileClaimCard, { deriveClaimBadge } from './ProfileClaimCard'
-import { getFaviconUrl } from '@/utils/favicon'
-import { extractDomain } from '@/utils/formatting'
 import '../styles/profile-charts.css'
 
 interface ProfileChartsProps {
@@ -86,27 +82,6 @@ export default function ProfileCharts({
     focus,
   )
   const certCounts = useUserCertCounts(addresses)
-
-  const topPlatformItems = useTopPlatformStats({
-    markets,
-    selectedTopics,
-    topicById,
-    focus,
-  })
-
-  // Top 3 claims sorted by PnL for the showcase card.
-  const showcaseClaims = useMemo(
-    () =>
-      [...topClaims]
-        .sort((a, b) => (b.stats.userPnlPct ?? 0) - (a.stats.userPnlPct ?? 0))
-        .slice(0, 3),
-    [topClaims],
-  )
-
-  const topPlatformMeta =
-    focus === 'all' ? 'all topics' : (topicById(focus)?.label ?? focus)
-  const topClaimMeta =
-    focus === 'all' ? 'your best picks' : (topicById(focus)?.label ?? focus)
 
   // Donut slices — the topics the user actually scored in, strongest first.
   // Replaces the radar; mirrors the ProfileDrawer score breakdown.
