@@ -6,3 +6,4 @@ export {
 } from './chainConfig'
 export { SofiaFeeProxyAbi } from './sofiaFeeProxy'
 export { MultiVaultAbi } from './multiVault'
+export { explicitGasLimit } from './gasLimit'

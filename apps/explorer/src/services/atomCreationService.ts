@@ -20,6 +20,7 @@ import {
   MultiVaultAbi,
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
+  explicitGasLimit,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -163,23 +164,23 @@ export async function executeCreateAtom(
       CREATION_CURVE_ID,
     ] as const
 
-    await publicClient.simulateContract({
+    const simConfig = {
       address: PROXY_ADDRESS,
       abi: SofiaFeeProxyAbi,
       functionName: 'createAtoms',
       args,
       value: totalCost,
       account: address,
-    })
+    } as const
+
+    await publicClient.simulateContract(simConfig)
+
+    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
-      address: PROXY_ADDRESS,
-      abi: SofiaFeeProxyAbi,
-      functionName: 'createAtoms',
-      args,
-      value: totalCost,
+      ...simConfig,
+      gas,
       chain: undefined,
-      account: address,
     })
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -269,23 +270,27 @@ export async function executeCreateAtomsBatch(
 
     const args = [address, dataArray, assetsArray, CREATION_CURVE_ID] as const
 
-    await publicClient.simulateContract({
+    const simConfig = {
       address: PROXY_ADDRESS,
       abi: SofiaFeeProxyAbi,
       functionName: 'createAtoms',
       args,
       value: totalCost,
       account: address,
-    })
+    } as const
+
+    await publicClient.simulateContract(simConfig)
+
+    const gas = await explicitGasLimit(
+      publicClient,
+      simConfig,
+      BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
+    )
 
     const hash = await client.writeContract({
-      address: PROXY_ADDRESS,
-      abi: SofiaFeeProxyAbi,
-      functionName: 'createAtoms',
-      args,
-      value: totalCost,
+      ...simConfig,
+      gas,
       chain: undefined,
-      account: address,
     })
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash })
