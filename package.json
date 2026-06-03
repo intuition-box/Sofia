@@ -14,8 +14,6 @@
     "dev:landing": "bun run --filter landing dev",
     "dev:blog": "bun run --filter blog dev",
     "dev:mastra": "bun run --filter mastra dev",
-    "dev:mcp": "bun run --filter mcp-server start:http",
-    "dev:stack": "concurrently -n mcp,mastra -c blue,green \"bun run dev:mcp\" \"bun run dev:mastra\"",
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter './apps/**' typecheck && bun run --filter './packages/**' typecheck && bun run --filter './services/**' typecheck",
     "format": "prettier --write .",
