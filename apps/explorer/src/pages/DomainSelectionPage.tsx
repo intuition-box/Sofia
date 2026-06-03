@@ -19,7 +19,7 @@ export default function DomainSelectionPage() {
     if (isSelected) {
       removeTopic(topicId) // redeem if on-chain, else just remove locally
     } else {
-      toggleTopic(topicId) // add locally + auto-add to cart
+      toggleTopic() // no-op: every user now has all interests (#521)
     }
   }
 

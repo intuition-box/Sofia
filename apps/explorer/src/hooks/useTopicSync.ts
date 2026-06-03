@@ -61,7 +61,7 @@ export function useTopicSync() {
           return
         }
         clearOptimisticPosition(qc, wallet.address, termId)
-        toggleTopic(topicId)
+        toggleTopic()
         setRedeemState(null)
         refetch()
       } catch (err: any) {
@@ -79,7 +79,7 @@ export function useTopicSync() {
   const removeTopic = useCallback(
     (topicId: string) => {
       if (hasPosition(topicId)) redeemTopic(topicId)
-      else toggleTopic(topicId)
+      else toggleTopic()
     },
     [hasPosition, redeemTopic, toggleTopic],
   )
