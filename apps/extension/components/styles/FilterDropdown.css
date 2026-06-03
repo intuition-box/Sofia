@@ -79,6 +79,27 @@
   color: var(--ds-muted);
   font-weight: 400;
 }
+
+/* Two matching dropdowns side by side (intention + context). Shared by the
+   PageBlockchainCard actions panel and the GroupDetailView expanded row. */
+.cert-actions-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+}
+.cert-actions-row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.cert-actions-row .ext-filter {
+  display: flex;
+  width: 100%;
+}
+.cert-actions-row .ext-filter-trigger {
+  width: 100%;
+  min-width: 0;
+}
 .ext-filter-trigger__chev {
   color: var(--ds-muted);
   transition: transform 0.15s ease;

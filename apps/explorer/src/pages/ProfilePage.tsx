@@ -12,7 +12,6 @@ import { userCertsToActivityInputs } from '../hooks/useIntentionGroups'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
-import { MAX_INTERESTS } from '../components/profile/InterestsGrid'
 import ProfileCharts from '../components/profile/ProfileCharts'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
@@ -35,23 +34,14 @@ export default function ProfilePage() {
   // When viewing yourself, aggregate across all linked wallets. When viewing
   // someone else (isViewingAs), use only their address.
   const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
-  const {
-    selectedTopics: rawSelectedTopics,
-    selectedCategories,
-    removeTopic,
-  } = useTopicSync()
-  // Profile (grid + radar + calendar + top-platforms) caps at 3 topics — the
-  // grid widget exports `MAX_INTERESTS` but the rest of the chart bundle
-  // honours whatever array we hand it, so trim here.
-  const selectedTopics = useMemo(
-    () => rawSelectedTopics.slice(0, MAX_INTERESTS),
-    [rawSelectedTopics],
-  )
+  const { selectedTopics, selectedCategories } = useTopicSync()
   const navigate = useNavigate()
   const { getStatus } = usePlatformConnections()
   const { score: trustCompositeScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
   const certCountsByTopic = useUserCertCountsByTopic(activityAddresses)
+  // Every topic is scored now (#521); the donut + details panel show the
+  // full split, so we hand the chart bundle the complete topic list.
   const scores = useReputationScores(
     getStatus,
     selectedTopics,
@@ -102,7 +92,7 @@ export default function ProfilePage() {
   const heroDescription = isViewingAs
     ? 'Exploring this wallet — pick an interest to dive in.'
     : address
-      ? `Pick your interests, link platforms and grow your reputation from ${shortAddr}.`
+      ? `Your reputation across every interest, from ${shortAddr}.`
       : pc.subtitle
 
   return (
@@ -186,13 +176,6 @@ export default function ProfilePage() {
           selectedCategories={selectedCategories}
           topicScores={topicScores}
           addresses={myAddresses}
-          onAddInterest={
-            isViewingAs ? undefined : () => navigate('/profile/topics')
-          }
-          onRemoveInterest={isViewingAs ? undefined : removeTopic}
-          onSelectInterest={(topicId) =>
-            navigate(`/profile/interest/${topicId}`)
-          }
         />
 
         {/* Echoes */}
