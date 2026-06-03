@@ -28,6 +28,7 @@ import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { computeDiscoveryBuckets } from '@/services/userOnChainProfileService'
 import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
+import { useDerivedReputation } from '@/hooks/useDerivedReputation'
 import { useSignals } from '@/hooks/useSignals'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useSeasonPool } from '@/hooks/useSeasonPool'
@@ -174,6 +175,11 @@ export default function ScoresPage() {
     signals,
     certCounts.byTopic,
   )
+  // Boost = credibility of users who positioned AFTER you on your claims,
+  // added on top of the per-cert base. See docs/reputation-curation.md.
+  const { scoreByTopic: derivedRep } = useDerivedReputation(
+    profileAddresses ?? [],
+  )
 
   // Reputation by topic — same TopicScore shape used by /profile.
   const topicScores = selectedTopics
@@ -188,7 +194,7 @@ export default function ScoresPage() {
         label: topic.label,
         emoji: getTopicEmoji(id) || '📌',
         color: topic.color ?? '#888888',
-        score: Math.round(reputationScore ?? 0),
+        score: Math.round((reputationScore ?? 0) + (derivedRep.get(id) ?? 0)),
       }
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)

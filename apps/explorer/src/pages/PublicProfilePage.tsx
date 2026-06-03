@@ -26,6 +26,7 @@ import ProfileTrustButton from '@/components/profile/ProfileTrustButton'
 import { useTrustScore } from '@/hooks/useTrustScore'
 import { useUserCertCountsByTopic } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
+import { useDerivedReputation } from '@/hooks/useDerivedReputation'
 import { useSignals } from '@/hooks/useSignals'
 import { useAddressInterests } from '@/hooks/useAddressInterests'
 import { resolveEnsToAddress } from '@/services/ensService'
@@ -137,7 +138,17 @@ export default function PublicProfilePage() {
     signals,
     certCountsByTopic,
   )
-  const topicScores = scores?.topics ?? []
+  // Boost = credibility of users who positioned AFTER this wallet on its
+  // claims, added on top of the per-cert base. See docs/reputation-curation.md.
+  const { scoreByTopic: derivedRep } = useDerivedReputation(addresses)
+  const topicScores = useMemo(
+    () =>
+      (scores?.topics ?? []).map((t) => ({
+        ...t,
+        score: t.score + (derivedRep.get(t.topicId) ?? 0),
+      })),
+    [scores?.topics, derivedRep],
+  )
 
   // Echoes activities feed the bento grid — same source the personal
   // profile uses so the section stays visually identical.

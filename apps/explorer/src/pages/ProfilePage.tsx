@@ -6,6 +6,7 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSync } from '../hooks/useTopicSync'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
+import { useDerivedReputation } from '../hooks/useDerivedReputation'
 import { useUserCertCountsByTopic } from '../hooks/useUserCertCountsByTopic'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '../hooks/useIntentionGroups'
@@ -50,7 +51,18 @@ export default function ProfilePage() {
     signals,
     certCountsByTopic,
   )
-  const topicScores = scores?.topics ?? []
+  // Base reputation = your own certs per topic (POINTS_PER_CERT). The big
+  // driver on top is the support of credible users who positioned AFTER you on
+  // your claims (eigentrust-weighted). See docs/reputation-curation.md.
+  const { scoreByTopic: derivedRep } = useDerivedReputation(activityAddresses)
+  const topicScores = useMemo(
+    () =>
+      (scores?.topics ?? []).map((t) => ({
+        ...t,
+        score: t.score + (derivedRep.get(t.topicId) ?? 0),
+      })),
+    [scores?.topics, derivedRep],
+  )
   // Echoes derives from the master on-chain profile so the bento groups
   // cover every cert (alltime), staying in sync with calendar/radar/score.
   const { profile, isLoading: profileLoading } = useUserOnChainProfile(
