@@ -463,35 +463,6 @@
   text-overflow: ellipsis;
 }
 
-/* Actor line — certifier + time ago. */
-.fc-actor-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-}
-.fc-actor-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-.fc-actor-ens {
-  font-family: 'Geist', sans-serif;
-  font-weight: 600;
-  color: var(--ds-ink);
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.fc-actor-ago {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--ds-muted);
-}
-
 /* Bottom — tags on the left, thumbs on the right. */
 .fc-bottom {
   display: flex;
@@ -512,40 +483,3 @@
    <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
    definition in feed-card.css. Only the wrapper stays. */
 
-.fc-positions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.fc-pos {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg);
-  padding: 0;
-  color: var(--ds-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.fc-pos:hover:not(:disabled) {
-  color: var(--ds-ink);
-  transform: scale(1.05);
-}
-.fc-pos.support:hover:not(:disabled) {
-  color: var(--trusted, #6dd4a0);
-  border-color: var(--trusted, #6dd4a0);
-}
-.fc-pos.oppose:hover:not(:disabled) {
-  color: var(--distrusted, #e87c7c);
-  border-color: var(--distrusted, #e87c7c);
-}
-.fc-pos:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}

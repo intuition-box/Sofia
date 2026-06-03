@@ -1,26 +1,23 @@
 /**
- * FeedCard — proto-styled URL card for the Home drill view.
+ * FeedCard — explore/home feed item. Thin mapper from `CircleItem` onto the
+ * shared <FeedCardView> (Claude Design "Feed Card" handoff): header
+ * (avatar + handle + time + stars), preview media, title, and a footer with
+ * support/oppose thumbs + intent verb chips.
  *
- * Mirrors the visual structure of proto-explorer's `.feed-card.fc-*`
- * (urlCard.ts + shared.css `fc-*`): favicon + title + host, an actor
- * line for the certifier, a bottom row with topic tags + verb tags +
- * support/oppose thumbs. No shadcn Card — bare DOM + DS tokens.
- *
- * Sofia data lacks the proto's star count + item description, so the
- * star badge and `fc-desc` sections aren't rendered here.
+ * Stars here are derived from the support count (same fallback heuristic the
+ * circle card uses when no MCP trust score is available) so the explore feed
+ * and the circle feed read identically.
  */
-import type { MouseEvent } from 'react'
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { computeStars } from '@/services/circleFeedSort'
 import { INTENTION_COLORS } from '@/config/intentions'
+import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
-import { UrlPreview } from '@/components/UrlPreview'
-import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
-
-function topicMeta(slug: string) {
-  return SOFIA_TOPICS.find((t) => t.id === slug)
-}
+import FeedCardView, {
+  type FeedCardVerb,
+  type FeedCardTopic,
+} from '@/components/feed/FeedCardView'
+import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
   item: CircleItem
@@ -37,13 +34,10 @@ export default function FeedCard({
   isPrivate,
   onDeposit,
 }: FeedCardProps) {
-  const shownName = isPrivate ? 'Someone' : displayName
-
   // Aggregate position counts + the viewer's own stake across every
   // intention vault — same rule as CircleFeedCard. `userSupported` /
-  // `userOpposed` come from the feed payload (useSofiaFeed passes the
-  // viewer's wallets), so a thumb the user has staked on stays lit
-  // across reloads instead of resetting on every render.
+  // `userOpposed` come from the feed payload so a thumb the user has
+  // staked on stays lit across reloads.
   let supports = 0
   let opposes = 0
   let userSupported = false
@@ -59,111 +53,41 @@ export default function FeedCard({
     (v) => v.counterTermId,
   )
 
-  const openUrl = () => {
-    if (!item.url) return
-    window.open(item.url, '_blank', 'noopener,noreferrer')
-  }
+  const verbs: FeedCardVerb[] = item.intentions.map((label) => ({
+    label,
+    color: INTENTION_COLORS[label],
+  }))
 
-  const handlePos = (side: 'support' | 'oppose') => (e: MouseEvent) => {
-    e.stopPropagation()
-    onDeposit?.(side, item)
-  }
+  const topics: FeedCardTopic[] = (item.topicContexts ?? [])
+    .slice(0, 2)
+    .map((slug) => {
+      const meta = SOFIA_TOPICS.find((t) => t.id === slug)
+      return { id: slug, label: meta?.label ?? slug }
+    })
 
   return (
-    <article
-      className="fc fc-standard fc--has-header"
-      role="link"
-      tabIndex={0}
-      onClick={openUrl}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          openUrl()
-        }
+    <FeedCardView
+      handle={isPrivate ? 'Someone' : displayName}
+      avatarUrl={isPrivate ? undefined : avatar || undefined}
+      when={timeAgo(item.timestamp)}
+      rating={computeStars(supports)}
+      title={item.title}
+      url={item.url}
+      domain={item.domain}
+      verbs={verbs}
+      topics={topics}
+      up={supports}
+      down={opposes}
+      userUp={userSupported}
+      userDown={userOpposed}
+      canUp={canSupport}
+      canDown={canOppose}
+      onVote={
+        onDeposit ? (side) => onDeposit(side, item) : undefined
+      }
+      onOpen={() => {
+        if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer')
       }}
-    >
-      <UrlPreview
-        variant="card"
-        url={item.url}
-        domain={item.domain}
-        className="fc-thumb"
-        alt={item.title || item.domain}
-      />
-      <div className="fc-head">
-        <div className="fc-title-wrap">
-          <div className="fc-title">{item.title}</div>
-          <div className="fc-host">{item.domain}</div>
-        </div>
-      </div>
-
-      <div className="fc-actor-line">
-        {!isPrivate && avatar && (
-          <img
-            src={avatar}
-            alt=""
-            className="fc-actor-avatar"
-            referrerPolicy="no-referrer"
-          />
-        )}
-        <span className="fc-actor-ens">{shownName}</span>
-        <span className="fc-actor-ago">{timeAgo(item.timestamp)}</span>
-      </div>
-
-      <div className="fc-bottom">
-        <div className="fc-tags">
-          {item.topicContexts?.slice(0, 2).map((slug) => {
-            const meta = topicMeta(slug)
-            return (
-              <TopicPill
-                key={slug}
-                topicId={slug}
-                color={meta?.color ?? 'var(--ds-muted)'}
-                label={meta?.label ?? slug}
-              />
-            )
-          })}
-          {item.intentions.map((intent) => (
-            <VerbPill key={intent} label={intent} color={INTENTION_COLORS[intent]} />
-          ))}
-        </div>
-
-        {onDeposit && (canSupport || canOppose) && (
-          <div className="fc-positions">
-            <button
-              type="button"
-              className={`fc-pos support${userSupported ? ' active' : ''}`}
-              data-count={supports}
-              aria-label={`Support (${supports})`}
-              aria-pressed={userSupported}
-              title={
-                userSupported
-                  ? `You supported · ${supports} total`
-                  : `${supports} support`
-              }
-              onClick={handlePos('support')}
-              disabled={!canSupport}
-            >
-              <ThumbsUp className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className={`fc-pos oppose${userOpposed ? ' active' : ''}`}
-              data-count={opposes}
-              aria-label={`Oppose (${opposes})`}
-              aria-pressed={userOpposed}
-              title={
-                userOpposed
-                  ? `You opposed · ${opposes} total`
-                  : `${opposes} oppose`
-              }
-              onClick={handlePos('oppose')}
-              disabled={!canOppose}
-            >
-              <ThumbsDown className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
-    </article>
+    />
   )
 }
