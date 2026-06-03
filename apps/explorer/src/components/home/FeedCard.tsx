@@ -1,15 +1,10 @@
 /**
  * FeedCard — explore/home feed item. Thin mapper from `CircleItem` onto the
  * shared <FeedCardView> (Claude Design "Feed Card" handoff): header
- * (avatar + handle + time + stars), preview media, title, and a footer with
+ * (avatar + handle + time), preview media, title, and a footer with
  * support/oppose thumbs + intent verb chips.
- *
- * Stars here are derived from the support count (same fallback heuristic the
- * circle card uses when no MCP trust score is available) so the explore feed
- * and the circle feed read identically.
  */
 import type { CircleItem } from '@/services/circleService'
-import { computeStars } from '@/services/circleFeedSort'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
@@ -34,24 +29,24 @@ export default function FeedCard({
   isPrivate,
   onDeposit,
 }: FeedCardProps) {
-  // Aggregate position counts + the viewer's own stake across every
-  // intention vault — same rule as CircleFeedCard. `userSupported` /
-  // `userOpposed` come from the feed payload so a thumb the user has
-  // staked on stays lit across reloads.
+  // A like/dislike stakes the cert's "in context of <topic>" nested
+  // triples — NOT the per-verb vaults — so one click = one position on the
+  // topic context(s), no verb picker. Counts + the lit state aggregate
+  // across those context triples. No context tag → nothing to stake, so the
+  // thumbs render disabled (with a tooltip) rather than fanning out across
+  // every verb vault.
   let supports = 0
   let opposes = 0
   let userSupported = false
   let userOpposed = false
-  for (const v of Object.values(item.intentionVaults)) {
-    supports += v.supportCount
-    opposes += v.opposeCount
-    if (v.userSupported) userSupported = true
-    if (v.userOpposed) userOpposed = true
+  for (const c of item.contextTriples) {
+    supports += c.supportCount
+    opposes += c.opposeCount
+    if (c.userSupported) userSupported = true
+    if (c.userOpposed) userOpposed = true
   }
-  const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
-  const canOppose = Object.values(item.intentionVaults).some(
-    (v) => v.counterTermId,
-  )
+  const canSupport = item.contextTriples.some((c) => c.termId)
+  const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
   const verbs: FeedCardVerb[] = item.intentions.map((label) => ({
     label,
@@ -70,7 +65,6 @@ export default function FeedCard({
       handle={isPrivate ? 'Someone' : displayName}
       avatarUrl={isPrivate ? undefined : avatar || undefined}
       when={timeAgo(item.timestamp)}
-      rating={computeStars(supports)}
       title={item.title}
       url={item.url}
       domain={item.domain}

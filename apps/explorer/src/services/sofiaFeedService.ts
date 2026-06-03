@@ -133,7 +133,7 @@ export async function fetchSofiaFeed({
   }))
 
   const items = processEvents(synthetic, getCertifier)
-  await enrichWithTopicContexts(items)
+  await enrichWithTopicContexts(items, viewer)
 
   // ── 2. Context (tag) positions — latest tag timestamp per cert term_id ──
   const ctxWhere: Positions_Bool_Exp = {
@@ -197,7 +197,7 @@ export async function fetchSofiaFeed({
       }
     })
     const bfItems = processEvents(bfSynthetic, getCertifier)
-    await enrichWithTopicContexts(bfItems)
+    await enrichWithTopicContexts(bfItems, viewer)
     items.push(...bfItems)
   }
 

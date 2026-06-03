@@ -1,16 +1,13 @@
 /**
  * CircleFeedCard — circle feed item. Thin mapper from `CircleItem` onto the
  * shared <FeedCardView> (Claude Design "Feed Card" handoff): header
- * (certifier avatar + handle + time + stars), preview media, title, footer
+ * (certifier avatar + handle + time), preview media, title, footer
  * with support/oppose thumbs + intent verb chips.
  *
- * Stars come from the circle's personalized-trust score to the certifier
- * (MCP) when available, otherwise the local support-count heuristic.
  * Support / oppose counts are summed across all intention vaults.
  */
 import { useNavigate } from 'react-router-dom'
 import type { CircleItem } from '@/services/circleService'
-import { computeStars, computeStarsFromTrust } from '@/services/circleFeedSort'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { extractDomain, timeAgo } from '@/utils/formatting'
@@ -26,9 +23,9 @@ interface CircleFeedCardProps {
   certifierName: string
   certifierAvatar: string
   /**
-   * Fires when the user clicks support/oppose. The parent owns the cart
-   * and the optional PredicatePicker for items with multiple intentions.
-   * When omitted, the thumbs render as display-only (no click handler).
+   * Fires when the user clicks like/dislike. The parent stakes the cert's
+   * topic-context triples (no verb picker). When omitted, the thumbs render
+   * as display-only (no click handler).
    */
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
   /**
@@ -37,12 +34,6 @@ interface CircleFeedCardProps {
    * / `userOpposed` flags so the thumb state updates instantly.
    */
   livePositionTermIds?: ReadonlySet<string>
-  /**
-   * Personalized-trust score from the circle's anchors to this item's
-   * certifier. When > 0, the star rating buckets this MCP score instead
-   * of the local support-count heuristic.
-   */
-  mcpScore?: number
 }
 
 export default function CircleFeedCard({
@@ -51,7 +42,6 @@ export default function CircleFeedCard({
   certifierAvatar,
   onDeposit,
   livePositionTermIds,
-  mcpScore,
 }: CircleFeedCardProps) {
   const navigate = useNavigate()
   const { topicById } = useTaxonomy()
@@ -70,32 +60,27 @@ export default function CircleFeedCard({
     .filter((t): t is NonNullable<typeof t> => t !== null)
     .slice(0, 2)
 
-  // Aggregated position counts and user state across all intention vaults.
+  // A like/dislike stakes the cert's "in context of <topic>" nested triples
+  // (one click = one position on the topic context, no verb picker), so the
+  // counts + lit state aggregate across those — not the per-verb vaults.
   // User state is the UNION of the feed-payload snapshot and the live
   // realtime positions set so a fresh deposit lights the thumb immediately.
   let supports = 0
   let opposes = 0
   let userSupported = false
   let userOpposed = false
-  for (const v of Object.values(item.intentionVaults)) {
-    supports += v.supportCount
-    opposes += v.opposeCount
-    if (v.userSupported || livePositionTermIds?.has(v.termId)) {
+  for (const c of item.contextTriples) {
+    supports += c.supportCount
+    opposes += c.opposeCount
+    if (c.userSupported || livePositionTermIds?.has(c.termId)) {
       userSupported = true
     }
-    if (v.userOpposed || livePositionTermIds?.has(v.counterTermId)) {
+    if (c.userOpposed || livePositionTermIds?.has(c.counterTermId)) {
       userOpposed = true
     }
   }
-  const stars =
-    mcpScore !== undefined && mcpScore > 0
-      ? computeStarsFromTrust(mcpScore)
-      : computeStars(supports)
-
-  const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
-  const canOppose = Object.values(item.intentionVaults).some(
-    (v) => v.counterTermId,
-  )
+  const canSupport = item.contextTriples.some((c) => c.termId)
+  const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
   // The whole card opens the URL, so the certifier handle can't be a nested
   // <a>. Render it as a click-to-navigate span that stops propagation.
@@ -127,7 +112,6 @@ export default function CircleFeedCard({
       avatarUrl={certifierAvatar || undefined}
       handleSlot={handleSlot}
       when={timeAgo(item.timestamp)}
-      rating={stars}
       title={item.title || host}
       url={item.url}
       domain={host}

@@ -404,27 +404,6 @@
   margin-top: 3px;
 }
 
-/* Star rating — solid gold up to the score, hairline-muted beyond. */
-.fc-stars {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-}
-.fc-stars svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-}
-.fc-star-on {
-  fill: var(--fun);
-  stroke: var(--fun);
-}
-.fc-star-off {
-  fill: none;
-  stroke: var(--ds-muted-soft);
-}
-
 /* Media — full-bleed preview, kept at the handoff's 432:232 ratio so it
    scales with the card width instead of a fixed pixel height. */
 .fc-media {
@@ -482,6 +461,7 @@
   flex-shrink: 0;
 }
 .fc-vote {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -510,6 +490,53 @@
 }
 .fc-vote.is-static {
   cursor: default;
+}
+/* Disabled like/dislike — kept visible (and pointer-events on) so the
+   `title` tooltip explains why it's off, e.g. the cert has no topic to
+   endorse. A native `disabled` button would swallow the hover. */
+/* Dim via colour, NOT `opacity` — opacity on the button would cap the
+   child tooltip's opacity too (stacking context), fading the copy. */
+.fc-vote.is-disabled,
+.fc-vote.is-disabled:hover {
+  cursor: not-allowed;
+  color: color-mix(in srgb, var(--ds-muted) 55%, transparent);
+  border-color: color-mix(in srgb, var(--ds-border) 60%, transparent);
+}
+
+/* Styled tooltip on a disabled like/dislike — instant, ink surface, sits
+   above the thumb. The thumb is `opacity: 0.45` but the tip overrides to
+   full opacity so the copy stays legible. */
+.fc-vote-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.7);
+}
+.fc-vote.is-disabled:hover .fc-vote-tip,
+.fc-vote.is-disabled:focus-visible .fc-vote-tip {
+  opacity: 1;
+  transform: translateY(0);
 }
 .fc-vote.up.on {
   color: var(--trusted);

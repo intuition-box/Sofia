@@ -18,16 +18,12 @@ import { useEnsNames } from '@/hooks/useEnsNames'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
-import { useCircleCertifierScores } from '@/hooks/useCircleCertifierScores'
-import {
-  displayLabelToIntentionType,
-  INTENTION_COLORS,
-} from '@/config/intentions'
+import { displayLabelToIntentionType } from '@/config/intentions'
 import type { CircleItem } from '@/services/circleService'
+import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
 import { computeTopEngaged } from '@/services/circleStats'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import PredicatePicker from '@/components/PredicatePicker'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import CircleFeedCard from './CircleFeedCard'
@@ -85,10 +81,6 @@ export default function CircleFeedSection({
 
   const { authenticated } = usePrivy()
   const cart = useCart()
-  const [predicatePicker, setPredicatePicker] = useState<{
-    side: 'support' | 'oppose'
-    item: CircleItem
-  } | null>(null)
 
   // Live override of the support/oppose state — kept in sync with the
   // realtime positions cache so a fresh deposit lights up the thumb
@@ -96,77 +88,38 @@ export default function CircleFeedSection({
   // pushed yet (or for positions outside the top-500 cap).
   const livePositionTermIds = useUserPositionTermIds(addresses)
 
-  /** Click on support/oppose thumb on a feed card. */
+  /**
+   * Like / dislike — stakes the cert's "in context of <topic>" nested
+   * triples (support → `termId`, oppose → `counterTermId`), one position per
+   * topic context, no verb picker / modal. A cert with no topic context has
+   * nothing to stake — the card disables its thumbs, so this is a no-op.
+   */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated) return
-      // Filter intentions whose vault has the matching side termId.
-      const available = item.intentions.filter((intent) => {
-        const vault = item.intentionVaults[intent]
-        if (!vault) return false
-        return side === 'support' ? !!vault.termId : !!vault.counterTermId
-      })
-      if (available.length === 0) return
-
-      if (available.length === 1) {
-        const intent = available[0]
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        cart.addItem({
-          id: `${vault.termId}-${side}`,
+      const contexts = item.contextTriples.filter((c) =>
+        side === 'support' ? !!c.termId : !!c.counterTermId,
+      )
+      if (contexts.length === 0) return
+      const newItems: CartItem[] = contexts.map((c) => {
+        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
+        const termId = side === 'support' ? c.termId : c.counterTermId
+        return {
+          id: `${termId}-${side}`,
           side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: color,
-        })
-      } else {
-        setPredicatePicker({ side, item })
-      }
+          intentionColor: meta?.color ?? '#888',
+        }
+      })
+      cart.addItems(newItems)
     },
     [authenticated, cart],
   )
 
-  const handlePredicateConfirm = useCallback(
-    (selectedIntentions: string[]) => {
-      if (!predicatePicker) return
-      const { side, item } = predicatePicker
-      const newItems: CartItem[] = selectedIntentions.map((intent) => {
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        return {
-          id: `${vault.termId}-${side}`,
-          side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
-          title: item.title,
-          favicon: item.favicon,
-          intentionColor: color,
-        }
-      })
-      cart.addItems(newItems)
-      setPredicatePicker(null)
-    },
-    [predicatePicker, cart],
-  )
-
   const topEngaged = useMemo(() => computeTopEngaged(items, 4), [items])
-
-  // Unique certifier addresses from the loaded feed — fed into the MCP
-  // batch hook so we get one personalized-trust call per distinct
-  // certifier rather than per feed event.
-  const uniqueCertifiers = useMemo(() => {
-    const s = new Set<string>()
-    for (const item of items) {
-      if (item.certifierAddress) s.add(item.certifierAddress.toLowerCase())
-    }
-    return Array.from(s)
-  }, [items])
-  const { scores: mcpScores } = useCircleCertifierScores(
-    uniqueCertifiers,
-    addresses,
-  )
 
   const filtered = useMemo(() => {
     const base = items
@@ -274,11 +227,6 @@ export default function CircleFeedSection({
                   certifierAvatar={av}
                   onDeposit={authenticated ? handleDeposit : undefined}
                   livePositionTermIds={livePositionTermIds}
-                  mcpScore={
-                    item.certifierAddress
-                      ? mcpScores.get(item.certifierAddress.toLowerCase())
-                      : undefined
-                  }
                 />
               )
             })}
@@ -301,16 +249,6 @@ export default function CircleFeedSection({
             </div>
           )}
         </>
-      )}
-
-      {predicatePicker && (
-        <PredicatePicker
-          isOpen
-          side={predicatePicker.side}
-          item={predicatePicker.item}
-          onConfirm={handlePredicateConfirm}
-          onClose={() => setPredicatePicker(null)}
-        />
       )}
     </section>
   )

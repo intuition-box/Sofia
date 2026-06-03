@@ -76,7 +76,7 @@ export interface CertifierInfo {
 // ── Context triples resolution ──
 
 const CONTEXT_TRIPLES_QUERY = `
-  query GetContextTriples($subjectIds: [String!]!) {
+  query GetContextTriples($subjectIds: [String!]!, $viewerIds: [String!] = []) {
     triples(
       where: {
         subject_id: { _in: $subjectIds }
@@ -84,20 +84,50 @@ const CONTEXT_TRIPLES_QUERY = `
       }
       limit: 500
     ) {
+      term_id
+      counter_term_id
       subject_id
       object { term_id label }
+      term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $viewerIds } }) { shares }
+        }
+      }
+      counter_term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $viewerIds } }) { shares }
+        }
+      }
     }
   }
 `
 
+/** One stakeable "in context of <topic>" nested triple resolved for a cert,
+ *  with its like/dislike terms + position tallies. */
+export interface ContextTripleData {
+  topicSlug: string
+  termId: string
+  counterTermId: string
+  supportCount: number
+  opposeCount: number
+  userSupported: boolean
+  userOpposed: boolean
+}
+
 /**
  * Fetch "in context of" nested triples for a set of cert triple term_ids.
- * Returns a map: certTripleTermId → topic slugs[]
+ * Returns a map: certTripleTermId → the stakeable context triples (one per
+ * topic), carrying the term/counter ids + tallies that drive the feed's
+ * like/dislike. `viewerIds` filters the user's own positions so the thumbs
+ * light up for what they've already staked.
  */
 async function fetchContextTriples(
   certTermIds: string[],
-): Promise<Map<string, string[]>> {
-  const result = new Map<string, string[]>()
+  viewerIds: readonly string[] = [],
+): Promise<Map<string, ContextTripleData[]>> {
+  const result = new Map<string, ContextTripleData[]>()
   if (certTermIds.length === 0) return result
 
   try {
@@ -106,7 +136,7 @@ async function fetchContextTriples(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: CONTEXT_TRIPLES_QUERY,
-        variables: { subjectIds: certTermIds },
+        variables: { subjectIds: certTermIds, viewerIds },
       }),
     })
     const json = await res.json()
@@ -115,16 +145,27 @@ async function fetchContextTriples(
     for (const t of triples) {
       const subjectId = t.subject_id
       const objectTermId = t.object?.term_id
-      if (!subjectId || !objectTermId) continue
+      const termId = t.term_id
+      if (!subjectId || !objectTermId || !termId) continue
 
       const topicSlug = ATOM_ID_TO_TOPIC.get(objectTermId)
       if (!topicSlug) continue
 
+      const entry: ContextTripleData = {
+        topicSlug,
+        termId,
+        counterTermId: t.counter_term_id ?? '',
+        supportCount: sumVaultPositions(t.term?.vaults),
+        opposeCount: sumVaultPositions(t.counter_term?.vaults),
+        userSupported: userHoldsShares(t.term?.vaults),
+        userOpposed: userHoldsShares(t.counter_term?.vaults),
+      }
+
       const existing = result.get(subjectId)
       if (existing) {
-        if (!existing.includes(topicSlug)) existing.push(topicSlug)
+        if (!existing.some((e) => e.termId === entry.termId)) existing.push(entry)
       } else {
-        result.set(subjectId, [topicSlug])
+        result.set(subjectId, [entry])
       }
     }
   } catch {
@@ -234,6 +275,7 @@ export function processEvents(
         timestamp: evt.created_at || '',
         intentionVaults,
         topicContexts: [],
+        contextTriples: [],
       })
     }
   }
@@ -247,6 +289,7 @@ export function processEvents(
  */
 export async function enrichWithTopicContexts(
   items: CircleItem[],
+  viewerWallets: readonly string[] = [],
 ): Promise<void> {
   // Collect all cert triple termIds from intentionVaults
   const termIdToItems = new Map<string, CircleItem[]>()
@@ -262,15 +305,24 @@ export async function enrichWithTopicContexts(
     }
   }
 
-  const contextMap = await fetchContextTriples(Array.from(termIdToItems.keys()))
+  const contextMap = await fetchContextTriples(
+    Array.from(termIdToItems.keys()),
+    viewerWallets,
+  )
 
-  for (const [termId, topicSlugs] of contextMap) {
+  for (const [termId, contexts] of contextMap) {
     const linkedItems = termIdToItems.get(termId)
     if (!linkedItems) continue
     for (const item of linkedItems) {
-      for (const slug of topicSlugs) {
-        if (!item.topicContexts.includes(slug)) {
-          item.topicContexts.push(slug)
+      for (const ctx of contexts) {
+        // Topic slug (drives the topic pills).
+        if (!item.topicContexts.includes(ctx.topicSlug)) {
+          item.topicContexts.push(ctx.topicSlug)
+        }
+        // Stakeable context triple (drives like/dislike). A cert can back
+        // several items (one per intention vault) — dedupe by term id.
+        if (!item.contextTriples.some((c) => c.termId === ctx.termId)) {
+          item.contextTriples.push(ctx)
         }
       }
     }

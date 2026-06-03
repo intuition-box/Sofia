@@ -4,7 +4,7 @@
  * the Claude Design "Feed Card" handoff:
  *
  *   ┌────────────────────────────────────────┐
- *   │ avatar  handle              ★★☆☆☆       │  header
+ *   │ avatar  handle                          │  header
  *   │         2h ago                          │
  *   ├────────────────────────────────────────┤
  *   │                                        │
@@ -16,8 +16,8 @@
  *   │ 👍 5  👎 0          INSPIRATION LEARNING│  footer
  *   └────────────────────────────────────────┘
  *
- * Pure view: each caller resolves its own data (counts, certifier, stars)
- * and hands it down. No data fetching, no business rules here.
+ * Pure view: each caller resolves its own data (counts, certifier) and
+ * hands it down. No data fetching, no business rules here.
  */
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
@@ -44,8 +44,6 @@ interface FeedCardViewProps {
   avatarUrl?: string
   /** Pre-formatted relative time (e.g. "2h ago"). */
   when: string
-  /** 0–5 expertise / engagement rating. Omit to hide the star row. */
-  rating?: number
   title: string
   url?: string
   domain?: string
@@ -60,6 +58,9 @@ interface FeedCardViewProps {
   canDown?: boolean
   /** Fires on thumb click; omit to render the thumbs display-only. */
   onVote?: (side: 'support' | 'oppose') => void
+  /** Tooltip shown on a disabled thumb explaining why it's off (e.g. the
+   *  cert has no topic context to stake on). The thumbs stay visible. */
+  voteDisabledReason?: string
   /** Opens the underlying URL (whole-card click + Enter). */
   onOpen?: () => void
   /** Optional interactive handle (e.g. a link to the certifier profile).
@@ -67,28 +68,10 @@ interface FeedCardViewProps {
   handleSlot?: ReactNode
 }
 
-function Stars({ n }: { n: number }) {
-  return (
-    <div className="fc-stars" title={`${n} / 5`} aria-label={`${n} out of 5`}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <svg
-          key={i}
-          viewBox="0 0 24 24"
-          className={i < n ? 'fc-star-on' : 'fc-star-off'}
-          aria-hidden="true"
-        >
-          <path d="M12 3.2l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.4 9.3l5.8-.8z" />
-        </svg>
-      ))}
-    </div>
-  )
-}
-
 export default function FeedCardView({
   handle,
   avatarUrl,
   when,
-  rating,
   title,
   url,
   domain,
@@ -101,6 +84,7 @@ export default function FeedCardView({
   canUp = true,
   canDown = true,
   onVote,
+  voteDisabledReason = 'No topic to endorse yet — this URL has no “in context of” tag.',
   onOpen,
   handleSlot,
 }: FeedCardViewProps) {
@@ -147,7 +131,6 @@ export default function FeedCardView({
             <div className="fc-handle">{handleSlot ?? handle}</div>
             <div className="fc-when">{when}</div>
           </div>
-          {rating != null && <Stars n={rating} />}
         </div>
       </header>
 
@@ -166,29 +149,43 @@ export default function FeedCardView({
       </div>
 
       <footer className="fc-foot">
-        {onVote && (canUp || canDown) ? (
+        {onVote ? (
           <div className="fc-votes">
             <button
               type="button"
-              className={`fc-vote up${userUp ? ' on' : ''}`}
-              aria-label={`Support (${up})`}
+              className={`fc-vote up${userUp ? ' on' : ''}${canUp ? '' : ' is-disabled'}`}
+              aria-label={
+                canUp ? `Support (${up})` : `Support off — ${voteDisabledReason}`
+              }
               aria-pressed={userUp}
-              onClick={vote('support')}
-              disabled={!canUp}
+              aria-disabled={!canUp}
+              onClick={canUp ? vote('support') : (e) => e.stopPropagation()}
             >
               <ThumbsUp aria-hidden="true" />
               {up}
+              {!canUp && (
+                <span className="fc-vote-tip" role="tooltip">
+                  {voteDisabledReason}
+                </span>
+              )}
             </button>
             <button
               type="button"
-              className={`fc-vote down${userDown ? ' on' : ''}`}
-              aria-label={`Oppose (${down})`}
+              className={`fc-vote down${userDown ? ' on' : ''}${canDown ? '' : ' is-disabled'}`}
+              aria-label={
+                canDown ? `Oppose (${down})` : `Oppose off — ${voteDisabledReason}`
+              }
               aria-pressed={userDown}
-              onClick={vote('oppose')}
-              disabled={!canDown}
+              aria-disabled={!canDown}
+              onClick={canDown ? vote('oppose') : (e) => e.stopPropagation()}
             >
               <ThumbsDown aria-hidden="true" />
               {down}
+              {!canDown && (
+                <span className="fc-vote-tip" role="tooltip">
+                  {voteDisabledReason}
+                </span>
+              )}
             </button>
           </div>
         ) : (

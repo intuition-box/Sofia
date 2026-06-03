@@ -13,11 +13,11 @@ import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
 import { PageHero } from '@0xsofia/design-system'
-import PredicatePicker from '../components/PredicatePicker'
 import FeedCard from '../components/home/FeedCard'
 import { EmptyFeedState } from '../components/EmptyFeedState'
 import { FeedCardSkeleton } from '../components/FeedCardSkeleton'
 import InterestTilesGrid from '../components/home/InterestTilesGrid'
+import ScrollToTopButton from '../components/ScrollToTopButton'
 import type { InterestPreset } from '../components/home/useInterestTiles'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { INTENTION_PASTEL } from '@0xsofia/design-system'
@@ -25,6 +25,7 @@ import { useCart } from '../hooks/useCart'
 import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
 import { INTENTION_COLORS } from '../config/intentions'
+import { SOFIA_TOPICS } from '../config/taxonomy'
 import '@/components/styles/pages.css'
 import '@/components/styles/home.css'
 
@@ -72,68 +73,36 @@ export default function DashboardPage() {
 
   // Cart system
   const cart = useCart()
-  const [predicatePicker, setPredicatePicker] = useState<{
-    side: 'support' | 'oppose'
-    item: CircleItem
-  } | null>(null)
-
-  /** Called when user clicks Support/Oppose on a card */
+  /**
+   * Like / dislike — stakes the cert's "in context of <topic>" nested
+   * triples, NOT the per-verb vaults. One click adds a position on every
+   * topic context (support → `termId`, oppose → `counterTermId`), so there's
+   * no verb picker / modal. A cert with no topic context has nothing to
+   * stake here — the card renders its thumbs disabled, so this is a no-op.
+   */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated || !walletAddress) return
-      // Filter intentions that have vault IDs for this side
-      const available = item.intentions.filter((intent) => {
-        const vault = item.intentionVaults[intent]
-        if (!vault) return false
-        return side === 'support' ? !!vault.termId : !!vault.counterTermId
-      })
-
-      if (available.length === 0) return
-
-      if (available.length === 1) {
-        // Single intention → add directly to cart
-        const intent = available[0]
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        cart.addItem({
-          id: `${vault.termId}-${side}`,
-          side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
-          title: item.title,
-          favicon: item.favicon,
-          intentionColor: color,
-        })
-      } else {
-        // Multiple intentions → show predicate picker
-        setPredicatePicker({ side, item })
-      }
-    },
-    [authenticated, cart],
-  )
-
-  /** Called from PredicatePicker when user confirms selection */
-  const handlePredicateConfirm = useCallback(
-    (selectedIntentions: string[]) => {
-      if (!predicatePicker) return
-      const { side, item } = predicatePicker
-      const newItems: CartItem[] = selectedIntentions.map((intent) => {
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
+      const contexts = item.contextTriples.filter((c) =>
+        side === 'support' ? !!c.termId : !!c.counterTermId,
+      )
+      if (contexts.length === 0) return
+      const newItems: CartItem[] = contexts.map((c) => {
+        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
+        const termId = side === 'support' ? c.termId : c.counterTermId
         return {
-          id: `${vault.termId}-${side}`,
+          id: `${termId}-${side}`,
           side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: color,
+          intentionColor: meta?.color ?? '#888',
         }
       })
       cart.addItems(newItems)
-      setPredicatePicker(null)
     },
-    [predicatePicker, cart],
+    [authenticated, walletAddress, cart],
   )
 
   const spaceParam = searchParams.get('space') || ''
@@ -293,9 +262,6 @@ export default function DashboardPage() {
                 : undefined
             }
           >
-            <span className="hm-drill-kind">
-              {drill.kind === 'verb' ? 'Verb' : 'Topic'}
-            </span>
             <span className="hm-drill-label">{drillLabel}</span>
             <span className="hm-drill-count">
               {filteredItems.length}{' '}
@@ -307,7 +273,7 @@ export default function DashboardPage() {
               onClick={() => setDrill(null)}
             >
               <XCircle className="h-3.5 w-3.5" />
-              Clear filter
+              Return to All Topics
             </button>
           </div>
         )}
@@ -417,18 +383,10 @@ export default function DashboardPage() {
             {loadingMore && <SofiaLoader size={40} />}
           </div>
         )}
-
-        {/* Predicate picker (multi-intention cards) */}
-        {predicatePicker && (
-          <PredicatePicker
-            isOpen
-            side={predicatePicker.side}
-            item={predicatePicker.item}
-            onConfirm={handlePredicateConfirm}
-            onClose={() => setPredicatePicker(null)}
-          />
-        )}
       </div>
+
+      {/* Floating back-to-top — appears once the feed is scrolled. */}
+      <ScrollToTopButton />
     </div>
   )
 }

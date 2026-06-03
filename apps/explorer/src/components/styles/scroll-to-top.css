@@ -1,0 +1,63 @@
+/* ── Back-to-top button ───────────────────────────────────────────
+   Floating pill anchored to the bottom-right of the viewport. Hidden
+   (and removed from the tab order) until the page is scrolled; springs
+   in with a small lift. Tinted with the design-system surface tokens so
+   it reads as part of the dark UI. */
+
+.scroll-top-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  cursor: pointer;
+  box-shadow: 0 10px 28px -12px
+    color-mix(in srgb, var(--ds-ink) 55%, transparent);
+  opacity: 0;
+  transform: translateY(12px) scale(0.92);
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.scroll-top-btn.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.scroll-top-btn:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+  transform: translateY(-2px) scale(1);
+}
+.scroll-top-btn:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+/* Keep clear of the mobile bottom nav (≈64px + safe-area). */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    right: 16px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-top-btn,
+  .scroll-top-btn.is-visible,
+  .scroll-top-btn:hover {
+    transform: none;
+    transition: opacity 0.2s ease;
+  }
+}
