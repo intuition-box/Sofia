@@ -26,7 +26,9 @@ import {
 } from "~/lib/utils"
 import {
   CERTIFICATION_LIST,
+  INTENTION_CONFIG,
   INTENTION_ITEMS,
+  type IntentionType,
   TRUST_ITEMS
 } from "~/types/intentionCategories"
 import type { GroupUrlRecord } from "~types/database"
@@ -53,6 +55,7 @@ import { INTENTION_PREDICATES } from "../../types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { CartToast } from "./CartDrawer"
 import FilterDropdown from "./FilterDropdown"
+import { IntentionSelector } from "./IntentionSelector"
 import { InterestContextSelector } from "./InterestContextSelector"
 
 import "../styles/CategoryStyles.css"
@@ -77,6 +80,7 @@ const UrlRow = ({
   onChainStatus,
   onAddToCart,
   onAddTrustToCart,
+  onRemoveFromCart,
   onOAuthCertify,
   onRemove,
   isProcessing,
@@ -96,6 +100,7 @@ const UrlRow = ({
     title?: string,
     context?: string | null
   ) => void
+  onRemoveFromCart: (predicateName: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
@@ -105,6 +110,41 @@ const UrlRow = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [selectedContext, setSelectedContext] = useState<string | null>(null)
+  // Single active intention picked in the dropdown (null = placeholder).
+  const [selectedIntention, setSelectedIntention] =
+    useState<IntentionType | null>(null)
+
+  // Resolve an intention type to its on-chain predicate (trust verb or
+  // "visits for …" purpose) so we can add/remove the matching cart item.
+  const predicateForType = (type: IntentionType): string | null => {
+    const cfg = INTENTION_CONFIG[type]
+    if (cfg.intentionPurpose) return INTENTION_PREDICATES[cfg.intentionPurpose]
+    return cfg.predicateLabel
+  }
+  const addIntentionToCart = (type: IntentionType) => {
+    const cfg = INTENTION_CONFIG[type]
+    if (cfg.intentionPurpose) {
+      onAddToCart(cfg.intentionPurpose, urlRecord.title, selectedContext)
+    } else if (cfg.predicateLabel) {
+      onAddTrustToCart(cfg.predicateLabel, urlRecord.title, selectedContext)
+    }
+  }
+  const handleSelectIntention = (type: IntentionType) => {
+    if (type === selectedIntention) return
+    if (selectedIntention) {
+      const prev = predicateForType(selectedIntention)
+      if (prev) onRemoveFromCart(prev)
+    }
+    addIntentionToCart(type)
+    setSelectedIntention(type)
+  }
+  const handleClearIntention = () => {
+    if (selectedIntention) {
+      const prev = predicateForType(selectedIntention)
+      if (prev) onRemoveFromCart(prev)
+    }
+    setSelectedIntention(null)
+  }
 
   const handleSelectContext = (slug: string | null) => {
     setSelectedContext(slug)
@@ -244,85 +284,33 @@ const UrlRow = ({
       {/* Expanded section with OAuth predicate + intention bubbles on same line */}
       {isExpanded && (
         <div className="url-expanded-section">
-          <div className="url-expanded-subtitle">Intentions</div>
-          <div className="intention-pills">
-            {urlRecord.oauthPredicate && (
-              <button
-                className="oauth-predicate-btn"
-                onClick={() => {
-                  onOAuthCertify(urlRecord)
-                  setIsExpanded(false)
-                }}
-                disabled={isProcessing}>
-                {urlRecord.oauthPredicate}
-              </button>
-            )}
-            {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
-              const isAlreadyCertified = allCertLabels.includes(type)
-              const isInCart = cartPredicates.includes(predicateLabel)
-              const canDepositContext = isAlreadyCertified && !!selectedContext
-              const canAdd =
-                !isInCart && (!isAlreadyCertified || canDepositContext)
-              return (
-                <button
-                  key={type}
-                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? "certified" : ""} ${isInCart ? "in-cart" : ""}`}
-                  onClick={() => {
-                    if (canAdd) {
-                      onAddTrustToCart(
-                        predicateLabel,
-                        urlRecord.title,
-                        selectedContext
-                      )
-                    }
-                  }}
-                  disabled={isProcessing || !canAdd}
-                  title={
-                    canDepositContext ? "Deposit + add context" : undefined
-                  }>
-                  {isInCart
-                    ? `${label} ✓`
-                    : canDepositContext
-                      ? `+ ${label}`
-                      : label}
-                </button>
-              )
-            })}
-            {INTENTION_ITEMS.map(({ key, label, type }) => {
-              const isAlreadyCertified = allCertLabels.includes(type)
-              const predicateName = INTENTION_PREDICATES[key]
-              const isInCart = cartPredicates.includes(predicateName)
-              const canDepositContext = isAlreadyCertified && !!selectedContext
-              const canAdd =
-                !isInCart && (!isAlreadyCertified || canDepositContext)
-              return (
-                <button
-                  key={key}
-                  className={`intention-pill intention-pill--${type} ${isAlreadyCertified ? "certified" : ""} ${isInCart ? "in-cart" : ""}`}
-                  onClick={() => {
-                    if (canAdd) {
-                      onAddToCart(key, urlRecord.title, selectedContext)
-                    }
-                  }}
-                  disabled={isProcessing || !canAdd}
-                  title={
-                    canDepositContext ? "Deposit + add context" : undefined
-                  }>
-                  {isInCart
-                    ? `${label} ✓`
-                    : canDepositContext
-                      ? `+ ${label}`
-                      : label}
-                </button>
-              )
-            })}
+          {urlRecord.oauthPredicate && (
+            <button
+              className="oauth-predicate-btn"
+              onClick={() => {
+                onOAuthCertify(urlRecord)
+                setIsExpanded(false)
+              }}
+              disabled={isProcessing}>
+              {urlRecord.oauthPredicate}
+            </button>
+          )}
+          {/* Two matching dropdowns side by side — same layout as
+              PageBlockchainCard's actions panel. */}
+          <div className="cert-actions-row">
+            <IntentionSelector
+              selected={selectedIntention}
+              onSelect={handleSelectIntention}
+              onClear={handleClearIntention}
+              disabled={isProcessing}
+            />
+            <InterestContextSelector
+              selectedContext={selectedContext}
+              onSelectContext={handleSelectContext}
+              disabled={isProcessing}
+              certifiedContexts={certifiedContexts}
+            />
           </div>
-          <InterestContextSelector
-            selectedContext={selectedContext}
-            onSelectContext={handleSelectContext}
-            disabled={isProcessing}
-            certifiedContexts={certifiedContexts}
-          />
         </div>
       )}
     </div>
@@ -438,6 +426,15 @@ const GroupDetailView = ({
       context ?? null
     )
     setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
+  }
+
+  // Cart: remove a queued predicate for a URL (used when the intention
+  // dropdown switches or clears its selection).
+  const handleRemoveFromCart = (url: string, predicateName: string) => {
+    const item = cart.items.find(
+      (i) => i.url === url && i.predicateName === predicateName
+    )
+    if (item) cart.removeFromCart(item.id)
   }
 
   // Get cart predicates for a specific URL
@@ -804,6 +801,9 @@ const GroupDetailView = ({
                   title,
                   context
                 )
+              }
+              onRemoveFromCart={(predicateName) =>
+                handleRemoveFromCart(urlRecord.url, predicateName)
               }
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
