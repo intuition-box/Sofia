@@ -89,15 +89,18 @@
 
 .pc-main {
   display: grid;
-  /* Claude Design "Score & Activity": fixed score column, the activity
-     calendar takes the rest so it reads big and GitHub-like. */
-  grid-template-columns: 392px 1fr;
+  /* Claude Design "Score & Activity": score column, the activity calendar
+     takes the rest so it reads big and GitHub-like. `minmax(0, …)` on both
+     tracks lets the columns shrink below their intrinsic size so the
+     heatmap can scroll inside its column instead of overflowing the
+     `overflow:hidden` card on mid-size viewports. */
+  grid-template-columns: minmax(0, 392px) minmax(0, 1fr);
   gap: 24px;
   min-height: 280px;
 }
 @media (max-width: 900px) {
   .pc-main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -105,6 +108,9 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* Grid child — allow it to shrink so the calendar's scroll container
+     can clamp to the column width rather than blow it out. */
+  min-width: 0;
   /* Top/bottom padding mirrors `.pc-radar-wrap` (4 / 10) so the
      technical mono ticker bars on the right column align with the
      radar's top + bottom tickers on the left. The bottom meta uses
@@ -165,6 +171,12 @@
   flex-direction: column;
   gap: 10px;
   border-top: 1px dashed var(--ds-border-soft);
+  /* The heatmap is fixed-cell (max-content); when the column gets narrow
+     let it scroll horizontally instead of being clipped by the card's
+     `overflow:hidden`. Thin scrollbar comes from the global rule. */
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 @media (max-width: 900px) {
   .pc-main-right {

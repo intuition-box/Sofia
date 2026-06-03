@@ -2454,3 +2454,32 @@ html {
     border-color: #fca5a5; /* red-300 */
   }
 }
+
+/* ── Scrollbars — one unified treatment across the app ──────────────
+   Thin, rounded, track-less thumb tinted with the design-system border
+   so every scroll surface (topic filter in circles, the context-manager
+   "add topics" popover, drawers, lists…) reads the same instead of the
+   OS default chrome. Standard props for Firefox / modern Chrome; the
+   WebKit pseudos cover older Chromium / Safari. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border, rgba(255, 255, 255, 0.18)) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border, rgba(255, 255, 255, 0.18));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-ink-soft, rgba(255, 255, 255, 0.34));
+  background-clip: padding-box;
+}

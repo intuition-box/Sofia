@@ -1,39 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 
-type Theme = 'light' | 'dark'
-
-const STORAGE_KEY = 'sofia_theme'
-
-function getInitialTheme(): Theme {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'light' || stored === 'dark') return stored
-  } catch {}
-  // Default to system preference
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
-  return 'light'
-}
-
+/**
+ * Dark is now the only theme. The light/white mode (and its toggle) was
+ * removed — this hook just guarantees the `dark` class stays on <html>
+ * and returns a frozen API so any remaining call sites keep compiling.
+ */
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
-
   useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
-
-  const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'))
+    document.documentElement.classList.add('dark')
   }, [])
 
-  const setTheme = useCallback((t: Theme) => {
-    setThemeState(t)
-  }, [])
-
-  return { theme, toggleTheme, setTheme }
+  const noop = () => {}
+  return { theme: 'dark' as const, toggleTheme: noop, setTheme: noop }
 }

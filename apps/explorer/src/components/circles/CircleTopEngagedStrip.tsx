@@ -2,13 +2,9 @@
  * CircleTopEngagedStrip — "Hot picks" strip of the top 4 URLs in the
  * circle by engagement score. Rendered inside CircleFeedSection just
  * below the filter row so it reads as the curated header of the feed
- * rather than a separate band. Cards reuse the same star-tier palette
- * as `CircleFeedCard` so the visual scale is consistent across the
- * page.
+ * rather than a separate band.
  */
-import { Star } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { computeStars, starTier } from '@/services/circleFeedSort'
 import { UrlPreview } from '@/components/UrlPreview'
 import { extractDomain } from '@/utils/formatting'
 
@@ -43,7 +39,6 @@ export default function CircleTopEngagedStrip({
       <div className="crd-top-engaged-strip">
         {items.map((item) => {
           const { supports, opposes } = aggregateCounts(item)
-          const stars = computeStars(supports)
           const host = item.domain || (item.url ? extractDomain(item.url) : '')
           const href = item.url && item.url.startsWith('http') ? item.url : '#'
           return (
@@ -64,17 +59,6 @@ export default function CircleTopEngagedStrip({
               />
               <p className="crd-te-title">{item.title || host}</p>
               <div className="crd-te-meta">
-                <div className="crd-te-stars" aria-label={`${stars} out of 5`}>
-                  {[1, 2, 3, 4, 5].map((slot) => (
-                    <Star
-                      key={slot}
-                      size={9}
-                      fill="currentColor"
-                      strokeWidth={0}
-                      className={`fc-star fc-star--${starTier(slot, stars)}`}
-                    />
-                  ))}
-                </div>
                 <span className="crd-te-count">{supports + opposes}</span>
               </div>
             </a>

@@ -18,15 +18,8 @@
   </head>
   <body>
     <script>
-      ;(function () {
-        var t = localStorage.getItem('sofia_theme')
-        if (
-          t === 'dark' ||
-          (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        ) {
-          document.documentElement.classList.add('dark')
-        }
-      })()
+      // Dark is the only theme — always applied, no light/white mode.
+      document.documentElement.classList.add('dark')
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

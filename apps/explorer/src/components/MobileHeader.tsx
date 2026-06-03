@@ -1,5 +1,4 @@
 import { Menu, ShoppingCart, PanelRight } from 'lucide-react'
-import { useTheme } from '../hooks/useTheme'
 
 interface MobileHeaderProps {
   /** Open / close the left nav drawer (NavSidebar in mobile mode). */
@@ -35,7 +34,6 @@ export function MobileHeader({
   cartCount = 0,
   hideRightRailButton = false,
 }: MobileHeaderProps) {
-  const { theme } = useTheme()
   return (
     <header className="app-mobile-header">
       <button
@@ -48,11 +46,7 @@ export function MobileHeader({
       </button>
 
       <div className="flex flex-1 items-center justify-center">
-        <img
-          src={theme === 'dark' ? '/logo.png' : '/logo_invert.png'}
-          alt="Sofia"
-          className="h-6 w-auto"
-        />
+        <img src="/logo.png" alt="Sofia" className="h-6 w-auto" />
       </div>
 
       <div className="flex items-center gap-1">

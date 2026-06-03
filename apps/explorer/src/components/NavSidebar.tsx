@@ -17,8 +17,6 @@ import {
   Flame,
   Vote,
   Globe,
-  Sun,
-  Moon,
   Wallet,
   LogOut,
   ShoppingCart,
@@ -32,7 +30,6 @@ import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
-import { useTheme } from '../hooks/useTheme'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -90,7 +87,6 @@ export function NavSidebar({
     )
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
-  const { theme, toggleTheme } = useTheme()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -173,48 +169,8 @@ export function NavSidebar({
         tag="v0.4"
         collapsed={collapsed}
         onToggleCollapse={onToggleCollapse}
-        logo={
-          <img
-            src={theme === 'dark' ? '/logo.png' : '/logo_invert.png'}
-            alt=""
-            className="nav-brand-logo"
-          />
-        }
+        logo={<img src="/logo.png" alt="" className="nav-brand-logo" />}
       />
-
-      {/* Toolbar — cart / notifications / theme toggle. Home lives as a
-          nav-item below (Navigation section). */}
-      <div className="ns-toolbar" role="toolbar" aria-label="Quick actions">
-        <button
-          type="button"
-          className={`ns-tool-btn${cart.count > 0 ? ' ns-tool-btn--filled' : ''}`}
-          onClick={onCartClick}
-          aria-label="Cart"
-          title="Cart"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {cart.count > 0 && (
-            <span className="ns-tool-badge">{cart.count}</span>
-          )}
-        </button>
-        <button
-          type="button"
-          className="ns-tool-btn"
-          onClick={toggleTheme}
-          aria-label={
-            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-          }
-          title={
-            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-          }
-        >
-          {theme === 'dark' ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
-        </button>
-      </div>
 
       <NavSection title="Navigation">{navItems.map(renderItem)}</NavSection>
 
@@ -348,6 +304,21 @@ export function NavSidebar({
           pinned right below it. margin-top:auto on .ns-bottom pulls the
           whole group to the bottom of the rail. */}
       <div className="ns-bottom">
+        {/* Cart — pinned just above the profile chip. */}
+        <button
+          type="button"
+          className={`ns-cart-btn${cart.count > 0 ? ' ns-cart-btn--filled' : ''}`}
+          onClick={onCartClick}
+          aria-label="Cart"
+          title="Cart"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span className="ns-cart-label">Cart</span>
+          {cart.count > 0 && (
+            <span className="ns-cart-count">{cart.count}</span>
+          )}
+        </button>
+
         {ready && !authenticated && (
           <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
             <Wallet className="h-4 w-4 mr-1" />
