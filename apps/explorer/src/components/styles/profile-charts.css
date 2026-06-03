@@ -89,7 +89,9 @@
 
 .pc-main {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  /* Narrower score column, wider activity column so the GitHub-style
+     calendar gets more room. */
+  grid-template-columns: 0.8fr 1.2fr;
   gap: 24px;
   min-height: 280px;
 }

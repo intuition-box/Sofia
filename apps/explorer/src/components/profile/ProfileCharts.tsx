@@ -111,7 +111,7 @@ export default function ProfileCharts({
     if (generalScore > 0) {
       out.push({
         id: 'general',
-        label: 'General',
+        label: 'No context',
         emoji: '✨',
         color: 'var(--ds-muted)',
         score: Math.round(generalScore),

@@ -25,7 +25,9 @@ import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -91,6 +93,7 @@ export default function PlatformDetailPage() {
 
   const { profile, isLoading } = useUserOnChainProfile(profileAddresses)
   const { ranked: platformMarkets } = usePlatformMarket()
+  const { topicById } = useTaxonomy()
   const [query, setQuery] = useState('')
   const [investOpen, setInvestOpen] = useState(false)
 
@@ -187,19 +190,6 @@ export default function PlatformDetailPage() {
       <div className="pp-sections">
         <section className="pp-section">
           <div className="pf-platform-toolbar">
-            {platformMarket ? (
-              <button
-                type="button"
-                className="pf-invest-btn"
-                style={{ background: heroColor }}
-                onClick={() => setInvestOpen(true)}
-              >
-                <TrendingUp className="h-4 w-4" />
-                Invest on {decodedDomain}
-              </button>
-            ) : (
-              <SectionTitle>Certifications on this platform</SectionTitle>
-            )}
             <div className="ts-search pf-platform-search">
               <Search className="ts-search-icon h-4 w-4" />
               <input
@@ -220,6 +210,19 @@ export default function PlatformDetailPage() {
                 </button>
               )}
             </div>
+            {platformMarket ? (
+              <button
+                type="button"
+                className="pf-invest-btn"
+                style={{ background: heroColor }}
+                onClick={() => setInvestOpen(true)}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Invest on {decodedDomain}
+              </button>
+            ) : (
+              <SectionTitle>Certifications on this platform</SectionTitle>
+            )}
           </div>
 
           {isLoading && items.length === 0 ? (
@@ -296,11 +299,19 @@ export default function PlatformDetailPage() {
                     </div>
                     <div className="fc-bottom">
                       <div className="fc-tags">
-                        {cfg && (
-                          <span className={`fc-verb-tag ${cfg.cssClass}`}>
-                            {cfg.label}
-                          </span>
-                        )}
+                        {cert.topicSlugs.map((slug) => {
+                          const t = topicById(slug)
+                          if (!t) return null
+                          return (
+                            <TopicPill
+                              key={slug}
+                              topicId={slug}
+                              color={t.color}
+                              label={t.label.split(' ')[0]}
+                            />
+                          )
+                        })}
+                        {cfg && <VerbPill label={cfg.label} color={cfg.color} />}
                         <span className="fc-tag">
                           {cert.certifierCount} holder
                           {cert.certifierCount === 1 ? '' : 's'}

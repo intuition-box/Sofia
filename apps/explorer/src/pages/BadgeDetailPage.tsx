@@ -19,7 +19,9 @@ import {
   predicateLabelToIntentionType,
 } from '@/config/intentions'
 import { extractDomain } from '@/utils/formatting'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import '@/components/styles/pages.css'
@@ -74,6 +76,7 @@ export default function BadgeDetailPage() {
         : undefined
 
   const { profile, isLoading } = useUserOnChainProfile(profileAddresses)
+  const { topicById } = useTaxonomy()
 
   const tier = tierParam && tierParam in TIERS ? TIERS[tierParam as Tier] : null
   if (!tier) {
@@ -201,11 +204,19 @@ export default function BadgeDetailPage() {
                     </div>
                     <div className="fc-bottom">
                       <div className="fc-tags">
-                        {cfg && (
-                          <span className={`fc-verb-tag ${cfg.cssClass}`}>
-                            {cfg.label}
-                          </span>
-                        )}
+                        {cert.topicSlugs.map((slug) => {
+                          const t = topicById(slug)
+                          if (!t) return null
+                          return (
+                            <TopicPill
+                              key={slug}
+                              topicId={slug}
+                              color={t.color}
+                              label={t.label.split(' ')[0]}
+                            />
+                          )
+                        })}
+                        {cfg && <VerbPill label={cfg.label} color={cfg.color} />}
                         <span className="fc-tag">
                           {cert.certifierCount} holder
                           {cert.certifierCount === 1 ? '' : 's'}

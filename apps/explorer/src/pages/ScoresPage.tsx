@@ -411,7 +411,7 @@ export default function ScoresPage() {
         <div className="pp-sections">
           {topicScores.length > 0 && (
             <section className="pp-section">
-              <SectionTitle>Reputation by topic</SectionTitle>
+              <SectionTitle>Topic</SectionTitle>
               <div className="pf-trust-topics">
                 {topicScores.map((t) => {
                   const pct = (t.score / maxTopicScore) * 100
@@ -438,7 +438,7 @@ export default function ScoresPage() {
 
           {verbCounts.length > 0 && (
             <section className="pp-section">
-              <SectionTitle>Reputation by verb</SectionTitle>
+              <SectionTitle>Intention</SectionTitle>
               <div className="pf-verb-grid">
                 {verbCounts.map((v) => (
                   <div
