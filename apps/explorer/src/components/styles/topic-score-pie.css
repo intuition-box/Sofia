@@ -1,0 +1,42 @@
+/* TopicScorePie — shared donut (ProfileDrawer + ProfileCharts). */
+.pd-ts-pie-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+.pd-ts-pie {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(
+    0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent)
+  );
+}
+.pd-ts-pie-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.pd-ts-pie-value {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
+}
+.pd-ts-pie-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}

@@ -30,11 +30,6 @@ import OAuthCallbackPage from './pages/OAuthCallbackPage'
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const InterestPage = lazy(() => import('./pages/InterestPage'))
-const DomainSelectionPage = lazy(() => import('./pages/DomainSelectionPage'))
-const NicheSelectionPage = lazy(() => import('./pages/NicheSelectionPage'))
-const DomainNicheSelectionPage = lazy(
-  () => import('./pages/DomainNicheSelectionPage'),
-)
 const AllPlatformsPage = lazy(() => import('./pages/AllPlatformsPage'))
 const ScoresPage = lazy(() => import('./pages/ScoresPage'))
 const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
@@ -315,30 +310,6 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <InterestPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile/interest/:topicId/categories"
-                  element={
-                    <ProtectedRoute>
-                      <DomainNicheSelectionPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile/topics"
-                  element={
-                    <ProtectedRoute>
-                      <DomainSelectionPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile/categories"
-                  element={
-                    <ProtectedRoute>
-                      <NicheSelectionPage />
                     </ProtectedRoute>
                   }
                 />

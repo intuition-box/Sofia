@@ -21,6 +21,7 @@ import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import TopicBadge from './profile/TopicBadge'
+import TopicScorePie, { type TopicPieSlice } from './profile/TopicScorePie'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
@@ -35,64 +36,6 @@ interface ProfileDrawerProps {
 function formatStatCount(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
   return String(n)
-}
-
-// ── Pie chart helper ───────────────────────────────────────────────────
-// Proto renderTopicPie ported to React (profileDrawer.ts:57-86).
-
-interface TopicPieSlice {
-  id: string
-  label: string
-  emoji: string
-  color: string
-  score: number
-}
-
-function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
-  const realTotal = slices.reduce((a, s) => a + s.score, 0)
-  // When no topic has scored yet, fall back to equal slices so the ring
-  // still teases the colour breakdown of the user's picked topics.
-  const equalFallback = realTotal === 0 && slices.length > 0
-  const denom = equalFallback ? slices.length : realTotal
-  const r = 50
-  const C = 2 * Math.PI * r
-  let cursor = 0
-
-  return (
-    <div className="pd-ts-pie-wrap">
-      <svg className="pd-ts-pie" viewBox="0 0 120 120" aria-hidden="true">
-        {slices.map((t) => {
-          const value = equalFallback ? 1 : t.score
-          const pct = denom > 0 ? value / denom : 0
-          const sliceLen = pct * C
-          const rest = C - sliceLen
-          const startDeg = -90 + (denom > 0 ? (cursor / denom) * 360 : 0)
-          cursor += value
-          return (
-            <circle
-              key={t.id}
-              cx={60}
-              cy={60}
-              r={r}
-              fill="none"
-              stroke={t.color}
-              strokeWidth={14}
-              strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
-              strokeOpacity={equalFallback ? 0.35 : 1}
-              transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
-            />
-          )
-        })}
-        <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
-      </svg>
-      <div className="pd-ts-pie-center">
-        <span className="pd-ts-pie-value">{Math.round(realTotal)}</span>
-        <span className="pd-ts-pie-label">
-          {equalFallback ? 'build it up' : 'total'}
-        </span>
-      </div>
-    </div>
-  )
 }
 
 // ── Main component ────────────────────────────────────────────────────
@@ -246,20 +189,22 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
-  const pieSlices: TopicPieSlice[] = selectedTopics
-    .map((id) => {
-      const topic = topicById(id)
-      if (!topic) return null
-      const scoreEntry = topicScores.find((s) => s.topicId === id)
+  // Every topic is scored now (#521), so the donut shows only the topics the
+  // user actually has points in, strongest first — avoids a wheel of empty
+  // zero-score slices.
+  const pieSlices: TopicPieSlice[] = [...topicScores]
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((s) => {
+      const topic = topicById(s.topicId)
       return {
-        id,
-        label: topic.label,
-        emoji: getTopicEmoji(id) || '📌',
-        color: topic.color ?? getIntentionColor('inspiration'),
-        score: Math.round(scoreEntry?.score ?? 0),
+        id: s.topicId,
+        label: topic?.label ?? s.topicId,
+        emoji: getTopicEmoji(s.topicId) || '📌',
+        color: topic?.color ?? getIntentionColor('inspiration'),
+        score: Math.round(s.score),
       }
     })
-    .filter((x): x is TopicPieSlice => x !== null)
   // "General" sector for certs the user owns without an `in context of`
   // nested triple. Counts toward the donut total so power users with
   // mostly-untagged certs aren't stuck at zero.
@@ -379,7 +324,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               </>
             ) : (
               <p className="pd-ts-empty">
-                Pick topics to see your score breakdown.
+                Certify pages to build your score breakdown.
               </p>
             )}
           </div>
