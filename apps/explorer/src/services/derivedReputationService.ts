@@ -15,6 +15,23 @@
  */
 import type { ClaimSupporters } from './claimSupportersService'
 
+/**
+ * Tolerate a rehydrated plain object as well as a Map. React Query persists to
+ * localStorage via JSON, so a cached Map can come back as `{}`/an object across
+ * reloads; normalizing here keeps the calc from ever throwing `.get is not a
+ * function` and white-screening the page. See docs/reputation-curation.md.
+ */
+function asClaimMap(
+  supportersByClaim:
+    | ReadonlyMap<string, ClaimSupporters>
+    | Record<string, ClaimSupporters>
+    | null
+    | undefined,
+): ReadonlyMap<string, ClaimSupporters> {
+  if (supportersByClaim instanceof Map) return supportersByClaim
+  return new Map(Object.entries(supportersByClaim ?? {}))
+}
+
 /** The minimal shape of one of the user's claims this calc needs. */
 export interface ReputationCert {
   /** Claim (triple) term_id — the key into supportersByClaim. */
@@ -60,9 +77,10 @@ export function computeDerivedReputation({
   side = 'support',
 }: ComputeParams): Map<string, number> {
   const scoreByTopic = new Map<string, number>()
+  const claims = asClaimMap(supportersByClaim)
 
   for (const cert of certs) {
-    const claim = supportersByClaim.get(cert.termId)
+    const claim = claims.get(cert.termId)
     if (!claim) continue
     const list = side === 'oppose' ? claim.oppose : claim.support
     if (list.length === 0) continue
@@ -91,8 +109,9 @@ export function collectFollowerAddresses({
   supportersByClaim,
 }: Pick<ComputeParams, 'accounts' | 'certs' | 'supportersByClaim'>): string[] {
   const out = new Set<string>()
+  const claims = asClaimMap(supportersByClaim)
   for (const cert of certs) {
-    const claim = supportersByClaim.get(cert.termId)
+    const claim = claims.get(cert.termId)
     if (!claim) continue
     for (const side of [claim.support, claim.oppose]) {
       for (const f of followersAfter(side, accounts, cert.certifiedAt)) {

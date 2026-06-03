@@ -54,7 +54,8 @@ export default function ProfilePage() {
   // Base reputation = your own certs per topic (POINTS_PER_CERT). The big
   // driver on top is the support of credible users who positioned AFTER you on
   // your claims (eigentrust-weighted). See docs/reputation-curation.md.
-  const { scoreByTopic: derivedRep } = useDerivedReputation(activityAddresses)
+  const { scoreByTopic: derivedRep, loading: boostLoading } =
+    useDerivedReputation(activityAddresses)
   const topicScores = useMemo(
     () =>
       (scores?.topics ?? []).map((t) => ({
@@ -186,6 +187,7 @@ export default function ProfilePage() {
           topicScores={topicScores}
           addresses={myAddresses}
           onViewScores={isViewingAs ? undefined : () => navigate('/scores')}
+          refining={boostLoading}
         />
 
         {/* Echoes */}

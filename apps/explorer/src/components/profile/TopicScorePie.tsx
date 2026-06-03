@@ -29,6 +29,10 @@ interface TopicScorePieProps {
    *  "View details" button that calls this. Hovering a segment still
    *  shows that topic's score. */
   onViewDetails?: () => void
+  /** True while the trust boost is still loading (MCP latency). The base
+   *  score is already shown; the centre caption pulses "refining" so the
+   *  upcoming grow reads as an enrichment, not a jump. */
+  refining?: boolean
 }
 
 const R = 104
@@ -40,6 +44,7 @@ export default function TopicScorePie({
   focus,
   setFocus,
   onViewDetails,
+  refining = false,
 }: TopicScorePieProps) {
   const [centerHover, setCenterHover] = useState(false)
   const total = slices.reduce((a, s) => a + s.score, 0)
@@ -118,7 +123,9 @@ export default function TopicScorePie({
             <span className="donut-num">
               {Math.round(total).toLocaleString()}
             </span>
-            <span className="donut-cap">Total score</span>
+            <span className={`donut-cap${refining ? ' refining' : ''}`}>
+              {refining ? 'refining trust…' : 'Total score'}
+            </span>
           </>
         )}
       </div>

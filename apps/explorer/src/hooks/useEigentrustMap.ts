@@ -10,8 +10,6 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchEigentrustMap } from '@/services/eigentrustService'
 
-const EMPTY = new Map<string, number>()
-
 export function useEigentrustMap(addresses: readonly string[]) {
   const key = useMemo(
     () => [...new Set(addresses)].filter(Boolean).sort(),
@@ -27,7 +25,14 @@ export function useEigentrustMap(addresses: readonly string[]) {
     refetchOnWindowFocus: false,
   })
 
-  const byAddress = query.data ?? EMPTY
+  // The query caches a plain object (survives localStorage persistence); the
+  // consumers want a Map. Rebuild it here — cheap and persistence-safe. The
+  // `instanceof Map` branch tolerates a stale in-memory Map (e.g. across HMR).
+  const byAddress = useMemo(() => {
+    const data = query.data
+    if (data instanceof Map) return data as Map<string, number>
+    return new Map<string, number>(Object.entries(data ?? {}))
+  }, [query.data])
 
   return {
     /** Map<address, credibility>. */

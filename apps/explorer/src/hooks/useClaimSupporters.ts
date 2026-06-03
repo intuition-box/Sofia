@@ -12,8 +12,6 @@ import {
   type ClaimSupporters,
 } from '@/services/claimSupportersService'
 
-const EMPTY = new Map<string, ClaimSupporters>()
-
 export function useClaimSupporters(claimTermIds: readonly string[]) {
   // Stable, deduped, sorted key so the cache hits regardless of input order.
   const key = useMemo(
@@ -30,9 +28,18 @@ export function useClaimSupporters(claimTermIds: readonly string[]) {
     refetchOnWindowFocus: false,
   })
 
+  // The query caches a plain object (survives localStorage persistence); the
+  // consumers want a Map. Rebuild it here — cheap and persistence-safe. The
+  // `instanceof Map` branch tolerates a stale in-memory Map (e.g. across HMR).
+  const byClaim = useMemo(() => {
+    const data = query.data
+    if (data instanceof Map) return data as Map<string, ClaimSupporters>
+    return new Map<string, ClaimSupporters>(Object.entries(data ?? {}))
+  }, [query.data])
+
   return {
     /** Map<claimTermId, { support, oppose }> — ordered, Pioneer first. */
-    byClaim: query.data ?? EMPTY,
+    byClaim,
     loading: query.isLoading,
     error: query.error ? String(query.error) : null,
     refresh: query.refetch,

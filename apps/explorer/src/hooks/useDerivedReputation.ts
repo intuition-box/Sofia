@@ -2,8 +2,8 @@
  * useDerivedReputation — orchestrates the reputation calc end to end.
  *
  * Chains: the user's on-chain certs → ordered stakers per claim
- * (useClaimSupporters) → credibility of the followers (useEigentrustMap) →
- * `computeDerivedReputation`. Returns topic → score for both the support side
+ * (useClaimSupporters) → global credibility of the followers (useEigentrustMap)
+ * → `computeDerivedReputation`. Returns topic → score for both the support side
  * (positive reputation) and the oppose mirror. See docs/reputation-curation.md.
  */
 import { useMemo } from 'react'
@@ -45,7 +45,11 @@ export function useDerivedReputation(addresses: readonly string[]) {
       collectFollowerAddresses({ accounts, certs, supportersByClaim: byClaim }),
     [accounts, certs, byClaim],
   )
-  const { byAddress, loading: trustLoading } = useEigentrustMap(followerAddresses)
+  // Credibility = the GLOBAL objective score per follower (compute_composite_score),
+  // not seeded by the viewer — one ranking across the whole graph. Personalized/
+  // group trust (usePersonalizedTrustMap) is reserved for per-circle reputation.
+  const { byAddress, loading: trustLoading } =
+    useEigentrustMap(followerAddresses)
 
   const scoreByTopic = useMemo(
     () =>

@@ -129,6 +129,8 @@ export default function ScoresPage() {
   const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
   const [activeTab, setActiveTab] = useState<ScoreTab>('score')
+  // Which topic card is expanded to show its base/boost breakdown.
+  const [openTopic, setOpenTopic] = useState<string | null>(null)
 
   // Beta Season Pool — vault stats + the connected wallet's position.
   const {
@@ -181,27 +183,40 @@ export default function ScoresPage() {
     profileAddresses ?? [],
   )
 
-  // Reputation by topic — same TopicScore shape used by /profile.
+  // Reputation by topic, split into its two drivers so the detail view can
+  // explain it: `base` = your own certifications (POINTS_PER_CERT each),
+  // `boost` = the credibility of users who backed your claims after you.
   const topicScores = selectedTopics
     .map((id) => {
       const topic = topicById(id)
       if (!topic) return null
-      const reputationScore = reputation?.topics.find(
-        (t) => t.topicId === id,
-      )?.score
+      const base = Math.round(
+        reputation?.topics.find((t) => t.topicId === id)?.score ?? 0,
+      )
+      const boost = Math.round(derivedRep.get(id) ?? 0)
       return {
         id,
         label: topic.label,
         emoji: getTopicEmoji(id) || '📌',
         color: topic.color ?? '#888888',
-        score: Math.round((reputationScore ?? 0) + (derivedRep.get(id) ?? 0)),
+        base,
+        boost,
+        certCount: Math.round(base / POINTS_PER_CERT),
+        score: base + boost,
       }
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
 
+  // Trust/distrust are no longer folded into `general` (they can't carry a
+  // topic context) — count them explicitly so the total stays in sync with
+  // the /profile donut, which renders them as their own circle slices.
   const generalScore = certCounts.general * POINTS_PER_CERT
+  const trustDistrustScore =
+    (certCounts.trusted + certCounts.distrusted) * POINTS_PER_CERT
   const totalTopicScore =
-    topicScores.reduce((a, t) => a + t.score, 0) + generalScore
+    topicScores.reduce((a, t) => a + t.score, 0) +
+    generalScore +
+    trustDistrustScore
   const maxTopicScore = Math.max(...topicScores.map((t) => t.score), 1)
 
   // Reputation by verb — derive directly from the master profile so the
@@ -265,7 +280,7 @@ export default function ScoresPage() {
     .slice(0, 5)
 
   return (
-    <div className="pf-view page-enter">
+    <div className="pf-view sp-page page-enter">
       <div className="pf-ts-back-row">
         <button
           type="button"
@@ -418,14 +433,24 @@ export default function ScoresPage() {
           {topicScores.length > 0 && (
             <section className="pp-section">
               <SectionTitle>Topic</SectionTitle>
+              <p className="sp-explainer">
+                Your score in a topic ={' '}
+                <strong>your certifications</strong> (base) +{' '}
+                <strong>the credibility of users who backed your claims</strong>{' '}
+                after you (boost). Click a topic for the breakdown.
+              </p>
               <div className="pf-trust-topics">
                 {topicScores.map((t) => {
                   const pct = (t.score / maxTopicScore) * 100
+                  const open = openTopic === t.id
                   return (
-                    <div
+                    <button
                       key={t.id}
-                      className="pf-trust-topic"
+                      type="button"
+                      className={`pf-trust-topic${open ? ' is-open' : ''}`}
                       style={{ ['--topic-color' as string]: t.color }}
+                      onClick={() => setOpenTopic(open ? null : t.id)}
+                      aria-expanded={open}
                     >
                       <div className="pf-trust-topic-head">
                         <span className="pf-trust-topic-emoji">{t.emoji}</span>
@@ -435,7 +460,37 @@ export default function ScoresPage() {
                       <div className="pf-trust-topic-bar">
                         <span style={{ width: `${pct}%` }} />
                       </div>
-                    </div>
+                      {open && (
+                        <div className="sp-topic-detail">
+                          <div className="sp-topic-detail-row">
+                            <span className="sp-topic-detail-k">
+                              Base · {t.certCount} cert
+                              {t.certCount === 1 ? '' : 's'} ×{' '}
+                              {POINTS_PER_CERT}
+                            </span>
+                            <span className="sp-topic-detail-v">{t.base}</span>
+                          </div>
+                          <div className="sp-topic-detail-row">
+                            <span className="sp-topic-detail-k">
+                              Boost · credibility of your backers
+                            </span>
+                            <span className="sp-topic-detail-v">
+                              +{t.boost}
+                            </span>
+                          </div>
+                          <div className="sp-topic-detail-row sp-topic-detail-total">
+                            <span className="sp-topic-detail-k">Total</span>
+                            <span className="sp-topic-detail-v">{t.score}</span>
+                          </div>
+                          {t.boost === 0 && (
+                            <p className="sp-topic-detail-hint">
+                              No credible backer has positioned after you on
+                              your {t.label} claims yet.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </button>
                   )
                 })}
               </div>
