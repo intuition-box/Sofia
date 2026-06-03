@@ -398,6 +398,20 @@ a.pd-la-row:hover {
   background: #e87c7c;
 }
 
+/* Topic badge — black glyph on the topic color, in place of the
+   support/oppose check. Slightly larger + rounded-square so the icon
+   reads, matching the colored topic disc used across the feeds. */
+.pd-la-badge--topic {
+  width: 18px;
+  height: 18px;
+  border-radius: 7px;
+  background: var(--pill-color, var(--ds-accent));
+  color: #000;
+}
+.pd-la-badge--topic .sf-topic-pill-glyph {
+  font-size: 11px;
+}
+
 .pd-la-text {
   display: flex;
   flex-direction: column;

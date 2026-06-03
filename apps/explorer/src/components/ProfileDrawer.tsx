@@ -7,9 +7,10 @@ import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { useGroups } from '@/hooks/useGroups'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
+import { getTopicIcon } from '@/config/topicEmoji'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { TopicPill, VerbPill } from './profile/FeedPills'
+import { VerbPill } from './profile/FeedPills'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
@@ -240,52 +241,66 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                             />
                           ) : null}
                         </span>
-                        <span
-                          className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
-                          aria-hidden="true"
-                        >
-                          {isOppose ? (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width="9"
-                              height="9"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                        {a.topic ? (
+                          // Topic events carry the topic glyph as the corner
+                          // badge — black icon on the topic color, sitting
+                          // where the support/oppose check would otherwise be.
+                          <span
+                            className="pd-la-badge pd-la-badge--topic"
+                            style={{
+                              ['--pill-color' as string]:
+                                a.topic.color || 'var(--ds-accent)',
+                            }}
+                            title={a.topic.label}
+                            aria-label={a.topic.label}
+                          >
+                            <span
+                              className="material-symbols-outlined sf-topic-pill-glyph"
+                              aria-hidden="true"
                             >
-                              <path d="M18 6 6 18" />
-                              <path d="M6 6l12 12" />
-                            </svg>
-                          ) : (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width="9"
-                              height="9"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </span>
+                              {getTopicIcon(a.topic.id)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span
+                            className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
+                            aria-hidden="true"
+                          >
+                            {isOppose ? (
+                              <svg
+                                viewBox="0 0 24 24"
+                                width="9"
+                                height="9"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M18 6 6 18" />
+                                <path d="M6 6l12 12" />
+                              </svg>
+                            ) : (
+                              <svg
+                                viewBox="0 0 24 24"
+                                width="9"
+                                height="9"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </span>
+                        )}
                       </span>
                       <span className="pd-la-text">
                         <span className="pd-la-title">
                           {a.verb ? (
                             <VerbPill label={a.verb.label} color={a.verb.color} />
-                          ) : null}
-                          {a.topic ? (
-                            <TopicPill
-                              topicId={a.topic.id}
-                              color={a.topic.color || 'var(--ds-muted)'}
-                              label={a.topic.label}
-                              iconOnly
-                            />
                           ) : null}
                           <strong>{a.title}</strong>
                         </span>
