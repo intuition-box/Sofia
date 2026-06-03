@@ -38,6 +38,13 @@ createRoot(document.getElementById('root')!).render(
             path="/architecture"
             element={<ReadingPage docId="architecture/overview" />}
           />
+          {/* Privacy policy — top-level route so the public link
+              (footers, Chrome Web Store listing) is /privacy, not the
+              deep /docs/litepaper/privacy path. */}
+          <Route
+            path="/privacy"
+            element={<ReadingPage docId="litepaper/privacy" />}
+          />
 
           {/* Special pages aliased under /docs → canonical route */}
           <Route
