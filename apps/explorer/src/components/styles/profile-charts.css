@@ -89,12 +89,12 @@
 
 .pc-main {
   display: grid;
-  /* Claude Design "Score & Activity": score column, the activity calendar
-     takes the rest so it reads big and GitHub-like. `minmax(0, …)` on both
-     tracks lets the columns shrink below their intrinsic size so the
-     heatmap can scroll inside its column instead of overflowing the
-     `overflow:hidden` card on mid-size viewports. */
-  grid-template-columns: minmax(0, 392px) minmax(0, 1fr);
+  /* Claude Design "Score & Activity": score donut on the left, activity
+     calendar taking the rest. BOTH tracks are fractional so they shrink
+     together with the panel — a fixed-max score column kept the donut
+     frozen while only the calendar shrank. The donut caps its own size
+     via max-width; the calendar is fluid (square cells). */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
   gap: 24px;
   min-height: 280px;
 }
