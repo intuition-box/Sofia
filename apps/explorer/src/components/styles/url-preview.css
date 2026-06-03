@@ -24,39 +24,30 @@
   display: block;
 }
 
-/* Favicon fallback: square icon centered over a brand-tinted backdrop.
-   The favicon is shown at a generous size so it reads as an intentional
-   "logo card" rather than an empty placeholder. The radial gradient
-   gives a subtle spotlight effect that catches the eye without looking
-   busy. Consumers can override `--up-favicon-tint` inline to swap the
-   gradient colour for a brand-specific hue (e.g. YouTube red, Spotify
-   green) when the host is known. */
+/* No-image fallback: a single-hue gradient that fades to black, tinted by
+   the domain's brand colour (`--up-fallback-color`, resolved by
+   getDomainColor — YouTube red, Spotify green, …). No favicon, no text —
+   just the gradient, so cards read as intentional rather than empty.
+   Reached only when neither a thumbnail nor an OG image resolved. */
 .up-card--favicon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background:
-    radial-gradient(
-      ellipse at center,
+    linear-gradient(
+      155deg,
       color-mix(
           in srgb,
-          var(--up-favicon-tint, var(--ds-accent, #888)) 28%,
+          var(--up-fallback-color, var(--ds-accent, #888)) 30%,
           transparent
         )
         0%,
-      transparent 75%
+      color-mix(
+          in srgb,
+          var(--up-fallback-color, var(--ds-accent, #888)) 9%,
+          transparent
+        )
+        60%,
+      transparent 100%
     ),
-    var(--ds-bg-subtle, #f4f4f5);
-}
-
-.up-card--favicon img {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  background: #fff;
-  padding: 10px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.18);
+    var(--ds-card);
 }
 
 /* ── Thumb variant ─────────────────────────────────────────────── */

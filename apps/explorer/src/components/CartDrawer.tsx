@@ -1,191 +1,61 @@
-import { X, Trash2 } from 'lucide-react'
-import { Button } from './ui/button'
 import type { CartItem } from '../hooks/useCart'
-import { INTENTION_COLORS } from '../config/intentions'
-import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
-import { SOFIA_TOPICS } from '../config/taxonomy'
-import TopicBadge from './profile/TopicBadge'
+import WeightModal from './WeightModal'
 import './styles/cart-drawer.css'
-
-const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
-
-/** Resolve the topic this cart item ultimately points to, if any.
- *  Covers the three ways a topic ends up in the cart:
- *   - Interest selection (kind: 'deposit') → termId IS the topic atom
- *   - Context Manager (kind: 'create-triple') → id encodes the slug
- *   - Create-circle has_tag (kind: 'create-triple') → objectId IS the
- *     topic atom (handled implicitly via ATOM_ID_TO_TOPIC). */
-function resolveTopic(item: CartItem) {
-  // 1. Direct topic-atom deposit (Interest cart items).
-  const direct = ATOM_ID_TO_TOPIC.get(item.termId)
-  if (direct) return TOPIC_BY_ID.get(direct) ?? null
-  // 2. Context-Manager nested triple — id format: `context-<cert>-<slug>`.
-  if (item.id.startsWith('context-')) {
-    const parts = item.id.split('-')
-    const slug = parts[parts.length - 1]
-    const meta = TOPIC_BY_ID.get(slug)
-    if (meta) return meta
-  }
-  // 3. has_tag triple — `objectId` is the topic atom id.
-  if (item.objectId) {
-    const slug = ATOM_ID_TO_TOPIC.get(item.objectId)
-    if (slug) return TOPIC_BY_ID.get(slug) ?? null
-  }
-  return null
-}
 
 interface CartDrawerProps {
   items: CartItem[]
   isOpen: boolean
   onClose: () => void
   onRemove: (id: string) => void
-  onClear: () => void
-  onSubmit: () => void
+  /** Fired when the batch tx succeeds and the user dismisses the success
+   *  screen — clears the cart (which lets the aside auto-close). */
+  onSuccess: () => void
 }
 
+/**
+ * CartDrawer — the cart sidepanel. It used to be a standalone item list
+ * that handed off to a separate <WeightModal> popup to pick weights and
+ * sign. That extra modal step is gone: the Amplify panel (basket +
+ * weights + cost + sign + success) now fills this aside directly, so the
+ * whole flow happens in one surface with the extension's exact UI.
+ *
+ * This component is just the slide-in shell; the panel is <WeightModal>
+ * rendered inline (no portal, no overlay). Removal is per-row (the basket
+ * checkbox) and closing is the panel's Cancel/Close button — mirroring the
+ * extension, which has no separate header chrome above the ticket.
+ */
 export default function CartDrawer({
   items,
   isOpen,
   onClose,
   onRemove,
-  onClear,
-  onSubmit,
+  onSuccess,
 }: CartDrawerProps) {
-  // No zoom — manual sizing. RightSidebar = w-72 (288px) × 1.25 = 360px, top 71px
   return (
     <aside
       className={`fixed right-0 overflow-hidden cd-aside ${isOpen ? 'cd-open' : ''}`}
     >
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-          {items.length > 0 ? (
-            <button
-              onPointerDown={(e) => {
-                e.stopPropagation()
-                onClear()
-              }}
-              className="text-sm text-muted-foreground hover:text-destructive transition-colors"
-            >
-              Clear all
-            </button>
-          ) : (
-            <span />
-          )}
-          <button
-            onPointerDown={(e) => {
-              e.stopPropagation()
-              onClose()
-            }}
-            className="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted/50"
-          >
-            <X className="h-5 w-5" />
-          </button>
+      {items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground px-6">
+          <img
+            src="/logo.png"
+            alt="Sofia"
+            className="h-12 w-12 mb-4 opacity-30"
+          />
+          <p className="text-sm">Your cart is empty</p>
+          <p className="text-xs mt-2 opacity-70">
+            Click Support or Oppose on any claim
+          </p>
         </div>
-
-        {/* Items */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {items.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <img
-                src="/logo.png"
-                alt="Sofia"
-                className="h-12 w-12 mx-auto mb-4 opacity-30"
-              />
-              <p className="text-sm">Your cart is empty</p>
-              <p className="text-xs mt-2 opacity-70">
-                Click Support or Oppose on any claim
-              </p>
-            </div>
-          ) : (
-            items.map((item) => {
-              const topicMeta = resolveTopic(item)
-              const color =
-                topicMeta?.color ||
-                item.intentionColor ||
-                INTENTION_COLORS[item.intention] ||
-                'var(--foreground)'
-              return (
-                <div
-                  key={item.id}
-                  className="rounded-lg border border-border bg-card px-3 py-2 flex items-center gap-3 transition-colors hover:bg-muted/30"
-                  style={{ borderLeftWidth: 3, borderLeftColor: color }}
-                >
-                  {topicMeta ? (
-                    // Topic-flavoured cart items (interests, context tags,
-                    // has_tag triples) lead with the coloured TopicBadge
-                    // so they match the rest of the topic surfaces.
-                    <TopicBadge
-                      topicId={topicMeta.id}
-                      color={topicMeta.color}
-                      size={28}
-                      title={topicMeta.label}
-                    />
-                  ) : item.favicon ? (
-                    <img
-                      src={item.favicon}
-                      alt=""
-                      className="h-7 w-7 rounded shrink-0 bg-muted"
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                  ) : null}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium leading-snug line-clamp-1">
-                      {item.title}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span
-                        className="font-semibold px-1.5 py-[1px] leading-none"
-                        style={{
-                          fontSize: 8,
-                          backgroundColor: `${color}20`,
-                          borderWidth: '1px',
-                          borderStyle: 'solid',
-                          borderColor: `${color}40`,
-                          borderRadius: '4px',
-                        }}
-                      >
-                        {item.intention}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          lineHeight: 1,
-                          color:
-                            item.side === 'support' ? '#10B981' : '#EF4444',
-                        }}
-                      >
-                        {item.side === 'support' ? '▲ Support' : '▼ Oppose'}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onPointerDown={() => onRemove(item.id)}
-                    className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-muted/50 transition-colors shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              )
-            })
-          )}
-        </div>
-
-        {/* Footer */}
-        {items.length > 0 && (
-          <div className="border-t border-border p-4">
-            <Button
-              className="w-full h-10 rounded-lg font-semibold text-sm"
-              onPointerDown={onSubmit}
-            >
-              Submit All ({items.length} item{items.length > 1 ? 's' : ''})
-            </Button>
-          </div>
-        )}
-      </div>
+      ) : (
+        <WeightModal
+          isOpen={isOpen}
+          items={items}
+          onClose={onClose}
+          onSuccess={onSuccess}
+          onRemove={onRemove}
+        />
+      )}
     </aside>
   )
 }

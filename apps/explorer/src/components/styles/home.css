@@ -21,7 +21,7 @@
   margin: 8px 0 24px;
 }
 .hm-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -33,7 +33,7 @@
   color: var(--ds-accent);
 }
 .hm-sub {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   color: var(--ds-muted);
   font-style: italic;
@@ -110,7 +110,7 @@
   padding: 32px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -169,7 +169,7 @@
 }
 
 .hm-tile-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -313,7 +313,7 @@
   color: var(--ds-muted);
 }
 .hm-drill-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -507,32 +507,10 @@
   flex-wrap: wrap;
   gap: 5px;
 }
-.fc-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  background: var(--ds-bg);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--ds-border);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
-.fc-verb-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: #02000e;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
+/* `.fc-tag` / `.fc-verb-tag` were duplicated here AND in feed-card.css,
+   which is why the feeds diverged. The feeds now use the shared
+   <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
+   definition in feed-card.css. Only the wrapper stays. */
 
 .fc-positions {
   display: flex;

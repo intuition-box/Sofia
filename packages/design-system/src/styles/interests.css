@@ -92,7 +92,7 @@
 }
 
 .ig-card-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.02em;
@@ -149,7 +149,7 @@
 }
 
 .ig-card-reveal-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -172,7 +172,7 @@
 }
 
 .ig-card-reveal-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;

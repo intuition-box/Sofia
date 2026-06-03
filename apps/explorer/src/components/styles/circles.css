@@ -161,7 +161,7 @@
   gap: 12px;
 }
 .cr-section-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -269,7 +269,7 @@
   place-items: center;
   background: var(--ds-bg-subtle);
   color: var(--ds-ink);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 700;
   font-size: 14px;
 }
@@ -299,7 +299,7 @@
   font-variant-numeric: tabular-nums;
 }
 .grp-member-stat-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 16px;
   color: var(--ds-ink);
@@ -352,7 +352,7 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 16px;
   color: #ffffff;
@@ -367,7 +367,7 @@
   min-width: 0;
 }
 .cr-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
@@ -444,7 +444,7 @@
   background: var(--ds-border-soft);
 }
 .cr-card-stat-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 28px;
   color: var(--ds-ink);
@@ -585,14 +585,14 @@
   color: var(--ds-ink);
 }
 .cr-card-new-plus {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 44px;
   font-weight: 300;
   font-style: italic;
   line-height: 1;
 }
 .cr-card-new-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 800;
   font-style: italic;
@@ -645,7 +645,7 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 24px;
   color: #ffffff;
@@ -733,7 +733,7 @@
   min-width: 0;
 }
 .crd-hero-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 32px;
   font-weight: 900;
   letter-spacing: -0.03em;
@@ -752,7 +752,7 @@
 }
 .crd-hero-desc {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   line-height: 1.5;
   color: var(--ds-ink-soft);
@@ -815,7 +815,7 @@
   align-items: flex-end;
 }
 .crd-hero-stat__num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   color: var(--ds-ink);
   line-height: 1;
@@ -895,7 +895,7 @@
   gap: 14px;
 }
 .crd-actions-big {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 900;
   line-height: 1;
@@ -1071,7 +1071,7 @@
   color: var(--ds-card);
 }
 .crd-active-empty {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 13px;
   color: var(--ds-muted);
@@ -1101,7 +1101,7 @@
 }
 .crd-active-rank {
   grid-row: 1 / span 2;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 18px;
   color: var(--ds-muted);
@@ -1309,7 +1309,7 @@
   border-bottom: 1px solid var(--ds-border);
 }
 .crd-members-panel-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 900;
   color: var(--ds-ink);
@@ -1529,7 +1529,7 @@
   pointer-events: none;
 }
 .crd-feed-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.025em;
@@ -1543,7 +1543,7 @@
   padding: 40px 16px;
   text-align: center;
   color: var(--ds-muted);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   border: 1px dashed var(--ds-border);
@@ -1747,7 +1747,7 @@
   align-items: flex-start;
 }
 .crd-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -1825,7 +1825,7 @@
   color: var(--circle-color, var(--ds-accent));
 }
 .crd-feed-cta__title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -1902,7 +1902,7 @@
   gap: 14px;
 }
 .crd-top-engaged-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 14px;
   color: var(--ds-ink);
@@ -1924,7 +1924,13 @@
   gap: 10px;
   overflow-x: auto;
   padding: 2px 2px 8px;
-  scrollbar-width: thin;
+  /* Scrollbar hidden — the strip still scrolls (trackpad / drag) but the
+     bar itself is suppressed for a cleaner header. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.crd-top-engaged-strip::-webkit-scrollbar {
+  display: none;
 }
 .crd-te-card {
   flex: 0 0 360px;
@@ -2657,7 +2663,7 @@
 }
 .crd-join-overlay-title {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;

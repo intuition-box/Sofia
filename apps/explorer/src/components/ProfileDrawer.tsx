@@ -21,10 +21,12 @@ import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import TopicBadge from './profile/TopicBadge'
+import { TopicPill, VerbPill } from './profile/FeedPills'
 import TopicScorePie, { type TopicPieSlice } from './profile/TopicScorePie'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import { getIntentionColor } from '@/config/intentions'
+import { getIntentionColor, INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
+import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -144,8 +146,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           // Surface the topic as a structured payload so the row can
           // render a coloured <TopicBadge> inline instead of dropping
           // a raw emoji into the action-label string.
-          actionPrefix: 'Tagged',
-          actionSuffix: 'on',
+          // Tagging activity carries no intention verb — just the topic
+          // chip (same chip as the Echoes cards).
+          verb: null as Verb | null,
           topic: e.topicSlug
             ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
             : null,
@@ -154,17 +157,19 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
-      // Action verb per intention — keeps the row scannable. Trust /
-      // distrust read as social signals; visits_for_* read as topical
-      // marks. Fallback to "Certified" so any future predicate the
-      // indexer surfaces still renders something coherent.
-      let actionPrefix = 'Certified'
-      if (intentionLower === 'trusts') actionPrefix = 'Trusted'
-      else if (isOppose) actionPrefix = 'Distrusted'
+      // Verb chip per intention — same colored-pill language as the
+      // Echoes cards. `cssClass` maps to the intent palette; an empty
+      // class falls back to the neutral accent for unknown predicates.
+      let verbLabel = 'Certified'
+      if (intentionLower === 'trusts') verbLabel = 'Trusted'
+      else if (isOppose) verbLabel = 'Distrusted'
       else if (intentionLower.startsWith('visits for ')) {
-        const tail = intentionLower.slice('visits for '.length)
-        actionPrefix = `Marked for ${tail}`
+        const tail = intentionLower.slice('visits for '.length).trim()
+        verbLabel = tail.charAt(0).toUpperCase() + tail.slice(1)
       }
+      // Color from the DS intention palette (keyed by label); unknown
+      // labels (e.g. "Certified") fall through to the neutral pill.
+      const verb: Verb = { label: verbLabel, color: INTENTION_COLORS[verbLabel] }
       return {
         id: c.termId,
         title,
@@ -173,9 +178,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         favicon,
         timestamp: e.ts,
         isOppose,
-        actionPrefix,
-        actionSuffix: '',
-        topic: null,
+        verb,
+        topic: null as TopicChip | null,
       }
     })
   }, [profile, topicById])
@@ -406,21 +410,16 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       </span>
                       <span className="pd-la-text">
                         <span className="pd-la-title">
-                          {a.actionPrefix}{' '}
-                          {a.topic && (
-                            <>
-                              <TopicBadge
-                                topicId={a.topic.id}
-                                color={a.topic.color || 'var(--ds-muted)'}
-                                size={14}
-                                title={a.topic.label}
-                              />{' '}
-                              <span className="pd-la-topic-label">
-                                {a.topic.label}
-                              </span>{' '}
-                            </>
-                          )}
-                          {a.actionSuffix ? `${a.actionSuffix} ` : ''}
+                          {a.verb ? (
+                            <VerbPill label={a.verb.label} color={a.verb.color} />
+                          ) : null}
+                          {a.topic ? (
+                            <TopicPill
+                              topicId={a.topic.id}
+                              color={a.topic.color || 'var(--ds-muted)'}
+                              label={a.topic.label}
+                            />
+                          ) : null}
                           <strong>{a.title}</strong>
                         </span>
                         <span className="pd-la-sub">

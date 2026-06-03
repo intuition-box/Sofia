@@ -76,7 +76,7 @@
 }
 
 .modal-title {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -272,7 +272,7 @@
 }
 
 .modal-success-title {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 28px;
   font-weight: 600;
   color: #ffffff;
@@ -345,7 +345,7 @@
 .reward-amount {
   font-size: 32px;
   font-weight: 600;
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   background: linear-gradient(
     180deg,
     var(--peach-1, #ffe9df) 0%,
@@ -1350,7 +1350,7 @@
 }
 /* Single-line title, uniform size for every character. */
 .rc-h1 {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-variation-settings:
     "SOFT" 30,
@@ -1363,7 +1363,7 @@
   white-space: nowrap;
 }
 .rc-sub {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-style: italic;
   font-size: 13.5px;
   color: rgba(255, 255, 255, 0.65);
@@ -1532,7 +1532,7 @@
   color: rgba(255, 255, 255, 0.75);
 }
 .rc-ledger-total {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   font-weight: 700;
   color: #ffffff;
@@ -1612,7 +1612,7 @@
 }
 
 .gs-slider-value {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   color: #ffb659;
   min-width: 36px;
@@ -1804,7 +1804,7 @@
 }
 
 .pp-item-slider__value {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 11px;
   color: #22d3ee;
   min-width: 28px;
@@ -1826,7 +1826,7 @@
 }
 
 .weight-modal-triplet-text {
-  font-family: "Fraunces", serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -2596,7 +2596,7 @@
   margin-bottom: -4px;
 }
 .amp .b3-drop {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-variation-settings:
     "SOFT" 30,
@@ -2607,7 +2607,7 @@
   color: #ffffff;
 }
 .amp .b3-h1 {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-variation-settings:
     "SOFT" 30,
@@ -2791,7 +2791,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -2940,7 +2940,7 @@
   margin-top: 2px;
 }
 .amp .b3-ledger-total {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 700;
   font-size: 19px;
   color: #ffffff;
@@ -3061,7 +3061,7 @@
 }
 .amp .b3-dest-amt {
   flex: 0 0 auto;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 13px;
   color: #ffffff;
@@ -3141,7 +3141,7 @@
   animation: rcAppear 0.3s ease-out;
 }
 .amp .b3-loading-title {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-variation-settings:
     "SOFT" 30,

@@ -13,7 +13,6 @@ import { MobileHeader } from './components/MobileHeader'
 import { BottomNav } from './components/BottomNav'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
-import WeightModal from './components/WeightModal'
 import { useCart } from './hooks/useCart'
 import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
@@ -45,6 +44,20 @@ import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
 import './components/styles/mobile-shell.css'
+import './components/styles/pills.css'
+
+/**
+ * First path segment of every PERSONAL `/profile/*` route (see the route
+ * table below). Anything else under `/profile/<x>` is the public profile
+ * (`/profile/:address`). Kept beside the routes so the two stay in sync —
+ * adding a personal sub-route means adding its segment here too. */
+const PERSONAL_PROFILE_SEGMENTS = new Set([
+  'context-manager',
+  'interest',
+  'topics',
+  'categories',
+  'platform',
+])
 
 function InterestsHydrationBoundary() {
   useInterestsHydration()
@@ -93,9 +106,18 @@ export default function App() {
     location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
     location.pathname.startsWith('/leaderboard')
+  // The public profile (`/profile/:address`) shows SOMEONE ELSE's profile,
+  // so the connected user's ProfileDrawer rail is meaningless there — it
+  // must run rail-less. Distinguish it from the personal `/profile/*`
+  // sub-routes (topics, platform, interest, …) by their known segments.
+  const profileSubSegment = location.pathname.startsWith('/profile/')
+    ? location.pathname.split('/')[2]
+    : ''
+  const isPublicProfile =
+    profileSubSegment !== '' &&
+    !PERSONAL_PROFILE_SEGMENTS.has(profileSubSegment)
   const cartOpen = cart.isOpen
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
-  const [weightModalOpen, setWeightModalOpen] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -145,11 +167,6 @@ export default function App() {
     sidebar.closeLeft()
     sidebar.closeRight()
   }, [sidebar])
-
-  const handleCartSubmit = useCallback(() => {
-    cart.close()
-    setWeightModalOpen(true)
-  }, [cart])
 
   const handleDepositSuccess = useCallback(() => {
     cart.clear()
@@ -244,24 +261,17 @@ export default function App() {
           isOpen={cartOpen}
           onClose={cart.close}
           onRemove={cart.removeItem}
-          onClear={cart.clear}
-          onSubmit={handleCartSubmit}
+          onSuccess={handleDepositSuccess}
         />
 
         <ProfileDrawer
           isOpen={
             isProfilePage &&
+            !isPublicProfile &&
             !cartOpen &&
             (sidebar.isDesktop || profileDrawerOpen)
           }
           onClose={() => setProfileDrawerOpen(false)}
-        />
-
-        <WeightModal
-          isOpen={weightModalOpen}
-          items={cart.items}
-          onClose={() => setWeightModalOpen(false)}
-          onSuccess={handleDepositSuccess}
         />
 
         <main

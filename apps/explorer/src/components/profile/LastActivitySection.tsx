@@ -1,11 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  GroupBentoCard,
-  type CertificationDot,
-  formatDuration,
-} from '@0xsofia/design-system'
-import { CERTIFICATION_COLORS, type IntentionType } from '@/config/intentions'
+import { GroupBentoCard } from '@0xsofia/design-system'
+import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
 import {
   useIntentionGroups,
   pickDominantColor,
@@ -16,8 +12,14 @@ import { calculateLevelProgress } from '@/lib/level/calculation'
 import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import { getFaviconUrl } from '@/utils/favicon'
 import { useGroupPreview } from '@/hooks/useGroupPreview'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
+import type { TopicChip } from '@/types/profileChips'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
+
+/** Topic-id → label + color resolver, sourced from `useTaxonomy`. */
+type TopicResolver = (id: string) => { label: string; color: string } | undefined
 
 interface LastActivitySectionProps {
   /** Pre-built activity inputs — caller derives them from the master profile. */
@@ -39,18 +41,6 @@ interface LastActivitySectionProps {
 /** Build the prop bag consumed by the presentational <GroupBentoCard>. */
 function toCardProps(g: IntentionGroupWithStats) {
   const xp = calculateLevelProgress(g.certifiedCount, g.level)
-  const dots: CertificationDot[] = (
-    Object.entries(g.certificationBreakdown) as [
-      IntentionType,
-      number | undefined,
-    ][]
-  )
-    .filter(([, c]) => (c ?? 0) > 0)
-    .map(([type]) => ({
-      key: type,
-      color: CERTIFICATION_COLORS[type],
-      title: type,
-    }))
   return {
     domain: g.domain,
     faviconSrc: getFaviconUrl(g.domain),
@@ -71,8 +61,52 @@ function toCardProps(g: IntentionGroupWithStats) {
         ? `${xp.xpToNextLevel} cert${xp.xpToNextLevel > 1 ? 's' : ''} to LVL ${g.level + 1}`
         : 'Max level!',
     dominantColor: pickDominantColor(g),
-    certificationDots: dots,
+    // Verbs + context are surfaced as readable chips below (GroupTags),
+    // mirroring the circle feed — so the anonymous colored cert dots are
+    // intentionally dropped here.
   }
+}
+
+/**
+ * Context + verb chips rendered in the Echoes card bandeau — same visual
+ * language as the circle feed (`fc-tag` / `fc-verb-tag`): topic discs with
+ * a short label, then filled intent-colored verb pills. Capped at two of
+ * each so the compact bento bandeau stays legible.
+ */
+function GroupTags({
+  group,
+  topicById,
+}: {
+  group: IntentionGroupWithStats
+  topicById: TopicResolver
+}) {
+  const topics = group.topicSlugs
+    .map((id) => {
+      const t = topicById(id)
+      if (!t) return null
+      return { id, label: t.label.split(' ')[0], color: t.color }
+    })
+    .filter((x): x is TopicChip => !!x)
+    .slice(0, 2)
+
+  const verbs = (Object.keys(group.certificationBreakdown) as IntentionType[])
+    .filter((type) => (group.certificationBreakdown[type] ?? 0) > 0)
+    .map((type) => INTENTION_CONFIG[type])
+    .filter(Boolean)
+    .slice(0, 2)
+
+  if (topics.length === 0 && verbs.length === 0) return null
+
+  return (
+    <div className="group-bento-tags">
+      {topics.map((t) => (
+        <TopicPill key={t.id} topicId={t.id} color={t.color} label={t.label} />
+      ))}
+      {verbs.map((v) => (
+        <VerbPill key={v.cssClass} label={v.label} color={v.color} />
+      ))}
+    </div>
+  )
 }
 
 export default function LastActivitySection({
@@ -84,7 +118,9 @@ export default function LastActivitySection({
   searchQuery,
 }: LastActivitySectionProps) {
   const groups = useIntentionGroups(activities, { sort })
+  const { topicById } = useTaxonomy()
   const trimmed = searchQuery?.trim().toLowerCase() ?? ''
+
   const filteredGroups = useMemo(() => {
     if (!trimmed) return groups
     return groups.filter((g) => g.domain.toLowerCase().includes(trimmed))
@@ -130,39 +166,38 @@ export default function LastActivitySection({
     )
   }
 
-  if (filteredGroups.length === 0) {
-    return (
-      <EmptyFeedState
-        gridClassName="bento-grid bento-grid-3"
-        skeletonCount={6}
-        renderSkeleton={() => <ActivityCardSkeleton />}
-        message={
-          trimmed ? `No echoes match “${searchQuery}”.` : 'No activity yet.'
-        }
-        hint={
-          trimmed
-            ? 'Try a different keyword or clear the search.'
-            : 'Start certifying pages with Sofia and your Echoes will land here.'
-        }
-      />
-    )
-  }
-
   return (
     <div className="triples-container">
-      <div className="groups-section">
-        <div className="bento-grid bento-grid-3">
-          {sizedGroups.map(({ group: g, size }) => (
-            <BentoGroupItem
-              key={g.id}
-              group={g}
-              size={size}
-              linkable={linkable}
-              viewedAddress={viewedAddress}
-            />
-          ))}
+      {filteredGroups.length === 0 ? (
+        <EmptyFeedState
+          gridClassName="bento-grid bento-grid-3"
+          skeletonCount={6}
+          renderSkeleton={() => <ActivityCardSkeleton />}
+          message={
+            trimmed ? `No echoes match “${searchQuery}”.` : 'No activity yet.'
+          }
+          hint={
+            trimmed
+              ? 'Try a different keyword or clear the search.'
+              : 'Start certifying pages with Sofia and your Echoes will land here.'
+          }
+        />
+      ) : (
+        <div className="groups-section">
+          <div className="bento-grid bento-grid-3">
+            {sizedGroups.map(({ group: g, size }) => (
+              <BentoGroupItem
+                key={g.id}
+                group={g}
+                size={size}
+                linkable={linkable}
+                viewedAddress={viewedAddress}
+                topicById={topicById}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -172,6 +207,7 @@ interface BentoGroupItemProps {
   size: 'small' | 'tall' | 'mega'
   linkable: boolean
   viewedAddress?: string
+  topicById: TopicResolver
 }
 
 /** One bento card. Owns its own preview resolution so the async
@@ -184,6 +220,7 @@ function BentoGroupItem({
   size,
   linkable,
   viewedAddress,
+  topicById,
 }: BentoGroupItemProps) {
   const preview = useGroupPreview(group)
   const cardProps = {
@@ -192,12 +229,13 @@ function BentoGroupItem({
     headerImage: preview.url,
     headerImageAlt: group.domain,
   }
-  if (!linkable) return <GroupBentoCard {...cardProps} />
+  const tags = <GroupTags group={group} topicById={topicById} />
+  if (!linkable) return <GroupBentoCard {...cardProps}>{tags}</GroupBentoCard>
   const base = `/profile/platform/${encodeURIComponent(group.domain)}`
   const href = viewedAddress ? `${base}?address=${viewedAddress}` : base
   return (
     <Link to={href} className="echoes-card-link">
-      <GroupBentoCard {...cardProps} />
+      <GroupBentoCard {...cardProps}>{tags}</GroupBentoCard>
     </Link>
   )
 }

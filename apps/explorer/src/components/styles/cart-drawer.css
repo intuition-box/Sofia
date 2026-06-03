@@ -1,7 +1,7 @@
 /* ── CartDrawer ── */
 .cd-aside {
   top: 0;
-  width: 333px;
+  width: 360px;
   height: 100vh;
   z-index: 10000;
   background: var(--sidebar);

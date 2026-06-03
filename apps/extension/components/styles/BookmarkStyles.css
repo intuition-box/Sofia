@@ -53,7 +53,7 @@
 
 /* Card titles in Fraunces (DS display font) */
 .bookmark-card h4 {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -153,7 +153,7 @@
 .bookmark-modal-title {
   margin: 0 0 var(--spacing-lg) 0;
   color: var(--ds-ink);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -403,7 +403,7 @@
 .bookmark-list-info h4 {
   margin: 0 0 var(--spacing-sm) 0;
   color: var(--ds-ink);
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 600;
   font-size: var(--font-size-lg);
   letter-spacing: -0.01em;
@@ -625,14 +625,14 @@
   transform: translateY(-1px);
 }
 .bookmark-card-new-plus {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 32px;
   font-weight: 300;
   font-style: italic;
   line-height: 1;
 }
 .bookmark-card-new-label {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   font-weight: 800;
   font-style: italic;

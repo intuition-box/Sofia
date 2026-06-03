@@ -47,7 +47,7 @@
 }
 
 .prr-pulse-value {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-weight: 900;
   font-size: 20px;
   line-height: 1;

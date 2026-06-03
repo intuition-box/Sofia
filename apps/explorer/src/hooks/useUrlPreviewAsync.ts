@@ -25,13 +25,19 @@ import type { UrlPreview } from '@/utils/urlPreview'
 const PROXY_FINGERPRINT =
   (import.meta.env.VITE_OG_PROXY_URL as string | undefined) ?? 'proxy-off'
 
+// Bumped whenever the preview-resolution logic changes in a way that
+// should invalidate already-cached results (incl. the IndexedDB-persisted
+// ones). v2: drop the proxy's generated `/render` placeholder cards so
+// they fall back to the client brand gradient.
+const CACHE_VERSION = 'v2'
+
 export function useUrlPreviewAsync(url: string | undefined): {
   data: UrlPreview | undefined
   isLoading: boolean
 } {
   const enabled = !!url && hasAsyncProvider(url)
   const { data, isLoading } = useQuery({
-    queryKey: ['url-preview', PROXY_FINGERPRINT, url],
+    queryKey: ['url-preview', CACHE_VERSION, PROXY_FINGERPRINT, url],
     queryFn: () => fetchAsyncUrlPreview(url!),
     enabled,
     staleTime: 24 * 60 * 60 * 1000,

@@ -13,7 +13,7 @@
 }
 
 .ph-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--ds-font-display);
   font-size: 60px;
   font-weight: 900;
   color: #1a1a1a;

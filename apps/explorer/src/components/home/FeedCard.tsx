@@ -12,11 +12,11 @@
 import type { MouseEvent } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo } from '@/utils/formatting'
 import { UrlPreview } from '@/components/UrlPreview'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 
 function topicMeta(slug: string) {
   return SOFIA_TOPICS.find((t) => t.id === slug)
@@ -30,11 +30,6 @@ interface FeedCardProps {
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
 }
 
-/** Proto verb-tag class is lowercase — Sofia intentions come capitalised. */
-function verbClass(intent: string): string {
-  return intent.toLowerCase()
-}
-
 export default function FeedCard({
   item,
   displayName,
@@ -43,7 +38,23 @@ export default function FeedCard({
   onDeposit,
 }: FeedCardProps) {
   const shownName = isPrivate ? 'Someone' : displayName
-  const canSupport = Object.keys(item.intentionVaults).length > 0
+
+  // Aggregate position counts + the viewer's own stake across every
+  // intention vault — same rule as CircleFeedCard. `userSupported` /
+  // `userOpposed` come from the feed payload (useSofiaFeed passes the
+  // viewer's wallets), so a thumb the user has staked on stays lit
+  // across reloads instead of resetting on every render.
+  let supports = 0
+  let opposes = 0
+  let userSupported = false
+  let userOpposed = false
+  for (const v of Object.values(item.intentionVaults)) {
+    supports += v.supportCount
+    opposes += v.opposeCount
+    if (v.userSupported) userSupported = true
+    if (v.userOpposed) userOpposed = true
+  }
+  const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
   const canOppose = Object.values(item.intentionVaults).some(
     (v) => v.counterTermId,
   )
@@ -103,25 +114,16 @@ export default function FeedCard({
           {item.topicContexts?.slice(0, 2).map((slug) => {
             const meta = topicMeta(slug)
             return (
-              <span key={slug} className="fc-tag">
-                <TopicBadge
-                  topicId={slug}
-                  color={meta?.color ?? 'var(--ds-muted)'}
-                  size={14}
-                  title={meta?.label}
-                />
-                {meta?.label ?? slug}
-              </span>
+              <TopicPill
+                key={slug}
+                topicId={slug}
+                color={meta?.color ?? 'var(--ds-muted)'}
+                label={meta?.label ?? slug}
+              />
             )
           })}
           {item.intentions.map((intent) => (
-            <span
-              key={intent}
-              className={`fc-verb-tag ${verbClass(intent)}`}
-              style={{ background: INTENTION_COLORS[intent] ?? undefined }}
-            >
-              {intent}
-            </span>
+            <VerbPill key={intent} label={intent} color={INTENTION_COLORS[intent]} />
           ))}
         </div>
 
@@ -129,8 +131,15 @@ export default function FeedCard({
           <div className="fc-positions">
             <button
               type="button"
-              className="fc-pos support"
-              aria-label="Support"
+              className={`fc-pos support${userSupported ? ' active' : ''}`}
+              data-count={supports}
+              aria-label={`Support (${supports})`}
+              aria-pressed={userSupported}
+              title={
+                userSupported
+                  ? `You supported · ${supports} total`
+                  : `${supports} support`
+              }
               onClick={handlePos('support')}
               disabled={!canSupport}
             >
@@ -138,8 +147,15 @@ export default function FeedCard({
             </button>
             <button
               type="button"
-              className="fc-pos oppose"
-              aria-label="Oppose"
+              className={`fc-pos oppose${userOpposed ? ' active' : ''}`}
+              data-count={opposes}
+              aria-label={`Oppose (${opposes})`}
+              aria-pressed={userOpposed}
+              title={
+                userOpposed
+                  ? `You opposed · ${opposes} total`
+                  : `${opposes} oppose`
+              }
               onClick={handlePos('oppose')}
               disabled={!canOppose}
             >
