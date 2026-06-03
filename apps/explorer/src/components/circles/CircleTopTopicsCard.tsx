@@ -11,7 +11,7 @@
 import { useMemo } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { TOPIC_ATOM_IDS } from '@/config/atomIds'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill } from '@/components/profile/FeedPills'
 import type { CircleItem } from '@/services/circleService'
 import type { CircleTopicCounts } from '@/services/circleTopicCountsService'
 
@@ -83,11 +83,11 @@ export default function CircleTopTopicsCard({
       <div className="cr-topics-list">
         {rows.map((r) => (
           <div key={r.id} className="cr-topics-row">
-            <TopicBadge
+            <TopicPill
               topicId={r.id}
               color={r.color}
-              size={22}
-              title={r.label}
+              label={r.label}
+              iconOnly
             />
             <span className="cr-topics-label">{r.label}</span>
             <span className="cr-topics-num">{r.count}</span>
