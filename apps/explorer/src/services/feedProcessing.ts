@@ -13,7 +13,7 @@ interface VaultPositionCount {
   positions?: Array<{ shares?: string | null }> | null
 }
 
-interface FeedEvent {
+export interface FeedEvent {
   id: string
   created_at?: string | null
   triple?: {
@@ -68,7 +68,7 @@ function userHoldsShares(vaults?: VaultPositionCount[] | null): boolean {
   return false
 }
 
-interface CertifierInfo {
+export interface CertifierInfo {
   address: string
   label: string
 }
