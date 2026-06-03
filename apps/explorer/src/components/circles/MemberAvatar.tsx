@@ -13,6 +13,7 @@
  * inside a button is invalid HTML and triggers React warnings.
  */
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { avatarColor } from '@/utils/avatarColor'
 
@@ -56,11 +57,12 @@ export default function MemberAvatar({
   )
 
   if (linkable && member.walletAddress) {
-    // `stopPropagation` keeps the click from bubbling up to any outer
+    // Client-side route (not a raw <a>, which would hard-reload the whole
+    // SPA). `stopPropagation` keeps the click from bubbling up to any outer
     // row/card click handler that would otherwise route somewhere else.
     return (
-      <a
-        href={`/profile/${member.walletAddress}`}
+      <Link
+        to={`/profile/${member.walletAddress}`}
         className={className}
         style={{
           background: bg,
@@ -72,7 +74,7 @@ export default function MemberAvatar({
         onClick={(e) => e.stopPropagation()}
       >
         {content}
-      </a>
+      </Link>
     )
   }
 

@@ -15,6 +15,18 @@
     margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Full-width routes — App tags these with `main-content--no-right` by
+   pathname (stable from the first paint). Release the reserved 290px right
+   gutter immediately, BEFORE the page's content grid mounts. Without this,
+   full-width relied solely on `.main-content:has(.<page-grid>)` (e.g.
+   home.css `:has(.hm-grid)`), which only matches once the grid renders — so
+   during loading the empty rail gutter flashed in, then collapsed once the
+   page loaded. The cart / ProfileDrawer / public-aside `body:has(...)`
+   overrides still win on specificity when they're open. */
+.main-content--no-right {
+  margin-right: 0;
+}
+
 /* Nav collapsed — main follows the narrower 68px rail. */
 .nav-collapsed .main-content {
   margin-left: 68px;

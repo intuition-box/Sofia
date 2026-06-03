@@ -250,15 +250,6 @@ export default function DashboardPage() {
           current source items (All or Circle). Click a tile to drill. */}
         {drill == null && !loading && (
           <>
-            <div className="hm-head">
-              <h2>
-                What are you <em>into</em> today?
-              </h2>
-              <p className="hm-sub">
-                Pick a topic to see URLs endorsed across every circle you
-                follow.
-              </p>
-            </div>
             <div className="hm-search">
               <Search
                 className="hm-search-icon h-3.5 w-3.5"
