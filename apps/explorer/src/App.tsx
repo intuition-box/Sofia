@@ -49,6 +49,7 @@ import { useViewAs } from './hooks/useViewAs'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
 import './components/styles/mobile-shell.css'
+import './components/styles/pills.css'
 
 /**
  * First path segment of every PERSONAL `/profile/*` route (see the route

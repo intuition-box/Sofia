@@ -21,8 +21,9 @@ import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import TopicBadge from './profile/TopicBadge'
+import { TopicPill, VerbPill } from './profile/FeedPills'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import { getIntentionColor } from '@/config/intentions'
+import { getIntentionColor, INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
@@ -216,20 +217,16 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // Verb chip per intention — same colored-pill language as the
       // Echoes cards. `cssClass` maps to the intent palette; an empty
       // class falls back to the neutral accent for unknown predicates.
-      let verb: Verb | null = {
-        label: 'Certified',
-        cssClass: '',
-      }
-      if (intentionLower === 'trusts')
-        verb = { label: 'Trusted', cssClass: 'trusted' }
-      else if (isOppose) verb = { label: 'Distrusted', cssClass: 'distrusted' }
+      let verbLabel = 'Certified'
+      if (intentionLower === 'trusts') verbLabel = 'Trusted'
+      else if (isOppose) verbLabel = 'Distrusted'
       else if (intentionLower.startsWith('visits for ')) {
         const tail = intentionLower.slice('visits for '.length).trim()
-        verb = {
-          label: tail.charAt(0).toUpperCase() + tail.slice(1),
-          cssClass: tail,
-        }
+        verbLabel = tail.charAt(0).toUpperCase() + tail.slice(1)
       }
+      // Color from the DS intention palette (keyed by label); unknown
+      // labels (e.g. "Certified") fall through to the neutral pill.
+      const verb: Verb = { label: verbLabel, color: INTENTION_COLORS[verbLabel] }
       return {
         id: c.termId,
         title,
@@ -477,24 +474,14 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       <span className="pd-la-text">
                         <span className="pd-la-title">
                           {a.verb ? (
-                            <span
-                              className={`pd-la-verb ${a.verb.cssClass}`.trim()}
-                            >
-                              {a.verb.label}
-                            </span>
+                            <VerbPill label={a.verb.label} color={a.verb.color} />
                           ) : null}
                           {a.topic ? (
-                            <span className="pd-la-topic">
-                              <TopicBadge
-                                topicId={a.topic.id}
-                                color={a.topic.color || 'var(--ds-muted)'}
-                                size={13}
-                                title={a.topic.label}
-                              />
-                              <span className="pd-la-topic-label">
-                                {a.topic.label}
-                              </span>
-                            </span>
+                            <TopicPill
+                              topicId={a.topic.id}
+                              color={a.topic.color || 'var(--ds-muted)'}
+                              label={a.topic.label}
+                            />
                           ) : null}
                           <strong>{a.title}</strong>
                         </span>

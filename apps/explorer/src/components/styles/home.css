@@ -507,32 +507,10 @@
   flex-wrap: wrap;
   gap: 5px;
 }
-.fc-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  background: var(--ds-bg);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--ds-border);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
-.fc-verb-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: #02000e;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
+/* `.fc-tag` / `.fc-verb-tag` were duplicated here AND in feed-card.css,
+   which is why the feeds diverged. The feeds now use the shared
+   <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
+   definition in feed-card.css. Only the wrapper stays. */
 
 .fc-positions {
   display: flex;

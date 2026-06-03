@@ -12,11 +12,11 @@
 import type { MouseEvent } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { INTENTION_COLORS } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo } from '@/utils/formatting'
 import { UrlPreview } from '@/components/UrlPreview'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 
 function topicMeta(slug: string) {
   return SOFIA_TOPICS.find((t) => t.id === slug)
@@ -28,11 +28,6 @@ interface FeedCardProps {
   avatar: string
   isPrivate?: boolean
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
-}
-
-/** Proto verb-tag class is lowercase — Sofia intentions come capitalised. */
-function verbClass(intent: string): string {
-  return intent.toLowerCase()
 }
 
 export default function FeedCard({
@@ -119,25 +114,16 @@ export default function FeedCard({
           {item.topicContexts?.slice(0, 2).map((slug) => {
             const meta = topicMeta(slug)
             return (
-              <span key={slug} className="fc-tag">
-                <TopicBadge
-                  topicId={slug}
-                  color={meta?.color ?? 'var(--ds-muted)'}
-                  size={14}
-                  title={meta?.label}
-                />
-                {meta?.label ?? slug}
-              </span>
+              <TopicPill
+                key={slug}
+                topicId={slug}
+                color={meta?.color ?? 'var(--ds-muted)'}
+                label={meta?.label ?? slug}
+              />
             )
           })}
           {item.intentions.map((intent) => (
-            <span
-              key={intent}
-              className={`fc-verb-tag ${verbClass(intent)}`}
-              style={{ background: INTENTION_COLORS[intent] ?? undefined }}
-            >
-              {intent}
-            </span>
+            <VerbPill key={intent} label={intent} color={INTENTION_COLORS[intent]} />
           ))}
         </div>
 

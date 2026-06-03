@@ -18,11 +18,7 @@ import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
 import { Search, X } from 'lucide-react'
-import {
-  SectionH2,
-  EchoesSortTabs,
-  type EchoesSortKey,
-} from '@0xsofia/design-system'
+import { SectionH2 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
 import { useEnsNames } from '@/hooks/useEnsNames'
@@ -49,7 +45,6 @@ export default function PublicProfilePage() {
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null)
   const [resolving, setResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
-  const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
   const [echoesSearch, setEchoesSearch] = useState('')
 
   // Resolve ENS (`.eth` / `.box`) or validate the raw address. The
@@ -267,12 +262,10 @@ export default function PublicProfilePage() {
                 ) : null}
               </div>
             </div>
-            <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={onChainLoading}
-            sort={echoesSort}
             searchQuery={echoesSearch}
             // Echo cards now route to /profile/platform/:domain?address=…
             // so visitors can drill into the viewed user's certs on a

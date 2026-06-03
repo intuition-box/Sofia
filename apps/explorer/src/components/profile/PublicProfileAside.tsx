@@ -27,7 +27,7 @@ import {
 import type { UserCert } from '@/services/userOnChainProfileService'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill } from '@/components/profile/FeedPills'
 import type { TopicChip } from '@/types/profileChips'
 
 interface PublicProfileAsideProps {
@@ -198,15 +198,12 @@ export default function PublicProfileAside({
             <p className="ppa-section-title">Most-marked topics</p>
             <div className="ppa-topics">
               {topTopics.map((t) => (
-                <span key={t.id} className="ppa-topic">
-                  <TopicBadge
-                    topicId={t.id}
-                    color={t.color}
-                    size={13}
-                    title={t.label}
-                  />
-                  {t.label}
-                </span>
+                <TopicPill
+                  key={t.id}
+                  topicId={t.id}
+                  color={t.color}
+                  label={t.label}
+                />
               ))}
             </div>
           </div>

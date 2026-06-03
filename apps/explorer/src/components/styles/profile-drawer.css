@@ -567,72 +567,13 @@ a.pd-la-row:hover {
   color: var(--ds-ink);
 }
 
-/* Verb + topic rendered as the SAME chips as the Echoes cards:
-   a filled intent-colored verb pill + a topic disc-chip, instead of
-   plain action text + a bare badge. */
-.pd-la-verb {
-  display: inline-flex;
-  align-items: center;
+/* Verb + topic use the shared <VerbPill> / <TopicPill> (styles/pills.css).
+   Here they sit inline inside the activity sentence (a -webkit-box), so
+   nudge spacing + baseline alignment for the running-text context. */
+.pd-la-title .sf-verb-pill,
+.pd-la-title .sf-topic-pill {
   margin-right: 6px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
-  color: var(--intent-ink);
-  background: var(--ds-accent);
   vertical-align: middle;
-}
-.pd-la-verb.trusted {
-  background: var(--intent-trusted);
-}
-.pd-la-verb.distrusted {
-  background: var(--intent-distrusted);
-}
-.pd-la-verb.work {
-  background: var(--intent-work);
-}
-.pd-la-verb.learning {
-  background: var(--intent-learning);
-}
-.pd-la-verb.fun {
-  background: var(--intent-fun);
-}
-.pd-la-verb.inspiration {
-  background: var(--intent-inspiration);
-}
-.pd-la-verb.buying {
-  background: var(--intent-buying);
-}
-.pd-la-verb.music {
-  background: var(--intent-music);
-}
-
-.pd-la-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-right: 6px;
-  padding: 2px 8px 2px 3px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
-  vertical-align: middle;
-}
-.pd-la-topic .topic-badge {
-  flex-shrink: 0;
-}
-.pd-la-topic-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
-  color: var(--ds-ink);
 }
 .pd-la-sub {
   font-family: 'JetBrains Mono', monospace;

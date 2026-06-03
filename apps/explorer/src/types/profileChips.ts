@@ -12,9 +12,9 @@ export interface TopicChip {
   color: string
 }
 
-/** A verb/intention rendered as a colored pill. `cssClass` maps to the
- *  intent palette (`.trusted`, `.work`, …); empty = neutral accent. */
+/** A verb/intention rendered as an outlined pill. `color` is the intent
+ *  color (text + border); undefined = neutral. */
 export interface Verb {
   label: string
-  cssClass: string
+  color?: string
 }

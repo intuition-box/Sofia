@@ -508,171 +508,13 @@
 }
 
 /* ── Echoes card context + verb chips ───────────────────────────────
-   Mirrors the circle feed silhouette (.fc-tag / .fc-verb-tag) but
-   scaled down for the compact bento bandeau. Rendered as the card's
-   last child (GroupTags), so the DS with-thumb rules already give it
-   the 14px side padding + 12px bottom padding + 6px top margin. */
+   Pills come from the shared <TopicPill> / <VerbPill> (styles/pills.css).
+   Here we only own the row wrapper; the DS with-thumb rules give it the
+   14px side padding + 12px bottom padding + 6px top margin. */
 .bento-grid-3 .group-bento-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-}
-
-.bento-grid-3 .group-bento-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 4px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ds-ink);
-}
-
-.bento-grid-3 .group-bento-tag .topic-badge {
-  flex-shrink: 0;
-}
-
-/* Verb pill — filled intent color + near-black text, same palette as
-   the feed cards' .fc-verb-tag. */
-.bento-grid-3 .group-bento-verb {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 9px;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--intent-ink);
-  background: var(--ds-accent);
-}
-.bento-grid-3 .group-bento-verb.trusted {
-  background: var(--intent-trusted);
-}
-.bento-grid-3 .group-bento-verb.distrusted {
-  background: var(--intent-distrusted);
-}
-.bento-grid-3 .group-bento-verb.work {
-  background: var(--intent-work);
-}
-.bento-grid-3 .group-bento-verb.learning {
-  background: var(--intent-learning);
-}
-.bento-grid-3 .group-bento-verb.fun {
-  background: var(--intent-fun);
-}
-.bento-grid-3 .group-bento-verb.inspiration {
-  background: var(--intent-inspiration);
-}
-.bento-grid-3 .group-bento-verb.buying {
-  background: var(--intent-buying);
-}
-.bento-grid-3 .group-bento-verb.music {
-  background: var(--intent-music);
-}
-
-/* ── Echoes quick-filter bar (Top Platforms / Top Claims) ───────────
-   The old standalone Top Platforms / Top Claims cards now live here as
-   toggle chips that scope the bento grid below. Sits between the Echoes
-   head (title + search + sort tabs) and the grid. */
-.echoes-filterbar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.echoes-filter-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-.echoes-filter-label {
-  margin-right: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-}
-.echoes-filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
-  color: var(--ds-ink);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-.echoes-filter-chip:hover {
-  border-color: var(--ds-ink-soft);
-}
-.echoes-filter-chip.active {
-  border-color: var(--ds-ink);
-  background: var(--ds-ink);
-  color: var(--ds-card);
-}
-.echoes-filter-favicon {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-/* Claim chips carry the intent color as a leading dot. */
-.echoes-filter-chip.claim::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--ds-accent);
-}
-.echoes-filter-chip.claim.trusted::before {
-  background: var(--intent-trusted);
-}
-.echoes-filter-chip.claim.distrusted::before {
-  background: var(--intent-distrusted);
-}
-.echoes-filter-chip.claim.work::before {
-  background: var(--intent-work);
-}
-.echoes-filter-chip.claim.learning::before {
-  background: var(--intent-learning);
-}
-.echoes-filter-chip.claim.fun::before {
-  background: var(--intent-fun);
-}
-.echoes-filter-chip.claim.inspiration::before {
-  background: var(--intent-inspiration);
-}
-.echoes-filter-chip.claim.buying::before {
-  background: var(--intent-buying);
-}
-.echoes-filter-chip.claim.music::before {
-  background: var(--intent-music);
 }
 
 /* ── PlatformDetailPage toolbar ── */
@@ -1606,28 +1448,12 @@
   height: 16px;
 }
 
+/* Topics use the shared <TopicPill> (styles/pills.css); we only own
+   the wrapping row here. */
 .ppa-topics {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-.ppa-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 4px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ds-ink);
-}
-.ppa-topic .topic-badge {
-  flex-shrink: 0;
 }
 
 /* Mobile — fold the rail away; the page content already carries the

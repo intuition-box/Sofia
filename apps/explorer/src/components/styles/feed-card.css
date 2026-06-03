@@ -302,45 +302,56 @@
   color: var(--ds-ink);
 }
 
-/* Verb tag — same shape as fc-tag, filled intent colour + black text. */
+/* Verb tag — outlined: text + border in the intent colour, no fill.
+   Mirrors the shared <VerbPill> (.sf-verb-pill); kept in sync so the
+   surfaces still on .fc-verb-tag (ProfileClaimCard, BadgeDetailPage,
+   PlatformDetailPage) match the feeds. */
 .fc-verb-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: var(--intent-ink);
+  color: var(--ds-ink);
   padding: 5px 11px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid var(--ds-border);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  background: var(--ds-accent);
+  background: transparent;
 }
 .fc-verb-tag.trusted {
-  background: var(--intent-trusted);
+  color: var(--intent-trusted);
+  border-color: var(--intent-trusted);
 }
 .fc-verb-tag.distrusted {
-  background: var(--intent-distrusted);
+  color: var(--intent-distrusted);
+  border-color: var(--intent-distrusted);
 }
 .fc-verb-tag.work {
-  background: var(--intent-work);
+  color: var(--intent-work);
+  border-color: var(--intent-work);
 }
 .fc-verb-tag.learning {
-  background: var(--intent-learning);
+  color: var(--intent-learning);
+  border-color: var(--intent-learning);
 }
 .fc-verb-tag.fun {
-  background: var(--intent-fun);
+  color: var(--intent-fun);
+  border-color: var(--intent-fun);
 }
 .fc-verb-tag.inspiration {
-  background: var(--intent-inspiration);
+  color: var(--intent-inspiration);
+  border-color: var(--intent-inspiration);
 }
 .fc-verb-tag.buying {
-  background: var(--intent-buying);
+  color: var(--intent-buying);
+  border-color: var(--intent-buying);
 }
 .fc-verb-tag.music {
-  background: var(--intent-music);
+  color: var(--intent-music);
+  border-color: var(--intent-music);
 }
 
 /* Star badge (top-right of the card). 5-tier scale: gold (1..3),

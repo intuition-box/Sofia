@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { GroupBentoCard } from '@0xsofia/design-system'
 import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
@@ -14,7 +14,7 @@ import { getFaviconUrl } from '@/utils/favicon'
 import { useGroupPreview } from '@/hooks/useGroupPreview'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import type { TopicChip } from '@/types/profileChips'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
@@ -100,20 +100,10 @@ function GroupTags({
   return (
     <div className="group-bento-tags">
       {topics.map((t) => (
-        <span key={t.id} className="group-bento-tag">
-          <TopicBadge
-            topicId={t.id}
-            color={t.color}
-            size={13}
-            title={t.label}
-          />
-          {t.label}
-        </span>
+        <TopicPill key={t.id} topicId={t.id} color={t.color} label={t.label} />
       ))}
       {verbs.map((v) => (
-        <span key={v.cssClass} className={`group-bento-verb ${v.cssClass}`}>
-          {v.label}
-        </span>
+        <VerbPill key={v.cssClass} label={v.label} color={v.color} />
       ))}
     </div>
   )
@@ -131,51 +121,10 @@ export default function LastActivitySection({
   const { topicById } = useTaxonomy()
   const trimmed = searchQuery?.trim().toLowerCase() ?? ''
 
-  // Quick-filter chips, derived from the (unfiltered) groups so the bar
-  // stays stable while the grid below narrows. Top Platforms / Top Claims
-  // used to be standalone cards; they now live here as toggle filters.
-  const [platformFilter, setPlatformFilter] = useState<string | null>(null)
-  const [claimFilter, setClaimFilter] = useState<IntentionType | null>(null)
-
-  const topPlatforms = useMemo(
-    () =>
-      [...groups]
-        .sort(
-          (a, b) =>
-            (b.certifiedCount || b.activeUrlCount) -
-            (a.certifiedCount || a.activeUrlCount),
-        )
-        .slice(0, 6)
-        .map((g) => g.domain),
-    [groups],
-  )
-
-  const topClaims = useMemo(() => {
-    const totals = new Map<IntentionType, number>()
-    for (const g of groups) {
-      for (const [type, count] of Object.entries(g.certificationBreakdown) as [
-        IntentionType,
-        number | undefined,
-      ][]) {
-        if (count) totals.set(type, (totals.get(type) ?? 0) + count)
-      }
-    }
-    return [...totals.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([type]) => type)
-  }, [groups])
-
   const filteredGroups = useMemo(() => {
-    let out = groups
-    if (trimmed) out = out.filter((g) => g.domain.toLowerCase().includes(trimmed))
-    if (platformFilter) out = out.filter((g) => g.domain === platformFilter)
-    if (claimFilter)
-      out = out.filter((g) => (g.certificationBreakdown[claimFilter] ?? 0) > 0)
-    return out
-  }, [groups, trimmed, platformFilter, claimFilter])
-
-  const hasFilters = Boolean(trimmed || platformFilter || claimFilter)
+    if (!trimmed) return groups
+    return groups.filter((g) => g.domain.toLowerCase().includes(trimmed))
+  }, [groups, trimmed])
 
   // Bento sizing — promote the highest-level groups to span more cells.
   // Picked from a level/cert-count ranking (NOT array position) so the
@@ -217,79 +166,19 @@ export default function LastActivitySection({
     )
   }
 
-  const filterBar =
-    topPlatforms.length > 0 || topClaims.length > 0 ? (
-      <div className="echoes-filterbar">
-        {topPlatforms.length > 0 ? (
-          <div className="echoes-filter-group">
-            <span className="echoes-filter-label">Platforms</span>
-            {topPlatforms.map((domain) => {
-              const active = platformFilter === domain
-              return (
-                <button
-                  key={domain}
-                  type="button"
-                  className={`echoes-filter-chip${active ? ' active' : ''}`}
-                  aria-pressed={active}
-                  onClick={() =>
-                    setPlatformFilter((prev) => (prev === domain ? null : domain))
-                  }
-                >
-                  <img
-                    src={getFaviconUrl(domain)}
-                    alt=""
-                    className="echoes-filter-favicon"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.visibility = 'hidden'
-                    }}
-                  />
-                  {domain}
-                </button>
-              )
-            })}
-          </div>
-        ) : null}
-        {topClaims.length > 0 ? (
-          <div className="echoes-filter-group">
-            <span className="echoes-filter-label">Claims</span>
-            {topClaims.map((type) => {
-              const cfg = INTENTION_CONFIG[type]
-              if (!cfg) return null
-              const active = claimFilter === type
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  className={`echoes-filter-chip claim ${cfg.cssClass}${active ? ' active' : ''}`}
-                  aria-pressed={active}
-                  onClick={() =>
-                    setClaimFilter((prev) => (prev === type ? null : type))
-                  }
-                >
-                  {cfg.label}
-                </button>
-              )
-            })}
-          </div>
-        ) : null}
-      </div>
-    ) : null
-
   return (
     <div className="triples-container">
-      {filterBar}
       {filteredGroups.length === 0 ? (
         <EmptyFeedState
           gridClassName="bento-grid bento-grid-3"
           skeletonCount={6}
           renderSkeleton={() => <ActivityCardSkeleton />}
           message={
-            hasFilters ? 'No echoes match these filters.' : 'No activity yet.'
+            trimmed ? `No echoes match “${searchQuery}”.` : 'No activity yet.'
           }
           hint={
-            hasFilters
-              ? 'Try a different platform or claim, or clear the filters.'
+            trimmed
+              ? 'Try a different keyword or clear the search.'
               : 'Start certifying pages with Sofia and your Echoes will land here.'
           }
         />

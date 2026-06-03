@@ -18,12 +18,7 @@ import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User, Tags, ArrowUpRight, Search, X } from 'lucide-react'
-import {
-  PageHero,
-  SectionH2,
-  EchoesSortTabs,
-  type EchoesSortKey,
-} from '@0xsofia/design-system'
+import { PageHero, SectionH2 } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -103,7 +98,6 @@ export default function ProfilePage() {
   const shortAddr = address
     ? address.slice(0, 6) + '...' + address.slice(-4)
     : ''
-  const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
   const [echoesSearch, setEchoesSearch] = useState('')
   const heroDescription = isViewingAs
     ? 'Exploring this wallet — pick an interest to dive in.'
@@ -231,12 +225,10 @@ export default function ProfilePage() {
                 ) : null}
               </div>
             </div>
-            <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
           </div>
           <LastActivitySection
             activities={echoesActivities}
             loading={profileLoading}
-            sort={echoesSort}
             searchQuery={echoesSearch}
           />
         </section>

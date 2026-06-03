@@ -14,7 +14,7 @@ import {
   TOPIC_ATOM_IDS,
 } from '../config/atomIds'
 import { SOFIA_TOPICS } from '../config/taxonomy'
-import TopicBadge from './profile/TopicBadge'
+import { TopicPill, VerbPill } from './profile/FeedPills'
 import {
   executeCreateTriplesBatch,
   MIN_SIGNAL_TRUST,
@@ -490,7 +490,6 @@ export default function WeightModal({
 
               <div className="b3-basket">
                 {items.map((item, index) => {
-                  const color = item.intentionColor || 'var(--ds-accent)'
                   const rowTrust = getAmount(index)
                   const topicMeta = resolveTopic(item)
                   return (
@@ -553,32 +552,21 @@ export default function WeightModal({
                           the topic label reads clearly and multiple contexts
                           wrap cleanly instead of crowding the favicon. */}
                       {topicMeta ? (
-                        // Topic-tagged item — show the topic's icon + label
-                        // only (drop the "Context > …" intention string).
+                        // Topic-tagged item — show the topic chip only
+                        // (drop the "Context > …" intention string).
                         <div className="b3-row-tags">
-                          <span
-                            className="amp-tag amp-tag--topic"
-                            style={{
-                              ['--tag-color' as string]: topicMeta.color,
-                            }}
-                          >
-                            <TopicBadge
-                              topicId={topicMeta.id}
-                              color={topicMeta.color}
-                              size={14}
-                              title={topicMeta.label}
-                            />
-                            {topicMeta.label}
-                          </span>
+                          <TopicPill
+                            topicId={topicMeta.id}
+                            color={topicMeta.color}
+                            label={topicMeta.label}
+                          />
                         </div>
                       ) : item.intention ? (
                         <div className="b3-row-tags">
-                          <span
-                            className="amp-tag"
-                            style={{ ['--tag-color' as string]: color }}
-                          >
-                            {item.intention}
-                          </span>
+                          <VerbPill
+                            label={item.intention}
+                            color={item.intentionColor}
+                          />
                         </div>
                       ) : null}
 

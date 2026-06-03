@@ -20,14 +20,11 @@ import {
   computeStarsFromTrust,
   starTier,
 } from '@/services/circleFeedSort'
-import {
-  displayLabelToIntentionType,
-  INTENTION_CONFIG,
-} from '@/config/intentions'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { extractDomain } from '@/utils/formatting'
 import { UrlPreview } from '@/components/UrlPreview'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 
 interface CircleFeedCardProps {
   item: CircleItem
@@ -56,10 +53,6 @@ interface CircleFeedCardProps {
    */
   mcpScore?: number
 }
-
-const VERB_CLASS_BY_LABEL: Record<string, string> = Object.fromEntries(
-  Object.values(INTENTION_CONFIG).map((v) => [v.label, v.cssClass]),
-)
 
 function starLabel(stars: number): string {
   if (stars >= 5) return 'Highly recommended'
@@ -210,25 +203,11 @@ export default function CircleFeedCard({
       <div className="fc-bottom">
         <div className="fc-tags">
           {topicTags.map((t) => (
-            <span key={t.id} className="fc-tag">
-              <TopicBadge
-                topicId={t.id}
-                color={t.color}
-                size={14}
-                title={t.label}
-              />
-              {t.label}
-            </span>
+            <TopicPill key={t.id} topicId={t.id} color={t.color} label={t.label} />
           ))}
-          {verbs.map((label) => {
-            const intentType = displayLabelToIntentionType(label)
-            const cssClass = VERB_CLASS_BY_LABEL[label] ?? intentType ?? ''
-            return (
-              <span key={label} className={`fc-verb-tag ${cssClass}`}>
-                {label}
-              </span>
-            )
-          })}
+          {verbs.map((label) => (
+            <VerbPill key={label} label={label} color={INTENTION_COLORS[label]} />
+          ))}
         </div>
 
         {/* Support / oppose thumbs — fires onDeposit when wired by the parent. */}
