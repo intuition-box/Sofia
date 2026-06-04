@@ -1,0 +1,77 @@
+/**
+ * CertFeedCard — render a single on-chain cert (UserCert) as the shared
+ * <FeedCardView>, with the inline <ContextPicker> "+ Context" affordance.
+ *
+ * Used wherever a profile surfaces a user's own certs as feed cards (the
+ * Scores page, the per-topic Interest page, …) so they look and behave like
+ * the Explore / Circles feed cards — including topic tagging.
+ */
+import type { UserCert } from '@/services/userOnChainProfileService'
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType,
+} from '@/config/intentions'
+import { extractDomain, cleanLabel, timeAgo } from '@/utils/formatting'
+import FeedCardView, {
+  type FeedCardVerb,
+  type FeedCardTopic,
+} from '@/components/feed/FeedCardView'
+import ContextPicker from '@/components/ContextPicker'
+import '@/components/styles/feed-card.css'
+
+interface CertFeedCardProps {
+  cert: UserCert
+  /** Certifier display name (usually the profile owner). */
+  handle: string
+  /** Resolved certifier avatar URL. */
+  avatarUrl?: string
+  /** Topic-id → label + color resolver (from useTaxonomy). */
+  topicById: (id: string) => { label: string; color: string } | undefined
+}
+
+export default function CertFeedCard({
+  cert,
+  handle,
+  avatarUrl,
+  topicById,
+}: CertFeedCardProps) {
+  const url = cert.objectUrl || ''
+  const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
+  const intentType = predicateLabelToIntentionType(cert.intention)
+  const verbCfg = intentType ? INTENTION_CONFIG[intentType] : undefined
+  const verbs: FeedCardVerb[] = verbCfg
+    ? [{ label: verbCfg.label, color: verbCfg.color }]
+    : []
+  const topics: FeedCardTopic[] = cert.topicSlugs
+    .map((s) => {
+      const t = topicById(s)
+      return t ? { id: s, label: t.label, color: t.color } : null
+    })
+    .filter((t): t is NonNullable<typeof t> => t !== null)
+  const title = cleanLabel(cert.objectLabel || domain || '')
+
+  return (
+    <FeedCardView
+      handle={handle}
+      avatarUrl={avatarUrl}
+      when={cert.certifiedAt ? timeAgo(cert.certifiedAt) : ''}
+      title={title}
+      url={url}
+      domain={domain}
+      verbs={verbs}
+      topics={topics}
+      up={cert.certifierCount}
+      down={0}
+      onOpen={() => {
+        if (url) window.open(url, '_blank', 'noopener,noreferrer')
+      }}
+      addContextSlot={
+        <ContextPicker
+          certTermId={cert.termId}
+          certTitle={title}
+          existingTopics={cert.topicSlugs}
+        />
+      }
+    />
+  )
+}
