@@ -8,7 +8,7 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Search, X, XCircle, Globe } from 'lucide-react'
+import { Search, X, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
@@ -62,9 +62,30 @@ const INTENT_FILTERS = [
 export default function DashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [intentFilter, setIntentFilter] = useState('All')
-  // Drill preset — when set, the feed filters to this topic/verb and the
-  // tiles grid is hidden. `null` = tiles view.
-  const [drill, setDrill] = useState<InterestPreset | null>(null)
+  // Drill preset lives in the URL (?topic=<id> / ?verb=<id>) so it earns a
+  // history entry — browser Back returns to the Explore tiles instead of
+  // leaving the page — and the drill is shareable. `null` = tiles view.
+  const drillTopic = searchParams.get('topic')
+  const drillVerb = searchParams.get('verb')
+  const drill = useMemo<InterestPreset | null>(
+    () =>
+      drillTopic
+        ? { kind: 'topic', id: drillTopic }
+        : drillVerb
+          ? { kind: 'verb', id: drillVerb }
+          : null,
+    [drillTopic, drillVerb],
+  )
+  const setDrill = useCallback(
+    (preset: InterestPreset | null) => {
+      const next = new URLSearchParams(searchParams)
+      next.delete('topic')
+      next.delete('verb')
+      if (preset) next.set(preset.kind, preset.id)
+      setSearchParams(next)
+    },
+    [searchParams, setSearchParams],
+  )
   // Search query applied to the tiles view (filters topic + verb labels).
   const [tileQuery, setTileQuery] = useState('')
   const { authenticated, user } = usePrivy()
@@ -209,9 +230,13 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHero
-        background={pc.color}
-        title={pc.title}
-        description={pc.subtitle}
+        background={drill ? (drillColor ?? pc.color) : pc.color}
+        title={drill ? drillLabel : pc.title}
+        description={
+          drill
+            ? `${filteredItems.length} ${filteredItems.length === 1 ? 'url' : 'urls'}`
+            : pc.subtitle
+        }
         icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
@@ -251,31 +276,23 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* Drill-down header — only when a preset is active. Inherits the
-          picked tile's colour so the drill visually echoes the tile. */}
+        {/* Breadcrumb — the drill title now lives in the PageHero, so this is
+          just the trail back to the tiles. The drill is a URL param, so this
+          and the browser Back button both return to the Explore tiles. */}
         {drill && (
-          <div
-            className="hm-drill-head"
-            style={
-              drillColor
-                ? { ['--drill-color' as string]: drillColor }
-                : undefined
-            }
-          >
-            <span className="hm-drill-label">{drillLabel}</span>
-            <span className="hm-drill-count">
-              {filteredItems.length}{' '}
-              {filteredItems.length === 1 ? 'url' : 'urls'}
-            </span>
+          <nav className="dp-crumbs" aria-label="Breadcrumb">
             <button
               type="button"
-              className="hm-drill-clear"
+              className="dp-crumb dp-crumb--link"
               onClick={() => setDrill(null)}
             >
-              <XCircle className="h-3.5 w-3.5" />
-              Return to All Topics
+              Explore
             </button>
-          </div>
+            <span className="dp-crumb-sep" aria-hidden="true">
+              /
+            </span>
+            <span className="dp-crumb dp-crumb--current">{drillLabel}</span>
+          </nav>
         )}
 
         {/* Feed — drill view only. The tiles masonry replaces the feed

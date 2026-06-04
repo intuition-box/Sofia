@@ -252,6 +252,40 @@
   padding-top: 0;
 }
 
+/* Explore drill breadcrumb — trail back to the tiles. The drill's title now
+   lives in the PageHero banner (tinted with the topic/verb colour). */
+.dp-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.dp-crumb {
+  text-transform: uppercase;
+}
+.dp-crumb--link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.13s ease;
+}
+.dp-crumb--link:hover {
+  color: var(--ds-ink);
+}
+.dp-crumb-sep {
+  color: var(--ds-muted);
+  opacity: 0.6;
+}
+.dp-crumb--current {
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+
 .hm-drill-head {
   --drill-color: var(--ds-accent);
   position: relative;
