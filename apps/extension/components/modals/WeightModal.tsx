@@ -403,16 +403,23 @@ const WeightModal = ({
   }
 
   const parseErrorMessage = (error: string): string => {
+    // The wallet-bridge error arrives wrapped in a full viem
+    // ContractFunctionExecutionError (calldata + ABI dump). Surface only the
+    // actionable hint instead of the raw dump that overflowed the box.
     if (
-      error.includes("Wallet unavailable:") ||
+      error.includes("Wallet unavailable") ||
       error.includes("navigate to an HTTPS page")
     ) {
-      return error
+      return "Wallet unavailable — open an HTTPS page (e.g. doc.sofia.intuition.box/wallet-bridge) to sign this transaction."
+    }
+    // User rejected the signature in their wallet.
+    if (/user rejected|user denied|rejected the request/i.test(error)) {
+      return "Signature rejected in your wallet."
     }
     const failedMatch = error.match(
       /(Shares addition failed|Weight addition failed):/i
     )
-    const failedText = failedMatch ? failedMatch[0] : "Transaction failed:"
+    const failedText = failedMatch ? failedMatch[0] : "Transaction failed."
     const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
     const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ""
     return detailsText ? `${failedText}\n${detailsText}` : failedText

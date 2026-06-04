@@ -423,6 +423,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Let the text column shrink inside the flex row so a long error wraps
+     instead of forcing horizontal overflow past the red box. */
+  min-width: 0;
 }
 
 .modal-error-title {
@@ -436,8 +439,10 @@
   color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
   margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  /* `anywhere` breaks unbroken strings (e.g. a hex calldata dump) that
+     `break-word` leaves intact; `pre-line` keeps our \n line breaks. */
+  overflow-wrap: anywhere;
+  white-space: pre-line;
   max-width: 100%;
 }
 
@@ -1361,6 +1366,60 @@
   margin: 0;
   color: var(--ds-ink);
   white-space: nowrap;
+}
+/* Confirmation copy for a no-reward batch (rare non-vote fallback). */
+.rc-empty-note {
+  margin: 12px 0 22px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ds-muted, rgba(255, 255, 255, 0.7));
+  max-width: 360px;
+}
+
+/* ── Amplify (vote-only) confirmation ─────────────────────────────────── */
+.rc-amp {
+  align-items: flex-start;
+}
+.rc-amp-hero {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 4px 0 18px;
+  color: var(--ds-on-accent, #0a0a0a);
+  background: var(--ds-accent);
+  box-shadow:
+    0 14px 32px -10px color-mix(in srgb, var(--ds-accent) 65%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--ds-accent) 14%, transparent);
+}
+.rc-amp-hero svg {
+  width: 28px;
+  height: 28px;
+}
+.rc-amp-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 6px 0 18px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.25);
+}
+.rc-amp-stat-v {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-accent);
+}
+.rc-amp-stat-k {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
 }
 .rc-sub {
   font-family: var(--ds-font-display);

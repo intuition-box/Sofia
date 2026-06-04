@@ -96,7 +96,14 @@ const BatchRewardContent = ({
       if (phase !== "loading") setPhase("loading")
       return
     }
-    if (rewards.length === 0) return
+    if (rewards.length === 0) {
+      // No discovery rewards to claim — e.g. a vote-only / amplify batch
+      // (liking a circle Mark earns no Pioneer/Explorer tier). Leave the
+      // loading phase so the surface shows a confirmation instead of
+      // spinning on "Capturing your Marks…" forever.
+      if (phase === "loading") setPhase("animation")
+      return
+    }
 
     // Auto-claim as soon as rewards are computed, then move to the animation phase.
     // The user no longer needs an intermediate "Claim All Rewards" click —
@@ -206,6 +213,118 @@ const BatchRewardContent = ({
           <SofiaLoader size={120} />
           <p className="b3-loading-title">Capturing</p>
           <p className="b3-loading-step">your Marks…</p>
+        </div>
+      </div>
+    )
+  }
+
+  // No discovery rewards (vote-only / amplify batch): a like or support on a
+  // circle Mark deposits on an existing triple, so there's no Pioneer/Explorer
+  // tier or Gold. Show a purpose-built confirmation, not the empty reward
+  // ticket (which would read "Marks captured / 0 G").
+  if (rewards.length === 0) {
+    const voteOnly = items.length > 0 && items.every((i) => i.voteAction)
+    if (voteOnly) {
+      // Dedupe to the pages amplified; each cart item is one context vault, so
+      // the raw count is the number of signals reinforced.
+      const pages = Array.from(new Map(items.map((i) => [i.url, i])).values())
+      const signalCount = items.length
+      return (
+        <div className="rc">
+          <div className="rc-ember" />
+          <div className="rc-ticket">
+            <div className="rc-body rc-amp">
+              <div className="rc-amp-hero" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M4.93 19.07a10 10 0 0 1 0-14.14" />
+                  <path d="M7.76 16.24a6 6 0 0 1 0-8.48" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  <path d="M16.24 7.76a6 6 0 0 1 0 8.48" />
+                  <circle cx="12" cy="12" r="2" />
+                </svg>
+              </div>
+              <div className="rc-headline">
+                <h1 className="rc-h1">Amplified.</h1>
+              </div>
+              <p className="rc-sub">
+                You reinforced {pages.length} Mark
+                {pages.length > 1 ? "s" : ""} from your circle.
+              </p>
+
+              <div className="rc-marks">
+                {pages.slice(0, 8).map((item) => (
+                  <div className="rc-mark" key={item.id}>
+                    <img
+                      src={item.faviconUrl || getFaviconUrl(item.url, 32)}
+                      alt=""
+                      className="rc-mark-fav"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).style.visibility =
+                          "hidden"
+                      }}
+                    />
+                    <div className="rc-mark-main">
+                      <span
+                        className="rc-mark-title"
+                        title={item.pageTitle || item.normalizedUrl}>
+                        {truncate(item.pageTitle || item.normalizedUrl, 48)}
+                      </span>
+                      <span className="rc-mark-host">
+                        {hostFromUrl(item.url)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {pages.length > 8 && (
+                  <div className="rc-mark rc-mark--more">
+                    <span className="rc-mark-title">
+                      +{pages.length - 8} more
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="rc-amp-stat">
+                <span className="rc-amp-stat-v">+{signalCount}</span>
+                <span className="rc-amp-stat-k">
+                  signal{signalCount > 1 ? "s" : ""} reinforced · no Gold for
+                  amplifying
+                </span>
+              </div>
+
+              <div className="rc-actions">
+                <button
+                  className="rc-btn rc-btn--primary"
+                  onClick={handleClose}>
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className="rc">
+        <div className="rc-ember" />
+        <div className="rc-ticket">
+          <div className="rc-body">
+            <div className="rc-headline">
+              <h1 className="rc-h1">Done.</h1>
+            </div>
+            <p className="rc-empty-note">Your transaction is confirmed.</p>
+            <div className="rc-actions">
+              <button className="rc-btn rc-btn--primary" onClick={handleClose}>
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
