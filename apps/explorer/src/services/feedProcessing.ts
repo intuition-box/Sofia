@@ -3,7 +3,7 @@ import {
   LABEL_TO_INTENTION,
 } from '../config/intentions'
 import { GRAPHQL_URL } from '../config'
-import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
+import { resolveContextAtom } from '../config/contextNodes'
 import { extractDomain, cleanLabel } from '../utils/formatting'
 import { getFaviconUrl } from '../utils/favicon'
 import type { CircleItem } from './circleService'
@@ -148,8 +148,11 @@ async function fetchContextTriples(
       const termId = t.term_id
       if (!subjectId || !objectTermId || !termId) continue
 
-      const topicSlug = ATOM_ID_TO_TOPIC.get(objectTermId)
-      if (!topicSlug) continue
+      // Roll a category context up to its parent topic so the feed's
+      // drill-by-topic + like/dislike grouping stays topic-keyed.
+      const node = resolveContextAtom(objectTermId)
+      if (!node || !node.topicSlug) continue
+      const topicSlug = node.topicSlug
 
       const entry: ContextTripleData = {
         topicSlug,

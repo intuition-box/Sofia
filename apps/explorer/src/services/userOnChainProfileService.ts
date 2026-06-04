@@ -23,7 +23,8 @@ import {
   useGetUserContextAdditionsQuery,
   type GetUserCertsAlltimeQuery,
 } from '@0xsofia/graphql'
-import { TOPIC_TERM_IDS, ATOM_ID_TO_TOPIC } from '@/config/atomIds'
+import { CONTEXT_TERM_IDS } from '@/config/atomIds'
+import { resolveContextAtom } from '@/config/contextNodes'
 
 type RawCertTriple = NonNullable<GetUserCertsAlltimeQuery['triples']>[number]
 
@@ -66,10 +67,15 @@ export interface UserCert {
   userShares: bigint
   /** Earliest position timestamp the user has on this cert. */
   certifiedAt: string
-  /** Topic atom term_ids resolved via "in context of" nested triples. */
+  /** Context atom term_ids resolved via "in context of" nested triples
+   *  (topic OR category atoms). */
   topicAtomIds: string[]
-  /** Topic slugs derived from `topicAtomIds`. */
+  /** Rolled-up topic slugs — a category context contributes its parent
+   *  topic, so this drives all topic-keyed scoring/display unchanged. */
   topicSlugs: string[]
+  /** Precise context slugs (topic slugs for topic tags, category slugs for
+   *  category tags) — for granular display and the picker's applied set. */
+  contextSlugs: string[]
 }
 
 /**
@@ -81,10 +87,12 @@ export interface UserCert {
 export interface ContextAddition {
   /** Cert triple term_id this context was attached to. */
   certTermId: string
-  /** Topic atom term_id (the tag itself). */
+  /** Context atom term_id (the tag itself — a topic or category atom). */
   topicAtomId: string
-  /** Topic slug resolved via `ATOM_ID_TO_TOPIC`, or `""` if unknown. */
+  /** Rolled-up topic slug (parent topic for a category tag), or `""`. */
   topicSlug: string
+  /** Precise context slug (topic or category), or `""` if unknown. */
+  contextSlug: string
   /** ISO timestamp of the user's first share on the nested triple. */
   addedAt: string
 }
@@ -145,13 +153,13 @@ export async function fetchUserOnChainProfile(
     const [linkData, additionData] = await Promise.all([
       useGetCertTopicLinksQuery.fetcher({
         certTermIds,
-        topicAtomIds: TOPIC_TERM_IDS,
+        topicAtomIds: CONTEXT_TERM_IDS,
         limit: TOPIC_LINKS_LIMIT,
       })(),
       useGetUserContextAdditionsQuery.fetcher({
         userAddresses,
         certTermIds,
-        topicAtomIds: TOPIC_TERM_IDS,
+        topicAtomIds: CONTEXT_TERM_IDS,
         limit: TOPIC_LINKS_LIMIT,
       })(),
     ])
@@ -170,10 +178,12 @@ export async function fetchUserOnChainProfile(
       const topicAtomId = row.object_id
       const addedAt = row.positions?.[0]?.created_at ?? ''
       if (!certTermId || !topicAtomId || !addedAt) continue
+      const node = resolveContextAtom(topicAtomId)
       contextAdditions.push({
         certTermId,
         topicAtomId,
-        topicSlug: ATOM_ID_TO_TOPIC.get(topicAtomId) ?? '',
+        topicSlug: node?.topicSlug ?? '',
+        contextSlug: node?.slug ?? '',
         addedAt: String(addedAt),
       })
     }
@@ -184,11 +194,18 @@ export async function fetchUserOnChainProfile(
   const certs: UserCert[] = rawTriples.map((t) => {
     const termId = t.term_id ?? ''
     const topicAtomIds = topicContextsByTerm.get(termId) ?? []
-    const topicSlugs: string[] = []
+    // Roll category contexts up to their parent topic for `topicSlugs`
+    // (drives scoring/donut/feed), while keeping the precise slug in
+    // `contextSlugs` for granular display + the picker's applied set.
+    const topicSet = new Set<string>()
+    const contextSlugs: string[] = []
     for (const id of topicAtomIds) {
-      const slug = ATOM_ID_TO_TOPIC.get(id)
-      if (slug) topicSlugs.push(slug)
+      const node = resolveContextAtom(id)
+      if (!node) continue
+      contextSlugs.push(node.slug)
+      if (node.topicSlug) topicSet.add(node.topicSlug)
     }
+    const topicSlugs = [...topicSet]
     let userShares = 0n
     let certifiedAt = ''
     for (const p of t.positions ?? []) {
@@ -213,6 +230,7 @@ export async function fetchUserOnChainProfile(
       certifiedAt,
       topicAtomIds,
       topicSlugs,
+      contextSlugs,
     }
   })
 

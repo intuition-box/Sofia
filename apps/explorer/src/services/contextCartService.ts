@@ -16,7 +16,8 @@
  * predicate / atom-id wiring out of React components.
  */
 
-import { IN_CONTEXT_OF_PREDICATE_ID, TOPIC_ATOM_IDS } from '@/config/atomIds'
+import { IN_CONTEXT_OF_PREDICATE_ID } from '@/config/atomIds'
+import { contextAtomIdForSlug } from '@/config/contextNodes'
 import type { CartItem } from '@/hooks/useCart'
 
 export interface AddContextInput {
@@ -55,7 +56,8 @@ export function buildContextCartItem(input: AddContextInput): CartItem | null {
     certTitle,
     certFavicon,
   } = input
-  const topicAtomId = TOPIC_ATOM_IDS[topicSlug]
+  // `topicSlug` is a context slug — a topic OR a category slug.
+  const topicAtomId = contextAtomIdForSlug(topicSlug)
   if (!certTermId || !topicAtomId) return null
 
   return {

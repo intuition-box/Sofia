@@ -576,3 +576,12 @@ export const IN_CONTEXT_OF_PREDICATE_ID =
 
 // Topic term IDs as array (for GraphQL batch queries)
 export const TOPIC_TERM_IDS = Object.values(TOPIC_ATOM_IDS)
+
+// Category term IDs as array — used alongside TOPIC_TERM_IDS to fetch
+// `in context of` links whose object is a category atom (category-level
+// context tags), not just a topic.
+export const CATEGORY_TERM_IDS = Object.values(CATEGORY_ATOM_IDS)
+
+// Topic + category term IDs — the full set of atoms that can legitimately
+// be the object of an `in context of` triple.
+export const CONTEXT_TERM_IDS = [...TOPIC_TERM_IDS, ...CATEGORY_TERM_IDS]

@@ -1,20 +1,21 @@
 /**
- * ContextPicker — the ONE reusable "tag this URL with a topic" control,
+ * ContextPicker — the ONE reusable "tag this URL with a context" control,
  * shared across the explorer (feed cards on Explore / Circles / Scores, the
  * Context Manager, …).
  *
- * Opens a single-column popover; the user multi-selects topics and confirms,
- * which queues one `(cert, in_context_of, topic)` nested-triple mint per pick
- * into the cart (via `buildContextCartItems`). Topics already applied to the
- * cert — or already queued in the cart — render as done/disabled so they
- * can't be re-added.
+ * Opens a single-column popover. The user multi-selects CONTEXTS — either a
+ * whole topic (e.g. "Web3") or, by expanding a topic, one of its categories
+ * (e.g. "DeFi") for a sharper tag. Confirming queues one
+ * `(cert, in_context_of, <topic|category>)` nested-triple mint per pick into
+ * the cart (via `buildContextCartItems`). A category scores under its parent
+ * topic (rollup), so the user gets precision without splitting the score.
  *
- * `variant` only swaps the trigger chrome; the popover body is identical
- * everywhere so the interaction is consistent across surfaces.
+ * Contexts already applied to the cert — or already queued — render as
+ * done/disabled so they can't be re-added.
  */
 import { useMemo, useState } from 'react'
 import type { CSSProperties, MouseEvent } from 'react'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, ChevronRight } from 'lucide-react'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { useCart } from '@/hooks/useCart'
 import { buildContextCartItems } from '@/services/contextCartService'
@@ -33,8 +34,19 @@ export interface ContextPickerProps {
   certTitle: string
   /** Optional favicon shown next to the cart row. */
   certFavicon?: string
-  /** Topic slugs already tagged on this cert — shown as done. */
+  /** Context slugs already tagged on this cert (topics or categories) —
+   *  shown as done. */
   existingTopics?: string[]
+}
+
+/** slug → { label, color } for every selectable context (topics +
+ *  categories), so confirm can resolve a pick without re-walking the tree. */
+const CONTEXT_META = new Map<string, { label: string; color: string }>()
+for (const topic of SOFIA_TOPICS) {
+  CONTEXT_META.set(topic.id, { label: topic.label, color: topic.color })
+  for (const cat of topic.categories) {
+    CONTEXT_META.set(cat.id, { label: cat.label, color: topic.color })
+  }
 }
 
 export default function ContextPicker({
@@ -46,10 +58,11 @@ export default function ContextPicker({
   const cart = useCart()
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const applied = useMemo(() => new Set(existingTopics), [existingTopics])
 
-  // Topic slugs already queued in the cart for THIS cert, so a second open
+  // Context slugs already queued in the cart for THIS cert, so a second open
   // doesn't offer to add them again.
   const queued = useMemo(() => {
     const set = new Set<string>()
@@ -71,16 +84,26 @@ export default function ContextPicker({
     })
   }
 
+  const toggleExpand = (slug: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
+
   const confirm = (e: MouseEvent) => {
     e.stopPropagation()
-    const topics = SOFIA_TOPICS.filter((t) => selected.has(t.id)).map((t) => ({
-      slug: t.id,
-      label: t.label,
-      color: t.color,
-    }))
-    if (topics.length > 0) {
+    const picks = [...selected]
+      .map((slug) => {
+        const meta = CONTEXT_META.get(slug)
+        return meta ? { slug, label: meta.label, color: meta.color } : null
+      })
+      .filter((p): p is { slug: string; label: string; color: string } => !!p)
+    if (picks.length > 0) {
       cart.addItems(
-        buildContextCartItems(certTermId, certTitle, certFavicon, topics),
+        buildContextCartItems(certTermId, certTitle, certFavicon, picks),
       )
       cart.open()
     }
@@ -91,19 +114,27 @@ export default function ContextPicker({
   // No cert triple to attach to — hide rather than render a dead button.
   if (!certTermId) return null
 
+  const renderState = (slug: string) => {
+    const isDone = applied.has(slug) || queued.has(slug)
+    return { isDone, isSel: selected.has(slug) }
+  }
+
   return (
     <Popover
       open={open}
       onOpenChange={(o) => {
         setOpen(o)
-        if (!o) setSelected(new Set())
+        if (!o) {
+          setSelected(new Set())
+          setExpanded(new Set())
+        }
       }}
     >
       <PopoverTrigger asChild>
         <button
           type="button"
           className="cp-trigger"
-          aria-label="Add a topic context to this URL"
+          aria-label="Add a topic or category context to this URL"
           onClick={stop}
         >
           <Plus aria-hidden="true" />
@@ -119,32 +150,95 @@ export default function ContextPicker({
         <p className="ctx-popover-title">Tag this URL with…</p>
         <div className="ctx-popover-list">
           {SOFIA_TOPICS.map((topic) => {
-            const isDone = applied.has(topic.id) || queued.has(topic.id)
-            const isSel = selected.has(topic.id)
+            const { isDone, isSel } = renderState(topic.id)
+            const isOpen = expanded.has(topic.id)
+            const hasCats = topic.categories.length > 0
+            const accent = {
+              ['--ctx-tag-color' as string]: topic.color,
+            } as CSSProperties
             return (
-              <button
-                key={topic.id}
-                type="button"
-                disabled={isDone}
-                className={`ctx-popover-item${isSel ? ' ctx-popover-item--active' : ''}${isDone ? ' ctx-popover-item--done' : ''}`}
-                onClick={() => toggle(topic.id)}
-                style={
-                  isSel
-                    ? ({
-                        ['--ctx-tag-color' as string]: topic.color,
-                      } as CSSProperties)
-                    : undefined
-                }
-              >
-                <TopicBadge
-                  topicId={topic.id}
-                  color={topic.color}
-                  size={22}
-                  title={topic.label}
-                />
-                <span className="ctx-popover-label">{topic.label}</span>
-                {(isSel || isDone) && <Check className="h-3.5 w-3.5" />}
-              </button>
+              <div key={topic.id} className="ctx-pick-group">
+                <div
+                  className={`ctx-pick-row${isSel ? ' ctx-pick-row--active' : ''}${isDone ? ' ctx-pick-row--done' : ''}`}
+                  style={accent}
+                >
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSel || isDone}
+                    disabled={isDone}
+                    className="ctx-check"
+                    onClick={() => toggle(topic.id)}
+                    aria-label={`Tag with ${topic.label}`}
+                  >
+                    {(isSel || isDone) && (
+                      <Check className="h-3 w-3" aria-hidden="true" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="ctx-pick-main"
+                    onClick={() =>
+                      hasCats ? toggleExpand(topic.id) : toggle(topic.id)
+                    }
+                    aria-expanded={hasCats ? isOpen : undefined}
+                  >
+                    <TopicBadge
+                      topicId={topic.id}
+                      color={topic.color}
+                      size={22}
+                      title={topic.label}
+                    />
+                    <span className="ctx-pick-label">{topic.label}</span>
+                    {hasCats && (
+                      <ChevronRight
+                        className={`ctx-pick-chevron h-4 w-4${isOpen ? ' ctx-pick-chevron--open' : ''}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                </div>
+                {isOpen && hasCats && (
+                  <div className="ctx-pick-cats">
+                    {[...topic.categories]
+                      .sort((a, b) => a.label.localeCompare(b.label))
+                      .map((cat) => {
+                      const cs = renderState(cat.id)
+                      return (
+                        <div
+                          key={cat.id}
+                          className={`ctx-pick-row ctx-pick-row--cat${cs.isSel ? ' ctx-pick-row--active' : ''}${cs.isDone ? ' ctx-pick-row--done' : ''}`}
+                          style={accent}
+                        >
+                          <button
+                            type="button"
+                            role="checkbox"
+                            aria-checked={cs.isSel || cs.isDone}
+                            disabled={cs.isDone}
+                            className="ctx-check"
+                            onClick={() => toggle(cat.id)}
+                            aria-label={`Tag with ${cat.label}`}
+                          >
+                            {(cs.isSel || cs.isDone) && (
+                              <Check className="h-3 w-3" aria-hidden="true" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            className="ctx-pick-main"
+                            disabled={cs.isDone}
+                            onClick={() => toggle(cat.id)}
+                          >
+                            <span className="ctx-pick-cat-label">
+                              {cat.label}
+                            </span>
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>
@@ -154,7 +248,9 @@ export default function ContextPicker({
           disabled={selected.size === 0}
           onClick={confirm}
         >
-          {selected.size > 0 ? `Add to cart (${selected.size})` : 'Select topics'}
+          {selected.size > 0
+            ? `Add to cart (${selected.size})`
+            : 'Select a context'}
         </button>
       </PopoverContent>
     </Popover>

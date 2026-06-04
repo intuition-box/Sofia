@@ -395,6 +395,127 @@
   background: transparent;
   color: var(--ds-ink-soft);
 }
+/* Two-step picker: clicking a topic row OPENS its categories; selection is
+   driven only by the left checkbox (topic OR category). */
+.ctx-popover-hint {
+  margin: 0 2px 6px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ds-muted);
+}
+.ctx-pick-group {
+  display: flex;
+  flex-direction: column;
+}
+.ctx-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.ctx-pick-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.ctx-pick-row--active {
+  background: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 14%,
+    var(--ds-bg-subtle)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--ctx-tag-color, var(--ds-accent)) 35%,
+    var(--ds-border)
+  );
+}
+.ctx-pick-row--done {
+  opacity: 0.5;
+}
+/* Left checkbox — the ONE selection affordance. */
+.ctx-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1.5px solid var(--ds-border);
+  background: var(--ds-card);
+  color: #02000e;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ctx-check:not(:disabled):hover {
+  border-color: var(--ctx-tag-color, var(--ds-accent));
+}
+.ctx-pick-row--active .ctx-check,
+.ctx-pick-row--done .ctx-check {
+  background: var(--ctx-tag-color, var(--ds-accent));
+  border-color: var(--ctx-tag-color, var(--ds-accent));
+}
+.ctx-check:disabled {
+  cursor: default;
+}
+/* Row body — clicking it drills into the topic (or toggles a category). */
+.ctx-pick-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink-soft);
+  text-align: left;
+}
+.ctx-pick-row:hover .ctx-pick-main,
+.ctx-pick-row--active .ctx-pick-main {
+  color: var(--ds-ink);
+}
+.ctx-pick-main:disabled {
+  cursor: default;
+}
+.ctx-pick-label {
+  flex: 1;
+  min-width: 0;
+}
+.ctx-pick-chevron {
+  flex-shrink: 0;
+  color: var(--ds-muted);
+  transition: transform 0.15s ease;
+}
+.ctx-pick-chevron--open {
+  transform: rotate(90deg);
+}
+/* Categories nested under an opened topic. */
+.ctx-pick-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 24px;
+  padding-left: 8px;
+  border-left: 1px solid var(--ds-border);
+}
+.ctx-pick-row--cat .ctx-pick-main {
+  padding: 7px 0;
+  font-size: 12px;
+}
+.ctx-pick-cat-label {
+  flex: 1;
+  min-width: 0;
+}
 /* Confirm button for the multi-select picker. */
 .ctx-popover-confirm {
   margin-top: 10px;

@@ -2595,6 +2595,14 @@ export const NICHE_BY_ID = new Map(ALL_NICHES.map((n) => [n.id, n]))
 
 export const CATEGORY_BY_ID = new Map(ALL_CATEGORIES.map((c) => [c.id, c]))
 
+/** Category slug → its parent topic slug. Drives the "roll a category
+ *  context up to its topic" rule used by the reputation pipeline so a cert
+ *  tagged with a category (e.g. `defi`) still scores under its topic
+ *  (`web3-crypto`). */
+export const CATEGORY_TO_TOPIC: Record<string, string> = Object.fromEntries(
+  ALL_CATEGORIES.map((c) => [c.id, c.topicId]),
+)
+
 export function getNichesForTopic(topicId: string): typeof ALL_NICHES {
   return ALL_NICHES.filter((n) => n.topicId === topicId)
 }

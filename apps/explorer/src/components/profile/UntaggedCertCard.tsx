@@ -8,7 +8,7 @@
  * cards, so tagging behaves identically everywhere.
  */
 import { useMemo } from 'react'
-import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { TOPIC_BY_ID, CATEGORY_BY_ID } from '@/config/taxonomy'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { useCart } from '@/hooks/useCart'
 import { contextCartId } from '@/services/contextCartService'
@@ -28,7 +28,14 @@ interface UntaggedCertCardProps {
   intentionLabel: string
 }
 
-const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
+interface QueuedChip {
+  slug: string
+  label: string
+  color: string
+  /** Topic id whose glyph the badge shows — the topic itself, or a
+   *  category's parent topic so the family icon stays consistent. */
+  badgeTopicId: string
+}
 
 export default function UntaggedCertCard({
   certTermId,
@@ -57,9 +64,32 @@ export default function UntaggedCertCard({
     return set
   }, [cart.items, certTermId])
 
+  // A queued context can be a topic OR a category — resolve both. A
+  // category borrows its parent topic's color + glyph so the chip reads as
+  // part of that topic family.
   const queuedList = [...queuedTopics]
-    .map((slug) => TOPIC_BY_ID.get(slug))
-    .filter((t): t is (typeof SOFIA_TOPICS)[number] => !!t)
+    .map((slug): QueuedChip | null => {
+      const topic = TOPIC_BY_ID.get(slug)
+      if (topic)
+        return {
+          slug,
+          label: topic.label,
+          color: topic.color,
+          badgeTopicId: topic.id,
+        }
+      const cat = CATEGORY_BY_ID.get(slug)
+      if (cat) {
+        const parent = TOPIC_BY_ID.get(cat.topicId)
+        return {
+          slug,
+          label: cat.label,
+          color: parent?.color ?? 'var(--ds-muted)',
+          badgeTopicId: cat.topicId,
+        }
+      }
+      return null
+    })
+    .filter((c): c is QueuedChip => !!c)
 
   return (
     <div
@@ -100,24 +130,24 @@ export default function UntaggedCertCard({
       <div className="fc-bottom">
         <div className="fc-tags">
           <VerbPill label={intentionLabel} color={verbColor} />
-          {queuedList.map((topic) => (
+          {queuedList.map((chip) => (
             <button
-              key={topic.id}
+              key={chip.slug}
               type="button"
               className="ctx-card-tag"
-              style={{ ['--ctx-tag-color' as string]: topic.color }}
+              style={{ ['--ctx-tag-color' as string]: chip.color }}
               onClick={() =>
-                cart.removeItem(contextCartId(certTermId, topic.id))
+                cart.removeItem(contextCartId(certTermId, chip.slug))
               }
               title="Remove from cart"
             >
               <TopicBadge
-                topicId={topic.id}
-                color={topic.color}
+                topicId={chip.badgeTopicId}
+                color={chip.color}
                 size={16}
-                title={topic.label}
+                title={chip.label}
               />
-              {topic.label}
+              {chip.label}
               <span className="ctx-card-tag-remove" aria-hidden="true">
                 ×
               </span>
