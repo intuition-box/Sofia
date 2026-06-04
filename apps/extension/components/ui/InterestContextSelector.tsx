@@ -36,7 +36,7 @@ interface InterestContextSelectorProps {
 
 export const InterestContextSelector = memo(
   ({
-    selectedContexts,
+    selectedContexts = [],
     onChange,
     disabled = false,
     certifiedContexts = [],
@@ -123,9 +123,6 @@ export const InterestContextSelector = memo(
           className="ext-ctx-pop"
           style={{ top: rect.top, left: rect.left }}
           role="dialog">
-          <p className="ext-ctx-hint">
-            Open a topic to tag a precise category, or tick the topic itself.
-          </p>
           <div className="ext-ctx-list">
             {SOFIA_TOPICS.map((topic) => {
               const isSel = selected.has(topic.id)

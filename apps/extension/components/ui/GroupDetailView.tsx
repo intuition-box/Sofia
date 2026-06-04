@@ -93,12 +93,12 @@ const UrlRow = ({
   onAddToCart: (
     intention: IntentionPurpose,
     title?: string,
-    context?: string | null
+    contexts?: string[]
   ) => void
   onAddTrustToCart: (
     predicateName: string,
     title?: string,
-    context?: string | null
+    contexts?: string[]
   ) => void
   onRemoveFromCart: (predicateName: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
@@ -106,10 +106,10 @@ const UrlRow = ({
   isProcessing: boolean
   cartPredicates: string[]
   certifiedContexts?: string[]
-  onContextChange: (context: string | null) => void
+  onContextChange: (contexts: string[]) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [selectedContext, setSelectedContext] = useState<string | null>(null)
+  const [selectedContexts, setSelectedContexts] = useState<string[]>([])
   // Single active intention picked in the dropdown (null = placeholder).
   const [selectedIntention, setSelectedIntention] =
     useState<IntentionType | null>(null)
@@ -124,9 +124,9 @@ const UrlRow = ({
   const addIntentionToCart = (type: IntentionType) => {
     const cfg = INTENTION_CONFIG[type]
     if (cfg.intentionPurpose) {
-      onAddToCart(cfg.intentionPurpose, urlRecord.title, selectedContext)
+      onAddToCart(cfg.intentionPurpose, urlRecord.title, selectedContexts)
     } else if (cfg.predicateLabel) {
-      onAddTrustToCart(cfg.predicateLabel, urlRecord.title, selectedContext)
+      onAddTrustToCart(cfg.predicateLabel, urlRecord.title, selectedContexts)
     }
   }
   const handleSelectIntention = (type: IntentionType) => {
@@ -146,26 +146,26 @@ const UrlRow = ({
     setSelectedIntention(null)
   }
 
-  const handleSelectContext = (slug: string | null) => {
-    setSelectedContext(slug)
-    onContextChange(slug)
+  const handleSelectContexts = (slugs: string[]) => {
+    setSelectedContexts(slugs)
+    onContextChange(slugs)
 
-    // When picking a context on a URL that is already certified, auto-queue
+    // When picking contexts on a URL that is already certified, auto-queue
     // a deposit-with-context cart item for each certified predicate that is
     // not already in the cart.
-    if (!slug) return
+    if (slugs.length === 0) return
     for (const certLabel of allCertLabels) {
       const intentionItem = INTENTION_ITEMS.find((i) => i.type === certLabel)
       if (intentionItem) {
         const predicateName = INTENTION_PREDICATES[intentionItem.key]
         if (!cartPredicates.includes(predicateName)) {
-          onAddToCart(intentionItem.key, urlRecord.title, slug)
+          onAddToCart(intentionItem.key, urlRecord.title, slugs)
         }
         continue
       }
       const trustItem = TRUST_ITEMS.find((t) => t.type === certLabel)
       if (trustItem && !cartPredicates.includes(trustItem.predicateLabel)) {
-        onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slug)
+        onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slugs)
       }
     }
   }
@@ -305,8 +305,8 @@ const UrlRow = ({
               disabled={isProcessing}
             />
             <InterestContextSelector
-              selectedContext={selectedContext}
-              onSelectContext={handleSelectContext}
+              selectedContexts={selectedContexts}
+              onChange={handleSelectContexts}
               disabled={isProcessing}
               certifiedContexts={certifiedContexts}
             />
@@ -394,7 +394,7 @@ const GroupDetailView = ({
     url: string,
     intention: IntentionPurpose,
     title?: string,
-    context?: string | null
+    contexts?: string[]
   ) => {
     const predicateName = INTENTION_PREDICATES[intention]
     const favicon = getFaviconUrl(url, 128)
@@ -404,7 +404,7 @@ const GroupDetailView = ({
       predicateName,
       intention,
       favicon,
-      context ?? null
+      contexts ?? []
     )
     setCartToast(added ? "Added to cart" : "Already in cart")
   }
@@ -414,7 +414,7 @@ const GroupDetailView = ({
     url: string,
     predicateName: string,
     title?: string,
-    context?: string | null
+    contexts?: string[]
   ) => {
     const favicon = getFaviconUrl(url, 128)
     const added = await cart.addToCart(
@@ -423,7 +423,7 @@ const GroupDetailView = ({
       predicateName,
       null,
       favicon,
-      context ?? null
+      contexts ?? []
     )
     setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
   }
@@ -791,15 +791,15 @@ const GroupDetailView = ({
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onAddToCart={(intention, title, context) =>
-                handleAddToCart(urlRecord.url, intention, title, context)
+              onAddToCart={(intention, title, contexts) =>
+                handleAddToCart(urlRecord.url, intention, title, contexts)
               }
-              onAddTrustToCart={(predicateName, title, context) =>
+              onAddTrustToCart={(predicateName, title, contexts) =>
                 handleAddTrustToCart(
                   urlRecord.url,
                   predicateName,
                   title,
-                  context
+                  contexts
                 )
               }
               onRemoveFromCart={(predicateName) =>
@@ -812,8 +812,8 @@ const GroupDetailView = ({
               }
               cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
               certifiedContexts={getCertifiedContexts(urlRecord.url)}
-              onContextChange={(context) =>
-                cart.updateContextForUrl(urlRecord.url, context)
+              onContextChange={(contexts) =>
+                cart.updateContextForUrl(urlRecord.url, contexts)
               }
             />
           ))
