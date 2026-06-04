@@ -32,13 +32,20 @@ function asClaimMap(
   return new Map(Object.entries(supportersByClaim ?? {}))
 }
 
-/** The minimal shape of one of the user's claims this calc needs. */
+/**
+ * The minimal shape of one of the user's claims this calc needs.
+ *
+ * A "claim" is an `in context of` triple (one per topic) the user staked —
+ * i.e. the vault a "like" deposits on (likes-only reputation). It is NOT the
+ * cert triple: co-certifying the cert does not lift reputation, only liking
+ * its topic does. See docs/reputation-likes-gap.md.
+ */
 export interface ReputationCert {
-  /** Claim (triple) term_id — the key into supportersByClaim. */
+  /** Claim (context triple) term_id — the key into supportersByClaim. */
   termId: string
   /** The user's own position timestamp on the claim (ISO; earliest of their wallets). */
   certifiedAt: string
-  /** Topic slugs this claim is tagged with (`in context of`). */
+  /** Topic slug(s) this claim feeds — normally a single rolled-up topic. */
   topicSlugs: string[]
 }
 

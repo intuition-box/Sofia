@@ -217,6 +217,10 @@ query GetUserContextAdditions(
     }
     limit: $limit
   ) {
+    # The context triple's OWN vault ids — reputation reads stakers (likers)
+    # on these: term_id = support (like), counter_term_id = oppose (dislike).
+    term_id
+    counter_term_id
     subject_id
     object_id
     positions(

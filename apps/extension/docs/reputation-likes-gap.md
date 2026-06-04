@@ -1,140 +1,85 @@
-# Reputation gap — likes don't feed a user's reputation
+# Reputation: likes feed a user's reputation (likes-only)
 
-**Status:** documented, not yet fixed. Waiting on the in-flight code-review
-Claude to land its commit, then implement on top.
+**Status:** ✅ implemented on `feat/circle-redesign`. Verified: graphql codegen +
+explorer typecheck (`tsc -b`) + 10/10 reputation unit tests + explorer build.
 
-**TL;DR:** A "like" (support/oppose from the Circle feed) stakes the cert's
-`in context of` **context triples**, but the reputation calc only reads stakers
-on the **cert triple** (the `visits for X` / `trusts` vault). The two never
-meet, so a like does **not** raise the liked user's reputation — in **either**
-the explorer or the extension. This is a shared gap, not an extension↔explorer
-drift.
+## What it does now
 
----
+A user's reputation in a topic = the credibility (eigentrust composite score) of
+the accounts that **liked** that topic of one of their Marks **after** them.
 
-## Intended behaviour (what we want)
+- A "like" (Circle support/oppose) stakes the `in context of` triple
+  `(cert → topic)`. Reputation reads the stakers on that context triple, per
+  topic.
+- **Likes only** — a plain co-certification of the cert triple does **not**
+  raise reputation. Rationale: the cert triple is topic-agnostic, so a second
+  certifier may disagree (oppose) or tag a *different* topic; crediting them to
+  all of the author's topics is noise. A like stakes the author's exact topic
+  context → an unambiguous per-topic endorsement.
+- Anti-Sybil: a liker with ~0 eigentrust score confers ~0 (a fresh account does
+  not boost).
+- Works in both apps unchanged — the extension already stakes the same context
+  triples on a like.
 
-A user who **invests/stakes on a cert (its claim + its category/topic context)
-after the original author** is "backing" that author. That backing should raise
-the **author's** reputation, **per topic/category**, weighted by the backer's
-eigentrust credibility (anti-Sybil: unknown/new accounts contribute 0).
+## What changed (all explorer / graphql)
 
-In other words: **a like = a backing position placed after the author, and it
-must feed the author's reputation score** — from the explorer *and* the
-extension.
-
----
-
-## Current behaviour (verified in source)
-
-### 1. The like stakes the `in context of` context triples
-
-- **Explorer** — `apps/explorer/src/components/circles/CircleFeedSection.tsx`
-  (`handleDeposit`, ~L97–120): the cart `termId` is
-  `c.termId` / `c.counterTermId` of each `contextTriple` (the
-  `(cert, in context of, topic)` triple), **not** the cert triple. A cert with
-  no topic context has nothing to stake → thumbs disabled (no-op).
-- **Extension** — `apps/extension/components/pages/circles-tabs/CircleFeedTab.tsx`
-  (`addVotesToCart`): fans a vote out to each context's
-  `supportTermId` / `opposeTermId` (the `in context of` triple vaults), with a
-  **fallback to the cert triple** only when the card has no context at all.
-
-So both apps deposit on the **context triples** for a normal (topic-tagged)
-like. They are already aligned with each other.
-
-### 2. Reputation reads stakers on the cert triple (not the context triple)
-
-- `apps/explorer/src/hooks/useDerivedReputation.ts:39`
-  `const claimIds = certs.map((c) => c.termId)` → these are the **cert triple**
-  term_ids.
-- `apps/explorer/src/services/userOnChainProfileService.ts` (~L194–235):
-  `cert.termId = t.term_id` of the `GetUserCertsAlltime` triple (predicate
-  `visits for X` / `trusts` / `distrust`). `topicSlugs` come from the
-  `in context of` **links** (`GetCertTopicLinks`) and are used only to *bucket*
-  the score by topic — the stakers themselves are read from the cert triple.
-- `apps/explorer/src/services/claimSupportersService.ts:49–75`
-  (`fetchClaimSupporters`): reads the time-ordered `positions` on the given
-  term_ids (the cert triples).
-- `apps/explorer/src/services/derivedReputationService.ts:57–100`
-  (`followersAfter` + `computeDerivedReputation`): for each cert, keep stakers
-  whose `createdAt > author's certifiedAt`, exclude the author, sum their
-  `credibility`, and add that to every topic the cert is tagged with.
-
-### 3. Why they don't meet
-
-The like writes a position on the **context triple's** vault; reputation reads
-positions on the **cert triple's** vault. Disjoint vaults → the like is never
-counted. What *does* raise reputation today is someone **re-certifying the same
-claim** (staking the cert triple) after the author — i.e. a co-certification,
-not a like.
+- `packages/graphql/src/queries/circle.graphql` → `GetUserContextAdditions` now
+  returns the context triple's own `term_id` + `counter_term_id` (regen'd into
+  `src/generated/index.ts`).
+- `apps/explorer/src/services/userOnChainProfileService.ts` → `ContextAddition`
+  exposes `contextTermId` / `contextCounterTermId`.
+- `apps/explorer/src/hooks/useDerivedReputation.ts` and `useReputationBackers.ts`
+  → build their claims from `profile.contextAdditions` (one context triple per
+  topic, keyed by `contextTermId`, baselined at the author's `addedAt`) instead
+  of `profile.certs`.
+- `apps/explorer/src/services/derivedReputationService.ts` → unchanged logic
+  (generic over the claim shape); only doc comments updated. The 10 unit tests
+  still pass.
 
 ---
 
-## Proposed fix (Option A — recommended)
+## ⚠️ Handoff to Maxim — "boost not always shown"
 
-Make the reputation calc read stakers on the **`in context of` context triples,
-per topic/category**, so a like maps 1:1 to a backing position on the exact
-topic it was placed on. Keep the existing cert-triple path too if we still want
-co-certifications to count (see "Open question" below).
+**Symptom:** on `/scores` (and profiles) the topic **boost** appears sometimes
+and is 0 other times for the same profile.
 
-Implementation sketch (all in the explorer; the extension already stakes the
-right triples, so the fix propagates to both automatically):
+**Cause:** it's NOT the likes-only calc — it's the remote **eigentrust trust
+engine (MCP)** that supplies the credibility weights:
 
-1. **Expose the context triple's own term_id + counter_term_id.**
-   `packages/graphql/src/queries/circle.graphql` → `GetCertTopicLinks` currently
-   selects only `subject_id` (cert) and `object_id` (topic atom). Add `term_id`
-   and `counter_term_id` (the context triple's own vault ids).
+- Each address = a full server-side EigenTrust pass, throttled to 3 parallel
+  (`eigentrustService.ts:24`). Slow under fan-out.
+- On a transient MCP failure (timeout / rate-limit), that account contributes 0
+  — the exact "sometimes it shows, sometimes not" case already documented at
+  `apps/explorer/src/services/eigentrustService.ts:62-67`.
+- `useEigentrustMap` has `staleTime: 30min` and `fetchEigentrustMap` resolves
+  *successfully* even when some addresses timed out (they return 0, not throw).
+  So a partial-timeout result is cached as "success" for 30 min → those likers
+  stay at 0 until the cache goes stale. That's why a refresh later "fixes" it.
 
-2. **Thread them through the profile layer.**
-   `userOnChainProfileService.ts`: build a per-`(cert, topic)` record carrying
-   `{ topicSlug, contextTermId, contextCounterTermId, addedAt }` (addedAt =
-   when the author created/staked the context triple — the ordering baseline).
-   Today it only keeps `topicAtomIds` / `topicSlugs`.
+**This is your domain (the trust engine) — left untouched.** Suggested
+directions when you pick it up:
 
-3. **Use context triples as the reputation claims.**
-   `useDerivedReputation.ts` / `derivedReputationService.ts`: instead of
-   `claimIds = certs.map(c => c.termId)`, collect the **context triple** term_ids
-   and run `useClaimSupporters` on them. In `computeDerivedReputation`, attribute
-   each context triple's qualifying stakers (after the author, credible) to **its
-   own topic** (not to all of the cert's topics). This also makes the per-topic
-   score more precise than the current "credit every topic on the cert" model.
+1. **Don't cache partial failures as success.** `fetchEigentrustScore` already
+   skips caching a per-address miss, but `useEigentrustMap`'s React Query entry
+   caches the whole map (incl. the 0s) for 30 min. Consider shortening
+   `staleTime` when any address resolved to 0, or marking the query for retry
+   when the result is incomplete.
+2. **Retry timed-out addresses** (small backoff) before settling them to 0.
+3. **UI**: `ScoresPage.tsx` / `PublicProfilePage.tsx` read `derivedRep` but
+   ignore `useDerivedReputation().loading`, so the boost renders as 0 during the
+   async calc. Gating the boost on `loading` (a "calculating…" state instead of
+   a 0) would remove the flicker regardless of the engine fix.
 
-4. **Ordering baseline.** Use the author's position timestamp on the context
-   triple (or the cert's `certifiedAt`) as the `> userTs` cutoff in
-   `followersAfter`, so only backers who came *after* the author count.
+**Note for testing:** an account with no eigentrust score does not *give* a
+boost (anti-Sybil), so you won't see a boost from your own likes — only from
+credible accounts' likes on the viewed profile.
 
-Net result: a like (explorer or extension) = a position on a context triple
-placed after the author → counted as backing → raises the author's reputation
-for that topic, weighted by the liker's credibility.
+### Quick reference
 
-## Alternative (Option B — not recommended)
-
-Make the like stake the **cert triple** instead of the context triples. Simpler
-on the reputation side (no calc change), but a single like would credit **all**
-of the cert's topics (loses per-topic granularity) and changes the like's
-on-chain semantics in both apps. Rejected unless we deliberately want
-non-topic-scoped likes.
-
----
-
-## Open question for the fix PR
-
-Should reputation count **both** (a) context-triple backers (likes) **and**
-(b) cert-triple backers (co-certifications), or **only** likes? Per the product
-intent ("someone who invests on the cert + category after the first user backs
-them"), likes (a) are the priority; whether co-certifications (b) should also
-count is a product call to confirm before implementing.
-
----
-
-## File reference index
-
-| Concern | File | Notes |
-|---|---|---|
-| Explorer like target | `apps/explorer/src/components/circles/CircleFeedSection.tsx` (~L97–120) | stakes context triple `termId`/`counterTermId` |
-| Extension like target | `apps/extension/components/pages/circles-tabs/CircleFeedTab.tsx` (`addVotesToCart`) | context triples, fallback cert triple |
-| Reputation claim ids | `apps/explorer/src/hooks/useDerivedReputation.ts:39` | `certs.map(c => c.termId)` = cert triples |
-| Cert termId source | `apps/explorer/src/services/userOnChainProfileService.ts` (~L194–235) | cert triple term_id; topicSlugs from `GetCertTopicLinks` |
-| Supporters fetch | `apps/explorer/src/services/claimSupportersService.ts:49–75` | positions on the given term_ids |
-| Reputation calc | `apps/explorer/src/services/derivedReputationService.ts:57–100` | `followersAfter` + `computeDerivedReputation` |
-| Topic-links query | `packages/graphql/src/queries/circle.graphql` → `GetCertTopicLinks` | needs `term_id` + `counter_term_id` added |
+| Concern | File |
+|---|---|
+| Reputation claims (now context triples) | `apps/explorer/src/hooks/useDerivedReputation.ts`, `useReputationBackers.ts` |
+| Context-triple ids on profile | `apps/explorer/src/services/userOnChainProfileService.ts` (`ContextAddition`) |
+| Pure calc (generic) | `apps/explorer/src/services/derivedReputationService.ts` |
+| Credibility weights (the flaky step) | `apps/explorer/src/services/eigentrustService.ts`, `hooks/useEigentrustMap.ts` |
+| Like target (both apps) | `apps/explorer/.../CircleFeedSection.tsx`, `apps/extension/.../CircleFeedTab.tsx` |

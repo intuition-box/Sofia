@@ -87,6 +87,11 @@ export interface UserCert {
 export interface ContextAddition {
   /** Cert triple term_id this context was attached to. */
   certTermId: string
+  /** The context triple's OWN support vault term_id — the vault a "like"
+   *  stakes. Reputation reads the stakers (likers) here, per topic. */
+  contextTermId: string
+  /** The context triple's oppose vault term_id (a "dislike"). */
+  contextCounterTermId: string
   /** Context atom term_id (the tag itself — a topic or category atom). */
   topicAtomId: string
   /** Rolled-up topic slug (parent topic for a category tag), or `""`. */
@@ -181,6 +186,8 @@ export async function fetchUserOnChainProfile(
       const node = resolveContextAtom(topicAtomId)
       contextAdditions.push({
         certTermId,
+        contextTermId: row.term_id ?? '',
+        contextCounterTermId: row.counter_term_id ?? '',
         topicAtomId,
         topicSlug: node?.topicSlug ?? '',
         contextSlug: node?.slug ?? '',
