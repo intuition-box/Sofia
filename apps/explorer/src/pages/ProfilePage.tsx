@@ -188,6 +188,11 @@ export default function ProfilePage() {
           addresses={myAddresses}
           onViewScores={isViewingAs ? undefined : () => navigate('/scores')}
           refining={boostLoading}
+          onSelectTopic={
+            isViewingAs
+              ? undefined
+              : (id) => navigate(`/profile/interest/${id}`)
+          }
         />
 
         {/* Echoes */}

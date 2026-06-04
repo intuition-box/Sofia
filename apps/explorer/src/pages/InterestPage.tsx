@@ -17,7 +17,8 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useMemo } from 'react'
 import { InterestHero, SectionTitle } from '@0xsofia/design-system'
-import { getTopicEmoji } from '@/config/topicEmoji'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { getTopicIcon } from '@/config/topicEmoji'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
 
@@ -81,19 +82,23 @@ export default function InterestPage() {
 
   return (
     <div className="pf-view page-enter">
-      <div className="pf-ts-back-row">
-        <button
-          type="button"
-          className="pf-btn"
-          onClick={() => navigate('/profile')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Profile
-        </button>
-      </div>
+      <Breadcrumb
+        items={[{ label: 'My profile', to: '/profile' }, { label: topic.label }]}
+      />
 
       <InterestHero
-        emoji={getTopicEmoji(topicId!)}
+        emoji={
+          <span
+            className="material-symbols-outlined"
+            aria-hidden="true"
+            style={{
+              color,
+              fontVariationSettings: "'FILL' 1, 'wght' 500",
+            }}
+          >
+            {getTopicIcon(topicId!)}
+          </span>
+        }
         title={topic.label}
         description={`Your footprint in ${topic.label} — categories you own, platforms you certified, and what the network signals here.`}
         topicColor={color}

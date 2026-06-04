@@ -33,6 +33,9 @@ interface TopicScorePieProps {
    *  score is already shown; the centre caption pulses "refining" so the
    *  upcoming grow reads as an enrichment, not a jump. */
   refining?: boolean
+  /** When set, clicking a topic segment drills into that topic (personal
+   *  profile → `/profile/interest/:id`). Only real-topic slices fire it. */
+  onSelectTopic?: (id: string) => void
 }
 
 const R = 104
@@ -45,6 +48,7 @@ export default function TopicScorePie({
   setFocus,
   onViewDetails,
   refining = false,
+  onSelectTopic,
 }: TopicScorePieProps) {
   const [centerHover, setCenterHover] = useState(false)
   const total = slices.reduce((a, s) => a + s.score, 0)
@@ -78,11 +82,23 @@ export default function TopicScorePie({
             strokeDashoffset={s.off.toFixed(2)}
             role="button"
             tabIndex={0}
-            aria-label={`${s.slice.label}: ${Math.round(s.slice.score)}`}
+            aria-label={
+              onSelectTopic
+                ? `${s.slice.label}: ${Math.round(s.slice.score)} — view topic`
+                : `${s.slice.label}: ${Math.round(s.slice.score)}`
+            }
+            style={onSelectTopic ? { cursor: 'pointer' } : undefined}
             onMouseEnter={() => setFocus(s.slice.id)}
             onMouseLeave={() => setFocus(null)}
             onFocus={() => setFocus(s.slice.id)}
             onBlur={() => setFocus(null)}
+            onClick={() => onSelectTopic?.(s.slice.id)}
+            onKeyDown={(e) => {
+              if (onSelectTopic && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                onSelectTopic(s.slice.id)
+              }
+            }}
           />
         ))}
       </svg>

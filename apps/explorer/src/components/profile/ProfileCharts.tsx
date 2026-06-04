@@ -45,6 +45,10 @@ interface ProfileChartsProps {
   onViewScores?: () => void
   /** True while the trust boost is still loading — pulses the donut centre. */
   refining?: boolean
+  /** Personal profile only: drill into a topic's page when its donut slice is
+   *  clicked. Omitted on the public profile (the interest page is the
+   *  connected user's, not the viewed wallet's). */
+  onSelectTopic?: (id: string) => void
 }
 
 export default function ProfileCharts({
@@ -53,6 +57,7 @@ export default function ProfileCharts({
   addresses,
   onViewScores,
   refining = false,
+  onSelectTopic,
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
 
@@ -155,6 +160,15 @@ export default function ProfileCharts({
                   setFocus={setHoverTopic}
                   onViewDetails={onViewScores}
                   refining={refining}
+                  onSelectTopic={
+                    onSelectTopic
+                      ? (id) => {
+                          // Only real topics have an interest page — skip the
+                          // synthetic general / trusted / distrusted slices.
+                          if (topicById(id)) onSelectTopic(id)
+                        }
+                      : undefined
+                  }
                 />
               ) : (
                 <p className="pc-score-empty">

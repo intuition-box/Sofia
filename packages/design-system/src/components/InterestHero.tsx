@@ -1,8 +1,9 @@
 import type { HTMLAttributes, ReactNode } from 'react'
 
 export interface InterestHeroProps extends HTMLAttributes<HTMLDivElement> {
-  /** Topic emoji (use `getTopicEmoji(slug)` to resolve). */
-  emoji: string
+  /** Topic icon — an emoji string, or a rendered glyph node (e.g. a
+   *  Material Symbols `<span>` resolved via `getTopicIcon(slug)`). */
+  emoji: ReactNode
   /** Topic display label — rendered as the Fraunces title. */
   title: string
   /** Description paragraph under the title. */
