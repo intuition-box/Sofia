@@ -171,7 +171,7 @@
 .amp .b3-row.is-on {
   opacity: 1;
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 170, 138, 0.55);
+  border-color: ##f7f6f517;
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
 }
 .amp .b3-row.is-on::before {
