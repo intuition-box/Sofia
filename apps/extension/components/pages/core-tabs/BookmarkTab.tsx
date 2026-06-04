@@ -10,10 +10,8 @@ import {
 import SofiaLoader from '../../ui/SofiaLoader'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import FilterDropdown from '../../ui/FilterDropdown'
-import {
-  TOPIC_FILTER_OPTIONS,
-  VERB_FILTER_OPTIONS
-} from '../../../lib/config/filterOptions'
+import TopicCategoryFilter from '../../ui/TopicCategoryFilter'
+import { VERB_FILTER_OPTIONS } from '../../../lib/config/filterOptions'
 import type { IntentionCategory, IntentionType } from '../../../types/intentionCategories'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -262,12 +260,9 @@ const BookmarkTab = () => {
                 onChange={(id) => setVerbFilter(id as IntentionType | 'all')}
                 options={VERB_FILTER_OPTIONS}
               />
-              <FilterDropdown
-                label="Topics"
+              <TopicCategoryFilter
                 value={topicFilter}
                 onChange={setTopicFilter}
-                options={TOPIC_FILTER_OPTIONS}
-                wide
               />
             </div>
             <div className="lists-grid">
