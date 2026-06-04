@@ -774,7 +774,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
             useUserCertifications. */}
         <div className="echoes-filter-row">
           <FilterDropdown
-            label="Verbs"
+            label="Intention"
             value={activeFilter}
             onChange={(id) => setActiveFilter(id as "all" | IntentionType)}
             options={VERB_FILTER_OPTIONS}

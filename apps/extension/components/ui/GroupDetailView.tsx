@@ -759,7 +759,7 @@ const GroupDetailView = ({
           it's view-specific and ties to the "To certify" stat. */}
       <div className="echoes-filter-row">
         <FilterDropdown
-          label="Verbs"
+          label="Intention"
           value={verbFilter}
           onChange={(id) => setVerbFilter(id as "all" | CertificationType)}
           options={VERB_FILTER_OPTIONS}

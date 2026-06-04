@@ -257,7 +257,7 @@ const BookmarkTab = () => {
                 on-chain "in context of" data from useUserCertifications. */}
             <div className="echoes-filter-row">
               <FilterDropdown
-                label="Verbs"
+                label="Intention"
                 value={verbFilter}
                 onChange={(id) => setVerbFilter(id as IntentionType | 'all')}
                 options={VERB_FILTER_OPTIONS}

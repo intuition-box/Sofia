@@ -138,7 +138,7 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
             user's on-chain "in context of" data. */}
         <div className="echoes-filter-row">
           <FilterDropdown
-            label="Verbs"
+            label="Intention"
             value={verbFilter}
             onChange={id => setVerbFilter(id as IntentionType | "all")}
             options={VERB_FILTER_OPTIONS}
