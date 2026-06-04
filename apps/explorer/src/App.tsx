@@ -54,8 +54,6 @@ import './components/styles/pills.css'
 const PERSONAL_PROFILE_SEGMENTS = new Set([
   'context-manager',
   'interest',
-  'topics',
-  'categories',
   'platform',
 ])
 

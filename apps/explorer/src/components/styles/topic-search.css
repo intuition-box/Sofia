@@ -1,6 +1,6 @@
 /* ── Topic search bar — reusable pill input with leading icon + clear.
- * Used today on DomainSelector (profile/topics flow). Styled with DS
- * tokens only so it reads the same on light / dark. */
+ * Used on PlatformDetailPage's toolbar (/profile/platform/:domain). Styled
+ * with DS tokens only so it reads the same on light / dark. */
 
 .ts-search {
   position: relative;

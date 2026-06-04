@@ -86,8 +86,8 @@ export default function ProfilePage() {
         <Wallet className="h-10 w-10 mx-auto text-muted-foreground/40" />
         <h2 className="mt-4 text-lg font-bold">Connect your wallet</h2>
         <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
-          Connect your wallet to access your profile, select domains, connect
-          platforms, and view your reputation scores.
+          Connect your wallet to access your profile, connect platforms, and
+          view your reputation scores.
         </p>
         <Button className="mt-4" onClick={() => login()}>
           <Wallet className="h-4 w-4 mr-2" />
