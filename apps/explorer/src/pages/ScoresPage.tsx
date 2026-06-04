@@ -1,171 +1,312 @@
 /**
- * ScoresPage — `/scores`. 1:1 port of the proto's renderTrustPage
- * (proto-explorer/src/views/profile.ts:985-1142 + styles/profile-trust.css).
+ * ScoresPage — `/scores`. Reputation "constellation" (Claude Design handoff).
  *
- * Header is a custom white card (.pf-ts-header) with kicker + Fraunces
- * title + description on the left, and a big trusted-green total-score
- * stat on the right. Four sections follow:
- *   - Reputation by topic (bars)
- *   - Reputation by verb (same card shape, one per intention)
- *   - Badges earned on URLs (Pioneer / Explorer / Contributor groups)
- *   - Engagement on your URLs (support/oppose bar + counts)
+ * "Read your score, don't read about it." A single donut carries the story:
+ * arc length = score, inner band = your certs (base), glowing outer band =
+ * others' boost. Toggle Topics ↔ Verbs. Click a segment → a contextual rail
+ * shows that topic's base/boost, the curators who lifted it, and recent
+ * activity. A Pool tab covers the season stake. No stacked card walls.
+ *
+ * Real data: per-topic base (cert count × POINTS_PER_CERT) + boost
+ * (`useDerivedReputation`), per-topic backers (`useReputationBackers`), verb
+ * counts + recent certs (`useUserOnChainProfile`), season pool
+ * (`useSeasonPool`).
  */
 
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
-import { ArrowLeft } from 'lucide-react'
 import { formatEther } from 'viem'
-import { SectionTitle, FaviconWrapper } from '@0xsofia/design-system'
-import { Button } from '@/components/ui/button'
-import { getTopicEmoji } from '@/config/topicEmoji'
-import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
+import type { Address } from 'viem'
+import { getTopicIcon } from '@/config/topicEmoji'
+import {
+  INTENTION_CONFIG,
+  type IntentionType,
+  predicateLabelToIntentionType,
+} from '@/config/intentions'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
-import { useTopClaims } from '@/hooks/useTopClaims'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
-import { computeDiscoveryBuckets } from '@/services/userOnChainProfileService'
 import { useUserCertCounts } from '@/hooks/useUserCertCountsByTopic'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useDerivedReputation } from '@/hooks/useDerivedReputation'
+import { useReputationBackers } from '@/hooks/useReputationBackers'
 import { useSignals } from '@/hooks/useSignals'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useEnsNames } from '@/hooks/useEnsNames'
 import { useSeasonPool } from '@/hooks/useSeasonPool'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
-import { predicateLabelToIntentionType } from '@/config/intentions'
-import { type ClaimBadge } from '@/components/profile/ProfileClaimCard'
-import { extractDomain, formatTrust } from '@/utils/formatting'
-import { getFaviconUrl } from '@/utils/favicon'
+import { extractDomain, cleanLabel, timeAgo, formatTrust } from '@/utils/formatting'
+import { avatarColor } from '@/utils/avatarColor'
+import type { TopicBacker } from '@/services/reputationBackersService'
+import FeedCardView, {
+  type FeedCardVerb,
+  type FeedCardTopic,
+} from '@/components/feed/FeedCardView'
 import '@/components/styles/pages.css'
-import '@/components/styles/scores-page.css'
+import '@/components/styles/scores-constellation.css'
 
-const VERBS: {
-  id: IntentionType
+const VERBS: { id: IntentionType; label: string; emoji: string; color: string }[] =
+  [
+    { id: 'trusted', label: INTENTION_CONFIG.trusted.label, emoji: '🛡️', color: 'var(--trusted)' },
+    { id: 'work', label: INTENTION_CONFIG.work.label, emoji: '💼', color: 'var(--work)' },
+    { id: 'learning', label: INTENTION_CONFIG.learning.label, emoji: '📚', color: 'var(--learning)' },
+    { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨', color: 'var(--inspiration)' },
+    { id: 'fun', label: INTENTION_CONFIG.fun.label, emoji: '🎲', color: 'var(--fun)' },
+    { id: 'buying', label: INTENTION_CONFIG.buying.label, emoji: '🛍️', color: 'var(--buying)' },
+    { id: 'music', label: INTENTION_CONFIG.music.label, emoji: '🎵', color: 'var(--music)' },
+    { id: 'distrusted', label: INTENTION_CONFIG.distrusted.label, emoji: '⚠️', color: 'var(--distrusted)' },
+  ]
+
+// ── Donut geometry ──
+const VB = 520
+const C = VB / 2
+const RO = 196
+const RI = 116
+
+function polar(r: number, deg: number): [number, number] {
+  const a = ((deg - 90) * Math.PI) / 180
+  return [C + r * Math.cos(a), C + r * Math.sin(a)]
+}
+function arcPath(ri: number, ro: number, a0: number, a1: number): string {
+  const large = a1 - a0 > 180 ? 1 : 0
+  const [x0o, y0o] = polar(ro, a0)
+  const [x1o, y1o] = polar(ro, a1)
+  const [x0i, y0i] = polar(ri, a1)
+  const [x1i, y1i] = polar(ri, a0)
+  return `M${x0o} ${y0o} A${ro} ${ro} 0 ${large} 1 ${x1o} ${y1o} L${x0i} ${y0i} A${ri} ${ri} 0 ${large} 0 ${x1i} ${y1i} Z`
+}
+
+type Mode = 'topics' | 'verbs'
+
+interface Seg {
+  slug: string
   label: string
-  emoji: string
   color: string
-}[] = [
-  {
-    id: 'trusted',
-    label: INTENTION_CONFIG.trusted.label,
-    emoji: '🤝',
-    color: INTENTION_CONFIG.trusted.color,
-  },
-  {
-    id: 'distrusted',
-    label: INTENTION_CONFIG.distrusted.label,
-    emoji: '⚠️',
-    color: INTENTION_CONFIG.distrusted.color,
-  },
-  {
-    id: 'work',
-    label: INTENTION_CONFIG.work.label,
-    emoji: '💼',
-    color: INTENTION_CONFIG.work.color,
-  },
-  {
-    id: 'learning',
-    label: INTENTION_CONFIG.learning.label,
-    emoji: '📚',
-    color: INTENTION_CONFIG.learning.color,
-  },
-  {
-    id: 'inspiration',
-    label: INTENTION_CONFIG.inspiration.label,
-    emoji: '✨',
-    color: INTENTION_CONFIG.inspiration.color,
-  },
-  {
-    id: 'fun',
-    label: INTENTION_CONFIG.fun.label,
-    emoji: '🎮',
-    color: INTENTION_CONFIG.fun.color,
-  },
-  {
-    id: 'buying',
-    label: INTENTION_CONFIG.buying.label,
-    emoji: '🛍️',
-    color: INTENTION_CONFIG.buying.color,
-  },
-  {
-    id: 'music',
-    label: INTENTION_CONFIG.music.label,
-    emoji: '🎵',
-    color: INTENTION_CONFIG.music.color,
-  },
-]
+  score: number
+  base: number
+  boost: number
+  certCount: number
+  a0: number
+  a1: number
+  mid: number
+}
 
-const BADGE_GROUPS: {
-  id: ClaimBadge
-  label: string
-  description: string
-  icon: string
-}[] = [
-  {
-    id: 'pioneer',
-    label: 'Pioneer',
-    description: 'First to certify the claim.',
-    icon: '/badges/pioneer.png',
-  },
-  {
-    id: 'early',
-    label: 'Explorer',
-    description: 'Supported before consensus.',
-    icon: '/badges/explorer.png',
-  },
-  {
-    id: 'viral',
-    label: 'Contributor',
-    description: 'Your signal spread across the network.',
-    icon: '/badges/contributor.png',
-  },
-]
+const fmt = (n: number) => Math.round(n).toLocaleString('en-US')
 
-type ScoreTab = 'score' | 'pool'
+/* ── Donut (module-level so its hover state survives parent re-renders) ── */
+function Donut({
+  items,
+  mode,
+  setMode,
+  sel,
+  setSel,
+  totalScore,
+}: {
+  items: Seg[]
+  mode: Mode
+  setMode: (m: Mode) => void
+  sel: string | null
+  setSel: (s: string | null) => void
+  totalScore: number
+}) {
+  const [hover, setHover] = useState<string | null>(null)
+  const focus = sel ? items.find((s) => s.slug === sel) : null
+  const hv = hover ? items.find((s) => s.slug === hover) : null
+  const centerScore = focus
+    ? focus.score
+    : mode === 'topics'
+      ? totalScore
+      : items.reduce((s, x) => s + x.score, 0)
+  const centerLabel = focus
+    ? focus.label
+    : mode === 'topics'
+      ? 'total score'
+      : 'total certs'
+
+  return (
+    <div className="sc2-canvas">
+      <svg
+        className="sc2-svg"
+        viewBox={`0 0 ${VB} ${VB}`}
+        preserveAspectRatio="xMidYMid meet"
+        onClick={() => setSel(null)}
+      >
+        <defs>
+          {items.map((s) => (
+            <filter
+              key={'f' + s.slug}
+              id={'glow-' + s.slug}
+              x="-40%"
+              y="-40%"
+              width="180%"
+              height="180%"
+            >
+              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={s.color} floodOpacity="0.9" />
+            </filter>
+          ))}
+        </defs>
+
+        {items.map((s) => {
+          const dim = sel && sel !== s.slug
+          const isFocus = sel === s.slug
+          const ro = RO + (isFocus ? 10 : 0)
+          const split = s.score ? RI + (ro - RI) * (s.base / s.score) : ro
+          const wide = s.a1 - s.a0 > 16
+          return (
+            <g
+              key={s.slug}
+              opacity={dim ? 0.26 : 1}
+              style={{ transition: 'opacity 0.2s', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setSel(isFocus ? null : s.slug)
+              }}
+              onMouseEnter={() => setHover(s.slug)}
+              onMouseMove={() => setHover(s.slug)}
+              onMouseLeave={() => setHover((h) => (h === s.slug ? null : h))}
+            >
+              <path
+                d={arcPath(RI, split, s.a0, s.a1)}
+                fill={s.color}
+                fillOpacity={mode === 'topics' ? 0.72 : 1}
+              />
+              {s.boost > 0 && (
+                <path
+                  d={arcPath(split + 1.5, ro, s.a0, s.a1)}
+                  fill={s.color}
+                  filter={isFocus || hover === s.slug ? `url(#glow-${s.slug})` : 'none'}
+                />
+              )}
+              {(isFocus || hover === s.slug) && (
+                <path
+                  d={arcPath(RI, ro, s.a0, s.a1)}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.45)"
+                  strokeWidth="1"
+                />
+              )}
+              {wide &&
+                (() => {
+                  const [lx, ly] = polar((RI + ro) / 2, s.mid)
+                  return (
+                    <text
+                      x={lx}
+                      y={ly + 5}
+                      textAnchor="middle"
+                      className="sc2-seg-score"
+                      fontSize={s.a1 - s.a0 > 28 ? 17 : 13}
+                    >
+                      {s.score}
+                    </text>
+                  )
+                })()}
+            </g>
+          )
+        })}
+
+        {/* center */}
+        <g pointerEvents="none">
+          <text
+            x={C}
+            y={focus ? C - 16 : C - 6}
+            textAnchor="middle"
+            className="sc2-center-n"
+            fontSize={focus ? 46 : 54}
+            fill={focus ? focus.color : 'var(--ds-accent)'}
+          >
+            {fmt(centerScore)}
+          </text>
+          <text x={C} y={focus ? C + 16 : C + 20} textAnchor="middle" className="sc2-center-lab">
+            {centerLabel}
+          </text>
+          {focus && mode === 'topics' && (
+            <text x={C} y={C + 38} textAnchor="middle" className="sc2-center-sub">
+              base {focus.base} · boost +{focus.boost}
+            </text>
+          )}
+        </g>
+      </svg>
+
+      <div className="sc2-modes">
+        <button
+          className={`sc2-mode${mode === 'topics' ? ' active' : ''}`}
+          onClick={() => {
+            setMode('topics')
+            setSel(null)
+          }}
+        >
+          Topics
+        </button>
+        <button
+          className={`sc2-mode${mode === 'verbs' ? ' active' : ''}`}
+          onClick={() => {
+            setMode('verbs')
+            setSel(null)
+          }}
+        >
+          Verbs
+        </button>
+      </div>
+
+      <div className="sc2-legend">
+        <div className="sc2-legend-row">
+          <span className="sc2-lg-arc" />
+          <span>
+            arc = <b>score</b>
+          </span>
+        </div>
+        <div className="sc2-legend-row">
+          <span className="sc2-lg-core" />
+          <span>
+            inner = <b>your certs</b>
+          </span>
+        </div>
+        {mode === 'topics' && (
+          <div className="sc2-legend-row">
+            <span className="sc2-lg-halo" />
+            <span>
+              outer = <b>others' boost</b>
+            </span>
+          </div>
+        )}
+      </div>
+
+      {hv &&
+        (() => {
+          const [tx, ty] = polar(RO + 6, hv.mid)
+          return (
+            <div
+              className="sc2-ctip"
+              style={{ left: `${(tx / VB) * 100}%`, top: `${(ty / VB) * 100}%` }}
+            >
+              <div className="sc2-ctip-t">{hv.label} · {hv.score}</div>
+              <div className="sc2-ctip-s">
+                {mode === 'topics' && hv.boost > 0
+                  ? `base ${hv.base} · boost +${hv.boost}`
+                  : `${hv.certCount} certs`}
+              </div>
+            </div>
+          )
+        })()}
+    </div>
+  )
+}
 
 export default function ScoresPage() {
-  const navigate = useNavigate()
   const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
-  const [activeTab, setActiveTab] = useState<ScoreTab>('score')
-  // Which topic card is expanded to show its base/boost breakdown.
-  const [openTopic, setOpenTopic] = useState<string | null>(null)
+  const [tab, setTab] = useState<'score' | 'pool'>('score')
+  const [mode, setMode] = useState<Mode>('topics')
+  const [sel, setSel] = useState<string | null>(null)
 
-  // Beta Season Pool — vault stats + the connected wallet's position.
-  const {
-    data: poolPositions,
-    vaultStats,
-    loading: poolLoading,
-  } = useSeasonPool(authenticated && activeTab === 'pool')
-
-  const userPool = useMemo(() => {
-    if (!poolPositions || !address) return null
-    const sorted = [...poolPositions].sort(
-      (a, b) => b.pnlPercent - a.pnlPercent,
-    )
-    const idx = sorted.findIndex(
-      (p) => p.address.toLowerCase() === address.toLowerCase(),
-    )
-    return idx >= 0
-      ? { position: sorted[idx], rank: idx + 1, total: sorted.length }
-      : null
-  }, [poolPositions, address])
   const { addresses: linkedAddresses } = useLinkedWallets()
   const profileAddresses =
-    linkedAddresses.length > 0
-      ? linkedAddresses
-      : address
-        ? [address]
-        : undefined
+    linkedAddresses.length > 0 ? linkedAddresses : address ? [address] : undefined
 
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
   const { topicById } = useTaxonomy()
-  const { claims: topClaims } = useTopClaims(profileAddresses)
-
-  // Master profile cache — every panel below derives from this snapshot
-  // so /scores stays in sync with /profile (donut, panel, calendar).
   const { profile } = useUserOnChainProfile(profileAddresses)
   const certCounts = useUserCertCounts(profileAddresses)
   const { signals } = useSignals(address)
@@ -177,471 +318,488 @@ export default function ScoresPage() {
     signals,
     certCounts.byTopic,
   )
-  // Boost = credibility of users who positioned AFTER you on your claims,
-  // added on top of the per-cert base. See docs/reputation-curation.md.
-  const { scoreByTopic: derivedRep } = useDerivedReputation(
-    profileAddresses ?? [],
+  const { scoreByTopic: derivedRep } = useDerivedReputation(profileAddresses ?? [])
+  const { backers } = useReputationBackers(profileAddresses ?? [])
+
+  // ── Topics (base + boost) ──
+  const topics = useMemo(
+    () =>
+      selectedTopics
+        .map((id) => {
+          const topic = topicById(id)
+          if (!topic) return null
+          const base = Math.round(
+            reputation?.topics.find((t) => t.topicId === id)?.score ?? 0,
+          )
+          const boost = Math.round(derivedRep.get(id) ?? 0)
+          return {
+            slug: id,
+            label: topic.label,
+            color: topic.color ?? '#888888',
+            base,
+            boost,
+            certCount: Math.round(base / POINTS_PER_CERT),
+            score: base + boost,
+          }
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null),
+    [selectedTopics, topicById, reputation, derivedRep],
+  )
+  const topicMap = useMemo(
+    () => Object.fromEntries(topics.map((t) => [t.slug, t])),
+    [topics],
   )
 
-  // Reputation by topic, split into its two drivers so the detail view can
-  // explain it: `base` = your own certifications (POINTS_PER_CERT each),
-  // `boost` = the credibility of users who backed your claims after you.
-  const topicScores = selectedTopics
-    .map((id) => {
-      const topic = topicById(id)
-      if (!topic) return null
-      const base = Math.round(
-        reputation?.topics.find((t) => t.topicId === id)?.score ?? 0,
-      )
-      const boost = Math.round(derivedRep.get(id) ?? 0)
-      return {
-        id,
-        label: topic.label,
-        emoji: getTopicEmoji(id) || '📌',
-        color: topic.color ?? '#888888',
-        base,
-        boost,
-        certCount: Math.round(base / POINTS_PER_CERT),
-        score: base + boost,
-      }
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null)
+  // ── Verbs (counts) ──
+  const verbs = useMemo(() => {
+    return VERBS.map((v) => {
+      let n = 0
+      for (const cert of profile.certs)
+        if (predicateLabelToIntentionType(cert.intention) === v.id) n++
+      return { ...v, n }
+    }).filter((v) => v.n > 0)
+  }, [profile.certs])
 
-  // Trust/distrust are no longer folded into `general` (they can't carry a
-  // topic context) — count them explicitly so the total stays in sync with
-  // the /profile donut, which renders them as their own circle slices.
   const generalScore = certCounts.general * POINTS_PER_CERT
   const trustDistrustScore =
     (certCounts.trusted + certCounts.distrusted) * POINTS_PER_CERT
-  const totalTopicScore =
-    topicScores.reduce((a, t) => a + t.score, 0) +
-    generalScore +
-    trustDistrustScore
-  const maxTopicScore = Math.max(...topicScores.map((t) => t.score), 1)
+  const totalScore =
+    topics.reduce((a, t) => a + t.score, 0) + generalScore + trustDistrustScore
 
-  // Reputation by verb — derive directly from the master profile so the
-  // counts cover every cert (not just the loaded 200-event window).
-  const verbCounts = VERBS.map((v) => {
-    let count = 0
-    for (const cert of profile.certs) {
-      if (predicateLabelToIntentionType(cert.intention) === v.id) count++
-    }
-    return { ...v, count }
-  }).filter((v) => v.count > 0)
+  // ── Donut segments for the active mode ──
+  const segments = useMemo<Seg[]>(() => {
+    const src =
+      mode === 'topics'
+        ? topics
+            .filter((t) => t.score > 0)
+            .map((t) => ({
+              slug: t.slug,
+              label: t.label,
+              color: t.color,
+              score: t.score,
+              base: t.base,
+              boost: t.boost,
+              certCount: t.certCount,
+            }))
+        : verbs.map((v) => ({
+            slug: v.id,
+            label: v.label,
+            color: v.color,
+            score: v.n,
+            base: v.n,
+            boost: 0,
+            certCount: v.n,
+          }))
+    src.sort((a, b) => b.score - a.score)
+    const total = src.reduce((s, x) => s + x.score, 0) || 1
+    const gap = 2.4
+    let a = 0
+    return src.map((it) => {
+      const span = (it.score / total) * (360 - gap * src.length)
+      const seg: Seg = {
+        ...it,
+        a0: a + gap / 2,
+        a1: a + gap / 2 + span,
+        mid: a + gap / 2 + span / 2,
+      }
+      a += span + gap
+      return seg
+    })
+  }, [mode, topics, verbs])
 
-  // Badges earned on URLs — derive from EVERY cert the user owns,
-  // not just `topClaims` (which only tracks the top-N by market cap).
-  // Single source of truth: `computeDiscoveryBuckets` is the same
-  // selector the right-rail Discovery badges consume.
-  const discoveryBuckets = computeDiscoveryBuckets(profile.certs)
-  const certToClaim = (cert: (typeof profile.certs)[number]) => ({
-    termId: cert.termId,
-    objectLabel: cert.objectLabel,
-    objectUrl: cert.objectUrl || undefined,
-    predicateLabel: cert.intention,
-    stats: {
-      supportCount: cert.certifierCount,
-      opposeCount: 0,
-      supportMarketCap: '0',
-      opposeMarketCap: '0',
-      userPnlPct: null,
-    },
-    totalMarketCap: 0n,
-  })
-  const bucketsByBadge: Record<ClaimBadge, typeof topClaims> = {
-    pioneer: discoveryBuckets.pioneer
-      .filter((c) => c.objectLabel)
-      .map(certToClaim),
-    early: discoveryBuckets.explorer
-      .filter((c) => c.objectLabel)
-      .map(certToClaim),
-    viral: discoveryBuckets.contributor
-      .filter((c) => c.objectLabel)
-      .map(certToClaim),
-    contrarian: [],
-  }
-  const perBadgeUrlsAll = BADGE_GROUPS.map((g) => ({
-    group: g,
-    urls: bucketsByBadge[g.id],
-  }))
-  const perBadgeUrls = perBadgeUrlsAll.map((entry) => ({
-    ...entry,
-    urls: entry.urls.slice(0, 3),
-  }))
-
-  // Engagement on your URLs — top 5 by total position count.
-  const engagement = [...topClaims]
-    .sort(
-      (a, b) =>
-        b.stats.supportCount +
-        b.stats.opposeCount -
-        (a.stats.supportCount + a.stats.opposeCount),
+  // ── Certs shown in the module below the donut (filtered by selection) ──
+  const sortedCerts = useMemo(
+    () =>
+      [...profile.certs]
+        .filter((c) => c.certifiedAt)
+        .sort((a, b) => (a.certifiedAt < b.certifiedAt ? 1 : -1)),
+    [profile.certs],
+  )
+  const shownCerts = useMemo(() => {
+    if (!sel) return sortedCerts.slice(0, 24)
+    if (mode === 'topics')
+      return sortedCerts.filter((c) => c.topicSlugs.includes(sel))
+    return sortedCerts.filter(
+      (c) => predicateLabelToIntentionType(c.intention) === sel,
     )
-    .slice(0, 5)
+  }, [sel, mode, sortedCerts])
+  const certsTitle = useMemo(() => {
+    if (!sel) return 'Recent certifications'
+    const label =
+      mode === 'topics'
+        ? (topicMap[sel]?.label ?? sel)
+        : (verbs.find((v) => v.id === sel)?.label ?? sel)
+    const sep = mode === 'topics' ? 'in' : '·'
+    return `${shownCerts.length} certification${shownCerts.length === 1 ? '' : 's'} ${sep} ${label}`
+  }, [sel, mode, shownCerts.length, topicMap, verbs])
 
-  return (
-    <div className="pf-view sp-page page-enter">
-      <div className="pf-ts-back-row">
-        <button
-          type="button"
-          className="pf-btn"
-          onClick={() => navigate('/profile')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to my profile
+  // ── Backer ENS + identity ──
+  const allBackerAddrs = useMemo<Address[]>(() => {
+    const set = new Set<string>()
+    for (const list of backers.byTopic.values())
+      for (const b of list) set.add(b.address)
+    if (address) set.add(address)
+    return [...set] as Address[]
+  }, [backers, address])
+  const { getDisplay, getAvatar } = useEnsNames(allBackerAddrs)
+  const handleOf = (a: string) => getDisplay(a as Address) || a
+  const initialsOf = (s: string) =>
+    s.replace(/\.(eth|box)$/i, '').replace(/^0x/, '').slice(0, 2).toUpperCase()
+
+  const selfDisplay = address ? getDisplay(address as Address) : ''
+  const selfAvatar = address ? getAvatar(address as Address) : ''
+  const shortAddr = address
+    ? `${address.slice(0, 6)}…${address.slice(-4)}`
+    : ''
+
+  // ── Season pool ──
+  const { data: poolPositions, vaultStats } = useSeasonPool(
+    authenticated && tab === 'pool',
+  )
+  const userPool = useMemo(() => {
+    if (!poolPositions || !address) return null
+    const sorted = [...poolPositions].sort((a, b) => b.pnlPercent - a.pnlPercent)
+    const idx = sorted.findIndex(
+      (p) => p.address.toLowerCase() === address.toLowerCase(),
+    )
+    return idx >= 0
+      ? { position: sorted[idx], rank: idx + 1, total: sorted.length }
+      : null
+  }, [poolPositions, address])
+
+  // ── Cert → feed card (the module below the donut) ──
+  const renderCertCard = (cert: (typeof profile.certs)[number]) => {
+    const url = cert.objectUrl || ''
+    const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
+    const intentType = predicateLabelToIntentionType(cert.intention)
+    const verb = VERBS.find((v) => v.id === intentType)
+    const cardVerbs: FeedCardVerb[] = verb
+      ? [{ label: verb.label, color: verb.color }]
+      : []
+    const cardTopics: FeedCardTopic[] = cert.topicSlugs
+      .map((s) => {
+        const t = topicById(s)
+        return t ? { id: s, label: t.label, color: t.color } : null
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null)
+    return (
+      <FeedCardView
+        key={cert.termId}
+        handle={selfDisplay || shortAddr}
+        avatarUrl={selfAvatar || undefined}
+        when={cert.certifiedAt ? timeAgo(cert.certifiedAt) : ''}
+        title={cleanLabel(cert.objectLabel || domain || '')}
+        url={url}
+        domain={domain}
+        verbs={cardVerbs}
+        topics={cardTopics}
+        up={cert.certifierCount}
+        down={0}
+        onOpen={() => {
+          if (url) window.open(url, '_blank', 'noopener,noreferrer')
+        }}
+      />
+    )
+  }
+
+  const renderBackerAv = (b: TopicBacker) => {
+    const av = getAvatar(b.address as Address)
+    return (
+      <span
+        className="sc2-dt-backer-av"
+        style={{ background: avatarColor(b.address) }}
+      >
+        {av ? (
+          <img src={av} alt="" referrerPolicy="no-referrer" />
+        ) : (
+          initialsOf(handleOf(b.address))
+        )}
+      </span>
+    )
+  }
+
+  // ── Detail rail content ──
+  const renderDetail = () => {
+    if (!sel) {
+      const rows =
+        mode === 'topics'
+          ? [...topics].sort((a, b) => b.score - a.score)
+          : [...verbs].sort((a, b) => b.n - a.n)
+      return (
+        <div className="sc2-detail-empty">
+          <span className="sc2-eyebrow">
+            {mode === 'topics' ? 'All topics' : 'All verbs'}
+          </span>
+          <div className="sc2-rank-list">
+            {rows.map((r) => {
+              const isTopic = mode === 'topics'
+              const slug = isTopic
+                ? (r as (typeof topics)[number]).slug
+                : (r as (typeof verbs)[number]).id
+              const color = r.color
+              const label = r.label
+              const score = isTopic
+                ? (r as (typeof topics)[number]).score
+                : (r as (typeof verbs)[number]).n
+              return (
+                <button
+                  type="button"
+                  className="sc2-rank-item"
+                  key={slug}
+                  onClick={() => setSel(slug)}
+                >
+                  <span className="sc2-rank-dot" style={{ background: color }} />
+                  {isTopic ? (
+                    <span
+                      className="material-symbols-outlined sc2-rank-glyph"
+                      aria-hidden="true"
+                    >
+                      {getTopicIcon(slug)}
+                    </span>
+                  ) : (
+                    <span className="sc2-rank-glyph">
+                      {(r as (typeof verbs)[number]).emoji}
+                    </span>
+                  )}
+                  <span className="sc2-rank-label">{label}</span>
+                  <span className={`sc2-rank-score${score === 0 ? ' zero' : ''}`}>
+                    {score}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    if (mode === 'topics') {
+      const t = topicMap[sel]
+      if (!t) return null
+      const tBackers = backers.byTopic.get(sel) ?? []
+      return (
+        <div style={{ ['--tc' as string]: t.color }}>
+          <div className="sc2-dt-head">
+            <span className="sc2-dt-emoji">
+              <span className="material-symbols-outlined sc2-dt-glyph" aria-hidden="true">
+                {getTopicIcon(sel)}
+              </span>
+            </span>
+            <div>
+              <div className="sc2-dt-name">{t.label}</div>
+              <div className="sc2-dt-certs">
+                {t.certCount} certs × {POINTS_PER_CERT}
+              </div>
+            </div>
+          </div>
+          <div className="sc2-dt-score">{t.score}</div>
+          <div className="sc2-dt-split">
+            <div className="sc2-dt-chip base">
+              <div className="sc2-dt-chip-k">
+                <i />
+                Base · you
+              </div>
+              <div className="sc2-dt-chip-v">{t.base}</div>
+            </div>
+            <div className="sc2-dt-chip boost">
+              <div className="sc2-dt-chip-k">
+                <i />
+                Boost · others
+              </div>
+              <div className="sc2-dt-chip-v">+{t.boost}</div>
+            </div>
+          </div>
+          <div className="sc2-dt-backers">
+            <div className="sc2-dt-backers-t">
+              {tBackers.length
+                ? `${tBackers.length} curator${tBackers.length === 1 ? '' : 's'} boosted you`
+                : 'No boost yet'}
+            </div>
+            {tBackers.length ? (
+              tBackers.map((b) => (
+                <div className="sc2-dt-backer" key={b.address}>
+                  {renderBackerAv(b)}
+                  <span className="sc2-dt-backer-h">{handleOf(b.address)}</span>
+                  <span className="sc2-dt-backer-bar">
+                    <i style={{ width: `${Math.min(100, b.credibility * 100)}%` }} />
+                  </span>
+                  <span className="sc2-dt-backer-c">{b.credibility.toFixed(2)}</span>
+                </div>
+              ))
+            ) : (
+              <p className="sc2-dt-none">
+                Be early and others will follow — their credibility lifts this
+                topic.
+              </p>
+            )}
+          </div>
+          <button type="button" className="sc2-dt-clear" onClick={() => setSel(null)}>
+            ← All topics
+          </button>
+        </div>
+      )
+    }
+
+    // verb detail
+    const v = verbs.find((x) => x.id === sel)
+    if (!v) return null
+    return (
+      <div style={{ ['--tc' as string]: v.color }}>
+        <div className="sc2-dt-head">
+          <span className="sc2-dt-emoji">
+            <span style={{ fontSize: 24 }}>{v.emoji}</span>
+          </span>
+          <div>
+            <div className="sc2-dt-name">{v.label}</div>
+            <div className="sc2-dt-certs">intention</div>
+          </div>
+        </div>
+        <div className="sc2-dt-score">{v.n}</div>
+        <p className="sc2-dt-none" style={{ marginTop: 14 }}>
+          URLs you certified with the{' '}
+          <b style={{ color: v.color }}>{v.label.toLowerCase()}</b> intention.
+        </p>
+        <button type="button" className="sc2-dt-clear" onClick={() => setSel(null)}>
+          ← All verbs
         </button>
       </div>
+    )
+  }
 
-      <div className="pf-ts-header">
-        <div className="pf-ts-header-title-block">
-          <h1 className="pf-ts-header-title">Score</h1>
-          <p className="pf-ts-header-desc">
-            Break down your reputation score across topics, intents, URLs and
-            engagement.
-          </p>
-        </div>
-        <div className="pf-ts-header-stat">
-          <span className="pf-ts-header-stat-value">{totalTopicScore}</span>
-          <span className="pf-ts-header-stat-label">Total score</span>
+  return (
+    <div className="pf-view page-enter sc2-page">
+      {/* Tabs only — identity + total live in the right rail and the donut
+          centre, so no redundant header bar. */}
+      <div className="sc2-toolbar">
+        <div className="sc2-tabs">
+          <button
+            className={`sc2-tab${tab === 'score' ? ' active' : ''}`}
+            onClick={() => setTab('score')}
+          >
+            Score
+          </button>
+          <button
+            className={`sc2-tab${tab === 'pool' ? ' active' : ''}`}
+            onClick={() => setTab('pool')}
+          >
+            Pool
+          </button>
         </div>
       </div>
 
-      <div className="sp-tabs">
-        <Button
-          size="sm"
-          variant={activeTab === 'score' ? 'default' : 'ghost'}
-          data-active={activeTab === 'score'}
-          onClick={() => setActiveTab('score')}
-        >
-          Score
-        </Button>
-        <Button
-          size="sm"
-          variant={activeTab === 'pool' ? 'default' : 'ghost'}
-          data-active={activeTab === 'pool'}
-          onClick={() => setActiveTab('pool')}
-        >
-          Pool
-        </Button>
-      </div>
+      {tab === 'score' ? (
+        <>
+          <div className="sc2-stage">
+            <Donut
+              items={segments}
+              mode={mode}
+              setMode={setMode}
+              sel={sel}
+              setSel={setSel}
+              totalScore={totalScore}
+            />
+            <aside className="sc2-detail">{renderDetail()}</aside>
+          </div>
 
-      {activeTab === 'pool' && (
-        <div className="pp-sections">
-          <section className="pp-section">
-            <SectionTitle>Beta Season Pool</SectionTitle>
-            {vaultStats && (
-              <div className="sp-pool-snapshot">
-                <div className="sp-pool-stat">
-                  <span className="sp-pool-stat-label">TVL</span>
-                  <span className="sp-pool-stat-value">
-                    {parseFloat(formatEther(vaultStats.tvl)).toFixed(2)} T
-                  </span>
-                </div>
-                <div className="sp-pool-stat">
-                  <span className="sp-pool-stat-label">Stakers</span>
-                  <span className="sp-pool-stat-value">
-                    {vaultStats.totalStakers.toLocaleString()}
-                  </span>
-                </div>
-                <div className="sp-pool-stat">
-                  <span className="sp-pool-stat-label">Share price</span>
-                  <span className="sp-pool-stat-value">
-                    {parseFloat(formatEther(vaultStats.sharePrice)).toFixed(4)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {!authenticated && (
-              <div className="sp-pool-empty">
-                Connect your wallet to view your pool position.
-              </div>
-            )}
-
-            {authenticated && poolLoading && !userPool && (
-              <div className="sp-pool-empty">Loading your position…</div>
-            )}
-
-            {authenticated && !poolLoading && !userPool && (
-              <div className="sp-pool-empty">
-                <div className="sp-pool-empty-title">No position yet</div>
-                <div className="sp-pool-empty-sub">
-                  Stake into the Beta Season Pool to appear here.
-                </div>
-              </div>
-            )}
-
-            {userPool && (
-              <div className="sp-pool-card">
-                <div className="sp-pool-rank">
-                  <span className="sp-pool-rank-hash">#</span>
-                  <span className="sp-pool-rank-num">{userPool.rank}</span>
-                  <span className="sp-pool-rank-of">
-                    of {userPool.total.toLocaleString()}
-                  </span>
-                </div>
-                <div className="sp-pool-rows">
-                  <div className="sp-pool-row">
-                    <span className="sp-pool-row-label">Current value</span>
-                    <span className="sp-pool-row-value">
-                      {formatTrust(userPool.position.currentValue)}
-                    </span>
-                  </div>
-                  <div className="sp-pool-row">
-                    <span className="sp-pool-row-label">Net deposited</span>
-                    <span className="sp-pool-row-value">
-                      {formatTrust(userPool.position.netDeposited)}
-                    </span>
-                  </div>
-                  <div className="sp-pool-row">
-                    <span className="sp-pool-row-label">P&amp;L</span>
-                    <span
-                      className={
-                        'sp-pool-row-value ' +
-                        (userPool.position.pnl >= 0n
-                          ? 'sp-pool-pos'
-                          : 'sp-pool-neg')
-                      }
-                    >
-                      {userPool.position.pnl >= 0n ? '+' : ''}
-                      {formatTrust(userPool.position.pnl)}
-                    </span>
-                  </div>
-                  <div className="sp-pool-row">
-                    <span className="sp-pool-row-label">P&amp;L %</span>
-                    <span
-                      className={
-                        'sp-pool-row-value ' +
-                        (userPool.position.pnlPercent >= 0
-                          ? 'sp-pool-pos'
-                          : 'sp-pool-neg')
-                      }
-                    >
-                      {userPool.position.pnlPercent >= 0 ? '+' : ''}
-                      {userPool.position.pnlPercent.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* Certifications module — the certs behind the selected segment
+              (or recent when nothing is selected), as feed cards. */}
+          <section className="sc2-certs">
+            <div className="sc2-certs-head">{certsTitle}</div>
+            {shownCerts.length > 0 ? (
+              <div className="masonry-grid">{shownCerts.map(renderCertCard)}</div>
+            ) : (
+              <div className="sc2-pool-empty">No certifications here yet.</div>
             )}
           </section>
-        </div>
-      )}
-
-      {activeTab === 'score' && (
-        <div className="pp-sections">
-          {topicScores.length > 0 && (
-            <section className="pp-section">
-              <SectionTitle>Topic</SectionTitle>
-              <p className="sp-explainer">
-                Your score in a topic ={' '}
-                <strong>your certifications</strong> (base) +{' '}
-                <strong>the credibility of users who backed your claims</strong>{' '}
-                after you (boost). Click a topic for the breakdown.
-              </p>
-              <div className="pf-trust-topics">
-                {topicScores.map((t) => {
-                  const pct = (t.score / maxTopicScore) * 100
-                  const open = openTopic === t.id
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      className={`pf-trust-topic${open ? ' is-open' : ''}`}
-                      style={{ ['--topic-color' as string]: t.color }}
-                      onClick={() => setOpenTopic(open ? null : t.id)}
-                      aria-expanded={open}
-                    >
-                      <div className="pf-trust-topic-head">
-                        <span className="pf-trust-topic-emoji">{t.emoji}</span>
-                        <span className="pf-trust-topic-label">{t.label}</span>
-                        <span className="pf-trust-topic-score">{t.score}</span>
-                      </div>
-                      <div className="pf-trust-topic-bar">
-                        <span style={{ width: `${pct}%` }} />
-                      </div>
-                      {open && (
-                        <div className="sp-topic-detail">
-                          <div className="sp-topic-detail-row">
-                            <span className="sp-topic-detail-k">
-                              Base · {t.certCount} cert
-                              {t.certCount === 1 ? '' : 's'} ×{' '}
-                              {POINTS_PER_CERT}
-                            </span>
-                            <span className="sp-topic-detail-v">{t.base}</span>
-                          </div>
-                          <div className="sp-topic-detail-row">
-                            <span className="sp-topic-detail-k">
-                              Boost · credibility of your backers
-                            </span>
-                            <span className="sp-topic-detail-v">
-                              +{t.boost}
-                            </span>
-                          </div>
-                          <div className="sp-topic-detail-row sp-topic-detail-total">
-                            <span className="sp-topic-detail-k">Total</span>
-                            <span className="sp-topic-detail-v">{t.score}</span>
-                          </div>
-                          {t.boost === 0 && (
-                            <p className="sp-topic-detail-hint">
-                              No credible backer has positioned after you on
-                              your {t.label} claims yet.
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-          )}
-
-          {verbCounts.length > 0 && (
-            <section className="pp-section">
-              <SectionTitle>Intention</SectionTitle>
-              <div className="pf-verb-grid">
-                {verbCounts.map((v) => (
-                  <div
-                    key={v.id}
-                    className="pf-trust-topic"
-                    style={{ ['--topic-color' as string]: v.color }}
-                  >
-                    <div className="pf-trust-topic-head">
-                      <span className="pf-trust-topic-emoji">{v.emoji}</span>
-                      <span className="pf-trust-topic-label">{v.label}</span>
-                      <span className="pf-trust-topic-score">{v.count}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section className="pp-section">
-            <SectionTitle>Badges earned on URLs</SectionTitle>
-            <div className="pf-badge-grid">
-              {perBadgeUrls.map(({ group, urls }) => {
-                const totalCount =
-                  perBadgeUrlsAll.find((e) => e.group.id === group.id)?.urls
-                    .length ?? 0
-                return (
-                  <div key={group.id} className="pf-badge-block">
-                    <div className="pf-badge-head">
-                      <img
-                        className="pf-badge-head-icon"
-                        src={group.icon}
-                        alt={group.label}
-                      />
-                      <div className="pf-badge-head-text">
-                        <span className="pf-badge-head-label">
-                          {group.label}
-                          {totalCount > 0 ? ` · ${totalCount}` : ''}
-                        </span>
-                        <span className="pf-badge-head-desc">
-                          {group.description}
-                        </span>
-                      </div>
-                    </div>
-                    {urls.length > 0 ? (
-                      <div className="pf-badge-urls">
-                        {urls.map((c) => {
-                          const domain = c.objectUrl
-                            ? extractDomain(c.objectUrl)
-                            : ''
-                          return (
-                            <a
-                              key={c.termId}
-                              className="pf-ts-url-item"
-                              href={c.objectUrl || '#'}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <FaviconWrapper
-                                size={22}
-                                src={domain ? getFaviconUrl(domain) : undefined}
-                                alt={domain}
-                                className="pf-ts-url-fav"
-                              />
-                              <div className="pf-ts-url-meta">
-                                <span className="pf-ts-url-title">
-                                  {c.objectLabel}
-                                </span>
-                                <span className="pf-ts-url-host">
-                                  {domain}
-                                  {c.stats.userPnlPct != null
-                                    ? ` · ${c.stats.userPnlPct >= 0 ? '+' : ''}${c.stats.userPnlPct}%`
-                                    : ''}
-                                </span>
-                              </div>
-                            </a>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <p className="pf-badge-empty">
-                        No claim in this tier yet.
-                      </p>
-                    )}
-                    {totalCount > urls.length && (
-                      <Link
-                        className="pf-badge-view-all"
-                        to={`/scores/badges/${
-                          group.id === 'pioneer'
-                            ? 'pioneer'
-                            : group.id === 'early'
-                              ? 'explorer'
-                              : 'contributor'
-                        }`}
-                      >
-                        View all {totalCount} →
-                      </Link>
-                    )}
-                  </div>
-                )
-              })}
+        </>
+      ) : (
+        <div className="sc2-pool">
+          {!authenticated ? (
+            <div className="sc2-pool-empty">
+              Connect your wallet to view your pool position.
             </div>
-          </section>
-
-          {engagement.length > 0 && (
-            <section className="pp-section">
-              <SectionTitle>Engagement on your URLs</SectionTitle>
-              <div className="pf-engage-list">
-                {engagement.map((c) => {
-                  const total = c.stats.supportCount + c.stats.opposeCount
-                  const supPct =
-                    total > 0
-                      ? Math.round((c.stats.supportCount / total) * 100)
-                      : 50
-                  const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
-                  return (
-                    <div key={c.termId} className="pf-engage-row">
-                      <FaviconWrapper
-                        size={24}
-                        src={domain ? getFaviconUrl(domain) : undefined}
-                        alt={domain}
-                        className="pf-engage-fav"
-                      />
-                      <div className="pf-engage-meta">
-                        <span className="pf-engage-title">{c.objectLabel}</span>
-                        <span className="pf-engage-sub">{domain}</span>
+          ) : (
+            <>
+              <div className="sc2-pool-grid">
+                <div className="sc2-pool-rank">
+                  <span className="sc2-pr-eyebrow">Beta Season Pool · your rank</span>
+                  {userPool ? (
+                    <>
+                      <div className="sc2-pr-rank">
+                        #{userPool.rank}
+                        <small> / {userPool.total.toLocaleString()}</small>
                       </div>
-                      <div className="pf-engage-bar">
-                        <span style={{ width: `${supPct}%` }} />
+                      <div className="sc2-pr-cap">
+                        Top{' '}
+                        {Math.max(1, Math.round((userPool.rank / userPool.total) * 100))}
+                        % of stakers this season.
                       </div>
-                      <div className="pf-engage-counts">
-                        <span className="pf-engage-sup">
-                          ▲ {c.stats.supportCount}
+                      <span
+                        className={`sc2-pr-pnl${userPool.position.pnlPercent < 0 ? ' neg' : ''}`}
+                      >
+                        {userPool.position.pnlPercent >= 0 ? '▲ +' : '▼ '}
+                        {userPool.position.pnlPercent.toFixed(1)}% return
+                      </span>
+                    </>
+                  ) : (
+                    <div className="sc2-pr-cap" style={{ marginTop: 16 }}>
+                      No position yet — stake into the Beta Season Pool to appear
+                      here.
+                    </div>
+                  )}
+                </div>
+                <div className="sc2-pool-side">
+                  {vaultStats && (
+                    <div className="sc2-pool-stats3">
+                      <div className="sc2-ps">
+                        <div className="sc2-ps-k">TVL</div>
+                        <div className="sc2-ps-v">
+                          {parseFloat(formatEther(vaultStats.tvl)).toFixed(0)}
+                          <small> T</small>
+                        </div>
+                      </div>
+                      <div className="sc2-ps">
+                        <div className="sc2-ps-k">Stakers</div>
+                        <div className="sc2-ps-v">
+                          {vaultStats.totalStakers.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="sc2-ps">
+                        <div className="sc2-ps-k">Share price</div>
+                        <div className="sc2-ps-v">
+                          {parseFloat(formatEther(vaultStats.sharePrice)).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {userPool && (
+                    <div className="sc2-pos-lines">
+                      <div className="sc2-pos-line">
+                        <span className="sc2-pos-line-k">Current value</span>
+                        <span className="sc2-pos-line-v">
+                          {formatTrust(userPool.position.currentValue)}
                         </span>
-                        <span className="pf-engage-opp">
-                          ▼ {c.stats.opposeCount}
+                      </div>
+                      <div className="sc2-pos-line">
+                        <span className="sc2-pos-line-k">Net deposited</span>
+                        <span className="sc2-pos-line-v">
+                          {formatTrust(userPool.position.netDeposited)}
+                        </span>
+                      </div>
+                      <div className="sc2-pos-line">
+                        <span className="sc2-pos-line-k">Unrealized PnL</span>
+                        <span
+                          className={`sc2-pos-line-v${userPool.position.pnl >= 0n ? ' up' : ' down'}`}
+                        >
+                          {userPool.position.pnl >= 0n ? '+' : ''}
+                          {formatTrust(userPool.position.pnl)}
                         </span>
                       </div>
                     </div>
-                  )
-                })}
+                  )}
+                </div>
               </div>
-            </section>
+            </>
           )}
         </div>
       )}
