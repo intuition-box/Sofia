@@ -9,11 +9,13 @@
  */
 import { useMemo } from 'react'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { useCart } from '@/hooks/useCart'
 import { contextCartId } from '@/services/contextCartService'
 import { UrlPreview } from '@/components/UrlPreview'
 import ContextPicker from '@/components/ContextPicker'
 import TopicBadge from './TopicBadge'
+import '@/components/styles/feed-card.css'
 
 interface UntaggedCertCardProps {
   certTermId: string
@@ -35,6 +37,8 @@ export default function UntaggedCertCard({
   intentionLabel,
 }: UntaggedCertCardProps) {
   const cart = useCart()
+  // Intent colour for the verb chip — same `.fc-verb` style as the feed cards.
+  const verbColor = INTENTION_COLORS[intentionLabel] ?? 'var(--ds-muted)'
 
   // Set of topic slugs queued for THIS cert. Recomputed from the cart
   // so external removals (cart drawer, batch submit) immediately
@@ -66,7 +70,8 @@ export default function UntaggedCertCard({
         className="ctx-card-thumb"
         alt={title || domain}
       />
-      <div className="ctx-card-head">
+      <div className="ctx-card-body">
+        <div className="ctx-card-head">
         {favicon ? (
           <img
             src={favicon}
@@ -82,10 +87,16 @@ export default function UntaggedCertCard({
         )}
         <div className="ctx-card-meta">
           <span className="ctx-card-title">{title || domain}</span>
-          <span className="ctx-card-sub">
-            {intentionLabel}
-            {domain ? ` · ${domain}` : ''}
-          </span>
+          <div className="ctx-card-sub-row">
+            <span
+              className="fc-verb"
+              style={{ ['--vc' as string]: verbColor }}
+            >
+              <i aria-hidden="true" />
+              {intentionLabel}
+            </span>
+            {domain && <span className="ctx-card-sub">{domain}</span>}
+          </div>
         </div>
       </div>
 
@@ -114,9 +125,9 @@ export default function UntaggedCertCard({
           ))}
         </div>
       )}
+      </div>
 
       <ContextPicker
-        variant="manager"
         certTermId={certTermId}
         certTitle={title || domain}
         certFavicon={favicon}

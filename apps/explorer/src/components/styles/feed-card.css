@@ -464,37 +464,6 @@
   gap: 8px;
   align-self: flex-start;
 }
-/* "+ Context" — inline affordance to tag the URL with a topic. Dashed so it
-   reads as an add action, not a populated chip. Sits inline at the end of the
-   topic/verb chip row (passed as the ChipOverflowRow `trailing` slot) and
-   wraps below only when the chips fill the line. */
-.fc-add-ctx {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 9px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--ds-muted);
-  background: transparent;
-  border: 1px dashed var(--ds-border);
-  border-radius: 9px;
-  cursor: pointer;
-  transition: all 0.13s ease;
-}
-.fc-add-ctx:hover {
-  color: var(--ds-ink);
-  border-color: var(--ds-muted-soft);
-  background: var(--ds-bg-subtle);
-}
-.fc-add-ctx svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-}
 .fc-vote {
   position: relative;
   display: inline-flex;

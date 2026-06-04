@@ -167,6 +167,21 @@
   border-color: color-mix(in srgb, var(--ds-accent) 40%, var(--ds-border));
 }
 
+/* URL info (head) on the left, queued topic pills on the right. */
+.ctx-card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ctx-card-body .ctx-card-head {
+  flex: 1;
+  min-width: 0;
+}
+.ctx-card-body .ctx-card-tags {
+  flex-shrink: 0;
+  justify-content: flex-end;
+  max-width: 55%;
+}
 .ctx-card-head {
   display: flex;
   align-items: flex-start;
@@ -201,6 +216,16 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+/* Verb chip (.fc-verb, feed style) + domain on one line under the title. */
+.ctx-card-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ctx-card-sub-row .fc-verb {
+  flex-shrink: 0;
 }
 .ctx-card-sub {
   font-family: 'JetBrains Mono', monospace;
@@ -394,6 +419,39 @@
   cursor: default;
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
+}
+
+/* ContextPicker trigger — the shared "+ Context" button used everywhere
+   (feed cards AND the Context Manager). Dashed pill; on feed cards it sits
+   inline at the end of the chip row and wraps only when the chips fill the
+   line. Lives here (not feed-card.css) because ContextPicker imports this
+   stylesheet, so the trigger is styled on every surface. */
+.cp-trigger {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ds-muted);
+  background: transparent;
+  border: 1px dashed var(--ds-border);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+.cp-trigger:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-muted-soft);
+  background: var(--ds-bg-subtle);
+}
+.cp-trigger svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 /* ── Sticky footer ────────────────────────────────────────────────── */

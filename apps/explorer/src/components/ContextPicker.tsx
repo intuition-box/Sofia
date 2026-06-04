@@ -35,9 +35,6 @@ export interface ContextPickerProps {
   certFavicon?: string
   /** Topic slugs already tagged on this cert — shown as done. */
   existingTopics?: string[]
-  /** Trigger chrome. 'feed' = compact dashed "+ Context"; 'manager' = the
-   *  Context Manager's "Add topics" pill. The popover body is identical. */
-  variant?: 'feed' | 'manager'
 }
 
 export default function ContextPicker({
@@ -45,7 +42,6 @@ export default function ContextPicker({
   certTitle,
   certFavicon,
   existingTopics = [],
-  variant = 'feed',
 }: ContextPickerProps) {
   const cart = useCart()
   const [open, setOpen] = useState(false)
@@ -95,13 +91,6 @@ export default function ContextPicker({
   // No cert triple to attach to — hide rather than render a dead button.
   if (!certTermId) return null
 
-  const isManager = variant === 'manager'
-  const triggerLabel = isManager
-    ? queued.size > 0
-      ? 'Edit topics'
-      : 'Add topics'
-    : 'Context'
-
   return (
     <Popover
       open={open}
@@ -113,12 +102,12 @@ export default function ContextPicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={isManager ? 'ctx-card-add' : 'fc-add-ctx'}
+          className="cp-trigger"
           aria-label="Add a topic context to this URL"
           onClick={stop}
         >
-          <Plus aria-hidden="true" className={isManager ? 'h-3.5 w-3.5' : ''} />
-          {triggerLabel}
+          <Plus aria-hidden="true" />
+          Context
         </button>
       </PopoverTrigger>
       <PopoverContent
