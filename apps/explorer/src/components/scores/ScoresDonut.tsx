@@ -168,7 +168,7 @@ export function ScoresDonut({
         <g pointerEvents="none">
           <text
             x={C}
-            y={focus ? C - 16 : C - 6}
+            y={270}
             textAnchor="middle"
             className="sc2-center-n"
             fontSize={focus ? 46 : 54}
@@ -178,7 +178,7 @@ export function ScoresDonut({
           </text>
           <text
             x={C}
-            y={focus ? C + 16 : C + 20}
+            y={290}
             textAnchor="middle"
             className="sc2-center-lab"
           >
