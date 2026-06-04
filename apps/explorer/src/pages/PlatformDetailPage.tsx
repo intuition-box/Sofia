@@ -10,8 +10,8 @@
  */
 
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Search, TrendingUp, X } from 'lucide-react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
@@ -27,6 +27,7 @@ import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
@@ -36,6 +37,10 @@ import type { PlatformVaultData } from '@/services/platformMarketService'
 import '@/components/styles/pages.css'
 import '@/components/styles/feed-card.css'
 import '@/components/styles/topic-search.css'
+// .pf-platform-toolbar / .pf-platform-search live here — without it the
+// toolbar isn't flex, so the search goes full-width and the Invest button
+// wraps below instead of sharing the row.
+import '@/components/styles/profile-sections.css'
 
 /** Domain → catalog slug, mirroring `utils/favicon.ts` so a `/profile/platform/youtube.com`
  *  URL resolves to the same `youtube` slug used in PLATFORM_ATOM_IDS. */
@@ -71,7 +76,6 @@ function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
 }
 
 export default function PlatformDetailPage() {
-  const navigate = useNavigate()
   const { domain: domainParam } = useParams<{ domain: string }>()
   const [searchParams] = useSearchParams()
   const decodedDomain = domainParam ? decodeURIComponent(domainParam) : ''
@@ -140,18 +144,15 @@ export default function PlatformDetailPage() {
   if (!decodedDomain) {
     return (
       <div className="pf-view page-enter">
-        <div className="pf-ts-back-row">
-          <button
-            type="button"
-            className="pf-btn"
-            onClick={() =>
-              navigate(viewedAddress ? `/profile/${viewedAddress}` : '/profile')
-            }
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to profile
-          </button>
-        </div>
+        <Breadcrumb
+          items={[
+            {
+              label: 'My profile',
+              to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
+            },
+            { label: 'Unknown platform' },
+          ]}
+        />
         <p className="text-sm text-muted-foreground">Unknown platform.</p>
       </div>
     )
@@ -159,16 +160,15 @@ export default function PlatformDetailPage() {
 
   return (
     <div className="pf-view page-enter">
-      <div className="pf-ts-back-row">
-        <button
-          type="button"
-          className="pf-btn"
-          onClick={() => navigate('/profile')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to profile
-        </button>
-      </div>
+      <Breadcrumb
+        items={[
+          {
+            label: 'My profile',
+            to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
+          },
+          { label: decodedDomain },
+        ]}
+      />
 
       <PageHero
         background={heroColor}
