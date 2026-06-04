@@ -1,103 +1,29 @@
 /**
- * Topic Config — On-chain topic atom IDs from Sofia Explorer
- * Maps topic slugs to their Intuition atom term_ids.
- * Source: sofia-explorer/src/config/atomIds.ts
+ * Topic Config — thin adapter over `@0xsofia/taxonomy`, the single source of
+ * truth shared with the explorer. The package owns the on-chain atom ids,
+ * canonical labels, colors (via `TOPIC_META`) and Material Symbols glyphs;
+ * this module only re-shapes them to the names the extension already imports,
+ * so the two apps can never drift.
+ *
+ * (Previously a hand-maintained copy of the explorer's atom/label/color/icon
+ * tables — verified identical before the swap: same 16 atom ids, labels,
+ * colors and glyphs.)
  */
+import { TOPIC_LABEL, TOPIC_META } from "@0xsofia/taxonomy"
 
-// 16 topic atoms
-export const TOPIC_ATOM_IDS: Record<string, string> = {
-  "tech-dev": "0x61524d6e0b5632736b5dc1cd5f77d3a87eb67f6f36824eaad3410feba9004c56",
-  "design-creative": "0x420ea4d0eba3364dbca6e84f6ed7f27c8fc4c197a0b4fcf8954e93a017a51f11",
-  "music-audio": "0x3416b9be13730261f12433b29adc7634e47e58c85814e418061a063d91ea645a",
-  "gaming": "0x9fbc9108b7d8127642cd5eccd1334b4258d9e4529e8ed788b618016487d65f96",
-  "web3-crypto": "0xb155d936c6cbe66b55f870d9bbf256509c5cf5289d8d8837232f65ad84a4451a",
-  "science": "0x323137957c96dd40718aa8592c1a2dd7964c0d5aa0c2ea39311d66524236fea9",
-  "sport-health": "0xedcba0b4443fd76ecacd5048533d60c987b973ed58a0d19d69d8dc2766a932c9",
-  "video-cinema": "0x56c5988f2489e6557a8abfa03e1a9bbe5aee7332587c15a6f4fe3ce51738938b",
-  "entrepreneurship": "0xcce17461209093770314177674fd5d63d876112a94295db79c82cb978280886d",
-  "performing-arts": "0xecfd93a579bf98bb1d9e7737b333805367bb2b66e434c03aa7ec3bb16be35dbe",
-  "nature-environment": "0x001a3f804ac76ccc90f80a96c5d60eb21b0fe9f6da424de427192e7ff29a58ff",
-  "food-lifestyle": "0x38173dfb0b4aef222fa0aa354d2437b35b703d766a2aa6ee374299b218807202",
-  "literature": "0x98e0dac5206f5e089f25057cb2feec9d35d89ba6e765f60db8e5e093ec8ff166",
-  "personal-dev": "0x36e25f1b36a2597e093feeb7b59357d06c318fc88c1452faffe9ef5ee6d001c1",
-  "ai": "0x1bdd032e96e2e32f00b0b371c5ecf47a8f22b765fce94ec96eb0d18ba6873dac",
-  "tooling": "0x20abbd15bf2a0e503b9ba2b941e15c3847e67ed6d99fc645523f27d2a84c5e4e",
-}
+export {
+  ATOM_ID_TO_TOPIC,
+  getTopicIcon,
+  TOPIC_ATOM_IDS,
+  TOPIC_ICON,
+  TOPIC_TERM_IDS
+} from "@0xsofia/taxonomy"
 
-// All topic term_ids as array (for GraphQL batch queries)
-export const TOPIC_TERM_IDS = Object.values(TOPIC_ATOM_IDS)
+// The extension uses the plural name; the package canonical is `TOPIC_LABEL`.
+export const TOPIC_LABELS: Record<string, string> = TOPIC_LABEL
 
-// Display labels
-export const TOPIC_LABELS: Record<string, string> = {
-  "tech-dev": "Tech",
-  "design-creative": "Design",
-  "music-audio": "Music",
-  "gaming": "Gaming",
-  "web3-crypto": "Web3",
-  "science": "Science",
-  "sport-health": "Sport",
-  "video-cinema": "Video",
-  "entrepreneurship": "Business",
-  "performing-arts": "Arts",
-  "nature-environment": "Nature",
-  "food-lifestyle": "Food",
-  "literature": "Literature",
-  "personal-dev": "Growth",
-  "ai": "AI",
-  "tooling": "Tooling",
-}
-
-// Topic colors — pulled 1:1 from sofia-explorer SOFIA_TOPICS taxonomy
-// (apps/explorer/src/config/taxonomy.ts). Pastel palette used for topic
-// pills, badges and hover states. Keep in sync with the explorer.
-export const TOPIC_COLORS: Record<string, string> = {
-  "tech-dev":           "#7bade0",
-  "design-creative":    "#d98cb3",
-  "music-audio":        "#e0896a",
-  "gaming":             "#a78bdb",
-  "web3-crypto":        "#6dd4a0",
-  "science":            "#5cc4d6",
-  "sport-health":       "#e4b95a",
-  "video-cinema":       "#ff9aa2",
-  "entrepreneurship":   "#ffc6b0",
-  "performing-arts":    "#c890d9",
-  "nature-environment": "#8ed1a8",
-  "food-lifestyle":     "#f2c36b",
-  "literature":         "#9fb6e2",
-  "personal-dev":       "#b5d68f",
-  "ai":                 "#a78bfa",
-  "tooling":            "#f59e0b",
-}
-
-// Reverse lookup: atom term_id → topic slug
-export const ATOM_ID_TO_TOPIC = new Map(
-  Object.entries(TOPIC_ATOM_IDS).map(([slug, id]) => [id, slug])
+// The package exposes color via `TOPIC_META`; flatten to the slug→hex map the
+// extension's pills, badges and hover states expect.
+export const TOPIC_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(TOPIC_META).map(([slug, meta]) => [slug, meta.color])
 )
-
-// Google Material Symbols (Outlined) glyph name per topic — ported 1:1
-// from sofia-explorer (src/config/topicEmoji.ts → TOPIC_ICON) so the
-// in-dot pictogram reads identically to the explorer's TopicBadge.
-export const TOPIC_ICON: Record<string, string> = {
-  "tech-dev": "terminal",
-  "design-creative": "palette",
-  "music-audio": "music_note",
-  "gaming": "sports_esports",
-  "web3-crypto": "currency_bitcoin",
-  "science": "science",
-  "sport-health": "fitness_center",
-  "video-cinema": "movie",
-  "entrepreneurship": "rocket_launch",
-  "performing-arts": "theater_comedy",
-  "nature-environment": "forest",
-  "food-lifestyle": "restaurant",
-  "literature": "menu_book",
-  "personal-dev": "psychology",
-  "ai": "smart_toy",
-  "tooling": "build"
-}
-
-const DEFAULT_TOPIC_ICON = "label"
-
-export function getTopicIcon(slug: string): string {
-  return TOPIC_ICON[slug] ?? DEFAULT_TOPIC_ICON
-}
