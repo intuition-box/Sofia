@@ -59,9 +59,7 @@ export interface CategoryPill {
 /** From a cert's `contextSlugs`, build display pills for the CATEGORY-level
  *  contexts only — each carrying its parent topic's color + glyph. Topic-level
  *  slugs are skipped (the card already shows the rolled-up topic pill). */
-export function categoryPills(
-  contextSlugs: readonly string[],
-): CategoryPill[] {
+export function categoryPills(contextSlugs: readonly string[]): CategoryPill[] {
   const out: CategoryPill[] = []
   for (const slug of contextSlugs) {
     const cat = CATEGORY_BY_ID.get(slug)

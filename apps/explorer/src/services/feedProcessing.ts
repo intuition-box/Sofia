@@ -174,7 +174,8 @@ async function fetchContextTriples(
 
       const existing = result.get(subjectId)
       if (existing) {
-        if (!existing.some((e) => e.termId === entry.termId)) existing.push(entry)
+        if (!existing.some((e) => e.termId === entry.termId))
+          existing.push(entry)
       } else {
         result.set(subjectId, [entry])
       }

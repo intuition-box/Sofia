@@ -19,7 +19,9 @@ import type { TopicChip } from '@/types/profileChips'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
 /** Topic-id → label + color resolver, sourced from `useTaxonomy`. */
-type TopicResolver = (id: string) => { label: string; color: string } | undefined
+type TopicResolver = (
+  id: string,
+) => { label: string; color: string } | undefined
 
 interface LastActivitySectionProps {
   /** Pre-built activity inputs — caller derives them from the master profile. */

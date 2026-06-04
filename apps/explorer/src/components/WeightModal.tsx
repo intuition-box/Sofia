@@ -47,7 +47,11 @@ const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
 function humanizeTxError(raw?: string): string {
   if (!raw) return 'Something went wrong. Please try again.'
   const msg = String(raw)
-  if (/user rejected|rejected the request|user denied|denied transaction/i.test(msg))
+  if (
+    /user rejected|rejected the request|user denied|denied transaction/i.test(
+      msg,
+    )
+  )
     return 'You rejected the transaction in your wallet.'
   if (/insufficient funds|exceeds balance|insufficient balance/i.test(msg))
     return 'Insufficient balance to cover this deposit.'
@@ -593,24 +597,27 @@ export default function WeightModal({
               {/* On-chain verification warning */}
               {missingTripleIds.length > 0 && (
                 <div className="wm-error-section" style={{ marginTop: 12 }}>
-              <span style={{ fontSize: 18 }}>⚠️</span>
-              <div>
-                <p
-                  className="text-sm font-semibold"
-                  style={{ margin: '0 0 4px' }}
-                >
-                  Triple verification failed
-                </p>
-                <p className="text-xs text-destructive" style={{ margin: 0 }}>
-                  {missingTripleIds.length} item
-                  {missingTripleIds.length > 1 ? 's' : ''} reference a triple
-                  that does not exist on-chain. Refusing to deposit — the cart
-                  data may be stale or the indexer may be out of sync. Remove
-                  affected items and retry.
-                </p>
-              </div>
-            </div>
-          )}
+                  <span style={{ fontSize: 18 }}>⚠️</span>
+                  <div>
+                    <p
+                      className="text-sm font-semibold"
+                      style={{ margin: '0 0 4px' }}
+                    >
+                      Triple verification failed
+                    </p>
+                    <p
+                      className="text-xs text-destructive"
+                      style={{ margin: 0 }}
+                    >
+                      {missingTripleIds.length} item
+                      {missingTripleIds.length > 1 ? 's' : ''} reference a
+                      triple that does not exist on-chain. Refusing to deposit —
+                      the cart data may be stale or the indexer may be out of
+                      sync. Remove affected items and retry.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Ledger — deposit + fees + total + balance + signing target */}
               <div className="b3-ledger">
@@ -752,11 +759,7 @@ export default function WeightModal({
                   balNum < breakdown.totalEstimate
                 }
               >
-                {processing
-                  ? 'Signing…'
-                  : verifying
-                    ? 'Verifying…'
-                    : 'Sign'}
+                {processing ? 'Signing…' : verifying ? 'Verifying…' : 'Sign'}
                 {!processing && !verifying && (
                   <span className="b3-btn-amt">
                     {formatTrust(breakdown.totalEstimate)} T

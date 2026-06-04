@@ -14,10 +14,7 @@
  *   - `fetchGroupTrustMap`  → community/topic-scoped credibility, anchored on
  *     a group of addresses (the DAO/circle lens) — no engine change needed.
  */
-import {
-  fetchCompositeScore,
-  fetchPersonalizedTrust,
-} from './mcpTrustService'
+import { fetchCompositeScore, fetchPersonalizedTrust } from './mcpTrustService'
 
 // The MCP graph syncs on a cron, so credibility changes slowly → long TTL.
 const TTL_MS = 30 * 60 * 1000

@@ -140,7 +140,10 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       }
       // Color from the DS intention palette (keyed by label); unknown
       // labels (e.g. "Certified") fall through to the neutral pill.
-      const verb: Verb = { label: verbLabel, color: INTENTION_COLORS[verbLabel] }
+      const verb: Verb = {
+        label: verbLabel,
+        color: INTENTION_COLORS[verbLabel],
+      }
       return {
         id: c.termId,
         title,
@@ -300,7 +303,10 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       <span className="pd-la-text">
                         <span className="pd-la-title">
                           {a.verb ? (
-                            <VerbPill label={a.verb.label} color={a.verb.color} />
+                            <VerbPill
+                              label={a.verb.label}
+                              color={a.verb.color}
+                            />
                           ) : null}
                           <strong>{a.title}</strong>
                         </span>

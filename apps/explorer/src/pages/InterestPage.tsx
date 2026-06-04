@@ -92,7 +92,10 @@ export default function InterestPage() {
   return (
     <div className="pf-view page-enter">
       <Breadcrumb
-        items={[{ label: 'My profile', to: '/profile' }, { label: topic.label }]}
+        items={[
+          { label: 'My profile', to: '/profile' },
+          { label: topic.label },
+        ]}
       />
 
       <InterestHero

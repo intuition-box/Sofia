@@ -657,7 +657,6 @@
   /* Bleed past the wrap's left padding so the meta lines align
      flush-left with the focus dropdown trigger (same -54px pull).
      Right padding stays at 0 so the trailing label sits flush. */
-
 }
 @media (max-width: 900px) {
   .pc-radar-meta {

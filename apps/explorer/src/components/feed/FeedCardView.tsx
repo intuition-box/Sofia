@@ -89,7 +89,11 @@ function ChipOverflowRow({
   return (
     <div className="fc-chips-wrap">
       {/* hidden mirror — all chips, measured for the first-line fit */}
-      <div className="fc-chips fc-chips--measure" ref={mirror} aria-hidden="true">
+      <div
+        className="fc-chips fc-chips--measure"
+        ref={mirror}
+        aria-hidden="true"
+      >
         {chips.map((c, i) => (
           <span key={i} data-chip="1" className="fc-chip-slot">
             {c.node}
@@ -313,7 +317,9 @@ export default function FeedCardView({
               type="button"
               className={`fc-vote up${userUp ? ' on' : ''}${canUp ? '' : ' is-disabled'}`}
               aria-label={
-                canUp ? `Support (${up})` : `Support off — ${voteDisabledReason}`
+                canUp
+                  ? `Support (${up})`
+                  : `Support off — ${voteDisabledReason}`
               }
               aria-pressed={userUp}
               aria-disabled={!canUp}
@@ -331,7 +337,9 @@ export default function FeedCardView({
               type="button"
               className={`fc-vote down${userDown ? ' on' : ''}${canDown ? '' : ' is-disabled'}`}
               aria-label={
-                canDown ? `Oppose (${down})` : `Oppose off — ${voteDisabledReason}`
+                canDown
+                  ? `Oppose (${down})`
+                  : `Oppose off — ${voteDisabledReason}`
               }
               aria-pressed={userDown}
               aria-disabled={!canDown}

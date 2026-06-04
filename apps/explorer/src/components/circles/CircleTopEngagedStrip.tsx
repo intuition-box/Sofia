@@ -60,7 +60,10 @@ export default function CircleTopEngagedStrip({
               />
               <p className="crd-te-title">{item.title || host}</p>
               <div className="crd-te-meta">
-                <span className="crd-te-count" title={`${supports} like${supports === 1 ? '' : 's'}`}>
+                <span
+                  className="crd-te-count"
+                  title={`${supports} like${supports === 1 ? '' : 's'}`}
+                >
                   <ThumbsUp aria-hidden="true" />
                   {supports}
                 </span>

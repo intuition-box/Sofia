@@ -73,7 +73,8 @@ export function computeBackersByTopic({
 
     const followers = list.filter(
       (s) =>
-        !accounts.has(s.account.toLowerCase()) && s.createdAt > cert.certifiedAt,
+        !accounts.has(s.account.toLowerCase()) &&
+        s.createdAt > cert.certifiedAt,
     )
     if (followers.length === 0) continue
 

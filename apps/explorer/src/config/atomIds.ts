@@ -34,8 +34,7 @@ export const TOPIC_ATOM_IDS: Record<string, string> = {
   // Reuses the existing "AI / Machine Learning" atom (also CATEGORY_ATOM_IDS['ai-ml']).
   ai: '0x1bdd032e96e2e32f00b0b371c5ecf47a8f22b765fce94ec96eb0d18ba6873dac',
   // Generic "tool" atom.
-  tooling:
-    '0x20abbd15bf2a0e503b9ba2b941e15c3847e67ed6d99fc645523f27d2a84c5e4e',
+  tooling: '0x20abbd15bf2a0e503b9ba2b941e15c3847e67ed6d99fc645523f27d2a84c5e4e',
 }
 
 // 161 category atoms

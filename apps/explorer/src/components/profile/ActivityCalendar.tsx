@@ -163,7 +163,8 @@ export default function ActivityCalendar({
                 // Only write shared focus when the dominant topic actually
                 // changes — avoids re-rendering the donut + grid on every
                 // cell the mouse sweeps across within the same topic.
-                if (totalDay > 0 && dominant.id !== focus) setFocus?.(dominant.id)
+                if (totalDay > 0 && dominant.id !== focus)
+                  setFocus?.(dominant.id)
               }
 
               return (
@@ -226,7 +227,6 @@ export default function ActivityCalendar({
             </div>,
             document.body,
           )}
-
       </div>
     </div>
   )

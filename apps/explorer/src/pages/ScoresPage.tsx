@@ -36,7 +36,12 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useSeasonPool } from '@/hooks/useSeasonPool'
 import { POINTS_PER_CERT } from '@/services/reputationScoreService'
-import { extractDomain, cleanLabel, timeAgo, formatTrust } from '@/utils/formatting'
+import {
+  extractDomain,
+  cleanLabel,
+  timeAgo,
+  formatTrust,
+} from '@/utils/formatting'
 import { avatarColor } from '@/utils/avatarColor'
 import type { TopicBacker } from '@/services/reputationBackersService'
 import FeedCardView, {
@@ -48,17 +53,61 @@ import { categoryPills } from '@/config/contextNodes'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
-const VERBS: { id: IntentionType; label: string; emoji: string; color: string }[] =
-  [
-    { id: 'trusted', label: INTENTION_CONFIG.trusted.label, emoji: '🛡️', color: 'var(--trusted)' },
-    { id: 'work', label: INTENTION_CONFIG.work.label, emoji: '💼', color: 'var(--work)' },
-    { id: 'learning', label: INTENTION_CONFIG.learning.label, emoji: '📚', color: 'var(--learning)' },
-    { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨', color: 'var(--inspiration)' },
-    { id: 'fun', label: INTENTION_CONFIG.fun.label, emoji: '🎲', color: 'var(--fun)' },
-    { id: 'buying', label: INTENTION_CONFIG.buying.label, emoji: '🛍️', color: 'var(--buying)' },
-    { id: 'music', label: INTENTION_CONFIG.music.label, emoji: '🎵', color: 'var(--music)' },
-    { id: 'distrusted', label: INTENTION_CONFIG.distrusted.label, emoji: '⚠️', color: 'var(--distrusted)' },
-  ]
+const VERBS: {
+  id: IntentionType
+  label: string
+  emoji: string
+  color: string
+}[] = [
+  {
+    id: 'trusted',
+    label: INTENTION_CONFIG.trusted.label,
+    emoji: '🛡️',
+    color: 'var(--trusted)',
+  },
+  {
+    id: 'work',
+    label: INTENTION_CONFIG.work.label,
+    emoji: '💼',
+    color: 'var(--work)',
+  },
+  {
+    id: 'learning',
+    label: INTENTION_CONFIG.learning.label,
+    emoji: '📚',
+    color: 'var(--learning)',
+  },
+  {
+    id: 'inspiration',
+    label: INTENTION_CONFIG.inspiration.label,
+    emoji: '✨',
+    color: 'var(--inspiration)',
+  },
+  {
+    id: 'fun',
+    label: INTENTION_CONFIG.fun.label,
+    emoji: '🎲',
+    color: 'var(--fun)',
+  },
+  {
+    id: 'buying',
+    label: INTENTION_CONFIG.buying.label,
+    emoji: '🛍️',
+    color: 'var(--buying)',
+  },
+  {
+    id: 'music',
+    label: INTENTION_CONFIG.music.label,
+    emoji: '🎵',
+    color: 'var(--music)',
+  },
+  {
+    id: 'distrusted',
+    label: INTENTION_CONFIG.distrusted.label,
+    emoji: '⚠️',
+    color: 'var(--distrusted)',
+  },
+]
 
 // ── Donut geometry ──
 const VB = 520
@@ -144,7 +193,13 @@ function Donut({
               width="180%"
               height="180%"
             >
-              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={s.color} floodOpacity="0.9" />
+              <feDropShadow
+                dx="0"
+                dy="0"
+                stdDeviation="5"
+                floodColor={s.color}
+                floodOpacity="0.9"
+              />
             </filter>
           ))}
         </defs>
@@ -177,7 +232,11 @@ function Donut({
                 <path
                   d={arcPath(split + 1.5, ro, s.a0, s.a1)}
                   fill={s.color}
-                  filter={isFocus || hover === s.slug ? `url(#glow-${s.slug})` : 'none'}
+                  filter={
+                    isFocus || hover === s.slug
+                      ? `url(#glow-${s.slug})`
+                      : 'none'
+                  }
                 />
               )}
               {(isFocus || hover === s.slug) && (
@@ -219,11 +278,21 @@ function Donut({
           >
             {fmt(centerScore)}
           </text>
-          <text x={C} y={focus ? C + 16 : C + 20} textAnchor="middle" className="sc2-center-lab">
+          <text
+            x={C}
+            y={focus ? C + 16 : C + 20}
+            textAnchor="middle"
+            className="sc2-center-lab"
+          >
             {centerLabel}
           </text>
           {focus && mode === 'topics' && (
-            <text x={C} y={C + 38} textAnchor="middle" className="sc2-center-sub">
+            <text
+              x={C}
+              y={C + 38}
+              textAnchor="middle"
+              className="sc2-center-sub"
+            >
               base {focus.base} · boost +{focus.boost}
             </text>
           )}
@@ -280,9 +349,14 @@ function Donut({
           return (
             <div
               className="sc2-ctip"
-              style={{ left: `${(tx / VB) * 100}%`, top: `${(ty / VB) * 100}%` }}
+              style={{
+                left: `${(tx / VB) * 100}%`,
+                top: `${(ty / VB) * 100}%`,
+              }}
             >
-              <div className="sc2-ctip-t">{hv.label} · {hv.score}</div>
+              <div className="sc2-ctip-t">
+                {hv.label} · {hv.score}
+              </div>
               <div className="sc2-ctip-s">
                 {mode === 'topics' && hv.boost > 0
                   ? `base ${hv.base} · boost +${hv.boost}`
@@ -304,7 +378,11 @@ export default function ScoresPage() {
 
   const { addresses: linkedAddresses } = useLinkedWallets()
   const profileAddresses =
-    linkedAddresses.length > 0 ? linkedAddresses : address ? [address] : undefined
+    linkedAddresses.length > 0
+      ? linkedAddresses
+      : address
+        ? [address]
+        : undefined
 
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
@@ -320,7 +398,9 @@ export default function ScoresPage() {
     signals,
     certCounts.byTopic,
   )
-  const { scoreByTopic: derivedRep } = useDerivedReputation(profileAddresses ?? [])
+  const { scoreByTopic: derivedRep } = useDerivedReputation(
+    profileAddresses ?? [],
+  )
   const { backers } = useReputationBackers(profileAddresses ?? [])
 
   // ── Topics (base + boost) ──
@@ -479,13 +559,15 @@ export default function ScoresPage() {
   const { getDisplay, getAvatar } = useEnsNames(allBackerAddrs)
   const handleOf = (a: string) => getDisplay(a as Address) || a
   const initialsOf = (s: string) =>
-    s.replace(/\.(eth|box)$/i, '').replace(/^0x/, '').slice(0, 2).toUpperCase()
+    s
+      .replace(/\.(eth|box)$/i, '')
+      .replace(/^0x/, '')
+      .slice(0, 2)
+      .toUpperCase()
 
   const selfDisplay = address ? getDisplay(address as Address) : ''
   const selfAvatar = address ? getAvatar(address as Address) : ''
-  const shortAddr = address
-    ? `${address.slice(0, 6)}…${address.slice(-4)}`
-    : ''
+  const shortAddr = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : ''
 
   // ── Season pool ──
   const { data: poolPositions, vaultStats } = useSeasonPool(
@@ -493,7 +575,9 @@ export default function ScoresPage() {
   )
   const userPool = useMemo(() => {
     if (!poolPositions || !address) return null
-    const sorted = [...poolPositions].sort((a, b) => b.pnlPercent - a.pnlPercent)
+    const sorted = [...poolPositions].sort(
+      (a, b) => b.pnlPercent - a.pnlPercent,
+    )
     const idx = sorted.findIndex(
       (p) => p.address.toLowerCase() === address.toLowerCase(),
     )
@@ -593,7 +677,10 @@ export default function ScoresPage() {
                   key={slug}
                   onClick={() => setSel(slug)}
                 >
-                  <span className="sc2-rank-dot" style={{ background: color }} />
+                  <span
+                    className="sc2-rank-dot"
+                    style={{ background: color }}
+                  />
                   {isTopic ? (
                     <span
                       className="material-symbols-outlined sc2-rank-glyph"
@@ -607,7 +694,9 @@ export default function ScoresPage() {
                     </span>
                   )}
                   <span className="sc2-rank-label">{label}</span>
-                  <span className={`sc2-rank-score${score === 0 ? ' zero' : ''}`}>
+                  <span
+                    className={`sc2-rank-score${score === 0 ? ' zero' : ''}`}
+                  >
                     {score}
                   </span>
                 </button>
@@ -623,13 +712,20 @@ export default function ScoresPage() {
       if (!t) return null
       const tBackers = backers.byTopic.get(sel) ?? []
       const tCats = (topicById(sel)?.categories ?? [])
-        .map((c) => ({ id: c.id, label: c.label, n: certCountByContext.get(c.id) ?? 0 }))
+        .map((c) => ({
+          id: c.id,
+          label: c.label,
+          n: certCountByContext.get(c.id) ?? 0,
+        }))
         .sort((a, b) => b.n - a.n)
       return (
         <div style={{ ['--tc' as string]: t.color }}>
           <div className="sc2-dt-head">
             <span className="sc2-dt-emoji">
-              <span className="material-symbols-outlined sc2-dt-glyph" aria-hidden="true">
+              <span
+                className="material-symbols-outlined sc2-dt-glyph"
+                aria-hidden="true"
+              >
                 {getTopicIcon(sel)}
               </span>
             </span>
@@ -669,9 +765,15 @@ export default function ScoresPage() {
                   {renderBackerAv(b)}
                   <span className="sc2-dt-backer-h">{handleOf(b.address)}</span>
                   <span className="sc2-dt-backer-bar">
-                    <i style={{ width: `${Math.min(100, b.credibility * 100)}%` }} />
+                    <i
+                      style={{
+                        width: `${Math.min(100, b.credibility * 100)}%`,
+                      }}
+                    />
                   </span>
-                  <span className="sc2-dt-backer-c">{b.credibility.toFixed(2)}</span>
+                  <span className="sc2-dt-backer-c">
+                    {b.credibility.toFixed(2)}
+                  </span>
                 </div>
               ))
             ) : (
@@ -683,9 +785,7 @@ export default function ScoresPage() {
           </div>
           {tCats.length > 0 && (
             <div className="sc2-dt-cats">
-              <div className="sc2-dt-cats-t">
-                Categories · {tCats.length}
-              </div>
+              <div className="sc2-dt-cats-t">Categories · {tCats.length}</div>
               <div className="sc2-dt-cats-list">
                 {tCats.map((c) => (
                   <span
@@ -699,7 +799,11 @@ export default function ScoresPage() {
               </div>
             </div>
           )}
-          <button type="button" className="sc2-dt-clear" onClick={() => setSel(null)}>
+          <button
+            type="button"
+            className="sc2-dt-clear"
+            onClick={() => setSel(null)}
+          >
             ← All topics
           </button>
         </div>
@@ -725,7 +829,11 @@ export default function ScoresPage() {
           URLs you certified with the{' '}
           <b style={{ color: v.color }}>{v.label.toLowerCase()}</b> intention.
         </p>
-        <button type="button" className="sc2-dt-clear" onClick={() => setSel(null)}>
+        <button
+          type="button"
+          className="sc2-dt-clear"
+          onClick={() => setSel(null)}
+        >
           ← All verbs
         </button>
       </div>
@@ -772,7 +880,9 @@ export default function ScoresPage() {
           <section className="sc2-certs">
             <div className="sc2-certs-head">{certsTitle}</div>
             {shownCerts.length > 0 ? (
-              <div className="masonry-grid">{shownCerts.map(renderCertCard)}</div>
+              <div className="masonry-grid">
+                {shownCerts.map(renderCertCard)}
+              </div>
             ) : (
               <div className="sc2-pool-empty">No certifications here yet.</div>
             )}
@@ -788,7 +898,9 @@ export default function ScoresPage() {
             <>
               <div className="sc2-pool-grid">
                 <div className="sc2-pool-rank">
-                  <span className="sc2-pr-eyebrow">Beta Season Pool · your rank</span>
+                  <span className="sc2-pr-eyebrow">
+                    Beta Season Pool · your rank
+                  </span>
                   {userPool ? (
                     <>
                       <div className="sc2-pr-rank">
@@ -797,7 +909,10 @@ export default function ScoresPage() {
                       </div>
                       <div className="sc2-pr-cap">
                         Top{' '}
-                        {Math.max(1, Math.round((userPool.rank / userPool.total) * 100))}
+                        {Math.max(
+                          1,
+                          Math.round((userPool.rank / userPool.total) * 100),
+                        )}
                         % of stakers this season.
                       </div>
                       <span
@@ -809,8 +924,8 @@ export default function ScoresPage() {
                     </>
                   ) : (
                     <div className="sc2-pr-cap" style={{ marginTop: 16 }}>
-                      No position yet — stake into the Beta Season Pool to appear
-                      here.
+                      No position yet — stake into the Beta Season Pool to
+                      appear here.
                     </div>
                   )}
                 </div>
@@ -833,7 +948,9 @@ export default function ScoresPage() {
                       <div className="sc2-ps">
                         <div className="sc2-ps-k">Share price</div>
                         <div className="sc2-ps-v">
-                          {parseFloat(formatEther(vaultStats.sharePrice)).toFixed(2)}
+                          {parseFloat(
+                            formatEther(vaultStats.sharePrice),
+                          ).toFixed(2)}
                         </div>
                       </div>
                     </div>

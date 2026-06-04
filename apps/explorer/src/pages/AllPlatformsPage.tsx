@@ -142,114 +142,113 @@ export default function AllPlatformsPage() {
         <div className="pm-empty">No platforms match your search.</div>
       ) : (
         <div className="pm-dex" role="table" aria-label="Platforms market">
-            <div className="pm-dex-head" role="row">
-              <span role="columnheader">#</span>
-              <span role="columnheader">Platform</span>
-              <span
-                role="columnheader"
-                className={`pm-dex-sortable${sortBy === 'mcap' ? ' sorted' : ''}`}
-                onClick={() => setSortBy('mcap')}
-              >
-                Market cap
-              </span>
-              <span
-                role="columnheader"
-                className={`pm-dex-sortable${sortBy === 'price' ? ' sorted' : ''}`}
-                onClick={() => setSortBy('price')}
-              >
-                Price
-              </span>
-              <span
-                role="columnheader"
-                className={`pm-dex-sortable${sortBy === 'holders' ? ' sorted' : ''}`}
-                onClick={() => setSortBy('holders')}
-              >
-                Holders
-              </span>
-              <span role="columnheader">P&amp;L</span>
-              <span role="columnheader" aria-label="Action" />
-            </div>
-
-            {rows.map((market, i) => {
-              const slug = ATOM_ID_TO_PLATFORM.get(market.termId) ?? ''
-              const entry = slug ? platformById(slug) : undefined
-              const topicColor = entry?.color ?? 'var(--ds-accent)'
-              const host = entry?.website
-                ? entry.website.replace(/^https?:\/\//, '').replace(/\/$/, '')
-                : slug
-              const pnl = market.userPnlPct
-              const pnlClass = pnl == null ? '' : pnl >= 0 ? 'up' : 'down'
-
-              return (
-                <div
-                  key={market.termId}
-                  className="pm-dex-row"
-                  role="row"
-                  onClick={() => setSelectedMarket(market)}
-                  style={{ ['--topic-color' as string]: topicColor }}
-                >
-                  <span className="pm-dex-rank" role="cell">
-                    {i + 1}
-                  </span>
-
-                  <span className="pm-dex-name" role="cell">
-                    <span className="pm-dex-favicon">
-                      {slug ? (
-                        <img
-                          src={`/favicons/${slug}.png`}
-                          alt=""
-                          onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display =
-                              'none')
-                          }
-                        />
-                      ) : null}
-                    </span>
-                    <span className="pm-dex-name-text">
-                      <span className="pm-dex-label">{market.label}</span>
-                      <span className="pm-dex-host">{host}</span>
-                    </span>
-                  </span>
-
-                  <span className="pm-dex-mcap" role="cell">
-                    <span className="pm-dex-num-big">
-                      {formatMCap(market.marketCap)}
-                    </span>
-                    <span className="pm-dex-num-unit">T</span>
-                  </span>
-
-                  <span className="pm-dex-price" role="cell">
-                    {formatShare(market.sharePrice)}
-                  </span>
-
-                  <span className="pm-dex-holders" role="cell">
-                    {market.positionCount}
-                  </span>
-
-                  <span className={`pm-dex-pnl ${pnlClass}`} role="cell">
-                    {pnl == null ? '—' : `${pnl >= 0 ? '+' : ''}${pnl}%`}
-                  </span>
-
-                  <span className="pm-dex-action" role="cell">
-                    <button
-                      type="button"
-                      className="pm-dex-invest"
-                      style={{ background: topicColor }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedMarket(market)
-                      }}
-                    >
-                      <TrendingUp className="h-3.5 w-3.5" />
-                      Invest
-                    </button>
-                  </span>
-                </div>
-              )
-            })}
+          <div className="pm-dex-head" role="row">
+            <span role="columnheader">#</span>
+            <span role="columnheader">Platform</span>
+            <span
+              role="columnheader"
+              className={`pm-dex-sortable${sortBy === 'mcap' ? ' sorted' : ''}`}
+              onClick={() => setSortBy('mcap')}
+            >
+              Market cap
+            </span>
+            <span
+              role="columnheader"
+              className={`pm-dex-sortable${sortBy === 'price' ? ' sorted' : ''}`}
+              onClick={() => setSortBy('price')}
+            >
+              Price
+            </span>
+            <span
+              role="columnheader"
+              className={`pm-dex-sortable${sortBy === 'holders' ? ' sorted' : ''}`}
+              onClick={() => setSortBy('holders')}
+            >
+              Holders
+            </span>
+            <span role="columnheader">P&amp;L</span>
+            <span role="columnheader" aria-label="Action" />
           </div>
-        )
-      }
+
+          {rows.map((market, i) => {
+            const slug = ATOM_ID_TO_PLATFORM.get(market.termId) ?? ''
+            const entry = slug ? platformById(slug) : undefined
+            const topicColor = entry?.color ?? 'var(--ds-accent)'
+            const host = entry?.website
+              ? entry.website.replace(/^https?:\/\//, '').replace(/\/$/, '')
+              : slug
+            const pnl = market.userPnlPct
+            const pnlClass = pnl == null ? '' : pnl >= 0 ? 'up' : 'down'
+
+            return (
+              <div
+                key={market.termId}
+                className="pm-dex-row"
+                role="row"
+                onClick={() => setSelectedMarket(market)}
+                style={{ ['--topic-color' as string]: topicColor }}
+              >
+                <span className="pm-dex-rank" role="cell">
+                  {i + 1}
+                </span>
+
+                <span className="pm-dex-name" role="cell">
+                  <span className="pm-dex-favicon">
+                    {slug ? (
+                      <img
+                        src={`/favicons/${slug}.png`}
+                        alt=""
+                        onError={(e) =>
+                          ((e.target as HTMLImageElement).style.display =
+                            'none')
+                        }
+                      />
+                    ) : null}
+                  </span>
+                  <span className="pm-dex-name-text">
+                    <span className="pm-dex-label">{market.label}</span>
+                    <span className="pm-dex-host">{host}</span>
+                  </span>
+                </span>
+
+                <span className="pm-dex-mcap" role="cell">
+                  <span className="pm-dex-num-big">
+                    {formatMCap(market.marketCap)}
+                  </span>
+                  <span className="pm-dex-num-unit">T</span>
+                </span>
+
+                <span className="pm-dex-price" role="cell">
+                  {formatShare(market.sharePrice)}
+                </span>
+
+                <span className="pm-dex-holders" role="cell">
+                  {market.positionCount}
+                </span>
+
+                <span className={`pm-dex-pnl ${pnlClass}`} role="cell">
+                  {pnl == null ? '—' : `${pnl >= 0 ? '+' : ''}${pnl}%`}
+                </span>
+
+                <span className="pm-dex-action" role="cell">
+                  <button
+                    type="button"
+                    className="pm-dex-invest"
+                    style={{ background: topicColor }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedMarket(market)
+                    }}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    Invest
+                  </button>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {selectedMarket && (
         <AtomDetailDialog

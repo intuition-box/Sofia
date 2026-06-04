@@ -87,9 +87,7 @@ export default function FeedCard({
       userDown={userOpposed}
       canUp={canSupport}
       canDown={canOppose}
-      onVote={
-        onDeposit ? (side) => onDeposit(side, item) : undefined
-      }
+      onVote={onDeposit ? (side) => onDeposit(side, item) : undefined}
       onOpen={() => {
         if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer')
       }}

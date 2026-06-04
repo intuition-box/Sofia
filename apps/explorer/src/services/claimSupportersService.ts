@@ -54,7 +54,8 @@ export async function fetchClaimSupporters(
   if (ids.length === 0) return out
 
   const chunks: string[][] = []
-  for (let i = 0; i < ids.length; i += BATCH) chunks.push(ids.slice(i, i + BATCH))
+  for (let i = 0; i < ids.length; i += BATCH)
+    chunks.push(ids.slice(i, i + BATCH))
 
   const results = await Promise.all(
     chunks.map((chunk) =>

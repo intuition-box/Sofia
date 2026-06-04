@@ -47,7 +47,10 @@ const cert = (
 describe('computeDerivedReputation', () => {
   it('a Pioneer earns from every later follower, weighted by credibility', () => {
     const supportersByClaim = new Map([
-      ['c1', claim([staker(ALICE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')])],
+      [
+        'c1',
+        claim([staker(ALICE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')]),
+      ],
     ])
     const out = computeDerivedReputation({
       accounts: accounts(ALICE),
@@ -60,7 +63,10 @@ describe('computeDerivedReputation', () => {
 
   it('a middle staker earns only from those who came after them', () => {
     const supportersByClaim = new Map([
-      ['c1', claim([staker(ALICE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')])],
+      [
+        'c1',
+        claim([staker(ALICE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')]),
+      ],
     ])
     const out = computeDerivedReputation({
       accounts: accounts(BOB),
@@ -87,7 +93,10 @@ describe('computeDerivedReputation', () => {
   it("excludes the user's own wallets from followers (multi-wallet)", () => {
     // ALICE + DAVE are the same user; DAVE staked after but must NOT count.
     const supportersByClaim = new Map([
-      ['c1', claim([staker(ALICE, 't1'), staker(DAVE, 't2'), staker(BOB, 't3')])],
+      [
+        'c1',
+        claim([staker(ALICE, 't1'), staker(DAVE, 't2'), staker(BOB, 't3')]),
+      ],
     ])
     const out = computeDerivedReputation({
       accounts: accounts(ALICE, DAVE),
@@ -100,7 +109,10 @@ describe('computeDerivedReputation', () => {
 
   it('Sybil / unknown credibility contributes 0 (anti-farm)', () => {
     const supportersByClaim = new Map([
-      ['c1', claim([staker(ALICE, 't1'), staker(SYBIL, 't2'), staker(BOB, 't3')])],
+      [
+        'c1',
+        claim([staker(ALICE, 't1'), staker(SYBIL, 't2'), staker(BOB, 't3')]),
+      ],
     ])
     const out = computeDerivedReputation({
       accounts: accounts(ALICE),
@@ -130,10 +142,7 @@ describe('computeDerivedReputation', () => {
     const supportersByClaim = new Map([
       [
         'c1',
-        claim(
-          [staker(ALICE, 't1')],
-          [staker(ALICE, 't1'), staker(BOB, 't2')],
-        ),
+        claim([staker(ALICE, 't1')], [staker(ALICE, 't1'), staker(BOB, 't2')]),
       ],
     ])
     const out = computeDerivedReputation({
@@ -175,7 +184,10 @@ describe('collectFollowerAddresses', () => {
 
   it('omits the user and pre-user stakers', () => {
     const supportersByClaim = new Map([
-      ['c1', claim([staker(DAVE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')])],
+      [
+        'c1',
+        claim([staker(DAVE, 't1'), staker(BOB, 't2'), staker(CAROL, 't3')]),
+      ],
     ])
     // user = BOB at t2 → only CAROL (t3) is a follower; DAVE (t1) is before.
     const addrs = collectFollowerAddresses({

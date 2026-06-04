@@ -177,7 +177,9 @@ export default function DashboardPage() {
   const filteredItems = useMemo(() => {
     if (drill?.kind !== 'topic' || verbFilter === 'all') return drillFiltered
     return drillFiltered.filter((item) =>
-      item.intentions.some((l) => displayLabelToIntentionType(l) === verbFilter),
+      item.intentions.some(
+        (l) => displayLabelToIntentionType(l) === verbFilter,
+      ),
     )
   }, [drillFiltered, drill, verbFilter])
 
@@ -315,7 +317,8 @@ export default function DashboardPage() {
                 uses it to re-drill to another verb (All → back to tiles). */}
             <div className="dp-filter-row">
               <span className="dp-url-count">
-                {filteredItems.length} url{filteredItems.length === 1 ? '' : 's'}
+                {filteredItems.length} url
+                {filteredItems.length === 1 ? '' : 's'}
               </span>
               <CircleVerbFilter
                 active={

@@ -655,7 +655,8 @@
   padding: 4px 9px;
   border-radius: 7px;
   background: color-mix(in srgb, var(--vc, var(--ds-muted)) 13%, transparent);
-  border: 1px solid color-mix(in srgb, var(--vc, var(--ds-muted)) 34%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--vc, var(--ds-muted)) 34%, transparent);
 }
 .fc-verb i {
   width: 6px;

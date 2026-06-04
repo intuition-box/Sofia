@@ -203,39 +203,39 @@ export default function ContextPicker({
                     {[...topic.categories]
                       .sort((a, b) => a.label.localeCompare(b.label))
                       .map((cat) => {
-                      const cs = renderState(cat.id)
-                      return (
-                        <div
-                          key={cat.id}
-                          className={`ctx-pick-row ctx-pick-row--cat${cs.isSel ? ' ctx-pick-row--active' : ''}${cs.isDone ? ' ctx-pick-row--done' : ''}`}
-                          style={accent}
-                        >
-                          <button
-                            type="button"
-                            role="checkbox"
-                            aria-checked={cs.isSel || cs.isDone}
-                            disabled={cs.isDone}
-                            className="ctx-check"
-                            onClick={() => toggle(cat.id)}
-                            aria-label={`Tag with ${cat.label}`}
+                        const cs = renderState(cat.id)
+                        return (
+                          <div
+                            key={cat.id}
+                            className={`ctx-pick-row ctx-pick-row--cat${cs.isSel ? ' ctx-pick-row--active' : ''}${cs.isDone ? ' ctx-pick-row--done' : ''}`}
+                            style={accent}
                           >
-                            {(cs.isSel || cs.isDone) && (
-                              <Check className="h-3 w-3" aria-hidden="true" />
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            className="ctx-pick-main"
-                            disabled={cs.isDone}
-                            onClick={() => toggle(cat.id)}
-                          >
-                            <span className="ctx-pick-cat-label">
-                              {cat.label}
-                            </span>
-                          </button>
-                        </div>
-                      )
-                    })}
+                            <button
+                              type="button"
+                              role="checkbox"
+                              aria-checked={cs.isSel || cs.isDone}
+                              disabled={cs.isDone}
+                              className="ctx-check"
+                              onClick={() => toggle(cat.id)}
+                              aria-label={`Tag with ${cat.label}`}
+                            >
+                              {(cs.isSel || cs.isDone) && (
+                                <Check className="h-3 w-3" aria-hidden="true" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="ctx-pick-main"
+                              disabled={cs.isDone}
+                              onClick={() => toggle(cat.id)}
+                            >
+                              <span className="ctx-pick-cat-label">
+                                {cat.label}
+                              </span>
+                            </button>
+                          </div>
+                        )
+                      })}
                   </div>
                 )}
               </div>

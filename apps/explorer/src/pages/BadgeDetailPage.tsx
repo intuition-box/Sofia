@@ -216,7 +216,9 @@ export default function BadgeDetailPage() {
                             />
                           )
                         })}
-                        {cfg && <VerbPill label={cfg.label} color={cfg.color} />}
+                        {cfg && (
+                          <VerbPill label={cfg.label} color={cfg.color} />
+                        )}
                         <span className="fc-tag">
                           {cert.certifierCount} holder
                           {cert.certifierCount === 1 ? '' : 's'}
