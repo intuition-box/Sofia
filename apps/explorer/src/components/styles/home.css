@@ -263,6 +263,12 @@
   font-size: 11px;
   letter-spacing: 0.04em;
 }
+/* When the breadcrumb sits above the PageHero banner, the outer page wrapper
+   has no padding — supply the edge breathing room here instead. */
+.dp-crumbs--top {
+  margin: 0;
+  padding: 16px 24px 12px;
+}
 .dp-crumb {
   text-transform: uppercase;
 }

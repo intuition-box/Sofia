@@ -213,6 +213,24 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Breadcrumb — sits above the banner (matching the rest of the app).
+        The drill is a URL param, so the Explore crumb and the browser Back
+        button both return to the Explore tiles. */}
+      {drill && (
+        <nav className="dp-crumbs dp-crumbs--top" aria-label="Breadcrumb">
+          <button
+            type="button"
+            className="dp-crumb dp-crumb--link"
+            onClick={() => setDrill(null)}
+          >
+            Explore
+          </button>
+          <span className="dp-crumb-sep" aria-hidden="true">
+            /
+          </span>
+          <span className="dp-crumb dp-crumb--current">{drillLabel}</span>
+        </nav>
+      )}
       <PageHero
         background={drill ? (drillColor ?? pc.color) : pc.color}
         title={drill ? drillLabel : pc.title}
@@ -258,25 +276,6 @@ export default function DashboardPage() {
               query={tileQuery}
             />
           </>
-        )}
-
-        {/* Breadcrumb — the drill title now lives in the PageHero, so this is
-          just the trail back to the tiles. The drill is a URL param, so this
-          and the browser Back button both return to the Explore tiles. */}
-        {drill && (
-          <nav className="dp-crumbs" aria-label="Breadcrumb">
-            <button
-              type="button"
-              className="dp-crumb dp-crumb--link"
-              onClick={() => setDrill(null)}
-            >
-              Explore
-            </button>
-            <span className="dp-crumb-sep" aria-hidden="true">
-              /
-            </span>
-            <span className="dp-crumb dp-crumb--current">{drillLabel}</span>
-          </nav>
         )}
 
         {/* Feed — drill view only. The tiles masonry replaces the feed

@@ -8,6 +8,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .bc-item {
   display: inline-flex;
