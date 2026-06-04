@@ -204,7 +204,10 @@ class CartServiceClass {
 
     const { label: normalizedLabel } = normalizeUrl(url)
     const wallet = walletAddress.toLowerCase()
-    const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}`
+    // Include the vault id so multiple "in context of" votes on the same
+    // URL+predicate (one per context triple, explorer-style fan-out) coexist
+    // as distinct cart items instead of colliding on a URL+predicate key.
+    const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}:${tripleTermId}`
 
     // Check for duplicate
     if (this.state.items.some(item => item.id === id)) {

@@ -2514,34 +2514,34 @@
    VerbPill — outlined (intent-color text + border, transparent fill) rather
    than the filled feed-card VerbTag. `currentColor` ties the border to the
    per-intent text color so each intent needs only a single color rule. */
-.amp .fc-verb-tag {
+.amp .b3-row-tags .fc-verb-tag {
   background: transparent;
   border: 1px solid currentColor;
   padding: 4px 10px;
   color: var(--ds-accent);
 }
-.amp .fc-verb-tag.trusted {
+.amp .b3-row-tags .fc-verb-tag.trusted {
   color: var(--trusted);
 }
-.amp .fc-verb-tag.distrusted {
+.amp .b3-row-tags .fc-verb-tag.distrusted {
   color: var(--distrusted);
 }
-.amp .fc-verb-tag.work {
+.amp .b3-row-tags .fc-verb-tag.work {
   color: var(--work);
 }
-.amp .fc-verb-tag.learning {
+.amp .b3-row-tags .fc-verb-tag.learning {
   color: var(--learning);
 }
-.amp .fc-verb-tag.fun {
+.amp .b3-row-tags .fc-verb-tag.fun {
   color: var(--fun);
 }
-.amp .fc-verb-tag.inspiration {
+.amp .b3-row-tags .fc-verb-tag.inspiration {
   color: var(--inspiration);
 }
-.amp .fc-verb-tag.buying {
+.amp .b3-row-tags .fc-verb-tag.buying {
   color: var(--buying);
 }
-.amp .fc-verb-tag.music {
+.amp .b3-row-tags .fc-verb-tag.music {
   color: var(--music);
 }
 

@@ -13,11 +13,30 @@
   max-height: 420px;
   overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: var(--ds-border, #2a2a35) transparent;
   padding: 10px;
   border-radius: 12px;
   background: var(--ds-card, #16161d);
   border: 1px solid var(--ds-border, #2a2a35);
   box-shadow: 0 18px 48px -12px rgba(0, 0, 0, 0.6);
+}
+/* Re-enable + style the scrollbar: the global `*::-webkit-scrollbar
+   { display: none }` hides every scrollbar, so a long topic list scrolls
+   with no visible track. `display: block` (more specific than `*`) brings
+   it back, styled to match the FollowTab search dropdown. */
+.ext-ctx-pop::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+.ext-ctx-pop::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ext-ctx-pop::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 3px;
+}
+.ext-ctx-pop::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-ink-soft);
 }
 .ext-ctx-hint {
   margin: 0 2px 8px;
