@@ -1,0 +1,192 @@
+/* InterestContextSelector — popover + two-step checkbox drill-down, ported
+   from the explorer's ContextPicker. Selection is driven only by the left
+   checkbox (topic or category). */
+
+.ext-ctx {
+  display: inline-flex;
+}
+
+/* Dashed "Add context" trigger. */
+.ext-ctx-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--ds-border, #2a2a35);
+  background: transparent;
+  color: var(--ds-ink-soft, #b8b8c4);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+.ext-ctx-trigger:hover:not(:disabled) {
+  border-color: var(--ds-accent, #8b7bf5);
+  color: var(--ds-ink, #f0f0f4);
+}
+.ext-ctx-trigger.has-value {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--ds-accent, #8b7bf5) 45%, transparent);
+  color: var(--ds-ink, #f0f0f4);
+}
+.ext-ctx-trigger:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Portal panel. */
+.ext-ctx-pop {
+  position: fixed;
+  z-index: 10000;
+  width: 300px;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--ds-card, #16161d);
+  border: 1px solid var(--ds-border, #2a2a35);
+  box-shadow: 0 18px 48px -12px rgba(0, 0, 0, 0.6);
+}
+.ext-ctx-hint {
+  margin: 0 2px 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ds-muted, #888);
+}
+.ext-ctx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ext-ctx-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A row = left checkbox + clickable body (drills / toggles). */
+.ext-ctx-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.ext-ctx-row:hover {
+  background: var(--ds-bg-subtle, #1d1d26);
+}
+.ext-ctx-row.is-active {
+  background: color-mix(
+    in srgb,
+    var(--ext-ctx-color, var(--ds-accent, #8b7bf5)) 14%,
+    var(--ds-bg-subtle, #1d1d26)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--ext-ctx-color, var(--ds-accent, #8b7bf5)) 35%,
+    var(--ds-border, #2a2a35)
+  );
+}
+.ext-ctx-row.is-done {
+  opacity: 0.5;
+}
+
+/* Left checkbox — the only selection affordance. */
+.ext-ctx-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1.5px solid var(--ds-border, #2a2a35);
+  background: var(--ds-card, #16161d);
+  color: #02000e;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ext-ctx-check:not(:disabled):hover {
+  border-color: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+}
+.ext-ctx-row.is-active .ext-ctx-check,
+.ext-ctx-row.is-done .ext-ctx-check {
+  background: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+  border-color: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+}
+.ext-ctx-check:disabled {
+  cursor: default;
+}
+
+/* Row body. */
+.ext-ctx-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink-soft, #b8b8c4);
+  text-align: left;
+}
+.ext-ctx-row:hover .ext-ctx-main,
+.ext-ctx-row.is-active .ext-ctx-main {
+  color: var(--ds-ink, #f0f0f4);
+}
+.ext-ctx-main:disabled {
+  cursor: default;
+}
+.ext-ctx-glyph {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #02000e;
+  font-size: 14px;
+}
+.ext-ctx-label {
+  flex: 1;
+  min-width: 0;
+}
+.ext-ctx-chev {
+  flex-shrink: 0;
+  color: var(--ds-muted, #888);
+  transition: transform 0.15s ease;
+}
+.ext-ctx-chev.is-open {
+  transform: rotate(90deg);
+}
+
+/* Nested categories. */
+.ext-ctx-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 24px;
+  padding-left: 8px;
+  border-left: 1px solid var(--ds-border, #2a2a35);
+}
+.ext-ctx-row--cat .ext-ctx-main {
+  padding: 6px 0;
+  font-size: 12px;
+}
+.ext-ctx-cat-label {
+  flex: 1;
+  min-width: 0;
+}

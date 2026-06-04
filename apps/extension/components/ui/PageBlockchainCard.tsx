@@ -122,7 +122,7 @@ const PageBlockchainCard = () => {
   // Context picker is always rendered: it draws from the 14 topics in
   // topicConfig, not the user's staked positions. Topic positions are
   // no longer needed here.
-  const [selectedContext, setSelectedContext] = useState<string | null>(null)
+  const [selectedContexts, setSelectedContexts] = useState<string[]>([])
   // Single active intention picked in the dropdown (null = placeholder).
   // Drives what's queued in the cart; switching/clearing toggles the cart.
   const [selectedIntention, setSelectedIntention] =
@@ -179,13 +179,13 @@ const PageBlockchainCard = () => {
         predicateName,
         intention,
         favicon,
-        selectedContext
+        selectedContexts
       )
       if (added) {
         setIsBursting(true)
       }
     },
-    [currentUrl, pageTitle, cart, selectedContext]
+    [currentUrl, pageTitle, cart, selectedContexts]
   )
 
   const handleAddTrustToCart = useCallback(
@@ -206,13 +206,13 @@ const PageBlockchainCard = () => {
         predicate,
         null,
         favicon,
-        selectedContext
+        selectedContexts
       )
       if (added) {
         setIsBursting(true)
       }
     },
-    [currentUrl, pageTitle, cart, selectedContext]
+    [currentUrl, pageTitle, cart, selectedContexts]
   )
 
   // Toggle the cart item for an intention type (trust verb or purpose).
@@ -329,48 +329,48 @@ const PageBlockchainCard = () => {
                   disabled={modal.intentionState.loading}
                 />
                 <InterestContextSelector
-                  selectedContext={selectedContext}
-                  onSelectContext={(slug) => {
-                      setSelectedContext(slug)
-                      if (!currentUrl) return
-                      cart.updateContextForUrl(currentUrl, slug)
-                      // Auto-queue deposit + context for already-certified
-                      // intentions / trust (slug captured explicitly so we
-                      // don't race the setSelectedContext closure).
-                      if (!slug) return
-                      const favicon = getFaviconUrl(currentUrl, 128)
-                      for (const intention of certifiedIntentions) {
-                        if (cartIntentionsForPage.includes(intention)) continue
-                        cart.addToCart(
-                          currentUrl,
-                          pageTitle,
-                          INTENTION_PREDICATES[intention],
-                          intention,
-                          favicon,
-                          slug
-                        )
-                      }
-                      if (alreadyTrusted && !trustInCart) {
-                        cart.addToCart(
-                          currentUrl,
-                          pageTitle,
-                          "trusts",
-                          null,
-                          favicon,
-                          slug
-                        )
-                      }
-                      if (alreadyDistrusted && !distrustInCart) {
-                        cart.addToCart(
-                          currentUrl,
-                          pageTitle,
-                          "distrust",
-                          null,
-                          favicon,
-                          slug
-                        )
-                      }
-                    }}
+                  selectedContexts={selectedContexts}
+                  onChange={(slugs) => {
+                    setSelectedContexts(slugs)
+                    if (!currentUrl) return
+                    cart.updateContextForUrl(currentUrl, slugs)
+                    // Auto-queue deposit + context for already-certified
+                    // intentions / trust (slugs captured explicitly so we
+                    // don't race the setSelectedContexts closure).
+                    if (slugs.length === 0) return
+                    const favicon = getFaviconUrl(currentUrl, 128)
+                    for (const intention of certifiedIntentions) {
+                      if (cartIntentionsForPage.includes(intention)) continue
+                      cart.addToCart(
+                        currentUrl,
+                        pageTitle,
+                        INTENTION_PREDICATES[intention],
+                        intention,
+                        favicon,
+                        slugs
+                      )
+                    }
+                    if (alreadyTrusted && !trustInCart) {
+                      cart.addToCart(
+                        currentUrl,
+                        pageTitle,
+                        "trusts",
+                        null,
+                        favicon,
+                        slugs
+                      )
+                    }
+                    if (alreadyDistrusted && !distrustInCart) {
+                      cart.addToCart(
+                        currentUrl,
+                        pageTitle,
+                        "distrust",
+                        null,
+                        favicon,
+                        slugs
+                      )
+                    }
+                  }}
                   disabled={modal.intentionState.loading}
                   certifiedContexts={certifiedContexts}
                 />
@@ -428,7 +428,11 @@ const PageBlockchainCard = () => {
                       const contexts = Array.from(
                         new Set(
                           cartItemsForPage
-                            .map((i) => i.interestContext)
+                            .flatMap(
+                              (i) =>
+                                i.interestContexts ??
+                                (i.interestContext ? [i.interestContext] : [])
+                            )
                             .filter((c): c is string => !!c && !!contextLabel(c))
                         )
                       ).map((slug) => ({

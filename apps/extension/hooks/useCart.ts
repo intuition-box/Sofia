@@ -25,7 +25,7 @@ export const useCart = () => {
       predicateName: string,
       intention: IntentionPurpose | null,
       faviconUrl: string | null,
-      interestContext?: string | null
+      interestContexts?: string[]
     ) => {
       if (!walletAddress) return Promise.resolve(false)
       return cartService.addItem(
@@ -35,7 +35,7 @@ export const useCart = () => {
         predicateName,
         intention,
         faviconUrl,
-        interestContext
+        interestContexts
       )
     },
     [walletAddress]
@@ -47,9 +47,13 @@ export const useCart = () => {
   )
 
   const updateContextForUrl = useCallback(
-    (url: string, interestContext: string | null) => {
+    (url: string, interestContexts: string[]) => {
       if (!walletAddress) return Promise.resolve()
-      return cartService.updateContextForUrl(walletAddress, url, interestContext)
+      return cartService.updateContextForUrl(
+        walletAddress,
+        url,
+        interestContexts
+      )
     },
     [walletAddress]
   )

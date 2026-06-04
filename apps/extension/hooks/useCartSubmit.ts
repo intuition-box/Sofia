@@ -134,30 +134,42 @@ export const useCartSubmit = () => {
         // 3. Process interest context triples (TX2 — nested triples)
         if (batchResult?.success) {
           const contextItems = certItems
-            .filter((item) => item.interestContext)
-            .map((item) => {
+            .flatMap((item) => {
+              // All chosen contexts for this cert (topics and/or categories);
+              // fall back to the legacy single field.
+              const slugs =
+                item.interestContexts && item.interestContexts.length
+                  ? item.interestContexts
+                  : item.interestContext
+                    ? [item.interestContext]
+                    : []
+              if (slugs.length === 0) return []
               // Look up the triple vault by stable input key. Indexing into
               // `batchResult.results` positionally is wrong: the service
               // reorders entries (created first, then deposits) after dedup.
               const inputKey = `${item.predicateName}|${item.url}`
               const tripleVaultId = batchResult.vaultIdByInputKey?.[inputKey]
-              // The context slug is a topic OR a category — resolve either to
-              // its on-chain atom so a category tag mints a real context.
-              const topicTermId = contextAtomIdForSlug(item.interestContext!)
               if (!tripleVaultId) {
-                logger.warn("Skip context triple: no vaultId resolved", {
+                logger.warn("Skip context triples: no vaultId resolved", {
                   inputKey,
-                  interestContext: item.interestContext
+                  contexts: slugs
                 })
+                return []
               }
-              return tripleVaultId && topicTermId
-                ? { certTripleVaultId: tripleVaultId, topicTermId }
-                : null
+              // One `in context of` triple per context — a slug is a topic OR
+              // a category, resolved to its on-chain atom either way.
+              return slugs
+                .map((slug) => {
+                  const topicTermId = contextAtomIdForSlug(slug)
+                  return topicTermId
+                    ? { certTripleVaultId: tripleVaultId, topicTermId }
+                    : null
+                })
+                .filter(Boolean) as {
+                certTripleVaultId: string
+                topicTermId: string
+              }[]
             })
-            .filter(Boolean) as {
-            certTripleVaultId: string
-            topicTermId: string
-          }[]
 
           if (contextItems.length > 0) {
             try {
