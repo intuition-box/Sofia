@@ -5,9 +5,9 @@
  * explorer (dot + label per hidden context). Ported from the explorer's
  * ChipOverflowRow (glitch-free: a hidden mirror is measured pre-paint).
  */
-import { useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties } from "react"
 import { createPortal } from "react-dom"
+import { useChipOverflow, useAnchoredTooltip } from "@0xsofia/design-system"
 
 import {
   contextColor,
@@ -34,35 +34,10 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
     }))
     .filter((c): c is ResolvedPill => Boolean(c.label))
 
-  const mirror = useRef<HTMLDivElement>(null)
   const total = chips.length
-  const [shown, setShown] = useState(total)
-  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
-
-  useLayoutEffect(() => {
-    const el = mirror.current
-    if (!el || total === 0) return
-    const measure = () => {
-      const slots = Array.from(
-        el.querySelectorAll<HTMLElement>('[data-chip="1"]'),
-      )
-      if (slots.length === 0) return
-      const top0 = slots[0].offsetTop
-      let firstLine = slots.length
-      for (let i = 1; i < slots.length; i++) {
-        if (slots[i].offsetTop > top0 + 1) {
-          firstLine = i
-          break
-        }
-      }
-      // Reserve one slot for the +N badge when something overflows.
-      setShown(firstLine >= total ? total : Math.max(1, firstLine - 1))
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [total, slugs.join(",")])
+  // Shared glitch-free mirror-measure; re-measures when the slug set changes.
+  const { mirrorRef, shown } = useChipOverflow(total, [slugs.join(",")])
+  const tip = useAnchoredTooltip()
 
   if (total === 0) return null
 
@@ -84,7 +59,7 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
   return (
     <div className="ext-cp-wrap">
       {/* hidden mirror — all chips, measured for the first-line fit */}
-      <div className="ext-cp-row ext-cp-row--measure" ref={mirror} aria-hidden>
+      <div className="ext-cp-row ext-cp-row--measure" ref={mirrorRef} aria-hidden>
         {chips.map((c) => (
           <span key={c.slug} data-chip="1" className="sf-topic-pill">
             <span
@@ -102,22 +77,21 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
         {hidden.length > 0 && (
           <span
             className="ext-cp-more"
-            onMouseEnter={(e) => {
-              const r = e.currentTarget.getBoundingClientRect()
-              setTip({ left: r.left + r.width / 2, top: r.top })
-            }}
-            onMouseLeave={() => setTip(null)}>
+            onMouseEnter={(e) =>
+              tip.openFrom(e.currentTarget.getBoundingClientRect())
+            }
+            onMouseLeave={tip.close}>
             +{hidden.length}
           </span>
         )}
       </div>
-      {tip &&
+      {tip.anchor &&
         hidden.length > 0 &&
         typeof document !== "undefined" &&
         createPortal(
           <div
             className="ext-cp-tip"
-            style={{ left: tip.left, top: tip.top }}
+            style={{ left: tip.anchor.left, top: tip.anchor.top }}
             role="tooltip">
             {hidden.map((c) => (
               <div className="ext-cp-tip-row" key={c.slug}>
