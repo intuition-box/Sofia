@@ -86,7 +86,7 @@ export default function CircleVerbFilterDropdown({
             style={{ background: dotColor }}
             aria-hidden="true"
           />
-          <span className="crd-filter-trigger__label">Verbs</span>
+          <span className="crd-filter-trigger__label">Intention</span>
           <span className="crd-filter-trigger__value">{activeLabel}</span>
           <ChevronDown size={12} className="crd-filter-trigger__chev" />
         </button>

@@ -24,8 +24,13 @@ import { useCart } from '../hooks/useCart'
 import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
 import { SOFIA_TOPICS } from '../config/taxonomy'
+import { displayLabelToIntentionType } from '../config/intentions'
+import CircleVerbFilter, {
+  type VerbFilterId,
+} from '../components/circles/CircleVerbFilter'
 import '@/components/styles/pages.css'
 import '@/components/styles/home.css'
+import '@/components/styles/circles.css'
 
 /** Build a Set of platform IDs that belong to a given Sofia topic */
 function getPlatformIdsForTopic(topicId: string): Set<string> {
@@ -75,6 +80,9 @@ export default function DashboardPage() {
   )
   // Search query applied to the tiles view (filters topic + verb labels).
   const [tileQuery, setTileQuery] = useState('')
+  // Verb sub-filter shown inside a TOPIC drill — narrows the drilled feed to
+  // one intention. Resets whenever the drill target changes.
+  const [verbFilter, setVerbFilter] = useState<VerbFilterId>('all')
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -160,7 +168,18 @@ export default function DashboardPage() {
           ),
         )
 
-  const filteredItems = drillFiltered
+  // Reset the verb sub-filter when the drill target changes.
+  useEffect(() => {
+    setVerbFilter('all')
+  }, [drillTopic, drillVerb])
+
+  // Verb sub-filter only applies inside a topic drill.
+  const filteredItems = useMemo(() => {
+    if (drill?.kind !== 'topic' || verbFilter === 'all') return drillFiltered
+    return drillFiltered.filter((item) =>
+      item.intentions.some((l) => displayLabelToIntentionType(l) === verbFilter),
+    )
+  }, [drillFiltered, drill, verbFilter])
 
   const { topics } = useTaxonomy()
   const drillLabel = useMemo(() => {
@@ -291,6 +310,14 @@ export default function DashboardPage() {
                     <X className="dp-space-close-icon" />
                   </button>
                 </Badge>
+              </div>
+            )}
+
+            {/* Verb sub-filter — appears once a TOPIC tile is drilled, to
+                narrow that topic's feed by intention. */}
+            {drill.kind === 'topic' && (
+              <div className="dp-verb-filter">
+                <CircleVerbFilter active={verbFilter} onChange={setVerbFilter} />
               </div>
             )}
 

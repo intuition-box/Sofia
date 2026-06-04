@@ -547,3 +547,8 @@
    <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
    definition in feed-card.css. Only the wrapper stays. */
 
+/* Verb sub-filter bar inside a topic drill (reuses the .vf-bar pills). */
+.dp-verb-filter {
+  margin: 2px 0 16px;
+}
+
