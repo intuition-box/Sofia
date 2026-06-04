@@ -5,29 +5,9 @@
  */
 
 // === TAXONOMIE ===
-
-export interface Niche {
-  id: string
-  label: string
-  disambiguationSignal?: string
-  disambiguationResult?: string
-}
-
-export interface Category {
-  id: string
-  label: string
-  termId?: string
-  niches: Niche[]
-}
-
-export interface Topic {
-  id: string
-  label: string
-  icon: string
-  color: string
-  categories: Category[]
-  primaryPlatforms: string[]
-}
+// Topic / Category / Niche now live in the shared @0xsofia/taxonomy package;
+// re-exported here so existing `@/types/reputation` import sites are unchanged.
+export type { Niche, Category, Topic } from '@0xsofia/taxonomy'
 
 // === PLATEFORMES ===
 

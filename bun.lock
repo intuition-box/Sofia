@@ -83,6 +83,7 @@
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/taxonomy": "workspace:*",
         "@dicebear/collection": "^9.0.0",
         "@dicebear/core": "^9.0.0",
         "@privy-io/react-auth": "^2.0.0",
@@ -157,6 +158,7 @@
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/taxonomy": "workspace:*",
         "@dicebear/collection": "^9.2.4",
         "@dicebear/core": "^9.2.4",
         "@noble/curves": "^1.8.0",
@@ -288,6 +290,13 @@
         "react-dom": "^18.0.0",
       },
     },
+    "packages/taxonomy": {
+      "name": "@0xsofia/taxonomy",
+      "version": "0.0.0",
+      "devDependencies": {
+        "typescript": "^5.9.3",
+      },
+    },
     "services/mastra": {
       "name": "mastra",
       "version": "1.0.0",
@@ -334,6 +343,8 @@
     "@0xsofia/design-system": ["@0xsofia/design-system@workspace:packages/design-system"],
 
     "@0xsofia/graphql": ["@0xsofia/graphql@workspace:packages/graphql"],
+
+    "@0xsofia/taxonomy": ["@0xsofia/taxonomy@workspace:packages/taxonomy"],
 
     "@a2a-js/sdk": ["@a2a-js/sdk@0.2.5", "", { "dependencies": { "@types/cors": "^2.8.17", "@types/express": "^4.17.23", "body-parser": "^2.2.0", "cors": "^2.8.5", "express": "^4.21.2", "uuid": "^11.1.0" } }, "sha512-VTDuRS5V0ATbJ/LkaQlisMnTAeYKXAK6scMguVBstf+KIBQ7HIuKhiXLv+G/hvejkV+THoXzoNifInAkU81P1g=="],
 

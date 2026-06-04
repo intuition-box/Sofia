@@ -56,7 +56,8 @@
     "viem": "^2.0.0",
     "graphql": "^16.9.0",
     "@0xsofia/graphql": "workspace:*",
-    "@0xsofia/design-system": "workspace:*"
+    "@0xsofia/design-system": "workspace:*",
+    "@0xsofia/taxonomy": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.5.0",
