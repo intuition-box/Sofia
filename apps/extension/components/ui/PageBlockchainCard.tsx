@@ -15,7 +15,7 @@ import {
   useUserCertifications,
   useWalletFromStorage
 } from "~/hooks"
-import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
 import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
@@ -422,17 +422,18 @@ const PageBlockchainCard = () => {
                         }
                       }
 
+                      // A context slug is a topic OR a category — resolve the
+                      // label/color either way (categories borrow the parent
+                      // topic's color).
                       const contexts = Array.from(
                         new Set(
                           cartItemsForPage
                             .map((i) => i.interestContext)
-                            .filter(
-                              (c): c is string => !!c && !!TOPIC_LABELS[c]
-                            )
+                            .filter((c): c is string => !!c && !!contextLabel(c))
                         )
                       ).map((slug) => ({
-                        label: TOPIC_LABELS[slug],
-                        color: TOPIC_COLORS[slug] || "var(--ds-accent)"
+                        label: contextLabel(slug)!,
+                        color: contextColor(slug)
                       }))
 
                       const renderColored = (

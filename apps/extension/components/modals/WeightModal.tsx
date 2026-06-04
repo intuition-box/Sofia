@@ -16,7 +16,7 @@ import {
 } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
 import {
   INTENTION_CONFIG,
@@ -703,11 +703,10 @@ const WeightModal = ({
                         ? INTENTION_CONFIG[intentKey]
                         : null
                     const topic = triplet.interestContext
-                      ? TOPIC_LABELS[triplet.interestContext]
+                      ? contextLabel(triplet.interestContext)
                       : null
                     const topicColor = triplet.interestContext
-                      ? TOPIC_COLORS[triplet.interestContext] ||
-                        "var(--ds-muted)"
+                      ? contextColor(triplet.interestContext)
                       : null
                     const canToggleOff = activeCount > 1
                     const lockedSingle = triplets.length <= 1

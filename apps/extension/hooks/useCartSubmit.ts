@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 
-import { TOPIC_ATOM_IDS } from "~/lib/config/topicConfig"
+import { contextAtomIdForSlug } from "@0xsofia/taxonomy"
 import type { CartItemRecord } from "~/lib/database"
 import {
   BlockchainService,
@@ -141,7 +141,9 @@ export const useCartSubmit = () => {
               // reorders entries (created first, then deposits) after dedup.
               const inputKey = `${item.predicateName}|${item.url}`
               const tripleVaultId = batchResult.vaultIdByInputKey?.[inputKey]
-              const topicTermId = TOPIC_ATOM_IDS[item.interestContext!]
+              // The context slug is a topic OR a category — resolve either to
+              // its on-chain atom so a category tag mints a real context.
+              const topicTermId = contextAtomIdForSlug(item.interestContext!)
               if (!tripleVaultId) {
                 logger.warn("Skip context triple: no vaultId resolved", {
                   inputKey,
