@@ -10,9 +10,9 @@
  */
 
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, ShoppingCart, Tags } from 'lucide-react'
+import { ShoppingCart, Tags } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useUntaggedCerts } from '@/hooks/useUntaggedCerts'
 import { useCart } from '@/hooks/useCart'
@@ -78,12 +78,12 @@ export default function ContextManagerPage() {
 
   return (
     <div className="pf-view page-enter ctx-page">
-      <div className="pf-ts-back-row">
-        <Link to="/profile" className="pf-btn">
-          <ArrowLeft className="h-4 w-4" />
-          Back to profile
-        </Link>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: 'My profile', to: '/profile' },
+          { label: 'Context Manager' },
+        ]}
+      />
 
       <PageHero
         title="Context Manager"

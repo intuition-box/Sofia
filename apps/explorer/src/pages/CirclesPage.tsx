@@ -11,6 +11,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { INTENTION_PASTEL, PageHero } from '@0xsofia/design-system'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useGroups } from '@/hooks/useGroups'
@@ -181,12 +182,9 @@ function CircleDetailSection({ id }: { id: string }) {
     // is still warming up.
     return (
       <div className="pf-view crd-detail">
-        <div className="pf-ts-back-row">
-          <Link to="/circles" className="pf-btn">
-            <ArrowLeft className="h-4 w-4" />
-            Back to circles
-          </Link>
-        </div>
+        <Breadcrumb
+          items={[{ label: 'Circles', to: '/circles' }, { label: 'Circle' }]}
+        />
         <p className="text-sm text-muted-foreground" style={{ padding: 24 }}>
           {isLoading ? 'Loading circle…' : 'Circle not found.'}
         </p>
