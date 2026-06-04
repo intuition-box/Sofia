@@ -253,11 +253,7 @@ export default function DashboardPage() {
       <PageHero
         background={drill ? (drillColor ?? pc.color) : pc.color}
         title={drill ? drillLabel : pc.title}
-        description={
-          drill
-            ? `${filteredItems.length} ${filteredItems.length === 1 ? 'url' : 'urls'}`
-            : pc.subtitle
-        }
+        description={drill ? '' : pc.subtitle}
         icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
@@ -313,13 +309,29 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Verb sub-filter — appears once a TOPIC tile is drilled, to
-                narrow that topic's feed by intention. */}
-            {drill.kind === 'topic' && (
-              <div className="dp-verb-filter">
-                <CircleVerbFilter active={verbFilter} onChange={setVerbFilter} />
-              </div>
-            )}
+            {/* URL count + verb filter on one row. The count sits left, the
+                intention pills to its right. Shown for every drill: a topic
+                drill uses the bar as a client-side sub-filter; a verb drill
+                uses it to re-drill to another verb (All → back to tiles). */}
+            <div className="dp-filter-row">
+              <span className="dp-url-count">
+                {filteredItems.length} url{filteredItems.length === 1 ? '' : 's'}
+              </span>
+              <CircleVerbFilter
+                active={
+                  drill.kind === 'verb'
+                    ? (drill.id as VerbFilterId)
+                    : verbFilter
+                }
+                onChange={(id) => {
+                  if (drill.kind === 'verb') {
+                    setDrill(id === 'all' ? null : { kind: 'verb', id })
+                  } else {
+                    setVerbFilter(id)
+                  }
+                }}
+              />
+            </div>
 
             {/* Loading */}
             {loading && (

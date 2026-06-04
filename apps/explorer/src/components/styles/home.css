@@ -547,8 +547,26 @@
    <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
    definition in feed-card.css. Only the wrapper stays. */
 
-/* Verb sub-filter bar inside a topic drill (reuses the .vf-bar pills). */
-.dp-verb-filter {
+/* Drill toolbar — URL count on the left, the verb filter pills (.vf-bar)
+   to its right, on one line. */
+.dp-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
   margin: 2px 0 16px;
+}
+.dp-url-count {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+}
+/* The verb bar fills the rest of the row and can scroll if it overflows. */
+.dp-filter-row .vf-bar {
+  flex: 1;
+  min-width: 0;
 }
 
