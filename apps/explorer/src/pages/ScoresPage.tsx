@@ -409,13 +409,46 @@ export default function ScoresPage() {
   }, [mode, topics, verbs])
 
   // ── Certs shown in the module below the donut (filtered by selection) ──
-  const sortedCerts = useMemo(
-    () =>
-      [...profile.certs]
-        .filter((c) => c.certifiedAt)
-        .sort((a, b) => (a.certifiedAt < b.certifiedAt ? 1 : -1)),
-    [profile.certs],
-  )
+  // Latest context-addition timestamp per cert — so "recent" reflects when
+  // the user last TAGGED a cert (from the Context Manager), not only when it
+  // was first certified. Adding a context doesn't touch `certifiedAt`, so
+  // without this a freshly-tagged-but-old cert would sink to the bottom.
+  const lastTaggedByCert = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const a of profile.contextAdditions) {
+      const prev = m.get(a.certTermId)
+      if (!prev || a.addedAt > prev) m.set(a.certTermId, a.addedAt)
+    }
+    return m
+  }, [profile.contextAdditions])
+
+  // How many certs the user has tagged in each context (topic or category),
+  // from the precise `contextSlugs`. Drives the per-category counts shown in
+  // the topic detail rail.
+  const certCountByContext = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const c of profile.certs) {
+      for (const slug of c.contextSlugs) m.set(slug, (m.get(slug) ?? 0) + 1)
+    }
+    return m
+  }, [profile.certs])
+
+  const sortedCerts = useMemo(() => {
+    // Effective recency = the later of the cert's own timestamp and its most
+    // recent context tag. Keeps timestamp-less certs (sorted last).
+    const recency = (c: (typeof profile.certs)[number]) => {
+      const tagged = lastTaggedByCert.get(c.termId) ?? ''
+      return c.certifiedAt > tagged ? c.certifiedAt : tagged
+    }
+    return [...profile.certs].sort((a, b) => {
+      const ta = recency(a)
+      const tb = recency(b)
+      if (ta === tb) return 0
+      if (!ta) return 1
+      if (!tb) return -1
+      return ta < tb ? 1 : -1
+    })
+  }, [profile.certs, lastTaggedByCert])
   const shownCerts = useMemo(() => {
     if (!sel) return sortedCerts.slice(0, 24)
     if (mode === 'topics')
@@ -585,6 +618,9 @@ export default function ScoresPage() {
       const t = topicMap[sel]
       if (!t) return null
       const tBackers = backers.byTopic.get(sel) ?? []
+      const tCats = (topicById(sel)?.categories ?? [])
+        .map((c) => ({ id: c.id, label: c.label, n: certCountByContext.get(c.id) ?? 0 }))
+        .sort((a, b) => b.n - a.n)
       return (
         <div style={{ ['--tc' as string]: t.color }}>
           <div className="sc2-dt-head">
@@ -641,6 +677,24 @@ export default function ScoresPage() {
               </p>
             )}
           </div>
+          {tCats.length > 0 && (
+            <div className="sc2-dt-cats">
+              <div className="sc2-dt-cats-t">
+                Categories · {tCats.length}
+              </div>
+              <div className="sc2-dt-cats-list">
+                {tCats.map((c) => (
+                  <span
+                    className={`sc2-dt-cat${c.n > 0 ? ' sc2-dt-cat--has' : ''}`}
+                    key={c.id}
+                  >
+                    {c.label}
+                    <b className="sc2-dt-cat-n">{c.n}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <button type="button" className="sc2-dt-clear" onClick={() => setSel(null)}>
             ← All topics
           </button>

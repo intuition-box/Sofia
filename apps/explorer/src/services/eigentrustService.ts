@@ -56,10 +56,18 @@ export async function fetchEigentrustScore(address: string): Promise<number> {
   const key = address.toLowerCase()
   const cached = globalCache.get(key)
   if (cached && Date.now() - cached.ts < TTL_MS) return cached.score
-  const composite = await fetchCompositeScore(key)
-  const score = composite?.compositeScore ?? 0
-  globalCache.set(key, { score, ts: Date.now() })
-  return score
+  try {
+    const composite = await fetchCompositeScore(key)
+    const score = composite?.compositeScore ?? 0
+    globalCache.set(key, { score, ts: Date.now() })
+    return score
+  } catch {
+    // Transient MCP failure (timeout / rate-limit). A single throw must NOT
+    // reject the whole eigentrust map — that would zero out the boost for
+    // every topic at once (the "sometimes it shows, sometimes not" bug).
+    // Contribute 0 for now and DON'T cache the miss, so the next pass retries.
+    return 0
+  }
 }
 
 /**
