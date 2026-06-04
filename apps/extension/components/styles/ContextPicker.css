@@ -2,39 +2,8 @@
    from the explorer's ContextPicker. Selection is driven only by the left
    checkbox (topic or category). */
 
-.ext-ctx {
-  display: inline-flex;
-}
-
-/* Dashed "Add context" trigger. */
-.ext-ctx-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px dashed var(--ds-border, #2a2a35);
-  background: transparent;
-  color: var(--ds-ink-soft, #b8b8c4);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.13s ease;
-}
-.ext-ctx-trigger:hover:not(:disabled) {
-  border-color: var(--ds-accent, #8b7bf5);
-  color: var(--ds-ink, #f0f0f4);
-}
-.ext-ctx-trigger.has-value {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--ds-accent, #8b7bf5) 45%, transparent);
-  color: var(--ds-ink, #f0f0f4);
-}
-.ext-ctx-trigger:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
+/* The trigger reuses the shared .ext-filter-trigger (FilterDropdown.css) so it
+   matches the other Mark-page pickers; only the panel below is custom. */
 
 /* Portal panel. */
 .ext-ctx-pop {

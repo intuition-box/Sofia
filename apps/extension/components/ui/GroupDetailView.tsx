@@ -85,7 +85,7 @@ const UrlRow = ({
   onRemove,
   isProcessing,
   cartPredicates,
-  certifiedContexts,
+  certifiedContexts = [],
   onContextChange
 }: {
   urlRecord: GroupUrlRecord
@@ -105,7 +105,7 @@ const UrlRow = ({
   onRemove: () => void
   isProcessing: boolean
   cartPredicates: string[]
-  certifiedContexts: string[]
+  certifiedContexts?: string[]
   onContextChange: (context: string | null) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)

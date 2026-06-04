@@ -5,7 +5,7 @@
  * select — every checked slug (topic or category) becomes an `in context of`
  * triple on submit.
  */
-import { Check, ChevronRight, Plus } from "lucide-react"
+import { Check, ChevronDown, ChevronRight } from "lucide-react"
 import {
   memo,
   useEffect,
@@ -18,8 +18,10 @@ import { createPortal } from "react-dom"
 
 import { SOFIA_TOPICS } from "@0xsofia/taxonomy"
 
+import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
 import { TOPIC_COLORS, TOPIC_ICON, TOPIC_LABELS } from "~/lib/config/topicConfig"
 
+import "../styles/FilterDropdown.css"
 import "../styles/ContextPicker.css"
 
 interface InterestContextSelectorProps {
@@ -105,8 +107,14 @@ export const InterestContextSelector = memo(
     }
 
     const count = selectedContexts.length
-    const triggerLabel =
-      count === 0 ? "Add context" : `${count} context${count === 1 ? "" : "s"}`
+    const valueLabel =
+      count === 0
+        ? "Choose"
+        : count === 1
+          ? (contextLabel(selectedContexts[0]) ?? selectedContexts[0])
+          : `${count} contexts`
+    const dotColor =
+      count > 0 ? contextColor(selectedContexts[0]) : "var(--ds-muted, #888)"
 
     const panel =
       open && rect ? (
@@ -212,17 +220,26 @@ export const InterestContextSelector = memo(
       ) : null
 
     return (
-      <div className="ext-ctx" ref={rootRef}>
+      <div className="ext-filter" ref={rootRef}>
         <button
           ref={triggerRef}
           type="button"
-          className={`ext-ctx-trigger${count > 0 ? " has-value" : ""}`}
+          className="ext-filter-trigger ext-filter-trigger--wide"
           aria-label="Add a topic or category context"
           aria-expanded={open}
           disabled={disabled}
           onClick={() => setOpen((v) => !v)}>
-          <Plus size={13} aria-hidden />
-          <span>{triggerLabel}</span>
+          <span
+            className="ext-filter-trigger__dot"
+            style={{ background: dotColor }}
+            aria-hidden
+          />
+          <span className="ext-filter-trigger__label">In context of</span>
+          <span
+            className={`ext-filter-trigger__value${count === 0 ? " is-placeholder" : ""}`}>
+            {valueLabel}
+          </span>
+          <ChevronDown size={12} className="ext-filter-trigger__chev" />
         </button>
         {panel && createPortal(panel, document.body)}
       </div>
