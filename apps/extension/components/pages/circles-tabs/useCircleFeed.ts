@@ -13,8 +13,10 @@
  * loading / refreshing flags and a `refresh()` that re-runs steps 1 & 2.
  */
 import {
+  useGetFeedContextTriplesQuery,
   useGetPerspectiveCertsQuery,
   useGetTrustCirclePositionsQuery,
+  type GetFeedContextTriplesQuery,
   type GetPerspectiveCertsQuery,
   type GetTrustCirclePositionsQuery
 } from "@0xsofia/graphql"
@@ -22,7 +24,6 @@ import { resolveContextAtom } from "@0xsofia/taxonomy"
 import { useCallback, useEffect, useState } from "react"
 import { getAddress } from "viem"
 
-import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
 import { PREDICATE_IDS, SUBJECT_IDS } from "~/lib/config/constants"
 import { batchResolveEns, createHookLogger } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
@@ -386,47 +387,17 @@ export function useCircleFeed(checksumAddress: string): UseCircleFeedResult {
       return
     }
 
-    const CONTEXT_QUERY = `
-      query GetFeedContextTriples(
-        $subjectTermIds: [String!]!
-        $limit: Int!
-        $offset: Int!
-      ) {
-        triples(
-          where: {
-            subject_id: { _in: $subjectTermIds }
-            predicate: { label: { _eq: "in context of" } }
-          }
-          limit: $limit
-          offset: $offset
-          order_by: { term_id: asc }
-        ) {
-          term_id
-          counter_term_id
-          subject_id
-          object { term_id }
-        }
-      }
-    `
-
-    interface ContextRow {
-      term_id?: string
-      counter_term_id?: string
-      subject_id?: string
-      object?: { term_id?: string }
-    }
-
     let cancelled = false
 
     const run = async () => {
-      const rows: ContextRow[] = []
+      const rows: NonNullable<GetFeedContextTriplesQuery["triples"]> = []
       try {
         for (let page = 0; page < MAX_PAGES; page++) {
-          const data = (await intuitionGraphqlClient.request(CONTEXT_QUERY, {
+          const data = await useGetFeedContextTriplesQuery.fetcher({
             subjectTermIds: certTermIds,
             limit: PAGE_SIZE,
             offset: page * PAGE_SIZE
-          })) as { triples?: ContextRow[] }
+          })()
           const pageRows = data?.triples ?? []
           rows.push(...pageRows)
           if (pageRows.length < PAGE_SIZE) break

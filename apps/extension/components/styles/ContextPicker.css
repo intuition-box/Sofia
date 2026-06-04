@@ -204,10 +204,13 @@
   overflow: hidden;
 }
 .ext-cp-more {
+  -webkit-appearance: none;
+  appearance: none;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   cursor: help;
+  line-height: 1;
   padding: 2px 7px;
   border-radius: 6px;
   font-family: "JetBrains Mono", monospace;

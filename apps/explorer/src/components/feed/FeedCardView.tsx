@@ -79,15 +79,25 @@ function ChipOverflowRow({
           </span>
         ))}
         {hidden > 0 && (
-          <span
+          <button
+            type="button"
             className="fc-chip-more"
+            aria-label={`Show ${hidden} more: ${chips
+              .slice(shown)
+              .map((c) => c.label)
+              .join(', ')}`}
             onMouseEnter={(e) =>
               tip.openFrom(e.currentTarget.getBoundingClientRect())
             }
             onMouseLeave={tip.close}
+            onFocus={(e) =>
+              tip.openFrom(e.currentTarget.getBoundingClientRect())
+            }
+            onBlur={tip.close}
+            onClick={(e) => e.stopPropagation()}
           >
             +{hidden}
-          </span>
+          </button>
         )}
         {trailing}
       </div>

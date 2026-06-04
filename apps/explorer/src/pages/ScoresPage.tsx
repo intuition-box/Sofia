@@ -13,7 +13,8 @@
  * (`useSeasonPool`).
  */
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
@@ -117,9 +118,45 @@ const VERBS: {
 export default function ScoresPage() {
   const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
-  const [tab, setTab] = useState<'score' | 'pool'>('score')
-  const [mode, setMode] = useState<Mode>('topics')
-  const [sel, setSel] = useState<string | null>(null)
+  // View state lives in the URL (?tab / ?mode / ?sel) so it's shareable and
+  // the browser Back button steps through tab/mode/segment changes. Missing
+  // params fall back to the prior `useState` defaults.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as 'score' | 'pool') ?? 'score'
+  const mode = (searchParams.get('mode') as Mode) ?? 'topics'
+  const sel = searchParams.get('sel')
+
+  const setTab = useCallback(
+    (next: 'score' | 'pool') => {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev)
+        params.set('tab', next)
+        return params
+      })
+    },
+    [setSearchParams],
+  )
+  const setMode = useCallback(
+    (next: Mode) => {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev)
+        params.set('mode', next)
+        return params
+      })
+    },
+    [setSearchParams],
+  )
+  const setSel = useCallback(
+    (next: string | null) => {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev)
+        if (next) params.set('sel', next)
+        else params.delete('sel')
+        return params
+      })
+    },
+    [setSearchParams],
+  )
 
   const { addresses: linkedAddresses } = useLinkedWallets()
   const profileAddresses =

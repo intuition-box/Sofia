@@ -229,6 +229,36 @@ query GetUserContextAdditions(
   }
 }
 
+# Step 3b of the Trust Circle feed (see useCircleFeed): the stakeable
+# "in context of" triples nested under each cert. One row per
+# (cert, context) — `subject_id` is the parent cert term_id, `term_id`
+# is the support vault the card votes on, `counter_term_id` the oppose
+# side, and `object.term_id` the context/topic atom the card resolves to
+# a slug. Paginated (limit/offset, term_id asc) to walk every context a
+# big trust circle's certs were tagged with.
+query GetFeedContextTriples(
+  $subjectTermIds: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      subject_id: { _in: $subjectTermIds }
+      predicate: { label: { _eq: "in context of" } }
+    }
+    limit: $limit
+    offset: $offset
+    order_by: { term_id: asc }
+  ) {
+    term_id
+    counter_term_id
+    subject_id
+    object {
+      term_id
+    }
+  }
+}
+
 # Master query for the on-chain profile: every cert triple where the user
 # holds shares > 0, paginated. Returns enough metadata to drive the
 # calendar (timestamp + topic), the radar (intention + topic), the

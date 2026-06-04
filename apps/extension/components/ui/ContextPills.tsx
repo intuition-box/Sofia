@@ -75,14 +75,22 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
       <div className="ext-cp-row">
         {chips.slice(0, shown).map(pill)}
         {hidden.length > 0 && (
-          <span
+          <button
+            type="button"
             className="ext-cp-more"
+            aria-label={`Show ${hidden.length} more: ${hidden
+              .map((c) => c.label)
+              .join(", ")}`}
             onMouseEnter={(e) =>
               tip.openFrom(e.currentTarget.getBoundingClientRect())
             }
-            onMouseLeave={tip.close}>
+            onMouseLeave={tip.close}
+            onFocus={(e) =>
+              tip.openFrom(e.currentTarget.getBoundingClientRect())
+            }
+            onBlur={tip.close}>
             +{hidden.length}
-          </span>
+          </button>
         )}
       </div>
       {tip.anchor &&

@@ -583,10 +583,13 @@
   min-width: 0;
 }
 .fc-chip-more {
+  -webkit-appearance: none;
+  appearance: none;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   cursor: help;
+  line-height: 1;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   font-weight: 700;
