@@ -34,6 +34,19 @@
   border-color: var(--ds-ink);
 }
 
+/* Title row: "Certified in X" on the left, the score-info pill far right. */
+.ip-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ip-section-head .ip-score-info {
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .ip-section {
   display: flex;
   flex-direction: column;
@@ -44,6 +57,15 @@
   display: flex;
   justify-content: center;
   padding: 32px 0;
+}
+
+/* Per-cert feed cards (same <FeedCardView> as Explore/Circles/Scores), so
+   the topic page shows certs with the inline "+ Context" picker. */
+.ip-cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 /* ── Stats ── */

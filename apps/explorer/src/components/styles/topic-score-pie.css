@@ -23,6 +23,10 @@
 }
 .donut-seg {
   cursor: pointer;
+  /* Focusable (role=button) — a click would otherwise draw the browser's
+     thick focus outline around the SVG arc. The .hot state is the cue;
+     drop the outline so the click stays clean. */
+  outline: none;
   transition:
     stroke-width 0.18s ease,
     opacity 0.18s ease,

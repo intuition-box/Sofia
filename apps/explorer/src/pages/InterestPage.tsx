@@ -11,8 +11,9 @@ import { Info } from 'lucide-react'
 import ScoreExplanationDialog from '@/components/ScoreExplanationDialog'
 import { useSignals } from '@/hooks/useSignals'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
-import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
-import LastActivitySection from '@/components/profile/LastActivitySection'
+import { useEnsNames } from '@/hooks/useEnsNames'
+import type { Address } from 'viem'
+import CertFeedCard from '@/components/feed/CertFeedCard'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useMemo } from 'react'
@@ -55,13 +56,21 @@ export default function InterestPage() {
     useUserOnChainProfile(
       linkedAddresses.length > 0 ? linkedAddresses : undefined,
     )
-  const topicEchoesActivities = useMemo(() => {
+  const topicCerts = useMemo(() => {
     if (!topicId) return []
-    const filtered = onChainProfile.certs.filter((c) =>
-      c.topicSlugs.includes(topicId),
-    )
-    return userCertsToActivityInputs(filtered)
+    return onChainProfile.certs.filter((c) => c.topicSlugs.includes(topicId))
   }, [onChainProfile.certs, topicId])
+
+  // Certifier handle/avatar — the profile owner, resolved once for all cards.
+  const { getDisplay, getAvatar } = useEnsNames(
+    walletAddress ? [walletAddress as Address] : [],
+  )
+  const certifierHandle = walletAddress
+    ? getDisplay(walletAddress as Address)
+    : 'You'
+  const certifierAvatar = walletAddress
+    ? getAvatar(walletAddress as Address)
+    : undefined
 
   if (!topic) {
     return (
@@ -88,11 +97,14 @@ export default function InterestPage() {
 
       <InterestHero
         emoji={
+          // Black glyph on the topic-colored banner (the hero sets
+          // `color: #02000e`, so inherit it) — same as the unified TopicPill.
           <span
             className="material-symbols-outlined"
             aria-hidden="true"
             style={{
-              color,
+              fontSize: 'clamp(72px, 12vw, 108px)',
+              lineHeight: 1,
               fontVariationSettings: "'FILL' 1, 'wght' 500",
             }}
           >
@@ -104,15 +116,6 @@ export default function InterestPage() {
         topicColor={color}
         stat={{ value: topicScore?.score ?? 0, label: 'Topic score' }}
       />
-      <button
-        type="button"
-        className="ip-score-info"
-        onClick={() => setScoreInfoOpen(true)}
-        aria-label="How is the topic score calculated?"
-      >
-        <Info className="h-3 w-3" aria-hidden />
-        <span>How is this score calculated?</span>
-      </button>
       <ScoreExplanationDialog
         open={scoreInfoOpen}
         onOpenChange={setScoreInfoOpen}
@@ -125,23 +128,40 @@ export default function InterestPage() {
             profile's Echoes section so visitors see a consistent
             language across the app. */}
         <section className="ip-section">
-          <SectionTitle>Certified in {topic.label}</SectionTitle>
-          {certsLoading && topicEchoesActivities.length === 0 ? (
+          <div className="ip-section-head">
+            <SectionTitle>Certified in {topic.label}</SectionTitle>
+            <button
+              type="button"
+              className="ip-score-info"
+              onClick={() => setScoreInfoOpen(true)}
+              aria-label="How is the topic score calculated?"
+            >
+              <Info className="h-3 w-3" aria-hidden />
+              <span>How is this score calculated?</span>
+            </button>
+          </div>
+          {certsLoading && topicCerts.length === 0 ? (
             <div className="ip-loader">
               <SofiaLoader size={48} />
             </div>
-          ) : topicEchoesActivities.length === 0 ? (
+          ) : topicCerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {walletAddress
                 ? `You haven't certified any URL in ${topic.label} yet.`
                 : 'Connect your wallet to see your certifications.'}
             </p>
           ) : (
-            <LastActivitySection
-              activities={topicEchoesActivities}
-              loading={certsLoading}
-              sort="platform"
-            />
+            <div className="ip-cert-grid">
+              {topicCerts.map((cert) => (
+                <CertFeedCard
+                  key={cert.termId}
+                  cert={cert}
+                  handle={certifierHandle}
+                  avatarUrl={certifierAvatar || undefined}
+                  topicById={topicById}
+                />
+              ))}
+            </div>
           )}
         </section>
       </div>
