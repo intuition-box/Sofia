@@ -586,6 +586,7 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
+  cursor: help;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   font-weight: 700;

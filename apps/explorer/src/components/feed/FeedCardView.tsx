@@ -35,11 +35,17 @@ import { TopicPill } from '@/components/profile/FeedPills'
  * that fit + the badge, so it never flashes a wrapped second line. One slot
  * is reserved for the badge so it always fits on the first line.
  */
+interface OverflowChip {
+  node: ReactNode
+  /** Plain-text label — surfaced in the `+N` badge tooltip when hidden. */
+  label: string
+}
+
 function ChipOverflowRow({
   chips,
   trailing,
 }: {
-  chips: ReactNode[]
+  chips: OverflowChip[]
   /** Always-visible node appended after the chips + overflow badge (e.g. the
    *  "+ Context" button). Sits inline on the same row when there's room and
    *  wraps below only when the chips fill the line. */
@@ -80,7 +86,7 @@ function ChipOverflowRow({
       <div className="fc-chips fc-chips--measure" ref={mirror} aria-hidden="true">
         {chips.map((c, i) => (
           <span key={i} data-chip="1" className="fc-chip-slot">
-            {c}
+            {c.node}
           </span>
         ))}
       </div>
@@ -88,10 +94,20 @@ function ChipOverflowRow({
       <div className="fc-chips">
         {chips.slice(0, shown).map((c, i) => (
           <span key={i} className="fc-chip-slot">
-            {c}
+            {c.node}
           </span>
         ))}
-        {hidden > 0 && <span className="fc-chip-more">+{hidden}</span>}
+        {hidden > 0 && (
+          <span
+            className="fc-chip-more"
+            title={chips
+              .slice(shown)
+              .map((c) => c.label)
+              .join(', ')}
+          >
+            +{hidden}
+          </span>
+        )}
         {trailing}
       </div>
     </div>
@@ -186,25 +202,31 @@ export default function FeedCardView({
   // Topics + categories first, verbs last — the verb is the least important
   // chip, so it's the one that collapses into the `+N` badge when the row is
   // tight. The overflow row lays the whole stream out on one line.
-  const chipNodes: ReactNode[] = [
-    ...topics.map((t) => (
-      <TopicPill
-        key={`t-${t.id}`}
-        topicId={t.glyphTopicId ?? t.id}
-        color={t.color || 'var(--ds-muted)'}
-        label={t.label}
-      />
-    )),
-    ...verbs.map((v) => (
-      <span
-        key={`v-${v.label}`}
-        className="fc-verb"
-        style={v.color ? { ['--vc' as string]: v.color } : undefined}
-      >
-        <i aria-hidden="true" />
-        {v.label}
-      </span>
-    )),
+  const chipNodes: OverflowChip[] = [
+    ...topics.map((t) => ({
+      label: t.label,
+      node: (
+        <TopicPill
+          key={`t-${t.id}`}
+          topicId={t.glyphTopicId ?? t.id}
+          color={t.color || 'var(--ds-muted)'}
+          label={t.label}
+        />
+      ),
+    })),
+    ...verbs.map((v) => ({
+      label: v.label,
+      node: (
+        <span
+          key={`v-${v.label}`}
+          className="fc-verb"
+          style={v.color ? { ['--vc' as string]: v.color } : undefined}
+        >
+          <i aria-hidden="true" />
+          {v.label}
+        </span>
+      ),
+    })),
   ]
 
   return (
