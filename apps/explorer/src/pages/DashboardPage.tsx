@@ -6,7 +6,6 @@ import type { CircleItem } from '../services/circleService'
 import { PLATFORM_CATALOG } from '../config/platformCatalog' // kept for getPlatformIdsForTopic helper
 import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
 import { Search, X, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
@@ -24,7 +23,6 @@ import { INTENTION_PASTEL } from '@0xsofia/design-system'
 import { useCart } from '../hooks/useCart'
 import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
-import { INTENTION_COLORS } from '../config/intentions'
 import { SOFIA_TOPICS } from '../config/taxonomy'
 import '@/components/styles/pages.css'
 import '@/components/styles/home.css'
@@ -49,19 +47,8 @@ function itemMatchesTopic(item: CircleItem, platformIds: Set<string>): boolean {
   return false
 }
 
-const INTENT_FILTERS = [
-  'All',
-  'Trusted',
-  'Distrusted',
-  'Work',
-  'Learning',
-  'Fun',
-  'Inspiration',
-]
-
 export default function DashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [intentFilter, setIntentFilter] = useState('All')
   // Drill preset lives in the URL (?topic=<id> / ?verb=<id>) so it earns a
   // history entry — browser Back returns to the Explore tiles instead of
   // leaving the page — and the drill is shareable. `null` = tiles view.
@@ -157,8 +144,8 @@ export default function DashboardPage() {
 
   const { getDisplay, getAvatar } = useEnsNames(allCertifiers)
 
-  // Apply space filter then drill preset (from tile click) then intention
-  // filter. Drill narrows the items by topic slug or verb.
+  // Apply space filter then drill preset (from tile click). Drill narrows
+  // the items by topic slug or verb.
   const spaceFiltered = spacePlatformIds
     ? sourceItems.filter((item) => itemMatchesTopic(item, spacePlatformIds))
     : sourceItems
@@ -173,10 +160,7 @@ export default function DashboardPage() {
           ),
         )
 
-  const filteredItems =
-    intentFilter === 'All'
-      ? drillFiltered
-      : drillFiltered.filter((item) => item.intentions.includes(intentFilter))
+  const filteredItems = drillFiltered
 
   const { topics } = useTaxonomy()
   const drillLabel = useMemo(() => {
@@ -309,35 +293,6 @@ export default function DashboardPage() {
                   </button>
                 </Badge>
               </div>
-            )}
-
-            {/* Intention filters — hidden when drilling on a verb (the drill
-          preset is already narrowing by intent, so the pills would
-          either duplicate or contradict it). */}
-            {drill?.kind !== 'verb' && (
-              <ScrollArea className="w-full mb-2">
-                <div className="flex gap-2 pb-2">
-                  {INTENT_FILTERS.map((intent) => {
-                    const isActive = intentFilter === intent
-                    const color = INTENTION_COLORS[intent]
-                    return (
-                      <button
-                        key={intent}
-                        className="feed-intent-pill"
-                        data-active={isActive || undefined}
-                        style={
-                          color
-                            ? ({ '--pill-color': color } as React.CSSProperties)
-                            : undefined
-                        }
-                        onClick={() => setIntentFilter(intent)}
-                      >
-                        {intent}
-                      </button>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
             )}
 
             {/* Loading */}
