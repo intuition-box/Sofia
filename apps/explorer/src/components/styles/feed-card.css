@@ -443,22 +443,26 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* Always reserve 2 lines so a 1-line title doesn't pull the footer up —
+     every card's footer (chips + thumbs + border) lands at the same height. */
+  min-height: calc(1.32em * 2);
 }
 
-/* Footer — votes left, verb chips right, hairline top border. */
+/* Footer — chip row, then votes beneath. Pinned to the card bottom (the grid
+   stretches cards to the tallest in their row) with a hairline top border. */
 .fc-foot {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+  margin-top: auto;
   padding: 13px 16px 15px;
   border-top: 1px solid var(--ds-border-soft);
 }
 .fc-votes {
   display: flex;
   gap: 8px;
-  flex-shrink: 0;
+  align-self: flex-start;
 }
 .fc-vote {
   position: relative;
@@ -551,12 +555,46 @@
 
 /* Verb chips — tinted fill + dot + text in the intent color (`--vc`,
    set inline by <FeedCardView> from INTENTION_COLORS). */
+.fc-chips-wrap {
+  position: relative;
+}
+/* Hidden mirror that holds every chip — measured to find the first-line fit
+   without ever showing a wrapped second line in the visible row. */
+.fc-chips--measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 .fc-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 7px;
+}
+/* One slot per chip — the overflow row hides slots past the first line and
+   appends a `+N` badge in their place. */
+.fc-chip-slot {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+.fc-chip-more {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 7px;
+  padding: 4px 8px;
 }
 .fc-verb {
   display: inline-flex;

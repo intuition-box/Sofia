@@ -19,10 +19,74 @@
  * Pure view: each caller resolves its own data (counts, certifier) and
  * hands it down. No data fetching, no business rules here.
  */
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { UrlPreview } from '@/components/UrlPreview'
 import { TopicPill } from '@/components/profile/FeedPills'
+
+/**
+ * ChipOverflowRow — lays chips on a single line; any that would wrap to a
+ * second line collapse into a trailing `+N` badge.
+ *
+ * Glitch-free: a hidden mirror (absolutely positioned, same width, wrap
+ * allowed) holds every chip and is measured in `useLayoutEffect` (runs
+ * synchronously before paint). The VISIBLE row only ever renders the chips
+ * that fit + the badge, so it never flashes a wrapped second line. One slot
+ * is reserved for the badge so it always fits on the first line.
+ */
+function ChipOverflowRow({ chips }: { chips: ReactNode[] }) {
+  const mirror = useRef<HTMLDivElement>(null)
+  const total = chips.length
+  const [shown, setShown] = useState(total)
+
+  useLayoutEffect(() => {
+    const el = mirror.current
+    if (!el || total === 0) return
+    const measure = () => {
+      const slots = Array.from(
+        el.querySelectorAll<HTMLElement>('[data-chip="1"]'),
+      )
+      if (slots.length === 0) return
+      const top0 = slots[0].offsetTop
+      let firstLine = slots.length
+      for (let i = 1; i < slots.length; i++) {
+        if (slots[i].offsetTop > top0 + 1) {
+          firstLine = i
+          break
+        }
+      }
+      setShown(firstLine >= total ? total : Math.max(1, firstLine - 1))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [total])
+
+  const hidden = total - shown
+  return (
+    <div className="fc-chips-wrap">
+      {/* hidden mirror — all chips, measured for the first-line fit */}
+      <div className="fc-chips fc-chips--measure" ref={mirror} aria-hidden="true">
+        {chips.map((c, i) => (
+          <span key={i} data-chip="1" className="fc-chip-slot">
+            {c}
+          </span>
+        ))}
+      </div>
+      {/* visible row — only what fits, + the overflow badge */}
+      <div className="fc-chips">
+        {chips.slice(0, shown).map((c, i) => (
+          <span key={i} className="fc-chip-slot">
+            {c}
+          </span>
+        ))}
+        {hidden > 0 && <span className="fc-chip-more">+{hidden}</span>}
+      </div>
+    </div>
+  )
+}
 
 export interface FeedCardVerb {
   label: string
@@ -102,6 +166,28 @@ export default function FeedCardView({
     onVote?.(side)
   }
 
+  // Verbs then topics, as one chip stream the overflow row lays out.
+  const chipNodes: ReactNode[] = [
+    ...verbs.map((v) => (
+      <span
+        key={`v-${v.label}`}
+        className="fc-verb"
+        style={v.color ? { ['--vc' as string]: v.color } : undefined}
+      >
+        <i aria-hidden="true" />
+        {v.label}
+      </span>
+    )),
+    ...topics.map((t) => (
+      <TopicPill
+        key={`t-${t.id}`}
+        topicId={t.id}
+        color={t.color || 'var(--ds-muted)'}
+        label={t.label}
+      />
+    )),
+  ]
+
   return (
     <article
       className="fc-card"
@@ -149,6 +235,7 @@ export default function FeedCardView({
       </div>
 
       <footer className="fc-foot">
+        <ChipOverflowRow chips={chipNodes} />
         {onVote ? (
           <div className="fc-votes">
             <button
@@ -200,27 +287,6 @@ export default function FeedCardView({
             </span>
           </div>
         )}
-
-        <div className="fc-chips">
-          {verbs.map((v) => (
-            <span
-              key={v.label}
-              className="fc-verb"
-              style={v.color ? { ['--vc' as string]: v.color } : undefined}
-            >
-              <i aria-hidden="true" />
-              {v.label}
-            </span>
-          ))}
-          {topics.map((t) => (
-            <TopicPill
-              key={t.id}
-              topicId={t.id}
-              color={t.color || 'var(--ds-muted)'}
-              label={t.label}
-            />
-          ))}
-        </div>
       </footer>
     </article>
   )
