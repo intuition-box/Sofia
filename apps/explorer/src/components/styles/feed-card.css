@@ -597,6 +597,52 @@
   border-radius: 7px;
   padding: 4px 8px;
 }
+/* +N overflow tooltip — same look as the profile calendar tooltip, but
+   defined here so it's styled wherever a feed card renders (the calendar's
+   profile-charts.css is route-lazy and absent on Explore/Circles). */
+.fc-more-tip {
+  position: fixed;
+  transform: translate(-50%, -100%) translateY(-10px);
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  pointer-events: none;
+  box-shadow: 0 10px 28px -10px
+    color-mix(in srgb, var(--ds-ink) 65%, transparent);
+  z-index: 10000;
+}
+.fc-more-tip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--ds-ink);
+}
+.fc-more-tip-row {
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+.fc-more-tip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fc-more-tip-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
 .fc-verb {
   display: inline-flex;
   align-items: center;

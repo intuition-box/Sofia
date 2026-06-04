@@ -122,21 +122,19 @@ function ChipOverflowRow({
         typeof document !== 'undefined' &&
         createPortal(
           <div
-            className="pc-area-tooltip"
+            className="fc-more-tip"
             style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
             role="tooltip"
           >
-            <div className="pc-tt-rows">
-              {chips.slice(shown).map((c, i) => (
-                <div className="pc-tt-row" key={i}>
-                  <span
-                    className="pc-tt-dot"
-                    style={{ background: c.color || 'var(--ds-muted)' }}
-                  />
-                  <span className="pc-tt-label">{c.label}</span>
-                </div>
-              ))}
-            </div>
+            {chips.slice(shown).map((c, i) => (
+              <div className="fc-more-tip-row" key={i}>
+                <span
+                  className="fc-more-tip-dot"
+                  style={{ background: c.color || 'var(--ds-muted)' }}
+                />
+                <span className="fc-more-tip-label">{c.label}</span>
+              </div>
+            ))}
           </div>,
           document.body,
         )}
