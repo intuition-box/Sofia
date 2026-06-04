@@ -44,6 +44,7 @@ import FeedCardView, {
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
+import { categoryPills } from '@/config/contextNodes'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
@@ -510,12 +511,15 @@ export default function ScoresPage() {
     const cardVerbs: FeedCardVerb[] = verb
       ? [{ label: verb.label, color: verb.color }]
       : []
-    const cardTopics: FeedCardTopic[] = cert.topicSlugs
-      .map((s) => {
-        const t = topicById(s)
-        return t ? { id: s, label: t.label, color: t.color } : null
-      })
-      .filter((t): t is NonNullable<typeof t> => t !== null)
+    const cardTopics: FeedCardTopic[] = [
+      ...cert.topicSlugs
+        .map((s) => {
+          const t = topicById(s)
+          return t ? { id: s, label: t.label, color: t.color } : null
+        })
+        .filter((t): t is NonNullable<typeof t> => t !== null),
+      ...categoryPills(cert.contextSlugs),
+    ]
     return (
       <FeedCardView
         key={cert.termId}
@@ -536,7 +540,7 @@ export default function ScoresPage() {
           <ContextPicker
             certTermId={cert.termId}
             certTitle={cleanLabel(cert.objectLabel || domain || '')}
-            existingTopics={cert.topicSlugs}
+            existingTopics={cert.contextSlugs}
           />
         }
       />

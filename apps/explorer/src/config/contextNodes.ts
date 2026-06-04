@@ -14,7 +14,7 @@ import {
   TOPIC_ATOM_IDS,
   CATEGORY_ATOM_IDS,
 } from './atomIds'
-import { CATEGORY_TO_TOPIC } from './taxonomy'
+import { CATEGORY_TO_TOPIC, CATEGORY_BY_ID, TOPIC_BY_ID } from './taxonomy'
 
 export type ContextLevel = 'topic' | 'category'
 
@@ -45,4 +45,34 @@ export function resolveContextAtom(atomId: string): ContextNode | null {
 /** Resolve a context slug (topic or category) to its on-chain atom id. */
 export function contextAtomIdForSlug(slug: string): string | undefined {
   return TOPIC_ATOM_IDS[slug] ?? CATEGORY_ATOM_IDS[slug]
+}
+
+/** Display-pill shape for a category context (matches FeedCardTopic). */
+export interface CategoryPill {
+  id: string
+  label: string
+  color: string
+  /** Parent topic id — drives the pill's family glyph. */
+  glyphTopicId: string
+}
+
+/** From a cert's `contextSlugs`, build display pills for the CATEGORY-level
+ *  contexts only — each carrying its parent topic's color + glyph. Topic-level
+ *  slugs are skipped (the card already shows the rolled-up topic pill). */
+export function categoryPills(
+  contextSlugs: readonly string[],
+): CategoryPill[] {
+  const out: CategoryPill[] = []
+  for (const slug of contextSlugs) {
+    const cat = CATEGORY_BY_ID.get(slug)
+    if (!cat) continue
+    const parent = TOPIC_BY_ID.get(cat.topicId)
+    out.push({
+      id: slug,
+      label: cat.label,
+      color: parent?.color ?? 'var(--ds-muted)',
+      glyphTopicId: cat.topicId,
+    })
+  }
+  return out
 }

@@ -29,6 +29,7 @@ import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
+import { categoryPills } from '@/config/contextNodes'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -307,10 +308,18 @@ export default function PlatformDetailPage() {
                               key={slug}
                               topicId={slug}
                               color={t.color}
-                              label={t.label.split(' ')[0]}
+                              label={t.label}
                             />
                           )
                         })}
+                        {categoryPills(cert.contextSlugs).map((c) => (
+                          <TopicPill
+                            key={c.id}
+                            topicId={c.glyphTopicId}
+                            color={c.color}
+                            label={c.label}
+                          />
+                        ))}
                         {cfg && <VerbPill label={cfg.label} color={cfg.color} />}
                         <span className="fc-tag">
                           {cert.certifierCount} holder

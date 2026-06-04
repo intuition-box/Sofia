@@ -17,6 +17,7 @@ import FeedCardView, {
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
+import { categoryPills } from '@/config/contextNodes'
 import '@/components/styles/feed-card.css'
 
 interface CertFeedCardProps {
@@ -42,12 +43,16 @@ export default function CertFeedCard({
   const verbs: FeedCardVerb[] = verbCfg
     ? [{ label: verbCfg.label, color: verbCfg.color }]
     : []
-  const topics: FeedCardTopic[] = cert.topicSlugs
-    .map((s) => {
-      const t = topicById(s)
-      return t ? { id: s, label: t.label, color: t.color } : null
-    })
-    .filter((t): t is NonNullable<typeof t> => t !== null)
+  // Rolled-up topic pills + the precise category pills (parent topic glyph).
+  const topics: FeedCardTopic[] = [
+    ...cert.topicSlugs
+      .map((s) => {
+        const t = topicById(s)
+        return t ? { id: s, label: t.label, color: t.color } : null
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null),
+    ...categoryPills(cert.contextSlugs),
+  ]
   const title = cleanLabel(cert.objectLabel || domain || '')
 
   return (
@@ -69,7 +74,7 @@ export default function CertFeedCard({
         <ContextPicker
           certTermId={cert.termId}
           certTitle={title}
-          existingTopics={cert.topicSlugs}
+          existingTopics={cert.contextSlugs}
         />
       }
     />

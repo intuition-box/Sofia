@@ -109,6 +109,9 @@ export interface FeedCardTopic {
   label: string
   /** Topic color from the taxonomy — drives the unified <TopicPill> fill. */
   color?: string
+  /** Glyph source — for a CATEGORY pill, pass the parent topic id so the
+   *  family icon shows. Defaults to `id` (a topic shows its own glyph). */
+  glyphTopicId?: string
 }
 
 interface FeedCardViewProps {
@@ -195,7 +198,7 @@ export default function FeedCardView({
     ...topics.map((t) => (
       <TopicPill
         key={`t-${t.id}`}
-        topicId={t.id}
+        topicId={t.glyphTopicId ?? t.id}
         color={t.color || 'var(--ds-muted)'}
         label={t.label}
       />
