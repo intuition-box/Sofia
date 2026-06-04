@@ -1,11 +1,11 @@
 /**
- * UntaggedCertCard — one cert rendered as a feed-style card with the shared
- * <ContextPicker> topic picker.
+ * UntaggedCertCard — one cert rendered as the shared feed-card, mirroring
+ * the cards on `/profile/platform/:domain`: URL preview + title on top, then
+ * a bottom row carrying the verb, any topics queued for tagging (removable),
+ * and the <ContextPicker> "+ Context" button.
  *
- * Shows the cert's favicon / title / host, the topics already queued for
- * tagging (real-time mirror of the cart, each removable) and the picker's
- * "Add topics" button. The picker (multi-select + confirm) is the same
- * control used on the feed cards, so tagging behaves identically everywhere.
+ * The picker (multi-select + confirm) is the same control used on the feed
+ * cards, so tagging behaves identically everywhere.
  */
 import { useMemo } from 'react'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
@@ -14,8 +14,10 @@ import { useCart } from '@/hooks/useCart'
 import { contextCartId } from '@/services/contextCartService'
 import { UrlPreview } from '@/components/UrlPreview'
 import ContextPicker from '@/components/ContextPicker'
+import { VerbPill } from '@/components/profile/FeedPills'
 import TopicBadge from './TopicBadge'
 import '@/components/styles/feed-card.css'
+import '@/components/styles/context-manager.css'
 
 interface UntaggedCertCardProps {
   certTermId: string
@@ -37,7 +39,7 @@ export default function UntaggedCertCard({
   intentionLabel,
 }: UntaggedCertCardProps) {
   const cart = useCart()
-  // Intent colour for the verb chip — same `.fc-verb` style as the feed cards.
+  // Intent colour for the verb pill — same INTENTION_COLORS the feed uses.
   const verbColor = INTENTION_COLORS[intentionLabel] ?? 'var(--ds-muted)'
 
   // Set of topic slugs queued for THIS cert. Recomputed from the cart
@@ -61,54 +63,52 @@ export default function UntaggedCertCard({
 
   return (
     <div
-      className={`ctx-card ctx-card--has-thumb${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
+      className={`feed-card feed-card--has-header${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
     >
       <UrlPreview
         variant="card"
         url={url}
         domain={domain}
-        className="ctx-card-thumb"
+        className="fc-thumb"
         alt={title || domain}
       />
-      <div className="ctx-card-body">
-        <div className="ctx-card-head">
-        {favicon ? (
-          <img
-            src={favicon}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="ctx-card-favicon"
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
-        ) : (
-          <span className="ctx-card-favicon ctx-card-favicon--fallback" />
-        )}
-        <div className="ctx-card-meta">
-          <span className="ctx-card-title">{title || domain}</span>
-          <div className="ctx-card-sub-row">
-            <span
-              className="fc-verb"
-              style={{ ['--vc' as string]: verbColor }}
-            >
-              <i aria-hidden="true" />
-              {intentionLabel}
-            </span>
-            {domain && <span className="ctx-card-sub">{domain}</span>}
-          </div>
+      <div className="fc-head">
+        <div className="fc-favicon">
+          {favicon ? (
+            <img
+              className="fc-favicon-img"
+              src={favicon}
+              alt=""
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            (title || domain).slice(0, 1).toUpperCase()
+          )}
+        </div>
+        <div className="fc-title-wrap">
+          <div className="fc-title">{title || domain}</div>
+          <div className="fc-host">{domain}</div>
         </div>
       </div>
 
-      {queuedList.length > 0 && (
-        <div className="ctx-card-tags">
+      {/* Bottom row: verb + queued topics (removable) + the picker, same
+          shape as the platform-page card's `.fc-bottom`. */}
+      <div className="fc-bottom">
+        <div className="fc-tags">
+          <VerbPill label={intentionLabel} color={verbColor} />
           {queuedList.map((topic) => (
             <button
               key={topic.id}
               type="button"
               className="ctx-card-tag"
               style={{ ['--ctx-tag-color' as string]: topic.color }}
-              onClick={() => cart.removeItem(contextCartId(certTermId, topic.id))}
+              onClick={() =>
+                cart.removeItem(contextCartId(certTermId, topic.id))
+              }
               title="Remove from cart"
             >
               <TopicBadge
@@ -123,15 +123,13 @@ export default function UntaggedCertCard({
               </span>
             </button>
           ))}
+          <ContextPicker
+            certTermId={certTermId}
+            certTitle={title || domain}
+            certFavicon={favicon}
+          />
         </div>
-      )}
       </div>
-
-      <ContextPicker
-        certTermId={certTermId}
-        certTitle={title || domain}
-        certFavicon={favicon}
-      />
     </div>
   )
 }
