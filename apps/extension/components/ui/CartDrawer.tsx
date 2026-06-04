@@ -107,7 +107,10 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     description: item.pageTitle || item.normalizedUrl,
     url: item.url,
     intention: item.intention ?? undefined,
-    interestContext: item.interestContext
+    interestContext: item.interestContext,
+    interestContexts:
+      item.interestContexts ??
+      (item.interestContext ? [item.interestContext] : [])
   }))
 
   if (!isOpen) return null

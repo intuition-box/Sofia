@@ -16,7 +16,8 @@ import {
 } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
+import { contextLabel } from "~/lib/config/contextDisplay"
+import ContextPills from "../ui/ContextPills"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
 import {
   INTENTION_CONFIG,
@@ -266,9 +267,16 @@ const WeightModal = ({
       }
     }
 
-    const contextTripleCount = triplets.filter(
-      (t, i) => !removedIndices.has(i) && t.interestContext
-    ).length
+    // One context triple is minted per context slug, so sum across triplets.
+    const contextTripleCount = triplets.reduce((n, t, i) => {
+      if (removedIndices.has(i)) return n
+      const c = t.interestContexts?.length
+        ? t.interestContexts.length
+        : t.interestContext
+          ? 1
+          : 0
+      return n + c
+    }, 0)
     const totalPPPercentage = hasPlatforms
       ? detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) /
         detectedPlatforms.length
@@ -702,12 +710,13 @@ const WeightModal = ({
                       intentKey && intentKey in INTENTION_CONFIG
                         ? INTENTION_CONFIG[intentKey]
                         : null
-                    const topic = triplet.interestContext
-                      ? contextLabel(triplet.interestContext)
-                      : null
-                    const topicColor = triplet.interestContext
-                      ? contextColor(triplet.interestContext)
-                      : null
+                    const ctxSlugs =
+                      triplet.interestContexts &&
+                      triplet.interestContexts.length
+                        ? triplet.interestContexts
+                        : triplet.interestContext
+                          ? [triplet.interestContext]
+                          : []
                     const canToggleOff = activeCount > 1
                     const lockedSingle = triplets.length <= 1
                     const platform =
@@ -780,7 +789,7 @@ const WeightModal = ({
                           <div className="b3-row-sub" title={triplet.url}>
                             {hostFromUrl(triplet.url)}
                           </div>
-                          {(intentEntry || topic) && (
+                          {(intentEntry || ctxSlugs.length > 0) && (
                             <div className="b3-row-tags">
                               {intentEntry && (
                                 <VerbTag
@@ -788,18 +797,7 @@ const WeightModal = ({
                                   label={intentEntry.label}
                                 />
                               )}
-                              {topic && topicColor && (
-                                <span
-                                  className="amp-tag"
-                                  style={
-                                    {
-                                      "--tag-color": topicColor,
-                                      "--tag-pastel": topicColor
-                                    } as React.CSSProperties
-                                  }>
-                                  {topic}
-                                </span>
-                              )}
+                              <ContextPills slugs={ctxSlugs} />
                             </div>
                           )}
                         </div>
@@ -1107,11 +1105,19 @@ const WeightModal = ({
                         {t.description || t.triplet.object}
                       </span>
                       <span className="rc-mark-meta">
-                        {t.interestContext && (
-                          <span className="rc-mark-ctx">
-                            {t.interestContext}
-                          </span>
-                        )}
+                        {(t.interestContexts?.length
+                          ? t.interestContexts
+                          : t.interestContext
+                            ? [t.interestContext]
+                            : []
+                        ).map((slug) => {
+                          const l = contextLabel(slug)
+                          return l ? (
+                            <span className="rc-mark-ctx" key={slug}>
+                              {l}
+                            </span>
+                          ) : null
+                        })}
                         <span className="rc-mark-host">
                           {hostFromUrl(t.url)}
                         </span>

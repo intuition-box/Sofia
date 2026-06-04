@@ -35,7 +35,10 @@ export interface ModalTriplet {
   description: string
   url: string
   intention?: IntentionPurpose | IntentionType
+  /** Primary context (= interestContexts[0]) — back-compat. */
   interestContext?: string | null
+  /** All context slugs (topics and/or categories) for multi-pill display. */
+  interestContexts?: string[]
 }
 
 interface TrustDistrustState {
