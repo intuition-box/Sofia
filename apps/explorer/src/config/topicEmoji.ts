@@ -20,6 +20,8 @@ export const TOPIC_EMOJI: Record<string, string> = {
   'food-lifestyle': '🍽️',
   literature: '📚',
   'personal-dev': '🧠',
+  ai: '🤖',
+  tooling: '🛠️',
 }
 
 export function getTopicEmoji(slug: string): string {
@@ -50,6 +52,8 @@ export const TOPIC_ICON: Record<string, string> = {
   'food-lifestyle': 'restaurant',
   literature: 'menu_book',
   'personal-dev': 'psychology',
+  ai: 'smart_toy',
+  tooling: 'build',
 }
 
 const DEFAULT_TOPIC_ICON = 'label'
@@ -79,6 +83,8 @@ export const TOPIC_SHORT_LABEL: Record<string, string> = {
   'food-lifestyle': 'FOOD',
   literature: 'LITERATURE',
   'personal-dev': 'GROWTH',
+  ai: 'AI',
+  tooling: 'TOOLS',
 }
 
 export function getTopicShortLabel(slug: string, fallback: string): string {

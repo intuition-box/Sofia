@@ -3,7 +3,7 @@
  * Do not edit manually. Re-generate with: python3 scripts/sync-atom-ids.py
  */
 
-// 14 topic atoms
+// 16 topic atoms
 export const TOPIC_ATOM_IDS: Record<string, string> = {
   'tech-dev':
     '0x61524d6e0b5632736b5dc1cd5f77d3a87eb67f6f36824eaad3410feba9004c56',
@@ -31,6 +31,11 @@ export const TOPIC_ATOM_IDS: Record<string, string> = {
     '0x98e0dac5206f5e089f25057cb2feec9d35d89ba6e765f60db8e5e093ec8ff166',
   'personal-dev':
     '0x36e25f1b36a2597e093feeb7b59357d06c318fc88c1452faffe9ef5ee6d001c1',
+  // Reuses the existing "AI / Machine Learning" atom (also CATEGORY_ATOM_IDS['ai-ml']).
+  ai: '0x1bdd032e96e2e32f00b0b371c5ecf47a8f22b765fce94ec96eb0d18ba6873dac',
+  // Generic "tool" atom.
+  tooling:
+    '0x20abbd15bf2a0e503b9ba2b941e15c3847e67ed6d99fc645523f27d2a84c5e4e',
 }
 
 // 161 category atoms

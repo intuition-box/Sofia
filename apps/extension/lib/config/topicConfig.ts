@@ -4,7 +4,7 @@
  * Source: sofia-explorer/src/config/atomIds.ts
  */
 
-// 14 topic atoms
+// 16 topic atoms
 export const TOPIC_ATOM_IDS: Record<string, string> = {
   "tech-dev": "0x61524d6e0b5632736b5dc1cd5f77d3a87eb67f6f36824eaad3410feba9004c56",
   "design-creative": "0x420ea4d0eba3364dbca6e84f6ed7f27c8fc4c197a0b4fcf8954e93a017a51f11",
@@ -20,6 +20,8 @@ export const TOPIC_ATOM_IDS: Record<string, string> = {
   "food-lifestyle": "0x38173dfb0b4aef222fa0aa354d2437b35b703d766a2aa6ee374299b218807202",
   "literature": "0x98e0dac5206f5e089f25057cb2feec9d35d89ba6e765f60db8e5e093ec8ff166",
   "personal-dev": "0x36e25f1b36a2597e093feeb7b59357d06c318fc88c1452faffe9ef5ee6d001c1",
+  "ai": "0x1bdd032e96e2e32f00b0b371c5ecf47a8f22b765fce94ec96eb0d18ba6873dac",
+  "tooling": "0x20abbd15bf2a0e503b9ba2b941e15c3847e67ed6d99fc645523f27d2a84c5e4e",
 }
 
 // All topic term_ids as array (for GraphQL batch queries)
@@ -41,6 +43,8 @@ export const TOPIC_LABELS: Record<string, string> = {
   "food-lifestyle": "Food",
   "literature": "Literature",
   "personal-dev": "Growth",
+  "ai": "AI",
+  "tooling": "Tooling",
 }
 
 // Topic colors — pulled 1:1 from sofia-explorer SOFIA_TOPICS taxonomy
@@ -61,6 +65,8 @@ export const TOPIC_COLORS: Record<string, string> = {
   "food-lifestyle":     "#f2c36b",
   "literature":         "#9fb6e2",
   "personal-dev":       "#b5d68f",
+  "ai":                 "#a78bfa",
+  "tooling":            "#f59e0b",
 }
 
 // Reverse lookup: atom term_id → topic slug
@@ -85,7 +91,9 @@ export const TOPIC_ICON: Record<string, string> = {
   "nature-environment": "forest",
   "food-lifestyle": "restaurant",
   "literature": "menu_book",
-  "personal-dev": "psychology"
+  "personal-dev": "psychology",
+  "ai": "smart_toy",
+  "tooling": "build"
 }
 
 const DEFAULT_TOPIC_ICON = "label"

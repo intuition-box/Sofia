@@ -2547,6 +2547,28 @@ export const SOFIA_TOPICS: Topic[] = [
       },
     ],
   },
+  // =========================================================================
+  // 15. AI  (taggable context — atom reused from "AI / Machine Learning")
+  // =========================================================================
+  {
+    id: 'ai',
+    label: 'AI',
+    icon: 'smart_toy',
+    color: '#a78bfa',
+    primaryPlatforms: [],
+    categories: [],
+  },
+  // =========================================================================
+  // 16. TOOLING  (taggable context — generic "tool" atom)
+  // =========================================================================
+  {
+    id: 'tooling',
+    label: 'Tooling',
+    icon: 'build',
+    color: '#f59e0b',
+    primaryPlatforms: [],
+    categories: [],
+  },
 ]
 
 // =============================================================================
