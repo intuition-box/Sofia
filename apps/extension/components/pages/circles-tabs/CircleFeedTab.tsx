@@ -47,10 +47,10 @@ const logger = createHookLogger("CircleFeedTab")
 const PAGE_SIZE = 1000
 const MAX_PAGES = 50
 
-// Predicate labels that count as a "certification" — identical set to
-// the explorer's `PERSPECTIVE_PREDICATE_LABELS`. Trust/distrust are
-// intentionally excluded: those are people-to-people signals, not URL
-// claims. Label-based (not id-based) so Music + Buying are included.
+// Predicate labels that count as circle activity — kept identical to the
+// explorer's circle feed (sofiaFeedService / circleService) so the two show
+// the same data. Includes trusts/distrust: in Sofia those are staked on
+// pages/URLs too (e.g. "trusts <site>"), so they belong in the feed.
 const PERSPECTIVE_PREDICATE_LABELS: string[] = [
   "visits for work",
   "visits for learning",
@@ -58,7 +58,9 @@ const PERSPECTIVE_PREDICATE_LABELS: string[] = [
   "visits for fun",
   "visits for inspiration",
   "visits for buying",
-  "visits for music"
+  "visits for music",
+  "trusts",
+  "distrust"
 ]
 
 // Extract domain from URL
@@ -438,7 +440,16 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
       }
     }
 
-    return [...groups.values()]
+    // Most recent first (the query returns term_id order, not chronological),
+    // so the newest circle activity surfaces at the top like the explorer.
+    return [...groups.values()].sort((a, b) => {
+      const ta = Date.parse(a.createdAt)
+      const tb = Date.parse(b.createdAt)
+      if (Number.isNaN(ta) && Number.isNaN(tb)) return 0
+      if (Number.isNaN(ta)) return 1
+      if (Number.isNaN(tb)) return -1
+      return tb - ta
+    })
   }, [feedItems])
 
   // Filter grouped items by verb (intention type) then by topic. Topic
