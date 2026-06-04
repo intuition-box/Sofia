@@ -12,6 +12,7 @@ import FeedCardView, {
   type FeedCardVerb,
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
+import ContextPicker from '@/components/ContextPicker'
 import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
@@ -60,6 +61,14 @@ export default function FeedCard({
       return { id: slug, label: meta?.label ?? slug, color: meta?.color }
     })
 
+  // The "in context of" subject is a cert triple term_id; a cert can hold
+  // several (one per intention vault). Pick the first deterministically so the
+  // cart dedupe id is stable across re-renders.
+  const certTermId = Object.values(item.intentionVaults)
+    .map((v) => v.termId)
+    .filter(Boolean)
+    .sort()[0]
+
   return (
     <FeedCardView
       handle={isPrivate ? 'Someone' : displayName}
@@ -82,6 +91,14 @@ export default function FeedCard({
       onOpen={() => {
         if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer')
       }}
+      addContextSlot={
+        <ContextPicker
+          certTermId={certTermId}
+          certTitle={item.title || item.domain}
+          certFavicon={item.favicon}
+          existingTopics={item.topicContexts}
+        />
+      }
     />
   )
 }

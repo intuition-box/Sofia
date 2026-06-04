@@ -43,6 +43,7 @@ import FeedCardView, {
   type FeedCardVerb,
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
+import ContextPicker from '@/components/ContextPicker'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
@@ -498,6 +499,13 @@ export default function ScoresPage() {
         onOpen={() => {
           if (url) window.open(url, '_blank', 'noopener,noreferrer')
         }}
+        addContextSlot={
+          <ContextPicker
+            certTermId={cert.termId}
+            certTitle={cleanLabel(cert.objectLabel || domain || '')}
+            existingTopics={cert.topicSlugs}
+          />
+        }
       />
     )
   }

@@ -15,6 +15,7 @@ import FeedCardView, {
   type FeedCardVerb,
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
+import ContextPicker from '@/components/ContextPicker'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedCardProps {
@@ -82,6 +83,14 @@ export default function CircleFeedCard({
   const canSupport = item.contextTriples.some((c) => c.termId)
   const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
+  // Subject for a new "in context of" triple — the cert triple term_id. A
+  // cert can hold several (one per intention vault); pick the first
+  // deterministically so the cart dedupe id stays stable.
+  const certTermId = Object.values(item.intentionVaults)
+    .map((v) => v.termId)
+    .filter(Boolean)
+    .sort()[0]
+
   // The whole card opens the URL, so the certifier handle can't be a nested
   // <a>. Render it as a click-to-navigate span that stops propagation.
   const handleSlot = item.certifierAddress ? (
@@ -129,6 +138,14 @@ export default function CircleFeedCard({
           window.open(item.url, '_blank', 'noopener,noreferrer')
         }
       }}
+      addContextSlot={
+        <ContextPicker
+          certTermId={certTermId}
+          certTitle={item.title || host}
+          certFavicon={item.favicon}
+          existingTopics={item.topicContexts}
+        />
+      }
     />
   )
 }

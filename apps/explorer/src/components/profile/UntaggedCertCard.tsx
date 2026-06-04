@@ -1,27 +1,18 @@
 /**
- * UntaggedCertCard — one cert rendered as a feed-style card with a
- * popover topic picker.
+ * UntaggedCertCard — one cert rendered as a feed-style card with the shared
+ * <ContextPicker> topic picker.
  *
- * Each card shows the cert's favicon / title / host, the topics
- * already queued for tagging (real-time mirror of the cart) and a
- * "Add topics" button that opens a popover with the full taxonomy.
- * Toggling a topic chip queues or un-queues the matching nested
- * triple via the cart.
+ * Shows the cert's favicon / title / host, the topics already queued for
+ * tagging (real-time mirror of the cart, each removable) and the picker's
+ * "Add topics" button. The picker (multi-select + confirm) is the same
+ * control used on the feed cards, so tagging behaves identically everywhere.
  */
 import { useMemo } from 'react'
-import { Plus, Check } from 'lucide-react'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { useCart } from '@/hooks/useCart'
-import {
-  buildContextCartItem,
-  contextCartId,
-} from '@/services/contextCartService'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { contextCartId } from '@/services/contextCartService'
 import { UrlPreview } from '@/components/UrlPreview'
+import ContextPicker from '@/components/ContextPicker'
 import TopicBadge from './TopicBadge'
 
 interface UntaggedCertCardProps {
@@ -59,23 +50,6 @@ export default function UntaggedCertCard({
     }
     return set
   }, [cart.items, certTermId])
-
-  const toggle = (slug: string, label: string, color: string) => {
-    const id = contextCartId(certTermId, slug)
-    if (queuedTopics.has(slug)) {
-      cart.removeItem(id)
-      return
-    }
-    const item = buildContextCartItem({
-      certTermId,
-      topicSlug: slug,
-      topicLabel: label,
-      topicColor: color,
-      certTitle: title || domain,
-      certFavicon: favicon,
-    })
-    if (item) cart.addItem(item)
-  }
 
   const queuedList = [...queuedTopics]
     .map((slug) => TOPIC_BY_ID.get(slug))
@@ -123,7 +97,7 @@ export default function UntaggedCertCard({
               type="button"
               className="ctx-card-tag"
               style={{ ['--ctx-tag-color' as string]: topic.color }}
-              onClick={() => toggle(topic.id, topic.label, topic.color)}
+              onClick={() => cart.removeItem(contextCartId(certTermId, topic.id))}
               title="Remove from cart"
             >
               <TopicBadge
@@ -141,46 +115,12 @@ export default function UntaggedCertCard({
         </div>
       )}
 
-      <Popover>
-        <PopoverTrigger asChild>
-          <button type="button" className="ctx-card-add">
-            <Plus className="h-3.5 w-3.5" />
-            {queuedTopics.size === 0 ? 'Add topics' : 'Edit topics'}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="ctx-popover" sideOffset={6}>
-          <p className="ctx-popover-title">Tag this URL with…</p>
-          <div className="ctx-popover-list">
-            {SOFIA_TOPICS.map((topic) => {
-              const active = queuedTopics.has(topic.id)
-              return (
-                <button
-                  key={topic.id}
-                  type="button"
-                  className={`ctx-popover-item${active ? ' ctx-popover-item--active' : ''}`}
-                  onClick={() => toggle(topic.id, topic.label, topic.color)}
-                  style={
-                    active
-                      ? ({
-                          ['--ctx-tag-color' as string]: topic.color,
-                        } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  <TopicBadge
-                    topicId={topic.id}
-                    color={topic.color}
-                    size={22}
-                    title={topic.label}
-                  />
-                  <span className="ctx-popover-label">{topic.label}</span>
-                  {active && <Check className="h-3.5 w-3.5" />}
-                </button>
-              )
-            })}
-          </div>
-        </PopoverContent>
-      </Popover>
+      <ContextPicker
+        variant="manager"
+        certTermId={certTermId}
+        certTitle={title || domain}
+        certFavicon={favicon}
+      />
     </div>
   )
 }

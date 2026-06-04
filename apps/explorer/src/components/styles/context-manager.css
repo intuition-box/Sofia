@@ -360,6 +360,41 @@
   flex: 1;
   min-width: 0;
 }
+/* Already-applied / already-queued topic — dimmed and non-interactive so it
+   can't be added twice (feed AddContextButton multi-select picker). */
+.ctx-popover-item--done {
+  opacity: 0.5;
+  cursor: default;
+}
+.ctx-popover-item--done:hover {
+  background: transparent;
+  color: var(--ds-ink-soft);
+}
+/* Confirm button for the multi-select picker. */
+.ctx-popover-confirm {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--ds-accent);
+  color: #02000e;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.13s ease;
+}
+.ctx-popover-confirm:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+.ctx-popover-confirm:disabled {
+  cursor: default;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+}
 
 /* ── Sticky footer ────────────────────────────────────────────────── */
 

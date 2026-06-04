@@ -35,7 +35,16 @@ import { TopicPill } from '@/components/profile/FeedPills'
  * that fit + the badge, so it never flashes a wrapped second line. One slot
  * is reserved for the badge so it always fits on the first line.
  */
-function ChipOverflowRow({ chips }: { chips: ReactNode[] }) {
+function ChipOverflowRow({
+  chips,
+  trailing,
+}: {
+  chips: ReactNode[]
+  /** Always-visible node appended after the chips + overflow badge (e.g. the
+   *  "+ Context" button). Sits inline on the same row when there's room and
+   *  wraps below only when the chips fill the line. */
+  trailing?: ReactNode
+}) {
   const mirror = useRef<HTMLDivElement>(null)
   const total = chips.length
   const [shown, setShown] = useState(total)
@@ -75,7 +84,7 @@ function ChipOverflowRow({ chips }: { chips: ReactNode[] }) {
           </span>
         ))}
       </div>
-      {/* visible row — only what fits, + the overflow badge */}
+      {/* visible row — only what fits, + the overflow badge + trailing slot */}
       <div className="fc-chips">
         {chips.slice(0, shown).map((c, i) => (
           <span key={i} className="fc-chip-slot">
@@ -83,6 +92,7 @@ function ChipOverflowRow({ chips }: { chips: ReactNode[] }) {
           </span>
         ))}
         {hidden > 0 && <span className="fc-chip-more">+{hidden}</span>}
+        {trailing}
       </div>
     </div>
   )
@@ -130,6 +140,9 @@ interface FeedCardViewProps {
   /** Optional interactive handle (e.g. a link to the certifier profile).
    *  When given, replaces the plain-text handle. */
   handleSlot?: ReactNode
+  /** Optional "+ Context" affordance rendered in the footer (between the
+   *  chip row and the votes). Callers build it so this view stays data-free. */
+  addContextSlot?: ReactNode
 }
 
 export default function FeedCardView({
@@ -151,6 +164,7 @@ export default function FeedCardView({
   voteDisabledReason = 'No topic to endorse yet — this URL has no “in context of” tag.',
   onOpen,
   handleSlot,
+  addContextSlot,
 }: FeedCardViewProps) {
   const initials = (handle || '?').replace(/^0x/, '').slice(0, 2).toUpperCase()
 
@@ -235,7 +249,7 @@ export default function FeedCardView({
       </div>
 
       <footer className="fc-foot">
-        <ChipOverflowRow chips={chipNodes} />
+        <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
         {onVote ? (
           <div className="fc-votes">
             <button
