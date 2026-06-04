@@ -13,6 +13,7 @@ import FeedCardView, {
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
+import { categoryPills } from '@/config/contextNodes'
 import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
@@ -54,12 +55,13 @@ export default function FeedCard({
     color: INTENTION_COLORS[label],
   }))
 
-  const topics: FeedCardTopic[] = (item.topicContexts ?? [])
-    .slice(0, 2)
-    .map((slug) => {
+  const topics: FeedCardTopic[] = [
+    ...(item.topicContexts ?? []).map((slug) => {
       const meta = SOFIA_TOPICS.find((t) => t.id === slug)
       return { id: slug, label: meta?.label ?? slug, color: meta?.color }
-    })
+    }),
+    ...categoryPills(item.categorySlugs ?? []),
+  ]
 
   // The "in context of" subject is a cert triple term_id; a cert can hold
   // several (one per intention vault). Pick the first deterministically so the
@@ -96,7 +98,10 @@ export default function FeedCard({
           certTermId={certTermId}
           certTitle={item.title || item.domain}
           certFavicon={item.favicon}
-          existingTopics={item.topicContexts}
+          existingTopics={[
+            ...(item.topicContexts ?? []),
+            ...(item.categorySlugs ?? []),
+          ]}
         />
       }
     />

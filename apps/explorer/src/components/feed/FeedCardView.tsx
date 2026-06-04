@@ -183,8 +183,18 @@ export default function FeedCardView({
     onVote?.(side)
   }
 
-  // Verbs then topics, as one chip stream the overflow row lays out.
+  // Topics + categories first, verbs last — the verb is the least important
+  // chip, so it's the one that collapses into the `+N` badge when the row is
+  // tight. The overflow row lays the whole stream out on one line.
   const chipNodes: ReactNode[] = [
+    ...topics.map((t) => (
+      <TopicPill
+        key={`t-${t.id}`}
+        topicId={t.glyphTopicId ?? t.id}
+        color={t.color || 'var(--ds-muted)'}
+        label={t.label}
+      />
+    )),
     ...verbs.map((v) => (
       <span
         key={`v-${v.label}`}
@@ -194,14 +204,6 @@ export default function FeedCardView({
         <i aria-hidden="true" />
         {v.label}
       </span>
-    )),
-    ...topics.map((t) => (
-      <TopicPill
-        key={`t-${t.id}`}
-        topicId={t.glyphTopicId ?? t.id}
-        color={t.color || 'var(--ds-muted)'}
-        label={t.label}
-      />
     )),
   ]
 

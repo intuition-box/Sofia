@@ -107,7 +107,13 @@ const CONTEXT_TRIPLES_QUERY = `
 /** One stakeable "in context of <topic>" nested triple resolved for a cert,
  *  with its like/dislike terms + position tallies. */
 export interface ContextTripleData {
+  /** Rolled-up parent topic slug (drives the topic pill + drill grouping). */
   topicSlug: string
+  /** Precise context slug — the category slug for a category tag, else the
+   *  topic slug. */
+  contextSlug: string
+  /** True when this context is a category (vs a whole topic). */
+  isCategory: boolean
   termId: string
   counterTermId: string
   supportCount: number
@@ -156,6 +162,8 @@ async function fetchContextTriples(
 
       const entry: ContextTripleData = {
         topicSlug,
+        contextSlug: node.slug,
+        isCategory: node.level === 'category',
         termId,
         counterTermId: t.counter_term_id ?? '',
         supportCount: sumVaultPositions(t.term?.vaults),
@@ -278,6 +286,7 @@ export function processEvents(
         timestamp: evt.created_at || '',
         intentionVaults,
         topicContexts: [],
+        categorySlugs: [],
         contextTriples: [],
       })
     }
@@ -318,9 +327,13 @@ export async function enrichWithTopicContexts(
     if (!linkedItems) continue
     for (const item of linkedItems) {
       for (const ctx of contexts) {
-        // Topic slug (drives the topic pills).
+        // Topic slug (drives the topic pills + drill grouping).
         if (!item.topicContexts.includes(ctx.topicSlug)) {
           item.topicContexts.push(ctx.topicSlug)
+        }
+        // Precise category slug (drives the category pills).
+        if (ctx.isCategory && !item.categorySlugs.includes(ctx.contextSlug)) {
+          item.categorySlugs.push(ctx.contextSlug)
         }
         // Stakeable context triple (drives like/dislike). A cert can back
         // several items (one per intention vault) — dedupe by term id.

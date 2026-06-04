@@ -16,6 +16,7 @@ import FeedCardView, {
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
+import { categoryPills } from '@/config/contextNodes'
 import '@/components/styles/feed-card.css'
 
 interface CircleFeedCardProps {
@@ -53,13 +54,15 @@ export default function CircleFeedCard({
     .slice(0, 2)
     .map((label) => ({ label, color: INTENTION_COLORS[label] }))
 
-  const topics: FeedCardTopic[] = item.topicContexts
-    .map((id) => {
-      const t = topicById(id)
-      return t ? { id, label: t.label, color: t.color } : null
-    })
-    .filter((t): t is NonNullable<typeof t> => t !== null)
-    .slice(0, 2)
+  const topics: FeedCardTopic[] = [
+    ...item.topicContexts
+      .map((id) => {
+        const t = topicById(id)
+        return t ? { id, label: t.label, color: t.color } : null
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null),
+    ...categoryPills(item.categorySlugs ?? []),
+  ]
 
   // A like/dislike stakes the cert's "in context of <topic>" nested triples
   // (one click = one position on the topic context, no verb picker), so the
@@ -143,7 +146,10 @@ export default function CircleFeedCard({
           certTermId={certTermId}
           certTitle={item.title || host}
           certFavicon={item.favicon}
-          existingTopics={item.topicContexts}
+          existingTopics={[
+            ...item.topicContexts,
+            ...(item.categorySlugs ?? []),
+          ]}
         />
       }
     />
