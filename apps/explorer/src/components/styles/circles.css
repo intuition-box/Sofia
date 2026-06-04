@@ -1975,10 +1975,17 @@
   gap: 6px;
 }
 .crd-te-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--ds-muted);
+  font-size: 11px;
+  color: var(--trusted);
   font-weight: 600;
+}
+.crd-te-count svg {
+  width: 13px;
+  height: 13px;
 }
 .crd-user-filter-label {
   font-family: 'JetBrains Mono', monospace;

@@ -4,6 +4,7 @@
  * below the filter row so it reads as the curated header of the feed
  * rather than a separate band.
  */
+import { ThumbsUp } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
 import { UrlPreview } from '@/components/UrlPreview'
 import { extractDomain } from '@/utils/formatting'
@@ -38,7 +39,7 @@ export default function CircleTopEngagedStrip({
       </div>
       <div className="crd-top-engaged-strip">
         {items.map((item) => {
-          const { supports, opposes } = aggregateCounts(item)
+          const { supports } = aggregateCounts(item)
           const host = item.domain || (item.url ? extractDomain(item.url) : '')
           const href = item.url && item.url.startsWith('http') ? item.url : '#'
           return (
@@ -59,7 +60,10 @@ export default function CircleTopEngagedStrip({
               />
               <p className="crd-te-title">{item.title || host}</p>
               <div className="crd-te-meta">
-                <span className="crd-te-count">{supports + opposes}</span>
+                <span className="crd-te-count" title={`${supports} like${supports === 1 ? '' : 's'}`}>
+                  <ThumbsUp aria-hidden="true" />
+                  {supports}
+                </span>
               </div>
             </a>
           )
