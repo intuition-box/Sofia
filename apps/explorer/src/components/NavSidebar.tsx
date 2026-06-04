@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   usePrivy,
   useLogin,
@@ -60,9 +60,12 @@ export function NavSidebar({
   onToggleCollapse,
 }: NavSidebarProps = {}) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { ready, authenticated, user } = usePrivy()
   const { login } = useLogin()
-  const { logout } = useLogout()
+  // On disconnect, send the user to the landing/login page ('/') rather than
+  // leaving them on a now-unauthenticated route (which would bounce to /explore).
+  const { logout } = useLogout({ onSuccess: () => navigate('/') })
   const { linkWallet } = useLinkAccount({
     onSuccess: () => window.location.reload(),
   })
@@ -114,7 +117,7 @@ export function NavSidebar({
     public: boolean
   }[] = [
     { to: '/circles', icon: Users, label: 'Circles', public: false },
-    { to: '/feed', icon: Globe, label: 'Explore', public: true },
+    { to: '/explore', icon: Globe, label: 'Explore', public: true },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
   ]

@@ -10,7 +10,7 @@ export interface PageColorConfig {
  * that tells the user what the page shows and what they can do on it.
  */
 export const PAGE_COLORS: Record<string, PageColorConfig> = {
-  '/feed': {
+  '/explore': {
     color: '#ffc6b0',
     title: 'Explore',
     subtitle:

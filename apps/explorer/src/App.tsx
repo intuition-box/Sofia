@@ -72,7 +72,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { ready, authenticated } = usePrivy()
   const { isViewingAs } = useViewAs()
   if (!ready) return null
-  if (!authenticated && !isViewingAs) return <Navigate to="/feed" replace />
+  if (!authenticated && !isViewingAs) return <Navigate to="/explore" replace />
   return <>{children}</>
 }
 
@@ -100,7 +100,7 @@ export default function App() {
   // Routes that run full-width — no ProfileDrawer, no RightSidebar.
   const isFullWidthPage =
     location.pathname.startsWith('/circles') ||
-    location.pathname.startsWith('/feed') ||
+    location.pathname.startsWith('/explore') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
     location.pathname.startsWith('/vote') ||
@@ -290,7 +290,12 @@ export default function App() {
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 {/* Public routes */}
-                <Route path="/feed" element={<DashboardPage />} />
+                <Route path="/explore" element={<DashboardPage />} />
+                {/* Legacy alias — /feed was renamed to /explore. */}
+                <Route
+                  path="/feed"
+                  element={<Navigate to="/explore" replace />}
+                />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route
                   path="/profile/:address"

@@ -16,7 +16,7 @@ export function RightSidebar({ hidden = false }: { hidden?: boolean }) {
   // Every consumer route (full-width pages, profile pages, cart open,
   // non-desktop) currently passes `hidden`. Early-return so the rail's
   // GraphQL hooks (useEnsNames, TrendingPages → useTrending) don't fire
-  // on /feed cold-load and pile onto the upstream rate-limit gate.
+  // on /explore cold-load and pile onto the upstream rate-limit gate.
   if (hidden) return null
 
   return <RightSidebarContent />

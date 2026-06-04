@@ -172,7 +172,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 className="lp-btn lp-btn-quiet"
-                onClick={() => navigate('/feed')}
+                onClick={() => navigate('/explore')}
               >
                 <span className="lp-icon" aria-hidden>
                   <svg

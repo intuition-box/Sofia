@@ -204,7 +204,7 @@ export default function DashboardPage() {
     ? spaceParam.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : ''
 
-  const pc = PAGE_COLORS['/feed']
+  const pc = PAGE_COLORS['/explore']
 
   return (
     <div>
