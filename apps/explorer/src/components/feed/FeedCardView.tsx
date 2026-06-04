@@ -20,6 +20,7 @@
  * hands it down. No data fetching, no business rules here.
  */
 import { useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { UrlPreview } from '@/components/UrlPreview'
@@ -39,6 +40,8 @@ interface OverflowChip {
   node: ReactNode
   /** Plain-text label — surfaced in the `+N` badge tooltip when hidden. */
   label: string
+  /** Dot color in the tooltip (topic/category color, or intent color). */
+  color?: string
 }
 
 function ChipOverflowRow({
@@ -54,6 +57,9 @@ function ChipOverflowRow({
   const mirror = useRef<HTMLDivElement>(null)
   const total = chips.length
   const [shown, setShown] = useState(total)
+  // Styled tooltip for the +N badge — same portal + .pc-area-tooltip used by
+  // the profile calendar, anchored to the badge's viewport rect.
+  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
 
   useLayoutEffect(() => {
     const el = mirror.current
@@ -100,16 +106,40 @@ function ChipOverflowRow({
         {hidden > 0 && (
           <span
             className="fc-chip-more"
-            title={chips
-              .slice(shown)
-              .map((c) => c.label)
-              .join(', ')}
+            onMouseEnter={(e) => {
+              const r = e.currentTarget.getBoundingClientRect()
+              setTip({ left: r.left + r.width / 2, top: r.top })
+            }}
+            onMouseLeave={() => setTip(null)}
           >
             +{hidden}
           </span>
         )}
         {trailing}
       </div>
+      {tip &&
+        hidden > 0 &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="pc-area-tooltip"
+            style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
+            role="tooltip"
+          >
+            <div className="pc-tt-rows">
+              {chips.slice(shown).map((c, i) => (
+                <div className="pc-tt-row" key={i}>
+                  <span
+                    className="pc-tt-dot"
+                    style={{ background: c.color || 'var(--ds-muted)' }}
+                  />
+                  <span className="pc-tt-label">{c.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
@@ -205,6 +235,7 @@ export default function FeedCardView({
   const chipNodes: OverflowChip[] = [
     ...topics.map((t) => ({
       label: t.label,
+      color: t.color,
       node: (
         <TopicPill
           key={`t-${t.id}`}
@@ -216,6 +247,7 @@ export default function FeedCardView({
     })),
     ...verbs.map((v) => ({
       label: v.label,
+      color: v.color,
       node: (
         <span
           key={`v-${v.label}`}
