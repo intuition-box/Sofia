@@ -29,7 +29,7 @@ export const TOPIC_TERM_IDS = Object.values(TOPIC_ATOM_IDS)
 
 // Display labels
 export const TOPIC_LABELS: Record<string, string> = {
-  "tech-dev": "Tech & Dev",
+  "tech-dev": "Tech",
   "design-creative": "Design",
   "music-audio": "Music",
   "gaming": "Gaming",

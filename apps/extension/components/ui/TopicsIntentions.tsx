@@ -84,7 +84,7 @@ export function TopicsIntentions({
   const cy = 240
 
   const TOPIC_NAMES = [
-    'TECH & DEV',
+    'TECH',
     'DESIGN',
     'MUSIC',
     'GAMING',

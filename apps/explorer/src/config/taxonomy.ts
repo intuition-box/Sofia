@@ -12,7 +12,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'tech-dev',
-    label: 'Tech & Dev',
+    label: 'Tech',
     icon: 'keyboard',
     color: '#7bade0',
     primaryPlatforms: [
@@ -212,7 +212,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'design-creative',
-    label: 'Design & Visual Arts',
+    label: 'Design',
     icon: 'palette',
     color: '#d98cb3',
     primaryPlatforms: ['figma', 'behance', 'dribbble', 'sketchfab', 'flickr'],
@@ -369,7 +369,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'music-audio',
-    label: 'Music & Audio',
+    label: 'Music',
     icon: 'music',
     color: '#e0896a',
     primaryPlatforms: [
@@ -739,7 +739,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'web3-crypto',
-    label: 'Web3 & Crypto',
+    label: 'Web3',
     icon: 'link',
     color: '#6dd4a0',
     primaryPlatforms: [
@@ -1009,7 +1009,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'science',
-    label: 'Science & Knowledge',
+    label: 'Science',
     icon: 'microscope',
     color: '#5cc4d6',
     primaryPlatforms: ['orcid', 'arxiv', 'pubmed', 'wikipedia', 'duolingo'],
@@ -1199,7 +1199,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'sport-health',
-    label: 'Sport & Health',
+    label: 'Sport',
     icon: 'running',
     color: '#e4b95a',
     primaryPlatforms: ['strava', 'garmin', 'komoot', 'inaturalist', 'ebird'],
@@ -1381,7 +1381,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'video-cinema',
-    label: 'Video & Cinema',
+    label: 'Video',
     icon: 'film',
     color: '#ff9aa2',
     primaryPlatforms: ['twitch', 'youtube', 'vimeo', 'trakt', 'dailymotion'],
@@ -1543,7 +1543,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'entrepreneurship',
-    label: 'Entrepreneurship & Business',
+    label: 'Business',
     icon: 'rocket',
     color: '#ffc6b0',
     primaryPlatforms: ['producthunt', 'linear', 'github', 'hacker-news'],
@@ -1716,7 +1716,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'performing-arts',
-    label: 'Performing Arts',
+    label: 'Arts',
     icon: 'theater',
     color: '#c890d9',
     primaryPlatforms: ['twitch', 'youtube', 'discord'],
@@ -1888,7 +1888,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'nature-environment',
-    label: 'Nature & Environment',
+    label: 'Nature',
     icon: 'leaf',
     color: '#8ed1a8',
     primaryPlatforms: [
@@ -2055,7 +2055,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'food-lifestyle',
-    label: 'Food, Fashion & Lifestyle',
+    label: 'Food',
     icon: 'utensils',
     color: '#f2c36b',
     primaryPlatforms: ['untappd', 'vivino', 'discogs', 'pinterest'],
@@ -2231,7 +2231,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'literature',
-    label: 'Literature & Writing',
+    label: 'Literature',
     icon: 'book',
     color: '#9fb6e2',
     primaryPlatforms: ['openlibrary', 'librarything', 'pocket', 'feedly'],
@@ -2393,7 +2393,7 @@ export const SOFIA_TOPICS: Topic[] = [
   // =========================================================================
   {
     id: 'personal-dev',
-    label: 'Personal Development',
+    label: 'Growth',
     icon: 'lotus',
     color: '#b5d68f',
     primaryPlatforms: ['duolingo', 'todoist', 'reddit'],

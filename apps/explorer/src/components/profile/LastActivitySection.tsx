@@ -84,7 +84,7 @@ function GroupTags({
     .map((id) => {
       const t = topicById(id)
       if (!t) return null
-      return { id, label: t.label.split(' ')[0], color: t.color }
+      return { id, label: t.label, color: t.color }
     })
     .filter((x): x is TopicChip => !!x)
     .slice(0, 2)
