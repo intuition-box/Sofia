@@ -19,22 +19,18 @@
  * Pure view: each caller resolves its own data (counts, certifier) and
  * hands it down. No data fetching, no business rules here.
  */
-import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
+import { useChipOverflow, useAnchoredTooltip } from '@0xsofia/design-system'
 import { UrlPreview } from '@/components/UrlPreview'
 import { TopicPill } from '@/components/profile/FeedPills'
 
 /**
  * ChipOverflowRow — lays chips on a single line; any that would wrap to a
- * second line collapse into a trailing `+N` badge.
- *
- * Glitch-free: a hidden mirror (absolutely positioned, same width, wrap
- * allowed) holds every chip and is measured in `useLayoutEffect` (runs
- * synchronously before paint). The VISIBLE row only ever renders the chips
- * that fit + the badge, so it never flashes a wrapped second line. One slot
- * is reserved for the badge so it always fits on the first line.
+ * second line collapse into a trailing `+N` badge. The glitch-free
+ * mirror-measure lives in the shared `useChipOverflow` hook
+ * (@0xsofia/design-system); this only supplies the feed-card markup/classes.
  */
 interface OverflowChip {
   node: ReactNode
@@ -54,36 +50,11 @@ function ChipOverflowRow({
    *  wraps below only when the chips fill the line. */
   trailing?: ReactNode
 }) {
-  const mirror = useRef<HTMLDivElement>(null)
   const total = chips.length
-  const [shown, setShown] = useState(total)
-  // Styled tooltip for the +N badge — same portal + .pc-area-tooltip used by
-  // the profile calendar, anchored to the badge's viewport rect.
-  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
-
-  useLayoutEffect(() => {
-    const el = mirror.current
-    if (!el || total === 0) return
-    const measure = () => {
-      const slots = Array.from(
-        el.querySelectorAll<HTMLElement>('[data-chip="1"]'),
-      )
-      if (slots.length === 0) return
-      const top0 = slots[0].offsetTop
-      let firstLine = slots.length
-      for (let i = 1; i < slots.length; i++) {
-        if (slots[i].offsetTop > top0 + 1) {
-          firstLine = i
-          break
-        }
-      }
-      setShown(firstLine >= total ? total : Math.max(1, firstLine - 1))
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [total])
+  const { mirrorRef, shown } = useChipOverflow(total)
+  // Styled tooltip for the +N badge — same portal anchoring used by the
+  // profile calendar, positioned from the badge's viewport rect.
+  const tip = useAnchoredTooltip()
 
   const hidden = total - shown
   return (
@@ -91,7 +62,7 @@ function ChipOverflowRow({
       {/* hidden mirror — all chips, measured for the first-line fit */}
       <div
         className="fc-chips fc-chips--measure"
-        ref={mirror}
+        ref={mirrorRef}
         aria-hidden="true"
       >
         {chips.map((c, i) => (
@@ -108,26 +79,35 @@ function ChipOverflowRow({
           </span>
         ))}
         {hidden > 0 && (
-          <span
+          <button
+            type="button"
             className="fc-chip-more"
-            onMouseEnter={(e) => {
-              const r = e.currentTarget.getBoundingClientRect()
-              setTip({ left: r.left + r.width / 2, top: r.top })
-            }}
-            onMouseLeave={() => setTip(null)}
+            aria-label={`Show ${hidden} more: ${chips
+              .slice(shown)
+              .map((c) => c.label)
+              .join(', ')}`}
+            onMouseEnter={(e) =>
+              tip.openFrom(e.currentTarget.getBoundingClientRect())
+            }
+            onMouseLeave={tip.close}
+            onFocus={(e) =>
+              tip.openFrom(e.currentTarget.getBoundingClientRect())
+            }
+            onBlur={tip.close}
+            onClick={(e) => e.stopPropagation()}
           >
             +{hidden}
-          </span>
+          </button>
         )}
         {trailing}
       </div>
-      {tip &&
+      {tip.anchor &&
         hidden > 0 &&
         typeof document !== 'undefined' &&
         createPortal(
           <div
             className="fc-more-tip"
-            style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
+            style={{ left: `${tip.anchor.left}px`, top: `${tip.anchor.top}px` }}
             role="tooltip"
           >
             {chips.slice(shown).map((c, i) => (

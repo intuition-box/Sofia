@@ -147,13 +147,26 @@ export const useBatchRewards = (
     const compute = async () => {
       setLoading(true)
 
+      // Discovery rewards only apply to NEW certifications (being first/early
+      // to mark a URL). Vote items (support/oppose on someone else's cert from
+      // the circle feed) deposit on an existing triple — they must NOT earn a
+      // Pioneer/Explorer/Contributor tier. Counting their URL's cert holders
+      // and subtracting one wrongly yielded "Pioneer" for a like.
+      const certItems = items.filter(item => !item.voteAction)
+      if (certItems.length === 0) {
+        setRewards([])
+        setTotalGoldInBatch(0)
+        setLoading(false)
+        return
+      }
+
       // Wait for indexer to process the batch TX
       await new Promise(resolve => setTimeout(resolve, INDEXER_DELAY))
       if (cancelled) return
 
       // Group items by hostname for batched queries
       const hostnameGroups = new Map<string, CartItemRecord[]>()
-      for (const item of items) {
+      for (const item of certItems) {
         const hostname = getHostname(item.url)
         if (!hostname) continue
         const group = hostnameGroups.get(hostname) || []
@@ -174,7 +187,7 @@ export const useBatchRewards = (
       if (cancelled) return
 
       // Compute rewards per item (using per-URL counts)
-      const rewardItems: BatchRewardItem[] = items.map(item => {
+      const rewardItems: BatchRewardItem[] = certItems.map(item => {
         const totalOnUrl = urlCounts.get(item.url) || 0
         // User just certified, so prevTotal = total - 1
         const prevTotal = Math.max(0, totalOnUrl - 1)

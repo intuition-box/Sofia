@@ -1,0 +1,300 @@
+/* InterestContextSelector — popover + two-step checkbox drill-down, ported
+   from the explorer's ContextPicker. Selection is driven only by the left
+   checkbox (topic or category). */
+
+/* The trigger reuses the shared .ext-filter-trigger (FilterDropdown.css) so it
+   matches the other Mark-page pickers; only the panel below is custom. */
+
+/* Portal panel. */
+.ext-ctx-pop {
+  position: fixed;
+  z-index: 10000;
+  width: 300px;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border, #2a2a35) transparent;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--ds-card, #16161d);
+  border: 1px solid var(--ds-border, #2a2a35);
+  box-shadow: 0 18px 48px -12px rgba(0, 0, 0, 0.6);
+}
+/* Re-enable + style the scrollbar: the global `*::-webkit-scrollbar
+   { display: none }` hides every scrollbar, so a long topic list scrolls
+   with no visible track. `display: block` (more specific than `*`) brings
+   it back, styled to match the FollowTab search dropdown. */
+.ext-ctx-pop::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+.ext-ctx-pop::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ext-ctx-pop::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 3px;
+}
+.ext-ctx-pop::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-ink-soft);
+}
+.ext-ctx-hint {
+  margin: 0 2px 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ds-muted, #888);
+}
+.ext-ctx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ext-ctx-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A row = left checkbox + clickable body (drills / toggles). */
+.ext-ctx-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.ext-ctx-row:hover {
+  background: var(--ds-bg-subtle, #1d1d26);
+}
+.ext-ctx-row.is-active {
+  background: color-mix(
+    in srgb,
+    var(--ext-ctx-color, var(--ds-accent, #8b7bf5)) 14%,
+    var(--ds-bg-subtle, #1d1d26)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--ext-ctx-color, var(--ds-accent, #8b7bf5)) 35%,
+    var(--ds-border, #2a2a35)
+  );
+}
+.ext-ctx-row.is-done {
+  opacity: 0.5;
+}
+
+/* Left checkbox — the only selection affordance. */
+.ext-ctx-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1.5px solid var(--ds-border, #2a2a35);
+  background: var(--ds-card, #16161d);
+  color: #02000e;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ext-ctx-check:not(:disabled):hover {
+  border-color: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+}
+.ext-ctx-row.is-active .ext-ctx-check,
+.ext-ctx-row.is-done .ext-ctx-check {
+  background: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+  border-color: var(--ext-ctx-color, var(--ds-accent, #8b7bf5));
+}
+.ext-ctx-check:disabled {
+  cursor: default;
+}
+
+/* Row body. */
+.ext-ctx-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink-soft, #b8b8c4);
+  text-align: left;
+}
+.ext-ctx-row:hover .ext-ctx-main,
+.ext-ctx-row.is-active .ext-ctx-main {
+  color: var(--ds-ink, #f0f0f4);
+}
+.ext-ctx-main:disabled {
+  cursor: default;
+}
+.ext-ctx-glyph {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #02000e;
+  font-size: 14px;
+}
+.ext-ctx-label {
+  flex: 1;
+  min-width: 0;
+}
+.ext-ctx-chev {
+  flex-shrink: 0;
+  color: var(--ds-muted, #888);
+  transition: transform 0.15s ease;
+}
+.ext-ctx-chev.is-open {
+  transform: rotate(90deg);
+}
+
+/* Nested categories. */
+.ext-ctx-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 24px;
+  padding-left: 8px;
+  border-left: 1px solid var(--ds-border, #2a2a35);
+}
+.ext-ctx-row--cat .ext-ctx-main {
+  padding: 6px 0;
+  font-size: 12px;
+}
+.ext-ctx-cat-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── ContextPills — single-line overflow row + styled +N tooltip ──────── */
+.ext-cp-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.ext-cp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Hidden mirror: spans the wrap width, wraps freely, measured pre-paint. */
+.ext-cp-row--measure {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+  flex-wrap: wrap;
+}
+/* Visible row: never wraps — overflow collapses into +N. */
+.ext-cp-row:not(.ext-cp-row--measure) {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.ext-cp-more {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  line-height: 1;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--ds-muted, #888);
+  background: var(--ds-bg-subtle, #1d1d26);
+  border: 1px solid var(--ds-border, #2a2a35);
+}
+/* Styled tooltip — same dark panel as the explorer (.fc-more-tip). */
+.ext-cp-tip {
+  position: fixed;
+  z-index: 10001;
+  transform: translate(-50%, -100%) translateY(-8px);
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ds-ink, #0c0c12);
+  color: var(--ds-bg, #f0f0f4);
+  pointer-events: none;
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.65);
+}
+.ext-cp-tip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--ds-ink, #0c0c12);
+}
+.ext-cp-tip-row {
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+}
+.ext-cp-tip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.ext-cp-tip-label {
+  white-space: nowrap;
+}
+
+/* ── Topic / category context pill ───────────────────────────────────
+ * Ported 1:1 from the explorer's pills.css (.sf-topic-pill) so context
+ * pills read identically everywhere ContextPills renders (Amplify modal,
+ * bookmarks, category detail). A filled disc in the topic color with a
+ * black glyph + label; a category borrows its parent topic's color.
+ * `--pill-color` is set inline by <ContextPills>. */
+.sf-topic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 7px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: #000;
+  background: var(--pill-color, var(--ds-accent));
+  border: 1px solid var(--pill-color, var(--ds-border));
+}
+.sf-topic-pill-glyph {
+  font-size: 14px;
+  line-height: 1;
+  color: #000;
+  /* Material Symbols variable-font axes — compact, filled glyph that reads
+     at 14px like the explorer's TopicBadge disc. */
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 500,
+    "GRAD" 0,
+    "opsz" 20;
+}

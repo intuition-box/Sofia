@@ -52,3 +52,21 @@ export const formatTrust = (val: number): string => {
   if (val === 0) return "0"
   return parseFloat(val.toFixed(4)).toString()
 }
+
+/** Bare hostname (no `www.`); falls back to the raw string on a parse error. */
+export const hostFromUrl = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
+
+/** A platform detected from a URL (Platform Pool routing). */
+export interface DetectedPlatform {
+  slug: string
+  termId: string
+  label: string
+}
+
+export type DetectPlatformFn = (url: string) => DetectedPlatform | null

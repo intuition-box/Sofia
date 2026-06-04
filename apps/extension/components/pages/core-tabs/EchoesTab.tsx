@@ -283,7 +283,7 @@ const EchoesTab = () => {
             "in context of" data from useUserCertifications. */}
         <div className="echoes-filter-row echoes-filter-row--actions">
           <FilterDropdown
-            label="Verbs"
+            label="Intention"
             value={certFilter}
             onChange={(id) => setCertFilter(id as IntentionType | "all")}
             options={VERB_FILTER_OPTIONS}

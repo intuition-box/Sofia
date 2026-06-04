@@ -82,7 +82,12 @@ export interface CartItemRecord {
   intention: IntentionPurpose | null
   faviconUrl: string | null
   addedAt: number
-  interestContext?: string | null     // Topic slug e.g. "web3-crypto" (from Sofia Explorer)
+  /** Primary context slug (= interestContexts[0]) — kept for back-compat with
+   *  single-pill readers. Topic or category slug. */
+  interestContext?: string | null
+  /** All chosen context slugs (topics and/or categories). One `in context of`
+   *  triple is minted per entry. */
+  interestContexts?: string[]
   voteAction?: "support" | "oppose"  // If present, this is a vote item (not a certification)
   tripleTermId?: string              // Vault ID for direct deposit (votes only)
 }
