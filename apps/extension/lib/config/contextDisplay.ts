@@ -6,7 +6,7 @@
  */
 import { CATEGORY_BY_ID, CATEGORY_TO_TOPIC } from "@0xsofia/taxonomy"
 
-import { TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
+import { getTopicIcon, TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
 
 /** Display label for a context slug, or null if it's neither a known topic
  *  nor a known category. */
@@ -22,4 +22,11 @@ export function contextColor(slug: string): string {
     TOPIC_COLORS[CATEGORY_TO_TOPIC[slug] ?? ""] ??
     "var(--ds-accent)"
   )
+}
+
+/** Material Symbols glyph name for a context slug — the topic's icon, or the
+ *  parent topic's icon for a category (so a category pill carries its family's
+ *  pictogram, matching the explorer's TopicPill). */
+export function contextIcon(slug: string): string {
+  return getTopicIcon(TOPIC_COLORS[slug] ? slug : (CATEGORY_TO_TOPIC[slug] ?? slug))
 }

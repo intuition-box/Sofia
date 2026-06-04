@@ -789,57 +789,58 @@ const WeightModal = ({
                           <div className="b3-row-sub" title={triplet.url}>
                             {hostFromUrl(triplet.url)}
                           </div>
-                          {(intentEntry || ctxSlugs.length > 0) && (
-                            <div className="b3-row-tags">
-                              {intentEntry && (
-                                <VerbTag
-                                  intent={intentKey as IntentionSlug}
-                                  label={intentEntry.label}
-                                />
-                              )}
-                              <ContextPills slugs={ctxSlugs} />
-                            </div>
-                          )}
                         </div>
 
-                        <div className="b3-row-right">
-                          <div className="b3-row-trust">
-                            <span className="b3-row-trust-val">
-                              {fixedDeposit != null
-                                ? "—"
-                                : formatTrust(rowTrust)}
-                            </span>
-                            <span className="b3-row-trust-unit">TRUST</span>
-                          </div>
-                          {fixedDeposit == null && (
-                            <div
-                              className="b3-tiers"
-                              role="radiogroup"
-                              aria-disabled={!on}>
-                              {weightOptions.map((o) => (
-                                <button
-                                  key={o.id}
-                                  role="radio"
-                                  aria-checked={sel === o.id}
-                                  type="button"
-                                  className={`b3-tier${
-                                    sel === o.id ? " is-on" : ""
-                                  }`}
-                                  disabled={!on || isProcessing}
-                                  onClick={() =>
-                                    on && handleWeightSelection(index, o.id)
-                                  }>
-                                  <span className="b3-tier-label">
-                                    {o.label}
-                                  </span>
-                                  <span className="b3-tier-value">
-                                    {o.value}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                        <div className="b3-row-trust">
+                          <span className="b3-row-trust-val">
+                            {fixedDeposit != null
+                              ? "—"
+                              : formatTrust(rowTrust)}
+                          </span>
+                          <span className="b3-row-trust-unit">TRUST</span>
                         </div>
+
+                        {/* Verb + context pills get their own full-width grid
+                            row (grid-column 1/-1) so multiple contexts wrap
+                            cleanly instead of crowding the title column. */}
+                        {(intentEntry || ctxSlugs.length > 0) && (
+                          <div className="b3-row-tags">
+                            {intentEntry && (
+                              <VerbTag
+                                intent={intentKey as IntentionSlug}
+                                label={intentEntry.label}
+                              />
+                            )}
+                            <ContextPills slugs={ctxSlugs} />
+                          </div>
+                        )}
+
+                        {/* Weight selector spans its own full-width row below
+                            the tags so the 3 tiers stay uncramped. */}
+                        {fixedDeposit == null && (
+                          <div
+                            className="b3-tiers"
+                            role="radiogroup"
+                            aria-disabled={!on}>
+                            {weightOptions.map((o) => (
+                              <button
+                                key={o.id}
+                                role="radio"
+                                aria-checked={sel === o.id}
+                                type="button"
+                                className={`b3-tier${
+                                  sel === o.id ? " is-on" : ""
+                                }`}
+                                disabled={!on || isProcessing}
+                                onClick={() =>
+                                  on && handleWeightSelection(index, o.id)
+                                }>
+                                <span className="b3-tier-label">{o.label}</span>
+                                <span className="b3-tier-value">{o.value}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
 
                         {platform && fixedDeposit == null && (
                           <div className={`b3-dest${on ? "" : " is-off"}`}>
@@ -897,11 +898,6 @@ const WeightModal = ({
                               <span className="b3-dest-amt">
                                 {formatTrust(platAmt)} T
                               </span>
-                            </div>
-                            <div className="b3-dest-scale" aria-hidden="true">
-                              <span>0</span>
-                              <span>50</span>
-                              <span>100</span>
                             </div>
                           </div>
                         )}

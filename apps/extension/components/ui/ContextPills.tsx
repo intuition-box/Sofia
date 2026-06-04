@@ -9,7 +9,11 @@ import { useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties } from "react"
 import { createPortal } from "react-dom"
 
-import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
+import {
+  contextColor,
+  contextIcon,
+  contextLabel,
+} from "~/lib/config/contextDisplay"
 
 import "../styles/ContextPicker.css"
 
@@ -17,6 +21,7 @@ interface ResolvedPill {
   slug: string
   label: string
   color: string
+  icon: string
 }
 
 export default function ContextPills({ slugs }: { slugs: string[] }) {
@@ -25,6 +30,7 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
       slug,
       label: contextLabel(slug),
       color: contextColor(slug),
+      icon: contextIcon(slug),
     }))
     .filter((c): c is ResolvedPill => Boolean(c.label))
 
@@ -64,10 +70,13 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
   const pill = (c: ResolvedPill) => (
     <span
       key={c.slug}
-      className="amp-tag"
-      style={
-        { "--tag-color": c.color, "--tag-pastel": c.color } as CSSProperties
-      }>
+      className="sf-topic-pill"
+      style={{ "--pill-color": c.color } as CSSProperties}>
+      <span
+        className="material-symbols-outlined sf-topic-pill-glyph"
+        aria-hidden>
+        {c.icon}
+      </span>
       {c.label}
     </span>
   )
@@ -77,7 +86,12 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
       {/* hidden mirror — all chips, measured for the first-line fit */}
       <div className="ext-cp-row ext-cp-row--measure" ref={mirror} aria-hidden>
         {chips.map((c) => (
-          <span key={c.slug} data-chip="1" className="amp-tag">
+          <span key={c.slug} data-chip="1" className="sf-topic-pill">
+            <span
+              className="material-symbols-outlined sf-topic-pill-glyph"
+              aria-hidden>
+              {c.icon}
+            </span>
             {c.label}
           </span>
         ))}

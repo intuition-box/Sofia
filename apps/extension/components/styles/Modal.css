@@ -2510,6 +2510,41 @@
   color: var(--tag-color, var(--ds-accent));
 }
 
+/* Within the Amplify modal, verb pills match the explorer's WeightModal
+   VerbPill — outlined (intent-color text + border, transparent fill) rather
+   than the filled feed-card VerbTag. `currentColor` ties the border to the
+   per-intent text color so each intent needs only a single color rule. */
+.amp .fc-verb-tag {
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: 4px 10px;
+  color: var(--ds-accent);
+}
+.amp .fc-verb-tag.trusted {
+  color: var(--trusted);
+}
+.amp .fc-verb-tag.distrusted {
+  color: var(--distrusted);
+}
+.amp .fc-verb-tag.work {
+  color: var(--work);
+}
+.amp .fc-verb-tag.learning {
+  color: var(--learning);
+}
+.amp .fc-verb-tag.fun {
+  color: var(--fun);
+}
+.amp .fc-verb-tag.inspiration {
+  color: var(--inspiration);
+}
+.amp .fc-verb-tag.buying {
+  color: var(--buying);
+}
+.amp .fc-verb-tag.music {
+  color: var(--music);
+}
+
 /* Ticket (foreground, parchment) */
 .amp .b3-ticket {
   position: relative;
@@ -2677,7 +2712,7 @@
   display: grid;
   grid-template-columns: auto auto 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
   padding: 14px 14px 14px 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -2691,7 +2726,7 @@
 .amp .b3-row.is-on {
   opacity: 1;
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 170, 138, 0.55);
+  border-color: rgba(255, 253, 252, 0.226);
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
 }
 .amp .b3-row.is-on::before {
@@ -2738,9 +2773,7 @@
 }
 .amp .b3-row-meta {
   min-width: 0;
-  /* Bottom-align with .b3-row-right so the verb/topic tags share a
-     baseline with the light/medium/strong tier pills. */
-  align-self: end;
+  align-self: center;
 }
 .amp .b3-row-kicker {
   font-family: "JetBrains Mono", monospace;
@@ -2775,21 +2808,16 @@
   text-overflow: ellipsis;
 }
 .amp .b3-row-tags {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 5px;
-  margin-top: 7px;
+  gap: 6px;
   flex-wrap: wrap;
-}
-.amp .b3-row-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  align-self: end;
 }
 .amp .b3-row-trust {
   display: inline-flex;
   align-items: baseline;
+  justify-self: end;
+  align-self: center;
   gap: 4px;
   font-family: var(--ds-font-display);
   font-weight: 800;
@@ -2809,6 +2837,7 @@
   color: rgba(255, 255, 255, 0.4);
 }
 .amp .b3-tiers {
+  grid-column: 1 / -1;
   display: flex;
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 6px;
@@ -2816,10 +2845,11 @@
   background: rgba(255, 255, 255, 0.03);
 }
 .amp .b3-tier {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 9px;
+  padding: 7px 9px;
   min-width: 0;
   background: transparent;
   border: 0;
@@ -3113,17 +3143,6 @@
   color: rgba(255, 255, 255, 0.7);
   min-width: 30px;
 }
-.amp .b3-dest-scale {
-  display: flex;
-  justify-content: space-between;
-  padding: 2px 1px 0;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.38);
-}
-
 /* Loading state — lives inside the Amplify ticket (no fallback to the
    legacy dark modal-body during a transaction). */
 .amp .b3-loading {
