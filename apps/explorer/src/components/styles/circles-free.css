@@ -1,0 +1,599 @@
+/* ============================================================
+   Sofia Explorer — Circle view, FREE tier (Phase 1)
+   Ported from design_handoff_circle_free (circle/free.css +
+   styles.css) onto the app's @0xsofia/design-system tokens.
+
+   Token mapping notes:
+   - --display → var(--ds-font-display)   (the app's display face)
+   - --mono    → 'JetBrains Mono'         (the app mono)
+   - proto VIVID intent colors map to --intent-* tokens; the
+     ambient/pastel values are the unprefixed --trusted / --fun /
+     --learning / --inspiration / --distrusted tokens.
+   - No raw hex for palette/surface — only --ds-* / intent tokens.
+   ============================================================ */
+
+/* Claude Design fonts — scoped to the circle detail so the rest of the app
+   keeps its faces. Unbounded = display/titles + big numbers; Inter = body;
+   JetBrains Mono = labels/eyebrows/meta (used literally in the rules below).
+   Overriding --ds-font-display here flips every `var(--ds-font-display)`
+   title in this subtree to Unbounded. */
+.crd-detail {
+  --ds-font-display: 'Unbounded', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Circle header (identity + actions + KPI band) ─────────────
+   Structure mirrors design_handoff_circle_free's `.cheader`:
+   `.cf-header-id` lays the logo tile beside the identity column;
+   the KPI band hangs below a hairline top border. Rendered as a
+   self-contained card here (it lives inside the padded .crd-detail
+   view, not a full-bleed main), with the design's left accent. */
+.cf-header {
+  position: relative;
+  padding: 18px 24px 0;
+  margin-bottom: 28px;
+}
+.cf-header-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding-bottom: 16px;
+}
+.cf-header-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+.cf-header-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+.cf-header-idcol {
+  min-width: 0;
+  flex: 1;
+}
+.cf-header-name-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+.cf-header-name {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ds-ink);
+  margin: 0;
+}
+.cf-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.cf-plan-badge-icon {
+  width: 11px;
+  height: 11px;
+}
+.cf-header-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+.cf-header-crumb {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.cf-header-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  margin: 9px 0 0;
+  max-width: 620px;
+  text-wrap: pretty;
+}
+.cf-header-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons (free tier) ─────────────────────────────────────── */
+.cf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 9px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink-soft);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+.cf-btn:hover {
+  border-color: var(--ds-muted-soft);
+  color: var(--ds-ink);
+}
+.cf-btn:active {
+  transform: translateY(1px);
+}
+.cf-btn-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.cf-btn-pro {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: transparent;
+}
+.cf-btn-pro:hover {
+  background: color-mix(in srgb, var(--ds-accent) 86%, #ffffff);
+  color: var(--ds-on-accent);
+}
+.cf-btn-member {
+  background: color-mix(in srgb, var(--trusted) 14%, var(--ds-bg-subtle));
+  border-color: color-mix(in srgb, var(--trusted) 40%, transparent);
+  color: var(--trusted);
+}
+.cf-btn-member:hover {
+  border-color: color-mix(in srgb, var(--trusted) 60%, transparent);
+  color: var(--trusted);
+}
+.cf-btn-ghost {
+  background: transparent;
+}
+
+/* ── KPI band ────────────────────────────────────────────────── */
+.cf-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--ds-border-soft);
+}
+.cf-kpi {
+  padding: 14px 4px 16px;
+  border-right: 1px solid var(--ds-border-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+}
+.cf-kpi:last-child {
+  border-right: none;
+}
+.cf-kpi-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.cf-kpi-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cf-kpi-value {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.cf-kpi-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  letter-spacing: 0.04em;
+}
+.cf-kpi-delta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.cf-kpi-delta.is-up {
+  color: var(--trusted);
+}
+.cf-kpi-delta.is-flat {
+  color: var(--ds-muted);
+}
+
+/* Locked Decisions tile — peach-tinted, clickable → upsell. */
+.cf-kpi-locked {
+  cursor: pointer;
+  position: relative;
+  background: var(--ds-accent-soft);
+  font: inherit;
+  border-top: none;
+  transition: background 0.14s ease;
+  gap: 8px;
+}
+.cf-kpi-locked:hover {
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+}
+.cf-kpi-lock-glyph {
+  display: grid;
+  place-items: center;
+  height: 28px;
+}
+.cf-kpi-lock-glyph > svg {
+  width: 19px;
+  height: 19px;
+  color: color-mix(in srgb, var(--ds-accent) 75%, var(--ds-ink));
+}
+.cf-kpi-pro-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+.cf-kpi-pro-tag-icon {
+  width: 10px;
+  height: 10px;
+}
+
+@media (max-width: 720px) {
+  .cf-kpis {
+    grid-template-columns: 1fr;
+  }
+  .cf-kpi {
+    border-right: none;
+    border-bottom: 1px solid var(--ds-border-soft);
+  }
+  .cf-kpi:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Members module (free) ───────────────────────────────────── */
+.cf-module {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  /* Full-width band. Rendered as the sole child of its own .crd-info-row
+     (single-column grid), so it stretches edge-to-edge regardless of the
+     info-row's column template. */
+  grid-column: 1 / -1;
+  padding: 18px;
+}
+
+/* Most Active + Top Topics strip beneath the Free Members band. */
+.cf-strip-2col {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 22px;
+  align-items: stretch;
+  margin: 0 0 22px;
+}
+@media (max-width: 720px) {
+  .cf-strip-2col {
+    grid-template-columns: 1fr;
+  }
+}
+.cf-module-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.cf-module-title {
+  font-family: var(--ds-font-display);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  margin: 0;
+}
+.cf-module-note {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.cf-top3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.cf-mcard {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 13px;
+}
+.cf-mrank {
+  font-family: var(--ds-font-display);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--ds-muted-soft);
+  width: 14px;
+  flex-shrink: 0;
+}
+.cf-mcard:first-child .cf-mrank {
+  color: var(--ds-accent);
+}
+.cf-mavatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #02000e;
+  text-decoration: none;
+}
+.cf-mid {
+  flex: 1;
+  min-width: 0;
+}
+.cf-mhandle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-mmeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.cf-mdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cf-mstat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.cf-mstat b {
+  font-family: var(--ds-font-display);
+  font-weight: 900;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.cf-mstat span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted-soft);
+  margin-top: 4px;
+}
+.cf-module-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Peach "Pro hint" pill — shared by module foot + panel foot. */
+.cf-prohint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--ds-accent-ink);
+  background: var(--ds-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 28%, transparent);
+  border-radius: 999px;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: background 0.13s ease;
+}
+.cf-prohint:hover {
+  background: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+}
+.cf-prohint-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .cf-top3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Topics treemap (Phase 2) ────────────────────────────────────
+   Ported from design_handoff_circle_free/circle/modules.css (.tmap*).
+   Proto var(--display) → --ds-font-display, var(--mono) → JetBrains
+   Mono, var(--c) (per-cell topic colour) kept as a local custom prop
+   set inline from taxonomy TOPIC_META. The Pro hover flyout (.tmap-
+   flyout / .fly-*) is intentionally NOT ported — free is read-only. */
+.cf-tmap {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ds-bg);
+}
+.cf-tmap-empty {
+  padding: 26px 18px;
+  border-radius: 10px;
+  background: var(--ds-bg);
+  border: 1px dashed var(--ds-border);
+  font-size: 13px;
+  color: var(--ds-muted);
+  text-align: center;
+}
+.cf-tmap-cell {
+  position: absolute;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--ds-bg);
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  transition: filter 0.18s ease;
+}
+.cf-tmap-cell-inner {
+  position: absolute;
+  inset: 0;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--c) 30%, transparent) 0%,
+      color-mix(in srgb, var(--c) 9%, transparent) 60%,
+      transparent 100%
+    ),
+    var(--ds-card);
+}
+.cf-tmap-cell::after {
+  /* top hairline accent */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--c);
+  opacity: 0.85;
+  z-index: 4;
+}
+.cf-tmap-cell:hover {
+  filter: brightness(1.18);
+  z-index: 6;
+}
+.cf-tmap-cell:focus-visible {
+  outline: 2px solid var(--c);
+  outline-offset: -2px;
+  z-index: 7;
+}
+.cf-tmap-cell-foot {
+  display: block;
+}
+.cf-tmap-label {
+  display: block;
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  color: var(--ds-ink);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.cf-tmap-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ds-ink-soft);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.92;
+}
+.cf-tmap-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c);
+  flex-shrink: 0;
+}
+.cf-tmap-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  margin-top: 6px;
+}
+.cf-tmap-spark i {
+  width: 3px;
+  background: var(--c);
+  opacity: 0.55;
+  border-radius: 1px;
+}

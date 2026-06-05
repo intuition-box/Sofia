@@ -1556,10 +1556,8 @@
   gap: 14px;
   flex-wrap: wrap;
   padding: 10px 14px;
-  border-radius: 10px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border-soft);
 }
+
 .crd-feed-filters-divider {
   width: 1px;
   height: 24px;
@@ -1932,60 +1930,16 @@
 .crd-top-engaged-strip::-webkit-scrollbar {
   display: none;
 }
-.crd-te-card {
-  flex: 0 0 360px;
-  width: 360px;
-  padding: 18px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border-soft);
-  border-left: 4px solid var(--circle-color, var(--ds-accent));
-  border-radius: 14px;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  cursor: pointer;
-  position: relative;
-  color: inherit;
+/* Each hot-pick renders a full <CircleFeedCard>; this wrapper pins a fixed
+   width so the cards scroll horizontally instead of collapsing to fit. The
+   inner masonry card stretches to fill the wrapper. */
+.crd-top-engaged-item {
+  flex: 0 0 340px;
+  width: 340px;
 }
-.crd-te-thumb {
+.crd-top-engaged-item > * {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--ds-bg-subtle);
-}
-.crd-te-title {
-  font-family: 'Geist', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ds-ink);
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.35;
-  min-height: 42px;
-}
-.crd-te-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-.crd-te-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--trusted);
-  font-weight: 600;
-}
-.crd-te-count svg {
-  width: 13px;
-  height: 13px;
 }
 .crd-user-filter-label {
   font-family: 'JetBrains Mono', monospace;

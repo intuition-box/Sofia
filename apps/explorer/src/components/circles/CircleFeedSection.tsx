@@ -43,12 +43,17 @@ interface CircleFeedSectionProps {
   addresses: string[]
   circleName: string
   members: TrustCircleAccount[]
+  /** Suppress the section's own "Certified by {name}" heading — used by
+   *  the Free path, which wraps the feed in an "Activity" module head so
+   *  the title isn't duplicated. */
+  hideTitle?: boolean
 }
 
 export default function CircleFeedSection({
   addresses,
   circleName,
   members,
+  hideTitle = false,
 }: CircleFeedSectionProps) {
   const { items, loading, loadingMore, hasMore, loadMore, error } =
     useCircleFeed(addresses)
@@ -149,19 +154,26 @@ export default function CircleFeedSection({
   // `useCircleFeed` had already paid for.
   const shown = filtered
 
-  // Batch ENS resolution for all certifiers visible in this slice.
+  // Batch ENS resolution for all certifiers visible in this slice plus the
+  // hot-picks strip (which now renders the same <CircleFeedCard>, so it needs
+  // resolved certifier names/avatars too).
   const certifierAddresses = useMemo(() => {
     const s = new Set<Address>()
     for (const item of shown) {
       if (item.certifierAddress) s.add(item.certifierAddress as Address)
     }
+    for (const item of topEngaged) {
+      if (item.certifierAddress) s.add(item.certifierAddress as Address)
+    }
     return Array.from(s)
-  }, [shown])
+  }, [shown, topEngaged])
   const { getDisplay, getAvatar } = useEnsNames(certifierAddresses)
 
   return (
     <section className="crd-feed-section">
-      <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      {!hideTitle && (
+        <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      )}
 
       <div className="crd-feed-filters">
         <CircleVerbFilterDropdown active={verb} onChange={setVerb} />
@@ -174,7 +186,13 @@ export default function CircleFeedSection({
         <CircleFeedSort active={sort} onChange={setSort} />
       </div>
 
-      <CircleTopEngagedStrip items={topEngaged} />
+      <CircleTopEngagedStrip
+        items={topEngaged}
+        getDisplay={getDisplay}
+        getAvatar={getAvatar}
+        onDeposit={authenticated ? handleDeposit : undefined}
+        livePositionTermIds={livePositionTermIds}
+      />
 
       {loading ? (
         <EmptyFeedState

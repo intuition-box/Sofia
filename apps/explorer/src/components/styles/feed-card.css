@@ -427,9 +427,18 @@
   object-fit: cover;
 }
 
-/* Body — title only (host/domain intentionally dropped per the design). */
+/* Body — title + the verb/topic/category chips below it. */
 .fc-body {
   padding: 15px 16px 14px;
+}
+/* Chips moved out of the footer to sit directly under the title — space
+   them from it and keep them left-aligned. */
+.fc-body .fc-chips-wrap {
+  margin-top: 10px;
+}
+.fc-body .fc-chips,
+.fc-body .fc-chips--measure {
+  justify-content: flex-start;
 }
 .fc-card-title {
   margin: 0;

@@ -466,13 +466,14 @@ export default function FeedCardView({
         )}
       </div>
 
-      {/* Title */}
+      {/* Title + context chips (verb / topic / category) directly below it */}
       <div className="fc-body">
         <h3 className="fc-card-title">{title}</h3>
+        <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
       </div>
 
-      {/* Footer — ONE ROW: votes left · chips+addContext right */}
-      <footer className="fc-foot">
+      {/* Footer — votes only (chips moved below the title above) */}
+      <footer className="fc-foot fc-foot--votes-only">
         {/* Votes — left side */}
         {onVote ? (
           <div className="fc-votes">
@@ -521,9 +522,6 @@ export default function FeedCardView({
             </span>
           </div>
         )}
-
-        {/* Chips + addContextSlot — right side */}
-        <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
       </footer>
     </article>
   )
