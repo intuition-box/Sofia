@@ -30,7 +30,6 @@ import {
 } from '../services/atomCreationService'
 import SofiaLoader from './ui/SofiaLoader'
 import FeedCardView from './feed/FeedCardView'
-import TopicBadge from './profile/TopicBadge'
 import './styles/weight-modal.css'
 import './styles/cart-amplify.css'
 import './styles/feed-card.css'
@@ -554,26 +553,18 @@ export default function WeightModal({
                   // pills work for circle-feed vote items too.
                   // (computed after badgeTopic below)
 
-                  // Topic icon disc badge — same as ProfileDrawer Last Activity.
-                  // Also try to resolve from `item.intention` which is set to the
-                  // topic slug label for circle-feed vote items (where resolveTopic
-                  // returns null because the termId is a context triple, not atom).
+                  // Resolve the topic for the pill below the title. resolveTopic
+                  // returns null for circle-feed vote items (termId is a context
+                  // triple, not a topic atom), so fall back to matching the
+                  // intention label against the taxonomy.
                   const badgeTopic = topicMeta ?? (() => {
                     const byLabel = [...TOPIC_BY_ID.values()].find(
                       (t) => t.label.toLowerCase() === item.intention?.toLowerCase()
                     )
                     return byLabel ?? null
                   })()
-                  const badge = badgeTopic ? (
-                    <TopicBadge
-                      topicId={badgeTopic.id}
-                      color={badgeTopic.color}
-                      size={20}
-                      title={badgeTopic.label}
-                    />
-                  ) : null
 
-                  // Now that badgeTopic is resolved, build the chip arrays
+                  // Topic pill below the title (no favicon overlay badge).
                   const topics = badgeTopic
                     ? [{ id: badgeTopic.id, label: badgeTopic.label, color: badgeTopic.color }]
                     : []
@@ -609,7 +600,6 @@ export default function WeightModal({
                           up={-1}
                           down={-1}
                           thumbnailSrc={item.favicon || undefined}
-                          badgeSlot={badge}
                         />
                       </div>
 

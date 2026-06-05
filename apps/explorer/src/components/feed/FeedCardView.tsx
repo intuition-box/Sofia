@@ -392,6 +392,15 @@ export default function FeedCardView({
               )}
             </div>
             <h3 className="fc-xs-title">{title}</h3>
+            {chipNodes.length > 0 && (
+              <div className="fc-xs-chips">
+                {chipNodes.map((c, i) => (
+                  <span key={i} className="fc-chip-slot">
+                    {c.node}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="fc-xs-foot">
               <span className="fc-xs-domain">{domain}</span>
               {/* up < 0 = caller opts out of vote display (e.g. cart context) */}

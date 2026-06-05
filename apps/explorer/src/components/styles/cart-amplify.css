@@ -175,16 +175,7 @@
   border-color: #f7f6f517;
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
 }
-.amp .b3-row.is-on::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--ds-accent);
-}
+/* Left accent bar removed per design — the row reads cleaner without it. */
 .amp .b3-check {
   width: 22px;
   height: 22px;

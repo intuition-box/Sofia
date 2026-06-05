@@ -1046,6 +1046,14 @@
 .fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
 .fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
 .fc-xs-votes--hidden { display: none; }
+/* Topic / verb pills below the xs title (cart context). */
+.fc-xs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
 
 /* Badge overlay — sits on the fc-xs-thumb-wrap (overflow:visible) so it
    is never clipped by the thumb's overflow:hidden. */
