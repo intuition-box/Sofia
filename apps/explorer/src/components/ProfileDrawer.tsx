@@ -16,6 +16,7 @@ import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import FeedCardView from '@/components/feed/FeedCardView'
+import { useUserPlatformInvests } from '@/hooks/useUserPlatformInvests'
 import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
@@ -48,6 +49,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // on-chain group the user is the subject of an `is_member_of` claim in.
   const { groups } = useGroups()
   const positions = useUserPositionTermIds(linkedAddresses)
+  const { invests: platformInvests } = useUserPlatformInvests(linkedAddresses)
   const circlesCount = useMemo(() => {
     if (linkedAddresses.length === 0) return 1
     const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
@@ -82,7 +84,14 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       topicAtomId: string
       ts: string
     }
-    type Event = CertEvent | ContextEvent
+    type InvestEvent = {
+      kind: 'invest'
+      platformName: string
+      favicon: string
+      website: string
+      ts: string
+    }
+    type Event = CertEvent | ContextEvent | InvestEvent
     const events: Event[] = []
     for (const c of profile.certs) {
       if (c.certifiedAt)
@@ -103,6 +112,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         ts: ca.addedAt,
       })
     }
+    for (const inv of platformInvests) {
+      events.push({
+        kind: 'invest',
+        platformName: inv.platformName,
+        favicon: inv.favicon,
+        website: inv.website,
+        ts: inv.createdAt,
+      })
+    }
     events.sort((a, b) => (b.ts > a.ts ? 1 : -1))
     // Up from 10 → 30 so the drawer surfaces a richer activity tail.
     // The list scrolls inside the drawer's outer `overflow-y: auto`
@@ -110,6 +128,21 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     // visual cap on display either — the user just sees more by
     // scrolling.
     return events.slice(0, 30).map((e) => {
+      // Platform invest — its own card with an "Invest" pill.
+      if (e.kind === 'invest') {
+        return {
+          id: `invest::${e.platformName}::${e.ts}`,
+          title: e.platformName,
+          url: e.website,
+          domain: '',
+          favicon: e.favicon,
+          timestamp: e.ts,
+          isOppose: false,
+          verb: { label: 'Invest', color: '#10B981' } as Verb,
+          topic: null as TopicChip | null,
+        }
+      }
+
       // Page info comes from the owned cert when we have it, else from the
       // fields carried on a context addition (cert not owned by viewer).
       const objectUrl =
@@ -129,6 +162,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         const topic = e.topicSlug ? topicById(e.topicSlug) : null
         const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
         const rowKey = e.cert?.termId ?? domain ?? 'cert'
+        // Context on someone else's cert = a "like" → show a Like pill.
+        // Context on your own cert = a topic tag → show the topic pill.
+        const isLike = !e.cert
         return {
           id: `${rowKey}::${e.topicAtomId}`,
           title,
@@ -137,15 +173,13 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           favicon,
           timestamp: e.ts,
           isOppose: false,
-          // Surface the topic as a structured payload so the row can
-          // render a coloured <TopicBadge> inline instead of dropping
-          // a raw emoji into the action-label string.
-          // Tagging activity carries no intention verb — just the topic
-          // chip (same chip as the Echoes cards).
-          verb: null as Verb | null,
-          topic: e.topicSlug
-            ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
-            : null,
+          verb: isLike
+            ? ({ label: 'Like', color: '#ec4899' } as Verb)
+            : (null as Verb | null),
+          topic:
+            !isLike && e.topicSlug
+              ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
+              : null,
         }
       }
 
@@ -181,7 +215,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         topic: null as TopicChip | null,
       }
     })
-  }, [profile, topicById])
+  }, [profile, topicById, platformInvests])
 
   if (!authenticated) return null
 
@@ -243,7 +277,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
-                  const isOppose = a.isOppose
+                  // Topic-icon badge over the favicon for topic-tag events.
+                  // Like / Invest / cert events carry their meaning in the pill.
                   const badge = a.topic ? (
                     <span
                       className="pd-la-badge pd-la-badge--topic"
@@ -255,19 +290,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                         {getTopicIcon(a.topic.id)}
                       </span>
                     </span>
-                  ) : (
-                    <span className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`} aria-hidden="true">
-                      {isOppose ? (
-                        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 6 6 18" /><path d="M6 6l12 12" />
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </span>
-                  )
+                  ) : null
                   const verbs = a.verb ? [{ label: a.verb.label, color: a.verb.color }] : []
                   const topics = a.topic ? [{ id: a.topic.id, label: a.topic.label, color: a.topic.color }] : []
                   return (
@@ -279,6 +302,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       title={a.title}
                       url={a.url || undefined}
                       domain={a.domain || undefined}
+                      thumbnailSrc={a.favicon || undefined}
                       verbs={verbs}
                       topics={topics}
                       up={-1}
