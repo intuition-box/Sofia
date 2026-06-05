@@ -65,10 +65,12 @@ export default function CertFeedCard({
   ]
   const title = cleanLabel(cert.objectLabel || domain || '')
 
-  // A like/dislike endorses the cert "in context of <topic>" — with no
-  // context there is nothing to stake, so the thumbs disable + show the
-  // tooltip, matching the circle feed (CircleFeedCard.canSupport).
-  const hasContext = cert.topicAtomIds.length > 0
+  // A like/dislike endorses the cert "in context of <topic>" — it stakes the
+  // topic-context vault, NOT the cert vault (the verb). With no stakable
+  // context the thumbs disable + show the tooltip, matching the circle feed
+  // (CircleFeedCard.canSupport / canOppose).
+  const canSupport = cert.contextTriples.some((c) => c.termId)
+  const canOppose = cert.contextTriples.some((c) => c.counterTermId)
 
   return (
     <FeedCardView
@@ -82,8 +84,8 @@ export default function CertFeedCard({
       topics={topics}
       up={cert.certifierCount}
       down={0}
-      canUp={hasContext}
-      canDown={hasContext}
+      canUp={canSupport}
+      canDown={canOppose}
       onVote={onVote}
       onOpen={() => {
         if (url) window.open(url, '_blank', 'noopener,noreferrer')

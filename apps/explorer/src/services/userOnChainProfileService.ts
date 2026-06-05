@@ -76,6 +76,11 @@ export interface UserCert {
   /** Precise context slugs (topic slugs for topic tags, category slugs for
    *  category tags) — for granular display and the picker's applied set. */
   contextSlugs: string[]
+  /** Topic context triples on this cert — the vaults a like (`termId`) /
+   *  dislike (`counterTermId`) actually stakes. A like must back the topic
+   *  context, NOT the cert vault (the verb), so the public-profile vote
+   *  mirrors the circle feed (CircleItem.contextTriples). */
+  contextTriples: { topicSlug: string; termId: string; counterTermId: string }[]
 }
 
 /**
@@ -217,6 +222,25 @@ export async function fetchUserOnChainProfile(
     return { certs: [], topicContextsByTerm, contextAdditions }
   }
 
+  // Index the user's context additions by cert so each UserCert can carry the
+  // topic-context triple term_ids — the vaults a like/dislike stakes. Deduped
+  // by topicSlug (one stake per topic, not per nested duplicate).
+  const contextTriplesByCert = new Map<
+    string,
+    { topicSlug: string; termId: string; counterTermId: string }[]
+  >()
+  for (const ca of contextAdditions) {
+    if (!ca.contextTermId || !ca.topicSlug) continue
+    const arr = contextTriplesByCert.get(ca.certTermId) ?? []
+    if (arr.some((c) => c.topicSlug === ca.topicSlug)) continue
+    arr.push({
+      topicSlug: ca.topicSlug,
+      termId: ca.contextTermId,
+      counterTermId: ca.contextCounterTermId,
+    })
+    contextTriplesByCert.set(ca.certTermId, arr)
+  }
+
   // Normalise into UserCert.
   const certs: UserCert[] = rawTriples.map((t) => {
     const termId = t.term_id ?? ''
@@ -258,6 +282,7 @@ export async function fetchUserOnChainProfile(
       topicAtomIds,
       topicSlugs,
       contextSlugs,
+      contextTriples: contextTriplesByCert.get(termId) ?? [],
     }
   })
 
