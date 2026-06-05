@@ -534,7 +534,7 @@ export default function ScoresPage() {
             <div className="sc2-dt-chip boost">
               <div className="sc2-dt-chip-k">
                 <i />
-                Boost · others
+                Backers · others
               </div>
               <div className="sc2-dt-chip-v">+{t.boost}</div>
             </div>
@@ -542,8 +542,8 @@ export default function ScoresPage() {
           <div className="sc2-dt-backers">
             <div className="sc2-dt-backers-t">
               {tBackers.length
-                ? `${tBackers.length} curator${tBackers.length === 1 ? '' : 's'} boosted you`
-                : 'No boost yet'}
+                ? `${tBackers.length} backer${tBackers.length === 1 ? '' : 's'}`
+                : 'No backers yet'}
             </div>
             {tBackers.length ? (
               tBackers.map((b) => (

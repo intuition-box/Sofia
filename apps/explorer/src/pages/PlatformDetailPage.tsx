@@ -20,10 +20,7 @@ import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { UserCert } from '@/services/userOnChainProfileService'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { useCart } from '@/hooks/useCart'
-import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType,
-} from '@/config/intentions'
+import type { CartItem } from '@/hooks/useCart'
 import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
@@ -123,31 +120,40 @@ export default function PlatformDetailPage() {
     label: viewedAddress ? certHandle || 'Profile' : 'My profile',
     to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
   }
-  // Like / dislike a cert — queues a support (or oppose) deposit on the
-  // cert's own vault into the Amplify cart, so a viewer can back another
-  // user's cert from their public profile. No-op when signed out.
+  const { topicById } = useTaxonomy()
+  // Like / dislike a cert — a like backs the cert's "in context of <topic>"
+  // triples (one stake per topic), NOT the cert vault (the verb). This mirrors
+  // the circle feed (CircleFeedSection.handleDeposit) so the right tx is queued
+  // and the stake feeds topic reputation. Deduped by topic. No-op when signed
+  // out or when the cert carries no stakable context.
   const handleVote = useCallback(
     (cert: UserCert, side: 'support' | 'oppose') => {
       if (!authenticated) return
-      const termId = side === 'support' ? cert.termId : cert.counterTermId
-      if (!termId) return
       const domain =
         extractDomain(cert.objectUrl) || extractDomain(cert.objectLabel) || ''
-      const cfg = (() => {
-        const t = predicateLabelToIntentionType(cert.intention)
-        return t ? INTENTION_CONFIG[t] : undefined
-      })()
-      cart.addItem({
-        id: `${termId}-${side}`,
-        side,
-        termId,
-        intention: cfg?.label ?? cert.intention,
-        title: cert.objectLabel || domain,
-        favicon: domain ? getFaviconUrl(domain) : '',
-        intentionColor: cfg?.color ?? '#888',
-      })
+      const favicon = domain ? getFaviconUrl(domain) : ''
+      const title = cert.objectLabel || domain
+      const seen = new Set<string>()
+      const newItems: CartItem[] = []
+      for (const c of cert.contextTriples) {
+        const termId = side === 'support' ? c.termId : c.counterTermId
+        if (!termId || seen.has(c.topicSlug)) continue
+        seen.add(c.topicSlug)
+        const meta = topicById(c.topicSlug)
+        newItems.push({
+          id: `${termId}-${side}`,
+          side,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
+          title,
+          favicon,
+          intentionColor: meta?.color ?? '#888',
+        })
+      }
+      if (newItems.length === 0) return
+      cart.addItems(newItems)
     },
-    [authenticated, cart],
+    [authenticated, cart, topicById],
   )
   const profileAddresses = viewedAddress
     ? [viewedAddress]
@@ -159,7 +165,6 @@ export default function PlatformDetailPage() {
 
   const { profile, isLoading } = useUserOnChainProfile(profileAddresses)
   const { ranked: platformMarkets } = usePlatformMarket()
-  const { topicById } = useTaxonomy()
   const [query, setQuery] = useState('')
   const [investOpen, setInvestOpen] = useState(false)
 
