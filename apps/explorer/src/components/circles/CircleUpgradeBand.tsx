@@ -28,7 +28,7 @@ function SparkGlyph() {
 
 export default function CircleUpgradeBand() {
   const onUpgrade = () =>
-    circleUpsellToast('Sofia Pro — contact your Circle steward to upgrade')
+    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
 
   return (
     <div className="up-band">

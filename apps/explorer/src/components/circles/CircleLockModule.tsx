@@ -99,7 +99,7 @@ export default function CircleLockModule({
   ghostRows = 3,
 }: CircleLockModuleProps) {
   const onUpgrade = () =>
-    circleUpsellToast('Sofia Pro — contact your Circle steward to upgrade')
+    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
 
   return (
     <section className="cf-module" aria-labelledby="cf-decisions-title">

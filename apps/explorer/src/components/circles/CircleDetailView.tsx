@@ -138,7 +138,7 @@ export default function CircleDetailView({
   const isFree = true
 
   const upgrade = () =>
-    circleUpsellToast('Sofia Pro — contact your Circle steward to upgrade')
+    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
   const memberClick = () =>
     circleUpsellToast(`You're a member of ${circle.name}`)
 

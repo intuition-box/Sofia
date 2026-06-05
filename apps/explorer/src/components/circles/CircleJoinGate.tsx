@@ -137,7 +137,7 @@ export default function CircleJoinGate({
             className="jg-alt"
             onClick={() =>
               circleUpsellToast(
-                'Sofia Pro — contact your Circle steward to upgrade',
+                'Sofia Pro — contact the core team on Discord to upgrade',
               )
             }
           >
