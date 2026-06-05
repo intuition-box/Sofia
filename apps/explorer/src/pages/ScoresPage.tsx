@@ -56,6 +56,7 @@ import {
   type Seg,
   type Mode,
 } from '@/components/scores/ScoresDonut'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
@@ -350,6 +351,7 @@ export default function ScoresPage() {
   const selfDisplay = address ? getDisplay(address as Address) : ''
   const selfAvatar = address ? getAvatar(address as Address) : ''
   const shortAddr = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : ''
+  const { redeemCert } = useRedeemCert()
 
   // ── Season pool ──
   const { data: poolPositions, vaultStats } = useSeasonPool(
@@ -409,6 +411,8 @@ export default function ScoresPage() {
             existingTopics={cert.contextSlugs}
           />
         }
+        isOwner
+        onDelete={() => redeemCert(cert.termId)}
       />
     )
   }

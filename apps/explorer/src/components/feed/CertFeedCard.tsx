@@ -18,6 +18,7 @@ import FeedCardView, {
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/feed-card.css'
 
 interface CertFeedCardProps {
@@ -28,6 +29,8 @@ interface CertFeedCardProps {
   avatarUrl?: string
   /** Topic-id → label + color resolver (from useTaxonomy). */
   topicById: (id: string) => { label: string; color: string } | undefined
+  /** When true, shows the owner ⋯ menu with a Remove (redeem) action. */
+  isOwner?: boolean
 }
 
 export default function CertFeedCard({
@@ -35,7 +38,9 @@ export default function CertFeedCard({
   handle,
   avatarUrl,
   topicById,
+  isOwner = false,
 }: CertFeedCardProps) {
+  const { redeemCert, isRedeeming } = useRedeemCert()
   const url = cert.objectUrl || ''
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
   const intentType = predicateLabelToIntentionType(cert.intention)
@@ -77,6 +82,8 @@ export default function CertFeedCard({
           existingTopics={cert.contextSlugs}
         />
       }
+      isOwner={isOwner}
+      onDelete={isOwner ? () => redeemCert(cert.termId) : undefined}
     />
   )
 }
