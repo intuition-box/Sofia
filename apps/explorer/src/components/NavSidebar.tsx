@@ -116,10 +116,10 @@ export function NavSidebar({
     label: string
     public: boolean
   }[] = [
-    { to: '/circles', icon: Users, label: 'Circles', public: false },
-    { to: '/explore', icon: Globe, label: 'Explore', public: true },
-    { to: '/compose', icon: Layers, label: 'Compose', public: false },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
+    { to: '/explore', icon: Globe, label: 'Explore', public: true },
+    { to: '/circles', icon: Users, label: 'Circles', public: false },
+    { to: '/compose', icon: Layers, label: 'Compose', public: false },
   ]
 
   const quickLinks: {
