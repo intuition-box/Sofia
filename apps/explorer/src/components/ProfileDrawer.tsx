@@ -274,16 +274,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                     <FeedCardView
                       key={a.id}
                       size="xs"
-                      handle={displayName || shortAddr}
-                      avatarUrl={avatar || undefined}
+                      handle=""
                       when={timeAgo(a.timestamp)}
                       title={a.title}
                       url={a.url || undefined}
                       domain={a.domain || undefined}
                       verbs={verbs}
                       topics={topics}
-                      up={0}
-                      down={0}
+                      up={-1}
+                      down={-1}
                       badgeSlot={badge}
                       onOpen={() => {
                         if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer')

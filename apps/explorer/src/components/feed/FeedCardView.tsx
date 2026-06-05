@@ -362,35 +362,35 @@ export default function FeedCardView({
           </div>
           {/* Main */}
           <div className="fc-xs-main">
-            <div className="fc-xs-head">
-              {/* Only render the avatar when there's something to show —
-                  avoids a blank gradient disc when handle is empty. */}
-              {(avatarUrl || handle) && (
-                <span className="fc-avatar fc-avatar--xs" aria-hidden="true">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt=""
-                      className="fc-avatar-img"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).style.visibility = 'hidden'
-                      }}
-                    />
-                  ) : (
-                    initials
-                  )}
-                </span>
-              )}
-              <span className="fc-xs-handle">
-                {handleSlot ?? handle}
-                {(handle || handleSlot) && <span className="fc-xs-sep">·</span>}
-                {when}
-              </span>
-              {isOwner && onDelete && (
-                <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
-              )}
-            </div>
+            {/* Head only renders when there's an identity/owner action to show.
+                The timestamp moved to the footer (bottom-left). */}
+            {(avatarUrl || handle || handleSlot || (isOwner && onDelete)) && (
+              <div className="fc-xs-head">
+                {(avatarUrl || handle) && (
+                  <span className="fc-avatar fc-avatar--xs" aria-hidden="true">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        className="fc-avatar-img"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+                        }}
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </span>
+                )}
+                {(handle || handleSlot) && (
+                  <span className="fc-xs-handle">{handleSlot ?? handle}</span>
+                )}
+                {isOwner && onDelete && (
+                  <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
+                )}
+              </div>
+            )}
             <h3 className="fc-xs-title">{title}</h3>
             {chipNodes.length > 0 && (
               <div className="fc-xs-chips">
@@ -402,7 +402,8 @@ export default function FeedCardView({
               </div>
             )}
             <div className="fc-xs-foot">
-              <span className="fc-xs-domain">{domain}</span>
+              {when && <span className="fc-xs-when">{when}</span>}
+              {domain && <span className="fc-xs-domain">{domain}</span>}
               {/* up < 0 = caller opts out of vote display (e.g. cart context) */}
               <div className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}>
                 <span

@@ -1046,6 +1046,12 @@
 .fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
 .fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
 .fc-xs-votes--hidden { display: none; }
+/* Timestamp, bottom-left of the xs footer. */
+.fc-xs-when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
 /* Topic / verb pills below the xs title (cart context). */
 .fc-xs-chips {
   display: flex;
