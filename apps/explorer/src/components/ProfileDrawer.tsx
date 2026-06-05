@@ -65,26 +65,39 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // is old. Each kind keeps its own timestamp.
   const lastActivity = useMemo(() => {
     const certByTerm = new Map(profile.certs.map((c) => [c.termId, c]))
-    type Event =
-      | { kind: 'cert'; cert: (typeof profile.certs)[number]; ts: string }
-      | {
-          kind: 'context'
-          cert: (typeof profile.certs)[number]
-          topicSlug: string
-          topicAtomId: string
-          ts: string
-        }
+    type CertEvent = {
+      kind: 'cert'
+      cert: (typeof profile.certs)[number]
+      ts: string
+    }
+    // A context event can land on a cert the viewer doesn't own. When the
+    // owned cert is present (`cert`) we use its richer fields; otherwise we
+    // fall back to the page info carried on the addition itself.
+    type ContextEvent = {
+      kind: 'context'
+      cert: (typeof profile.certs)[number] | null
+      objectUrl: string
+      objectLabel: string
+      topicSlug: string
+      topicAtomId: string
+      ts: string
+    }
+    type Event = CertEvent | ContextEvent
     const events: Event[] = []
     for (const c of profile.certs) {
       if (c.certifiedAt)
         events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
     }
     for (const ca of profile.contextAdditions) {
-      const cert = certByTerm.get(ca.certTermId)
-      if (!cert || !ca.addedAt) continue
+      if (!ca.addedAt) continue
+      const cert = certByTerm.get(ca.certTermId) ?? null
+      // No owned cert AND no carried page info → nothing renderable.
+      if (!cert && !ca.objectUrl && !ca.objectLabel) continue
       events.push({
         kind: 'context',
         cert,
+        objectUrl: ca.objectUrl,
+        objectLabel: ca.objectLabel,
         topicSlug: ca.topicSlug,
         topicAtomId: ca.topicAtomId,
         ts: ca.addedAt,
@@ -97,19 +110,27 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     // visual cap on display either — the user just sees more by
     // scrolling.
     return events.slice(0, 30).map((e) => {
-      const c = e.cert
-      const url = c.objectUrl || ''
-      const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
-      const title = cleanLabel(c.objectLabel || domain || '')
+      // Page info comes from the owned cert when we have it, else from the
+      // fields carried on a context addition (cert not owned by viewer).
+      const objectUrl =
+        e.kind === 'context' && !e.cert ? e.objectUrl : (e.cert?.objectUrl ?? '')
+      const objectLabel =
+        e.kind === 'context' && !e.cert
+          ? e.objectLabel
+          : (e.cert?.objectLabel ?? '')
+      const url = objectUrl || ''
+      const domain = extractDomain(url) || extractDomain(objectLabel) || ''
+      const title = cleanLabel(objectLabel || domain || '')
       const linkUrl =
-        url || (c.objectLabel.startsWith('http') ? c.objectLabel : '')
+        url || (objectLabel.startsWith('http') ? objectLabel : '')
       const favicon = domain ? getFaviconUrl(domain) : ''
 
       if (e.kind === 'context') {
         const topic = e.topicSlug ? topicById(e.topicSlug) : null
         const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
+        const rowKey = e.cert?.termId ?? domain ?? 'cert'
         return {
-          id: `${c.termId}::${e.topicAtomId}`,
+          id: `${rowKey}::${e.topicAtomId}`,
           title,
           url: linkUrl,
           domain,
@@ -128,6 +149,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         }
       }
 
+      // Only reached for `kind: 'cert'`, where `e.cert` is always present.
+      const c = e.cert
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
       // Verb chip per intention — same colored-pill language as the

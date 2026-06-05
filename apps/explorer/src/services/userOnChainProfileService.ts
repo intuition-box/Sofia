@@ -100,6 +100,13 @@ export interface ContextAddition {
   contextSlug: string
   /** ISO timestamp of the user's first share on the nested triple. */
   addedAt: string
+  /** The tagged cert's object URL — carried from the `subject.term.triple`
+   *  join so a context added to ANOTHER user's cert (not in the viewer's
+   *  own `certs`) can still render a row. `""` when the indexer returns
+   *  no url. */
+  objectUrl: string
+  /** The tagged cert's object label / domain. `""` when unknown. */
+  objectLabel: string
 }
 
 export interface UserOnChainProfile {
@@ -161,9 +168,12 @@ export async function fetchUserOnChainProfile(
         topicAtomIds: CONTEXT_TERM_IDS,
         limit: TOPIC_LINKS_LIMIT,
       })(),
+      // Not scoped to the user's own certs: the position filter is what
+      // identifies "the user tagged this", so a context staked on someone
+      // else's cert surfaces here too. The cert's page info rides along on
+      // each row (`subject.term.triple.object`) so the drawer can render it.
       useGetUserContextAdditionsQuery.fetcher({
         userAddresses,
-        certTermIds,
         topicAtomIds: CONTEXT_TERM_IDS,
         limit: TOPIC_LINKS_LIMIT,
       })(),
@@ -184,6 +194,7 @@ export async function fetchUserOnChainProfile(
       const addedAt = row.positions?.[0]?.created_at ?? ''
       if (!certTermId || !topicAtomId || !addedAt) continue
       const node = resolveContextAtom(topicAtomId)
+      const certObject = row.subject?.term?.triple?.object
       contextAdditions.push({
         certTermId,
         contextTermId: row.term_id ?? '',
@@ -192,6 +203,8 @@ export async function fetchUserOnChainProfile(
         topicSlug: node?.topicSlug ?? '',
         contextSlug: node?.slug ?? '',
         addedAt: String(addedAt),
+        objectUrl: certObject?.value?.thing?.url ?? '',
+        objectLabel: certObject?.label ?? '',
       })
     }
     contextAdditions.sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1))
