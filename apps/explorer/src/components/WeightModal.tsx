@@ -29,8 +29,11 @@ import {
   type PinThingFn,
 } from '../services/atomCreationService'
 import SofiaLoader from './ui/SofiaLoader'
+import FeedCardView from './feed/FeedCardView'
+import TopicBadge from './profile/TopicBadge'
 import './styles/weight-modal.css'
 import './styles/cart-amplify.css'
+import './styles/feed-card.css'
 
 /** Deposit strength presets — ported 1:1 from the extension's Amplify
  *  ticket (Light / Medium / Strong). Medium (0.5) is the default and
@@ -524,11 +527,37 @@ export default function WeightModal({
                   const rowTrust = getAmount(index)
                   const topicMeta = resolveTopic(item)
                   const isRedeem = item.kind === 'redeem'
+
+                  // Extract real domain from Google favicon service URL
+                  // e.g. "https://www.google.com/s2/favicons?domain=example.com&sz=64" → "example.com"
+                  const faviconDomain = (() => {
+                    try {
+                      const u = new URL(item.favicon)
+                      return u.searchParams.get('domain') || u.hostname
+                    } catch { return '' }
+                  })()
+
+                  // Verb/topic chips for the xs card footer row
+                  const verbs = (!topicMeta && item.intention)
+                    ? [{ label: item.intention, color: item.intentionColor }]
+                    : []
+                  const topics = topicMeta
+                    ? [{ id: topicMeta.id, label: topicMeta.label, color: topicMeta.color }]
+                    : []
+
+                  // Topic icon disc badge — same as ProfileDrawer Last Activity
+                  const badge = topicMeta ? (
+                    <TopicBadge
+                      topicId={topicMeta.id}
+                      color={topicMeta.color}
+                      size={20}
+                      title={topicMeta.label}
+                    />
+                  ) : null
+
                   return (
                     <div className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`} key={item.id}>
-                      {/* Check doubles as the remove control — clicking an
-                          active row drops it from the cart (the explorer has
-                          no on/off-but-kept state like the extension). */}
+                      {/* Remove control */}
                       <button
                         className="b3-check"
                         type="button"
@@ -536,41 +565,25 @@ export default function WeightModal({
                         disabled={processing}
                         onClick={() => onRemove?.(item.id)}
                       >
-                        <svg
-                          width="11"
-                          height="11"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M5 12l4 4L19 6"
-                            stroke="var(--ds-on-accent)"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                          <path d="M5 12l4 4L19 6" stroke="var(--ds-on-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
 
-                      {item.favicon ? (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          className="b3-row-fav"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            ;(e.target as HTMLImageElement).style.visibility =
-                              'hidden'
-                          }}
+                      {/* xs FeedCardView — favicon thumbnail + topic badge + title + pills */}
+                      <div className="b3-row-card">
+                        <FeedCardView
+                          size="xs"
+                          handle=""
+                          when=""
+                          title={item.title}
+                          domain={faviconDomain}
+                          verbs={verbs}
+                          topics={topics}
+                          up={0}
+                          down={0}
+                          badgeSlot={badge}
                         />
-                      ) : (
-                        <span className="b3-row-fav" aria-hidden="true" />
-                      )}
-
-                      <div className="b3-row-meta">
-                        <div className="b3-row-name" title={item.title}>
-                          {item.title}
-                        </div>
                       </div>
 
                       {isRedeem ? (
@@ -579,38 +592,12 @@ export default function WeightModal({
                         </div>
                       ) : (
                         <div className="b3-row-trust">
-                          <span className="b3-row-trust-val">
-                            {formatTrust(rowTrust)}
-                          </span>
+                          <span className="b3-row-trust-val">{formatTrust(rowTrust)}</span>
                           <span className="b3-row-trust-unit">TRUST</span>
                         </div>
                       )}
 
-                      {/* Tags get their own full-width line below the title so
-                          the topic label reads clearly and multiple contexts
-                          wrap cleanly instead of crowding the favicon. */}
-                      {topicMeta ? (
-                        // Topic-tagged item — show the topic chip only
-                        // (drop the "Context > …" intention string).
-                        <div className="b3-row-tags">
-                          <TopicPill
-                            topicId={topicMeta.id}
-                            color={topicMeta.color}
-                            label={topicMeta.label}
-                          />
-                        </div>
-                      ) : item.intention ? (
-                        <div className="b3-row-tags">
-                          <VerbPill
-                            label={item.intention}
-                            color={item.intentionColor}
-                          />
-                        </div>
-                      ) : null}
-
                       {isRedeem ? (
-                        // Redeem rows: no weight picker — the full position
-                        // is redeemed, nothing to tune.
                         <div className="b3-tiers b3-tiers--redeem">
                           <span className="b3-tier-label">All shares returned</span>
                         </div>
@@ -706,41 +693,35 @@ export default function WeightModal({
             </>
           )}
 
-          {/* Success state */}
+          {/* Success — the peach "Transaction validated" reward takeover. */}
           {txResult?.success && (
-            <div className="wm-success-card">
-              <div className="wm-success-glow" />
-              <div className="wm-success-inner">
-                <p
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    margin: 0,
-                    lineHeight: 1.2,
-                  }}
-                >
+            <div className="wm-reward">
+              <div className="wm-reward-rays" aria-hidden="true" />
+              <div className="wm-reward-inner">
+                <span className="wm-reward-eyebrow">Thank you</span>
+                <h2 className="wm-reward-title">
                   Transaction
                   <br />
-                  Validated
+                  validated
+                </h2>
+                <p className="wm-reward-msg">
+                  One more truth, on-chain.
                 </p>
-                <p
-                  className="text-sm text-muted-foreground"
-                  style={{ margin: 0 }}
-                >
-                  {items.length} deposit{items.length > 1 ? 's' : ''} submitted
-                  successfully
-                </p>
-                {txResult.txHash && (
-                  <a
-                    href={`${EXPLORER_URL}/tx/${txResult.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline"
-                    style={{ marginTop: 4 }}
-                  >
-                    View on Explorer →
-                  </a>
-                )}
+                <div className="wm-reward-meta">
+                  <span>
+                    {items.length} signal{items.length > 1 ? 's' : ''} recorded
+                  </span>
+                  {txResult.txHash && (
+                    <a
+                      href={`${EXPLORER_URL}/tx/${txResult.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="wm-reward-link"
+                    >
+                      View on Explorer ↗
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           )}
