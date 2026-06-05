@@ -320,7 +320,7 @@ export default function ComposePage() {
                         className="cmp-card-view"
                         onClick={(e) => {
                           e.stopPropagation()
-                          navigate(`/profile/interest/${topic.id}`)
+                          navigate(`/explore?topic=${topic.id}`)
                         }}
                       >
                         <ArrowUpRight className="h-3 w-3" />
