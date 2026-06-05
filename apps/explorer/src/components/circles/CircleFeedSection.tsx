@@ -102,9 +102,17 @@ export default function CircleFeedSection({
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated) return
-      const contexts = item.contextTriples.filter((c) =>
-        side === 'support' ? !!c.termId : !!c.counterTermId,
-      )
+      // Deduplicate by topicSlug: multiple cert triples on the same card
+      // (e.g. visits_for_work + visits_for_learning) each produce their own
+      // "in context of" triple for the same topic, but we only want ONE
+      // stake per topic — not one per intention.
+      const seenTopics = new Set<string>()
+      const contexts = item.contextTriples.filter((c) => {
+        const hasVault = side === 'support' ? !!c.termId : !!c.counterTermId
+        if (!hasVault || seenTopics.has(c.topicSlug)) return false
+        seenTopics.add(c.topicSlug)
+        return true
+      })
       if (contexts.length === 0) return
       const newItems: CartItem[] = contexts.map((c) => {
         const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
