@@ -165,7 +165,10 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         // Context on your own cert = a topic tag → show the topic pill.
         const isLike = !e.cert
         return {
-          id: `${rowKey}::${e.topicAtomId}`,
+          // Include the timestamp: a not-owned like falls back to `domain`
+          // for rowKey, so two likes on different certs of the same domain +
+          // same topic would otherwise collide on one React key.
+          id: `${rowKey}::${e.topicAtomId}::${e.ts}`,
           title,
           url: linkUrl,
           domain,

@@ -41,16 +41,24 @@ export async function fetchUserPlatformInvests(
   limit = 100,
 ): Promise<UserPlatformInvest[]> {
   if (addresses.length === 0 || termIds.length === 0) return []
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: GET_USER_PLATFORM_INVESTS,
-      variables: { addresses, termIds, limit },
-    }),
-  })
-  const json = await res.json()
-  const rows = json.data?.positions ?? []
+  // Activity-feed data — degrade to empty on any network / parse / GraphQL
+  // error rather than rejecting the query (the drawer just shows fewer rows).
+  let rows: { term_id?: string; created_at?: string }[] = []
+  try {
+    const res = await fetch(GRAPHQL_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: GET_USER_PLATFORM_INVESTS,
+        variables: { addresses, termIds, limit },
+      }),
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    rows = json.data?.positions ?? []
+  } catch {
+    return []
+  }
   // Dedupe by term_id keeping the earliest position (first invest), so a
   // re-deposit doesn't create a second activity row.
   const byTerm = new Map<string, string>()

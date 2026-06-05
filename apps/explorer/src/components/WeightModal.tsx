@@ -177,8 +177,14 @@ export default function WeightModal({
     return cv?.trim() ? parseFloat(cv) || 0 : (weights[index] ?? 0.5)
   }
 
+  // Redeem rows recover TRUST — they don't deposit. Excluding them keeps the
+  // ledger total (and the balance-gated submit button) from charging a
+  // phantom 0.5 default per redeem row.
   const totalDeposit = useMemo(() => {
-    return items.reduce((sum, _, i) => sum + getAmount(i), 0)
+    return items.reduce(
+      (sum, it, i) => (it.kind === 'redeem' ? sum : sum + getAmount(i)),
+      0,
+    )
   }, [items, weights, customValues])
 
   const balNum = balance ? parseFloat(balance) : 0
@@ -282,23 +288,55 @@ export default function WeightModal({
 
     let allOk = true
 
-    // Redeem: recover TRUST from each cert vault one by one.
+    // Redeem: recover TRUST from each cert vault one by one. `redeemAtom`
+    // throws on wallet rejection / revert (it doesn't catch internally), so
+    // the loop is wrapped — otherwise a rejected popup leaves the panel stuck
+    // with no error. `createTripleProcessing` drives the spinner since redeem
+    // takes neither the deposit nor the create-triple path.
     if (redeemTermIds.length > 0) {
       if (!authenticated || wallets.length === 0) {
         setCreateTripleResult({ success: false, error: 'No wallet connected' })
         return
       }
       const wallet = wallets[0]
-      for (const termId of redeemTermIds) {
-        const r = await redeemAtom(wallet, termId)
-        if (!r.success) {
-          allOk = false
-        } else {
-          clearOptimisticPosition(qc, wallet.address, termId)
+      let lastRedeemHash: string | undefined
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        for (const termId of redeemTermIds) {
+          const r = await redeemAtom(wallet, termId)
+          if (!r.success) {
+            allOk = false
+            setCreateTripleResult({
+              success: false,
+              error: r.error ?? 'Redeem failed',
+            })
+          } else {
+            if (r.txHash) lastRedeemHash = r.txHash
+            clearOptimisticPosition(qc, wallet.address, termId)
+          }
         }
+      } catch (err) {
+        allOk = false
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      } finally {
+        setCreateTripleProcessing(false)
       }
       if (allOk) {
         qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+        // A redeem-only cart has no deposit/create result to drive the
+        // success screen — synthesize one so the panel shows "validated"
+        // and the Close tap hands off to onSuccess (clears the cart).
+        if (
+          depositItems.length === 0 &&
+          createItems.length === 0 &&
+          circleIndices.length === 0
+        ) {
+          setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+        }
       }
     }
 
