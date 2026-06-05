@@ -65,6 +65,11 @@ export default function CertFeedCard({
   ]
   const title = cleanLabel(cert.objectLabel || domain || '')
 
+  // A like/dislike endorses the cert "in context of <topic>" — with no
+  // context there is nothing to stake, so the thumbs disable + show the
+  // tooltip, matching the circle feed (CircleFeedCard.canSupport).
+  const hasContext = cert.topicAtomIds.length > 0
+
   return (
     <FeedCardView
       handle={handle}
@@ -77,6 +82,8 @@ export default function CertFeedCard({
       topics={topics}
       up={cert.certifierCount}
       down={0}
+      canUp={hasContext}
+      canDown={hasContext}
       onVote={onVote}
       onOpen={() => {
         if (url) window.open(url, '_blank', 'noopener,noreferrer')
