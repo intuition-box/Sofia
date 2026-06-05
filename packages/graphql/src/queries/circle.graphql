@@ -202,29 +202,88 @@ query GetCertTopicLinks(
 # Drives "Tagged X with topic Y" rows in the ProfileDrawer activity feed.
 # `positions` is filtered+ordered+limited to the user's first share so
 # the row count stays bounded.
+#
+# NB: this is intentionally NOT scoped to the user's own certs. The
+# `positions` filter (account holds shares on the context triple) is what
+# identifies "the user did this", so the row also surfaces when the user
+# staked a context on SOMEONE ELSE'S cert. The subject (cert) triple's
+# `object` page info is selected so the drawer can render that row without
+# the viewer owning the cert.
 query GetUserContextAdditions(
   $userAddresses: [String!]!
-  $certTermIds: [String!]!
   $topicAtomIds: [String!]!
   $limit: Int = 50000
 ) {
   triples(
     where: {
       predicate: { label: { _eq: "in context of" } }
-      subject_id: { _in: $certTermIds }
       object_id: { _in: $topicAtomIds }
       positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
     limit: $limit
   ) {
+    # The context triple's OWN vault ids — reputation reads stakers (likers)
+    # on these: term_id = support (like), counter_term_id = oppose (dislike).
+    term_id
+    counter_term_id
     subject_id
     object_id
+    # Subject = the atom that IS the cert triple this context hangs off.
+    # `subject.term.triple` resolves that cert triple; carry its `object`
+    # page info (mirrors GetUserCertsAlltime's `object` selection) so the
+    # row renders even when the viewer doesn't own the cert.
+    subject {
+      term {
+        triple {
+          object {
+            term_id
+            label
+            value {
+              thing {
+                url
+                name
+              }
+            }
+          }
+        }
+      }
+    }
     positions(
       where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
       order_by: { created_at: asc }
       limit: 1
     ) {
       created_at
+    }
+  }
+}
+
+# Step 3b of the Trust Circle feed (see useCircleFeed): the stakeable
+# "in context of" triples nested under each cert. One row per
+# (cert, context) — `subject_id` is the parent cert term_id, `term_id`
+# is the support vault the card votes on, `counter_term_id` the oppose
+# side, and `object.term_id` the context/topic atom the card resolves to
+# a slug. Paginated (limit/offset, term_id asc) to walk every context a
+# big trust circle's certs were tagged with.
+query GetFeedContextTriples(
+  $subjectTermIds: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      subject_id: { _in: $subjectTermIds }
+      predicate: { label: { _eq: "in context of" } }
+    }
+    limit: $limit
+    offset: $offset
+    order_by: { term_id: asc }
+  ) {
+    term_id
+    counter_term_id
+    subject_id
+    object {
+      term_id
     }
   }
 }

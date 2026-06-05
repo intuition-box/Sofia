@@ -214,6 +214,12 @@ export default function PlatformsRightRail() {
             {myPositions.best && myPositions.best.userPnlPct != null && (
               <div className="prr-mover">
                 <span className="prr-mover-kicker">Best</span>
+                <FaviconWrapper
+                  className="prr-mover-fav"
+                  size={20}
+                  src={`/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.best.termId) || ''}.png`}
+                  alt={myPositions.best.label}
+                />
                 <span className="prr-mover-name">{myPositions.best.label}</span>
                 <span className="prr-mover-pct prr-mover-pct--up">
                   ▲ {myPositions.best.userPnlPct.toFixed(1)}%
@@ -225,6 +231,12 @@ export default function PlatformsRightRail() {
               myPositions.worst.termId !== myPositions.best?.termId && (
                 <div className="prr-mover">
                   <span className="prr-mover-kicker">Worst</span>
+                  <FaviconWrapper
+                    className="prr-mover-fav"
+                    size={20}
+                    src={`/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.worst.termId) || ''}.png`}
+                    alt={myPositions.worst.label}
+                  />
                   <span className="prr-mover-name">
                     {myPositions.worst.label}
                   </span>

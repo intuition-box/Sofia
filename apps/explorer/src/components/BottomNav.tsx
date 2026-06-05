@@ -14,7 +14,7 @@ interface BottomNavItem {
 }
 
 const NAV_ITEMS: BottomNavItem[] = [
-  { to: '/feed', label: 'Explore', icon: Globe },
+  { to: '/explore', label: 'Explore', icon: Globe },
   { to: '/circles', label: 'Circles', icon: Users, authRequired: true },
   {
     to: '/compose',

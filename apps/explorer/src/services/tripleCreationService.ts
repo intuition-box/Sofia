@@ -18,6 +18,7 @@ import {
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
   intuitionChain,
+  explicitGasLimit,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -120,22 +121,20 @@ export async function executeCreateTriple(
         CREATION_CURVE_ID,
         0n,
       ] as const
-      await publicClient.simulateContract({
+      const simConfig = {
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'deposit',
         args: depositArgs,
         value: totalCost,
         account: address,
-      })
+      } as const
+      await publicClient.simulateContract(simConfig)
+      const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
       const hash = await client.writeContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'deposit',
-        args: depositArgs,
-        value: totalCost,
+        ...simConfig,
+        gas,
         chain: intuitionChain,
-        account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
       return receipt.status === 'success'
@@ -169,23 +168,23 @@ export async function executeCreateTriple(
       CREATION_CURVE_ID,
     ] as const
 
-    await publicClient.simulateContract({
+    const simConfig = {
       address: PROXY_ADDRESS,
       abi: SofiaFeeProxyAbi,
       functionName: 'createTriples',
       args,
       value: totalCost,
       account: address,
-    })
+    } as const
+
+    await publicClient.simulateContract(simConfig)
+
+    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
-      address: PROXY_ADDRESS,
-      abi: SofiaFeeProxyAbi,
-      functionName: 'createTriples',
-      args,
-      value: totalCost,
+      ...simConfig,
+      gas,
       chain: intuitionChain,
-      account: address,
     })
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -293,23 +292,27 @@ export async function executeCreateTriplesBatch(
         CREATION_CURVE_ID,
       ] as const
 
-      await publicClient.simulateContract({
+      const simConfig = {
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'createTriples',
         args,
         value: totalCost,
         account: address,
-      })
+      } as const
+
+      await publicClient.simulateContract(simConfig)
+
+      const gas = await explicitGasLimit(
+        publicClient,
+        simConfig,
+        BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
+      )
 
       const hash = await client.writeContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'createTriples',
-        args,
-        value: totalCost,
+        ...simConfig,
+        gas,
         chain: intuitionChain,
-        account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
       if (receipt.status !== 'success')
@@ -342,23 +345,27 @@ export async function executeCreateTriplesBatch(
 
       const args = [address, termIds, curveIds, assets, minShares] as const
 
-      await publicClient.simulateContract({
+      const simConfig = {
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'depositBatch',
         args,
         value: totalValue,
         account: address,
-      })
+      } as const
+
+      await publicClient.simulateContract(simConfig)
+
+      const gas = await explicitGasLimit(
+        publicClient,
+        simConfig,
+        BigInt(toDeposit.length) * 600_000n + 1_000_000n,
+      )
 
       const hash = await client.writeContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'depositBatch',
-        args,
-        value: totalValue,
+        ...simConfig,
+        gas,
         chain: intuitionChain,
-        account: address,
       })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
       if (receipt.status !== 'success')

@@ -37,8 +37,8 @@ COPY apps/doc/package.json ./apps/doc/
 COPY apps/og/package.json ./apps/og/
 COPY packages/graphql/package.json ./packages/graphql/
 COPY packages/design-system/package.json ./packages/design-system/
+COPY packages/taxonomy/package.json ./packages/taxonomy/
 COPY services/mastra/package.json ./services/mastra/
-COPY services/mcp-server/package.json ./services/mcp-server/
 
 RUN bun install --frozen-lockfile
 

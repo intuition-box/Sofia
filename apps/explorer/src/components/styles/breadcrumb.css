@@ -1,0 +1,33 @@
+/* Breadcrumb — standard page path (replaces the old "← Back to X" buttons). */
+.bc-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bc-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.bc-sep {
+  color: var(--ds-muted-soft);
+}
+.bc-link {
+  color: var(--ds-muted);
+  text-decoration: none;
+  transition: color 0.13s ease;
+}
+.bc-link:hover {
+  color: var(--ds-ink);
+}
+.bc-current {
+  color: var(--ds-ink);
+  font-weight: 600;
+}

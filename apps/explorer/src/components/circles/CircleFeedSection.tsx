@@ -18,16 +18,12 @@ import { useEnsNames } from '@/hooks/useEnsNames'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
-import { useCircleCertifierScores } from '@/hooks/useCircleCertifierScores'
-import {
-  displayLabelToIntentionType,
-  INTENTION_COLORS,
-} from '@/config/intentions'
+import { displayLabelToIntentionType } from '@/config/intentions'
 import type { CircleItem } from '@/services/circleService'
+import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
 import { computeTopEngaged } from '@/services/circleStats'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
-import PredicatePicker from '@/components/PredicatePicker'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
 import CircleFeedCard from './CircleFeedCard'
@@ -47,12 +43,17 @@ interface CircleFeedSectionProps {
   addresses: string[]
   circleName: string
   members: TrustCircleAccount[]
+  /** Suppress the section's own "Certified by {name}" heading — used by
+   *  the Free path, which wraps the feed in an "Activity" module head so
+   *  the title isn't duplicated. */
+  hideTitle?: boolean
 }
 
 export default function CircleFeedSection({
   addresses,
   circleName,
   members,
+  hideTitle = false,
 }: CircleFeedSectionProps) {
   const { items, loading, loadingMore, hasMore, loadMore, error } =
     useCircleFeed(addresses)
@@ -85,10 +86,6 @@ export default function CircleFeedSection({
 
   const { authenticated } = usePrivy()
   const cart = useCart()
-  const [predicatePicker, setPredicatePicker] = useState<{
-    side: 'support' | 'oppose'
-    item: CircleItem
-  } | null>(null)
 
   // Live override of the support/oppose state — kept in sync with the
   // realtime positions cache so a fresh deposit lights up the thumb
@@ -96,77 +93,46 @@ export default function CircleFeedSection({
   // pushed yet (or for positions outside the top-500 cap).
   const livePositionTermIds = useUserPositionTermIds(addresses)
 
-  /** Click on support/oppose thumb on a feed card. */
+  /**
+   * Like / dislike — stakes the cert's "in context of <topic>" nested
+   * triples (support → `termId`, oppose → `counterTermId`), one position per
+   * topic context, no verb picker / modal. A cert with no topic context has
+   * nothing to stake — the card disables its thumbs, so this is a no-op.
+   */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated) return
-      // Filter intentions whose vault has the matching side termId.
-      const available = item.intentions.filter((intent) => {
-        const vault = item.intentionVaults[intent]
-        if (!vault) return false
-        return side === 'support' ? !!vault.termId : !!vault.counterTermId
+      // Deduplicate by topicSlug: multiple cert triples on the same card
+      // (e.g. visits_for_work + visits_for_learning) each produce their own
+      // "in context of" triple for the same topic, but we only want ONE
+      // stake per topic — not one per intention.
+      const seenTopics = new Set<string>()
+      const contexts = item.contextTriples.filter((c) => {
+        const hasVault = side === 'support' ? !!c.termId : !!c.counterTermId
+        if (!hasVault || seenTopics.has(c.topicSlug)) return false
+        seenTopics.add(c.topicSlug)
+        return true
       })
-      if (available.length === 0) return
-
-      if (available.length === 1) {
-        const intent = available[0]
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        cart.addItem({
-          id: `${vault.termId}-${side}`,
+      if (contexts.length === 0) return
+      const newItems: CartItem[] = contexts.map((c) => {
+        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
+        const termId = side === 'support' ? c.termId : c.counterTermId
+        return {
+          id: `${termId}-${side}`,
           side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: color,
-        })
-      } else {
-        setPredicatePicker({ side, item })
-      }
+          intentionColor: meta?.color ?? '#888',
+        }
+      })
+      cart.addItems(newItems)
     },
     [authenticated, cart],
   )
 
-  const handlePredicateConfirm = useCallback(
-    (selectedIntentions: string[]) => {
-      if (!predicatePicker) return
-      const { side, item } = predicatePicker
-      const newItems: CartItem[] = selectedIntentions.map((intent) => {
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        return {
-          id: `${vault.termId}-${side}`,
-          side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
-          title: item.title,
-          favicon: item.favicon,
-          intentionColor: color,
-        }
-      })
-      cart.addItems(newItems)
-      setPredicatePicker(null)
-    },
-    [predicatePicker, cart],
-  )
-
   const topEngaged = useMemo(() => computeTopEngaged(items, 4), [items])
-
-  // Unique certifier addresses from the loaded feed — fed into the MCP
-  // batch hook so we get one personalized-trust call per distinct
-  // certifier rather than per feed event.
-  const uniqueCertifiers = useMemo(() => {
-    const s = new Set<string>()
-    for (const item of items) {
-      if (item.certifierAddress) s.add(item.certifierAddress.toLowerCase())
-    }
-    return Array.from(s)
-  }, [items])
-  const { scores: mcpScores } = useCircleCertifierScores(
-    uniqueCertifiers,
-    addresses,
-  )
 
   const filtered = useMemo(() => {
     const base = items
@@ -196,19 +162,26 @@ export default function CircleFeedSection({
   // `useCircleFeed` had already paid for.
   const shown = filtered
 
-  // Batch ENS resolution for all certifiers visible in this slice.
+  // Batch ENS resolution for all certifiers visible in this slice plus the
+  // hot-picks strip (which now renders the same <CircleFeedCard>, so it needs
+  // resolved certifier names/avatars too).
   const certifierAddresses = useMemo(() => {
     const s = new Set<Address>()
     for (const item of shown) {
       if (item.certifierAddress) s.add(item.certifierAddress as Address)
     }
+    for (const item of topEngaged) {
+      if (item.certifierAddress) s.add(item.certifierAddress as Address)
+    }
     return Array.from(s)
-  }, [shown])
+  }, [shown, topEngaged])
   const { getDisplay, getAvatar } = useEnsNames(certifierAddresses)
 
   return (
     <section className="crd-feed-section">
-      <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      {!hideTitle && (
+        <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      )}
 
       <div className="crd-feed-filters">
         <CircleVerbFilterDropdown active={verb} onChange={setVerb} />
@@ -221,7 +194,13 @@ export default function CircleFeedSection({
         <CircleFeedSort active={sort} onChange={setSort} />
       </div>
 
-      <CircleTopEngagedStrip items={topEngaged} />
+      <CircleTopEngagedStrip
+        items={topEngaged}
+        getDisplay={getDisplay}
+        getAvatar={getAvatar}
+        onDeposit={authenticated ? handleDeposit : undefined}
+        livePositionTermIds={livePositionTermIds}
+      />
 
       {loading ? (
         <EmptyFeedState
@@ -274,11 +253,6 @@ export default function CircleFeedSection({
                   certifierAvatar={av}
                   onDeposit={authenticated ? handleDeposit : undefined}
                   livePositionTermIds={livePositionTermIds}
-                  mcpScore={
-                    item.certifierAddress
-                      ? mcpScores.get(item.certifierAddress.toLowerCase())
-                      : undefined
-                  }
                 />
               )
             })}
@@ -301,16 +275,6 @@ export default function CircleFeedSection({
             </div>
           )}
         </>
-      )}
-
-      {predicatePicker && (
-        <PredicatePicker
-          isOpen
-          side={predicatePicker.side}
-          item={predicatePicker.item}
-          onConfirm={handlePredicateConfirm}
-          onClose={() => setPredicatePicker(null)}
-        />
       )}
     </section>
   )

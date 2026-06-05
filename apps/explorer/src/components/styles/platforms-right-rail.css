@@ -47,11 +47,11 @@
 }
 
 .prr-pulse-value {
-  font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
   font-size: 20px;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--ds-ink);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -120,8 +120,10 @@
 .prr-row-name {
   flex: 1;
   min-width: 0;
+  font-family: 'Unbounded', sans-serif;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -129,9 +131,10 @@
 }
 
 .prr-row-stat {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Unbounded', sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -140,12 +143,16 @@
 
 .prr-mover {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: baseline;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
   gap: 10px;
   padding: 8px 10px;
   border-radius: 8px;
   background: var(--ds-bg-subtle);
+}
+
+.prr-mover-fav {
+  flex-shrink: 0;
 }
 
 .prr-mover-kicker {
@@ -158,8 +165,10 @@
 }
 
 .prr-mover-name {
+  font-family: 'Unbounded', sans-serif;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -167,9 +176,10 @@
 }
 
 .prr-mover-pct {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Unbounded', sans-serif;
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 

@@ -1,6 +1,6 @@
 /* ── Page content ── */
 .page-content {
-  padding: 16px 8px;
+  padding: 8px;
 }
 
 /* ── Generic proto-styled button (.btn from proto) ── */
@@ -12,8 +12,7 @@
    PlatformDetail, etc). Kept here — not in scores-page.css — so every
    consumer gets the breathing room without an extra import. */
 .pf-ts-back-row {
-  margin-top: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 10;
 }
 /* Invest CTA used on platform-detail pages. Adopts the page's hero color
    via inline `background`; keeps a dark on-color text for readability. */

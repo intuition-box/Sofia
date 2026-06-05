@@ -89,3 +89,6 @@ apps/landing/Hero Split*.html
 .next/
 .vercel/
 .docusaurus/
+
+# Scratch PR / planning docs (kept local, pasted into the PR description)
+/doc.md

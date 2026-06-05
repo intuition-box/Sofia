@@ -13,7 +13,7 @@ import {
   ATOM_ID_TO_TOPIC,
   ATOM_ID_TO_CATEGORY,
 } from '@/config/atomIds'
-import { TOPIC_META } from '@/config/topicMeta'
+import { TOPIC_META, TOPIC_LABEL } from '@/config/topicMeta'
 
 // ── Types ──
 
@@ -169,7 +169,9 @@ export async function fetchTaxonomy(): Promise<TaxonomyData> {
     topicMap.set(atom.term_id, {
       id: slug,
       termId: atom.term_id,
-      label: atom.label || atom.value?.thing?.name || slug,
+      // Canonical short label wins over the long on-chain atom label
+      // ("Web3 & Crypto" → "Web3") so topics read identically everywhere.
+      label: TOPIC_LABEL[slug] || atom.label || atom.value?.thing?.name || slug,
       description: atom.value?.thing?.description,
       image: atom.image,
       icon: meta.icon,

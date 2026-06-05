@@ -89,13 +89,18 @@
 
 .pc-main {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  /* Claude Design "Score & Activity": score donut on the left, activity
+     calendar taking the rest. BOTH tracks are fractional so they shrink
+     together with the panel — a fixed-max score column kept the donut
+     frozen while only the calendar shrank. The donut caps its own size
+     via max-width; the calendar is fluid (square cells). */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
   gap: 24px;
   min-height: 280px;
 }
 @media (max-width: 900px) {
   .pc-main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -103,13 +108,15 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* Grid child — allow it to shrink so the calendar's scroll container
+     can clamp to the column width rather than blow it out. */
+  min-width: 0;
   /* Top/bottom padding mirrors `.pc-radar-wrap` (4 / 10) so the
      technical mono ticker bars on the right column align with the
      radar's top + bottom tickers on the left. The bottom meta uses
      `margin-top: auto` so it sticks to the bottom of this column
      regardless of how short the inner content runs. */
-  padding: 4px 0 10px 16px;
-  border-left: 1px dashed var(--ds-border-soft);
+  padding: 4px 0 10px 0px;
 }
 
 /* Technical mono ticker chrome — top + bottom bordered bands echoing
@@ -163,8 +170,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 16px;
   border-top: 1px dashed var(--ds-border-soft);
+  /* The heatmap is now fluid (square cells in fraction columns) so it
+     fits the column at any width — just let it shrink. */
+  min-width: 0;
 }
 @media (max-width: 900px) {
   .pc-main-right {
@@ -207,6 +216,9 @@
 .pc-cal-wrap {
   position: relative;
   --cal-0: var(--ds-border-soft);
+  /* Claude Design "Score & Activity" heatmap: fixed-size cells. */
+  --cell: 19px;
+  --cell-gap: 5px;
 }
 
 .pc-cal {
@@ -234,8 +246,10 @@
   grid-column: 2;
   grid-row: 1;
   display: grid;
+  /* Fluid columns — one fraction per week so the month labels track the
+     heatmap as it scales with the container. */
   grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
-  column-gap: 3px;
+  column-gap: var(--cell-gap);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
@@ -252,8 +266,10 @@
   grid-column: 1;
   grid-row: 2;
   display: grid;
-  grid-template-rows: repeat(7, minmax(0, 1fr));
-  row-gap: 3px;
+  /* Fraction rows so the weekday labels stretch to match the now-fluid
+     heatmap row heights (driven by the square cells' aspect-ratio). */
+  grid-template-rows: repeat(7, 1fr);
+  row-gap: var(--cell-gap);
   align-items: center;
   justify-items: end;
   font-family: 'JetBrains Mono', monospace;
@@ -268,37 +284,46 @@
   grid-column: 2;
   grid-row: 2;
   display: grid;
+  /* Fluid: one fraction per week, square cells via aspect-ratio. The grid
+     fills the available column width and the cells shrink with it, so the
+     heatmap stays fully responsive instead of overflowing at max-content. */
   grid-template-columns: repeat(var(--cal-weeks, 18), minmax(0, 1fr));
-  grid-template-rows: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(7, auto);
   grid-auto-flow: column;
-  column-gap: 3px;
-  row-gap: 3px;
-  aspect-ratio: calc(var(--cal-weeks, 18)) / 7;
+  column-gap: var(--cell-gap);
+  row-gap: var(--cell-gap);
   width: 100%;
 }
 
 .pc-cal-cell {
   width: 100%;
-  height: 100%;
-  border-radius: 3px;
+  aspect-ratio: 1;
+  border-radius: 4px;
   background: var(--cal-0);
   transition:
-    transform 0.15s ease,
-    outline-color 0.15s ease;
+    transform 0.12s ease,
+    outline-color 0.12s ease,
+    opacity 0.16s ease;
   outline: 1px solid transparent;
 }
 .pc-cal-cell[data-day] {
   cursor: pointer;
 }
 .pc-cal-cell[data-day]:hover {
-  transform: scale(1.3);
+  transform: scale(1.22);
   outline-color: var(--ds-ink);
   outline-offset: 1px;
   z-index: 2;
   position: relative;
+  opacity: 1;
 }
 .pc-cal-cell.l0 {
   background: var(--cal-0);
+}
+/* Cross-highlight: active cells of non-focused topics dim (mirrors the
+   donut's dim state). */
+.pc-cal-cell.dim {
+  opacity: 0.18;
 }
 
 /* Days with multiple topics active get a tiny corner notch. */
@@ -316,35 +341,6 @@
   background: var(--ds-card);
   opacity: 0.9;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-ink) 25%, transparent);
-}
-
-.pc-cal-legend {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  justify-content: flex-end;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-  padding-top: 4px;
-}
-.pc-cal-legend-topic {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 600;
-  color: var(--leg-color, var(--ds-muted));
-}
-.pc-cal-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--leg-color, var(--ds-muted));
-  box-shadow: 0 0 8px
-    color-mix(in srgb, var(--leg-color, var(--ds-muted)) 50%, transparent);
 }
 
 /* ── Calendar hover tooltip — ported 1:1 from proto `.pc-area-tooltip`
@@ -612,53 +608,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 440px;
   padding: 4px 10px 10px;
   overflow: visible;
 }
 
-/* Score donut (replaces the radar) — circle on top, topic legend below. */
+/* Score donut (replaces the radar) — circle on top, topic legend on hover. */
 .pc-score-donut {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex: 1;
   width: 100%;
   padding: 8px 0;
 }
-.pc-score-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  max-width: 240px;
-}
-.pc-score-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-.pc-score-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-.pc-score-legend-label {
-  flex: 1;
-  color: var(--ds-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pc-score-legend-val {
-  font-variant-numeric: tabular-nums;
-  color: var(--ds-muted);
-  font-weight: 600;
-}
+/* The per-topic breakdown now lives in the donut centre on slice hover
+   (TopicScorePie), so the old below-the-donut legend list is gone. */
 .pc-score-empty {
   color: var(--ds-muted);
   font-size: 12px;
@@ -692,13 +657,13 @@
   /* Bleed past the wrap's left padding so the meta lines align
      flush-left with the focus dropdown trigger (same -54px pull).
      Right padding stays at 0 so the trailing label sits flush. */
-  margin-left: -54px;
 }
 @media (max-width: 900px) {
   .pc-radar-meta {
     margin-left: 0;
   }
 }
+
 .pc-radar-meta--top {
   padding-bottom: 8px;
   border-bottom: 1px solid color-mix(in srgb, var(--ds-ink) 16%, transparent);
@@ -807,305 +772,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* ── Details panel ───────────────────────────────────────────────── */
-/* Ported from proto profile-charts.css:247-361. */
-
-.pc-details {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-}
-/* `all topics` overview gets a right-side rail with compact interest
-   pills, turning the panel into a 2-column grid. The left column keeps
-   the score hero; the right column shows the user's selected topics. */
-.pc-details.has-side {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
-.pc-details-main {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-}
-@media (max-width: 700px) {
-  .pc-details.has-side {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-/* Compact interest rail */
-.pc-details-side {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-left: 16px;
-  border-left: 1px dashed var(--ds-border-soft);
-  min-width: 0;
-}
-@media (max-width: 700px) {
-  .pc-details-side {
-    padding-left: 0;
-    padding-top: 12px;
-    border-left: none;
-    border-top: 1px dashed var(--ds-border-soft);
-  }
-}
-.pc-details-side-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-.pc-details-side-edit {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  padding: 2px 0;
-  transition: color 0.15s ease;
-}
-.pc-details-side-edit:hover {
-  color: var(--ds-ink);
-}
-.pc-details-side-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.pc-interest-pill {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 6px 4px 10px;
-  border-radius: 999px;
-  background: color-mix(
-    in srgb,
-    var(--pill-color, var(--ds-muted)) 8%,
-    var(--ds-card)
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--pill-color, var(--ds-border)) 22%, transparent);
-  min-width: 0;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-.pc-interest-pill:hover {
-  background: color-mix(
-    in srgb,
-    var(--pill-color, var(--ds-muted)) 16%,
-    var(--ds-card)
-  );
-  border-color: color-mix(
-    in srgb,
-    var(--pill-color, var(--ds-border)) 45%,
-    transparent
-  );
-}
-.pc-interest-pill-main {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  padding: 2px 0;
-  background: transparent;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.pc-interest-pill-main:disabled {
-  cursor: default;
-}
-.pc-interest-pill-main:not(:disabled):hover {
-  transform: translateX(1px);
-}
-.pc-interest-pill-main:focus-visible {
-  outline: 2px solid var(--pill-color, var(--ds-accent));
-  outline-offset: 3px;
-  border-radius: 999px;
-}
-.pc-interest-pill-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ds-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pc-interest-pill-score {
-  font-family: var(--ds-font-display);
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--ds-ink);
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
-.pc-interest-pill-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  border: 0;
-  background: transparent;
-  color: var(--ds-muted);
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.15s ease;
-}
-.pc-interest-pill-remove:hover {
-  background: color-mix(in srgb, var(--ds-ink) 8%, transparent);
-  color: var(--ds-ink);
-}
-.pc-interest-pill--add,
-.pc-interest-pill--empty {
-  background: transparent;
-  border: 1px dashed var(--ds-border);
-  color: var(--ds-muted);
-  cursor: pointer;
-  grid-template-columns: auto 1fr;
-}
-.pc-interest-pill--add {
-  text-align: left;
-  font: inherit;
-}
-.pc-interest-pill--add:hover {
-  border-color: var(--ds-ink-soft, var(--ds-ink));
-  color: var(--ds-ink);
-}
-.pc-interest-pill-plus {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  font-size: 10px;
-  line-height: 1;
-}
-
-.pc-details-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.pc-details-clear {
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border);
-  color: var(--ds-muted);
-  padding: 4px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  z-index: 1;
-}
-.pc-details-clear:hover {
-  border-color: var(--topic-color, var(--ds-ink-soft));
-  color: var(--topic-color, var(--ds-ink));
-}
-
-.pc-details-title {
-  font-family: var(--ds-font-display);
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--topic-color, var(--ds-ink));
-}
-
-.pc-details-hero {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.pc-details-score {
-  font-family: var(--ds-font-display);
-  font-size: 52px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--ds-ink);
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
-}
-.pc-details-score-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ds-muted);
-  font-weight: 600;
-}
-.pc-details-delta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
-}
-
-.pc-details-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 4px;
-}
-.pc-details-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-top: 1px dashed var(--ds-border-soft);
-}
-.pc-details-row:first-child {
-  border-top: none;
-}
-.pc-details-row-label {
-  font-size: 12px;
-  color: var(--ds-muted);
-}
-.pc-details-row-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Claim card (ProfileClaimCard — used by Scores + Top Claims) ──── */

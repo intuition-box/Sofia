@@ -9,31 +9,41 @@
  * Echoes bento card.
  */
 
-import { useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Search, TrendingUp, X } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useEnsNames } from '@/hooks/useEnsNames'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import type { UserCert } from '@/services/userOnChainProfileService'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
-import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType,
-} from '@/config/intentions'
+import { useCart } from '@/hooks/useCart'
+import type { CartItem } from '@/hooks/useCart'
 import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
+import { categoryPills } from '@/config/contextNodes'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
+import CertFeedCard from '@/components/feed/CertFeedCard'
+import '@/components/styles/feed-card.css'
 import { PAGE_COLORS } from '@/config/pageColors'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import type { PlatformVaultData } from '@/services/platformMarketService'
 import '@/components/styles/pages.css'
 import '@/components/styles/feed-card.css'
 import '@/components/styles/topic-search.css'
+// .pf-platform-toolbar / .pf-platform-search live here — without it the
+// toolbar isn't flex, so the search goes full-width and the Invest button
+// wraps below instead of sharing the row.
+import '@/components/styles/profile-sections.css'
 
 /** Domain → catalog slug, mirroring `utils/favicon.ts` so a `/profile/platform/youtube.com`
  *  URL resolves to the same `youtube` slug used in PLATFORM_ATOM_IDS. */
@@ -69,18 +79,82 @@ function certDomain(cert: { objectUrl: string; objectLabel: string }): string {
 }
 
 export default function PlatformDetailPage() {
-  const navigate = useNavigate()
   const { domain: domainParam } = useParams<{ domain: string }>()
   const [searchParams] = useSearchParams()
   const decodedDomain = domainParam ? decodeURIComponent(domainParam) : ''
-  const { user } = usePrivy()
+  const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
   const { addresses: linkedAddresses } = useLinkedWallets()
+  const cart = useCart()
   // Public-profile entry point: `?address=0x…` lets the page render
   // any wallet's certs on this platform, not just the connected user's.
   // Falls back to the connected user when no override is provided so
   // the personal flow stays unchanged.
   const viewedAddress = searchParams.get('address') ?? undefined
+  // Resolve ENS for BOTH the connected user and the viewed wallet so the
+  // cert cards show the RIGHT certifier (the profile owner being viewed),
+  // not the connected viewer.
+  const ensAddrs = useMemo(() => {
+    const list: `0x${string}`[] = []
+    if (address) list.push(address as `0x${string}`)
+    if (viewedAddress) list.push(viewedAddress as `0x${string}`)
+    return list
+  }, [address, viewedAddress])
+  const { getDisplay, getAvatar } = useEnsNames(ensAddrs)
+  // Whose certs are shown: the viewed wallet on a public profile, else the
+  // connected user. Drives the cert card identity + owner affordances.
+  const certifierAddress = viewedAddress ?? address
+  const isOwnProfile =
+    !viewedAddress ||
+    (!!address && viewedAddress.toLowerCase() === address.toLowerCase())
+  const certHandle = certifierAddress
+    ? getDisplay(certifierAddress as `0x${string}`) ||
+      `${certifierAddress.slice(0, 6)}…${certifierAddress.slice(-4)}`
+    : ''
+  const certAvatar = certifierAddress
+    ? getAvatar(certifierAddress as `0x${string}`)
+    : ''
+  // Profile breadcrumb crumb — on a public profile it points to (and is
+  // labelled after) the VIEWED user, not "My profile".
+  const profileCrumb = {
+    label: viewedAddress ? certHandle || 'Profile' : 'My profile',
+    to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
+  }
+  const { topicById } = useTaxonomy()
+  // Like / dislike a cert — a like backs the cert's "in context of <topic>"
+  // triples (one stake per topic), NOT the cert vault (the verb). This mirrors
+  // the circle feed (CircleFeedSection.handleDeposit) so the right tx is queued
+  // and the stake feeds topic reputation. Deduped by topic. No-op when signed
+  // out or when the cert carries no stakable context.
+  const handleVote = useCallback(
+    (cert: UserCert, side: 'support' | 'oppose') => {
+      if (!authenticated) return
+      const domain =
+        extractDomain(cert.objectUrl) || extractDomain(cert.objectLabel) || ''
+      const favicon = domain ? getFaviconUrl(domain) : ''
+      const title = cert.objectLabel || domain
+      const seen = new Set<string>()
+      const newItems: CartItem[] = []
+      for (const c of cert.contextTriples) {
+        const termId = side === 'support' ? c.termId : c.counterTermId
+        if (!termId || seen.has(c.topicSlug)) continue
+        seen.add(c.topicSlug)
+        const meta = topicById(c.topicSlug)
+        newItems.push({
+          id: `${termId}-${side}`,
+          side,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
+          title,
+          favicon,
+          intentionColor: meta?.color ?? '#888',
+        })
+      }
+      if (newItems.length === 0) return
+      cart.addItems(newItems)
+    },
+    [authenticated, cart, topicById],
+  )
   const profileAddresses = viewedAddress
     ? [viewedAddress]
     : linkedAddresses.length > 0
@@ -137,18 +211,7 @@ export default function PlatformDetailPage() {
   if (!decodedDomain) {
     return (
       <div className="pf-view page-enter">
-        <div className="pf-ts-back-row">
-          <button
-            type="button"
-            className="pf-btn"
-            onClick={() =>
-              navigate(viewedAddress ? `/profile/${viewedAddress}` : '/profile')
-            }
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to profile
-          </button>
-        </div>
+        <Breadcrumb items={[profileCrumb, { label: 'Unknown platform' }]} />
         <p className="text-sm text-muted-foreground">Unknown platform.</p>
       </div>
     )
@@ -156,16 +219,7 @@ export default function PlatformDetailPage() {
 
   return (
     <div className="pf-view page-enter">
-      <div className="pf-ts-back-row">
-        <button
-          type="button"
-          className="pf-btn"
-          onClick={() => navigate('/profile')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to profile
-        </button>
-      </div>
+      <Breadcrumb items={[profileCrumb, { label: decodedDomain }]} />
 
       <PageHero
         background={heroColor}
@@ -187,19 +241,6 @@ export default function PlatformDetailPage() {
       <div className="pp-sections">
         <section className="pp-section">
           <div className="pf-platform-toolbar">
-            {platformMarket ? (
-              <button
-                type="button"
-                className="pf-invest-btn"
-                style={{ background: heroColor }}
-                onClick={() => setInvestOpen(true)}
-              >
-                <TrendingUp className="h-4 w-4" />
-                Invest on {decodedDomain}
-              </button>
-            ) : (
-              <SectionTitle>Certifications on this platform</SectionTitle>
-            )}
             <div className="ts-search pf-platform-search">
               <Search className="ts-search-icon h-4 w-4" />
               <input
@@ -220,6 +261,19 @@ export default function PlatformDetailPage() {
                 </button>
               )}
             </div>
+            {platformMarket ? (
+              <button
+                type="button"
+                className="pf-invest-btn"
+                style={{ background: heroColor }}
+                onClick={() => setInvestOpen(true)}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Invest on {decodedDomain}
+              </button>
+            ) : (
+              <SectionTitle>Certifications on this platform</SectionTitle>
+            )}
           </div>
 
           {isLoading && items.length === 0 ? (
@@ -247,69 +301,21 @@ export default function PlatformDetailPage() {
             />
           ) : (
             <div className="masonry-grid crd-feed">
-              {items.map((cert) => {
-                const host = certDomain(cert)
-                const itemFavicon = host ? getFaviconUrl(host) : ''
-                const verbId = predicateLabelToIntentionType(cert.intention)
-                const cfg =
-                  verbId && verbId in INTENTION_CONFIG
-                    ? INTENTION_CONFIG[verbId as keyof typeof INTENTION_CONFIG]
-                    : null
-                const href =
-                  cert.objectUrl && cert.objectUrl.startsWith('http')
-                    ? cert.objectUrl
-                    : '#'
-                return (
-                  <a
-                    key={cert.termId}
-                    className="feed-card feed-card--has-header"
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <UrlPreview
-                      variant="card"
-                      url={cert.objectUrl}
-                      domain={host}
-                      className="fc-thumb"
-                      alt={cert.objectLabel || host}
-                    />
-                    <div className="fc-head">
-                      <div className="fc-favicon">
-                        {itemFavicon ? (
-                          <img
-                            className="fc-favicon-img"
-                            src={itemFavicon}
-                            alt=""
-                            loading="lazy"
-                          />
-                        ) : (
-                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
-                        )}
-                      </div>
-                      <div className="fc-title-wrap">
-                        <div className="fc-title">
-                          {cert.objectLabel || host}
-                        </div>
-                        <div className="fc-host">{host}</div>
-                      </div>
-                    </div>
-                    <div className="fc-bottom">
-                      <div className="fc-tags">
-                        {cfg && (
-                          <span className={`fc-verb-tag ${cfg.cssClass}`}>
-                            {cfg.label}
-                          </span>
-                        )}
-                        <span className="fc-tag">
-                          {cert.certifierCount} holder
-                          {cert.certifierCount === 1 ? '' : 's'}
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
+              {items.map((cert) => (
+                <CertFeedCard
+                  key={cert.termId}
+                  cert={cert}
+                  handle={certHandle}
+                  avatarUrl={certAvatar || undefined}
+                  topicById={topicById}
+                  isOwner={isOwnProfile}
+                  onVote={
+                    authenticated
+                      ? (side) => handleVote(cert, side)
+                      : undefined
+                  }
+                />
+              ))}
             </div>
           )}
         </section>

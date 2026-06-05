@@ -49,7 +49,10 @@ const staticFallback = buildStaticFallback()
 
 export function useTaxonomy() {
   const { data, isLoading, error } = useQuery<TaxonomyData>({
-    queryKey: ['taxonomy'],
+    // Version suffix busts the persisted localStorage cache when the topic
+    // set changes (e.g. adding AI + Tooling) so clients refetch the full
+    // list instead of serving a stale 14-topic snapshot.
+    queryKey: ['taxonomy', 'v2-ai-tooling'],
     queryFn: fetchTaxonomy,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,

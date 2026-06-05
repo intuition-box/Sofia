@@ -9,8 +9,9 @@
  */
 import { useMemo } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, PenSquare } from 'lucide-react'
+import { PenSquare } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useGroups } from '@/hooks/useGroups'
 import { usePerspective } from '@/hooks/usePerspective'
@@ -124,12 +125,13 @@ export default function PerspectivePage() {
 
   return (
     <div className="page-content page-enter perspective-page">
-      <div className="pf-ts-back-row">
-        <Link to="/compose" className="pf-btn">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Compose
-        </Link>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: 'Explore', to: '/' },
+          { label: 'Compose', to: editHref },
+          { label: `Perspective · ${meta.label}` },
+        ]}
+      />
 
       <PageHero
         background={meta.color}

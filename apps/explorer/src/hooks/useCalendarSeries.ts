@@ -64,18 +64,19 @@ export function useCalendarSeries(
 
   const countsByTopic = useMemo(() => {
     const out = new Map<string, number[]>()
-    for (const cert of profile.certs) {
-      if (cert.topicSlugs.length === 0) continue
-      const idx = dayIndexFor(cert.certifiedAt, todayMs)
+    // Topic activity is dated by WHEN the context was added (the tagging
+    // action), not the cert's original certification date — so URLs
+    // categorised today land on today, matching the Last-activity feed.
+    for (const ca of profile.contextAdditions) {
+      if (!ca.topicSlug) continue
+      const idx = dayIndexFor(ca.addedAt, todayMs)
       if (idx === null) continue
-      for (const slug of cert.topicSlugs) {
-        let counts = out.get(slug)
-        if (!counts) {
-          counts = new Array<number>(CAL_DAYS).fill(0)
-          out.set(slug, counts)
-        }
-        counts[idx] += 1
+      let counts = out.get(ca.topicSlug)
+      if (!counts) {
+        counts = new Array<number>(CAL_DAYS).fill(0)
+        out.set(ca.topicSlug, counts)
       }
+      counts[idx] += 1
     }
     return out
   }, [profile, todayMs])
@@ -129,13 +130,27 @@ export function useCalendarSeries(
       ]
     }
 
-    // ALL — show every verb (radar verbs + trusted/distrusted) so the
-    // heat-map reflects the user's full activity, not just topic-tagged
-    // certs. Empty buckets are dropped to keep the legend compact.
-    return (
+    // ALL — show BOTH lenses: per-topic series (matching the score donut,
+    // so the donut ↔ heatmap cross-highlight keys off the same topic ids)
+    // followed by per-verb series. The legend lists topics then verbs.
+    const total = (counts: number[]) => counts.reduce((s, n) => s + n, 0)
+
+    const topicSeries: CalendarTopicSeries[] = [...countsByTopic.entries()]
+      .map(([slug, counts]) => {
+        const topic = topicById(slug)
+        return {
+          id: slug,
+          label: topic?.label ?? slug,
+          color: topic?.color ?? getIntentionColor('inspiration'),
+          counts,
+        }
+      })
+      .sort((a, b) => total(b.counts) - total(a.counts))
+
+    const verbSeries: CalendarTopicSeries[] = (
       Array.from(CALENDAR_VERB_IDS) as Array<keyof typeof INTENTION_CONFIG>
     )
-      .map((verbId) => {
+      .map((verbId): CalendarTopicSeries | null => {
         const cfg = INTENTION_CONFIG[verbId]
         const counts = countsByVerb.get(verbId)
         if (!counts) return null
@@ -146,6 +161,9 @@ export function useCalendarSeries(
           counts,
         }
       })
-      .filter((x) => x !== null)
+      .filter((x): x is CalendarTopicSeries => x !== null)
+      .sort((a, b) => total(b.counts) - total(a.counts))
+
+    return [...topicSeries, ...verbSeries]
   }, [focus, selectedTopics, topicById, countsByTopic, countsByVerb])
 }

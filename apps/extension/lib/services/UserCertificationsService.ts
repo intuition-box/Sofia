@@ -21,7 +21,7 @@ import {
   PREDICATE_LABEL_TO_INTENTION,
   TRUST_LABEL_TO_TYPE
 } from "../config/predicateConstants"
-import { ATOM_ID_TO_TOPIC } from "../config/topicConfig"
+import { resolveContextAtom } from "@0xsofia/taxonomy"
 import { normalizeUrl } from "../utils"
 import { createServiceLogger } from "../utils/logger"
 import { txEventBus } from "./TxEventBus"
@@ -415,10 +415,17 @@ class UserCertificationsServiceClass {
         const entry = termIdToEntry.get(subjectId)
         if (!entry) continue
 
-        // Resolve topic slug from atom term_id
-        const topicSlug = ATOM_ID_TO_TOPIC.get(objectTermId)
-        if (topicSlug && !entry.interestContexts.includes(topicSlug)) {
-          entry.interestContexts.push(topicSlug)
+        // Resolve the context atom — topic OR category. Record the precise
+        // slug AND (for a category) its parent topic, so filtering/display
+        // works for either a topic or a category tag.
+        const node = resolveContextAtom(objectTermId)
+        if (!node) continue
+        const slugs =
+          node.level === "category" ? [node.slug, node.topicSlug] : [node.slug]
+        for (const slug of slugs) {
+          if (slug && !entry.interestContexts.includes(slug)) {
+            entry.interestContexts.push(slug)
+          }
         }
       }
     } catch (err) {

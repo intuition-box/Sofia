@@ -1,0 +1,152 @@
+# Sofia feed — positions-based recency.
+#
+# The triple-based feed queries (GetSofiaGlobalFeed / GetSofiaCircleActivity,
+# circle.graphql) order by `triples.created_at` = the moment the URL+predicate
+# triple was first minted on-chain. That timestamp never moves when a new
+# certifier stakes, nor when someone tags an existing cert "in context of" a
+# topic — so recent activity on pre-existing certs is buried and the topic
+# filter misses recently-tagged certs.
+#
+# These queries drive the feed from the `positions` table instead (indexed on
+# created_at), so the feed reflects the latest *staking action*:
+#   - GetSofiaFeedCertPositions   → one row per cert position (visits-for / trusts)
+#   - GetSofiaFeedContextPositions → one row per "in context of" tag position
+#   - GetSofiaFeedTriplesByIds     → metadata backfill for tagged certs whose
+#                                    own cert-position is outside the window
+#
+# The `$where` variable lets the service scope global (predicate only) vs
+# circle (predicate + account_id ∈ trusted wallets) without query duplication.
+
+query GetSofiaFeedCertPositions(
+  $where: positions_bool_exp!
+  $userAddresses: [String!] = []
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: $where
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    account_id
+    created_at
+    account {
+      id
+      label
+      image
+    }
+    term {
+      triple {
+        term_id
+        counter_term_id
+        predicate {
+          term_id
+          label
+        }
+        object {
+          ...AtomMetadata
+        }
+        term {
+          vaults {
+            position_count
+            positions(where: { account_id: { _in: $userAddresses } }) {
+              account_id
+              shares
+            }
+          }
+        }
+        counter_term {
+          vaults {
+            position_count
+            positions(where: { account_id: { _in: $userAddresses } }) {
+              account_id
+              shares
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+query GetSofiaFeedContextPositions(
+  $where: positions_bool_exp!
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: $where
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    account_id
+    created_at
+    account {
+      id
+      label
+      image
+    }
+    term {
+      triple {
+        subject_id
+        object {
+          term_id
+          label
+        }
+      }
+    }
+  }
+}
+
+query GetSofiaFeedTriplesByIds(
+  $termIds: [String!]!
+  $userAddresses: [String!] = []
+) {
+  triples(where: { term_id: { _in: $termIds } }) {
+    term_id
+    counter_term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      ...AtomMetadata
+    }
+    # Most recent endorser — the certifier identity to render on the card
+    # when the cert surfaced only via a recent topic tag (no cert-position
+    # in the window).
+    recentPositions: positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: desc }
+      limit: 1
+    ) {
+      account_id
+      created_at
+      account {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $userAddresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}

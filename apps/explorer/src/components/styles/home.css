@@ -252,18 +252,78 @@
   padding-top: 0;
 }
 
+/* Explore drill breadcrumb — trail back to the tiles. The drill's title now
+   lives in the PageHero banner (tinted with the topic/verb colour). */
+.dp-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+/* When the breadcrumb sits above the PageHero banner, the outer page wrapper
+   has no padding — supply the edge breathing room here instead. */
+.dp-crumbs--top {
+  margin: 0;
+  padding: 16px 24px 12px;
+}
+.dp-crumb {
+  text-transform: uppercase;
+}
+.dp-crumb--link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.13s ease;
+}
+.dp-crumb--link:hover {
+  color: var(--ds-ink);
+}
+.dp-crumb-sep {
+  color: var(--ds-muted);
+  opacity: 0.6;
+}
+.dp-crumb--current {
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+
 .hm-drill-head {
   --drill-color: var(--ds-accent);
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
   margin: 28px 0 20px;
-  padding: 14px 18px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border);
+  padding: 16px 20px;
+  /* Coloured banner — a soft wash of the picked intention/topic colour
+     over the card surface so the drill view is unmistakably tied to the
+     verb or topic the user opened. The left bar + hairline reinforce it. */
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--drill-color) 22%, var(--ds-card)) 0%,
+    color-mix(in oklab, var(--drill-color) 7%, var(--ds-card)) 55%,
+    var(--ds-card) 100%
+  );
+  border: 1px solid
+    color-mix(in oklab, var(--drill-color) 35%, var(--ds-border));
   border-left: 4px solid var(--drill-color);
   border-radius: 12px;
   flex-wrap: wrap;
+  overflow: hidden;
+}
+.hm-drill-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--drill-color), transparent 70%);
+  opacity: 0.7;
+  pointer-events: none;
 }
 .hm-drill-back {
   display: inline-flex;
@@ -463,35 +523,6 @@
   text-overflow: ellipsis;
 }
 
-/* Actor line — certifier + time ago. */
-.fc-actor-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-}
-.fc-actor-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-.fc-actor-ens {
-  font-family: 'Geist', sans-serif;
-  font-weight: 600;
-  color: var(--ds-ink);
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.fc-actor-ago {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--ds-muted);
-}
-
 /* Bottom — tags on the left, thumbs on the right. */
 .fc-bottom {
   display: flex;
@@ -512,40 +543,25 @@
    <TopicPill>/<VerbPill>; the few remaining .fc-* users read the single
    definition in feed-card.css. Only the wrapper stays. */
 
-.fc-positions {
+/* Drill toolbar — URL count on the left, the verb filter pills (.vf-bar)
+   to its right, on one line. */
+.dp-filter-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 2px 0 16px;
+}
+.dp-url-count {
   flex-shrink: 0;
-}
-.fc-pos {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg);
-  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--ds-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
 }
-.fc-pos:hover:not(:disabled) {
-  color: var(--ds-ink);
-  transform: scale(1.05);
-}
-.fc-pos.support:hover:not(:disabled) {
-  color: var(--trusted, #6dd4a0);
-  border-color: var(--trusted, #6dd4a0);
-}
-.fc-pos.oppose:hover:not(:disabled) {
-  color: var(--distrusted, #e87c7c);
-  border-color: var(--distrusted, #e87c7c);
-}
-.fc-pos:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+/* The verb bar fills the rest of the row and can scroll if it overflows. */
+.dp-filter-row .vf-bar {
+  flex: 1;
+  min-width: 0;
 }

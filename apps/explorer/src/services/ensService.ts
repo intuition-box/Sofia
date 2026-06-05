@@ -101,9 +101,14 @@ export async function resolveEnsAvatar(address: string): Promise<void> {
     return
   }
 
-  // Use ensdata.net for avatar resolution
+  // Resolve the avatar via the NAME (forward), not the address (reverse).
+  // `.box` names have no ENS reverse record, so api.ensdata.net/<address>
+  // 404s and the avatar falls back to a generated blob; the forward
+  // lookup api.ensdata.net/<name> returns the real avatar (e.g. my.box).
   try {
-    const res = await fetch(`https://api.ensdata.net/${key}`)
+    const res = await fetch(
+      `https://api.ensdata.net/${encodeURIComponent(name)}`,
+    )
     if (res.ok) {
       const data = await res.json()
       if (data.avatar) {

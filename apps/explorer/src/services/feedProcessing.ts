@@ -3,7 +3,7 @@ import {
   LABEL_TO_INTENTION,
 } from '../config/intentions'
 import { GRAPHQL_URL } from '../config'
-import { ATOM_ID_TO_TOPIC } from '../config/atomIds'
+import { resolveContextAtom } from '../config/contextNodes'
 import { extractDomain, cleanLabel } from '../utils/formatting'
 import { getFaviconUrl } from '../utils/favicon'
 import type { CircleItem } from './circleService'
@@ -13,7 +13,7 @@ interface VaultPositionCount {
   positions?: Array<{ shares?: string | null }> | null
 }
 
-interface FeedEvent {
+export interface FeedEvent {
   id: string
   created_at?: string | null
   triple?: {
@@ -68,7 +68,7 @@ function userHoldsShares(vaults?: VaultPositionCount[] | null): boolean {
   return false
 }
 
-interface CertifierInfo {
+export interface CertifierInfo {
   address: string
   label: string
 }
@@ -76,7 +76,7 @@ interface CertifierInfo {
 // ── Context triples resolution ──
 
 const CONTEXT_TRIPLES_QUERY = `
-  query GetContextTriples($subjectIds: [String!]!) {
+  query GetContextTriples($subjectIds: [String!]!, $viewerIds: [String!] = []) {
     triples(
       where: {
         subject_id: { _in: $subjectIds }
@@ -84,20 +84,56 @@ const CONTEXT_TRIPLES_QUERY = `
       }
       limit: 500
     ) {
+      term_id
+      counter_term_id
       subject_id
       object { term_id label }
+      term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $viewerIds } }) { shares }
+        }
+      }
+      counter_term {
+        vaults {
+          position_count
+          positions(where: { account_id: { _in: $viewerIds } }) { shares }
+        }
+      }
     }
   }
 `
 
+/** One stakeable "in context of <topic>" nested triple resolved for a cert,
+ *  with its like/dislike terms + position tallies. */
+export interface ContextTripleData {
+  /** Rolled-up parent topic slug (drives the topic pill + drill grouping). */
+  topicSlug: string
+  /** Precise context slug — the category slug for a category tag, else the
+   *  topic slug. */
+  contextSlug: string
+  /** True when this context is a category (vs a whole topic). */
+  isCategory: boolean
+  termId: string
+  counterTermId: string
+  supportCount: number
+  opposeCount: number
+  userSupported: boolean
+  userOpposed: boolean
+}
+
 /**
  * Fetch "in context of" nested triples for a set of cert triple term_ids.
- * Returns a map: certTripleTermId → topic slugs[]
+ * Returns a map: certTripleTermId → the stakeable context triples (one per
+ * topic), carrying the term/counter ids + tallies that drive the feed's
+ * like/dislike. `viewerIds` filters the user's own positions so the thumbs
+ * light up for what they've already staked.
  */
 async function fetchContextTriples(
   certTermIds: string[],
-): Promise<Map<string, string[]>> {
-  const result = new Map<string, string[]>()
+  viewerIds: readonly string[] = [],
+): Promise<Map<string, ContextTripleData[]>> {
+  const result = new Map<string, ContextTripleData[]>()
   if (certTermIds.length === 0) return result
 
   try {
@@ -106,7 +142,7 @@ async function fetchContextTriples(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: CONTEXT_TRIPLES_QUERY,
-        variables: { subjectIds: certTermIds },
+        variables: { subjectIds: certTermIds, viewerIds },
       }),
     })
     const json = await res.json()
@@ -115,16 +151,33 @@ async function fetchContextTriples(
     for (const t of triples) {
       const subjectId = t.subject_id
       const objectTermId = t.object?.term_id
-      if (!subjectId || !objectTermId) continue
+      const termId = t.term_id
+      if (!subjectId || !objectTermId || !termId) continue
 
-      const topicSlug = ATOM_ID_TO_TOPIC.get(objectTermId)
-      if (!topicSlug) continue
+      // Roll a category context up to its parent topic so the feed's
+      // drill-by-topic + like/dislike grouping stays topic-keyed.
+      const node = resolveContextAtom(objectTermId)
+      if (!node || !node.topicSlug) continue
+      const topicSlug = node.topicSlug
+
+      const entry: ContextTripleData = {
+        topicSlug,
+        contextSlug: node.slug,
+        isCategory: node.level === 'category',
+        termId,
+        counterTermId: t.counter_term_id ?? '',
+        supportCount: sumVaultPositions(t.term?.vaults),
+        opposeCount: sumVaultPositions(t.counter_term?.vaults),
+        userSupported: userHoldsShares(t.term?.vaults),
+        userOpposed: userHoldsShares(t.counter_term?.vaults),
+      }
 
       const existing = result.get(subjectId)
       if (existing) {
-        if (!existing.includes(topicSlug)) existing.push(topicSlug)
+        if (!existing.some((e) => e.termId === entry.termId))
+          existing.push(entry)
       } else {
-        result.set(subjectId, [topicSlug])
+        result.set(subjectId, [entry])
       }
     }
   } catch {
@@ -234,6 +287,8 @@ export function processEvents(
         timestamp: evt.created_at || '',
         intentionVaults,
         topicContexts: [],
+        categorySlugs: [],
+        contextTriples: [],
       })
     }
   }
@@ -247,6 +302,7 @@ export function processEvents(
  */
 export async function enrichWithTopicContexts(
   items: CircleItem[],
+  viewerWallets: readonly string[] = [],
 ): Promise<void> {
   // Collect all cert triple termIds from intentionVaults
   const termIdToItems = new Map<string, CircleItem[]>()
@@ -262,15 +318,28 @@ export async function enrichWithTopicContexts(
     }
   }
 
-  const contextMap = await fetchContextTriples(Array.from(termIdToItems.keys()))
+  const contextMap = await fetchContextTriples(
+    Array.from(termIdToItems.keys()),
+    viewerWallets,
+  )
 
-  for (const [termId, topicSlugs] of contextMap) {
+  for (const [termId, contexts] of contextMap) {
     const linkedItems = termIdToItems.get(termId)
     if (!linkedItems) continue
     for (const item of linkedItems) {
-      for (const slug of topicSlugs) {
-        if (!item.topicContexts.includes(slug)) {
-          item.topicContexts.push(slug)
+      for (const ctx of contexts) {
+        // Topic slug (drives the topic pills + drill grouping).
+        if (!item.topicContexts.includes(ctx.topicSlug)) {
+          item.topicContexts.push(ctx.topicSlug)
+        }
+        // Precise category slug (drives the category pills).
+        if (ctx.isCategory && !item.categorySlugs.includes(ctx.contextSlug)) {
+          item.categorySlugs.push(ctx.contextSlug)
+        }
+        // Stakeable context triple (drives like/dislike). A cert can back
+        // several items (one per intention vault) — dedupe by term id.
+        if (!item.contextTriples.some((c) => c.termId === ctx.termId)) {
+          item.contextTriples.push(ctx)
         }
       }
     }

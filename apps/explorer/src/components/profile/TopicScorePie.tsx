@@ -1,8 +1,16 @@
 /**
- * TopicScorePie — donut of the user's reputation split across topics.
- * Shared by the ProfileDrawer right rail and the ProfileCharts main panel.
- * Ported from proto renderTopicPie (profileDrawer.ts:57-86).
+ * TopicScorePie — reputation donut, split across topics (+ a "No context"
+ * slice). Implements the Claude Design "Score & Activity" donut: a ring of
+ * contiguous flat-capped segments (one per topic, no grey "other" arc),
+ * rotated so it starts at 12 o'clock. The centre shows the total; hovering a
+ * segment dims the rest, fattens the hovered one, and swaps the centre to
+ * that topic's score + name in its colour. Hovering the centre (the total)
+ * swaps it for a "View details" button.
+ *
+ * `focus` is LIFTED to the parent (ProfileCharts) so the donut, its centre
+ * and the activity heatmap all cross-highlight off the same topic id.
  */
+import { useState } from 'react'
 import '../styles/topic-score-pie.css'
 
 export interface TopicPieSlice {
@@ -13,48 +21,129 @@ export interface TopicPieSlice {
   score: number
 }
 
-export default function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
-  const realTotal = slices.reduce((a, s) => a + s.score, 0)
-  // When no topic has scored yet, fall back to equal slices so the ring
-  // still teases the colour breakdown.
-  const equalFallback = realTotal === 0 && slices.length > 0
-  const denom = equalFallback ? slices.length : realTotal
-  const r = 50
-  const C = 2 * Math.PI * r
-  let cursor = 0
+interface TopicScorePieProps {
+  slices: TopicPieSlice[]
+  focus: string | null
+  setFocus: (id: string | null) => void
+  /** When set, hovering the donut centre (the total) swaps it for a
+   *  "View details" button that calls this. Hovering a segment still
+   *  shows that topic's score. */
+  onViewDetails?: () => void
+  /** True while the trust boost is still loading (MCP latency). The base
+   *  score is already shown; the centre caption pulses "refining" so the
+   *  upcoming grow reads as an enrichment, not a jump. */
+  refining?: boolean
+  /** When set, clicking a topic segment drills into that topic (personal
+   *  profile → `/profile/interest/:id`). Only real-topic slices fire it. */
+  onSelectTopic?: (id: string) => void
+}
+
+const R = 104
+const SW = 26
+const C = 2 * Math.PI * R
+
+export default function TopicScorePie({
+  slices,
+  focus,
+  setFocus,
+  onViewDetails,
+  refining = false,
+  onSelectTopic,
+}: TopicScorePieProps) {
+  const [centerHover, setCenterHover] = useState(false)
+  const total = slices.reduce((a, s) => a + s.score, 0)
+
+  // Build contiguous arc segments sized by share of total.
+  let acc = 0
+  const segs = slices.map((s) => {
+    const len = total > 0 ? (s.score / total) * C : 0
+    const seg = { slice: s, dash: len, off: -acc }
+    acc += len
+    return seg
+  })
+
+  const focused = focus ? (slices.find((s) => s.id === focus) ?? null) : null
 
   return (
-    <div className="pd-ts-pie-wrap">
-      <svg className="pd-ts-pie" viewBox="0 0 120 120" aria-hidden="true">
-        {slices.map((t) => {
-          const value = equalFallback ? 1 : t.score
-          const pct = denom > 0 ? value / denom : 0
-          const sliceLen = pct * C
-          const rest = C - sliceLen
-          const startDeg = -90 + (denom > 0 ? (cursor / denom) * 360 : 0)
-          cursor += value
-          return (
-            <circle
-              key={t.id}
-              cx={60}
-              cy={60}
-              r={r}
-              fill="none"
-              stroke={t.color}
-              strokeWidth={14}
-              strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
-              strokeOpacity={equalFallback ? 0.35 : 1}
-              transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
-            />
-          )
-        })}
-        <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
+    <div className={`donut${focus ? ' dim' : ''}`}>
+      <svg className="donut-svg" viewBox="0 0 248 248">
+        {segs.map((s) => (
+          <circle
+            key={s.slice.id}
+            className={`donut-seg${focus === s.slice.id ? ' hot' : ''}`}
+            cx={124}
+            cy={124}
+            r={R}
+            fill="none"
+            stroke={s.slice.color}
+            strokeWidth={SW}
+            strokeLinecap="butt"
+            strokeDasharray={`${s.dash.toFixed(2)} ${(C - s.dash).toFixed(2)}`}
+            strokeDashoffset={s.off.toFixed(2)}
+            role="button"
+            tabIndex={0}
+            aria-label={
+              onSelectTopic
+                ? `${s.slice.label}: ${Math.round(s.slice.score)} — view topic`
+                : `${s.slice.label}: ${Math.round(s.slice.score)}`
+            }
+            style={onSelectTopic ? { cursor: 'pointer' } : undefined}
+            onMouseEnter={() => setFocus(s.slice.id)}
+            onMouseLeave={() => setFocus(null)}
+            onFocus={() => setFocus(s.slice.id)}
+            onBlur={() => setFocus(null)}
+            onClick={() => onSelectTopic?.(s.slice.id)}
+            onKeyDown={(e) => {
+              if (onSelectTopic && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                onSelectTopic(s.slice.id)
+              }
+            }}
+          />
+        ))}
       </svg>
-      <div className="pd-ts-pie-center">
-        <span className="pd-ts-pie-value">{Math.round(realTotal)}</span>
-        <span className="pd-ts-pie-label">
-          {equalFallback ? 'build it up' : 'total'}
-        </span>
+      <div
+        className={`donut-center${focused ? ' has-focus' : ''}`}
+        // Focusable when there's a "View details" action, so keyboard users
+        // can reveal + reach the button the same way hover does.
+        tabIndex={onViewDetails ? 0 : undefined}
+        aria-label={onViewDetails ? 'Score details' : undefined}
+        onMouseEnter={() => setCenterHover(true)}
+        onMouseLeave={() => setCenterHover(false)}
+        onFocus={() => setCenterHover(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node))
+            setCenterHover(false)
+        }}
+      >
+        {focused ? (
+          <>
+            <span className="donut-num">{Math.round(focused.score)}</span>
+            <span
+              className="donut-focus-label"
+              style={{ color: focused.color }}
+            >
+              {focused.label}
+            </span>
+          </>
+        ) : centerHover && onViewDetails ? (
+          <button
+            type="button"
+            className="donut-view-btn"
+            onClick={onViewDetails}
+          >
+            View details <span aria-hidden="true">→</span>
+          </button>
+        ) : (
+          <>
+            <span className="donut-num">
+              {Math.round(total).toLocaleString()}
+            </span>
+            <span className={`donut-cap${refining ? ' refining' : ''}`}>
+              {refining ? 'refining trust…' : 'Total score'}
+            </span>
+          </>
+        )}
       </div>
     </div>
   )

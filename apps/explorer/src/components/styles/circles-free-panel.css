@@ -1,0 +1,375 @@
+/* ============================================================
+   Sofia Explorer — Circle view, FREE tier (Phase 1)
+   Members side panel + per-row controls (trust toggle, social
+   buttons) + the upsell toast. Split out of circles-free.css to
+   keep each stylesheet focused and under the file-size budget.
+   Same token mapping as circles-free.css.
+   ============================================================ */
+
+/* ── Members side panel ──────────────────────────────────────── */
+.cf-panel-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+[data-theme='light'] .cf-panel-scrim {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.cf-panel-scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cf-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  width: min(400px, 92vw);
+  background: var(--ds-card);
+  border-left: 1px solid var(--ds-border);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: -24px 0 60px -24px
+    color-mix(in srgb, var(--ds-ink) 55%, transparent);
+}
+.cf-panel.is-open {
+  transform: translateX(0);
+}
+.cf-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--ds-border);
+}
+.cf-panel-title {
+  font-family: var(--ds-font-display);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.cf-panel-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-top: 5px;
+}
+.cf-panel-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.cf-panel-close:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-muted-soft);
+}
+.cf-panel-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 14px 16px 6px;
+  padding: 9px 12px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.cf-panel-search-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--ds-muted-soft);
+  flex-shrink: 0;
+}
+.cf-panel-search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ds-ink);
+  font-family: inherit;
+  font-size: 13px;
+}
+.cf-panel-search input::placeholder {
+  color: var(--ds-muted-soft);
+}
+.cf-panel-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+.cf-panel-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 10px;
+}
+.cf-panel-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.cf-panel-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-muted-soft);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.cf-panel-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #02000e;
+  text-decoration: none;
+}
+.cf-panel-id {
+  flex: 1;
+  min-width: 0;
+}
+.cf-panel-handle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-top: 3px;
+}
+.cf-panel-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.cf-panel-stat b {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.cf-panel-stat span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted-soft);
+  margin-top: 2px;
+}
+.cf-panel-empty {
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 12.5px;
+  padding: 30px 12px;
+}
+.cf-panel-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  border-top: 1px solid var(--ds-border);
+}
+.cf-panel-foot-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted-soft);
+}
+
+/* ── Per-member social buttons ───────────────────────────────────
+   Rendered inside the member identity column (.cf-panel-id /
+   .cf-mid), stacked BELOW the handle + meta line as a compact,
+   left-aligned icon row — never pushed to the far right or inline
+   with the name. */
+.cf-socials {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+}
+.cf-social {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ds-border);
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+  text-decoration: none;
+}
+.cf-social:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-muted-soft);
+  background: var(--ds-bg-subtle);
+}
+.cf-social > svg,
+.cf-social-icon {
+  width: 13px;
+  height: 13px;
+}
+.cf-social.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Per-row trust toggle ────────────────────────────────────── */
+.cf-trust-btn {
+  position: relative;
+  flex-shrink: 0;
+  min-width: 78px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 6px 11px;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--intent-trusted) 45%, transparent);
+  background: transparent;
+  color: var(--intent-trusted);
+  transition:
+    background 0.13s ease,
+    border-color 0.13s ease,
+    color 0.13s ease;
+}
+.cf-trust-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--intent-trusted) 16%, transparent);
+}
+.cf-trust-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cf-trust-btn.is-queued {
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+}
+/* trusted state: solid green, with hover-swap to red "Distrust" */
+.cf-trust-btn.is-trusted {
+  background: color-mix(in srgb, var(--intent-trusted) 18%, transparent);
+  border-color: color-mix(in srgb, var(--intent-trusted) 55%, transparent);
+  color: var(--intent-trusted);
+}
+.cf-trust-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+.cf-trust-icon {
+  width: 11px;
+  height: 11px;
+}
+.cf-trust-hover {
+  display: none;
+}
+.cf-trust-btn.is-trusted:hover {
+  background: color-mix(in srgb, var(--intent-distrusted) 18%, transparent);
+  border-color: color-mix(in srgb, var(--intent-distrusted) 60%, transparent);
+  color: var(--intent-distrusted);
+}
+.cf-trust-btn.is-trusted:hover .cf-trust-default {
+  display: none;
+}
+.cf-trust-btn.is-trusted:hover .cf-trust-hover {
+  display: inline;
+}
+
+/* ── Upsell toast (self-contained singleton) ─────────────────── */
+.cf-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 200;
+  transform: translate(-50%, 16px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(440px, 90vw);
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: 0 18px 50px -20px color-mix(in srgb, var(--ds-ink) 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.cf-toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.cf-toast-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--ds-accent-ink);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-panel,
+  .cf-panel-scrim,
+  .cf-toast,
+  .cf-btn,
+  .cf-trust-btn,
+  .cf-social {
+    transition: none;
+  }
+}

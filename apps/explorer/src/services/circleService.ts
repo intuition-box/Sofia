@@ -45,8 +45,33 @@ export interface CircleItem {
       userOpposed: boolean
     }
   >
-  /** Topic slugs from nested "in context of" triples (e.g. ["tech-dev", "web3-crypto"]) */
+  /** Rolled-up topic slugs from nested "in context of" triples (a category
+   *  tag contributes its parent topic) — drives topic pills + drill grouping. */
   topicContexts: string[]
+  /** Precise CATEGORY slugs from category-level "in context of" tags — drives
+   *  the category pills shown alongside the topic. */
+  categorySlugs: string[]
+  /**
+   * Stakeable "in context of <topic>" nested triples — the like/dislike
+   * target. A like is a single click that stakes the topic context(s); no
+   * verb is picked (so multi-intention certs no longer need a modal). One
+   * entry per topic the cert is tagged with.
+   */
+  contextTriples: {
+    topicSlug: string
+    /** Support side (a like). */
+    termId: string
+    /** Oppose side (a dislike). */
+    counterTermId: string
+    /** Total support positions on this context triple (all curves). */
+    supportCount: number
+    /** Total oppose positions on the counter term (all curves). */
+    opposeCount: number
+    /** Viewer holds shares > 0 on the support side. */
+    userSupported: boolean
+    /** Viewer holds shares > 0 on the oppose side. */
+    userOpposed: boolean
+  }[]
 }
 
 /**

@@ -7,57 +7,52 @@
  * DS `.nav-*` items and the (removed) `.hdr-*` header classes.
  */
 
-/* ── Toolbar ────────────────────────────────────────────────────── */
+/* ── Cart button (bottom cluster, just above the profile chip) ─────── */
 
-.ns-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.ns-tool-btn {
+.ns-cart-btn {
   position: relative;
-  flex: 1;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  height: 34px;
-  border-radius: 10px;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid var(--ds-border);
   background: var(--ds-card);
-  color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.ns-tool-btn:hover {
+.ns-cart-btn:hover {
   border-color: var(--ds-ink-soft);
   background: var(--ds-bg-subtle);
-  color: var(--ds-ink);
+}
+.ns-cart-btn svg {
+  flex-shrink: 0;
+}
+.ns-cart-label {
+  flex: 1;
+  text-align: left;
 }
 
-/* Filled state — applied to the cart button when cart.count > 0 so the
-   basket visibly flags it has items. Echoes the peach accent used by
-   the 'Start your journey' CTA. */
-.ns-tool-btn--filled {
-  background: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-card));
-  border-color: var(--ds-accent);
-  color: var(--ds-accent-ink);
+/* Filled state — flags a non-empty cart with the peach accent, echoing
+   the 'Connect' CTA / extension-installed pill. */
+.ns-cart-btn--filled {
+  background: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ds-accent) 40%, var(--ds-border));
+  color: var(--ds-accent-ink, var(--ds-ink));
 }
-.ns-tool-btn--filled:hover {
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-  color: var(--ds-on-accent);
+.ns-cart-btn--filled:hover {
+  background: color-mix(in srgb, var(--ds-accent) 24%, transparent);
 }
 
-.ns-tool-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
+.ns-cart-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,11 +60,19 @@
   background: var(--distrusted, #e87c7c);
   color: #ffffff;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  border: 2px solid var(--ds-card);
+}
+
+/* Collapsed rail — icon only, centered (mirrors .ns-extension-btn). */
+.nav-collapsed .ns-cart-btn {
+  justify-content: center;
+  padding: 10px;
+}
+.nav-collapsed .ns-cart-label {
+  display: none;
 }
 
 /* ── Auth dropdown menu (from the auth chip in the nav bottom) ─────
@@ -327,30 +330,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── User region separator ───────────────────────────────────────── */
-/* Dashed divider below the toolbar so the nav sections read as a
-   separate visual group. The auth chip / connect button is now pinned
-   to the bottom of the rail (see the margin-top: auto rule below). */
-.ns-toolbar + .nav-section {
-  position: relative;
-  padding-top: 14px;
-}
-.ns-toolbar + .nav-section::before {
-  content: '';
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--ds-border),
-    transparent
-  );
-}
-
-/* Bottom cluster wrapper — holds the auth block + countdown and pins
+/* Bottom cluster wrapper — holds the cart, auth block + countdown and pins
    the whole group to the bottom of the rail (whether auth renders or
    not). Items stack with a 10px gap. */
 .ns-bottom {

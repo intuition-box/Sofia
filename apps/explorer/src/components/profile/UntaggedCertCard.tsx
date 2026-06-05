@@ -1,28 +1,25 @@
 /**
- * UntaggedCertCard — one cert rendered as a feed-style card with a
- * popover topic picker.
+ * UntaggedCertCard — one cert rendered as the shared feed-card, mirroring
+ * the cards on `/profile/platform/:domain`: URL preview + title on top, then
+ * a bottom row carrying the verb, any topics queued for tagging (removable),
+ * and the <ContextPicker> "+ Context" button.
  *
- * Each card shows the cert's favicon / title / host, the topics
- * already queued for tagging (real-time mirror of the cart) and a
- * "Add topics" button that opens a popover with the full taxonomy.
- * Toggling a topic chip queues or un-queues the matching nested
- * triple via the cart.
+ * The picker (multi-select + confirm) is the same control used on the feed
+ * cards, so tagging behaves identically everywhere.
  */
 import { useMemo } from 'react'
-import { Plus, Check } from 'lucide-react'
-import { SOFIA_TOPICS } from '@/config/taxonomy'
+import { Trash2 } from 'lucide-react'
+import { TOPIC_BY_ID, CATEGORY_BY_ID } from '@/config/taxonomy'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { useCart } from '@/hooks/useCart'
-import {
-  buildContextCartItem,
-  contextCartId,
-} from '@/services/contextCartService'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
+import { contextCartId } from '@/services/contextCartService'
 import { UrlPreview } from '@/components/UrlPreview'
+import ContextPicker from '@/components/ContextPicker'
+import { VerbPill } from '@/components/profile/FeedPills'
 import TopicBadge from './TopicBadge'
+import '@/components/styles/feed-card.css'
+import '@/components/styles/context-manager.css'
 
 interface UntaggedCertCardProps {
   certTermId: string
@@ -33,7 +30,14 @@ interface UntaggedCertCardProps {
   intentionLabel: string
 }
 
-const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
+interface QueuedChip {
+  slug: string
+  label: string
+  color: string
+  /** Topic id whose glyph the badge shows — the topic itself, or a
+   *  category's parent topic so the family icon stays consistent. */
+  badgeTopicId: string
+}
 
 export default function UntaggedCertCard({
   certTermId,
@@ -44,6 +48,9 @@ export default function UntaggedCertCard({
   intentionLabel,
 }: UntaggedCertCardProps) {
   const cart = useCart()
+  const { redeemCert } = useRedeemCert()
+  // Intent colour for the verb pill — same INTENTION_COLORS the feed uses.
+  const verbColor = INTENTION_COLORS[intentionLabel] ?? 'var(--ds-muted)'
 
   // Set of topic slugs queued for THIS cert. Recomputed from the cart
   // so external removals (cart drawer, batch submit) immediately
@@ -60,127 +67,111 @@ export default function UntaggedCertCard({
     return set
   }, [cart.items, certTermId])
 
-  const toggle = (slug: string, label: string, color: string) => {
-    const id = contextCartId(certTermId, slug)
-    if (queuedTopics.has(slug)) {
-      cart.removeItem(id)
-      return
-    }
-    const item = buildContextCartItem({
-      certTermId,
-      topicSlug: slug,
-      topicLabel: label,
-      topicColor: color,
-      certTitle: title || domain,
-      certFavicon: favicon,
-    })
-    if (item) cart.addItem(item)
-  }
-
+  // A queued context can be a topic OR a category — resolve both. A
+  // category borrows its parent topic's color + glyph so the chip reads as
+  // part of that topic family.
   const queuedList = [...queuedTopics]
-    .map((slug) => TOPIC_BY_ID.get(slug))
-    .filter((t): t is (typeof SOFIA_TOPICS)[number] => !!t)
+    .map((slug): QueuedChip | null => {
+      const topic = TOPIC_BY_ID.get(slug)
+      if (topic)
+        return {
+          slug,
+          label: topic.label,
+          color: topic.color,
+          badgeTopicId: topic.id,
+        }
+      const cat = CATEGORY_BY_ID.get(slug)
+      if (cat) {
+        const parent = TOPIC_BY_ID.get(cat.topicId)
+        return {
+          slug,
+          label: cat.label,
+          color: parent?.color ?? 'var(--ds-muted)',
+          badgeTopicId: cat.topicId,
+        }
+      }
+      return null
+    })
+    .filter((c): c is QueuedChip => !!c)
 
   return (
     <div
-      className={`ctx-card ctx-card--has-thumb${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
+      className={`feed-card feed-card--has-header${queuedTopics.size > 0 ? ' ctx-card--active' : ''}`}
     >
       <UrlPreview
         variant="card"
         url={url}
         domain={domain}
-        className="ctx-card-thumb"
+        className="fc-thumb"
         alt={title || domain}
       />
-      <div className="ctx-card-head">
-        {favicon ? (
-          <img
-            src={favicon}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="ctx-card-favicon"
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
-        ) : (
-          <span className="ctx-card-favicon ctx-card-favicon--fallback" />
-        )}
-        <div className="ctx-card-meta">
-          <span className="ctx-card-title">{title || domain}</span>
-          <span className="ctx-card-sub">
-            {intentionLabel}
-            {domain ? ` · ${domain}` : ''}
-          </span>
+      <div className="fc-head">
+        <div className="fc-favicon">
+          {favicon ? (
+            <img
+              className="fc-favicon-img"
+              src={favicon}
+              alt=""
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            (title || domain).slice(0, 1).toUpperCase()
+          )}
         </div>
+        <div className="fc-title-wrap">
+          <div className="fc-title">{title || domain}</div>
+          <div className="fc-host">{domain}</div>
+        </div>
+        <button
+          type="button"
+          className="ctx-card-remove"
+          title="Remove certification"
+          aria-label="Remove certification"
+          onClick={() => redeemCert(certTermId, title || domain, url)}
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
 
-      {queuedList.length > 0 && (
-        <div className="ctx-card-tags">
-          {queuedList.map((topic) => (
+      {/* Bottom row: verb + queued topics (removable) + the picker, same
+          shape as the platform-page card's `.fc-bottom`. */}
+      <div className="fc-bottom">
+        <div className="fc-tags">
+          <VerbPill label={intentionLabel} color={verbColor} />
+          {queuedList.map((chip) => (
             <button
-              key={topic.id}
+              key={chip.slug}
               type="button"
               className="ctx-card-tag"
-              style={{ ['--ctx-tag-color' as string]: topic.color }}
-              onClick={() => toggle(topic.id, topic.label, topic.color)}
+              style={{ ['--ctx-tag-color' as string]: chip.color }}
+              onClick={() =>
+                cart.removeItem(contextCartId(certTermId, chip.slug))
+              }
               title="Remove from cart"
             >
               <TopicBadge
-                topicId={topic.id}
-                color={topic.color}
+                topicId={chip.badgeTopicId}
+                color={chip.color}
                 size={16}
-                title={topic.label}
+                title={chip.label}
               />
-              {topic.label}
+              {chip.label}
               <span className="ctx-card-tag-remove" aria-hidden="true">
                 ×
               </span>
             </button>
           ))}
+          <ContextPicker
+            certTermId={certTermId}
+            certTitle={title || domain}
+            certFavicon={favicon}
+          />
         </div>
-      )}
-
-      <Popover>
-        <PopoverTrigger asChild>
-          <button type="button" className="ctx-card-add">
-            <Plus className="h-3.5 w-3.5" />
-            {queuedTopics.size === 0 ? 'Add topics' : 'Edit topics'}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="ctx-popover" sideOffset={6}>
-          <p className="ctx-popover-title">Tag this URL with…</p>
-          <div className="ctx-popover-list">
-            {SOFIA_TOPICS.map((topic) => {
-              const active = queuedTopics.has(topic.id)
-              return (
-                <button
-                  key={topic.id}
-                  type="button"
-                  className={`ctx-popover-item${active ? ' ctx-popover-item--active' : ''}`}
-                  onClick={() => toggle(topic.id, topic.label, topic.color)}
-                  style={
-                    active
-                      ? ({
-                          ['--ctx-tag-color' as string]: topic.color,
-                        } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  <TopicBadge
-                    topicId={topic.id}
-                    color={topic.color}
-                    size={22}
-                    title={topic.label}
-                  />
-                  <span className="ctx-popover-label">{topic.label}</span>
-                  {active && <Check className="h-3.5 w-3.5" />}
-                </button>
-              )
-            })}
-          </div>
-        </PopoverContent>
-      </Popover>
+      </div>
     </div>
   )
 }

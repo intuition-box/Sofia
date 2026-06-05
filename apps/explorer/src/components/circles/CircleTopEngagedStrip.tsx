@@ -2,35 +2,36 @@
  * CircleTopEngagedStrip — "Hot picks" strip of the top 4 URLs in the
  * circle by engagement score. Rendered inside CircleFeedSection just
  * below the filter row so it reads as the curated header of the feed
- * rather than a separate band. Cards reuse the same star-tier palette
- * as `CircleFeedCard` so the visual scale is consistent across the
- * page.
+ * rather than a separate band.
+ *
+ * Each pick renders as the unified <CircleFeedCard> (same card the main
+ * masonry grid uses) so the hot-picks strip stays visually consistent
+ * with the feed. The cards live in a horizontally scrolling strip; each
+ * takes a fixed width (`.crd-top-engaged-item`) so they scroll sideways
+ * instead of collapsing.
  */
-import { Star } from 'lucide-react'
+import type { Address } from 'viem'
 import type { CircleItem } from '@/services/circleService'
-import { computeStars, starTier } from '@/services/circleFeedSort'
-import { UrlPreview } from '@/components/UrlPreview'
-import { extractDomain } from '@/utils/formatting'
+import CircleFeedCard from './CircleFeedCard'
 
 interface CircleTopEngagedStripProps {
   items: CircleItem[]
-}
-
-function aggregateCounts(item: CircleItem): {
-  supports: number
-  opposes: number
-} {
-  let supports = 0
-  let opposes = 0
-  for (const v of Object.values(item.intentionVaults)) {
-    supports += v.supportCount
-    opposes += v.opposeCount
-  }
-  return { supports, opposes }
+  /** Resolves a certifier display name from their address. */
+  getDisplay: (address: Address) => string
+  /** Resolves a certifier avatar URL from their address. */
+  getAvatar: (address: Address) => string
+  /** Like / dislike handler, threaded from the feed section. */
+  onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
+  /** Live set of staked term_ids, threaded from the feed section. */
+  livePositionTermIds?: ReadonlySet<string>
 }
 
 export default function CircleTopEngagedStrip({
   items,
+  getDisplay,
+  getAvatar,
+  onDeposit,
+  livePositionTermIds,
 }: CircleTopEngagedStripProps) {
   if (items.length === 0) return null
 
@@ -42,42 +43,19 @@ export default function CircleTopEngagedStrip({
       </div>
       <div className="crd-top-engaged-strip">
         {items.map((item) => {
-          const { supports, opposes } = aggregateCounts(item)
-          const stars = computeStars(supports)
-          const host = item.domain || (item.url ? extractDomain(item.url) : '')
-          const href = item.url && item.url.startsWith('http') ? item.url : '#'
+          const addr = item.certifierAddress as Address | undefined
+          const name = addr ? getDisplay(addr) : item.certifier
+          const av = addr ? getAvatar(addr) : ''
           return (
-            <a
-              key={item.id}
-              className="crd-te-card"
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={item.title || host}
-            >
-              <UrlPreview
-                variant="card"
-                url={item.url}
-                domain={host}
-                className="crd-te-thumb"
-                alt={item.title || host}
+            <div key={item.id} className="crd-top-engaged-item">
+              <CircleFeedCard
+                item={item}
+                certifierName={name}
+                certifierAvatar={av}
+                onDeposit={onDeposit}
+                livePositionTermIds={livePositionTermIds}
               />
-              <p className="crd-te-title">{item.title || host}</p>
-              <div className="crd-te-meta">
-                <div className="crd-te-stars" aria-label={`${stars} out of 5`}>
-                  {[1, 2, 3, 4, 5].map((slot) => (
-                    <Star
-                      key={slot}
-                      size={9}
-                      fill="currentColor"
-                      strokeWidth={0}
-                      className={`fc-star fc-star--${starTier(slot, stars)}`}
-                    />
-                  ))}
-                </div>
-                <span className="crd-te-count">{supports + opposes}</span>
-              </div>
-            </a>
+            </div>
           )
         })}
       </div>

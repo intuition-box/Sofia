@@ -131,153 +131,6 @@
   margin: 0 0 10px;
 }
 
-/* ── Topic Score (pie + legend card) ─────────────────────────────── */
-
-.pd-topic-score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin: 18px 20px 0;
-  padding: 16px 18px;
-  border-radius: 12px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-card);
-}
-.pd-topic-score .pd-section-title {
-  align-self: flex-start;
-  padding: 0;
-  margin: 0;
-}
-
-.pd-ts-empty {
-  margin: 0;
-  font-size: 12px;
-  color: var(--ds-muted);
-  text-align: center;
-  padding: 20px 0;
-}
-
-.pd-ts-pie-wrap {
-  position: relative;
-  width: 130px;
-  height: 130px;
-}
-.pd-ts-pie {
-  width: 100%;
-  height: 100%;
-  display: block;
-  filter: drop-shadow(
-    0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent)
-  );
-}
-.pd-ts-pie-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-.pd-ts-pie-value {
-  font-family: var(--ds-font-display);
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--ds-ink);
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
-}
-.pd-ts-pie-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-}
-
-.pd-ts-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-  margin-top: 4px;
-}
-.pd-ts-legend-item {
-  display: grid;
-  /* `auto` for the leading TopicBadge so its 18px disc no longer
-     overflows into the label column — the previous fixed 8px slot
-     was sized for the old dot indicator. */
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  font-size: 11px;
-}
-.pd-ts-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--slice-color, var(--ds-muted));
-  box-shadow: 0 0 6px
-    color-mix(in srgb, var(--slice-color, var(--ds-muted)) 50%, transparent);
-}
-.pd-ts-legend-label {
-  color: var(--ds-ink);
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.pd-ts-legend-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--slice-color, var(--ds-ink));
-  font-variant-numeric: tabular-nums;
-}
-
-/* View-details pill under the score card. */
-.pd-ts-view-btn {
-  margin: 10px 20px 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-card);
-  color: var(--ds-ink);
-  text-decoration: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-.pd-ts-view-btn:hover {
-  border-color: color-mix(
-    in srgb,
-    var(--trusted, #6dd4a0) 40%,
-    var(--ds-border)
-  );
-  color: #2f9c6a;
-  transform: translateX(2px);
-}
-.pd-ts-view-arrow {
-  font-size: 14px;
-  transition: transform 0.18s ease;
-}
-.pd-ts-view-btn:hover .pd-ts-view-arrow {
-  transform: translateX(3px);
-}
-
 /* ── Circle impact stats ─────────────────────────────────────────── */
 
 .pd-impact-row {
@@ -498,7 +351,7 @@
 .pd-la-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 13px;
   /* No nested scroll: the drawer's outer `overflow-y: auto` handles
      scrolling, so the activity list grows to its full natural height
      instead of being capped at 420px (which clipped the last row). */
@@ -545,6 +398,20 @@ a.pd-la-row:hover {
   background: #e87c7c;
 }
 
+/* Topic badge — black glyph on the topic color, in place of the
+   support/oppose check. Slightly larger + rounded-square so the icon
+   reads, matching the colored topic disc used across the feeds. */
+.pd-la-badge--topic {
+  width: 18px;
+  height: 18px;
+  border-radius: 7px;
+  background: var(--pill-color, var(--ds-accent));
+  color: #000;
+}
+.pd-la-badge--topic .sf-topic-pill-glyph {
+  font-size: 11px;
+}
+
 .pd-la-text {
   display: flex;
   flex-direction: column;
@@ -580,33 +447,4 @@ a.pd-la-row:hover {
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
-}
-
-/* "General" pie slice gets a button-like affordance so the user
-   knows it's actionable (jumps to the Context Manager). */
-button.pd-ts-legend-item {
-  background: none;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-  text-align: inherit;
-}
-.pd-ts-legend-item--link {
-  border-radius: 8px;
-  padding: 4px 8px;
-  margin: -4px -8px;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-.pd-ts-legend-item--link:hover {
-  background: var(--ds-bg-subtle);
-  border-color: var(--ds-border);
-}
-.pd-ts-legend-item--link::after {
-  content: '→';
-  margin-left: 6px;
-  color: var(--ds-muted);
-  font-weight: 600;
 }

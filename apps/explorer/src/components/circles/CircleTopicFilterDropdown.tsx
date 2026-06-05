@@ -12,7 +12,7 @@ import {
   PopoverContent,
 } from '@/components/ui/popover'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
-import TopicBadge from '@/components/profile/TopicBadge'
+import { TopicPill } from '@/components/profile/FeedPills'
 
 export type TopicFilterId = 'all' | string
 
@@ -83,11 +83,11 @@ export default function CircleTopicFilterDropdown({
               }`}
               onClick={() => handleSelect(t.id)}
             >
-              <TopicBadge
+              <TopicPill
                 topicId={t.id}
                 color={t.color}
-                size={12}
-                title={t.label}
+                label={t.label}
+                iconOnly
               />
               {t.label}
             </button>

@@ -5,8 +5,9 @@
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, Sparkles } from 'lucide-react'
+import { Check, Sparkles } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import '@/components/styles/pages.css'
 import '@/components/styles/billing-page.css'
 
@@ -91,12 +92,12 @@ export default function BillingPage() {
 
   return (
     <div className="pf-view bp-page">
-      <div className="pf-ts-back-row">
-        <button type="button" className="pf-btn" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: 'My profile', to: '/profile' },
+          { label: 'Billing & plans' },
+        ]}
+      />
 
       <PageHero
         title="Billing & plans"

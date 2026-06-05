@@ -1,13 +1,6 @@
 import { VerbTag } from "@0xsofia/design-system"
-import {
-  useFindUserPositionsOnTriplesQuery,
-  useGetPerspectiveCertsQuery,
-  useGetTrustCirclePositionsQuery,
-  type GetPerspectiveCertsQuery,
-  type GetTrustCirclePositionsQuery
-} from "@0xsofia/graphql"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { createPortal } from "react-dom"
+import { useFindUserPositionsOnTriplesQuery } from "@0xsofia/graphql"
+import { useMemo, useState } from "react"
 import { getAddress } from "viem"
 
 import {
@@ -21,8 +14,8 @@ import {
   TOPIC_FILTER_OPTIONS,
   VERB_FILTER_OPTIONS
 } from "~/lib/config/filterOptions"
-import { PREDICATE_IDS, SUBJECT_IDS } from "~/lib/config/constants"
-import { batchResolveEns, createHookLogger, getFaviconUrl } from "~/lib/utils"
+import { getFaviconUrl } from "~/lib/utils"
+import type { IntentionPurpose } from "~/types/discovery"
 import type { IntentionType } from "~/types/intentionCategories"
 import {
   INTENTION_CONFIG,
@@ -33,42 +26,14 @@ import { useRouter } from "../../layout/RouterProvider"
 import Avatar from "../../ui/Avatar"
 import CategoryCard from "../../ui/CategoryCard"
 import CategoryDetailView from "../../ui/CategoryDetailView"
+import ContextPills from "../../ui/ContextPills"
 import FilterDropdown from "../../ui/FilterDropdown"
 import SofiaLoader from "../../ui/SofiaLoader"
+import type { FeedContext, GroupedFeedItem } from "./feedTypes"
+import { useCircleFeed } from "./useCircleFeed"
 
 import "../../styles/CircleFeedTab.css"
 import "../../styles/CategoryStyles.css"
-
-const logger = createHookLogger("CircleFeedTab")
-
-// Pagination convention shared with the explorer's perspectiveService:
-// loop the indexer 1000 rows at a time until a short page comes back,
-// hard-capped at 50 pages (50k rows) so a runaway query can't spin.
-const PAGE_SIZE = 1000
-const MAX_PAGES = 50
-
-// Predicate labels that count as a "certification" — identical set to
-// the explorer's `PERSPECTIVE_PREDICATE_LABELS`. Trust/distrust are
-// intentionally excluded: those are people-to-people signals, not URL
-// claims. Label-based (not id-based) so Music + Buying are included.
-const PERSPECTIVE_PREDICATE_LABELS: string[] = [
-  "visits for work",
-  "visits for learning",
-  "visits for learning ", // legacy trailing-space variant
-  "visits for fun",
-  "visits for inspiration",
-  "visits for buying",
-  "visits for music"
-]
-
-// Extract domain from URL
-const getDomain = (url: string): string => {
-  try {
-    return new URL(url).hostname.replace("www.", "")
-  } catch {
-    return url
-  }
-}
 
 // Format relative time
 const formatTimestamp = (timestamp: string) => {
@@ -84,35 +49,6 @@ const formatTimestamp = (timestamp: string) => {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString()
-}
-
-interface CircleFeedItem {
-  id: string
-  tripleTermId: string
-  counterTermId: string
-  intentionType: IntentionType
-  tripleSubject: string
-  triplePredicate: string
-  tripleObject: string
-  pageLabel: string
-  pageUrl: string
-  domain: string
-  memberAddress: string
-  memberLabel: string
-  memberImage: string
-  createdAt: string
-}
-
-interface GroupedFeedItem {
-  groupKey: string
-  pageLabel: string
-  pageUrl: string
-  domain: string
-  memberAddress: string
-  memberLabel: string
-  memberImage: string
-  createdAt: string
-  intentions: CircleFeedItem[]
 }
 
 type ViewState =
@@ -134,273 +70,22 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
   // EchoesTab use, so the Verb + Topic filters stay coherent everywhere.
   const { certifications } = useUserCertifications(address)
   const [viewState, setViewState] = useState<ViewState>({ type: "feed" })
-  const [feedItems, setFeedItems] = useState<CircleFeedItem[]>([])
-  const [trustedWallets, setTrustedWallets] = useState<string[]>([])
-  const [walletToLabel, setWalletToLabel] = useState(
-    () => new Map<string, string>()
-  )
-  const [walletToImage, setWalletToImage] = useState(
-    () => new Map<string, string>()
-  )
 
   const checksumAddress = address ? getAddress(address) : ""
 
-  // Step 1: Get followed accounts.
-  //
-  // `GetTrustCirclePositions` has `$offset` but no `$limit` — the
-  // indexer's default page cap silently truncated big trust circles to
-  // the first page, so members past it never produced feed rows. We now
-  // page by offset (same PAGE_SIZE / MAX_PAGES convention as Step 2)
-  // until a short page comes back, accumulating every member triple.
-  const [trustCircleLoading, setTrustCircleLoading] = useState(false)
-  const [trustCircleFetching, setTrustCircleFetching] = useState(false)
-
-  const refetchTrustCircle = useCallback(async () => {
-    if (!checksumAddress) {
-      setTrustedWallets([])
-      setTrustCircleLoading(false)
-      setTrustCircleFetching(false)
-      return
-    }
-    setTrustCircleFetching(true)
-    setTrustCircleLoading((prev) => prev || trustedWallets.length === 0)
-
-    const rawTriples: NonNullable<GetTrustCirclePositionsQuery["triples"]> = []
-    try {
-      for (let page = 0; page < MAX_PAGES; page++) {
-        const data = await useGetTrustCirclePositionsQuery.fetcher({
-          subjectId: SUBJECT_IDS.I,
-          predicateId: PREDICATE_IDS.TRUSTS,
-          addresses: checksumAddress,
-          offset: page * PAGE_SIZE,
-          positionsOrderBy: [{ shares: "desc" }]
-        })()
-        const rows = data?.triples ?? []
-        rawTriples.push(...rows)
-        if (rows.length < PAGE_SIZE) break
-      }
-    } catch (err) {
-      // Keep whatever member pages already loaded — partial circle is
-      // far better than blanking the feed entirely.
-      logger.error("Trust circle pagination failed", err)
-    }
-
-    const wallets: string[] = []
-    const labelMap = new Map<string, string>()
-    const imageMap = new Map<string, string>()
-
-    for (const triple of rawTriples) {
-      // Only include if user has positive shares (not untrusted)
-      const hasPositiveShares = triple.term?.vaults?.some((v) =>
-        v.positions?.some((p) => p.shares && BigInt(p.shares) > 0n)
-      )
-      if (!hasPositiveShares) continue
-
-      const accounts = triple.object?.accounts || []
-      const label = triple.object?.label || ""
-
-      for (const account of accounts) {
-        if (account?.id) {
-          try {
-            // Indexer matches account ids in EIP-55 checksum case;
-            // keep a lowercase mirror for the client-side filter.
-            const checksumWallet = getAddress(account.id)
-            wallets.push(checksumWallet)
-            wallets.push(checksumWallet.toLowerCase())
-            labelMap.set(
-              checksumWallet.toLowerCase(),
-              account.label || label || checksumWallet
-            )
-            if (account.image) {
-              imageMap.set(checksumWallet.toLowerCase(), account.image)
-            }
-          } catch {
-            continue
-          }
-        }
-      }
-    }
-
-    setTrustedWallets([...new Set(wallets)])
-    setWalletToLabel(labelMap)
-    setWalletToImage(imageMap)
-    setTrustCircleLoading(false)
-    setTrustCircleFetching(false)
-
-    // Batch-resolve ENS names + avatars for wallets with raw address labels
-    const addressesToResolve = [...labelMap.entries()]
-      .filter(
-        ([, label]) => !label || label.startsWith("0x") || label.includes("...")
-      )
-      .map(([wallet]) => wallet)
-
-    if (addressesToResolve.length > 0) {
-      batchResolveEns(addressesToResolve).then((ensResults) => {
-        for (const [addr, ens] of ensResults) {
-          if (ens.name) labelMap.set(addr, ens.name)
-          if (ens.avatar) imageMap.set(addr, ens.avatar)
-        }
-        setWalletToLabel(new Map(labelMap))
-        setWalletToImage(new Map(imageMap))
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checksumAddress])
-
-  useEffect(() => {
-    refetchTrustCircle()
-  }, [refetchTrustCircle])
-
-  // Step 2: Get ALL certifications from trusted wallets — triples, not
-  // events.
-  //
-  // This is the same data path the explorer uses
-  // (`perspectiveService.fetchPerspectiveCertifications` →
-  // `GetPerspectiveCerts`): query the `visits_for_*` cert triples
-  // directly, filtered to triples where one of our trusted wallets holds
-  // shares > 0. The old `GetSofiaTrustedActivity` events query routed
-  // through the Sofia proxy and structurally missed every non-proxy /
-  // out-of-filter certification — that whole code path is gone.
-  //
-  // Paginated 1000 rows at a time (PAGE_SIZE / MAX_PAGES) with
-  // incremental display: each page is mapped and pushed into feedItems
-  // immediately so the feed paints progressively and is never blank
-  // while later pages stream in. A failed page keeps everything already
-  // loaded.
-  const [rawCertTriples, setRawCertTriples] = useState<
-    NonNullable<GetPerspectiveCertsQuery["triples"]>
-  >([])
-  const [eventsLoading, setEventsLoading] = useState(false)
-  const [eventsFetching, setEventsFetching] = useState(false)
-
-  const refetchEvents = useCallback(async () => {
-    if (trustedWallets.length === 0) {
-      setRawCertTriples([])
-      setEventsLoading(false)
-      setEventsFetching(false)
-      return
-    }
-
-    // Indexer stores account ids in EIP-55 checksum case; a lowercase
-    // `_in` filter silently matches nothing. Checksum the list before
-    // the network call (the trustedWallets state already carries a
-    // lowercase mirror used by the client-side certifier filter below).
-    const checksumWallets: string[] = []
-    for (const w of trustedWallets) {
-      try {
-        checksumWallets.push(getAddress(w))
-      } catch {
-        // Skip the lowercase mirror entries / bad ids — getAddress
-        // throws on a non-checksum string. Deduped right after.
-      }
-    }
-    const uniqueChecksum = [...new Set(checksumWallets)]
-    if (uniqueChecksum.length === 0) {
-      setRawCertTriples([])
-      setEventsLoading(false)
-      setEventsFetching(false)
-      return
-    }
-
-    setEventsFetching(true)
-    setEventsLoading((prev) => prev || rawCertTriples.length === 0)
-
-    const acc: NonNullable<GetPerspectiveCertsQuery["triples"]> = []
-    try {
-      for (let page = 0; page < MAX_PAGES; page++) {
-        const data = await useGetPerspectiveCertsQuery.fetcher({
-          wallets: uniqueChecksum,
-          predicateLabels: PERSPECTIVE_PREDICATE_LABELS,
-          limit: PAGE_SIZE,
-          offset: page * PAGE_SIZE
-        })()
-        const rows = data?.triples ?? []
-        acc.push(...rows)
-        // Incremental display: paint each page as it lands so the feed
-        // grows in front of the user and is never blank. A heavy later
-        // page must never wipe what's already shown.
-        setRawCertTriples([...acc])
-        setEventsLoading(false)
-        if (rows.length < PAGE_SIZE) break
-      }
-    } catch (err) {
-      // Keep whatever pages already loaded instead of wiping the feed.
-      logger.error("Perspective certs pagination failed", err)
-      if (acc.length > 0) setRawCertTriples([...acc])
-    } finally {
-      setEventsLoading(false)
-      setEventsFetching(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trustedWallets])
-
-  useEffect(() => {
-    refetchEvents()
-  }, [refetchEvents])
-
-  // Step 3: Map cert triples → feed items.
-  //
-  // A triple can carry several certifiers (one position row per trusted
-  // wallet that staked on it) — emit one CircleFeedItem per (triple,
-  // certifier) so the existing `pageUrl::memberAddress` grouping keeps
-  // working and every member's mark is attributed. Kept separate from
-  // the fetch so ENS label/avatar resolution re-maps the labels without
-  // re-hitting the network.
-  useEffect(() => {
-    if (rawCertTriples.length === 0) {
-      setFeedItems([])
-      return
-    }
-
-    const lowerWalletSet = new Set(trustedWallets.map((w) => w.toLowerCase()))
-    const items: CircleFeedItem[] = []
-
-    for (const triple of rawCertTriples) {
-      const predicateLabel = triple.predicate?.label
-      if (!predicateLabel) continue
-
-      const intentionType = predicateLabelToIntentionType(predicateLabel)
-      if (!intentionType) continue
-
-      const obj = triple.object
-      const pageLabel = obj?.label || ""
-      const pageUrl =
-        obj?.value?.thing?.url ||
-        (pageLabel.startsWith("http") ? pageLabel : `https://${pageLabel}`)
-      const domain = getDomain(pageUrl)
-      const tripleTermId = triple.term_id || ""
-      const counterTermId = triple.counter_term_id || ""
-      const createdAt = triple.created_at ? String(triple.created_at) : ""
-
-      // positions are already server-filtered to "shares > 0" for our
-      // wallet set; every account_id here is a relevant certifier.
-      for (const position of triple.positions ?? []) {
-        const memberAddress = position.account_id
-        if (!memberAddress) continue
-        const addrKey = memberAddress.toLowerCase()
-        if (!lowerWalletSet.has(addrKey)) continue
-
-        items.push({
-          id: `${tripleTermId}::${addrKey}`,
-          tripleTermId,
-          counterTermId,
-          intentionType,
-          tripleSubject: "I",
-          triplePredicate: predicateLabel,
-          tripleObject: pageLabel,
-          pageLabel: pageLabel || domain,
-          pageUrl,
-          domain,
-          memberAddress,
-          memberLabel: walletToLabel.get(addrKey) || memberAddress,
-          memberImage: walletToImage.get(addrKey) || "",
-          createdAt
-        })
-      }
-    }
-
-    setFeedItems(items)
-  }, [rawCertTriples, trustedWallets, walletToLabel, walletToImage])
+  // The trust-circle → cert → feed-item → context data pipeline lives in the
+  // hook so this component stays presentational (grouping + filtering +
+  // voting + view routing).
+  const {
+    feedItems,
+    trustedWallets,
+    walletToLabel,
+    walletToImage,
+    contextsByCert,
+    loading,
+    refreshing,
+    refresh
+  } = useCircleFeed(checksumAddress)
 
   // Group feed items by pageUrl + memberAddress to avoid duplicate cards
   const groupedItems = useMemo(() => {
@@ -433,17 +118,46 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
           memberLabel: item.memberLabel,
           memberImage: item.memberImage,
           createdAt: item.createdAt,
-          intentions: [item]
+          intentions: [item],
+          contexts: [],
+          contextSlugs: []
         })
       }
     }
 
-    return [...groups.values()]
-  }, [feedItems])
+    // Attach the context triples for each group by unioning the contexts of
+    // all its intention certs (deduped by support vault — distinct certs
+    // produce distinct context triples, so this only collapses exact repeats).
+    for (const group of groups.values()) {
+      const contexts: FeedContext[] = []
+      const seenVaults = new Set<string>()
+      for (const intention of group.intentions) {
+        for (const ctx of contextsByCert.get(intention.tripleTermId) ?? []) {
+          if (seenVaults.has(ctx.supportTermId)) continue
+          seenVaults.add(ctx.supportTermId)
+          contexts.push(ctx)
+        }
+      }
+      group.contexts = contexts
+      group.contextSlugs = [...new Set(contexts.map((c) => c.slug))]
+    }
 
-  // Filter grouped items by verb (intention type) then by topic. Topic
-  // keeps groups whose page carries the selected "in context of" slug
-  // on-chain — same semantics as EchoesTab / the explorer feed.
+    // Most recent first (the query returns term_id order, not chronological),
+    // so the newest circle activity surfaces at the top like the explorer.
+    return [...groups.values()].sort((a, b) => {
+      const ta = Date.parse(a.createdAt)
+      const tb = Date.parse(b.createdAt)
+      if (Number.isNaN(ta) && Number.isNaN(tb)) return 0
+      if (Number.isNaN(ta)) return 1
+      if (Number.isNaN(tb)) return -1
+      return tb - ta
+    })
+  }, [feedItems, contextsByCert])
+
+  // Filter grouped items by verb (intention type) then by topic. Topic now
+  // keeps groups whose own cert contexts carry the selected slug (the card's
+  // real "in context of" tags), falling back to the viewer's certifications
+  // for cards whose contexts haven't loaded yet.
   const filteredItems = useMemo(() => {
     let result = groupedItems
     if (activeFilter !== "all") {
@@ -453,6 +167,9 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     }
     if (topicFilter !== "all") {
       result = result.filter((group) => {
+        if (group.contextSlugs.length > 0) {
+          return group.contextSlugs.includes(topicFilter)
+        }
         const entry = getCertificationForUrl(certifications, group.pageUrl)
         return entry?.interestContexts?.includes(topicFilter) ?? false
       })
@@ -460,11 +177,30 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     return result
   }, [groupedItems, activeFilter, topicFilter, certifications])
 
-  // Step 4: Check user's existing positions on feed triples (support/oppose state)
-  const allTripleIds = useMemo(() => {
-    const ids = feedItems.map((item) => item.tripleTermId).filter(Boolean)
-    return [...new Set(ids)]
-  }, [feedItems])
+  // Step 4: Check the user's existing positions on the feed's stakeable
+  // triples. We query both the cert term_ids (fallback cards) and every
+  // context support term_id, and map each back to its group so a thumb
+  // lights when the user already staked on any of a card's contexts.
+  const { allTripleIds, termIdToGroupKey } = useMemo(() => {
+    const ids = new Set<string>()
+    const toGroup = new Map<string, string>()
+    for (const group of groupedItems) {
+      if (group.contexts.length > 0) {
+        for (const ctx of group.contexts) {
+          if (!ctx.supportTermId) continue
+          ids.add(ctx.supportTermId)
+          toGroup.set(ctx.supportTermId, group.groupKey)
+        }
+      } else {
+        for (const intention of group.intentions) {
+          if (!intention.tripleTermId) continue
+          ids.add(intention.tripleTermId)
+          toGroup.set(intention.tripleTermId, group.groupKey)
+        }
+      }
+    }
+    return { allTripleIds: [...ids], termIdToGroupKey: toGroup }
+  }, [groupedItems])
 
   const { data: userPositionsData } = useFindUserPositionsOnTriplesQuery(
     {
@@ -478,7 +214,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     }
   )
 
-  // Build map: itemId → 'support' | 'oppose' (from on-chain + local votes)
+  // Build map: groupKey → 'support' | 'oppose' (from on-chain + local votes)
   const [localVotes, setLocalVotes] = useState(
     () => new Map<string, "support" | "oppose">()
   )
@@ -489,30 +225,28 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     // On-chain positions (support on term vault, oppose on counter_term vault)
     if (userPositionsData?.triples) {
       for (const triple of userPositionsData.triples) {
+        const groupKey = termIdToGroupKey.get(triple.term_id ?? "")
+        if (!groupKey) continue
         const hasSupport = triple.positions?.some(
           (p) => p.shares && BigInt(p.shares) > 0n
         )
         const hasOppose = triple.counter_term?.vaults?.some((v) =>
           v.positions?.some((p) => p.shares && BigInt(p.shares) > 0n)
         )
-
-        const feedItem = feedItems.find(
-          (item) => item.tripleTermId === triple.term_id
-        )
-        if (feedItem) {
-          if (hasSupport) map.set(feedItem.id, "support")
-          else if (hasOppose) map.set(feedItem.id, "oppose")
-        }
+        // Don't downgrade an already-recorded support to nothing if another
+        // of the card's triples has no position.
+        if (hasSupport) map.set(groupKey, "support")
+        else if (hasOppose && !map.has(groupKey)) map.set(groupKey, "oppose")
       }
     }
 
     // Merge local votes (override on-chain if just voted)
-    for (const [id, vote] of localVotes) {
-      map.set(id, vote)
+    for (const [groupKey, vote] of localVotes) {
+      map.set(groupKey, vote)
     }
 
     return map
-  }, [userPositionsData, feedItems, localVotes])
+  }, [userPositionsData, termIdToGroupKey, localVotes])
 
   // Member profile: use useIntentionCategories with member's wallet
   const memberWallet =
@@ -529,43 +263,74 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
   // Cart-based vote system
   const { addVoteToCart, isVoteInCart } = useCart()
 
-  // Intention picker state (shown when a grouped card has multiple intentions)
-  const [intentionPickerGroup, setIntentionPickerGroup] =
-    useState<GroupedFeedItem | null>(null)
-  const [intentionPickerAction, setIntentionPickerAction] = useState<
-    "Support" | "Oppose"
-  >("Support")
-
-  const addVoteToCartFromItem = (
-    item: CircleFeedItem,
+  // One-click vote (explorer parity) — no intention picker. A click fans the
+  // vote out across every "in context of" triple of the card, depositing on
+  // each context vault. Cards without contexts fall back to the cert triple
+  // so older un-tagged marks stay votable.
+  const addVotesToCart = (
+    group: GroupedFeedItem,
     action: "Support" | "Oppose"
   ) => {
     const voteAction =
       action === "Support" ? ("support" as const) : ("oppose" as const)
-    const vaultId =
-      action === "Support" ? item.tripleTermId : item.counterTermId
-    if (!vaultId) return
+    const favicon = getFaviconUrl(group.domain, 64)
 
-    // addVoteToCart expects an IntentionPurpose (for_work, for_learning, …),
-    // not an IntentionType (which also covers trusted/distrusted votes that
-    // have no purpose). Map via INTENTION_CONFIG so trusted/distrusted resolve
-    // to null instead of failing the cart contract.
-    const intentionType = predicateLabelToIntentionType(item.triplePredicate)
-    const purpose = intentionType
-      ? INTENTION_CONFIG[intentionType].intentionPurpose
-      : null
-    addVoteToCart(
-      item.pageUrl,
-      item.pageLabel,
-      item.triplePredicate,
-      purpose,
-      getFaviconUrl(item.domain, 64),
-      voteAction,
-      vaultId
-    ).then((added) => {
-      if (added) {
-        // Track local vote state for UI feedback
-        setLocalVotes((prev) => new Map(prev).set(item.id, voteAction))
+    // (vaultId, predicate, purpose) tuples to add — one per context, or the
+    // cert triples when the card has no contexts.
+    const targets: {
+      vaultId: string
+      predicate: string
+      purpose: IntentionPurpose | null
+    }[] = []
+
+    if (group.contexts.length > 0) {
+      for (const ctx of group.contexts) {
+        const vaultId =
+          action === "Support" ? ctx.supportTermId : ctx.opposeTermId
+        if (!vaultId) continue
+        targets.push({
+          vaultId,
+          predicate: ctx.predicate,
+          purpose: ctx.purpose
+        })
+      }
+    } else {
+      for (const item of group.intentions) {
+        const vaultId =
+          action === "Support" ? item.tripleTermId : item.counterTermId
+        if (!vaultId) continue
+        const intentionType = predicateLabelToIntentionType(
+          item.triplePredicate
+        )
+        targets.push({
+          vaultId,
+          predicate: item.triplePredicate,
+          purpose: intentionType
+            ? INTENTION_CONFIG[intentionType].intentionPurpose
+            : null
+        })
+      }
+    }
+
+    if (targets.length === 0) return
+
+    Promise.all(
+      targets.map((t) =>
+        addVoteToCart(
+          group.pageUrl,
+          group.pageLabel,
+          t.predicate,
+          t.purpose,
+          favicon,
+          voteAction,
+          t.vaultId
+        )
+      )
+    ).then((results) => {
+      if (results.some(Boolean)) {
+        setLocalVotes((prev) =>
+          new Map(prev).set(group.groupKey, voteAction)
+        )
       }
     })
   }
@@ -573,38 +338,17 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
   const handleSupport = (e: React.MouseEvent, group: GroupedFeedItem) => {
     e.stopPropagation()
     if (!address) return
-    if (group.intentions.length === 1) {
-      addVoteToCartFromItem(group.intentions[0], "Support")
-    } else {
-      setIntentionPickerGroup(group)
-      setIntentionPickerAction("Support")
-    }
+    addVotesToCart(group, "Support")
   }
 
   const handleOppose = (e: React.MouseEvent, group: GroupedFeedItem) => {
     e.stopPropagation()
     if (!address) return
-    if (group.intentions.length === 1) {
-      addVoteToCartFromItem(group.intentions[0], "Oppose")
-    } else {
-      setIntentionPickerGroup(group)
-      setIntentionPickerAction("Oppose")
-    }
+    addVotesToCart(group, "Oppose")
   }
 
-  const handleIntentionPick = (item: CircleFeedItem) => {
-    addVoteToCartFromItem(item, intentionPickerAction)
-    setIntentionPickerGroup(null)
-  }
-
-  const loading = trustCircleLoading || eventsLoading
-  const refreshing = trustCircleFetching || eventsFetching
-
-  // Refresh feed data
-  const handleRefresh = () => {
-    refetchTrustCircle()
-    refetchEvents()
-  }
+  // Refresh feed data (re-runs the trust-circle + cert fetch in the hook)
+  const handleRefresh = refresh
 
   // Handle member click
   const handleMemberClick = (
@@ -774,7 +518,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
             useUserCertifications. */}
         <div className="echoes-filter-row">
           <FilterDropdown
-            label="Verbs"
+            label="Intention"
             value={activeFilter}
             onChange={(id) => setActiveFilter(id as "all" | IntentionType)}
             options={VERB_FILTER_OPTIONS}
@@ -833,34 +577,11 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                 onClick={() =>
                   window.open(group.pageUrl, "_blank", "noopener,noreferrer")
                 }>
-                {/* Header: favicon + badges */}
-                <div className="circle-card-header">
-                  <img
-                    src={getFaviconUrl(group.domain, 64)}
-                    alt=""
-                    className="circle-card-favicon"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.display = "none"
-                    }}
-                  />
-                  <div className="circle-intention-badges">
-                    {group.intentions.map((intention) => (
-                      <VerbTag
-                        key={intention.intentionType}
-                        intent={intention.intentionType}
-                        label={INTENTION_CONFIG[intention.intentionType].label}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Page title */}
-                <div className="circle-card-title">{group.pageLabel}</div>
-
-                {/* Footer: member + votes + time */}
-                <div className="circle-card-footer">
-                  <span
-                    className="circle-card-member-name"
+                {/* Header: ENS avatar + name + date (explorer FeedCard look) */}
+                <div className="circle-card-hd">
+                  <button
+                    type="button"
+                    className="circle-card-member"
                     onClick={(e) => {
                       e.stopPropagation()
                       handleMemberClick(
@@ -869,28 +590,77 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                         group.memberImage
                       )
                     }}>
-                    {group.memberLabel}
-                  </span>
+                    <Avatar
+                      imgSrc={group.memberImage}
+                      name={group.memberLabel}
+                      avatarClassName="circle-card-avatar"
+                      size="small"
+                    />
+                    <span className="circle-card-hd-id">
+                      <span className="circle-card-handle">
+                        {group.memberLabel}
+                      </span>
+                      <span className="circle-card-when">
+                        {formatTimestamp(group.createdAt)}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+
+                {/* Middle: favicon + site name */}
+                <div className="circle-card-mid">
+                  <img
+                    src={getFaviconUrl(group.domain, 64)}
+                    alt=""
+                    className="circle-card-favicon"
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).style.display = "none"
+                    }}
+                  />
+                  <span className="circle-card-title">{group.pageLabel}</span>
+                </div>
+
+                {/* Footer: context pills, then votes */}
+                <div className="circle-card-footer">
+                  <div className="circle-intention-badges">
+                    {group.contextSlugs.length > 0 ? (
+                      // Topic/category context pills — the triples a vote
+                      // actually stakes on (explorer parity).
+                      <ContextPills slugs={group.contextSlugs} />
+                    ) : (
+                      // No "in context of" tags yet → show the member's
+                      // intention badges so the card isn't blank (these cards
+                      // vote on the cert triple).
+                      group.intentions.map((intention) => (
+                        <VerbTag
+                          key={intention.intentionType}
+                          intent={intention.intentionType}
+                          label={INTENTION_CONFIG[intention.intentionType].label}
+                        />
+                      ))
+                    )}
+                  </div>
                   {group.intentions.some((i) => i.tripleTermId) &&
                     (() => {
-                      const hasSupported = group.intentions.some(
-                        (i) => votedItems.get(i.id) === "support"
-                      )
-                      const hasOpposed = group.intentions.some(
-                        (i) => votedItems.get(i.id) === "oppose"
-                      )
+                      const groupVote = votedItems.get(group.groupKey)
+                      const hasSupported = groupVote === "support"
+                      const hasOpposed = groupVote === "oppose"
                       const inCartSupport = group.intentions.some((i) =>
                         isVoteInCart(i.pageUrl, i.triplePredicate, "support")
                       )
                       const inCartOppose = group.intentions.some((i) =>
                         isVoteInCart(i.pageUrl, i.triplePredicate, "oppose")
                       )
+                      // Oppose needs an oppose vault: a context counter term
+                      // (when tagged) or the cert counter term (fallback).
+                      const canOppose =
+                        group.contexts.length > 0
+                          ? group.contexts.some((c) => c.opposeTermId)
+                          : group.intentions.some((i) => i.counterTermId)
                       // Disable if already voted the opposite on-chain or in cart
                       const supportDisabled = hasOpposed || inCartOppose
                       const opposeDisabled =
-                        hasSupported ||
-                        inCartSupport ||
-                        !group.intentions.some((i) => i.counterTermId)
+                        hasSupported || inCartSupport || !canOppose
 
                       return (
                         <div className="circle-card-actions">
@@ -941,64 +711,12 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                         </div>
                       )
                     })()}
-                  <span className="circle-card-time">
-                    {formatTimestamp(group.createdAt)}
-                  </span>
                 </div>
               </div>
             )
           })}
         </div>
       )}
-
-      {/* Intention picker overlay (when card has multiple intentions) — portaled to body */}
-      {intentionPickerGroup &&
-        createPortal(
-          <div
-            className="circle-picker-overlay"
-            onClick={() => setIntentionPickerGroup(null)}>
-            <div
-              className="circle-picker-modal"
-              onClick={(e) => e.stopPropagation()}>
-              <div className="circle-picker-title">
-                {intentionPickerAction} which intention?
-              </div>
-              <div className="circle-picker-options">
-                {intentionPickerGroup.intentions.map((intention) => {
-                  const config = INTENTION_CONFIG[intention.intentionType]
-                  const isDisabled =
-                    intentionPickerAction === "Oppose" &&
-                    !intention.counterTermId
-                  return (
-                    <button
-                      key={intention.intentionType}
-                      className="circle-picker-option"
-                      style={
-                        {
-                          "--picker-color": config.color
-                        } as React.CSSProperties
-                      }
-                      disabled={isDisabled}
-                      onClick={() => handleIntentionPick(intention)}>
-                      <span
-                        className="circle-intention-badge"
-                        style={{
-                          backgroundColor: `${config.color}20`,
-                          color: config.color
-                        }}>
-                        {config.label}
-                      </span>
-                      <span className="circle-picker-label">
-                        {intentionPickerGroup.pageLabel}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   )
 }

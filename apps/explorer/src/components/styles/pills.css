@@ -39,6 +39,12 @@
   background: var(--pill-color, var(--ds-accent));
   border: 1px solid var(--pill-color, var(--ds-border));
 }
+/* Icon-only variant — equal padding so the rounded pill reads as a
+   colored disc carrying just the glyph (no label). */
+.sf-topic-pill--icon {
+  gap: 0;
+  padding: 4px;
+}
 .sf-topic-pill-glyph {
   font-size: 14px;
   line-height: 1;

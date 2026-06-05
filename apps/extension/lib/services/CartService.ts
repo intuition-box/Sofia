@@ -134,7 +134,7 @@ class CartServiceClass {
     predicateName: string,
     intention: IntentionPurpose | null,
     faviconUrl: string | null,
-    interestContext?: string | null
+    interestContexts?: string[]
   ): Promise<boolean> {
     // Reject free-form predicate strings to prevent silent on-chain creation
     // of attacker-shaped predicate atoms (lookalike trailing space, homograph,
@@ -163,7 +163,11 @@ class CartServiceClass {
       intention,
       faviconUrl,
       addedAt: Date.now(),
-      interestContext: interestContext || null,
+      // Keep the first as the primary single-pill field; store the full set
+      // so submit mints one `in context of` triple per context.
+      interestContext: interestContexts?.[0] ?? null,
+      interestContexts:
+        interestContexts && interestContexts.length ? interestContexts : undefined,
     }
 
     try {
@@ -200,7 +204,10 @@ class CartServiceClass {
 
     const { label: normalizedLabel } = normalizeUrl(url)
     const wallet = walletAddress.toLowerCase()
-    const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}`
+    // Include the vault id so multiple "in context of" votes on the same
+    // URL+predicate (one per context triple, explorer-style fan-out) coexist
+    // as distinct cart items instead of colliding on a URL+predicate key.
+    const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}:${tripleTermId}`
 
     // Check for duplicate
     if (this.state.items.some(item => item.id === id)) {
@@ -273,7 +280,7 @@ class CartServiceClass {
   async updateContextForUrl(
     walletAddress: string,
     url: string,
-    interestContext: string | null
+    interestContexts: string[]
   ): Promise<void> {
     const wallet = walletAddress.toLowerCase()
     const { label: normalizedLabel } = normalizeUrl(url)
@@ -283,18 +290,27 @@ class CartServiceClass {
     )
     if (matching.length === 0) return
 
+    // Keep the first as the primary single-pill field; store the full set.
+    const patch = {
+      interestContext: interestContexts[0] ?? null,
+      interestContexts: interestContexts.length ? interestContexts : undefined
+    }
+
     try {
-      const updated = matching.map(item => ({ ...item, interestContext }))
+      const updated = matching.map(item => ({ ...item, ...patch }))
       for (const item of updated) {
         await CartDataService.addItem(item) // put = upsert
       }
       const items = this.state.items.map(item =>
         item.walletAddress === wallet && item.normalizedUrl === normalizedLabel
-          ? { ...item, interestContext }
+          ? { ...item, ...patch }
           : item
       )
       this.updateState({ items, count: items.length })
-      logger.info("Updated context for URL", { normalizedLabel, interestContext })
+      logger.info("Updated context for URL", {
+        normalizedLabel,
+        interestContexts
+      })
     } catch (error) {
       logger.error("Failed to update context for URL", { error })
     }

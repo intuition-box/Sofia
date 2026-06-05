@@ -1,18 +1,7 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
-import { useTopicSelection } from '../hooks/useDomainSelection'
-import { usePlatformConnections } from '../hooks/usePlatformConnections'
-import { useReputationScores } from '../hooks/useReputationScores'
-import {
-  useUserCertCountsByTopic,
-  useUserCertCounts,
-} from '../hooks/useUserCertCountsByTopic'
-import { POINTS_PER_CERT } from '../services/reputationScoreService'
-import { useSignals } from '../hooks/useSignals'
-import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { useGroups } from '@/hooks/useGroups'
@@ -20,14 +9,14 @@ import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import TopicBadge from './profile/TopicBadge'
-import { TopicPill, VerbPill } from './profile/FeedPills'
-import TopicScorePie, { type TopicPieSlice } from './profile/TopicScorePie'
-import { getTopicEmoji } from '@/config/topicEmoji'
-import { getIntentionColor, INTENTION_COLORS } from '@/config/intentions'
+import { VerbPill } from './profile/FeedPills'
+import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
+import FeedCardView from '@/components/feed/FeedCardView'
+import { useUserPlatformInvests } from '@/hooks/useUserPlatformInvests'
+import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
 interface ProfileDrawerProps {
@@ -43,28 +32,12 @@ function formatStatCount(n: number): string {
 // ── Main component ────────────────────────────────────────────────────
 
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
-  const navigate = useNavigate()
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
-  const { selectedTopics, selectedCategories } = useTopicSelection()
-  const { getStatus } = usePlatformConnections()
-  const { score: trustScore } = useTrustScore(address || undefined)
-  const { signals } = useSignals(address || undefined)
-  const certCountsByTopic = useUserCertCountsByTopic(linkedAddresses)
-  const certCounts = useUserCertCounts(linkedAddresses)
-  const scores = useReputationScores(
-    getStatus,
-    selectedTopics,
-    selectedCategories,
-    trustScore,
-    signals,
-    certCountsByTopic,
-  )
-  const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
   // Activity comes from the master on-chain profile (alltime, paginated,
   // shared across the page via React Query dedupe). Every cert kind
@@ -75,6 +48,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // on-chain group the user is the subject of an `is_member_of` claim in.
   const { groups } = useGroups()
   const positions = useUserPositionTermIds(linkedAddresses)
+  const { invests: platformInvests } = useUserPlatformInvests(linkedAddresses)
   const circlesCount = useMemo(() => {
     if (linkedAddresses.length === 0) return 1
     const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
@@ -92,29 +66,58 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // is old. Each kind keeps its own timestamp.
   const lastActivity = useMemo(() => {
     const certByTerm = new Map(profile.certs.map((c) => [c.termId, c]))
-    type Event =
-      | { kind: 'cert'; cert: (typeof profile.certs)[number]; ts: string }
-      | {
-          kind: 'context'
-          cert: (typeof profile.certs)[number]
-          topicSlug: string
-          topicAtomId: string
-          ts: string
-        }
+    type CertEvent = {
+      kind: 'cert'
+      cert: (typeof profile.certs)[number]
+      ts: string
+    }
+    // A context event can land on a cert the viewer doesn't own. When the
+    // owned cert is present (`cert`) we use its richer fields; otherwise we
+    // fall back to the page info carried on the addition itself.
+    type ContextEvent = {
+      kind: 'context'
+      cert: (typeof profile.certs)[number] | null
+      objectUrl: string
+      objectLabel: string
+      topicSlug: string
+      topicAtomId: string
+      ts: string
+    }
+    type InvestEvent = {
+      kind: 'invest'
+      platformName: string
+      favicon: string
+      website: string
+      ts: string
+    }
+    type Event = CertEvent | ContextEvent | InvestEvent
     const events: Event[] = []
     for (const c of profile.certs) {
       if (c.certifiedAt)
         events.push({ kind: 'cert', cert: c, ts: c.certifiedAt })
     }
     for (const ca of profile.contextAdditions) {
-      const cert = certByTerm.get(ca.certTermId)
-      if (!cert || !ca.addedAt) continue
+      if (!ca.addedAt) continue
+      const cert = certByTerm.get(ca.certTermId) ?? null
+      // No owned cert AND no carried page info → nothing renderable.
+      if (!cert && !ca.objectUrl && !ca.objectLabel) continue
       events.push({
         kind: 'context',
         cert,
+        objectUrl: ca.objectUrl,
+        objectLabel: ca.objectLabel,
         topicSlug: ca.topicSlug,
         topicAtomId: ca.topicAtomId,
         ts: ca.addedAt,
+      })
+    }
+    for (const inv of platformInvests) {
+      events.push({
+        kind: 'invest',
+        platformName: inv.platformName,
+        favicon: inv.favicon,
+        website: inv.website,
+        ts: inv.createdAt,
       })
     }
     events.sort((a, b) => (b.ts > a.ts ? 1 : -1))
@@ -124,37 +127,66 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     // visual cap on display either — the user just sees more by
     // scrolling.
     return events.slice(0, 30).map((e) => {
-      const c = e.cert
-      const url = c.objectUrl || ''
-      const domain = extractDomain(url) || extractDomain(c.objectLabel) || ''
-      const title = cleanLabel(c.objectLabel || domain || '')
+      // Platform invest — its own card with an "Invest" pill.
+      if (e.kind === 'invest') {
+        return {
+          id: `invest::${e.platformName}::${e.ts}`,
+          title: e.platformName,
+          url: e.website,
+          domain: '',
+          favicon: e.favicon,
+          timestamp: e.ts,
+          isOppose: false,
+          verb: { label: 'Invest', color: '#10B981' } as Verb,
+          topic: null as TopicChip | null,
+        }
+      }
+
+      // Page info comes from the owned cert when we have it, else from the
+      // fields carried on a context addition (cert not owned by viewer).
+      const objectUrl =
+        e.kind === 'context' && !e.cert ? e.objectUrl : (e.cert?.objectUrl ?? '')
+      const objectLabel =
+        e.kind === 'context' && !e.cert
+          ? e.objectLabel
+          : (e.cert?.objectLabel ?? '')
+      const url = objectUrl || ''
+      const domain = extractDomain(url) || extractDomain(objectLabel) || ''
+      const title = cleanLabel(objectLabel || domain || '')
       const linkUrl =
-        url || (c.objectLabel.startsWith('http') ? c.objectLabel : '')
+        url || (objectLabel.startsWith('http') ? objectLabel : '')
       const favicon = domain ? getFaviconUrl(domain) : ''
 
       if (e.kind === 'context') {
         const topic = e.topicSlug ? topicById(e.topicSlug) : null
         const topicLabel = topic?.label ?? e.topicSlug ?? 'topic'
+        const rowKey = e.cert?.termId ?? domain ?? 'cert'
+        // Context on someone else's cert = a "like" → show a Like pill.
+        // Context on your own cert = a topic tag → show the topic pill.
+        const isLike = !e.cert
         return {
-          id: `${c.termId}::${e.topicAtomId}`,
+          // Include the timestamp: a not-owned like falls back to `domain`
+          // for rowKey, so two likes on different certs of the same domain +
+          // same topic would otherwise collide on one React key.
+          id: `${rowKey}::${e.topicAtomId}::${e.ts}`,
           title,
           url: linkUrl,
           domain,
           favicon,
           timestamp: e.ts,
           isOppose: false,
-          // Surface the topic as a structured payload so the row can
-          // render a coloured <TopicBadge> inline instead of dropping
-          // a raw emoji into the action-label string.
-          // Tagging activity carries no intention verb — just the topic
-          // chip (same chip as the Echoes cards).
-          verb: null as Verb | null,
-          topic: e.topicSlug
-            ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
-            : null,
+          verb: isLike
+            ? ({ label: 'Like', color: '#ec4899' } as Verb)
+            : (null as Verb | null),
+          topic:
+            !isLike && e.topicSlug
+              ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
+              : null,
         }
       }
 
+      // Only reached for `kind: 'cert'`, where `e.cert` is always present.
+      const c = e.cert
       const intentionLower = (c.intention ?? '').trim().toLowerCase()
       const isOppose = intentionLower === 'distrust'
       // Verb chip per intention — same colored-pill language as the
@@ -169,7 +201,10 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       }
       // Color from the DS intention palette (keyed by label); unknown
       // labels (e.g. "Certified") fall through to the neutral pill.
-      const verb: Verb = { label: verbLabel, color: INTENTION_COLORS[verbLabel] }
+      const verb: Verb = {
+        label: verbLabel,
+        color: INTENTION_COLORS[verbLabel],
+      }
       return {
         id: c.termId,
         title,
@@ -182,7 +217,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         topic: null as TopicChip | null,
       }
     })
-  }, [profile, topicById])
+  }, [profile, topicById, platformInvests])
 
   if (!authenticated) return null
 
@@ -192,45 +227,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
     : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
-
-  // Every topic is scored now (#521), so the donut shows only the topics the
-  // user actually has points in, strongest first — avoids a wheel of empty
-  // zero-score slices.
-  const pieSlices: TopicPieSlice[] = [...topicScores]
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .map((s) => {
-      const topic = topicById(s.topicId)
-      return {
-        id: s.topicId,
-        label: topic?.label ?? s.topicId,
-        emoji: getTopicEmoji(s.topicId) || '📌',
-        color: topic?.color ?? getIntentionColor('inspiration'),
-        score: Math.round(s.score),
-      }
-    })
-  // "General" sector for certs the user owns without an `in context of`
-  // nested triple. Counts toward the donut total so power users with
-  // mostly-untagged certs aren't stuck at zero.
-  const generalScore = certCounts.general * POINTS_PER_CERT
-  if (generalScore > 0) {
-    pieSlices.push({
-      id: 'general',
-      label: 'General',
-      emoji: '✨',
-      color: 'var(--ds-muted, #888)',
-      score: generalScore,
-    })
-  }
-
-  // Percentile derived from `trustScore` (0–100, where 100 = most trusted).
-  // We only show a percentile when the user actually has a non-zero score —
-  // a 0 here means "no eigentrust paths yet", which would otherwise render
-  // as the misleading "Top 100%".
-  const percentileLabel =
-    trustScore != null && trustScore > 0
-      ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
-      : 'View details'
 
   return (
     <>
@@ -277,158 +273,32 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           </div>
 
-          {/* Topic Score pie chart */}
-          <div className="pd-topic-score">
-            <span className="pd-section-title">Score</span>
-            {pieSlices.length > 0 ? (
-              <>
-                <TopicScorePie slices={pieSlices} />
-                <div className="pd-ts-legend">
-                  {pieSlices.map((t) => {
-                    const inner = (
-                      <>
-                        <TopicBadge
-                          topicId={t.id}
-                          color={t.color}
-                          size={18}
-                          title={t.label}
-                        />
-                        <span className="pd-ts-legend-label">{t.label}</span>
-                        <span className="pd-ts-legend-val">{t.score}</span>
-                      </>
-                    )
-                    // The "general" slice is the only one with an
-                    // actionable next step — open the Context Manager
-                    // so the user can tag the URLs that landed in it.
-                    if (t.id === 'general') {
-                      return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          className="pd-ts-legend-item pd-ts-legend-item--link"
-                          style={{ ['--slice-color' as string]: t.color }}
-                          onClick={() => navigate('/profile/context-manager')}
-                          title="Add topic context to these certs"
-                        >
-                          {inner}
-                        </button>
-                      )
-                    }
-                    return (
-                      <span
-                        key={t.id}
-                        className="pd-ts-legend-item"
-                        style={{ ['--slice-color' as string]: t.color }}
-                      >
-                        {inner}
-                      </span>
-                    )
-                  })}
-                </div>
-              </>
-            ) : (
-              <p className="pd-ts-empty">
-                Certify pages to build your score breakdown.
-              </p>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className="pd-ts-view-btn"
-            onClick={() => navigate('/scores')}
-          >
-            <span>{percentileLabel}</span>
-            <span className="pd-ts-view-arrow">→</span>
-          </button>
-
-          {/* Last Activity — support/oppose only for now. */}
+          {/* Last Activity — xs feed cards with topic/support badge overlay. */}
           {lastActivity.length > 0 && (
             <div className="pd-section">
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
-                  const isOppose = a.isOppose
-                  const root = a.domain
+                  const verbs = a.verb ? [{ label: a.verb.label, color: a.verb.color }] : []
+                  const topics = a.topic ? [{ id: a.topic.id, label: a.topic.label, color: a.topic.color }] : []
                   return (
-                    <a
+                    <FeedCardView
                       key={a.id}
-                      className="pd-la-row"
-                      href={a.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className="pd-la-anchor">
-                        <span
-                          className="favicon"
-                          style={{ ['--fav-size' as string]: '32px' }}
-                        >
-                          {a.favicon ? (
-                            <img
-                              src={a.favicon}
-                              alt=""
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).style.display =
-                                  'none'
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                        <span
-                          className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
-                          aria-hidden="true"
-                        >
-                          {isOppose ? (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width="9"
-                              height="9"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M18 6 6 18" />
-                              <path d="M6 6l12 12" />
-                            </svg>
-                          ) : (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width="9"
-                              height="9"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </span>
-                      </span>
-                      <span className="pd-la-text">
-                        <span className="pd-la-title">
-                          {a.verb ? (
-                            <VerbPill label={a.verb.label} color={a.verb.color} />
-                          ) : null}
-                          {a.topic ? (
-                            <TopicPill
-                              topicId={a.topic.id}
-                              color={a.topic.color || 'var(--ds-muted)'}
-                              label={a.topic.label}
-                            />
-                          ) : null}
-                          <strong>{a.title}</strong>
-                        </span>
-                        <span className="pd-la-sub">
-                          {root}
-                          {root ? ' · ' : ''}
-                          {timeAgo(a.timestamp)}
-                        </span>
-                      </span>
-                    </a>
+                      size="xs"
+                      handle=""
+                      when={timeAgo(a.timestamp)}
+                      title={a.title}
+                      url={a.url || undefined}
+                      domain={a.domain || undefined}
+                      thumbnailSrc={a.favicon || undefined}
+                      verbs={verbs}
+                      topics={topics}
+                      up={-1}
+                      down={-1}
+                      onOpen={() => {
+                        if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer')
+                      }}
+                    />
                   )
                 })}
               </div>

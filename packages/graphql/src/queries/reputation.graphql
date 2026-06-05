@@ -1,0 +1,33 @@
+# Reputation & curation queries.
+#
+# ClaimSupporters — ordered stakers per claim (triple), both sides.
+#   support = the triple's own positions (its term vault)
+#   oppose  = the counter_term positions
+# Ordered by created_at asc so index 0 is the first staker (the Pioneer).
+# This is the backbone of the reputation derivation: "credible accounts that
+# positioned AFTER you on a claim you hold". See docs/reputation-curation.md.
+query ClaimSupporters($claimTermIds: [String!]!) {
+  triples(where: { term_id: { _in: $claimTermIds } }) {
+    term_id
+    support: positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 1000
+    ) {
+      account_id
+      created_at
+      shares
+    }
+    counter_term {
+      oppose: positions(
+        where: { shares: { _gt: "0" } }
+        order_by: { created_at: asc }
+        limit: 1000
+      ) {
+        account_id
+        created_at
+        shares
+      }
+    }
+  }
+}

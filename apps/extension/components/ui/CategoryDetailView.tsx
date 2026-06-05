@@ -10,10 +10,11 @@ import {
   useRedeemTriple,
   useUserCertifications
 } from "../../hooks"
-import { TOPIC_FILTER_OPTIONS } from "~/lib/config/filterOptions"
 import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionCategory, CategoryUrl } from "../../types/intentionCategories"
+import ContextPills from "./ContextPills"
 import FilterDropdown from "./FilterDropdown"
+import TopicCategoryFilter from "./TopicCategoryFilter"
 
 type SortBy = "date-desc" | "date-asc" | "domain" | "shares"
 
@@ -46,11 +47,14 @@ const formatDate = (dateStr: string): string => {
 
 const CategoryUrlRow = ({
   url,
+  contexts,
   isRedeeming,
   onRedeem,
   canRedeem
 }: {
   url: CategoryUrl
+  /** Topic + category context slugs for this URL (from on-chain certs). */
+  contexts: string[]
   isRedeeming: boolean
   onRedeem: (termId: string, urlStr: string) => void
   /** False when viewing another user's profile — you can't redeem
@@ -82,6 +86,11 @@ const CategoryUrlRow = ({
               <span className="url-date">{formatDate(url.certifiedAt)}</span>
             )}
           </div>
+          {contexts.length > 0 && (
+            <div className="url-row-tags">
+              <ContextPills slugs={contexts} />
+            </div>
+          )}
         </div>
         {canRedeem && url.termId && (
           <button
@@ -310,12 +319,9 @@ const CategoryDetailView = ({
             wide
             singleColumn
           />
-          <FilterDropdown
-            label="Topics"
+          <TopicCategoryFilter
             value={topicFilter}
             onChange={setTopicFilter}
-            options={TOPIC_FILTER_OPTIONS}
-            wide
           />
         </div>
       )}
@@ -344,6 +350,10 @@ const CategoryDetailView = ({
             <CategoryUrlRow
               key={`${url.url}-${index}`}
               url={url}
+              contexts={
+                getCertificationForUrl(certifications, url.url)
+                  ?.interestContexts ?? []
+              }
               isRedeeming={redeemingUrls.has(url.url)}
               onRedeem={handleRedeem}
               canRedeem={!isReadOnly}

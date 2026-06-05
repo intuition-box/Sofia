@@ -1,26 +1,20 @@
 /**
- * FeedCard — proto-styled URL card for the Home drill view.
- *
- * Mirrors the visual structure of proto-explorer's `.feed-card.fc-*`
- * (urlCard.ts + shared.css `fc-*`): favicon + title + host, an actor
- * line for the certifier, a bottom row with topic tags + verb tags +
- * support/oppose thumbs. No shadcn Card — bare DOM + DS tokens.
- *
- * Sofia data lacks the proto's star count + item description, so the
- * star badge and `fc-desc` sections aren't rendered here.
+ * FeedCard — explore/home feed item. Thin mapper from `CircleItem` onto the
+ * shared <FeedCardView> (Claude Design "Feed Card" handoff): header
+ * (avatar + handle + time), preview media, title, and a footer with
+ * support/oppose thumbs + intent verb chips.
  */
-import type { MouseEvent } from 'react'
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { CircleItem } from '@/services/circleService'
-import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { INTENTION_COLORS } from '@/config/intentions'
+import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
-import { UrlPreview } from '@/components/UrlPreview'
-import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
-
-function topicMeta(slug: string) {
-  return SOFIA_TOPICS.find((t) => t.id === slug)
-}
+import FeedCardView, {
+  type FeedCardVerb,
+  type FeedCardTopic,
+} from '@/components/feed/FeedCardView'
+import ContextPicker from '@/components/ContextPicker'
+import { categoryPills } from '@/config/contextNodes'
+import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
   item: CircleItem
@@ -37,133 +31,77 @@ export default function FeedCard({
   isPrivate,
   onDeposit,
 }: FeedCardProps) {
-  const shownName = isPrivate ? 'Someone' : displayName
-
-  // Aggregate position counts + the viewer's own stake across every
-  // intention vault — same rule as CircleFeedCard. `userSupported` /
-  // `userOpposed` come from the feed payload (useSofiaFeed passes the
-  // viewer's wallets), so a thumb the user has staked on stays lit
-  // across reloads instead of resetting on every render.
+  // A like/dislike stakes the cert's "in context of <topic>" nested
+  // triples — NOT the per-verb vaults — so one click = one position on the
+  // topic context(s), no verb picker. Counts + the lit state aggregate
+  // across those context triples. No context tag → nothing to stake, so the
+  // thumbs render disabled (with a tooltip) rather than fanning out across
+  // every verb vault.
   let supports = 0
   let opposes = 0
   let userSupported = false
   let userOpposed = false
-  for (const v of Object.values(item.intentionVaults)) {
-    supports += v.supportCount
-    opposes += v.opposeCount
-    if (v.userSupported) userSupported = true
-    if (v.userOpposed) userOpposed = true
+  for (const c of item.contextTriples) {
+    supports += c.supportCount
+    opposes += c.opposeCount
+    if (c.userSupported) userSupported = true
+    if (c.userOpposed) userOpposed = true
   }
-  const canSupport = Object.values(item.intentionVaults).some((v) => v.termId)
-  const canOppose = Object.values(item.intentionVaults).some(
-    (v) => v.counterTermId,
-  )
+  const canSupport = item.contextTriples.some((c) => c.termId)
+  const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
-  const openUrl = () => {
-    if (!item.url) return
-    window.open(item.url, '_blank', 'noopener,noreferrer')
-  }
+  const verbs: FeedCardVerb[] = item.intentions.map((label) => ({
+    label,
+    color: INTENTION_COLORS[label],
+  }))
 
-  const handlePos = (side: 'support' | 'oppose') => (e: MouseEvent) => {
-    e.stopPropagation()
-    onDeposit?.(side, item)
-  }
+  const topics: FeedCardTopic[] = [
+    ...(item.topicContexts ?? []).map((slug) => {
+      const meta = SOFIA_TOPICS.find((t) => t.id === slug)
+      return { id: slug, label: meta?.label ?? slug, color: meta?.color }
+    }),
+    ...categoryPills(item.categorySlugs ?? []),
+  ]
+
+  // The "in context of" subject is a cert triple term_id; a cert can hold
+  // several (one per intention vault). Pick the first deterministically so the
+  // cart dedupe id is stable across re-renders.
+  const certTermId = Object.values(item.intentionVaults)
+    .map((v) => v.termId)
+    .filter(Boolean)
+    .sort()[0]
 
   return (
-    <article
-      className="fc fc-standard fc--has-header"
-      role="link"
-      tabIndex={0}
-      onClick={openUrl}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          openUrl()
-        }
+    <FeedCardView
+      handle={isPrivate ? 'Someone' : displayName}
+      avatarUrl={isPrivate ? undefined : avatar || undefined}
+      when={timeAgo(item.timestamp)}
+      title={item.title}
+      url={item.url}
+      domain={item.domain}
+      verbs={verbs}
+      topics={topics}
+      up={supports}
+      down={opposes}
+      userUp={userSupported}
+      userDown={userOpposed}
+      canUp={canSupport}
+      canDown={canOppose}
+      onVote={onDeposit ? (side) => onDeposit(side, item) : undefined}
+      onOpen={() => {
+        if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer')
       }}
-    >
-      <UrlPreview
-        variant="card"
-        url={item.url}
-        domain={item.domain}
-        className="fc-thumb"
-        alt={item.title || item.domain}
-      />
-      <div className="fc-head">
-        <div className="fc-title-wrap">
-          <div className="fc-title">{item.title}</div>
-          <div className="fc-host">{item.domain}</div>
-        </div>
-      </div>
-
-      <div className="fc-actor-line">
-        {!isPrivate && avatar && (
-          <img
-            src={avatar}
-            alt=""
-            className="fc-actor-avatar"
-            referrerPolicy="no-referrer"
-          />
-        )}
-        <span className="fc-actor-ens">{shownName}</span>
-        <span className="fc-actor-ago">{timeAgo(item.timestamp)}</span>
-      </div>
-
-      <div className="fc-bottom">
-        <div className="fc-tags">
-          {item.topicContexts?.slice(0, 2).map((slug) => {
-            const meta = topicMeta(slug)
-            return (
-              <TopicPill
-                key={slug}
-                topicId={slug}
-                color={meta?.color ?? 'var(--ds-muted)'}
-                label={meta?.label ?? slug}
-              />
-            )
-          })}
-          {item.intentions.map((intent) => (
-            <VerbPill key={intent} label={intent} color={INTENTION_COLORS[intent]} />
-          ))}
-        </div>
-
-        {onDeposit && (canSupport || canOppose) && (
-          <div className="fc-positions">
-            <button
-              type="button"
-              className={`fc-pos support${userSupported ? ' active' : ''}`}
-              data-count={supports}
-              aria-label={`Support (${supports})`}
-              aria-pressed={userSupported}
-              title={
-                userSupported
-                  ? `You supported · ${supports} total`
-                  : `${supports} support`
-              }
-              onClick={handlePos('support')}
-              disabled={!canSupport}
-            >
-              <ThumbsUp className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className={`fc-pos oppose${userOpposed ? ' active' : ''}`}
-              data-count={opposes}
-              aria-label={`Oppose (${opposes})`}
-              aria-pressed={userOpposed}
-              title={
-                userOpposed
-                  ? `You opposed · ${opposes} total`
-                  : `${opposes} oppose`
-              }
-              onClick={handlePos('oppose')}
-              disabled={!canOppose}
-            >
-              <ThumbsDown className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
-    </article>
+      addContextSlot={
+        <ContextPicker
+          certTermId={certTermId}
+          certTitle={item.title || item.domain}
+          certFavicon={item.favicon}
+          existingTopics={[
+            ...(item.topicContexts ?? []),
+            ...(item.categorySlugs ?? []),
+          ]}
+        />
+      }
+    />
   )
 }

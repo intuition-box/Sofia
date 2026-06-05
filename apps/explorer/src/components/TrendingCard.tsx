@@ -61,7 +61,9 @@ export default function TrendingCard({
           intention: 'Invest',
           intentionColor: '#10B981',
           favicon: platform.favicon,
+          kind: 'deposit',
         })
+        cart.open()
       }
     },
     [market, cart, platform],

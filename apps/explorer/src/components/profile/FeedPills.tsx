@@ -17,15 +17,21 @@ interface TopicPillProps {
   /** Topic color from the taxonomy — drives the fill + border. */
   color: string
   label: string
+  /** Render only the black glyph on the colored disc — drops the label.
+   *  Used where space is tight (e.g. the ProfileDrawer activity rows). */
+  iconOnly?: boolean
 }
 
 /** A topic rendered as a colored pill: black glyph on the topic color,
- *  border of the same color. */
-export function TopicPill({ topicId, color, label }: TopicPillProps) {
+ *  border of the same color. With `iconOnly`, collapses to a colored disc
+ *  carrying just the glyph (label still exposed via the tooltip/aria). */
+export function TopicPill({ topicId, color, label, iconOnly }: TopicPillProps) {
   return (
     <span
-      className="sf-topic-pill"
+      className={`sf-topic-pill${iconOnly ? ' sf-topic-pill--icon' : ''}`}
       style={{ ['--pill-color' as string]: color || 'var(--ds-accent)' }}
+      title={iconOnly ? label : undefined}
+      aria-label={iconOnly ? label : undefined}
     >
       <span
         className="material-symbols-outlined sf-topic-pill-glyph"
@@ -33,7 +39,7 @@ export function TopicPill({ topicId, color, label }: TopicPillProps) {
       >
         {getTopicIcon(topicId)}
       </span>
-      {label}
+      {iconOnly ? null : label}
     </span>
   )
 }

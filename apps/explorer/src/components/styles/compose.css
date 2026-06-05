@@ -206,14 +206,12 @@
   justify-content: space-between;
 }
 .who-card .who-name {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   line-height: 1.1;
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
+  color: var(--ds-ink);
 }
 .who-card .who-stack {
   display: flex;

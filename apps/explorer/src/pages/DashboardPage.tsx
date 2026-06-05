@@ -6,27 +6,31 @@ import type { CircleItem } from '../services/circleService'
 import { PLATFORM_CATALOG } from '../config/platformCatalog' // kept for getPlatformIdsForTopic helper
 import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Search, X, XCircle, Globe } from 'lucide-react'
+import { Search, X, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
 import { PageHero } from '@0xsofia/design-system'
-import PredicatePicker from '../components/PredicatePicker'
 import FeedCard from '../components/home/FeedCard'
 import { EmptyFeedState } from '../components/EmptyFeedState'
 import { FeedCardSkeleton } from '../components/FeedCardSkeleton'
 import InterestTilesGrid from '../components/home/InterestTilesGrid'
+import ScrollToTopButton from '../components/ScrollToTopButton'
 import type { InterestPreset } from '../components/home/useInterestTiles'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { INTENTION_PASTEL } from '@0xsofia/design-system'
 import { useCart } from '../hooks/useCart'
 import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
-import { INTENTION_COLORS } from '../config/intentions'
+import { SOFIA_TOPICS } from '../config/taxonomy'
+import { displayLabelToIntentionType } from '../config/intentions'
+import CircleVerbFilter, {
+  type VerbFilterId,
+} from '../components/circles/CircleVerbFilter'
 import '@/components/styles/pages.css'
 import '@/components/styles/home.css'
+import '@/components/styles/circles.css'
 
 /** Build a Set of platform IDs that belong to a given Sofia topic */
 function getPlatformIdsForTopic(topicId: string): Set<string> {
@@ -48,92 +52,73 @@ function itemMatchesTopic(item: CircleItem, platformIds: Set<string>): boolean {
   return false
 }
 
-const INTENT_FILTERS = [
-  'All',
-  'Trusted',
-  'Distrusted',
-  'Work',
-  'Learning',
-  'Fun',
-  'Inspiration',
-]
-
 export default function DashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [intentFilter, setIntentFilter] = useState('All')
-  // Drill preset — when set, the feed filters to this topic/verb and the
-  // tiles grid is hidden. `null` = tiles view.
-  const [drill, setDrill] = useState<InterestPreset | null>(null)
+  // Drill preset lives in the URL (?topic=<id> / ?verb=<id>) so it earns a
+  // history entry — browser Back returns to the Explore tiles instead of
+  // leaving the page — and the drill is shareable. `null` = tiles view.
+  const drillTopic = searchParams.get('topic')
+  const drillVerb = searchParams.get('verb')
+  const drill = useMemo<InterestPreset | null>(
+    () =>
+      drillTopic
+        ? { kind: 'topic', id: drillTopic }
+        : drillVerb
+          ? { kind: 'verb', id: drillVerb }
+          : null,
+    [drillTopic, drillVerb],
+  )
+  const setDrill = useCallback(
+    (preset: InterestPreset | null) => {
+      const next = new URLSearchParams(searchParams)
+      next.delete('topic')
+      next.delete('verb')
+      if (preset) next.set(preset.kind, preset.id)
+      setSearchParams(next)
+    },
+    [searchParams, setSearchParams],
+  )
   // Search query applied to the tiles view (filters topic + verb labels).
   const [tileQuery, setTileQuery] = useState('')
+  // Verb sub-filter shown inside a TOPIC drill — narrows the drilled feed to
+  // one intention. Resets whenever the drill target changes.
+  const [verbFilter, setVerbFilter] = useState<VerbFilterId>('all')
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Cart system
   const cart = useCart()
-  const [predicatePicker, setPredicatePicker] = useState<{
-    side: 'support' | 'oppose'
-    item: CircleItem
-  } | null>(null)
-
-  /** Called when user clicks Support/Oppose on a card */
+  /**
+   * Like / dislike — stakes the cert's "in context of <topic>" nested
+   * triples, NOT the per-verb vaults. One click adds a position on every
+   * topic context (support → `termId`, oppose → `counterTermId`), so there's
+   * no verb picker / modal. A cert with no topic context has nothing to
+   * stake here — the card renders its thumbs disabled, so this is a no-op.
+   */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated || !walletAddress) return
-      // Filter intentions that have vault IDs for this side
-      const available = item.intentions.filter((intent) => {
-        const vault = item.intentionVaults[intent]
-        if (!vault) return false
-        return side === 'support' ? !!vault.termId : !!vault.counterTermId
-      })
-
-      if (available.length === 0) return
-
-      if (available.length === 1) {
-        // Single intention → add directly to cart
-        const intent = available[0]
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
-        cart.addItem({
-          id: `${vault.termId}-${side}`,
-          side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
-          title: item.title,
-          favicon: item.favicon,
-          intentionColor: color,
-        })
-      } else {
-        // Multiple intentions → show predicate picker
-        setPredicatePicker({ side, item })
-      }
-    },
-    [authenticated, cart],
-  )
-
-  /** Called from PredicatePicker when user confirms selection */
-  const handlePredicateConfirm = useCallback(
-    (selectedIntentions: string[]) => {
-      if (!predicatePicker) return
-      const { side, item } = predicatePicker
-      const newItems: CartItem[] = selectedIntentions.map((intent) => {
-        const vault = item.intentionVaults[intent]
-        const color = INTENTION_COLORS[intent] ?? '#888'
+      const contexts = item.contextTriples.filter((c) =>
+        side === 'support' ? !!c.termId : !!c.counterTermId,
+      )
+      if (contexts.length === 0) return
+      const newItems: CartItem[] = contexts.map((c) => {
+        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
+        const termId = side === 'support' ? c.termId : c.counterTermId
         return {
-          id: `${vault.termId}-${side}`,
+          id: `${termId}-${side}`,
           side,
-          termId: side === 'support' ? vault.termId : vault.counterTermId,
-          intention: intent,
+          termId,
+          intention: meta?.label ?? c.topicSlug,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: color,
+          intentionColor: meta?.color ?? '#888',
         }
       })
       cart.addItems(newItems)
-      setPredicatePicker(null)
     },
-    [predicatePicker, cart],
+    [authenticated, walletAddress, cart],
   )
 
   const spaceParam = searchParams.get('space') || ''
@@ -167,8 +152,8 @@ export default function DashboardPage() {
 
   const { getDisplay, getAvatar } = useEnsNames(allCertifiers)
 
-  // Apply space filter then drill preset (from tile click) then intention
-  // filter. Drill narrows the items by topic slug or verb.
+  // Apply space filter then drill preset (from tile click). Drill narrows
+  // the items by topic slug or verb.
   const spaceFiltered = spacePlatformIds
     ? sourceItems.filter((item) => itemMatchesTopic(item, spacePlatformIds))
     : sourceItems
@@ -183,10 +168,20 @@ export default function DashboardPage() {
           ),
         )
 
-  const filteredItems =
-    intentFilter === 'All'
-      ? drillFiltered
-      : drillFiltered.filter((item) => item.intentions.includes(intentFilter))
+  // Reset the verb sub-filter when the drill target changes.
+  useEffect(() => {
+    setVerbFilter('all')
+  }, [drillTopic, drillVerb])
+
+  // Verb sub-filter only applies inside a topic drill.
+  const filteredItems = useMemo(() => {
+    if (drill?.kind !== 'topic' || verbFilter === 'all') return drillFiltered
+    return drillFiltered.filter((item) =>
+      item.intentions.some(
+        (l) => displayLabelToIntentionType(l) === verbFilter,
+      ),
+    )
+  }, [drillFiltered, drill, verbFilter])
 
   const { topics } = useTaxonomy()
   const drillLabel = useMemo(() => {
@@ -235,14 +230,32 @@ export default function DashboardPage() {
     ? spaceParam.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : ''
 
-  const pc = PAGE_COLORS['/feed']
+  const pc = PAGE_COLORS['/explore']
 
   return (
     <div>
+      {/* Breadcrumb — sits above the banner (matching the rest of the app).
+        The drill is a URL param, so the Explore crumb and the browser Back
+        button both return to the Explore tiles. */}
+      {drill && (
+        <nav className="dp-crumbs dp-crumbs--top" aria-label="Breadcrumb">
+          <button
+            type="button"
+            className="dp-crumb dp-crumb--link"
+            onClick={() => setDrill(null)}
+          >
+            Explore
+          </button>
+          <span className="dp-crumb-sep" aria-hidden="true">
+            /
+          </span>
+          <span className="dp-crumb dp-crumb--current">{drillLabel}</span>
+        </nav>
+      )}
       <PageHero
-        background={pc.color}
-        title={pc.title}
-        description={pc.subtitle}
+        background={drill ? (drillColor ?? pc.color) : pc.color}
+        title={drill ? drillLabel : pc.title}
+        description={drill ? '' : pc.subtitle}
         icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
@@ -250,15 +263,6 @@ export default function DashboardPage() {
           current source items (All or Circle). Click a tile to drill. */}
         {drill == null && !loading && (
           <>
-            <div className="hm-head">
-              <h2>
-                What are you <em>into</em> today?
-              </h2>
-              <p className="hm-sub">
-                Pick a topic to see URLs endorsed across every circle you
-                follow.
-              </p>
-            </div>
             <div className="hm-search">
               <Search
                 className="hm-search-icon h-3.5 w-3.5"
@@ -291,36 +295,6 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* Drill-down header — only when a preset is active. Inherits the
-          picked tile's colour so the drill visually echoes the tile. */}
-        {drill && (
-          <div
-            className="hm-drill-head"
-            style={
-              drillColor
-                ? { ['--drill-color' as string]: drillColor }
-                : undefined
-            }
-          >
-            <span className="hm-drill-kind">
-              {drill.kind === 'verb' ? 'Verb' : 'Topic'}
-            </span>
-            <span className="hm-drill-label">{drillLabel}</span>
-            <span className="hm-drill-count">
-              {filteredItems.length}{' '}
-              {filteredItems.length === 1 ? 'url' : 'urls'}
-            </span>
-            <button
-              type="button"
-              className="hm-drill-clear"
-              onClick={() => setDrill(null)}
-            >
-              <XCircle className="h-3.5 w-3.5" />
-              Clear filter
-            </button>
-          </div>
-        )}
-
         {/* Feed — drill view only. The tiles masonry replaces the feed
           by default; clicking a tile sets `drill` and reveals this. */}
         {drill && (
@@ -337,34 +311,30 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Intention filters — hidden when drilling on a verb (the drill
-          preset is already narrowing by intent, so the pills would
-          either duplicate or contradict it). */}
-            {drill?.kind !== 'verb' && (
-              <ScrollArea className="w-full mb-2">
-                <div className="flex gap-2 pb-2">
-                  {INTENT_FILTERS.map((intent) => {
-                    const isActive = intentFilter === intent
-                    const color = INTENTION_COLORS[intent]
-                    return (
-                      <button
-                        key={intent}
-                        className="feed-intent-pill"
-                        data-active={isActive || undefined}
-                        style={
-                          color
-                            ? ({ '--pill-color': color } as React.CSSProperties)
-                            : undefined
-                        }
-                        onClick={() => setIntentFilter(intent)}
-                      >
-                        {intent}
-                      </button>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-            )}
+            {/* URL count + verb filter on one row. The count sits left, the
+                intention pills to its right. Shown for every drill: a topic
+                drill uses the bar as a client-side sub-filter; a verb drill
+                uses it to re-drill to another verb (All → back to tiles). */}
+            <div className="dp-filter-row">
+              <span className="dp-url-count">
+                {filteredItems.length} url
+                {filteredItems.length === 1 ? '' : 's'}
+              </span>
+              <CircleVerbFilter
+                active={
+                  drill.kind === 'verb'
+                    ? (drill.id as VerbFilterId)
+                    : verbFilter
+                }
+                onChange={(id) => {
+                  if (drill.kind === 'verb') {
+                    setDrill(id === 'all' ? null : { kind: 'verb', id })
+                  } else {
+                    setVerbFilter(id)
+                  }
+                }}
+              />
+            </div>
 
             {/* Loading */}
             {loading && (
@@ -426,18 +396,10 @@ export default function DashboardPage() {
             {loadingMore && <SofiaLoader size={40} />}
           </div>
         )}
-
-        {/* Predicate picker (multi-intention cards) */}
-        {predicatePicker && (
-          <PredicatePicker
-            isOpen
-            side={predicatePicker.side}
-            item={predicatePicker.item}
-            onConfirm={handlePredicateConfirm}
-            onClose={() => setPredicatePicker(null)}
-          />
-        )}
       </div>
+
+      {/* Floating back-to-top — appears once the feed is scrolled. */}
+      <ScrollToTopButton />
     </div>
   )
 }

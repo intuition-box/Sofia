@@ -423,6 +423,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Let the text column shrink inside the flex row so a long error wraps
+     instead of forcing horizontal overflow past the red box. */
+  min-width: 0;
 }
 
 .modal-error-title {
@@ -436,8 +439,10 @@
   color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
   margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  /* `anywhere` breaks unbroken strings (e.g. a hex calldata dump) that
+     `break-word` leaves intact; `pre-line` keeps our \n line breaks. */
+  overflow-wrap: anywhere;
+  white-space: pre-line;
   max-width: 100%;
 }
 
@@ -1361,6 +1366,60 @@
   margin: 0;
   color: var(--ds-ink);
   white-space: nowrap;
+}
+/* Confirmation copy for a no-reward batch (rare non-vote fallback). */
+.rc-empty-note {
+  margin: 12px 0 22px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ds-muted, rgba(255, 255, 255, 0.7));
+  max-width: 360px;
+}
+
+/* ── Amplify (vote-only) confirmation ─────────────────────────────────── */
+.rc-amp {
+  align-items: flex-start;
+}
+.rc-amp-hero {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 4px 0 18px;
+  color: var(--ds-on-accent, #0a0a0a);
+  background: var(--ds-accent);
+  box-shadow:
+    0 14px 32px -10px color-mix(in srgb, var(--ds-accent) 65%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--ds-accent) 14%, transparent);
+}
+.rc-amp-hero svg {
+  width: 28px;
+  height: 28px;
+}
+.rc-amp-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 6px 0 18px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.25);
+}
+.rc-amp-stat-v {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-accent);
+}
+.rc-amp-stat-k {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
 }
 .rc-sub {
   font-family: var(--ds-font-display);
@@ -2510,6 +2569,41 @@
   color: var(--tag-color, var(--ds-accent));
 }
 
+/* Within the Amplify modal, verb pills match the explorer's WeightModal
+   VerbPill — outlined (intent-color text + border, transparent fill) rather
+   than the filled feed-card VerbTag. `currentColor` ties the border to the
+   per-intent text color so each intent needs only a single color rule. */
+.amp .b3-row-tags .fc-verb-tag {
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: 4px 10px;
+  color: var(--ds-accent);
+}
+.amp .b3-row-tags .fc-verb-tag.trusted {
+  color: var(--trusted);
+}
+.amp .b3-row-tags .fc-verb-tag.distrusted {
+  color: var(--distrusted);
+}
+.amp .b3-row-tags .fc-verb-tag.work {
+  color: var(--work);
+}
+.amp .b3-row-tags .fc-verb-tag.learning {
+  color: var(--learning);
+}
+.amp .b3-row-tags .fc-verb-tag.fun {
+  color: var(--fun);
+}
+.amp .b3-row-tags .fc-verb-tag.inspiration {
+  color: var(--inspiration);
+}
+.amp .b3-row-tags .fc-verb-tag.buying {
+  color: var(--buying);
+}
+.amp .b3-row-tags .fc-verb-tag.music {
+  color: var(--music);
+}
+
 /* Ticket (foreground, parchment) */
 .amp .b3-ticket {
   position: relative;
@@ -2677,7 +2771,7 @@
   display: grid;
   grid-template-columns: auto auto 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
   padding: 14px 14px 14px 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -2691,7 +2785,7 @@
 .amp .b3-row.is-on {
   opacity: 1;
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 170, 138, 0.55);
+  border-color: rgba(255, 253, 252, 0.226);
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
 }
 .amp .b3-row.is-on::before {
@@ -2738,9 +2832,7 @@
 }
 .amp .b3-row-meta {
   min-width: 0;
-  /* Bottom-align with .b3-row-right so the verb/topic tags share a
-     baseline with the light/medium/strong tier pills. */
-  align-self: end;
+  align-self: center;
 }
 .amp .b3-row-kicker {
   font-family: "JetBrains Mono", monospace;
@@ -2775,21 +2867,16 @@
   text-overflow: ellipsis;
 }
 .amp .b3-row-tags {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 5px;
-  margin-top: 7px;
+  gap: 6px;
   flex-wrap: wrap;
-}
-.amp .b3-row-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  align-self: end;
 }
 .amp .b3-row-trust {
   display: inline-flex;
   align-items: baseline;
+  justify-self: end;
+  align-self: center;
   gap: 4px;
   font-family: var(--ds-font-display);
   font-weight: 800;
@@ -2809,6 +2896,7 @@
   color: rgba(255, 255, 255, 0.4);
 }
 .amp .b3-tiers {
+  grid-column: 1 / -1;
   display: flex;
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 6px;
@@ -2816,10 +2904,11 @@
   background: rgba(255, 255, 255, 0.03);
 }
 .amp .b3-tier {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 9px;
+  padding: 7px 9px;
   min-width: 0;
   background: transparent;
   border: 0;
@@ -3113,17 +3202,6 @@
   color: rgba(255, 255, 255, 0.7);
   min-width: 30px;
 }
-.amp .b3-dest-scale {
-  display: flex;
-  justify-content: space-between;
-  padding: 2px 1px 0;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.38);
-}
-
 /* Loading state — lives inside the Amplify ticket (no fallback to the
    legacy dark modal-body during a transaction). */
 .amp .b3-loading {

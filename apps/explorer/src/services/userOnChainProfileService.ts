@@ -23,7 +23,8 @@ import {
   useGetUserContextAdditionsQuery,
   type GetUserCertsAlltimeQuery,
 } from '@0xsofia/graphql'
-import { TOPIC_TERM_IDS, ATOM_ID_TO_TOPIC } from '@/config/atomIds'
+import { CONTEXT_TERM_IDS } from '@/config/atomIds'
+import { resolveContextAtom } from '@/config/contextNodes'
 
 type RawCertTriple = NonNullable<GetUserCertsAlltimeQuery['triples']>[number]
 
@@ -66,10 +67,20 @@ export interface UserCert {
   userShares: bigint
   /** Earliest position timestamp the user has on this cert. */
   certifiedAt: string
-  /** Topic atom term_ids resolved via "in context of" nested triples. */
+  /** Context atom term_ids resolved via "in context of" nested triples
+   *  (topic OR category atoms). */
   topicAtomIds: string[]
-  /** Topic slugs derived from `topicAtomIds`. */
+  /** Rolled-up topic slugs — a category context contributes its parent
+   *  topic, so this drives all topic-keyed scoring/display unchanged. */
   topicSlugs: string[]
+  /** Precise context slugs (topic slugs for topic tags, category slugs for
+   *  category tags) — for granular display and the picker's applied set. */
+  contextSlugs: string[]
+  /** Topic context triples on this cert — the vaults a like (`termId`) /
+   *  dislike (`counterTermId`) actually stakes. A like must back the topic
+   *  context, NOT the cert vault (the verb), so the public-profile vote
+   *  mirrors the circle feed (CircleItem.contextTriples). */
+  contextTriples: { topicSlug: string; termId: string; counterTermId: string }[]
 }
 
 /**
@@ -81,12 +92,26 @@ export interface UserCert {
 export interface ContextAddition {
   /** Cert triple term_id this context was attached to. */
   certTermId: string
-  /** Topic atom term_id (the tag itself). */
+  /** The context triple's OWN support vault term_id — the vault a "like"
+   *  stakes. Reputation reads the stakers (likers) here, per topic. */
+  contextTermId: string
+  /** The context triple's oppose vault term_id (a "dislike"). */
+  contextCounterTermId: string
+  /** Context atom term_id (the tag itself — a topic or category atom). */
   topicAtomId: string
-  /** Topic slug resolved via `ATOM_ID_TO_TOPIC`, or `""` if unknown. */
+  /** Rolled-up topic slug (parent topic for a category tag), or `""`. */
   topicSlug: string
+  /** Precise context slug (topic or category), or `""` if unknown. */
+  contextSlug: string
   /** ISO timestamp of the user's first share on the nested triple. */
   addedAt: string
+  /** The tagged cert's object URL — carried from the `subject.term.triple`
+   *  join so a context added to ANOTHER user's cert (not in the viewer's
+   *  own `certs`) can still render a row. `""` when the indexer returns
+   *  no url. */
+  objectUrl: string
+  /** The tagged cert's object label / domain. `""` when unknown. */
+  objectLabel: string
 }
 
 export interface UserOnChainProfile {
@@ -128,12 +153,12 @@ export async function fetchUserOnChainProfile(
     rawTriples.push(...pageRows)
     if (pageRows.length < PAGE_SIZE) break
   }
-  if (rawTriples.length === 0) return EMPTY_PROFILE
-
   // Step 2 — resolve "in context of" nested triples for every cert, and
-  // in parallel the subset the user actually staked on (with timestamps,
-  // so the ProfileDrawer activity feed can render "Tagged X with Y"
-  // events alongside the regular certs).
+  // in parallel the subset the user actually staked on (with timestamps).
+  //
+  // GetUserContextAdditions is NOT gated on the user having their own certs:
+  // the user can tag someone else's cert, and that addition should surface
+  // in Last Activity even if rawTriples is empty. Run it unconditionally.
   const certTermIds = rawTriples
     .map((t) => t.term_id)
     .filter((x): x is string => !!x)
@@ -141,20 +166,24 @@ export async function fetchUserOnChainProfile(
   const topicContextsByTerm = new Map<string, string[]>()
   const contextAdditions: ContextAddition[] = []
 
-  if (certTermIds.length > 0) {
-    const [linkData, additionData] = await Promise.all([
-      useGetCertTopicLinksQuery.fetcher({
-        certTermIds,
-        topicAtomIds: TOPIC_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-      useGetUserContextAdditionsQuery.fetcher({
-        userAddresses,
-        certTermIds,
-        topicAtomIds: TOPIC_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-    ])
+  // Fetch additions unconditionally — scoped only by the user's positions,
+  // not by their own certs. Fetch cert topic links only if they have certs.
+  const [linkData, additionData] = await Promise.all([
+    certTermIds.length > 0
+      ? useGetCertTopicLinksQuery.fetcher({
+          certTermIds,
+          topicAtomIds: CONTEXT_TERM_IDS,
+          limit: TOPIC_LINKS_LIMIT,
+        })()
+      : Promise.resolve({ triples: [] }),
+    useGetUserContextAdditionsQuery.fetcher({
+      userAddresses,
+      topicAtomIds: CONTEXT_TERM_IDS,
+      limit: TOPIC_LINKS_LIMIT,
+    })(),
+  ])
+
+  {
 
     for (const row of linkData.triples ?? []) {
       const certTermId = row.subject_id
@@ -170,25 +199,64 @@ export async function fetchUserOnChainProfile(
       const topicAtomId = row.object_id
       const addedAt = row.positions?.[0]?.created_at ?? ''
       if (!certTermId || !topicAtomId || !addedAt) continue
+      const node = resolveContextAtom(topicAtomId)
+      const certObject = row.subject?.term?.triple?.object
       contextAdditions.push({
         certTermId,
+        contextTermId: row.term_id ?? '',
+        contextCounterTermId: row.counter_term_id ?? '',
         topicAtomId,
-        topicSlug: ATOM_ID_TO_TOPIC.get(topicAtomId) ?? '',
+        topicSlug: node?.topicSlug ?? '',
+        contextSlug: node?.slug ?? '',
         addedAt: String(addedAt),
+        objectUrl: certObject?.value?.thing?.url ?? '',
+        objectLabel: certObject?.label ?? '',
       })
     }
     contextAdditions.sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1))
+  }
+
+  // If the user has no certs of their own, return now — we still captured
+  // any contextAdditions above (tags on others' certs).
+  if (rawTriples.length === 0) {
+    return { certs: [], topicContextsByTerm, contextAdditions }
+  }
+
+  // Index the user's context additions by cert so each UserCert can carry the
+  // topic-context triple term_ids — the vaults a like/dislike stakes. Deduped
+  // by topicSlug (one stake per topic, not per nested duplicate).
+  const contextTriplesByCert = new Map<
+    string,
+    { topicSlug: string; termId: string; counterTermId: string }[]
+  >()
+  for (const ca of contextAdditions) {
+    if (!ca.contextTermId || !ca.topicSlug) continue
+    const arr = contextTriplesByCert.get(ca.certTermId) ?? []
+    if (arr.some((c) => c.topicSlug === ca.topicSlug)) continue
+    arr.push({
+      topicSlug: ca.topicSlug,
+      termId: ca.contextTermId,
+      counterTermId: ca.contextCounterTermId,
+    })
+    contextTriplesByCert.set(ca.certTermId, arr)
   }
 
   // Normalise into UserCert.
   const certs: UserCert[] = rawTriples.map((t) => {
     const termId = t.term_id ?? ''
     const topicAtomIds = topicContextsByTerm.get(termId) ?? []
-    const topicSlugs: string[] = []
+    // Roll category contexts up to their parent topic for `topicSlugs`
+    // (drives scoring/donut/feed), while keeping the precise slug in
+    // `contextSlugs` for granular display + the picker's applied set.
+    const topicSet = new Set<string>()
+    const contextSlugs: string[] = []
     for (const id of topicAtomIds) {
-      const slug = ATOM_ID_TO_TOPIC.get(id)
-      if (slug) topicSlugs.push(slug)
+      const node = resolveContextAtom(id)
+      if (!node) continue
+      contextSlugs.push(node.slug)
+      if (node.topicSlug) topicSet.add(node.topicSlug)
     }
+    const topicSlugs = [...topicSet]
     let userShares = 0n
     let certifiedAt = ''
     for (const p of t.positions ?? []) {
@@ -213,6 +281,8 @@ export async function fetchUserOnChainProfile(
       certifiedAt,
       topicAtomIds,
       topicSlugs,
+      contextSlugs,
+      contextTriples: contextTriplesByCert.get(termId) ?? [],
     }
   })
 
