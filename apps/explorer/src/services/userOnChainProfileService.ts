@@ -148,12 +148,12 @@ export async function fetchUserOnChainProfile(
     rawTriples.push(...pageRows)
     if (pageRows.length < PAGE_SIZE) break
   }
-  if (rawTriples.length === 0) return EMPTY_PROFILE
-
   // Step 2 — resolve "in context of" nested triples for every cert, and
-  // in parallel the subset the user actually staked on (with timestamps,
-  // so the ProfileDrawer activity feed can render "Tagged X with Y"
-  // events alongside the regular certs).
+  // in parallel the subset the user actually staked on (with timestamps).
+  //
+  // GetUserContextAdditions is NOT gated on the user having their own certs:
+  // the user can tag someone else's cert, and that addition should surface
+  // in Last Activity even if rawTriples is empty. Run it unconditionally.
   const certTermIds = rawTriples
     .map((t) => t.term_id)
     .filter((x): x is string => !!x)
@@ -161,23 +161,24 @@ export async function fetchUserOnChainProfile(
   const topicContextsByTerm = new Map<string, string[]>()
   const contextAdditions: ContextAddition[] = []
 
-  if (certTermIds.length > 0) {
-    const [linkData, additionData] = await Promise.all([
-      useGetCertTopicLinksQuery.fetcher({
-        certTermIds,
-        topicAtomIds: CONTEXT_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-      // Not scoped to the user's own certs: the position filter is what
-      // identifies "the user tagged this", so a context staked on someone
-      // else's cert surfaces here too. The cert's page info rides along on
-      // each row (`subject.term.triple.object`) so the drawer can render it.
-      useGetUserContextAdditionsQuery.fetcher({
-        userAddresses,
-        topicAtomIds: CONTEXT_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-    ])
+  // Fetch additions unconditionally — scoped only by the user's positions,
+  // not by their own certs. Fetch cert topic links only if they have certs.
+  const [linkData, additionData] = await Promise.all([
+    certTermIds.length > 0
+      ? useGetCertTopicLinksQuery.fetcher({
+          certTermIds,
+          topicAtomIds: CONTEXT_TERM_IDS,
+          limit: TOPIC_LINKS_LIMIT,
+        })()
+      : Promise.resolve({ triples: [] }),
+    useGetUserContextAdditionsQuery.fetcher({
+      userAddresses,
+      topicAtomIds: CONTEXT_TERM_IDS,
+      limit: TOPIC_LINKS_LIMIT,
+    })(),
+  ])
+
+  {
 
     for (const row of linkData.triples ?? []) {
       const certTermId = row.subject_id
@@ -208,6 +209,12 @@ export async function fetchUserOnChainProfile(
       })
     }
     contextAdditions.sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1))
+  }
+
+  // If the user has no certs of their own, return now — we still captured
+  // any contextAdditions above (tags on others' certs).
+  if (rawTriples.length === 0) {
+    return { certs: [], topicContextsByTerm, contextAdditions }
   }
 
   // Normalise into UserCert.
