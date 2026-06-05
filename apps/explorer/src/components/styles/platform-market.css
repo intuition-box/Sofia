@@ -313,14 +313,11 @@
   gap: 8px;
 }
 .pm-dex-label {
-  font-family: var(--ds-font-display);
-  font-size: 16px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
