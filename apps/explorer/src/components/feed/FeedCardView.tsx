@@ -327,15 +327,18 @@ export default function FeedCardView({
         onKeyDown={handleKey}
       >
         <div className="fc-xs-row">
-          {/* Thumbnail + optional badge overlay */}
-          <div className="fc-xs-thumb">
-            <UrlPreview
-              variant="card"
-              url={url}
-              domain={domain}
-              className="fc-xs-thumb-img"
-              alt={title || domain}
-            />
+          {/* Thumbnail wrapper — overflow:visible so the badge can overflow
+              the clipped thumb without being cut off. */}
+          <div className="fc-xs-thumb-wrap">
+            <div className="fc-xs-thumb">
+              <UrlPreview
+                variant="card"
+                url={url}
+                domain={domain}
+                className="fc-xs-thumb-img"
+                alt={title || domain}
+              />
+            </div>
             {badgeSlot && (
               <span className="fc-xs-badge">{badgeSlot}</span>
             )}
@@ -343,24 +346,28 @@ export default function FeedCardView({
           {/* Main */}
           <div className="fc-xs-main">
             <div className="fc-xs-head">
-              <span className="fc-avatar fc-avatar--xs" aria-hidden="true">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt=""
-                    className="fc-avatar-img"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.visibility = 'hidden'
-                    }}
-                  />
-                ) : (
-                  initials
-                )}
-              </span>
+              {/* Only render the avatar when there's something to show —
+                  avoids a blank gradient disc when handle is empty. */}
+              {(avatarUrl || handle) && (
+                <span className="fc-avatar fc-avatar--xs" aria-hidden="true">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      className="fc-avatar-img"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+                      }}
+                    />
+                  ) : (
+                    initials
+                  )}
+                </span>
+              )}
               <span className="fc-xs-handle">
                 {handleSlot ?? handle}
-                <span className="fc-xs-sep">·</span>
+                {(handle || handleSlot) && <span className="fc-xs-sep">·</span>}
                 {when}
               </span>
               {isOwner && onDelete && (

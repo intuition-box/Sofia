@@ -948,13 +948,19 @@
   gap: 12px;
   padding: 12px 13px;
 }
-.fc-xs-thumb {
+/* Wrapper: overflow:visible so the badge can poke out of the clipped thumb */
+.fc-xs-thumb-wrap {
   position: relative;
   width: 56px;
   height: 56px;
+  flex-shrink: 0;
+}
+.fc-xs-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
   border-radius: 10px;
   overflow: hidden;
-  flex-shrink: 0;
   background: var(--ds-bg-subtle);
 }
 .fc-xs-thumb-img {
@@ -1031,12 +1037,11 @@
 .fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
 .fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
 
-/* Badge overlay on the xs thumbnail — topic icon disc or support/oppose mark.
-   Positioned bottom-right so it overlaps the favicon corner, matching the
-   pd-la-badge look from ProfileDrawer. */
+/* Badge overlay — sits on the fc-xs-thumb-wrap (overflow:visible) so it
+   is never clipped by the thumb's overflow:hidden. */
 .fc-xs-badge {
   position: absolute;
   bottom: -5px;
   right: -5px;
-  z-index: 2;
+  z-index: 3;
 }

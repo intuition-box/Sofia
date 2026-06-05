@@ -251,7 +251,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                     <FeedCardView
                       key={a.id}
                       size="xs"
-                      handle=""
+                      handle={displayName || shortAddr}
+                      avatarUrl={avatar || undefined}
                       when={timeAgo(a.timestamp)}
                       title={a.title}
                       url={a.url || undefined}
