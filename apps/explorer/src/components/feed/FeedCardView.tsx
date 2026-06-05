@@ -434,7 +434,7 @@ export default function FeedCardView({
             <div className="fc-when">{when}</div>
           </div>
           {isOwner && onDelete && (
-            <OwnerMenu onDelete={() => setRemoved(true)} />
+            <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
           )}
         </div>
       </header>
