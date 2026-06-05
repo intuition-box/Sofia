@@ -202,16 +202,21 @@ query GetCertTopicLinks(
 # Drives "Tagged X with topic Y" rows in the ProfileDrawer activity feed.
 # `positions` is filtered+ordered+limited to the user's first share so
 # the row count stays bounded.
+#
+# NB: this is intentionally NOT scoped to the user's own certs. The
+# `positions` filter (account holds shares on the context triple) is what
+# identifies "the user did this", so the row also surfaces when the user
+# staked a context on SOMEONE ELSE'S cert. The subject (cert) triple's
+# `object` page info is selected so the drawer can render that row without
+# the viewer owning the cert.
 query GetUserContextAdditions(
   $userAddresses: [String!]!
-  $certTermIds: [String!]!
   $topicAtomIds: [String!]!
   $limit: Int = 50000
 ) {
   triples(
     where: {
       predicate: { label: { _eq: "in context of" } }
-      subject_id: { _in: $certTermIds }
       object_id: { _in: $topicAtomIds }
       positions: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
     }
@@ -223,6 +228,26 @@ query GetUserContextAdditions(
     counter_term_id
     subject_id
     object_id
+    # Subject = the atom that IS the cert triple this context hangs off.
+    # `subject.term.triple` resolves that cert triple; carry its `object`
+    # page info (mirrors GetUserCertsAlltime's `object` selection) so the
+    # row renders even when the viewer doesn't own the cert.
+    subject {
+      term {
+        triple {
+          object {
+            term_id
+            label
+            value {
+              thing {
+                url
+                name
+              }
+            }
+          }
+        }
+      }
+    }
     positions(
       where: { account_id: { _in: $userAddresses }, shares: { _gt: "0" } }
       order_by: { created_at: asc }
