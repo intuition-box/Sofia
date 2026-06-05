@@ -1030,3 +1030,13 @@
 }
 .fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
 .fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
+
+/* Badge overlay on the xs thumbnail — topic icon disc or support/oppose mark.
+   Positioned bottom-right so it overlaps the favicon corner, matching the
+   pd-la-badge look from ProfileDrawer. */
+.fc-xs-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  z-index: 2;
+}

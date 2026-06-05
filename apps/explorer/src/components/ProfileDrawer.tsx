@@ -15,6 +15,8 @@ import { INTENTION_COLORS } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
+import FeedCardView from '@/components/feed/FeedCardView'
+import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
 interface ProfileDrawerProps {
@@ -212,84 +214,57 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           </div>
 
-          {/* Last Activity — favicon + topic/support badge overlay. */}
+          {/* Last Activity — xs feed cards with topic/support badge overlay. */}
           {lastActivity.length > 0 && (
             <div className="pd-section">
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
                   const isOppose = a.isOppose
-                  const root = a.domain
-                  return (
-                    <a
-                      key={a.id}
-                      className="pd-la-row"
-                      href={a.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  const badge = a.topic ? (
+                    <span
+                      className="pd-la-badge pd-la-badge--topic"
+                      style={{ ['--pill-color' as string]: a.topic.color || 'var(--ds-accent)' }}
+                      title={a.topic.label}
+                      aria-label={a.topic.label}
                     >
-                      <span className="pd-la-anchor">
-                        <span
-                          className="favicon"
-                          style={{ ['--fav-size' as string]: '32px' }}
-                        >
-                          {a.favicon ? (
-                            <img
-                              src={a.favicon}
-                              alt=""
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).style.display =
-                                  'none'
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                        {a.topic ? (
-                          <span
-                            className="pd-la-badge pd-la-badge--topic"
-                            style={{
-                              ['--pill-color' as string]:
-                                a.topic.color || 'var(--ds-accent)',
-                            }}
-                            title={a.topic.label}
-                            aria-label={a.topic.label}
-                          >
-                            <span
-                              className="material-symbols-outlined sf-topic-pill-glyph"
-                              aria-hidden="true"
-                            >
-                              {getTopicIcon(a.topic.id)}
-                            </span>
-                          </span>
-                        ) : (
-                          <span
-                            className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
-                            aria-hidden="true"
-                          >
-                            {isOppose ? (
-                              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 6 6 18" /><path d="M6 6l12 12" />
-                              </svg>
-                            ) : (
-                              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </span>
-                        )}
+                      <span className="material-symbols-outlined sf-topic-pill-glyph" aria-hidden="true">
+                        {getTopicIcon(a.topic.id)}
                       </span>
-                      <span className="pd-la-text">
-                        <span className="pd-la-title">
-                          {a.verb ? (
-                            <VerbPill label={a.verb.label} color={a.verb.color} />
-                          ) : null}
-                          <strong>{a.title}</strong>
-                        </span>
-                        <span className="pd-la-sub">
-                          {root}{root ? ' · ' : ''}{timeAgo(a.timestamp)}
-                        </span>
-                      </span>
-                    </a>
+                    </span>
+                  ) : (
+                    <span className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`} aria-hidden="true">
+                      {isOppose ? (
+                        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 6 6 18" /><path d="M6 6l12 12" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </span>
+                  )
+                  const verbs = a.verb ? [{ label: a.verb.label, color: a.verb.color }] : []
+                  const topics = a.topic ? [{ id: a.topic.id, label: a.topic.label, color: a.topic.color }] : []
+                  return (
+                    <FeedCardView
+                      key={a.id}
+                      size="xs"
+                      handle=""
+                      when={timeAgo(a.timestamp)}
+                      title={a.title}
+                      url={a.url || undefined}
+                      domain={a.domain || undefined}
+                      verbs={verbs}
+                      topics={topics}
+                      up={0}
+                      down={0}
+                      badgeSlot={badge}
+                      onOpen={() => {
+                        if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer')
+                      }}
+                    />
                   )
                 })}
               </div>

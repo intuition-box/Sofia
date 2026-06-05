@@ -222,6 +222,9 @@ interface FeedCardViewProps {
   /** When true, renders the owner ⋯ menu with a Delete action.
    *  onDelete fires when the user confirms deletion. */
   isOwner?: boolean
+  /** Optional badge overlay rendered in the top-right corner of the xs
+   *  thumbnail (e.g. a topic icon disc or support/oppose check). */
+  badgeSlot?: ReactNode
   onDelete?: () => void
 }
 
@@ -248,6 +251,7 @@ export default function FeedCardView({
   size = 'lg',
   isOwner = false,
   onDelete,
+  badgeSlot,
 }: FeedCardViewProps) {
   const [removed, setRemoved] = useState(false)
   const initials = (handle || '?').replace(/^0x/, '').slice(0, 2).toUpperCase()
@@ -323,7 +327,7 @@ export default function FeedCardView({
         onKeyDown={handleKey}
       >
         <div className="fc-xs-row">
-          {/* Thumbnail */}
+          {/* Thumbnail + optional badge overlay */}
           <div className="fc-xs-thumb">
             <UrlPreview
               variant="card"
@@ -332,6 +336,9 @@ export default function FeedCardView({
               className="fc-xs-thumb-img"
               alt={title || domain}
             />
+            {badgeSlot && (
+              <span className="fc-xs-badge">{badgeSlot}</span>
+            )}
           </div>
           {/* Main */}
           <div className="fc-xs-main">
