@@ -79,6 +79,11 @@ interface WeightModalProps {
   successContent?: React.ReactNode
   /** Called when user removes a triplet from the batch (receives triplet id) */
   onRemoveTriplet?: (tripletId: string) => void
+  /**
+   * When set, the basket shows a "Clear all" button and unchecking the last
+   * remaining mark empties the whole cart. Cart-only (CartDrawer wires it).
+   */
+  onClearCart?: () => void
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -104,6 +109,7 @@ const WeightModal = ({
   positionBoard,
   successContent,
   onRemoveTriplet,
+  onClearCart,
   onClose,
   onSubmit
 }: WeightModalProps) => {
@@ -627,6 +633,7 @@ const WeightModal = ({
             removedIndices={removedIndices}
             setRemovedIndices={setRemovedIndices}
             onRemoveTriplet={onRemoveTriplet}
+            onClearCart={onClearCart}
             selectedWeights={selectedWeights}
             activeCount={activeCount}
             isProcessing={isProcessing}

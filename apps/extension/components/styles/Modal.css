@@ -2761,6 +2761,39 @@
 }
 
 /* Basket rows */
+.amp .b3-basket-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.amp .b3-basket-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.amp .b3-basket-clear {
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.amp .b3-basket-clear:hover:not(:disabled) {
+  color: #ff6b6b;
+}
+.amp .b3-basket-clear:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 .amp .b3-basket {
   display: flex;
   flex-direction: column;

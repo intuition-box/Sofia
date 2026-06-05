@@ -31,6 +31,7 @@ interface WeightAmplifyTicketProps {
   removedIndices: Set<number>
   setRemovedIndices: Dispatch<SetStateAction<Set<number>>>
   onRemoveTriplet?: (tripletId: string) => void
+  onClearCart?: () => void
   selectedWeights: WeightOptionId[]
   activeCount: number
   isProcessing: boolean
@@ -59,6 +60,7 @@ export default function WeightAmplifyTicket({
   removedIndices,
   setRemovedIndices,
   onRemoveTriplet,
+  onClearCart,
   selectedWeights,
   activeCount,
   isProcessing,
@@ -81,13 +83,21 @@ export default function WeightAmplifyTicket({
   onClose,
   onSubmit
 }: WeightAmplifyTicketProps) {
-  const lockedSingle = triplets.length <= 1
-  const canToggleOff = activeCount > 1
+  // In cart mode (onClearCart wired) the basket can be emptied entirely:
+  // every mark is uncheckable and unchecking the last one clears the cart.
+  // Elsewhere a lone mark stays locked on and the last active mark can't go.
+  const clearable = !!onClearCart
+  const lockedSingle = triplets.length <= 1 && !clearable
+  const canToggleOff = activeCount > 1 || clearable
 
   const toggleRow = (index: number, triplet: ModalTriplet, on: boolean) => {
     if (lockedSingle || isProcessing) return
     if (on) {
-      if (!canToggleOff) return
+      // Unchecking the last remaining mark empties the whole cart and closes.
+      if (activeCount <= 1) {
+        if (clearable) onClearCart?.()
+        return
+      }
       setRemovedIndices((prev) => new Set(prev).add(index))
       onRemoveTriplet?.(triplet.id)
     } else {
@@ -144,6 +154,21 @@ export default function WeightAmplifyTicket({
                   All · {o.label}
                 </button>
               ))}
+            </div>
+          )}
+
+          {clearable && (
+            <div className="b3-basket-head">
+              <span className="b3-basket-count">
+                {activeCount} {activeCount === 1 ? "mark" : "marks"}
+              </span>
+              <button
+                className="b3-basket-clear"
+                type="button"
+                disabled={isProcessing}
+                onClick={onClearCart}>
+                Clear all
+              </button>
             </div>
           )}
 

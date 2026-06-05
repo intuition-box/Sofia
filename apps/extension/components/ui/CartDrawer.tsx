@@ -36,7 +36,7 @@ interface CartDrawerProps {
  * reward handoff (BatchRewardContent) is stitched in on success.
  */
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-  const { items, atomsToCreate, removeFromCart } = useCart()
+  const { items, atomsToCreate, removeFromCart, clearCart } = useCart()
   const { submitCart, submitting, result, error, reset, clearSubmittedItems } =
     useCartSubmit()
   const { navigateTo, setMyProfileIntent } = useRouter()
@@ -62,6 +62,15 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       submittedItemsRef.current = []
     }
     reset()
+    onClose()
+  }
+
+  /**
+   * Empties the whole cart and closes the modal. Wired to the basket's
+   * "Clear all" button and to unchecking the last remaining mark.
+   */
+  const handleClearCart = () => {
+    clearCart()
     onClose()
   }
 
@@ -143,6 +152,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         />
       }
       onRemoveTriplet={(tripletId) => removeFromCart(tripletId)}
+      onClearCart={handleClearCart}
       onClose={handleWeightClose}
       onSubmit={handleWeightSubmit}
     />
