@@ -129,7 +129,14 @@ export default function WeightModal({
   const depositTermIds = useMemo(
     () =>
       items
-        .filter((it) => (it.kind ?? 'deposit') === 'deposit' && it.kind !== 'redeem')
+        .filter((it) =>
+          (it.kind ?? 'deposit') === 'deposit' &&
+          it.kind !== 'redeem' &&
+          // Platform atom vaults (Invest) are atoms, not triples — skip
+          // the triple-existence check or it always fails.
+          it.intention !== 'Invest' &&
+          !it.id.startsWith('invest-'),
+        )
         .map((it) => it.termId),
     [items],
   )
@@ -528,12 +535,18 @@ export default function WeightModal({
                   const topicMeta = resolveTopic(item)
                   const isRedeem = item.kind === 'redeem'
 
-                  // Extract real domain from Google favicon service URL
-                  // e.g. "https://www.google.com/s2/favicons?domain=example.com&sz=64" → "example.com"
+                  // Extract real domain from favicon URL — handles both the
+                  // Google favicon service (?domain=example.com) and direct
+                  // favicon URLs (e.g. platform favicons served directly).
                   const faviconDomain = (() => {
+                    if (!item.favicon) return ''
                     try {
                       const u = new URL(item.favicon)
-                      return u.searchParams.get('domain') || u.hostname
+                      // Google S2 service: extract the domain query param
+                      const qd = u.searchParams.get('domain')
+                      if (qd) return qd
+                      // Direct favicon URL: use its hostname
+                      return u.hostname.replace(/^www\./, '')
                     } catch { return '' }
                   })()
 
@@ -580,8 +593,8 @@ export default function WeightModal({
                           domain={faviconDomain}
                           verbs={verbs}
                           topics={topics}
-                          up={0}
-                          down={0}
+                          up={-1}
+                          down={-1}
                           badgeSlot={badge}
                         />
                       </div>

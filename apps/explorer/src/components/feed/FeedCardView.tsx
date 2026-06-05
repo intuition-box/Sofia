@@ -377,7 +377,8 @@ export default function FeedCardView({
             <h3 className="fc-xs-title">{title}</h3>
             <div className="fc-xs-foot">
               <span className="fc-xs-domain">{domain}</span>
-              <div className="fc-xs-votes">
+              {/* up < 0 = caller opts out of vote display (e.g. cart context) */}
+              <div className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}>
                 <span
                   className={`fc-xs-vote u${userUp ? ' on' : ''}`}
                   onClick={onVote ? vote('support') : undefined}

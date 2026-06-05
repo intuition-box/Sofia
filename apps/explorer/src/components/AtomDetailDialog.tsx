@@ -93,8 +93,12 @@ export default function AtomDetailDialog({
       intention: 'Invest',
       intentionColor: 'var(--ds-accent)',
       favicon,
+      // Platform atom vault — not a triple, skip triple verification
+      kind: 'deposit',
     }
     cart.addItem(item)
+    onOpenChange(false)
+    cart.open()
   }
 
   return (
