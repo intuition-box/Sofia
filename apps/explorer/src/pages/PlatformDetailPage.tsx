@@ -32,6 +32,8 @@ import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import { categoryPills } from '@/config/contextNodes'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
+import CertFeedCard from '@/components/feed/CertFeedCard'
+import '@/components/styles/feed-card.css'
 import { PAGE_COLORS } from '@/config/pageColors'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -251,87 +253,15 @@ export default function PlatformDetailPage() {
             />
           ) : (
             <div className="masonry-grid crd-feed">
-              {items.map((cert) => {
-                const host = certDomain(cert)
-                const itemFavicon = host ? getFaviconUrl(host) : ''
-                const verbId = predicateLabelToIntentionType(cert.intention)
-                const cfg =
-                  verbId && verbId in INTENTION_CONFIG
-                    ? INTENTION_CONFIG[verbId as keyof typeof INTENTION_CONFIG]
-                    : null
-                const href =
-                  cert.objectUrl && cert.objectUrl.startsWith('http')
-                    ? cert.objectUrl
-                    : '#'
-                return (
-                  <a
-                    key={cert.termId}
-                    className="feed-card feed-card--has-header"
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <UrlPreview
-                      variant="card"
-                      url={cert.objectUrl}
-                      domain={host}
-                      className="fc-thumb"
-                      alt={cert.objectLabel || host}
-                    />
-                    <div className="fc-head">
-                      <div className="fc-favicon">
-                        {itemFavicon ? (
-                          <img
-                            className="fc-favicon-img"
-                            src={itemFavicon}
-                            alt=""
-                            loading="lazy"
-                          />
-                        ) : (
-                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
-                        )}
-                      </div>
-                      <div className="fc-title-wrap">
-                        <div className="fc-title">
-                          {cert.objectLabel || host}
-                        </div>
-                        <div className="fc-host">{host}</div>
-                      </div>
-                    </div>
-                    <div className="fc-bottom">
-                      <div className="fc-tags">
-                        {cert.topicSlugs.map((slug) => {
-                          const t = topicById(slug)
-                          if (!t) return null
-                          return (
-                            <TopicPill
-                              key={slug}
-                              topicId={slug}
-                              color={t.color}
-                              label={t.label}
-                            />
-                          )
-                        })}
-                        {categoryPills(cert.contextSlugs).map((c) => (
-                          <TopicPill
-                            key={c.id}
-                            topicId={c.glyphTopicId}
-                            color={c.color}
-                            label={c.label}
-                          />
-                        ))}
-                        {cfg && (
-                          <VerbPill label={cfg.label} color={cfg.color} />
-                        )}
-                        <span className="fc-tag">
-                          {cert.certifierCount} holder
-                          {cert.certifierCount === 1 ? '' : 's'}
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
+              {items.map((cert) => (
+                <CertFeedCard
+                  key={cert.termId}
+                  cert={cert}
+                  handle={address ? `${address.slice(0, 6)}…${address.slice(-4)}` : ''}
+                  topicById={topicById}
+                  isOwner
+                />
+              ))}
             </div>
           )}
         </section>
