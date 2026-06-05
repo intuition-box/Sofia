@@ -31,6 +31,10 @@ interface CertFeedCardProps {
   topicById: (id: string) => { label: string; color: string } | undefined
   /** When true, shows the owner ⋯ menu with a Remove (redeem) action. */
   isOwner?: boolean
+  /** Fires on like/dislike (support/oppose). When omitted the thumbs render
+   *  display-only (existing behaviour). Wired e.g. on a public profile so a
+   *  viewer can support another user's cert. */
+  onVote?: (side: 'support' | 'oppose') => void
 }
 
 export default function CertFeedCard({
@@ -39,6 +43,7 @@ export default function CertFeedCard({
   avatarUrl,
   topicById,
   isOwner = false,
+  onVote,
 }: CertFeedCardProps) {
   const { redeemCert } = useRedeemCert()
   const url = cert.objectUrl || ''
@@ -72,6 +77,7 @@ export default function CertFeedCard({
       topics={topics}
       up={cert.certifierCount}
       down={0}
+      onVote={onVote}
       onOpen={() => {
         if (url) window.open(url, '_blank', 'noopener,noreferrer')
       }}
