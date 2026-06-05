@@ -21,14 +21,18 @@ import {
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
+import { redeemAtom } from '../services/redeemService'
+import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
   type AtomIPFSPayload,
   type PinThingFn,
 } from '../services/atomCreationService'
 import SofiaLoader from './ui/SofiaLoader'
+import FeedCardView from './feed/FeedCardView'
 import './styles/weight-modal.css'
 import './styles/cart-amplify.css'
+import './styles/feed-card.css'
 
 /** Deposit strength presets — ported 1:1 from the extension's Amplify
  *  ticket (Light / Medium / Strong). Medium (0.5) is the default and
@@ -124,7 +128,14 @@ export default function WeightModal({
   const depositTermIds = useMemo(
     () =>
       items
-        .filter((it) => (it.kind ?? 'deposit') === 'deposit')
+        .filter((it) =>
+          (it.kind ?? 'deposit') === 'deposit' &&
+          it.kind !== 'redeem' &&
+          // Platform atom vaults (Invest) are atoms, not triples — skip
+          // the triple-existence check or it always fails.
+          it.intention !== 'Invest' &&
+          !it.id.startsWith('invest-'),
+        )
         .map((it) => it.termId),
     [items],
   )
@@ -166,8 +177,14 @@ export default function WeightModal({
     return cv?.trim() ? parseFloat(cv) || 0 : (weights[index] ?? 0.5)
   }
 
+  // Redeem rows recover TRUST — they don't deposit. Excluding them keeps the
+  // ledger total (and the balance-gated submit button) from charging a
+  // phantom 0.5 default per redeem row.
   const totalDeposit = useMemo(() => {
-    return items.reduce((sum, _, i) => sum + getAmount(i), 0)
+    return items.reduce(
+      (sum, it, i) => (it.kind === 'redeem' ? sum : sum + getAmount(i)),
+      0,
+    )
   }, [items, weights, customValues])
 
   const balNum = balance ? parseFloat(balance) : 0
@@ -182,7 +199,9 @@ export default function WeightModal({
     let deposits = 0
     let creates = 0
     for (const item of items) {
-      if (item.kind === 'create-circle' && item.circleDraft) {
+      if (item.kind === 'redeem') {
+        // Redeems don't deposit — skip from cost estimate.
+      } else if (item.kind === 'create-circle' && item.circleDraft) {
         const validTopics = item.circleDraft.topicIds.filter(
           (slug) => !!TOPIC_ATOM_IDS[slug],
         )
@@ -240,12 +259,15 @@ export default function WeightModal({
   const handleSubmit = useCallback(async () => {
     const depositItems: { termId: string; amountTrust: number }[] = []
     const createItems: BatchCreateTripleItem[] = []
+    const redeemTermIds: string[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
     items.forEach((item, i) => {
       const amount = getAmount(i)
-      if (
+      if (item.kind === 'redeem') {
+        redeemTermIds.push(item.termId)
+      } else if (
         item.kind === 'create-triple' &&
         item.subjectId &&
         item.predicateId &&
@@ -265,6 +287,58 @@ export default function WeightModal({
     })
 
     let allOk = true
+
+    // Redeem: recover TRUST from each cert vault one by one. `redeemAtom`
+    // throws on wallet rejection / revert (it doesn't catch internally), so
+    // the loop is wrapped — otherwise a rejected popup leaves the panel stuck
+    // with no error. `createTripleProcessing` drives the spinner since redeem
+    // takes neither the deposit nor the create-triple path.
+    if (redeemTermIds.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      const wallet = wallets[0]
+      let lastRedeemHash: string | undefined
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        for (const termId of redeemTermIds) {
+          const r = await redeemAtom(wallet, termId)
+          if (!r.success) {
+            allOk = false
+            setCreateTripleResult({
+              success: false,
+              error: r.error ?? 'Redeem failed',
+            })
+          } else {
+            if (r.txHash) lastRedeemHash = r.txHash
+            clearOptimisticPosition(qc, wallet.address, termId)
+          }
+        }
+      } catch (err) {
+        allOk = false
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      } finally {
+        setCreateTripleProcessing(false)
+      }
+      if (allOk) {
+        qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+        // A redeem-only cart has no deposit/create result to drive the
+        // success screen — synthesize one so the panel shows "validated"
+        // and the Close tap hands off to onSuccess (clears the cart).
+        if (
+          depositItems.length === 0 &&
+          createItems.length === 0 &&
+          circleIndices.length === 0
+        ) {
+          setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+        }
+      }
+    }
 
     if (depositItems.length > 0) {
       const r = await depositBatch(depositItems)
@@ -496,11 +570,49 @@ export default function WeightModal({
                 {items.map((item, index) => {
                   const rowTrust = getAmount(index)
                   const topicMeta = resolveTopic(item)
+                  const isRedeem = item.kind === 'redeem'
+
+                  // Extract real domain from favicon URL — handles both the
+                  // Google favicon service (?domain=example.com) and direct
+                  // favicon URLs (e.g. platform favicons served directly).
+                  const faviconDomain = (() => {
+                    if (!item.favicon) return ''
+                    try {
+                      const u = new URL(item.favicon)
+                      // Google S2 service: extract the domain query param
+                      const qd = u.searchParams.get('domain')
+                      if (qd) return qd
+                      // Direct favicon URL: use its hostname
+                      return u.hostname.replace(/^www\./, '')
+                    } catch { return '' }
+                  })()
+
+                  // Verb/topic chips built AFTER badgeTopic resolution so topic
+                  // pills work for circle-feed vote items too.
+                  // (computed after badgeTopic below)
+
+                  // Resolve the topic for the pill below the title. resolveTopic
+                  // returns null for circle-feed vote items (termId is a context
+                  // triple, not a topic atom), so fall back to matching the
+                  // intention label against the taxonomy.
+                  const badgeTopic = topicMeta ?? (() => {
+                    const byLabel = [...TOPIC_BY_ID.values()].find(
+                      (t) => t.label.toLowerCase() === item.intention?.toLowerCase()
+                    )
+                    return byLabel ?? null
+                  })()
+
+                  // Topic pill below the title (no favicon overlay badge).
+                  const topics = badgeTopic
+                    ? [{ id: badgeTopic.id, label: badgeTopic.label, color: badgeTopic.color }]
+                    : []
+                  const verbs = (!badgeTopic && item.intention)
+                    ? [{ label: item.intention, color: item.intentionColor }]
+                    : []
+
                   return (
-                    <div className="b3-row is-on" key={item.id}>
-                      {/* Check doubles as the remove control — clicking an
-                          active row drops it from the cart (the explorer has
-                          no on/off-but-kept state like the extension). */}
+                    <div className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`} key={item.id}>
+                      {/* Remove control */}
                       <button
                         className="b3-check"
                         type="button"
@@ -508,87 +620,59 @@ export default function WeightModal({
                         disabled={processing}
                         onClick={() => onRemove?.(item.id)}
                       >
-                        <svg
-                          width="11"
-                          height="11"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M5 12l4 4L19 6"
-                            stroke="var(--ds-on-accent)"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                          <path d="M5 12l4 4L19 6" stroke="var(--ds-on-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
 
-                      {item.favicon ? (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          className="b3-row-fav"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            ;(e.target as HTMLImageElement).style.visibility =
-                              'hidden'
-                          }}
+                      {/* xs FeedCardView — favicon thumbnail + topic badge + title + pills */}
+                      <div className="b3-row-card">
+                        <FeedCardView
+                          size="xs"
+                          handle=""
+                          when=""
+                          title={item.title}
+                          domain={faviconDomain}
+                          verbs={verbs}
+                          topics={topics}
+                          up={-1}
+                          down={-1}
+                          thumbnailSrc={item.favicon || undefined}
                         />
+                      </div>
+
+                      {isRedeem ? (
+                        <div className="b3-row-trust b3-row-trust--redeem">
+                          <span className="b3-row-trust-unit">REDEEM</span>
+                        </div>
                       ) : (
-                        <span className="b3-row-fav" aria-hidden="true" />
+                        <div className="b3-row-trust">
+                          <span className="b3-row-trust-val">{formatTrust(rowTrust)}</span>
+                          <span className="b3-row-trust-unit">TRUST</span>
+                        </div>
                       )}
 
-                      <div className="b3-row-meta">
-                        <div className="b3-row-name" title={item.title}>
-                          {item.title}
+                      {isRedeem ? (
+                        <div className="b3-tiers b3-tiers--redeem">
+                          <span className="b3-tier-label">All shares returned</span>
                         </div>
-                      </div>
-
-                      <div className="b3-row-trust">
-                        <span className="b3-row-trust-val">
-                          {formatTrust(rowTrust)}
-                        </span>
-                        <span className="b3-row-trust-unit">TRUST</span>
-                      </div>
-
-                      {/* Tags get their own full-width line below the title so
-                          the topic label reads clearly and multiple contexts
-                          wrap cleanly instead of crowding the favicon. */}
-                      {topicMeta ? (
-                        // Topic-tagged item — show the topic chip only
-                        // (drop the "Context > …" intention string).
-                        <div className="b3-row-tags">
-                          <TopicPill
-                            topicId={topicMeta.id}
-                            color={topicMeta.color}
-                            label={topicMeta.label}
-                          />
+                      ) : (
+                        <div className="b3-tiers" role="radiogroup">
+                          {WEIGHT_TIERS.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              role="radio"
+                              aria-checked={weights[index] === t.value}
+                              className={`b3-tier${weights[index] === t.value ? ' is-on' : ''}`}
+                              disabled={processing}
+                              onClick={() => handleWeightSelect(index, t.value)}
+                            >
+                              <span className="b3-tier-label">{t.label}</span>
+                            </button>
+                          ))}
                         </div>
-                      ) : item.intention ? (
-                        <div className="b3-row-tags">
-                          <VerbPill
-                            label={item.intention}
-                            color={item.intentionColor}
-                          />
-                        </div>
-                      ) : null}
-
-                      <div className="b3-tiers" role="radiogroup">
-                        {WEIGHT_TIERS.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={weights[index] === t.value}
-                            className={`b3-tier${weights[index] === t.value ? ' is-on' : ''}`}
-                            disabled={processing}
-                            onClick={() => handleWeightSelect(index, t.value)}
-                          >
-                            <span className="b3-tier-label">{t.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                      )}
                     </div>
                   )
                 })}
@@ -664,41 +748,35 @@ export default function WeightModal({
             </>
           )}
 
-          {/* Success state */}
+          {/* Success — the peach "Transaction validated" reward takeover. */}
           {txResult?.success && (
-            <div className="wm-success-card">
-              <div className="wm-success-glow" />
-              <div className="wm-success-inner">
-                <p
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    margin: 0,
-                    lineHeight: 1.2,
-                  }}
-                >
+            <div className="wm-reward">
+              <div className="wm-reward-rays" aria-hidden="true" />
+              <div className="wm-reward-inner">
+                <span className="wm-reward-eyebrow">Thank you</span>
+                <h2 className="wm-reward-title">
                   Transaction
                   <br />
-                  Validated
+                  validated
+                </h2>
+                <p className="wm-reward-msg">
+                  One more truth, on-chain.
                 </p>
-                <p
-                  className="text-sm text-muted-foreground"
-                  style={{ margin: 0 }}
-                >
-                  {items.length} deposit{items.length > 1 ? 's' : ''} submitted
-                  successfully
-                </p>
-                {txResult.txHash && (
-                  <a
-                    href={`${EXPLORER_URL}/tx/${txResult.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline"
-                    style={{ marginTop: 4 }}
-                  >
-                    View on Explorer →
-                  </a>
-                )}
+                <div className="wm-reward-meta">
+                  <span>
+                    {items.length} signal{items.length > 1 ? 's' : ''} recorded
+                  </span>
+                  {txResult.txHash && (
+                    <a
+                      href={`${EXPLORER_URL}/tx/${txResult.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="wm-reward-link"
+                    >
+                      View on Explorer ↗
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           )}

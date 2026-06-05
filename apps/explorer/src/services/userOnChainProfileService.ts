@@ -87,6 +87,11 @@ export interface UserCert {
 export interface ContextAddition {
   /** Cert triple term_id this context was attached to. */
   certTermId: string
+  /** The context triple's OWN support vault term_id — the vault a "like"
+   *  stakes. Reputation reads the stakers (likers) here, per topic. */
+  contextTermId: string
+  /** The context triple's oppose vault term_id (a "dislike"). */
+  contextCounterTermId: string
   /** Context atom term_id (the tag itself — a topic or category atom). */
   topicAtomId: string
   /** Rolled-up topic slug (parent topic for a category tag), or `""`. */
@@ -95,6 +100,13 @@ export interface ContextAddition {
   contextSlug: string
   /** ISO timestamp of the user's first share on the nested triple. */
   addedAt: string
+  /** The tagged cert's object URL — carried from the `subject.term.triple`
+   *  join so a context added to ANOTHER user's cert (not in the viewer's
+   *  own `certs`) can still render a row. `""` when the indexer returns
+   *  no url. */
+  objectUrl: string
+  /** The tagged cert's object label / domain. `""` when unknown. */
+  objectLabel: string
 }
 
 export interface UserOnChainProfile {
@@ -136,12 +148,12 @@ export async function fetchUserOnChainProfile(
     rawTriples.push(...pageRows)
     if (pageRows.length < PAGE_SIZE) break
   }
-  if (rawTriples.length === 0) return EMPTY_PROFILE
-
   // Step 2 — resolve "in context of" nested triples for every cert, and
-  // in parallel the subset the user actually staked on (with timestamps,
-  // so the ProfileDrawer activity feed can render "Tagged X with Y"
-  // events alongside the regular certs).
+  // in parallel the subset the user actually staked on (with timestamps).
+  //
+  // GetUserContextAdditions is NOT gated on the user having their own certs:
+  // the user can tag someone else's cert, and that addition should surface
+  // in Last Activity even if rawTriples is empty. Run it unconditionally.
   const certTermIds = rawTriples
     .map((t) => t.term_id)
     .filter((x): x is string => !!x)
@@ -149,20 +161,24 @@ export async function fetchUserOnChainProfile(
   const topicContextsByTerm = new Map<string, string[]>()
   const contextAdditions: ContextAddition[] = []
 
-  if (certTermIds.length > 0) {
-    const [linkData, additionData] = await Promise.all([
-      useGetCertTopicLinksQuery.fetcher({
-        certTermIds,
-        topicAtomIds: CONTEXT_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-      useGetUserContextAdditionsQuery.fetcher({
-        userAddresses,
-        certTermIds,
-        topicAtomIds: CONTEXT_TERM_IDS,
-        limit: TOPIC_LINKS_LIMIT,
-      })(),
-    ])
+  // Fetch additions unconditionally — scoped only by the user's positions,
+  // not by their own certs. Fetch cert topic links only if they have certs.
+  const [linkData, additionData] = await Promise.all([
+    certTermIds.length > 0
+      ? useGetCertTopicLinksQuery.fetcher({
+          certTermIds,
+          topicAtomIds: CONTEXT_TERM_IDS,
+          limit: TOPIC_LINKS_LIMIT,
+        })()
+      : Promise.resolve({ triples: [] }),
+    useGetUserContextAdditionsQuery.fetcher({
+      userAddresses,
+      topicAtomIds: CONTEXT_TERM_IDS,
+      limit: TOPIC_LINKS_LIMIT,
+    })(),
+  ])
+
+  {
 
     for (const row of linkData.triples ?? []) {
       const certTermId = row.subject_id
@@ -179,15 +195,26 @@ export async function fetchUserOnChainProfile(
       const addedAt = row.positions?.[0]?.created_at ?? ''
       if (!certTermId || !topicAtomId || !addedAt) continue
       const node = resolveContextAtom(topicAtomId)
+      const certObject = row.subject?.term?.triple?.object
       contextAdditions.push({
         certTermId,
+        contextTermId: row.term_id ?? '',
+        contextCounterTermId: row.counter_term_id ?? '',
         topicAtomId,
         topicSlug: node?.topicSlug ?? '',
         contextSlug: node?.slug ?? '',
         addedAt: String(addedAt),
+        objectUrl: certObject?.value?.thing?.url ?? '',
+        objectLabel: certObject?.label ?? '',
       })
     }
     contextAdditions.sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1))
+  }
+
+  // If the user has no certs of their own, return now — we still captured
+  // any contextAdditions above (tags on others' certs).
+  if (rawTriples.length === 0) {
+    return { certs: [], topicContextsByTerm, contextAdditions }
   }
 
   // Normalise into UserCert.

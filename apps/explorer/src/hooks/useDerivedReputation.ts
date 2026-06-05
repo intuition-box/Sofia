@@ -26,14 +26,21 @@ export function useDerivedReputation(addresses: readonly string[]) {
     addresses.length > 0 ? [...addresses] : undefined,
   )
 
+  // Reputation = likes only. A claim is one `in context of` triple (per
+  // topic) the user staked — the vault a "like" deposits on — NOT the cert
+  // triple. So someone who likes your Mark's topic AFTER you lifts your
+  // reputation in that topic; a plain co-certification of the cert triple
+  // does not. See docs/reputation-likes-gap.md.
   const certs = useMemo<ReputationCert[]>(
     () =>
-      profile.certs.map((c) => ({
-        termId: c.termId,
-        certifiedAt: c.certifiedAt,
-        topicSlugs: c.topicSlugs,
-      })),
-    [profile.certs],
+      profile.contextAdditions
+        .filter((ca) => ca.contextTermId && ca.topicSlug)
+        .map((ca) => ({
+          termId: ca.contextTermId,
+          certifiedAt: ca.addedAt,
+          topicSlugs: [ca.topicSlug],
+        })),
+    [profile.contextAdditions],
   )
 
   const claimIds = useMemo(() => certs.map((c) => c.termId), [certs])

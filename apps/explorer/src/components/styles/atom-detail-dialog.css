@@ -71,14 +71,11 @@
   min-width: 0;
 }
 .add-title-name {
-  font-family: var(--ds-font-display);
-  font-size: 22px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
   line-height: 1.1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -114,15 +111,12 @@
   font-weight: 600;
 }
 .add-metric-value {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 16px;
   font-weight: 800;
   color: var(--ds-ink);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
   line-height: 1;
 }
 

@@ -9,14 +9,17 @@
  * Echoes bento card.
  */
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useEnsNames } from '@/hooks/useEnsNames'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import type { UserCert } from '@/services/userOnChainProfileService'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
+import { useCart } from '@/hooks/useCart'
 import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType,
@@ -32,6 +35,8 @@ import { TopicPill, VerbPill } from '@/components/profile/FeedPills'
 import { categoryPills } from '@/config/contextNodes'
 import { EmptyFeedState } from '@/components/EmptyFeedState'
 import { FeedCardSkeleton } from '@/components/FeedCardSkeleton'
+import CertFeedCard from '@/components/feed/CertFeedCard'
+import '@/components/styles/feed-card.css'
 import { PAGE_COLORS } from '@/config/pageColors'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -80,14 +85,70 @@ export default function PlatformDetailPage() {
   const { domain: domainParam } = useParams<{ domain: string }>()
   const [searchParams] = useSearchParams()
   const decodedDomain = domainParam ? decodeURIComponent(domainParam) : ''
-  const { user } = usePrivy()
+  const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
   const { addresses: linkedAddresses } = useLinkedWallets()
+  const cart = useCart()
   // Public-profile entry point: `?address=0x…` lets the page render
   // any wallet's certs on this platform, not just the connected user's.
   // Falls back to the connected user when no override is provided so
   // the personal flow stays unchanged.
   const viewedAddress = searchParams.get('address') ?? undefined
+  // Resolve ENS for BOTH the connected user and the viewed wallet so the
+  // cert cards show the RIGHT certifier (the profile owner being viewed),
+  // not the connected viewer.
+  const ensAddrs = useMemo(() => {
+    const list: `0x${string}`[] = []
+    if (address) list.push(address as `0x${string}`)
+    if (viewedAddress) list.push(viewedAddress as `0x${string}`)
+    return list
+  }, [address, viewedAddress])
+  const { getDisplay, getAvatar } = useEnsNames(ensAddrs)
+  // Whose certs are shown: the viewed wallet on a public profile, else the
+  // connected user. Drives the cert card identity + owner affordances.
+  const certifierAddress = viewedAddress ?? address
+  const isOwnProfile =
+    !viewedAddress ||
+    (!!address && viewedAddress.toLowerCase() === address.toLowerCase())
+  const certHandle = certifierAddress
+    ? getDisplay(certifierAddress as `0x${string}`) ||
+      `${certifierAddress.slice(0, 6)}…${certifierAddress.slice(-4)}`
+    : ''
+  const certAvatar = certifierAddress
+    ? getAvatar(certifierAddress as `0x${string}`)
+    : ''
+  // Profile breadcrumb crumb — on a public profile it points to (and is
+  // labelled after) the VIEWED user, not "My profile".
+  const profileCrumb = {
+    label: viewedAddress ? certHandle || 'Profile' : 'My profile',
+    to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
+  }
+  // Like / dislike a cert — queues a support (or oppose) deposit on the
+  // cert's own vault into the Amplify cart, so a viewer can back another
+  // user's cert from their public profile. No-op when signed out.
+  const handleVote = useCallback(
+    (cert: UserCert, side: 'support' | 'oppose') => {
+      if (!authenticated) return
+      const termId = side === 'support' ? cert.termId : cert.counterTermId
+      if (!termId) return
+      const domain =
+        extractDomain(cert.objectUrl) || extractDomain(cert.objectLabel) || ''
+      const cfg = (() => {
+        const t = predicateLabelToIntentionType(cert.intention)
+        return t ? INTENTION_CONFIG[t] : undefined
+      })()
+      cart.addItem({
+        id: `${termId}-${side}`,
+        side,
+        termId,
+        intention: cfg?.label ?? cert.intention,
+        title: cert.objectLabel || domain,
+        favicon: domain ? getFaviconUrl(domain) : '',
+        intentionColor: cfg?.color ?? '#888',
+      })
+    },
+    [authenticated, cart],
+  )
   const profileAddresses = viewedAddress
     ? [viewedAddress]
     : linkedAddresses.length > 0
@@ -145,15 +206,7 @@ export default function PlatformDetailPage() {
   if (!decodedDomain) {
     return (
       <div className="pf-view page-enter">
-        <Breadcrumb
-          items={[
-            {
-              label: 'My profile',
-              to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
-            },
-            { label: 'Unknown platform' },
-          ]}
-        />
+        <Breadcrumb items={[profileCrumb, { label: 'Unknown platform' }]} />
         <p className="text-sm text-muted-foreground">Unknown platform.</p>
       </div>
     )
@@ -161,15 +214,7 @@ export default function PlatformDetailPage() {
 
   return (
     <div className="pf-view page-enter">
-      <Breadcrumb
-        items={[
-          {
-            label: 'My profile',
-            to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
-          },
-          { label: decodedDomain },
-        ]}
-      />
+      <Breadcrumb items={[profileCrumb, { label: decodedDomain }]} />
 
       <PageHero
         background={heroColor}
@@ -251,87 +296,21 @@ export default function PlatformDetailPage() {
             />
           ) : (
             <div className="masonry-grid crd-feed">
-              {items.map((cert) => {
-                const host = certDomain(cert)
-                const itemFavicon = host ? getFaviconUrl(host) : ''
-                const verbId = predicateLabelToIntentionType(cert.intention)
-                const cfg =
-                  verbId && verbId in INTENTION_CONFIG
-                    ? INTENTION_CONFIG[verbId as keyof typeof INTENTION_CONFIG]
-                    : null
-                const href =
-                  cert.objectUrl && cert.objectUrl.startsWith('http')
-                    ? cert.objectUrl
-                    : '#'
-                return (
-                  <a
-                    key={cert.termId}
-                    className="feed-card feed-card--has-header"
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <UrlPreview
-                      variant="card"
-                      url={cert.objectUrl}
-                      domain={host}
-                      className="fc-thumb"
-                      alt={cert.objectLabel || host}
-                    />
-                    <div className="fc-head">
-                      <div className="fc-favicon">
-                        {itemFavicon ? (
-                          <img
-                            className="fc-favicon-img"
-                            src={itemFavicon}
-                            alt=""
-                            loading="lazy"
-                          />
-                        ) : (
-                          (host || cert.objectLabel).slice(0, 1).toUpperCase()
-                        )}
-                      </div>
-                      <div className="fc-title-wrap">
-                        <div className="fc-title">
-                          {cert.objectLabel || host}
-                        </div>
-                        <div className="fc-host">{host}</div>
-                      </div>
-                    </div>
-                    <div className="fc-bottom">
-                      <div className="fc-tags">
-                        {cert.topicSlugs.map((slug) => {
-                          const t = topicById(slug)
-                          if (!t) return null
-                          return (
-                            <TopicPill
-                              key={slug}
-                              topicId={slug}
-                              color={t.color}
-                              label={t.label}
-                            />
-                          )
-                        })}
-                        {categoryPills(cert.contextSlugs).map((c) => (
-                          <TopicPill
-                            key={c.id}
-                            topicId={c.glyphTopicId}
-                            color={c.color}
-                            label={c.label}
-                          />
-                        ))}
-                        {cfg && (
-                          <VerbPill label={cfg.label} color={cfg.color} />
-                        )}
-                        <span className="fc-tag">
-                          {cert.certifierCount} holder
-                          {cert.certifierCount === 1 ? '' : 's'}
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
+              {items.map((cert) => (
+                <CertFeedCard
+                  key={cert.termId}
+                  cert={cert}
+                  handle={certHandle}
+                  avatarUrl={certAvatar || undefined}
+                  topicById={topicById}
+                  isOwner={isOwnProfile}
+                  onVote={
+                    authenticated
+                      ? (side) => handleVote(cert, side)
+                      : undefined
+                  }
+                />
+              ))}
             </div>
           )}
         </section>

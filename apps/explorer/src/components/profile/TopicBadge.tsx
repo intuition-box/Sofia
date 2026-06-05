@@ -11,6 +11,7 @@
  * `index.html`). The glyph name comes from `getTopicIcon(slug)`.
  */
 import { getTopicIcon } from '@/config/topicEmoji'
+import '@/components/styles/profile-sections.css'
 
 interface TopicBadgeProps {
   /** Topic slug — used to resolve the icon + as a stable test hook. */

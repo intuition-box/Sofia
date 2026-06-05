@@ -30,14 +30,19 @@ export function useReputationBackers(addresses: readonly string[]): {
     addresses.length > 0 ? [...addresses] : undefined,
   )
 
+  // Claims = the user's `in context of` triples (one per topic), so backers
+  // are the accounts that LIKED a topic of your Mark after you — not
+  // co-certifiers of the cert triple. Mirrors useDerivedReputation.
   const certs = useMemo<ReputationCert[]>(
     () =>
-      profile.certs.map((c) => ({
-        termId: c.termId,
-        certifiedAt: c.certifiedAt,
-        topicSlugs: c.topicSlugs,
-      })),
-    [profile.certs],
+      profile.contextAdditions
+        .filter((ca) => ca.contextTermId && ca.topicSlug)
+        .map((ca) => ({
+          termId: ca.contextTermId,
+          certifiedAt: ca.addedAt,
+          topicSlugs: [ca.topicSlug],
+        })),
+    [profile.contextAdditions],
   )
 
   const claimIds = useMemo(() => certs.map((c) => c.termId), [certs])

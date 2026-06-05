@@ -8,9 +8,11 @@
  * cards, so tagging behaves identically everywhere.
  */
 import { useMemo } from 'react'
+import { Trash2 } from 'lucide-react'
 import { TOPIC_BY_ID, CATEGORY_BY_ID } from '@/config/taxonomy'
 import { INTENTION_COLORS } from '@/config/intentions'
 import { useCart } from '@/hooks/useCart'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import { contextCartId } from '@/services/contextCartService'
 import { UrlPreview } from '@/components/UrlPreview'
 import ContextPicker from '@/components/ContextPicker'
@@ -46,6 +48,7 @@ export default function UntaggedCertCard({
   intentionLabel,
 }: UntaggedCertCardProps) {
   const cart = useCart()
+  const { redeemCert } = useRedeemCert()
   // Intent colour for the verb pill — same INTENTION_COLORS the feed uses.
   const verbColor = INTENTION_COLORS[intentionLabel] ?? 'var(--ds-muted)'
 
@@ -123,6 +126,15 @@ export default function UntaggedCertCard({
           <div className="fc-title">{title || domain}</div>
           <div className="fc-host">{domain}</div>
         </div>
+        <button
+          type="button"
+          className="ctx-card-remove"
+          title="Remove certification"
+          aria-label="Remove certification"
+          onClick={() => redeemCert(certTermId, title || domain, url)}
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
 
       {/* Bottom row: verb + queued topics (removable) + the picker, same

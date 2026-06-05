@@ -18,6 +18,7 @@ import FeedCardView, {
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/feed-card.css'
 
 interface CertFeedCardProps {
@@ -28,6 +29,12 @@ interface CertFeedCardProps {
   avatarUrl?: string
   /** Topic-id → label + color resolver (from useTaxonomy). */
   topicById: (id: string) => { label: string; color: string } | undefined
+  /** When true, shows the owner ⋯ menu with a Remove (redeem) action. */
+  isOwner?: boolean
+  /** Fires on like/dislike (support/oppose). When omitted the thumbs render
+   *  display-only (existing behaviour). Wired e.g. on a public profile so a
+   *  viewer can support another user's cert. */
+  onVote?: (side: 'support' | 'oppose') => void
 }
 
 export default function CertFeedCard({
@@ -35,7 +42,10 @@ export default function CertFeedCard({
   handle,
   avatarUrl,
   topicById,
+  isOwner = false,
+  onVote,
 }: CertFeedCardProps) {
+  const { redeemCert } = useRedeemCert()
   const url = cert.objectUrl || ''
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
   const intentType = predicateLabelToIntentionType(cert.intention)
@@ -55,6 +65,11 @@ export default function CertFeedCard({
   ]
   const title = cleanLabel(cert.objectLabel || domain || '')
 
+  // A like/dislike endorses the cert "in context of <topic>" — with no
+  // context there is nothing to stake, so the thumbs disable + show the
+  // tooltip, matching the circle feed (CircleFeedCard.canSupport).
+  const hasContext = cert.topicAtomIds.length > 0
+
   return (
     <FeedCardView
       handle={handle}
@@ -67,6 +82,9 @@ export default function CertFeedCard({
       topics={topics}
       up={cert.certifierCount}
       down={0}
+      canUp={hasContext}
+      canDown={hasContext}
+      onVote={onVote}
       onOpen={() => {
         if (url) window.open(url, '_blank', 'noopener,noreferrer')
       }}
@@ -77,6 +95,8 @@ export default function CertFeedCard({
           existingTopics={cert.contextSlugs}
         />
       }
+      isOwner={isOwner}
+      onDelete={isOwner ? () => redeemCert(cert.termId, title, url) : undefined}
     />
   )
 }

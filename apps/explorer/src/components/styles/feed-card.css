@@ -427,9 +427,18 @@
   object-fit: cover;
 }
 
-/* Body — title only (host/domain intentionally dropped per the design). */
+/* Body — title + the verb/topic/category chips below it. */
 .fc-body {
   padding: 15px 16px 14px;
+}
+/* Chips moved out of the footer to sit directly under the title — space
+   them from it and keep them left-aligned. */
+.fc-body .fc-chips-wrap {
+  margin-top: 10px;
+}
+.fc-body .fc-chips,
+.fc-body .fc-chips--measure {
+  justify-content: flex-start;
 }
 .fc-card-title {
   margin: 0;
@@ -448,21 +457,37 @@
   min-height: calc(1.32em * 2);
 }
 
-/* Footer — chip row, then votes beneath. Pinned to the card bottom (the grid
-   stretches cards to the tallest in their row) with a hairline top border. */
+/* Footer — ONE ROW: votes on the left, chips on the right.
+   Pinned to the card bottom; the grid stretches all cards to the tallest in
+   the row so footers land at the same height. */
 .fc-foot {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 11px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   margin-top: auto;
   padding: 13px 16px 15px;
   border-top: 1px solid var(--ds-border-soft);
 }
+/* Chips wrap fills remaining space after the vote buttons */
+.fc-foot .fc-chips-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.fc-foot .fc-chips {
+  justify-content: flex-end;
+}
+.fc-foot .fc-chips--measure {
+  right: 0;
+  left: auto;
+  width: 100%;
+}
 .fc-votes {
   display: flex;
   gap: 8px;
-  align-self: flex-start;
+  flex-shrink: 0;
 }
 .fc-vote {
   position: relative;
@@ -750,4 +775,297 @@
   flex-shrink: 0;
   display: inline-block;
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
+}
+
+/* ── Media domain badge (bottom-left of the preview image) ──────────────── */
+.fc-media-domain {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(7, 6, 14, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 9px;
+  pointer-events: none;
+}
+.fc-media-domain span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #fff;
+  white-space: nowrap;
+}
+.fc-media-fav {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.fc-media-fav img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Owner kebab menu ───────────────────────────────────────────────────── */
+.fc-kebab-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.fc-kebab {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ds-muted-soft);
+  cursor: pointer;
+  transition: all 0.13s ease;
+  padding: 0;
+}
+.fc-kebab:hover,
+.fc-kebab.open {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.fc-kebab-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 158px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 11px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  padding: 5px;
+  animation: menu-in 0.12s ease;
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fc-kebab-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  font-family: var(--sans, 'Inter', sans-serif);
+  font-size: 12.5px;
+  color: var(--ds-ink-soft);
+  background: none;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.fc-kebab-item:hover {
+  background: var(--ds-bg-subtle);
+}
+.fc-kebab-item.danger {
+  color: var(--distrusted, #ef5a5a);
+}
+.fc-kebab-item.danger:hover {
+  background: color-mix(in srgb, var(--distrusted, #ef5a5a) 13%, transparent);
+}
+
+/* ── Removed / undo state ───────────────────────────────────────────────── */
+.fc-card--gone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  /* Override flex-column from .fc-card */
+  flex-direction: row;
+}
+.fc-gone-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.fc-gone-undo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Size variant overrides ─────────────────────────────────────────────── */
+/* Default (lg) = 432px — no override needed, it fills the grid cell. */
+
+/* Medium — 360px context */
+.fc-card--s-md {
+  border-radius: 16px;
+}
+.fc-card--s-md .fc-hd { padding: 13px 14px 11px; }
+.fc-card--s-md .fc-avatar { width: 34px; height: 34px; font-size: 11px; }
+.fc-card--s-md .fc-handle { font-size: 13px; }
+.fc-card--s-md .fc-when { font-size: 10px; }
+.fc-card--s-md .fc-media { aspect-ratio: 360 / 170; }
+.fc-card--s-md .fc-media-domain { left: 10px; bottom: 10px; }
+.fc-card--s-md .fc-body { padding: 13px 14px 12px; }
+.fc-card--s-md .fc-card-title { font-size: 14.5px; }
+.fc-card--s-md .fc-foot { padding: 11px 14px 13px; }
+.fc-card--s-md .fc-vote { font-size: 11.5px; padding: 6px 10px; }
+.fc-card--s-md .fc-vote svg { width: 14px; height: 14px; }
+
+/* Small — 300px context */
+.fc-card--s-sm {
+  border-radius: 14px;
+}
+.fc-card--s-sm .fc-hd { padding: 12px 13px 10px; }
+.fc-card--s-sm .fc-avatar { width: 30px; height: 30px; font-size: 10px; }
+.fc-card--s-sm .fc-handle { font-size: 12.5px; }
+.fc-card--s-sm .fc-when { font-size: 10px; }
+.fc-card--s-sm .fc-media { aspect-ratio: 300 / 132; }
+.fc-card--s-sm .fc-media-domain { left: 9px; bottom: 9px; padding: 4px 7px; }
+.fc-card--s-sm .fc-media-fav { width: 15px; height: 15px; }
+.fc-card--s-sm .fc-media-fav img { width: 10px; height: 10px; }
+.fc-card--s-sm .fc-media-domain span { font-size: 10px; }
+.fc-card--s-sm .fc-body { padding: 12px 13px 11px; }
+.fc-card--s-sm .fc-card-title { font-size: 13px; }
+.fc-card--s-sm .fc-foot { padding: 10px 13px 12px; }
+.fc-card--s-sm .fc-vote { font-size: 11px; padding: 6px 9px; border-radius: 8px; gap: 5px; }
+.fc-card--s-sm .fc-vote svg { width: 13px; height: 13px; }
+.fc-card--s-sm .fc-verb { font-size: 9px; padding: 3px 8px; }
+
+/* Extra-small — list row (no full-bleed hero) */
+.fc-card--s-xs {
+  border-radius: 12px;
+  overflow: visible; /* allow the kebab menu to overflow */
+}
+.fc-xs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 13px;
+}
+/* Wrapper: overflow:visible so the badge can poke out of the clipped thumb */
+.fc-xs-thumb-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.fc-xs-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+}
+.fc-xs-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+.fc-xs-main {
+  flex: 1;
+  min-width: 0;
+}
+.fc-xs-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.fc-avatar--xs {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 7px !important;
+  box-shadow: none !important;
+}
+.fc-xs-handle {
+  flex: 1;
+  min-width: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-xs-sep {
+  color: var(--ds-muted-soft);
+  margin: 0 2px;
+}
+.fc-xs-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ds-ink);
+  margin: 5px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-xs-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.fc-xs-domain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
+.fc-xs-votes {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
+.fc-xs-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
+.fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
+.fc-xs-votes--hidden { display: none; }
+/* Timestamp, bottom-left of the xs footer. */
+.fc-xs-when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
+/* Topic / verb pills below the xs title (cart context). */
+.fc-xs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+/* Badge overlay — sits on the fc-xs-thumb-wrap (overflow:visible) so it
+   is never clipped by the thumb's overflow:hidden. */
+.fc-xs-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  z-index: 3;
 }

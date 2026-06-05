@@ -3,31 +3,35 @@
  * circle by engagement score. Rendered inside CircleFeedSection just
  * below the filter row so it reads as the curated header of the feed
  * rather than a separate band.
+ *
+ * Each pick renders as the unified <CircleFeedCard> (same card the main
+ * masonry grid uses) so the hot-picks strip stays visually consistent
+ * with the feed. The cards live in a horizontally scrolling strip; each
+ * takes a fixed width (`.crd-top-engaged-item`) so they scroll sideways
+ * instead of collapsing.
  */
-import { ThumbsUp } from 'lucide-react'
+import type { Address } from 'viem'
 import type { CircleItem } from '@/services/circleService'
-import { UrlPreview } from '@/components/UrlPreview'
-import { extractDomain } from '@/utils/formatting'
+import CircleFeedCard from './CircleFeedCard'
 
 interface CircleTopEngagedStripProps {
   items: CircleItem[]
-}
-
-function aggregateCounts(item: CircleItem): {
-  supports: number
-  opposes: number
-} {
-  let supports = 0
-  let opposes = 0
-  for (const v of Object.values(item.intentionVaults)) {
-    supports += v.supportCount
-    opposes += v.opposeCount
-  }
-  return { supports, opposes }
+  /** Resolves a certifier display name from their address. */
+  getDisplay: (address: Address) => string
+  /** Resolves a certifier avatar URL from their address. */
+  getAvatar: (address: Address) => string
+  /** Like / dislike handler, threaded from the feed section. */
+  onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
+  /** Live set of staked term_ids, threaded from the feed section. */
+  livePositionTermIds?: ReadonlySet<string>
 }
 
 export default function CircleTopEngagedStrip({
   items,
+  getDisplay,
+  getAvatar,
+  onDeposit,
+  livePositionTermIds,
 }: CircleTopEngagedStripProps) {
   if (items.length === 0) return null
 
@@ -39,36 +43,19 @@ export default function CircleTopEngagedStrip({
       </div>
       <div className="crd-top-engaged-strip">
         {items.map((item) => {
-          const { supports } = aggregateCounts(item)
-          const host = item.domain || (item.url ? extractDomain(item.url) : '')
-          const href = item.url && item.url.startsWith('http') ? item.url : '#'
+          const addr = item.certifierAddress as Address | undefined
+          const name = addr ? getDisplay(addr) : item.certifier
+          const av = addr ? getAvatar(addr) : ''
           return (
-            <a
-              key={item.id}
-              className="crd-te-card"
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={item.title || host}
-            >
-              <UrlPreview
-                variant="card"
-                url={item.url}
-                domain={host}
-                className="crd-te-thumb"
-                alt={item.title || host}
+            <div key={item.id} className="crd-top-engaged-item">
+              <CircleFeedCard
+                item={item}
+                certifierName={name}
+                certifierAvatar={av}
+                onDeposit={onDeposit}
+                livePositionTermIds={livePositionTermIds}
               />
-              <p className="crd-te-title">{item.title || host}</p>
-              <div className="crd-te-meta">
-                <span
-                  className="crd-te-count"
-                  title={`${supports} like${supports === 1 ? '' : 's'}`}
-                >
-                  <ThumbsUp aria-hidden="true" />
-                  {supports}
-                </span>
-              </div>
-            </a>
+            </div>
           )
         })}
       </div>

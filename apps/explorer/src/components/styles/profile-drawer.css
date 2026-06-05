@@ -351,7 +351,7 @@
 .pd-la-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 13px;
   /* No nested scroll: the drawer's outer `overflow-y: auto` handles
      scrolling, so the activity list grows to its full natural height
      instead of being capped at 420px (which clipped the last row). */

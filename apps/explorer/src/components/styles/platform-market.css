@@ -313,14 +313,11 @@
   gap: 8px;
 }
 .pm-dex-label {
-  font-family: var(--ds-font-display);
-  font-size: 16px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -366,14 +363,11 @@
   white-space: nowrap;
 }
 .pm-dex-num-big {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 16px;
   font-weight: 800;
   color: var(--ds-ink);
-  letter-spacing: -0.015em;
-  font-variation-settings:
-    'SOFT' 30,
-    'opsz' 144;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 .pm-dex-num-unit {
@@ -384,15 +378,17 @@
 }
 .pm-dex-price,
 .pm-dex-holders {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 600;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .pm-dex-pnl {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-family: 'Unbounded', system-ui, sans-serif;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ds-muted);
 }
 .pm-dex-pnl.up {

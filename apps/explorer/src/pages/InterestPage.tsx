@@ -162,6 +162,7 @@ export default function InterestPage() {
                   handle={certifierHandle}
                   avatarUrl={certifierAvatar || undefined}
                   topicById={topicById}
+                  isOwner
                 />
               ))}
             </div>

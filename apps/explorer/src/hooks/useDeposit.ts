@@ -47,6 +47,11 @@ export function useDeposit() {
           // quickly enough that the refetch lands the green thumb without
           // waiting on the WS push.
           qc.invalidateQueries({ queryKey: ['circle-feed'] })
+          // A context-add ("+ Context") deposits on an "in context of"
+          // triple — refresh the master profile so the new tag shows up in
+          // the ProfileDrawer "Last activity" feed without waiting on
+          // staleTime.
+          qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
         }
         return result
       } catch (err: any) {
@@ -81,6 +86,7 @@ export function useDeposit() {
             applyOptimisticPosition(qc, wallet.address, item.termId, 1n)
           }
           qc.invalidateQueries({ queryKey: ['circle-feed'] })
+          qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
         }
         return result
       } catch (err: any) {

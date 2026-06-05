@@ -43,12 +43,17 @@ interface CircleFeedSectionProps {
   addresses: string[]
   circleName: string
   members: TrustCircleAccount[]
+  /** Suppress the section's own "Certified by {name}" heading — used by
+   *  the Free path, which wraps the feed in an "Activity" module head so
+   *  the title isn't duplicated. */
+  hideTitle?: boolean
 }
 
 export default function CircleFeedSection({
   addresses,
   circleName,
   members,
+  hideTitle = false,
 }: CircleFeedSectionProps) {
   const { items, loading, loadingMore, hasMore, loadMore, error } =
     useCircleFeed(addresses)
@@ -97,9 +102,17 @@ export default function CircleFeedSection({
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated) return
-      const contexts = item.contextTriples.filter((c) =>
-        side === 'support' ? !!c.termId : !!c.counterTermId,
-      )
+      // Deduplicate by topicSlug: multiple cert triples on the same card
+      // (e.g. visits_for_work + visits_for_learning) each produce their own
+      // "in context of" triple for the same topic, but we only want ONE
+      // stake per topic — not one per intention.
+      const seenTopics = new Set<string>()
+      const contexts = item.contextTriples.filter((c) => {
+        const hasVault = side === 'support' ? !!c.termId : !!c.counterTermId
+        if (!hasVault || seenTopics.has(c.topicSlug)) return false
+        seenTopics.add(c.topicSlug)
+        return true
+      })
       if (contexts.length === 0) return
       const newItems: CartItem[] = contexts.map((c) => {
         const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
@@ -149,19 +162,26 @@ export default function CircleFeedSection({
   // `useCircleFeed` had already paid for.
   const shown = filtered
 
-  // Batch ENS resolution for all certifiers visible in this slice.
+  // Batch ENS resolution for all certifiers visible in this slice plus the
+  // hot-picks strip (which now renders the same <CircleFeedCard>, so it needs
+  // resolved certifier names/avatars too).
   const certifierAddresses = useMemo(() => {
     const s = new Set<Address>()
     for (const item of shown) {
       if (item.certifierAddress) s.add(item.certifierAddress as Address)
     }
+    for (const item of topEngaged) {
+      if (item.certifierAddress) s.add(item.certifierAddress as Address)
+    }
     return Array.from(s)
-  }, [shown])
+  }, [shown, topEngaged])
   const { getDisplay, getAvatar } = useEnsNames(certifierAddresses)
 
   return (
     <section className="crd-feed-section">
-      <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      {!hideTitle && (
+        <h2 className="crd-feed-title">Certified by {circleName}</h2>
+      )}
 
       <div className="crd-feed-filters">
         <CircleVerbFilterDropdown active={verb} onChange={setVerb} />
@@ -174,7 +194,13 @@ export default function CircleFeedSection({
         <CircleFeedSort active={sort} onChange={setSort} />
       </div>
 
-      <CircleTopEngagedStrip items={topEngaged} />
+      <CircleTopEngagedStrip
+        items={topEngaged}
+        getDisplay={getDisplay}
+        getAvatar={getAvatar}
+        onDeposit={authenticated ? handleDeposit : undefined}
+        livePositionTermIds={livePositionTermIds}
+      />
 
       {loading ? (
         <EmptyFeedState

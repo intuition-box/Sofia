@@ -173,39 +173,13 @@
    columns layout that packs naturally like the Home / Circle /
    Platform feeds. Breakpoints mirror those grids for consistency. */
 .psp-grid {
-  column-count: 6;
-  column-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
 }
-.psp-grid > * {
-  break-inside: avoid;
-  margin-bottom: 12px;
-  display: block;
+/* fc-card fills its grid cell width; no fixed pixel width needed. */
+.psp-grid .fc-card {
   width: 100%;
-}
-@media (max-width: 1600px) {
-  .psp-grid {
-    column-count: 5;
-  }
-}
-@media (max-width: 1280px) {
-  .psp-grid {
-    column-count: 4;
-  }
-}
-@media (max-width: 960px) {
-  .psp-grid {
-    column-count: 3;
-  }
-}
-@media (max-width: 720px) {
-  .psp-grid {
-    column-count: 2;
-  }
-}
-@media (max-width: 480px) {
-  .psp-grid {
-    column-count: 1;
-  }
 }
 
 .psp-item-card {

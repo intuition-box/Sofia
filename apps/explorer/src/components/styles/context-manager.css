@@ -620,3 +620,25 @@
   color: var(--ds-on-accent);
   border-color: var(--ds-accent);
 }
+
+.ctx-card-remove {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ds-muted-soft);
+  cursor: pointer;
+  transition: all 0.13s ease;
+  padding: 0;
+  margin-left: auto;
+}
+.ctx-card-remove:hover {
+  color: var(--distrusted, #ef5a5a);
+  background: color-mix(in srgb, var(--distrusted, #ef5a5a) 10%, transparent);
+  border-color: color-mix(in srgb, var(--distrusted, #ef5a5a) 30%, transparent);
+}

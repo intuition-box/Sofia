@@ -36,8 +36,9 @@ export interface CartItem {
    *   - 'create-triple'  → SofiaFeeProxy.createTriples (atoms must exist)
    *   - 'create-circle'  → atomCreationService + createTriples (mints
    *                        circle atom + membership + has_tag triples)
+   *   - 'redeem'         → MultiVault.redeem (retrieves all shares)
    *  Defaults to 'deposit' for back-compat with existing callers. */
-  kind?: 'deposit' | 'create-triple' | 'create-circle'
+  kind?: 'deposit' | 'create-triple' | 'create-circle' | 'redeem'
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string

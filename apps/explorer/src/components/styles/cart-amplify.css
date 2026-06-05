@@ -155,10 +155,11 @@
 .amp .b3-row {
   position: relative;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  /* check | xs-card(fills) | trust | tiers */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px 12px;
-  padding: 14px 14px 14px 16px;
+  padding: 10px 14px 10px 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
@@ -174,16 +175,7 @@
   border-color: #f7f6f517;
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
 }
-.amp .b3-row.is-on::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--ds-accent);
-}
+/* Left accent bar removed per design — the row reads cleaner without it. */
 .amp .b3-check {
   width: 22px;
   height: 22px;
@@ -314,6 +306,68 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0.85;
+}
+
+/* xs FeedCardView wrapper inside the Amplify basket row — strip all the
+   card chrome (border, bg, shadow, padding) so it blends into the b3-row,
+   and let the chip row right-align to push against the trust amount. */
+.amp .b3-row-card {
+  min-width: 0;
+}
+.amp .b3-row-card .fc-card--s-xs {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  cursor: default;
+  animation: none;
+}
+.amp .b3-row-card .fc-xs-row {
+  padding: 0;
+  gap: 10px;
+}
+/* Keep the thumbnail compact inside the row */
+.amp .b3-row-card .fc-xs-thumb-wrap,
+.amp .b3-row-card .fc-xs-thumb {
+  width: 40px;
+  height: 40px;
+}
+.amp .b3-row-card .fc-xs-title {
+  color: var(--ds-ink, #fff);
+  font-size: 13px;
+  margin-top: 3px;
+}
+.amp .b3-row-card .fc-xs-domain {
+  display: none;
+}
+/* The tiers row always spans full width below the card + trust */
+.amp .b3-tiers {
+  grid-column: 1 / -1;
+}
+.amp .b3-row-trust {
+  align-self: center;
+}
+
+/* Redeem row — no weight picker, just a label. Tinted in the accent
+   color so it reads as distinct from a regular deposit row. */
+.amp .b3-tiers--redeem {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px dashed var(--ds-accent);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  opacity: 0.85;
+}
+.amp .b3-row-trust--redeem {
+  color: var(--ds-accent);
 }
 
 /* Ledger */

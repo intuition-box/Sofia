@@ -276,38 +276,102 @@
   gap: 2px;
 }
 
-/* ── Success ── */
-.wm-success-card {
+/* ── Success — peach "Transaction validated" reward takeover ──
+   Bleeds past the .b3-body padding (18 24 22) to fill the cart panel
+   edge-to-edge in peach, with Unbounded display type. */
+.wm-reward {
   position: relative;
-  border-radius: 16px;
+  flex: 1;
+  min-height: 0;
+  margin: -18px -24px -22px;
+  display: grid;
+  place-items: center;
+  padding: 48px 26px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
   overflow: hidden;
-  background: var(--card);
-  border: 1px solid var(--border);
-  animation: wm-appear 0.4s ease-out;
+  text-align: center;
+  container-type: inline-size;
+  animation: wm-reward-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.wm-success-glow {
+/* soft radiant bloom behind the headline */
+.wm-reward-rays {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--primary) 50%,
-    transparent 100%
+  inset: -40% -15% auto;
+  height: 90%;
+  background: radial-gradient(
+    58% 52% at 50% 36%,
+    rgba(255, 255, 255, 0.55),
+    transparent 70%
   );
-  opacity: 0.8;
+  opacity: 0.75;
+  pointer-events: none;
 }
-
-.wm-success-inner {
+.wm-reward-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 28px 20px;
-  gap: 12px;
+  gap: 16px;
+}
+.wm-reward-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.wm-reward-title {
+  margin: 0;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: clamp(38px, 13cqi, 56px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+.wm-reward-msg {
+  margin: 0;
+  max-width: 19ch;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.42;
+  opacity: 0.78;
+}
+.wm-reward-meta {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.wm-reward-meta > span {
+  opacity: 0.6;
+}
+.wm-reward-link {
+  color: var(--ds-on-accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.wm-reward-link:hover {
+  opacity: 0.7;
+}
+@keyframes wm-reward-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ── Error ── */
