@@ -21,6 +21,8 @@ import {
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
+import { redeemAtom } from '../services/redeemService'
+import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
   type AtomIPFSPayload,
@@ -124,7 +126,7 @@ export default function WeightModal({
   const depositTermIds = useMemo(
     () =>
       items
-        .filter((it) => (it.kind ?? 'deposit') === 'deposit')
+        .filter((it) => (it.kind ?? 'deposit') === 'deposit' && it.kind !== 'redeem')
         .map((it) => it.termId),
     [items],
   )
@@ -182,7 +184,9 @@ export default function WeightModal({
     let deposits = 0
     let creates = 0
     for (const item of items) {
-      if (item.kind === 'create-circle' && item.circleDraft) {
+      if (item.kind === 'redeem') {
+        // Redeems don't deposit — skip from cost estimate.
+      } else if (item.kind === 'create-circle' && item.circleDraft) {
         const validTopics = item.circleDraft.topicIds.filter(
           (slug) => !!TOPIC_ATOM_IDS[slug],
         )
@@ -240,12 +244,15 @@ export default function WeightModal({
   const handleSubmit = useCallback(async () => {
     const depositItems: { termId: string; amountTrust: number }[] = []
     const createItems: BatchCreateTripleItem[] = []
+    const redeemTermIds: string[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
     items.forEach((item, i) => {
       const amount = getAmount(i)
-      if (
+      if (item.kind === 'redeem') {
+        redeemTermIds.push(item.termId)
+      } else if (
         item.kind === 'create-triple' &&
         item.subjectId &&
         item.predicateId &&
@@ -265,6 +272,26 @@ export default function WeightModal({
     })
 
     let allOk = true
+
+    // Redeem: recover TRUST from each cert vault one by one.
+    if (redeemTermIds.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      const wallet = wallets[0]
+      for (const termId of redeemTermIds) {
+        const r = await redeemAtom(wallet, termId)
+        if (!r.success) {
+          allOk = false
+        } else {
+          clearOptimisticPosition(qc, wallet.address, termId)
+        }
+      }
+      if (allOk) {
+        qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+      }
+    }
 
     if (depositItems.length > 0) {
       const r = await depositBatch(depositItems)
@@ -496,8 +523,9 @@ export default function WeightModal({
                 {items.map((item, index) => {
                   const rowTrust = getAmount(index)
                   const topicMeta = resolveTopic(item)
+                  const isRedeem = item.kind === 'redeem'
                   return (
-                    <div className="b3-row is-on" key={item.id}>
+                    <div className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`} key={item.id}>
                       {/* Check doubles as the remove control — clicking an
                           active row drops it from the cart (the explorer has
                           no on/off-but-kept state like the extension). */}
@@ -545,12 +573,18 @@ export default function WeightModal({
                         </div>
                       </div>
 
-                      <div className="b3-row-trust">
-                        <span className="b3-row-trust-val">
-                          {formatTrust(rowTrust)}
-                        </span>
-                        <span className="b3-row-trust-unit">TRUST</span>
-                      </div>
+                      {isRedeem ? (
+                        <div className="b3-row-trust b3-row-trust--redeem">
+                          <span className="b3-row-trust-unit">REDEEM</span>
+                        </div>
+                      ) : (
+                        <div className="b3-row-trust">
+                          <span className="b3-row-trust-val">
+                            {formatTrust(rowTrust)}
+                          </span>
+                          <span className="b3-row-trust-unit">TRUST</span>
+                        </div>
+                      )}
 
                       {/* Tags get their own full-width line below the title so
                           the topic label reads clearly and multiple contexts
@@ -574,21 +608,29 @@ export default function WeightModal({
                         </div>
                       ) : null}
 
-                      <div className="b3-tiers" role="radiogroup">
-                        {WEIGHT_TIERS.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={weights[index] === t.value}
-                            className={`b3-tier${weights[index] === t.value ? ' is-on' : ''}`}
-                            disabled={processing}
-                            onClick={() => handleWeightSelect(index, t.value)}
-                          >
-                            <span className="b3-tier-label">{t.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                      {isRedeem ? (
+                        // Redeem rows: no weight picker — the full position
+                        // is redeemed, nothing to tune.
+                        <div className="b3-tiers b3-tiers--redeem">
+                          <span className="b3-tier-label">All shares returned</span>
+                        </div>
+                      ) : (
+                        <div className="b3-tiers" role="radiogroup">
+                          {WEIGHT_TIERS.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              role="radio"
+                              aria-checked={weights[index] === t.value}
+                              className={`b3-tier${weights[index] === t.value ? ' is-on' : ''}`}
+                              disabled={processing}
+                              onClick={() => handleWeightSelect(index, t.value)}
+                            >
+                              <span className="b3-tier-label">{t.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )
                 })}

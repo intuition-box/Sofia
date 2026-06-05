@@ -412,7 +412,7 @@ export default function ScoresPage() {
           />
         }
         isOwner
-        onDelete={() => redeemCert(cert.termId)}
+        onDelete={() => redeemCert(cert.termId, cleanLabel(cert.objectLabel || domain || ''), url)}
       />
     )
   }

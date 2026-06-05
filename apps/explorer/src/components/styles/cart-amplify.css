@@ -316,6 +316,28 @@
   opacity: 0.85;
 }
 
+/* Redeem row — no weight picker, just a label. Tinted in the accent
+   color so it reads as distinct from a regular deposit row. */
+.amp .b3-tiers--redeem {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px dashed var(--ds-accent);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  opacity: 0.85;
+}
+.amp .b3-row-trust--redeem {
+  color: var(--ds-accent);
+}
+
 /* Ledger */
 .amp .b3-ledger {
   border-top: 1px dashed rgba(255, 255, 255, 0.3);

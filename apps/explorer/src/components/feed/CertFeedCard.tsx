@@ -40,7 +40,7 @@ export default function CertFeedCard({
   topicById,
   isOwner = false,
 }: CertFeedCardProps) {
-  const { redeemCert, isRedeeming } = useRedeemCert()
+  const { redeemCert } = useRedeemCert()
   const url = cert.objectUrl || ''
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
   const intentType = predicateLabelToIntentionType(cert.intention)
@@ -83,7 +83,7 @@ export default function CertFeedCard({
         />
       }
       isOwner={isOwner}
-      onDelete={isOwner ? () => redeemCert(cert.termId) : undefined}
+      onDelete={isOwner ? () => redeemCert(cert.termId, title, url) : undefined}
     />
   )
 }
