@@ -191,7 +191,7 @@ export function ScoresDonut({
               textAnchor="middle"
               className="sc2-center-sub"
             >
-              base {focus.base} · boost +{focus.boost}
+              base {focus.base} · backers +{focus.boost}
             </text>
           )}
         </g>
@@ -235,7 +235,7 @@ export function ScoresDonut({
           <div className="sc2-legend-row">
             <span className="sc2-lg-halo" />
             <span>
-              outer = <b>others' boost</b>
+              outer = <b>backers</b>
             </span>
           </div>
         )}
@@ -257,7 +257,7 @@ export function ScoresDonut({
               </div>
               <div className="sc2-ctip-s">
                 {mode === 'topics' && hv.boost > 0
-                  ? `base ${hv.base} · boost +${hv.boost}`
+                  ? `base ${hv.base} · backers +${hv.boost}`
                   : `${hv.certCount} certs`}
               </div>
             </div>
