@@ -550,23 +550,36 @@ export default function WeightModal({
                     } catch { return '' }
                   })()
 
-                  // Verb/topic chips for the xs card footer row
-                  const verbs = (!topicMeta && item.intention)
-                    ? [{ label: item.intention, color: item.intentionColor }]
-                    : []
-                  const topics = topicMeta
-                    ? [{ id: topicMeta.id, label: topicMeta.label, color: topicMeta.color }]
-                    : []
+                  // Verb/topic chips built AFTER badgeTopic resolution so topic
+                  // pills work for circle-feed vote items too.
+                  // (computed after badgeTopic below)
 
-                  // Topic icon disc badge — same as ProfileDrawer Last Activity
-                  const badge = topicMeta ? (
+                  // Topic icon disc badge — same as ProfileDrawer Last Activity.
+                  // Also try to resolve from `item.intention` which is set to the
+                  // topic slug label for circle-feed vote items (where resolveTopic
+                  // returns null because the termId is a context triple, not atom).
+                  const badgeTopic = topicMeta ?? (() => {
+                    const byLabel = [...TOPIC_BY_ID.values()].find(
+                      (t) => t.label.toLowerCase() === item.intention?.toLowerCase()
+                    )
+                    return byLabel ?? null
+                  })()
+                  const badge = badgeTopic ? (
                     <TopicBadge
-                      topicId={topicMeta.id}
-                      color={topicMeta.color}
+                      topicId={badgeTopic.id}
+                      color={badgeTopic.color}
                       size={20}
-                      title={topicMeta.label}
+                      title={badgeTopic.label}
                     />
                   ) : null
+
+                  // Now that badgeTopic is resolved, build the chip arrays
+                  const topics = badgeTopic
+                    ? [{ id: badgeTopic.id, label: badgeTopic.label, color: badgeTopic.color }]
+                    : []
+                  const verbs = (!badgeTopic && item.intention)
+                    ? [{ label: item.intention, color: item.intentionColor }]
+                    : []
 
                   return (
                     <div className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`} key={item.id}>
@@ -595,6 +608,7 @@ export default function WeightModal({
                           topics={topics}
                           up={-1}
                           down={-1}
+                          thumbnailSrc={item.favicon || undefined}
                           badgeSlot={badge}
                         />
                       </div>

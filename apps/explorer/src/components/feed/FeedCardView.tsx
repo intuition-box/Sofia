@@ -226,6 +226,10 @@ interface FeedCardViewProps {
    *  thumbnail (e.g. a topic icon disc or support/oppose check). */
   badgeSlot?: ReactNode
   onDelete?: () => void
+  /** Direct image URL for the xs thumbnail — bypasses UrlPreview (which
+   *  fetches an OG image) so callers can show a favicon or any asset
+   *  they already have (e.g. in the Amplify cart). */
+  thumbnailSrc?: string
 }
 
 export default function FeedCardView({
@@ -252,6 +256,7 @@ export default function FeedCardView({
   isOwner = false,
   onDelete,
   badgeSlot,
+  thumbnailSrc,
 }: FeedCardViewProps) {
   const [removed, setRemoved] = useState(false)
   const initials = (handle || '?').replace(/^0x/, '').slice(0, 2).toUpperCase()
@@ -331,13 +336,25 @@ export default function FeedCardView({
               the clipped thumb without being cut off. */}
           <div className="fc-xs-thumb-wrap">
             <div className="fc-xs-thumb">
-              <UrlPreview
-                variant="card"
-                url={url}
-                domain={domain}
-                className="fc-xs-thumb-img"
-                alt={title || domain}
-              />
+              {thumbnailSrc ? (
+                <img
+                  src={thumbnailSrc}
+                  alt=""
+                  className="fc-xs-thumb-img"
+                  style={{ objectFit: 'contain', padding: '6px', background: '#fff', borderRadius: '8px' }}
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
+              ) : (
+                <UrlPreview
+                  variant="card"
+                  url={url}
+                  domain={domain}
+                  className="fc-xs-thumb-img"
+                  alt={title || domain}
+                />
+              )}
             </div>
             {badgeSlot && (
               <span className="fc-xs-badge">{badgeSlot}</span>
