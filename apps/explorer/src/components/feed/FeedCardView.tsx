@@ -371,7 +371,7 @@ export default function FeedCardView({
                 {when}
               </span>
               {isOwner && onDelete && (
-                <OwnerMenu onDelete={() => setRemoved(true)} />
+                <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
               )}
             </div>
             <h3 className="fc-xs-title">{title}</h3>

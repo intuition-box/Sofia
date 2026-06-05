@@ -15,6 +15,7 @@ import { Search, TrendingUp, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useEnsNames } from '@/hooks/useEnsNames'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import {
@@ -85,6 +86,11 @@ export default function PlatformDetailPage() {
   const { user } = usePrivy()
   const address = user?.wallet?.address
   const { addresses: linkedAddresses } = useLinkedWallets()
+  const { getDisplay, getAvatar } = useEnsNames(
+    address ? [address as `0x${string}`] : [],
+  )
+  const selfDisplay = address ? getDisplay(address as `0x${string}`) : ''
+  const selfAvatar = address ? getAvatar(address as `0x${string}`) : ''
   // Public-profile entry point: `?address=0x…` lets the page render
   // any wallet's certs on this platform, not just the connected user's.
   // Falls back to the connected user when no override is provided so
@@ -257,7 +263,8 @@ export default function PlatformDetailPage() {
                 <CertFeedCard
                   key={cert.termId}
                   cert={cert}
-                  handle={address ? `${address.slice(0, 6)}…${address.slice(-4)}` : ''}
+                  handle={selfDisplay || (address ? `${address.slice(0, 6)}…${address.slice(-4)}` : '')}
+                  avatarUrl={selfAvatar || undefined}
                   topicById={topicById}
                   isOwner
                 />
