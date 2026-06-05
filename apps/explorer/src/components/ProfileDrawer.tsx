@@ -7,7 +7,6 @@ import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { useGroups } from '@/hooks/useGroups'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
-import { getTopicIcon } from '@/config/topicEmoji'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { VerbPill } from './profile/FeedPills'
@@ -277,20 +276,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
-                  // Topic-icon badge over the favicon for topic-tag events.
-                  // Like / Invest / cert events carry their meaning in the pill.
-                  const badge = a.topic ? (
-                    <span
-                      className="pd-la-badge pd-la-badge--topic"
-                      style={{ ['--pill-color' as string]: a.topic.color || 'var(--ds-accent)' }}
-                      title={a.topic.label}
-                      aria-label={a.topic.label}
-                    >
-                      <span className="material-symbols-outlined sf-topic-pill-glyph" aria-hidden="true">
-                        {getTopicIcon(a.topic.id)}
-                      </span>
-                    </span>
-                  ) : null
                   const verbs = a.verb ? [{ label: a.verb.label, color: a.verb.color }] : []
                   const topics = a.topic ? [{ id: a.topic.id, label: a.topic.label, color: a.topic.color }] : []
                   return (
@@ -307,7 +292,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       topics={topics}
                       up={-1}
                       down={-1}
-                      badgeSlot={badge}
                       onOpen={() => {
                         if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer')
                       }}
