@@ -225,6 +225,9 @@ interface FeedCardViewProps {
   /** Optional badge overlay rendered in the top-right corner of the xs
    *  thumbnail (e.g. a topic icon disc or support/oppose check). */
   badgeSlot?: ReactNode
+  /** Optional badge overlay pinned to the top-right of the media area on the
+   *  full card (lg/md/sm) — e.g. a "Pioneer" marker on URLs you first marked. */
+  cornerBadge?: ReactNode
   onDelete?: () => void
   /** Direct image URL for the xs thumbnail — bypasses UrlPreview (which
    *  fetches an OG image) so callers can show a favicon or any asset
@@ -256,6 +259,7 @@ export default function FeedCardView({
   isOwner = false,
   onDelete,
   badgeSlot,
+  cornerBadge,
   thumbnailSrc,
 }: FeedCardViewProps) {
   const [removed, setRemoved] = useState(false)
@@ -492,6 +496,7 @@ export default function FeedCardView({
             <span>{domain}</span>
           </div>
         )}
+        {cornerBadge && <div className="fc-media-corner">{cornerBadge}</div>}
       </div>
 
       {/* Title + context chips (verb / topic / category) directly below it */}
