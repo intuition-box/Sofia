@@ -13,7 +13,7 @@
  * decision content the free tier has no access to.
  */
 import { Check } from 'lucide-react'
-import { circleUpsellToast } from './CircleUpsellToast'
+import { circleProModal } from './CircleProModal'
 
 interface CircleLockModuleProps {
   /** Section heading (e.g. "Decisions"). */
@@ -98,8 +98,7 @@ export default function CircleLockModule({
   feats,
   ghostRows = 3,
 }: CircleLockModuleProps) {
-  const onUpgrade = () =>
-    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
+  const onUpgrade = () => circleProModal()
 
   return (
     <section className="cf-module" aria-labelledby="cf-decisions-title">

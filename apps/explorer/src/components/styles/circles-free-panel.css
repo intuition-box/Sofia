@@ -38,11 +38,13 @@
   flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: -24px 0 60px -24px
-    color-mix(in srgb, var(--ds-ink) 55%, transparent);
 }
+/* Glow only while open — when closed the panel sits off-screen right and a
+ * base box-shadow projecting left would bleed onto the visible viewport. */
 .cf-panel.is-open {
   transform: translateX(0);
+  box-shadow: -24px 0 60px -24px
+    color-mix(in srgb, var(--ds-ink) 55%, transparent);
 }
 .cf-panel-head {
   display: flex;

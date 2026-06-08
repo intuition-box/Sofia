@@ -91,11 +91,13 @@ export default function CertFeedCard({
         if (url) window.open(url, '_blank', 'noopener,noreferrer')
       }}
       addContextSlot={
-        <ContextPicker
-          certTermId={cert.termId}
-          certTitle={title}
-          existingTopics={cert.contextSlugs}
-        />
+        isOwner ? (
+          <ContextPicker
+            certTermId={cert.termId}
+            certTitle={title}
+            existingTopics={cert.contextSlugs}
+          />
+        ) : undefined
       }
       isOwner={isOwner}
       onDelete={isOwner ? () => redeemCert(cert.termId, title, url) : undefined}

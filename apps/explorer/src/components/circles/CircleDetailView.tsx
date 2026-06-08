@@ -48,6 +48,7 @@ import AllMembersPanel from './AllMembersPanel'
 import MembersPanelFree from './MembersPanelFree'
 import CircleJoinOverlay from './CircleJoinOverlay'
 import CircleUpsellToast, { circleUpsellToast } from './CircleUpsellToast'
+import CircleProModal, { circleProModal } from './CircleProModal'
 import type { CircleData } from '@/types/circle'
 // Base circle chrome (feed filters `.crd-filter-*`, hot-picks `.crd-te-*`,
 // feed layout) lives in circles.css — imported here so the detail view is
@@ -128,6 +129,12 @@ export default function CircleDetailView({
   // Connect / Install Sofia CTA so the visitor has a clear next step.
   const showConnectCta = locked && !authenticated
   const [allMembersOpen, setAllMembersOpen] = useState(false)
+  // In-page tab toggled by the locked "Decisions" KPI tile. `overview`
+  // shows Members + Topics + Activity; `decisions` swaps that column for
+  // the locked Decisions module + upgrade band (the Pro paywall preview).
+  const [activeTab, setActiveTab] = useState<'overview' | 'decisions'>(
+    'overview',
+  )
 
   const effectiveColor = colorOverride ?? circle.color
   // Free-tier framing (plan pill, locked Decisions KPI, Pro hints) is
@@ -136,9 +143,14 @@ export default function CircleDetailView({
   // branches below are kept as dead fallbacks for now; remove once the
   // Free framing is confirmed everywhere.)
   const isFree = true
+  // The personal Trust Circle (`kind === 'trust'`) can't be upgraded to Pro
+  // and isn't on a Free plan either — it's a circle the user owns. So it
+  // keeps the rich Free layout (ranked members, topics treemap, Activity)
+  // but every plan affordance (plan badge, Upgrade buttons, locked
+  // Decisions, Pro hints, upsell toast) is suppressed.
+  const showPlan = circle.kind !== 'trust'
 
-  const upgrade = () =>
-    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
+  const upgrade = () => circleProModal()
   const memberClick = () =>
     circleUpsellToast(`You're a member of ${circle.name}`)
 
@@ -172,9 +184,14 @@ export default function CircleDetailView({
           stats={!locked ? stats : undefined}
           totalMembers={circle.members.length}
           isMember={circle.isMember}
+          showPlan={showPlan}
           onJoin={onJoin}
           onUpgrade={upgrade}
           onMemberClick={memberClick}
+          decisionsActive={activeTab === 'decisions'}
+          onDecisionsClick={() =>
+            setActiveTab((t) => (t === 'decisions' ? 'overview' : 'decisions'))
+          }
         />
       ) : (
         <CircleDetailHero
@@ -220,55 +237,63 @@ export default function CircleDetailView({
             className={gated ? 'content-gated' : undefined}
             aria-hidden={gated}
           >
-            <div className="crd-info-row">
-              <MembersFree
-                ranked={activity.ranked}
-                activity={activity}
-                streaks={streaks}
-                totalMembers={circle.members.length}
-                onViewAll={() => setAllMembersOpen(true)}
-                onUpgrade={upgrade}
-              />
-            </div>
-            <div className="crd-info-row">
-              <CircleTopicsTreemap items={feedItems} />
-            </div>
+            {showPlan && activeTab === 'decisions' ? (
+              /* Decisions tab — the locked Pro module + upgrade band (Phase
+                 3), shown in place of Members/Topics/Activity when the user
+                 opens the "Decisions" KPI tile. Re-clicking the tile (or the
+                 toggle) returns to the overview. */
+              <>
+                <CircleLockModule
+                  title="Decisions"
+                  lockTitle="Expertise-weighted voting"
+                  desc="Run Circle decisions where each vote is weighted by measured topic expertise — not one wallet, one vote."
+                  feats={[
+                    'Weighted vote room',
+                    'Topic-matched quorum',
+                    'Transparent weighting',
+                  ]}
+                  ghostRows={3}
+                />
+                <CircleUpgradeBand />
+              </>
+            ) : (
+              <>
+                <div className="crd-info-row">
+                  <MembersFree
+                    ranked={activity.ranked}
+                    activity={activity}
+                    streaks={streaks}
+                    totalMembers={circle.members.length}
+                    onViewAll={() => setAllMembersOpen(true)}
+                    onUpgrade={upgrade}
+                    showPlan={showPlan}
+                  />
+                </div>
+                <div className="crd-info-row">
+                  <CircleTopicsTreemap items={feedItems} showPlan={showPlan} />
+                </div>
 
-            {/* Activity module — the existing feed card + verb/topic/sort
-                filters, retitled "Activity" (the feed's own heading is
-                suppressed via `hideTitle` so it isn't duplicated). */}
-            <section
-              className="cf-module crd-activity-module"
-              aria-labelledby="cf-activity-title"
-            >
-              <div className="cf-module-head">
-                <h2 id="cf-activity-title" className="cf-module-title">
-                  Activity
-                </h2>
-              </div>
-              <CircleFeedSection
-                addresses={circle.addresses}
-                circleName={circle.name}
-                members={circle.members}
-                hideTitle
-              />
-            </section>
-
-            {/* Decisions — locked Pro module (Phase 3). */}
-            <CircleLockModule
-              title="Decisions"
-              lockTitle="Expertise-weighted voting"
-              desc="Run Circle decisions where each vote is weighted by measured topic expertise — not one wallet, one vote."
-              feats={[
-                'Weighted vote room',
-                'Topic-matched quorum',
-                'Transparent weighting',
-              ]}
-              ghostRows={3}
-            />
-
-            {/* Upgrade band — last in the free content. */}
-            <CircleUpgradeBand />
+                {/* Activity module — the existing feed card + verb/topic/sort
+                    filters, retitled "Activity" (the feed's own heading is
+                    suppressed via `hideTitle` so it isn't duplicated). */}
+                <section
+                  className="cf-module crd-activity-module"
+                  aria-labelledby="cf-activity-title"
+                >
+                  <div className="cf-module-head">
+                    <h2 id="cf-activity-title" className="cf-module-title">
+                      Activity
+                    </h2>
+                  </div>
+                  <CircleFeedSection
+                    addresses={circle.addresses}
+                    circleName={circle.name}
+                    members={circle.members}
+                    hideTitle
+                  />
+                </section>
+              </>
+            )}
           </div>
 
           {gated && (
@@ -334,6 +359,7 @@ export default function CircleDetailView({
             circle.members.filter((m) => activity.isActive(m)).length
           }
           circleName={circle.name}
+          showPlan={showPlan}
           onUpgrade={upgrade}
           onToast={circleUpsellToast}
         />
@@ -346,7 +372,8 @@ export default function CircleDetailView({
         />
       )}
 
-      {isFree && <CircleUpsellToast />}
+      {isFree && showPlan && <CircleUpsellToast />}
+      {isFree && showPlan && <CircleProModal circleName={circle.name} />}
     </div>
   )
 }

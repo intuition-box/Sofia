@@ -21,6 +21,9 @@ interface FeedCardProps {
   displayName: string
   avatar: string
   isPrivate?: boolean
+  /** Whether this cert is the viewer's own. The "+ Context" tagging CTA shows
+   *  only on your own Marks; on others' you only get the like/dislike thumbs. */
+  isOwner?: boolean
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
 }
 
@@ -29,6 +32,7 @@ export default function FeedCard({
   displayName,
   avatar,
   isPrivate,
+  isOwner = false,
   onDeposit,
 }: FeedCardProps) {
   // A like/dislike stakes the cert's "in context of <topic>" nested
@@ -92,15 +96,17 @@ export default function FeedCard({
         if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer')
       }}
       addContextSlot={
-        <ContextPicker
-          certTermId={certTermId}
-          certTitle={item.title || item.domain}
-          certFavicon={item.favicon}
-          existingTopics={[
-            ...(item.topicContexts ?? []),
-            ...(item.categorySlugs ?? []),
-          ]}
-        />
+        isOwner ? (
+          <ContextPicker
+            certTermId={certTermId}
+            certTitle={item.title || item.domain}
+            certFavicon={item.favicon}
+            existingTopics={[
+              ...(item.topicContexts ?? []),
+              ...(item.categorySlugs ?? []),
+            ]}
+          />
+        ) : undefined
       }
     />
   )

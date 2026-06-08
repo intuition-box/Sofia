@@ -122,7 +122,7 @@ describe('computeBackersByTopic', () => {
     ])
   })
 
-  it('drops zero / unknown-credibility backers (Sybil anti-farm)', () => {
+  it('includes zero / unknown-credibility backers (count is MCP-independent)', () => {
     const supportersByClaim = new Map([
       [
         'c1',
@@ -133,12 +133,13 @@ describe('computeBackersByTopic', () => {
       accounts: accounts(ALICE),
       certs: [cert('c1', 't1', ['tech'])],
       supportersByClaim,
-      credibility: cred, // SYBIL absent → 0 → dropped
+      credibility: cred, // SYBIL absent → 0, but still listed (sorted last)
     })
     expect(result.byTopic.get('tech')).toEqual([
       { address: BOB, credibility: 0.5 },
+      { address: SYBIL, credibility: 0 },
     ])
-    expect(result.backerCount).toBe(1)
+    expect(result.backerCount).toBe(2)
   })
 
   it('dedupes a backer who appears across multiple claims of one topic', () => {

@@ -49,8 +49,10 @@ const MCP_ENDPOINT = `${MCP_TRUST_URL}/mcp`
 // server-side, so under a burst (e.g. 48 followers) a single call can hang. A
 // hung fetch would never resolve/reject and would stall the whole batch
 // (Promise.all never settles → query stuck "loading" forever). Aborting turns
-// a hang into a catchable error → the caller falls back to 0. */
-const MCP_TIMEOUT_MS = 20_000
+// a hang into a catchable error → the caller reuses the last-known score.
+// Measured cold-call latency is ~25s (warm: ~0.2s), so 20s was clipping the
+// first pass and zeroing real backers; 45s lets the cold pass land. */
+const MCP_TIMEOUT_MS = 45_000
 
 function parseSSE(raw: string): unknown {
   // SSE format: "event: message\ndata: {json}\n\n"

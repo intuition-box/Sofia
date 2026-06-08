@@ -22,6 +22,9 @@ interface CircleTopEngagedStripProps {
   getAvatar: (address: Address) => string
   /** Like / dislike handler, threaded from the feed section. */
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
+  /** Lowercased set of the viewer's wallets — gates the "+ Context" CTA to
+   *  own Marks only (same rule as the main feed). */
+  ownAddresses?: ReadonlySet<string>
   /** Live set of staked term_ids, threaded from the feed section. */
   livePositionTermIds?: ReadonlySet<string>
 }
@@ -31,6 +34,7 @@ export default function CircleTopEngagedStrip({
   getDisplay,
   getAvatar,
   onDeposit,
+  ownAddresses,
   livePositionTermIds,
 }: CircleTopEngagedStripProps) {
   if (items.length === 0) return null
@@ -46,12 +50,16 @@ export default function CircleTopEngagedStrip({
           const addr = item.certifierAddress as Address | undefined
           const name = addr ? getDisplay(addr) : item.certifier
           const av = addr ? getAvatar(addr) : ''
+          const isOwner =
+            ownAddresses?.has((item.certifierAddress || '').toLowerCase()) ??
+            false
           return (
             <div key={item.id} className="crd-top-engaged-item">
               <CircleFeedCard
                 item={item}
                 certifierName={name}
                 certifierAvatar={av}
+                isOwner={isOwner}
                 onDeposit={onDeposit}
                 livePositionTermIds={livePositionTermIds}
               />

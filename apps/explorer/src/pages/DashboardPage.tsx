@@ -10,6 +10,7 @@ import { Button } from '../components/ui/button'
 import { Search, X, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import type { Address } from 'viem'
 import { PageHero } from '@0xsofia/design-system'
 import FeedCard from '../components/home/FeedCard'
@@ -96,6 +97,15 @@ export default function DashboardPage() {
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  // Own certs vs others' — "+ Context" only shows on your own Marks; on others'
+  // you can only back (like). Lowercased linked-wallet set to test each card's
+  // certifier against.
+  const { addresses: linkedAddresses } = useLinkedWallets()
+  const ownAddresses = useMemo(
+    () => new Set(linkedAddresses.map((a) => a.toLowerCase())),
+    [linkedAddresses],
+  )
 
   // Cart system
   const cart = useCart()
@@ -382,12 +392,16 @@ export default function DashboardPage() {
                         const addr = item.certifierAddress as Address
                         const name = addr ? getDisplay(addr) : item.certifier
                         const av = addr ? getAvatar(addr) : ''
+                        const isOwner = ownAddresses.has(
+                          (item.certifierAddress || '').toLowerCase(),
+                        )
                         return (
                           <FeedCard
                             key={item.id}
                             item={item}
                             displayName={name}
                             avatar={av}
+                            isOwner={isOwner}
                             onDeposit={handleDeposit}
                           />
                         )

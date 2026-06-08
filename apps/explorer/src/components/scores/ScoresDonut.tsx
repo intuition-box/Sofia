@@ -1,9 +1,8 @@
 /**
- * ScoresDonut — the reputation constellation donut, extracted from ScoresPage
- * to keep that page under the 800-line cap. Module-level so its hover state
- * survives parent re-renders. Arc = score, inner band = base (your certs),
- * glowing outer band = boost (others). Toggle Topics <-> Verbs; click a
- * segment to select it.
+ * ScoresDonut — the reputation donut. Each segment's arc length = that topic's
+ * score; click a segment to select it (which filters the certs shown below).
+ * A single flat ring (no base/boost radial split, no glow halo) keeps it
+ * legible. Module-level so its hover state survives parent re-renders.
  */
 import { useState } from 'react'
 
@@ -26,8 +25,6 @@ function arcPath(ri: number, ro: number, a0: number, a1: number): string {
   return `M${x0o} ${y0o} A${ro} ${ro} 0 ${large} 1 ${x1o} ${y1o} L${x0i} ${y0i} A${ri} ${ri} 0 ${large} 0 ${x1i} ${y1i} Z`
 }
 
-export type Mode = 'topics' | 'verbs'
-
 export interface Seg {
   slug: string
   label: string
@@ -46,15 +43,11 @@ const fmt = (n: number) => Math.round(n).toLocaleString('en-US')
 /* ── Donut (module-level so its hover state survives parent re-renders) ── */
 export function ScoresDonut({
   items,
-  mode,
-  setMode,
   sel,
   setSel,
   totalScore,
 }: {
   items: Seg[]
-  mode: Mode
-  setMode: (m: Mode) => void
   sel: string | null
   setSel: (s: string | null) => void
   totalScore: number
@@ -62,16 +55,8 @@ export function ScoresDonut({
   const [hover, setHover] = useState<string | null>(null)
   const focus = sel ? items.find((s) => s.slug === sel) : null
   const hv = hover ? items.find((s) => s.slug === hover) : null
-  const centerScore = focus
-    ? focus.score
-    : mode === 'topics'
-      ? totalScore
-      : items.reduce((s, x) => s + x.score, 0)
-  const centerLabel = focus
-    ? focus.label
-    : mode === 'topics'
-      ? 'total score'
-      : 'total certs'
+  const centerScore = focus ? focus.score : totalScore
+  const centerLabel = focus ? focus.label : 'total score'
 
   return (
     <div className="sc2-canvas">
@@ -81,32 +66,10 @@ export function ScoresDonut({
         preserveAspectRatio="xMidYMid meet"
         onClick={() => setSel(null)}
       >
-        <defs>
-          {items.map((s) => (
-            <filter
-              key={'f' + s.slug}
-              id={'glow-' + s.slug}
-              x="-40%"
-              y="-40%"
-              width="180%"
-              height="180%"
-            >
-              <feDropShadow
-                dx="0"
-                dy="0"
-                stdDeviation="5"
-                floodColor={s.color}
-                floodOpacity="0.9"
-              />
-            </filter>
-          ))}
-        </defs>
-
         {items.map((s) => {
           const dim = sel && sel !== s.slug
           const isFocus = sel === s.slug
           const ro = RO + (isFocus ? 10 : 0)
-          const split = s.score ? RI + (ro - RI) * (s.base / s.score) : ro
           const wide = s.a1 - s.a0 > 16
           return (
             <g
@@ -122,21 +85,10 @@ export function ScoresDonut({
               onMouseLeave={() => setHover((h) => (h === s.slug ? null : h))}
             >
               <path
-                d={arcPath(RI, split, s.a0, s.a1)}
+                d={arcPath(RI, ro, s.a0, s.a1)}
                 fill={s.color}
-                fillOpacity={mode === 'topics' ? 0.72 : 1}
+                fillOpacity={0.82}
               />
-              {s.boost > 0 && (
-                <path
-                  d={arcPath(split + 1.5, ro, s.a0, s.a1)}
-                  fill={s.color}
-                  filter={
-                    isFocus || hover === s.slug
-                      ? `url(#glow-${s.slug})`
-                      : 'none'
-                  }
-                />
-              )}
               {(isFocus || hover === s.slug) && (
                 <path
                   d={arcPath(RI, ro, s.a0, s.a1)}
@@ -176,15 +128,10 @@ export function ScoresDonut({
           >
             {fmt(centerScore)}
           </text>
-          <text
-            x={C}
-            y={290}
-            textAnchor="middle"
-            className="sc2-center-lab"
-          >
+          <text x={C} y={290} textAnchor="middle" className="sc2-center-lab">
             {centerLabel}
           </text>
-          {focus && mode === 'topics' && (
+          {focus && (
             <text
               x={C}
               y={C + 38}
@@ -196,50 +143,6 @@ export function ScoresDonut({
           )}
         </g>
       </svg>
-
-      <div className="sc2-modes">
-        <button
-          className={`sc2-mode${mode === 'topics' ? ' active' : ''}`}
-          onClick={() => {
-            setMode('topics')
-            setSel(null)
-          }}
-        >
-          Topics
-        </button>
-        <button
-          className={`sc2-mode${mode === 'verbs' ? ' active' : ''}`}
-          onClick={() => {
-            setMode('verbs')
-            setSel(null)
-          }}
-        >
-          Verbs
-        </button>
-      </div>
-
-      <div className="sc2-legend">
-        <div className="sc2-legend-row">
-          <span className="sc2-lg-arc" />
-          <span>
-            arc = <b>score</b>
-          </span>
-        </div>
-        <div className="sc2-legend-row">
-          <span className="sc2-lg-core" />
-          <span>
-            inner = <b>your certs</b>
-          </span>
-        </div>
-        {mode === 'topics' && (
-          <div className="sc2-legend-row">
-            <span className="sc2-lg-halo" />
-            <span>
-              outer = <b>backers</b>
-            </span>
-          </div>
-        )}
-      </div>
 
       {hv &&
         (() => {
@@ -256,7 +159,7 @@ export function ScoresDonut({
                 {hv.label} · {hv.score}
               </div>
               <div className="sc2-ctip-s">
-                {mode === 'topics' && hv.boost > 0
+                {hv.boost > 0
                   ? `base ${hv.base} · backers +${hv.boost}`
                   : `${hv.certCount} certs`}
               </div>

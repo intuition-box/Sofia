@@ -31,6 +31,12 @@ interface CircleFeedCardProps {
    */
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
   /**
+   * Whether this cert belongs to the viewer. The "+ Context" tagging CTA is
+   * shown only on your own Marks; on someone else's claim you can only back it
+   * (the like/dislike thumbs). Defaults to false (others' cards).
+   */
+  isOwner?: boolean
+  /**
    * Live set of term_ids the user has shares > 0 on, sourced from the
    * realtime positions cache. Unioned with the per-vault `userSupported`
    * / `userOpposed` flags so the thumb state updates instantly.
@@ -43,6 +49,7 @@ export default function CircleFeedCard({
   certifierName,
   certifierAvatar,
   onDeposit,
+  isOwner = false,
   livePositionTermIds,
 }: CircleFeedCardProps) {
   const navigate = useNavigate()
@@ -142,15 +149,17 @@ export default function CircleFeedCard({
         }
       }}
       addContextSlot={
-        <ContextPicker
-          certTermId={certTermId}
-          certTitle={item.title || host}
-          certFavicon={item.favicon}
-          existingTopics={[
-            ...item.topicContexts,
-            ...(item.categorySlugs ?? []),
-          ]}
-        />
+        isOwner ? (
+          <ContextPicker
+            certTermId={certTermId}
+            certTitle={item.title || host}
+            certFavicon={item.favicon}
+            existingTopics={[
+              ...item.topicContexts,
+              ...(item.categorySlugs ?? []),
+            ]}
+          />
+        ) : undefined
       }
     />
   )

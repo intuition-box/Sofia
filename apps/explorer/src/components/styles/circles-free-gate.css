@@ -427,3 +427,189 @@
     text-align: left;
   }
 }
+
+/* ── Pro upsell modal (replaces the upgrade toast) ───────────── */
+/* Fixed, centered dialog firing from every "Upgrade to Pro" CTA.
+   Shares the JoinGate card's glass/typography language so the upsell
+   reads as part of the same family. */
+.pro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background: color-mix(in srgb, var(--ds-ink) 58%, transparent);
+  backdrop-filter: blur(4px);
+  animation: jg-in 0.22s ease;
+}
+.pro-modal {
+  position: relative;
+  width: 540px;
+  max-width: 100%;
+  max-height: calc(100dvh - 64px);
+  overflow-y: auto;
+  text-align: center;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 22px;
+  padding: 34px 34px 30px;
+  box-shadow: 0 40px 110px color-mix(in srgb, var(--ds-ink) 38%, transparent);
+  animation: pro-modal-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes pro-modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.pro-modal-x {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.13s,
+    background 0.13s,
+    border-color 0.13s;
+}
+.pro-modal-x:hover {
+  color: var(--ds-ink);
+  background: var(--ds-card-hover, var(--ds-accent-soft));
+  border-color: var(--ds-border);
+}
+.pro-modal-x svg {
+  width: 16px;
+  height: 16px;
+}
+.pro-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--ds-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, transparent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+.pro-modal-badge-ic {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.pro-modal-title {
+  font-family: var(--ds-font-display);
+  font-weight: 900;
+  font-size: 27px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  margin: 14px 0 0;
+}
+.pro-modal-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ds-muted);
+  margin: 11px auto 0;
+  max-width: 440px;
+  text-wrap: pretty;
+}
+.pro-modal-feats {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.pro-modal-feat {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px 15px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
+  border: 1px solid var(--ds-border-soft);
+}
+.pro-modal-feat-ic {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--ds-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 30%, transparent);
+  color: var(--ds-accent);
+}
+.pro-modal-feat-ic svg {
+  width: 17px;
+  height: 17px;
+}
+.pro-modal-feat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.pro-modal-feat-title {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.pro-modal-feat-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  text-wrap: pretty;
+}
+.pro-modal-foot {
+  margin-top: 24px;
+}
+.pro-modal-cta {
+  width: 100%;
+  justify-content: center;
+  font-size: 12.5px;
+  padding: 13px;
+  border-radius: 12px;
+}
+.pro-modal-cta-ic {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.pro-modal-note {
+  display: block;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ds-muted-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pro-modal-overlay,
+  .pro-modal {
+    animation: none;
+  }
+}

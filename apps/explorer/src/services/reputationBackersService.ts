@@ -48,9 +48,12 @@ export interface BackersResult {
 }
 
 /**
- * Per-topic backers: the accounts that positioned strictly after the user on
- * the user's claims in that topic, with credibility > 0, deduped per topic and
- * sorted strongest-first. ISO timestamps compare lexicographically.
+ * Per-topic backers: EVERY account that positioned strictly after the user on
+ * the user's claims in that topic, deduped per topic and sorted by credibility
+ * strongest-first. The count is pure indexer data (MCP-independent) so it's
+ * stable across reloads; credibility is the displayed trust score (0 when the
+ * engine doesn't know them) and weights the boost, not the count. ISO
+ * timestamps compare lexicographically.
  */
 export function computeBackersByTopic({
   accounts,
@@ -85,8 +88,11 @@ export function computeBackersByTopic({
         perTopic.set(topic, m)
       }
       for (const f of followers) {
+        // Every account that positioned after you is a backer — the COUNT is
+        // pure indexer data, so it stays stable across reloads regardless of
+        // the MCP. Credibility is just their displayed trust score (0 when the
+        // engine doesn't know them yet); it weights the boost, not the count.
         const cred = credibility.get(f.account) ?? 0
-        if (cred <= 0) continue
         if (!m.has(f.account)) m.set(f.account, cred)
         if (!all.has(f.account)) all.set(f.account, cred)
       }

@@ -15,6 +15,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import type { Address } from 'viem'
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
@@ -86,6 +87,15 @@ export default function CircleFeedSection({
 
   const { authenticated } = usePrivy()
   const cart = useCart()
+
+  // Own certs vs others'. The "+ Context" tagging CTA only makes sense on your
+  // own Marks; on someone else's claim you can only back it (like). Lowercased
+  // set of the viewer's linked wallets to test each card's certifier against.
+  const { addresses: linkedAddresses } = useLinkedWallets()
+  const ownAddresses = useMemo(
+    () => new Set(linkedAddresses.map((a) => a.toLowerCase())),
+    [linkedAddresses],
+  )
 
   // Live override of the support/oppose state — kept in sync with the
   // realtime positions cache so a fresh deposit lights up the thumb
@@ -198,6 +208,7 @@ export default function CircleFeedSection({
         items={topEngaged}
         getDisplay={getDisplay}
         getAvatar={getAvatar}
+        ownAddresses={ownAddresses}
         onDeposit={authenticated ? handleDeposit : undefined}
         livePositionTermIds={livePositionTermIds}
       />
@@ -245,12 +256,16 @@ export default function CircleFeedSection({
               const addr = item.certifierAddress as Address | undefined
               const name = addr ? getDisplay(addr) : item.certifier
               const av = addr ? getAvatar(addr) : ''
+              const isOwner = ownAddresses.has(
+                (item.certifierAddress || '').toLowerCase(),
+              )
               return (
                 <CircleFeedCard
                   key={item.id}
                   item={item}
                   certifierName={name}
                   certifierAvatar={av}
+                  isOwner={isOwner}
                   onDeposit={authenticated ? handleDeposit : undefined}
                   livePositionTermIds={livePositionTermIds}
                 />

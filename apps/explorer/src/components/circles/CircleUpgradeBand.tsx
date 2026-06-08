@@ -4,10 +4,10 @@
  * The full-width, peach-tinted card rendered LAST in the free circle
  * content: a sparkle icon, eyebrow ("Sofia Pro · for DAO operators"),
  * title, sub-copy, a "500 TRUST / mo" price, and an "Upgrade Circle"
- * button that fires the shared `circleUpsellToast`. Ported from the
+ * button that opens the shared `CircleProModal`. Ported from the
  * design handoff's `UpgradeBand`.
  */
-import { circleUpsellToast } from './CircleUpsellToast'
+import { circleProModal } from './CircleProModal'
 
 /** Inline sparkle glyph — matches the handoff's `SparkGlyph`. */
 function SparkGlyph() {
@@ -27,8 +27,7 @@ function SparkGlyph() {
 }
 
 export default function CircleUpgradeBand() {
-  const onUpgrade = () =>
-    circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
+  const onUpgrade = () => circleProModal()
 
   return (
     <div className="up-band">
