@@ -53,6 +53,7 @@ RUN bun install --frozen-lockfile
 # Sources for explorer + the workspace packages it imports.
 COPY packages/graphql/ ./packages/graphql/
 COPY packages/design-system/ ./packages/design-system/
+COPY packages/taxonomy/ ./packages/taxonomy/
 COPY apps/explorer/ ./apps/explorer/
 
 # Vite emits to apps/explorer/dist/. The `prebuild` hook runs the
