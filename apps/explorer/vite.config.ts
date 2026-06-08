@@ -13,6 +13,20 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    rollupOptions: {
+      // Privy ships misplaced /*#__PURE__*/ annotations that Rollup can't
+      // interpret. They're harmless but flood the build log with thousands
+      // of lines — hiding real errors and adding memory pressure on
+      // constrained CI/Coolify build containers. Drop just those.
+      onwarn(warning, defaultHandler) {
+        if (
+          warning.code === 'INVALID_ANNOTATION' ||
+          warning.message?.includes('contains an annotation that Rollup')
+        )
+          return
+        defaultHandler(warning)
+      },
+    },
   },
   server: {
     port: 5173,
