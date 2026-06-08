@@ -1,6 +1,7 @@
 import { useState, Suspense, lazy } from "react"
 
 import { useRouter } from "../layout/RouterProvider"
+import Breadcrumb from "../ui/Breadcrumb"
 import SofiaLoader from "../ui/SofiaLoader"
 import {
   useCheckFollowStatus,
@@ -28,8 +29,22 @@ type SubTab = "bookmarks" | "trust-circle"
 const isValidTab = (tab?: string): tab is SubTab =>
   !!tab && ["bookmarks", "trust-circle"].includes(tab)
 
+// Label for the breadcrumb's parent crumb, derived from where the user came
+// from (the router's previous page).
+const PAGE_LABELS: Record<string, string> = {
+  home: "Home",
+  circles: "Circles",
+  "my-profile": "My Profile",
+  score: "Score",
+  recommendations: "For You",
+  mark: "Mark",
+  "discovery-profile": "Discovery"
+}
+
 const UserProfilePage = () => {
-  const { userProfileData, goBack } = useRouter()
+  const { userProfileData, goBack, history } = useRouter()
+  const previousPage = history[history.length - 2]
+  const parentLabel = PAGE_LABELS[previousPage] ?? "Circles"
   const [activeTab, setActiveTab] = useState<SubTab>(
     isValidTab(userProfileData?.initialTab) ? userProfileData.initialTab : "bookmarks"
   )
@@ -167,9 +182,12 @@ const UserProfilePage = () => {
         signalsCreated={accountSignals}
         actions={renderActions()}
         backButton={
-          <button className="user-profile-back-button" onClick={goBack}>
-            ← Back
-          </button>
+          <Breadcrumb
+            crumbs={[
+              { label: parentLabel, onClick: goBack },
+              { label: displayLabel }
+            ]}
+          />
         }
       />
 

@@ -1,0 +1,1082 @@
+/**
+ * Feed card — 1:1 port of the proto `.feed-card` / `.fc-*` classes.
+ * Used in the circles detail feed today, ready to be reused elsewhere.
+ * Proto tokens (`--card`, `--border`, `--ink`, `--muted`, `--bg-subtle`,
+ * `--accent`, `--border-soft`) remapped to `--ds-*`.
+ */
+
+.feed-card {
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible;
+  height: fit-content;
+  text-decoration: none;
+  color: inherit;
+  /* Stagger fade-in on grid mount — each card animates in with a
+     small delay relative to its DOM position. Caps at 12 entries so
+     deeply-loaded feeds don't stall their visual arrival. */
+  animation: feed-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+.feed-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.feed-card:nth-child(2) {
+  animation-delay: 40ms;
+}
+.feed-card:nth-child(3) {
+  animation-delay: 80ms;
+}
+.feed-card:nth-child(4) {
+  animation-delay: 120ms;
+}
+.feed-card:nth-child(5) {
+  animation-delay: 160ms;
+}
+.feed-card:nth-child(6) {
+  animation-delay: 200ms;
+}
+.feed-card:nth-child(7) {
+  animation-delay: 240ms;
+}
+.feed-card:nth-child(8) {
+  animation-delay: 280ms;
+}
+.feed-card:nth-child(9) {
+  animation-delay: 320ms;
+}
+.feed-card:nth-child(10) {
+  animation-delay: 360ms;
+}
+.feed-card:nth-child(11) {
+  animation-delay: 400ms;
+}
+.feed-card:nth-child(12) {
+  animation-delay: 440ms;
+}
+
+@keyframes feed-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cards with a real content thumbnail (e.g. YouTube) get a 16:9 image
+   bleeding to the card edges at the top. We can't undo the padding on
+   .feed-card without breaking the rest of the children, so the thumb
+   is sized with calc() and pulled out with negative margins. The
+   parent's overflow stays visible — the thumb has its own rounded-top
+   corners that match the card's. */
+/* Higher specificity than `.masonry-grid > *` which forces overflow:visible
+   on every direct child. The card has its own rounded corners; the header
+   image needs to clip cleanly to them. Covers both root classes — the
+   Home `.fc` root and the masonry `.feed-card` share the same .fc-* inner
+   tree so the modifier works identically on both. */
+.masonry-grid > .feed-card--has-header,
+.feed-card--has-header,
+.fc--has-header {
+  overflow: hidden;
+}
+
+/* Header image — bleeds to the card's inner border via negative
+   margins + calc width. Top corners match the card's 12px radius. */
+.feed-card .fc-thumb.up-card,
+.fc .fc-thumb.up-card {
+  width: calc(100% + 40px);
+  margin: -18px -20px 0;
+  border-radius: 12px 12px 0 0;
+  aspect-ratio: 16 / 9;
+}
+
+/* When the card shows a header image, bump the bandeau favicon +
+   title sizes so the site identity remains the visual anchor next to
+   the thumb. */
+.feed-card--has-header .fc-favicon,
+.fc--has-header .fc-favicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.feed-card--has-header .fc-title,
+.fc--has-header .fc-title {
+  font-size: 16px;
+  line-height: 1.3;
+}
+.feed-card--has-header .fc-head,
+.fc--has-header .fc-head {
+  padding-right: 0;
+}
+
+/* ── FeedCardSkeleton ─────────────────────────────────────────────
+   Ghost version of .feed-card / .fc that mirrors the production
+   layout: thumb header (16:9 bleed) + title block + bottom pill row.
+   Used by loading states AND by <EmptyFeedState> to show the missing
+   content's silhouette. Pulse uses the shared `sk-pulse` keyframes. */
+.feed-card--skeleton {
+  cursor: default;
+}
+.fc-thumb-skeleton {
+  width: calc(100% + 40px);
+  margin: -18px -20px 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px 12px 0 0;
+  background: var(--ds-bg-subtle, #f4f4f5);
+  animation: sk-pulse 1.6s ease-in-out infinite;
+}
+.fc-skel-line {
+  height: 10px;
+  border-radius: 4px;
+  background: var(--ds-bg-subtle, #f4f4f5);
+  animation: sk-pulse 1.6s ease-in-out infinite;
+}
+.fc-skel-line--lg {
+  width: 70%;
+}
+.fc-skel-line--sm {
+  width: 35%;
+  margin-top: 6px;
+}
+.fc-skel-pill {
+  width: 64px;
+  height: 22px;
+  border-radius: 8px;
+  background: var(--ds-bg-subtle, #f4f4f5);
+  animation: sk-pulse 1.6s ease-in-out infinite;
+}
+
+.fc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-right: 12px;
+}
+.fc-favicon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  /* Neutral grey so white and black favicons both stay visible. */
+  background: #f2f2f2;
+  padding: 5px;
+  border: 1px solid var(--ds-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-family: var(--ds-font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ds-ink);
+}
+.fc-favicon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.25));
+}
+.fc-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.fc-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-host {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Bottom row: tags on the left, support/oppose on the right. */
+.fc-bottom {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ds-border-soft);
+}
+.fc-tags {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.fc-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  background: #ffffff;
+  padding: 4px 11px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+[data-theme='dark'] .fc-tag,
+.dark .fc-tag {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+}
+
+/* Verb tag — outlined: text + border in the intent colour, no fill.
+   Mirrors the shared <VerbPill> (.sf-verb-pill); kept in sync so the
+   surfaces still on .fc-verb-tag (ProfileClaimCard, BadgeDetailPage,
+   PlatformDetailPage) match the feeds. */
+.fc-verb-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  background: transparent;
+}
+.fc-verb-tag.trusted {
+  color: var(--intent-trusted);
+  border-color: var(--intent-trusted);
+}
+.fc-verb-tag.distrusted {
+  color: var(--intent-distrusted);
+  border-color: var(--intent-distrusted);
+}
+.fc-verb-tag.work {
+  color: var(--intent-work);
+  border-color: var(--intent-work);
+}
+.fc-verb-tag.learning {
+  color: var(--intent-learning);
+  border-color: var(--intent-learning);
+}
+.fc-verb-tag.fun {
+  color: var(--intent-fun);
+  border-color: var(--intent-fun);
+}
+.fc-verb-tag.inspiration {
+  color: var(--intent-inspiration);
+  border-color: var(--intent-inspiration);
+}
+.fc-verb-tag.buying {
+  color: var(--intent-buying);
+  border-color: var(--intent-buying);
+}
+.fc-verb-tag.music {
+  color: var(--intent-music);
+  border-color: var(--intent-music);
+}
+
+/* ── Feed card (Claude Design "Feed Card" handoff) ─────────────────
+   The current feed card, shared by the explore feed (home FeedCard) and
+   the circle feed (CircleFeedCard) via <FeedCardView>. Structure: header
+   (avatar + handle + time + stars) · full-bleed media · title · footer
+   (support/oppose thumbs + intent verb chips). Sized to its grid cell —
+   the `.masonry-grid` / `.drill-masonry` track controls the width.
+
+   The legacy `.fc-*` rules above this block now only back the loading
+   skeleton (.fc-head / .fc-title-wrap / .fc-bottom / .fc-thumb-skeleton)
+   and the tag pills reused by the Badge / Platform / ProfileClaim pages
+   (.fc-tag / .fc-verb-tag). */
+.fc-card {
+  /* Column stack — the grid wrapper (`.masonry-grid > *`) forces
+     `display: flex` on its children, so we must pin the direction or the
+     header / media / title / footer lay out in a row. */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  /* Dark-surface card — matches the design handoff (the explorer feed
+     renders on the dark shell). */
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+  animation: feed-card-enter 0.45s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+.fc-card:hover {
+  border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+.fc-card:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+/* Header — avatar + identity + star rating */
+.fc-hd {
+  padding: 15px 16px 13px;
+}
+.fc-hd-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.fc-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #5b8def, #9b7ef0);
+  box-shadow:
+    0 0 0 2px var(--ds-card),
+    0 0 0 3px var(--ds-border-soft);
+}
+.fc-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.fc-hd-id {
+  flex: 1;
+  min-width: 0;
+}
+.fc-handle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-handle-link {
+  color: inherit;
+  cursor: pointer;
+}
+.fc-handle-link:hover {
+  color: var(--ds-accent);
+  text-decoration: underline;
+}
+.fc-when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ds-muted-soft);
+  margin-top: 3px;
+}
+
+/* Media — full-bleed preview, kept at the handoff's 432:232 ratio so it
+   scales with the card width instead of a fixed pixel height. */
+.fc-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 432 / 232;
+  background: var(--ds-bg-subtle);
+  overflow: hidden;
+}
+.fc-media .up-card,
+.fc-media .fc-media-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+/* The inner <img> of an injected UrlPreview (.up-card wrapper) AND a plain
+   <img class="fc-media-img"> injected directly (extension favicon / OG) both
+   fill the media box. Callers may override `object-fit` inline (e.g. favicons
+   want `contain` over a white pad). */
+.fc-media .up-card img,
+.fc-media img.fc-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Body — title + the verb/topic/category chips below it. */
+.fc-body {
+  padding: 15px 16px 14px;
+}
+/* Chips moved out of the footer to sit directly under the title — space
+   them from it and keep them left-aligned. */
+.fc-body .fc-chips-wrap {
+  margin-top: 10px;
+}
+.fc-body .fc-chips,
+.fc-body .fc-chips--measure {
+  justify-content: flex-start;
+}
+.fc-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* Always reserve 2 lines so a 1-line title doesn't pull the footer up —
+     every card's footer (chips + thumbs + border) lands at the same height. */
+  min-height: calc(1.32em * 2);
+}
+
+/* Footer — ONE ROW: votes on the left, chips on the right.
+   Pinned to the card bottom; the grid stretches all cards to the tallest in
+   the row so footers land at the same height. */
+.fc-foot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding: 13px 16px 15px;
+  border-top: 1px solid var(--ds-border-soft);
+}
+/* Chips wrap fills remaining space after the vote buttons */
+.fc-foot .fc-chips-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.fc-foot .fc-chips {
+  justify-content: flex-end;
+}
+.fc-foot .fc-chips--measure {
+  right: 0;
+  left: auto;
+  width: 100%;
+}
+.fc-votes {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.fc-vote {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ds-muted);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 9px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+.fc-vote svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.fc-vote:hover:not(:disabled):not(.is-static) {
+  color: var(--ds-ink);
+  border-color: var(--ds-muted-soft);
+}
+.fc-vote:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.fc-vote.is-static {
+  cursor: default;
+}
+/* Disabled like/dislike — kept visible (and pointer-events on) so the
+   `title` tooltip explains why it's off, e.g. the cert has no topic to
+   endorse. A native `disabled` button would swallow the hover. */
+/* Dim via colour, NOT `opacity` — opacity on the button would cap the
+   child tooltip's opacity too (stacking context), fading the copy. */
+.fc-vote.is-disabled,
+.fc-vote.is-disabled:hover {
+  cursor: not-allowed;
+  color: color-mix(in srgb, var(--ds-muted) 55%, transparent);
+  border-color: color-mix(in srgb, var(--ds-border) 60%, transparent);
+}
+
+/* Styled tooltip on a disabled like/dislike — instant, ink surface, sits
+   above the thumb. The thumb is `opacity: 0.45` but the tip overrides to
+   full opacity so the copy stays legible. */
+.fc-vote-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.7);
+}
+.fc-vote.is-disabled:hover .fc-vote-tip,
+.fc-vote.is-disabled:focus-visible .fc-vote-tip {
+  opacity: 1;
+  transform: translateY(0);
+}
+.fc-vote.up.on {
+  color: var(--trusted);
+  border-color: color-mix(in srgb, var(--trusted) 45%, transparent);
+  background: color-mix(in srgb, var(--trusted) 12%, transparent);
+}
+.fc-vote.down.on {
+  color: var(--distrusted);
+  border-color: color-mix(in srgb, var(--distrusted) 45%, transparent);
+  background: color-mix(in srgb, var(--distrusted) 12%, transparent);
+}
+
+/* Verb chips — tinted fill + dot + text in the intent color (`--vc`,
+   set inline by <FeedCardView> from INTENTION_COLORS). */
+.fc-chips-wrap {
+  position: relative;
+}
+/* Hidden mirror that holds every chip — measured to find the first-line fit
+   without ever showing a wrapped second line in the visible row. */
+.fc-chips--measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.fc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+}
+/* One slot per chip — the overflow row hides slots past the first line and
+   appends a `+N` badge in their place. */
+.fc-chip-slot {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+.fc-chip-more {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: help;
+  line-height: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 7px;
+  padding: 4px 8px;
+}
+/* +N overflow tooltip — same look as the profile calendar tooltip, but
+   defined here so it's styled wherever a feed card renders (the calendar's
+   profile-charts.css is route-lazy and absent on Explore/Circles). */
+.fc-more-tip {
+  position: fixed;
+  transform: translate(-50%, -100%) translateY(-10px);
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  pointer-events: none;
+  box-shadow: 0 10px 28px -10px
+    color-mix(in srgb, var(--ds-ink) 65%, transparent);
+  z-index: 10000;
+}
+.fc-more-tip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--ds-ink);
+}
+.fc-more-tip-row {
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+.fc-more-tip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fc-more-tip-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.fc-verb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vc, var(--ds-ink-soft));
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--vc, var(--ds-muted)) 13%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--vc, var(--ds-muted)) 34%, transparent);
+}
+.fc-verb i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vc, var(--ds-muted));
+  flex-shrink: 0;
+}
+/* Topics reuse the shared <TopicPill> (.sf-topic-pill, styles/pills.css) —
+   black glyph on the topic color — so the feed cards match the topic pills
+   used across echoes / drawer / profile. */
+
+/* Masonry column layout (CSS columns — no JS needed). */
+/* Row-major grid (was CSS-columns masonry). Items flow left-to-right
+   so the engagement sort reads as 1 2 3 / 4 5 6 instead of the
+   column-first 1 3 5 / 2 4 6 you get with `column-count`. The class
+   name is kept for backward compat with the existing selectors. */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  width: 100%;
+}
+.masonry-grid > * {
+  display: flex;
+  overflow: visible;
+  min-width: 0;
+}
+@media (max-width: 1200px) {
+  .masonry-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .masonry-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Verb filter bar (inline variant) */
+.vf-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.vf-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.vf-chip:hover {
+  border-color: var(--ds-ink-soft);
+}
+.vf-chip.active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+[data-theme='dark'] .vf-chip.active,
+.dark .vf-chip.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+.vf-chip-emoji {
+  font-size: 12px;
+  line-height: 1;
+}
+.vf-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
+}
+
+/* ── Media domain badge (bottom-left of the preview image) ──────────────── */
+.fc-media-domain {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(7, 6, 14, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 9px;
+  pointer-events: none;
+}
+.fc-media-domain span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #fff;
+  white-space: nowrap;
+}
+.fc-media-fav {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.fc-media-fav img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Owner kebab menu ───────────────────────────────────────────────────── */
+.fc-kebab-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.fc-kebab {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ds-muted-soft);
+  cursor: pointer;
+  transition: all 0.13s ease;
+  padding: 0;
+}
+.fc-kebab:hover,
+.fc-kebab.open {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.fc-kebab-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 158px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 11px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  padding: 5px;
+  animation: menu-in 0.12s ease;
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fc-kebab-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  font-family: var(--sans, 'Inter', sans-serif);
+  font-size: 12.5px;
+  color: var(--ds-ink-soft);
+  background: none;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.fc-kebab-item:hover {
+  background: var(--ds-bg-subtle);
+}
+.fc-kebab-item.danger {
+  color: var(--distrusted, #ef5a5a);
+}
+.fc-kebab-item.danger:hover {
+  background: color-mix(in srgb, var(--distrusted, #ef5a5a) 13%, transparent);
+}
+
+/* ── Removed / undo state ───────────────────────────────────────────────── */
+.fc-card--gone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  /* Override flex-column from .fc-card */
+  flex-direction: row;
+}
+.fc-gone-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.fc-gone-undo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Size variant overrides ─────────────────────────────────────────────── */
+/* Default (lg) = 432px — no override needed, it fills the grid cell. */
+
+/* Medium — 360px context */
+.fc-card--s-md {
+  border-radius: 16px;
+}
+.fc-card--s-md .fc-hd { padding: 13px 14px 11px; }
+.fc-card--s-md .fc-avatar { width: 34px; height: 34px; font-size: 11px; }
+.fc-card--s-md .fc-handle { font-size: 13px; }
+.fc-card--s-md .fc-when { font-size: 10px; }
+.fc-card--s-md .fc-media { aspect-ratio: 360 / 170; }
+.fc-card--s-md .fc-media-domain { left: 10px; bottom: 10px; }
+.fc-card--s-md .fc-body { padding: 13px 14px 12px; }
+.fc-card--s-md .fc-card-title { font-size: 14.5px; }
+.fc-card--s-md .fc-foot { padding: 11px 14px 13px; }
+.fc-card--s-md .fc-vote { font-size: 11.5px; padding: 6px 10px; }
+.fc-card--s-md .fc-vote svg { width: 14px; height: 14px; }
+
+/* Small — 300px context */
+.fc-card--s-sm {
+  border-radius: 14px;
+}
+.fc-card--s-sm .fc-hd { padding: 12px 13px 10px; }
+.fc-card--s-sm .fc-avatar { width: 30px; height: 30px; font-size: 10px; }
+.fc-card--s-sm .fc-handle { font-size: 12.5px; }
+.fc-card--s-sm .fc-when { font-size: 10px; }
+.fc-card--s-sm .fc-media { aspect-ratio: 300 / 132; }
+.fc-card--s-sm .fc-media-domain { left: 9px; bottom: 9px; padding: 4px 7px; }
+.fc-card--s-sm .fc-media-fav { width: 15px; height: 15px; }
+.fc-card--s-sm .fc-media-fav img { width: 10px; height: 10px; }
+.fc-card--s-sm .fc-media-domain span { font-size: 10px; }
+.fc-card--s-sm .fc-body { padding: 12px 13px 11px; }
+.fc-card--s-sm .fc-card-title { font-size: 13px; }
+.fc-card--s-sm .fc-foot { padding: 10px 13px 12px; }
+.fc-card--s-sm .fc-vote { font-size: 11px; padding: 6px 9px; border-radius: 8px; gap: 5px; }
+.fc-card--s-sm .fc-vote svg { width: 13px; height: 13px; }
+.fc-card--s-sm .fc-verb { font-size: 9px; padding: 3px 8px; }
+
+/* Extra-small — list row (no full-bleed hero) */
+.fc-card--s-xs {
+  border-radius: 12px;
+  overflow: visible; /* allow the kebab menu to overflow */
+}
+.fc-xs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 13px;
+}
+/* Wrapper: overflow:visible so the badge can poke out of the clipped thumb */
+.fc-xs-thumb-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.fc-xs-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ds-bg-subtle);
+}
+.fc-xs-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+/* Object-fit for a plain <img class="fc-xs-thumb-img"> injected directly
+   (extension favicon / OG). The explorer's UrlPreview styles its own inner
+   <img> via url-preview.css. Callers may override `object-fit` inline. */
+.fc-xs-thumb img.fc-xs-thumb-img {
+  object-fit: cover;
+}
+.fc-xs-main {
+  flex: 1;
+  min-width: 0;
+}
+.fc-xs-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.fc-avatar--xs {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 7px !important;
+  box-shadow: none !important;
+}
+.fc-xs-handle {
+  flex: 1;
+  min-width: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-xs-sep {
+  color: var(--ds-muted-soft);
+  margin: 0 2px;
+}
+.fc-xs-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ds-ink);
+  margin: 5px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-xs-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.fc-xs-domain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
+.fc-xs-votes {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
+.fc-xs-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
+.fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
+.fc-xs-votes--hidden { display: none; }
+/* Timestamp, bottom-left of the xs footer. */
+.fc-xs-when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
+/* Topic / verb pills below the xs title (cart context). */
+.fc-xs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+/* Badge overlay — sits on the fc-xs-thumb-wrap (overflow:visible) so it
+   is never clipped by the thumb's overflow:hidden. */
+.fc-xs-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  z-index: 3;
+}

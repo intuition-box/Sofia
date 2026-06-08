@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState, useCallback } from 'react'
 import { useWalletFromStorage } from '../../hooks'
+import Breadcrumb from '../ui/Breadcrumb'
 import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -38,28 +39,23 @@ const CirclesPage = () => {
           )}
           {circleLayer === 'feed' && (
             <>
-              <button
-                type="button"
-                className="circle-layer-back-btn"
-                onClick={() => setCircleLayer('home')}
-                aria-label="Back to community home"
-              >
-                ← Back
-              </button>
+              <Breadcrumb
+                crumbs={[
+                  { label: 'Circles', onClick: () => setCircleLayer('home') },
+                  { label: 'Feed' }
+                ]}
+              />
               <CircleFeedTab onViewMembers={() => setCircleLayer('members')} />
             </>
           )}
           {circleLayer === 'members' && (
             <>
-              <button
-                type="button"
-                className="circle-layer-back-btn"
-                onClick={() => setCircleLayer('home')}
-                aria-label="Back to community home"
-              >
-                ← Back
-              </button>
-              <h3 className="circle-layer-title">Trust Circle Members</h3>
+              <Breadcrumb
+                crumbs={[
+                  { label: 'Circles', onClick: () => setCircleLayer('home') },
+                  { label: 'Trust Circle Members' }
+                ]}
+              />
               <TrustCirclePanel
                 walletAddress={walletAddress}
                 onInviteMember={() => setCircleLayer('home')}

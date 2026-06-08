@@ -386,7 +386,7 @@
   padding: 0;
 }
 
-/* Stacked header — back button on row 1, domain title + level on row 2 */
+/* Stacked header — breadcrumb on row 1, domain title section on row 2 */
 .group-detail-header {
   display: flex;
   flex-direction: column;
@@ -395,14 +395,9 @@
   border-bottom: 1px solid var(--ds-border-soft);
 }
 
-.group-detail-header .back-btn {
-  align-self: flex-start;
-}
-
-/* Back button — mirrors explorer .pf-btn (apps/explorer/.../pages.css).
+/* Profile button — mirrors explorer .pf-btn (apps/explorer/.../pages.css).
    Bordered card-toned pill with icon + label. */
-.pf-btn,
-.back-btn {
+.pf-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -418,8 +413,7 @@
   transition: all 0.15s ease;
 }
 
-.pf-btn:hover,
-.back-btn:hover {
+.pf-btn:hover {
   border-color: var(--ds-ink);
 }
 
@@ -656,6 +650,51 @@
   outline: 2px solid var(--ds-accent);
   outline-offset: -2px;
   border-radius: 12px;
+}
+
+/* ── Echoes GroupDetailView — xs-card treatment ─────────────────────────────
+   Scoped to `.group-detail-view` so the shared `.url-row` in History /
+   Bookmarks / Categories stays untouched. Adds the favicon thumb (mirrors the
+   feed card's .fc-xs-thumb) + tighter xs density. */
+.group-detail-view .url-row-main {
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.group-detail-view .url-row-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ds-radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  /* White pad so dark/light favicons both stay legible (same convention as
+     the DS feed card's xs thumb / UrlPreviewImage favicon fallback). */
+  background: #fff;
+  border: 1px solid var(--ds-border-soft);
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+}
+
+.group-detail-view .url-row-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: var(--spacing-sm);
+  box-sizing: border-box;
+}
+
+/* Full URL under the title — mono + muted, truncated to one line. */
+.group-detail-view .url-host {
+  display: block;
+  margin-top: var(--spacing-2xs, 2px);
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .url-info {

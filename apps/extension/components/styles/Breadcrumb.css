@@ -1,0 +1,66 @@
+/**
+ * Breadcrumb — clickable navigation trail that replaces the extension's old
+ * "Back to …" buttons. Parent crumbs are muted clickable buttons; the last
+ * crumb is the active title in the DS display font. All values come from the
+ * design-system tokens.
+ */
+
+.sf-bc {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.sf-bc-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.sf-bc-sep {
+  color: var(--ds-muted-soft);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  user-select: none;
+}
+
+.sf-bc-crumb {
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--bc-color, var(--ds-muted));
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: var(--transition-fast);
+}
+
+button.sf-bc-crumb:hover {
+  color: var(--ds-ink);
+  text-decoration: underline;
+}
+
+button.sf-bc-crumb:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Active (last) crumb — the current page title. */
+.sf-bc-crumb--active {
+  font-family: var(--ds-font-display);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--bc-color, var(--ds-ink));
+  cursor: default;
+}

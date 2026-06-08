@@ -12,6 +12,7 @@ import {
 } from "../../hooks"
 import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionCategory, CategoryUrl } from "../../types/intentionCategories"
+import Breadcrumb, { type Crumb } from "./Breadcrumb"
 import ContextPills from "./ContextPills"
 import FilterDropdown from "./FilterDropdown"
 import TopicCategoryFilter from "./TopicCategoryFilter"
@@ -32,6 +33,10 @@ interface CategoryDetailViewProps {
   /** Wallet whose certifications back the Topic filter (the profile
    *  owner). When omitted the Topic filter has no data to match. */
   walletAddress?: string
+  /** Parent breadcrumb trail (e.g. `[{ label: "Bookmarks", onClick: onBack }]`).
+   *  The category's own name is appended as the active crumb. Defaults to a
+   *  single "Bookmarks" crumb wired to `onBack`. */
+  crumbs?: Crumb[]
 }
 
 const formatDate = (dateStr: string): string => {
@@ -115,7 +120,8 @@ const CategoryDetailView = ({
   category,
   onBack,
   onRedeem,
-  walletAddress
+  walletAddress,
+  crumbs
 }: CategoryDetailViewProps) => {
   const { label, color, urls, urlCount } = category
   const { redeemPosition } = useRedeemTriple()
@@ -245,14 +251,9 @@ const CategoryDetailView = ({
 
   return (
     <div className="category-detail">
-      {/* Header — same stacked pattern as GroupDetailView */}
+      {/* Header — breadcrumb (parent trail + this category) replaces the back
+          button; same stacked pattern as GroupDetailView. */}
       <div className="category-detail-header">
-        <button className="back-btn" onClick={onBack}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-          Back to Bookmarks
-        </button>
         <div className="category-detail-title-section">
           <div
             className="category-detail-marker"
@@ -260,7 +261,12 @@ const CategoryDetailView = ({
             aria-hidden="true"
           />
           <div className="category-detail-info">
-            <h3 className="category-detail-name">{label}</h3>
+            <Breadcrumb
+              crumbs={[
+                ...(crumbs ?? [{ label: "Bookmarks", onClick: onBack }]),
+                { label }
+              ]}
+            />
             <span className="category-detail-count">
               {urlCount} certified URL{urlCount > 1 ? "s" : ""}
             </span>

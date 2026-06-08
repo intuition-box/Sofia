@@ -1,6 +1,10 @@
-import { VerbTag } from "@0xsofia/design-system"
+import {
+  FeedCardView,
+  type FeedCardTopic,
+  type FeedCardVerb
+} from "@0xsofia/design-system"
 import { useFindUserPositionsOnTriplesQuery } from "@0xsofia/graphql"
-import { useMemo, useState } from "react"
+import { useMemo, useState, type CSSProperties } from "react"
 import { getAddress } from "viem"
 
 import {
@@ -10,6 +14,11 @@ import {
   useUserCertifications,
   useWalletFromStorage
 } from "~/hooks"
+import {
+  contextColor,
+  contextIcon,
+  contextLabel
+} from "~/lib/config/contextDisplay"
 import {
   TOPIC_FILTER_OPTIONS,
   VERB_FILTER_OPTIONS
@@ -24,11 +33,12 @@ import {
 
 import { useRouter } from "../../layout/RouterProvider"
 import Avatar from "../../ui/Avatar"
+import Breadcrumb from "../../ui/Breadcrumb"
 import CategoryCard from "../../ui/CategoryCard"
 import CategoryDetailView from "../../ui/CategoryDetailView"
-import ContextPills from "../../ui/ContextPills"
 import FilterDropdown from "../../ui/FilterDropdown"
 import SofiaLoader from "../../ui/SofiaLoader"
+import UrlPreviewImage from "../../ui/UrlPreviewImage"
 import type { FeedContext, GroupedFeedItem } from "./feedTypes"
 import { useCircleFeed } from "./useCircleFeed"
 
@@ -335,18 +345,6 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     })
   }
 
-  const handleSupport = (e: React.MouseEvent, group: GroupedFeedItem) => {
-    e.stopPropagation()
-    if (!address) return
-    addVotesToCart(group, "Support")
-  }
-
-  const handleOppose = (e: React.MouseEvent, group: GroupedFeedItem) => {
-    e.stopPropagation()
-    if (!address) return
-    addVotesToCart(group, "Oppose")
-  }
-
   // Refresh feed data (re-runs the trust-circle + cert fetch in the hook)
   const handleRefresh = refresh
 
@@ -402,11 +400,25 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
 
   // Member category detail view
   if (viewState.type === "member-category" && memberSelectedCategory) {
+    const memberView = viewState
     return (
       <div className="circle-feed-tab">
         <CategoryDetailView
           category={memberSelectedCategory}
           onBack={handleBack}
+          crumbs={[
+            { label: "Circles", onClick: () => setViewState({ type: "feed" }) },
+            {
+              label: memberView.label,
+              onClick: () =>
+                setViewState({
+                  type: "member-profile",
+                  address: memberView.address,
+                  label: memberView.label,
+                  image: memberView.image
+                })
+            }
+          ]}
         />
       </div>
     )
@@ -417,16 +429,18 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     return (
       <div className="circle-feed-tab">
         <div className="circle-member-header">
-          <button className="circle-back-btn" onClick={handleBack}>
-            Back
-          </button>
           <Avatar
             imgSrc={viewState.image}
             name={viewState.address}
             avatarClassName="circle-member-avatar"
             size="medium"
           />
-          <h3 className="circle-member-name">{viewState.label}</h3>
+          <Breadcrumb
+            crumbs={[
+              { label: "Circles", onClick: () => setViewState({ type: "feed" }) },
+              { label: viewState.label }
+            ]}
+          />
         </div>
 
         {memberCategoriesLoading ? (
@@ -570,19 +584,57 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
       {filteredItems.length > 0 && (
         <div className="circle-grid">
           {filteredItems.map((group) => {
+            const groupVote = votedItems.get(group.groupKey)
+            const hasSupported = groupVote === "support"
+            const hasOpposed = groupVote === "oppose"
+            const inCartSupport = group.intentions.some((i) =>
+              isVoteInCart(i.pageUrl, i.triplePredicate, "support")
+            )
+            const inCartOppose = group.intentions.some((i) =>
+              isVoteInCart(i.pageUrl, i.triplePredicate, "oppose")
+            )
+            // Oppose needs an oppose vault: a context counter term (when
+            // tagged) or the cert counter term (fallback).
+            const canOppose =
+              group.contexts.length > 0
+                ? group.contexts.some((c) => c.opposeTermId)
+                : group.intentions.some((i) => i.counterTermId)
+            const hasVotableTriple = group.intentions.some((i) => i.tripleTermId)
+
+            // Topic/category context pills — the triples a vote stakes on.
+            const topics: FeedCardTopic[] = group.contextSlugs.flatMap(
+              (slug) => {
+                const label = contextLabel(slug)
+                return label
+                  ? [{ id: slug, label, color: contextColor(slug) }]
+                  : []
+              }
+            )
+
+            // No "in context of" tags yet → show the member's intention verbs
+            // so the card isn't blank (these cards vote on the cert triple).
+            const verbs: FeedCardVerb[] =
+              group.contextSlugs.length > 0
+                ? []
+                : group.intentions.map((i) => ({
+                    label: INTENTION_CONFIG[i.intentionType].label,
+                    color: INTENTION_CONFIG[i.intentionType].color
+                  }))
+
             return (
-              <div
+              <FeedCardView
                 key={group.groupKey}
-                className="circle-card"
-                onClick={() =>
-                  window.open(group.pageUrl, "_blank", "noopener,noreferrer")
-                }>
-                {/* Header: ENS avatar + name + date (explorer FeedCard look) */}
-                <div className="circle-card-hd">
-                  <button
-                    type="button"
-                    className="circle-card-member"
+                size="sm"
+                hideVoteCounts
+                handle={group.memberLabel}
+                avatarUrl={group.memberImage}
+                handleSlot={
+                  <span
+                    className="fc-handle-link"
+                    role="link"
+                    tabIndex={0}
                     onClick={(e) => {
+                      e.preventDefault()
                       e.stopPropagation()
                       handleMemberClick(
                         group.memberAddress,
@@ -590,129 +642,61 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                         group.memberImage
                       )
                     }}>
-                    <Avatar
-                      imgSrc={group.memberImage}
-                      name={group.memberLabel}
-                      avatarClassName="circle-card-avatar"
-                      size="small"
-                    />
-                    <span className="circle-card-hd-id">
-                      <span className="circle-card-handle">
-                        {group.memberLabel}
-                      </span>
-                      <span className="circle-card-when">
-                        {formatTimestamp(group.createdAt)}
-                      </span>
-                    </span>
-                  </button>
-                </div>
-
-                {/* Middle: favicon + site name */}
-                <div className="circle-card-mid">
-                  <img
-                    src={getFaviconUrl(group.domain, 64)}
-                    alt=""
-                    className="circle-card-favicon"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.display = "none"
-                    }}
+                    {group.memberLabel}
+                  </span>
+                }
+                when={formatTimestamp(group.createdAt)}
+                title={group.pageLabel}
+                url={group.pageUrl}
+                domain={group.domain}
+                verbs={verbs}
+                topics={topics}
+                up={0}
+                down={0}
+                userUp={hasSupported || inCartSupport}
+                userDown={hasOpposed || inCartOppose}
+                canUp={hasVotableTriple && !(hasOpposed || inCartOppose)}
+                canDown={
+                  hasVotableTriple &&
+                  canOppose &&
+                  !(hasSupported || inCartSupport)
+                }
+                onVote={
+                  hasVotableTriple
+                    ? (side) => {
+                        if (!address) return
+                        addVotesToCart(
+                          group,
+                          side === "support" ? "Support" : "Oppose"
+                        )
+                      }
+                    : undefined
+                }
+                onOpen={() =>
+                  window.open(group.pageUrl, "_blank", "noopener,noreferrer")
+                }
+                renderMedia={(ctx) => (
+                  <UrlPreviewImage
+                    url={ctx.url}
+                    domain={ctx.domain}
+                    className={ctx.className}
+                    variant={ctx.variant}
+                    alt={ctx.title}
                   />
-                  <span className="circle-card-title">{group.pageLabel}</span>
-                </div>
-
-                {/* Footer: context pills, then votes */}
-                <div className="circle-card-footer">
-                  <div className="circle-intention-badges">
-                    {group.contextSlugs.length > 0 ? (
-                      // Topic/category context pills — the triples a vote
-                      // actually stakes on (explorer parity).
-                      <ContextPills slugs={group.contextSlugs} />
-                    ) : (
-                      // No "in context of" tags yet → show the member's
-                      // intention badges so the card isn't blank (these cards
-                      // vote on the cert triple).
-                      group.intentions.map((intention) => (
-                        <VerbTag
-                          key={intention.intentionType}
-                          intent={intention.intentionType}
-                          label={INTENTION_CONFIG[intention.intentionType].label}
-                        />
-                      ))
-                    )}
-                  </div>
-                  {group.intentions.some((i) => i.tripleTermId) &&
-                    (() => {
-                      const groupVote = votedItems.get(group.groupKey)
-                      const hasSupported = groupVote === "support"
-                      const hasOpposed = groupVote === "oppose"
-                      const inCartSupport = group.intentions.some((i) =>
-                        isVoteInCart(i.pageUrl, i.triplePredicate, "support")
-                      )
-                      const inCartOppose = group.intentions.some((i) =>
-                        isVoteInCart(i.pageUrl, i.triplePredicate, "oppose")
-                      )
-                      // Oppose needs an oppose vault: a context counter term
-                      // (when tagged) or the cert counter term (fallback).
-                      const canOppose =
-                        group.contexts.length > 0
-                          ? group.contexts.some((c) => c.opposeTermId)
-                          : group.intentions.some((i) => i.counterTermId)
-                      // Disable if already voted the opposite on-chain or in cart
-                      const supportDisabled = hasOpposed || inCartOppose
-                      const opposeDisabled =
-                        hasSupported || inCartSupport || !canOppose
-
-                      return (
-                        <div className="circle-card-actions">
-                          <button
-                            className={`circle-action-btn circle-support-btn ${hasSupported || inCartSupport ? "voted" : ""}`}
-                            onClick={(e) => handleSupport(e, group)}
-                            disabled={supportDisabled}
-                            title={
-                              inCartSupport ? "In cart" : "Support this Mark"
-                            }
-                            aria-label="Support">
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true">
-                              <path d="M7 10v12" />
-                              <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L15 2c1.1 0 2 .9 2 2v1.88Z" />
-                            </svg>
-                          </button>
-                          <button
-                            className={`circle-action-btn circle-oppose-btn ${hasOpposed || inCartOppose ? "voted" : ""}`}
-                            onClick={(e) => handleOppose(e, group)}
-                            disabled={opposeDisabled}
-                            title={
-                              inCartOppose ? "In cart" : "Oppose this Mark"
-                            }
-                            aria-label="Oppose">
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true">
-                              <path d="M17 14V2" />
-                              <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L9 22c-1.1 0-2-.9-2-2v-1.88Z" />
-                            </svg>
-                          </button>
-                        </div>
-                      )
-                    })()}
-                </div>
-              </div>
+                )}
+                renderTopic={(t) => (
+                  <span
+                    className="sf-topic-pill"
+                    style={{ "--pill-color": t.color } as CSSProperties}>
+                    <span
+                      className="material-symbols-outlined sf-topic-pill-glyph"
+                      aria-hidden>
+                      {contextIcon(t.id)}
+                    </span>
+                    {t.label}
+                  </span>
+                )}
+              />
             )
           })}
         </div>
