@@ -36,6 +36,8 @@ interface MembersPanelFreeProps {
   totalMembers: number
   activeCount: number
   circleName: string
+  /** Whether to show the Pro hint pill. False for the Trust Circle. */
+  showPlan: boolean
   onUpgrade: () => void
   onToast: (message: string) => void
 }
@@ -51,6 +53,7 @@ export default function MembersPanelFree({
   totalMembers,
   activeCount,
   circleName,
+  showPlan,
   onUpgrade,
   onToast,
 }: MembersPanelFreeProps) {
@@ -191,10 +194,12 @@ export default function MembersPanelFree({
 
         <div className="cf-panel-foot">
           <span className="cf-panel-foot-note">Sorted by activity</span>
-          <button type="button" className="cf-prohint" onClick={onUpgrade}>
-            <Lock className="cf-prohint-icon" aria-hidden="true" />
-            Rank by expertise with Pro
-          </button>
+          {showPlan && (
+            <button type="button" className="cf-prohint" onClick={onUpgrade}>
+              <Lock className="cf-prohint-icon" aria-hidden="true" />
+              Rank by expertise with Pro
+            </button>
+          )}
         </div>
       </aside>
     </>

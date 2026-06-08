@@ -28,6 +28,9 @@ import type { CircleItem } from '@/services/circleService'
 interface CircleTopicsTreemapProps {
   /** Circle feed items — the source of per-topic certification counts. */
   items: readonly CircleItem[]
+  /** Whether the circle has a Pro plan. False for the Trust Circle, where
+   *  cells stay read-only without the "drill with Pro" upsell. */
+  showPlan: boolean
 }
 
 // Treemap box height (matches the prototype's fixed 388px canvas).
@@ -71,6 +74,7 @@ function Sparkline({ seed }: SparklineProps) {
 
 export default function CircleTopicsTreemap({
   items,
+  showPlan,
 }: CircleTopicsTreemapProps) {
   const topics = useCircleTopicActivity(items)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -106,8 +110,12 @@ export default function CircleTopicsTreemap({
     return squarify(seeded, 0, 0, width, TREEMAP_HEIGHT)
   }, [topics, width])
 
-  const onPick = (label: string) =>
-    circleUpsellToast(`Drill into ${label}'s experts with Sofia Pro`)
+  // Free groups fire the "drill with Pro" upsell on click; the Trust Circle
+  // has no Pro plan, so cells are inert there.
+  const onPick = showPlan
+    ? (label: string) =>
+        circleUpsellToast(`Drill into ${label}'s experts with Sofia Pro`)
+    : undefined
 
   return (
     <section className="cf-module" aria-labelledby="cf-topics-title">
@@ -139,7 +147,8 @@ export default function CircleTopicsTreemap({
 
 interface TreemapCellProps {
   cell: CircleTopicActivity & { x: number; y: number; w: number; h: number }
-  onPick: (label: string) => void
+  /** Click handler — undefined when the cell is inert (Trust Circle). */
+  onPick?: (label: string) => void
 }
 
 function TreemapCell({ cell, onPick }: TreemapCellProps) {
@@ -164,8 +173,12 @@ function TreemapCell({ cell, onPick }: TreemapCellProps) {
         height: cell.h,
         ['--c' as string]: cell.color,
       }}
-      onClick={() => onPick(cell.label)}
-      aria-label={`${cell.label} — ${cell.signals} certifications. Upgrade to Pro to drill into experts.`}
+      onClick={onPick ? () => onPick(cell.label) : undefined}
+      aria-label={
+        onPick
+          ? `${cell.label} — ${cell.signals} certifications. Upgrade to Pro to drill into experts.`
+          : `${cell.label} — ${cell.signals} certifications.`
+      }
     >
       <span className="cf-tmap-cell-inner">
         <span

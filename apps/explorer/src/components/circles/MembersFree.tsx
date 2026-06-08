@@ -26,6 +26,8 @@ interface MembersFreeProps {
   totalMembers: number
   onViewAll: () => void
   onUpgrade: () => void
+  /** Whether to show the Pro hint pill. False for the Trust Circle. */
+  showPlan: boolean
 }
 
 export default function MembersFree({
@@ -35,6 +37,7 @@ export default function MembersFree({
   totalMembers,
   onViewAll,
   onUpgrade,
+  showPlan,
 }: MembersFreeProps) {
   const top3 = ranked.slice(0, 3)
 
@@ -90,10 +93,12 @@ export default function MembersFree({
           View all {totalMembers} members
           <ArrowRight className="cf-btn-icon" aria-hidden="true" />
         </button>
-        <button type="button" className="cf-prohint" onClick={onUpgrade}>
-          <Lock className="cf-prohint-icon" aria-hidden="true" />
-          Rank by expertise &amp; delegate trust with Pro
-        </button>
+        {showPlan && (
+          <button type="button" className="cf-prohint" onClick={onUpgrade}>
+            <Lock className="cf-prohint-icon" aria-hidden="true" />
+            Rank by expertise &amp; delegate trust with Pro
+          </button>
+        )}
       </div>
     </section>
   )

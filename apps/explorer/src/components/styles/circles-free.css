@@ -186,6 +186,11 @@
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--ds-border-soft);
 }
+/* Trust Circle has no locked "Decisions" tile — drop to two columns so the
+   remaining KPIs fill the band instead of leaving a gap. */
+.cf-kpis--duo {
+  grid-template-columns: repeat(2, 1fr);
+}
 .cf-kpi {
   padding: 14px 4px 16px;
   border-right: 1px solid var(--ds-border-soft);

@@ -136,6 +136,12 @@ export default function CircleDetailView({
   // branches below are kept as dead fallbacks for now; remove once the
   // Free framing is confirmed everywhere.)
   const isFree = true
+  // The personal Trust Circle (`kind === 'trust'`) can't be upgraded to Pro
+  // and isn't on a Free plan either — it's a circle the user owns. So it
+  // keeps the rich Free layout (ranked members, topics treemap, Activity)
+  // but every plan affordance (plan badge, Upgrade buttons, locked
+  // Decisions, Pro hints, upsell toast) is suppressed.
+  const showPlan = circle.kind !== 'trust'
 
   const upgrade = () =>
     circleUpsellToast('Sofia Pro — contact the core team on Discord to upgrade')
@@ -172,6 +178,7 @@ export default function CircleDetailView({
           stats={!locked ? stats : undefined}
           totalMembers={circle.members.length}
           isMember={circle.isMember}
+          showPlan={showPlan}
           onJoin={onJoin}
           onUpgrade={upgrade}
           onMemberClick={memberClick}
@@ -228,10 +235,11 @@ export default function CircleDetailView({
                 totalMembers={circle.members.length}
                 onViewAll={() => setAllMembersOpen(true)}
                 onUpgrade={upgrade}
+                showPlan={showPlan}
               />
             </div>
             <div className="crd-info-row">
-              <CircleTopicsTreemap items={feedItems} />
+              <CircleTopicsTreemap items={feedItems} showPlan={showPlan} />
             </div>
 
             {/* Activity module — the existing feed card + verb/topic/sort
@@ -254,21 +262,25 @@ export default function CircleDetailView({
               />
             </section>
 
-            {/* Decisions — locked Pro module (Phase 3). */}
-            <CircleLockModule
-              title="Decisions"
-              lockTitle="Expertise-weighted voting"
-              desc="Run Circle decisions where each vote is weighted by measured topic expertise — not one wallet, one vote."
-              feats={[
-                'Weighted vote room',
-                'Topic-matched quorum',
-                'Transparent weighting',
-              ]}
-              ghostRows={3}
-            />
+            {/* Decisions — locked Pro module (Phase 3). Suppressed for the
+                Trust Circle, which has no plan to upgrade. */}
+            {showPlan && (
+              <CircleLockModule
+                title="Decisions"
+                lockTitle="Expertise-weighted voting"
+                desc="Run Circle decisions where each vote is weighted by measured topic expertise — not one wallet, one vote."
+                feats={[
+                  'Weighted vote room',
+                  'Topic-matched quorum',
+                  'Transparent weighting',
+                ]}
+                ghostRows={3}
+              />
+            )}
 
-            {/* Upgrade band — last in the free content. */}
-            <CircleUpgradeBand />
+            {/* Upgrade band — last in the free content. Not for the Trust
+                Circle (nothing to upgrade). */}
+            {showPlan && <CircleUpgradeBand />}
           </div>
 
           {gated && (
@@ -334,6 +346,7 @@ export default function CircleDetailView({
             circle.members.filter((m) => activity.isActive(m)).length
           }
           circleName={circle.name}
+          showPlan={showPlan}
           onUpgrade={upgrade}
           onToast={circleUpsellToast}
         />
@@ -346,7 +359,7 @@ export default function CircleDetailView({
         />
       )}
 
-      {isFree && <CircleUpsellToast />}
+      {isFree && showPlan && <CircleUpsellToast />}
     </div>
   )
 }

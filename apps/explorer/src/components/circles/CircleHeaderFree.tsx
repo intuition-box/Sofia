@@ -32,6 +32,10 @@ interface CircleHeaderFreeProps {
   totalMembers: number
   /** Whether the viewer is already a member of this circle. */
   isMember: boolean
+  /** Whether this circle has a Free/Pro plan. The personal Trust Circle
+   *  has none, so its plan badge, Upgrade button and locked Decisions
+   *  KPI are suppressed. */
+  showPlan: boolean
   /** Fires when a non-member clicks "Enter this Circle". */
   onJoin?: () => void
   /** Fires for any Pro-gated affordance (Upgrade button, locked KPI). */
@@ -53,6 +57,7 @@ export default function CircleHeaderFree({
   stats,
   totalMembers,
   isMember,
+  showPlan,
   onJoin,
   onUpgrade,
   onMemberClick,
@@ -73,10 +78,12 @@ export default function CircleHeaderFree({
           <div className="cf-header-idcol">
             <div className="cf-header-name-row">
               <h1 className="cf-header-name">{name}</h1>
-              <span className="cf-plan-badge">
-                <Lock className="cf-plan-badge-icon" aria-hidden="true" />
-                Free plan
-              </span>
+              {showPlan && (
+                <span className="cf-plan-badge">
+                  <Lock className="cf-plan-badge-icon" aria-hidden="true" />
+                  Free plan
+                </span>
+              )}
             </div>
             <div className="cf-header-sub">
               <span className="cf-header-crumb">{handle}</span>
@@ -102,20 +109,26 @@ export default function CircleHeaderFree({
                   Enter this Circle
                 </button>
               )}
-              <button
-                type="button"
-                className="cf-btn cf-btn-pro"
-                onClick={onUpgrade}
-              >
-                <Sparkles className="cf-btn-icon" aria-hidden="true" />
-                Upgrade to Pro
-              </button>
+              {showPlan && (
+                <button
+                  type="button"
+                  className="cf-btn cf-btn-pro"
+                  onClick={onUpgrade}
+                >
+                  <Sparkles className="cf-btn-icon" aria-hidden="true" />
+                  Upgrade to Pro
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="cf-kpis" role="group" aria-label="Circle metrics">
+      <div
+        className={`cf-kpis${showPlan ? '' : ' cf-kpis--duo'}`}
+        role="group"
+        aria-label="Circle metrics"
+      >
         <div className="cf-kpi">
           <span className="cf-kpi-label">
             <span
@@ -145,28 +158,30 @@ export default function CircleHeaderFree({
           <span className="cf-kpi-delta is-flat">active in last 7 days</span>
         </div>
 
-        <button
-          type="button"
-          className="cf-kpi cf-kpi-locked"
-          onClick={onUpgrade}
-          aria-label="Decisions — a Pro feature. Upgrade to unlock."
-        >
-          <span className="cf-kpi-label">
-            <span
-              className="cf-kpi-dot"
-              style={{ background: 'var(--ds-accent)' }}
-              aria-hidden="true"
-            />
-            Decisions
-          </span>
-          <span className="cf-kpi-lock-glyph">
-            <Lock aria-hidden="true" />
-          </span>
-          <span className="cf-kpi-pro-tag">
-            <ShieldCheck className="cf-kpi-pro-tag-icon" aria-hidden="true" />
-            Pro feature
-          </span>
-        </button>
+        {showPlan && (
+          <button
+            type="button"
+            className="cf-kpi cf-kpi-locked"
+            onClick={onUpgrade}
+            aria-label="Decisions — a Pro feature. Upgrade to unlock."
+          >
+            <span className="cf-kpi-label">
+              <span
+                className="cf-kpi-dot"
+                style={{ background: 'var(--ds-accent)' }}
+                aria-hidden="true"
+              />
+              Decisions
+            </span>
+            <span className="cf-kpi-lock-glyph">
+              <Lock aria-hidden="true" />
+            </span>
+            <span className="cf-kpi-pro-tag">
+              <ShieldCheck className="cf-kpi-pro-tag-icon" aria-hidden="true" />
+              Pro feature
+            </span>
+          </button>
+        )}
       </div>
     </header>
   )
