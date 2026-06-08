@@ -33,6 +33,7 @@ import {
 
 import { useRouter } from "../../layout/RouterProvider"
 import Avatar from "../../ui/Avatar"
+import Breadcrumb from "../../ui/Breadcrumb"
 import CategoryCard from "../../ui/CategoryCard"
 import CategoryDetailView from "../../ui/CategoryDetailView"
 import FilterDropdown from "../../ui/FilterDropdown"
@@ -399,11 +400,25 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
 
   // Member category detail view
   if (viewState.type === "member-category" && memberSelectedCategory) {
+    const memberView = viewState
     return (
       <div className="circle-feed-tab">
         <CategoryDetailView
           category={memberSelectedCategory}
           onBack={handleBack}
+          crumbs={[
+            { label: "Circles", onClick: () => setViewState({ type: "feed" }) },
+            {
+              label: memberView.label,
+              onClick: () =>
+                setViewState({
+                  type: "member-profile",
+                  address: memberView.address,
+                  label: memberView.label,
+                  image: memberView.image
+                })
+            }
+          ]}
         />
       </div>
     )
@@ -414,16 +429,18 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
     return (
       <div className="circle-feed-tab">
         <div className="circle-member-header">
-          <button className="circle-back-btn" onClick={handleBack}>
-            Back
-          </button>
           <Avatar
             imgSrc={viewState.image}
             name={viewState.address}
             avatarClassName="circle-member-avatar"
             size="medium"
           />
-          <h3 className="circle-member-name">{viewState.label}</h3>
+          <Breadcrumb
+            crumbs={[
+              { label: "Circles", onClick: () => setViewState({ type: "feed" }) },
+              { label: viewState.label }
+            ]}
+          />
         </div>
 
         {memberCategoriesLoading ? (

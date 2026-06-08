@@ -13,6 +13,7 @@ import {
 } from "~/hooks"
 import { VERB_FILTER_OPTIONS } from "~/lib/config/filterOptions"
 import type { IntentionType } from "~/types/intentionCategories"
+import { useRouter } from "../../layout/RouterProvider"
 import CategoryDetailView from "../../ui/CategoryDetailView"
 import FilterDropdown from "../../ui/FilterDropdown"
 import TopicCategoryFilter from "../../ui/TopicCategoryFilter"
@@ -25,6 +26,7 @@ interface UserBookmarksTabProps {
 }
 
 const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
+  const { userProfileData } = useRouter()
   const {
     categories,
     selectedCategory,
@@ -48,6 +50,12 @@ const UserBookmarksTab = ({ walletAddress }: UserBookmarksTabProps) => {
           category={selectedCategory}
           onBack={() => selectCategory(null)}
           walletAddress={walletAddress}
+          crumbs={[
+            {
+              label: userProfileData?.label || "Profile",
+              onClick: () => selectCategory(null)
+            }
+          ]}
         />
       </div>
     )

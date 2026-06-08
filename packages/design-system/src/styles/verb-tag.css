@@ -1,7 +1,9 @@
 /**
- * Verb tag pill — shape matches `.fc-tag`, background is the intent color,
- * text is always ink. Backgrounds MUST stay in sync with INTENTION_CONFIG
- * in `src/taxonomy/intentions.ts`.
+ * Verb tag pill — OUTLINED: text + border in the intent colour, no fill.
+ * Single source of truth, kept in sync with the `.fc-verb-tag` block in
+ * `feed-card.css` (the explorer's canonical style) so the pill renders the
+ * same everywhere — explorer feeds AND the extension. Intent colours mirror
+ * `INTENTION_CONFIG` (src/taxonomy/intentions.ts).
  *
  * Usage: <span class="fc-verb-tag work">Work</span>
  */
@@ -10,40 +12,48 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: #02000e;
+  color: var(--ds-ink);
   padding: 5px 11px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid var(--ds-border);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  background: var(--ds-accent);
+  background: transparent;
 }
 
-/* Canonical intent classes (mirror INTENTION_CONFIG). */
+/* Canonical intent classes (mirror INTENTION_CONFIG) — colored text + border. */
 .fc-verb-tag.trusted {
-  background: var(--trusted);
+  color: var(--intent-trusted);
+  border-color: var(--intent-trusted);
 }
 .fc-verb-tag.distrusted {
-  background: var(--distrusted);
+  color: var(--intent-distrusted);
+  border-color: var(--intent-distrusted);
 }
 .fc-verb-tag.work {
-  background: var(--work);
+  color: var(--intent-work);
+  border-color: var(--intent-work);
 }
 .fc-verb-tag.learning {
-  background: var(--learning);
+  color: var(--intent-learning);
+  border-color: var(--intent-learning);
 }
 .fc-verb-tag.fun {
-  background: var(--fun);
+  color: var(--intent-fun);
+  border-color: var(--intent-fun);
 }
 .fc-verb-tag.inspiration {
-  background: var(--inspiration);
+  color: var(--intent-inspiration);
+  border-color: var(--intent-inspiration);
 }
 .fc-verb-tag.buying {
-  background: var(--buying);
+  color: var(--intent-buying);
+  border-color: var(--intent-buying);
 }
 .fc-verb-tag.music {
-  background: var(--music);
+  color: var(--intent-music);
+  border-color: var(--intent-music);
 }

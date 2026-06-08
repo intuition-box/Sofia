@@ -9,10 +9,6 @@
 
 /* Design System tokens */
 @import "@0xsofia/design-system/theme.css";
-/* feed-card.css FIRST so the DS component sheets below win on any shared
-   class. Notably `.fc-verb-tag`: verb-tag.css = filled pill (what the
-   extension wants), feed-card.css = outlined (explorer-only). Loading
-   feed-card first lets verb-tag.css override it. */
 @import "@0xsofia/design-system/styles/feed-card.css";
 @import "@0xsofia/design-system/styles/verb-tag.css";
 @import "@0xsofia/design-system/styles/user-badge.css";

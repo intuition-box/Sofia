@@ -412,35 +412,12 @@
   padding: var(--spacing-sm) 0 var(--spacing-xl);
 }
 
-.circle-back-btn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
-  padding: 6px var(--spacing-md);
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.circle-back-btn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  color: var(--color-text-secondary);
-}
-
 .circle-member-avatar {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-full);
   overflow: hidden;
   flex-shrink: 0;
-}
-
-.circle-member-name {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  margin: 0;
 }
 
 .circle-categories-grid {

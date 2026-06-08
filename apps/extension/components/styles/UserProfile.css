@@ -2,28 +2,6 @@
 /* Uses AccountTab.css for shared styles (stats, sub-tabs, achievements, etc.) */
 /* Only page-specific overrides below */
 
-/* ========== BACK BUTTON ========== */
-.user-profile-back-button {
-  position: absolute;
-  top: -50px;
-  left: 0;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.user-profile-back-button:hover {
-  background: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
 /* Stack the "Trusted ✓" pill and the "Retirer du trust circle" action
    so both are visible on the profile of a user that is already in the
    current account's trust circle. */

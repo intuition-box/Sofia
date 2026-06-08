@@ -109,36 +109,3 @@
   flex-direction: column;
 }
 
-.circle-layer-back-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: fit-content;
-  margin: 0 auto var(--spacing-md) 0;
-  padding: var(--spacing-xs) var(--spacing-md);
-  background: transparent;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--radius-md);
-  color: var(--ds-muted);
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.circle-layer-back-btn:hover {
-  color: var(--ds-ink);
-  border-color: var(--ds-ink-soft);
-}
-
-.circle-layer-title {
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ds-ink);
-  text-align: left;
-  margin: 0 0 var(--spacing-md) 0;
-}
