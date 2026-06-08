@@ -133,9 +133,10 @@
 .lp-headline {
   font-family: var(--ds-font-display);
   font-weight: 500;
-  /* Fluid: caps at 137px on wide desktop (the size validated by hand),
-     scales down with the viewport so it never overflows on narrow screens. */
-  font-size: clamp(2.75rem, 9.5vw, 137px);
+  /* Fluid, scaled to the LEFT half-panel (not the full viewport) so the
+     longest word ("Communities") never overflows + gets clipped. 6.4vw tracks
+     the ~50vw auth column; capped on wide desktop, floored on mobile. */
+  font-size: clamp(2.25rem, 6.4vw, 116px);
   line-height: 0.98;
   letter-spacing: -0.025em;
   color: #f5f3ff;
@@ -151,15 +152,13 @@
 
 .lp-lede {
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.95rem;
+  /* Fluid so the tagline scales down on narrow viewports instead of
+     overflowing. Wraps within the auth panel (no forced single line). */
+  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
   line-height: 1.5;
   color: rgba(245, 243, 255, 0.78);
   margin: 0;
-  /* Escape the lp-auth-inner 440px constraint so the sentence stays
-     on a single line. The auth panel itself clips overflow if needed. */
-  max-width: none;
-  width: max-content;
-  white-space: nowrap;
+  max-width: 40ch;
 }
 
 /* ── Auth buttons (on ink) ──────────────────────────── */
