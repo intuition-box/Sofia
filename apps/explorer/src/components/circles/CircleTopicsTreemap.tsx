@@ -16,7 +16,7 @@
  * / no resolvable topic slugs) we render a graceful empty state instead of
  * fabricating cells.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { circleUpsellToast } from './CircleUpsellToast'
 import { squarify } from './squarify'
 import {
@@ -32,8 +32,6 @@ interface CircleTopicsTreemapProps {
 
 // Treemap box height (matches the prototype's fixed 388px canvas).
 const TREEMAP_HEIGHT = 388
-// Fallback width before the ResizeObserver reports the real measurement.
-const DEFAULT_WIDTH = 1040
 // Cell-content thresholds (px) for progressive disclosure.
 const BIG_W = 150
 const BIG_H = 90
@@ -76,9 +74,17 @@ export default function CircleTopicsTreemap({
 }: CircleTopicsTreemapProps) {
   const topics = useCircleTopicActivity(items)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(DEFAULT_WIDTH)
+  // Start at 0 (not a guessed width): the cells memo skips rendering until we
+  // have a real measurement, so the treemap never paints at the wrong size.
+  const [width, setWidth] = useState(0)
 
-  useEffect(() => {
+  // Re-run on `topics.length` so the observer attaches once the container
+  // actually mounts. The wrap div is only rendered when topics > 0, so on the
+  // first paint (topics still loading) `wrapRef.current` is null and a deps:[]
+  // effect would bail forever — leaving width at its default and the treemap
+  // half-filled until a reload. useLayoutEffect measures before paint, so the
+  // correct layout shows on the first frame the container exists.
+  useLayoutEffect(() => {
     const el = wrapRef.current
     if (!el) return
     const measure = () => setWidth(el.clientWidth)
@@ -90,7 +96,7 @@ export default function CircleTopicsTreemap({
       ro.disconnect()
       window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [topics.length])
 
   const cells = useMemo(() => {
     if (width <= 0 || topics.length === 0) return []

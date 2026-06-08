@@ -361,19 +361,28 @@
 .sc2-dt-backers {
   margin-top: 22px;
 }
+.sc2-dt-backers-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+}
 .sc2-dt-backers-t {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ds-muted);
-  margin-bottom: 5px;
 }
-.sc2-dt-backers-cap {
-  font-size: 11px;
+/* Right-aligned column header sitting above the trust-score column. */
+.sc2-dt-backers-col {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--ds-muted);
-  opacity: 0.78;
-  margin-bottom: 11px;
+  white-space: nowrap;
 }
 .sc2-dt-backer {
   display: flex;

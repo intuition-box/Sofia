@@ -502,16 +502,16 @@ export default function ScoresPage() {
             </div>
           </div>
           <div className="sc2-dt-backers">
-            <div className="sc2-dt-backers-t">
-              {tBackers.length
-                ? `${tBackers.length} backer${tBackers.length === 1 ? '' : 's'}`
-                : 'No backers yet'}
-            </div>
-            {tBackers.length > 0 && (
-              <div className="sc2-dt-backers-cap">
-                Bar = each backer&apos;s trust score
+            <div className="sc2-dt-backers-head">
+              <div className="sc2-dt-backers-t">
+                {tBackers.length
+                  ? `${tBackers.length} backer${tBackers.length === 1 ? '' : 's'}`
+                  : 'No backers yet'}
               </div>
-            )}
+              {tBackers.length > 0 && (
+                <div className="sc2-dt-backers-col">Trust score</div>
+              )}
+            </div>
             {tBackers.length ? (
               tBackers.map((b) => (
                 <div className="sc2-dt-backer" key={b.address}>
