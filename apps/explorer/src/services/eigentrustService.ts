@@ -25,6 +25,41 @@ const MAX_PARALLEL = 3
 
 const globalCache = new Map<string, { score: number; ts: number }>()
 
+// Durable per-address cache. The cold MCP path can take >20s (a full
+// server-side EigenTrust pass) and intermittently time out — without
+// persistence, every reload re-rolls which followers resolve, so the backer
+// count and boost flicker (8 → 3 → …). Persisting per ADDRESS (not per
+// follower-set, like the React Query map) means a score we've seen once stays
+// put across reloads and set changes; a later timeout reuses it instead of
+// regressing to 0. localStorage, best-effort.
+const LS_KEY = 'sofia-eigentrust-v1'
+let hydrated = false
+
+function hydrate(): void {
+  if (hydrated || typeof window === 'undefined') return
+  hydrated = true
+  try {
+    const raw = window.localStorage.getItem(LS_KEY)
+    if (!raw) return
+    const obj = JSON.parse(raw) as Record<string, { score: number; ts: number }>
+    for (const [k, v] of Object.entries(obj))
+      if (!globalCache.has(k)) globalCache.set(k, v)
+  } catch {
+    // corrupt/inaccessible storage — ignore, fall back to in-memory only
+  }
+}
+
+function persist(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const obj: Record<string, { score: number; ts: number }> = {}
+    for (const [k, v] of globalCache) obj[k] = v
+    window.localStorage.setItem(LS_KEY, JSON.stringify(obj))
+  } catch {
+    // quota / private-mode — non-fatal, the in-memory cache still works
+  }
+}
+
 /** Run `fn` over `items` with a bounded number of concurrent workers. */
 async function mapWithConcurrency<T, R>(
   items: readonly T[],
@@ -50,21 +85,23 @@ async function mapWithConcurrency<T, R>(
  *  EIP-55 checksummed (mixed-case) addresses — querying mixed-case returns 0.
  *  So we lowercase for the MCP call + cache key. */
 export async function fetchEigentrustScore(address: string): Promise<number> {
+  hydrate()
   const key = address.toLowerCase()
   const cached = globalCache.get(key)
   if (cached && Date.now() - cached.ts < TTL_MS) return cached.score
-  try {
-    const composite = await fetchCompositeScore(key)
-    const score = composite?.compositeScore ?? 0
-    globalCache.set(key, { score, ts: Date.now() })
-    return score
-  } catch {
-    // Transient MCP failure (timeout / rate-limit). A single throw must NOT
-    // reject the whole eigentrust map — that would zero out the boost for
-    // every topic at once (the "sometimes it shows, sometimes not" bug).
-    // Contribute 0 for now and DON'T cache the miss, so the next pass retries.
-    return 0
-  }
+
+  // `fetchCompositeScore` swallows transient failures and returns null (a real
+  // in-graph zero comes back as `{ compositeScore: 0 }`). So null = "no answer"
+  // → reuse the last-known score (never regress to 0 on a timeout) and DON'T
+  // cache the miss, so a manual reload retries it. Only a real response updates
+  // the durable cache.
+  const composite = await fetchCompositeScore(key)
+  if (composite == null) return cached?.score ?? 0
+
+  const score = composite.compositeScore ?? 0
+  globalCache.set(key, { score, ts: Date.now() })
+  persist()
+  return score
 }
 
 /**

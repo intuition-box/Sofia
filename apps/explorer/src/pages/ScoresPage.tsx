@@ -2,19 +2,19 @@
  * ScoresPage — `/scores`. Reputation "constellation" (Claude Design handoff).
  *
  * "Read your score, don't read about it." A single donut carries the story:
- * arc length = score, inner band = your certs (base), glowing outer band =
- * others' boost. Toggle Topics ↔ Verbs. Click a segment → a contextual rail
- * shows that topic's base/boost, the curators who lifted it, and recent
- * activity. A Pool tab covers the season stake. No stacked card walls.
+ * each topic's arc length = its score. Click a segment (or a row in the rail)
+ * → a contextual rail shows that topic's base/backers split, the backers who
+ * lifted it (weighted by their trust score), and the certs behind it appear
+ * below. A Pool tab covers the season stake. No stacked card walls.
  *
  * Real data: per-topic base (cert count × POINTS_PER_CERT) + boost
- * (`useDerivedReputation`), per-topic backers (`useReputationBackers`), verb
- * counts + recent certs (`useUserOnChainProfile`), season pool
- * (`useSeasonPool`).
+ * (`useDerivedReputation`), per-topic backers (`useReputationBackers`),
+ * recent certs (`useUserOnChainProfile`), season pool (`useSeasonPool`).
  */
 
-import { useCallback, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useCallback, useMemo, useState } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
@@ -51,11 +51,7 @@ import FeedCardView, {
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
-import {
-  ScoresDonut,
-  type Seg,
-  type Mode,
-} from '@/components/scores/ScoresDonut'
+import { ScoresDonut, type Seg } from '@/components/scores/ScoresDonut'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
@@ -119,12 +115,36 @@ const VERBS: {
 export default function ScoresPage() {
   const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
-  // View state lives in the URL (?tab / ?mode / ?sel) so it's shareable and
-  // the browser Back button steps through tab/mode/segment changes. Missing
-  // params fall back to the prior `useState` defaults.
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [reloading, setReloading] = useState(false)
+
+  // Manual refresh: re-pull the reputation chain (profile → claim supporters →
+  // eigentrust). Picks up new backers and retries any whose MCP score timed out
+  // (those aren't cached, so they re-fetch). Cached scores stay put — durable
+  // by design — so this never makes the numbers regress.
+  const handleReload = useCallback(async () => {
+    setReloading(true)
+    try {
+      await queryClient.refetchQueries({
+        predicate: (q) => {
+          const k = q.queryKey[0]
+          return (
+            k === 'user-onchain-profile' ||
+            k === 'claimSupporters' ||
+            k === 'eigentrustMap'
+          )
+        },
+      })
+    } finally {
+      setReloading(false)
+    }
+  }, [queryClient])
+  // View state lives in the URL (?tab / ?sel) so it's shareable and the
+  // browser Back button steps through tab/segment changes. Missing params
+  // fall back to the prior defaults.
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = (searchParams.get('tab') as 'score' | 'pool') ?? 'score'
-  const mode = (searchParams.get('mode') as Mode) ?? 'topics'
   const sel = searchParams.get('sel')
 
   const setTab = useCallback(
@@ -132,16 +152,6 @@ export default function ScoresPage() {
       setSearchParams((prev) => {
         const params = new URLSearchParams(prev)
         params.set('tab', next)
-        return params
-      })
-    },
-    [setSearchParams],
-  )
-  const setMode = useCallback(
-    (next: Mode) => {
-      setSearchParams((prev) => {
-        const params = new URLSearchParams(prev)
-        params.set('mode', next)
         return params
       })
     },
@@ -215,46 +225,25 @@ export default function ScoresPage() {
     [topics],
   )
 
-  // ── Verbs (counts) ──
-  const verbs = useMemo(() => {
-    return VERBS.map((v) => {
-      let n = 0
-      for (const cert of profile.certs)
-        if (predicateLabelToIntentionType(cert.intention) === v.id) n++
-      return { ...v, n }
-    }).filter((v) => v.n > 0)
-  }, [profile.certs])
-
   const generalScore = certCounts.general * POINTS_PER_CERT
   const trustDistrustScore =
     (certCounts.trusted + certCounts.distrusted) * POINTS_PER_CERT
   const totalScore =
     topics.reduce((a, t) => a + t.score, 0) + generalScore + trustDistrustScore
 
-  // ── Donut segments for the active mode ──
+  // ── Donut segments (topics) ──
   const segments = useMemo<Seg[]>(() => {
-    const src =
-      mode === 'topics'
-        ? topics
-            .filter((t) => t.score > 0)
-            .map((t) => ({
-              slug: t.slug,
-              label: t.label,
-              color: t.color,
-              score: t.score,
-              base: t.base,
-              boost: t.boost,
-              certCount: t.certCount,
-            }))
-        : verbs.map((v) => ({
-            slug: v.id,
-            label: v.label,
-            color: v.color,
-            score: v.n,
-            base: v.n,
-            boost: 0,
-            certCount: v.n,
-          }))
+    const src = topics
+      .filter((t) => t.score > 0)
+      .map((t) => ({
+        slug: t.slug,
+        label: t.label,
+        color: t.color,
+        score: t.score,
+        base: t.base,
+        boost: t.boost,
+        certCount: t.certCount,
+      }))
     src.sort((a, b) => b.score - a.score)
     const total = src.reduce((s, x) => s + x.score, 0) || 1
     const gap = 2.4
@@ -270,7 +259,7 @@ export default function ScoresPage() {
       a += span + gap
       return seg
     })
-  }, [mode, topics, verbs])
+  }, [topics])
 
   // ── Certs shown in the module below the donut (filtered by selection) ──
   // Latest context-addition timestamp per cert — so "recent" reflects when
@@ -315,21 +304,13 @@ export default function ScoresPage() {
   }, [profile.certs, lastTaggedByCert])
   const shownCerts = useMemo(() => {
     if (!sel) return sortedCerts.slice(0, 24)
-    if (mode === 'topics')
-      return sortedCerts.filter((c) => c.topicSlugs.includes(sel))
-    return sortedCerts.filter(
-      (c) => predicateLabelToIntentionType(c.intention) === sel,
-    )
-  }, [sel, mode, sortedCerts])
+    return sortedCerts.filter((c) => c.topicSlugs.includes(sel))
+  }, [sel, sortedCerts])
   const certsTitle = useMemo(() => {
     if (!sel) return 'Recent certifications'
-    const label =
-      mode === 'topics'
-        ? (topicMap[sel]?.label ?? sel)
-        : (verbs.find((v) => v.id === sel)?.label ?? sel)
-    const sep = mode === 'topics' ? 'in' : '·'
-    return `${shownCerts.length} certification${shownCerts.length === 1 ? '' : 's'} ${sep} ${label}`
-  }, [sel, mode, shownCerts.length, topicMap, verbs])
+    const label = topicMap[sel]?.label ?? sel
+    return `${shownCerts.length} certification${shownCerts.length === 1 ? '' : 's'} in ${label}`
+  }, [sel, shownCerts.length, topicMap])
 
   // ── Backer ENS + identity ──
   const allBackerAddrs = useMemo<Address[]>(() => {
@@ -436,64 +417,45 @@ export default function ScoresPage() {
   // ── Detail rail content ──
   const renderDetail = () => {
     if (!sel) {
-      const rows =
-        mode === 'topics'
-          ? [...topics].sort((a, b) => b.score - a.score)
-          : [...verbs].sort((a, b) => b.n - a.n)
+      const rows = [...topics].sort((a, b) => b.score - a.score)
       return (
         <div className="sc2-detail-empty">
-          <span className="sc2-eyebrow">
-            {mode === 'topics' ? 'All topics' : 'All verbs'}
-          </span>
+          <span className="sc2-eyebrow">All topics</span>
+          <p className="sc2-detail-hint">
+            Click a topic — in the wheel or in the list — to see its
+            certifications below.
+          </p>
           <div className="sc2-rank-list">
-            {rows.map((r) => {
-              const isTopic = mode === 'topics'
-              const slug = isTopic
-                ? (r as (typeof topics)[number]).slug
-                : (r as (typeof verbs)[number]).id
-              const color = r.color
-              const label = r.label
-              const score = isTopic
-                ? (r as (typeof topics)[number]).score
-                : (r as (typeof verbs)[number]).n
-              return (
-                <button
-                  type="button"
-                  className="sc2-rank-item"
-                  key={slug}
-                  onClick={() => setSel(slug)}
+            {rows.map((r) => (
+              <button
+                type="button"
+                className="sc2-rank-item"
+                key={r.slug}
+                onClick={() => setSel(r.slug)}
+              >
+                <span className="sc2-rank-dot" style={{ background: r.color }} />
+                <span
+                  className="material-symbols-outlined sc2-rank-glyph"
+                  aria-hidden="true"
                 >
-                  <span
-                    className="sc2-rank-dot"
-                    style={{ background: color }}
-                  />
-                  {isTopic ? (
-                    <span
-                      className="material-symbols-outlined sc2-rank-glyph"
-                      aria-hidden="true"
-                    >
-                      {getTopicIcon(slug)}
-                    </span>
-                  ) : (
-                    <span className="sc2-rank-glyph">
-                      {(r as (typeof verbs)[number]).emoji}
-                    </span>
-                  )}
-                  <span className="sc2-rank-label">{label}</span>
-                  <span
-                    className={`sc2-rank-score${score === 0 ? ' zero' : ''}`}
-                  >
-                    {score}
-                  </span>
-                </button>
-              )
-            })}
+                  {getTopicIcon(r.slug)}
+                </span>
+                <span className="sc2-rank-label">{r.label}</span>
+                <span
+                  className={`sc2-rank-score${r.score === 0 ? ' zero' : ''}`}
+                >
+                  {r.score}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       )
     }
 
-    if (mode === 'topics') {
+    // Topic detail (sel is a topic slug here). Block-scoped so the locals
+    // don't leak into renderDetail's other branches.
+    {
       const t = topicMap[sel]
       if (!t) return null
       const tBackers = backers.byTopic.get(sel) ?? []
@@ -545,6 +507,11 @@ export default function ScoresPage() {
                 ? `${tBackers.length} backer${tBackers.length === 1 ? '' : 's'}`
                 : 'No backers yet'}
             </div>
+            {tBackers.length > 0 && (
+              <div className="sc2-dt-backers-cap">
+                Bar = each backer&apos;s trust score
+              </div>
+            )}
             {tBackers.length ? (
               tBackers.map((b) => (
                 <div className="sc2-dt-backer" key={b.address}>
@@ -595,35 +562,6 @@ export default function ScoresPage() {
         </div>
       )
     }
-
-    // verb detail
-    const v = verbs.find((x) => x.id === sel)
-    if (!v) return null
-    return (
-      <div style={{ ['--tc' as string]: v.color }}>
-        <div className="sc2-dt-head">
-          <span className="sc2-dt-emoji">
-            <span style={{ fontSize: 24 }}>{v.emoji}</span>
-          </span>
-          <div>
-            <div className="sc2-dt-name">{v.label}</div>
-            <div className="sc2-dt-certs">intention</div>
-          </div>
-        </div>
-        <div className="sc2-dt-score">{v.n}</div>
-        <p className="sc2-dt-none" style={{ marginTop: 14 }}>
-          URLs you certified with the{' '}
-          <b style={{ color: v.color }}>{v.label.toLowerCase()}</b> intention.
-        </p>
-        <button
-          type="button"
-          className="sc2-dt-clear"
-          onClick={() => setSel(null)}
-        >
-          ← All verbs
-        </button>
-      </div>
-    )
   }
 
   return (
@@ -631,6 +569,32 @@ export default function ScoresPage() {
       {/* Tabs only — identity + total live in the right rail and the donut
           centre, so no redundant header bar. */}
       <div className="sc2-toolbar">
+        <div className="sc2-toolbar-left">
+          <button
+            type="button"
+            className="sc2-back"
+            onClick={() => navigate('/profile')}
+          >
+            ← Back to profile
+          </button>
+          {tab === 'score' && (
+            <button
+              type="button"
+              className="sc2-reload"
+              onClick={handleReload}
+              disabled={reloading}
+              title="Refresh backers & trust scores"
+            >
+              <span
+                className={`material-symbols-outlined sc2-reload-ico${reloading ? ' spin' : ''}`}
+                aria-hidden="true"
+              >
+                refresh
+              </span>
+              {reloading ? 'Reloading…' : 'Reload'}
+            </button>
+          )}
+        </div>
         <div className="sc2-tabs">
           <button
             className={`sc2-tab${tab === 'score' ? ' active' : ''}`}
@@ -652,8 +616,6 @@ export default function ScoresPage() {
           <div className="sc2-stage">
             <ScoresDonut
               items={segments}
-              mode={mode}
-              setMode={setMode}
               sel={sel}
               setSel={setSel}
               totalScore={totalScore}
