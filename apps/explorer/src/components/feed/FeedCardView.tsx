@@ -212,9 +212,6 @@ interface FeedCardViewProps {
   canDown?: boolean
   onVote?: (side: 'support' | 'oppose') => void
   voteDisabledReason?: string
-  /** Hide the like/dislike thumbs entirely (not just disable them). Used on
-   *  the viewer's own Marks — you can't back your own claim. */
-  hideVotes?: boolean
   onOpen?: () => void
   handleSlot?: ReactNode
   /** Optional "+ Context" affordance rendered in the footer chip row.
@@ -252,7 +249,6 @@ export default function FeedCardView({
   canDown = true,
   onVote,
   voteDisabledReason = 'No topic to endorse yet — this URL has no "in context of" tag.',
-  hideVotes = false,
   onOpen,
   handleSlot,
   addContextSlot,
@@ -408,10 +404,8 @@ export default function FeedCardView({
             <div className="fc-xs-foot">
               {when && <span className="fc-xs-when">{when}</span>}
               {domain && <span className="fc-xs-domain">{domain}</span>}
-              {/* up < 0 = caller opts out of vote display (e.g. cart context);
-                  hideVotes = own Mark (can't back yourself) */}
-              <div
-                className={`fc-xs-votes${up < 0 || hideVotes ? ' fc-xs-votes--hidden' : ''}`}>
+              {/* up < 0 = caller opts out of vote display (e.g. cart context) */}
+              <div className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}>
                 <span
                   className={`fc-xs-vote u${userUp ? ' on' : ''}`}
                   onClick={onVote ? vote('support') : undefined}
@@ -506,9 +500,7 @@ export default function FeedCardView({
         <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
       </div>
 
-      {/* Footer — votes only (chips moved below the title above). Hidden on
-          your own Marks (hideVotes): you can't back your own claim. */}
-      {!hideVotes && (
+      {/* Footer — votes only (chips moved below the title above) */}
       <footer className="fc-foot fc-foot--votes-only">
         {/* Votes — left side */}
         {onVote ? (
@@ -559,7 +551,6 @@ export default function FeedCardView({
           </div>
         )}
       </footer>
-      )}
     </article>
   )
 }

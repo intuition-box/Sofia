@@ -143,7 +143,6 @@ export default function CircleFeedCard({
       canUp={canSupport}
       canDown={canOppose}
       onVote={onDeposit ? (side) => onDeposit(side, item) : undefined}
-      hideVotes={isOwner}
       onOpen={() => {
         if (item.url && item.url.startsWith('http')) {
           window.open(item.url, '_blank', 'noopener,noreferrer')
