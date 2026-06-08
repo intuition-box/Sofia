@@ -169,7 +169,7 @@ export function NavSidebar({
     <DsNavSidebar>
       <NavBrand
         name="Sofia Explorer"
-        tag="v0.4"
+        tag="v1.0"
         collapsed={collapsed}
         onToggleCollapse={onToggleCollapse}
         logo={<img src="/logo.png" alt="" className="nav-brand-logo" />}
