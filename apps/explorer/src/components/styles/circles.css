@@ -1288,15 +1288,17 @@
   overflow-y: auto;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: -16px 0 48px -24px
-    color-mix(in srgb, var(--ds-ink) 50%, transparent);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+/* Glow only while open — when closed the panel sits off-screen right and a
+ * base box-shadow projecting left would bleed onto the visible viewport. */
 .crd-members-panel.open {
   transform: translateX(0);
+  box-shadow: -16px 0 48px -24px
+    color-mix(in srgb, var(--ds-ink) 50%, transparent);
 }
 .crd-members-panel-head {
   display: flex;
