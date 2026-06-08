@@ -1,4 +1,5 @@
 export * from './FaviconWrapper'
+export * from './FeedCardView'
 export * from './VerbTag'
 export * from './UserBadge'
 export * from './GroupBentoCard'
