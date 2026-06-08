@@ -13,11 +13,12 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { getTopicIcon } from '@/config/topicEmoji'
 import {
   INTENTION_CONFIG,
@@ -115,7 +116,6 @@ const VERBS: {
 export default function ScoresPage() {
   const { user, authenticated } = usePrivy()
   const address = user?.wallet?.address
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [reloading, setReloading] = useState(false)
 
@@ -566,17 +566,14 @@ export default function ScoresPage() {
 
   return (
     <div className="pf-view page-enter sc2-page">
+      <Breadcrumb
+        items={[{ label: 'My profile', to: '/profile' }, { label: 'Scores' }]}
+      />
+
       {/* Tabs only — identity + total live in the right rail and the donut
           centre, so no redundant header bar. */}
       <div className="sc2-toolbar">
         <div className="sc2-toolbar-left">
-          <button
-            type="button"
-            className="sc2-back"
-            onClick={() => navigate('/profile')}
-          >
-            ← Back to profile
-          </button>
           {tab === 'score' && (
             <button
               type="button"

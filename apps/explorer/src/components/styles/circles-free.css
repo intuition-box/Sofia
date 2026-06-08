@@ -264,6 +264,10 @@
 .cf-kpi-locked:hover {
   background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
 }
+.cf-kpi-locked.is-active {
+  background: color-mix(in srgb, var(--ds-accent) 22%, transparent);
+  box-shadow: inset 0 2px 0 0 var(--ds-accent);
+}
 .cf-kpi-lock-glyph {
   display: grid;
   place-items: center;

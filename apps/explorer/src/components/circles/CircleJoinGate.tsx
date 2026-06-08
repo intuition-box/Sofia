@@ -22,7 +22,7 @@
  */
 import { useLogin } from '@privy-io/react-auth'
 import { Zap, Check } from 'lucide-react'
-import { circleUpsellToast } from './CircleUpsellToast'
+import { circleProModal } from './CircleProModal'
 
 interface JoinGateStat {
   label: string
@@ -135,11 +135,7 @@ export default function CircleJoinGate({
           <button
             type="button"
             className="jg-alt"
-            onClick={() =>
-              circleUpsellToast(
-                'Sofia Pro — contact the core team on Discord to upgrade',
-              )
-            }
+            onClick={() => circleProModal()}
           >
             or upgrade to Pro for full analytics
           </button>

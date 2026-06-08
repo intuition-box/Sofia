@@ -38,10 +38,15 @@ interface CircleHeaderFreeProps {
   showPlan: boolean
   /** Fires when a non-member clicks "Enter this Circle". */
   onJoin?: () => void
-  /** Fires for any Pro-gated affordance (Upgrade button, locked KPI). */
+  /** Fires for any Pro-gated affordance (Upgrade button). */
   onUpgrade: () => void
   /** Fires when an existing member clicks the "Member" confirmation. */
   onMemberClick?: () => void
+  /** Toggles the in-page Decisions tab from the locked KPI tile. */
+  onDecisionsClick?: () => void
+  /** Whether the Decisions tab is currently open — toggles the tile's
+   *  active styling. */
+  decisionsActive?: boolean
 }
 
 function formatCount(n: number): string {
@@ -61,6 +66,8 @@ export default function CircleHeaderFree({
   onJoin,
   onUpgrade,
   onMemberClick,
+  onDecisionsClick,
+  decisionsActive = false,
 }: CircleHeaderFreeProps) {
   const signals = stats ? formatCount(stats.postCount) : '—'
   const active = stats ? String(stats.activeMemberCount) : '—'
@@ -161,9 +168,12 @@ export default function CircleHeaderFree({
         {showPlan && (
           <button
             type="button"
-            className="cf-kpi cf-kpi-locked"
-            onClick={onUpgrade}
-            aria-label="Decisions — a Pro feature. Upgrade to unlock."
+            className={`cf-kpi cf-kpi-locked${
+              decisionsActive ? ' is-active' : ''
+            }`}
+            onClick={onDecisionsClick}
+            aria-pressed={decisionsActive}
+            aria-label="Decisions — a Pro feature. Open to preview."
           >
             <span className="cf-kpi-label">
               <span
