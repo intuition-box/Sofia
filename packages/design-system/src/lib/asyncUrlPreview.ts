@@ -1,8 +1,8 @@
 /**
  * Async URL preview dispatcher — handles providers that require a
  * network round-trip (oEmbed JSON, OG proxy). Pure sync providers
- * (YouTube, GitHub) live in `getUrlPreview()` and short-circuit before
- * we ever reach this file.
+ * (YouTube, GitHub) live in each app's `getUrlPreview()` and short-circuit
+ * before we ever reach this file.
  *
  * Provider priority:
  *   1. Spotify oEmbed       — cover art
@@ -11,28 +11,26 @@
  *   4. Universal OG proxy   — fallback for ANY URL with `<meta og:image>`
  *                              (Medium, Substack, dev.to, blogs, X, ...)
  *
- * The OG proxy slot is opt-in via `VITE_OG_PROXY_URL`. When unset, the
- * provider isn't tried — the card stays on its sync favicon fallback.
- * Once the OG proxy service (see `services/og-proxy/`) is deployed and
- * the env var points at it, every URL with OpenGraph meta tags gets a
- * real preview.
+ * The OG proxy slot is opt-in: the caller passes `ogProxyUrl` (read from
+ * its own env — `VITE_OG_PROXY_URL` in the explorer, `PLASMO_PUBLIC_OG_PROXY_URL`
+ * in the extension). When omitted, the provider isn't tried — the card
+ * stays on its sync favicon fallback. This module reads NO env itself so
+ * it works identically under Vite and Plasmo/Parcel.
  */
 import type { UrlPreview } from './urlPreview'
 import { isSpotifyUrl, fetchSpotifyPreview } from './spotify'
 import { isVimeoUrl, fetchVimeoPreview } from './vimeo'
 import { isSoundCloudUrl, fetchSoundCloudPreview } from './soundcloud'
 
-const OG_PROXY_URL = import.meta.env.VITE_OG_PROXY_URL as string | undefined
-
 /** True when the URL belongs to a provider we can query async, OR when
  *  a universal OG proxy is configured. Drives the React Query `enabled`
  *  flag so we don't fire fetches for URLs we can't enrich. */
-export function hasAsyncProvider(url: string): boolean {
+export function hasAsyncProvider(url: string, ogProxyUrl?: string): boolean {
   if (!url) return false
   if (isSpotifyUrl(url)) return true
   if (isVimeoUrl(url)) return true
   if (isSoundCloudUrl(url)) return true
-  if (OG_PROXY_URL) return true
+  if (ogProxyUrl) return true
   return false
 }
 
@@ -42,6 +40,7 @@ export function hasAsyncProvider(url: string): boolean {
  *  so a flaky endpoint can't break the chain. */
 export async function fetchAsyncUrlPreview(
   url: string,
+  ogProxyUrl?: string,
 ): Promise<UrlPreview | null> {
   if (isSpotifyUrl(url)) {
     const hit = await safe(() => fetchSpotifyPreview(url))
@@ -55,10 +54,10 @@ export async function fetchAsyncUrlPreview(
     const hit = await safe(() => fetchSoundCloudPreview(url))
     if (hit) return hit
   }
-  // Universal OG proxy — only fires when the env var is set. Catches
-  // everything the typed providers missed.
-  if (OG_PROXY_URL) {
-    const hit = await safe(() => fetchOgProxyPreview(url, OG_PROXY_URL))
+  // Universal OG proxy — only fires when the caller passes a base URL.
+  // Catches everything the typed providers missed.
+  if (ogProxyUrl) {
+    const hit = await safe(() => fetchOgProxyPreview(url, ogProxyUrl))
     if (hit) return hit
   }
   return null
