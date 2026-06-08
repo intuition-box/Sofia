@@ -44,9 +44,15 @@ export const OG_BASE_URL =
   'https://og.sofia.intuition.box'
 
 // ── MCP Trust Engine ──
+// Same-origin path in BOTH dev and prod. The upstream
+// (mcp-trust.intuition.box) does not expose the `mcp-session-id` response
+// header for cross-origin callers, so a direct browser fetch never
+// establishes a session → every score collapses to 0. We always go through a
+// same-origin relay instead: the Vite dev proxy (vite.config.ts) and the
+// nginx `/mcp-trust` location in prod (nginx.conf). Override via
+// VITE_MCP_TRUST_URL only if you have an upstream with proper CORS headers.
 export const MCP_TRUST_URL =
-  (import.meta.env.VITE_MCP_TRUST_URL as string) ||
-  (import.meta.env.DEV ? '/mcp-trust' : 'https://mcp-trust.intuition.box')
+  (import.meta.env.VITE_MCP_TRUST_URL as string) || '/mcp-trust'
 
 // ── Predicate IDs (mainnet) ──
 export const PREDICATE_IDS = {
