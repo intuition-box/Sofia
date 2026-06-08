@@ -11,7 +11,7 @@ year. We moved everything into a single workspace, shipped end-to-end multi
 wallet support, gave the frontend its own design language, and finally
 replaced our polling with real-time data. This logbook covers the whole arc.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## One repository, finally
 

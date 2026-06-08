@@ -9,7 +9,7 @@ tags: [infrastructure, milestones]
 
 This week has been focused on measuring and preparing for our Alpha launch.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Current Focus
 

@@ -17,7 +17,7 @@ Most importantly, we presented Sofia publicly for the first time during Intuitio
 
 Together, these updates represent a turning point: Sofia is evolving from an internal project into a public-facing product with a growing community behind it.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Public Demo & Community Launch
 

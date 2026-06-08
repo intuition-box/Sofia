@@ -10,7 +10,7 @@ reaches v0.6.0 with new ways to express your interests and stake on your favorit
 platforms. We also shipped smarter notifications, cleaner UI, and a bunch of
 stability fixes.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Sofia Explorer
 
