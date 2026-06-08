@@ -1,10 +1,31 @@
+import { useEffect, useState } from 'react'
+
 import './SofiaLoader.css'
 
 interface SofiaLoaderProps {
   size?: number
+  /** Rotating phrases shown below the loader to keep users patient. */
+  messages?: string[]
+  /** Milliseconds between phrase swaps. */
+  messageInterval?: number
 }
 
-const SofiaLoader = ({ size = 120 }: SofiaLoaderProps) => {
+const SofiaLoader = ({
+  size = 120,
+  messages,
+  messageInterval = 2800
+}: SofiaLoaderProps) => {
+  const hasMessages = !!messages && messages.length > 0
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    if (!hasMessages || messages!.length < 2) return
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % messages!.length)
+    }, messageInterval)
+    return () => clearInterval(id)
+  }, [hasMessages, messages, messageInterval])
+
   return (
     <div className="sofia-loader-container">
       <svg
@@ -24,6 +45,11 @@ const SofiaLoader = ({ size = 120 }: SofiaLoaderProps) => {
           d="M570.246 375.13V409.291C570.245 443.539 570.246 470.068 518.517 488.06L347.946 563L6.19888e-06 410.125V171.852L347.946 0L698 149.137V215.493L358.344 71.4668C351.921 68.6409 344.591 68.7428 338.249 71.745L75.2657 196.226C66.7914 200.237 61.3862 208.786 61.3862 218.176V352.933C61.3864 362.537 67.0374 371.239 75.802 375.13L338.255 491.61C344.428 494.349 351.46 494.385 357.659 491.708L465.369 445.194C498.722 431.358 508.859 418.983 508.86 409.291V349.778L570.246 375.13Z"
         />
       </svg>
+      {hasMessages && (
+        <p key={index} className="sofia-loader-message">
+          {messages![index]}
+        </p>
+      )}
     </div>
   )
 }

@@ -1,7 +1,36 @@
 .sofia-loader-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1.25rem;
+}
+
+.sofia-loader-message {
+  max-width: 22rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--muted-foreground, rgba(255, 255, 255, 0.55));
+  animation: sofia-message-fade 2.8s ease-in-out infinite;
+}
+
+@keyframes sofia-message-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 .sofia-loader-svg {

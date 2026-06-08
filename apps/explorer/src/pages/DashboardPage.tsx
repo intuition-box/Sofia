@@ -32,6 +32,16 @@ import '@/components/styles/pages.css'
 import '@/components/styles/home.css'
 import '@/components/styles/circles.css'
 
+/** Rotating phrases shown while the Explore feed loads. */
+const EXPLORE_LOADER_MESSAGES = [
+  'Gathering signals from your trust circle…',
+  'Reading the latest certifications on-chain…',
+  'Mapping what people actually trust…',
+  'Curating discoveries worth your time…',
+  'Connecting atoms across the graph…',
+  'Almost there — sorting the freshest activity…'
+]
+
 /** Build a Set of platform IDs that belong to a given Sofia topic */
 function getPlatformIdsForTopic(topicId: string): Set<string> {
   const ids = new Set<string>()
@@ -259,6 +269,15 @@ export default function DashboardPage() {
         icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
+        {/* Initial load — the feed fetch is slow, so keep users patient with
+          the Sofia loader and rotating phrases. Shown regardless of drill
+          state since both views below are gated on `!loading`. */}
+        {loading && (
+          <div className="flex items-start justify-center page-loader">
+            <SofiaLoader size={96} messages={EXPLORE_LOADER_MESSAGES} />
+          </div>
+        )}
+
         {/* Tiles view — default. Shows the interest masonry built from the
           current source items (All or Circle). Click a tile to drill. */}
         {drill == null && !loading && (
@@ -335,13 +354,6 @@ export default function DashboardPage() {
                 }}
               />
             </div>
-
-            {/* Loading */}
-            {loading && (
-              <div className="flex items-start justify-center page-loader">
-                <SofiaLoader size={96} />
-              </div>
-            )}
 
             {/* Error */}
             {!loading && feedError && (
