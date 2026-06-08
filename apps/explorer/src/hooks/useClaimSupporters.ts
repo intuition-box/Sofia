@@ -24,7 +24,9 @@ export function useClaimSupporters(claimTermIds: readonly string[]) {
     queryFn: () => fetchClaimSupporters(key),
     enabled: key.length > 0,
     staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    // 24h to match the persister's maxAge (providers.tsx) so this link of the
+    // reputation chain survives reloads/navigation instead of being GC'd at 30m.
+    gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 

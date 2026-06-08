@@ -51,6 +51,61 @@ export interface ReputationCert {
 
 export type ReputationSide = 'support' | 'oppose'
 
+/**
+ * Minimal profile shape `buildReputationClaims` reads. Declared locally (not
+ * imported from userOnChainProfileService) to keep this calc service pure and
+ * free of the data-layer dependency.
+ */
+interface ClaimSources {
+  certs: readonly {
+    termId: string
+    certifiedAt: string
+    topicSlugs: string[]
+  }[]
+  contextAdditions: readonly {
+    contextTermId: string
+    addedAt: string
+    topicSlug: string
+  }[]
+}
+
+/**
+ * HYBRID claim set — what counts as "backing" your reputation in a topic:
+ *   1. the CERT triple (`I | visits for work | youtube.com`) — any account that
+ *      co-certified the same Mark after you, the abundant signal; and
+ *   2. the `in context of` TOPIC triple (`cert | in context of | AI`) — anyone
+ *      who staked ("liked") your per-topic tag after you, the precise signal.
+ * Both feed the same downstream calc. Deduped by term_id (a cert and a context
+ * triple never share one, so the two sources never collide); topic slugs are
+ * merged and the earliest timestamp wins so every later staker stays a
+ * follower. See docs/reputation-curation.md.
+ */
+export function buildReputationClaims({
+  certs,
+  contextAdditions,
+}: ClaimSources): ReputationCert[] {
+  const byTerm = new Map<string, ReputationCert>()
+
+  const add = (termId: string, certifiedAt: string, topicSlugs: string[]) => {
+    if (!termId || topicSlugs.length === 0) return
+    const existing = byTerm.get(termId)
+    if (!existing) {
+      byTerm.set(termId, { termId, certifiedAt, topicSlugs: [...topicSlugs] })
+      return
+    }
+    for (const t of topicSlugs)
+      if (!existing.topicSlugs.includes(t)) existing.topicSlugs.push(t)
+    if (certifiedAt && certifiedAt < existing.certifiedAt)
+      existing.certifiedAt = certifiedAt
+  }
+
+  for (const c of certs) add(c.termId, c.certifiedAt, c.topicSlugs)
+  for (const ca of contextAdditions)
+    add(ca.contextTermId, ca.addedAt, ca.topicSlug ? [ca.topicSlug] : [])
+
+  return [...byTerm.values()]
+}
+
 interface ComputeParams {
   /** The user's wallet addresses, lowercased — excluded from "followers". */
   accounts: ReadonlySet<string>

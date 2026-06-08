@@ -13,6 +13,7 @@ import { useEigentrustMap } from '@/hooks/useEigentrustMap'
 import {
   computeDerivedReputation,
   collectFollowerAddresses,
+  buildReputationClaims,
   type ReputationCert,
 } from '@/services/derivedReputationService'
 
@@ -26,21 +27,13 @@ export function useDerivedReputation(addresses: readonly string[]) {
     addresses.length > 0 ? [...addresses] : undefined,
   )
 
-  // Reputation = likes only. A claim is one `in context of` triple (per
-  // topic) the user staked — the vault a "like" deposits on — NOT the cert
-  // triple. So someone who likes your Mark's topic AFTER you lifts your
-  // reputation in that topic; a plain co-certification of the cert triple
-  // does not. See docs/reputation-likes-gap.md.
+  // Reputation = HYBRID backing. A claim is either the cert triple (any
+  // co-certifier of your Mark after you) OR the `in context of` topic triple
+  // (anyone who "liked" your per-topic tag after you). Both lift your
+  // reputation in that topic. See docs/reputation-curation.md.
   const certs = useMemo<ReputationCert[]>(
-    () =>
-      profile.contextAdditions
-        .filter((ca) => ca.contextTermId && ca.topicSlug)
-        .map((ca) => ({
-          termId: ca.contextTermId,
-          certifiedAt: ca.addedAt,
-          topicSlugs: [ca.topicSlug],
-        })),
-    [profile.contextAdditions],
+    () => buildReputationClaims(profile),
+    [profile.certs, profile.contextAdditions],
   )
 
   const claimIds = useMemo(() => certs.map((c) => c.termId), [certs])

@@ -16,7 +16,10 @@ import {
 } from '@/services/userOnChainProfileService'
 
 const STALE_TIME_MS = 5 * 60 * 1000
-const GC_TIME_MS = 60 * 60 * 1000
+// 24h to match the persister's maxAge (providers.tsx) — the profile is the
+// head of the reputation chain, so it must survive the full persist window
+// (not GC at 1h) for backers to rehydrate instantly on reload/navigation.
+const GC_TIME_MS = 24 * 60 * 60 * 1000
 
 const EMPTY: UserOnChainProfile = {
   certs: [],

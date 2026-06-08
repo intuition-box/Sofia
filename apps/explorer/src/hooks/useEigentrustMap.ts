@@ -21,7 +21,10 @@ export function useEigentrustMap(addresses: readonly string[]) {
     queryFn: () => fetchEigentrustMap(key),
     enabled: key.length > 0,
     staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    // 24h to match the persister's maxAge (providers.tsx) — the MCP eigentrust
+    // pass is the slow link in the reputation chain, so its result must survive
+    // reloads/navigation for the full persist window, not get GC'd after 1h.
+    gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import {
   computeDerivedReputation,
   collectFollowerAddresses,
+  buildReputationClaims,
   type ReputationCert,
 } from '@/services/derivedReputationService'
 import type {
@@ -163,6 +164,43 @@ describe('computeDerivedReputation', () => {
       credibility: cred,
     })
     expect(out.size).toBe(0)
+  })
+})
+
+describe('buildReputationClaims (hybrid: certs + context triples)', () => {
+  it('includes BOTH cert triples and context triples as claims', () => {
+    const claims = buildReputationClaims({
+      certs: [{ termId: 'cert1', certifiedAt: 't1', topicSlugs: ['tech'] }],
+      contextAdditions: [
+        { contextTermId: 'ctx1', addedAt: 't2', topicSlug: 'web3' },
+      ],
+    })
+    expect(claims).toEqual([
+      { termId: 'cert1', certifiedAt: 't1', topicSlugs: ['tech'] },
+      { termId: 'ctx1', certifiedAt: 't2', topicSlugs: ['web3'] },
+    ])
+  })
+
+  it('drops claims with no term_id or no topic', () => {
+    const claims = buildReputationClaims({
+      certs: [{ termId: '', certifiedAt: 't1', topicSlugs: ['tech'] }],
+      contextAdditions: [
+        { contextTermId: 'ctx1', addedAt: 't2', topicSlug: '' },
+      ],
+    })
+    expect(claims).toEqual([])
+  })
+
+  it('dedups a repeated term_id, merging topics and keeping the earliest ts', () => {
+    const claims = buildReputationClaims({
+      certs: [{ termId: 'x', certifiedAt: 't3', topicSlugs: ['tech'] }],
+      // same term_id arriving again (e.g. a granular category roll-up)
+      contextAdditions: [{ contextTermId: 'x', addedAt: 't1', topicSlug: 'web3' }],
+    })
+    expect(claims).toHaveLength(1)
+    expect(claims[0].termId).toBe('x')
+    expect(claims[0].certifiedAt).toBe('t1') // earliest wins → all later stake counts
+    expect(claims[0].topicSlugs.sort()).toEqual(['tech', 'web3'])
   })
 })
 

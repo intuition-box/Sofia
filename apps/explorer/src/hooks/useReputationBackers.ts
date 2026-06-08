@@ -10,7 +10,10 @@ import { useMemo } from 'react'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { useClaimSupporters } from '@/hooks/useClaimSupporters'
 import { useEigentrustMap } from '@/hooks/useEigentrustMap'
-import { collectFollowerAddresses } from '@/services/derivedReputationService'
+import {
+  collectFollowerAddresses,
+  buildReputationClaims,
+} from '@/services/derivedReputationService'
 import type { ReputationCert } from '@/services/derivedReputationService'
 import {
   computeBackersByTopic,
@@ -30,19 +33,12 @@ export function useReputationBackers(addresses: readonly string[]): {
     addresses.length > 0 ? [...addresses] : undefined,
   )
 
-  // Claims = the user's `in context of` triples (one per topic), so backers
-  // are the accounts that LIKED a topic of your Mark after you — not
-  // co-certifiers of the cert triple. Mirrors useDerivedReputation.
+  // Claims = HYBRID: the cert triples (co-certifiers of your Mark after you)
+  // AND the `in context of` topic triples (likers of your topic tag after
+  // you). Both are backers. Mirrors useDerivedReputation.
   const certs = useMemo<ReputationCert[]>(
-    () =>
-      profile.contextAdditions
-        .filter((ca) => ca.contextTermId && ca.topicSlug)
-        .map((ca) => ({
-          termId: ca.contextTermId,
-          certifiedAt: ca.addedAt,
-          topicSlugs: [ca.topicSlug],
-        })),
-    [profile.contextAdditions],
+    () => buildReputationClaims(profile),
+    [profile.certs, profile.contextAdditions],
   )
 
   const claimIds = useMemo(() => certs.map((c) => c.termId), [certs])
