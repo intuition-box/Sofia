@@ -12,13 +12,14 @@
  * recent certs (`useUserOnChainProfile`), season pool (`useSeasonPool`).
  */
 
-import { useCallback, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
 import { Breadcrumb } from '@/components/Breadcrumb'
+import ScoresBackingExplainer from '@/components/ScoresBackingExplainer'
 import { getTopicIcon } from '@/config/topicEmoji'
 import {
   INTENTION_CONFIG,
@@ -169,6 +170,19 @@ export default function ScoresPage() {
     [setSearchParams],
   )
 
+  // Pioneer-only filter for the certifications module: clicking the "Pioneer
+  // ×N" line below narrows the cert list to the URLs you were first/only to
+  // mark in the selected topic. Reset whenever the selected topic changes.
+  const [pioneerOnly, setPioneerOnly] = useState(false)
+  const certsRef = useRef<HTMLElement>(null)
+  useEffect(() => setPioneerOnly(false), [sel])
+  const showPioneerCerts = useCallback(() => {
+    setPioneerOnly((on) => !on)
+    requestAnimationFrame(() =>
+      certsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    )
+  }, [])
+
   const { addresses: linkedAddresses } = useLinkedWallets()
   const profileAddresses =
     linkedAddresses.length > 0
@@ -286,6 +300,28 @@ export default function ScoresPage() {
     return m
   }, [profile.certs])
 
+  // How many distinct URLs you were the FIRST/only certifier of, per topic —
+  // the discovery "Pioneer" rank (certifierCount <= 1), deduped by URL atom.
+  // Surfaced in the topic detail because being first to mark a page is its own
+  // reward, separate from how others later back you.
+  const pioneerByTopic = useMemo(() => {
+    const seen = new Map<string, Set<string>>()
+    for (const c of profile.certs) {
+      if (c.certifierCount > 1 || !c.objectTermId) continue
+      for (const topic of c.topicSlugs) {
+        let s = seen.get(topic)
+        if (!s) {
+          s = new Set()
+          seen.set(topic, s)
+        }
+        s.add(c.objectTermId)
+      }
+    }
+    const m = new Map<string, number>()
+    for (const [topic, s] of seen) m.set(topic, s.size)
+    return m
+  }, [profile.certs])
+
   const sortedCerts = useMemo(() => {
     // Effective recency = the later of the cert's own timestamp and its most
     // recent context tag. Keeps timestamp-less certs (sorted last).
@@ -304,13 +340,25 @@ export default function ScoresPage() {
   }, [profile.certs, lastTaggedByCert])
   const shownCerts = useMemo(() => {
     if (!sel) return sortedCerts.slice(0, 24)
-    return sortedCerts.filter((c) => c.topicSlugs.includes(sel))
-  }, [sel, sortedCerts])
+    const inTopic = sortedCerts.filter((c) => c.topicSlugs.includes(sel))
+    if (!pioneerOnly) return inTopic
+    // Pioneer-only: the URLs you were first/only to mark (certifierCount <= 1),
+    // one card per URL — mirrors the per-topic Pioneer count exactly.
+    const seen = new Set<string>()
+    return inTopic.filter((c) => {
+      if (c.certifierCount > 1 || !c.objectTermId || seen.has(c.objectTermId))
+        return false
+      seen.add(c.objectTermId)
+      return true
+    })
+  }, [sel, sortedCerts, pioneerOnly])
   const certsTitle = useMemo(() => {
     if (!sel) return 'Recent certifications'
     const label = topicMap[sel]?.label ?? sel
+    if (pioneerOnly)
+      return `Pioneer · ${shownCerts.length} URL${shownCerts.length === 1 ? '' : 's'} in ${label}`
     return `${shownCerts.length} certification${shownCerts.length === 1 ? '' : 's'} in ${label}`
-  }, [sel, shownCerts.length, topicMap])
+  }, [sel, shownCerts.length, topicMap, pioneerOnly])
 
   // ── Backer ENS + identity ──
   const allBackerAddrs = useMemo<Address[]>(() => {
@@ -369,6 +417,9 @@ export default function ScoresPage() {
         .filter((t): t is NonNullable<typeof t> => t !== null),
       ...categoryPills(cert.contextSlugs),
     ]
+    // Pioneer = you're the first/only certifier of this URL — a small badge
+    // makes that gratifying at a glance, anywhere the card shows.
+    const isPioneer = cert.certifierCount <= 1
     return (
       <FeedCardView
         key={cert.termId}
@@ -380,6 +431,22 @@ export default function ScoresPage() {
         domain={domain}
         verbs={cardVerbs}
         topics={cardTopics}
+        cornerBadge={
+          isPioneer ? (
+            <span
+              className="sc2-cert-pioneer"
+              title="You were the first or only certifier of this URL"
+            >
+              <span
+                className="material-symbols-outlined sc2-cert-pioneer-ic"
+                aria-hidden="true"
+              >
+                flag
+              </span>
+              Pioneer
+            </span>
+          ) : undefined
+        }
         up={cert.certifierCount}
         down={0}
         onOpen={() => {
@@ -459,6 +526,9 @@ export default function ScoresPage() {
       const t = topicMap[sel]
       if (!t) return null
       const tBackers = backers.byTopic.get(sel) ?? []
+      // How many times you were the sole/first certifier of a URL in this
+      // topic — the discovery "Pioneer" rank (certifierCount <= 1), per URL.
+      const pioneerN = pioneerByTopic.get(sel) ?? 0
       const tCats = (topicById(sel)?.categories ?? [])
         .map((c) => ({
           id: c.id,
@@ -502,11 +572,19 @@ export default function ScoresPage() {
             </div>
           </div>
           <div className="sc2-dt-backers">
+            {tBackers.length > 0 && (
+              <p className="sc2-dt-conv">
+                You took a position, then{' '}
+                <b>
+                  {tBackers.length} backer{tBackers.length === 1 ? '' : 's'}
+                </b>{' '}
+                staked behind your call — lifting this topic
+                <b className="sc2-dt-conv-boost"> +{t.boost}</b>.
+              </p>
+            )}
             <div className="sc2-dt-backers-head">
               <div className="sc2-dt-backers-t">
-                {tBackers.length
-                  ? `${tBackers.length} backer${tBackers.length === 1 ? '' : 's'}`
-                  : 'No backers yet'}
+                {tBackers.length ? 'Backer' : 'No backers yet'}
               </div>
               {tBackers.length > 0 && (
                 <div className="sc2-dt-backers-col">Trust score</div>
@@ -514,9 +592,22 @@ export default function ScoresPage() {
             </div>
             {tBackers.length ? (
               tBackers.map((b) => (
-                <div className="sc2-dt-backer" key={b.address}>
+                <Link
+                  className="sc2-dt-backer"
+                  key={b.address}
+                  to={`/profile/${b.address}`}
+                  title={`View ${handleOf(b.address)}'s profile`}
+                >
                   {renderBackerAv(b)}
                   <span className="sc2-dt-backer-h">{handleOf(b.address)}</span>
+                  {b.backCount > 1 && (
+                    <span
+                      className="sc2-dt-backer-n"
+                      title={`Backed ${b.backCount} of your calls in this topic`}
+                    >
+                      ×{b.backCount}
+                    </span>
+                  )}
                   <span className="sc2-dt-backer-bar">
                     <i
                       style={{
@@ -527,7 +618,7 @@ export default function ScoresPage() {
                   <span className="sc2-dt-backer-c">
                     {b.credibility.toFixed(2)}
                   </span>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="sc2-dt-none">
@@ -536,6 +627,35 @@ export default function ScoresPage() {
               </p>
             )}
           </div>
+          {pioneerN > 0 && (
+            <button
+              type="button"
+              className={`sc2-dt-pioneer${pioneerOnly ? ' is-active' : ''}`}
+              onClick={showPioneerCerts}
+              aria-pressed={pioneerOnly}
+              title="See the URLs where you were the first or only certifier"
+            >
+              <span
+                className="material-symbols-outlined sc2-dt-pioneer-ic"
+                aria-hidden="true"
+              >
+                flag
+              </span>
+              <span className="sc2-dt-pioneer-t">
+                Pioneer <b>×{pioneerN}</b>
+              </span>
+              <span className="sc2-dt-pioneer-d">
+                first to mark {pioneerN} URL{pioneerN === 1 ? '' : 's'} in{' '}
+                {t.label}
+              </span>
+              <span
+                className="material-symbols-outlined sc2-dt-pioneer-chev"
+                aria-hidden="true"
+              >
+                chevron_right
+              </span>
+            </button>
+          )}
           {tCats.length > 0 && (
             <div className="sc2-dt-cats">
               <div className="sc2-dt-cats-t">Categories · {tCats.length}</div>
@@ -610,6 +730,7 @@ export default function ScoresPage() {
 
       {tab === 'score' ? (
         <>
+          <ScoresBackingExplainer />
           <div className="sc2-stage">
             <ScoresDonut
               items={segments}
@@ -622,8 +743,19 @@ export default function ScoresPage() {
 
           {/* Certifications module — the certs behind the selected segment
               (or recent when nothing is selected), as feed cards. */}
-          <section className="sc2-certs">
-            <div className="sc2-certs-head">{certsTitle}</div>
+          <section className="sc2-certs" ref={certsRef}>
+            <div className="sc2-certs-head">
+              <span>{certsTitle}</span>
+              {pioneerOnly && (
+                <button
+                  type="button"
+                  className="sc2-certs-clear"
+                  onClick={() => setPioneerOnly(false)}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
             {shownCerts.length > 0 ? (
               <div className="masonry-grid">
                 {shownCerts.map(renderCertCard)}

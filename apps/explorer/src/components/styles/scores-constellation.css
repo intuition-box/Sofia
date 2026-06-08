@@ -361,6 +361,21 @@
 .sc2-dt-backers {
   margin-top: 22px;
 }
+/* Conviction line — frames the backers as people who followed YOUR call. */
+.sc2-dt-conv {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
+.sc2-dt-conv b {
+  color: var(--ds-ink);
+  font-weight: 700;
+}
+.sc2-dt-conv-boost {
+  color: var(--tc);
+}
 .sc2-dt-backers-head {
   display: flex;
   align-items: baseline;
@@ -388,7 +403,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.13s;
+}
+.sc2-dt-backer:hover {
+  background: var(--ds-bg-subtle);
+}
+.sc2-dt-backer:hover .sc2-dt-backer-h {
+  color: var(--ds-ink);
 }
 .sc2-dt-backer-av {
   width: 24px;
@@ -416,6 +442,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Repeat-backer count — how many of YOUR URLs this account backed in this
+   topic. Only shown when > 1 (a one-off needs no badge). */
+.sc2-dt-backer-n {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tc);
+  background: color-mix(in srgb, var(--tc) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tc) 38%, transparent);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
 .sc2-dt-backer-bar {
   width: 46px;
   height: 4px;
@@ -439,6 +479,66 @@
 .sc2-dt-none {
   font-size: 12px;
   color: var(--ds-muted);
+}
+/* Pioneer line — distinct URLs you were first/only to mark in this topic.
+   A discovery reward, separate from how others back you afterwards. */
+.sc2-dt-pioneer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  text-align: left;
+  background: color-mix(in srgb, var(--tc) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tc) 26%, transparent);
+  cursor: pointer;
+  transition:
+    background 0.13s,
+    border-color 0.13s;
+}
+.sc2-dt-pioneer:hover {
+  background: color-mix(in srgb, var(--tc) 15%, transparent);
+}
+.sc2-dt-pioneer.is-active {
+  background: color-mix(in srgb, var(--tc) 18%, transparent);
+  border-color: color-mix(in srgb, var(--tc) 45%, transparent);
+}
+.sc2-dt-pioneer-chev {
+  margin-left: auto;
+  font-size: 17px;
+  color: var(--tc);
+  flex-shrink: 0;
+  transition: transform 0.13s;
+}
+.sc2-dt-pioneer.is-active .sc2-dt-pioneer-chev {
+  transform: rotate(90deg);
+}
+.sc2-dt-pioneer-ic {
+  font-size: 17px;
+  color: var(--tc);
+  flex-shrink: 0;
+}
+.sc2-dt-pioneer-t {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tc);
+  flex-shrink: 0;
+}
+.sc2-dt-pioneer-t b {
+  font-weight: 800;
+}
+.sc2-dt-pioneer-d {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* Categories of the selected topic — listed under the backers block. */
 .sc2-dt-cats {
@@ -668,12 +768,54 @@
   margin-top: 22px;
 }
 .sc2-certs-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
   margin-bottom: 14px;
+}
+/* Pioneer marker pinned on a cert card's media — you were first/only here. */
+.sc2-cert-pioneer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px 4px 7px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-on-accent, #1a1320);
+  background: var(--ds-accent);
+  border: 1px solid color-mix(in srgb, #000 12%, var(--ds-accent));
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--ds-accent) 70%, transparent);
+}
+.sc2-cert-pioneer-ic {
+  font-size: 13px;
+}
+.sc2-certs-clear {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  padding: 4px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  cursor: pointer;
+  transition:
+    color 0.13s,
+    border-color 0.13s;
+}
+.sc2-certs-clear:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
 }
 
 /* ── Responsive (container-based) ───────────────────────────*/
@@ -703,5 +845,170 @@
   }
   .sc2-bar-total {
     margin-left: auto;
+  }
+}
+
+/* ── Backing explainer band (judgment narrative, dismissible) ──────── */
+.sc2-explainer {
+  position: relative;
+  margin: 0 0 20px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--ds-accent) 10%, var(--ds-card)),
+    var(--ds-card) 72%
+  );
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 24%, var(--ds-border));
+}
+.sc2-explainer-x {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.13s,
+    background 0.13s,
+    border-color 0.13s;
+}
+.sc2-explainer-x:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.sc2-explainer-x svg {
+  width: 15px;
+  height: 15px;
+}
+.sc2-explainer-intro {
+  max-width: 620px;
+}
+.sc2-explainer-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+.sc2-explainer-lead {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ds-ink-soft);
+  margin: 7px 0 0;
+  text-wrap: pretty;
+}
+.sc2-explainer-lead b {
+  color: var(--ds-ink);
+  font-weight: 800;
+}
+.sc2-explainer-steps {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.sc2-explainer-step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ds-ink) 4%, var(--ds-card));
+  border: 1px solid var(--ds-border-soft);
+}
+.sc2-explainer-step-n {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+}
+.sc2-explainer-step-ic {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--ds-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 28%, transparent);
+  color: var(--ds-accent);
+}
+.sc2-explainer-step-ic svg {
+  width: 15px;
+  height: 15px;
+}
+.sc2-explainer-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.sc2-explainer-step-t {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.sc2-explainer-step-d {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+  text-wrap: pretty;
+}
+
+/* Quiet re-open chip shown once the band is dismissed. */
+.sc2-explainer-reopen {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 16px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 0.13s,
+    border-color 0.13s;
+}
+.sc2-explainer-reopen:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-ink-soft);
+}
+.sc2-explainer-reopen svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+  .sc2-explainer-steps {
+    grid-template-columns: 1fr;
   }
 }

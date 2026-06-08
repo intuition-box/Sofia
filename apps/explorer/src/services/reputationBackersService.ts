@@ -16,6 +16,10 @@ export interface TopicBacker {
   address: string
   /** Global credibility weight (eigentrust/composite), 0..1-ish. */
   credibility: number
+  /** How many of YOUR distinct claims (URLs) in this topic this account has
+   *  staked behind. The "backs you the most" signal — a repeat backer who
+   *  stands behind several of your calls weighs more than a one-off. */
+  backCount: number
 }
 
 interface ComputeBackersParams {
@@ -63,8 +67,11 @@ export function computeBackersByTopic({
   side = 'support',
 }: ComputeBackersParams): BackersResult {
   const claims = asClaimMap(supportersByClaim)
-  // topic → (address → credibility)
-  const perTopic = new Map<string, Map<string, number>>()
+  // topic → (address → { the backer + the set of YOUR claims they backed })
+  const perTopic = new Map<
+    string,
+    Map<string, { backer: TopicBacker; claims: Set<string> }>
+  >()
   // global distinct backers
   const all = new Map<string, number>()
 
@@ -93,7 +100,17 @@ export function computeBackersByTopic({
         // the MCP. Credibility is just their displayed trust score (0 when the
         // engine doesn't know them yet); it weights the boost, not the count.
         const cred = credibility.get(f.account) ?? 0
-        if (!m.has(f.account)) m.set(f.account, cred)
+        let entry = m.get(f.account)
+        if (!entry) {
+          entry = {
+            backer: { address: f.account, credibility: cred, backCount: 0 },
+            claims: new Set(),
+          }
+          m.set(f.account, entry)
+        }
+        // Tally distinct claims (URLs) of yours this account backs in this
+        // topic — a backer standing behind several of your calls counts more.
+        entry.claims.add(cert.termId)
         if (!all.has(f.account)) all.set(f.account, cred)
       }
     }
@@ -101,12 +118,14 @@ export function computeBackersByTopic({
 
   const byTopic = new Map<string, TopicBacker[]>()
   for (const [topic, m] of perTopic) {
-    byTopic.set(
-      topic,
-      [...m]
-        .map(([address, c]) => ({ address, credibility: c }))
-        .sort((a, b) => b.credibility - a.credibility),
-    )
+    const list = [...m.values()].map(({ backer, claims: c }) => ({
+      ...backer,
+      backCount: c.size,
+    }))
+    // Ordered by who backs you the MOST (distinct claims), then by credibility
+    // (the Trust-score tiebreak / "who lifts you most"). Repeat backers rise.
+    list.sort((a, b) => b.backCount - a.backCount || b.credibility - a.credibility)
+    byTopic.set(topic, list)
   }
 
   const creds = [...all.values()]
