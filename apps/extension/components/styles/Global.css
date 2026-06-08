@@ -15,6 +15,7 @@
 @import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
 @import "@0xsofia/design-system/styles/platforms-grid.css";
 @import "@0xsofia/design-system/styles/favicon.css";
+@import "@0xsofia/design-system/styles/feed-card.css";
 
 /* Extension is always dark — pin DS tokens to dark-mode values.
    theme.css defaults :root to light; this override ensures --ds-ink

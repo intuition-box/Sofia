@@ -203,7 +203,10 @@
 /* Grid Layout */
 .circle-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Single column: the feed now renders the shared FeedCardView at size
+     `md` (OG hero + title + footer), which needs the full side-panel width
+     to read. Two columns would crush the hero image. */
+  grid-template-columns: 1fr;
   gap: var(--spacing-md);
 }
 

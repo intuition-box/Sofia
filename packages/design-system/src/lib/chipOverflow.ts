@@ -20,11 +20,13 @@ import type { DependencyList, RefObject } from 'react'
 export function computeChipsShown(offsetTops: readonly number[]): number {
   const total = offsetTops.length
   if (total === 0) return 0
-  const top0 = offsetTops[0]
+  // `?? 0` / `?? top0` satisfy `noUncheckedIndexedAccess`; every index < total
+  // is always present at runtime, so these fallbacks never actually trigger.
+  const top0 = offsetTops[0] ?? 0
   let firstLine = total
   for (let i = 1; i < total; i++) {
     // +1 tolerance for sub-pixel baseline jitter.
-    if (offsetTops[i] > top0 + 1) {
+    if ((offsetTops[i] ?? top0) > top0 + 1) {
       firstLine = i
       break
     }
