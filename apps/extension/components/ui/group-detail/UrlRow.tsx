@@ -10,7 +10,8 @@ import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import {
   formatDuration,
   formatShortDate,
-  getEffectiveCertStatus
+  getEffectiveCertStatus,
+  getFaviconUrl
 } from "~/lib/utils"
 import {
   CERTIFICATION_LIST,
@@ -155,6 +156,17 @@ function UrlRow({
           }
         }}
         style={{ cursor: canToggle ? "pointer" : "default" }}>
+        {/* xs-card favicon thumb — left rail, mirrors the feed card's
+            .fc-xs-thumb. No OG fetch: a URL group shares one domain. */}
+        <span className="url-row-thumb" aria-hidden="true">
+          <img
+            src={getFaviconUrl(urlRecord.url, 64)}
+            alt=""
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).style.visibility = "hidden"
+            }}
+          />
+        </span>
         <div className="url-info">
           <a
             href={urlRecord.url}
@@ -166,6 +178,11 @@ function UrlRow({
               ? getDisplayTitle(urlRecord.title, urlRecord.url)
               : urlRecord.url}
           </a>
+          {/* Full URL (sans protocole) — distinguishes pages that share the
+              group's domain. Truncated with ellipsis. */}
+          <span className="url-host">
+            {urlRecord.url.replace(/^https?:\/\//, "")}
+          </span>
           <div className="url-meta">
             {((isCertifiedOnChain && allCertInfos.length > 0) ||
               certifiedContexts.length > 0) && (

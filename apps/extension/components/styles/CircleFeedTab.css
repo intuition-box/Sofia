@@ -203,9 +203,9 @@
 /* Grid Layout */
 .circle-grid {
   display: grid;
-  /* Single column: the feed now renders the shared FeedCardView at size
-     `md` (OG hero + title + footer), which needs the full side-panel width
-     to read. Two columns would crush the hero image. */
+  /* Single column: the feed renders the shared FeedCardView (OG hero + title
+     + footer), which needs the full side-panel width to read. Two columns
+     would crush the hero image. */
   grid-template-columns: 1fr;
   gap: var(--spacing-md);
 }

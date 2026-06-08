@@ -658,6 +658,49 @@
   border-radius: 12px;
 }
 
+/* ── Echoes GroupDetailView — xs-card treatment ─────────────────────────────
+   Scoped to `.group-detail-view` so the shared `.url-row` in History /
+   Bookmarks / Categories stays untouched. Adds the favicon thumb (mirrors the
+   feed card's .fc-xs-thumb) + tighter xs density. */
+.group-detail-view .url-row-main {
+  gap: 12px;
+  padding: 11px 13px;
+}
+
+.group-detail-view .url-row-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid var(--ds-border-soft);
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+}
+
+.group-detail-view .url-row-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Full URL under the title — mono + muted, truncated to one line. */
+.group-detail-view .url-host {
+  display: block;
+  margin-top: 2px;
+  color: var(--ds-muted);
+  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .url-info {
   flex: 1;
   min-width: 0;

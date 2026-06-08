@@ -607,7 +607,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
             return (
               <FeedCardView
                 key={group.groupKey}
-                size="md"
+                size="sm"
                 hideVoteCounts
                 handle={group.memberLabel}
                 avatarUrl={group.memberImage}
