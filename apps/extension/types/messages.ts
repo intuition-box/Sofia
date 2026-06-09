@@ -35,8 +35,7 @@ export type MessageType =
   // Wallet bridge messages
   | 'WALLET_REQUEST'
   | 'WALLET_EVENT'
-  // Browsing nudge notifications
-  | 'BROWSING_NUDGE'
+  // Browsing nudge (red icon badge — reset on cart action / side panel open)
   | 'NUDGE_DISMISSED'
 
 export interface ChromeMessage {
