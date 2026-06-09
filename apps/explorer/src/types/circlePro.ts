@@ -53,3 +53,58 @@ export interface ExpertiseRow {
   /** Peer confirmations. */
   peers: number
 }
+
+// ── Decisions (expertise-weighted voting) ──────────────────────────────────
+// Mock until the on-chain decision lifecycle exists. Weight derives from a
+// member's per-topic expertise — expertise-weighted, NOT token-weighted.
+
+export type VoteChoice = 'yes' | 'no' | 'abstain'
+
+export interface DecisionVoter {
+  handle: string
+  image?: string
+  /** Expertise multiplier on the decision's topic (≥ 0.3). */
+  weight: number
+  vote: 'yes' | 'no'
+}
+
+export interface CircleDecision {
+  id: string
+  question: string
+  topicSlug: string
+  topicLabel: string
+  topicColor: string
+  author: string
+  /** Days since posed. */
+  ago: number
+  /** Days until close. */
+  closes: number
+  /** Expertise-weighted split (percentages, sum 100). */
+  weighted: { yes: number; no: number }
+  /** Raw headcount split. */
+  headcount: { yes: number; no: number }
+  totalVoters: number
+  /** Top voters by weight (preview). */
+  voters: DecisionVoter[]
+}
+
+export interface QueueDecision {
+  id: string
+  question: string
+  topicSlug: string
+  topicLabel: string
+  topicColor: string
+  status: 'open' | 'closed'
+  closes?: number
+  voters: number
+  result?: 'passed' | 'rejected'
+  weighted?: { yes: number; no: number }
+}
+
+export interface CircleDecisionsData {
+  decisions: CircleDecision[]
+  queue: QueueDecision[]
+  meta: { open: number; closed: number }
+  /** Connected viewer's per-topic expertise level 0-100 (mock for now). */
+  viewerExpertise: ReadonlyMap<string, number>
+}

@@ -50,7 +50,9 @@ import CircleJoinOverlay from './CircleJoinOverlay'
 import CircleUpsellToast, { circleUpsellToast } from './CircleUpsellToast'
 import CircleProModal, { circleProModal } from './CircleProModal'
 import CircleExpertise from './CircleExpertise'
+import CircleDecisions from './CircleDecisions'
 import { useCircleExpertise } from '@/hooks/useCircleExpertise'
+import { buildCircleDecisions } from '@/lib/circleDecisions'
 import { ModuleHead, Treemap, Toaster } from '@0xsofia/design-system'
 import type { CircleData } from '@/types/circle'
 // Base circle chrome (feed filters `.crd-filter-*`, hot-picks `.crd-te-*`,
@@ -187,6 +189,21 @@ export default function CircleDetailView({
       })
     }
   }
+  // Weighted-decision room data (mock, anchored on real topics + members).
+  const decisions = useMemo(
+    () => buildCircleDecisions(expertise.topics, expertise.rows),
+    [expertise.topics, expertise.rows],
+  )
+  // A decision's topic tag routes back to the overview + highlights the cell.
+  const highlightTopic = (slug: string) => {
+    setActiveTab('overview')
+    setDomain(slug)
+    if (typeof document !== 'undefined') {
+      requestAnimationFrame(() => {
+        document.getElementById('cp-topics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
   // The personal Trust Circle (`kind === 'trust'`) can't be upgraded to Pro
   // and isn't on a Free plan either — it's a circle the user owns. So it
   // keeps the rich Free layout (ranked members, topics treemap, Activity)
@@ -239,6 +256,8 @@ export default function CircleDetailView({
           onDecisionsClick={() =>
             setActiveTab((t) => (t === 'decisions' ? 'overview' : 'decisions'))
           }
+          decisionsUnlocked={isPro}
+          decisionsMeta={isPro ? decisions.meta : undefined}
         />
       ) : (
         <CircleDetailHero
@@ -305,6 +324,10 @@ export default function CircleDetailView({
               </>
             ) : isPro ? (
               <div className="cp-pro">
+                {activeTab === 'decisions' ? (
+                  <CircleDecisions data={decisions} onTheme={highlightTopic} />
+                ) : (
+                  <>
                 <section className="module" id="cp-topics">
                   <ModuleHead title="Topics" />
                   <Treemap
@@ -336,6 +359,8 @@ export default function CircleDetailView({
                     hideTitle
                   />
                 </section>
+                  </>
+                )}
               </div>
             ) : (
               <>
