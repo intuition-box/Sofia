@@ -1,0 +1,46 @@
+/**
+ * @0xsofia/design-system — StatePill
+ * Signal-state pill (circle/modules.css:275-288).
+ */
+.ds-state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ds-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 9px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.ds-state-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.ds-state-pill--aligned {
+  color: var(--state-aligned);
+  background: color-mix(in srgb, var(--trusted) 11%, transparent);
+  border-color: color-mix(in srgb, var(--trusted) 28%, transparent);
+}
+.ds-state-pill--aligned i {
+  background: var(--trusted);
+}
+.ds-state-pill--active {
+  color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.ds-state-pill--active i {
+  background: var(--ds-muted);
+}
+.ds-state-pill--low {
+  color: var(--ds-muted);
+  background: transparent;
+  border-color: var(--ds-border-soft);
+}
+.ds-state-pill--low i {
+  background: var(--ds-muted-soft);
+}

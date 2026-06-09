@@ -31,7 +31,16 @@
     "./styles/niche-chips.css": "./src/styles/niche-chips.css",
     "./styles/platforms-grid.css": "./src/styles/platforms-grid.css",
     "./styles/section-h2.css": "./src/styles/section-h2.css",
-    "./styles/echoes-sort-tabs.css": "./src/styles/echoes-sort-tabs.css"
+    "./styles/echoes-sort-tabs.css": "./src/styles/echoes-sort-tabs.css",
+    "./styles/typography.css": "./src/styles/typography.css",
+    "./styles/icon.css": "./src/styles/icon.css",
+    "./styles/avatar.css": "./src/styles/avatar.css",
+    "./styles/state-pill.css": "./src/styles/state-pill.css",
+    "./styles/avail.css": "./src/styles/avail.css",
+    "./styles/module-head.css": "./src/styles/module-head.css",
+    "./styles/toast.css": "./src/styles/toast.css",
+    "./styles/contribution-calendar.css": "./src/styles/contribution-calendar.css",
+    "./styles/treemap.css": "./src/styles/treemap.css"
   },
   "files": [
     "src"

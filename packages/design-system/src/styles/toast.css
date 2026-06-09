@@ -1,0 +1,34 @@
+/**
+ * @0xsofia/design-system — Toaster
+ * Bottom-center confirmation toast (circle/modules.css:446-456).
+ */
+.ds-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  padding: 11px 18px;
+  border-radius: 10px;
+  z-index: 200;
+  box-shadow: 0 14px 36px -12px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.ds-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.ds-toast .ds-icon {
+  color: var(--intent-trusted, #22c55e);
+  width: 14px;
+  height: 14px;
+}

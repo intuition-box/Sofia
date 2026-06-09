@@ -1,0 +1,122 @@
+/**
+ * @0xsofia/design-system — ContributionCalendar
+ * GitHub-style heatmap (circle/modules.css:783-813). Cell level tints are
+ * mixed from `--ds-cell` (set inline by the component per accent color).
+ */
+.ds-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ds-cal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ds-cal-total {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.ds-cal-total b {
+  color: var(--ds-ink-soft);
+  font-weight: 600;
+}
+.ds-cal-months {
+  display: grid;
+  font-family: var(--ds-font-mono);
+  font-size: 7.5px;
+  color: var(--ds-muted-soft);
+  letter-spacing: 0.04em;
+}
+.ds-cal-body {
+  position: relative;
+}
+.ds-cal-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+}
+.ds-cal-col {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+}
+.ds-cal-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--ds-border-soft);
+}
+.ds-cal-grid .ds-cal-cell {
+  cursor: pointer;
+  transition: outline-color 0.1s;
+  outline: 1.5px solid transparent;
+  outline-offset: 1px;
+}
+.ds-cal-grid .ds-cal-cell:hover {
+  outline-color: var(--ds-ink);
+}
+.ds-cal-cell.l0 {
+  background: color-mix(in srgb, var(--ds-border-soft) 70%, transparent);
+}
+.ds-cal-cell.l1 {
+  background: color-mix(in srgb, var(--ds-cell) 28%, var(--ds-bg));
+}
+.ds-cal-cell.l2 {
+  background: color-mix(in srgb, var(--ds-cell) 50%, var(--ds-bg));
+}
+.ds-cal-cell.l3 {
+  background: color-mix(in srgb, var(--ds-cell) 74%, var(--ds-bg));
+}
+.ds-cal-cell.l4 {
+  background: var(--ds-cell);
+}
+.ds-cal-tip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 9px));
+  pointer-events: none;
+  z-index: 30;
+  white-space: nowrap;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-radius: 7px;
+  padding: 6px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  box-shadow: var(--ds-shadow-card);
+}
+.ds-cal-tip b {
+  font-size: 11px;
+  font-weight: 700;
+}
+.ds-cal-tip span {
+  font-family: var(--ds-font-mono);
+  font-size: 9px;
+  opacity: 0.7;
+  letter-spacing: 0.04em;
+}
+.ds-cal-tip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--ds-ink);
+}
+.ds-cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+  font-family: var(--ds-font-mono);
+  font-size: 8.5px;
+  color: var(--ds-muted-soft);
+}
+.ds-cal-legend .ds-cal-cell {
+  width: 10px;
+  height: 10px;
+  aspect-ratio: auto;
+}

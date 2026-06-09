@@ -1,0 +1,34 @@
+/**
+ * @0xsofia/design-system — ModuleHead
+ * Section header: title row (+ optional right slot) + description
+ * (circle/styles.css:390-429). Title uses the display face at 22px.
+ */
+.ds-module-head {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+.ds-module-head-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ds-module-title {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  margin: 0;
+  color: var(--ds-ink);
+}
+.ds-module-desc {
+  font-size: 12.5px;
+  color: var(--ds-muted);
+  margin: 0;
+  max-width: 640px;
+  text-align: left;
+  text-wrap: pretty;
+}
