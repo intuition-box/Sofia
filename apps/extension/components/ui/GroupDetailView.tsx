@@ -44,7 +44,6 @@ import WeightModal from "../modals/WeightModal"
 import { CartToast } from "./CartDrawer"
 import FilterDropdown from "./FilterDropdown"
 import GroupDetailHeader from "./group-detail/GroupDetailHeader"
-import LevelProgress from "./group-detail/LevelProgress"
 import UrlRow from "./group-detail/UrlRow"
 
 import "../styles/CategoryStyles.css"
@@ -424,13 +423,12 @@ const GroupDetailView = ({
 
   return (
     <div className="group-detail-view">
-      {/* Header — back button, then the domain title with the
-          Explorer link aligned to the right of the same line. */}
-      <GroupDetailHeader domain={group.domain} onBack={onBack} />
-
-      {/* Level — fully automatic: it tracks the on-chain certification
-          count up and down. No Gold, no manual "Level Up" action. */}
-      <LevelProgress
+      {/* Unified header card — breadcrumb, domain identity, and the
+          fully-automatic level bar (tracks the on-chain certification
+          count up and down; no Gold, no manual "Level Up"). */}
+      <GroupDetailHeader
+        domain={group.domain}
+        onBack={onBack}
         currentLevel={currentLevel}
         progressPercent={progressPercent}
         xpToNextLevel={xpToNextLevel}
@@ -458,9 +456,9 @@ const GroupDetailView = ({
         />
         <button
           type="button"
-          className={`filter-btn filter-btn--uncertified ${uncertifiedOnly ? "active" : ""}`}
+          className={`funcert ${uncertifiedOnly ? "active" : ""}`}
           onClick={() => setUncertifiedOnly((v) => !v)}>
-          Uncertified ({uncertifiedCount})
+          Uncertified <span className="n tnum">{uncertifiedCount}</span>
         </button>
       </div>
 
