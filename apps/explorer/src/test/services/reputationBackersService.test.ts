@@ -59,8 +59,8 @@ describe('computeBackersByTopic', () => {
       credibility: cred,
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
-      { address: CAROL, credibility: 0.2 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
+      { address: CAROL, credibility: 0.2, backCount: 1 },
     ])
   })
 
@@ -99,7 +99,7 @@ describe('computeBackersByTopic', () => {
       credibility: cred,
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: CAROL, credibility: 0.2 },
+      { address: CAROL, credibility: 0.2, backCount: 1 },
     ])
   })
 
@@ -118,7 +118,7 @@ describe('computeBackersByTopic', () => {
       credibility: cred,
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
     ])
   })
 
@@ -136,8 +136,8 @@ describe('computeBackersByTopic', () => {
       credibility: cred, // SYBIL absent → 0, but still listed (sorted last)
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
-      { address: SYBIL, credibility: 0 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
+      { address: SYBIL, credibility: 0, backCount: 1 },
     ])
     expect(result.backerCount).toBe(2)
   })
@@ -153,11 +153,30 @@ describe('computeBackersByTopic', () => {
       supportersByClaim,
       credibility: cred,
     })
-    // BOB backs two claims in 'tech' but appears once.
+    // BOB backs two claims in 'tech' but appears once — backCount reflects 2.
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 2 },
     ])
     expect(result.backerCount).toBe(1)
+  })
+
+  it('orders by backCount first — a repeat backer outranks a stronger one-off', () => {
+    const supportersByClaim = new Map([
+      // CAROL (cred 0.2) backs BOTH claims; DAVE (cred 0.9) backs only c2.
+      ['c1', claim([staker(ALICE, 't1'), staker(CAROL, 't2')])],
+      ['c2', claim([staker(ALICE, 't1'), staker(CAROL, 't2'), staker(DAVE, 't3')])],
+    ])
+    const result = computeBackersByTopic({
+      accounts: accounts(ALICE),
+      certs: [cert('c1', 't1', ['tech']), cert('c2', 't1', ['tech'])],
+      supportersByClaim,
+      credibility: cred,
+    })
+    // CAROL backs you the most (2 claims) so she leads despite lower trust.
+    expect(result.byTopic.get('tech')).toEqual([
+      { address: CAROL, credibility: 0.2, backCount: 2 },
+      { address: DAVE, credibility: 0.9, backCount: 1 },
+    ])
   })
 
   it('counts a backer once globally even across different topics', () => {
@@ -171,10 +190,10 @@ describe('computeBackersByTopic', () => {
       credibility: cred,
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
     ])
     expect(result.byTopic.get('web3')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
     ])
     // Distinct backer count is global, so BOB counts once despite two topics.
     expect(result.backerCount).toBe(1)
@@ -212,7 +231,7 @@ describe('computeBackersByTopic', () => {
       side: 'oppose',
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
     ])
   })
 
@@ -228,7 +247,7 @@ describe('computeBackersByTopic', () => {
       credibility: cred,
     })
     expect(result.byTopic.get('tech')).toEqual([
-      { address: BOB, credibility: 0.5 },
+      { address: BOB, credibility: 0.5, backCount: 1 },
     ])
   })
 

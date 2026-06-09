@@ -783,6 +783,13 @@
 }
 
 /* ── Media domain badge (bottom-left of the preview image) ──────────────── */
+/* Corner badge — pinned top-right of the media area (e.g. Pioneer marker). */
+.fc-media-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+}
 .fc-media-domain {
   position: absolute;
   left: 12px;

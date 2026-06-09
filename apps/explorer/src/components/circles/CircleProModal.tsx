@@ -49,12 +49,12 @@ const FEATURES: readonly ProFeature[] = [
   {
     icon: Scale,
     title: 'Expertise-weighted decisions',
-    desc: "Run votes where each voice is weighted by measured on-chain topic expertise — your Circle decides like a team of specialists, not one wallet, one vote.",
+    desc: "Run votes where each voice is weighted by measured on-chain topic reputation — your Circle decides like a team of specialists, not one wallet, one vote.",
   },
   {
-    icon: BarChart3,
-    title: 'The full analytics picture',
-    desc: 'Week-over-week signals, curator retention and topic momentum — the metrics the free view only hints at, so you can steer the group with real numbers.',
+    icon: ListChecks,
+    title: 'Priority topic curation',
+    desc: 'Let members stake on the topics that should rise, and surface what your organization genuinely cares about.',
   },
   {
     icon: Crosshair,
@@ -62,14 +62,9 @@ const FEATURES: readonly ProFeature[] = [
     desc: 'Open any topic to see who in your Circle actually holds authority on it, and route the right decisions to the right members.',
   },
   {
-    icon: Flame,
-    title: 'Member momentum & streaks',
-    desc: "Spot your most consistent contributors and the ones going quiet — reward the core and keep the Circle alive.",
-  },
-  {
-    icon: ListChecks,
-    title: 'Priority topic curation',
-    desc: 'Let members stake on the topics that should rise, and surface what your organization genuinely cares about.',
+    icon: BarChart3,
+    title: 'The full analytics picture',
+    desc: 'Week-over-week signals, curator retention and topic momentum ',
   },
 ]
 
@@ -133,7 +128,7 @@ export default function CircleProModal({
           Takes the pulse of {circleName} 
         </h2>
         <p className="pro-modal-sub">
-          Free unlocks reading the Circle. Pro unlocks running your
+          Pro unlocks running your
           organization on-chain — weighted decisions, the full analytics
           picture, and the tools to keep the group moving.
         </p>
