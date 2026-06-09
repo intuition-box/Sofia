@@ -14,6 +14,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const { currentPage } = useRouter()
 
   const isOnboarding = currentPage.startsWith('onboarding')
+  // The bottom navigation only renders when a wallet is connected
+  // (see BottomNavigation). Without it we must not reserve its footprint,
+  // otherwise the full-height login page overflows and scrolls.
+  const showBottomNav = !!account
 
   return (
     <div className={`app-container ${isOnboarding ? 'app-container--onboarding' : ''}`}>
@@ -22,7 +26,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="app-overlay" />
       ) : null}
 
-      <div className="app-content">
+      <div className={`app-content ${showBottomNav ? '' : 'app-content--no-nav'}`}>
         {children}
       </div>
     </div>
