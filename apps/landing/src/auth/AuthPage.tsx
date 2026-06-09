@@ -173,6 +173,13 @@ export function AuthPage() {
     }, 1500)
   }, [extensionId])
 
+  const handleTutorial = useCallback(() => {
+    sendToExtension({ type: 'OPEN_TUTORIAL' }, extensionId)
+    setTimeout(() => {
+      window.location.href = '/'
+    }, 1000)
+  }, [extensionId])
+
   const handleDisconnect = useCallback(async () => {
     await disconnect()
     setHasSent(false)
@@ -278,6 +285,9 @@ export function AuthPage() {
                 </div>
                 <button className={styles.claimBtn} onClick={handleFirstClaim}>
                   Create your first claim
+                </button>
+                <button className={styles.tutorialBtn} onClick={handleTutorial}>
+                  Tutorial
                 </button>
               </>
             )}

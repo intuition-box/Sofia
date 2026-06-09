@@ -1,95 +1,59 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { useRouter } from '../layout/RouterProvider'
+// Placeholder screenshots — to be recaptured against the current UI.
+// (echo card, GroupDetailView, profile, friends/circle, bookmark select)
+import screenshotSelect from '../../assets/selectbookmark.png'
 import screenshotGroup from '../../assets/youtubegroup.png'
 import screenshotDetail from '../../assets/details.png'
-import screenshotGold from '../../assets/gold.png'
-import screenshotQuests from '../../assets/quests.png'
-import screenshotPulse from '../../assets/pulse.png'
-import screenshotInterest from '../../assets/interest.png'
-import screenshotCircle from '../../assets/circle.png'
-import screenshotStreak from '../../assets/streak.png'
-import screenshotCommunity from '../../assets/community.png'
 import screenshotProfile from '../../assets/profil.png'
-import screenshotSelect from '../../assets/selectbookmark.png'
+import screenshotCommunity from '../../assets/community.png'
 import '../styles/OnboardingStyles.css'
 
 interface TutorialStep {
   title: string
-  description: string
+  description: ReactNode
   screenshot: string
 }
 
+// Order: S, G, M, P, F — import first, then explain what was created.
 const STEPS: TutorialStep[] = [
-  // --- Bloc 1: Core (groupes, certify, gold, profil) ---
+  {
+    title: 'Select & Import',
+    description: (
+      <>
+        Pick the bookmarks you want to import. They'll be grouped by domain
+        into Echoes, ready to Mark on-chain.{' '}
+        <strong>
+          Sensitive pages (banking, auth, checkout) are always excluded.
+        </strong>
+      </>
+    ),
+    screenshot: screenshotSelect
+  },
   {
     title: 'Your Intention Groups',
     description:
-      'Your navigation will be organized into groups by domain. Each group represents a topic or interest you engage with online.',
+      'Your navigation is organized into Echoes — groups by domain. Each Echo represents a topic or interest you engage with online.',
     screenshot: screenshotGroup
   },
   {
     title: 'Mark on-chain',
     description:
-      'Inside each group, you can Mark URLs on-chain. This creates a verifiable attestation of your engagement with that content.',
+      'Inside each Echo, Mark URLs on-chain. This creates a verifiable attestation of your engagement with that content.',
     screenshot: screenshotDetail
-  },
-  {
-    title: 'Earn Gold & Level Up',
-    description:
-      'Each Mark earns you Gold. Spend Gold to level up your groups and unlock higher attestation weight. Complete quests to earn public XP and build your on-chain reputation.',
-    screenshot: screenshotGold
   },
   {
     title: 'Your Profile',
     description:
-      'Track your level, XP progress, and discovery badges in your profile. See your stats grow as you Mark, explore, and contribute to the knowledge graph.',
+      'Track your level and progress in your profile. Each Mark earns Gold to level up your Echoes and unlock higher attestation weight. Complete quests to claim badges and earn XP — your public, on-chain reputation.',
     screenshot: screenshotProfile
   },
-  // --- Bloc 2: Gamification (quests, streaks) ---
   {
-    title: 'Complete Quests',
+    title: 'Friends & Circle',
     description:
-      'Unlock achievements by completing quests: create signals, bookmark URLs, connect social accounts, run Pulse analysis, and more. Claim quest badges to earn XP and track your progress.',
-    screenshot: screenshotQuests
-  },
-  {
-    title: 'Streaks & Leaderboard',
-    description:
-      'Mark or vote every day to build your streak. Compete with other users on the global leaderboard and climb the rankings by maintaining daily activity.',
-    screenshot: screenshotStreak
-  },
-  // --- Bloc 3: AI (pulse, interests) ---
-  {
-    title: 'Pulse Analysis',
-    description:
-      'Launch Pulse to let Sofia analyze your open tabs. The AI extracts themes and semantic signals from your browsing session, helping you discover patterns in your activity.',
-    screenshot: screenshotPulse
-  },
-  {
-    title: 'Interest Analysis',
-    description:
-      'Your Marks build a verifiable on-chain profile. This data is analyzed to generate a map of your interests and intentions, creating a unique digital identity.',
-    screenshot: screenshotInterest
-  },
-  // --- Bloc 4: Social (community, circle, chat) ---
-  {
-    title: 'Connect with Friends',
-    description:
-      'Follow and trust your friends to discover what they Mark. Connect your social accounts (X, Discord, YouTube, Twitch, Spotify) to verify your identity and unlock social quests.',
+      'Follow and trust friends to discover what they Mark, and connect your social accounts (X, Discord, YouTube, Twitch, Spotify) to unlock social quests. In the Circle feed, like or dislike their Marks to shape content curation.',
     screenshot: screenshotCommunity
-  },
-  {
-    title: 'Circle & Voting',
-    description:
-      'See what your trust circle is Marking in the Circle feed. Like or dislike their Marks to express your opinion and contribute to content curation.',
-    screenshot: screenshotCircle
-  },
-  // --- Bloc 5: Onboarding final ---
-  {
-    title: 'Select & Import',
-    description:
-      'Next, select the bookmarks you want to import locally. These URLs reflect your browsing habits. Once imported, Mark them on-chain to affirm your intentions and link them to your profile.',
-    screenshot: screenshotSelect
   }
 ]
 
@@ -132,11 +96,13 @@ const OnboardingTutorialPage = () => {
         </div>
 
         <div className="tutorial-content">
-          <img
-            src={step.screenshot}
-            alt={step.title}
-            className={`tutorial-screenshot ${currentStep === 0 || isLastStep ? 'tutorial-screenshot-small' : ''}`}
-          />
+          <div className="tutorial-screenshot-frame">
+            <img
+              src={step.screenshot}
+              alt={step.title}
+              className="tutorial-screenshot"
+            />
+          </div>
           <h2 className="onboarding-title">{step.title}</h2>
           <p className="onboarding-description">{step.description}</p>
         </div>
@@ -146,24 +112,23 @@ const OnboardingTutorialPage = () => {
             className="onboarding-btn onboarding-btn-primary"
             onClick={handleNext}
           >
-            {isLastStep ? 'Import my bookmarks' : 'Next'}
+            {isLastStep ? 'Select my bookmarks' : 'Next'}
           </button>
-          {currentStep > 0 && (
+          <div className="tutorial-secondary-actions">
             <button
               className="onboarding-btn onboarding-btn-secondary"
               onClick={handleBack}
+              style={{ visibility: currentStep > 0 ? 'visible' : 'hidden' }}
             >
               Back
             </button>
-          )}
-          {(currentStep === 0 || isLastStep) && (
             <button
               className="onboarding-btn onboarding-btn-secondary"
               onClick={handleSkip}
             >
               Skip
             </button>
-          )}
+          </div>
         </div>
       </div>
     </div>

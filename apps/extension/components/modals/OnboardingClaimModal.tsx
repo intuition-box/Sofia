@@ -287,351 +287,341 @@ const OnboardingClaimModal = ({
 
   if (!isOpen || alreadyClaimed) return null
 
+  // Restyled to share the Amplify (b3) editorial ticket — parchment surface,
+  // drop-cap headline, b3 ledger + actions — while keeping the progressive
+  // step machine (onboarding-section reveal) and useOnboardingClaim hook.
   return createPortal(
     <div
       className={`modal-overlay onboarding-claim-overlay ${txLoading ? "processing" : ""}`}
     >
       <div className="modal-content onboarding-claim-modal">
-        <div className="modal-body">
+        <div className="amp b3 b3--v5">
+          <div className="b3-bg b3-bg--v5" aria-hidden="true">
+            <div className="b3-bg-hex b3-bg-hex--1" />
+            <div className="b3-bg-hex b3-bg-hex--2" />
+            <div className="b3-bg-hex b3-bg-hex--3" />
+            <div className="b3-bg-grain" />
+          </div>
 
-          {/* Step 1+: Triple card (always visible from step 1) */}
-          {isFormState && (
-            <div
-              className={`onboarding-section ${step >= 1 ? "visible" : ""} ${step === 1 ? "highlighted" : ""}`}
-            >
-              <div className="weight-modal-triplet-card">
-                <div className="weight-modal-triplet-text">
-                  {badge ? (
-                    <span
-                      className="weight-modal-cert-target"
-                      style={{
-                        borderColor: `${badge.color}40`,
-                        backgroundColor: `${badge.color}0A`
-                      }}
-                    >
-                      <span className="object">Sofia</span>
-                      <span className="weight-modal-cert-dot">&middot;</span>
-                      <span
-                        className="weight-modal-intention-badge"
-                        style={{ color: badge.color }}
-                      >
-                        {badge.label}
-                      </span>
-                    </span>
-                  ) : (
-                    <>
-                      <span className="subject">I</span>{" "}
-                      <span className="action">trust</span>{" "}
-                      <span className="object">Sofia</span>
-                    </>
-                  )}
-                </div>
-              </div>
+          {txLoading && !txSuccess && (
+            <div className="b3-loading" role="status" aria-live="polite">
+              <SofiaLoader size={120} />
+              <p className="b3-loading-title">Creating</p>
+              <p className="b3-loading-step">{processingStep}</p>
+              <p className="b3-loading-warn">
+                Do not close or navigate away from this tab
+              </p>
             </div>
           )}
 
-          {/* Step 2+: Weight pills */}
-          {isFormState && (
-            <div
-              className={`onboarding-section ${step >= 2 ? "visible" : ""} ${step === 2 ? "highlighted" : ""}`}
-            >
-              <div className="weight-modal-amount-row">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.000001"
-                  value={
-                    selectedWeight === null
-                      ? ""
-                      : selectedWeight === "custom"
-                        ? customValue || ""
-                        : weightOptions.find(
-                              (opt) => opt.id === selectedWeight
-                            )?.value || ""
-                  }
-                  onChange={(e) => {
-                    setSelectedWeight("custom")
-                    setCustomValue(e.target.value)
-                  }}
-                  onFocus={(e) => {
-                    setSelectedWeight("custom")
-                    e.target.select()
-                  }}
-                  className="weight-modal-amount-input"
-                  placeholder="0.01"
-                  disabled={txLoading}
-                />
-                <div className="weight-modal-pills">
-                  {weightOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSelectedWeight(option.id)}
-                      className={`weight-modal-pill ${selectedWeight === option.id ? "selected" : ""}`}
-                      disabled={txLoading}
-                    >
-                      {option.value}
-                    </button>
+          <div className="b3-ticket">
+            <div className="b3-body">
+              <div className="b3-headline">
+                <span className="b3-drop">F</span>
+                <h1 className="b3-h1">irst claim.</h1>
+              </div>
+              {isFormState && step >= 1 && step <= 5 && (
+                <p className="b3-sub">{STEP_HINTS[step - 1]}</p>
+              )}
+              {isFormState && (
+                <div className="onboarding-step-indicators">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <div
+                      key={s}
+                      className={`onboarding-step-dot ${s === step ? "active" : ""} ${s < step ? "completed" : ""}`}
+                    />
                   ))}
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Step 3+: Global Stake slider */}
-          {isFormState && gsEnabled && (
-            <div
-              className={`onboarding-section ${step >= 3 ? "visible" : ""} ${step === 3 ? "highlighted" : ""}`}
-            >
-              <div className="gs-slider-section">
-                <div className="gs-slider-header">
-                  <span className="gs-slider-label">Beta Season Pool</span>
-                  <span className="gs-slider-value">
-                    {gsPercentage / 1000}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={50000}
-                  step={1000}
-                  value={gsPercentage}
-                  onChange={(e) => {
-                    setGsPercentage(Number(e.target.value))
-                    setGsInteracted(true)
-                  }}
-                  className="gs-slider-input"
-                  style={
-                    {
-                      "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
-                    } as React.CSSProperties
-                  }
-                  disabled={txLoading}
-                />
-                <div className="gs-slider-breakdown">
-                  <div className="gs-slider-breakdown-item">
-                    <span className="gs-slider-breakdown-label">Signal</span>
-                    <span className="gs-slider-breakdown-value">
-                      {formatTrust(breakdown.signalAmount)} TRUST
-                    </span>
-                  </div>
-                  <div className="gs-slider-breakdown-item">
-                    <span className="gs-slider-breakdown-label">
-                      Beta Season Pool
-                    </span>
-                    <span className="gs-slider-breakdown-value pool">
-                      {formatTrust(breakdown.poolAmount)} TRUST
-                    </span>
+              {/* Step 1+: Triple card */}
+              {isFormState && (
+                <div
+                  className={`onboarding-section ${step >= 1 ? "visible" : ""} ${step === 1 ? "highlighted" : ""}`}
+                >
+                  <div className="weight-modal-triplet-card">
+                    <div className="weight-modal-triplet-text">
+                      {badge ? (
+                        <span
+                          className="weight-modal-cert-target"
+                          style={{
+                            borderColor: `${badge.color}40`,
+                            backgroundColor: `${badge.color}0A`
+                          }}
+                        >
+                          <span className="object">Sofia</span>
+                          <span className="weight-modal-cert-dot">&middot;</span>
+                          <span
+                            className="weight-modal-intention-badge"
+                            style={{ color: badge.color }}
+                          >
+                            {badge.label}
+                          </span>
+                        </span>
+                      ) : (
+                        <>
+                          <span className="subject">I</span>{" "}
+                          <span className="action">trust</span>{" "}
+                          <span className="object">Sofia</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {breakdown.belowMinimum && (
-                  <span className="gs-slider-minimum-hint">
-                    Below minimum — pool contribution skipped
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Step 4+: Cost breakdown */}
-          {isFormState && (
-            <div
-              className={`onboarding-section ${step >= 4 ? "visible" : ""} ${step === 4 ? "highlighted" : ""}`}
-            >
-              <div className="weight-modal-cost-summary">
-                <div className="weight-modal-cost-row">
-                  <span>Deposit</span>
-                  <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
+              {/* Step 2+: Weight pills */}
+              {isFormState && (
+                <div
+                  className={`onboarding-section ${step >= 2 ? "visible" : ""} ${step === 2 ? "highlighted" : ""}`}
+                >
+                  <div className="weight-modal-amount-row">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.000001"
+                      value={
+                        selectedWeight === null
+                          ? ""
+                          : selectedWeight === "custom"
+                            ? customValue || ""
+                            : weightOptions.find(
+                                  (opt) => opt.id === selectedWeight
+                                )?.value || ""
+                      }
+                      onChange={(e) => {
+                        setSelectedWeight("custom")
+                        setCustomValue(e.target.value)
+                      }}
+                      onFocus={(e) => {
+                        setSelectedWeight("custom")
+                        e.target.select()
+                      }}
+                      className="weight-modal-amount-input"
+                      placeholder="0.01"
+                      disabled={txLoading}
+                    />
+                    <div className="weight-modal-pills">
+                      {weightOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setSelectedWeight(option.id)}
+                          className={`weight-modal-pill ${selectedWeight === option.id ? "selected" : ""}`}
+                          disabled={txLoading}
+                        >
+                          {option.value}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                {gsEnabled &&
-                  gsPercentage > 0 &&
-                  !breakdown.belowMinimum && (
-                    <>
-                      <div className="weight-modal-cost-row weight-modal-cost-sub">
-                        <span>Signal</span>
-                        <span>
+              )}
+
+              {/* Step 3+: Global Stake slider */}
+              {isFormState && gsEnabled && (
+                <div
+                  className={`onboarding-section ${step >= 3 ? "visible" : ""} ${step === 3 ? "highlighted" : ""}`}
+                >
+                  <div className="gs-slider-section">
+                    <div className="gs-slider-header">
+                      <span className="gs-slider-label">Beta Season Pool</span>
+                      <span className="gs-slider-value">
+                        {gsPercentage / 1000}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={50000}
+                      step={1000}
+                      value={gsPercentage}
+                      onChange={(e) => {
+                        setGsPercentage(Number(e.target.value))
+                        setGsInteracted(true)
+                      }}
+                      className="gs-slider-input"
+                      style={
+                        {
+                          "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
+                        } as React.CSSProperties
+                      }
+                      disabled={txLoading}
+                    />
+                    <div className="gs-slider-breakdown">
+                      <div className="gs-slider-breakdown-item">
+                        <span className="gs-slider-breakdown-label">Signal</span>
+                        <span className="gs-slider-breakdown-value">
                           {formatTrust(breakdown.signalAmount)} TRUST
                         </span>
                       </div>
-                      <div className="weight-modal-cost-row weight-modal-cost-sub">
-                        <span>Beta Season Pool</span>
-                        <span>
+                      <div className="gs-slider-breakdown-item">
+                        <span className="gs-slider-breakdown-label">
+                          Beta Season Pool
+                        </span>
+                        <span className="gs-slider-breakdown-value pool">
                           {formatTrust(breakdown.poolAmount)} TRUST
                         </span>
                       </div>
+                    </div>
+                    {breakdown.belowMinimum && (
+                      <span className="gs-slider-minimum-hint">
+                        Below minimum — pool contribution skipped
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4+: Cost ledger (b3) */}
+              {isFormState && (
+                <div
+                  className={`onboarding-section ${step >= 4 ? "visible" : ""} ${step === 4 ? "highlighted" : ""}`}
+                >
+                  <div className="b3-ledger">
+                    <div className="b3-ledger-row">
+                      <span>Deposit</span>
+                      <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
+                    </div>
+                    {gsEnabled &&
+                      gsPercentage > 0 &&
+                      !breakdown.belowMinimum && (
+                        <>
+                          <div className="b3-ledger-row">
+                            <span>Signal</span>
+                            <span>
+                              {formatTrust(breakdown.signalAmount)} TRUST
+                            </span>
+                          </div>
+                          <div className="b3-ledger-row">
+                            <span>Beta Season Pool</span>
+                            <span>
+                              {formatTrust(breakdown.poolAmount)} TRUST
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    {breakdown.totalFees > 0 && (
+                      <div className="b3-ledger-row">
+                        <span>Fees</span>
+                        <span>{formatTrust(breakdown.totalFees)} TRUST</span>
+                      </div>
+                    )}
+                    <div className="b3-ledger-row b3-ledger-total">
+                      <span>Total deposit</span>
+                      <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                    </div>
+                    <div
+                      className={`b3-ledger-row b3-ledger-row--muted ${breakdown.totalEstimate > userBalance ? "weight-modal-insufficient" : ""}`}
+                    >
+                      <span>Your balance</span>
+                      <span>{formatTrust(userBalance)} TRUST</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Success State */}
+              {txSuccess && (
+                <div className="modal-success-card">
+                  <div className="modal-success-card-glow" />
+                  <div className="modal-success-card-inner">
+                    <div className="modal-success-left">
+                      <h2 className="modal-success-title">
+                        First Claim
+                        <br />
+                        Validated
+                      </h2>
+                      <p className="modal-success-subtitle">
+                        {operationType === "deposit"
+                          ? "Your trust signal has been reinforced!"
+                          : "Your trust signal has been amplified!"}
+                      </p>
+                      {transactionHash && (
+                        <a
+                          href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="modal-tx-link"
+                        >
+                          View on Explorer &rarr;
+                        </a>
+                      )}
+                      <p className="onboarding-redirect-hint">
+                        Redirecting to tutorial...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error State */}
+              {txError && !txSuccess && (
+                <div className="modal-error-section">
+                  <div className="modal-error-icon">&#10060;</div>
+                  <div className="modal-error-text">
+                    <p className="modal-error-title">Transaction Failed</p>
+                    <p className="modal-error-message">
+                      {parseErrorMessage(txError)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions (b3) */}
+              {!txSuccess && (
+                <div className="b3-actions">
+                  {txError ? (
+                    <>
+                      <button className="b3-btn" onClick={handleClose}>
+                        Close
+                      </button>
+                      <button
+                        className="b3-btn b3-btn--primary"
+                        onClick={handleSubmit}
+                        disabled={txLoading}
+                      >
+                        Retry
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="b3-btn"
+                        onClick={() => {
+                          reset()
+                          onComplete()
+                        }}
+                        disabled={txLoading}
+                      >
+                        Skip
+                      </button>
+                      <button
+                        className="b3-btn b3-btn--primary"
+                        onClick={handleContinue}
+                        disabled={
+                          txLoading ||
+                          !canContinue ||
+                          (step === 5 && breakdown.totalEstimate > userBalance)
+                        }
+                      >
+                        {txLoading
+                          ? "Processing..."
+                          : step === 5
+                            ? "Mark"
+                            : "Continue"}
+                        {step === 5 && !txLoading && (
+                          <span className="b3-btn-amt">
+                            {formatTrust(breakdown.totalEstimate)} T
+                          </span>
+                        )}
+                      </button>
                     </>
                   )}
-                {breakdown.totalFees > 0 && (
-                  <>
-                    <div className="weight-modal-cost-divider" />
-                    <div className="weight-modal-cost-row weight-modal-cost-fees-subtotal">
-                      <span>Fees</span>
-                      <span>{formatTrust(breakdown.totalFees)} TRUST</span>
-                    </div>
-                    {(breakdown.sofiaFixedFee > 0 ||
-                      breakdown.sofiaPercentFee > 0) && (
-                      <div className="weight-modal-cost-row weight-modal-cost-sub">
-                        <span>Sofia fee</span>
-                        <span>
-                          {formatTrust(
-                            breakdown.sofiaFixedFee +
-                              breakdown.sofiaPercentFee
-                          )}{" "}
-                          TRUST
-                        </span>
-                      </div>
-                    )}
-                    {breakdown.creationCost > 0 && (
-                      <div className="weight-modal-cost-row weight-modal-cost-sub">
-                        <span>Intuition fee (creation only)</span>
-                        <span>
-                          {formatTrust(breakdown.creationCost)} TRUST
-                        </span>
-                      </div>
-                    )}
-                    <div className="weight-modal-cost-divider" />
-                    <div className="weight-modal-cost-row weight-modal-cost-total">
-                      <span>Total</span>
-                      <span>
-                        {formatTrust(breakdown.totalEstimate)} TRUST
-                      </span>
-                    </div>
-                  </>
-                )}
-                <div
-                  className={`weight-modal-cost-row weight-modal-cost-balance ${breakdown.totalEstimate > userBalance ? "weight-modal-insufficient" : ""}`}
-                >
-                  <span>Balance</span>
-                  <span>{formatTrust(userBalance)} TRUST</span>
                 </div>
-                <p className="weight-modal-cost-note">
-                  * Estimated — actual may vary
-                </p>
-              </div>
+              )}
             </div>
-          )}
-
-          {/* Success State */}
-          {txSuccess && (
-            <div className="modal-success-card">
-              <div className="modal-success-card-glow" />
-              <div className="modal-success-card-inner">
-                <div className="modal-success-left">
-                  <h2 className="modal-success-title">
-                    First Claim
-                    <br />
-                    Validated
-                  </h2>
-                  <p className="modal-success-subtitle">
-                    {operationType === "deposit"
-                      ? "Your trust signal has been reinforced!"
-                      : "Your trust signal has been amplified!"}
-                  </p>
-                  {transactionHash && (
-                    <a
-                      href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="modal-tx-link"
-                    >
-                      View on Explorer &rarr;
-                    </a>
-                  )}
-                  <p className="onboarding-redirect-hint">
-                    Redirecting to tutorial...
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Error State */}
-          {txError && !txSuccess && (
-            <div className="modal-error-section">
-              <div className="modal-error-icon">&#10060;</div>
-              <div className="modal-error-text">
-                <p className="modal-error-title">Transaction Failed</p>
-                <p className="modal-error-message">
-                  {parseErrorMessage(txError)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Processing State */}
-          {txLoading && !txSuccess && (
-            <div className="modal-processing-section">
-              <SofiaLoader size={60} />
-              <div className="modal-processing-text">
-                <p className="modal-processing-title">Creating</p>
-                <p className="modal-processing-step">{processingStep}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Step hint + indicators (bottom) */}
-          {isFormState && step <= 5 && (
-            <p className="onboarding-step-hint">{STEP_HINTS[step - 1]}</p>
-          )}
-          {isFormState && (
-            <div className="onboarding-step-indicators">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <div
-                  key={s}
-                  className={`onboarding-step-dot ${s === step ? "active" : ""} ${s < step ? "completed" : ""}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        {!txSuccess && (
-          <div className="modal-actions">
-            {step === 5 && !txError && (
-              <button
-                className="stake-btn stake-btn-cancel"
-                onClick={() => { reset(); onComplete() }}
-                disabled={txLoading}
-              >
-                Skip
-              </button>
-            )}
-            {txError && (
-              <button
-                className="stake-btn stake-btn-cancel"
-                onClick={handleClose}
-              >
-                Close
-              </button>
-            )}
-            {!txError && isFormState && (
-              <button
-                className="modal-btn primary"
-                onClick={handleContinue}
-                disabled={
-                  txLoading ||
-                  !canContinue ||
-                  (step === 5 && breakdown.totalEstimate > userBalance)
-                }
-              >
-                {txLoading
-                  ? "Processing..."
-                  : step === 5
-                    ? "Mark"
-                    : "Continue"}
-              </button>
-            )}
-            {txError && (
-              <button
-                className="modal-btn primary"
-                onClick={handleSubmit}
-                disabled={txLoading}
-              >
-                Retry
-              </button>
-            )}
           </div>
-        )}
+        </div>
       </div>
     </div>,
     document.body

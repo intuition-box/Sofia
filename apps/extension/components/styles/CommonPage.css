@@ -244,7 +244,7 @@
 }
 
 .group-bento-title {
-  font-family: var(--ds-font-display);
+  font-family: var(--ds-font-unbounded);
   color: var(--ds-ink);
   font-size: 15px;
   font-weight: 600;
