@@ -23,11 +23,14 @@ export async function publishToWallet(
   name: string,
   data: unknown,
 ): Promise<void> {
+  // No key (e.g. local dev) → skip silently; REST history is the source of
+  // truth so realtime is purely additive.
+  if (!env.ablyApiKey) return
   try {
     await rest().channels.get(notifChannel(wallet)).publish(name, data)
   } catch (err) {
-    // Realtime is best-effort — the REST notification history is the source of
-    // truth, so a transient Ably failure must never block the request.
+    // Realtime is best-effort — a transient Ably failure must never block the
+    // request.
     console.error('[ably] publish failed', err)
   }
 }
