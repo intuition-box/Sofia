@@ -18,7 +18,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  /* Fill the scroll container (.app-content), not the viewport — using
+   * 100vh here overflowed once the parent added padding, causing the
+   * login page to scroll. */
+  height: 100%;
+  min-height: 100%;
   background: var(--ds-bg);
   color: var(--ds-ink);
   box-sizing: border-box;

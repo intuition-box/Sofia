@@ -32,6 +32,8 @@ export type MessageType =
   | 'DEEP_LINK_PROFILE'
   // Onboarding first claim from landing page
   | 'FIRST_CLAIM'
+  // Open the onboarding tutorial from the landing page
+  | 'OPEN_TUTORIAL'
   // Wallet bridge messages
   | 'WALLET_REQUEST'
   | 'WALLET_EVENT'

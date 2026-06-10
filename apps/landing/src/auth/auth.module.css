@@ -199,6 +199,37 @@
   margin-left: 0 !important;
 }
 
+/* Secondary "Tutorial" action — outline variant, sits under the claim CTA. */
+.tutorialBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.85rem 1.75rem;
+  background: transparent;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.tutorialBtn:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent) !important;
+  transform: translateY(-1px);
+}
+
 .closeBtn,
 .disconnectBtn {
   margin-top: 1rem;

@@ -21,6 +21,7 @@ import {
 import { TOPIC_COLORS, TOPIC_LABELS } from '~/lib/config/topicConfig'
 import ArrowTopRightIcon from '../../ui/icons/arrow-top-right-thick.svg'
 import LinkVariantIcon from '../../ui/icons/link-variant.svg'
+import { Trash2 } from 'lucide-react'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
@@ -390,12 +391,17 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                         />
                         <button
                           type="button"
-                          className="portal-button portal-button--danger"
+                          className="portal-button portal-button--danger portal-button--icon"
                           onClick={() => handleRedeem(tripletItem.id)}
                           disabled={redeemingIds.has(tripletItem.id)}
                           title="Redeem position"
+                          aria-label="Redeem position"
                         >
-                          {redeemingIds.has(tripletItem.id) ? '...' : 'Redeem'}
+                          {redeemingIds.has(tripletItem.id) ? (
+                            '...'
+                          ) : (
+                            <Trash2 size={15} aria-hidden="true" />
+                          )}
                         </button>
                       </div>
 

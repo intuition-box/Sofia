@@ -19,7 +19,7 @@ import CirclesPage from "./components/pages/CirclesPage"
 import ScorePage from "./components/pages/ScorePage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
-import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
+import OnboardingTour from "./components/onboarding/OnboardingTour"
 import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkSelectPage"
 import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
@@ -46,14 +46,13 @@ const SidePanelContent = () => {
   useEffect(() => {
     if (authenticated && walletAddress && currentPage === 'home') {
       // Onboarding is gated by consent, not by groups. Until the user has
-      // explicitly accepted or declined browsing tracking we must route
-      // them through onboarding-import — Chrome Web Store policy requires
-      // consent before any data collection (including external-auth paths
-      // that previously skipped onboarding).
+      // explicitly accepted or declined browsing tracking we route them to the
+      // guided tour, whose welcome screen carries the consent checkbox — Chrome
+      // Web Store policy requires consent before any data collection.
       chrome.storage.sync.get('tracking_consent_seen').then(({ tracking_consent_seen }) => {
         if (!tracking_consent_seen) {
           chrome.storage.session.remove('pending_external_auth')
-          navigateTo('onboarding-import')
+          navigateTo('onboarding-tutorial')
           setOnboardingChecked(true)
           return
         }
@@ -104,8 +103,8 @@ const SidePanelContent = () => {
         return <OnboardingImportPage />
       case 'onboarding-select':
         return <OnboardingBookmarkSelectPage />
-      case 'onboarding-tutorial':
-        return <OnboardingTutorialPage />
+      // 'onboarding-tutorial' is now handled by the OnboardingTour overlay,
+      // which redirects to 'mark' and runs coachmarks over the real UI.
       default:
         return <MarkPage />
     }
@@ -115,6 +114,7 @@ const SidePanelContent = () => {
     <AppLayout>
       {renderCurrentPage()}
       <BottomNavigation />
+      <OnboardingTour />
       {firstClaimData && (
         <OnboardingClaimModal
           isOpen={!!firstClaimData}
