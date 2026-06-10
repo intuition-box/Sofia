@@ -1,11 +1,15 @@
 /**
- * useGroupNotifications — notification history (REST, polled) + an Ably realtime
- * subscription that pushes new notifications instantly. On any realtime event we
- * invalidate the notification, application and membership caches so the bell,
- * the admin requests panel and the join gate all update live.
+ * Notification hooks for the group-join flow.
  *
- * REST polling is the baseline (works without Ably); the realtime push just
- * makes it instant.
+ *  - `useNotifications()`        REST history (polled) + unread count + mark
+ *                               read/all. The query is React-Query-deduped, so
+ *                               the nav badge and the notifications page share
+ *                               one fetch.
+ *  - `useNotificationsRealtime()` the Ably subscription — mount ONCE (in the
+ *                               always-mounted NavSidebar). A push invalidates
+ *                               the notifications / applications / membership
+ *                               caches so the badge, admin panel and join gate
+ *                               update live.
  */
 import { useEffect } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
@@ -19,10 +23,9 @@ import {
 
 const KEY = ['groupNotifications']
 
-export function useGroupNotifications() {
-  const { getAccessToken, authenticated, user } = usePrivy()
+export function useNotifications() {
+  const { getAccessToken, authenticated } = usePrivy()
   const qc = useQueryClient()
-  const wallet = user?.wallet?.address?.toLowerCase() ?? null
 
   const query = useQuery({
     queryKey: KEY,
@@ -54,7 +57,22 @@ export function useGroupNotifications() {
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 
-  // ── Ably realtime ──
+  return {
+    notifications: query.data?.notifications ?? [],
+    unread: query.data?.unread ?? 0,
+    loading: query.isLoading,
+    markRead: (id: string) => markRead.mutate(id),
+    markAllRead: () => markAll.mutate(),
+  }
+}
+
+/** Mount ONCE — opens an Ably channel for the connected wallet and refreshes
+ *  the relevant caches on every realtime push. */
+export function useNotificationsRealtime() {
+  const { getAccessToken, authenticated, user } = usePrivy()
+  const qc = useQueryClient()
+  const wallet = user?.wallet?.address?.toLowerCase() ?? null
+
   useEffect(() => {
     if (!authenticated || !wallet) return
     let client: { close: () => void } | null = null
@@ -70,7 +88,6 @@ export function useGroupNotifications() {
               const token = await getAccessToken()
               if (!token) return cb('No token', null)
               const tokenRequest = await getAblyToken(token)
-              // Ably accepts a TokenRequest object here.
               cb(null, tokenRequest as never)
             } catch (err) {
               cb(err as string, null)
@@ -78,15 +95,12 @@ export function useGroupNotifications() {
           },
         })
         client = realtime
-        const channel = realtime.channels.get(`notif:${wallet}`)
-        channel.subscribe('notification', () => {
-          // A new notification → refresh the bell + anything it might affect.
+        realtime.channels.get(`notif:${wallet}`).subscribe('notification', () => {
           qc.invalidateQueries({ queryKey: KEY })
           qc.invalidateQueries({ queryKey: ['groupApplications'] })
           qc.invalidateQueries({ queryKey: ['groupMembership'] })
         })
       } catch (err) {
-        // Realtime is optional — REST polling still delivers notifications.
         console.warn('[notifications] Ably unavailable', err)
       }
     })()
@@ -96,12 +110,4 @@ export function useGroupNotifications() {
       client?.close()
     }
   }, [authenticated, wallet, getAccessToken, qc])
-
-  return {
-    notifications: query.data?.notifications ?? [],
-    unread: query.data?.unread ?? 0,
-    loading: query.isLoading,
-    markRead: (id: string) => markRead.mutate(id),
-    markAllRead: () => markAll.mutate(),
-  }
 }

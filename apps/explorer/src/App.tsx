@@ -11,7 +11,6 @@ import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import { MobileHeader } from './components/MobileHeader'
 import { BottomNav } from './components/BottomNav'
-import TopBar from './components/TopBar'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import { useCart } from './hooks/useCart'
@@ -36,6 +35,7 @@ const BadgeDetailPage = lazy(() => import('./pages/BadgeDetailPage'))
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage'))
 const CirclesPage = lazy(() => import('./pages/CirclesPage'))
 const ComposePage = lazy(() => import('./pages/ComposePage'))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const VotePage = lazy(() => import('./pages/VotePage'))
@@ -285,7 +285,6 @@ export default function App() {
             .filter(Boolean)
             .join(' ')}
         >
-          <TopBar />
           <RouteErrorBoundary key={location.pathname}>
             <Suspense fallback={<RouteFallback />}>
               <Routes>
@@ -309,6 +308,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
                     </ProtectedRoute>
                   }
                 />

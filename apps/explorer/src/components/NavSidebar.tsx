@@ -1,5 +1,10 @@
-import { Link, useLocation } from 'react-router-dom'
-import { usePrivy } from '@privy-io/react-auth'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  usePrivy,
+  useLogin,
+  useLogout,
+  useLinkAccount,
+} from '@privy-io/react-auth'
 import {
   NavSidebar as DsNavSidebar,
   NavBrand,
@@ -9,20 +14,38 @@ import {
 import {
   Home,
   User,
+  Bell,
   Flame,
   Vote,
   Globe,
+  Wallet,
+  LogOut,
   ShoppingCart,
   Users,
   Layers,
 } from 'lucide-react'
+import type { Address } from 'viem'
 import { useMemo } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
+import {
+  useNotifications,
+  useNotificationsRealtime,
+} from '../hooks/useGroupNotifications'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
+import { useEnsNames } from '../hooks/useEnsNames'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 import './styles/nav-sidebar-trust-circle.css'
 import './styles/nav-sidebar-toolbar.css'
 
@@ -42,9 +65,18 @@ export function NavSidebar({
   onToggleCollapse,
 }: NavSidebarProps = {}) {
   const location = useLocation()
-  const { authenticated, user } = usePrivy()
+  const navigate = useNavigate()
+  const { ready, authenticated, user } = usePrivy()
+  const { login } = useLogin()
+  // On disconnect, send the user to the landing/login page ('/') rather than
+  // leaving them on a now-unauthenticated route (which would bounce to /explore).
+  const { logout } = useLogout({ onSuccess: () => navigate('/') })
+  const { linkWallet } = useLinkAccount({
+    onSuccess: () => window.location.reload(),
+  })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses } = useLinkedWallets()
+  const { addresses: linkedAddresses, primary: primaryWallet } =
+    useLinkedWallets()
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
@@ -64,6 +96,30 @@ export function NavSidebar({
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
 
+  // Notification badge + the single realtime subscription (NavSidebar is always
+  // mounted, so this is the natural home for the global Ably channel).
+  const { unread } = useNotifications()
+  useNotificationsRealtime()
+
+  const addresses: Address[] = address ? [address as Address] : []
+  const { getDisplay, getAvatar } = useEnsNames(addresses)
+  const ensName = address ? getDisplay(address as Address) : ''
+  const ensAvatar = address ? getAvatar(address as Address) : ''
+  const displayAddr = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : ''
+  const googleAccount = user?.google as
+    | { name?: string; profilePictureUrl?: string; email?: string }
+    | undefined
+  const profileAvatar = googleAccount?.profilePictureUrl || ensAvatar || ''
+  const profileName =
+    googleAccount?.name ||
+    ensName ||
+    googleAccount?.email ||
+    user?.email?.address ||
+    displayAddr ||
+    'User'
+
   const navItems: {
     to: string
     icon: typeof Home
@@ -71,6 +127,7 @@ export function NavSidebar({
     public: boolean
   }[] = [
     { to: '/profile', icon: User, label: 'My Profile', public: false },
+    { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
     { to: '/explore', icon: Globe, label: 'Explore', public: true },
     { to: '/circles', icon: Users, label: 'Circles', public: false },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
@@ -96,25 +153,26 @@ export function NavSidebar({
     const locked = !item.public && !authenticated
     const active = location.pathname === item.to
     const Icon = item.icon
+    // The Notifications row carries an unread badge over its bell icon.
+    const iconNode =
+      item.to === '/notifications' ? (
+        <span className="ns-notif-ic">
+          <Icon className="h-4 w-4" />
+          {unread > 0 && (
+            <span className="ns-notif-badge">{unread > 9 ? '9+' : unread}</span>
+          )}
+        </span>
+      ) : (
+        <Icon className="h-4 w-4" />
+      )
     if (locked) {
       return (
-        <NavItem
-          key={item.to}
-          as="button"
-          icon={<Icon className="h-4 w-4" />}
-          label={item.label}
-          locked
-        />
+        <NavItem key={item.to} as="button" icon={iconNode} label={item.label} locked />
       )
     }
     return (
       <Link key={item.to} to={item.to} style={{ display: 'block' }}>
-        <NavItem
-          as="button"
-          icon={<Icon className="h-4 w-4" />}
-          label={item.label}
-          active={active}
-        />
+        <NavItem as="button" icon={iconNode} label={item.label} active={active} />
       </Link>
     )
   }
@@ -257,8 +315,7 @@ export function NavSidebar({
         </NavSection>
       ) : null}
 
-      {/* Bottom cluster — just the cart now (account/notifications moved to the
-          top-right TopBar). margin-top:auto on .ns-bottom keeps it pinned low. */}
+      {/* Bottom cluster — cart, then the account chip (profile / disconnect). */}
       <div className="ns-bottom">
         <button
           type="button"
@@ -273,6 +330,120 @@ export function NavSidebar({
             <span className="ns-cart-count">{cart.count}</span>
           )}
         </button>
+
+        {ready && !authenticated && (
+          <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
+            <Wallet className="h-4 w-4 mr-1" />
+            Connect
+          </Button>
+        )}
+        {ready && authenticated && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="ns-auth-chip"
+                aria-label="Account menu"
+              >
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt={profileName}
+                    referrerPolicy="no-referrer"
+                    className="ns-auth-avatar"
+                  />
+                ) : (
+                  <span className="ns-auth-avatar ns-auth-avatar--fallback">
+                    {profileName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="ns-auth-meta">
+                  <span className="ns-auth-name">{profileName}</span>
+                  {displayAddr && (
+                    <span className="ns-auth-sub">{displayAddr}</span>
+                  )}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              side="top"
+              className="ns-auth-menu"
+            >
+              <div className="ns-auth-menu-head">
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="ns-auth-menu-avatar"
+                  />
+                ) : (
+                  <span className="ns-auth-menu-avatar ns-auth-menu-avatar--fallback">
+                    {profileName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <div className="ns-auth-menu-ident">
+                  <span className="ns-auth-menu-name">{profileName}</span>
+                  {displayAddr && (
+                    <span className="ns-auth-menu-sub">{displayAddr}</span>
+                  )}
+                </div>
+              </div>
+
+              {linkedAddresses.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="ns-auth-menu-label">
+                    Wallets
+                  </DropdownMenuLabel>
+                  {linkedAddresses.map((addr) => {
+                    const isPrimary =
+                      primaryWallet?.toLowerCase() === addr.toLowerCase()
+                    const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                    return (
+                      <DropdownMenuItem
+                        key={addr}
+                        className="ns-auth-menu-wallet"
+                        onSelect={(e) => e.preventDefault()}
+                        title={addr}
+                      >
+                        <span
+                          className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                          aria-hidden="true"
+                        />
+                        <span className="ns-auth-menu-wallet-addr">
+                          {short}
+                        </span>
+                        {isPrimary && (
+                          <span className="ns-auth-menu-wallet-tag">
+                            primary
+                          </span>
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </>
+              )}
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => linkWallet()}
+                className="ns-auth-menu-action"
+              >
+                <Wallet className="h-4 w-4" />
+                Link another wallet
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="ns-auth-menu-action ns-auth-menu-action--danger"
+              >
+                <LogOut className="h-4 w-4" />
+                Disconnect
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </DsNavSidebar>
   )

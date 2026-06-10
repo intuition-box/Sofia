@@ -434,3 +434,25 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* ── Notifications nav-item unread badge ───────────────────── */
+.ns-notif-ic {
+  position: relative;
+  display: inline-flex;
+}
+.ns-notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--intent-distrusted, #ef4444);
+  color: #fff;
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}

@@ -1,0 +1,92 @@
+/**
+ * notifications-page.css — X-style notifications feed in the main column:
+ * sticky header + list of rows.
+ */
+.np-page {
+  max-width: 720px;
+}
+.np-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 4px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--ds-bg) 85%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ds-border);
+}
+.np-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.np-readall {
+  font-size: 12px;
+  color: var(--ds-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.np-readall:hover {
+  color: var(--ds-ink);
+}
+.np-empty {
+  padding: 48px 8px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 13.5px;
+}
+.np-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.np-row {
+  border-bottom: 1px solid var(--ds-border-soft);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.np-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.np-row.is-unread {
+  background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
+}
+.np-row-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.np-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.np-row-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.np-row-msg {
+  display: block;
+  font-size: 13px;
+  color: var(--ds-muted);
+  margin-top: 2px;
+  word-break: break-word;
+}
+.np-row-when {
+  flex-shrink: 0;
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 11px;
+  color: var(--ds-muted-soft);
+  margin-top: 2px;
+}
