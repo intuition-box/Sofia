@@ -32,6 +32,7 @@ import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
 import { useCircleListStats } from '@/hooks/useCircleListStats'
 import { useMemberActivity } from '@/hooks/useMemberActivity'
 import { useMemberStreaks } from '@/hooks/useMemberStreaks'
+import { useMembershipStatus, useRequestJoin } from '@/hooks/useGroupMembership'
 import CircleDetailHero from './CircleDetailHero'
 import CircleHeaderFree from './CircleHeaderFree'
 import CircleMembersCard from './CircleMembersCard'
@@ -44,6 +45,7 @@ import CircleFeedConnectCta from './CircleFeedConnectCta'
 import CircleLockModule from './CircleLockModule'
 import CircleUpgradeBand from './CircleUpgradeBand'
 import CircleJoinGate from './CircleJoinGate'
+import CircleAdminRequests from './CircleAdminRequests'
 import AllMembersPanel from './AllMembersPanel'
 import MembersPanelFree from './MembersPanelFree'
 import CircleJoinOverlay from './CircleJoinOverlay'
@@ -124,6 +126,19 @@ export default function CircleDetailView({
   // from the global streak leaderboard — fetched ONCE here, joined by
   // wallet, and passed down to both the top-3 cards + the side panel.
   const streaks = useMemberStreaks()
+  // Gated join (group-api backend): a non-member's request/approval state
+  // drives the join gate's CTA. Only groups have a backend membership record.
+  const groupTermId = circle.kind === 'group' ? circle.id : null
+  const membership = useMembershipStatus(groupTermId)
+  const { request: requestJoin, requesting } = useRequestJoin(groupTermId)
+  const joinStatus: 'none' | 'pending' | 'approved' | 'rejected' =
+    membership.isApproved
+      ? 'approved'
+      : membership.isPending
+        ? 'pending'
+        : membership.isRejected
+          ? 'rejected'
+          : 'none'
   // Non-auth visitor landing on a locked group: the blurred-feed
   // teaser doesn't help — turn the whole activity slot into a
   // Connect / Install Sofia CTA so the visitor has a clear next step.
@@ -216,6 +231,13 @@ export default function CircleDetailView({
         />
       )}
 
+      {/* Admin-only: pending join requests to approve/reject (renders nothing
+          for non-admins). Sits above the gated content so reviewers always see
+          it crisp. */}
+      {circle.kind === 'group' && (
+        <CircleAdminRequests groupTermId={groupTermId} />
+      )}
+
       {/* Members module → Topics treemap → Activity → Decisions → Upgrade.
           Free groups render the top-3 Members module as a full-width band,
           followed by the full-width Topics treemap (Phase 2), the renamed
@@ -304,6 +326,9 @@ export default function CircleDetailView({
               activeCount={activeNow}
               signalCount={stats?.postCount}
               authenticated={authenticated}
+              joinStatus={joinStatus}
+              onRequest={requestJoin}
+              requesting={requesting}
               onJoin={onJoin}
               inCart={joinInCart}
               disabled={joinDisabled}
