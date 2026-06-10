@@ -9,6 +9,24 @@ import { prisma } from '../db'
 import { ensureGroupSeeded } from '../indexer'
 import { notify } from '../notify'
 
+// Write-abuse guards: an authenticated caller could otherwise stuff arbitrary
+// blobs into the DB. Caps keep one row bounded.
+const MAX_ANSWERS_BYTES = 8 * 1024 // 8 KB of JSON
+const MAX_NOTE_CHARS = 1000
+
+/** Validate + normalise the optional join-form answers. Throws 400 if oversized
+ *  or not a plain JSON object. Returns `undefined` when absent (left untouched). */
+function sanitizeAnswers(value: unknown): object | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw new HTTPException(400, { message: 'answers must be an object' })
+  }
+  if (JSON.stringify(value).length > MAX_ANSWERS_BYTES) {
+    throw new HTTPException(413, { message: 'answers too large' })
+  }
+  return value as object
+}
+
 const REVIEWER_ROLES = ['OWNER', 'ADMIN', 'MODERATOR'] as const
 const APPLICATION_STATUSES = [
   'PENDING',
@@ -39,11 +57,12 @@ applications.post('/groups/:groupTermId/applications', async (c) => {
   }
 
   const body = (await c.req.json().catch(() => ({}))) as { answers?: unknown }
+  const answers = sanitizeAnswers(body.answers)
   const application = await prisma.application.upsert({
     where: { wallet_groupTermId: { wallet, groupTermId } },
     update: {
       status: 'PENDING',
-      answers: body.answers === undefined ? undefined : (body.answers as object),
+      answers,
       reviewerWallet: null,
       reviewedAt: null,
       reviewNote: null,
@@ -52,7 +71,7 @@ applications.post('/groups/:groupTermId/applications', async (c) => {
       wallet,
       groupTermId,
       status: 'PENDING',
-      answers: body.answers === undefined ? undefined : (body.answers as object),
+      answers,
     },
   })
 
@@ -146,6 +165,8 @@ applications.post('/applications/:id/reject', async (c) => {
   const reviewer = getWallet(c)
   const id = c.req.param('id')
   const body = (await c.req.json().catch(() => ({}))) as { note?: string }
+  const note =
+    typeof body.note === 'string' ? body.note.slice(0, MAX_NOTE_CHARS) : undefined
 
   const app = await prisma.application.findUnique({ where: { id } })
   if (!app) throw new HTTPException(404, { message: 'Application not found' })
@@ -157,7 +178,7 @@ applications.post('/applications/:id/reject', async (c) => {
       status: 'REJECTED',
       reviewerWallet: reviewer,
       reviewedAt: new Date(),
-      reviewNote: body.note,
+      reviewNote: note,
     },
   })
   await prisma.event.create({
@@ -172,7 +193,7 @@ applications.post('/applications/:id/reject', async (c) => {
     recipientWallet: app.wallet,
     type: 'JOIN_REJECTED',
     title: 'Request declined',
-    message: body.note || 'Your request was declined',
+    message: note || 'Your request was declined',
     metadata: { groupTermId: app.groupTermId, applicationId: id },
   })
 

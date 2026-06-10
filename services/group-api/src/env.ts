@@ -15,7 +15,20 @@ function optional(name: string): string {
   return v ?? ''
 }
 
+const isProd = process.env.NODE_ENV === 'production'
+
+// Belt-and-suspenders: the dev backdoor must NEVER be reachable in prod, so we
+// hard-disable it here regardless of what's in the environment. A leftover
+// DEV_SEED_TOKEN in the prod env is loudly rejected rather than silently honoured.
+if (isProd && process.env.DEV_SEED_TOKEN) {
+  console.error(
+    '[group-api] DEV_SEED_TOKEN is set in production — IGNORING it. ' +
+      'The dev impersonation backdoor is force-disabled. Unset this variable.',
+  )
+}
+
 export const env = {
+  isProd,
   port: Number(process.env.PORT ?? 8788),
   databaseUrl: required('DATABASE_URL'),
   privyAppId: optional('PRIVY_APP_ID'),
@@ -23,10 +36,11 @@ export const env = {
   ablyApiKey: optional('ABLY_API_KEY'),
   indexerUrl:
     process.env.INTUITION_GRAPHQL_URL ?? 'https://mainnet.intuition.sh/v1/graphql',
-  // When set, enables dev-only testing: `/dev/seed-owner` + header-based wallet
+  // When set (dev only), enables `/dev/seed-owner` + header-based wallet
   // impersonation (`x-dev-token` + `x-dev-wallet`) so the whole API is
-  // curl-testable without Privy. MUST be empty in production.
-  devSeedToken: process.env.DEV_SEED_TOKEN ?? '',
+  // curl-testable without Privy. Force-empty in production — the backdoor can
+  // never run there even if the variable is present.
+  devSeedToken: isProd ? '' : (process.env.DEV_SEED_TOKEN ?? ''),
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')
     .map((s) => s.trim())
