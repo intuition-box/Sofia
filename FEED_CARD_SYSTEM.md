@@ -35,12 +35,12 @@ packages/design-system/src/
 `FeedCardView` prend une prop `size?: 'lg' | 'md' | 'sm' | 'xs'` (défaut `lg`),
 appliquée en classe BEM `fc-card fc-card--s-${size}` :
 
-| Size | Largeur cible | Rendu |
-|------|---------------|-------|
-| `lg` | 432px | hero pleine largeur (défaut explorer) |
-| `md` | 360px | hero 360/170 |
-| `sm` | 300px | hero 300/132 |
-| `xs` | list-row | pas de hero, ligne compacte horizontale |
+| Size | Largeur cible | Rendu                                   |
+| ---- | ------------- | --------------------------------------- |
+| `lg` | 432px         | hero pleine largeur (défaut explorer)   |
+| `md` | 360px         | hero 360/170                            |
+| `sm` | 300px         | hero 300/132                            |
+| `xs` | list-row      | pas de hero, ligne compacte horizontale |
 
 Les overrides par taille sont dans `feed-card.css`, section
 `/* ── Size variant overrides ── */`.
@@ -73,6 +73,7 @@ passe son `<TopicPill>`, l'extension son `.sf-topic-pill`. Résultat : aucune
 dépendance app-spécifique (UrlPreview, TopicPill) ne remonte dans le DS.
 
 Autres props notables :
+
 - `showDomainBadge?: boolean` (défaut `true`) — le badge favicon+domaine sur le hero.
 - `hideVoteCounts?: boolean` (défaut `false`) — rend les pouces **sans chiffre**,
   pour un UX de vote **toggle** (le cart de l'extension n'a pas de tally par card).
@@ -97,9 +98,9 @@ Le service OG (`services/og-proxy/`) est **déjà déployé** sur
 **aucune** variable d'environnement (sinon il casserait entre Vite et Plasmo).
 Chaque app lit **sa** variable et passe l'URL au hook :
 
-| App | Variable d'env | Lecture |
-|-----|----------------|---------|
-| explorer (Vite) | `VITE_OG_PROXY_URL` | `import.meta.env.VITE_OG_PROXY_URL` |
+| App                | Variable d'env               | Lecture                                  |
+| ------------------ | ---------------------------- | ---------------------------------------- |
+| explorer (Vite)    | `VITE_OG_PROXY_URL`          | `import.meta.env.VITE_OG_PROXY_URL`      |
 | extension (Plasmo) | `PLASMO_PUBLIC_OG_PROXY_URL` | `process.env.PLASMO_PUBLIC_OG_PROXY_URL` |
 
 Si la variable est absente → pas d'OG, fallback favicon (extension) ou favicon
@@ -108,6 +109,7 @@ gradient (explorer).
 ## 4. Comment chaque app consomme le composant
 
 ### Explorer (`apps/explorer/src/components/feed/FeedCardView.tsx`)
+
 Un **adaptateur mince** wrappe le composant DS et injecte ses slots. Les ~7
 call-sites existants importent toujours `@/components/feed/FeedCardView`
 inchangés :
@@ -133,22 +135,25 @@ qui injecte `VITE_OG_PROXY_URL`. Le CSS `feed-card.css` de l'explorer n'est plus
 qu'un `@import "@0xsofia/design-system/styles/feed-card.css";`.
 
 ### Extension (`apps/extension/components/pages/circles-tabs/CircleFeedTab.tsx`)
+
 La circle feed rend maintenant `<FeedCardView>` directement :
 
 ```tsx
 <FeedCardView
   size="md"
-  hideVoteCounts                          // votes via cart = toggle, pas de tally
+  hideVoteCounts // votes via cart = toggle, pas de tally
   handle={group.memberLabel}
   title={group.pageLabel}
   url={group.pageUrl}
   domain={group.domain}
-  verbs={verbs}                           // intentions → fc-verb pills
-  topics={topics}                         // contextSlugs → renderTopic
+  verbs={verbs} // intentions → fc-verb pills
+  topics={topics} // contextSlugs → renderTopic
   userUp={hasSupported || inCartSupport}
   userDown={hasOpposed || inCartOppose}
-  onVote={(side) => addVotesToCart(group, side === 'support' ? 'Support' : 'Oppose')}
-  renderMedia={(ctx) => <UrlPreviewImage {...ctx} />}   // OG + fallback favicon
+  onVote={(side) =>
+    addVotesToCart(group, side === 'support' ? 'Support' : 'Oppose')
+  }
+  renderMedia={(ctx) => <UrlPreviewImage {...ctx} />} // OG + fallback favicon
   renderTopic={(t) => <span className="sf-topic-pill">…</span>}
 />
 ```
@@ -160,15 +165,18 @@ d'OG. Le CSS `feed-card.css` du DS est `@import` dans `Global.css`.
 ## 5. Recettes
 
 **Ajouter une nouvelle taille** (ex. `xl`) :
+
 1. `FeedCardSize` dans `packages/design-system/src/components/FeedCardView.tsx`.
 2. Bloc `.fc-card--s-xl { … }` dans `packages/design-system/src/styles/feed-card.css`.
 
 **Ajouter un nouveau consommateur** (autre surface) :
+
 1. `import { FeedCardView } from '@0xsofia/design-system'`.
 2. Fournir `renderMedia` (et `renderTopic` si topics) avec les composants de l'app.
 3. S'assurer que le CSS est chargé (`@import` du DS, déjà fait dans explorer + extension).
 
 **Ajouter un provider OG** (ex. Twitch) :
+
 1. `packages/design-system/src/lib/twitch.ts` (sur le modèle de `spotify.ts`).
 2. Le brancher dans `asyncUrlPreview.ts` (cascade `fetchAsyncUrlPreview`).
 

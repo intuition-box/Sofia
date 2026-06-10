@@ -21,7 +21,7 @@ We've also begun working on Sofia's documentation — there's still a lot to wri
 
 The journey continues with its ups and downs, but every challenge brings us closer to a more robust, trustworthy Sofia.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## UI / UX Enhancements
 

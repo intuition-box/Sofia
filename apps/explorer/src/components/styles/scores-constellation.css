@@ -793,7 +793,8 @@
   color: var(--ds-on-accent, #1a1320);
   background: var(--ds-accent);
   border: 1px solid color-mix(in srgb, #000 12%, var(--ds-accent));
-  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--ds-accent) 70%, transparent);
+  box-shadow: 0 4px 14px -4px
+    color-mix(in srgb, var(--ds-accent) 70%, transparent);
 }
 .sc2-cert-pioneer-ic {
   font-size: 13px;

@@ -9,7 +9,7 @@ Real reputation scoring went live this week: users now get a score that reflects
 their actual activity on connected platforms, not just a count of how many they
 connected.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## From counter to real reputation
 

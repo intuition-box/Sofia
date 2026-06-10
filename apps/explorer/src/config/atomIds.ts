@@ -3,4 +3,4 @@
  * registry now live in packages/taxonomy so the explorer and the extension
  * share one source of truth. Existing "@/config/*" import sites are unchanged.
  */
-export * from "@0xsofia/taxonomy"
+export * from '@0xsofia/taxonomy'

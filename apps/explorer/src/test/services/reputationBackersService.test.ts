@@ -164,7 +164,10 @@ describe('computeBackersByTopic', () => {
     const supportersByClaim = new Map([
       // CAROL (cred 0.2) backs BOTH claims; DAVE (cred 0.9) backs only c2.
       ['c1', claim([staker(ALICE, 't1'), staker(CAROL, 't2')])],
-      ['c2', claim([staker(ALICE, 't1'), staker(CAROL, 't2'), staker(DAVE, 't3')])],
+      [
+        'c2',
+        claim([staker(ALICE, 't1'), staker(CAROL, 't2'), staker(DAVE, 't3')]),
+      ],
     ])
     const result = computeBackersByTopic({
       accounts: accounts(ALICE),

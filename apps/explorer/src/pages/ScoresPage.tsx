@@ -460,7 +460,13 @@ export default function ScoresPage() {
           />
         }
         isOwner
-        onDelete={() => redeemCert(cert.termId, cleanLabel(cert.objectLabel || domain || ''), url)}
+        onDelete={() =>
+          redeemCert(
+            cert.termId,
+            cleanLabel(cert.objectLabel || domain || ''),
+            url,
+          )
+        }
       />
     )
   }
@@ -500,7 +506,10 @@ export default function ScoresPage() {
                 key={r.slug}
                 onClick={() => setSel(r.slug)}
               >
-                <span className="sc2-rank-dot" style={{ background: r.color }} />
+                <span
+                  className="sc2-rank-dot"
+                  style={{ background: r.color }}
+                />
                 <span
                   className="material-symbols-outlined sc2-rank-glyph"
                   aria-hidden="true"

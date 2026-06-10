@@ -105,7 +105,11 @@ describe('engagementScore', () => {
       timestamp: ago(6 * HALF_LIFE_MS),
       vaults: { v: vault(3, 0) },
     })
-    const fresh = item({ id: 'fresh', timestamp: ago(0), vaults: { v: vault(1, 0) } })
+    const fresh = item({
+      id: 'fresh',
+      timestamp: ago(0),
+      vaults: { v: vault(1, 0) },
+    })
     expect(engagementScore(cold)).toBeGreaterThan(engagementScore(fresh))
   })
 })
@@ -120,7 +124,7 @@ describe('sortFeed', () => {
     vi.useRealTimers()
   })
 
-  it("recent mode sorts purely by timestamp descending", () => {
+  it('recent mode sorts purely by timestamp descending', () => {
     const items = [
       item({ id: 'mid', timestamp: ago(2 * DAY_MS) }),
       item({ id: 'newest', timestamp: ago(0) }),
@@ -132,7 +136,11 @@ describe('sortFeed', () => {
 
   it('recent mode ignores engagement entirely', () => {
     const items = [
-      item({ id: 'old-but-hot', timestamp: ago(5 * DAY_MS), vaults: { v: vault(99, 99) } }),
+      item({
+        id: 'old-but-hot',
+        timestamp: ago(5 * DAY_MS),
+        vaults: { v: vault(99, 99) },
+      }),
       item({ id: 'new-but-cold', timestamp: ago(0) }),
     ]
     const sorted = sortFeed(items, 'recent')

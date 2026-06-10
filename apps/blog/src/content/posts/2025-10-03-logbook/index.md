@@ -16,7 +16,7 @@ Finally, we consolidated our universal architecture by introducing a single cons
 
 All these changes improve stability, clarity, and scalability — giving users smoother interactions and developers a cleaner foundation to build on.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## CSS Refactoring & Architecture
 

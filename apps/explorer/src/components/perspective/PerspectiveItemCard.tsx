@@ -22,7 +22,8 @@ export default function PerspectiveItemCard({
 
   const verbs: FeedCardVerb[] = item.intentions.slice(0, 2).map((label) => ({
     label,
-    color: intentionColors[label] ?? INTENTION_COLORS[label] ?? 'var(--ds-muted)',
+    color:
+      intentionColors[label] ?? INTENTION_COLORS[label] ?? 'var(--ds-muted)',
   }))
 
   return (

@@ -49,7 +49,7 @@ const FEATURES: readonly ProFeature[] = [
   {
     icon: Scale,
     title: 'Expertise-weighted decisions',
-    desc: "Run votes where each voice is weighted by measured on-chain topic reputation — your Circle decides like a team of specialists, not one wallet, one vote.",
+    desc: 'Run votes where each voice is weighted by measured on-chain topic reputation — your Circle decides like a team of specialists, not one wallet, one vote.',
   },
   {
     icon: ListChecks,
@@ -124,13 +124,10 @@ export default function CircleProModal({
           Sofia Pro
         </span>
 
-        <h2 className="pro-modal-title">
-          Takes the pulse of {circleName} 
-        </h2>
+        <h2 className="pro-modal-title">Takes the pulse of {circleName}</h2>
         <p className="pro-modal-sub">
-          Pro unlocks running your
-          organization on-chain — weighted decisions, the full analytics
-          picture, and the tools to keep the group moving.
+          Pro unlocks running your organization on-chain — weighted decisions,
+          the full analytics picture, and the tools to keep the group moving.
         </p>
 
         <ul className="pro-modal-feats">
