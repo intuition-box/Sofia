@@ -14,6 +14,7 @@
     "dev:landing": "bun run --filter landing dev",
     "dev:blog": "bun run --filter blog dev",
     "dev:mastra": "bun run --filter mastra dev",
+    "dev:group-api": "bun run --filter group-api dev",
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter './apps/**' typecheck && bun run --filter './packages/**' typecheck && bun run --filter './services/**' typecheck",
     "format": "prettier --write .",

@@ -1,0 +1,128 @@
+// group-api — Prisma schema
+//
+// Models the off-chain layer for the gated group-join flow. Mirrors the
+// intuition-box/Atlas membership model (Application / Membership / Notification
+// / Event + role + status enums) but keyed on a wallet address + the on-chain
+// group atom term_id instead of Atlas's NextAuth userId + communityId.
+//
+// Truth of record (v1): the Membership row carries role/status; the on-chain
+// `(account, MEMBER_OF, group)` triple is minted by the user via the explorer
+// cart AFTER an admin approves (see docs/group-join).
+
+generator client {
+  provider      = "prisma-client-js"
+  // `native` for local dev, musl target for the alpine Docker runtime.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  BANNED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+  BANNED
+}
+
+enum EventType {
+  OWNER_SEEDED
+  JOIN_REQUESTED
+  JOIN_APPROVED
+  JOIN_REJECTED
+  JOIN_WITHDRAWN
+  ROLE_UPDATED
+  MEMBER_BANNED
+}
+
+enum NotificationType {
+  JOIN_REQUESTED
+  JOIN_APPROVED
+  JOIN_REJECTED
+  ROLE_UPDATED
+}
+
+/// A wallet's role + status within an on-chain group. The owner is seeded
+/// from the group atom's creator; admins/moderators are promoted by the owner.
+model Membership {
+  id           String           @id @default(cuid())
+  /// Lowercased EIP-55 wallet address.
+  wallet       String
+  /// On-chain group atom term_id (bytes32 hash).
+  groupTermId  String
+  role         MembershipRole   @default(MEMBER)
+  status       MembershipStatus @default(ACTIVE)
+  /// Wallet of the admin who banned this member, when status = BANNED.
+  bannedBy     String?
+  approvedAt   DateTime?
+  lastActiveAt DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([wallet, groupTermId])
+  @@index([groupTermId, role])
+  @@index([groupTermId, status])
+}
+
+/// A request to join a group. One row per (wallet, group); re-applying after a
+/// rejection flips the same row back to PENDING.
+model Application {
+  id          String            @id @default(cuid())
+  wallet      String
+  groupTermId String
+  status      ApplicationStatus @default(PENDING)
+  /// Optional answers to a join form (unused in v1, kept for forward-compat).
+  answers     Json?
+  /// Admin who reviewed the request.
+  reviewerWallet String?
+  reviewedAt     DateTime?
+  reviewNote     String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([wallet, groupTermId])
+  @@index([groupTermId, status])
+}
+
+/// In-app notification for a wallet. Also pushed in realtime over Ably.
+model Notification {
+  id             String           @id @default(cuid())
+  recipientWallet String
+  type           NotificationType
+  title          String
+  message        String
+  /// Arbitrary payload (groupTermId, applicationId, actor, …).
+  metadata       Json?
+  readAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([recipientWallet, readAt])
+}
+
+/// Append-only activity log per group (audit + future activity feed).
+model Event {
+  id            String    @id @default(cuid())
+  groupTermId   String
+  actorWallet   String
+  subjectWallet String?
+  type          EventType
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+
+  @@index([groupTermId, createdAt])
+}
