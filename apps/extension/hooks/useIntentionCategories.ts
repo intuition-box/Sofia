@@ -41,6 +41,10 @@ export function useIntentionCategories(walletAddress?: string): UseIntentionCate
     // Iterate through all domain groups and their URLs
     for (const group of groups) {
       for (const url of group.urls) {
+        // Skip user→user trust relationships: their object is an account
+        // (0x… address), not a web page. They belong to the Circle, not the
+        // Bookmarks collections.
+        if (/^0x[0-9a-f]/i.test((url.url || "").trim())) continue
         const certification = url.certification as IntentionType
         if (certification && categoryMap[certification]) {
           categoryMap[certification].push({

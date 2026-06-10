@@ -50,7 +50,7 @@ const OnboardingImportPage = () => {
     return (
       <div className="onboarding-page">
         <div className="onboarding-skip-message">
-          <p>You can always import your data from the central orb at any time.</p>
+          <p>You can always import your data from the settings page.</p>
         </div>
       </div>
     )

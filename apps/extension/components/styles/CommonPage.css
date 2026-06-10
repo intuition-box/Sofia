@@ -941,6 +941,15 @@
   color: #fff;
 }
 
+/* Icon-only variant — square trash button (replaces the "Redeem" label). */
+.portal-button--icon {
+  padding: 5px;
+}
+.portal-button--icon svg {
+  width: 15px;
+  height: 15px;
+}
+
 .history-detail-link {
   font-family: "Geist", sans-serif;
   font-size: 12px;

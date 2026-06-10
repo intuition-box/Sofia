@@ -92,6 +92,13 @@ export const useTrustAccount = (): TrustAccountResult => {
         setTripleVaultId(result.tripleVaultId)
         setOperationType(result.source === "created" ? "created" : "deposit")
         setTransactionHash(result.txHash)
+        // Tell any mounted trust-circle views to refetch (they don't observe
+        // this tx otherwise, so a just-trusted account wouldn't appear).
+        try {
+          window.dispatchEvent(new CustomEvent("sofia:trust-added"))
+        } catch {
+          /* not in a window context */
+        }
       } catch (err) {
         logger.error("Trust account creation failed", err)
 
