@@ -8,7 +8,16 @@ import type { MembershipRole } from '@prisma/client'
 import { prisma } from './db'
 import { env } from './env'
 
-const privy = new PrivyClient(env.privyAppId, env.privyAppSecret)
+let privyClient: PrivyClient | null = null
+function privy(): PrivyClient {
+  if (!privyClient) {
+    if (!env.privyAppId || !env.privyAppSecret) {
+      throw new HTTPException(503, { message: 'Auth not configured (PRIVY_APP_ID/SECRET)' })
+    }
+    privyClient = new PrivyClient(env.privyAppId, env.privyAppSecret)
+  }
+  return privyClient
+}
 
 /** Hono context typing — `wallet` is set by `authMiddleware`. */
 export type AppEnv = { Variables: { wallet: string } }
@@ -22,7 +31,7 @@ async function resolveWallet(userId: string): Promise<string | null> {
   const cached = walletCache.get(userId)
   if (cached && Date.now() - cached.at < WALLET_TTL) return cached.wallet
 
-  const user = await privy.getUser(userId)
+  const user = await privy().getUser(userId)
   const fromEmbedded = user.wallet?.address
   const fromLinked = user.linkedAccounts.find(
     (a): a is typeof a & { address: string } =>
@@ -41,7 +50,7 @@ export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
 
   let userId: string
   try {
-    const claims = await privy.verifyAuthToken(token)
+    const claims = await privy().verifyAuthToken(token)
     userId = claims.userId
   } catch {
     throw new HTTPException(401, { message: 'Invalid token' })

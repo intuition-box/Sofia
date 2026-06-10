@@ -7,12 +7,20 @@ function required(name: string): string {
   return v
 }
 
+// Optional at boot — the dependent client (Privy auth / Ably) throws a clear
+// error only when actually used, so `/health` + migrations work without them.
+function optional(name: string): string {
+  const v = process.env[name]
+  if (!v) console.warn(`[group-api] ${name} not set — related features disabled`)
+  return v ?? ''
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 8788),
   databaseUrl: required('DATABASE_URL'),
-  privyAppId: required('PRIVY_APP_ID'),
-  privyAppSecret: required('PRIVY_APP_SECRET'),
-  ablyApiKey: required('ABLY_API_KEY'),
+  privyAppId: optional('PRIVY_APP_ID'),
+  privyAppSecret: optional('PRIVY_APP_SECRET'),
+  ablyApiKey: optional('ABLY_API_KEY'),
   indexerUrl:
     process.env.INTUITION_GRAPHQL_URL ?? 'https://mainnet.intuition.sh/v1/graphql',
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
