@@ -36,6 +36,12 @@ const SidePanelContent = () => {
   const { walletAddress, authenticated } = useWalletFromStorage()
   const [, setOnboardingChecked] = useState(false)
 
+  // Opening the side panel clears the browsing nudge: reset the counter so
+  // the red icon badge falls back to the unpublished-echoes count.
+  useEffect(() => {
+    chrome.runtime.sendMessage({ type: "NUDGE_DISMISSED" }).catch(() => {})
+  }, [])
+
   // Automatic page management based on connection state
   useEffect(() => {
     if (authenticated && walletAddress && currentPage === 'home') {

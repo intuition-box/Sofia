@@ -40,6 +40,24 @@ export class BadgeService {
   }
 
   /**
+   * Refresh the icon badge from the single source of truth.
+   *
+   * Priority: an active browsing nudge (user browsed past the threshold
+   * without marking) takes precedence over the unpublished-echoes count.
+   * The session key is owned by BrowsingNudgeService — read as a literal
+   * here to keep the dependency one-directional (no import cycle).
+   */
+  public async refreshBadge(): Promise<void> {
+    const session = await chrome.storage.session.get('browsingNudgeActive')
+    const nudgeCount = session.browsingNudgeActive || 0
+    if (nudgeCount > 0) {
+      await this.updateEchoBadge(nudgeCount)
+      return
+    }
+    await this.updateEchoBadge(await this.countAvailableEchoes())
+  }
+
+  /**
    * Count available (unpublished) triplets in IndexedDB
    */
   public async countAvailableEchoes(): Promise<number> {
@@ -95,10 +113,9 @@ export class BadgeService {
    */
   public async handleBadgeUpdate(sendResponse: (response: MessageResponse) => void): Promise<void> {
     try {
-      const availableCount = await this.countAvailableEchoes()
-      await this.updateEchoBadge(availableCount)
-      logger.info('Badge updated successfully', { count: availableCount })
-      sendResponse({ success: true, data: { count: availableCount } })
+      await this.refreshBadge()
+      logger.info('Badge updated successfully')
+      sendResponse({ success: true })
     } catch (error) {
       logger.error('Failed to update badge', error)
       sendResponse({ 

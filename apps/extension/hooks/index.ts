@@ -99,8 +99,5 @@ export type { BatchRewardItem } from './useBatchRewards'
 // Platform Pool
 export { usePlatformPool, PP_FEE_DENOMINATOR } from './usePlatformPool'
 
-// Notifications
-export { useBrowsingNudge } from './useBrowsingNudge'
-
 // Tracking
 export { useTracking } from './useTracking'
