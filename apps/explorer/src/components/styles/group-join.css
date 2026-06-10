@@ -96,15 +96,25 @@
   color: var(--intent-distrusted, #ef4444);
 }
 
-/* ── Top-right account cluster ─────────────────────────────── */
+/* ── Top navbar (sticky header over the main column) ───────── */
+/* First child of `.main-content` — full-bleed across the main column and
+   flush to the top by cancelling its 48px top + 56px side padding; sticks on
+   scroll. Account cluster pinned right. */
 .gj-topbar {
-  position: fixed;
-  top: 14px;
-  right: 18px;
-  z-index: 50;
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
+  height: 56px;
+  margin: -48px -56px 24px;
+  padding: 0 22px;
+  background: color-mix(in srgb, var(--ds-bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ds-border);
 }
 /* Mobile chrome (MobileHeader) owns the account/notifications there. */
 @media (max-width: 900px) {

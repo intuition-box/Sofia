@@ -251,8 +251,6 @@ export default function App() {
           collapsed={effectiveNavCollapsed}
           onToggleCollapse={toggleNavCollapsed}
         />
-        {/* Persistent top-right account cluster (notifications + profile). */}
-        <TopBar />
         {showRightSidebar && (
           <RightSidebar hidden={isProfilePage || cartOpen} />
         )}
@@ -287,6 +285,7 @@ export default function App() {
             .filter(Boolean)
             .join(' ')}
         >
+          <TopBar />
           <RouteErrorBoundary key={location.pathname}>
             <Suspense fallback={<RouteFallback />}>
               <Routes>
