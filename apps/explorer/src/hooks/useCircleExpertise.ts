@@ -108,7 +108,7 @@ export function useCircleExpertise({
   }, [feedItems])
 
   const rows = useMemo<ExpertiseRow[]>(() => {
-    const base = members.map((member) => {
+    const base = members.map((member): ExpertiseRow => {
       const wallet = member.walletAddress?.toLowerCase() ?? ''
       const marks = activity.signalsForMember(member)
       const active = activity.isActive(member)
@@ -136,7 +136,7 @@ export function useCircleExpertise({
         stake: 200 + (seed % 4800),
         backers: 3 + (seed % 38),
         peers: 4 + (seed % 56),
-      } satisfies ExpertiseRow
+      }
     })
 
     // Mark the top-N by trust score as core contributors.

@@ -72,6 +72,8 @@ export interface AvatarProps {
   square?: boolean
   /** Override the derived initials. */
   initials?: string
+  /** Tooltip — defaults to `label`. */
+  title?: string
   className?: string
   style?: CSSProperties
 }
@@ -83,6 +85,7 @@ export function Avatar({
   size = 32,
   square = false,
   initials,
+  title,
   className,
   style,
 }: AvatarProps) {
@@ -90,7 +93,7 @@ export function Avatar({
   return (
     <span
       className={cls}
-      title={label}
+      title={title ?? label}
       style={{
         width: size,
         height: size,
