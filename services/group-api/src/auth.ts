@@ -44,6 +44,17 @@ async function resolveWallet(userId: string): Promise<string | null> {
 
 /** Verify the bearer token, resolve the wallet, set it on the context. */
 export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
+  // Dev impersonation — guarded by DEV_SEED_TOKEN (empty in prod). Lets curl
+  // hit any endpoint as an arbitrary wallet without a Privy token.
+  if (env.devSeedToken && c.req.header('x-dev-token') === env.devSeedToken) {
+    const devWallet = c.req.header('x-dev-wallet')
+    if (devWallet) {
+      c.set('wallet', devWallet.toLowerCase())
+      await next()
+      return
+    }
+  }
+
   const header = c.req.header('Authorization') ?? ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : ''
   if (!token) throw new HTTPException(401, { message: 'Missing bearer token' })

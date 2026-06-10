@@ -23,6 +23,10 @@ export const env = {
   ablyApiKey: optional('ABLY_API_KEY'),
   indexerUrl:
     process.env.INTUITION_GRAPHQL_URL ?? 'https://mainnet.intuition.sh/v1/graphql',
+  // When set, enables dev-only testing: `/dev/seed-owner` + header-based wallet
+  // impersonation (`x-dev-token` + `x-dev-wallet`) so the whole API is
+  // curl-testable without Privy. MUST be empty in production.
+  devSeedToken: process.env.DEV_SEED_TOKEN ?? '',
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')
     .map((s) => s.trim())

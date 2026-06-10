@@ -9,6 +9,7 @@ import { env } from './env'
 import { applications } from './routes/applications'
 import { members } from './routes/members'
 import { notifications } from './routes/notifications'
+import { dev } from './routes/dev'
 
 const app = new Hono<AppEnv>()
 
@@ -23,6 +24,9 @@ app.use(
 
 // Liveness probe — must stay auth-free (registered before the auth middleware).
 app.get('/health', (c) => c.text('ok'))
+
+// Dev-only seed route — token-guarded, no Privy (registered before auth).
+app.route('/', dev)
 
 // Everything below requires a valid Privy bearer token.
 app.use('*', authMiddleware)
