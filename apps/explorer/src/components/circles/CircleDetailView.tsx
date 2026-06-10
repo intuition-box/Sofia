@@ -49,6 +49,11 @@ import MembersPanelFree from './MembersPanelFree'
 import CircleJoinOverlay from './CircleJoinOverlay'
 import CircleUpsellToast, { circleUpsellToast } from './CircleUpsellToast'
 import CircleProModal, { circleProModal } from './CircleProModal'
+import CircleExpertise from './CircleExpertise'
+import CircleDecisions from './CircleDecisions'
+import { useCircleExpertise } from '@/hooks/useCircleExpertise'
+import { buildCircleDecisions } from '@/lib/circleDecisions'
+import { ModuleHead, Treemap, Toaster } from '@0xsofia/design-system'
 import type { CircleData } from '@/types/circle'
 // Base circle chrome (feed filters `.crd-filter-*`, hot-picks `.crd-te-*`,
 // feed layout) lives in circles.css — imported here so the detail view is
@@ -57,6 +62,16 @@ import '@/components/styles/circles.css'
 import '@/components/styles/circles-free.css'
 import '@/components/styles/circles-free-panel.css'
 import '@/components/styles/circles-free-gate.css'
+import '@/components/styles/circles-pro.css'
+// DS primitive stylesheets used by the Pro surface.
+import '@0xsofia/design-system/styles/typography.css'
+import '@0xsofia/design-system/styles/icon.css'
+import '@0xsofia/design-system/styles/avatar.css'
+import '@0xsofia/design-system/styles/avail.css'
+import '@0xsofia/design-system/styles/module-head.css'
+import '@0xsofia/design-system/styles/treemap.css'
+import '@0xsofia/design-system/styles/contribution-calendar.css'
+import '@0xsofia/design-system/styles/toast.css'
 
 interface CircleDetailViewProps {
   circle: CircleData
@@ -143,12 +158,61 @@ export default function CircleDetailView({
   // branches below are kept as dead fallbacks for now; remove once the
   // Free framing is confirmed everywhere.)
   const isFree = true
+  // Pro (paid DAO) circle — swaps the Free Members/Topics modules for the
+  // Members & expertise table + treemap-as-selector. The hook is gated on
+  // `isPro` (empty roster → no eigentrust fetch) so Free circles stay cheap.
+  const isPro = circle.mode === 'pro'
+  const [domain, setDomain] = useState<string | null>(null)
+  const expertise = useCircleExpertise({
+    members: isPro ? circle.members : [],
+    feedItems,
+    streaks,
+  })
+  // Treemap nodes (topic slug → activity-sized cell).
+  const treemapNodes = useMemo(
+    () =>
+      expertise.topics.map((t) => ({
+        id: t.slug,
+        value: t.certs,
+        color: t.color,
+        label: t.label,
+        meta: `${t.certs.toLocaleString('en-US')} certifications`,
+        seed: t.certs,
+      })),
+    [expertise.topics],
+  )
+  const pickDomain = (id: string) => {
+    setDomain((d) => (d === id ? null : id))
+    if (typeof document !== 'undefined') {
+      requestAnimationFrame(() => {
+        document.getElementById('cp-members')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
+  // Weighted-decision room data (mock, anchored on real topics + members).
+  const decisions = useMemo(
+    () => buildCircleDecisions(expertise.topics, expertise.rows),
+    [expertise.topics, expertise.rows],
+  )
+  // A decision's topic tag routes back to the overview + highlights the cell.
+  const highlightTopic = (slug: string) => {
+    setActiveTab('overview')
+    setDomain(slug)
+    if (typeof document !== 'undefined') {
+      requestAnimationFrame(() => {
+        document.getElementById('cp-topics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
   // The personal Trust Circle (`kind === 'trust'`) can't be upgraded to Pro
   // and isn't on a Free plan either — it's a circle the user owns. So it
   // keeps the rich Free layout (ranked members, topics treemap, Activity)
   // but every plan affordance (plan badge, Upgrade buttons, locked
   // Decisions, Pro hints, upsell toast) is suppressed.
-  const showPlan = circle.kind !== 'trust'
+  // Plan affordances (Free badge, Upgrade buttons, locked Decisions, Pro
+  // hints, upsell) make no sense on the personal Trust Circle, nor on a circle
+  // that's already Pro.
+  const showPlan = circle.kind !== 'trust' && !isPro
 
   const upgrade = () => circleProModal()
   const memberClick = () =>
@@ -192,6 +256,8 @@ export default function CircleDetailView({
           onDecisionsClick={() =>
             setActiveTab((t) => (t === 'decisions' ? 'overview' : 'decisions'))
           }
+          decisionsUnlocked={isPro}
+          decisionsMeta={isPro ? decisions.meta : undefined}
         />
       ) : (
         <CircleDetailHero
@@ -256,6 +322,46 @@ export default function CircleDetailView({
                 />
                 <CircleUpgradeBand />
               </>
+            ) : isPro ? (
+              <div className="cp-pro">
+                {activeTab === 'decisions' ? (
+                  <CircleDecisions data={decisions} onTheme={highlightTopic} />
+                ) : (
+                  <>
+                <section className="module" id="cp-topics">
+                  <ModuleHead title="Topics" />
+                  <Treemap
+                    nodes={treemapNodes}
+                    selectedId={domain}
+                    onSelect={pickDomain}
+                  />
+                </section>
+                <CircleExpertise
+                  rows={expertise.rows}
+                  topicMeta={expertise.topicMeta}
+                  topDomains={expertise.topDomains}
+                  domain={domain}
+                  onClearDomain={() => setDomain(null)}
+                  feedItems={feedItems}
+                />
+                <section
+                  className="cf-module crd-activity-module"
+                  aria-labelledby="cf-activity-title">
+                  <div className="cf-module-head">
+                    <h2 id="cf-activity-title" className="cf-module-title">
+                      Activity
+                    </h2>
+                  </div>
+                  <CircleFeedSection
+                    addresses={circle.addresses}
+                    circleName={circle.name}
+                    members={circle.members}
+                    hideTitle
+                  />
+                </section>
+                  </>
+                )}
+              </div>
             ) : (
               <>
                 <div className="crd-info-row">
@@ -374,6 +480,7 @@ export default function CircleDetailView({
 
       {isFree && showPlan && <CircleUpsellToast />}
       {isFree && showPlan && <CircleProModal circleName={circle.name} />}
+      {isPro && <Toaster />}
     </div>
   )
 }

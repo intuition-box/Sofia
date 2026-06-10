@@ -189,7 +189,9 @@ function EchoCardBody({ group, topicById, height, tint }: EchoCardBodyProps) {
             {verbs.map((v) => (
               <VerbPill key={`v-${v.key}`} label={v.label} color={v.color} />
             ))}
-            {overflow > 0 ? <span className="chip-more">+{overflow}</span> : null}
+            {overflow > 0 ? (
+              <span className="chip-more">+{overflow}</span>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -61,11 +61,7 @@ export default function ScoresBackingExplainer() {
   // user can pull it back to re-read it.
   if (dismissed) {
     return (
-      <button
-        type="button"
-        className="sc2-explainer-reopen"
-        onClick={reopen}
-      >
+      <button type="button" className="sc2-explainer-reopen" onClick={reopen}>
         <HelpCircle aria-hidden="true" />
         How backing works
       </button>

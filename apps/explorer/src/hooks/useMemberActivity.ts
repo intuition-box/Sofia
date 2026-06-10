@@ -77,7 +77,8 @@ export function useMemberActivity(
       ranked,
       signalsForMember: (m: TrustCircleAccount) =>
         signalsByTermId.get(m.termId) ?? 0,
-      isActive: (m: TrustCircleAccount) => activeByTermId.get(m.termId) === true,
+      isActive: (m: TrustCircleAccount) =>
+        activeByTermId.get(m.termId) === true,
     }
   }, [items, members])
 }

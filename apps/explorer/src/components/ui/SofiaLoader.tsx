@@ -13,7 +13,7 @@ interface SofiaLoaderProps {
 const SofiaLoader = ({
   size = 120,
   messages,
-  messageInterval = 2800
+  messageInterval = 2800,
 }: SofiaLoaderProps) => {
   const hasMessages = !!messages && messages.length > 0
   const [index, setIndex] = useState(0)

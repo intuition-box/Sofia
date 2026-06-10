@@ -72,7 +72,12 @@ describe('buildTrustCircle', () => {
   it('unions linked wallets and member wallets into a lowercased address set', () => {
     const circle = buildTrustCircle(
       ['0xABCDEF0000000000000000000000000000000001'],
-      [member({ termId: 'm1', wallet: '0xBEEF000000000000000000000000000000000002' })],
+      [
+        member({
+          termId: 'm1',
+          wallet: '0xBEEF000000000000000000000000000000000002',
+        }),
+      ],
     )
     expect(circle.addresses).toEqual([
       '0xabcdef0000000000000000000000000000000001',
@@ -125,8 +130,14 @@ describe('buildGroupCircle', () => {
     const circle = buildGroupCircle(
       group({
         memberships: [
-          membership({ termId: 'a', wallet: '0xAAA0000000000000000000000000000000000001' }),
-          membership({ termId: 'b', wallet: '0xBBB0000000000000000000000000000000000002' }),
+          membership({
+            termId: 'a',
+            wallet: '0xAAA0000000000000000000000000000000000001',
+          }),
+          membership({
+            termId: 'b',
+            wallet: '0xBBB0000000000000000000000000000000000002',
+          }),
         ],
       }),
       [],
@@ -168,7 +179,10 @@ describe('buildGroupCircle', () => {
       group({
         termId: 'group-xyz',
         memberships: [
-          membership({ termId: 'a', wallet: '0xEEE0000000000000000000000000000000000005' }),
+          membership({
+            termId: 'a',
+            wallet: '0xEEE0000000000000000000000000000000000005',
+          }),
         ],
       }),
       ['0xFFF0000000000000000000000000000000000006'],
@@ -188,9 +202,11 @@ describe('buildGroupCircle', () => {
 
   it('takes the first topic color, falling back to the group default', () => {
     const memberships = [membership({ termId: 'a', wallet: '0xabc' })]
-    const withTopic = buildGroupCircle(group({ memberships }), [], [
-      { id: 't', label: 'Tech', color: '#abcdef' },
-    ])
+    const withTopic = buildGroupCircle(
+      group({ memberships }),
+      [],
+      [{ id: 't', label: 'Tech', color: '#abcdef' }],
+    )
     const noTopic = buildGroupCircle(group({ memberships }), [])
     expect(withTopic.color).toBe('#abcdef')
     expect(noTopic.color).toBe('var(--ds-accent, #e87c7c)')

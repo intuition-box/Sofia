@@ -1,0 +1,114 @@
+/**
+ * @0xsofia/design-system — Treemap
+ * Squarified treemap cells (circle/modules.css:5-99). Per-cell accent comes
+ * from `--ds-cell` (set inline by the component).
+ */
+.ds-tmap {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ds-bg);
+}
+.ds-tmap-cell {
+  position: absolute;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--ds-bg);
+  transition: filter 0.18s ease;
+}
+.ds-tmap-cell-inner {
+  position: absolute;
+  inset: 0;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--ds-cell) 30%, transparent) 0%,
+      color-mix(in srgb, var(--ds-cell) 9%, transparent) 60%,
+      transparent 100%
+    ),
+    var(--ds-card);
+}
+.ds-tmap-cell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ds-cell);
+  opacity: 0.85;
+  z-index: 4;
+}
+.ds-tmap-cell:hover {
+  filter: brightness(1.18);
+  z-index: 6;
+}
+.ds-tmap-cell.is-dimmed {
+  filter: brightness(0.5) saturate(0.6);
+}
+.ds-tmap-cell.is-active {
+  z-index: 7;
+}
+.ds-tmap-cell.is-active .ds-tmap-cell-inner {
+  outline: 1.5px solid var(--ds-cell);
+  outline-offset: -1.5px;
+}
+.ds-tmap-label {
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  color: var(--ds-ink);
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.ds-tmap-meta {
+  font-family: var(--ds-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ds-ink-soft);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.92;
+}
+.ds-tmap-meta .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ds-cell);
+}
+.ds-tmap-picked {
+  position: absolute;
+  bottom: 9px;
+  right: 10px;
+  font-family: var(--ds-font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-cell);
+  background: color-mix(in srgb, var(--ds-cell) 20%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 5;
+}
+.ds-tmap-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  margin-top: 6px;
+}
+.ds-tmap-spark i {
+  width: 3px;
+  background: var(--ds-cell);
+  opacity: 0.55;
+  border-radius: 1px;
+}

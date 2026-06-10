@@ -13,7 +13,7 @@ Docusaurus onto our own stack, the landing deck learned to behave on a phone,
 and the explorer got the cleanup pass that a public release demands. It was
 the first time the whole public surface had to stand on its own.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## The extension reached the store — and bounced
 

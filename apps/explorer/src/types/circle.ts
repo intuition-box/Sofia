@@ -12,10 +12,22 @@ import type { TrustCircleAccount } from '@/services/trustCircleService'
 
 export type CircleKind = 'trust' | 'group'
 
+/**
+ * Billing tier of a circle. `'free'` is the default Free-tier framing;
+ * `'pro'` unlocks the paid DAO surface (Members & expertise, weighted
+ * Decisions room, treemap drill-down). Today the value is resolved by a
+ * dev allowlist / localStorage override in `circleBuilders`; the real
+ * payment DB will flip this flag per circle once a member unlocks Pro.
+ */
+export type CircleMode = 'free' | 'pro'
+
 export interface CircleData {
   /** Stable identifier used in routing: `'trust'` or the group atom term_id. */
   id: string
   kind: CircleKind
+  /** Billing tier — drives the Free vs Pro framing in `CircleDetailView`.
+   *  Optional for back-compat; treat `undefined` as `'free'`. */
+  mode?: CircleMode
   name: string
   description: string
   /** CSS color (hex or var()). Sourced from the first associated topic for

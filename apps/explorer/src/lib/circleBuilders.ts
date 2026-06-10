@@ -8,13 +8,34 @@
  * new circle kind appears.
  */
 
-import type { CircleData } from '@/types/circle'
+import type { CircleData, CircleMode } from '@/types/circle'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { GroupEntry } from '@/services/groupsService'
 import { timeAgo } from '@/utils/formatting'
 
 const DEFAULT_TRUST_COLOR = 'var(--trusted, #6dd4a0)'
 const DEFAULT_GROUP_COLOR = 'var(--ds-accent, #e87c7c)'
+
+/**
+ * Resolve a circle's billing tier. Until the payment DB exists, Pro is a
+ * dev/demo toggle:
+ *   - `localStorage['sofia:circle-mode']` = 'pro' | 'free' forces every
+ *     circle to that tier (quick preview of either framing);
+ *   - otherwise a small name allowlist (`gitcoin`) renders Pro so the new
+ *     paid surface is reachable on a real group.
+ * The real gate will set `mode` per circle from the unlock record.
+ */
+const PRO_CIRCLE_NAMES = new Set(['gitcoin', 'gitcoin dao'])
+
+export function resolveCircleMode(name: string): CircleMode {
+  try {
+    const override = localStorage.getItem('sofia:circle-mode')
+    if (override === 'pro' || override === 'free') return override
+  } catch {
+    // localStorage unavailable (SSR / sandboxed) — fall through to allowlist.
+  }
+  return PRO_CIRCLE_NAMES.has(name.trim().toLowerCase()) ? 'pro' : 'free'
+}
 
 /** Topic descriptor used by `buildGroupCircle` to extract the visual
  *  signature. Kept minimal so the loader hook can pass either the raw
@@ -50,6 +71,8 @@ export function buildTrustCircle(
   return {
     id: 'trust',
     kind: 'trust',
+    // The personal Trust Circle is never on a paid plan — it's the user's own.
+    mode: 'free',
     name: options.name ?? 'Trust Circle',
     description:
       options.description ??
@@ -107,6 +130,7 @@ export function buildGroupCircle(
   return {
     id: group.termId,
     kind: 'group',
+    mode: resolveCircleMode(group.label),
     name: group.label,
     description: group.description || '',
     color: topics[0]?.color ?? DEFAULT_GROUP_COLOR,

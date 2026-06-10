@@ -9,7 +9,7 @@ We spent the week at EthCC[9] in Cannes, met a ton of inspiring people, and ship
 Wispear at the ETHGlobal hackathon. Back home, we took a semi-off week to rest,
 brainstorm, and tighten a few things up.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## EthCC[9] & ETHGlobal Hackathon
 

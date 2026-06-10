@@ -47,6 +47,11 @@ interface CircleHeaderFreeProps {
   /** Whether the Decisions tab is currently open — toggles the tile's
    *  active styling. */
   decisionsActive?: boolean
+  /** Pro tier: render the Decisions tile as an UNLOCKED nav (no lock glyph,
+   *  shows open/closed counts) instead of the Free locked teaser. */
+  decisionsUnlocked?: boolean
+  /** Open/closed decision counts for the unlocked Pro tile. */
+  decisionsMeta?: { open: number; closed: number }
 }
 
 function formatCount(n: number): string {
@@ -68,6 +73,8 @@ export default function CircleHeaderFree({
   onMemberClick,
   onDecisionsClick,
   decisionsActive = false,
+  decisionsUnlocked = false,
+  decisionsMeta,
 }: CircleHeaderFreeProps) {
   const signals = stats ? formatCount(stats.postCount) : '—'
   const active = stats ? String(stats.activeMemberCount) : '—'
@@ -132,7 +139,7 @@ export default function CircleHeaderFree({
       </div>
 
       <div
-        className={`cf-kpis${showPlan ? '' : ' cf-kpis--duo'}`}
+        className={`cf-kpis${showPlan || decisionsUnlocked ? '' : ' cf-kpis--duo'}`}
         role="group"
         aria-label="Circle metrics"
       >
@@ -189,6 +196,32 @@ export default function CircleHeaderFree({
             <span className="cf-kpi-pro-tag">
               <ShieldCheck className="cf-kpi-pro-tag-icon" aria-hidden="true" />
               Pro feature
+            </span>
+          </button>
+        )}
+
+        {decisionsUnlocked && (
+          <button
+            type="button"
+            className={`cf-kpi cf-kpi-nav${decisionsActive ? ' is-active' : ''}`}
+            onClick={onDecisionsClick}
+            aria-pressed={decisionsActive}
+            aria-label="Open the Decisions room"
+          >
+            <span className="cf-kpi-label">
+              <span
+                className="cf-kpi-dot"
+                style={{ background: 'var(--ds-accent)' }}
+                aria-hidden="true"
+              />
+              Decisions
+            </span>
+            <span className="cf-kpi-value">
+              {decisionsMeta?.open ?? 0}
+              <span className="cf-kpi-unit">/ {decisionsMeta?.closed ?? 0}</span>
+            </span>
+            <span className="cf-kpi-delta is-up">
+              {decisionsActive ? '‹ Back to Circle' : 'Open vote room →'}
             </span>
           </button>
         )}

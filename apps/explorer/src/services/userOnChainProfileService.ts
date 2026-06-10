@@ -184,7 +184,6 @@ export async function fetchUserOnChainProfile(
   ])
 
   {
-
     for (const row of linkData.triples ?? []) {
       const certTermId = row.subject_id
       const topicAtomId = row.object_id
