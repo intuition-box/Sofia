@@ -11,6 +11,7 @@ import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import { MobileHeader } from './components/MobileHeader'
 import { BottomNav } from './components/BottomNav'
+import TopBar from './components/TopBar'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import { useCart } from './hooks/useCart'
@@ -250,6 +251,8 @@ export default function App() {
           collapsed={effectiveNavCollapsed}
           onToggleCollapse={toggleNavCollapsed}
         />
+        {/* Persistent top-right account cluster (notifications + profile). */}
+        <TopBar />
         {showRightSidebar && (
           <RightSidebar hidden={isProfilePage || cartOpen} />
         )}
