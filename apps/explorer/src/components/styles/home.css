@@ -565,3 +565,137 @@
   flex: 1;
   min-width: 0;
 }
+
+/* ── Explore home — Topics / Circles / Activity blocks ───────────── */
+
+.hm-home {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ── Identity header ────────────────────────────────────────────── */
+.hm-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      105deg,
+      color-mix(in oklab, var(--ds-accent) 14%, transparent),
+      transparent 46%
+    ),
+    var(--ds-card);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.hm-profile:hover {
+  transform: translateY(-2px);
+  border-color: var(--ds-ink-soft);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.45);
+}
+.hm-profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.hm-profile-greeting {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.hm-profile-name {
+  font-family: var(--ds-font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hm-profile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-accent);
+}
+
+/* ── Section shell ──────────────────────────────────────────────── */
+.hm-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.hm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.hm-section-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hm-section-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.hm-section-action:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+
+/* ── Circles row — responsive card grid ─────────────────────────── */
+.hm-circles-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
