@@ -32,6 +32,7 @@ const GET_USER_ATTRIBUTES = `
         where: { predicate_id: { _in: $predicateIds } }
         limit: 300
       ) {
+        term_id
         object {
           label
         }
@@ -53,6 +54,8 @@ export interface UserAttribute {
   category: AttributeCategory
   /** Open positions backing the endorsement — the "real usage" signal. */
   endorserCount: number
+  /** The endorsement triple's term_id — the vault to stake on to endorse. */
+  termId: string
 }
 
 export interface UserAttributes {
@@ -61,6 +64,7 @@ export interface UserAttributes {
 }
 
 interface RawTriple {
+  term_id?: string | null
   object?: { label?: string | null } | null
   term?: { vaults?: { position_count?: number | null }[] | null } | null
 }
@@ -105,15 +109,18 @@ export async function fetchUserAttributes(
     const attr = getAttributeByLabel(label)
     if (!attr) continue // not a recognised skill/tool — drop generic "uses".
     const count = Number(triple?.term?.vaults?.[0]?.position_count ?? 0)
+    const termId = triple?.term_id ?? ''
     const existing = byId.get(attr.id)
     if (existing) {
       existing.endorserCount = Math.max(existing.endorserCount, count)
+      if (!existing.termId && termId) existing.termId = termId
     } else {
       byId.set(attr.id, {
         id: attr.id,
         label: attr.label,
         category: attr.category,
         endorserCount: count,
+        termId,
       })
     }
   }

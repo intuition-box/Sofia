@@ -29,10 +29,12 @@ import { useReputationScores } from '@/hooks/useReputationScores'
 import { useDerivedReputation } from '@/hooks/useDerivedReputation'
 import { useSignals } from '@/hooks/useSignals'
 import { useAddressInterests } from '@/hooks/useAddressInterests'
+import { useEndorseAttribute } from '@/hooks/useEndorseAttribute'
 import { resolveEnsToAddress } from '@/services/ensService'
 import type { ConnectionStatus } from '@/types/reputation'
 import { MAX_INTERESTS } from '@/components/profile/InterestsGrid'
 import ProfileCharts from '@/components/profile/ProfileCharts'
+import ProfileAttributes from '@/components/profile/ProfileAttributes'
 import LastActivitySection from '@/components/profile/LastActivitySection'
 import PublicProfileAside from '@/components/profile/PublicProfileAside'
 import SofiaLoader from '@/components/ui/SofiaLoader'
@@ -81,6 +83,9 @@ export default function PublicProfilePage() {
     [walletAddress],
   )
   const { getDisplay, getAvatar } = useEnsNames(addresses)
+  // Endorse ("vote") a skill/tool of the viewed user — stakes their
+  // endorsement triple via the Amplify cart.
+  const { endorse } = useEndorseAttribute()
 
   // ── On-chain data — single round of fetches the rest of the page reads.
   const { profile: onChainProfile, isLoading: onChainLoading } =
@@ -237,6 +242,10 @@ export default function PublicProfilePage() {
           topicScores={topicScores}
           addresses={addresses}
         />
+
+        {/* Skills & Tools — on-chain endorsements. Votable here: a visitor
+            can endorse this wallet's skills/tools (stakes the triple). */}
+        <ProfileAttributes address={walletAddress} onEndorse={endorse} />
 
         {/* Echoes — same bento grid + head (search + sort tabs) as the
             personal profile. The filter chips + context/verb chips live

@@ -4,7 +4,7 @@
  * the shared Atlas taxonomy. Each chip shows the endorser count when backed,
  * giving a read on real, attested usage rather than self-declared tags.
  */
-import { Sparkles, Wrench } from 'lucide-react'
+import { Sparkles, Wrench, ThumbsUp } from 'lucide-react'
 import { SectionH2 } from '@0xsofia/design-system'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
 import type { UserAttribute } from '@/services/userAttributesService'
@@ -12,18 +12,40 @@ import '@/components/styles/profile-attributes.css'
 
 interface ProfileAttributesProps {
   address: string | undefined
+  /** When set, each chip gets an endorse ("vote") button. */
+  onEndorse?: (attr: UserAttribute) => void
 }
 
-function AttributeChips({ items }: { items: UserAttribute[] }) {
+function AttributeChips({
+  items,
+  onEndorse,
+}: {
+  items: UserAttribute[]
+  onEndorse?: (attr: UserAttribute) => void
+}) {
   return (
     <ul className="pa-chips">
       {items.map((a) => (
-        <li key={a.id} className="pa-chip">
+        <li
+          key={a.id}
+          className={`pa-chip${onEndorse ? ' pa-chip--votable' : ''}`}
+        >
           <span className="pa-chip-label">{a.label}</span>
           {a.endorserCount > 0 && (
             <span className="pa-chip-count" title="Endorsers">
               {a.endorserCount}
             </span>
+          )}
+          {onEndorse && a.termId && (
+            <button
+              type="button"
+              className="pa-chip-vote"
+              onClick={() => onEndorse(a)}
+              aria-label={`Endorse ${a.label}`}
+              title={`Endorse ${a.label}`}
+            >
+              <ThumbsUp className="h-3 w-3" aria-hidden="true" />
+            </button>
           )}
         </li>
       ))}
@@ -31,7 +53,10 @@ function AttributeChips({ items }: { items: UserAttribute[] }) {
   )
 }
 
-export default function ProfileAttributes({ address }: ProfileAttributesProps) {
+export default function ProfileAttributes({
+  address,
+  onEndorse,
+}: ProfileAttributesProps) {
   const { skills, tools, loading } = useUserAttributes(address)
 
   // No endorsements and nothing in flight → don't render an empty block.
@@ -53,7 +78,7 @@ export default function ProfileAttributes({ address }: ProfileAttributesProps) {
               <span className="pa-group-count">{skills.length}</span>
             </div>
             {skills.length ? (
-              <AttributeChips items={skills} />
+              <AttributeChips items={skills} onEndorse={onEndorse} />
             ) : (
               <p className="pa-empty">No skill endorsements yet.</p>
             )}
@@ -66,7 +91,7 @@ export default function ProfileAttributes({ address }: ProfileAttributesProps) {
               <span className="pa-group-count">{tools.length}</span>
             </div>
             {tools.length ? (
-              <AttributeChips items={tools} />
+              <AttributeChips items={tools} onEndorse={onEndorse} />
             ) : (
               <p className="pa-empty">No tool endorsements yet.</p>
             )}

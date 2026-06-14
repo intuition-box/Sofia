@@ -109,3 +109,32 @@
   font-size: 13px;
   color: var(--ds-muted);
 }
+
+/* Endorse ("vote") button — only on votable chips (public profile). */
+.pa-chip--votable {
+  padding-right: 5px;
+}
+.pa-chip-vote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+.pa-chip-vote:hover,
+.pa-chip-vote:focus-visible {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  transform: scale(1.08);
+  outline: none;
+}
