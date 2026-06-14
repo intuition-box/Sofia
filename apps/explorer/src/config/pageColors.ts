@@ -52,9 +52,9 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   },
   '/profile/platforms': {
     color: '#B5CEAA',
-    title: 'Platforms',
+    title: 'Markets',
     subtitle:
-      'Spot the next trending platforms early and invest before the crowd does.',
+      'Spot the next trending platforms early and stake before the crowd does.',
     glow: 'rgba(181,206,170,0.4)',
   },
   '/profile/platform': {

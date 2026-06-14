@@ -1,8 +1,8 @@
 /**
- * AllPlatformsPage (`/platforms`) — Platform Market browser.
+ * AllPlatformsPage (`/platforms`) — Markets browser.
  *
- * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Invest CTA).
- * Topic colour accents the rank pill and the Invest button.
+ * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Stake CTA).
+ * Topic colour accents the rank pill and the Stake button.
  *
  * NOTE: a "Connect" view (topic-grouped PlatformGrid connector) is hidden for
  * now — the platform connection flow isn't finished. See LIVE_PLATFORM_IDS in
@@ -241,7 +241,7 @@ export default function AllPlatformsPage() {
                     }}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
-                    Invest
+                    Stake
                   </button>
                 </span>
               </div>

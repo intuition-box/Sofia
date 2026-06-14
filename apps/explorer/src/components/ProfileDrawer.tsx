@@ -127,7 +127,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     // visual cap on display either — the user just sees more by
     // scrolling.
     return events.slice(0, 30).map((e) => {
-      // Platform invest — its own card with an "Invest" pill.
+      // Platform stake — its own card with a "Stake" pill.
       if (e.kind === 'invest') {
         return {
           id: `invest::${e.platformName}::${e.ts}`,
@@ -137,7 +137,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           favicon: e.favicon,
           timestamp: e.ts,
           isOppose: false,
-          verb: { label: 'Invest', color: '#10B981' } as Verb,
+          verb: { label: 'Stake', color: '#10B981' } as Verb,
           topic: null as TopicChip | null,
         }
       }

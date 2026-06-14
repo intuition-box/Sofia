@@ -14,7 +14,6 @@ import {
 import {
   Home,
   User,
-  Flame,
   Vote,
   Globe,
   Wallet,
@@ -22,6 +21,8 @@ import {
   ShoppingCart,
   Users,
   Layers,
+  Trophy,
+  LineChart,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useMemo } from 'react'
@@ -128,8 +129,8 @@ export function NavSidebar({
     label: string
     public: boolean
   }[] = [
-    { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
-    { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
+    { to: '/platforms', icon: LineChart, label: 'Markets', public: false },
+    { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
 
