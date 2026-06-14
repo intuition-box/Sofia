@@ -19,12 +19,8 @@ interface InterestTileProps {
   onPick: () => void
 }
 
-const FAVS_BY_TIER: Record<InterestTier, number> = {
-  hero: 6,
-  featured: 5,
-  standard: 4,
-  compact: 3,
-}
+/** Uniform favicon cap — every tile is the same size now. */
+const MAX_FAVS = 5
 
 /** First N distinct-host samples — drives the favicon strip. */
 function uniqueFavicons(samples: CircleItem[], max: number): CircleItem[] {
@@ -48,7 +44,7 @@ export default function InterestTile({
   samples,
   onPick,
 }: InterestTileProps) {
-  const favs = uniqueFavicons(samples, FAVS_BY_TIER[tier])
+  const favs = uniqueFavicons(samples, MAX_FAVS)
 
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {

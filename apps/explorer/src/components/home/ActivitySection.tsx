@@ -60,6 +60,7 @@ export default function ActivitySection({
                 displayName={name}
                 avatar={av}
                 isOwner={isOwner}
+                size="md"
                 onDeposit={onDeposit}
               />
             )
