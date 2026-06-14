@@ -127,11 +127,21 @@
 
 .hm-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 .hm-grid > .hm-tile {
   width: 100%;
+}
+@media (max-width: 900px) {
+  .hm-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .hm-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Tile ────────────────────────────────────────────────────────── */
@@ -154,6 +164,11 @@
   position: relative;
   overflow: hidden;
   min-height: 128px;
+}
+.hm-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 9%, var(--ds-card));
 }
 .hm-tile:focus-visible {
   outline: 2px solid var(--ds-accent);
@@ -586,8 +601,18 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+@media (max-width: 900px) {
+  .hm-circles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .hm-circles {
+    grid-template-columns: 1fr;
+  }
 }
 .hm-circle {
   all: unset;

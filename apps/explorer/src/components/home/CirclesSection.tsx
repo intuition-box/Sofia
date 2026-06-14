@@ -12,7 +12,7 @@ import type { TrustCircleAccount } from '@/services/trustCircleService'
 import MemberAvatar from '@/components/circles/MemberAvatar'
 import HomeSection from './HomeSection'
 
-const MAX_GROUPS = 5
+const MAX_CIRCLES = 6
 const MAX_AVATARS = 4
 
 const TRUST_DESCRIPTION =
@@ -73,7 +73,8 @@ export default function CirclesSection() {
       isTrust: true,
     })
   }
-  for (const g of groups.slice(0, MAX_GROUPS)) {
+  const groupSlots = MAX_CIRCLES - circles.length
+  for (const g of groups.slice(0, groupSlots)) {
     circles.push({
       id: g.termId,
       name: g.label,

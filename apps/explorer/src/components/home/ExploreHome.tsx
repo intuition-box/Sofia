@@ -15,7 +15,7 @@ import CirclesSection from './CirclesSection'
 import ActivitySection from './ActivitySection'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
 
-const TOPICS_PREVIEW = 9
+const TOPICS_PREVIEW = 6
 
 interface ExploreHomeProps {
   items: CircleItem[]
