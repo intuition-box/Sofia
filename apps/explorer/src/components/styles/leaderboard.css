@@ -279,3 +279,55 @@
   color: var(--ds-ink);
   font-weight: 600;
 }
+
+/* ── Streak sub-toggle (Signals / Vote) ─────────────────────────── */
+.lb-subtabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 18px 0;
+}
+.lb-subtabs button[data-active='true'] {
+  background: #f5d58a;
+  color: var(--ds-on-accent);
+  border-color: #f5d58a;
+}
+
+/* ── Topic selector bar ─────────────────────────────────────────── */
+.lb-topic-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px 4px;
+}
+.lb-topic-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.lb-topic-select {
+  max-width: 240px;
+  padding: 6px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lb-topic-select:focus {
+  outline: none;
+  border-color: var(--ds-ink);
+}
+.lb-topic-hint {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+}
