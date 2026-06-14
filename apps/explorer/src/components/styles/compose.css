@@ -24,14 +24,6 @@
   margin-bottom: 8px;
   overflow: visible;
 }
-.composer-head-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  flex-wrap: wrap;
-}
 .composer-head h2 {
   margin: 0;
   font-family: var(--ds-font-display);
@@ -50,15 +42,21 @@
 }
 .composer-head-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
-.composer-count {
+
+/* Validation gate — what's missing (muted) vs ready to compile (accent). */
+.composer-status {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
   color: var(--ds-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+}
+.composer-status.is-ready {
+  color: var(--trusted, #6dd4a0);
+  font-weight: 600;
 }
 
 .cmp-search {
@@ -66,6 +64,9 @@
 }
 .cmp-search-input {
   width: 100%;
+  /* Compose's search is a quick filter, not the page's focus — cap it so
+     it doesn't span the whole width and compete with the action row. */
+  max-width: 360px;
   padding: 10px 14px;
   font-family: 'Geist', sans-serif;
   font-size: 13px;
@@ -332,7 +333,7 @@
 /* Compose action stage — fixed box with an oversized canvas centred on it
    so the ripple rings spill out beyond the button boundaries. */
 .cmp-action-stage.fx-stage {
-  width: 120px;
+  width: 150px;
   height: 60px;
   display: flex;
   align-items: center;
@@ -376,20 +377,35 @@
   position: relative;
   z-index: 2;
   margin: 0;
-  width: 100px;
+  width: 130px;
   justify-content: center;
+}
+/* At rest the leading icon carries the mode's accent; on hover the whole
+   button floods with it. */
+.action-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--action-color, currentColor);
+  transition: color 0.18s ease;
 }
 .action-btn:hover:not(:disabled),
 .action-btn.is-compiling {
-  background: var(--ds-accent);
+  background: var(--action-color, var(--ds-accent));
   color: var(--ds-on-accent);
-  border-color: var(--ds-accent);
+  border-color: var(--action-color, var(--ds-accent));
   transform: translateY(-1px);
+}
+.action-btn:hover:not(:disabled) .action-btn-icon,
+.action-btn.is-compiling .action-btn-icon {
+  color: currentColor;
 }
 .action-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+}
+.action-btn:disabled .action-btn-icon {
+  color: currentColor;
 }
 .action-btn.is-compiling {
   pointer-events: none;

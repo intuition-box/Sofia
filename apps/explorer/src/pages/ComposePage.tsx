@@ -12,10 +12,10 @@
  * three.js compile animation + `/perspective` destination land (see
  * INTEGRATION.md §9 follow-up wave).
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHero } from '@0xsofia/design-system'
-import { ArrowUpRight, Search } from 'lucide-react'
+import { ArrowUpRight, Search, Combine, Blend, Diff, Contrast } from 'lucide-react'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
@@ -27,26 +27,40 @@ import type { CompareMode } from '@/lib/compileActionAnims'
 import '@/components/styles/pages.css'
 import '@/components/styles/compose.css'
 
-const COMPARE_MODES: { id: CompareMode; label: string; hint: string }[] = [
+const COMPARE_MODES: {
+  id: CompareMode
+  label: string
+  hint: string
+  icon: ReactNode
+  color: string
+}[] = [
   {
     id: 'merge',
     label: 'Merge',
     hint: 'Union — everything any selection certified.',
+    icon: <Combine className="h-4 w-4" />,
+    color: '#6dd4a0',
   },
   {
     id: 'intersect',
     label: 'Intersect',
     hint: 'Strict overlap — where selections agree.',
+    icon: <Blend className="h-4 w-4" />,
+    color: '#5cc4d6',
   },
   {
     id: 'subtract',
     label: 'Subtract',
     hint: 'Difference — in one, missing from others.',
+    icon: <Diff className="h-4 w-4" />,
+    color: '#e0a458',
   },
   {
     id: 'contrast',
     label: 'Contrast',
     hint: 'Divergence — where selections disagree most.',
+    icon: <Contrast className="h-4 w-4" />,
+    color: '#c890d9',
   },
 ]
 
@@ -166,25 +180,35 @@ export default function ComposePage() {
 
       <div className="composer">
         <div className="composer-head">
-          <div className="composer-head-row">
-            <h2>
-              Compose <em>your perspective</em>
-            </h2>
-            <div className="composer-head-actions">
-              {COMPARE_MODES.map((m) => (
-                <CompileActionButton
-                  key={m.id}
-                  mode={m.id}
-                  label={m.label}
-                  title={m.hint}
-                  disabled={!canCompile}
-                  onRun={handleCompile}
-                />
-              ))}
-            </div>
+          <h2>
+            Compose <em>your perspective</em>
+          </h2>
+          <div className="composer-head-actions">
+            {COMPARE_MODES.map((m) => (
+              <CompileActionButton
+                key={m.id}
+                mode={m.id}
+                label={m.label}
+                title={m.hint}
+                icon={m.icon}
+                color={m.color}
+                disabled={!canCompile}
+                onRun={handleCompile}
+              />
+            ))}
           </div>
-          <span className="composer-count">
-            {w} circle{w === 1 ? '' : 's'} · {t} topic{t === 1 ? '' : 's'}
+          {/* Validation gate — tells the user exactly what's missing before
+              a compile can redirect to /perspective, instead of leaving the
+              action buttons silently disabled. */}
+          <span
+            className={`composer-status${canCompile ? ' is-ready' : ''}`}
+            role="status"
+          >
+            {canCompile
+              ? `Ready — ${w} circle${w === 1 ? '' : 's'} · ${t} topic${
+                  t === 1 ? '' : 's'
+                } selected`
+              : 'Pick at least 1 circle and 1 topic — or 2 of either — to compile.'}
           </span>
         </div>
 

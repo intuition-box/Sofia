@@ -9,7 +9,14 @@
  * ref-based `lastPulseMs`. The canvas fades the circles in/out every
  * time the button is clicked, matching the proto behaviour.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import * as THREE from 'three'
 import {
   COMPILE_ACTION_BUILDERS,
@@ -22,6 +29,10 @@ interface CompileActionButtonProps {
   label: string
   title?: string
   disabled?: boolean
+  /** Leading icon — gives each compile mode a visual identity. */
+  icon?: ReactNode
+  /** Per-mode accent, surfaced as `--action-color` for icon + hover. */
+  color?: string
   onRun: (mode: CompareMode) => void
 }
 
@@ -39,6 +50,8 @@ export default function CompileActionButton({
   label,
   title,
   disabled,
+  icon,
+  color,
   onRun,
 }: CompileActionButtonProps) {
   const stageRef = useRef<HTMLDivElement | null>(null)
@@ -202,7 +215,17 @@ export default function CompileActionButton({
         disabled={disabled}
         title={title}
         onClick={handleClick}
+        style={
+          color
+            ? ({ ['--action-color']: color } as CSSProperties)
+            : undefined
+        }
       >
+        {icon && (
+          <span className="action-btn-icon" aria-hidden="true">
+            {icon}
+          </span>
+        )}
         {label}
       </button>
     </div>
