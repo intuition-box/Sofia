@@ -45,6 +45,29 @@ export default function ExploreHome({
 
   return (
     <div className="hm-home">
+      {/* Search sits above the blocks (Reddit /explore style). */}
+      <div className="hm-search hm-search--top">
+        <Search className="hm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+        <input
+          type="search"
+          className="hm-search-input"
+          placeholder="Search topics or intents…"
+          value={topicQuery}
+          onChange={(e) => setTopicQuery(e.target.value)}
+          aria-label="Search topics or intents"
+        />
+        {topicQuery && (
+          <button
+            type="button"
+            className="hm-search-clear"
+            onClick={() => setTopicQuery('')}
+            aria-label="Clear search"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* ── Topics ─────────────────────────────────────────────── */}
       <HomeSection
         title="Topics"
@@ -57,27 +80,6 @@ export default function ExploreHome({
               }
         }
       >
-        <div className="hm-search">
-          <Search className="hm-search-icon h-3.5 w-3.5" aria-hidden="true" />
-          <input
-            type="search"
-            className="hm-search-input"
-            placeholder="Search topics or intents…"
-            value={topicQuery}
-            onChange={(e) => setTopicQuery(e.target.value)}
-            aria-label="Search topics or intents"
-          />
-          {topicQuery && (
-            <button
-              type="button"
-              className="hm-search-clear"
-              onClick={() => setTopicQuery('')}
-              aria-label="Clear search"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
         <InterestTilesGrid
           items={items}
           onPick={onPickTopic}

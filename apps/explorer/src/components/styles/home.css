@@ -105,6 +105,11 @@
   color: var(--ds-ink);
   background: var(--ds-bg-subtle);
 }
+/* On the Explore home the search leads the page; `.hm-home`'s gap owns the
+   spacing below it. */
+.hm-search--top {
+  margin-bottom: 0;
+}
 
 .hm-empty {
   padding: 32px 16px;
@@ -160,9 +165,6 @@
   position: relative;
   overflow: hidden;
 }
-.hm-tile.hm-verb {
-  border-left: 3px solid var(--verb-color, var(--ds-accent));
-}
 .hm-tile:focus-visible {
   outline: 2px solid var(--ds-accent);
   outline-offset: 2px;
@@ -183,8 +185,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-top: auto;
   padding-top: 10px;
-  border-top: 1px dashed var(--ds-border);
 }
 .hm-platform-favs {
   display: inline-flex;
@@ -192,52 +194,6 @@
   gap: 6px;
   flex-wrap: wrap;
   min-width: 0;
-}
-
-/* ── URL preview rows (featured / hero) ─────────────────────────── */
-
-.hm-urls {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--ds-border);
-}
-.hm-url-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border);
-  text-align: left;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.hm-tile:hover .hm-url-row {
-  border-color: color-mix(in oklab, var(--ds-ink) 25%, transparent);
-}
-.hm-url-host {
-  flex: 1;
-  min-width: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--ds-muted);
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Hero tile — bigger favicon + host. */
-.hm-tile.hm-hero .hm-url-row {
-  padding: 10px 12px;
-}
-.hm-tile.hm-hero .hm-url-host {
-  font-size: 12px;
 }
 
 /* ── Drill-down header ──────────────────────────────────────────── */
@@ -629,9 +585,80 @@
   background: var(--ds-bg-subtle);
 }
 
-/* ── Circles row — responsive card grid ─────────────────────────── */
-.hm-circles-row {
+/* ── Circles — compact cards (logo + name + members) ────────────── */
+.hm-circles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.hm-circle {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+.hm-circle:hover,
+.hm-circle:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--ds-ink-soft);
+  outline: none;
+}
+.hm-circle-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: var(--ds-font-display);
+  font-size: 16px;
+  font-weight: 800;
+  overflow: hidden;
+}
+.hm-circle-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hm-circle-logo--trust {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+}
+.hm-circle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hm-circle-name {
+  font-family: var(--ds-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hm-circle-members {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
 }

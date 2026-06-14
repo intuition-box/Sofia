@@ -41,7 +41,6 @@ export default function InterestTilesGrid({
           kind={t.kind}
           id={t.id}
           label={t.label}
-          color={t.color}
           tier={t.tier}
           samples={t.samples}
           onPick={() => onPick({ kind: t.kind, id: t.id })}

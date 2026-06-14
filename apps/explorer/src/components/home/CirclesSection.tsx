@@ -1,18 +1,26 @@
 /**
- * CirclesSection — Explore-home block. Shows the user's Trust Circle (when
- * signed in) plus a few discovered groups, reusing the same cards as the
- * /circles list. "View all" routes to the full circles page.
+ * CirclesSection — Explore-home block. Compact circle cards (logo + name +
+ * member count) for the user's Trust Circle and a few discovered groups. The
+ * full /circles cards are too tall for this strip, so we render a lightweight
+ * version here. "View all" routes to the full circles page.
  */
 import { usePrivy } from '@privy-io/react-auth'
 import { useNavigate } from 'react-router-dom'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useGroups } from '@/hooks/useGroups'
-import TrustCircleCard from '@/components/circles/TrustCircleCard'
-import GroupCard from '@/components/circles/GroupCard'
 import HomeSection from './HomeSection'
 
-const MAX_GROUPS = 3
+const MAX_GROUPS = 5
+
+interface MiniCircle {
+  id: string
+  name: string
+  image: string | null
+  memberCount: number
+  to: string
+  isTrust?: boolean
+}
 
 export default function CirclesSection() {
   const navigate = useNavigate()
@@ -21,29 +29,68 @@ export default function CirclesSection() {
   const { accounts, loading: trustLoading } = useTrustCircle(addresses)
   const { groups, isLoading: groupsLoading } = useGroups()
 
-  const previewGroups = groups.slice(0, MAX_GROUPS)
-  const hasContent = authenticated || previewGroups.length > 0
+  const circles: MiniCircle[] = []
+  if (authenticated) {
+    circles.push({
+      id: 'trust',
+      name: 'Trust Circle',
+      image: null,
+      memberCount: accounts.length,
+      to: '/circles/trust',
+      isTrust: true,
+    })
+  }
+  for (const g of groups.slice(0, MAX_GROUPS)) {
+    circles.push({
+      id: g.termId,
+      name: g.label,
+      image: g.image,
+      memberCount: g.memberCount,
+      to: `/circles/${g.termId}`,
+    })
+  }
 
-  // Nothing to show and nothing loading → drop the block entirely so the
-  // home doesn't render an empty section.
-  if (!hasContent && !groupsLoading) return null
+  const loading = trustLoading || groupsLoading
+  if (circles.length === 0 && !loading) return null
 
   return (
     <HomeSection
       title="Circles"
       action={{ label: 'View all', onClick: () => navigate('/circles') }}
     >
-      <div className="hm-circles-row">
-        {authenticated && (
-          <TrustCircleCard members={accounts} loading={trustLoading} />
-        )}
-        {previewGroups.map((g) => (
-          <GroupCard key={g.termId} group={g} />
-        ))}
-        {groupsLoading && previewGroups.length === 0 && !authenticated && (
-          <p className="hm-empty">Loading circles…</p>
-        )}
-      </div>
+      {circles.length === 0 ? (
+        <p className="hm-empty">Loading circles…</p>
+      ) : (
+        <ul className="hm-circles">
+          {circles.map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                className="hm-circle"
+                onClick={() => navigate(c.to)}
+              >
+                <span
+                  className={`hm-circle-logo${
+                    c.isTrust ? ' hm-circle-logo--trust' : ''
+                  }`}
+                >
+                  {c.image ? (
+                    <img src={c.image} alt="" loading="lazy" />
+                  ) : (
+                    c.name.slice(0, 1).toUpperCase()
+                  )}
+                </span>
+                <span className="hm-circle-text">
+                  <span className="hm-circle-name">{c.name}</span>
+                  <span className="hm-circle-members">
+                    {c.memberCount} member{c.memberCount === 1 ? '' : 's'}
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </HomeSection>
   )
 }
