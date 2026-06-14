@@ -48,7 +48,7 @@ export default function TopicLeaderboardTable({
             </option>
           ))}
         </select>
-        <span className="lb-topic-hint">Ranked by certifications held</span>
+        <span className="lb-topic-hint">Ranked by EigenTrust score</span>
       </div>
 
       <div className="overflow-x-auto">
@@ -57,6 +57,7 @@ export default function TopicLeaderboardTable({
             <tr className="lb-border-row">
               <th className="lb-rank-head">#</th>
               <th className="lb-cell-head">User</th>
+              <th className="lb-cell-head-num">Trust</th>
               <th className="lb-cell-head-num">Certs</th>
             </tr>
           </thead>
@@ -64,7 +65,7 @@ export default function TopicLeaderboardTable({
             {loading &&
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="lb-border-row">
-                  <td colSpan={3} className="lb-cell">
+                  <td colSpan={4} className="lb-cell">
                     <div className="lb-skeleton bg-muted animate-pulse" />
                   </td>
                 </tr>
@@ -72,7 +73,7 @@ export default function TopicLeaderboardTable({
 
             {error && (
               <tr>
-                <td colSpan={3} className="lb-error">
+                <td colSpan={4} className="lb-error">
                   {error}
                 </td>
               </tr>
@@ -80,7 +81,7 @@ export default function TopicLeaderboardTable({
 
             {!loading && !error && entries.length === 0 && (
               <tr>
-                <td colSpan={3} className="lb-error">
+                <td colSpan={4} className="lb-error">
                   No certifications in this topic yet.
                 </td>
               </tr>
@@ -123,6 +124,9 @@ export default function TopicLeaderboardTable({
                         />
                         <span className="lb-username">{getDisplay(addr)}</span>
                       </a>
+                    </td>
+                    <td className="lb-cell-num">
+                      {Math.round(entry.trustScore)}
                     </td>
                     <td className="lb-cell-num">{entry.certCount}</td>
                   </tr>
