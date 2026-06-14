@@ -416,9 +416,7 @@ export default function Leaderboard({
       {isStreak && (
         <StreakLeaderboardTable connectedAddress={connectedAddress} />
       )}
-      {isTopic && (
-        <TopicLeaderboardTable connectedAddress={connectedAddress} />
-      )}
+      {isTopic && <TopicLeaderboardTable />}
 
       {isTrust && !loading && (
         <div className="lb-trust-legend">
