@@ -5,7 +5,6 @@
  * giving a read on real, attested usage rather than self-declared tags.
  */
 import { Sparkles, Wrench, ThumbsUp } from 'lucide-react'
-import { SectionH2 } from '@0xsofia/design-system'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
 import type { UserAttribute } from '@/services/userAttributesService'
 import '@/components/styles/profile-attributes.css'
@@ -59,12 +58,9 @@ export default function ProfileAttributes({
 }: ProfileAttributesProps) {
   const { skills, tools, loading } = useUserAttributes(address)
 
-  // No endorsements and nothing in flight → don't render an empty block.
-  if (!loading && skills.length === 0 && tools.length === 0) return null
-
   return (
-    <section className="pp-section pa-section">
-      <SectionH2>Skills &amp; Tools</SectionH2>
+    <section className="pa-section">
+      <h3 className="pa-title">Skills &amp; Tools</h3>
       <p className="pa-sub">Endorsed on-chain by the community.</p>
 
       {loading ? (

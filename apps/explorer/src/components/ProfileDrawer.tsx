@@ -16,6 +16,7 @@ import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import FeedCardView from '@/components/feed/FeedCardView'
 import { useUserPlatformInvests } from '@/hooks/useUserPlatformInvests'
+import ProfileAttributes from '@/components/profile/ProfileAttributes'
 import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
@@ -247,6 +248,11 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-name">{displayName}</p>
               <p className="pd-address">{shortAddr}</p>
             </div>
+          </div>
+
+          {/* Skills & Tools — on-chain endorsements (own profile, read-only) */}
+          <div className="pd-section">
+            <ProfileAttributes address={address || undefined} />
           </div>
 
           {/* Circle impact — sits right under the banner so identity +

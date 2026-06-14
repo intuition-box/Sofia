@@ -14,7 +14,6 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
 import ProfileCharts from '../components/profile/ProfileCharts'
-import ProfileAttributes from '../components/profile/ProfileAttributes'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -195,9 +194,6 @@ export default function ProfilePage() {
               : (id) => navigate(`/profile/interest/${id}`)
           }
         />
-
-        {/* Skills & Tools — on-chain endorsements (Atlas taxonomy) */}
-        <ProfileAttributes address={address || undefined} />
 
         {/* Echoes */}
         <section className="pp-section">

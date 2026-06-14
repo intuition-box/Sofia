@@ -1,9 +1,20 @@
-/* ── Profile — Skills & Tools (on-chain endorsements) ───────────── */
+/* ── Profile sidebar — Skills & Tools (on-chain endorsements) ───── */
 
+.pa-section {
+  padding: 4px 0 2px;
+}
+.pa-title {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
 .pa-sub {
-  margin: -4px 0 16px;
+  margin: 2px 0 14px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.02em;
   color: var(--ds-muted);
 }
@@ -17,9 +28,9 @@
 }
 
 .pa-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .pa-group {

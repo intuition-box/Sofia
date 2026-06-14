@@ -27,7 +27,9 @@ import {
 import type { UserCert } from '@/services/userOnChainProfileService'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
+import { useEndorseAttribute } from '@/hooks/useEndorseAttribute'
 import { TopicPill } from '@/components/profile/FeedPills'
+import ProfileAttributes from '@/components/profile/ProfileAttributes'
 import type { TopicChip } from '@/types/profileChips'
 
 interface PublicProfileAsideProps {
@@ -110,6 +112,7 @@ export default function PublicProfileAside({
   certCountsByTopic,
 }: PublicProfileAsideProps) {
   const { topicById } = useTaxonomy()
+  const { endorse } = useEndorseAttribute()
   const { accounts: trustCircle } = useTrustCircle(
     walletAddress ? [walletAddress as Address] : undefined,
   )
@@ -236,6 +239,11 @@ export default function PublicProfileAside({
             </div>
           </div>
         ) : null}
+
+        {/* Skills & Tools — on-chain endorsements; votable on a public profile */}
+        <div className="ppa-section">
+          <ProfileAttributes address={walletAddress} onEndorse={endorse} />
+        </div>
       </div>
     </aside>
   )
