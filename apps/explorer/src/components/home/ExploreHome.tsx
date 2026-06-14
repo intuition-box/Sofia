@@ -11,7 +11,6 @@ import type { CircleItem } from '@/services/circleService'
 import InterestTilesGrid from './InterestTilesGrid'
 import type { InterestPreset } from './useInterestTiles'
 import HomeSection from './HomeSection'
-import HomeProfileHeader from './HomeProfileHeader'
 import CirclesSection from './CirclesSection'
 import ActivitySection from './ActivitySection'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
@@ -46,8 +45,6 @@ export default function ExploreHome({
 
   return (
     <div className="hm-home">
-      <HomeProfileHeader />
-
       {/* ── Topics ─────────────────────────────────────────────── */}
       <HomeSection
         title="Topics"

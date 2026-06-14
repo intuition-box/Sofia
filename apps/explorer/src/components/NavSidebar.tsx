@@ -384,6 +384,15 @@ export function NavSidebar({
                 </div>
               </div>
 
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => navigate('/profile')}
+                className="ns-auth-menu-action"
+              >
+                <User className="h-4 w-4" />
+                View profile
+              </DropdownMenuItem>
+
               {linkedAddresses.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
