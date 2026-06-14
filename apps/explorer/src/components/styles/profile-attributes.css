@@ -1,0 +1,111 @@
+/* ── Profile — Skills & Tools (on-chain endorsements) ───────────── */
+
+.pa-sub {
+  margin: -4px 0 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ds-muted);
+}
+
+.pa-loading {
+  padding: 20px 0;
+  font-family: var(--ds-font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ds-muted);
+}
+
+.pa-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.pa-group {
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  background: var(--ds-card);
+}
+
+.pa-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: var(--ds-font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+/* Skills lean accent, tools lean ink — a subtle, semantic split. */
+.pa-group:first-child .pa-group-head svg {
+  color: var(--ds-accent);
+}
+.pa-group:last-child .pa-group-head svg {
+  color: var(--ds-ink-soft);
+}
+.pa-group-count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+}
+
+.pa-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px 6px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-bg-subtle);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.pa-chip:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
+}
+.pa-chip-label {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.pa-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pa-empty {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ds-muted);
+}
