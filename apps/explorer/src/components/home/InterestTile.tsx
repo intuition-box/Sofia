@@ -73,7 +73,7 @@ export default function InterestTile({
             {favs.map((s, idx) => (
               <FaviconWrapper
                 key={`${s.domain}-${idx}`}
-                size={26}
+                size={36}
                 src={s.favicon}
                 alt={s.domain}
               />
