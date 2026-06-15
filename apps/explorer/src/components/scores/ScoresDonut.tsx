@@ -131,16 +131,6 @@ export function ScoresDonut({
           <text x={C} y={290} textAnchor="middle" className="sc2-center-lab">
             {centerLabel}
           </text>
-          {focus && (
-            <text
-              x={C}
-              y={C + 38}
-              textAnchor="middle"
-              className="sc2-center-sub"
-            >
-              base {focus.base} · backers +{focus.boost}
-            </text>
-          )}
         </g>
       </svg>
 
