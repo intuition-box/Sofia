@@ -478,3 +478,19 @@ a.pd-la-row:hover {
   color: var(--ds-muted);
   letter-spacing: 0.02em;
 }
+
+/* ── Account & wallet management menu (replaces the copy button) ─────────
+   Reuses the nav account-menu item classes (.ns-auth-menu-*, loaded globally
+   via NavSidebar) for the rows; the container is fully self-styled here so it
+   never depends on the dropdown base, and sits above the drawer rail. */
+.pd-manage-menu {
+  min-width: 240px;
+  padding: 6px;
+  background: var(--ds-card, var(--ds-bg));
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.5);
+  /* Above the drawer aside (z-index: 9999) — the menu portals to <body> but the
+     rail sits very high, so without this it opens hidden behind it. */
+  z-index: 10000 !important;
+}

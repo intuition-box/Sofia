@@ -2,21 +2,28 @@
  * ProfileAttributes — "Skills & Tools" profile block (sidebar).
  *
  * Two modes:
- *  - owner (`canDeclare`): a search box per group adds your own skills/tools
- *    (max 5 each) → queues an on-chain declaration via the cart.
+ *  - owner (`canDeclare`): the sidebar shows only the declared chips with a
+ *    small edit (pencil) button per group. Editing happens in a modal — a
+ *    search box per group adds your own skills/tools (max 5 each) → queues an
+ *    on-chain declaration via the cart. Keeps the sidebar clean (chips only).
  *  - visitor (`onEndorse`): each chip shows a support counter + a "+" button
  *    to endorse (vote), Atlas-style.
  *
  * The declared chips are read on-chain via useUserAttributes.
  */
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Sparkles, Wrench } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
-import { Sparkles, Wrench } from 'lucide-react'
 import { SKILLS, TOOLS, type Attribute } from '@0xsofia/taxonomy'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
 import { useDeclareSkill } from '@/hooks/useDeclareSkill'
 import type { UserAttribute } from '@/services/userAttributesService'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import '@/components/styles/profile-attributes.css'
 
 const MAX_PER_GROUP = 5
@@ -27,7 +34,7 @@ interface ProfileAttributesProps {
   address: string | string[] | undefined
   /** When set, each chip gets an endorse ("vote") button (public profile). */
   onEndorse?: (attr: UserAttribute) => void
-  /** When true, show a search box to declare your own skills/tools. */
+  /** When true, show the edit button + modal to declare your own skills/tools. */
   canDeclare?: boolean
 }
 
@@ -68,7 +75,7 @@ function AttributeChips({
   )
 }
 
-/** Search box that adds an attribute from the taxonomy (owner only). */
+/** Search box that adds an attribute from the taxonomy (owner only, in modal). */
 function AttributeAdder({
   pool,
   declared,
@@ -127,51 +134,92 @@ function AttributeAdder({
   )
 }
 
+/** Sidebar group — clean: head (edit button when owner) + chips, no inline adder. */
 function AttributeGroup({
   kind,
   items,
-  pool,
   onEndorse,
   canDeclare,
-  onDeclare,
+  onEdit,
 }: {
   kind: 'skill' | 'tool'
   items: UserAttribute[]
-  pool: readonly Attribute[]
   onEndorse?: (attr: UserAttribute) => void
   canDeclare?: boolean
-  onDeclare: (id: string) => void
+  onEdit: () => void
 }) {
   const Icon = kind === 'skill' ? Sparkles : Wrench
-  const declared = new Set(items.map((a) => a.label.toLowerCase()))
-  const atMax = items.length >= MAX_PER_GROUP
 
   return (
     <div className="pa-group">
       <div className="pa-group-head">
         <Icon className="h-4 w-4" aria-hidden="true" />
         <span>{kind === 'skill' ? 'Skills' : 'Tools'}</span>
-        <span className="pa-group-count">
-          {canDeclare ? `${items.length}/${MAX_PER_GROUP}` : items.length}
-        </span>
+        {canDeclare ? (
+          <button
+            type="button"
+            className="pa-group-edit"
+            onClick={onEdit}
+            aria-label={`Edit ${kind}s`}
+          >
+            edit
+          </button>
+        ) : (
+          <span className="pa-group-count">{items.length}</span>
+        )}
       </div>
-
-      {canDeclare && !atMax && (
-        <AttributeAdder
-          pool={pool}
-          declared={declared}
-          onPick={onDeclare}
-          placeholder={`Add a ${kind}…`}
-        />
-      )}
 
       {items.length ? (
         <AttributeChips items={items} onEndorse={onEndorse} />
       ) : (
-        !canDeclare && (
-          <p className="pa-empty">No {kind} endorsements yet.</p>
-        )
+        <p className="pa-empty">
+          {canDeclare
+            ? `No ${kind}s yet — tap edit to add.`
+            : `No ${kind} endorsements yet.`}
+        </p>
       )}
+    </div>
+  )
+}
+
+/** Modal group — head with count, search to add, and current chips. */
+function EditGroup({
+  kind,
+  items,
+  pool,
+  onPick,
+}: {
+  kind: 'skill' | 'tool'
+  items: UserAttribute[]
+  pool: readonly Attribute[]
+  onPick: (id: string) => void
+}) {
+  const Icon = kind === 'skill' ? Sparkles : Wrench
+  const declared = new Set(items.map((a) => a.label.toLowerCase()))
+  const atMax = items.length >= MAX_PER_GROUP
+
+  return (
+    <div className="pa-edit-group">
+      <div className="pa-group-head">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+        <span>{kind === 'skill' ? 'Skills' : 'Tools'}</span>
+        <span className="pa-group-count">
+          {items.length}/{MAX_PER_GROUP}
+        </span>
+      </div>
+
+      {atMax ? (
+        <p className="pa-empty">Max {MAX_PER_GROUP} reached.</p>
+      ) : (
+        <AttributeAdder
+          pool={pool}
+          declared={declared}
+          onPick={onPick}
+          placeholder={`Add a ${kind}…`}
+        />
+      )}
+
+      {items.length > 0 && <AttributeChips items={items} />}
     </div>
   )
 }
@@ -183,6 +231,7 @@ export default function ProfileAttributes({
 }: ProfileAttributesProps) {
   const { skills, tools, loading } = useUserAttributes(address)
   const { declare } = useDeclareSkill()
+  const [editOpen, setEditOpen] = useState(false)
 
   return (
     <section className="pa-section">
@@ -193,20 +242,42 @@ export default function ProfileAttributes({
           <AttributeGroup
             kind="skill"
             items={skills}
-            pool={SKILLS}
             onEndorse={onEndorse}
             canDeclare={canDeclare}
-            onDeclare={declare}
+            onEdit={() => setEditOpen(true)}
           />
           <AttributeGroup
             kind="tool"
             items={tools}
-            pool={TOOLS}
             onEndorse={onEndorse}
             canDeclare={canDeclare}
-            onDeclare={declare}
+            onEdit={() => setEditOpen(true)}
           />
         </div>
+      )}
+
+      {canDeclare && (
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="pa-edit-modal">
+            <DialogHeader>
+              <DialogTitle>Edit skills &amp; tools</DialogTitle>
+            </DialogHeader>
+            <div className="pa-edit-body">
+              <EditGroup
+                kind="skill"
+                items={skills}
+                pool={SKILLS}
+                onPick={declare}
+              />
+              <EditGroup
+                kind="tool"
+                items={tools}
+                pool={TOOLS}
+                onPick={declare}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </section>
   )

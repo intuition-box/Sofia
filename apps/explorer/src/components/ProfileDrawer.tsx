@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
-import { Copy, Check } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { usePrivy, useLogout, useLinkAccount } from '@privy-io/react-auth'
+import { Copy, Check, Wallet, LogOut, MoreHorizontal } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useTaxonomy } from '../hooks/useTaxonomy'
@@ -35,8 +44,15 @@ function formatStatCount(n: number): string {
 
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { authenticated, user } = usePrivy()
+  const navigate = useNavigate()
+  // On disconnect, leave the now-unauthenticated route for the landing page.
+  const { logout } = useLogout({ onSuccess: () => navigate('/') })
+  const { linkWallet } = useLinkAccount({
+    onSuccess: () => window.location.reload(),
+  })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses } = useLinkedWallets()
+  const { addresses: linkedAddresses, primary: primaryWallet } =
+    useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
@@ -260,19 +276,87 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               {shortAddr && (
                 <span className="pd-address-row">
                   <span className="pd-address">{shortAddr}</span>
-                  <button
-                    type="button"
-                    className={`pd-copy${copied ? ' pd-copy--done' : ''}`}
-                    onClick={handleCopy}
-                    aria-label="Copy wallet address"
-                    title={copied ? 'Copied' : 'Copy address'}
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="pd-copy"
+                        aria-label="Account & wallet management"
+                        title="Manage account"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      side="bottom"
+                      className="pd-manage-menu"
+                    >
+                      <DropdownMenuItem
+                        onClick={handleCopy}
+                        className="ns-auth-menu-action"
+                      >
+                        {copied ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copied ? 'Copied' : 'Copy address'}
+                      </DropdownMenuItem>
+
+                      {linkedAddresses.length > 0 && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel className="ns-auth-menu-label">
+                            Wallets
+                          </DropdownMenuLabel>
+                          {linkedAddresses.map((addr) => {
+                            const isPrimary =
+                              primaryWallet?.toLowerCase() ===
+                              addr.toLowerCase()
+                            const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                            return (
+                              <DropdownMenuItem
+                                key={addr}
+                                className="ns-auth-menu-wallet"
+                                onSelect={(e) => e.preventDefault()}
+                                title={addr}
+                              >
+                                <span
+                                  className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                                  aria-hidden="true"
+                                />
+                                <span className="ns-auth-menu-wallet-addr">
+                                  {short}
+                                </span>
+                                {isPrimary && (
+                                  <span className="ns-auth-menu-wallet-tag">
+                                    primary
+                                  </span>
+                                )}
+                              </DropdownMenuItem>
+                            )
+                          })}
+                        </>
+                      )}
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => linkWallet()}
+                        className="ns-auth-menu-action"
+                      >
+                        <Wallet className="h-4 w-4" />
+                        Link another wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => logout()}
+                        className="ns-auth-menu-action ns-auth-menu-action--danger"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Disconnect
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </span>
               )}
             </div>

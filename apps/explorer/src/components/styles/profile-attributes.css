@@ -63,8 +63,8 @@
 
 /* Square "vote pastille" chips, matching the Circle Pro v2 endorse pills
    (the `endo` style): a translucent tint of the chip's own colour fills it, a
-   stronger tint draws the 7px-radius border, and a solid dot leads. Skills
-   lean accent, tools lean ink, in line with the group-header icons. Flat by
+   stronger tint draws the 7px-radius border. Skills lean accent, tools lean
+   ink, in line with the group-header icons. Flat by
    design — no lift — so it reads like the source pastilles. The count badge is
    intentionally left loud. */
 .pa-chip {
@@ -86,15 +86,6 @@
 }
 .pa-group:last-child .pa-chip {
   --pa-chip-c: var(--ds-ink-soft);
-}
-/* Leading colour dot — solid version of the chip colour (the endo dot). */
-.pa-chip::before {
-  content: '';
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--pa-chip-c);
 }
 .pa-chip:hover {
   border-color: color-mix(in srgb, var(--pa-chip-c) 45%, transparent);
@@ -229,4 +220,38 @@
 }
 .pa-adder-opt svg {
   color: var(--ds-accent);
+}
+
+/* ── Edit button (owner sidebar — replaces the count) ───────────────── */
+.pa-group-edit {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.13s;
+}
+.pa-group-edit:hover {
+  color: var(--ds-ink);
+}
+
+/* ── Edit modal (add skills/tools) ──────────────────────────────────── */
+.pa-edit-modal {
+  max-width: 460px;
+}
+.pa-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 4px;
+}
+.pa-edit-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
