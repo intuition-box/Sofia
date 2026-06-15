@@ -226,15 +226,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     })
   }, [profile, topicById, platformInvests])
 
-  if (!authenticated) return null
-
-  const displayName = address ? getDisplay(address as Address) : ''
-  const avatar = address ? getAvatar(address as Address) : ''
-  const shortAddr = address
-    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-    : ''
-  const initials = (displayName || address).slice(0, 2).toUpperCase()
-
+  // Hooks must run before any early return.
   const [copied, setCopied] = useState(false)
   const handleCopy = () => {
     if (!address) return
@@ -243,6 +235,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       setTimeout(() => setCopied(false), 1500)
     })
   }
+
+  if (!authenticated) return null
+
+  const displayName = address ? getDisplay(address as Address) : ''
+  const avatar = address ? getAvatar(address as Address) : ''
+  const shortAddr = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : ''
+  const initials = (displayName || address).slice(0, 2).toUpperCase()
 
   return (
     <>
