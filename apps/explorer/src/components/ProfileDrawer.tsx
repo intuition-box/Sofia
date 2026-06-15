@@ -252,6 +252,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
           {/* Skills & Tools — declare your own (on-chain), others endorse */}
           <div className="pd-section">
+            <p className="pd-section-title">Skills &amp; Tools</p>
             <ProfileAttributes address={address || undefined} canDeclare />
           </div>
 

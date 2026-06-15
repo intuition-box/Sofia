@@ -1,22 +1,7 @@
 /* ── Profile sidebar — Skills & Tools (on-chain endorsements) ───── */
 
 .pa-section {
-  padding: 4px 0 2px;
-}
-.pa-title {
-  margin: 0;
-  font-family: var(--ds-font-display);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--ds-ink);
-}
-.pa-sub {
-  margin: 2px 0 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  color: var(--ds-muted);
+  padding: 0;
 }
 
 .pa-loading {
@@ -45,9 +30,9 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
-  font-family: var(--ds-font-display);
-  font-size: 15px;
-  font-weight: 800;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ds-ink);
 }
@@ -162,13 +147,13 @@
 }
 .pa-adder-icon {
   position: absolute;
-  left: 10px;
+  left: 11px;
   color: var(--ds-muted);
   pointer-events: none;
 }
 .pa-adder-input {
   width: 100%;
-  padding: 7px 10px 7px 30px;
+  padding: 7px 12px 7px 38px;
   border: 1px solid var(--ds-border);
   border-radius: 8px;
   background: var(--ds-bg);

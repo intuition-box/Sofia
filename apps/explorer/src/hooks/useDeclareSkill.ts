@@ -15,8 +15,8 @@ export function useDeclareSkill() {
     (attributeId: string) => {
       const attr = getAttributeById(attributeId)
       if (!attr) return
+      // Queue silently — stay on the side panel, don't pop the cart open.
       cart.addItem(buildDeclareSkillCartItem(attr))
-      cart.open()
     },
     [cart],
   )

@@ -183,13 +183,6 @@ export default function ProfileAttributes({
 
   return (
     <section className="pa-section">
-      <h3 className="pa-title">Skills &amp; Tools</h3>
-      <p className="pa-sub">
-        {canDeclare
-          ? 'Add yours; others endorse them on-chain.'
-          : 'Endorsed on-chain by the community.'}
-      </p>
-
       {loading ? (
         <div className="pa-loading">Reading endorsements…</div>
       ) : (

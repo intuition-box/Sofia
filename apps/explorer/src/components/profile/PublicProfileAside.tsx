@@ -242,6 +242,7 @@ export default function PublicProfileAside({
 
         {/* Skills & Tools — on-chain endorsements; votable on a public profile */}
         <div className="ppa-section">
+          <p className="ppa-section-title">Skills &amp; Tools</p>
           <ProfileAttributes address={walletAddress} onEndorse={endorse} />
         </div>
       </div>
