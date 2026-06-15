@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
+import { Copy, Check } from 'lucide-react'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useTaxonomy } from '../hooks/useTaxonomy'
@@ -234,6 +235,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    if (!address) return
+    void navigator.clipboard?.writeText(address).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
   return (
     <>
       <aside className={`pd-aside ${isOpen ? 'pd-open' : ''}`}>
@@ -246,7 +256,24 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </Avatar>
             <div className="pd-name-wrap">
               <p className="pd-name">{displayName}</p>
-              <p className="pd-address">{shortAddr}</p>
+              {shortAddr && (
+                <span className="pd-address-row">
+                  <span className="pd-address">{shortAddr}</span>
+                  <button
+                    type="button"
+                    className={`pd-copy${copied ? ' pd-copy--done' : ''}`}
+                    onClick={handleCopy}
+                    aria-label="Copy wallet address"
+                    title={copied ? 'Copied' : 'Copy address'}
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </span>
+              )}
             </div>
           </div>
 
