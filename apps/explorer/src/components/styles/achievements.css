@@ -1,0 +1,191 @@
+/* ── Achievements (Module 5) — ported from Claude Design "Curator Profile Pro"
+   (profile/profile.css .ach-*). Tokens remapped to the explorer's design
+   system: --display → --ds-font-display (Unbounded), --mono → JetBrains Mono. */
+
+.ach-loading,
+.ach-empty {
+  font-size: 13px;
+  color: var(--ds-muted);
+  padding: 18px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+}
+
+/* Three-column panel: Level/XP · Gold · Badges */
+.ach-panel {
+  display: grid;
+  grid-template-columns: 1.1fr 0.7fr 2fr;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  overflow: hidden;
+}
+.ach-panel.no-gold {
+  grid-template-columns: 1.1fr 2fr;
+}
+.ach-panel > div {
+  padding: 16px 18px;
+  border-right: 1px solid var(--ds-border-soft);
+}
+.ach-panel > div:last-child {
+  border-right: none;
+}
+
+/* Tabular numerals for aligned figures */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Column 1 · Level + XP */
+.ach-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.ach-level-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.ach-lvl {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+}
+.ach-xp {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.ach-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--ds-border-soft);
+  overflow: hidden;
+}
+.ach-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--ds-accent);
+  transition: width 0.3s var(--ds-ease-out, ease-out);
+}
+.ach-next {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ds-muted-soft);
+}
+
+/* Column 2 · Gold (self-only, private) */
+.ach-gold {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.ach-gold-v {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: #e8c87a;
+  letter-spacing: -0.01em;
+}
+.ach-gold-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ach-priv {
+  color: var(--ds-muted-soft);
+  border: 1px solid var(--ds-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 8px;
+}
+
+/* Column 3 · Badges */
+.ach-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+.ach-badges-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ach-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 6px;
+  padding: 4px 9px;
+  transition: all 0.13s;
+}
+.ach-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-muted-soft);
+  transition: background 0.13s;
+}
+.ach-badge:hover {
+  color: var(--ds-ink);
+  border-color: var(--trusted);
+}
+.ach-badge:hover .ach-badge-dot {
+  background: var(--trusted);
+}
+.ach-badge.off {
+  opacity: 0.4;
+}
+.ach-badge.off:hover {
+  border-color: var(--ds-border);
+}
+.ach-badge.off:hover .ach-badge-dot {
+  background: var(--ds-muted-soft);
+}
+.ach-all {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  text-decoration: none;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.ach-all:hover {
+  color: var(--ds-ink);
+}
+
+/* Stack on narrow viewports */
+@media (max-width: 720px) {
+  .ach-panel,
+  .ach-panel.no-gold {
+    grid-template-columns: 1fr;
+  }
+  .ach-panel > div {
+    border-right: none;
+    border-bottom: 1px solid var(--ds-border-soft);
+  }
+  .ach-panel > div:last-child {
+    border-bottom: none;
+  }
+}

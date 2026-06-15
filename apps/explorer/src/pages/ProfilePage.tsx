@@ -14,6 +14,9 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
 import ProfileCharts from '../components/profile/ProfileCharts'
+import Achievements from '../components/profile/Achievements'
+import { useAchievements } from '../hooks/useAchievements'
+import { useExtensionGold } from '../hooks/useExtensionGold'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -35,6 +38,10 @@ export default function ProfilePage() {
   // When viewing yourself, aggregate across all linked wallets. When viewing
   // someone else (isViewingAs), use only their address.
   const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
+  // Achievements (on-chain level/XP/badges) for the profile being viewed;
+  // Gold is private + extension-local, so only fetched for your own profile.
+  const achievements = useAchievements(address)
+  const { gold } = useExtensionGold(isViewingAs ? undefined : address)
   const { selectedTopics, selectedCategories } = useTopicSync()
   const navigate = useNavigate()
   const { getStatus } = usePlatformConnections()
@@ -193,6 +200,16 @@ export default function ProfilePage() {
               ? undefined
               : (id) => navigate(`/profile/interest/${id}`)
           }
+        />
+
+        {/* Achievements — Level/XP + badges (on-chain), Gold (private,
+            extension-local). Curator Profile Pro · Module 5. */}
+        <Achievements
+          data={achievements.data}
+          loading={achievements.loading}
+          hasAccount={achievements.hasAccount}
+          gold={gold}
+          self={!isViewingAs}
         />
 
         {/* Echoes */}

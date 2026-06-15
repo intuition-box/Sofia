@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { avatarColor } from '@/utils/avatarColor'
+import { getAvatarUrl } from '@/services/ensService'
 
 interface MemberAvatarProps {
   member: TrustCircleAccount
@@ -32,17 +33,29 @@ export default function MemberAvatar({
   className = 'mav',
   linkable = false,
 }: MemberAvatarProps) {
-  const [imgOk, setImgOk] = useState(true)
+  const [primaryFailed, setPrimaryFailed] = useState(false)
   const bg = avatarColor(member.termId || member.label)
-  const hasImage = !!member.image && imgOk
+
+  // Universal fallback — the same resolver the feed, profile and leaderboard
+  // use (ENS-cached image → deterministic DiceBear glass). Group members carry
+  // no on-chain `image`, so without this they'd render bare initials while the
+  // very same wallet shows a generated avatar elsewhere. The generated value is
+  // a local data URI, so it never 404s; initials only remain when there's no
+  // wallet to seed from at all.
+  const generated = member.walletAddress
+    ? getAvatarUrl(member.walletAddress)
+    : ''
+  const usePrimary = !!member.image && !primaryFailed
+  const src = usePrimary ? member.image! : generated
+  const hasImage = !!src
   const initials = member.label.slice(0, 2).toUpperCase()
 
   const content = hasImage ? (
     <img
-      src={member.image!}
+      src={src}
       alt=""
       loading="lazy"
-      onError={() => setImgOk(false)}
+      onError={() => setPrimaryFailed(true)}
       style={{
         position: 'absolute',
         inset: 0,

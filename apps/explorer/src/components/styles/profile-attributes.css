@@ -61,21 +61,47 @@
   gap: 8px;
 }
 
+/* Square "vote pastille" chips, matching the Circle Pro v2 endorse pills
+   (the `endo` style): a translucent tint of the chip's own colour fills it, a
+   stronger tint draws the 7px-radius border, and a solid dot leads. Skills
+   lean accent, tools lean ink, in line with the group-header icons. Flat by
+   design — no lift — so it reads like the source pastilles. The count badge is
+   intentionally left loud. */
 .pa-chip {
+  --pa-chip-c: var(--ds-ink-soft);
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 10px 6px 12px;
-  border: 1px solid var(--ds-border);
-  border-radius: 999px;
-  background: var(--ds-bg-subtle);
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--pa-chip-c) 26%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pa-chip-c) 13%, transparent);
+  color: var(--ds-ink);
   transition:
     border-color 0.15s ease,
-    transform 0.15s ease;
+    background 0.15s ease;
+}
+.pa-group:first-child .pa-chip {
+  --pa-chip-c: var(--ds-accent);
+}
+.pa-group:last-child .pa-chip {
+  --pa-chip-c: var(--ds-ink-soft);
+}
+/* Leading colour dot — solid version of the chip colour (the endo dot). */
+.pa-chip::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pa-chip-c);
 }
 .pa-chip:hover {
-  border-color: var(--ds-ink-soft);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--pa-chip-c) 45%, transparent);
+  background: color-mix(in srgb, var(--pa-chip-c) 20%, transparent);
+}
+.pa-chip:active {
+  background: color-mix(in srgb, var(--pa-chip-c) 28%, transparent);
 }
 .pa-chip-label {
   font-family: 'Geist', sans-serif;
@@ -118,7 +144,7 @@
   height: 22px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: 6px;
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;

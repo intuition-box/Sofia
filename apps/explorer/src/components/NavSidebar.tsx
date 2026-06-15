@@ -32,6 +32,7 @@ import { useGroups } from '../hooks/useGroups'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { getAvatarUrl } from '../services/ensService'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import {
@@ -70,9 +71,14 @@ export function NavSidebar({
   const { linkWallet } = useLinkAccount({
     onSuccess: () => window.location.reload(),
   })
-  const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses, primary: primaryWallet } =
     useLinkedWallets()
+  // Identity wallet for the nav: prefer the linked "primary" (= addresses[0],
+  // the public identity the profile and feed resolve against) so the nav
+  // avatar + name match what's shown elsewhere. Privy's active wallet
+  // (user.wallet.address) can be an embedded/undefined wallet, which left the
+  // nav avatar blank even though the same user resolved fine on their profile.
+  const address = primaryWallet ?? user?.wallet?.address ?? ''
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
@@ -204,15 +210,19 @@ export function NavSidebar({
                   <div className="ns-circle-avatars">
                     {trustCircle.slice(0, 5).map((a) => {
                       const bg = avatarColor(a.termId || a.label)
+                      // Same universal fallback the feed/member lists use, so a
+                      // wallet with no on-chain image still shows its generated
+                      // avatar here instead of bare initials.
+                      const img =
+                        a.image ||
+                        (a.walletAddress ? getAvatarUrl(a.walletAddress) : '')
                       return (
                         <Avatar
                           key={a.termId}
                           className="ns-mav"
                           style={{ background: bg }}
                         >
-                          {a.image && (
-                            <AvatarImage src={a.image} alt={a.label} />
-                          )}
+                          {img && <AvatarImage src={img} alt={a.label} />}
                           <AvatarFallback
                             className="text-[9px]"
                             style={{ background: bg, color: '#02000e' }}
@@ -266,17 +276,19 @@ export function NavSidebar({
                         const bg = avatarColor(
                           m.member.termId || m.member.label,
                         )
+                        const img =
+                          m.member.image ||
+                          (m.member.walletAddress
+                            ? getAvatarUrl(m.member.walletAddress)
+                            : '')
                         return (
                           <Avatar
                             key={m.member.termId}
                             className="ns-mav"
                             style={{ background: bg }}
                           >
-                            {m.member.image && (
-                              <AvatarImage
-                                src={m.member.image}
-                                alt={m.member.label}
-                              />
+                            {img && (
+                              <AvatarImage src={img} alt={m.member.label} />
                             )}
                             <AvatarFallback
                               className="text-[9px]"

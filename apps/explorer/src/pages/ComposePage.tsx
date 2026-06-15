@@ -183,6 +183,19 @@ export default function ComposePage() {
           <h2>
             Compose <em>your perspective</em>
           </h2>
+          {/* Validation gate — sits between the title and the action row so
+              the user reads what's needed before reaching the compile
+              buttons, instead of finding them silently disabled. */}
+          <span
+            className={`composer-status${canCompile ? ' is-ready' : ''}`}
+            role="status"
+          >
+            {canCompile
+              ? `Ready — ${w} circle${w === 1 ? '' : 's'} · ${t} topic${
+                  t === 1 ? '' : 's'
+                } selected`
+              : 'Pick at least 1 circle and 1 topic — or 2 of either — to compile.'}
+          </span>
           <div className="composer-head-actions">
             {COMPARE_MODES.map((m) => (
               <CompileActionButton
@@ -196,44 +209,32 @@ export default function ComposePage() {
                 onRun={handleCompile}
               />
             ))}
-          </div>
-          {/* Validation gate — tells the user exactly what's missing before
-              a compile can redirect to /perspective, instead of leaving the
-              action buttons silently disabled. */}
-          <span
-            className={`composer-status${canCompile ? ' is-ready' : ''}`}
-            role="status"
-          >
-            {canCompile
-              ? `Ready — ${w} circle${w === 1 ? '' : 's'} · ${t} topic${
-                  t === 1 ? '' : 's'
-                } selected`
-              : 'Pick at least 1 circle and 1 topic — or 2 of either — to compile.'}
-          </span>
-        </div>
-
-        <div className="cmp-search">
-          <div style={{ position: 'relative' }}>
-            <Search
-              className="h-4 w-4"
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--ds-muted)',
-                pointerEvents: 'none',
-              }}
-            />
-            <input
-              type="search"
-              className="cmp-search-input"
-              style={{ paddingLeft: 36 }}
-              placeholder="Search circles or topics…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoComplete="off"
-            />
+            {/* Search shares the action row — a quick filter sitting to the
+                right of the compile buttons, on the same line. */}
+            <div className="cmp-search">
+              <div style={{ position: 'relative' }}>
+                <Search
+                  className="h-4 w-4"
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--ds-muted)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <input
+                  type="search"
+                  className="cmp-search-input"
+                  style={{ paddingLeft: 36 }}
+                  placeholder="Search circles or topics…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

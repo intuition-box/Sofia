@@ -21,7 +21,9 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 8px;
+  /* Was 8px; the search used to add the gap before the grid, but it now
+     lives inside the action row — so the head carries that spacing itself. */
+  margin-bottom: 20px;
   overflow: visible;
 }
 .composer-head h2 {
@@ -42,7 +44,9 @@
 }
 .composer-head-actions {
   display: flex;
+  align-items: center;
   gap: 10px;
+  width: 100%;
   flex-wrap: wrap;
 }
 
@@ -60,7 +64,11 @@
 }
 
 .cmp-search {
-  margin: 16px 0 20px;
+  /* On the same line as the compile buttons: the auto left margin pushes it
+     to the right end of the action row. */
+  margin: 0 0 0 auto;
+  flex: 0 1 320px;
+  min-width: 200px;
 }
 .cmp-search-input {
   width: 100%;
