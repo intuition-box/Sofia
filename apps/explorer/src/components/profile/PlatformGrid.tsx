@@ -13,10 +13,10 @@ import {
   ExternalLink,
   Link as LinkIcon,
   Loader2,
-  Search,
   UserPlus,
   Wallet,
 } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { PLATFORM_CATALOG } from '../../config/platformCatalog'
 import { getSuggestedPlatforms } from '../../config/taxonomy'
 import type {
@@ -129,7 +129,7 @@ export default function PlatformGrid({
   return (
     <div className="pg-root">
       <div className="pg-search">
-        <Search className="h-4 w-4 pg-search-icon" aria-hidden="true" />
+        <MagnifierIcon className="h-4 w-4 pg-search-icon" aria-hidden="true" />
         <input
           className="pg-search-input"
           type="search"

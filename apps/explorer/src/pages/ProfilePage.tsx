@@ -20,7 +20,8 @@ import { useExtensionGold } from '../hooks/useExtensionGold'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User, Tags, ArrowUpRight, Search, X } from 'lucide-react'
+import { Wallet, User, Tags, ArrowUpRight, X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { PageHero, SectionH2 } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
@@ -218,7 +219,7 @@ export default function ProfilePage() {
             <div className="pf-echoes-head-left">
               <SectionH2>Echoes</SectionH2>
               <div className="pf-echoes-search">
-                <Search
+                <MagnifierIcon
                   className="pf-echoes-search-icon h-3.5 w-3.5"
                   aria-hidden="true"
                 />

@@ -11,7 +11,8 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { Search, TrendingUp, X } from 'lucide-react'
+import { TrendingUp, X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
@@ -242,7 +243,7 @@ export default function PlatformDetailPage() {
         <section className="pp-section">
           <div className="pf-platform-toolbar">
             <div className="ts-search pf-platform-search">
-              <Search className="ts-search-icon h-4 w-4" />
+              <MagnifierIcon className="ts-search-icon h-4 w-4" />
               <input
                 type="search"
                 value={query}

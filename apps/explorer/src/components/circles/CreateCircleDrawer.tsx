@@ -6,7 +6,8 @@
  * circle atom + membership triple + N has_tag triples at submit time.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronDown, Search, X } from 'lucide-react'
+import { Check, ChevronDown, X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { type AccountAtom, useSearchAccounts } from '@/hooks/useSearchAccounts'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { useCart, type CircleDraft } from '@/hooks/useCart'
@@ -264,7 +265,7 @@ export default function CreateCircleDrawer({
               </span>
             </legend>
             <div className="cc-search">
-              <Search className="cc-search-icon h-4 w-4" />
+              <MagnifierIcon className="cc-search-icon h-4 w-4" />
               <input
                 type="text"
                 className="cc-input cc-search-input"
@@ -364,7 +365,7 @@ export default function CreateCircleDrawer({
           <div className="cc-field">
             <span className="cc-label">Invite members</span>
             <div className="cc-search">
-              <Search className="cc-search-icon h-4 w-4" />
+              <MagnifierIcon className="cc-search-icon h-4 w-4" />
               <input
                 type="text"
                 className="cc-input cc-search-input"

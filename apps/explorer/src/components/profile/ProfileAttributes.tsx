@@ -10,7 +10,8 @@
  * The declared chips are read on-chain via useUserAttributes.
  */
 import { useState } from 'react'
-import { Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { Sparkles, Wrench } from 'lucide-react'
 import { SKILLS, TOOLS, type Attribute } from '@0xsofia/taxonomy'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
@@ -94,7 +95,7 @@ function AttributeAdder({
   return (
     <div className="pa-adder">
       <span className="pa-adder-field">
-        <Search className="pa-adder-icon h-3.5 w-3.5" aria-hidden="true" />
+        <MagnifierIcon className="pa-adder-icon h-3.5 w-3.5" aria-hidden="true" />
         <input
           type="search"
           className="pa-adder-input"

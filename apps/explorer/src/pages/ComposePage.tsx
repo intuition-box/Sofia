@@ -15,7 +15,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHero } from '@0xsofia/design-system'
-import { ArrowUpRight, Search, Combine, Blend, Diff, Contrast } from 'lucide-react'
+import { ArrowUpRight, Combine, Blend, Diff, Contrast } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
@@ -213,7 +214,7 @@ export default function ComposePage() {
                 right of the compile buttons, on the same line. */}
             <div className="cmp-search">
               <div style={{ position: 'relative' }}>
-                <Search
+                <MagnifierIcon
                   className="h-4 w-4"
                   style={{
                     position: 'absolute',

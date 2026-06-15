@@ -17,7 +17,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
-import { Search, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { SectionH2 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
@@ -246,7 +247,7 @@ export default function PublicProfilePage() {
             <div className="pf-echoes-head-left">
               <SectionH2>Echoes</SectionH2>
               <div className="pf-echoes-search">
-                <Search
+                <MagnifierIcon
                   className="pf-echoes-search-icon h-3.5 w-3.5"
                   aria-hidden="true"
                 />

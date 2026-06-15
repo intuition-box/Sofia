@@ -11,7 +11,8 @@
 import { useMemo, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero } from '@0xsofia/design-system'
-import { Search, TrendingUp, X } from 'lucide-react'
+import { TrendingUp, X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { formatEther } from 'viem'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
@@ -97,7 +98,7 @@ export default function AllPlatformsPage() {
 
       <div className="pm-filters">
         <div className="pm-filter-group pm-filter-search">
-          <Search className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+          <MagnifierIcon className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
           <input
             type="search"
             className="pm-search-input"
