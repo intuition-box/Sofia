@@ -15,6 +15,10 @@ import { useMemo } from 'react'
 import type { CircleItem } from '@/services/circleService'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { INTENTION_PASTEL } from '@0xsofia/design-system'
+import {
+  TOPIC_DESCRIPTIONS,
+  VERB_DESCRIPTIONS,
+} from '@/config/topicDescriptions'
 
 export type InterestKind = 'topic' | 'verb'
 export type InterestTier = 'hero' | 'featured' | 'standard' | 'compact'
@@ -32,6 +36,8 @@ export interface InterestTile {
   color: string
   /** Matching feed items count. Drives ranking. */
   count: number
+  /** One-line description shown under the label. */
+  description: string
   /** Up to 6 sample items used by the tile body. */
   samples: CircleItem[]
   tier: InterestTier
@@ -77,6 +83,7 @@ export function useInterestTiles(items: CircleItem[]): InterestTile[] {
         label: t.label,
         color: t.color,
         count: matches.length,
+        description: TOPIC_DESCRIPTIONS[t.id] ?? '',
         samples: matches.slice(0, 6),
         tier: 'compact' as const, // placeholder — overwritten below
       }
@@ -94,6 +101,7 @@ export function useInterestTiles(items: CircleItem[]): InterestTile[] {
           INTENTION_PASTEL[v.id as keyof typeof INTENTION_PASTEL] ??
           'var(--ds-accent)',
         count: matches.length,
+        description: VERB_DESCRIPTIONS[v.id] ?? '',
         samples: matches.slice(0, 6),
         tier: 'compact' as const,
       }

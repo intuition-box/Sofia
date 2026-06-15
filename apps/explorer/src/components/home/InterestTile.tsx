@@ -14,6 +14,7 @@ interface InterestTileProps {
   kind: InterestKind
   id: string
   label: string
+  description: string
   tier: InterestTier
   samples: CircleItem[]
   onPick: () => void
@@ -40,6 +41,7 @@ export default function InterestTile({
   kind,
   id,
   label,
+  description,
   tier,
   samples,
   onPick,
@@ -63,6 +65,7 @@ export default function InterestTile({
     >
       <div className="hm-tile-body">
         <div className="hm-tile-label">{label}</div>
+        {description && <p className="hm-tile-desc">{description}</p>}
       </div>
       {favs.length > 0 && (
         <div className="hm-platforms">
