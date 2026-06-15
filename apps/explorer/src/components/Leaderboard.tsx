@@ -106,7 +106,7 @@ export default function Leaderboard({
 }: LeaderboardProps) {
   const [activeTab, setActiveTab] = useState<
     'alpha' | 'pool' | 'trust' | 'streak' | 'topic'
-  >('alpha')
+  >('trust')
   const {
     rankings: trustRankings,
     loading: trustLoading,
