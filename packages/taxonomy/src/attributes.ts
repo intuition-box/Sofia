@@ -3,14 +3,27 @@
  * (intuition-box/Atlas, src/lib/attestations/definitions.ts) so Sofia and Atlas
  * share one reference for the same Intuition ecosystem atoms.
  *
- * - `ATTRIBUTES` — 46 skills + 88 tools, each `{ id, label, category, atomData }`.
+ * - `ATTRIBUTES` — skills + tools, each `{ id, label, category, atomData }`.
  * - `ATTESTATION_TYPES` — the endorsement predicates (`is_skilled_in` /
- *   `uses_tool`) with their on-chain `termId`, plus the social signals
- *   (follow/trust/…). These termIds are the keys to read endorsements on-chain.
+ *   `uses_tool`) with their on-chain `termId`, plus the social signals.
+ * - `getAttributeThingData` — the EXACT JSON-LD Atlas pins to IPFS for a
+ *   skill/tool atom. Kept byte-identical (incl. `ATLAS_BASE_URL`) so Sofia
+ *   mints the SAME object atom termId and the triples interoperate with Atlas.
  *
- * Kept in sync with Atlas; the IPFS/Thing minting helpers were dropped — Sofia
- * reads endorsements, it doesn't mint attribute atoms.
+ * Must stay in sync with intuition-box/Atlas src/lib/attestations/definitions.ts.
  */
+
+/** Base URL Atlas bakes into each attribute Thing — do NOT change (it feeds
+ *  the IPFS CID, hence the atom termId). */
+const ATLAS_BASE_URL = 'https://atlas.box'
+
+/** Schema.org Thing metadata for an Intuition atom (name/description/url). */
+export interface ThingData {
+  name: string
+  description?: string
+  image?: string
+  url?: string
+}
 
 /* ────────────────────────────
    Attestation Types
@@ -953,4 +966,26 @@ export function getAttributeByLabel(label: string): Attribute | undefined {
 /** Lookup an attribute by its ID. */
 export function getAttributeById(id: string): Attribute | undefined {
   return ATTRIBUTES[id as AttributeId];
+}
+
+/**
+ * The schema.org Thing pinned to IPFS for an attribute's object atom.
+ * Deterministic: identical JSON-LD → identical IPFS CID → identical atom
+ * termId. MUST match Atlas byte-for-byte so the triples interoperate.
+ */
+export function getAttributeThingData(id: AttributeId): ThingData {
+  const attr = ATTRIBUTES[id];
+  const categoryLabel = attr.category === "skill" ? "skill" : "tool";
+  return {
+    name: attr.label,
+    description: `${attr.label} — a ${categoryLabel} on Atlas`,
+    url: `${ATLAS_BASE_URL}/${attr.category}s/${attr.id}`,
+  };
+}
+
+/** Endorsement predicate term_id for an attribute category. */
+export function endorsePredicateTermId(category: AttributeCategory): string {
+  return category === "skill"
+    ? ATTESTATION_TYPES.SKILL_ENDORSE.termId
+    : ATTESTATION_TYPES.TOOL_ENDORSE.termId;
 }
