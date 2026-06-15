@@ -281,7 +281,13 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           {/* Skills & Tools — declare your own (on-chain), others endorse */}
           <div className="pd-section">
             <p className="pd-section-title">Skills &amp; Tools</p>
-            <ProfileAttributes address={address || undefined} canDeclare />
+            {/* Read across ALL linked wallets: a skill may have been declared
+                under any of them (the signing wallet is wallets[0], which can
+                differ from Privy's primary user.wallet.address). */}
+            <ProfileAttributes
+              address={linkedAddresses.length ? linkedAddresses : undefined}
+              canDeclare
+            />
           </div>
 
           {/* Circle impact — sits right under the banner so identity +

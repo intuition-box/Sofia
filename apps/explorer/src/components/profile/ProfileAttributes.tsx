@@ -21,7 +21,9 @@ import '@/components/styles/profile-attributes.css'
 const MAX_PER_GROUP = 5
 
 interface ProfileAttributesProps {
-  address: string | undefined
+  /** One address (public profile) or the full linked-wallet set (own profile),
+   *  since skills may have been declared under any linked wallet. */
+  address: string | string[] | undefined
   /** When set, each chip gets an endorse ("vote") button (public profile). */
   onEndorse?: (attr: UserAttribute) => void
   /** When true, show a search box to declare your own skills/tools. */

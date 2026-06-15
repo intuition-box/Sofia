@@ -24,10 +24,12 @@ const SKILL_PREDICATE_ID = ATTESTATION_TYPES.SKILL_ENDORSE.termId
 const TOOL_PREDICATE_ID = ATTESTATION_TYPES.TOOL_ENDORSE.termId
 
 // The endorsement subject is the user's account atom, looked up by `wallet_id`
-// (stored EIP-55 checksummed — a lowercased address matches nothing).
+// (stored EIP-55 checksummed — a lowercased address matches nothing). A Privy
+// user can have several linked wallets and may have declared skills under any
+// of them, so we look up every linked address with `_in` and union the result.
 const GET_USER_ATTRIBUTES = `
-  query UserAttributes($address: String!, $predicateIds: [String!]!) {
-    atoms(where: { wallet_id: { _eq: $address } }) {
+  query UserAttributes($addresses: [String!]!, $predicateIds: [String!]!) {
+    atoms(where: { wallet_id: { _in: $addresses } }) {
       as_subject_triples(
         where: { predicate_id: { _in: $predicateIds } }
         limit: 300
@@ -74,15 +76,20 @@ interface RawAtom {
 }
 
 export async function fetchUserAttributes(
-  address: string,
+  address: string | string[],
 ): Promise<UserAttributes> {
-  // wallet_id is checksummed on-chain; bail on a malformed address.
-  let checksummed: string
-  try {
-    checksummed = getAddress(address)
-  } catch {
-    return { skills: [], tools: [] }
+  // wallet_id is checksummed on-chain; checksum each address and drop malformed
+  // ones. Bail only when nothing valid remains.
+  const raw = Array.isArray(address) ? address : [address]
+  const checksummed: string[] = []
+  for (const a of raw) {
+    try {
+      checksummed.push(getAddress(a))
+    } catch {
+      // malformed address — skip
+    }
   }
+  if (checksummed.length === 0) return { skills: [], tools: [] }
 
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
@@ -90,7 +97,7 @@ export async function fetchUserAttributes(
     body: JSON.stringify({
       query: GET_USER_ATTRIBUTES,
       variables: {
-        address: checksummed,
+        addresses: checksummed,
         predicateIds: [SKILL_PREDICATE_ID, TOOL_PREDICATE_ID],
       },
     }),
