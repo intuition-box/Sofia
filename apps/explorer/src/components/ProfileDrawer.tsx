@@ -250,9 +250,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           </div>
 
-          {/* Skills & Tools — on-chain endorsements (own profile, read-only) */}
+          {/* Skills & Tools — declare your own (on-chain), others endorse */}
           <div className="pd-section">
-            <ProfileAttributes address={address || undefined} />
+            <ProfileAttributes address={address || undefined} canDeclare />
           </div>
 
           {/* Circle impact — sits right under the banner so identity +

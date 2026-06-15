@@ -149,3 +149,73 @@
   transform: scale(1.08);
   outline: none;
 }
+
+/* ── Owner: declare a skill/tool (search box + dropdown) ────────── */
+.pa-adder {
+  position: relative;
+  margin-bottom: 8px;
+}
+.pa-adder-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pa-adder-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.pa-adder-input {
+  width: 100%;
+  padding: 7px 10px 7px 30px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pa-adder-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+.pa-adder-input::placeholder {
+  color: var(--ds-muted);
+}
+.pa-adder-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  background: var(--ds-card);
+  box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pa-adder-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pa-adder-opt:hover {
+  background: var(--ds-bg-subtle);
+}
+.pa-adder-opt svg {
+  color: var(--ds-accent);
+}
