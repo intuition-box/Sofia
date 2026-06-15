@@ -176,12 +176,12 @@
 }
 
 .hm-tile-label {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
-  font-weight: 900;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  line-height: 1.15;
+  line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -692,9 +692,9 @@
   min-width: 0;
 }
 .hm-circle-name {
-  font-family: var(--ds-font-display);
-  font-size: 15px;
-  font-weight: 800;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ds-ink);
   overflow: hidden;
