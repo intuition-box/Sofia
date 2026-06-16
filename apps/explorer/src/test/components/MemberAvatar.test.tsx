@@ -5,6 +5,11 @@ import type { TrustCircleAccount } from '@/services/trustCircleService'
 // Stub the universal avatar resolver so we can assert the fallback path
 // without pulling DiceBear / ENS into the test. Echo the (lowercased)
 // address back so we can also prove the seed is normalised.
+//
+// This stub mirrors the real `getAvatarUrl` contract (non-empty data URI,
+// lowercased seed) — that contract is pinned in
+// `test/services/ensService.test.ts` so this mock can't silently drift from
+// the actual resolver.
 vi.mock('@/services/ensService', () => ({
   getAvatarUrl: (addr: string) => `data:generated;${addr.toLowerCase()}`,
 }))

@@ -14,6 +14,7 @@ import { useGetAccountLabelsQuery } from '@0xsofia/graphql'
 import {
   resolveViaGraphQL,
   getDisplayName,
+  getAvatarUrl,
   isRealLabel,
   isEnsName,
   formatEth,
@@ -128,5 +129,43 @@ describe('ensService.resolveViaGraphQL', () => {
 
     expect(warnSpy).toHaveBeenCalled()
     warnSpy.mockRestore()
+  })
+})
+
+// Pins the `getAvatarUrl` contract that MemberAvatar (and its test's mock)
+// depend on. MemberAvatar.test.tsx stubs `getAvatarUrl` to assert the
+// avatar/initials fallback; these cases keep that stub honest by asserting
+// the real resolver's invariants — without them the mock could drift from
+// the resolver and the component test would pass against fiction.
+describe('ensService.getAvatarUrl', () => {
+  it('returns a non-empty data URI for an uncached address', () => {
+    // Fresh address (not touched by the resolveViaGraphQL cases above) so the
+    // generated-avatar branch is exercised rather than a warm cache hit.
+    const url = getAvatarUrl('0x5555555555555555555555555555555555555555')
+    expect(url).toMatch(/^data:/)
+    expect(url.length).toBeGreaterThan(0)
+  })
+
+  it('is deterministic and casing-insensitive', () => {
+    // The exact invariant MemberAvatar relies on: the same wallet renders an
+    // identical avatar everywhere, regardless of the casing the call site uses.
+    const lower = getAvatarUrl('0x5555555555555555555555555555555555555555')
+    const upper = getAvatarUrl('0x5555555555555555555555555555555555555555'.toUpperCase())
+    expect(lower).toBe(upper)
+  })
+
+  it('returns the resolved on-chain image once it has been cached', async () => {
+    const addr = '0x6666666666666666666666666666666666666666'
+    const image = 'https://example.com/avatar.png'
+    mockedFetcher.mockReturnValue(() =>
+      Promise.resolve({
+        accounts: [{ id: addr, label: 'carol.eth', image, atom: null }],
+      }),
+    )
+
+    await resolveViaGraphQL([addr])
+
+    // A resolved image must win over the generated DiceBear fallback.
+    expect(getAvatarUrl(addr)).toBe(image)
   })
 })
