@@ -2,7 +2,7 @@
  * AtomDetailDialog — platform market detail modal opened from the
  * `/platforms` grid. Proto-aligned: kicker + Fraunces title with the
  * platform favicon in a white rounded container, KPI tiles, compact
- * holders leaderboard, primary Invest CTA that drops the platform
+ * holders leaderboard, primary Stake CTA that drops the platform
  * into the cart.
  */
 
@@ -118,7 +118,7 @@ export default function AtomDetailDialog({
                 />
               </span>
               <div className="add-title-block">
-                <span className="add-kicker">Platform market</span>
+                <span className="add-kicker">Markets</span>
                 <span className="add-title-name">{platformName}</span>
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function AtomDetailDialog({
         {/* Invest action */}
         <div className="add-actions">
           {!walletAddress ? (
-            <div className="add-no-wallet">Connect a wallet to invest</div>
+            <div className="add-no-wallet">Connect a wallet to stake</div>
           ) : (
             <button
               type="button"
@@ -262,7 +262,7 @@ export default function AtomDetailDialog({
               disabled={inCart}
             >
               <TrendingUp className="h-4 w-4" />
-              {inCart ? 'Added to cart' : `Invest in ${platformName}`}
+              {inCart ? 'Added to cart' : `Stake in ${platformName}`}
             </button>
           )}
         </div>

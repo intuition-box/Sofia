@@ -1,0 +1,257 @@
+/* ── Profile sidebar — Skills & Tools (on-chain endorsements) ───── */
+
+.pa-section {
+  padding: 0;
+}
+
+.pa-loading {
+  padding: 20px 0;
+  font-family: var(--ds-font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ds-muted);
+}
+
+.pa-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pa-group {
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  background: var(--ds-card);
+}
+
+.pa-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+/* Skills lean accent, tools lean ink — a subtle, semantic split. */
+.pa-group:first-child .pa-group-head svg {
+  color: var(--ds-accent);
+}
+.pa-group:last-child .pa-group-head svg {
+  color: var(--ds-ink-soft);
+}
+.pa-group-count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+}
+
+.pa-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Square "vote pastille" chips, matching the Circle Pro v2 endorse pills
+   (the `endo` style): a translucent tint of the chip's own colour fills it, a
+   stronger tint draws the 7px-radius border. Skills lean accent, tools lean
+   ink, in line with the group-header icons. Flat by
+   design — no lift — so it reads like the source pastilles. The count badge is
+   intentionally left loud. */
+.pa-chip {
+  --pa-chip-c: var(--ds-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--pa-chip-c) 26%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pa-chip-c) 13%, transparent);
+  color: var(--ds-ink);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.pa-group:first-child .pa-chip {
+  --pa-chip-c: var(--ds-accent);
+}
+.pa-group:last-child .pa-chip {
+  --pa-chip-c: var(--ds-ink-soft);
+}
+.pa-chip:hover {
+  border-color: color-mix(in srgb, var(--pa-chip-c) 45%, transparent);
+  background: color-mix(in srgb, var(--pa-chip-c) 20%, transparent);
+}
+.pa-chip:active {
+  background: color-mix(in srgb, var(--pa-chip-c) 28%, transparent);
+}
+.pa-chip-label {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.pa-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pa-empty {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ds-muted);
+}
+
+/* Endorse ("vote") button — only on votable chips (public profile). */
+.pa-chip--votable {
+  padding-right: 5px;
+}
+.pa-chip-vote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+.pa-chip-vote:hover,
+.pa-chip-vote:focus-visible {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  transform: scale(1.08);
+  outline: none;
+}
+
+/* ── Owner: declare a skill/tool (search box + dropdown) ────────── */
+.pa-adder {
+  position: relative;
+  margin-bottom: 8px;
+}
+.pa-adder-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pa-adder-icon {
+  position: absolute;
+  left: 11px;
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.pa-adder-input {
+  width: 100%;
+  padding: 7px 12px 7px 38px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pa-adder-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+.pa-adder-input::placeholder {
+  color: var(--ds-muted);
+}
+.pa-adder-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  background: var(--ds-card);
+  box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pa-adder-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ds-ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pa-adder-opt:hover {
+  background: var(--ds-bg-subtle);
+}
+.pa-adder-opt svg {
+  color: var(--ds-accent);
+}
+
+/* ── Edit button (owner sidebar — replaces the count) ───────────────── */
+.pa-group-edit {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.13s;
+}
+.pa-group-edit:hover {
+  color: var(--ds-ink);
+}
+
+/* ── Edit modal (add skills/tools) ──────────────────────────────────── */
+.pa-edit-modal {
+  max-width: 460px;
+}
+.pa-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 4px;
+}
+.pa-edit-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

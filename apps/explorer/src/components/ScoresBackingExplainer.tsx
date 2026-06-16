@@ -7,12 +7,14 @@
  * story was implicit in the data but never told — this dismissible band
  * frames it the first time someone lands on the page.
  *
- * Dismissal persists in localStorage so it shows once, not every visit.
+ * State is lifted to the page (ScoresPage owns open/dismiss + persistence)
+ * so the dismissed-state chip (`ScoresExplainerReopen`) can ride the toolbar
+ * line right next to the Score / Pool tabs, while the full band stays a
+ * full-width row below. Dismissal persists in localStorage so it shows once.
  */
-import { useState } from 'react'
 import { Flag, Users, TrendingUp, X, HelpCircle } from 'lucide-react'
 
-const DISMISS_KEY = 'sc2-backing-explainer-dismissed'
+export const SC2_EXPLAINER_DISMISS_KEY = 'sc2-backing-explainer-dismissed'
 
 const STEPS = [
   {
@@ -32,48 +34,31 @@ const STEPS = [
   },
 ]
 
-export default function ScoresBackingExplainer() {
-  const [dismissed, setDismissed] = useState(
-    () =>
-      typeof localStorage !== 'undefined' &&
-      localStorage.getItem(DISMISS_KEY) === '1',
+/**
+ * Dismissed-state chip — rendered up in the toolbar so it sits on the same
+ * line as the Score / Pool tabs instead of taking a line of its own.
+ */
+export function ScoresExplainerReopen({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" className="sc2-explainer-reopen" onClick={onClick}>
+      <HelpCircle aria-hidden="true" />
+      How backing works
+    </button>
   )
+}
 
-  const close = () => {
-    try {
-      localStorage.setItem(DISMISS_KEY, '1')
-    } catch {
-      /* private mode / storage disabled — dismiss for the session only */
-    }
-    setDismissed(true)
-  }
-
-  const reopen = () => {
-    try {
-      localStorage.removeItem(DISMISS_KEY)
-    } catch {
-      /* ignore */
-    }
-    setDismissed(false)
-  }
-
-  // Once dismissed, leave a quiet chip so the explainer is never lost — the
-  // user can pull it back to re-read it.
-  if (dismissed) {
-    return (
-      <button type="button" className="sc2-explainer-reopen" onClick={reopen}>
-        <HelpCircle aria-hidden="true" />
-        How backing works
-      </button>
-    )
-  }
-
+/** The full explanatory band. Controlled by the page — `onClose` dismisses it. */
+export default function ScoresBackingExplainer({
+  onClose,
+}: {
+  onClose: () => void
+}) {
   return (
     <section className="sc2-explainer" aria-label="How backing works">
       <button
         type="button"
         className="sc2-explainer-x"
-        onClick={close}
+        onClick={onClose}
         aria-label="Dismiss"
       >
         <X aria-hidden="true" />

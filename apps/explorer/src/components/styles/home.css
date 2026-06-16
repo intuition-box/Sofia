@@ -105,6 +105,11 @@
   color: var(--ds-ink);
   background: var(--ds-bg-subtle);
 }
+/* On the Explore home the search leads the page; `.hm-home`'s gap owns the
+   spacing below it. */
+.hm-search--top {
+  margin-bottom: 0;
+}
 
 .hm-empty {
   padding: 32px 16px;
@@ -121,23 +126,22 @@
 /* ── Masonry grid ───────────────────────────────────────────────── */
 
 .hm-grid {
-  column-count: 3;
-  column-gap: 14px;
-}
-@media (max-width: 1200px) {
-  .hm-grid {
-    column-count: 2;
-  }
-}
-@media (max-width: 700px) {
-  .hm-grid {
-    column-count: 1;
-  }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 .hm-grid > .hm-tile {
-  break-inside: avoid;
-  margin-bottom: 14px;
   width: 100%;
+}
+@media (max-width: 900px) {
+  .hm-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .hm-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Tile ────────────────────────────────────────────────────────── */
@@ -159,9 +163,12 @@
     box-shadow 0.18s ease;
   position: relative;
   overflow: hidden;
+  min-height: 128px;
 }
-.hm-tile.hm-verb {
-  border-left: 3px solid var(--verb-color, var(--ds-accent));
+.hm-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 9%, var(--ds-card));
 }
 .hm-tile:focus-visible {
   outline: 2px solid var(--ds-accent);
@@ -169,12 +176,28 @@
 }
 
 .hm-tile-label {
-  font-family: var(--ds-font-display);
-  font-size: 20px;
-  font-weight: 900;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
-  line-height: 1.1;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hm-tile-desc {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ds-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── Platform strip (compact tiles) ─────────────────────────────── */
@@ -183,8 +206,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-top: auto;
   padding-top: 10px;
-  border-top: 1px dashed var(--ds-border);
 }
 .hm-platform-favs {
   display: inline-flex;
@@ -192,52 +215,6 @@
   gap: 6px;
   flex-wrap: wrap;
   min-width: 0;
-}
-
-/* ── URL preview rows (featured / hero) ─────────────────────────── */
-
-.hm-urls {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--ds-border);
-}
-.hm-url-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--ds-bg-subtle);
-  border: 1px solid var(--ds-border);
-  text-align: left;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.hm-tile:hover .hm-url-row {
-  border-color: color-mix(in oklab, var(--ds-ink) 25%, transparent);
-}
-.hm-url-host {
-  flex: 1;
-  min-width: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--ds-muted);
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Hero tile — bigger favicon + host. */
-.hm-tile.hm-hero .hm-url-row {
-  padding: 10px 12px;
-}
-.hm-tile.hm-hero .hm-url-host {
-  font-size: 12px;
 }
 
 /* ── Drill-down header ──────────────────────────────────────────── */
@@ -564,4 +541,207 @@
 .dp-filter-row .vf-bar {
   flex: 1;
   min-width: 0;
+}
+
+/* ── Explore home — Topics / Circles / Activity blocks ───────────── */
+
+.hm-home {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Section shell ──────────────────────────────────────────────── */
+.hm-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.hm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.hm-section-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hm-section-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.hm-section-action:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+
+/* ── Circles — medium cards (logo + name + members + avatars) ───── */
+.hm-circles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+/* Let columns shrink below the card's nowrap-description min-content so the
+   3-up grid holds instead of overflowing into a single stacked column. */
+.hm-circles > li {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .hm-circles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 460px) {
+  .hm-circles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.hm-circle {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 148px;
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  background: var(--ds-card);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.hm-circle:hover,
+.hm-circle:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--ds-ink-soft);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
+  outline: none;
+}
+.hm-circle-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hm-circle-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: var(--ds-font-display);
+  font-size: 18px;
+  font-weight: 800;
+  overflow: hidden;
+}
+.hm-circle-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hm-circle-logo--trust {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent, #fff);
+}
+.hm-circle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hm-circle-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hm-circle-members {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+}
+.hm-circle-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-circle-avatars {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+.hm-circle-mav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--ds-card);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #02000e;
+}
+.hm-circle-mav:first-child {
+  margin-left: 0;
+}
+.hm-circle-mav--more {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
 }

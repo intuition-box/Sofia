@@ -51,22 +51,19 @@
   color: var(--ds-ink);
 }
 .lb-sort-active {
-  color: #f5d58a !important;
+  color: var(--ds-ink) !important;
 }
 
 /* ── Card wrapper — matches StatsRibbon / PersonalStats ── */
 .lb-card {
   position: relative;
   border: 1px solid var(--ds-border);
-  border-top: 4px solid #f5d58a;
   border-radius: 14px;
   background: var(--ds-card);
   overflow: hidden;
   padding: 0;
   gap: 0;
-  box-shadow:
-    0 1px 0 0 color-mix(in oklab, #f5d58a 30%, transparent) inset,
-    0 24px 60px -28px color-mix(in oklab, #f5d58a 22%, transparent);
+  box-shadow: var(--ds-shadow-card);
 }
 
 /* ── Layout ── */
@@ -75,31 +72,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, #f5d58a 6%, transparent) 0%,
-    transparent 100%
-  );
+  border-bottom: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
 }
 .lb-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--ds-font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   color: var(--ds-ink);
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.lb-title::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 18px;
-  background: #f5d58a;
-  border-radius: 2px;
 }
 .lb-tab-group {
   display: flex;
@@ -114,13 +98,13 @@
   color: var(--ds-ink);
 }
 .lb-tab-group button[data-active='true'] {
-  background: #f5d58a;
+  background: var(--ds-accent);
   color: var(--ds-on-accent);
-  border-color: #f5d58a;
+  border-color: var(--ds-accent);
 }
 .lb-tab-group button[data-active='true']:hover {
-  background: color-mix(in oklab, #f5d58a 88%, #000);
-  border-color: color-mix(in oklab, #f5d58a 88%, #000);
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 .lb-table {
   width: 100%;
@@ -156,7 +140,8 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Podium badges for top 3 */
+/* Podium badges for top 3 — neutral design-system treatment. The #1 sits on
+   the accent; #2/#3 use the subtle surface so nothing reads as gaudy gold. */
 .lb-rank-badge {
   display: inline-flex;
   align-items: center;
@@ -167,25 +152,25 @@
   font-size: 13px;
   font-weight: 700;
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-  border: 1.5px solid currentColor;
+  border: 1px solid var(--ds-border);
 }
 .lb-rank-1 {
-  color: #fcd34d;
-  background: color-mix(in oklab, #fcd34d 14%, transparent);
-  box-shadow: 0 0 12px -2px color-mix(in oklab, #fcd34d 50%, transparent);
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
 }
 .lb-rank-2 {
-  color: #d4d4d8;
-  background: color-mix(in oklab, #d4d4d8 12%, transparent);
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
 .lb-rank-3 {
-  color: #d08c5c;
-  background: color-mix(in oklab, #d08c5c 14%, transparent);
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
 }
 
 /* Top 3 row treatment */
 .lb-top-row {
-  background: color-mix(in oklab, #f5d58a 4%, transparent);
+  background: var(--ds-bg-subtle);
 }
 .lb-top-row .lb-username {
   font-weight: 600;
@@ -206,7 +191,7 @@
   transition: color 0.15s;
 }
 .lb-user-link:hover {
-  color: #f5d58a;
+  color: var(--ds-ink);
 }
 .lb-avatar {
   width: 22px;
@@ -225,10 +210,9 @@
   color: var(--ds-ink);
 }
 
-/* ── Self row highlight (aligned with TopPlatforms' top-row tint) ── */
+/* ── Self row highlight — neutral subtle wash, no coloured border. ── */
 .lb-self-row {
-  border-left: 3px solid #f5d58a;
-  background: color-mix(in srgb, #f5d58a 4%, transparent);
+  background: var(--ds-bg-subtle);
 }
 
 /* Row hover — mirrors TopPlatforms `.pc-plat-row:hover`. */
@@ -236,7 +220,7 @@
   background: var(--ds-bg-subtle);
 }
 .lb-table tbody tr.lb-border-row.lb-self-row:hover {
-  background: color-mix(in srgb, #f5d58a 8%, transparent);
+  background: var(--ds-border-soft);
 }
 
 /* ── Skeleton ── */
@@ -251,7 +235,7 @@
   font-size: 14px;
   vertical-align: middle;
   text-align: center;
-  color: var(--destructive-foreground);
+  color: var(--ds-muted);
 }
 
 /* ── P&L colors (aligned with TopPlatforms `.pc-plat-delta`) ── */
@@ -278,4 +262,72 @@
 .lb-trust-legend strong {
   color: var(--ds-ink);
   font-weight: 600;
+}
+
+/* ── Streak sub-toggle (Signals / Vote) ─────────────────────────── */
+.lb-subtabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 18px 0;
+}
+.lb-subtabs button {
+  color: var(--ds-ink-soft);
+  background: transparent;
+}
+.lb-subtabs button:hover {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+}
+.lb-subtabs button[data-active='true'] {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+/* ── Topic tab — coming-soon placeholder ────────────────────────── */
+.lb-coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 24px 56px;
+}
+.lb-coming-soon-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+}
+.lb-coming-soon-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.lb-coming-soon-title {
+  margin: 6px 0 0;
+  font-family: var(--ds-font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.lb-coming-soon-text {
+  margin: 0;
+  max-width: 360px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
 }

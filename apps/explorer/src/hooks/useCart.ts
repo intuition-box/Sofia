@@ -19,6 +19,19 @@ export interface CircleDraft {
   topicIds: string[]
 }
 
+/** Draft payload carried by a `kind: 'create-skill'` cart item. WeightModal
+ *  mints the skill/tool object atom (Atlas-identical Thing) then the
+ *  `[you → is_skilled_in/uses → skill]` triple at submit time. */
+export interface SkillDraft {
+  /** IPFS Thing for the object atom — must match Atlas byte-for-byte. */
+  payload: { name: string; description: string; image: string; url: string }
+  /** is_skilled_in (skills) / uses (tools) predicate term_id. */
+  predicateId: string
+  /** Canonical label + category, for the cart row + grouping. */
+  label: string
+  category: 'skill' | 'tool'
+}
+
 export interface CartItem {
   id: string
   side: 'support' | 'oppose'
@@ -37,8 +50,10 @@ export interface CartItem {
    *   - 'create-circle'  → atomCreationService + createTriples (mints
    *                        circle atom + membership + has_tag triples)
    *   - 'redeem'         → MultiVault.redeem (retrieves all shares)
+   *   - 'create-skill'   → atomCreationService (mints skill/tool atom) +
+   *                        createTriples ([you → is_skilled_in/uses → skill])
    *  Defaults to 'deposit' for back-compat with existing callers. */
-  kind?: 'deposit' | 'create-triple' | 'create-circle' | 'redeem'
+  kind?: 'deposit' | 'create-triple' | 'create-circle' | 'redeem' | 'create-skill'
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string
@@ -46,6 +61,8 @@ export interface CartItem {
   objectId?: string
   /** Required when `kind === 'create-circle'`. */
   circleDraft?: CircleDraft
+  /** Required when `kind === 'create-skill'`. */
+  skillDraft?: SkillDraft
 }
 
 interface CartContextValue {

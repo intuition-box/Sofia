@@ -12,10 +12,11 @@
  * three.js compile animation + `/perspective` destination land (see
  * INTEGRATION.md §9 follow-up wave).
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHero } from '@0xsofia/design-system'
-import { ArrowUpRight, Search } from 'lucide-react'
+import { ArrowUpRight, Combine, Blend, Diff, Contrast } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
@@ -27,26 +28,40 @@ import type { CompareMode } from '@/lib/compileActionAnims'
 import '@/components/styles/pages.css'
 import '@/components/styles/compose.css'
 
-const COMPARE_MODES: { id: CompareMode; label: string; hint: string }[] = [
+const COMPARE_MODES: {
+  id: CompareMode
+  label: string
+  hint: string
+  icon: ReactNode
+  color: string
+}[] = [
   {
     id: 'merge',
     label: 'Merge',
     hint: 'Union — everything any selection certified.',
+    icon: <Combine className="h-4 w-4" />,
+    color: '#6dd4a0',
   },
   {
     id: 'intersect',
     label: 'Intersect',
     hint: 'Strict overlap — where selections agree.',
+    icon: <Blend className="h-4 w-4" />,
+    color: '#5cc4d6',
   },
   {
     id: 'subtract',
     label: 'Subtract',
     hint: 'Difference — in one, missing from others.',
+    icon: <Diff className="h-4 w-4" />,
+    color: '#e0a458',
   },
   {
     id: 'contrast',
     label: 'Contrast',
     hint: 'Divergence — where selections disagree most.',
+    icon: <Contrast className="h-4 w-4" />,
+    color: '#c890d9',
   },
 ]
 
@@ -166,50 +181,61 @@ export default function ComposePage() {
 
       <div className="composer">
         <div className="composer-head">
-          <div className="composer-head-row">
-            <h2>
-              Compose <em>your perspective</em>
-            </h2>
-            <div className="composer-head-actions">
-              {COMPARE_MODES.map((m) => (
-                <CompileActionButton
-                  key={m.id}
-                  mode={m.id}
-                  label={m.label}
-                  title={m.hint}
-                  disabled={!canCompile}
-                  onRun={handleCompile}
-                />
-              ))}
-            </div>
-          </div>
-          <span className="composer-count">
-            {w} circle{w === 1 ? '' : 's'} · {t} topic{t === 1 ? '' : 's'}
+          <h2>
+            Compose <em>your perspective</em>
+          </h2>
+          {/* Validation gate — sits between the title and the action row so
+              the user reads what's needed before reaching the compile
+              buttons, instead of finding them silently disabled. */}
+          <span
+            className={`composer-status${canCompile ? ' is-ready' : ''}`}
+            role="status"
+          >
+            {canCompile
+              ? `Ready — ${w} circle${w === 1 ? '' : 's'} · ${t} topic${
+                  t === 1 ? '' : 's'
+                } selected`
+              : 'Pick at least 1 circle and 1 topic — or 2 of either — to compile.'}
           </span>
-        </div>
-
-        <div className="cmp-search">
-          <div style={{ position: 'relative' }}>
-            <Search
-              className="h-4 w-4"
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--ds-muted)',
-                pointerEvents: 'none',
-              }}
-            />
-            <input
-              type="search"
-              className="cmp-search-input"
-              style={{ paddingLeft: 36 }}
-              placeholder="Search circles or topics…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoComplete="off"
-            />
+          <div className="composer-head-actions">
+            {COMPARE_MODES.map((m) => (
+              <CompileActionButton
+                key={m.id}
+                mode={m.id}
+                label={m.label}
+                title={m.hint}
+                icon={m.icon}
+                color={m.color}
+                disabled={!canCompile}
+                onRun={handleCompile}
+              />
+            ))}
+            {/* Search shares the action row — a quick filter sitting to the
+                right of the compile buttons, on the same line. */}
+            <div className="cmp-search">
+              <div style={{ position: 'relative' }}>
+                <MagnifierIcon
+                  className="h-4 w-4"
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--ds-muted)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <input
+                  type="search"
+                  className="cmp-search-input"
+                  style={{ paddingLeft: 36 }}
+                  placeholder="Search circles or topics…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

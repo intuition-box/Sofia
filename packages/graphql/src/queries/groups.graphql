@@ -25,6 +25,21 @@ query GetGroupsList($predicateId: String!, $limit: Int!, $offset: Int!) {
   }
 }
 
+# Topics tagged onto a single group (`group → has_tag → topic`). Drives the
+# circle's visual signature (hero color, default chip color) derived from the
+# first topic the group was tagged with at creation.
+query GetGroupTopics($groupTermId: String!, $hasTagPredicateId: String!) {
+  triples(
+    where: {
+      subject_id: { _eq: $groupTermId }
+      predicate_id: { _eq: $hasTagPredicateId }
+    }
+    limit: 50
+  ) {
+    object_id
+  }
+}
+
 # All membership triples for one specific group atom — used by the
 # group detail page to list every claimed member.
 query GetGroupDetail(

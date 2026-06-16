@@ -193,9 +193,13 @@ export function getDisplayName(addr: string): string {
 }
 
 export function getAvatarUrl(addr: string): string {
-  const cached = avatarCache.get(addr.toLowerCase())
+  const key = addr.toLowerCase()
+  const cached = avatarCache.get(key)
   if (cached) return cached
-  // DiceBear fallback — generate deterministic glass avatar from address
-  const avatar = createAvatar(glass, { seed: addr })
+  // DiceBear fallback — deterministic glass avatar from the address.
+  // Seed on the lowercased address so the SAME wallet renders an identical
+  // avatar everywhere (feed, profile, member lists, leaderboard) regardless
+  // of the casing the call site happens to pass.
+  const avatar = createAvatar(glass, { seed: key })
   return avatar.toDataUri()
 }

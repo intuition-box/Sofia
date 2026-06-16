@@ -78,18 +78,48 @@
   gap: 2px;
 }
 .pd-name {
-  font-family: var(--ds-font-display);
-  font-size: 18px;
-  font-weight: 800;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.1;
   color: var(--ds-ink);
+}
+.pd-address-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .pd-address {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
+}
+.pd-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.pd-copy:hover,
+.pd-copy:focus-visible {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  outline: none;
+}
+.pd-copy--done {
+  color: var(--trusted, #6dd4a0);
 }
 
 .pd-share-btn {
@@ -447,4 +477,20 @@ a.pd-la-row:hover {
   font-size: 10px;
   color: var(--ds-muted);
   letter-spacing: 0.02em;
+}
+
+/* ── Account & wallet management menu (replaces the copy button) ─────────
+   Reuses the nav account-menu item classes (.ns-auth-menu-*, loaded globally
+   via NavSidebar) for the rows; the container is fully self-styled here so it
+   never depends on the dropdown base, and sits above the drawer rail. */
+.pd-manage-menu {
+  min-width: 240px;
+  padding: 6px;
+  background: var(--ds-card, var(--ds-bg));
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.5);
+  /* Above the drawer aside (z-index: 9999) — the menu portals to <body> but the
+     rail sits very high, so without this it opens hidden behind it. */
+  z-index: 10000 !important;
 }

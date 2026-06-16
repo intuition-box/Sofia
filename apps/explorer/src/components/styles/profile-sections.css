@@ -154,7 +154,9 @@
 .pf-echoes-search-input {
   width: 100%;
   padding: 7px 32px 7px 36px;
-  border-radius: 999px;
+  /* Match the Skills & Tools search field (.pa-adder-input) — a softly
+     squared 8px, not a full pill. */
+  border-radius: 8px;
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);

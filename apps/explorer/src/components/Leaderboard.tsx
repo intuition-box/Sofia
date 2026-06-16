@@ -8,6 +8,8 @@ import type { EigentrustEntry } from '../services/mcpTrustService'
 import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { formatTrust } from '../utils/formatting'
+import StreakLeaderboardTable from './leaderboard/StreakLeaderboardTable'
+import TopicLeaderboardTable from './leaderboard/TopicLeaderboardTable'
 import './styles/leaderboard.css'
 
 function RankCell({ rank }: { rank: number }) {
@@ -102,9 +104,9 @@ export default function Leaderboard({
   poolError,
   connectedAddress,
 }: LeaderboardProps) {
-  const [activeTab, setActiveTab] = useState<'alpha' | 'pool' | 'trust'>(
-    'alpha',
-  )
+  const [activeTab, setActiveTab] = useState<
+    'alpha' | 'pool' | 'trust' | 'streak' | 'topic'
+  >('trust')
   const {
     rankings: trustRankings,
     loading: trustLoading,
@@ -138,6 +140,11 @@ export default function Leaderboard({
 
   const isAlpha = activeTab === 'alpha'
   const isTrust = activeTab === 'trust'
+  const isStreak = activeTab === 'streak'
+  const isTopic = activeTab === 'topic'
+  // The Streak / Topic tabs are self-contained sub-components with their own
+  // data + loading state; the shared table below only drives alpha/pool/trust.
+  const isSharedTable = isAlpha || isTrust || activeTab === 'pool'
   const loading = isTrust ? trustLoading : isAlpha ? alphaLoading : poolLoading
   const error = isTrust ? trustError : isAlpha ? alphaError : poolError
   const columns = isAlpha ? ALPHA_COLUMNS : POOL_COLUMNS
@@ -172,10 +179,28 @@ export default function Leaderboard({
           >
             Trust Ranking
           </Button>
+          <Button
+            size="sm"
+            variant={activeTab === 'streak' ? 'default' : 'ghost'}
+            data-active={activeTab === 'streak'}
+            onClick={() => setActiveTab('streak')}
+          >
+            Streak
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === 'topic' ? 'default' : 'ghost'}
+            data-active={activeTab === 'topic'}
+            onClick={() => setActiveTab('topic')}
+          >
+            Topic
+          </Button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table — alpha / pool / trust share this one; streak & topic render
+          their own self-contained tables below. */}
+      {isSharedTable && (
       <div className="overflow-x-auto">
         <table className="lb-table">
           {!isTrust && (
@@ -386,6 +411,12 @@ export default function Leaderboard({
           </tbody>
         </table>
       </div>
+      )}
+
+      {isStreak && (
+        <StreakLeaderboardTable connectedAddress={connectedAddress} />
+      )}
+      {isTopic && <TopicLeaderboardTable />}
 
       {isTrust && !loading && (
         <div className="lb-trust-legend">

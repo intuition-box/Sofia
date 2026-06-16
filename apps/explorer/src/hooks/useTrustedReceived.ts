@@ -15,61 +15,14 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
-import { GRAPHQL_URL, SUBJECT_IDS, PREDICATE_IDS } from '@/config'
+import {
+  useFindAccountAtomsQuery,
+  useGetTrustedByPositionsQuery,
+} from '@0xsofia/graphql'
+import { SUBJECT_IDS, PREDICATE_IDS } from '@/config'
 
 const STALE_TIME_MS = 5 * 60 * 1000
 const GC_TIME_MS = 60 * 60 * 1000
-
-const FIND_ACCOUNT_ATOMS_QUERY = `
-  query FindAccountAtoms($addresses: [String!]!) {
-    atoms(
-      where: {
-        _and: [
-          { data: { _in: $addresses } }
-          { type: { _eq: "Account" } }
-        ]
-      }
-    ) {
-      term_id
-    }
-  }
-`
-
-const TRUSTED_BY_POSITIONS_QUERY = `
-  query GetTrustedByPositions($subjectId: String!, $predicateId: String!, $objectIds: [String!]!) {
-    triples(
-      where: {
-        _and: [
-          { subject_id: { _eq: $subjectId } }
-          { predicate_id: { _eq: $predicateId } }
-          { object_id: { _in: $objectIds } }
-        ]
-      }
-    ) {
-      term {
-        vaults {
-          positions_aggregate(where: { shares: { _gt: "0" } }) {
-            aggregate { count }
-          }
-        }
-      }
-    }
-  }
-`
-
-async function gqlRequest<T>(
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, variables }),
-  })
-  const json = await res.json()
-  if (json.errors?.length) throw new Error(json.errors[0].message)
-  return json.data as T
-}
 
 async function fetchTrustedReceived(
   addresses: readonly string[],
@@ -80,25 +33,20 @@ async function fetchTrustedReceived(
   const lower = addresses.map((a) => a.toLowerCase())
   const allCase = Array.from(new Set([...checksum, ...lower]))
 
-  const atomResult = await gqlRequest<{ atoms: { term_id: string }[] }>(
-    FIND_ACCOUNT_ATOMS_QUERY,
-    { addresses: allCase },
-  ).catch(() => ({ atoms: [] as { term_id: string }[] }))
+  const atomResult = await useFindAccountAtomsQuery
+    .fetcher({ addresses: allCase })()
+    .catch(() => ({ atoms: [] as { term_id: string }[] }))
 
   const myAtomIds = atomResult.atoms.map((a) => a.term_id).filter(Boolean)
   if (myAtomIds.length === 0) return 0
 
-  const res = await gqlRequest<{
-    triples: {
-      term: {
-        vaults: { positions_aggregate: { aggregate: { count: number } } }[]
-      }
-    }[]
-  }>(TRUSTED_BY_POSITIONS_QUERY, {
-    subjectId: SUBJECT_IDS.I,
-    predicateId: PREDICATE_IDS.TRUSTS,
-    objectIds: myAtomIds,
-  }).catch(() => ({ triples: [] as never[] }))
+  const res = await useGetTrustedByPositionsQuery
+    .fetcher({
+      subjectId: SUBJECT_IDS.I,
+      predicateId: PREDICATE_IDS.TRUSTS,
+      objectIds: myAtomIds,
+    })()
+    .catch(() => ({ triples: [] as never[] }))
 
   let total = 0
   for (const triple of res.triples || []) {

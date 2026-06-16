@@ -20,6 +20,7 @@
     "@0xsofia/design-system": "workspace:*",
     "@0xsofia/graphql": "workspace:*",
     "@0xsofia/taxonomy": "workspace:*",
+    "@0xsofia/quests": "workspace:*",
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",
     "@noble/curves": "^1.8.0",

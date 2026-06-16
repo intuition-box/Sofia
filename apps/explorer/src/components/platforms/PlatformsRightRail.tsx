@@ -14,6 +14,8 @@ import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import { FaviconWrapper } from '@0xsofia/design-system'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
+import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -35,6 +37,8 @@ function compactNumber(n: number): string {
 
 export default function PlatformsRightRail() {
   const { markets, isLoading } = usePlatformMarket()
+  const { platformById } = usePlatformCatalog()
+  const { redeemCert } = useRedeemCert()
   const { user, authenticated } = usePrivy()
   const walletAddress = user?.wallet?.address
   const [selected, setSelected] = useState<PlatformVaultData | null>(null)
@@ -87,6 +91,7 @@ export default function PlatformsRightRail() {
         totalInvested: '0',
         best: null as PlatformVaultData | null,
         worst: null as PlatformVaultData | null,
+        held: [] as PlatformVaultData[],
       }
     const totalRaw = held.reduce(
       (acc, m) => acc + BigInt(m.userDeposited || '0'),
@@ -101,6 +106,9 @@ export default function PlatformsRightRail() {
       totalInvested: formatMCap(totalRaw.toString()),
       best: sorted[0] ?? null,
       worst: sorted[sorted.length - 1] ?? null,
+      held: [...held].sort(
+        (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
+      ),
     }
   }, [authenticated, markets])
 
@@ -194,7 +202,7 @@ export default function PlatformsRightRail() {
           </p>
         ) : myPositions.count === 0 ? (
           <p className="prr-empty">
-            You don't hold any platform yet. Invest from any card to start
+            You don't hold any platform yet. Stake from any card to start
             tracking here.
           </p>
         ) : (
@@ -208,7 +216,7 @@ export default function PlatformsRightRail() {
                 <span className="prr-pulse-value">
                   {myPositions.totalInvested}
                 </span>
-                <span className="prr-pulse-label">Invested (T)</span>
+                <span className="prr-pulse-label">Staked (T)</span>
               </div>
             </div>
             {myPositions.best && myPositions.best.userPnlPct != null && (
@@ -252,6 +260,33 @@ export default function PlatformsRightRail() {
                   </span>
                 </div>
               )}
+
+            <ul className="prr-positions">
+              {myPositions.held.map((market) => {
+                const slug = ATOM_ID_TO_PLATFORM.get(market.termId) || ''
+                const entry = slug ? platformById(slug) : undefined
+                const website = entry?.website || slug
+                return (
+                  <li key={market.termId} className="prr-position">
+                    <FaviconWrapper
+                      size={20}
+                      src={`/favicons/${slug}.png`}
+                      alt={market.label}
+                    />
+                    <span className="prr-position-name">{market.label}</span>
+                    <button
+                      type="button"
+                      className="prr-redeem-btn"
+                      onClick={() =>
+                        redeemCert(market.termId, market.label, website)
+                      }
+                    >
+                      Redeem
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           </>
         )}
       </section>

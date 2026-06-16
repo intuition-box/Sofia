@@ -11,6 +11,7 @@ import { timeAgo } from '@/utils/formatting'
 import FeedCardView, {
   type FeedCardVerb,
   type FeedCardTopic,
+  type FeedCardSize,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
@@ -24,6 +25,8 @@ interface FeedCardProps {
   /** Whether this cert is the viewer's own. The "+ Context" tagging CTA shows
    *  only on your own Marks; on others' you only get the like/dislike thumbs. */
   isOwner?: boolean
+  /** Card size — Activity uses 'md' for a uniform medium grid; default 'lg'. */
+  size?: FeedCardSize
   onDeposit?: (side: 'support' | 'oppose', item: CircleItem) => void
 }
 
@@ -33,6 +36,7 @@ export default function FeedCard({
   avatar,
   isPrivate,
   isOwner = false,
+  size,
   onDeposit,
 }: FeedCardProps) {
   // A like/dislike stakes the cert's "in context of <topic>" nested
@@ -77,6 +81,7 @@ export default function FeedCard({
 
   return (
     <FeedCardView
+      size={size}
       handle={isPrivate ? 'Someone' : displayName}
       avatarUrl={isPrivate ? undefined : avatar || undefined}
       when={timeAgo(item.timestamp)}

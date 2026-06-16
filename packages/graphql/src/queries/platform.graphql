@@ -1,0 +1,54 @@
+# On-chain platform catalog — platform atoms + their category relationships
+# from the Intuition knowledge graph (`platform → has_tag → category`). Drives
+# the on-chain replacement for the static platformCatalog data.
+query GetPlatformTriples(
+  $predicateId: String!
+  $categoryTermIds: [String!]!
+) {
+  triples(
+    where: {
+      predicate_id: { _eq: $predicateId }
+      object: { term_id: { _in: $categoryTermIds } }
+      subject: { term_id: { _nin: $categoryTermIds } }
+    }
+    limit: 1000
+  ) {
+    subject {
+      term_id
+      label
+      image
+      value {
+        thing {
+          url
+          name
+          description
+        }
+      }
+    }
+    object {
+      term_id
+      label
+    }
+  }
+}
+
+# The user's positions on platform ATOM vaults (their "invests"), with
+# timestamps, for the profile activity feed.
+query GetUserPlatformInvests(
+  $addresses: [String!]!
+  $termIds: [String!]!
+  $limit: Int!
+) {
+  positions(
+    where: {
+      account_id: { _in: $addresses }
+      term_id: { _in: $termIds }
+      shares: { _gt: "0" }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+  ) {
+    term_id
+    created_at
+  }
+}

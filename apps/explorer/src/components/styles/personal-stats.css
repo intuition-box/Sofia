@@ -1,31 +1,16 @@
 /* ──────────────────────────────────────────────────────────
    Personal Stats — player card / standing
+   Surfaces + accents come straight from the design-system tokens
+   (--ds-*). No hardcoded gold, no coloured borders.
    ────────────────────────────────────────────────────────── */
 
 .ps-card {
   position: relative;
   border: 1px solid var(--ds-border);
-  border-top: 4px solid #f5d58a;
   border-radius: 14px;
   background: var(--ds-card);
   overflow: hidden;
-  box-shadow:
-    0 1px 0 0 color-mix(in oklab, #f5d58a 30%, transparent) inset,
-    0 24px 60px -28px color-mix(in oklab, #f5d58a 22%, transparent);
-}
-
-.ps-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    135deg,
-    color-mix(in oklab, #f5d58a 4%, transparent) 0 1px,
-    transparent 1px 14px
-  );
-  mix-blend-mode: screen;
-  opacity: 0.6;
+  box-shadow: var(--ds-shadow-card);
 }
 
 /* ── Top bar ── */
@@ -34,7 +19,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 22px;
-  border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  border-bottom: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -49,14 +35,6 @@
   align-items: center;
   gap: 12px;
   color: var(--ds-ink);
-}
-.ps-bar-title::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 14px;
-  background: #f5d58a;
-  border-radius: 2px;
 }
 .ps-share-btn {
   display: inline-flex;
@@ -74,17 +52,13 @@
   text-transform: none;
   cursor: pointer;
   transition: all 0.18s;
-  box-shadow: 0 2px 0 0 color-mix(in oklab, #f5d58a 60%, transparent);
 }
 .ps-share-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow:
-    0 4px 0 0 #f5d58a,
-    0 6px 16px -6px rgba(0, 0, 0, 0.4);
+  border-color: var(--ds-ink-soft);
 }
 .ps-share-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 0 0 #f5d58a;
 }
 .ps-share-btn:disabled {
   opacity: 0.5;
@@ -94,19 +68,6 @@
   width: 14px;
   height: 14px;
   fill: currentColor;
-}
-/* Light-mode-friendly inverse: in dark mode the black-on-dark loses contrast against the card,
-   add a subtle outline glow */
-.dark .ps-share-btn {
-  box-shadow:
-    0 0 0 1px color-mix(in oklab, #f5d58a 40%, transparent),
-    0 2px 0 0 color-mix(in oklab, #f5d58a 60%, transparent);
-}
-.dark .ps-share-btn:hover:not(:disabled) {
-  box-shadow:
-    0 0 0 1px #f5d58a,
-    0 4px 0 0 #f5d58a,
-    0 6px 16px -6px rgba(0, 0, 0, 0.6);
 }
 
 /* ── Body ── */
@@ -120,7 +81,7 @@
 /* ── Player zone (left) ── */
 .ps-player {
   padding: 26px 24px;
-  border-right: 1px solid color-mix(in oklab, var(--ds-ink) 10%, transparent);
+  border-right: 1px solid var(--ds-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,7 +110,7 @@
 .ps-rank-hash {
   font-size: 0.42em;
   font-weight: 500;
-  color: #f5d58a;
+  color: var(--ds-muted);
   margin-top: 0.18em;
 }
 .ps-rank-of {
@@ -160,22 +121,22 @@
   text-transform: uppercase;
   color: var(--ds-muted);
 }
-/* Top 3 special tints */
+/* Top 3 — kept on the ink scale so #1 still reads as "best" without
+   resorting to gaudy gold/silver/bronze hardcodes. */
 .ps-rank--1 {
-  color: #f5d58a;
-  text-shadow: 0 0 28px color-mix(in oklab, #f5d58a 50%, transparent);
+  color: var(--ds-ink);
 }
 .ps-rank--2 {
-  color: #d4d4d8;
+  color: var(--ds-ink-soft);
 }
 .ps-rank--3 {
-  color: #d08c5c;
+  color: var(--ds-ink-soft);
 }
 
 .ps-divider {
   width: 38px;
   height: 1px;
-  background: color-mix(in oklab, #f5d58a 50%, transparent);
+  background: var(--ds-border);
 }
 
 .ps-identity {
@@ -189,10 +150,8 @@
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid color-mix(in oklab, #f5d58a 50%, transparent);
-  box-shadow:
-    0 0 0 4px var(--ds-card),
-    0 0 16px -4px color-mix(in oklab, #f5d58a 60%, transparent);
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 0 0 4px var(--ds-card);
 }
 .ps-name {
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
@@ -207,9 +166,9 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid color-mix(in oklab, #f5d58a 60%, transparent);
-  background: color-mix(in oklab, #f5d58a 10%, transparent);
-  color: #f5d58a;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 700;
@@ -220,7 +179,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #f5d58a;
+  background: var(--ds-on-accent);
 }
 
 /* ── Stats zone (right) ── */
@@ -236,7 +195,7 @@
 }
 .ps-stats--split .ps-stats-col + .ps-stats-col {
   padding-left: 32px;
-  border-left: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  border-left: 1px solid var(--ds-border);
 }
 .ps-stats-col {
   display: flex;
@@ -248,7 +207,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #f5d58a;
+  color: var(--ds-muted);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -259,13 +218,13 @@
   display: inline-block;
   width: 18px;
   height: 2px;
-  background: #f5d58a;
+  background: var(--ds-border);
 }
 .ps-section-title::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  background: var(--ds-border);
 }
 
 .ps-stat-list {
@@ -277,7 +236,7 @@
   align-items: baseline;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px dashed color-mix(in oklab, var(--ds-ink) 10%, transparent);
+  border-bottom: 1px dashed var(--ds-border);
 }
 .ps-stat-row:last-child {
   border-bottom: none;
@@ -301,10 +260,10 @@
   color: var(--ds-ink);
 }
 .ps-stat-value--positive {
-  color: #22c55e;
+  color: var(--trusted);
 }
 .ps-stat-value--negative {
-  color: #ef4444;
+  color: var(--distrusted);
 }
 
 /* ── Not alpha state ── */
@@ -334,7 +293,7 @@
   }
   .ps-player {
     border-right: none;
-    border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 10%, transparent);
+    border-bottom: 1px solid var(--ds-border);
   }
   .ps-rank {
     font-size: 64px;
