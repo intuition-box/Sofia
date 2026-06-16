@@ -145,7 +145,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // Page info comes from the owned cert when we have it, else from the
       // fields carried on a context addition (cert not owned by viewer).
       const objectUrl =
-        e.kind === 'context' && !e.cert ? e.objectUrl : (e.cert?.objectUrl ?? '')
+        e.kind === 'context' && !e.cert
+          ? e.objectUrl
+          : (e.cert?.objectUrl ?? '')
       const objectLabel =
         e.kind === 'context' && !e.cert
           ? e.objectLabel
@@ -153,8 +155,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       const url = objectUrl || ''
       const domain = extractDomain(url) || extractDomain(objectLabel) || ''
       const title = cleanLabel(objectLabel || domain || '')
-      const linkUrl =
-        url || (objectLabel.startsWith('http') ? objectLabel : '')
+      const linkUrl = url || (objectLabel.startsWith('http') ? objectLabel : '')
       const favicon = domain ? getFaviconUrl(domain) : ''
 
       if (e.kind === 'context') {
@@ -180,7 +181,11 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             : (null as Verb | null),
           topic:
             !isLike && e.topicSlug
-              ? { id: e.topicSlug, label: topicLabel, color: topic?.color ?? '' }
+              ? {
+                  id: e.topicSlug,
+                  label: topicLabel,
+                  color: topic?.color ?? '',
+                }
               : null,
         }
       }
@@ -279,8 +284,18 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               <p className="pd-section-title">Last activity</p>
               <div className="pd-la-list">
                 {lastActivity.map((a) => {
-                  const verbs = a.verb ? [{ label: a.verb.label, color: a.verb.color }] : []
-                  const topics = a.topic ? [{ id: a.topic.id, label: a.topic.label, color: a.topic.color }] : []
+                  const verbs = a.verb
+                    ? [{ label: a.verb.label, color: a.verb.color }]
+                    : []
+                  const topics = a.topic
+                    ? [
+                        {
+                          id: a.topic.id,
+                          label: a.topic.label,
+                          color: a.topic.color,
+                        },
+                      ]
+                    : []
                   return (
                     <FeedCardView
                       key={a.id}
@@ -296,7 +311,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       up={-1}
                       down={-1}
                       onOpen={() => {
-                        if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer')
+                        if (a.url)
+                          window.open(a.url, '_blank', 'noopener,noreferrer')
                       }}
                     />
                   )

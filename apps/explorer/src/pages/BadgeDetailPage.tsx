@@ -174,7 +174,12 @@ export default function BadgeDetailPage() {
                 <CertFeedCard
                   key={cert.termId}
                   cert={cert}
-                  handle={selfDisplay || (address ? `${address.slice(0, 6)}…${address.slice(-4)}` : '')}
+                  handle={
+                    selfDisplay ||
+                    (address
+                      ? `${address.slice(0, 6)}…${address.slice(-4)}`
+                      : '')
+                  }
                   avatarUrl={selfAvatar || undefined}
                   topicById={topicById}
                   isOwner

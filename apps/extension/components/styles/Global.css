@@ -1,7 +1,7 @@
 /* Styles globaux et communs à toute l'application */
 
-/* Import Google Fonts (Geist + Frank Ruhl Libre + JetBrains Mono — same as DS) */
-@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=block');
+/* Import Google Fonts (Geist + Frank Ruhl Libre + JetBrains Mono — same as DS — + Unbounded) */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;500;600;700&display=block');
 
 /* Material Symbols Outlined — topic glyphs in filter dots, same family
    and variation axes as the explorer's TopicBadge. */
@@ -173,6 +173,7 @@ body {
   --font-family-primary: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-display: var(--ds-font-display);
   --font-family-mono: 'JetBrains Mono', monospace;
+  --ds-font-unbounded: 'Unbounded', ui-sans-serif, system-ui, sans-serif;
   --font-size-xs: 10px;
   --font-size-sm: 12px;
   --font-size-base: 14px;

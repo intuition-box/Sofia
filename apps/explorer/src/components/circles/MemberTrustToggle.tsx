@@ -60,7 +60,9 @@ export default function MemberTrustToggle({
 
   const disabled = disabledReason !== null
   const label = inCart ? 'Queued' : 'Trust'
-  const title = disabledHint ?? (inCart ? 'In cart — submit to emit' : `Trust ${member.label}`)
+  const title =
+    disabledHint ??
+    (inCart ? 'In cart — submit to emit' : `Trust ${member.label}`)
 
   const handleClick = (e: MouseEvent) => {
     e.preventDefault()

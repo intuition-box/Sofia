@@ -310,9 +310,7 @@ export default function PlatformDetailPage() {
                   topicById={topicById}
                   isOwner={isOwnProfile}
                   onVote={
-                    authenticated
-                      ? (side) => handleVote(cert, side)
-                      : undefined
+                    authenticated ? (side) => handleVote(cert, side) : undefined
                   }
                 />
               ))}

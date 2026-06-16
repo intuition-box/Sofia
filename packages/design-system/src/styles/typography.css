@@ -1,0 +1,42 @@
+/**
+ * @0xsofia/design-system — typography utilities
+ *
+ * Shared text primitives ported from the newexplorerDAO handoff
+ * (circle/styles.css:91-109). Class-based so any surface can opt in without
+ * re-declaring the font stacks:
+ *   - `.ds-display`  display/heading face (`--ds-font-display`, e.g. Unbounded
+ *                    when the host overrides it; Frank Ruhl Libre otherwise)
+ *   - `.ds-eyebrow`  uppercase tracked mono label
+ *   - `.ds-mono`     mono face (`--ds-font-mono`)
+ *   - `.tnum`        tabular figures (stable-width numbers in tables/metrics)
+ *
+ * Import once where needed:
+ *   `import "@0xsofia/design-system/styles/typography.css"`
+ */
+
+.ds-display {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  /* Variable-font axes — harmless no-ops on static faces. */
+  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  color: var(--ds-ink);
+}
+
+.ds-eyebrow {
+  font-family: var(--ds-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin: 0;
+}
+
+.ds-mono {
+  font-family: var(--ds-font-mono);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}

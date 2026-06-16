@@ -325,6 +325,24 @@ export function setupMessageHandlers(): void {
       return true
     }
 
+    if (message.type === 'OPEN_TUTORIAL') {
+      ;(async () => {
+        try {
+          await chrome.storage.session.set({ pending_tutorial: true })
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+          if (tab?.id) {
+            await chrome.sidePanel.open({ tabId: tab.id })
+          }
+          logger.info('Tutorial intent stored')
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error('Failed to handle OPEN_TUTORIAL', error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+      })()
+      return true
+    }
+
     sendResponse({ success: false, error: 'Unknown message type' })
     return true
   })

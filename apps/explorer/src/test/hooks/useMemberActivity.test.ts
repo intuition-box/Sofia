@@ -49,11 +49,7 @@ describe('useMemberActivity', () => {
       member({ termId: 'a', label: 'alice', walletAddress: '0xAAA' }),
       member({ termId: 'b', label: 'bob', walletAddress: '0xBBB' }),
     ]
-    const items = [
-      item('0xaaa', NOW),
-      item('0xAAA', NOW),
-      item('0xbbb', NOW),
-    ]
+    const items = [item('0xaaa', NOW), item('0xAAA', NOW), item('0xbbb', NOW)]
     const { result } = renderHook(() => useMemberActivity(items, members))
     expect(result.current.signalsByTermId.get('a')).toBe(2)
     expect(result.current.signalsByTermId.get('b')).toBe(1)

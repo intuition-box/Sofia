@@ -214,6 +214,16 @@
   cursor: not-allowed;
 }
 
+/* Icon-only variant — square trash button (replaces the "Redeem" label). */
+.url-redeem-btn--icon {
+  justify-content: center;
+  padding: 6px;
+}
+.url-redeem-btn--icon svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* Empty state */
 .category-empty {
   text-align: center;

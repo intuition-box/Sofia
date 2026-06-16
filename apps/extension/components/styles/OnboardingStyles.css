@@ -57,7 +57,7 @@
   padding: 12px 16px;
   border: none;
   border-radius: 12px;
-  font-family: var(--ds-font-display);
+  font-family: var(--ds-font-unbounded);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -105,23 +105,30 @@
   opacity: 0.85;
 }
 
-/* Tutorial card with blur */
+/* Tutorial card with blur.
+ * Fixed height so every step is exactly the same size regardless of
+ * screenshot aspect ratio or copy length (space-between pins the progress
+ * dots on top, the content in the middle, the actions at the bottom). */
 .tutorial-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
   border-radius: 16px;
   padding: 24px 20px;
   width: 100%;
+  height: 500px;
+  box-sizing: border-box;
 }
 
 /* Tutorial specific */
 .tutorial-progress {
   display: flex;
   gap: 6px;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  flex-shrink: 0;
 }
 
 .tutorial-dot {
@@ -144,21 +151,48 @@
 }
 
 .tutorial-content {
-  max-width: 95%;
-  margin-bottom: var(--spacing-xl);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+/* Fixed-size frame so each screenshot occupies the exact same space;
+ * object-fit: contain letterboxes any aspect ratio without resizing
+ * the card. */
+.tutorial-screenshot-frame {
+  width: 100%;
+  height: 185px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tutorial-screenshot {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
+  object-fit: contain;
   border-radius: 12px;
-  margin-bottom: var(--spacing-lg);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.tutorial-screenshot-small {
-  max-width: 300px;
+/* Back + Skip share a row under the primary action. */
+.tutorial-secondary-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.tutorial-secondary-actions .onboarding-btn {
+  flex: 1;
 }
 
 /* Error message */

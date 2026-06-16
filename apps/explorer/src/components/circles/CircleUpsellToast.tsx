@@ -22,7 +22,9 @@ const TOAST_TTL_MS = 2600
 /** Fire a transient upsell toast from anywhere in the circle view. */
 export function circleUpsellToast(message: string): void {
   if (typeof window === 'undefined') return
-  window.dispatchEvent(new CustomEvent<string>(TOAST_EVENT, { detail: message }))
+  window.dispatchEvent(
+    new CustomEvent<string>(TOAST_EVENT, { detail: message }),
+  )
 }
 
 export default function CircleUpsellToast() {

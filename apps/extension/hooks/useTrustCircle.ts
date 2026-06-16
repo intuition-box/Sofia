@@ -211,6 +211,18 @@ export function useTrustCircle(
     fetchTrustCircle()
   }, [fetchTrustCircle])
 
+  // Refetch after a trust is created elsewhere (e.g. the "+ add" / onboarding
+  // flow). The triple needs a moment to index, so retry on a short backoff —
+  // otherwise a just-trusted account is missing until a manual refresh.
+  useEffect(() => {
+    const onTrustAdded = () => {
+      setTimeout(() => fetchTrustCircle(), 2000)
+      setTimeout(() => fetchTrustCircle(), 5000)
+    }
+    window.addEventListener("sofia:trust-added", onTrustAdded)
+    return () => window.removeEventListener("sofia:trust-added", onTrustAdded)
+  }, [fetchTrustCircle])
+
   return {
     accounts,
     loading,

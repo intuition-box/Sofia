@@ -124,7 +124,9 @@ export function computeBackersByTopic({
     }))
     // Ordered by who backs you the MOST (distinct claims), then by credibility
     // (the Trust-score tiebreak / "who lifts you most"). Repeat backers rise.
-    list.sort((a, b) => b.backCount - a.backCount || b.credibility - a.credibility)
+    list.sort(
+      (a, b) => b.backCount - a.backCount || b.credibility - a.credibility,
+    )
     byTopic.set(topic, list)
   }
 

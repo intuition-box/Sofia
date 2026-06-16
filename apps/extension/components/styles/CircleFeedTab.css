@@ -203,11 +203,13 @@
 /* Grid Layout */
 .circle-grid {
   display: grid;
-  /* Single column: the feed renders the shared FeedCardView (OG hero + title
-     + footer), which needs the full side-panel width to read. Two columns
-     would crush the hero image. */
-  grid-template-columns: 1fr;
+  /* Responsive: fluid sm cards fill each cell — two columns when the panel is
+     wide enough, collapsing to one on narrow side-panels. */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--spacing-md);
+}
+.circle-grid > * {
+  min-width: 0;
 }
 
 /* Card — vertical stack mirroring the explorer's FeedCard:

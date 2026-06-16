@@ -1,0 +1,38 @@
+/**
+ * @0xsofia/design-system — AvailDot
+ * Availability dot + label (circle/modules.css:418-422). The dot-only variant
+ * (`ds-avail--dot`) hides the label via `gap: 0` since no text is rendered.
+ */
+.ds-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--ds-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ds-avail i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ds-avail--active {
+  color: var(--trusted);
+}
+.ds-avail--active i {
+  background: var(--intent-trusted, #22c55e);
+}
+.ds-avail--quiet {
+  color: var(--fun);
+}
+.ds-avail--quiet i {
+  background: var(--intent-fun, #f59e0b);
+}
+.ds-avail--inactive {
+  color: var(--ds-muted-soft);
+}
+.ds-avail--inactive i {
+  background: var(--ds-muted-soft);
+}

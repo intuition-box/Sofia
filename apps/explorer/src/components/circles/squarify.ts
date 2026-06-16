@@ -46,7 +46,10 @@ export function squarify<T extends SquarifyItem>(
   if (total <= 0 || W <= 0 || H <= 0 || items.length === 0) return []
 
   const scale = (W * H) / total
-  const data: AreaItem<T>[] = items.map((i) => ({ ...i, area: i.value * scale }))
+  const data: AreaItem<T>[] = items.map((i) => ({
+    ...i,
+    area: i.value * scale,
+  }))
   // Working cells still carry `area`; it's stripped on return.
   const out: (AreaItem<T> & { x: number; y: number; w: number; h: number })[] =
     []
@@ -65,7 +68,10 @@ export function squarify<T extends SquarifyItem>(
   const worst = (r: AreaItem<T>[], area: number, s: number): number => {
     const max = Math.max(...r.map((it) => it.area))
     const min = Math.min(...r.map((it) => it.area))
-    return Math.max((s * s * max) / (area * area), (area * area) / (s * s * min))
+    return Math.max(
+      (s * s * max) / (area * area),
+      (area * area) / (s * s * min),
+    )
   }
 
   // Commit the current row as a column (when wide) or row (when tall),

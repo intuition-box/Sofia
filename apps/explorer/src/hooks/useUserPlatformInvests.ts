@@ -56,7 +56,8 @@ export function useUserPlatformInvests(addresses: readonly string[]) {
       const cat = slug ? SLUG_TO_CATALOG.get(slug) : undefined
       let domain = ''
       try {
-        if (cat?.website) domain = new URL(cat.website).hostname.replace(/^www\./, '')
+        if (cat?.website)
+          domain = new URL(cat.website).hostname.replace(/^www\./, '')
       } catch {
         // ignore
       }

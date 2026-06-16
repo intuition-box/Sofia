@@ -5,7 +5,11 @@ import {
   categoryPills,
 } from '@/config/contextNodes'
 import { TOPIC_ATOM_IDS, CATEGORY_ATOM_IDS } from '@/config/atomIds'
-import { CATEGORY_TO_TOPIC, CATEGORY_BY_ID, TOPIC_BY_ID } from '@/config/taxonomy'
+import {
+  CATEGORY_TO_TOPIC,
+  CATEGORY_BY_ID,
+  TOPIC_BY_ID,
+} from '@/config/taxonomy'
 
 // 'defi' is a category under the 'web3-crypto' topic; 'web-development' under
 // 'tech-dev'. These anchor the rollup assertions.

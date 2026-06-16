@@ -1,0 +1,27 @@
+/**
+ * @0xsofia/design-system — Avatar
+ * Initials on a gradient (circle/styles.css:497-509). Size + background are
+ * set inline by the component; this sheet owns the shape + text rendering.
+ */
+.ds-avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--ds-font-mono);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  position: relative;
+}
+.ds-avatar--square {
+  border-radius: 9px;
+}
+.ds-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

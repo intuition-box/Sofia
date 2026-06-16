@@ -128,13 +128,14 @@ export default function WeightModal({
   const depositTermIds = useMemo(
     () =>
       items
-        .filter((it) =>
-          (it.kind ?? 'deposit') === 'deposit' &&
-          it.kind !== 'redeem' &&
-          // Platform atom vaults (Invest) are atoms, not triples — skip
-          // the triple-existence check or it always fails.
-          it.intention !== 'Invest' &&
-          !it.id.startsWith('invest-'),
+        .filter(
+          (it) =>
+            (it.kind ?? 'deposit') === 'deposit' &&
+            it.kind !== 'redeem' &&
+            // Platform atom vaults (Invest) are atoms, not triples — skip
+            // the triple-existence check or it always fails.
+            it.intention !== 'Invest' &&
+            !it.id.startsWith('invest-'),
         )
         .map((it) => it.termId),
     [items],
@@ -584,7 +585,9 @@ export default function WeightModal({
                       if (qd) return qd
                       // Direct favicon URL: use its hostname
                       return u.hostname.replace(/^www\./, '')
-                    } catch { return '' }
+                    } catch {
+                      return ''
+                    }
                   })()
 
                   // Verb/topic chips built AFTER badgeTopic resolution so topic
@@ -595,23 +598,37 @@ export default function WeightModal({
                   // returns null for circle-feed vote items (termId is a context
                   // triple, not a topic atom), so fall back to matching the
                   // intention label against the taxonomy.
-                  const badgeTopic = topicMeta ?? (() => {
-                    const byLabel = [...TOPIC_BY_ID.values()].find(
-                      (t) => t.label.toLowerCase() === item.intention?.toLowerCase()
-                    )
-                    return byLabel ?? null
-                  })()
+                  const badgeTopic =
+                    topicMeta ??
+                    (() => {
+                      const byLabel = [...TOPIC_BY_ID.values()].find(
+                        (t) =>
+                          t.label.toLowerCase() ===
+                          item.intention?.toLowerCase(),
+                      )
+                      return byLabel ?? null
+                    })()
 
                   // Topic pill below the title (no favicon overlay badge).
                   const topics = badgeTopic
-                    ? [{ id: badgeTopic.id, label: badgeTopic.label, color: badgeTopic.color }]
+                    ? [
+                        {
+                          id: badgeTopic.id,
+                          label: badgeTopic.label,
+                          color: badgeTopic.color,
+                        },
+                      ]
                     : []
-                  const verbs = (!badgeTopic && item.intention)
-                    ? [{ label: item.intention, color: item.intentionColor }]
-                    : []
+                  const verbs =
+                    !badgeTopic && item.intention
+                      ? [{ label: item.intention, color: item.intentionColor }]
+                      : []
 
                   return (
-                    <div className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`} key={item.id}>
+                    <div
+                      className={`b3-row is-on${isRedeem ? ' b3-row--redeem' : ''}`}
+                      key={item.id}
+                    >
                       {/* Remove control */}
                       <button
                         className="b3-check"
@@ -620,8 +637,19 @@ export default function WeightModal({
                         disabled={processing}
                         onClick={() => onRemove?.(item.id)}
                       >
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                          <path d="M5 12l4 4L19 6" stroke="var(--ds-on-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M5 12l4 4L19 6"
+                            stroke="var(--ds-on-accent)"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       </button>
 
@@ -647,14 +675,18 @@ export default function WeightModal({
                         </div>
                       ) : (
                         <div className="b3-row-trust">
-                          <span className="b3-row-trust-val">{formatTrust(rowTrust)}</span>
+                          <span className="b3-row-trust-val">
+                            {formatTrust(rowTrust)}
+                          </span>
                           <span className="b3-row-trust-unit">TRUST</span>
                         </div>
                       )}
 
                       {isRedeem ? (
                         <div className="b3-tiers b3-tiers--redeem">
-                          <span className="b3-tier-label">All shares returned</span>
+                          <span className="b3-tier-label">
+                            All shares returned
+                          </span>
                         </div>
                       ) : (
                         <div className="b3-tiers" role="radiogroup">
@@ -759,9 +791,7 @@ export default function WeightModal({
                   <br />
                   validated
                 </h2>
-                <p className="wm-reward-msg">
-                  One more truth, on-chain.
-                </p>
+                <p className="wm-reward-msg">One more truth, on-chain.</p>
                 <div className="wm-reward-meta">
                   <span>
                     {items.length} signal{items.length > 1 ? 's' : ''} recorded

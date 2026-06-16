@@ -33,3 +33,9 @@
   box-sizing: border-box;
   padding-bottom: 100px; /* Space for fixed bottom navigation bar */
 }
+
+/* No bottom navigation (e.g. login page) — don't reserve its footprint,
+ * otherwise a full-height page overflows the scroll container. */
+.app-content--no-nav {
+  padding-bottom: 0;
+}

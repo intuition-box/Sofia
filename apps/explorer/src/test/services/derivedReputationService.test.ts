@@ -195,7 +195,9 @@ describe('buildReputationClaims (hybrid: certs + context triples)', () => {
     const claims = buildReputationClaims({
       certs: [{ termId: 'x', certifiedAt: 't3', topicSlugs: ['tech'] }],
       // same term_id arriving again (e.g. a granular category roll-up)
-      contextAdditions: [{ contextTermId: 'x', addedAt: 't1', topicSlug: 'web3' }],
+      contextAdditions: [
+        { contextTermId: 'x', addedAt: 't1', topicSlug: 'web3' },
+      ],
     })
     expect(claims).toHaveLength(1)
     expect(claims[0].termId).toBe('x')

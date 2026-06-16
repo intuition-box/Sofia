@@ -10,6 +10,7 @@ import {
   useRedeemTriple,
   useUserCertifications
 } from "../../hooks"
+import { Trash2 } from "lucide-react"
 import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionCategory, CategoryUrl } from "../../types/intentionCategories"
 import Breadcrumb, { type Crumb } from "./Breadcrumb"
@@ -99,7 +100,7 @@ const CategoryUrlRow = ({
         </div>
         {canRedeem && url.termId && (
           <button
-            className="url-redeem-btn"
+            className="url-redeem-btn url-redeem-btn--icon"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -107,8 +108,9 @@ const CategoryUrlRow = ({
             }}
             disabled={isRedeeming}
             title="Redeem position"
+            aria-label="Redeem position"
           >
-            {isRedeeming ? "..." : "Redeem"}
+            {isRedeeming ? "..." : <Trash2 size={15} aria-hidden="true" />}
           </button>
         )}
       </a>

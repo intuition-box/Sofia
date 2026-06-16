@@ -1,0 +1,184 @@
+/* Echoes Domain header — unified header + level card.
+ *
+ * Ported from the Claude Design "Echoes Domain.html" handoff. The previous
+ * layout split the domain header and the level bar into two separate blocks,
+ * which read as disharmonious above the feed. This merges them into one
+ * bordered card (.ehead) preceded by a clean mono breadcrumb (.pagecrumb),
+ * followed by the existing filter row with an accent "Uncertified" button
+ * (.funcert). Uses the extension DS tokens + the Unbounded display font.
+ */
+
+/* ── Page breadcrumb (above the card) ──────────────────────── */
+.ecrumb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted-soft);
+}
+.pagecrumb {
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+.ecrumb a {
+  color: var(--ds-muted-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+.ecrumb a:hover {
+  color: var(--ds-ink);
+}
+.ecrumb .sep {
+  opacity: 0.5;
+}
+.ecrumb-current {
+  color: var(--ds-muted);
+}
+
+/* ── Unified header card ───────────────────────────────────── */
+.ehead {
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ehead-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+.efav {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px var(--ds-border),
+    0 4px 14px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.efav img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  border-radius: 4px;
+  object-fit: contain;
+}
+.edomain {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--ds-font-unbounded);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.eexplorer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 9px;
+  padding: 8px 13px;
+  cursor: pointer;
+  transition: all 0.13s;
+  text-decoration: none;
+}
+.eexplorer:hover {
+  border-color: var(--ds-muted-soft);
+  color: var(--ds-ink);
+}
+.eexplorer svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* level progress bar — its own clean row */
+.ehead-lvlbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  border-top: 1px solid var(--ds-border-soft);
+}
+.lvl-tag {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  flex-shrink: 0;
+}
+.lvl-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--ds-border);
+  overflow: hidden;
+}
+.lvl-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--ds-accent), #ff9d78);
+  transition: width 0.3s ease;
+}
+.lvl-next {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.lvl-next b {
+  color: var(--ds-ink);
+}
+
+/* ── Uncertified button (in the filter row) ────────────────── */
+.funcert {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 32%, transparent);
+  border-radius: 9px;
+  padding: 9px 13px;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+.funcert:hover {
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+}
+.funcert.active {
+  background: color-mix(in srgb, var(--ds-accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, transparent);
+}
+.funcert .n {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-weight: 700;
+}

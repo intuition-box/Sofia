@@ -94,6 +94,114 @@ export default function WeightBasketRow({
   const platAmt = on ? rowTrust * ppFraction : 0
   const urlAmt = on ? rowTrust - platAmt : 0
 
+  // A user→user trust (TrustAccountButton mints `trust-<termId>` ids) renders
+  // as the "trust card" — a person→person bond, not an ordinary URL row.
+  const isTrustRelation = triplet.id.startsWith("trust-")
+  if (isTrustRelation) {
+    const peerInit = (triplet.triplet.object || "?")
+      .replace(/[^a-z0-9]/gi, "")
+      .slice(0, 2)
+      .toUpperCase()
+    return (
+      <div
+        className={`b3-row b3-row--trust tcard${on ? " is-on" : ""}`}
+        style={{ "--tc": intentEntry?.color ?? "#22c55e" } as React.CSSProperties}>
+        <div className="tcard-row">
+          <button
+            className="tcard-check"
+            role="checkbox"
+            aria-checked={on}
+            aria-label={on ? "Deselect" : "Select"}
+            type="button"
+            disabled={lockedSingle || (on && !canToggleOff)}
+            onClick={onToggle}>
+            {on && (
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M20 6 9 17l-5-5"
+                  stroke="currentColor"
+                  strokeWidth="3.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
+          <div className="bond">
+            <div className="bond-p you">
+              <span className="bond-av bond-av--you">YOU</span>
+              <span className="bond-name">you</span>
+            </div>
+            <div className="bond-mid">
+              <span className="bond-line" />
+              <span className="bond-verb">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7z" />
+                </svg>
+                {intentEntry?.label ?? "Trusted"}
+              </span>
+            </div>
+            <div className="bond-p">
+              <span className="bond-av bond-av--peer">{peerInit}</span>
+              <span className="bond-name" title={triplet.triplet.object}>
+                {triplet.triplet.object}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="tcard-stake">
+          <span className="tcard-amt">
+            {fixedDeposit != null ? "—" : formatTrust(rowTrust)}
+            <small>TRUST</small>
+          </span>
+        </div>
+
+        {fixedDeposit == null && (
+          <div className="b3-tiers" role="radiogroup" aria-disabled={!on}>
+            {weightOptions.map((o) => (
+              <button
+                key={o.id}
+                role="radio"
+                aria-checked={sel === o.id}
+                type="button"
+                className={`b3-tier${sel === o.id ? " is-on" : ""}`}
+                disabled={!on || isProcessing}
+                onClick={() => on && onWeightSelect(o.id)}>
+                <span className="b3-tier-label">{o.label}</span>
+                <span className="b3-tier-value">{o.value}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <p className="tcard-note">
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>
+            Trusting a <b>person</b> backs everything they curate — it shapes
+            your circle, not just one page.
+          </span>
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className={`b3-row${on ? " is-on" : ""}`}>
       <button

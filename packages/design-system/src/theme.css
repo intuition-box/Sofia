@@ -114,3 +114,29 @@
   /* Near-black ink for text sitting on a vivid pill. */
   --intent-ink: #02000e;
 }
+
+/* ── Fonts, layout & signal-state tokens (theme-independent) ──
+   Ported from the newexplorerDAO handoff (circle/styles.css:53-64). The
+   display face stays `--ds-font-display` (apps swap it per surface — the
+   circle view overrides it to "Unbounded"); the mono/sans faces are added
+   here so shared primitives (ContributionCalendar, Treemap, .ds-mono) can
+   reference one source. Signal-state colors alias existing tokens so they
+   flip correctly with the theme. */
+:root,
+[data-theme='light'],
+[data-theme='dark'],
+.dark {
+  --ds-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+  --ds-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Shared layout constants. */
+  --ds-shell-nav: 240px;
+  --ds-rail: 348px;
+  --ds-maxw: 1440px;
+
+  /* Signal-state semantics — alias existing tokens (theme-aware). */
+  --state-aligned: var(--trusted);
+  --state-active: var(--ds-muted);
+  --state-low: var(--ds-muted-soft);
+}

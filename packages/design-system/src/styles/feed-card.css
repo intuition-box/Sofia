@@ -546,7 +546,7 @@
   left: 0;
   z-index: 20;
   width: max-content;
-  max-width: 220px;
+  max-width: min(220px, calc(100vw - 24px));
   padding: 7px 10px;
   border-radius: 8px;
   background: var(--ds-ink);
@@ -637,6 +637,7 @@
   position: fixed;
   transform: translate(-50%, -100%) translateY(-10px);
   min-width: 120px;
+  max-width: min(240px, calc(100vw - 24px));
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -664,6 +665,7 @@
   grid-template-columns: 8px 1fr;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
 }
@@ -675,6 +677,9 @@
 .fc-more-tip-label {
   font-weight: 500;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .fc-verb {
   display: inline-flex;

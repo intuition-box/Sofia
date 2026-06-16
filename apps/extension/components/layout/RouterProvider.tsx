@@ -140,12 +140,28 @@ export const RouterProvider = ({
     }
   }, [])
 
+  // Check for pending tutorial deep link from landing page. Runs after the
+  // sidepanel auto-routing has settled (see useEffect delay) so it wins over
+  // the default mark/onboarding-import redirect.
+  const handlePendingTutorial = useCallback(async () => {
+    try {
+      const result = await chrome.storage.session.get('pending_tutorial')
+      if (result.pending_tutorial) {
+        await chrome.storage.session.remove('pending_tutorial')
+        navigateTo('onboarding-tutorial')
+      }
+    } catch (err) {
+      logger.error('Failed to check pending tutorial', err)
+    }
+  }, [])
+
   // Check on mount (delayed to let sidepanel init complete) + listen for storage changes
   useEffect(() => {
     // Delay initial check so sidepanel onboarding/home redirect settles first
     const timeout = setTimeout(() => {
       handlePendingProfile()
       handlePendingFirstClaim()
+      handlePendingTutorial()
     }, 500)
 
     // Instant check when side panel is already open and a new deep link arrives
@@ -157,6 +173,9 @@ export const RouterProvider = ({
         if (changes.pending_first_claim?.newValue) {
           handlePendingFirstClaim()
         }
+        if (changes.pending_tutorial?.newValue) {
+          handlePendingTutorial()
+        }
       }
     }
     chrome.storage.onChanged.addListener(listener)
@@ -164,7 +183,7 @@ export const RouterProvider = ({
       clearTimeout(timeout)
       chrome.storage.onChanged.removeListener(listener)
     }
-  }, [handlePendingProfile, handlePendingFirstClaim])
+  }, [handlePendingProfile, handlePendingFirstClaim, handlePendingTutorial])
 
   const value: RouterContextType = {
     currentPage,
