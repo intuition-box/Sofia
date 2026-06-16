@@ -100,13 +100,6 @@ interface CircleDetailViewProps {
   onJoin?: () => void
 }
 
-// Pure display handle — the CircleData model carries no on-chain handle,
-// so groups show a kebab-cased name as a stable, non-fabricated stand-in
-// (e.g. "Gitcoin DAO" → "gitcoin-dao"). Never presented as an ENS name.
-function deriveHandle(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, '-')
-}
-
 export default function CircleDetailView({
   circle,
   colorOverride,
@@ -257,7 +250,6 @@ export default function CircleDetailView({
       {isFree ? (
         <CircleHeaderFree
           name={circle.name}
-          handle={deriveHandle(circle.name)}
           description={circle.description}
           circleColor={effectiveColor}
           stats={!locked ? stats : undefined}
@@ -369,16 +361,12 @@ export default function CircleDetailView({
                 <section
                   className="cf-module crd-activity-module"
                   aria-labelledby="cf-activity-title">
-                  <div className="cf-module-head">
-                    <h2 id="cf-activity-title" className="cf-module-title">
-                      Activity
-                    </h2>
-                  </div>
                   <CircleFeedSection
                     addresses={circle.addresses}
                     circleName={circle.name}
                     members={circle.members}
                     hideTitle
+                    moduleTitle="Activity"
                   />
                 </section>
                   </>
@@ -408,16 +396,12 @@ export default function CircleDetailView({
                   className="cf-module crd-activity-module"
                   aria-labelledby="cf-activity-title"
                 >
-                  <div className="cf-module-head">
-                    <h2 id="cf-activity-title" className="cf-module-title">
-                      Activity
-                    </h2>
-                  </div>
                   <CircleFeedSection
                     addresses={circle.addresses}
                     circleName={circle.name}
                     members={circle.members}
                     hideTitle
+                    moduleTitle="Activity"
                   />
                 </section>
               </>

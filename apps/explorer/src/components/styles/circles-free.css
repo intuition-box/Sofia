@@ -116,7 +116,9 @@
   color: var(--ds-muted);
   margin: 9px 0 0;
   max-width: 620px;
-  text-wrap: pretty;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cf-header-actions {
   margin-top: 14px;

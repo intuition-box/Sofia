@@ -19,7 +19,10 @@ import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
 import { Breadcrumb } from '@/components/Breadcrumb'
-import ScoresBackingExplainer from '@/components/ScoresBackingExplainer'
+import ScoresBackingExplainer, {
+  ScoresExplainerReopen,
+  SC2_EXPLAINER_DISMISS_KEY,
+} from '@/components/ScoresBackingExplainer'
 import { getTopicIcon } from '@/config/topicEmoji'
 import {
   INTENTION_CONFIG,
@@ -55,6 +58,7 @@ import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
 import { ScoresDonut, type Seg } from '@/components/scores/ScoresDonut'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
+import { SEASON_POOL_TERM_ID } from '@/config'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
@@ -158,6 +162,34 @@ export default function ScoresPage() {
     },
     [setSearchParams],
   )
+
+  // Backing explainer — state lifted here so the dismissed-state chip can sit
+  // in the toolbar (same line as the Score / Pool tabs) while the full band
+  // renders as its own full-width row below. Persisted so it shows once.
+  const [explainerOpen, setExplainerOpen] = useState(
+    () =>
+      !(
+        typeof localStorage !== 'undefined' &&
+        localStorage.getItem(SC2_EXPLAINER_DISMISS_KEY) === '1'
+      ),
+  )
+  const openExplainer = () => {
+    try {
+      localStorage.removeItem(SC2_EXPLAINER_DISMISS_KEY)
+    } catch {
+      /* ignore */
+    }
+    setExplainerOpen(true)
+  }
+  const closeExplainer = () => {
+    try {
+      localStorage.setItem(SC2_EXPLAINER_DISMISS_KEY, '1')
+    } catch {
+      /* private mode / storage disabled — dismiss for the session only */
+    }
+    setExplainerOpen(false)
+  }
+
   const setSel = useCallback(
     (next: string | null) => {
       setSearchParams((prev) => {
@@ -563,7 +595,6 @@ export default function ScoresPage() {
               </div>
             </div>
           </div>
-          <div className="sc2-dt-score">{t.score}</div>
           <div className="sc2-dt-split">
             <div className="sc2-dt-chip base">
               <div className="sc2-dt-chip-k">
@@ -581,16 +612,6 @@ export default function ScoresPage() {
             </div>
           </div>
           <div className="sc2-dt-backers">
-            {tBackers.length > 0 && (
-              <p className="sc2-dt-conv">
-                You took a position, then{' '}
-                <b>
-                  {tBackers.length} backer{tBackers.length === 1 ? '' : 's'}
-                </b>{' '}
-                staked behind your call — lifting this topic
-                <b className="sc2-dt-conv-boost"> +{t.boost}</b>.
-              </p>
-            )}
             <div className="sc2-dt-backers-head">
               <div className="sc2-dt-backers-t">
                 {tBackers.length ? 'Backer' : 'No backers yet'}
@@ -617,13 +638,6 @@ export default function ScoresPage() {
                       ×{b.backCount}
                     </span>
                   )}
-                  <span className="sc2-dt-backer-bar">
-                    <i
-                      style={{
-                        width: `${Math.min(100, b.credibility * 100)}%`,
-                      }}
-                    />
-                  </span>
                   <span className="sc2-dt-backer-c">
                     {b.credibility.toFixed(2)}
                   </span>
@@ -721,25 +735,30 @@ export default function ScoresPage() {
             </button>
           )}
         </div>
-        <div className="sc2-tabs">
-          <button
-            className={`sc2-tab${tab === 'score' ? ' active' : ''}`}
-            onClick={() => setTab('score')}
-          >
-            Score
-          </button>
-          <button
-            className={`sc2-tab${tab === 'pool' ? ' active' : ''}`}
-            onClick={() => setTab('pool')}
-          >
-            Pool
-          </button>
+        <div className="sc2-toolbar-right">
+          {tab === 'score' && !explainerOpen && (
+            <ScoresExplainerReopen onClick={openExplainer} />
+          )}
+          <div className="sc2-tabs">
+            <button
+              className={`sc2-tab${tab === 'score' ? ' active' : ''}`}
+              onClick={() => setTab('score')}
+            >
+              Score
+            </button>
+            <button
+              className={`sc2-tab${tab === 'pool' ? ' active' : ''}`}
+              onClick={() => setTab('pool')}
+            >
+              Pool
+            </button>
+          </div>
         </div>
       </div>
 
       {tab === 'score' ? (
         <>
-          <ScoresBackingExplainer />
+          {explainerOpen && <ScoresBackingExplainer onClose={closeExplainer} />}
           <div className="sc2-stage">
             <ScoresDonut
               items={segments}
@@ -865,6 +884,19 @@ export default function ScoresPage() {
                         </span>
                       </div>
                     </div>
+                  )}
+                  {userPool && (
+                    <button
+                      type="button"
+                      className="sc2-pool-redeem"
+                      disabled
+                      aria-disabled="true"
+                      onClick={() =>
+                        redeemCert(SEASON_POOL_TERM_ID, 'Beta Season Pool', '')
+                      }
+                    >
+                      Redeem position
+                    </button>
                   )}
                 </div>
               </div>

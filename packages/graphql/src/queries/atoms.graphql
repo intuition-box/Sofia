@@ -192,3 +192,18 @@ query FindAtomIds($where: atoms_bool_exp = {}, $limit: Int = 100) {
     data
   }
 }
+
+# Account atoms for a set of wallet addresses — drives the "Trusted" badge
+# (positions other users hold on the connected user's account atoms).
+query FindAccountAtoms($addresses: [String!]!) {
+  atoms(
+    where: {
+      _and: [
+        { data: { _in: $addresses } }
+        { type: { _eq: "Account" } }
+      ]
+    }
+  ) {
+    term_id
+  }
+}

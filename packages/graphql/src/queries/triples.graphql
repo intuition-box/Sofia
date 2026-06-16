@@ -163,3 +163,77 @@ query FindNestedTriples($where: triples_bool_exp = {}, $limit: Int = 100) {
     }
   }
 }
+
+# Trust positions other users hold on the connected user's account atoms —
+# aggregates position counts on every `(I, trusts, <accountAtom>)` triple's
+# vaults. Drives the "Trusted" badge in the right-rail.
+query GetTrustedByPositions(
+  $subjectId: String!
+  $predicateId: String!
+  $objectIds: [String!]!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _in: $objectIds } }
+      ]
+    }
+  ) {
+    term {
+      vaults {
+        positions_aggregate(where: { shares: { _gt: "0" } }) {
+          aggregate {
+            count
+          }
+        }
+      }
+    }
+  }
+}
+
+# Cert triples certified "in context of" a given topic — step 1 resolves the
+# context triples to subject (cert) ids; step 2 (GetCertTriples) resolves
+# platform details for those certs.
+query GetTopicContextTriples($topicTermId: String!) {
+  triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      object: { term_id: { _eq: $topicTermId } }
+    }
+    limit: 200
+  ) {
+    subject_id
+  }
+}
+
+# Resolve cert triple details (platform label/url/image, vault stats and the
+# viewer's own positions) for a set of cert term ids.
+query GetCertTriples($termIds: [String!]!, $address: String) {
+  triples(where: { term_id: { _in: $termIds } }) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      label
+      image
+      value {
+        thing {
+          url
+          name
+        }
+      }
+    }
+    term {
+      vaults {
+        position_count
+        market_cap
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+        }
+      }
+    }
+  }
+}

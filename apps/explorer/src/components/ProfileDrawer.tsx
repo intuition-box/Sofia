@@ -1,5 +1,15 @@
-import { useMemo } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { usePrivy, useLogout, useLinkAccount } from '@privy-io/react-auth'
+import { Copy, Check, Wallet, LogOut, MoreHorizontal } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useTaxonomy } from '../hooks/useTaxonomy'
@@ -16,6 +26,7 @@ import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import FeedCardView from '@/components/feed/FeedCardView'
 import { useUserPlatformInvests } from '@/hooks/useUserPlatformInvests'
+import ProfileAttributes from '@/components/profile/ProfileAttributes'
 import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
@@ -33,8 +44,15 @@ function formatStatCount(n: number): string {
 
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { authenticated, user } = usePrivy()
+  const navigate = useNavigate()
+  // On disconnect, leave the now-unauthenticated route for the landing page.
+  const { logout } = useLogout({ onSuccess: () => navigate('/') })
+  const { linkWallet } = useLinkAccount({
+    onSuccess: () => window.location.reload(),
+  })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses } = useLinkedWallets()
+  const { addresses: linkedAddresses, primary: primaryWallet } =
+    useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
@@ -127,7 +145,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     // visual cap on display either — the user just sees more by
     // scrolling.
     return events.slice(0, 30).map((e) => {
-      // Platform invest — its own card with an "Invest" pill.
+      // Platform stake — its own card with a "Stake" pill.
       if (e.kind === 'invest') {
         return {
           id: `invest::${e.platformName}::${e.ts}`,
@@ -137,7 +155,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           favicon: e.favicon,
           timestamp: e.ts,
           isOppose: false,
-          verb: { label: 'Invest', color: '#10B981' } as Verb,
+          verb: { label: 'Stake', color: '#10B981' } as Verb,
           topic: null as TopicChip | null,
         }
       }
@@ -224,6 +242,16 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     })
   }, [profile, topicById, platformInvests])
 
+  // Hooks must run before any early return.
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    if (!address) return
+    void navigator.clipboard?.writeText(address).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
   if (!authenticated) return null
 
   const displayName = address ? getDisplay(address as Address) : ''
@@ -245,8 +273,105 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </Avatar>
             <div className="pd-name-wrap">
               <p className="pd-name">{displayName}</p>
-              <p className="pd-address">{shortAddr}</p>
+              {shortAddr && (
+                <span className="pd-address-row">
+                  <span className="pd-address">{shortAddr}</span>
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="pd-copy"
+                        aria-label="Account & wallet management"
+                        title="Manage account"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      side="bottom"
+                      className="pd-manage-menu"
+                    >
+                      <DropdownMenuItem
+                        onClick={handleCopy}
+                        className="ns-auth-menu-action"
+                      >
+                        {copied ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copied ? 'Copied' : 'Copy address'}
+                      </DropdownMenuItem>
+
+                      {linkedAddresses.length > 0 && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel className="ns-auth-menu-label">
+                            Wallets
+                          </DropdownMenuLabel>
+                          {linkedAddresses.map((addr) => {
+                            const isPrimary =
+                              primaryWallet?.toLowerCase() ===
+                              addr.toLowerCase()
+                            const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                            return (
+                              <DropdownMenuItem
+                                key={addr}
+                                className="ns-auth-menu-wallet"
+                                onSelect={(e) => e.preventDefault()}
+                                title={addr}
+                              >
+                                <span
+                                  className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                                  aria-hidden="true"
+                                />
+                                <span className="ns-auth-menu-wallet-addr">
+                                  {short}
+                                </span>
+                                {isPrimary && (
+                                  <span className="ns-auth-menu-wallet-tag">
+                                    primary
+                                  </span>
+                                )}
+                              </DropdownMenuItem>
+                            )
+                          })}
+                        </>
+                      )}
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => linkWallet()}
+                        className="ns-auth-menu-action"
+                      >
+                        <Wallet className="h-4 w-4" />
+                        Link another wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => logout()}
+                        className="ns-auth-menu-action ns-auth-menu-action--danger"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Disconnect
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </span>
+              )}
             </div>
+          </div>
+
+          {/* Skills & Tools — declare your own (on-chain), others endorse */}
+          <div className="pd-section">
+            <p className="pd-section-title">Skills &amp; Tools</p>
+            {/* Read across ALL linked wallets: a skill may have been declared
+                under any of them (the signing wallet is wallets[0], which can
+                differ from Privy's primary user.wallet.address). */}
+            <ProfileAttributes
+              address={linkedAddresses.length ? linkedAddresses : undefined}
+              canDeclare
+            />
           </div>
 
           {/* Circle impact — sits right under the banner so identity +

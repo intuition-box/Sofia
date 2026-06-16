@@ -17,7 +17,8 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import type { Address } from 'viem'
-import { Search, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { MemberActivityResult } from '@/hooks/useMemberActivity'
 import type { MemberStreaksResult } from '@/hooks/useMemberStreaks'
@@ -125,7 +126,7 @@ export default function MembersPanelFree({
         </div>
 
         <div className="cf-panel-search">
-          <Search className="cf-panel-search-icon" aria-hidden="true" />
+          <MagnifierIcon className="cf-panel-search-icon" aria-hidden="true" />
           <input
             type="text"
             value={query}

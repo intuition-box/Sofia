@@ -5,28 +5,7 @@
  * A platform invest is a deposit on a platform atom (PLATFORM_ATOM_IDS), not
  * a triple — so it doesn't surface via the cert / context-addition queries.
  */
-import { GRAPHQL_URL } from '@/config'
-
-const GET_USER_PLATFORM_INVESTS = `
-  query GetUserPlatformInvests(
-    $addresses: [String!]!
-    $termIds: [String!]!
-    $limit: Int!
-  ) {
-    positions(
-      where: {
-        account_id: { _in: $addresses }
-        term_id: { _in: $termIds }
-        shares: { _gt: "0" }
-      }
-      order_by: { created_at: desc }
-      limit: $limit
-    ) {
-      term_id
-      created_at
-    }
-  }
-`
+import { useGetUserPlatformInvestsQuery } from '@0xsofia/graphql'
 
 export interface UserPlatformInvest {
   /** Platform atom term_id (key into PLATFORM_ATOM_IDS by value). */
@@ -45,17 +24,12 @@ export async function fetchUserPlatformInvests(
   // error rather than rejecting the query (the drawer just shows fewer rows).
   let rows: { term_id?: string; created_at?: string }[] = []
   try {
-    const res = await fetch(GRAPHQL_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: GET_USER_PLATFORM_INVESTS,
-        variables: { addresses, termIds, limit },
-      }),
-    })
-    if (!res.ok) return []
-    const json = await res.json()
-    rows = json.data?.positions ?? []
+    const data = await useGetUserPlatformInvestsQuery.fetcher({
+      addresses,
+      termIds,
+      limit,
+    })()
+    rows = data.positions ?? []
   } catch {
     return []
   }

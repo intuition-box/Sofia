@@ -83,6 +83,7 @@
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/quests": "workspace:*",
         "@0xsofia/taxonomy": "workspace:*",
         "@dicebear/collection": "^9.0.0",
         "@dicebear/core": "^9.0.0",
@@ -159,6 +160,7 @@
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/quests": "workspace:*",
         "@0xsofia/taxonomy": "workspace:*",
         "@dicebear/collection": "^9.2.4",
         "@dicebear/core": "^9.2.4",
@@ -295,6 +297,13 @@
         "react-dom": "^18.0.0",
       },
     },
+    "packages/quests": {
+      "name": "@0xsofia/quests",
+      "version": "0.0.0",
+      "devDependencies": {
+        "typescript": "^5.9.3",
+      },
+    },
     "packages/taxonomy": {
       "name": "@0xsofia/taxonomy",
       "version": "0.0.0",
@@ -363,6 +372,8 @@
     "@0xsofia/design-system": ["@0xsofia/design-system@workspace:packages/design-system"],
 
     "@0xsofia/graphql": ["@0xsofia/graphql@workspace:packages/graphql"],
+
+    "@0xsofia/quests": ["@0xsofia/quests@workspace:packages/quests"],
 
     "@0xsofia/taxonomy": ["@0xsofia/taxonomy@workspace:packages/taxonomy"],
 

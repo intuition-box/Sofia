@@ -1,10 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  usePrivy,
-  useLogin,
-  useLogout,
-  useLinkAccount,
-} from '@privy-io/react-auth'
+import { usePrivy, useLogin } from '@privy-io/react-auth'
 import {
   NavSidebar as DsNavSidebar,
   NavBrand,
@@ -13,39 +8,27 @@ import {
 } from '@0xsofia/design-system'
 import {
   Home,
-  User,
   Bell,
-  Flame,
   Vote,
   Globe,
   Wallet,
-  LogOut,
   ShoppingCart,
   Users,
   Layers,
+  Trophy,
+  LineChart,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useMemo } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
-import {
-  useNotifications,
-  useNotificationsRealtime,
-} from '../hooks/useGroupNotifications'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { getAvatarUrl } from '../services/ensService'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu'
 import './styles/nav-sidebar-trust-circle.css'
 import './styles/nav-sidebar-toolbar.css'
 
@@ -68,15 +51,14 @@ export function NavSidebar({
   const navigate = useNavigate()
   const { ready, authenticated, user } = usePrivy()
   const { login } = useLogin()
-  // On disconnect, send the user to the landing/login page ('/') rather than
-  // leaving them on a now-unauthenticated route (which would bounce to /explore).
-  const { logout } = useLogout({ onSuccess: () => navigate('/') })
-  const { linkWallet } = useLinkAccount({
-    onSuccess: () => window.location.reload(),
-  })
-  const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses, primary: primaryWallet } =
     useLinkedWallets()
+  // Identity wallet for the nav: prefer the linked "primary" (= addresses[0],
+  // the public identity the profile and feed resolve against) so the nav
+  // avatar + name match what's shown elsewhere. Privy's active wallet
+  // (user.wallet.address) can be an embedded/undefined wallet, which left the
+  // nav avatar blank even though the same user resolved fine on their profile.
+  const address = primaryWallet ?? user?.wallet?.address ?? ''
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
@@ -95,11 +77,6 @@ export function NavSidebar({
     )
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
-
-  // Notification badge + the single realtime subscription (NavSidebar is always
-  // mounted, so this is the natural home for the global Ably channel).
-  const { unread } = useNotifications()
-  useNotificationsRealtime()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -126,11 +103,10 @@ export function NavSidebar({
     label: string
     public: boolean
   }[] = [
-    { to: '/profile', icon: User, label: 'My Profile', public: false },
-    { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
     { to: '/explore', icon: Globe, label: 'Explore', public: true },
     { to: '/circles', icon: Users, label: 'Circles', public: false },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
+    { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
   ]
 
   const quickLinks: {
@@ -139,8 +115,8 @@ export function NavSidebar({
     label: string
     public: boolean
   }[] = [
-    { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
-    { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
+    { to: '/platforms', icon: LineChart, label: 'Markets', public: false },
+    { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
 
@@ -153,26 +129,25 @@ export function NavSidebar({
     const locked = !item.public && !authenticated
     const active = location.pathname === item.to
     const Icon = item.icon
-    // The Notifications row carries an unread badge over its bell icon.
-    const iconNode =
-      item.to === '/notifications' ? (
-        <span className="ns-notif-ic">
-          <Icon className="h-4 w-4" />
-          {unread > 0 && (
-            <span className="ns-notif-badge">{unread > 9 ? '9+' : unread}</span>
-          )}
-        </span>
-      ) : (
-        <Icon className="h-4 w-4" />
-      )
     if (locked) {
       return (
-        <NavItem key={item.to} as="button" icon={iconNode} label={item.label} locked />
+        <NavItem
+          key={item.to}
+          as="button"
+          icon={<Icon className="h-4 w-4" />}
+          label={item.label}
+          locked
+        />
       )
     }
     return (
       <Link key={item.to} to={item.to} style={{ display: 'block' }}>
-        <NavItem as="button" icon={iconNode} label={item.label} active={active} />
+        <NavItem
+          as="button"
+          icon={<Icon className="h-4 w-4" />}
+          label={item.label}
+          active={active}
+        />
       </Link>
     )
   }
@@ -216,15 +191,19 @@ export function NavSidebar({
                   <div className="ns-circle-avatars">
                     {trustCircle.slice(0, 5).map((a) => {
                       const bg = avatarColor(a.termId || a.label)
+                      // Same universal fallback the feed/member lists use, so a
+                      // wallet with no on-chain image still shows its generated
+                      // avatar here instead of bare initials.
+                      const img =
+                        a.image ||
+                        (a.walletAddress ? getAvatarUrl(a.walletAddress) : '')
                       return (
                         <Avatar
                           key={a.termId}
                           className="ns-mav"
                           style={{ background: bg }}
                         >
-                          {a.image && (
-                            <AvatarImage src={a.image} alt={a.label} />
-                          )}
+                          {img && <AvatarImage src={img} alt={a.label} />}
                           <AvatarFallback
                             className="text-[9px]"
                             style={{ background: bg, color: '#02000e' }}
@@ -278,17 +257,19 @@ export function NavSidebar({
                         const bg = avatarColor(
                           m.member.termId || m.member.label,
                         )
+                        const img =
+                          m.member.image ||
+                          (m.member.walletAddress
+                            ? getAvatarUrl(m.member.walletAddress)
+                            : '')
                         return (
                           <Avatar
                             key={m.member.termId}
                             className="ns-mav"
                             style={{ background: bg }}
                           >
-                            {m.member.image && (
-                              <AvatarImage
-                                src={m.member.image}
-                                alt={m.member.label}
-                              />
+                            {img && (
+                              <AvatarImage src={img} alt={m.member.label} />
                             )}
                             <AvatarFallback
                               className="text-[9px]"
@@ -315,8 +296,11 @@ export function NavSidebar({
         </NavSection>
       ) : null}
 
-      {/* Bottom cluster — cart, then the account chip (profile / disconnect). */}
+      {/* Bottom cluster — countdown sits on top, auth (profile/disconnect)
+          pinned right below it. margin-top:auto on .ns-bottom pulls the
+          whole group to the bottom of the rail. */}
       <div className="ns-bottom">
+        {/* Cart — pinned just above the profile chip. */}
         <button
           type="button"
           className={`ns-cart-btn${cart.count > 0 ? ' ns-cart-btn--filled' : ''}`}
@@ -338,111 +322,31 @@ export function NavSidebar({
           </Button>
         )}
         {ready && authenticated && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="ns-auth-chip"
-                aria-label="Account menu"
-              >
-                {profileAvatar ? (
-                  <img
-                    src={profileAvatar}
-                    alt={profileName}
-                    referrerPolicy="no-referrer"
-                    className="ns-auth-avatar"
-                  />
-                ) : (
-                  <span className="ns-auth-avatar ns-auth-avatar--fallback">
-                    {profileName.slice(0, 2).toUpperCase()}
-                  </span>
-                )}
-                <span className="ns-auth-meta">
-                  <span className="ns-auth-name">{profileName}</span>
-                  {displayAddr && (
-                    <span className="ns-auth-sub">{displayAddr}</span>
-                  )}
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              side="top"
-              className="ns-auth-menu"
-            >
-              <div className="ns-auth-menu-head">
-                {profileAvatar ? (
-                  <img
-                    src={profileAvatar}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    className="ns-auth-menu-avatar"
-                  />
-                ) : (
-                  <span className="ns-auth-menu-avatar ns-auth-menu-avatar--fallback">
-                    {profileName.slice(0, 2).toUpperCase()}
-                  </span>
-                )}
-                <div className="ns-auth-menu-ident">
-                  <span className="ns-auth-menu-name">{profileName}</span>
-                  {displayAddr && (
-                    <span className="ns-auth-menu-sub">{displayAddr}</span>
-                  )}
-                </div>
-              </div>
-
-              {linkedAddresses.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="ns-auth-menu-label">
-                    Wallets
-                  </DropdownMenuLabel>
-                  {linkedAddresses.map((addr) => {
-                    const isPrimary =
-                      primaryWallet?.toLowerCase() === addr.toLowerCase()
-                    const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
-                    return (
-                      <DropdownMenuItem
-                        key={addr}
-                        className="ns-auth-menu-wallet"
-                        onSelect={(e) => e.preventDefault()}
-                        title={addr}
-                      >
-                        <span
-                          className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
-                          aria-hidden="true"
-                        />
-                        <span className="ns-auth-menu-wallet-addr">
-                          {short}
-                        </span>
-                        {isPrimary && (
-                          <span className="ns-auth-menu-wallet-tag">
-                            primary
-                          </span>
-                        )}
-                      </DropdownMenuItem>
-                    )
-                  })}
-                </>
+          <button
+            type="button"
+            className="ns-auth-chip"
+            aria-label="Open your profile"
+            onClick={() => navigate('/profile')}
+          >
+            {profileAvatar ? (
+              <img
+                src={profileAvatar}
+                alt={profileName}
+                referrerPolicy="no-referrer"
+                className="ns-auth-avatar"
+              />
+            ) : (
+              <span className="ns-auth-avatar ns-auth-avatar--fallback">
+                {profileName.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+            <span className="ns-auth-meta">
+              <span className="ns-auth-name">{profileName}</span>
+              {displayAddr && (
+                <span className="ns-auth-sub">{displayAddr}</span>
               )}
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => linkWallet()}
-                className="ns-auth-menu-action"
-              >
-                <Wallet className="h-4 w-4" />
-                Link another wallet
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => logout()}
-                className="ns-auth-menu-action ns-auth-menu-action--danger"
-              >
-                <LogOut className="h-4 w-4" />
-                Disconnect
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </span>
+          </button>
         )}
       </div>
     </DsNavSidebar>

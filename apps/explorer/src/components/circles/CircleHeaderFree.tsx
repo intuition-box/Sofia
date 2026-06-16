@@ -23,7 +23,6 @@ import type { CircleStats } from '@/services/circleStats'
 
 interface CircleHeaderFreeProps {
   name: string
-  handle: string
   description: string
   circleColor: string
   /** Aggregate metrics — drives the first two KPI tiles. */
@@ -61,7 +60,6 @@ function formatCount(n: number): string {
 
 export default function CircleHeaderFree({
   name,
-  handle,
   description,
   circleColor,
   stats,
@@ -86,11 +84,14 @@ export default function CircleHeaderFree({
     >
       <div className="cf-header-top">
         <div className="cf-header-id">
-          <span className="cf-header-logo" style={{ background: circleColor }}>
-            {name.slice(0, 1).toUpperCase()}
-          </span>
           <div className="cf-header-idcol">
             <div className="cf-header-name-row">
+              <span
+                className="cf-header-logo"
+                style={{ background: circleColor }}
+              >
+                {name.slice(0, 1).toUpperCase()}
+              </span>
               <h1 className="cf-header-name">{name}</h1>
               {showPlan && (
                 <span className="cf-plan-badge">
@@ -98,9 +99,6 @@ export default function CircleHeaderFree({
                   Free plan
                 </span>
               )}
-            </div>
-            <div className="cf-header-sub">
-              <span className="cf-header-crumb">{handle}</span>
             </div>
             <p className="cf-header-desc">{description}</p>
             <div className="cf-header-actions">

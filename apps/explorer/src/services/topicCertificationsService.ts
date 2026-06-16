@@ -6,7 +6,10 @@
  *   2. Resolve the subject cert triples to get platform details
  */
 
-import { GRAPHQL_URL } from '@/config'
+import {
+  useGetTopicContextTriplesQuery,
+  useGetCertTriplesQuery,
+} from '@0xsofia/graphql'
 import { TOPIC_ATOM_IDS } from '@/config/atomIds'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
@@ -34,45 +37,6 @@ export interface TopicCertification {
   certifiers: string[]
 }
 
-// ── Queries ──
-
-const GET_CONTEXT_TRIPLES = `
-  query GetTopicContextTriples($topicTermId: String!) {
-    triples(
-      where: {
-        predicate: { label: { _eq: "in context of" } }
-        object: { term_id: { _eq: $topicTermId } }
-      }
-      limit: 200
-    ) {
-      subject_id
-    }
-  }
-`
-
-const GET_CERT_TRIPLES = `
-  query GetCertTriples($termIds: [String!]!, $address: String) {
-    triples(where: { term_id: { _in: $termIds } }) {
-      term_id
-      predicate { label }
-      object {
-        label
-        image
-        value { thing { url name } }
-      }
-      term {
-        vaults {
-          position_count
-          market_cap
-          positions(where: { account_id: { _ilike: $address } }) {
-            shares
-          }
-        }
-      }
-    }
-  }
-`
-
 // ── Fetch ──
 
 export async function fetchTopicCertifications(
@@ -83,16 +47,8 @@ export async function fetchTopicCertifications(
   if (!topicTermId) return []
 
   // Step 1: get cert triple IDs linked to this topic
-  const ctxRes = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: GET_CONTEXT_TRIPLES,
-      variables: { topicTermId },
-    }),
-  })
-  const ctxJson = await ctxRes.json()
-  const contextTriples = ctxJson.data?.triples || []
+  const ctxData = await useGetTopicContextTriplesQuery.fetcher({ topicTermId })()
+  const contextTriples = ctxData.triples || []
   const certTermIds = contextTriples
     .map((t: any) => t.subject_id)
     .filter(Boolean) as string[]
@@ -101,16 +57,11 @@ export async function fetchTopicCertifications(
 
   // Step 2: resolve cert triples
   const address = walletAddress || '0x0000000000000000000000000000000000000000'
-  const certRes = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: GET_CERT_TRIPLES,
-      variables: { termIds: certTermIds, address },
-    }),
-  })
-  const certJson = await certRes.json()
-  const certTriples = certJson.data?.triples || []
+  const certData = await useGetCertTriplesQuery.fetcher({
+    termIds: certTermIds,
+    address,
+  })()
+  const certTriples = certData.triples || []
 
   return certTriples.map((triple: any) => {
     const obj = triple.object

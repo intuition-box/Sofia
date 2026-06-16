@@ -158,7 +158,7 @@ export default function TrendingCard({
               className="ip-trending-invest-btn"
               onClick={handleInvest}
             >
-              <ShoppingCart className="h-3 w-3" /> Invest
+              <ShoppingCart className="h-3 w-3" /> Stake
             </Button>
           </div>
         )}

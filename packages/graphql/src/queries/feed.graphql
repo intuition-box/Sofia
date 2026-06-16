@@ -150,3 +150,40 @@ query GetSofiaFeedTriplesByIds(
     }
   }
 }
+
+# "in context of" nested triples for a set of cert triple term_ids — carries
+# the like/dislike term + counter ids and per-vault position tallies (filtered
+# to the viewer's own positions) that light up the feed's thumbs.
+query GetContextTriples($subjectIds: [String!]!, $viewerIds: [String!] = []) {
+  triples(
+    where: {
+      subject_id: { _in: $subjectIds }
+      predicate: { label: { _eq: "in context of" } }
+    }
+    limit: 500
+  ) {
+    term_id
+    counter_term_id
+    subject_id
+    object {
+      term_id
+      label
+    }
+    term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $viewerIds } }) {
+          shares
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        position_count
+        positions(where: { account_id: { _in: $viewerIds } }) {
+          shares
+        }
+      }
+    }
+  }
+}

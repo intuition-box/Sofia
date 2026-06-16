@@ -17,7 +17,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { isAddress } from 'viem'
 import type { Address } from 'viem'
-import { Search, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { SectionH2 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '@/hooks/useIntentionGroups'
@@ -40,6 +41,9 @@ import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
 
 const PUBLIC_HERO_COLOR = '#627EEA'
+
+// Number of interest categories surfaced in the profile preview rail.
+const MAX_CATEGORIES = 6
 
 export default function PublicProfilePage() {
   const { address: rawAddress } = useParams<{ address: string }>()
@@ -115,7 +119,7 @@ export default function PublicProfilePage() {
   }, [ownedTopics, certCountsByTopic])
 
   const selectedCategories = useMemo<string[]>(
-    () => ownedCategories.slice(0, 6),
+    () => ownedCategories.slice(0, MAX_CATEGORIES),
     [ownedCategories],
   )
 
@@ -246,7 +250,7 @@ export default function PublicProfilePage() {
             <div className="pf-echoes-head-left">
               <SectionH2>Echoes</SectionH2>
               <div className="pf-echoes-search">
-                <Search
+                <MagnifierIcon
                   className="pf-echoes-search-icon h-3.5 w-3.5"
                   aria-hidden="true"
                 />

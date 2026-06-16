@@ -1,32 +1,16 @@
 /* ──────────────────────────────────────────────────────────
    Stats Ribbon — editorial championship gazette
+   Surfaces + accents come straight from the design-system tokens
+   (--ds-*). No hardcoded gold, no coloured borders.
    ────────────────────────────────────────────────────────── */
 
 .sr-card {
   position: relative;
   border: 1px solid var(--ds-border);
-  border-top: 4px solid #f5d58a;
   border-radius: 14px;
   background: var(--ds-card);
   overflow: hidden;
-  box-shadow:
-    0 1px 0 0 color-mix(in oklab, #f5d58a 30%, transparent) inset,
-    0 24px 60px -28px color-mix(in oklab, #f5d58a 22%, transparent);
-}
-
-/* Faint diagonal sheen */
-.sr-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    135deg,
-    color-mix(in oklab, #f5d58a 4%, transparent) 0 1px,
-    transparent 1px 14px
-  );
-  mix-blend-mode: screen;
-  opacity: 0.6;
+  box-shadow: var(--ds-shadow-card);
 }
 
 /* ── Top bar ── */
@@ -35,7 +19,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 22px;
-  border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  border-bottom: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -59,19 +44,19 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #f5d58a;
-  box-shadow: 0 0 0 0 #f5d58a;
+  background: var(--ds-accent);
+  box-shadow: 0 0 0 0 var(--ds-accent);
   animation: sr-pulse 1.6s ease-out infinite;
 }
 @keyframes sr-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, #f5d58a 70%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--ds-accent) 70%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 8px color-mix(in oklab, #f5d58a 0%, transparent);
+    box-shadow: 0 0 0 8px color-mix(in oklab, var(--ds-accent) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, #f5d58a 0%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--ds-accent) 0%, transparent);
   }
 }
 .sr-bar strong {
@@ -83,7 +68,7 @@
   display: inline-block;
   width: 1px;
   height: 10px;
-  background: color-mix(in oklab, var(--ds-ink) 25%, transparent);
+  background: var(--ds-border);
 }
 
 /* ── Body grid ── */
@@ -97,7 +82,7 @@
 /* ── Hero (left) ── */
 .sr-hero {
   padding: 32px 28px 28px;
-  border-right: 1px solid color-mix(in oklab, var(--ds-ink) 10%, transparent);
+  border-right: 1px solid var(--ds-border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -110,7 +95,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #f5d58a;
+  color: var(--ds-muted);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -120,7 +105,7 @@
   display: inline-block;
   width: 24px;
   height: 2px;
-  background: #f5d58a;
+  background: var(--ds-border);
 }
 .sr-hero-value {
   font-family: var(--ds-font-display);
@@ -156,9 +141,9 @@
   color: var(--ds-muted);
 }
 .sr-hero-tag {
-  border: 1px solid color-mix(in oklab, #f5d58a 60%, transparent);
-  background: color-mix(in oklab, #f5d58a 10%, transparent);
-  color: #f5d58a;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
   padding: 4px 10px;
   border-radius: 999px;
   font-weight: 700;
@@ -179,11 +164,11 @@
   min-height: 110px;
 }
 .sr-cell + .sr-cell {
-  border-left: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  border-left: 1px solid var(--ds-border);
 }
 .sr-cell:nth-child(3),
 .sr-cell:nth-child(4) {
-  border-top: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+  border-top: 1px solid var(--ds-border);
 }
 .sr-cell:nth-child(3) {
   border-left: none;
@@ -215,7 +200,7 @@
   }
   .sr-hero {
     border-right: none;
-    border-bottom: 1px solid color-mix(in oklab, var(--ds-ink) 10%, transparent);
+    border-bottom: 1px solid var(--ds-border);
     min-height: 0;
   }
 }
@@ -225,7 +210,7 @@
   }
   .sr-cell + .sr-cell {
     border-left: none;
-    border-top: 1px solid color-mix(in oklab, var(--ds-ink) 8%, transparent);
+    border-top: 1px solid var(--ds-border);
   }
   .sr-cell:nth-child(3) {
     border-left: none;

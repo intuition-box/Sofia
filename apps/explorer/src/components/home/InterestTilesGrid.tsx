@@ -12,20 +12,24 @@ interface InterestTilesGridProps {
   onPick: (preset: InterestPreset) => void
   /** Case-insensitive substring filter on tile label. */
   query?: string
+  /** Cap the number of tiles shown (top-N by rank). Omit to show all. */
+  limit?: number
 }
 
 export default function InterestTilesGrid({
   items,
   onPick,
   query,
+  limit,
 }: InterestTilesGridProps) {
   const tiles = useInterestTiles(items)
   const q = (query ?? '').trim().toLowerCase()
-  const visibleTiles = q
+  const filtered = q
     ? tiles.filter((t) => t.label.toLowerCase().includes(q))
     : tiles
+  const visibleTiles = limit != null ? filtered.slice(0, limit) : filtered
 
-  if (q && visibleTiles.length === 0) {
+  if (q && filtered.length === 0) {
     return <p className="hm-empty">No topic or intent matches “{query}”.</p>
   }
 
@@ -37,7 +41,7 @@ export default function InterestTilesGrid({
           kind={t.kind}
           id={t.id}
           label={t.label}
-          color={t.color}
+          description={t.description}
           tier={t.tier}
           samples={t.samples}
           onPick={() => onPick({ kind: t.kind, id: t.id })}

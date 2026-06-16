@@ -7,7 +7,7 @@ import { PLATFORM_CATALOG } from '../config/platformCatalog' // kept for getPlat
 import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
-import { Search, X, Globe } from 'lucide-react'
+import { X, Globe } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
@@ -16,7 +16,7 @@ import { PageHero } from '@0xsofia/design-system'
 import FeedCard from '../components/home/FeedCard'
 import { EmptyFeedState } from '../components/EmptyFeedState'
 import { FeedCardSkeleton } from '../components/FeedCardSkeleton'
-import InterestTilesGrid from '../components/home/InterestTilesGrid'
+import ExploreHome from '../components/home/ExploreHome'
 import ScrollToTopButton from '../components/ScrollToTopButton'
 import type { InterestPreset } from '../components/home/useInterestTiles'
 import { useTaxonomy } from '../hooks/useTaxonomy'
@@ -84,13 +84,30 @@ export default function DashboardPage() {
       const next = new URLSearchParams(searchParams)
       next.delete('topic')
       next.delete('verb')
+      next.delete('view')
       if (preset) next.set(preset.kind, preset.id)
       setSearchParams(next)
     },
     [searchParams, setSearchParams],
   )
-  // Search query applied to the tiles view (filters topic + verb labels).
-  const [tileQuery, setTileQuery] = useState('')
+  // `?view=activity` opens the full feed straight from the home Activity
+  // block. `null` view + no drill = the 3-block Explore home.
+  const viewParam = searchParams.get('view')
+  const isActivityView = viewParam === 'activity'
+  const showActivity = useCallback(() => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('topic')
+    next.delete('verb')
+    next.set('view', 'activity')
+    setSearchParams(next)
+  }, [searchParams, setSearchParams])
+  const goHome = useCallback(() => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('topic')
+    next.delete('verb')
+    next.delete('view')
+    setSearchParams(next)
+  }, [searchParams, setSearchParams])
   // Verb sub-filter shown inside a TOPIC drill — narrows the drilled feed to
   // one intention. Resets whenever the drill target changes.
   const [verbFilter, setVerbFilter] = useState<VerbFilterId>('all')
@@ -251,31 +268,36 @@ export default function DashboardPage() {
     : ''
 
   const pc = PAGE_COLORS['/explore']
+  // Feed view = a topic/verb drill OR the "View all activity" mode. Anything
+  // else is the 3-block Explore home.
+  const isFeedView = !!drill || isActivityView
 
   return (
     <div>
       {/* Breadcrumb — sits above the banner (matching the rest of the app).
-        The drill is a URL param, so the Explore crumb and the browser Back
-        button both return to the Explore tiles. */}
-      {drill && (
+        Drill / activity live in URL params, so the Explore crumb and the
+        browser Back button both return to the Explore home. */}
+      {isFeedView && (
         <nav className="dp-crumbs dp-crumbs--top" aria-label="Breadcrumb">
           <button
             type="button"
             className="dp-crumb dp-crumb--link"
-            onClick={() => setDrill(null)}
+            onClick={goHome}
           >
             Explore
           </button>
           <span className="dp-crumb-sep" aria-hidden="true">
             /
           </span>
-          <span className="dp-crumb dp-crumb--current">{drillLabel}</span>
+          <span className="dp-crumb dp-crumb--current">
+            {drill ? drillLabel : 'Activity'}
+          </span>
         </nav>
       )}
       <PageHero
         background={drill ? (drillColor ?? pc.color) : pc.color}
-        title={drill ? drillLabel : pc.title}
-        description={drill ? '' : pc.subtitle}
+        title={drill ? drillLabel : isActivityView ? 'Activity' : pc.title}
+        description={isFeedView ? '' : pc.subtitle}
         icon={<Globe />}
       />
       <div className="space-y-4 page-content page-enter">
@@ -288,45 +310,24 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Tiles view — default. Shows the interest masonry built from the
-          current source items (All or Circle). Click a tile to drill. */}
-        {drill == null && !loading && (
-          <>
-            <div className="hm-search">
-              <Search
-                className="hm-search-icon h-3.5 w-3.5"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                className="hm-search-input"
-                placeholder="Search topics or intents…"
-                value={tileQuery}
-                onChange={(e) => setTileQuery(e.target.value)}
-                aria-label="Search topics or intents"
-              />
-              {tileQuery && (
-                <button
-                  type="button"
-                  className="hm-search-clear"
-                  onClick={() => setTileQuery('')}
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            <InterestTilesGrid
-              items={spaceFiltered}
-              onPick={setDrill}
-              query={tileQuery}
-            />
-          </>
+        {/* Explore home — default. Three blocks (Topics / Circles /
+          Activity) + identity header. Topic tiles drill into the feed;
+          "View all" on Activity opens the full feed below. */}
+        {!isFeedView && !loading && (
+          <ExploreHome
+            items={spaceFiltered}
+            onPickTopic={setDrill}
+            onSeeAllActivity={showActivity}
+            getDisplay={getDisplay}
+            getAvatar={getAvatar}
+            ownAddresses={ownAddresses}
+            onDeposit={handleDeposit}
+          />
         )}
 
-        {/* Feed — drill view only. The tiles masonry replaces the feed
-          by default; clicking a tile sets `drill` and reveals this. */}
-        {drill && (
+        {/* Feed — drill or "View all activity". The home replaces the feed
+          by default; drilling a tile or opening activity reveals this. */}
+        {isFeedView && (
           <>
             {/* Space filter badge */}
             {spaceParam && (
@@ -341,28 +342,31 @@ export default function DashboardPage() {
             )}
 
             {/* URL count + verb filter on one row. The count sits left, the
-                intention pills to its right. Shown for every drill: a topic
-                drill uses the bar as a client-side sub-filter; a verb drill
-                uses it to re-drill to another verb (All → back to tiles). */}
+                intention pills to its right. The verb bar is drill-only: a
+                topic drill uses it as a client-side sub-filter; a verb drill
+                re-drills to another verb. The activity view shows the count
+                alone (no drill to narrow). */}
             <div className="dp-filter-row">
               <span className="dp-url-count">
                 {filteredItems.length} url
                 {filteredItems.length === 1 ? '' : 's'}
               </span>
-              <CircleVerbFilter
-                active={
-                  drill.kind === 'verb'
-                    ? (drill.id as VerbFilterId)
-                    : verbFilter
-                }
-                onChange={(id) => {
-                  if (drill.kind === 'verb') {
-                    setDrill(id === 'all' ? null : { kind: 'verb', id })
-                  } else {
-                    setVerbFilter(id)
+              {drill && (
+                <CircleVerbFilter
+                  active={
+                    drill.kind === 'verb'
+                      ? (drill.id as VerbFilterId)
+                      : verbFilter
                   }
-                }}
-              />
+                  onChange={(id) => {
+                    if (drill.kind === 'verb') {
+                      setDrill(id === 'all' ? null : { kind: 'verb', id })
+                    } else {
+                      setVerbFilter(id)
+                    }
+                  }}
+                />
+              )}
             </div>
 
             {/* Error */}

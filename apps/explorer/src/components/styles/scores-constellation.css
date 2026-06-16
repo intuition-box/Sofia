@@ -87,6 +87,13 @@
   border-radius: 10px;
   background: var(--ds-card);
 }
+/* Right cluster — the "How backing works" chip rides the same line as the
+   Score / Pool tabs instead of taking a row of its own. */
+.sc2-toolbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
 .sc2-tab {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
@@ -629,7 +636,6 @@
   display: grid;
   grid-template-columns: 1.15fr 1fr;
   gap: 14px;
-  max-width: 980px;
 }
 .sc2-pool-rank {
   background: linear-gradient(160deg, #1b1832, var(--ds-card));
@@ -647,7 +653,7 @@
   color: var(--ds-accent);
 }
 .sc2-pr-rank {
-  font-family: var(--ds-font-display);
+  font-family: 'Unbounded', sans-serif;
   font-weight: 800;
   font-size: 72px;
   line-height: 0.9;
@@ -708,7 +714,7 @@
   color: var(--ds-muted);
 }
 .sc2-ps-v {
-  font-family: var(--ds-font-display);
+  font-family: 'Unbounded', sans-serif;
   font-weight: 800;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -742,7 +748,7 @@
   color: var(--ds-muted);
 }
 .sc2-pos-line-v {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Unbounded', sans-serif;
   font-size: 13.5px;
   color: var(--ds-ink);
 }
@@ -751,6 +757,40 @@
 }
 .sc2-pos-line-v.down {
   color: var(--distrusted);
+}
+/* Redeem the season-pool position — routes through the cart → MultiVault.redeem
+   (curve 1, all shares). */
+.sc2-pool-redeem {
+  margin-top: 2px;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 13px;
+  background: var(--ds-accent);
+  color: #02000e;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+.sc2-pool-redeem:hover {
+  background: color-mix(in srgb, var(--ds-accent) 86%, #000);
+  transform: translateY(-1px);
+}
+.sc2-pool-redeem:active {
+  transform: translateY(0);
+}
+/* Display-only for now — shown but not interactive. */
+.sc2-pool-redeem:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.sc2-pool-redeem:disabled:hover {
+  background: var(--ds-accent);
+  transform: none;
 }
 .sc2-pool-empty {
   background: var(--ds-card);
@@ -939,7 +979,10 @@
   place-items: center;
   border-radius: 50%;
   background: var(--ds-accent);
-  color: #fff;
+  /* Fixed black, not var(--ds-ink) — ink flips to near-white in dark mode,
+     but the accent badge stays light peach in both themes, so the digit must
+     stay black to read (and to match the requested look). */
+  color: #02000e;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 700;
@@ -984,7 +1027,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin: 0 0 16px;
+  margin: 0;
   padding: 7px 13px;
   border-radius: 999px;
   background: var(--ds-card);

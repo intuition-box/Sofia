@@ -64,3 +64,19 @@ query GetPerspectiveCerts(
     }
   }
 }
+
+# Subset of cert term ids that have an "in context of" nested triple pointing
+# to one of the given topic atom ids — applied client-side to narrow a circle's
+# certs to the selected topics.
+query CertsInTopics($certTermIds: [String!]!, $topicAtomIds: [String!]!) {
+  triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      subject_id: { _in: $certTermIds }
+      object_id: { _in: $topicAtomIds }
+    }
+    limit: 50000
+  ) {
+    subject_id
+  }
+}

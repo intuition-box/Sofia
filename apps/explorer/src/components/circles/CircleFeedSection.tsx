@@ -48,6 +48,9 @@ interface CircleFeedSectionProps {
    *  the Free path, which wraps the feed in an "Activity" module head so
    *  the title isn't duplicated. */
   hideTitle?: boolean
+  /** When set, render this module heading (e.g. "Activity") BELOW the
+   *  hot-picks strip and above the filters. */
+  moduleTitle?: string
 }
 
 export default function CircleFeedSection({
@@ -55,6 +58,7 @@ export default function CircleFeedSection({
   circleName,
   members,
   hideTitle = false,
+  moduleTitle,
 }: CircleFeedSectionProps) {
   const { items, loading, loadingMore, hasMore, loadMore, error } =
     useCircleFeed(addresses)
@@ -193,6 +197,23 @@ export default function CircleFeedSection({
         <h2 className="crd-feed-title">Certified by {circleName}</h2>
       )}
 
+      <CircleTopEngagedStrip
+        items={topEngaged}
+        getDisplay={getDisplay}
+        getAvatar={getAvatar}
+        ownAddresses={ownAddresses}
+        onDeposit={authenticated ? handleDeposit : undefined}
+        livePositionTermIds={livePositionTermIds}
+      />
+
+      {moduleTitle && (
+        <div className="cf-module-head">
+          <h2 id="cf-activity-title" className="cf-module-title">
+            {moduleTitle}
+          </h2>
+        </div>
+      )}
+
       <div className="crd-feed-filters">
         <CircleVerbFilterDropdown active={verb} onChange={setVerb} />
         <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
@@ -203,15 +224,6 @@ export default function CircleFeedSection({
         />
         <CircleFeedSort active={sort} onChange={setSort} />
       </div>
-
-      <CircleTopEngagedStrip
-        items={topEngaged}
-        getDisplay={getDisplay}
-        getAvatar={getAvatar}
-        ownAddresses={ownAddresses}
-        onDeposit={authenticated ? handleDeposit : undefined}
-        livePositionTermIds={livePositionTermIds}
-      />
 
       {loading ? (
         <EmptyFeedState

@@ -264,6 +264,8 @@ export default function WeightModal({
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
+    /** Indices of 'create-skill' items — mint skill/tool atom then triple. */
+    const skillIndices: number[] = []
     items.forEach((item, i) => {
       const amount = getAmount(i)
       if (item.kind === 'redeem') {
@@ -282,6 +284,8 @@ export default function WeightModal({
         })
       } else if (item.kind === 'create-circle' && item.circleDraft) {
         circleIndices.push(i)
+      } else if (item.kind === 'create-skill' && item.skillDraft) {
+        skillIndices.push(i)
       } else {
         depositItems.push({ termId: item.termId, amountTrust: amount })
       }
@@ -434,6 +438,65 @@ export default function WeightModal({
               signalTrust: perTripleAmount,
             })
           }
+        })
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        setCreateTripleProcessing(false)
+        return
+      }
+    }
+
+    // Phase A (skills) — mint every queued skill/tool atom in one tx, then
+    // push the `[you → is_skilled_in/uses → skill]` triple into the batch.
+    // Mirrors the circle path: deterministic Thing → same atom termId as
+    // Atlas, so the triples interoperate.
+    if (skillIndices.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      if (!userAccountAtom.exists || !userAccountAtom.termId) {
+        setCreateTripleResult({
+          success: false,
+          error:
+            'Your Account atom is not yet on-chain. Make any deposit or certification first, then retry.',
+        })
+        return
+      }
+
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        const payloads: AtomIPFSPayload[] = skillIndices.map(
+          (idx) => items[idx].skillDraft!.payload,
+        )
+        const atomBatch = await executeCreateAtomsBatch(
+          wallets[0],
+          payloads,
+          pinThing,
+        )
+        if (!atomBatch.success) {
+          setCreateTripleResult({
+            success: false,
+            error: atomBatch.error ?? 'Skill atom creation failed',
+          })
+          return
+        }
+
+        const userAtomId = userAccountAtom.termId
+        skillIndices.forEach((idx, i) => {
+          const atomId = atomBatch.results[i]?.atomId
+          if (!atomId) return
+          const draft = items[idx].skillDraft!
+          createItems.push({
+            subjectId: userAtomId,
+            predicateId: draft.predicateId,
+            objectId: atomId,
+            signalTrust: Math.max(getAmount(idx), MIN_SIGNAL_TRUST),
+          })
         })
       } catch (err) {
         setCreateTripleResult({

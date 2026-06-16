@@ -1,8 +1,8 @@
 /**
- * AllPlatformsPage (`/platforms`) — Platform Market browser.
+ * AllPlatformsPage (`/platforms`) — Markets browser.
  *
- * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Invest CTA).
- * Topic colour accents the rank pill and the Invest button.
+ * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Stake CTA).
+ * Topic colour accents the rank pill and the Stake button.
  *
  * NOTE: a "Connect" view (topic-grouped PlatformGrid connector) is hidden for
  * now — the platform connection flow isn't finished. See LIVE_PLATFORM_IDS in
@@ -11,7 +11,8 @@
 import { useMemo, useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { PageHero } from '@0xsofia/design-system'
-import { Search, TrendingUp, X } from 'lucide-react'
+import { TrendingUp, X } from 'lucide-react'
+import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { formatEther } from 'viem'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
@@ -97,7 +98,7 @@ export default function AllPlatformsPage() {
 
       <div className="pm-filters">
         <div className="pm-filter-group pm-filter-search">
-          <Search className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+          <MagnifierIcon className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
           <input
             type="search"
             className="pm-search-input"
@@ -241,7 +242,7 @@ export default function AllPlatformsPage() {
                     }}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
-                    Invest
+                    Stake
                   </button>
                 </span>
               </div>
