@@ -37,6 +37,13 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
       'Back or oppose live claims from the network with on-chain deposits.',
     glow: 'rgba(200,144,217,0.4)',
   },
+  '/notifications': {
+    color: '#A8D8EA',
+    title: 'Notifications',
+    subtitle:
+      'Join requests, approvals and role changes across your circles.',
+    glow: 'rgba(168,216,234,0.4)',
+  },
   '/profile': {
     color: '#ffc6b0',
     title: 'My Profile',

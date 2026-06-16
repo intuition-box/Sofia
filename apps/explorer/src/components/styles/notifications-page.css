@@ -1,52 +1,30 @@
 /**
- * notifications-page.css — X-style notifications feed in the main column:
- * sticky frosted header + a list of rows with per-type icon badges, an
- * accent rail + dot on unread items, a skeleton loader and an empty state.
+ * notifications-page.css — a PageHero banner over a centered column:
+ * an actions row (unread count + mark-all-read), then a list of rows with
+ * per-type icon badges, an accent rail + dot on unread items, a skeleton
+ * loader and an empty state.
  */
 .np-page {
-  max-width: 720px;
+  width: 100%;
+}
+.np-body {
+  margin-top: 18px;
 }
 
-/* ── Sticky header ── */
-.np-head {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+/* ── Actions row (under the hero) ── */
+.np-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 6px 14px;
-  margin-bottom: 2px;
-  background: color-mix(in srgb, var(--ds-bg) 82%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 0 4px 10px;
   border-bottom: 1px solid var(--ds-border);
+  margin-bottom: 2px;
 }
-.np-head-l {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.np-title {
-  margin: 0;
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--ds-ink);
-}
-.np-count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+.np-count-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-muted);
 }
 .np-readall {
   font-size: 12.5px;
@@ -177,7 +155,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 64px 16px;
+  padding: 56px 16px;
   text-align: center;
 }
 .np-empty-ico {

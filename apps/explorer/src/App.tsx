@@ -105,6 +105,9 @@ export default function App() {
     location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
     location.pathname.startsWith('/leaderboard')
+  // Notifications also surfaces the connected user's ProfileDrawer on the
+  // right rail (instead of the generic Top-Reputations/Trending sidebar).
+  const isNotificationsPage = location.pathname.startsWith('/notifications')
   // The public profile (`/profile/:address`) shows SOMEONE ELSE's profile,
   // so the connected user's ProfileDrawer rail is meaningless there — it
   // must run rail-less. Distinguish it from the personal `/profile/*`
@@ -191,7 +194,8 @@ export default function App() {
      so we still want the markup mounted — the rail toggle in the mobile
      header opens it via `right-open`. Pages tagged full-width or the
      profile/cart-open states still suppress the rail entirely. */
-  const showRightSidebar = !isFullWidthPage && !isProfilePage && !cartOpen
+  const showRightSidebar =
+    !isFullWidthPage && !isProfilePage && !isNotificationsPage && !cartOpen
 
   const cartItemCount = cart.items.length
 
@@ -252,7 +256,7 @@ export default function App() {
           onToggleCollapse={toggleNavCollapsed}
         />
         {showRightSidebar && (
-          <RightSidebar hidden={isProfilePage || cartOpen} />
+          <RightSidebar hidden={isProfilePage || isNotificationsPage || cartOpen} />
         )}
 
         <CartDrawer
@@ -265,7 +269,7 @@ export default function App() {
 
         <ProfileDrawer
           isOpen={
-            isProfilePage &&
+            (isProfilePage || isNotificationsPage) &&
             !isPublicProfile &&
             !cartOpen &&
             (sidebar.isDesktop || profileDrawerOpen)
