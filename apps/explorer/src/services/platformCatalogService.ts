@@ -4,7 +4,7 @@
  * Replaces the static platformCatalog.ts data.
  */
 
-import { GRAPHQL_URL } from '@/config'
+import { useGetPlatformTriplesQuery } from '@0xsofia/graphql'
 import {
   PLATFORM_ATOM_IDS,
   CATEGORY_ATOM_IDS,
@@ -35,38 +35,6 @@ export interface PlatformCatalogData {
   getPlatformsByCategory: (categoryId: string) => OnChainPlatform[]
 }
 
-// ── GraphQL queries ──
-
-const GET_PLATFORM_TRIPLES = `
-  query GetPlatformTriples($predicateId: String!, $categoryTermIds: [String!]!) {
-    triples(
-      where: {
-        predicate_id: { _eq: $predicateId }
-        object: { term_id: { _in: $categoryTermIds } }
-        subject: { term_id: { _nin: $categoryTermIds } }
-      }
-      limit: 1000
-    ) {
-      subject {
-        term_id
-        label
-        image
-        value {
-          thing {
-            url
-            name
-            description
-          }
-        }
-      }
-      object {
-        term_id
-        label
-      }
-    }
-  }
-`
-
 // ── Helpers ──
 
 // Category → Topic mapping (built from atomIds + taxonomy knowledge)
@@ -85,20 +53,12 @@ export async function fetchPlatformCatalog(
 ): Promise<PlatformCatalogData> {
   const categoryTermIds = Object.values(CATEGORY_ATOM_IDS)
 
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: GET_PLATFORM_TRIPLES,
-      variables: {
-        predicateId: HAS_TAG_PREDICATE_ID,
-        categoryTermIds,
-      },
-    }),
-  })
+  const data = await useGetPlatformTriplesQuery.fetcher({
+    predicateId: HAS_TAG_PREDICATE_ID,
+    categoryTermIds,
+  })()
 
-  const json = await res.json()
-  const triples = json.data?.triples || []
+  const triples = data.triples || []
 
   // Group triples by platform (subject)
   const platformMap = new Map<string, OnChainPlatform>()

@@ -2,7 +2,7 @@ import {
   PREDICATE_TO_INTENTION,
   LABEL_TO_INTENTION,
 } from '../config/intentions'
-import { GRAPHQL_URL } from '../config'
+import { useGetContextTriplesQuery } from '@0xsofia/graphql'
 import { resolveContextAtom } from '../config/contextNodes'
 import { extractDomain, cleanLabel } from '../utils/formatting'
 import { getFaviconUrl } from '../utils/favicon'
@@ -75,35 +75,6 @@ export interface CertifierInfo {
 
 // ── Context triples resolution ──
 
-const CONTEXT_TRIPLES_QUERY = `
-  query GetContextTriples($subjectIds: [String!]!, $viewerIds: [String!] = []) {
-    triples(
-      where: {
-        subject_id: { _in: $subjectIds }
-        predicate: { label: { _eq: "in context of" } }
-      }
-      limit: 500
-    ) {
-      term_id
-      counter_term_id
-      subject_id
-      object { term_id label }
-      term {
-        vaults {
-          position_count
-          positions(where: { account_id: { _in: $viewerIds } }) { shares }
-        }
-      }
-      counter_term {
-        vaults {
-          position_count
-          positions(where: { account_id: { _in: $viewerIds } }) { shares }
-        }
-      }
-    }
-  }
-`
-
 /** One stakeable "in context of <topic>" nested triple resolved for a cert,
  *  with its like/dislike terms + position tallies. */
 export interface ContextTripleData {
@@ -137,16 +108,11 @@ async function fetchContextTriples(
   if (certTermIds.length === 0) return result
 
   try {
-    const res = await fetch(GRAPHQL_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: CONTEXT_TRIPLES_QUERY,
-        variables: { subjectIds: certTermIds, viewerIds },
-      }),
-    })
-    const json = await res.json()
-    const triples = json.data?.triples || []
+    const data = await useGetContextTriplesQuery.fetcher({
+      subjectIds: certTermIds,
+      viewerIds: viewerIds as string[],
+    })()
+    const triples = data.triples || []
 
     for (const t of triples) {
       const subjectId = t.subject_id

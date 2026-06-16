@@ -42,6 +42,9 @@ import '@/components/styles/profile-sections.css'
 
 const PUBLIC_HERO_COLOR = '#627EEA'
 
+// Number of interest categories surfaced in the profile preview rail.
+const MAX_CATEGORIES = 6
+
 export default function PublicProfilePage() {
   const { address: rawAddress } = useParams<{ address: string }>()
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null)
@@ -116,7 +119,7 @@ export default function PublicProfilePage() {
   }, [ownedTopics, certCountsByTopic])
 
   const selectedCategories = useMemo<string[]>(
-    () => ownedCategories.slice(0, 6),
+    () => ownedCategories.slice(0, MAX_CATEGORIES),
     [ownedCategories],
   )
 

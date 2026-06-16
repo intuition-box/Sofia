@@ -1,8 +1,7 @@
 import {
-  useGetTrendingByPredicateQuery,
+  useGetTrendingByPredicateLabelQuery,
   type GetTrendingByPredicateQuery,
 } from '@0xsofia/graphql'
-import { GRAPHQL_URL } from '@/config'
 import { getPlatformsByTopic } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
@@ -38,40 +37,15 @@ const CATEGORY_DISPLAY: Record<IntentCategory, string> = {
   buying: 'Buying',
 }
 
-const TRENDING_BY_LABEL_QUERY = `
-  query GetTrendingByLabel($label: String!, $limit: Int!) {
-    triples(
-      where: { predicate: { label: { _eq: $label } } }
-      order_by: [{ positions_aggregate: { count: desc } }, { created_at: desc }]
-      limit: $limit
-    ) {
-      term_id
-      counter_term_id
-      object {
-        label
-        value { thing { url } }
-      }
-      all_positions: positions(where: { shares: { _gt: "0" } }) {
-        account { id }
-      }
-    }
-  }
-`
-
 async function fetchByLabel(
   label: string,
   limit: number,
 ): Promise<TrendingTripleRaw[]> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: TRENDING_BY_LABEL_QUERY,
-      variables: { label, limit },
-    }),
-  })
-  const json = await res.json()
-  return json.data?.triples ?? []
+  const data = await useGetTrendingByPredicateLabelQuery.fetcher({
+    predicateLabel: label,
+    limit,
+  })()
+  return (data.triples ?? []) as unknown as TrendingTripleRaw[]
 }
 
 /** Known aliases: apiBaseUrl hostname → real website domain */

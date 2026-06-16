@@ -27,6 +27,8 @@ import {
 import '@/components/styles/profile-attributes.css'
 
 const MAX_PER_GROUP = 5
+// Cap the skill/tool autocomplete dropdown to keep it scannable.
+const MAX_SUGGESTIONS = 6
 
 interface ProfileAttributesProps {
   /** One address (public profile) or the full linked-wallet set (own profile),
@@ -96,7 +98,7 @@ function AttributeAdder({
             a.label.toLowerCase().includes(query) &&
             !declared.has(a.label.toLowerCase()),
         )
-        .slice(0, 6)
+        .slice(0, MAX_SUGGESTIONS)
     : []
 
   return (

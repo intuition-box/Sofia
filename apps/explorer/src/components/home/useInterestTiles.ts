@@ -43,6 +43,9 @@ export interface InterestTile {
   tier: InterestTier
 }
 
+// Sample feed items shown in each tile's preview body.
+const MAX_TILE_SAMPLES = 6
+
 type VerbDef = { id: string; label: string }
 
 const VERBS: VerbDef[] = [
@@ -84,7 +87,7 @@ export function useInterestTiles(items: CircleItem[]): InterestTile[] {
         color: t.color,
         count: matches.length,
         description: TOPIC_DESCRIPTIONS[t.id] ?? '',
-        samples: matches.slice(0, 6),
+        samples: matches.slice(0, MAX_TILE_SAMPLES),
         tier: 'compact' as const, // placeholder — overwritten below
       }
     })
@@ -102,7 +105,7 @@ export function useInterestTiles(items: CircleItem[]): InterestTile[] {
           'var(--ds-accent)',
         count: matches.length,
         description: VERB_DESCRIPTIONS[v.id] ?? '',
-        samples: matches.slice(0, 6),
+        samples: matches.slice(0, MAX_TILE_SAMPLES),
         tier: 'compact' as const,
       }
     })

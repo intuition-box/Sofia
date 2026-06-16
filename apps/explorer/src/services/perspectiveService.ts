@@ -17,9 +17,9 @@
 import { getAddress } from 'viem'
 import {
   useGetPerspectiveCertsQuery,
+  useCertsInTopicsQuery,
   type GetPerspectiveCertsQuery,
 } from '@0xsofia/graphql'
-import { GRAPHQL_URL } from '@/config'
 import { LABEL_TO_INTENTION } from '@/config/intentions'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
@@ -212,35 +212,12 @@ async function fetchCertsInTopics(
   certTermIds: string[],
   topicAtomIds: string[],
 ): Promise<Set<string>> {
-  // Reuses the existing GetCertTopicLinks shape but fetched inline so we
-  // don't pay the generated-hook overhead for a one-shot raw fetch.
-  const query = `
-    query CertsInTopics($certTermIds: [String!]!, $topicAtomIds: [String!]!) {
-      triples(
-        where: {
-          predicate: { label: { _eq: "in context of" } }
-          subject_id: { _in: $certTermIds }
-          object_id: { _in: $topicAtomIds }
-        }
-        limit: 50000
-      ) {
-        subject_id
-      }
-    }
-  `
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query,
-      variables: { certTermIds, topicAtomIds },
-    }),
-  })
-  const json = (await res.json()) as {
-    data?: { triples?: Array<{ subject_id?: string }> }
-  }
+  const data = await useCertsInTopicsQuery.fetcher({
+    certTermIds,
+    topicAtomIds,
+  })()
   const allowed = new Set<string>()
-  for (const t of json.data?.triples ?? []) {
+  for (const t of data.triples ?? []) {
     if (t.subject_id) allowed.add(t.subject_id)
   }
   return allowed
