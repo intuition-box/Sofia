@@ -39,6 +39,7 @@ COPY packages/graphql/package.json ./packages/graphql/
 COPY packages/design-system/package.json ./packages/design-system/
 COPY packages/taxonomy/package.json ./packages/taxonomy/
 COPY services/mastra/package.json ./services/mastra/
+COPY services/group-api/package.json ./services/group-api/
 
 RUN bun install --frozen-lockfile
 

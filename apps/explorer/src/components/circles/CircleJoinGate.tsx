@@ -42,7 +42,15 @@ interface CircleJoinGateProps {
   signalCount?: number
   /** Whether the viewer is authenticated (has a wallet to join with). */
   authenticated: boolean
-  /** Fires the cart-based join — only when authed, not in-cart, enabled. */
+  /** Gated-join state from the backend. `none` → request, `pending` →
+   *  awaiting review, `approved` → unlock the on-chain mint, `rejected` →
+   *  declined. */
+  joinStatus?: 'none' | 'pending' | 'approved' | 'rejected'
+  /** Submits a join request to the backend (shown when `joinStatus==='none'`). */
+  onRequest?: () => void
+  /** Request submission in flight. */
+  requesting?: boolean
+  /** Fires the cart-based on-chain mint — used once `joinStatus==='approved'`. */
   onJoin?: () => void
   /** Join already queued in the cart → CTA shows a confirmation status. */
   inCart?: boolean
@@ -58,6 +66,9 @@ export default function CircleJoinGate({
   activeCount,
   signalCount,
   authenticated,
+  joinStatus = 'none',
+  onRequest,
+  requesting = false,
   onJoin,
   inCart = false,
   disabled = false,
@@ -75,16 +86,6 @@ export default function CircleJoinGate({
     stats.push({ label: 'signals / wk', value: signalCount })
   }
 
-  const handleEnter = () => {
-    if (!authenticated) {
-      login()
-      return
-    }
-    onJoin?.()
-  }
-
-  const ctaDisabled = authenticated && disabled
-
   return (
     <div className="join-gate" role="region" aria-label="Join this circle">
       <div className="jg-card">
@@ -94,9 +95,15 @@ export default function CircleJoinGate({
         <div className="jg-eyebrow">Members-only Circle</div>
         <h2 className="jg-title">Enter the {circleName} Circle</h2>
         <p className="jg-sub">
-          {authenticated
-            ? "Join to read the Circle's signals, topics and members. Free — your wallet is your membership."
-            : "Connect your wallet to read the Circle's signals, topics and members. Free — your wallet is your membership."}
+          {!authenticated
+            ? 'Connect your wallet to request access to this Circle.'
+            : joinStatus === 'pending'
+              ? "Your request is in review — you'll be notified when an admin decides."
+              : joinStatus === 'rejected'
+                ? 'Your request was declined. You can ask again later.'
+                : joinStatus === 'approved'
+                  ? "You're approved! Add your membership to the cart to finish joining on-chain."
+                  : 'An admin reviews new members. Free — your wallet is your membership.'}
         </p>
 
         {stats.length > 0 && (
@@ -110,26 +117,58 @@ export default function CircleJoinGate({
           </div>
         )}
 
-        {inCart ? (
+        {!authenticated ? (
+          <button
+            type="button"
+            className="cf-btn cf-btn-pro jg-cta"
+            onClick={() => login()}
+          >
+            <Zap className="jg-cta-ic" aria-hidden="true" />
+            Connect to enter
+          </button>
+        ) : joinStatus === 'pending' ? (
           <span className="jg-status">
             <Check className="jg-status-ic" aria-hidden="true" />
-            Added to cart — confirm in the drawer
+            Request pending review
           </span>
+        ) : joinStatus === 'approved' ? (
+          inCart ? (
+            <span className="jg-status">
+              <Check className="jg-status-ic" aria-hidden="true" />
+              Added to cart — confirm in the drawer
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="cf-btn cf-btn-pro jg-cta"
+              onClick={() => onJoin?.()}
+              disabled={disabled}
+            >
+              <Zap className="jg-cta-ic" aria-hidden="true" />
+              Enter this Circle
+            </button>
+          )
         ) : (
           <button
             type="button"
             className="cf-btn cf-btn-pro jg-cta"
-            onClick={handleEnter}
-            disabled={ctaDisabled}
+            onClick={() => onRequest?.()}
+            disabled={requesting}
           >
             <Zap className="jg-cta-ic" aria-hidden="true" />
-            {authenticated ? 'Enter this Circle' : 'Connect to enter'}
+            {requesting
+              ? 'Requesting…'
+              : joinStatus === 'rejected'
+                ? 'Request again'
+                : 'Request to join'}
           </button>
         )}
 
-        {!inCart && ctaDisabled && disabledReason && (
-          <span className="jg-hint">{disabledReason}</span>
-        )}
+        {authenticated &&
+          joinStatus === 'approved' &&
+          !inCart &&
+          disabled &&
+          disabledReason && <span className="jg-hint">{disabledReason}</span>}
 
         {authenticated && (
           <button

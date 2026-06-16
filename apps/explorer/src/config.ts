@@ -54,6 +54,15 @@ export const OG_BASE_URL =
 export const MCP_TRUST_URL =
   (import.meta.env.VITE_MCP_TRUST_URL as string) || '/mcp-trust'
 
+// ── Group join API (gated membership backend) ──
+// The service sets CORS for the explorer origin, so the browser calls it
+// directly (no same-origin relay needed). Dev → local service; prod → env.
+export const GROUP_API_URL =
+  (import.meta.env.VITE_GROUP_API_URL as string) ||
+  (import.meta.env.DEV
+    ? 'http://localhost:8788'
+    : 'https://group-api.sofia.intuition.box')
+
 // ── Predicate IDs (mainnet) ──
 export const PREDICATE_IDS = {
   TRUSTS: '0x3a73f3b1613d166eea141a25a2adc70db9304ab3c4e90daecad05f86487c3ee9',

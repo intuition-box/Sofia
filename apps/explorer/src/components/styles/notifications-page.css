@@ -1,0 +1,213 @@
+/**
+ * notifications-page.css — a PageHero banner over a centered column:
+ * an actions row (unread count + mark-all-read), then a list of rows with
+ * per-type icon badges, an accent rail + dot on unread items, a skeleton
+ * loader and an empty state.
+ */
+.np-page {
+  width: 100%;
+}
+.np-body {
+  margin-top: 18px;
+}
+
+/* ── Actions row (under the hero) ── */
+.np-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 10px;
+  border-bottom: 1px solid var(--ds-border);
+  margin-bottom: 2px;
+}
+.np-count-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-muted);
+}
+.np-readall {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ds-accent-ink);
+  background: none;
+  border: none;
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.np-readall:hover {
+  background: var(--ds-bg-subtle);
+}
+
+/* ── List + rows ── */
+.np-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.np-row {
+  position: relative;
+  border-bottom: 1px solid var(--ds-border-soft);
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.np-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.np-row.is-unread {
+  background: var(--ds-accent-soft);
+}
+.np-row.is-unread:hover {
+  background: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+}
+/* Accent rail down the left edge of unread rows. */
+.np-row.is-unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--ds-accent-ink);
+}
+.np-row-link {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── Type icon badge ── */
+.np-ico {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.np-ico--info {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-ink);
+}
+.np-ico--positive {
+  background: color-mix(in srgb, #1f9d6b 15%, transparent);
+  color: #1f9d6b;
+}
+.np-ico--negative {
+  background: color-mix(in srgb, #e0524d 16%, transparent);
+  color: #e0524d;
+}
+
+/* ── Text block ── */
+.np-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.np-row-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.np-row-msg {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ds-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ── Right-hand meta (time + unread dot) ── */
+.np-row-meta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  align-self: flex-start;
+  padding-top: 2px;
+}
+.np-row-when {
+  font-size: 11.5px;
+  color: var(--ds-muted-soft);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.np-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ds-accent-ink);
+}
+
+/* ── Empty state ── */
+.np-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 56px 16px;
+  text-align: center;
+}
+.np-empty-ico {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted-soft);
+  margin-bottom: 6px;
+}
+.np-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.np-empty-sub {
+  margin: 0;
+  max-width: 260px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+}
+
+/* ── Skeleton loader ── */
+.np-sk {
+  background: var(--ds-bg-subtle);
+  border-radius: 6px;
+  animation: np-pulse 1.4s ease-in-out infinite;
+}
+.np-ico.np-sk {
+  border-radius: 50%;
+}
+.np-sk-line {
+  display: block;
+  height: 11px;
+  width: 70%;
+  margin-top: 8px;
+}
+.np-sk-line--title {
+  height: 13px;
+  width: 42%;
+  margin-top: 2px;
+}
+@keyframes np-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}

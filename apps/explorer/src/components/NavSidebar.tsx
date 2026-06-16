@@ -8,6 +8,7 @@ import {
 } from '@0xsofia/design-system'
 import {
   Home,
+  Bell,
   Vote,
   Globe,
   Wallet,
@@ -105,6 +106,7 @@ export function NavSidebar({
     { to: '/explore', icon: Globe, label: 'Explore', public: true },
     { to: '/circles', icon: Users, label: 'Circles', public: false },
     { to: '/compose', icon: Layers, label: 'Compose', public: false },
+    { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
   ]
 
   const quickLinks: {
