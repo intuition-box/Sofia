@@ -10,6 +10,7 @@ import {
 
 export function useUserAttributes(
   address: string | string[] | undefined,
+  viewerAddresses: string[] = [],
 ): {
   skills: UserAttribute[]
   tools: UserAttribute[]
@@ -20,10 +21,15 @@ export function useUserAttributes(
     address == null ? [] : Array.isArray(address) ? address : [address]
   // Stable, order-independent cache key across the linked wallet set.
   const key = addresses.map((a) => a.toLowerCase()).sort().join(',')
+  // The viewer set affects the `viewerEndorsed` flag, so it's part of the key.
+  const viewerKey = viewerAddresses
+    .map((a) => a.toLowerCase())
+    .sort()
+    .join(',')
 
   const query = useQuery({
-    queryKey: ['userAttributes', key],
-    queryFn: () => fetchUserAttributes(addresses),
+    queryKey: ['userAttributes', key, viewerKey],
+    queryFn: () => fetchUserAttributes(addresses, viewerAddresses),
     enabled: addresses.length > 0,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,

@@ -11,12 +11,14 @@
  *
  * The declared chips are read on-chain via useUserAttributes.
  */
-import { useState } from 'react'
-import { Plus, Sparkles, Wrench } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Plus, ChevronUp, Sparkles, Wrench } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { SKILLS, TOOLS, type Attribute } from '@0xsofia/taxonomy'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
 import { useDeclareSkill } from '@/hooks/useDeclareSkill'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { useCart } from '@/hooks/useCart'
 import type { UserAttribute } from '@/services/userAttributesService'
 import {
   Dialog,
@@ -29,6 +31,11 @@ import '@/components/styles/profile-attributes.css'
 const MAX_PER_GROUP = 5
 // Cap the skill/tool autocomplete dropdown to keep it scannable.
 const MAX_SUGGESTIONS = 6
+
+/** A declared attribute plus an optional `pending` flag: entries the owner has
+ *  just added are queued in the cart (not yet minted on-chain) and render as
+ *  dashed chips so it's obvious the declaration still needs to be submitted. */
+type DisplayAttribute = UserAttribute & { pending?: boolean }
 
 interface ProfileAttributesProps {
   /** One address (public profile) or the full linked-wallet set (own profile),
@@ -44,35 +51,68 @@ function AttributeChips({
   items,
   onEndorse,
 }: {
-  items: UserAttribute[]
+  items: DisplayAttribute[]
   onEndorse?: (attr: UserAttribute) => void
 }) {
   return (
     <ul className="pa-chips">
-      {items.map((a) => (
-        <li
-          key={a.id}
-          className={`pa-chip${onEndorse ? ' pa-chip--votable' : ''}`}
-        >
-          <span className="pa-chip-label">{a.label}</span>
-          {a.endorserCount > 0 && (
-            <span className="pa-chip-count" title="Supporters">
-              {a.endorserCount}
-            </span>
-          )}
-          {onEndorse && a.termId && (
-            <button
-              type="button"
-              className="pa-chip-vote"
-              onClick={() => onEndorse(a)}
-              aria-label={`Endorse ${a.label}`}
-              title={`Endorse ${a.label}`}
-            >
-              <Plus className="h-3 w-3" aria-hidden="true" />
-            </button>
-          )}
-        </li>
-      ))}
+      {items.map((a) => {
+        const votable = !!onEndorse && !a.pending
+        const voted = !a.pending && a.viewerEndorsed
+        return (
+          <li
+            key={a.id}
+            className={`pa-chip${votable ? ' pa-chip--votable' : ''}${
+              a.pending ? ' pa-chip--pending' : ''
+            }${voted ? ' pa-chip--mine' : ''}`}
+            title={
+              a.pending
+                ? 'Queued — submit your cart to confirm on-chain'
+                : voted
+                  ? 'You back this'
+                  : undefined
+            }
+          >
+            <span className="pa-chip-label">{a.label}</span>
+            {a.pending ? (
+              <span className="pa-chip-tag" aria-label="Pending declaration">
+                queued
+              </span>
+            ) : votable && a.termId ? (
+              <button
+                type="button"
+                className={`pa-chip-vote${voted ? ' pa-chip-vote--voted' : ''}`}
+                onClick={() => onEndorse!(a)}
+                aria-label={
+                  voted
+                    ? `You back ${a.label} — add more support`
+                    : `Endorse ${a.label}`
+                }
+                title={
+                  voted
+                    ? 'You back this — click to add more support'
+                    : `Endorse ${a.label}`
+                }
+              >
+                <ChevronUp className="pa-chip-vote-ic" aria-hidden="true" />
+                <span className="pa-chip-vote-n">{a.endorserCount}</span>
+              </button>
+            ) : (
+              a.endorserCount > 0 && (
+                <span
+                  className={`pa-chip-vote pa-chip-vote--static${
+                    voted ? ' pa-chip-vote--voted' : ''
+                  }`}
+                  title={voted ? 'You back this' : 'Supporters'}
+                >
+                  <ChevronUp className="pa-chip-vote-ic" aria-hidden="true" />
+                  <span className="pa-chip-vote-n">{a.endorserCount}</span>
+                </span>
+              )
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -145,7 +185,7 @@ function AttributeGroup({
   onEdit,
 }: {
   kind: 'skill' | 'tool'
-  items: UserAttribute[]
+  items: DisplayAttribute[]
   onEndorse?: (attr: UserAttribute) => void
   canDeclare?: boolean
   onEdit: () => void
@@ -192,11 +232,14 @@ function EditGroup({
   onPick,
 }: {
   kind: 'skill' | 'tool'
-  items: UserAttribute[]
+  items: DisplayAttribute[]
   pool: readonly Attribute[]
   onPick: (id: string) => void
 }) {
   const Icon = kind === 'skill' ? Sparkles : Wrench
+  // Pending (queued) entries count toward both the "already declared" set (so
+  // the adder won't re-suggest them) and the max — you can't queue more than
+  // MAX_PER_GROUP total across confirmed + pending.
   const declared = new Set(items.map((a) => a.label.toLowerCase()))
   const atMax = items.length >= MAX_PER_GROUP
 
@@ -226,14 +269,58 @@ function EditGroup({
   )
 }
 
+/** Append the owner's queued (cart) declarations to the confirmed list,
+ *  skipping any whose label is already declared on-chain. */
+function withPending(
+  confirmed: UserAttribute[],
+  pending: DisplayAttribute[],
+): DisplayAttribute[] {
+  const have = new Set(confirmed.map((a) => a.label.toLowerCase()))
+  return [...confirmed, ...pending.filter((p) => !have.has(p.label.toLowerCase()))]
+}
+
 export default function ProfileAttributes({
   address,
   onEndorse,
   canDeclare,
 }: ProfileAttributesProps) {
-  const { skills, tools, loading } = useUserAttributes(address)
+  // The connected viewer's wallets — flags which chips they already endorsed
+  // so we can render those in a stronger "voted" state.
+  const { addresses: viewerAddresses } = useLinkedWallets()
+  const { skills, tools, loading } = useUserAttributes(address, viewerAddresses)
   const { declare } = useDeclareSkill()
+  const cart = useCart()
   const [editOpen, setEditOpen] = useState(false)
+
+  // Skill/tool declarations the owner just added sit in the cart as
+  // `create-skill` items until the cart is submitted on-chain. Surface them as
+  // dashed "queued" chips so the add is visibly acknowledged. Only on the
+  // owner's own profile (`canDeclare`) — the cart is the current user's, not
+  // the profile being viewed.
+  const pending = useMemo(() => {
+    const skillsP: DisplayAttribute[] = []
+    const toolsP: DisplayAttribute[] = []
+    if (canDeclare) {
+      for (const it of cart.items) {
+        const draft = it.kind === 'create-skill' ? it.skillDraft : undefined
+        if (!draft) continue
+        const entry: DisplayAttribute = {
+          id: it.id,
+          label: draft.label,
+          category: draft.category,
+          endorserCount: 0,
+          viewerEndorsed: false,
+          termId: it.termId,
+          pending: true,
+        }
+        ;(draft.category === 'skill' ? skillsP : toolsP).push(entry)
+      }
+    }
+    return { skills: skillsP, tools: toolsP }
+  }, [cart.items, canDeclare])
+
+  const skillsDisplay = withPending(skills, pending.skills)
+  const toolsDisplay = withPending(tools, pending.tools)
 
   return (
     <section className="pa-section">
@@ -243,14 +330,14 @@ export default function ProfileAttributes({
         <div className="pa-groups">
           <AttributeGroup
             kind="skill"
-            items={skills}
+            items={skillsDisplay}
             onEndorse={onEndorse}
             canDeclare={canDeclare}
             onEdit={() => setEditOpen(true)}
           />
           <AttributeGroup
             kind="tool"
-            items={tools}
+            items={toolsDisplay}
             onEndorse={onEndorse}
             canDeclare={canDeclare}
             onEdit={() => setEditOpen(true)}
@@ -267,13 +354,13 @@ export default function ProfileAttributes({
             <div className="pa-edit-body">
               <EditGroup
                 kind="skill"
-                items={skills}
+                items={skillsDisplay}
                 pool={SKILLS}
                 onPick={declare}
               />
               <EditGroup
                 kind="tool"
-                items={tools}
+                items={toolsDisplay}
                 pool={TOOLS}
                 onPick={declare}
               />

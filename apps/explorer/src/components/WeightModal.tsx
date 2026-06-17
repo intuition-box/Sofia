@@ -530,6 +530,12 @@ export default function WeightModal({
             // the user shows up immediately.
             qc.invalidateQueries({ queryKey: ['groups-list'] })
             qc.invalidateQueries({ queryKey: ['group-detail'] })
+            // A declared skill/tool ([you → is_skilled_in/uses → X]) lands via
+            // this create path — refresh the profile's skills/tools (and the
+            // master profile) so it shows up without waiting on the 10-min
+            // staleTime.
+            qc.invalidateQueries({ queryKey: ['userAttributes'] })
+            qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
           }
         } finally {
           setCreateTripleProcessing(false)

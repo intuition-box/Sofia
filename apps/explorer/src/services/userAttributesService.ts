@@ -30,7 +30,11 @@ const TOOL_PREDICATE_ID = ATTESTATION_TYPES.TOOL_ENDORSE.termId
 // usually a different address than the account holder, so it matches nothing.
 // We pass both checksummed and lowercased forms since `data` casing varies.
 const GET_USER_ATTRIBUTES = `
-  query UserAttributes($addresses: [String!]!, $predicateIds: [String!]!) {
+  query UserAttributes(
+    $addresses: [String!]!
+    $predicateIds: [String!]!
+    $viewerAddresses: [String!]!
+  ) {
     atoms(
       where: {
         _and: [{ data: { _in: $addresses } }, { type: { _eq: "Account" } }]
@@ -47,6 +51,14 @@ const GET_USER_ATTRIBUTES = `
         term {
           vaults(where: { curve_id: { _eq: "1" } }) {
             position_count
+            viewerPositions: positions(
+              where: {
+                account_id: { _in: $viewerAddresses }
+                shares: { _gt: "0" }
+              }
+            ) {
+              account_id
+            }
           }
         }
       }
@@ -62,6 +74,9 @@ export interface UserAttribute {
   category: AttributeCategory
   /** Open positions backing the endorsement — the "real usage" signal. */
   endorserCount: number
+  /** True when the connected viewer already holds a position on this
+   *  endorsement triple (drives the "you voted" chip highlight). */
+  viewerEndorsed: boolean
   /** The endorsement triple's term_id — the vault to stake on to endorse. */
   termId: string
 }
@@ -74,7 +89,14 @@ export interface UserAttributes {
 interface RawTriple {
   term_id?: string | null
   object?: { label?: string | null } | null
-  term?: { vaults?: { position_count?: number | null }[] | null } | null
+  term?: {
+    vaults?:
+      | {
+          position_count?: number | null
+          viewerPositions?: { account_id?: string | null }[] | null
+        }[]
+      | null
+  } | null
 }
 
 interface RawAtom {
@@ -83,6 +105,7 @@ interface RawAtom {
 
 export async function fetchUserAttributes(
   address: string | string[],
+  viewerAddresses: string[] = [],
 ): Promise<UserAttributes> {
   // The Account atom's `data` holds the address; match both checksummed and
   // lowercased forms (casing varies in the index). Drop malformed addresses,
@@ -100,6 +123,19 @@ export async function fetchUserAttributes(
   }
   if (variants.size === 0) return { skills: [], tools: [] }
 
+  // The connected viewer's wallets — used to flag which endorsement triples
+  // the viewer already backs. Both casings, same as above.
+  const viewerVariants = new Set<string>()
+  for (const a of viewerAddresses) {
+    try {
+      const checksummed = getAddress(a)
+      viewerVariants.add(checksummed)
+      viewerVariants.add(checksummed.toLowerCase())
+    } catch {
+      // malformed address — skip
+    }
+  }
+
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -108,6 +144,7 @@ export async function fetchUserAttributes(
       variables: {
         addresses: [...variants],
         predicateIds: [SKILL_PREDICATE_ID, TOOL_PREDICATE_ID],
+        viewerAddresses: [...viewerVariants],
       },
     }),
   })
@@ -125,11 +162,14 @@ export async function fetchUserAttributes(
     if (!label) continue
     const attr = getAttributeByLabel(label)
     if (!attr) continue // not a recognised skill/tool — drop generic "uses".
-    const count = Number(triple?.term?.vaults?.[0]?.position_count ?? 0)
+    const vault = triple?.term?.vaults?.[0]
+    const count = Number(vault?.position_count ?? 0)
+    const viewerEndorsed = (vault?.viewerPositions?.length ?? 0) > 0
     const termId = triple?.term_id ?? ''
     const existing = byId.get(attr.id)
     if (existing) {
       existing.endorserCount = Math.max(existing.endorserCount, count)
+      existing.viewerEndorsed = existing.viewerEndorsed || viewerEndorsed
       if (!existing.termId && termId) existing.termId = termId
     } else {
       byId.set(attr.id, {
@@ -137,6 +177,7 @@ export async function fetchUserAttributes(
         label: attr.label,
         category: attr.category,
         endorserCount: count,
+        viewerEndorsed,
         termId,
       })
     }

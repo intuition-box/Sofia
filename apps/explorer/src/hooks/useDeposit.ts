@@ -52,6 +52,10 @@ export function useDeposit() {
           // the ProfileDrawer "Last activity" feed without waiting on
           // staleTime.
           qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+          // Endorsing a skill/tool deposits on its endorsement triple —
+          // refresh the skills/tools panels so the endorser count reflects
+          // the new position instead of the cached value (10 min staleTime).
+          qc.invalidateQueries({ queryKey: ['userAttributes'] })
         }
         return result
       } catch (err: any) {
@@ -87,6 +91,7 @@ export function useDeposit() {
           }
           qc.invalidateQueries({ queryKey: ['circle-feed'] })
           qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+          qc.invalidateQueries({ queryKey: ['userAttributes'] })
         }
         return result
       } catch (err: any) {

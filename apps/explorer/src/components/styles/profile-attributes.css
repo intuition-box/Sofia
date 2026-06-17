@@ -69,30 +69,27 @@
    intentionally left loud. */
 .pa-chip {
   --pa-chip-c: var(--ds-ink-soft);
+  --pa-vote-c: #e2924b;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 9px;
-  border: 1px solid color-mix(in srgb, var(--pa-chip-c) 26%, transparent);
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--pa-chip-c) 13%, transparent);
+  gap: 8px;
+  padding: 4px 6px 4px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--ds-ink) 5%, transparent);
   color: var(--ds-ink);
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
 }
+/* Skills carry the accent hue (used by the dashed "queued" state); tools stay
+   neutral. The pill fill itself is uniform to match the reference. */
 .pa-group:first-child .pa-chip {
   --pa-chip-c: var(--ds-accent);
 }
-.pa-group:last-child .pa-chip {
-  --pa-chip-c: var(--ds-ink-soft);
-}
 .pa-chip:hover {
-  border-color: color-mix(in srgb, var(--pa-chip-c) 45%, transparent);
-  background: color-mix(in srgb, var(--pa-chip-c) 20%, transparent);
-}
-.pa-chip:active {
-  background: color-mix(in srgb, var(--pa-chip-c) 28%, transparent);
+  border-color: color-mix(in srgb, var(--ds-ink) 26%, var(--ds-border));
+  background: color-mix(in srgb, var(--ds-ink) 8%, transparent);
 }
 .pa-chip-label {
   font-family: 'Geist', sans-serif;
@@ -100,19 +97,35 @@
   font-weight: 600;
   color: var(--ds-ink);
 }
-.pa-chip-count {
+
+/* Queued declaration — added but not yet minted on-chain. Dashed border +
+   transparent fill so it reads as a placeholder distinct from a confirmed
+   chip; a small "queued" tag spells it out. */
+.pa-chip--pending {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--pa-chip-c) 50%, transparent);
+  background: transparent;
+}
+.pa-chip--pending:hover {
+  border-color: color-mix(in srgb, var(--pa-chip-c) 65%, transparent);
+  background: color-mix(in srgb, var(--pa-chip-c) 8%, transparent);
+}
+.pa-chip--pending .pa-chip-label {
+  color: var(--ds-ink-soft);
+}
+.pa-chip-tag {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
+  height: 16px;
+  padding: 0 6px;
   border-radius: 999px;
-  background: var(--ds-accent);
-  color: var(--ds-on-accent, #fff);
+  border: 1px dashed color-mix(in srgb, var(--pa-chip-c) 55%, transparent);
+  color: var(--ds-muted);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .pa-empty {
@@ -123,33 +136,67 @@
   color: var(--ds-muted);
 }
 
-/* Endorse ("vote") button — only on votable chips (public profile). */
-.pa-chip--votable {
-  padding-right: 5px;
-}
+/* Upvote control — chevron + supporter count in warm amber, matching the
+   reference "^ N" pill. On votable chips (public profile) it's the endorse
+   button; on the owner's own chips it's a static read-out of the count. */
 .pa-chip-vote {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
+  gap: 2px;
+  padding: 3px 8px 3px 6px;
   border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--ds-muted);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pa-vote-c) 14%, transparent);
+  color: var(--pa-vote-c);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
   transition:
     background 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
+    transform 0.12s ease;
 }
 .pa-chip-vote:hover,
 .pa-chip-vote:focus-visible {
-  background: var(--ds-accent);
-  color: var(--ds-on-accent, #fff);
-  transform: scale(1.08);
+  background: color-mix(in srgb, var(--pa-vote-c) 26%, transparent);
+  transform: translateY(-1px);
   outline: none;
+}
+.pa-chip-vote--static,
+.pa-chip-vote--static:hover {
+  cursor: default;
+  transform: none;
+  background: color-mix(in srgb, var(--pa-vote-c) 14%, transparent);
+}
+.pa-chip-vote-ic {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.6;
+}
+.pa-chip-vote-n {
+  line-height: 1;
+}
+
+/* Voted — the connected viewer already backs this chip. The whole pill takes a
+   warm amber edge and the upvote control fills solid, so "I already voted on
+   this" reads at a glance (vs the outline default = not yet voted). */
+.pa-chip--mine {
+  border-color: color-mix(in srgb, var(--pa-vote-c) 55%, transparent);
+  background: color-mix(in srgb, var(--pa-vote-c) 9%, transparent);
+}
+.pa-chip--mine:hover {
+  border-color: color-mix(in srgb, var(--pa-vote-c) 70%, transparent);
+  background: color-mix(in srgb, var(--pa-vote-c) 13%, transparent);
+}
+.pa-chip-vote--voted,
+.pa-chip-vote--static.pa-chip-vote--voted {
+  background: var(--pa-vote-c);
+  color: #1f1505;
+}
+.pa-chip-vote--voted:hover,
+.pa-chip-vote--voted:focus-visible {
+  background: color-mix(in srgb, var(--pa-vote-c) 86%, #000);
 }
 
 /* ── Owner: declare a skill/tool (search box + dropdown) ────────── */
