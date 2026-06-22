@@ -35,11 +35,14 @@ COPY apps/extension/package.json ./apps/extension/
 COPY apps/landing/package.json ./apps/landing/
 COPY apps/doc/package.json ./apps/doc/
 COPY apps/og/package.json ./apps/og/
+COPY apps/blog/package.json ./apps/blog/
 COPY packages/graphql/package.json ./packages/graphql/
 COPY packages/design-system/package.json ./packages/design-system/
 COPY packages/taxonomy/package.json ./packages/taxonomy/
+COPY packages/quests/package.json ./packages/quests/
 COPY services/mastra/package.json ./services/mastra/
 COPY services/group-api/package.json ./services/group-api/
+COPY services/og-proxy/package.json ./services/og-proxy/
 
 RUN bun install --frozen-lockfile
 
@@ -71,14 +74,15 @@ COPY --from=build /repo/services/mastra/.mastra/output /app
 RUN npm install --omit=dev && \
     npm install pino pino-pretty bufferutil utf-8-validate
 
-# DStack mounts the encrypted volume here in production. The .env tells
-# Mastra to write the SQLite file under this path.
-RUN mkdir -p /dstack/data
+# DStack monte le volume chiffré ici en prod (DATABASE_URL=file:/app/data/...).
+# On crée le dossier pour que le boot ne crashe pas même si le volume tarde
+# à être monté (un mount par-dessus shadow ce dossier, sans souci).
+RUN mkdir -p /app/data
 
 EXPOSE 4111
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:4111/api/health || exit 1
+    CMD curl -f http://localhost:4111/health || exit 1
 
 # Use the start script from .mastra/output/package.json — it wires up
 # the OpenTelemetry instrumentation hooks.

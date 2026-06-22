@@ -1,44 +1,54 @@
+# Sofia-Mastra — Phala Cloud TEE (durci juin 2026)
+#
+# Tous les secrets ci-dessous sont NEUFS (générés en local post-incident).
 services:
   sofia:
-    # En prod sur Phala : maximesaintjoannis/sofia-mastra:vX.Y.Z (push via
-    # le workflow CI). En local pour tester l'image fraîchement buildée :
-    # docker build -f Dockerfile -t sofia-mastra:test . puis IMAGE=sofia-mastra:test
-    image: ${IMAGE:-maximesaintjoannis/sofia-mastra:v1.5.0}
+    image: maximesaintjoannis/sofia-mastra:v2.1.1
     container_name: sofia
     environment:
-      # GaiaNet configuration
-      - GAIANET_NODE_URL=${GAIANET_NODE_URL}
-      - GAIANET_MODEL=${GAIANET_MODEL}
-      - GAIANET_TEXT_MODEL_SMALL=${GAIANET_TEXT_MODEL_SMALL}
-      - GAIANET_TEXT_MODEL_LARGE=${GAIANET_TEXT_MODEL_LARGE}
-      - GAIANET_EMBEDDING_MODEL=${GAIANET_EMBEDDING_MODEL}
-      - GAIANET_EMBEDDING_URL=${GAIANET_EMBEDDING_URL}
-      - USE_EMBEDDINGS=${USE_EMBEDDINGS:-true}
+      # Database — LibSQL sur le volume DStack chiffré.
+      # ⚠️ /app/data DOIT être un volume persistant chiffré monté côté Phala,
+      # sinon les oauth_tokens sont éphémères.
+      - DATABASE_URL=file:/app/data/mastra.db
 
-      # Database (LibSQL file for persistence on DStack encrypted volume)
-      - DATABASE_URL=file:/dstack/data/mastra.db
-
-      # MCP Server — points to an external instance (Coolify) when the
-      # chatbot is wired up. Leave empty for now: the chatbot agent
-      # tolerates MCP being unreachable and boots without tools.
-      - MCP_SERVER_URL=${MCP_SERVER_URL:-}
-
-      # Server configuration
       - NODE_ENV=${NODE_ENV:-production}
 
-      # OAuth token storage (AES-256-GCM, 32 bytes hex — REQUIRED to
-      # enable the encrypted oauth_tokens table)
+      # Chiffrement des tokens OAuth (AES-256-GCM, 64 hex) — NOUVELLE clé.
       - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}
 
-      # Human Attestor Bot (Proof of Human onchain attestations)
+      # Bot Human Attestor — NOUVELLE clé (l'ancienne 0xCd62c5… est grillée).
+      # Rappel : sa nouvelle adresse doit remplacer BOT_VERIFIER_ADDRESS dans
+      # l'extension (chainConfig.prod.ts/dev.ts) + republication.
       - BOT_PRIVATE_KEY=${BOT_PRIVATE_KEY}
+
+      # OAuth — à NE remettre que pour les apps recréées (les anciennes apps
+      # sont supprimées dans les consoles → secrets + tokens users invalidés).
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - YOUTUBE_CLIENT_ID=${YOUTUBE_CLIENT_ID}
+      - YOUTUBE_CLIENT_SECRET=${YOUTUBE_CLIENT_SECRET}
       - TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID}
+      - TWITCH_CLIENT_SECRET=${TWITCH_CLIENT_SECRET}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+
+      # Clés API (signal fetchers) — NOUVELLES (les anciennes sont grillées).
+      - GRAPH_API_KEY=${GRAPH_API_KEY}
+    # Seul 4111 exposé. (3001 MCP retiré.)
     ports:
       - '4111:4111'
+    # Volume persistant chiffré (dstack le provisionne sur le disque chiffré
+    # du CVM). C'est ce qui fait exister /app/data → SQLite peut ouvrir la DB.
+    volumes:
+      - sofia-data:/app/data
     restart: always
+    # Route de health réelle = /health (pas /api/health, qui renvoie 404).
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:4111/api/health']
+      test: ['CMD', 'curl', '-f', 'http://localhost:4111/health']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
+
+volumes:
+  sofia-data:
