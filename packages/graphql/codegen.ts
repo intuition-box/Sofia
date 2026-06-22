@@ -1,8 +1,6 @@
 import type { CodegenConfig } from '@graphql-codegen/cli'
 import type { Types } from '@graphql-codegen/plugin-helpers'
 
-import { API_URL_PROD } from './src/constants'
-
 const commonGenerateOptions: Types.ConfiguredOutput = {
   config: {
     reactQueryVersion: 5,
@@ -36,30 +34,23 @@ const commonGenerateOptions: Types.ConfiguredOutput = {
   ],
 }
 
+// Types are generated from the committed `schema.graphql` snapshot rather
+// than the live indexer. This keeps the build offline + deterministic and
+// makes it immune to upstream schema regressions (e.g. mainnet temporarily
+// dropping its `mutation` root type, which used to break `pinThing` codegen
+// and fail the whole build). Refresh the snapshot from the live indexer with
+// `bun run codegen:schema` whenever the indexer schema actually changes.
 const config: CodegenConfig = {
   overwrite: true,
-  schema: {
-    [API_URL_PROD]: {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
-  },
+  schema: './schema.graphql',
   ignoreNoDocuments: true,
-  documents: ['**/*.graphql'],
+  documents: ['src/**/*.graphql'],
   generates: {
     './src/generated/index.ts': {
       config: {
         ...commonGenerateOptions.config,
       },
       plugins: commonGenerateOptions.plugins,
-    },
-    './schema.graphql': {
-      plugins: ['schema-ast'],
-      config: {
-        includeDirectives: true,
-      },
     },
   },
   watch: process.env.NODE_ENV === 'development',

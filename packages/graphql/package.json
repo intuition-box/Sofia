@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "codegen": "NODE_ENV=production graphql-codegen --config codegen.ts",
+    "codegen:schema": "NODE_ENV=production graphql-codegen --config codegen.schema.ts",
     "codegen:watch": "NODE_ENV=development dotenv graphql-codegen --config codegen.ts",
     "build": "pnpm codegen",
     "dev": "pnpm codegen:watch",
