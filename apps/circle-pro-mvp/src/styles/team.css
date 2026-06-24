@@ -30,6 +30,105 @@
   font-size: 13px;
   color: var(--ds-muted);
 }
+/* Featured "à la une" insert */
+.tv-featured {
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.tv-featured:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+.tv-feat-shot {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.tv-feat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.tv-feat-fav {
+  width: 46px;
+  height: 46px;
+  opacity: 0.7;
+}
+.tv-feat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 22px 24px;
+  justify-content: center;
+  min-width: 0;
+}
+.tv-feat-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--c);
+}
+.tv-feat-title {
+  font-family: var(--display);
+  font-size: clamp(18px, 2vw, 23px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.tv-feat-host {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.tv-feat-people {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--ds-muted);
+}
+.tv-feat-people b {
+  color: var(--ds-ink);
+}
+.tv-feat-avs {
+  display: flex;
+  flex: none;
+}
+.tv-feat-av {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-left: -7px;
+  border: 2px solid var(--surface);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+}
+.tv-feat-av:first-child {
+  margin-left: 0;
+}
+@media (max-width: 640px) {
+  .tv-featured {
+    grid-template-columns: 1fr;
+  }
+}
+
 .tv-table {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);

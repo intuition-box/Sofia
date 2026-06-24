@@ -12,21 +12,11 @@ import {
   NavSection,
   NavItem,
 } from '@0xsofia/design-system'
-import { Bookmark, ShoppingCart } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Sparkles, Bookmark, Users, ShoppingCart } from 'lucide-react'
 import { avGrad } from '../data/helpers'
 import { toast } from '../lib/toast'
 import '@0xsofia/design-system/styles/nav-sidebar.css'
 import '../styles/nav-extras.css'
-
-interface NavLink {
-  id: string
-  Icon: LucideIcon
-  label: string
-  active?: boolean
-}
-
-const NAV_ITEMS: NavLink[] = [{ id: 'mybookmarks', Icon: Bookmark, label: 'My bookmarks', active: true }]
 
 interface CircleEntry {
   name: string
@@ -43,20 +33,15 @@ const CIRCLES: CircleEntry[] = [
   { name: 'Marketing', teamId: 'marketing', color: '#8b5cf6', count: 7, avs: [3, 2], more: 0 },
 ]
 
-function renderItem({ id, Icon, label, active }: NavLink) {
-  return (
-    <NavItem
-      key={id}
-      as="button"
-      icon={<Icon size={16} />}
-      label={label}
-      active={active}
-      onClick={() => toast(`Open ${label}`)}
-    />
-  )
-}
-
-export function Nav({ onOpenTeam }: { onOpenTeam: (id: string) => void }) {
+export function Nav({
+  current,
+  onNav,
+  onOpenTeam,
+}: {
+  current: 'bookmarks' | 'circle' | 'essential'
+  onNav: (v: 'bookmarks' | 'circle' | 'essential') => void
+  onOpenTeam: (id: string) => void
+}) {
   return (
     <DsNavSidebar>
       <NavBrand
@@ -65,7 +50,29 @@ export function Nav({ onOpenTeam }: { onOpenTeam: (id: string) => void }) {
         logo={<span className="nav-brand-logo nbl-logo">S</span>}
       />
 
-      <NavSection title="Navigation">{NAV_ITEMS.map(renderItem)}</NavSection>
+      <NavSection title="Navigation">
+        <NavItem
+          as="button"
+          icon={<Sparkles size={16} />}
+          label="Essential"
+          active={current === 'essential'}
+          onClick={() => onNav('essential')}
+        />
+        <NavItem
+          as="button"
+          icon={<Bookmark size={16} />}
+          label="My bookmarks"
+          active={current === 'bookmarks'}
+          onClick={() => onNav('bookmarks')}
+        />
+        <NavItem
+          as="button"
+          icon={<Users size={16} />}
+          label="Circle"
+          active={current === 'circle'}
+          onClick={() => onNav('circle')}
+        />
+      </NavSection>
 
       <NavSection title="Teams">
         <div className="ns-circles-list">

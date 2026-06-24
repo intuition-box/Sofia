@@ -382,6 +382,9 @@
 /* ── Act 3 — categorize ────────────────────────────────────── */
 .ob-categorize {
   width: 100%;
+  max-height: calc(100dvh - 56px);
+  display: flex;
+  flex-direction: column;
 }
 .ob-cat-head {
   display: flex;
@@ -417,8 +420,8 @@
   margin-top: 16px;
   padding: 13px 16px;
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--ds-accent) 32%, var(--border));
-  background: var(--ds-accent-soft);
+  border: 1px solid var(--border-strong);
+  background: transparent;
   opacity: 0.5;
   transition: opacity var(--t-normal) var(--ease);
 }
@@ -464,6 +467,13 @@
   font-size: 12px;
   color: var(--ds-muted);
 }
+.ob-overlap-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+/* service/team tag style now lives in global.css as .team-tag */
 
 /* Column headers — give the dense row a readable hierarchy. */
 .ob-cols {
@@ -667,7 +677,7 @@
   gap: 8px;
   padding: 12px 20px;
   border: none;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   background: var(--ds-accent);
   color: #2a160e;
   font-size: 14px;
@@ -773,8 +783,10 @@
   font-weight: 600;
 }
 .tsel-btn.has-value {
-  border-color: color-mix(in srgb, var(--c) 45%, var(--border-strong));
-  background: color-mix(in srgb, var(--c) 10%, var(--surface-2));
+  border-color: var(--border-strong);
+}
+.tsel-btn .topic-ms {
+  color: var(--c);
 }
 .tsel-btn:hover {
   border-color: var(--ds-accent);
@@ -836,17 +848,13 @@
   text-align: left;
 }
 .tsel-opt:hover {
-  background: color-mix(in srgb, var(--c) 14%, transparent);
+  background: var(--surface-2);
 }
 .tsel-opt.on {
-  background: color-mix(in srgb, var(--c) 18%, transparent);
+  background: var(--surface-2);
 }
-.tsel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--c);
-  flex: none;
+.tsel-opt .topic-ms {
+  color: var(--c);
 }
 .tsel-opt .tsel-label {
   flex: 1;

@@ -9,6 +9,7 @@ import { Header, type TabId } from './shell/Header'
 import { JoinModal } from './shell/JoinModal'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
+import { Essential } from './tabs/Essential'
 import { Overview } from './tabs/Overview'
 import { Members } from './tabs/Members'
 import { TeamView, type TeamMeta } from './tabs/TeamView'
@@ -18,6 +19,7 @@ import { TEAM_MAP } from './data/teams'
 import './onboarding/onboarding.css'
 import './styles/shell.css'
 import './styles/bookmarks.css'
+import './styles/essential.css'
 import './styles/post.css'
 import './styles/team.css'
 import './styles/surfaces.css'
@@ -26,7 +28,7 @@ import './styles/activity-memory.css'
 import './styles/overlays.css'
 
 export default function App() {
-  const [tab, setTab] = useState<TabId>('bookmarks')
+  const [tab, setTab] = useState<TabId>('essential')
   const [domain, setDomain] = useState('all')
   const [team, setTeam] = useState<TeamMeta | null>(null)
   const [onboarding, setOnboarding] = useState(true)
@@ -50,30 +52,25 @@ export default function App() {
 
   return (
     <div className="app">
-      <Nav onOpenTeam={openTeam} />
+      <Nav
+        current={tab === 'bookmarks' ? 'bookmarks' : tab === 'essential' ? 'essential' : 'circle'}
+        onNav={(v) => goTab(v === 'bookmarks' ? 'bookmarks' : v === 'essential' ? 'essential' : 'overview')}
+        onOpenTeam={openTeam}
+      />
       <main className="main">
-        <Header tab={tab} onTab={goTab} teamTab={team ? { id: 'team', label: team.label } : undefined} />
-        {tab === 'bookmarks' ? <Bookmarks /> : null}
-        {tab === 'overview' ? <Overview onTopic={goTopic} /> : null}
-        {tab === 'members' ? <Members domain={domain} setDomain={setDomain} /> : null}
-        {tab === 'team' && team ? <TeamView key={team.id} team={team} /> : null}
-
-        <footer className="foot">
-          <span>Sofia Pro</span>
-          <span className="sep">/</span>
-          <span>Acme workspace</span>
-          <span className="sep">/</span>
-          <span>Internal knowledge base · mocked demo</span>
-          <div className="right">
-            <a href="#" onClick={(e) => e.preventDefault()}>
-              Docs
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()}>
-              Methodology
-            </a>
-            <span>v0.1 · mvp</span>
-          </div>
-        </footer>
+        {tab === 'essential' ? (
+          <Essential />
+        ) : tab === 'bookmarks' ? (
+          <Bookmarks />
+        ) : tab === 'team' && team ? (
+          <TeamView key={team.id} team={team} />
+        ) : (
+          <>
+            <Header tab={tab} onTab={goTab} />
+            {tab === 'overview' ? <Overview onTopic={goTopic} /> : null}
+            {tab === 'members' ? <Members domain={domain} setDomain={setDomain} /> : null}
+          </>
+        )}
       </main>
 
       <JoinModal />
@@ -85,7 +82,7 @@ export default function App() {
             setImported(items)
             setOnboarding(false)
             goTab('bookmarks')
-            toast(`Imported ${items.length} bookmarks into Acme`)
+            toast(`Imported ${items.length} bookmarks into Intuition Core Team`)
           }}
           onSkip={() => setOnboarding(false)}
         />

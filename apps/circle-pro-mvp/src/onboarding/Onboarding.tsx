@@ -3,20 +3,20 @@
  * you're joining already keeps the same things.
  *   1. welcome    — "Continue with Brave" (real provider logo)
  *   2. sort       — browse YOUR folder tree (same architecture as My bookmarks)
- *                   and drop each link into Acme's topics; per row, who keeps it
- *   3. importing → done — add to Acme, land in My bookmarks
+ *                   and drop each link into Intuition Core Team's topics; per row, who keeps it
+ *   3. importing → done — add to Intuition Core Team, land in My bookmarks
  *
  * Plain copy, real teammate names, no crypto handles.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Check, ArrowRight, Users } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
 import { Icon } from '../components/Icon'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { suggestCategory } from '../data/topics'
 import { proofFor } from '../lib/social'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
-import { sharedPeople } from '../data/folderTree'
+import { sharedPeople, sharedTeamIds } from '../data/folderTree'
 import type { ImportedBookmark } from '../lib/imported'
 import { TopicSelect } from '../components/TopicSelect'
 import { avGrad, hostOf } from '../data/helpers'
@@ -127,7 +127,7 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
     <div className="ob-card ob-welcome">
       <h1 className="ob-title">Import your bookmarks</h1>
       <p className="ob-lede">
-        Bring your Brave folders into Acme — same folders, same order. You sort them into topics and
+        Bring your Brave folders into Intuition Core Team — same folders, same order. You sort them into topics and
         see who on the team already keeps the same things.
       </p>
 
@@ -196,17 +196,18 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
   )
 
   const overlapPeople = useMemo(() => sharedPeople(MY_BOOKMARKS as BmNode[], 5), [])
+  const sharedTeams = useMemo(
+    () => sharedTeamIds(MY_BOOKMARKS as BmNode[]).map((id) => TEAM_MAP[id]).filter(Boolean),
+    [],
+  )
 
   return (
     <div className="ob-card ob-categorize">
       <header className="ob-cat-head">
-        <h2 className="ob-title ob-title--sm obc-title">Sort your bookmarks into Acme's topics</h2>
+        <h2 className="ob-title ob-title--sm obc-title">Sort your bookmarks into Intuition Core Team's topics</h2>
       </header>
 
       <div className={`ob-overlap${proofReady ? ' ready' : ''}`}>
-        <span className="ob-overlap-ic">
-          <Users size={16} />
-        </span>
         <span className="ob-overlap-avs">
           {overlapPeople.map((t, j) => (
             <span key={t.name} className="ob-overlap-av" title={t.name} style={{ background: avGrad(t.grad), zIndex: 9 - j }} />
@@ -214,8 +215,16 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
         </span>
         <p className="ob-overlap-txt">
           <b className="tnum">{proofReady ? certifiedCount : '··'}</b> of your <b className="tnum">{total}</b> bookmarks
-          are already kept by people on <b>Acme</b>.
-          <span className="ob-overlap-sub">Open your folders below — you'll see exactly who shares each one.</span>
+          are already kept by people on <b>Intuition Core Team</b>.
+          {proofReady && sharedTeams.length ? (
+            <span className="ob-overlap-teams">
+              {sharedTeams.map((t) => (
+                <span key={t.id} className="team-tag" style={{ ['--c' as string]: t.color }}>
+                  {t.label}
+                </span>
+              ))}
+            </span>
+          ) : null}
         </p>
       </div>
 
@@ -239,13 +248,6 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
             <button className="kb-chip kb-chip--folder" key={f.name} onClick={() => setPath((p) => [...p, f.name])}>
               <Icon name="folder" />
               {f.name}
-              {f.people.length ? (
-                <span className="kb-chip-people">
-                  {f.people.slice(0, 3).map((p, j) => (
-                    <span key={p.name} className="kb-chip-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }} />
-                  ))}
-                </span>
-              ) : null}
             </button>
           ))}
         </div>
@@ -258,6 +260,9 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
             const team = TEAM_MAP[teamFor(l.url)]
             return (
               <div className="kb-res" key={l.url}>
+                <div className="obc-topic">
+                  <TopicSelect value={topicOf(l)} onChange={(id) => onPick(l.url, id)} />
+                </div>
                 <Favicon host={hostOf(l.url)} />
                 <div className="kb-res-main">
                   <div className="kb-res-title">{l.title}</div>
@@ -266,23 +271,15 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
                       <span className="ob-skel" />
                     ) : liked.total ? (
                       <span className="kb-sig kb-likedby">
-                        <span className="kb-lb-avs">
-                          {liked.people.map((t, j) => (
-                            <span key={t.name} className="kb-lb-av" title={t.name} style={{ background: avGrad(t.grad), zIndex: 9 - j }} />
-                          ))}
-                        </span>
                         <span className="kb-lb-txt">
                           <b>{liked.total}</b> from{' '}
-                          <span className="kb-lb-team-name" style={{ color: team.color }}>{team.label}</span>
+                          <span className="team-tag" style={{ ['--c' as string]: team.color }}>{team.label}</span>
                         </span>
                       </span>
                     ) : (
                       <span className="kb-sig kb-sig--new">Only you so far</span>
                     )}
                   </div>
-                </div>
-                <div className="obc-topic">
-                  <TopicSelect value={topicOf(l)} onChange={(id) => onPick(l.url, id)} />
                 </div>
               </div>
             )
@@ -297,7 +294,7 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
           Back
         </button>
         <button className="ob-cta" onClick={onImport}>
-          Add {total} bookmarks to Acme <ArrowRight size={16} />
+          Add {total} bookmarks to Intuition Core Team <ArrowRight size={16} />
         </button>
       </footer>
     </div>
@@ -309,9 +306,9 @@ function Importing({ total }: { total: number }) {
   return (
     <div className="ob-card ob-importing">
       <div className="ob-spinner" />
-      <h2 className="ob-title ob-title--sm">Adding to Acme</h2>
+      <h2 className="ob-title ob-title--sm">Adding to Intuition Core Team</h2>
       <p className="ob-lede ob-lede--sm mono">
-        <b className="tnum">{total}</b> bookmarks · adding to Acme
+        <b className="tnum">{total}</b> bookmarks · adding to Intuition Core Team
       </p>
     </div>
   )
@@ -324,7 +321,6 @@ function Done({ total, certifiedCount, onSee }: { total: number; certifiedCount:
         <Check size={28} />
       </div>
       <h1 className="ob-title">Your bookmarks are in</h1>
-      <p className="ob-lede">Same folders — and now you can see who on the team keeps the same things.</p>
       <div className="ob-done-stats">
         <div className="ob-done-stat">
           <b className="tnum">{total}</b>

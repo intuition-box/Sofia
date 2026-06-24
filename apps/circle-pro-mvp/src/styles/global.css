@@ -74,6 +74,13 @@ button {
   outline-offset: 2px;
   border-radius: 5px;
 }
+/* Text fields signal focus via their own (or their wrapper's) border, not a
+   second stacked outline — avoids the "double ring / Christmas tree" on the
+   pill search & ask fields. */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
 
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -81,6 +88,19 @@ button {
 }
 .mono {
   font-family: var(--ds-font-mono);
+}
+
+/* Service / team tag — one consistent pill wherever a department label appears
+   (onboarding, bookmarks, post header, comments). Caller sets --c to the team color. */
+.team-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 15%, transparent);
 }
 
 ::selection {
@@ -179,7 +199,8 @@ button {
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
-  display: inline-flex;
+  display: inline-block;
+  vertical-align: middle;
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;

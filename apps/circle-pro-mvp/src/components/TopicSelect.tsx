@@ -74,7 +74,6 @@ export function TopicSelect({ value, onChange, placeholder = 'Pick a topic' }: T
                 setOpen(false)
               }}
             >
-              <span className="tsel-dot" />
               <TopicIcon id={c.id} size={16} />
               <span className="tsel-label">{c.label}</span>
               {value === c.id ? <span className="tsel-check"><Icon name="check" /></span> : null}

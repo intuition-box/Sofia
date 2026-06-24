@@ -1,5 +1,5 @@
 /**
- * Acme teammates — plain enterprise display names (no crypto handles) for the
+ * Intuition Core Team teammates — plain enterprise display names (no crypto handles) for the
  * "who on your team already saved this" social proof. Deterministic per URL so
  * the demo is stable. This is the hook of onboarding: the favourites you import
  * are already kept by people on the team you're about to join.

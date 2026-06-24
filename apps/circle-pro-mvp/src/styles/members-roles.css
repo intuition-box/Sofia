@@ -86,16 +86,15 @@ table.ctab th.num {
   gap: 5px;
   padding: 3px 8px;
   border-radius: var(--r-pill);
-  border: 1px solid color-mix(in srgb, var(--c) 32%, transparent);
-  background: color-mix(in srgb, var(--c) 10%, transparent);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: #fff;
   font-size: 11px;
   font-weight: 600;
 }
-.mem-chip .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c);
+.mem-chip .topic-ms {
+  font-size: 13px;
+  color: var(--c);
 }
 .mem-chip b {
   color: var(--ds-muted);
@@ -192,11 +191,24 @@ table.ctab th.num {
   color: var(--ds-muted);
 }
 
+/* ── Roles → my teams' tools + memory ──────────────────────── */
+.role-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+.role-team {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 /* ── Roles ─────────────────────────────────────────────────── */
 .role-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 12px;
+  margin-top: 16px;
 }
 .role-tile {
   display: flex;
@@ -264,6 +276,30 @@ table.ctab th.num {
 .role-av-more {
   background: var(--surface-3);
   color: var(--ds-muted);
+}
+.role-tile--add {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  border-style: dashed;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+.role-tile--add:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+}
+.role-tile--add .ic svg {
+  width: 18px;
+  height: 18px;
+}
+.role-tile-add-label {
+  font-size: 13px;
+  font-weight: 600;
 }
 .role-roster {
   margin-top: 18px;

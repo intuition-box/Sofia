@@ -26,6 +26,15 @@ export function allLinksDeep(nodes: BmNode[], out: FlatBkLink[] = []): FlatBkLin
   return out
 }
 
+/** Distinct team ids that keep at least one link inside these nodes. */
+export function sharedTeamIds(nodes: BmNode[]): string[] {
+  const seen = new Set<string>()
+  for (const l of allLinksDeep(nodes)) {
+    for (const p of likedBy(l.url).people) seen.add(p.teamId)
+  }
+  return [...seen]
+}
+
 /** Teammates who keep at least one link inside these nodes (deduped, capped). */
 export function sharedPeople(nodes: BmNode[], cap = 4): Teammate[] {
   const seen = new Set<string>()

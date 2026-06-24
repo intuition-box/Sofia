@@ -10,6 +10,9 @@ import { teamFor } from '../data/teams'
 import { suggestCategory } from '../data/topics'
 import { MY_BOOKMARKS, type BmNode } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
+import { Activity } from './Activity'
+import { Memory } from './Memory'
+import type { RoleId } from '../data/types'
 import { PostDetail, type PostItem } from './PostDetail'
 
 export interface TeamMeta {
@@ -17,6 +20,9 @@ export interface TeamMeta {
   label: string
   color: string
 }
+
+/** Map a navbar team to its closest functional role, to scope tools + memory. */
+const TEAM_ROLE: Record<string, RoleId> = { eng: 'dev', design: 'design', marketing: 'socials' }
 
 interface FlatLink {
   title: string
@@ -43,11 +49,14 @@ function Favicon({ host }: { host: string }) {
 
 export function TeamView({ team }: { team: TeamMeta }) {
   const [selected, setSelected] = useState<PostItem | null>(null)
+  const [shotOk, setShotOk] = useState(true)
+  const teamRole = TEAM_ROLE[team.id] ?? 'dev'
 
   const rows = useMemo(() => {
     return allLinks(MY_BOOKMARKS as BmNode[])
       .map((l) => ({ l, people: likedBy(l.url).people.filter((p) => p.teamId === team.id) }))
       .filter((r) => r.people.length > 0)
+      .sort((a, b) => b.people.length - a.people.length)
       .slice(0, 40)
   }, [team.id])
 
@@ -65,18 +74,62 @@ export function TeamView({ team }: { team: TeamMeta }) {
     })
   }
 
+  const featured = rows[0]
+  const rest = rows.slice(1)
+  const featAbs = featured ? (featured.l.url.startsWith('http') ? featured.l.url : `https://${featured.l.url}`) : ''
+
   return (
     <div className="content">
       <div className="tv">
         <header className="tv-head">
           <h1 className="tv-title" style={{ color: team.color }}>
-            {team.label}
+            {team.label} team
           </h1>
         </header>
 
-        <div className="tv-table">
-          {rows.length ? (
-            rows.map(({ l, people }) => (
+        <Activity role={teamRole} />
+        <Memory role={teamRole} />
+
+        {featured ? (
+          <button className="tv-featured" style={{ ['--c' as string]: team.color }} onClick={() => open(featured.l)}>
+            <span className="tv-feat-shot">
+              {shotOk ? (
+                <img
+                  className="tv-feat-img"
+                  src={`https://image.thum.io/get/width/640/crop/440/noanimate/${featAbs}`}
+                  alt=""
+                  loading="lazy"
+                  onError={() => setShotOk(false)}
+                />
+              ) : (
+                <img className="tv-feat-fav" src={`https://www.google.com/s2/favicons?domain=${hostOf(featured.l.url)}&sz=128`} alt="" />
+              )}
+            </span>
+            <span className="tv-feat-body">
+              <span className="tv-feat-eyebrow">À la une</span>
+              <span className="tv-feat-title">{featured.l.title}</span>
+              <span className="tv-feat-host mono">{hostOf(featured.l.url)}</span>
+              <span className="tv-feat-people">
+                <span className="tv-feat-avs">
+                  {featured.people.slice(0, 5).map((p, j) => (
+                    <span key={p.name} className="tv-feat-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }}>
+                      {initials(p.name)}
+                    </span>
+                  ))}
+                </span>
+                <span>
+                  <b className="tnum">{featured.people.length}</b> in {team.label} comment
+                </span>
+              </span>
+            </span>
+          </button>
+        ) : (
+          <p className="bk2-empty">No bookmarks kept by {team.label} yet.</p>
+        )}
+
+        {rest.length ? (
+          <div className="tv-table">
+            {rest.map(({ l, people }) => (
               <div
                 className="tv-row"
                 key={l.url}
@@ -100,15 +153,13 @@ export function TeamView({ team }: { team: TeamMeta }) {
                     ))}
                   </span>
                   <span className="tv-count">
-                    <b className="tnum">{people.length}</b> keep it
+                    <b className="tnum">{people.length}</b> comment
                   </span>
                 </span>
               </div>
-            ))
-          ) : (
-            <p className="bk2-empty">No bookmarks kept by {team.label} yet.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   )

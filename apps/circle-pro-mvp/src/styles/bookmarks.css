@@ -71,12 +71,306 @@
   padding: 0;
 }
 
+/* Breadcrumb crumbs as folder navigators (each opens its child folders). */
+.fab-crumb-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.fab-crumb--nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ds-ink);
+  font: inherit;
+  padding: 0 2px;
+  transition: color var(--t-fast) var(--ease);
+}
+.fab-crumb--nav:hover,
+.fab-crumb--nav.open {
+  color: var(--ds-accent);
+}
+.fab-crumb--nav .ic svg {
+  width: 0.6em;
+  height: 0.6em;
+}
+.fab-dd {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  min-width: 240px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.8);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.fab-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-ink);
+  font: inherit;
+  text-align: left;
+}
+.fab-dd-item:hover {
+  background: var(--surface-2);
+}
+.fab-dd-item .ic svg {
+  width: 15px;
+  height: 15px;
+  color: var(--ds-muted);
+}
+.fab-dd-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fab-dd-n {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.fab-dd-avs {
+  display: flex;
+  flex: none;
+}
+.fab-dd-av {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-left: -6px;
+  border: 2px solid var(--surface);
+}
+.fab-dd-av:first-child {
+  margin-left: 0;
+}
+
+/* ── Feed card: title (primary) → context + who-shares → actions ── */
+.kb-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.bk-card:hover {
+  border-color: var(--border-strong);
+}
+.bk-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.bk-fav {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  overflow: hidden;
+  flex: none;
+  margin-top: 1px;
+}
+.bk-fav img {
+  width: 18px;
+  height: 18px;
+}
+.bk-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bk-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  line-height: 1.3;
+}
+.bk-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bk-ctx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  padding: 2px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+}
+.bk-ctx-chip .topic-ms {
+  font-size: 13px;
+  color: var(--c);
+}
+.bk-domain {
+  min-width: 0;
+  font-size: 11px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.bk-like:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-accent);
+}
+.bk-like.on {
+  color: var(--ds-accent);
+  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--border-strong));
+  background: var(--ds-accent-soft);
+}
+.bk-like .ic svg {
+  width: 14px;
+  height: 14px;
+}
+/* Right column of a row: the like, with the service(s) that keep it underneath. */
+.bk-likes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+}
+.bk-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+}
+.bk-shared {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--ds-muted);
+}
+.bk-shared-avs {
+  display: inline-flex;
+  flex: none;
+}
+.bk-shared-av {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-left: -6px;
+  border: 2px solid var(--surface);
+}
+.bk-shared-av:first-child {
+  margin-left: 0;
+}
+.bk-shared-txt b {
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.bk-shared-solo {
+  color: var(--ds-muted);
+}
+.bk-shared-svcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+.bk-addctx {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+}
+.bk-addctx:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+}
+.bk-addctx .ic svg {
+  width: 12px;
+  height: 12px;
+}
+.bk-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+.bk-picker-lab {
+  flex: none;
+  font-size: 9.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.bk-picker .tsel {
+  flex: 1;
+  max-width: 240px;
+}
+
 /* ── Toolbar ───────────────────────────────────────────────── */
 .fab-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+/* Whichever element leads the view (breadcrumb when drilled, toolbar at root)
+   gets the same top breathing room from the header. */
+.kb > :first-child {
+  margin-top: 6px;
 }
 .fab-count {
   font-size: 12px;
@@ -96,9 +390,7 @@
   color: var(--ds-muted);
 }
 .bk2-search:focus-within {
-  border-color: color-mix(in srgb, var(--ds-accent) 50%, transparent);
-  outline: 2px solid color-mix(in srgb, var(--ds-accent) 45%, transparent);
-  outline-offset: 1px;
+  border-color: var(--ds-accent);
 }
 .bk2-search .ic svg {
   width: 16px;
@@ -274,12 +566,8 @@
   color: var(--c);
   font-weight: 600;
 }
-.kb-team::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--c);
+.kb-team {
+  color: #fff;
 }
 
 /* ── Count + empty ─────────────────────────────────────────── */
@@ -437,8 +725,9 @@
   font-weight: 600;
   padding: 1px 8px;
   border-radius: var(--r-pill);
-  color: var(--c);
-  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: #fff;
+  background: transparent;
+  border: 1px solid var(--border-strong);
 }
 
 /* ── Folder navigation (Chrome-like) ───────────────────────── */

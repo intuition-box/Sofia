@@ -9,12 +9,25 @@
  */
 import { TopicsTreemap } from '../components/TopicsTreemap'
 import { BookmarkCard } from '../components/BookmarkCard'
-import { Avatar, ModuleHead } from '../components/primitives'
+import { Avatar } from '../components/primitives'
 import { Icon } from '../components/Icon'
-import { GateBtn } from '../lib/gate'
 import { fmt, topDomains } from '../data/helpers'
 import { BOOKMARKS_BY_TOPIC, MEMBERS, TOPIC_MAP, votesFor } from '../data/mock'
 import type { Member } from '../data/types'
+
+// A distinct Material Symbol per topic (mock theme ids don't map to the Sofia
+// taxonomy, so TopicIcon can't resolve them) — colored per topic via --c.
+const TOPIC_GLYPH: Record<string, string> = {
+  funding: 'savings',
+  gov: 'gavel',
+  sec: 'security',
+  ai: 'smart_toy',
+  devtool: 'terminal',
+  pubgoods: 'volunteer_activism',
+  qf: 'how_to_vote',
+  defi: 'currency_exchange',
+  zk: 'enhanced_encryption',
+}
 
 function scoreColor(s: number): string {
   return s >= 80 ? 'var(--trusted-p)' : s >= 60 ? 'var(--ds-ink)' : 'var(--ds-muted)'
@@ -27,11 +40,10 @@ interface RowProps {
   metricUnit?: string
   metricColor: string
   metricSub: string
-  trustReason: string
   leading?: boolean
 }
 
-function MemberRow({ m, rank, metricVal, metricUnit, metricColor, metricSub, trustReason, leading }: RowProps) {
+function MemberRow({ m, rank, metricVal, metricUnit, metricColor, metricSub, leading }: RowProps) {
   const chips = topDomains(m, 3, 30)
   return (
     <tr className="mem-tr">
@@ -56,7 +68,9 @@ function MemberRow({ m, rank, metricVal, metricUnit, metricColor, metricSub, tru
         <div className="mem-domains">
           {chips.map((d) => (
             <span key={d.id} className="mem-chip" style={{ ['--c' as string]: TOPIC_MAP[d.id].color }}>
-              <i className="dot" />
+              <span className="topic-ms material-symbols-outlined" style={{ fontSize: 13 }} aria-hidden="true">
+                {TOPIC_GLYPH[d.id] ?? 'sell'}
+              </span>
               {TOPIC_MAP[d.id].label}
               <b className="tnum">{d.level}</b>
             </span>
@@ -84,11 +98,6 @@ function MemberRow({ m, rank, metricVal, metricUnit, metricColor, metricSub, tru
           <div className="mm-sub">{metricSub}</div>
         </div>
       </td>
-      <td className="mem-act-cell">
-        <GateBtn className="btn btn-sm trust-btn" reason={trustReason}>
-          Trust
-        </GateBtn>
-      </td>
     </tr>
   )
 }
@@ -111,21 +120,7 @@ export function Members({ domain, setDomain }: MembersProps) {
       <TopicsTreemap domain={domain} onPick={setDomain} />
 
       <section className="module">
-        <ModuleHead title="Members" desc="Who the team trusts — overall, or scoped to a topic." />
         <div className="panel">
-          {topic ? (
-            <div className="vt-q" style={{ ['--c' as string]: topic.color }}>
-              <div className="vt-q-line">
-                <span className="vt-q-text">
-                  Most expert member in <b style={{ color: topic.color }}>{topic.label}</b>
-                </span>
-                <button className="ex-back" onClick={() => setDomain('all')}>
-                  <Icon name="chevronLeft" /> Overall
-                </button>
-              </div>
-            </div>
-          ) : null}
-
           <table className="ctab">
             <thead>
               <tr>
@@ -134,7 +129,6 @@ export function Members({ domain, setDomain }: MembersProps) {
                 <th>Topics</th>
                 <th>Streak</th>
                 <th className="num mm-th">{isAll ? 'Trust score' : 'Backing'}</th>
-                <th className="num">Trust</th>
               </tr>
             </thead>
             <tbody>
@@ -147,7 +141,6 @@ export function Members({ domain, setDomain }: MembersProps) {
                       metricVal={String(m.score)}
                       metricColor={scoreColor(m.score)}
                       metricSub={`${m.raw} marks`}
-                      trustReason={`trust ${m.handle}`}
                     />
                   ))
                 : backing.map((r, i) => (
@@ -159,7 +152,6 @@ export function Members({ domain, setDomain }: MembersProps) {
                       metricUnit="votes"
                       metricColor={topic!.color}
                       metricSub={`${r.backers} backers`}
-                      trustReason={`trust ${r.m.handle} in ${topic!.label}`}
                       leading={r.m.handle === leaderHandle}
                     />
                   ))}

@@ -9,7 +9,6 @@ import { TopicIcon } from '../components/TopicIcon'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
 import { commentsFor, docType, whyFor, type Comment } from '../lib/discussion'
-import { likedBy } from '../data/teammates'
 import { setContext, useMyBookmarks } from '../lib/mybookmarks'
 import { avGrad, initials } from '../data/helpers'
 
@@ -21,7 +20,7 @@ export interface PostItem {
   teamId: string
 }
 
-function CommentRow({ c }: { c: Comment }) {
+export function CommentRow({ c }: { c: Comment }) {
   const team = TEAM_MAP[c.teamId]
   const grad = c.grad
   return (
@@ -33,7 +32,7 @@ function CommentRow({ c }: { c: Comment }) {
         <div className="pc-head">
           <span className="pc-who">{c.who}</span>
           {team ? (
-            <span className="pc-team" style={{ ['--c' as string]: team.color }}>
+            <span className="team-tag" style={{ ['--c' as string]: team.color }}>
               {team.label}
             </span>
           ) : null}
@@ -55,9 +54,6 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
   const cat = CATEGORY_MAP[item.topicId]
   const team = TEAM_MAP[item.teamId]
   const type = docType(item.host)
-  const sharerTm = likedBy(item.url).people[0]
-  const sharer = sharerTm?.name ?? 'You'
-  const sharerGrad = sharerTm?.grad ?? 0
   const abs = item.url.startsWith('http') ? item.url : `https://${item.url}`
 
   const [comments, setComments] = useState<Comment[]>(() => commentsFor(item.url))
@@ -86,7 +82,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
 
         <div className="post-tags">
           {team ? (
-            <span className="post-tag" style={{ ['--c' as string]: team.color }}>
+            <span className="team-tag" style={{ ['--c' as string]: team.color }}>
               {team.label}
             </span>
           ) : null}
@@ -100,15 +96,6 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
         </div>
 
         <h1 className="post-title">{item.title}</h1>
-
-        <div className="post-by">
-          <span className="post-by-av" style={{ background: avGrad(sharerGrad) }}>
-            {initials(sharer)}
-          </span>
-          <span>
-            Shared by <b>{sharer}</b> · 2 h ago
-          </span>
-        </div>
 
         <a className="post-preview" href={abs} target="_blank" rel="noopener noreferrer">
           <div className={`post-shot${shotOk ? '' : ' is-fallback'}`}>

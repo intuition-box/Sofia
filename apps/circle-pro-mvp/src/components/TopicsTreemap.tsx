@@ -6,7 +6,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { TOPICS } from '../data/mock'
 import { fmt } from '../data/helpers'
-import { ModuleHead } from './primitives'
 
 interface SqItem {
   id: string
@@ -147,7 +146,6 @@ export function TopicsTreemap({ domain, onPick }: TopicsTreemapProps) {
 
   return (
     <section className="module">
-      <ModuleHead title="Topics" desc="Pick a topic to scope members and bookmarks to it." />
       <div className="tmap" ref={wrapRef} style={{ height: H }}>
         {rects.map((r) => {
           const big = r.w > 150 && r.h > 90

@@ -33,7 +33,7 @@ export function JoinModal() {
   const doJoin = () => {
     join()
     close()
-    toast("You've joined Acme")
+    toast("You've joined Intuition Core Team")
   }
 
   return (
@@ -42,10 +42,10 @@ export function JoinModal() {
         <button className="drill-close" onClick={close} aria-label="Close">
           <Icon name="x" />
         </button>
-        <span className="join-eyebrow mono">Acme workspace</span>
+        <span className="join-eyebrow mono">Intuition Core Team workspace</span>
         <h3 className="join-title">Join the workspace to {reason}</h3>
         <p className="join-sub">
-          You're browsing <b>Acme</b> as a guest. The page stays public — joining unlocks the
+          You're browsing <b>Intuition Core Team</b> as a guest. The page stays public — joining unlocks the
           deeper, member-only surface.
         </p>
         <ul className="join-benefits">

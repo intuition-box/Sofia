@@ -37,8 +37,13 @@
 .obc-list {
   margin-top: 12px;
 }
+.ob-categorize .obc-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
 .obc-list .kb-res {
-  grid-template-columns: 34px minmax(0, 1fr) 168px;
+  grid-template-columns: 168px 34px minmax(0, 1fr);
   cursor: default;
 }
 .obc-list .kb-res:hover {

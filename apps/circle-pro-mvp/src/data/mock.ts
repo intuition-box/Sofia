@@ -113,10 +113,10 @@ export function memberByHandle(h: string): Member | undefined {
 
 /* ── Circle roll-up ───────────────────────────────────────────────────── */
 export const CIRCLE: Circle = {
-  name: 'Acme',
+  name: 'Intuition Core Team',
   handle: 'acme.com',
   description:
-    "Acme's shared knowledge base — where every team saves, validates and finds the resources that actually matter, organized by topic.",
+    "Intuition Core Team's shared knowledge base — where every team saves, validates and finds the resources that actually matter, organized by topic.",
   totalMembers: 104,
   activeMembers: 71,
   kpi: {

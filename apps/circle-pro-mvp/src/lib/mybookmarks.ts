@@ -22,9 +22,11 @@ interface MyState {
   context: Record<string, string>
   /** URLs the user manually positioned, in order (floated to the top). */
   order: string[]
+  /** Per-URL "in context of" topic (taxonomy category id) the user assigned. */
+  topics: Record<string, string>
 }
 
-let state: MyState = { added: [], context: {}, order: [] }
+let state: MyState = { added: [], context: {}, order: [], topics: {} }
 const listeners = new Set<() => void>()
 const emit = () => {
   for (const l of listeners) l()
@@ -47,6 +49,10 @@ export function setContext(url: string, text: string): void {
 }
 export function setOrder(urls: string[]): void {
   state = { ...state, order: urls }
+  emit()
+}
+export function setTopic(url: string, id: string): void {
+  state = { ...state, topics: { ...state.topics, [url]: id } }
   emit()
 }
 

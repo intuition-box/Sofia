@@ -6,14 +6,16 @@
  * familiar structure: who on your team already keeps each link, your own
  * context note, and the discussion. Click a row → its detail + comments.
  */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { TopicIcon } from '../components/TopicIcon'
+import { TopicSelect } from '../components/TopicSelect'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
-import { suggestCategory } from '../data/topics'
+import { suggestCategory, CATEGORY_MAP } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
-import { addBookmark, setContext, useMyBookmarks } from '../lib/mybookmarks'
-import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
+import { addBookmark, setContext, setTopic, useMyBookmarks } from '../lib/mybookmarks'
+import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
 import { avGrad, hostOf } from '../data/helpers'
 import { countLinks, allLinksDeep, sharedPeople } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
@@ -25,22 +27,23 @@ interface FlatLink {
   url: string
 }
 
-function Favicon({ host }: { host: string }) {
-  const [err, setErr] = useState(false)
-  if (err || !host) return <span className="kb-res-fav kb-res-fav--fb">{(host[0] || '?').toUpperCase()}</span>
-  return (
-    <span className="kb-res-fav">
-      <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`} alt="" loading="lazy" onError={() => setErr(true)} />
-    </span>
-  )
-}
-
 export function Bookmarks() {
   const my = useMyBookmarks()
   const [path, setPath] = useState<string[]>([])
   const [q, setQ] = useState('')
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [adding, setAdding] = useState(false)
+  const [openCrumb, setOpenCrumb] = useState<number | null>(null)
+  const crumbsRef = useRef<HTMLElement>(null)
+  const [likes, setLikes] = useState<Set<string>>(() => new Set())
+  const [ctxEdit, setCtxEdit] = useState<string | null>(null)
+  const toggleLike = (url: string) =>
+    setLikes((s) => {
+      const n = new Set(s)
+      if (n.has(url)) n.delete(url)
+      else n.add(url)
+      return n
+    })
 
   // Root = your top folders, preceded by anything you've added by hand (loose).
   const rootChildren = useMemo<BmNode[]>(() => {
@@ -61,27 +64,46 @@ export function Bookmarks() {
 
   const needle = q.trim().toLowerCase()
 
-  const subfolders = useMemo(() => {
-    if (needle) return []
-    return currentNodes
-      .filter((n): n is BmFolder => n.type === 'folder')
-      .map((f) => ({ name: f.name, people: sharedPeople(f.children) }))
-  }, [currentNodes, needle])
-
+  // The feed: every bookmark under the current folder (deep), so you always see
+  // information. Folders are navigated from the breadcrumb, not as cards.
   const links = useMemo<FlatLink[]>(() => {
-    if (needle) {
-      return allLinksDeep(rootChildren)
-        .filter((l) => l.title.toLowerCase().includes(needle) || l.url.toLowerCase().includes(needle))
-        .slice(0, SHOWN_CAP)
-    }
-    return currentNodes
-      .filter((n): n is BmLink => n.type === 'link')
-      .map((l) => ({ title: l.title, url: l.url }))
-      .slice(0, SHOWN_CAP)
+    const base = allLinksDeep(needle ? rootChildren : currentNodes)
+    const filtered = needle
+      ? base.filter((l) => l.title.toLowerCase().includes(needle) || l.url.toLowerCase().includes(needle))
+      : base
+    return filtered.slice(0, SHOWN_CAP)
   }, [currentNodes, rootChildren, needle])
 
   const currentFolderName = path.length ? path[path.length - 1] : ''
   const totalHere = needle ? links.length : countLinks(currentNodes)
+
+  // Child folders selectable from breadcrumb crumb `c` (0 = root "My bookmarks").
+  const foldersAt = (c: number): BmFolder[] => {
+    let nodes = rootChildren
+    for (const seg of path.slice(0, c)) {
+      const f = nodes.find((n) => n.type === 'folder' && n.name === seg) as BmFolder | undefined
+      if (!f) return []
+      nodes = f.children
+    }
+    return nodes.filter((n): n is BmFolder => n.type === 'folder')
+  }
+  const crumbClick = (c: number) => {
+    setPath((p) => p.slice(0, c))
+    setOpenCrumb((o) => (o === c ? null : c))
+  }
+  const navTo = (c: number, name: string) => {
+    setPath((p) => p.slice(0, c).concat(name))
+    setOpenCrumb(null)
+  }
+
+  useEffect(() => {
+    if (openCrumb === null) return
+    const onDoc = (e: MouseEvent) => {
+      if (crumbsRef.current && !crumbsRef.current.contains(e.target as Node)) setOpenCrumb(null)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [openCrumb])
 
   const openLink = (l: FlatLink) => {
     setSelected({
@@ -112,25 +134,58 @@ export function Bookmarks() {
   return (
     <div className="content">
       <div className="kb">
-        {/* ── Breadcrumb — only your folder path, root reachable via home icon ── */}
-        {path.length > 0 ? (
-          <nav className="fab-crumbs" aria-label="Breadcrumb">
-            <button className="fab-crumb fab-home fab-home--ic" onClick={() => setPath([])} aria-label="Back to all folders">
-              <Icon name="home" />
-            </button>
-            {path.map((seg, i) => (
-              <span className="fab-seg" key={`${seg}-${i}`}>
-                <span className="fab-sep" aria-hidden="true">›</span>
-                <span className="fab-crumb fab-crumb--facet fab-crumb--folder" style={{ ['--c' as string]: 'var(--ds-muted)' }}>
-                  <Icon name="folder" />
-                  <button className="fab-crumb-label" onClick={() => setPath((p) => p.slice(0, i + 1))}>
-                    {seg}
-                  </button>
+        {/* ── Breadcrumb-driven folder navigation (always present) ── */}
+        <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
+          {[{ label: 'My bookmarks', c: 0 }, ...path.map((seg, i) => ({ label: seg, c: i + 1 }))].map(
+            ({ label, c }, idx) => {
+              const folders = foldersAt(c)
+              return (
+                <span className="fab-seg" key={`${label}-${c}`}>
+                  {idx > 0 ? (
+                    <span className="fab-sep" aria-hidden="true">›</span>
+                  ) : null}
+                  <span className="fab-crumb-wrap">
+                    <button
+                      className={`fab-crumb fab-crumb--nav${openCrumb === c ? ' open' : ''}`}
+                      onClick={() => crumbClick(c)}
+                    >
+                      {c > 0 ? <Icon name="folder" /> : null}
+                      {label}
+                      {folders.length ? <Icon name="chevronDown" /> : null}
+                    </button>
+                    {openCrumb === c && folders.length ? (
+                      <div className="fab-dd">
+                        {folders.map((f) => {
+                          const people = sharedPeople(f.children)
+                          return (
+                            <button className="fab-dd-item" key={f.name} onClick={() => navTo(c, f.name)}>
+                              <Icon name="folder" />
+                              <span className="fab-dd-name">{f.name}</span>
+                              {people.length ? (
+                                <span className="fab-dd-avs">
+                                  {people.slice(0, 3).map((p, j) => (
+                                    <span
+                                      key={p.name}
+                                      className="fab-dd-av"
+                                      title={p.name}
+                                      style={{ background: avGrad(p.grad), zIndex: 9 - j }}
+                                    />
+                                  ))}
+                                </span>
+                              ) : (
+                                <span className="fab-dd-n tnum">{countLinks(f.children)}</span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ) : null}
+                  </span>
                 </span>
-              </span>
-            ))}
-          </nav>
-        ) : null}
+              )
+            },
+          )}
+        </nav>
 
         {/* ── Toolbar ── */}
         <div className="fab-bar">
@@ -150,47 +205,24 @@ export function Bookmarks() {
 
         {adding ? <AddForm onSubmit={submitAdd} onCancel={() => setAdding(false)} /> : null}
 
-        {/* ── Sub-folders ── */}
-        {subfolders.length ? (
-          <div className="kb-deeper">
-            <span className="kb-section-lab mono">Folders</span>
-            <div className="kb-chips">
-              {subfolders.map((f) => (
-                <button className="kb-chip kb-chip--folder" key={f.name} onClick={() => setPath((p) => [...p, f.name])}>
-                  <Icon name="folder" />
-                  {f.name}
-                  {f.people.length ? (
-                    <span className="kb-chip-people">
-                      {f.people.slice(0, 3).map((p, j) => (
-                        <span key={p.name} className="kb-chip-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }} />
-                      ))}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {/* ── Links at this level ── */}
+        {/* ── Feed: resource title → who shares it + context → actions ── */}
         <div className="kb-resources">
-          {!needle && currentFolderName ? (
-            <span className="kb-section-lab mono">In {currentFolderName}</span>
-          ) : needle ? (
-            <span className="kb-section-lab mono">Results</span>
-          ) : (
-            <span className="kb-section-lab mono">Bookmarks</span>
-          )}
           {links.length ? (
-            <div className="kb-list kb-browse">
+            <div className="kb-feed">
               {links.map((l) => {
                 const host = hostOf(l.url)
                 const liked = likedBy(l.url)
-                const resTeam = TEAM_MAP[teamFor(l.url)]
-                const note = my.context[l.url]
+                const services = [...new Set(liked.people.map((p) => p.teamId))]
+                  .map((id) => TEAM_MAP[id])
+                  .filter(Boolean)
+                const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
+                const ctx = CATEGORY_MAP[ctxId]
+                const isLiked = likes.has(l.url)
+                const likeCount = liked.total + (isLiked ? 1 : 0)
+                const picking = ctxEdit === l.url
                 return (
                   <div
-                    className="kb-res"
+                    className="bk-card"
                     key={l.url}
                     role="button"
                     tabIndex={0}
@@ -199,37 +231,77 @@ export function Bookmarks() {
                       if (e.key === 'Enter') openLink(l)
                     }}
                   >
-                    <Favicon host={host} />
-                    <div className="kb-res-main">
-                      <div className="kb-res-title">{l.title}</div>
-                      {note ? (
-                        <div className="kb-res-why is-mine">
-                          <span className="kb-res-mine mono">your note</span>“{note}”
+                    <div className="bk-card-top">
+                      <span className="bk-fav">
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => {
+                            ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
+                          }}
+                        />
+                      </span>
+                      <div className="bk-id">
+                        <div className="bk-title">{l.title}</div>
+                        <div className="bk-meta">
+                          {ctx ? (
+                            <span className="bk-ctx-chip" style={{ ['--c' as string]: ctx.color }}>
+                              <TopicIcon id={ctx.id} size={12} />
+                              {ctx.label}
+                            </span>
+                          ) : null}
+                          <span className="bk-domain mono">{host}</span>
+                          <button
+                            type="button"
+                            className="bk-addctx"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setCtxEdit(picking ? null : l.url)
+                            }}
+                          >
+                            <Icon name="plus" /> Context
+                          </button>
                         </div>
-                      ) : null}
-                      <div className="kb-res-signals">
-                        {liked.total ? (
-                          <span className="kb-sig kb-likedby">
-                            <span className="kb-lb-avs">
-                              {liked.people.map((t, j) => (
-                                <span
-                                  key={t.name}
-                                  className="kb-lb-av"
-                                  title={t.name}
-                                  style={{ background: avGrad(t.grad), zIndex: 9 - j }}
-                                />
-                              ))}
-                            </span>
-                            <span className="kb-lb-txt">
-                              <b>{liked.total}</b> from{' '}
-                              <span className="kb-lb-team-name" style={{ color: resTeam.color }}>{resTeam.label}</span>
-                            </span>
+                      </div>
+                      <div className="bk-likes">
+                        <button
+                          type="button"
+                          className={`bk-like${isLiked ? ' on' : ''}`}
+                          aria-pressed={isLiked}
+                          aria-label="Like"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleLike(l.url)
+                          }}
+                        >
+                          <Icon name="thumbup" />
+                          <span className="tnum">{likeCount}</span>
+                        </button>
+                        {services.length ? (
+                          <span className="bk-shared-svcs">
+                            {services.map((s) => (
+                              <span key={s.id} className="team-tag" style={{ ['--c' as string]: s.color }}>
+                                {s.label}
+                              </span>
+                            ))}
                           </span>
-                        ) : (
-                          <span className="kb-sig kb-sig--new">Only you so far</span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
+
+                    {picking ? (
+                      <div className="bk-picker" onClick={(e) => e.stopPropagation()}>
+                        <span className="bk-picker-lab mono">In context of</span>
+                        <TopicSelect
+                          value={ctxId}
+                          onChange={(id) => {
+                            setTopic(l.url, id)
+                            setCtxEdit(null)
+                          }}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 )
               })}
