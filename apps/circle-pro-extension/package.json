@@ -1,0 +1,28 @@
+{
+  "name": "circle-pro-extension",
+  "displayName": "Sofia Pro — Add to team",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Right-click any page or link → Add to team. Frictionless team bookmarking.",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "plasmo": "0.90.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.258",
+    "@types/node": "^22.0.0",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "prettier": "3.2.4",
+    "typescript": "^5.9.3"
+  },
+  "manifest": {
+    "permissions": ["contextMenus", "storage", "activeTab"]
+  }
+}
