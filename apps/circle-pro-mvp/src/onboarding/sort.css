@@ -43,11 +43,33 @@
   overflow-y: auto;
 }
 .obc-list .kb-res {
-  grid-template-columns: 168px 34px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
   cursor: default;
 }
 .obc-list .kb-res:hover {
   background: transparent;
+}
+.obc-list .kb-res-fav {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  margin-top: 0;
+}
+.obc-list .kb-res-fav img {
+  width: 24px;
+  height: 24px;
+}
+.obc-list .kb-res-title {
+  font-size: 15px;
+}
+.obc-list .kb-res-host {
+  margin-left: 0;
+}
+.obc-list .tsel-btn {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
 }
 .obc-topic {
   min-width: 0;

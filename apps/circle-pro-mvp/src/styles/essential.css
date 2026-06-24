@@ -168,6 +168,63 @@
 .es-section--last {
   margin-bottom: 80px;
 }
+
+/* ── Topics ────────────────────────────────────────────────── */
+.es-topics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .es-topics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.es-topic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.es-topic:hover {
+  border-color: color-mix(in srgb, var(--c) 45%, var(--border));
+  transform: translateY(-2px);
+}
+.es-topic-ic {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  flex: none;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.es-topic-ic .topic-ms {
+  color: var(--c);
+  font-size: 18px;
+}
+.es-topic-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.es-topic-n {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
 .es-sec-head {
   display: flex;
   align-items: center;

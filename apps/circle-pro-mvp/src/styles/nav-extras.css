@@ -161,6 +161,43 @@
 .ns-auth-chip--top {
   margin-bottom: 14px;
 }
+.ns-coll-fav {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: block;
+}
+.ns-coll-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: block;
+}
+.ns-team-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 9px;
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.ns-team-add:hover {
+  color: var(--ds-ink);
+  background: var(--surface-2);
+}
+.ns-team-add-ic {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  font-size: 14px;
+}
 .ns-auth-avatar {
   width: 32px;
   height: 32px;

@@ -6,7 +6,6 @@
 import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
 import { type TabId } from './shell/Header'
-import { JoinModal } from './shell/JoinModal'
 import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
@@ -79,7 +78,6 @@ export default function App() {
         ) : null}
       </main>
 
-      <JoinModal />
       <ProfileGate />
       <Toast />
     </div>

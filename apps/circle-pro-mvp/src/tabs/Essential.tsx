@@ -6,6 +6,8 @@
  * (favicons + hairline icons + initials avatars), to sit under the app's nav.
  */
 import { Icon } from '../components/Icon'
+import { TopicIcon } from '../components/TopicIcon'
+import { CATEGORIES } from '../data/topics'
 import { avGrad, initials } from '../data/helpers'
 
 interface Tool {
@@ -59,6 +61,13 @@ const PILLS = [
   { label: 'Design' },
 ] as const
 
+const TOPICS = CATEGORIES.slice(0, 8).map((c, i) => ({
+  id: c.id,
+  label: c.label,
+  color: c.color,
+  count: 6 + ((i * 7 + 3) % 22),
+}))
+
 function Favicon({ host }: { host: string }) {
   return (
     <span className="es-fav">
@@ -89,7 +98,6 @@ export function Essential() {
       <div className="es-wrap">
         {/* Hero */}
         <header className="es-hero">
-          <div className="es-eyebrow mono">Intuition team · Essential</div>
           <h1 className="es-h1">What do you want to know?</h1>
           <p className="es-lede">Your team's knowledge, one search away.</p>
         </header>
@@ -125,7 +133,7 @@ export function Essential() {
 
         {/* Essential tools */}
         <section className="es-section">
-          <SectionHead title="Essential tools" action="See all" />
+          <SectionHead title="Most used tools" action="See all" />
           <div className="es-grid-3">
             {TOOLS.map((t) => (
               <a className="es-tool" key={t.name}>
@@ -142,6 +150,22 @@ export function Essential() {
                     <Icon name="bookmark" /> {t.bm}
                   </span>
                 </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* Topics */}
+        <section className="es-section">
+          <SectionHead title="Topics" action="See all" />
+          <div className="es-topics">
+            {TOPICS.map((t) => (
+              <a className="es-topic" key={t.id} style={{ ['--c' as string]: t.color }}>
+                <span className="es-topic-ic">
+                  <TopicIcon id={t.id} size={18} />
+                </span>
+                <span className="es-topic-name">{t.label}</span>
+                <span className="es-topic-n mono">{t.count}</span>
               </a>
             ))}
           </div>

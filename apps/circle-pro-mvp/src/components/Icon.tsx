@@ -105,6 +105,9 @@ const ICONS: Record<string, ReactElement> = {
   package: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" /><path d="m3 8 9 5 9-5" /><path d="M12 13v8" /></svg>
   ),
+  smile: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 14.5a4.5 4.5 0 0 0 8 0" /><path d="M9 9.5v.01" /><path d="M15 9.5v.01" /></svg>
+  ),
 }
 
 export type IconName = keyof typeof ICONS

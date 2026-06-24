@@ -10,6 +10,7 @@
  */
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
+import { CommentComposer, isMediaUrl } from '../components/CommentComposer'
 import { TopicIcon } from '../components/TopicIcon'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
@@ -48,7 +49,11 @@ export function CommentRow({ c }: { c: Comment }) {
           ) : null}
           <span className="pc-when">{c.when}</span>
         </div>
-        <p className="pc-text">{c.text}</p>
+        {isMediaUrl(c.text) ? (
+          <img className="pc-gif" src={c.text} alt="" />
+        ) : (
+          <p className="pc-text">{c.text}</p>
+        )}
         <div className="pc-actions">
           <span className="pc-like">
             <Icon name="thumbup" /> {c.likes}
@@ -141,6 +146,8 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
               </button>
             </div>
           </>
+        ) : isMediaUrl(c.text ?? '') ? (
+          <img className="pc-gif" src={c.text ?? ''} alt="" />
         ) : (
           <p className="pc-text">{c.text}</p>
         )}
@@ -189,25 +196,11 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
     toggleLike,
   } = useComments(key)
 
-  const [draft, setDraft] = useState('')
-  const [sending, setSending] = useState(false)
   const my = useMyBookmarks()
   const mine = my.context[item.url]
   const [editWhy, setEditWhy] = useState(false)
   const [whyDraft, setWhyDraft] = useState('')
   const [shotOk, setShotOk] = useState(true)
-
-  const send = async () => {
-    const t = draft.trim()
-    if (!t || sending) return
-    setSending(true)
-    try {
-      await add(t)
-      setDraft('')
-    } finally {
-      setSending(false)
-    }
-  }
 
   return (
     <div className="content">
@@ -359,23 +352,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
           ) : null}
 
           {canWrite ? (
-            <div className="post-composer">
-              <span className="pc-av" style={{ background: avGrad(0) }}>
-                YO
-              </span>
-              <input
-                className="post-composer-input"
-                placeholder="Add a comment…"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') send()
-                }}
-              />
-              <button className="post-composer-send" disabled={sending} onClick={send}>
-                Send
-              </button>
-            </div>
+            <CommentComposer onSend={(content) => void add(content)} />
           ) : (
             <button className="post-composer-signin" onClick={() => login()}>
               <Icon name="send" />

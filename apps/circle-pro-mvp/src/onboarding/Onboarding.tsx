@@ -14,8 +14,7 @@ import { Icon } from '../components/Icon'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { suggestCategory } from '../data/topics'
 import { proofFor } from '../lib/social'
-import { TEAM_MAP, teamFor } from '../data/teams'
-import { likedBy } from '../data/teammates'
+import { TEAM_MAP } from '../data/teams'
 import { sharedPeople, sharedTeamIds, countLinks } from '../data/folderTree'
 import type { ImportedBookmark } from '../lib/imported'
 import { TopicSelect } from '../components/TopicSelect'
@@ -116,10 +115,10 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
 
 /* ── Act 1 — welcome ──────────────────────────────────────────────────── */
 const BROWSERS: [string, string][] = [
-  ['Chrome', 'googlechrome'],
-  ['Firefox', 'firefoxbrowser'],
+  ['Chrome', 'chrome'],
+  ['Firefox', 'firefox'],
   ['Safari', 'safari'],
-  ['Edge', 'microsoftedge'],
+  ['Edge', 'edge'],
 ]
 
 function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void }) {
@@ -141,13 +140,13 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
         <span className="ob-or">or</span>
         {BROWSERS.map(([name, slug]) => (
           <button key={slug} className="ob-browser" title={`Import from ${name}`} onClick={onStart}>
-            <img src={`https://cdn.simpleicons.org/${slug}`} alt={name} />
+            <img src={`https://cdn.jsdelivr.net/gh/alrra/browser-logos@main/src/${slug}/${slug}_64x64.png`} alt={name} />
           </button>
         ))}
       </div>
 
       <button className="ob-skip" onClick={onSkip}>
-        Skip — explore the workspace first
+        Skip
       </button>
     </div>
   )
@@ -304,35 +303,17 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
 
       {links.length ? (
         <div className="kb-list obc-list">
-          {links.map((l) => {
-            const liked = likedBy(l.url)
-            const team = TEAM_MAP[teamFor(l.url)]
-            return (
-              <div className="kb-res" key={l.url}>
+          {links.map((l) => (
+            <div className="kb-res" key={l.url}>
+              <Favicon host={hostOf(l.url)} />
+              <div className="kb-res-main">
+                <div className="kb-res-title">{l.title}</div>
                 <div className="obc-topic">
                   <TopicSelect value={topicOf(l)} onChange={(id) => onPick(l.url, id)} />
                 </div>
-                <Favicon host={hostOf(l.url)} />
-                <div className="kb-res-main">
-                  <div className="kb-res-title">{l.title}</div>
-                  <div className="kb-res-signals">
-                    {!proofReady ? (
-                      <span className="ob-skel" />
-                    ) : liked.total ? (
-                      <span className="kb-sig kb-likedby">
-                        <span className="kb-lb-txt">
-                          <b>{liked.total}</b> from{' '}
-                          <span className="team-tag" style={{ ['--c' as string]: team.color }}>{team.label}</span>
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="kb-sig kb-sig--new">Only you so far</span>
-                    )}
-                  </div>
-                </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       ) : (
         <p className="obc-empty">Open a folder above to start sorting.</p>

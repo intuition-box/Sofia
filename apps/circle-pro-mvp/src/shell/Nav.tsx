@@ -32,6 +32,18 @@ const CIRCLES: CircleEntry[] = [
   { name: 'Marketing', teamId: 'marketing', color: '#8b5cf6', count: 7, avs: [3, 2], more: 0 },
 ]
 
+// Collections = saved tools + topics, browsable from the rail's bottom section.
+const COLL_TOOLS = [
+  { label: 'Figma', host: 'figma.com' },
+  { label: 'Notion', host: 'notion.so' },
+  { label: 'Linear', host: 'linear.app' },
+]
+const COLL_TOPICS = [
+  { label: 'Growth', color: '#22c55e' },
+  { label: 'AI tooling', color: '#8b5cf6' },
+  { label: 'Design system', color: '#ec4899' },
+]
+
 export function Nav({
   current,
   onNav,
@@ -107,7 +119,32 @@ export function Nav({
               </div>
             </a>
           ))}
+          <button className="ns-team-add" onClick={() => toast('Create a new team')}>
+            <span className="ns-team-add-ic">＋</span>
+            Create new
+          </button>
         </div>
+      </NavSection>
+
+      <NavSection title="Collections">
+        {COLL_TOOLS.map((t) => (
+          <NavItem
+            as="button"
+            key={t.label}
+            icon={<img className="ns-coll-fav" src={`https://www.google.com/s2/favicons?domain=${t.host}&sz=64`} alt="" />}
+            label={t.label}
+            onClick={() => toast(`Opening ${t.label}`)}
+          />
+        ))}
+        {COLL_TOPICS.map((t) => (
+          <NavItem
+            as="button"
+            key={t.label}
+            icon={<span className="ns-coll-dot" style={{ background: t.color }} />}
+            label={`#${t.label}`}
+            onClick={() => toast(`Opening ${t.label}`)}
+          />
+        ))}
       </NavSection>
     </DsNavSidebar>
   )

@@ -618,40 +618,421 @@
   color: #fff;
   background: color-mix(in srgb, var(--c) 70%, #000);
 }
+.tlv-by {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.tlv-by-av {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  flex: none;
+}
+.tlv-by-meta {
+  line-height: 1.25;
+}
+.tlv-by-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.tlv-by-sub {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.tlv-note {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 28%, var(--border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--ds-accent) 8%, transparent);
+}
+.tlv-note-lab {
+  margin-bottom: 6px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+.tlv-note-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-ink);
+}
+.post-comments .cc {
+  margin-top: 14px;
+}
+
+/* ── Side-by-side Memory + Skills, compact 2×2 grids + view-all ── */
+.tv-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .tv-cols {
+    grid-template-columns: 1fr;
+  }
+}
+.tv-cols .module {
+  min-width: 0;
+}
+.skcard-grid.skcard-grid--compact,
+.mem-grid.mem-grid--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.view-all-btn {
+  border: none;
+  background: none;
+  color: var(--ds-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mem-viewall {
+  margin-left: auto;
+}
+.skcard-grid--compact .skcard,
+.mem-grid--compact .memcard {
+  min-height: 134px;
+}
+.skcard-grid--compact .skcard {
+  justify-content: space-between;
+}
+.va {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+.va-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.va-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--ds-ink);
+}
+.va-head .skv-icon {
+  margin-left: auto;
+}
+.va-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 22px;
+}
+
+/* General team search bar (top of the team view). */
+.tv-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.tv-search:focus-within {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--border-strong));
+}
+.tv-search .ic svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ds-muted);
+}
+.tv-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 14px;
+}
+.tv-search-input::placeholder {
+  color: var(--ds-muted);
+}
 
 /* Create-new skill card — empty dashed square, first in the grid. */
-.skcard--create {
+.skcard--create,
+.memcard--create,
+.tg-card--create {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  min-height: 124px;
+  gap: 6px;
+  min-height: 110px;
+  padding: 20px;
   border: 1px dashed var(--border-strong);
   border-radius: var(--r-md);
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;
+  text-align: center;
   transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
-.skcard--create:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
+.skcard--create:hover,
+.memcard--create:hover,
+.tg-card--create:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
 }
-.skcard-create-ic {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid currentColor;
-}
-.skcard-create-ic .ic svg {
-  width: 18px;
-  height: 18px;
+.skcard-create-plus {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1;
 }
 .skcard-create-label {
-  font-size: 13px;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.skv-pill--pick {
+  cursor: pointer;
+}
+.skv-pill--pick:hover {
+  border-color: var(--ds-accent);
+}
+
+/* ── Tools grid (team view) — cards with desc, used-by tags, vote rail ── */
+.tg-head-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+.tg-count {
+  font-size: 10px;
+  color: var(--ds-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+.tg-sort {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.tg-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--ds-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tg-add-btn:hover {
+  background: var(--surface-3);
+}
+.tg-add-btn .ic svg {
+  width: 13px;
+  height: 13px;
+}
+.tg-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 760px) {
+  .tg-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.tg-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px 17px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.tg-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.tg-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tg-card-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+}
+.tg-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  overflow: hidden;
+  flex: none;
+}
+.tg-icon-glyph {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c);
+}
+.tg-icon-fav {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+}
+.tg-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.tg-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  margin-bottom: 13px;
+  min-height: 36px;
+}
+.tg-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.tg-foot-lab {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  flex: none;
+}
+.tg-used {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tg-used-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  font-size: 11px;
+  color: var(--ds-ink);
+}
+.tg-used-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.tg-vote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 46px;
+  flex: none;
+  align-self: flex-start;
+  padding: 9px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.tg-vote:hover {
+  border-color: var(--ds-accent);
+}
+.tg-vote-arrow {
+  font-size: 11px;
+  line-height: 1;
+}
+.tg-vote-count {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ds-ink);
+}
+.tg-vote.on {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+.tg-vote.on .tg-vote-count {
+  color: var(--ds-accent);
+}
+.tg-card--add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+.tg-card--add:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+}
+.tg-add-ic {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-strong);
+  font-size: 20px;
+}
+.tg-add-label {
+  font-size: 12px;
   font-weight: 600;
 }
 .skv-rail {
@@ -691,11 +1072,173 @@
 }
 .skv-composer {
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
   padding: 13px 16px;
   border-top: 1px solid var(--border);
+}
+
+/* ── Comment composer (emoji + GIF, Slack-level) ───────────── */
+.cc {
+  position: relative;
+}
+.cc-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.cc:focus-within .cc-bar {
+  border-color: color-mix(in srgb, var(--ds-accent) 60%, var(--border-strong));
+}
+.cc-av {
+  flex: none;
+}
+.cc-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 13.5px;
+}
+.cc-input::placeholder {
+  color: var(--ds-muted);
+}
+.cc-ic,
+.cc-gif-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.cc-ic {
+  width: 28px;
+}
+.cc-ic .ic svg {
+  width: 18px;
+  height: 18px;
+}
+.cc-gif-btn {
+  padding: 0 9px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.cc-ic:hover,
+.cc-gif-btn:hover,
+.cc-ic.on,
+.cc-gif-btn.on {
+  background: var(--surface-3);
+  color: var(--ds-ink);
+}
+.cc-send {
+  flex: none;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--ds-accent);
+  color: #0c0b14;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cc-send:hover {
+  filter: brightness(1.05);
+}
+.cc-pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.8);
+}
+.cc-pop--emoji {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.cc-emoji {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 17px;
+  cursor: pointer;
+}
+.cc-emoji:hover {
+  background: var(--surface-2);
+}
+.cc-pop--gif {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.cc-gif-search {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--ds-ink);
+  font-size: 13px;
+}
+.cc-gif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.cc-gif-item {
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.cc-gif-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cc-gif-msg {
+  grid-column: 1 / -1;
+  padding: 18px 0;
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 12px;
+}
+.pc-gif {
+  display: block;
+  max-width: 220px;
+  max-height: 180px;
+  margin-top: 2px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
 }
 @media (max-width: 880px) {
   .skv-body {

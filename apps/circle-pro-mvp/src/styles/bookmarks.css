@@ -347,8 +347,13 @@
 .bk-card--xl {
   gap: 0;
   padding: 0;
-  overflow: hidden;
   border-radius: var(--r-lg);
+}
+/* Lift the card whose context dropdown is open so its menu isn't covered by
+   the following cards in the grid (and isn't clipped by card overflow). */
+.bk-card:has(.tsel.open) {
+  position: relative;
+  z-index: 20;
 }
 .bk-card--xl:hover {
   transform: translateY(-2px);
@@ -361,6 +366,7 @@
   overflow: hidden;
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
 .bk-shot-img {
   width: 100%;

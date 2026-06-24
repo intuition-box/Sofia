@@ -13,6 +13,7 @@ import { avGrad, hostOf, initials } from '../data/helpers'
 import { Activity, Tools } from './Activity'
 import { Memory } from './Memory'
 import { ModuleHead } from '../components/primitives'
+import { Icon } from '../components/Icon'
 import { VoteButton, voteSeed } from '../components/VoteButton'
 import type { RoleId } from '../data/types'
 import { PostDetail, type PostItem } from './PostDetail'
@@ -52,6 +53,7 @@ function Favicon({ host }: { host: string }) {
 export function TeamView({ team }: { team: TeamMeta }) {
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [shotOk, setShotOk] = useState(true)
+  const [q, setQ] = useState('')
   const teamRole = TEAM_ROLE[team.id] ?? 'dev'
 
   const rows = useMemo(() => {
@@ -76,8 +78,10 @@ export function TeamView({ team }: { team: TeamMeta }) {
     })
   }
 
-  const featured = rows[0]
-  const rest = rows.slice(1)
+  const needle = q.trim().toLowerCase()
+  const visibleRows = needle ? rows.filter((r) => r.l.title.toLowerCase().includes(needle)) : rows
+  const featured = visibleRows[0]
+  const rest = visibleRows.slice(1)
   const featAbs = featured ? (featured.l.url.startsWith('http') ? featured.l.url : `https://${featured.l.url}`) : ''
 
   return (
@@ -89,9 +93,22 @@ export function TeamView({ team }: { team: TeamMeta }) {
           </h1>
         </header>
 
+        <form className="tv-search" onSubmit={(e) => e.preventDefault()}>
+          <Icon name="search" />
+          <input
+            className="tv-search-input"
+            placeholder={`Search ${team.label} — tools, skills, memory, links…`}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </form>
+
+        <div className="tv-cols">
+          <Memory role={teamRole} />
+          <Activity role={teamRole} />
+        </div>
+
         <Tools />
-        <Activity role={teamRole} />
-        <Memory role={teamRole} />
 
         <ModuleHead title="Activity" />
         {featured ? (
