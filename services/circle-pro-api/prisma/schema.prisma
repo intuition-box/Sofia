@@ -1,0 +1,76 @@
+// circle-pro-api — Prisma schema
+//
+// Off-chain layer for the circle-pro-mvp app (first pro client). Two concerns:
+//
+//  1. Identity — a Profile maps a wallet (Privy embedded/linked) to a unique
+//     human-readable @handle + free displayName, so the UI NEVER shows 0x….
+//  2. Discussion — Comments + CommentLikes attached to a bookmark.
+//
+// Bookmarks are NOT modeled here. A comment references a `bookmarkKey` =
+// normalised URL, which stays valid whether bookmarks end up on-chain (atom
+// term_id, mappable from the URL) or off-chain later. Zero migration either way.
+
+generator client {
+  provider      = "prisma-client-js"
+  // `native` for local dev, musl target for the alpine Docker runtime.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A wallet's public identity. Created on first login (the "choose a pseudo"
+/// gate). `handle` is the unique login-name; `displayName` is a free label.
+model Profile {
+  /// Lowercased EIP-55 wallet address (from the Privy JWT). Primary key.
+  wallet      String    @id
+  /// Unique public handle, validated `[a-z0-9_]{3,20}` at the route layer.
+  handle      String    @unique
+  /// Free-form display name (defaults to the handle when omitted).
+  displayName String?
+  /// Avatar gradient index — mirrors the front's avGrad() so avatars are stable.
+  avatarSeed  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments    Comment[]
+}
+
+/// A comment on a bookmark, scoped to a circle. Soft-deleted (deletedAt) so a
+/// removed comment doesn't break the thread — the UI renders "comment deleted".
+model Comment {
+  id           String        @id @default(cuid())
+  /// Normalised bookmark URL — the join key (see schema header).
+  bookmarkKey  String
+  /// Which circle this discussion belongs to (single circle in the MVP).
+  circleId     String        @default("acme")
+  /// Author's lowercased wallet; relation resolves the public Profile.
+  authorWallet String
+  author       Profile       @relation(fields: [authorWallet], references: [wallet])
+  text         String
+  /// Non-null once the author edits — drives the "edited" badge.
+  editedAt     DateTime?
+  /// Non-null once soft-deleted.
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+
+  likes        CommentLike[]
+
+  @@index([bookmarkKey, circleId, createdAt])
+  @@index([authorWallet])
+}
+
+/// One like per (comment, wallet). Cascade-deleted with its comment.
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  /// Lowercased wallet of the liker.
+  wallet    String
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, wallet])
+  @@index([commentId])
+}

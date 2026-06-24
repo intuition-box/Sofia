@@ -1,0 +1,19 @@
+# Local Postgres for circle-pro-api dev. Port 5433 to avoid clashing with a
+# system Postgres (or group-api's example on 5432). Prod uses Neon — only
+# DATABASE_URL changes, no code.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: circle-pro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: circle_pro
+    ports:
+      - "5433:5432"
+    volumes:
+      - circle_pro_pgdata:/var/lib/postgresql/data
+
+volumes:
+  circle_pro_pgdata:

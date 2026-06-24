@@ -4,8 +4,8 @@
  */
 import { useEffect, useState } from 'react'
 import { Icon } from '../components/Icon'
-import { join, onGate } from '../lib/gate'
-import { toast } from '../lib/toast'
+import { onGate } from '../lib/gate'
+import { useAuth } from '../hooks/useAuth'
 
 const BENEFITS = [
   'Filter members by topic & role, see full rosters',
@@ -15,6 +15,7 @@ const BENEFITS = [
 ]
 
 export function JoinModal() {
+  const { login } = useAuth()
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('go deeper')
 
@@ -30,10 +31,11 @@ export function JoinModal() {
   if (!open) return null
 
   const close = () => setOpen(false)
+  // Real Privy login. Once authenticated, App bridges it to `join()`, which
+  // unlocks the member-only surfaces, and the pseudo/ENS gate takes over.
   const doJoin = () => {
-    join()
     close()
-    toast("You've joined Intuition Core Team")
+    login()
   }
 
   return (

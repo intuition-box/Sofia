@@ -379,3 +379,78 @@
   font-size: 12px;
   font-weight: 700;
 }
+.post-composer-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ── Real comments (circle-pro-api) ────────────────────────── */
+.pc-handle {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.pc-edited {
+  font-size: 10px;
+  color: var(--ds-muted);
+  opacity: 0.8;
+}
+.pc-like {
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+.pc-like.is-on {
+  color: var(--ds-accent);
+}
+.pc-empty {
+  font-size: 12px;
+  color: var(--ds-muted);
+  padding: 6px 0 12px;
+}
+.pc-more {
+  display: block;
+  width: 100%;
+  margin: 4px 0 12px;
+  padding: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pc-more:hover {
+  background: color-mix(in srgb, var(--ds-ink) 5%, transparent);
+}
+.pc-more:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.pc--deleted .pc-text--muted {
+  color: var(--ds-muted);
+  font-style: italic;
+}
+.pc-av--ghost {
+  background: color-mix(in srgb, var(--ds-ink) 10%, transparent);
+}
+.post-composer-signin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 11px 16px;
+  width: 100%;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.post-composer-signin:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 50%, transparent);
+}

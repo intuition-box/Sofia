@@ -117,6 +117,102 @@
   color: var(--ds-muted);
 }
 
+/* ── Profile gate (choose a handle) ────────────────────────── */
+.pg-field {
+  display: block;
+  margin: 16px 0 0;
+}
+.pg-lab {
+  display: block;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-bottom: 6px;
+}
+.pg-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--ds-ink) 14%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ds-ink) 4%, transparent);
+}
+.pg-input-wrap:focus-within {
+  border-color: var(--ds-accent);
+}
+.pg-at {
+  color: var(--ds-muted);
+  font-size: 14px;
+}
+.pg-input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  padding: 11px 0;
+  font-size: 14px;
+  color: inherit;
+}
+.pg-input--plain {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--ds-ink) 14%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ds-ink) 4%, transparent);
+}
+.pg-input--plain:focus {
+  border-color: var(--ds-accent);
+}
+.pg-avail {
+  font-size: 11px;
+  flex: none;
+}
+.pg-avail--ok {
+  color: var(--trusted-p);
+}
+.pg-avail--taken {
+  color: var(--distrusted-p, #e08);
+}
+.pg-avail--checking {
+  color: var(--ds-muted);
+}
+.pg-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+.pg-error {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--distrusted-p, #e08);
+}
+.join-actions {
+  margin-top: 20px;
+}
+.pg-resolving {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 18px 0 8px;
+}
+.pg-spinner {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--ds-ink) 14%, transparent);
+  border-top-color: var(--ds-accent);
+  animation: pg-spin 0.8s linear infinite;
+}
+@keyframes pg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Gate (locked surfaces) ────────────────────────────────── */
 .lk {
   position: relative;

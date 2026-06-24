@@ -3,6 +3,7 @@
  * `CircleHeaderV2` in `circle-pro2/AppV2.jsx`.
  */
 import { CIRCLE } from '../data/mock'
+import { AccountButton } from './AccountButton'
 
 export type TabId = 'essential' | 'bookmarks' | 'overview' | 'roles' | 'members' | 'team'
 
@@ -30,6 +31,9 @@ export function Header({ tab, onTab, teamTab }: HeaderProps) {
           <div>
             <h1 className="cheader-name">{CIRCLE.name}</h1>
             <p className="cheader-desc cheader-desc-wide">{CIRCLE.description}</p>
+            <div className="cheader-actions cheader-actions-under">
+              <AccountButton />
+            </div>
           </div>
         </div>
       </div>

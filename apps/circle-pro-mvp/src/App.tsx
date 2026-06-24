@@ -3,10 +3,11 @@
  * base. Two surfaces only: My bookmarks (the home) and Overview. Members is a
  * drill-in from the Overview topic map. All data is mocked.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
 import { Header, type TabId } from './shell/Header'
 import { JoinModal } from './shell/JoinModal'
+import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
 import { Essential } from './tabs/Essential'
@@ -15,6 +16,8 @@ import { Members } from './tabs/Members'
 import { TeamView, type TeamMeta } from './tabs/TeamView'
 import { Onboarding } from './onboarding/Onboarding'
 import { setImported } from './lib/imported'
+import { useAuth } from './hooks/useAuth'
+import { join } from './lib/gate'
 import { TEAM_MAP } from './data/teams'
 import './onboarding/onboarding.css'
 import './styles/shell.css'
@@ -32,6 +35,13 @@ export default function App() {
   const [domain, setDomain] = useState('all')
   const [team, setTeam] = useState<TeamMeta | null>(null)
   const [onboarding, setOnboarding] = useState(true)
+
+  // Signing in unlocks the member-only surfaces (the mock gate reflects real
+  // auth). Guests still browse the public page.
+  const { authenticated } = useAuth()
+  useEffect(() => {
+    if (authenticated) join()
+  }, [authenticated])
 
   const goTab = (t: TabId) => {
     setTab(t)
@@ -74,6 +84,7 @@ export default function App() {
       </main>
 
       <JoinModal />
+      <ProfileGate />
       <Toast />
 
       {onboarding ? (

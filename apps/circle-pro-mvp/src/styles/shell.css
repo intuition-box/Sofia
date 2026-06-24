@@ -61,8 +61,96 @@
 }
 .cheader-actions {
   display: flex;
+  align-items: center;
   gap: 10px;
   margin-top: 14px;
+}
+
+/* ── Account button (Privy connect / identity) ─────────────── */
+.acct {
+  position: relative;
+}
+.acct-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ds-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.acct-chip:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 50%, transparent);
+}
+.acct-av {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  flex: none;
+}
+.acct-name {
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acct-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.acct-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 41;
+  min-width: 180px;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+.acct-menu-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.acct-menu-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.acct-menu-handle {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.acct-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 13px;
+  cursor: pointer;
+}
+.acct-menu-item:hover {
+  background: color-mix(in srgb, var(--ds-ink) 6%, transparent);
 }
 
 .kpis {

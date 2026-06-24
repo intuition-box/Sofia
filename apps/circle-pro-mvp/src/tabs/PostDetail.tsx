@@ -1,16 +1,25 @@
 /**
  * PostDetail — wireframe view 4. The detail of a shared link: the sharer's
- * context ("why it's useful"), the link preview, and the comment thread that
- * makes the "who-knows-what" graph. Opens when a feed card is clicked.
+ * context ("why it's useful"), the link preview, and the comment thread.
+ *
+ * Two comment renderers live here:
+ *  - `CommentRow` — the mock visual (Comment from discussion.ts), kept as-is and
+ *    reused by Activity.tsx.
+ *  - `PostCommentRow` — the REAL thread (PublicComment from circle-pro-api):
+ *    public reads, auth+profile-gated writes (add/edit/delete/like).
  */
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
-import { commentsFor, docType, whyFor, type Comment } from '../lib/discussion'
+import { docType, whyFor, type Comment } from '../lib/discussion'
 import { setContext, useMyBookmarks } from '../lib/mybookmarks'
 import { avGrad, initials } from '../data/helpers'
+import { bookmarkKey } from '../lib/bookmarkKey'
+import { useComments } from '../hooks/useComments'
+import { useAuth } from '../hooks/useAuth'
+import type { PublicComment } from '../services/circleProApi'
 
 export interface PostItem {
   title: string
@@ -20,6 +29,7 @@ export interface PostItem {
   teamId: string
 }
 
+// Mock comment row — kept for Activity.tsx's "who-knows-what" surface.
 export function CommentRow({ c }: { c: Comment }) {
   const team = TEAM_MAP[c.teamId]
   const grad = c.grad
@@ -50,27 +60,153 @@ export function CommentRow({ c }: { c: Comment }) {
   )
 }
 
+/** Compact relative time from an ISO timestamp. */
+function timeAgo(iso: string): string {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000)
+  if (s < 60) return 'now'
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m} min`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h} h`
+  const d = Math.floor(h / 24)
+  return `${d} d`
+}
+
+interface PostCommentRowProps {
+  c: PublicComment
+  mine: boolean
+  onEdit: (id: string, text: string) => Promise<unknown>
+  onDelete: (id: string) => Promise<unknown>
+  onToggleLike: (c: PublicComment) => Promise<unknown>
+}
+
+// Real comment row — backed by circle-pro-api. Same visual language as the mock
+// CommentRow, plus @handle, an "edited" badge, and author-only edit/delete.
+function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostCommentRowProps) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(c.text ?? '')
+  const [busy, setBusy] = useState(false)
+
+  if (c.deleted) {
+    return (
+      <div className="pc pc--deleted">
+        <span className="pc-av pc-av--ghost" />
+        <div className="pc-main">
+          <p className="pc-text pc-text--muted">comment deleted</p>
+        </div>
+      </div>
+    )
+  }
+
+  const saveEdit = async () => {
+    const t = draft.trim()
+    if (!t || t === c.text) return setEditing(false)
+    setBusy(true)
+    try {
+      await onEdit(c.id, t)
+      setEditing(false)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="pc">
+      <span className="pc-av" style={{ background: avGrad(c.author.avatarSeed) }}>
+        {initials(c.author.displayName)}
+      </span>
+      <div className="pc-main">
+        <div className="pc-head">
+          <span className="pc-who">{c.author.displayName}</span>
+          <span className="pc-handle mono">@{c.author.handle}</span>
+          <span className="pc-when">{timeAgo(c.createdAt)}</span>
+          {c.edited ? <span className="pc-edited mono">edited</span> : null}
+        </div>
+
+        {editing ? (
+          <>
+            <textarea
+              className="post-why-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={2}
+              autoFocus
+            />
+            <div className="post-why-actions">
+              <button className="ex-back" onClick={() => setEditing(false)}>
+                Cancel
+              </button>
+              <button className="post-composer-send" disabled={busy} onClick={saveEdit}>
+                Save
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="pc-text">{c.text}</p>
+        )}
+
+        <div className="pc-actions">
+          <button
+            className={`pc-like${c.likedByMe ? ' is-on' : ''}`}
+            onClick={() => onToggleLike(c)}
+          >
+            <Icon name="thumbup" /> {c.likeCount}
+          </button>
+          {mine && !editing ? (
+            <>
+              <button className="pc-reply" onClick={() => setEditing(true)}>
+                Edit
+              </button>
+              <button className="pc-reply" onClick={() => onDelete(c.id)}>
+                Delete
+              </button>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => void }) {
   const cat = CATEGORY_MAP[item.topicId]
   const team = TEAM_MAP[item.teamId]
   const type = docType(item.host)
   const abs = item.url.startsWith('http') ? item.url : `https://${item.url}`
 
-  const [comments, setComments] = useState<Comment[]>(() => commentsFor(item.url))
+  const key = bookmarkKey(item.url)
+  const { wallet, authenticated, login } = useAuth()
+  const {
+    items: comments,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    canWrite,
+    add,
+    edit,
+    remove,
+    toggleLike,
+  } = useComments(key)
+
   const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
   const my = useMyBookmarks()
   const mine = my.context[item.url]
   const [editWhy, setEditWhy] = useState(false)
   const [whyDraft, setWhyDraft] = useState('')
   const [shotOk, setShotOk] = useState(true)
-  const send = () => {
+
+  const send = async () => {
     const t = draft.trim()
-    if (!t) return
-    setComments((cs) => [
-      ...cs,
-      { id: `${item.url}#you-${cs.length}`, who: 'You', teamId: 'eng', grad: 0, when: 'now', text: t, likes: 0, reply: false },
-    ])
-    setDraft('')
+    if (!t || sending) return
+    setSending(true)
+    try {
+      await add(t)
+      setDraft('')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -189,28 +325,59 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
         </div>
 
         <div className="post-comments">
-          <h3 className="post-comments-h">{comments.length} comments</h3>
-          {comments.map((c) => (
-            <CommentRow key={c.id} c={c} />
-          ))}
+          <h3 className="post-comments-h">
+            {loading
+              ? 'Comments'
+              : `${comments.length} comment${comments.length === 1 ? '' : 's'}`}
+          </h3>
 
-          <div className="post-composer">
-            <span className="pc-av" style={{ background: avGrad(0) }}>
-              YO
-            </span>
-            <input
-              className="post-composer-input"
-              placeholder="Add a comment…"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') send()
-              }}
-            />
-            <button className="post-composer-send" onClick={send}>
-              Send
+          {loading ? (
+            <p className="pc-empty mono">Loading…</p>
+          ) : comments.length === 0 ? (
+            <p className="pc-empty mono">No comments yet — start the thread.</p>
+          ) : (
+            comments.map((c) => (
+              <PostCommentRow
+                key={c.id}
+                c={c}
+                mine={!!wallet && c.author.wallet === wallet}
+                onEdit={edit}
+                onDelete={remove}
+                onToggleLike={toggleLike}
+              />
+            ))
+          )}
+
+          {hasMore ? (
+            <button className="pc-more" disabled={loadingMore} onClick={loadMore}>
+              {loadingMore ? 'Loading…' : 'Load more comments'}
             </button>
-          </div>
+          ) : null}
+
+          {canWrite ? (
+            <div className="post-composer">
+              <span className="pc-av" style={{ background: avGrad(0) }}>
+                YO
+              </span>
+              <input
+                className="post-composer-input"
+                placeholder="Add a comment…"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') send()
+                }}
+              />
+              <button className="post-composer-send" disabled={sending} onClick={send}>
+                Send
+              </button>
+            </div>
+          ) : (
+            <button className="post-composer-signin" onClick={() => login()}>
+              <Icon name="send" />
+              {authenticated ? 'Set your handle to comment' : 'Sign in to comment'}
+            </button>
+          )}
         </div>
       </article>
     </div>
