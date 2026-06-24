@@ -828,6 +828,12 @@
   font-weight: 800;
   color: var(--c);
 }
+.endo-fav {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  display: block;
+}
 .csoc {
   display: grid;
   place-items: center;
@@ -1840,7 +1846,6 @@ button.sk-tool-chip {
 .mem-team {
   margin-top: 22px;
   padding-top: 22px;
-  border-top: 1px solid var(--border-strong);
 }
 .mem-team-sub {
   display: inline-flex;
@@ -1860,7 +1865,6 @@ button.sk-tool-chip {
 .act-team {
   margin-top: 22px;
   padding-top: 22px;
-  border-top: 1px solid var(--border-strong);
 }
 .mem-empty {
   padding: 26px 20px;

@@ -106,8 +106,19 @@ const MEMBERS_V2: MemberV2[] = [
 ]
 
 /* Votable Role / Skill / Tool chip (▲ count), local-state toggle. */
+const TOOL_HOSTS: Record<string, string> = {
+  Figma: 'figma.com',
+  Framer: 'framer.com',
+  Notion: 'notion.so',
+  'VS Code': 'code.visualstudio.com',
+  GitHub: 'github.com',
+  Foundry: 'getfoundry.sh',
+  Obsidian: 'obsidian.md',
+}
+
 function Endo({ c }: { c: Chip }) {
   const [on, setOn] = useState(false)
+  const host = c.glyph ? TOOL_HOSTS[c.label] : undefined
   return (
     <button
       type="button"
@@ -115,7 +126,21 @@ function Endo({ c }: { c: Chip }) {
       style={{ ['--c' as string]: c.color }}
       onClick={() => setOn((v) => !v)}
     >
-      {c.glyph ? <b className="endo-glyph">{c.glyph}</b> : <span className="endo-dot" />}
+      {host ? (
+        <img
+          className="endo-fav"
+          src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`}
+          alt=""
+          loading="lazy"
+          onError={(e) => {
+            ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
+          }}
+        />
+      ) : c.glyph ? (
+        <b className="endo-glyph">{c.glyph}</b>
+      ) : (
+        <span className="endo-dot" />
+      )}
       {c.label}
       <span className="endo-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -156,7 +181,6 @@ export function TeamMembers() {
               </div>
             </div>
 
-            {m.headline ? <p className="cc-headline">{m.headline}</p> : null}
 
             <dl className="cc-attrs">
               <div className="cc-attr">

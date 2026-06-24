@@ -35,6 +35,13 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Light mode: the design-system borders are near-invisible on white surfaces,
+   so darken them a touch (dark mode keeps the token-driven values). */
+:root:not(.dark) {
+  --border: #e3e1e8;
+  --border-strong: #cdcad6;
+}
+
 *,
 *::before,
 *::after {

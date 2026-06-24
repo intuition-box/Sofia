@@ -39,7 +39,6 @@ export function Memory({ role = null }: MemoryProps) {
     return (
       <div className="memcard" key={m.id} style={{ ['--c' as string]: k.color }}>
         <h4 className="memcard-title">{m.title}</h4>
-        <p className="memcard-snippet">{m.snippet}</p>
         <div className="memcard-foot">
           <div className="memcard-who">
             {m.who.map((h) => {

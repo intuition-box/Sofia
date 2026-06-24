@@ -31,16 +31,7 @@
   width: min(540px, 100%);
   padding: 38px;
   border-radius: 22px;
-  border: 1px solid var(--border-strong);
   background: var(--surface);
-  box-shadow: 0 40px 100px -44px rgba(0, 0, 0, 0.8);
-}
-.ob-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 24px auto 24px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 181, 155, 0.35), transparent);
 }
 
 .ob-title {

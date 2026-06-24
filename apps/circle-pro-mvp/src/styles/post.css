@@ -248,7 +248,7 @@
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ds-accent);
+  color: var(--ds-ink);
   font-weight: 700;
 }
 .post-why-edit {

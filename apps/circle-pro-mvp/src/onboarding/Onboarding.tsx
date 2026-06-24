@@ -91,7 +91,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
 
   return (
     <div className="ob">
-      <div className={`ob-stage ob-stage--${step}`} key={step}>
+      <div className={`ob-stage ob-stage--${step}`}>
         {step === 'welcome' ? <Welcome onStart={() => setStep('sort')} onSkip={onSkip} /> : null}
         {step === 'sort' ? (
           <Sort
