@@ -211,11 +211,13 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
 
   return (
     <div className="content">
-      <article className="post">
+      <article className="post post--split">
         <button className="post-back" onClick={onBack}>
           <Icon name="chevronLeft" /> Back to feed
         </button>
 
+        <div className="post-split">
+          <div className="post-col-main">
         <div className="post-tags">
           {team ? (
             <span className="team-tag" style={{ ['--c' as string]: team.color }}>
@@ -323,7 +325,9 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
             <Icon name="send" /> Share
           </button>
         </div>
+          </div>
 
+          <div className="post-col-side">
         <div className="post-comments">
           <h3 className="post-comments-h">
             {loading
@@ -378,6 +382,8 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
               {authenticated ? 'Set your handle to comment' : 'Sign in to comment'}
             </button>
           )}
+        </div>
+          </div>
         </div>
       </article>
     </div>

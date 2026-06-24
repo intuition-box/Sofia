@@ -33,6 +33,45 @@
   width: min(760px, 100%);
   margin: 0 auto;
 }
+
+/* ── Split layout: OG image + post on the left, comments on the right ── */
+.post--split {
+  width: min(1140px, 100%);
+}
+.post-split {
+  display: flex;
+  align-items: stretch;
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+.post-col-main {
+  width: 520px;
+  flex: none;
+  border-right: 1px solid var(--border);
+  padding: 22px 24px;
+}
+.post-col-side {
+  flex: 1;
+  min-width: 0;
+  padding: 22px 24px;
+}
+.post-col-side .post-comments {
+  border-top: none;
+  padding-top: 0;
+}
+@media (max-width: 980px) {
+  .post-split {
+    flex-direction: column;
+  }
+  .post-col-main {
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
 .post-back {
   border: none;
   background: transparent;

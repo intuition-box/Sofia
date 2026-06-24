@@ -8,7 +8,7 @@
  *
  * Plain copy, real teammate names, no crypto handles.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { Icon } from '../components/Icon'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
@@ -16,7 +16,7 @@ import { suggestCategory } from '../data/topics'
 import { proofFor } from '../lib/social'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
-import { sharedPeople, sharedTeamIds } from '../data/folderTree'
+import { sharedPeople, sharedTeamIds, countLinks } from '../data/folderTree'
 import type { ImportedBookmark } from '../lib/imported'
 import { TopicSelect } from '../components/TopicSelect'
 import { avGrad, hostOf } from '../data/helpers'
@@ -128,7 +128,7 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
       <h1 className="ob-title">Import your bookmarks</h1>
       <p className="ob-lede">
         Bring your Brave folders into Intuition Core Team — same folders, same order. You sort them into topics and
-        see who on the team already keeps the same things.
+        see who on the team already keeps the same things. Your folders are read locally — nothing is uploaded.
       </p>
 
       <button className="ob-brave" onClick={onStart}>
@@ -136,7 +136,6 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
         <span>Continue with Brave</span>
         <ArrowRight size={17} className="ob-brave-go" />
       </button>
-      <p className="ob-reassure mono">Reads your folders locally · nothing is uploaded</p>
 
       <div className="ob-browsers">
         <span className="ob-or">or</span>
@@ -167,6 +166,8 @@ interface SortProps {
 
 function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onImport }: SortProps) {
   const [path, setPath] = useState<string[]>([])
+  const [openCrumb, setOpenCrumb] = useState<number | null>(null)
+  const crumbsRef = useRef<HTMLElement>(null)
 
   const currentNodes = useMemo<BmNode[]>(() => {
     let nodes = MY_BOOKMARKS as BmNode[]
@@ -177,14 +178,6 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
     }
     return nodes
   }, [path])
-
-  const subfolders = useMemo(
-    () =>
-      currentNodes
-        .filter((n): n is BmFolder => n.type === 'folder')
-        .map((f) => ({ name: f.name, people: sharedPeople(f.children) })),
-    [currentNodes],
-  )
 
   const folderName = path.length ? path[path.length - 1] : ''
   const links = useMemo<FlatLink[]>(
@@ -200,6 +193,35 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
     () => sharedTeamIds(MY_BOOKMARKS as BmNode[]).map((id) => TEAM_MAP[id]).filter(Boolean),
     [],
   )
+
+  // Folder navigation mirrors My bookmarks: child folders live in each
+  // breadcrumb crumb's dropdown, not as a separate chip row.
+  const foldersAt = (c: number): BmFolder[] => {
+    let nodes = MY_BOOKMARKS as BmNode[]
+    for (const seg of path.slice(0, c)) {
+      const f = nodes.find((n) => n.type === 'folder' && n.name === seg) as BmFolder | undefined
+      if (!f) return []
+      nodes = f.children
+    }
+    return nodes.filter((n): n is BmFolder => n.type === 'folder')
+  }
+  const crumbClick = (c: number) => {
+    setPath((p) => p.slice(0, c))
+    setOpenCrumb((o) => (o === c ? null : c))
+  }
+  const navTo = (c: number, name: string) => {
+    setPath((p) => p.slice(0, c).concat(name))
+    setOpenCrumb(null)
+  }
+
+  useEffect(() => {
+    if (openCrumb === null) return
+    const onDoc = (e: MouseEvent) => {
+      if (crumbsRef.current && !crumbsRef.current.contains(e.target as Node)) setOpenCrumb(null)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [openCrumb])
 
   return (
     <div className="ob-card ob-categorize">
@@ -228,30 +250,57 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
         </p>
       </div>
 
-      <nav className="obc-crumbs" aria-label="Folder path">
-        <button className="obc-crumb" onClick={() => setPath([])}>
-          My bookmarks
-        </button>
-        {path.map((seg, i) => (
-          <span className="obc-seg" key={`${seg}-${i}`}>
-            <span className="obc-sep" aria-hidden="true">›</span>
-            <button className="obc-crumb" onClick={() => setPath((p) => p.slice(0, i + 1))}>
-              {seg}
-            </button>
-          </span>
-        ))}
+      <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
+        {[{ label: 'My bookmarks', c: 0 }, ...path.map((seg, i) => ({ label: seg, c: i + 1 }))].map(
+          ({ label, c }, idx) => {
+            const folders = foldersAt(c)
+            return (
+              <span className="fab-seg" key={`${label}-${c}`}>
+                {idx > 0 ? (
+                  <span className="fab-sep" aria-hidden="true">›</span>
+                ) : null}
+                <span className="fab-crumb-wrap">
+                  <button
+                    className={`fab-crumb fab-crumb--nav${openCrumb === c ? ' open' : ''}`}
+                    onClick={() => crumbClick(c)}
+                  >
+                    {c > 0 ? <Icon name="folder" /> : null}
+                    {label}
+                    {folders.length ? <Icon name="chevronDown" /> : null}
+                  </button>
+                  {openCrumb === c && folders.length ? (
+                    <div className="fab-dd">
+                      {folders.map((f) => {
+                        const people = sharedPeople(f.children)
+                        return (
+                          <button className="fab-dd-item" key={f.name} onClick={() => navTo(c, f.name)}>
+                            <Icon name="folder" />
+                            <span className="fab-dd-name">{f.name}</span>
+                            {people.length ? (
+                              <span className="fab-dd-avs">
+                                {people.slice(0, 3).map((p, j) => (
+                                  <span
+                                    key={p.name}
+                                    className="fab-dd-av"
+                                    title={p.name}
+                                    style={{ background: avGrad(p.grad), zIndex: 9 - j }}
+                                  />
+                                ))}
+                              </span>
+                            ) : (
+                              <span className="fab-dd-n tnum">{countLinks(f.children)}</span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </span>
+              </span>
+            )
+          },
+        )}
       </nav>
-
-      {subfolders.length ? (
-        <div className="obc-folders">
-          {subfolders.map((f) => (
-            <button className="kb-chip kb-chip--folder" key={f.name} onClick={() => setPath((p) => [...p, f.name])}>
-              <Icon name="folder" />
-              {f.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {links.length ? (
         <div className="kb-list obc-list">

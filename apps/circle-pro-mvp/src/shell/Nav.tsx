@@ -8,11 +8,10 @@
  */
 import {
   NavSidebar as DsNavSidebar,
-  NavBrand,
   NavSection,
   NavItem,
 } from '@0xsofia/design-system'
-import { Sparkles, Bookmark, Users, ShoppingCart } from 'lucide-react'
+import { Sparkles, Bookmark } from 'lucide-react'
 import { avGrad } from '../data/helpers'
 import { toast } from '../lib/toast'
 import '@0xsofia/design-system/styles/nav-sidebar.css'
@@ -38,17 +37,26 @@ export function Nav({
   onNav,
   onOpenTeam,
 }: {
-  current: 'bookmarks' | 'circle' | 'essential'
-  onNav: (v: 'bookmarks' | 'circle' | 'essential') => void
+  current: 'bookmarks' | 'essential' | null
+  onNav: (v: 'bookmarks' | 'essential') => void
   onOpenTeam: (id: string) => void
 }) {
   return (
     <DsNavSidebar>
-      <NavBrand
-        name="Sofia Pro"
-        tag="MVP"
-        logo={<span className="nav-brand-logo nbl-logo">S</span>}
-      />
+      <button
+        type="button"
+        className="ns-auth-chip ns-auth-chip--top"
+        aria-label="Open your profile"
+        onClick={() => toast('Opening your profile')}
+      >
+        <span className="ns-auth-avatar ns-auth-avatar--fallback" style={{ background: avGrad(0) }}>
+          SC
+        </span>
+        <span className="ns-auth-meta">
+          <span className="ns-auth-name">Sam Chauché</span>
+          <span className="ns-auth-sub">sam@acme.com</span>
+        </span>
+      </button>
 
       <NavSection title="Navigation">
         <NavItem
@@ -64,13 +72,6 @@ export function Nav({
           label="My bookmarks"
           active={current === 'bookmarks'}
           onClick={() => onNav('bookmarks')}
-        />
-        <NavItem
-          as="button"
-          icon={<Users size={16} />}
-          label="Circle"
-          active={current === 'circle'}
-          onClick={() => onNav('circle')}
         />
       </NavSection>
 
@@ -108,35 +109,6 @@ export function Nav({
           ))}
         </div>
       </NavSection>
-
-      <div className="ns-bottom">
-        <button
-          type="button"
-          className="ns-cart-btn ns-cart-btn--filled"
-          onClick={() => toast('Opening saved')}
-          aria-label="Saved"
-          title="Saved"
-        >
-          <ShoppingCart size={16} />
-          <span className="ns-cart-label">Saved</span>
-          <span className="ns-cart-count">3</span>
-        </button>
-
-        <button
-          type="button"
-          className="ns-auth-chip"
-          aria-label="Open your profile"
-          onClick={() => toast('Opening your profile')}
-        >
-          <span className="ns-auth-avatar ns-auth-avatar--fallback" style={{ background: avGrad(0) }}>
-            SC
-          </span>
-          <span className="ns-auth-meta">
-            <span className="ns-auth-name">Sam Chauché</span>
-            <span className="ns-auth-sub">sam@acme.com</span>
-          </span>
-        </button>
-      </div>
     </DsNavSidebar>
   )
 }

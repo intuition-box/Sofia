@@ -13,9 +13,10 @@ interface TopicSelectProps {
   value: string | null
   onChange: (id: string) => void
   placeholder?: string
+  lead?: string
 }
 
-export function TopicSelect({ value, onChange, placeholder = 'Pick a topic' }: TopicSelectProps) {
+export function TopicSelect({ value, onChange, placeholder = 'Pick a topic', lead }: TopicSelectProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const sel = value ? CATEGORY_MAP[value] : null
@@ -46,6 +47,7 @@ export function TopicSelect({ value, onChange, placeholder = 'Pick a topic' }: T
         aria-haspopup="listbox"
         aria-expanded={open}
       >
+        {lead ? <span className="tsel-lead mono">{lead}</span> : null}
         {sel ? (
           <>
             <TopicIcon id={sel.id} size={16} />

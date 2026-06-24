@@ -17,9 +17,9 @@ interface Tool {
   bm: number
 }
 const TOOLS: Tool[] = [
-  { name: 'Notion HQ', host: 'notion.so', desc: "Base de connaissance & docs partagés de l'équipe.", team: 'Marketing', color: '#3b82f6', bm: 28 },
-  { name: 'Figma', host: 'figma.com', desc: 'Design system & maquettes produit.', team: 'Development', color: '#8b5cf6', bm: 19 },
-  { name: 'Linear', host: 'linear.app', desc: 'Suivi des sprints & roadmap dev.', team: 'Development', color: '#8b5cf6', bm: 15 },
+  { name: 'Notion HQ', host: 'notion.so', desc: "The team's shared knowledge base & docs.", team: 'Marketing', color: '#3b82f6', bm: 28 },
+  { name: 'Figma', host: 'figma.com', desc: 'Design system & product mockups.', team: 'Development', color: '#8b5cf6', bm: 19 },
+  { name: 'Linear', host: 'linear.app', desc: 'Sprint tracking & dev roadmap.', team: 'Development', color: '#8b5cf6', bm: 15 },
 ]
 
 interface Commented {
@@ -32,9 +32,9 @@ interface Commented {
   comments: number
 }
 const COMMENTED: Commented[] = [
-  { rank: 1, title: 'Le guide async-first de Notion', source: 'notion.so', who: 'Lina', team: 'Marketing', color: '#3b82f6', comments: 24 },
+  { rank: 1, title: "Notion's async-first guide", source: 'notion.so', who: 'Lina', team: 'Marketing', color: '#3b82f6', comments: 24 },
   { rank: 2, title: 'Architecture decision records — v2', source: 'Document', who: 'Tom', team: 'Development', color: '#8b5cf6', comments: 17 },
-  { rank: 3, title: 'Modèles de pricing SaaS 2026', source: 'openview.com', who: 'Marc', team: 'Marketing', color: '#3b82f6', comments: 12 },
+  { rank: 3, title: 'SaaS pricing models 2026', source: 'openview.com', who: 'Marc', team: 'Marketing', color: '#3b82f6', comments: 12 },
 ]
 
 interface Member {
@@ -90,22 +90,22 @@ export function Essential() {
         {/* Hero */}
         <header className="es-hero">
           <div className="es-eyebrow mono">Intuition team · Essential</div>
-          <h1 className="es-h1">Que cherches-tu à savoir ?</h1>
-          <p className="es-lede">Le savoir de ton équipe, à portée de recherche.</p>
+          <h1 className="es-h1">What do you want to know?</h1>
+          <p className="es-lede">Your team's knowledge, one search away.</p>
         </header>
 
         {/* Search engine */}
         <div className="es-search">
           <div className="es-search-row">
             <Icon name="search" />
-            <span className="es-search-ph">Pose une question, ou colle un lien à partager…</span>
+            <span className="es-search-ph">Ask a question, or paste a link to share…</span>
             <span className="es-kbd mono">⌘K</span>
           </div>
           <div className="es-search-foot">
             <button className="es-search-ic" aria-label="Add"><Icon name="plus" /></button>
             <button className="es-search-ic mono" aria-label="Topic">#</button>
             <button className="es-search-ic mono" aria-label="Mention">@</button>
-            <button className="es-search-go">Rechercher</button>
+            <button className="es-search-go">Search</button>
           </div>
         </div>
 
@@ -125,7 +125,7 @@ export function Essential() {
 
         {/* Essential tools */}
         <section className="es-section">
-          <SectionHead title="Essential tools" action="Tout voir" />
+          <SectionHead title="Essential tools" action="See all" />
           <div className="es-grid-3">
             {TOOLS.map((t) => (
               <a className="es-tool" key={t.name}>
@@ -133,7 +133,6 @@ export function Essential() {
                   <Favicon host={t.host} />
                   <div className="es-tool-id">
                     <div className="es-tool-name">{t.name}</div>
-                    <div className="es-tool-host mono">{t.host}</div>
                   </div>
                 </div>
                 <div className="es-tool-desc">{t.desc}</div>
@@ -150,16 +149,15 @@ export function Essential() {
 
         {/* Most commented */}
         <section className="es-section">
-          <SectionHead title="Most commented" action="Tout voir" />
+          <SectionHead title="Most commented" action="See all" />
           <div className="es-ranked">
             {COMMENTED.map((c) => (
               <a className="es-rank-row" key={c.rank}>
                 <Favicon host={c.source.includes('.') ? c.source : 'notion.so'} />
                 <div className="es-rank-id">
                   <div className="es-rank-title">{c.title}</div>
-                  <div className="es-rank-meta mono">{c.source} · partagé par {c.who}</div>
+                  <div className="es-rank-meta mono">shared by {c.who}</div>
                 </div>
-                <span className="es-team-tag" style={{ ['--c' as string]: c.color }}>{c.team}</span>
                 <span className="es-rank-comments">
                   <Icon name="thumbup" /> {c.comments}
                 </span>
@@ -170,7 +168,7 @@ export function Essential() {
 
         {/* Core team members */}
         <section className="es-section es-section--last">
-          <SectionHead title="Core team members" action="Voir l'équipe" />
+          <SectionHead title="Core team members" action="See the team" />
           <div className="es-grid-3">
             {MEMBERS.map((m) => (
               <div className="es-member" key={m.name}>
@@ -185,7 +183,7 @@ export function Essential() {
                   ))}
                 </div>
                 <div className="es-member-stats mono">
-                  {m.shares} partages · {m.nTopics} topics
+                  {m.shares} shares · {m.nTopics} topics
                 </div>
               </div>
             ))}

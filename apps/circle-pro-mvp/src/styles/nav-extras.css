@@ -158,6 +158,9 @@
 .ns-auth-chip:hover {
   background: var(--ds-bg-subtle);
 }
+.ns-auth-chip--top {
+  margin-bottom: 14px;
+}
 .ns-auth-avatar {
   width: 32px;
   height: 32px;

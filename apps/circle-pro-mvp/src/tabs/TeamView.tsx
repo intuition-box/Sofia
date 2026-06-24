@@ -10,8 +10,10 @@ import { teamFor } from '../data/teams'
 import { suggestCategory } from '../data/topics'
 import { MY_BOOKMARKS, type BmNode } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
-import { Activity } from './Activity'
+import { Activity, Tools } from './Activity'
 import { Memory } from './Memory'
+import { ModuleHead } from '../components/primitives'
+import { VoteButton, voteSeed } from '../components/VoteButton'
 import type { RoleId } from '../data/types'
 import { PostDetail, type PostItem } from './PostDetail'
 
@@ -87,11 +89,22 @@ export function TeamView({ team }: { team: TeamMeta }) {
           </h1>
         </header>
 
+        <Tools />
         <Activity role={teamRole} />
         <Memory role={teamRole} />
 
+        <ModuleHead title="Activity" />
         {featured ? (
-          <button className="tv-featured" style={{ ['--c' as string]: team.color }} onClick={() => open(featured.l)}>
+          <div
+            className="tv-featured"
+            style={{ ['--c' as string]: team.color }}
+            role="button"
+            tabIndex={0}
+            onClick={() => open(featured.l)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') open(featured.l)
+            }}
+          >
             <span className="tv-feat-shot">
               {shotOk ? (
                 <img
@@ -106,7 +119,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
               )}
             </span>
             <span className="tv-feat-body">
-              <span className="tv-feat-eyebrow">À la une</span>
+              <span className="tv-feat-eyebrow">Featured</span>
               <span className="tv-feat-title">{featured.l.title}</span>
               <span className="tv-feat-host mono">{hostOf(featured.l.url)}</span>
               <span className="tv-feat-people">
@@ -121,8 +134,9 @@ export function TeamView({ team }: { team: TeamMeta }) {
                   <b className="tnum">{featured.people.length}</b> in {team.label} comment
                 </span>
               </span>
+              <VoteButton base={voteSeed(featured.l.url)} className="tv-feat-vote" />
             </span>
-          </button>
+          </div>
         ) : (
           <p className="bk2-empty">No bookmarks kept by {team.label} yet.</p>
         )}
@@ -156,6 +170,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
                     <b className="tnum">{people.length}</b> comment
                   </span>
                 </span>
+                <VoteButton base={voteSeed(l.url)} className="tv-row-vote" />
               </div>
             ))}
           </div>

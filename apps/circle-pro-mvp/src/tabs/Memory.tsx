@@ -24,7 +24,7 @@ interface MemoryProps {
   role?: RoleId | null
 }
 
-const KINDS: (MemoryKind | 'all')[] = ['all', 'decision', 'thread', 'doc']
+const KINDS: (MemoryKind | 'all')[] = ['all', 'thread', 'doc']
 
 export function Memory({ role = null }: MemoryProps) {
   const [q, setQ] = useState('')
@@ -34,7 +34,9 @@ export function Memory({ role = null }: MemoryProps) {
   // team scope: a memory belongs to a team if any of its authors hold that role
   const team = role ? ROLE_MAP[role] : null
   const teamHandles = role ? new Set(peopleByRole(role).map((p) => p.handle)) : null
-  const base = team && teamHandles ? MEMORY.filter((m) => m.who.some((h) => teamHandles.has(h))) : MEMORY
+  const base = (team && teamHandles ? MEMORY.filter((m) => m.who.some((h) => teamHandles.has(h))) : MEMORY).filter(
+    (m) => m.kind !== 'decision',
+  )
 
   const ask = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,15 +87,16 @@ export function Memory({ role = null }: MemoryProps) {
 
   return (
     <section className={`module${team ? ' mem-team' : ''}`} id={team ? `memory-${role}` : 'memory'}>
-      <ModuleHead title={team ? `${team.label} team memory` : 'Collective memory'} />
-
       {base.length === 0 ? (
-        <div className="mem-empty">
-          <p>
-            No decisions, threads or docs recorded by the <b>{team ? team.label : 'Circle'}</b> team yet.
-          </p>
-          <span className="mono">Memory fills as this team votes, ships and documents on-chain.</span>
-        </div>
+        <>
+          <ModuleHead title="Memory" />
+          <div className="mem-empty">
+            <p>
+              No decisions, threads or docs recorded by the <b>{team ? team.label : 'Circle'}</b> team yet.
+            </p>
+            <span className="mono">Memory fills as this team votes, ships and documents on-chain.</span>
+          </div>
+        </>
       ) : (
         <>
           <form className="mem-ask" onSubmit={ask}>
@@ -117,6 +120,8 @@ export function Memory({ role = null }: MemoryProps) {
               Recall
             </button>
           </form>
+
+          <ModuleHead title="Memory" />
 
           {answer ? (
             <div className="mem-answer">

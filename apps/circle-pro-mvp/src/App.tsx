@@ -5,14 +5,12 @@
  */
 import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
-import { Header, type TabId } from './shell/Header'
+import { type TabId } from './shell/Header'
 import { JoinModal } from './shell/JoinModal'
 import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
 import { Essential } from './tabs/Essential'
-import { Overview } from './tabs/Overview'
-import { Members } from './tabs/Members'
 import { TeamView, type TeamMeta } from './tabs/TeamView'
 import { Onboarding } from './onboarding/Onboarding'
 import { setImported } from './lib/imported'
@@ -32,7 +30,6 @@ import './styles/overlays.css'
 
 export default function App() {
   const [tab, setTab] = useState<TabId>('essential')
-  const [domain, setDomain] = useState('all')
   const [team, setTeam] = useState<TeamMeta | null>(null)
   const [onboarding, setOnboarding] = useState(true)
 
@@ -54,50 +51,37 @@ export default function App() {
     setTab('team')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  const goTopic = (id: string) => {
-    setDomain(id)
-    setTab('members')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 
   return (
     <div className="app">
       <Nav
-        current={tab === 'bookmarks' ? 'bookmarks' : tab === 'essential' ? 'essential' : 'circle'}
-        onNav={(v) => goTab(v === 'bookmarks' ? 'bookmarks' : v === 'essential' ? 'essential' : 'overview')}
+        current={tab === 'bookmarks' ? 'bookmarks' : tab === 'essential' ? 'essential' : null}
+        onNav={(v) => goTab(v)}
         onOpenTeam={openTeam}
       />
       <main className="main">
-        {tab === 'essential' ? (
+        {onboarding ? (
+          <Onboarding
+            onComplete={(items) => {
+              setImported(items)
+              setOnboarding(false)
+              goTab('bookmarks')
+              toast(`Imported ${items.length} bookmarks into Intuition Core Team`)
+            }}
+            onSkip={() => setOnboarding(false)}
+          />
+        ) : tab === 'essential' ? (
           <Essential />
         ) : tab === 'bookmarks' ? (
           <Bookmarks />
         ) : tab === 'team' && team ? (
           <TeamView key={team.id} team={team} />
-        ) : (
-          <>
-            <Header tab={tab} onTab={goTab} />
-            {tab === 'overview' ? <Overview onTopic={goTopic} /> : null}
-            {tab === 'members' ? <Members domain={domain} setDomain={setDomain} /> : null}
-          </>
-        )}
+        ) : null}
       </main>
 
       <JoinModal />
       <ProfileGate />
       <Toast />
-
-      {onboarding ? (
-        <Onboarding
-          onComplete={(items) => {
-            setImported(items)
-            setOnboarding(false)
-            goTab('bookmarks')
-            toast(`Imported ${items.length} bookmarks into Intuition Core Team`)
-          }}
-          onSkip={() => setOnboarding(false)}
-        />
-      ) : null}
     </div>
   )
 }

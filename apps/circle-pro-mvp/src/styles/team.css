@@ -136,7 +136,7 @@
 }
 .tv-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(150px, 1fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(150px, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;

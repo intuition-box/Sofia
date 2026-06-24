@@ -12,12 +12,12 @@ import { TopicIcon } from '../components/TopicIcon'
 import { TopicSelect } from '../components/TopicSelect'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
-import { suggestCategory, CATEGORY_MAP } from '../data/topics'
+import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
 import { addBookmark, setContext, setTopic, useMyBookmarks } from '../lib/mybookmarks'
 import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
-import { avGrad, hostOf } from '../data/helpers'
-import { countLinks, allLinksDeep, sharedPeople } from '../data/folderTree'
+import { hostOf } from '../data/helpers'
+import { countLinks, allLinksDeep } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
 
 const SHOWN_CAP = 60
@@ -27,16 +27,36 @@ interface FlatLink {
   url: string
 }
 
+/* Big OG preview for a card — thum.io screenshot, favicon fallback. */
+function BkShot({ url, host }: { url: string; host: string }) {
+  const [ok, setOk] = useState(true)
+  return (
+    <div className="bk-shot">
+      {ok ? (
+        <img
+          className="bk-shot-img"
+          src={`https://image.thum.io/get/width/600/crop/360/noanimate/${url}`}
+          alt=""
+          loading="lazy"
+          onError={() => setOk(false)}
+        />
+      ) : (
+        <img className="bk-shot-fav" src={`https://www.google.com/s2/favicons?domain=${host}&sz=128`} alt="" />
+      )}
+    </div>
+  )
+}
+
 export function Bookmarks() {
   const my = useMyBookmarks()
   const [path, setPath] = useState<string[]>([])
   const [q, setQ] = useState('')
+  const [topicFilter, setTopicFilter] = useState<string>('all')
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [adding, setAdding] = useState(false)
   const [openCrumb, setOpenCrumb] = useState<number | null>(null)
   const crumbsRef = useRef<HTMLElement>(null)
   const [likes, setLikes] = useState<Set<string>>(() => new Set())
-  const [ctxEdit, setCtxEdit] = useState<string | null>(null)
   const toggleLike = (url: string) =>
     setLikes((s) => {
       const n = new Set(s)
@@ -68,14 +88,18 @@ export function Bookmarks() {
   // information. Folders are navigated from the breadcrumb, not as cards.
   const links = useMemo<FlatLink[]>(() => {
     const base = allLinksDeep(needle ? rootChildren : currentNodes)
-    const filtered = needle
+    const byText = needle
       ? base.filter((l) => l.title.toLowerCase().includes(needle) || l.url.toLowerCase().includes(needle))
       : base
-    return filtered.slice(0, SHOWN_CAP)
-  }, [currentNodes, rootChildren, needle])
+    const byTopic =
+      topicFilter === 'all'
+        ? byText
+        : byText.filter((l) => (my.topics[l.url] ?? suggestCategory('', l.url)) === topicFilter)
+    return byTopic.slice(0, SHOWN_CAP)
+  }, [currentNodes, rootChildren, needle, topicFilter, my.topics])
 
   const currentFolderName = path.length ? path[path.length - 1] : ''
-  const totalHere = needle ? links.length : countLinks(currentNodes)
+  const totalHere = needle || topicFilter !== 'all' ? links.length : countLinks(currentNodes)
 
   // Child folders selectable from breadcrumb crumb `c` (0 = root "My bookmarks").
   const foldersAt = (c: number): BmFolder[] => {
@@ -155,29 +179,13 @@ export function Bookmarks() {
                     </button>
                     {openCrumb === c && folders.length ? (
                       <div className="fab-dd">
-                        {folders.map((f) => {
-                          const people = sharedPeople(f.children)
-                          return (
-                            <button className="fab-dd-item" key={f.name} onClick={() => navTo(c, f.name)}>
-                              <Icon name="folder" />
-                              <span className="fab-dd-name">{f.name}</span>
-                              {people.length ? (
-                                <span className="fab-dd-avs">
-                                  {people.slice(0, 3).map((p, j) => (
-                                    <span
-                                      key={p.name}
-                                      className="fab-dd-av"
-                                      title={p.name}
-                                      style={{ background: avGrad(p.grad), zIndex: 9 - j }}
-                                    />
-                                  ))}
-                                </span>
-                              ) : (
-                                <span className="fab-dd-n tnum">{countLinks(f.children)}</span>
-                              )}
-                            </button>
-                          )
-                        })}
+                        {folders.map((f) => (
+                          <button className="fab-dd-item" key={f.name} onClick={() => navTo(c, f.name)}>
+                            <Icon name="folder" />
+                            <span className="fab-dd-name">{f.name}</span>
+                            <span className="fab-dd-n tnum">{countLinks(f.children)}</span>
+                          </button>
+                        ))}
                       </div>
                     ) : null}
                   </span>
@@ -198,6 +206,7 @@ export function Bookmarks() {
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
+          <TopicFilter value={topicFilter} options={CATEGORIES} onChange={setTopicFilter} />
           <button className="kb-add-btn" onClick={() => setAdding((v) => !v)}>
             <Icon name="plus" /> Add bookmark
           </button>
@@ -208,7 +217,7 @@ export function Bookmarks() {
         {/* ── Feed: resource title → who shares it + context → actions ── */}
         <div className="kb-resources">
           {links.length ? (
-            <div className="kb-feed">
+            <div className="kb-feed kb-grid4">
               {links.map((l) => {
                 const host = hostOf(l.url)
                 const liked = likedBy(l.url)
@@ -216,13 +225,12 @@ export function Bookmarks() {
                   .map((id) => TEAM_MAP[id])
                   .filter(Boolean)
                 const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
-                const ctx = CATEGORY_MAP[ctxId]
                 const isLiked = likes.has(l.url)
                 const likeCount = liked.total + (isLiked ? 1 : 0)
-                const picking = ctxEdit === l.url
+                const abs = l.url.startsWith('http') ? l.url : `https://${l.url}`
                 return (
                   <div
-                    className="bk-card"
+                    className="bk-card bk-card--xl"
                     key={l.url}
                     role="button"
                     tabIndex={0}
@@ -231,38 +239,11 @@ export function Bookmarks() {
                       if (e.key === 'Enter') openLink(l)
                     }}
                   >
-                    <div className="bk-card-top">
-                      <span className="bk-fav">
-                        <img
-                          src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => {
-                            ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-                          }}
-                        />
-                      </span>
-                      <div className="bk-id">
-                        <div className="bk-title">{l.title}</div>
-                        <div className="bk-meta">
-                          {ctx ? (
-                            <span className="bk-ctx-chip" style={{ ['--c' as string]: ctx.color }}>
-                              <TopicIcon id={ctx.id} size={12} />
-                              {ctx.label}
-                            </span>
-                          ) : null}
-                          <span className="bk-domain mono">{host}</span>
-                          <button
-                            type="button"
-                            className="bk-addctx"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setCtxEdit(picking ? null : l.url)
-                            }}
-                          >
-                            <Icon name="plus" /> Context
-                          </button>
-                        </div>
+                    <BkShot url={abs} host={host} />
+                    <div className="bk-body">
+                      <div className="bk-title">{l.title}</div>
+                      <div className="bk-meta" onClick={(e) => e.stopPropagation()}>
+                        <TopicSelect value={ctxId} onChange={(id) => setTopic(l.url, id)} />
                       </div>
                       <div className="bk-likes">
                         <button
@@ -281,7 +262,7 @@ export function Bookmarks() {
                         {services.length ? (
                           <span className="bk-shared-svcs">
                             {services.map((s) => (
-                              <span key={s.id} className="team-tag" style={{ ['--c' as string]: s.color }}>
+                              <span key={s.id} className="svc-tag">
                                 {s.label}
                               </span>
                             ))}
@@ -289,19 +270,6 @@ export function Bookmarks() {
                         ) : null}
                       </div>
                     </div>
-
-                    {picking ? (
-                      <div className="bk-picker" onClick={(e) => e.stopPropagation()}>
-                        <span className="bk-picker-lab mono">In context of</span>
-                        <TopicSelect
-                          value={ctxId}
-                          onChange={(id) => {
-                            setTopic(l.url, id)
-                            setCtxEdit(null)
-                          }}
-                        />
-                      </div>
-                    ) : null}
                   </div>
                 )
               })}
@@ -315,6 +283,82 @@ export function Bookmarks() {
           <p className="bk2-count mono">Showing {links.length} of {totalHere}</p>
         ) : null}
       </div>
+    </div>
+  )
+}
+
+/* ── Topic filter — single dropdown over the feed (mirrors the Explorer
+   circle feed filters, scoped to topic/context). ──────────────────────── */
+function TopicFilter({
+  value,
+  options,
+  onChange,
+}: {
+  value: string
+  options: { id: string; label: string; color: string }[]
+  onChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
+  const active = value !== 'all' ? CATEGORY_MAP[value] : null
+  return (
+    <div className="bk-filter" ref={ref}>
+      <button
+        type="button"
+        className="bk-filter-trigger"
+        style={active ? { ['--c' as string]: active.color } : undefined}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="bk-filter-lab mono">Topic</span>
+        <span className="bk-filter-val">
+          {active ? (
+            <>
+              <TopicIcon id={active.id} size={15} />
+              {active.label}
+            </>
+          ) : (
+            'All'
+          )}
+        </span>
+        <Icon name="chevronDown" />
+      </button>
+      {open ? (
+        <div className="bk-filter-pop">
+          <button
+            type="button"
+            className={`bk-filter-opt${value === 'all' ? ' on' : ''}`}
+            onClick={() => {
+              onChange('all')
+              setOpen(false)
+            }}
+          >
+            All topics
+          </button>
+          {options.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              className={`bk-filter-opt${value === o.id ? ' on' : ''}`}
+              style={{ ['--c' as string]: o.color }}
+              onClick={() => {
+                onChange(o.id)
+                setOpen(false)
+              }}
+            >
+              <TopicIcon id={o.id} size={16} />
+              {o.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
