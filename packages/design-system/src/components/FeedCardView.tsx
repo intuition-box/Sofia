@@ -460,6 +460,7 @@ export function FeedCardView({
                   {hideVoteCounts ? null : down}
                 </span>
               </div>
+              {addContextSlot}
             </div>
           </div>
         </div>
