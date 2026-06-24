@@ -1,0 +1,330 @@
+/* ============================================================
+   Shared surfaces — modules, treemap, avatars, bookmark cards,
+   on-chain activity list.
+   ============================================================ */
+
+/* ── Modules / panels ──────────────────────────────────────── */
+.module {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.module-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.module-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+.module-desc {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 13px;
+}
+.module-cap {
+  margin: 4px 0 0;
+  color: var(--ds-muted);
+  font-size: 12px;
+  max-width: 80ch;
+}
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: 16px;
+}
+.link-btn {
+  border: none;
+  background: transparent;
+  color: var(--ds-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+/* ── Treemap ───────────────────────────────────────────────── */
+.tmap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--sunken);
+}
+.tmap-cell {
+  position: absolute;
+  padding: 3px;
+  cursor: pointer;
+  transition: opacity var(--t-normal) var(--ease);
+}
+.tmap-cell-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--c) 42%, transparent), color-mix(in srgb, var(--c) 10%, transparent)),
+    var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--c) 38%, transparent);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.tmap-cell:hover .tmap-cell-inner {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--c) 60%, transparent);
+}
+.tmap-cell.dimmed {
+  opacity: 0.4;
+}
+.tmap-cell.active-cell .tmap-cell-inner {
+  border-color: var(--c);
+  box-shadow: 0 0 0 1px var(--c) inset;
+}
+.tmap-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.66);
+}
+.tmap-label {
+  font-family: var(--display);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.tmap-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+  margin-top: 8px;
+}
+.tmap-spark i {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+}
+.tmap-picked {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+}
+
+/* ── Avatars ───────────────────────────────────────────────── */
+.av {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  flex: none;
+}
+.av-sq {
+  border-radius: 9px;
+}
+
+/* ── Bookmark cards ────────────────────────────────────────── */
+.sig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.feed-grid {
+  margin-top: 14px;
+}
+.sigc {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.sigc:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--c) 45%, var(--border));
+}
+.sigc-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px 9px;
+}
+.sigc-av {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.sigc-handle {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.sigc-when {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
+.sigc-banner {
+  height: 96px;
+  margin: 0 12px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.sigc-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sigc-title {
+  margin: 11px 12px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.sigc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px 12px;
+  flex-wrap: wrap;
+}
+.sigc-vote {
+  display: flex;
+  gap: 6px;
+}
+.vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.vote .ic svg {
+  width: 14px;
+  height: 14px;
+}
+.vote.up.on {
+  color: var(--trusted-p);
+  border-color: color-mix(in srgb, var(--trusted) 50%, transparent);
+  background: color-mix(in srgb, var(--trusted) 14%, transparent);
+}
+.vote.down.on {
+  color: var(--distrusted);
+  border-color: color-mix(in srgb, var(--distrusted) 50%, transparent);
+  background: color-mix(in srgb, var(--distrusted) 14%, transparent);
+}
+.sigc-verbs {
+  display: flex;
+  gap: 6px;
+}
+.sigc-verb,
+.sigc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-muted);
+}
+.sigc-verb i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vc, var(--ds-muted));
+}
+.sigc-tag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+/* ── On-chain activity list (overview teaser) ──────────────── */
+.onchain-panel {
+  padding: 6px;
+}
+.onchain-list {
+  display: flex;
+  flex-direction: column;
+}
+.ocrow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 10px;
+  border-radius: 10px;
+}
+.ocrow:hover {
+  background: var(--surface-2);
+}
+.ocrow + .ocrow {
+  border-top: 1px solid var(--border);
+}
+.oc-main {
+  flex: 1;
+  min-width: 0;
+}
+.oc-whorow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.oc-who {
+  font-size: 13px;
+  font-weight: 600;
+}
+.oc-kind {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c);
+}
+.oc-detail {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oc-theme {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  flex: none;
+}
+.oc-when {
+  font-size: 11px;
+  color: var(--ds-muted);
+  flex: none;
+}

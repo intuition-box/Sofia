@@ -1,0 +1,55 @@
+/* ============================================================
+   Onboarding sort step — folder browser reusing the My-bookmarks
+   look (kb-chip / kb-res), kept flat: no extra shelves or cards.
+   ============================================================ */
+.obc-title {
+  white-space: nowrap;
+}
+.obc-crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-top: 18px;
+  font-size: 13px;
+}
+.obc-crumb {
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 6px;
+}
+.obc-crumb:hover {
+  color: var(--ds-ink);
+}
+.obc-sep {
+  color: var(--ds-border);
+}
+.obc-folders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 2px;
+}
+.obc-list {
+  margin-top: 12px;
+}
+.obc-list .kb-res {
+  grid-template-columns: 34px minmax(0, 1fr) 168px;
+  cursor: default;
+}
+.obc-list .kb-res:hover {
+  background: transparent;
+}
+.obc-topic {
+  min-width: 0;
+}
+.obc-empty {
+  padding: 22px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 13px;
+}

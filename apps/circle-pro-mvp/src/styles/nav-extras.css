@@ -1,0 +1,192 @@
+/* ============================================================
+   Nav extras — the bits the DS nav-sidebar.css doesn't ship:
+   brand logo box, the "Circles" list, and the bottom cluster
+   (cart + profile chip). Mirrors apps/explorer's nav-sidebar
+   toolbar/trust-circle styling, using --ds-* tokens.
+   ============================================================ */
+
+/* Host layout: pin the rail full-height (DS styles content only). */
+.nav-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* Brand logo box (DS sets the 36x36 frame; we fill it). */
+.nbl-logo {
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(140deg, var(--ds-accent), #d98cb3);
+  color: #1a0f0a;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ── Circles list ──────────────────────────────────────────── */
+.ns-circles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ns-circle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ns-circle:hover {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border);
+}
+.ns-circle-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ns-circle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.ns-circle-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ns-circle-count {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.ns-circle-avatars {
+  display: flex;
+  padding-left: 16px;
+}
+.ns-mav {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-left: -7px;
+  border: 2px solid var(--ds-card);
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #02000e;
+}
+.ns-mav-more,
+.ns-mav-add {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+}
+.ns-tc-empty {
+  margin: 0;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+
+/* ── Bottom cluster ────────────────────────────────────────── */
+.ns-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+}
+.ns-cart-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ns-cart-btn:hover {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+}
+.ns-cart-btn--filled {
+  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border));
+}
+.ns-cart-label {
+  flex: 1;
+  text-align: left;
+}
+.ns-cart-count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+.ns-auth-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+.ns-auth-chip:hover {
+  background: var(--ds-bg-subtle);
+}
+.ns-auth-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex: none;
+}
+.ns-auth-avatar--fallback {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #02000e;
+}
+.ns-auth-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ns-auth-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ns-auth-sub {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  color: var(--ds-muted);
+}

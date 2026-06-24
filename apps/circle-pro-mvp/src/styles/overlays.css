@@ -1,0 +1,316 @@
+/* ============================================================
+   Overlays — join band/modal, gate veils, toast, onboarding,
+   responsive breakpoints.
+   ============================================================ */
+
+/* ── Join band + modal ─────────────────────────────────────── */
+.join-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 30%, var(--border));
+  background: linear-gradient(120deg, var(--ds-accent-soft), transparent 70%), var(--surface);
+}
+.join-band-t {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+}
+.join-band-s {
+  margin: 4px 0 0;
+  color: var(--ds-muted);
+  font-size: 13px;
+}
+.dec-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(6, 5, 12, 0.66);
+  backdrop-filter: blur(6px);
+}
+.dec-modal {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 26px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.8);
+}
+.drill-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ds-muted);
+}
+.drill-close:hover {
+  background: var(--surface-3);
+  color: var(--ds-ink);
+}
+.join-eyebrow {
+  font-size: 11px;
+  color: var(--ds-accent);
+}
+.join-title {
+  margin: 10px 0 6px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 21px;
+}
+.join-sub {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 13px;
+}
+.join-benefits {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.join-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.jb-ic {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--trusted) 18%, transparent);
+  color: var(--trusted-p);
+  flex: none;
+}
+.jb-ic .ic svg {
+  width: 13px;
+  height: 13px;
+}
+.join-actions {
+  display: flex;
+  gap: 10px;
+}
+.join-actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+.join-foot {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+
+/* ── Gate (locked surfaces) ────────────────────────────────── */
+.lk {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.lk-blur {
+  filter: blur(6px) saturate(0.7);
+  pointer-events: none;
+  user-select: none;
+}
+.lk-veil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 10, 18, 0.55);
+}
+.lk-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 26px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+}
+.lk-ico {
+  color: var(--ds-accent);
+}
+.lk-ico svg {
+  width: 22px;
+  height: 22px;
+}
+.lk-label {
+  font-size: 13px;
+  color: var(--ds-muted);
+}
+.gate-lock svg {
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+}
+.is-gated {
+  opacity: 0.92;
+}
+
+/* ── Toast ─────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 24px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--ds-ink);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 80;
+  transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease);
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.toast .ic {
+  color: var(--trusted-p);
+}
+
+/* ── Onboarding welcome veil ───────────────────────────────── */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(900px 600px at 50% 0%, rgba(255, 181, 155, 0.12), transparent 60%),
+    rgba(6, 5, 12, 0.82);
+  backdrop-filter: blur(8px);
+}
+.vcard {
+  width: min(460px, 100%);
+  padding: 32px 30px;
+  text-align: center;
+  border-radius: 22px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 50px 110px -40px rgba(0, 0, 0, 0.85);
+}
+.vlogo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 15px;
+  background: linear-gradient(140deg, var(--ds-accent), #d98cb3);
+  color: #1a0f0a;
+  font-size: 24px;
+}
+.v-eyebrow {
+  font-size: 11px;
+  color: var(--ds-accent);
+  letter-spacing: 0.04em;
+}
+.vtitle {
+  margin: 8px 0 10px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+}
+.vtx {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.vstats {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin: 22px 0;
+}
+.vstat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vstat b {
+  font-size: 19px;
+  font-weight: 700;
+}
+.vstat span {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ds-muted);
+}
+.vbtns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vbtn-primary,
+.vbtn-ghost {
+  justify-content: center;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+.v-foot {
+  margin: 16px 0 0;
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .kpis-v2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 880px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  /* Real DS rail un-pins and flows above the content on narrow screens. */
+  .nav-sidebar {
+    position: static;
+    height: auto;
+  }
+}
+@media (max-width: 560px) {
+  .kpis-v2 {
+    grid-template-columns: 1fr;
+  }
+  .ccard {
+    grid-template-columns: 1fr;
+  }
+  .cc-stat {
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}

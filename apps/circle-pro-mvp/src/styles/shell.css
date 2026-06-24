@@ -1,0 +1,188 @@
+/* ============================================================
+   Shell chrome — app frame, main column, header, tabs, footer.
+   (The left rail is the real DS NavSidebar — see nav-sidebar.css
+   + nav-extras.css.)
+   ============================================================ */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--ds-shell-nav, 240px) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* ── Main column ───────────────────────────────────────────── */
+.main {
+  min-width: 0;
+  padding: 26px clamp(18px, 3vw, 44px) 64px;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.cheader {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: 4px;
+}
+.cheader-id {
+  display: flex;
+  gap: 16px;
+}
+.cheader-logo {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  flex: none;
+  border-radius: 16px;
+  background: var(--sunken);
+  border: 1px solid var(--border);
+  color: var(--ds-accent);
+  font-size: 24px;
+}
+.cheader-name {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.02em;
+}
+.cheader-desc {
+  margin: 6px 0 0;
+  color: var(--ds-muted);
+  font-size: 13.5px;
+}
+.cheader-desc-wide {
+  max-width: 70ch;
+}
+.cheader-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.kpi-unit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  margin-left: 4px;
+}
+.kpi-delta {
+  font-size: 11.5px;
+  color: var(--ds-muted);
+}
+.kpi-delta.up {
+  color: var(--trusted-p);
+}
+.core-avs {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+}
+.core-av {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-left: -8px;
+  border: 2px solid var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.core-av:first-child {
+  margin-left: 0;
+}
+.core-av-more {
+  background: var(--surface-3);
+  color: var(--ds-ink);
+}
+.core-av-more:hover {
+  background: var(--ds-accent-soft);
+}
+
+.ctabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.ctabs .ctab {
+  position: relative;
+  padding: 11px 14px;
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.ctabs .ctab:hover {
+  color: var(--ds-ink);
+}
+.ctabs .ctab.active {
+  color: var(--ds-ink);
+}
+.ctabs .ctab.active::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ds-accent);
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--ds-muted);
+}
+.foot .sep {
+  color: var(--border-strong);
+}
+.foot .right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.foot .right a:hover {
+  color: var(--ds-ink);
+}
