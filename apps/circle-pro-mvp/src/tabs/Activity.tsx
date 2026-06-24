@@ -130,9 +130,9 @@ export function Activity({ role = null }: ActivityProps) {
           ) : null}
 
           <div className="skcard-grid skcard-grid--compact">
-            <button className="skcard skcard--create" onClick={() => setCreating((v) => !v)}>
+            <button className="skcard--create" onClick={() => setCreating((v) => !v)}>
               <span className="skcard-create-plus">+</span>
-              <span className="skcard-create-label">Create new</span>
+              <span className="skcard-create-label">Add skills</span>
             </button>
             {shownSkills.slice(0, 3).map((s) => renderSkill(s, setOpenId))}
           </div>

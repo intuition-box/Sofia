@@ -198,6 +198,28 @@
   width: 18px;
   font-size: 14px;
 }
+.ns-foot {
+  margin-top: auto;
+  padding-top: 8px;
+}
+.ns-theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 9px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ns-theme-toggle:hover {
+  color: var(--ds-ink);
+  background: var(--surface-2);
+}
 .ns-auth-avatar {
   width: 32px;
   height: 32px;

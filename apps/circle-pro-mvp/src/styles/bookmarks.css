@@ -225,6 +225,10 @@
   width: auto;
   padding: 6px 11px;
 }
+.bk-meta .tsel-menu {
+  left: 0;
+  right: auto;
+}
 .tsel-lead {
   font-size: 10px;
   letter-spacing: 0.07em;

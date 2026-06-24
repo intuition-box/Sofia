@@ -15,7 +15,7 @@ import { TopicIcon } from '../components/TopicIcon'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
-import { setContext, useMyBookmarks } from '../lib/mybookmarks'
+import { likedBy } from '../data/teammates'
 import { avGrad, initials } from '../data/helpers'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { useComments } from '../hooks/useComments'
@@ -196,10 +196,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
     toggleLike,
   } = useComments(key)
 
-  const my = useMyBookmarks()
-  const mine = my.context[item.url]
-  const [editWhy, setEditWhy] = useState(false)
-  const [whyDraft, setWhyDraft] = useState('')
+  const sharer = likedBy(item.url).people[0]
   const [shotOk, setShotOk] = useState(true)
 
   return (
@@ -267,47 +264,16 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
 
         <div className="post-why">
           <div className="post-why-head">
-            <span className="post-why-lab mono">{mine ? 'Your context' : "Why it's useful"}</span>
-            {!editWhy ? (
-              <button
-                className="post-why-edit"
-                onClick={() => {
-                  setWhyDraft(mine ?? '')
-                  setEditWhy(true)
-                }}
-              >
-                <Icon name="edit" /> {mine ? 'Edit' : 'Add your context'}
-              </button>
-            ) : null}
+            <span className="post-why-lab mono">Why it's useful</span>
           </div>
-          {editWhy ? (
-            <>
-              <textarea
-                className="post-why-input"
-                value={whyDraft}
-                onChange={(e) => setWhyDraft(e.target.value)}
-                rows={3}
-                autoFocus
-                placeholder="Why is this useful? Add the context only you have…"
-              />
-              <div className="post-why-actions">
-                <button className="ex-back" onClick={() => setEditWhy(false)}>
-                  Cancel
-                </button>
-                <button
-                  className="post-composer-send"
-                  onClick={() => {
-                    setContext(item.url, whyDraft)
-                    setEditWhy(false)
-                  }}
-                >
-                  Save context
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="post-why-text">{mine ?? whyFor(item.url)}</p>
-          )}
+          <div className="post-why-body">
+            {sharer ? (
+              <span className="post-why-av" style={{ background: avGrad(sharer.grad) }} title={sharer.name}>
+                {initials(sharer.name)}
+              </span>
+            ) : null}
+            <p className="post-why-text">{whyFor(item.url)}</p>
+          </div>
         </div>
 
         <div className="post-actions">

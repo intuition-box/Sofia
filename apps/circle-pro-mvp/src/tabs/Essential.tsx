@@ -5,6 +5,7 @@
  * Rebuilt on the Sofia design-system tokens (no Claude-Design hex), no emoji
  * (favicons + hairline icons + initials avatars), to sit under the app's nav.
  */
+import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { CATEGORIES } from '../data/topics'
@@ -49,8 +50,30 @@ interface Member {
 }
 const MEMBERS: Member[] = [
   { name: 'Lina Moreau', role: 'Head of Marketing', grad: 0, topics: ['Growth', 'Brand'], shares: 42, nTopics: 8 },
-  { name: 'Tom Bauer', role: 'Lead Engineer', grad: 5, topics: ['Infra', 'AI'], shares: 37, nTopics: 6 },
-  { name: 'Inès Roy', role: 'Product Designer', grad: 2, topics: ['DS', 'Figma'], shares: 29, nTopics: 5 },
+  { name: 'Tom Bauer', role: 'Lead Protocol Engineer', grad: 5, topics: ['Solidity', 'EVM'], shares: 37, nTopics: 6 },
+  { name: 'Inès Roy', role: 'Product Designer', grad: 2, topics: ['Design system', 'Figma'], shares: 29, nTopics: 5 },
+  { name: 'Marc Petit', role: 'Head of Sales', grad: 3, topics: ['BD', 'Pricing'], shares: 24, nTopics: 4 },
+  { name: 'Sofia Rossi', role: 'Data Analyst', grad: 1, topics: ['Dune', 'Funnels'], shares: 31, nTopics: 7 },
+  { name: 'Yuki Sato', role: 'Frontend Engineer', grad: 4, topics: ['React', 'wagmi'], shares: 26, nTopics: 5 },
+  { name: 'Noah Klein', role: 'Smart Contract Engineer', grad: 5, topics: ['Foundry', 'Audits'], shares: 33, nTopics: 6 },
+  { name: 'Aria Khan', role: 'Community Lead', grad: 2, topics: ['Discord', 'Ambassadors'], shares: 45, nTopics: 9 },
+  { name: 'Diego Alvarez', role: 'Growth Marketer', grad: 0, topics: ['SEO', 'Lifecycle'], shares: 19, nTopics: 4 },
+  { name: 'Mei Lin', role: 'Product Manager', grad: 3, topics: ['Roadmap', 'Discovery'], shares: 28, nTopics: 6 },
+  { name: 'Omar Haddad', role: 'Security Researcher', grad: 5, topics: ['Security', 'Fuzzing'], shares: 22, nTopics: 5 },
+  { name: 'Clara Mendez', role: 'Brand Designer', grad: 1, topics: ['Brand', 'Motion'], shares: 17, nTopics: 3 },
+  { name: 'Felix Wagner', role: 'Backend Engineer', grad: 4, topics: ['Indexers', 'GraphQL'], shares: 30, nTopics: 6 },
+  { name: 'Nadia Aziz', role: 'UX Researcher', grad: 2, topics: ['Research', 'Flows'], shares: 21, nTopics: 4 },
+  { name: 'Leo Santos', role: 'Developer Relations', grad: 0, topics: ['Docs', 'SDK'], shares: 36, nTopics: 7 },
+  { name: 'Priya Nair', role: 'Ops Lead', grad: 3, topics: ['Finance', 'Legal'], shares: 14, nTopics: 3 },
+  { name: 'Hugo Lefebvre', role: 'Protocol Researcher', grad: 5, topics: ['Mechanism', 'Tokenomics'], shares: 27, nTopics: 6 },
+  { name: 'Sara Cohen', role: 'Content Lead', grad: 1, topics: ['Editorial', 'Newsletter'], shares: 23, nTopics: 5 },
+  { name: 'Kenji Mori', role: 'Infra Engineer', grad: 4, topics: ['Infra', 'CI/CD'], shares: 18, nTopics: 4 },
+  { name: 'Emma Dubois', role: 'Partnerships', grad: 2, topics: ['BD', 'Ecosystem'], shares: 20, nTopics: 4 },
+  { name: 'Ravi Patel', role: 'Full-stack Engineer', grad: 5, topics: ['Next.js', 'viem'], shares: 25, nTopics: 5 },
+  { name: 'Hana Park', role: 'Motion Designer', grad: 1, topics: ['Motion', 'Framer'], shares: 16, nTopics: 3 },
+  { name: 'Adam Novak', role: 'Growth Lead', grad: 0, topics: ['Growth', 'Analytics'], shares: 34, nTopics: 7 },
+  { name: 'Lucas Silva', role: 'Solutions Engineer', grad: 4, topics: ['Integrations', 'API'], shares: 22, nTopics: 5 },
+  { name: 'Zoe Martin', role: 'People Ops', grad: 3, topics: ['Hiring', 'Culture'], shares: 13, nTopics: 3 },
 ]
 
 const PILLS = [
@@ -68,6 +91,15 @@ const TOPICS = CATEGORIES.slice(0, 8).map((c, i) => ({
   count: 6 + ((i * 7 + 3) % 22),
 }))
 
+const TEAMS = [
+  { name: 'Engineering', color: '#3b82f6', members: 8, lead: 'Tom Bauer', focus: 'Protocol, frontend & infra' },
+  { name: 'Design', color: '#ec4899', members: 4, lead: 'Inès Roy', focus: 'Product & brand design' },
+  { name: 'Marketing', color: '#8b5cf6', members: 5, lead: 'Lina Moreau', focus: 'Growth, content & community' },
+  { name: 'Sales / BD', color: '#22c55e', members: 3, lead: 'Marc Petit', focus: 'Pipeline & partnerships' },
+  { name: 'Product', color: '#f59e0b', members: 3, lead: 'Mei Lin', focus: 'Roadmap & discovery' },
+  { name: 'Research', color: '#06b6d4', members: 2, lead: 'Hugo Lefebvre', focus: 'Mechanism & tokenomics' },
+]
+
 function Favicon({ host }: { host: string }) {
   return (
     <span className="es-fav">
@@ -83,16 +115,41 @@ function Favicon({ host }: { host: string }) {
   )
 }
 
-function SectionHead({ title, action }: { title: string; action: string }) {
+function SectionHead({ title, action, onAction }: { title: string; action: string; onAction?: () => void }) {
   return (
     <div className="es-sec-head">
       <h2 className="es-sec-title">{title}</h2>
-      <button className="es-sec-all">{action} →</button>
+      <button className="es-sec-all" onClick={onAction}>
+        {action} →
+      </button>
+    </div>
+  )
+}
+
+function MemberCard({ m }: { m: Member }) {
+  return (
+    <div className="es-member">
+      <span className="es-member-av" style={{ background: avGrad(m.grad) }}>
+        {initials(m.name)}
+      </span>
+      <div className="es-member-name">{m.name}</div>
+      <div className="es-member-role">{m.role}</div>
+      <div className="es-member-tags">
+        {m.topics.map((t) => (
+          <span className="es-member-tag mono" key={t}>
+            #{t}
+          </span>
+        ))}
+      </div>
+      <div className="es-member-stats mono">
+        {m.shares} shares · {m.nTopics} topics
+      </div>
     </div>
   )
 }
 
 export function Essential() {
+  const [showAllMembers, setShowAllMembers] = useState(false)
   return (
     <div className="es-content">
       <div className="es-wrap">
@@ -146,9 +203,6 @@ export function Essential() {
                 <div className="es-tool-desc">{t.desc}</div>
                 <div className="es-tool-foot">
                   <span className="es-team-tag" style={{ ['--c' as string]: t.color }}>{t.team}</span>
-                  <span className="es-tool-bm">
-                    <Icon name="bookmark" /> {t.bm}
-                  </span>
                 </div>
               </a>
             ))}
@@ -190,30 +244,56 @@ export function Essential() {
           </div>
         </section>
 
+        {/* Teams */}
+        <section className="es-section">
+          <SectionHead title="Teams" action="See all" />
+          <div className="es-grid-3">
+            {TEAMS.map((t) => (
+              <a className="es-team" key={t.name} style={{ ['--c' as string]: t.color }}>
+                <div className="es-team-top">
+                  <span className="es-team-dot" />
+                  <span className="es-team-name">{t.name}</span>
+                  <span className="es-team-n mono">{t.members}</span>
+                </div>
+                <div className="es-team-focus">{t.focus}</div>
+                <div className="es-team-lead mono">Lead · {t.lead}</div>
+              </a>
+            ))}
+          </div>
+        </section>
+
         {/* Core team members */}
         <section className="es-section es-section--last">
-          <SectionHead title="Core team members" action="See the team" />
+          <SectionHead title="Core team members" action="See all" onAction={() => setShowAllMembers(true)} />
           <div className="es-grid-3">
-            {MEMBERS.map((m) => (
-              <div className="es-member" key={m.name}>
-                <span className="es-member-av" style={{ background: avGrad(m.grad) }}>
-                  {initials(m.name)}
-                </span>
-                <div className="es-member-name">{m.name}</div>
-                <div className="es-member-role">{m.role}</div>
-                <div className="es-member-tags">
-                  {m.topics.map((t) => (
-                    <span className="es-member-tag mono" key={t}>#{t}</span>
-                  ))}
-                </div>
-                <div className="es-member-stats mono">
-                  {m.shares} shares · {m.nTopics} topics
-                </div>
-              </div>
+            {MEMBERS.slice(0, 6).map((m) => (
+              <MemberCard m={m} key={m.name} />
             ))}
           </div>
         </section>
       </div>
+
+      {showAllMembers ? (
+        <div className="skmodal" role="dialog" aria-modal="true" onClick={() => setShowAllMembers(false)}>
+          <div className="skmodal-card skmodal-card--skv" onClick={(e) => e.stopPropagation()}>
+            <div className="va">
+              <header className="va-head">
+                <h2 className="va-title">Core team members</h2>
+                <button className="skv-icon" aria-label="Close" onClick={() => setShowAllMembers(false)}>
+                  <Icon name="close" />
+                </button>
+              </header>
+              <div className="va-body sk-scroll">
+                <div className="es-grid-3">
+                  {MEMBERS.map((m) => (
+                    <MemberCard m={m} key={m.name} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

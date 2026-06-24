@@ -17,8 +17,11 @@
   </head>
   <body>
     <script>
-      // Dark is the only theme (matches the Sofia explorer / design source).
-      document.documentElement.classList.add('dark')
+      // Dark by default; honour a saved 'light' preference (the in-app toggle)
+      // before first paint to avoid a flash of the wrong theme.
+      if (localStorage.getItem('sofia-theme') !== 'light') {
+        document.documentElement.classList.add('dark')
+      }
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

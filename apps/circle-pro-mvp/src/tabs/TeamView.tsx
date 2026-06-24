@@ -12,6 +12,7 @@ import { MY_BOOKMARKS, type BmNode } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { Activity, Tools } from './Activity'
 import { Memory } from './Memory'
+import { TeamMembers } from './TeamMembers'
 import { ModuleHead } from '../components/primitives'
 import { Icon } from '../components/Icon'
 import { VoteButton, voteSeed } from '../components/VoteButton'
@@ -50,10 +51,20 @@ function Favicon({ host }: { host: string }) {
   )
 }
 
+const WHEN = ['Apr 5', 'Apr 1', 'Mar 25', 'Mar 24', 'Mar 23', 'Mar 15', 'Mar 11', 'Feb 19', 'Jan 30', 'May 2']
+
+/** Deterministic Discourse-style metrics (replies / views / activity) per link. */
+function rowMeta(url: string): { replies: number; views: number; when: string } {
+  const h = voteSeed(url)
+  const h2 = voteSeed(`${url}#v`)
+  return { replies: h % 7, views: 6 + (h2 % 55), when: WHEN[h % WHEN.length] }
+}
+
 export function TeamView({ team }: { team: TeamMeta }) {
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [shotOk, setShotOk] = useState(true)
   const [q, setQ] = useState('')
+  const [view, setView] = useState<'overview' | 'members'>('overview')
   const teamRole = TEAM_ROLE[team.id] ?? 'dev'
 
   const rows = useMemo(() => {
@@ -93,6 +104,27 @@ export function TeamView({ team }: { team: TeamMeta }) {
           </h1>
         </header>
 
+        <div className="tv-tabs">
+          <button
+            type="button"
+            className={`tv-tab${view === 'overview' ? ' on' : ''}`}
+            onClick={() => setView('overview')}
+          >
+            Overview
+          </button>
+          <button
+            type="button"
+            className={`tv-tab${view === 'members' ? ' on' : ''}`}
+            onClick={() => setView('members')}
+          >
+            Members
+          </button>
+        </div>
+
+        {view === 'members' ? (
+          <TeamMembers />
+        ) : (
+          <>
         <form className="tv-search" onSubmit={(e) => e.preventDefault()}>
           <Icon name="search" />
           <input
@@ -160,38 +192,47 @@ export function TeamView({ team }: { team: TeamMeta }) {
 
         {rest.length ? (
           <div className="tv-table">
-            {rest.map(({ l, people }) => (
-              <div
-                className="tv-row"
-                key={l.url}
-                role="button"
-                tabIndex={0}
-                onClick={() => open(l)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') open(l)
-                }}
-              >
-                <span className="tv-res">
-                  <Favicon host={hostOf(l.url)} />
-                  <span className="tv-res-t">{l.title}</span>
-                </span>
-                <span className="tv-people">
+            <div className="tv-row tv-row--head">
+              <span className="tv-th-topic">Topic</span>
+              <span className="tv-th-av" />
+              <span className="tv-th-num">Replies</span>
+              <span className="tv-th-num">Views</span>
+              <span className="tv-th-num">Activity</span>
+            </div>
+            {rest.map(({ l, people }) => {
+              const m = rowMeta(l.url)
+              return (
+                <div
+                  className="tv-row"
+                  key={l.url}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => open(l)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') open(l)
+                  }}
+                >
+                  <span className="tv-res">
+                    <Favicon host={hostOf(l.url)} />
+                    <span className="tv-res-t">{l.title}</span>
+                  </span>
                   <span className="tv-avs">
-                    {people.slice(0, 5).map((p, j) => (
+                    {people.slice(0, 4).map((p, j) => (
                       <span key={p.name} className="tv-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }}>
                         {initials(p.name)}
                       </span>
                     ))}
                   </span>
-                  <span className="tv-count">
-                    <b className="tnum">{people.length}</b> comment
-                  </span>
-                </span>
-                <VoteButton base={voteSeed(l.url)} className="tv-row-vote" />
-              </div>
-            ))}
+                  <span className="tv-num tnum">{m.replies}</span>
+                  <span className="tv-num tnum">{m.views}</span>
+                  <span className="tv-num tv-when">{m.when}</span>
+                </div>
+              )
+            })}
           </div>
         ) : null}
+          </>
+        )}
       </div>
     </div>
   )

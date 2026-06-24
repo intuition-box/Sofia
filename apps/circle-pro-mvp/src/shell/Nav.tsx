@@ -6,14 +6,16 @@
  * (items toast, circles + profile are demo data) so the rail looks identical
  * without dragging the explorer's data layer.
  */
+import { useState } from 'react'
 import {
   NavSidebar as DsNavSidebar,
   NavSection,
   NavItem,
 } from '@0xsofia/design-system'
-import { Sparkles, Bookmark } from 'lucide-react'
+import { Sparkles, Bookmark, Sun, Moon } from 'lucide-react'
 import { avGrad } from '../data/helpers'
 import { toast } from '../lib/toast'
+import { currentTheme, toggleTheme, type Theme } from '../lib/theme'
 import '@0xsofia/design-system/styles/nav-sidebar.css'
 import '../styles/nav-extras.css'
 
@@ -43,6 +45,16 @@ const COLL_TOPICS = [
   { label: 'AI tooling', color: '#8b5cf6' },
   { label: 'Design system', color: '#ec4899' },
 ]
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>(() => currentTheme())
+  return (
+    <button type="button" className="ns-theme-toggle" onClick={() => setTheme(toggleTheme())} aria-label="Toggle theme">
+      {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+    </button>
+  )
+}
 
 export function Nav({
   current,
@@ -146,6 +158,10 @@ export function Nav({
           />
         ))}
       </NavSection>
+
+      <div className="ns-foot">
+        <ThemeToggle />
+      </div>
     </DsNavSidebar>
   )
 }

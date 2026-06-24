@@ -225,6 +225,61 @@
   font-size: 11px;
   color: var(--ds-muted);
 }
+
+/* ── Teams ─────────────────────────────────────────────────── */
+.es-team {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.es-team:hover {
+  border-color: color-mix(in srgb, var(--c) 50%, var(--border));
+  transform: translateY(-2px);
+}
+.es-team-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.es-team-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--c);
+  flex: none;
+}
+.es-team-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.es-team-n {
+  font-size: 11px;
+  color: var(--ds-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+.es-team-focus {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+}
+.es-team-lead {
+  margin-top: auto;
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
 .es-sec-head {
   display: flex;
   align-items: center;
