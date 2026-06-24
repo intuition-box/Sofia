@@ -74,13 +74,10 @@ function Favicon({ host }: { host: string }) {
   )
 }
 
-function SectionHead({ title, sub, action }: { title: string; sub: string; action: string }) {
+function SectionHead({ title, action }: { title: string; action: string }) {
   return (
     <div className="es-sec-head">
-      <div className="es-sec-titles">
-        <h2 className="es-sec-title">{title}</h2>
-        <span className="es-sec-sub">{sub}</span>
-      </div>
+      <h2 className="es-sec-title">{title}</h2>
       <button className="es-sec-all">{action} →</button>
     </div>
   )
@@ -128,7 +125,7 @@ export function Essential() {
 
         {/* Essential tools */}
         <section className="es-section">
-          <SectionHead title="Essential tools" sub="Les indispensables de l'équipe" action="Tout voir" />
+          <SectionHead title="Essential tools" action="Tout voir" />
           <div className="es-grid-3">
             {TOOLS.map((t) => (
               <a className="es-tool" key={t.name}>
@@ -153,11 +150,10 @@ export function Essential() {
 
         {/* Most commented */}
         <section className="es-section">
-          <SectionHead title="Most commented" sub="Ce qui fait parler l'équipe" action="Tout voir" />
+          <SectionHead title="Most commented" action="Tout voir" />
           <div className="es-ranked">
             {COMMENTED.map((c) => (
               <a className="es-rank-row" key={c.rank}>
-                <span className={`es-rank-n${c.rank === 1 ? ' top' : ''}`}>{c.rank}</span>
                 <Favicon host={c.source.includes('.') ? c.source : 'notion.so'} />
                 <div className="es-rank-id">
                   <div className="es-rank-title">{c.title}</div>
@@ -174,7 +170,7 @@ export function Essential() {
 
         {/* Core team members */}
         <section className="es-section es-section--last">
-          <SectionHead title="Core team members" sub="Qui sait quoi" action="Voir l'équipe" />
+          <SectionHead title="Core team members" action="Voir l'équipe" />
           <div className="es-grid-3">
             {MEMBERS.map((m) => (
               <div className="es-member" key={m.name}>

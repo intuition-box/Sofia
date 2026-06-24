@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ModuleHead } from '../components/primitives'
-import { MEMORY, MEMORY_ASKS, MEMORY_KIND, ROLE_MAP, TOPIC_MAP, peopleByRole, personByHandle } from '../data/mock'
+import { MEMORY, MEMORY_ASKS, MEMORY_KIND, ROLE_MAP, peopleByRole, personByHandle } from '../data/mock'
 import { avGrad, initials } from '../data/helpers'
 import { requireJoin } from '../lib/gate'
 import type { MemoryKind, MemoryRecord, RoleId } from '../data/types'
@@ -148,18 +148,8 @@ export function Memory({ role = null }: MemoryProps) {
           <div className="mem-grid">
             {filtered.map((m) => {
               const k = MEMORY_KIND[m.kind]
-              const th = TOPIC_MAP[m.topic]
               return (
                 <div className="memcard" key={m.id} style={{ ['--c' as string]: k.color }}>
-                  <div className="memcard-top">
-                    <span className="memcard-kind">{k.label}</span>
-                    {th ? (
-                      <span className="memcard-topic" style={{ color: th.color }}>
-                        #{th.label}
-                      </span>
-                    ) : null}
-                    <span className="memcard-when mono">{m.when}</span>
-                  </div>
                   <h4 className="memcard-title">{m.title}</h4>
                   <p className="memcard-snippet">{m.snippet}</p>
                   <div className="memcard-foot">
