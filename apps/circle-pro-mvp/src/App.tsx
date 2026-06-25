@@ -6,7 +6,6 @@
 import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
 import { CircleSwitcher } from './shell/CircleSwitcher'
-import { type TabId } from './shell/Header'
 import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
@@ -29,6 +28,9 @@ import './styles/members-roles.css'
 import './styles/activity-memory.css'
 import './styles/tags.css'
 import './styles/overlays.css'
+
+/** Which top-level surface is showing. */
+export type TabId = 'essential' | 'bookmarks' | 'overview' | 'roles' | 'members' | 'team'
 
 /** Dev-only tag design-system sheet: open the app with `?tags` in the URL. */
 const SHOW_TAG_GALLERY = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tags')

@@ -11,7 +11,6 @@ import {
   createProfile,
   updateProfile,
   checkHandle,
-  type PublicProfile,
 } from '../services/circleProApi'
 
 export function useProfile() {
@@ -48,7 +47,7 @@ export function useProfile() {
     [token],
   )
 
-  const profile = (q.data ?? null) as PublicProfile | null
+  const profile = q.data ?? null
 
   return {
     profile,
