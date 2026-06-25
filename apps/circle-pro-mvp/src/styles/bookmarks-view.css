@@ -1,0 +1,123 @@
+/* My bookmarks — grid/list view toggle (Phase 4). The grid is the existing
+   kb-grid4 cards; the list reuses the same .bk-card markup but reflows it into
+   a compact horizontal row via CSS only. */
+
+.bk-viewtoggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.bk-view {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+.bk-view svg {
+  width: 16px;
+  height: 16px;
+}
+.bk-view:hover {
+  color: var(--ds-ink);
+}
+.bk-view.on {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
+/* ── List view ─────────────────────────────────────────────── */
+.kb-feed.kb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kb-list .bk-card--xl {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+}
+.kb-list .bk-shot {
+  width: 130px;
+  min-width: 130px;
+  height: 76px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  flex: none;
+}
+.kb-list .bk-shot-img,
+.kb-list .bk-shot-fav {
+  width: 100%;
+  height: 100%;
+}
+.kb-list .bk-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kb-list .bk-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kb-list .bk-meta,
+.kb-list .bk-likes {
+  margin: 0;
+}
+
+/* ── Share to group (private → shared) ─────────────────────── */
+.bk-share-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bk-share-btn:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, transparent);
+  background: var(--ds-accent-soft);
+}
+.bk-share-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.bk-share-btn .ic svg {
+  width: 13px;
+  height: 13px;
+}
+.bk-share-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--trusted-p, #6dd4a0);
+}
+.bk-share-badge .ic svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Share control gets its own row in the card (always visible). */
+.bk-share-row {
+  display: flex;
+  margin-top: 6px;
+}
