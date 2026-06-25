@@ -151,6 +151,34 @@ export const getCircleMembers = (token: string | null, circleId: string = CIRCLE
     `/circles/${encodeURIComponent(circleId)}/members`,
   ).then((r) => r.members)
 
+export interface ActivityItem {
+  kind: 'share' | 'comment'
+  id: string
+  createdAt: string
+  author: PublicProfile
+  bookmarkKey: string
+  title?: string
+  url?: string
+  text?: string
+}
+
+export interface ActivityPage {
+  items: ActivityItem[]
+  hasMore: boolean
+}
+
+/** The circle's activity feed (shares + comments, newest first). Public read. */
+export const getCircleActivity = (
+  token: string | null,
+  opts?: { offset?: number; limit?: number; circleId?: string },
+) =>
+  api<ActivityPage>(
+    token,
+    `/circles/${encodeURIComponent(opts?.circleId ?? CIRCLE_ID)}/activity?offset=${
+      opts?.offset ?? 0
+    }${opts?.limit ? `&limit=${opts.limit}` : ''}`,
+  )
+
 // ── Comments ──
 
 export const listComments = (

@@ -2,6 +2,63 @@
    Activity (lenses, skills, tools) + Memory tab.
    ============================================================ */
 
+/* ── Real circle activity feed (shares + comments) ─────────── */
+.act-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.act-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+}
+.act-row:hover {
+  background: var(--surface-2);
+}
+.act-av {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0b0a12;
+}
+.act-body {
+  min-width: 0;
+  flex: 1;
+}
+.act-line {
+  font-size: 14px;
+  color: var(--ds-ink);
+}
+.act-target {
+  color: var(--ds-accent, #ffc6b0);
+}
+.act-time {
+  color: var(--ds-muted, #8f8ca8);
+  font-size: 12px;
+}
+.act-text {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ds-ink);
+}
+.act-host {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ds-muted, #8f8ca8);
+}
+.act-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
 /* ── Activity: lenses, skills, tools ───────────────────────── */
 .lens-tabs {
   display: flex;
