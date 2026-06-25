@@ -15,6 +15,9 @@ import { topicHue, deptHue, type TagHueName } from '../data/tagStyles'
 const DOMAIN_CYCLE: TagHueName[] = ['teal', 'indigo', 'violet', 'amber', 'pink', 'orange']
 import { CATEGORIES } from '../data/topics'
 import { avGrad, initials } from '../data/helpers'
+import { useSearch } from '../hooks/useSearch'
+import { SearchBar, SearchResults } from '../components/Search'
+import '../styles/search.css'
 
 interface Tool {
   name: string
@@ -164,6 +167,7 @@ function MemberCard({ m }: { m: Member }) {
 
 export function Essential() {
   const [showAllMembers, setShowAllMembers] = useState(false)
+  const search = useSearch()
   return (
     <div className="es-content">
       <div className="es-wrap">
@@ -173,21 +177,13 @@ export function Essential() {
           <p className="es-lede">Your team's knowledge, one search away.</p>
         </header>
 
-        {/* Search engine */}
-        <div className="es-search">
-          <div className="es-search-row">
-            <Icon name="search" />
-            <span className="es-search-ph">Ask a question, or paste a link to share…</span>
-            <span className="es-kbd mono">⌘K</span>
-          </div>
-          <div className="es-search-foot">
-            <button className="es-search-ic" aria-label="Add"><Icon name="plus" /></button>
-            <button className="es-search-ic mono" aria-label="Topic">#</button>
-            <button className="es-search-ic mono" aria-label="Mention">@</button>
-            <button className="es-search-go">Search</button>
-          </div>
-        </div>
+        {/* Search engine — the group's knowledge access (real backend) */}
+        <SearchBar search={search} />
 
+        {search.results ? (
+          <SearchResults search={search} />
+        ) : (
+          <>
         {/* Filter pills — domain + skill tags (each family reads distinctly) */}
         <div className="es-pills">
           {PILLS.map((p) =>
@@ -299,6 +295,8 @@ export function Essential() {
             ))}
           </div>
         </section>
+          </>
+        )}
       </div>
 
       {showAllMembers ? (

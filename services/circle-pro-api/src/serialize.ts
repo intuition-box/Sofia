@@ -1,5 +1,5 @@
 // Shared shaping + validation helpers for the public API surface.
-import type { Profile, Comment } from '@prisma/client'
+import type { Profile, Comment, Bookmark, BookmarkTag } from '@prisma/client'
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/
 
@@ -25,6 +25,36 @@ export function publicProfile(p: Profile): PublicProfile {
     handle: p.handle,
     displayName: p.displayName ?? p.handle,
     avatarSeed: p.avatarSeed,
+  }
+}
+
+export type PublicTag = { id: string; label: string; color: string; level: string }
+
+type BookmarkWithMeta = Bookmark & { author: Profile; tags: BookmarkTag[] }
+
+export type PublicBookmark = {
+  id: string
+  url: string
+  normalizedUrl: string
+  title: string
+  context: string
+  circleId: string
+  author: PublicProfile
+  tags: PublicTag[]
+  createdAt: string
+}
+
+export function publicBookmark(b: BookmarkWithMeta): PublicBookmark {
+  return {
+    id: b.id,
+    url: b.url,
+    normalizedUrl: b.normalizedUrl,
+    title: b.title,
+    context: b.context,
+    circleId: b.circleId,
+    author: publicProfile(b.author),
+    tags: b.tags.map((t) => ({ id: t.tagId, label: t.label, color: t.color, level: t.level })),
+    createdAt: b.createdAt.toISOString(),
   }
 }
 

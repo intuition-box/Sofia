@@ -1,0 +1,204 @@
+/* Search — the group's knowledge access. Real bar + hints + grouped results. */
+
+/* Keep the original .es-search chrome (size/shadow) — only make it functional.
+   The input replaces the static .es-search-ph span and matches it exactly. */
+.es-search {
+  position: relative;
+}
+.es-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ds-ink);
+}
+.es-search-input::placeholder {
+  color: var(--ds-muted);
+}
+
+.sb-hints {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.sb-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 13.5px;
+  cursor: pointer;
+  text-align: left;
+}
+.sb-hint:hover {
+  background: var(--surface-2);
+}
+.sb-hint-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.sb-hint-kind {
+  margin-left: auto;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
+}
+
+/* ── Results ───────────────────────────────────────────────── */
+.sr {
+  margin-top: 4px;
+}
+.sr-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.sr-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sr-count {
+  font-size: 12.5px;
+  color: var(--ds-muted);
+}
+.sr-back {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sr-back:hover {
+  color: var(--ds-ink);
+}
+.sr-section {
+  margin-bottom: 26px;
+}
+.sr-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sr-sec-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.sr-soon {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, transparent);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.sr-empty {
+  font-size: 13px;
+  color: var(--ds-muted);
+  padding: 30px 0;
+  text-align: center;
+}
+.sr-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  margin-bottom: 8px;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.sr-row:hover {
+  border-color: var(--border-strong);
+}
+.sr-fav {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex: none;
+  margin-top: 1px;
+}
+.sr-av {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+.sr-body {
+  min-width: 0;
+  flex: 1;
+}
+.sr-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sr-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ds-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sr-meta {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.sr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
+}
+.sr-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}

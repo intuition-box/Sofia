@@ -36,6 +36,7 @@ model Profile {
   updatedAt   DateTime  @updatedAt
 
   comments    Comment[]
+  bookmarks   Bookmark[]
 }
 
 /// A comment on a bookmark, scoped to a circle. Soft-deleted (deletedAt) so a
@@ -73,4 +74,45 @@ model CommentLike {
 
   @@unique([commentId, wallet])
   @@index([commentId])
+}
+
+/// A bookmark shared into a circle — the core of the group's knowledge. Created
+/// by the extension ("Share in Sofia") or in-app. Qualified with a free-text
+/// context + taxonomy tags. One row per (author, url, circle).
+model Bookmark {
+  id            String        @id @default(cuid())
+  /// Normalised URL — the stable join key (matches the extension/circle-pro-mvp).
+  normalizedUrl String
+  url           String
+  title         String
+  /// The "why it's useful" note.
+  context       String        @default("")
+  circleId      String        @default("acme")
+  authorWallet  String
+  author        Profile       @relation(fields: [authorWallet], references: [wallet])
+  tags          BookmarkTag[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([authorWallet, normalizedUrl, circleId])
+  @@index([circleId, createdAt])
+  @@index([normalizedUrl])
+}
+
+/// A taxonomy tag on a bookmark (topic / category / niche slug). Its own row so
+/// search + tag hints can query/aggregate tags directly.
+model BookmarkTag {
+  id         String   @id @default(cuid())
+  bookmarkId String
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  /// Taxonomy slug id (e.g. "web-development").
+  tagId      String
+  label      String
+  color      String
+  /// "topic" | "category" | "niche".
+  level      String
+
+  @@index([bookmarkId])
+  @@index([tagId])
+  @@index([label])
 }

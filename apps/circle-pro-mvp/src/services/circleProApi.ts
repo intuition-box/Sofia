@@ -148,3 +148,80 @@ export const unlikeComment = (token: string, id: string) =>
   api<{ comment: PublicComment }>(token, `/comments/${id}/like`, {
     method: 'DELETE',
   }).then((r) => r.comment)
+
+// ── Bookmarks ──
+
+export interface PublicTag {
+  id: string
+  label: string
+  color: string
+  level: string
+}
+
+export interface PublicBookmark {
+  id: string
+  url: string
+  normalizedUrl: string
+  title: string
+  context: string
+  circleId: string
+  author: PublicProfile
+  tags: PublicTag[]
+  createdAt: string
+}
+
+export const listBookmarks = (
+  token: string | null,
+  opts?: { mine?: boolean; offset?: number; circleId?: string },
+) =>
+  api<{ bookmarks: PublicBookmark[]; hasMore: boolean }>(
+    token,
+    `/bookmarks?circleId=${opts?.circleId ?? CIRCLE_ID}&offset=${opts?.offset ?? 0}${
+      opts?.mine ? '&mine=1' : ''
+    }`,
+  )
+
+export const postBookmark = (
+  token: string,
+  body: { url: string; normalizedUrl: string; title: string; context?: string; tags?: PublicTag[] },
+) =>
+  api<{ bookmark: PublicBookmark }>(token, '/bookmarks', {
+    method: 'POST',
+    body: JSON.stringify({ ...body, circleId: CIRCLE_ID }),
+  }).then((r) => r.bookmark)
+
+// ── Search — the group's knowledge access ──
+
+export interface SearchComment {
+  id: string
+  text: string
+  bookmarkKey: string
+  author: PublicProfile
+  createdAt: string
+}
+
+export interface SearchResults {
+  query: string
+  bookmarks: PublicBookmark[]
+  comments: SearchComment[]
+  people: PublicProfile[]
+}
+
+export interface SearchHint {
+  type: 'tag' | 'bookmark' | 'person'
+  label: string
+  value: string
+  color?: string
+}
+
+export const searchAll = (token: string | null, q: string) =>
+  api<SearchResults>(
+    token,
+    `/search?circleId=${CIRCLE_ID}&q=${encodeURIComponent(q)}`,
+  )
+
+export const searchHints = (token: string | null, q: string) =>
+  api<{ hints: SearchHint[] }>(
+    token,
+    `/search/hints?q=${encodeURIComponent(q)}`,
+  ).then((r) => r.hints)

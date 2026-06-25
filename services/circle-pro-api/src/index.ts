@@ -9,6 +9,8 @@ import { env } from './env'
 import { dev } from './routes/dev'
 import { profile } from './routes/profile'
 import { comments, commentsRead } from './routes/comments'
+import { bookmarks, bookmarksRead } from './routes/bookmarks'
+import { search } from './routes/search'
 
 const app = new Hono<AppEnv>()
 
@@ -29,11 +31,14 @@ app.route('/', dev)
 
 // Public reads — optional auth (per-route), registered before the global guard.
 app.route('/', commentsRead)
+app.route('/', bookmarksRead)
+app.route('/', search)
 
 // Everything below requires a valid Privy bearer token (or dev impersonation).
 app.use('*', authMiddleware)
 app.route('/', profile)
 app.route('/', comments)
+app.route('/', bookmarks)
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
