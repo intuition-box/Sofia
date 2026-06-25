@@ -127,6 +127,30 @@ export const getMyCircles = (token: string) =>
     (r) => r.circles,
   )
 
+export interface MemberExpertise {
+  tagId: string
+  label: string
+  color: string
+  count: number
+}
+
+export interface CircleMember {
+  wallet: string
+  role: string
+  /** null when the member hasn't created a Pro profile yet. */
+  profile: PublicProfile | null
+  shareCount: number
+  /** Most-used taxonomy tags in this circle (derived, most first). */
+  expertise: MemberExpertise[]
+}
+
+/** Members of a circle + role + profile + derived expertise. Public read. */
+export const getCircleMembers = (token: string | null, circleId: string = CIRCLE_ID) =>
+  api<{ members: CircleMember[] }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/members`,
+  ).then((r) => r.members)
+
 // ── Comments ──
 
 export const listComments = (
