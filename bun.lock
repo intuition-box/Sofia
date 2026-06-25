@@ -49,6 +49,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@0xsofia/taxonomy": "workspace:*",
+        "@0xsofia/url-key": "workspace:*",
         "plasmo": "0.90.5",
         "react": "18.2.0",
         "react-dom": "18.2.0",
@@ -68,6 +69,7 @@
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/taxonomy": "workspace:*",
+        "@0xsofia/url-key": "workspace:*",
         "@privy-io/react-auth": "^2.0.0",
         "@tanstack/react-query": "^5.0.0",
         "lucide-react": "^0.525.0",
@@ -351,10 +353,18 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/url-key": {
+      "name": "@0xsofia/url-key",
+      "version": "0.0.0",
+      "devDependencies": {
+        "typescript": "^5.9.3",
+      },
+    },
     "services/circle-pro-api": {
       "name": "circle-pro-api",
       "version": "0.1.0",
       "dependencies": {
+        "@0xsofia/url-key": "workspace:*",
         "@prisma/client": "^6.2.0",
         "@privy-io/server-auth": "^1.18.0",
         "hono": "^4.6.0",
@@ -430,6 +440,8 @@
     "@0xsofia/quests": ["@0xsofia/quests@workspace:packages/quests"],
 
     "@0xsofia/taxonomy": ["@0xsofia/taxonomy@workspace:packages/taxonomy"],
+
+    "@0xsofia/url-key": ["@0xsofia/url-key@workspace:packages/url-key"],
 
     "@a2a-js/sdk": ["@a2a-js/sdk@0.2.5", "", { "dependencies": { "@types/cors": "^2.8.17", "@types/express": "^4.17.23", "body-parser": "^2.2.0", "cors": "^2.8.5", "express": "^4.21.2", "uuid": "^11.1.0" } }, "sha512-VTDuRS5V0ATbJ/LkaQlisMnTAeYKXAK6scMguVBstf+KIBQ7HIuKhiXLv+G/hvejkV+THoXzoNifInAkU81P1g=="],
 

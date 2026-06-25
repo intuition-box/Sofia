@@ -3,6 +3,7 @@
 // One row per (author, normalisedUrl, circle); re-sharing updates it.
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
+import { normalizeUrl } from '@0xsofia/url-key'
 import type { AppEnv } from '../auth'
 import { getWallet, optionalAuthMiddleware } from '../auth'
 import { prisma } from '../db'
@@ -36,11 +37,14 @@ bookmarks.post('/bookmarks', async (c) => {
   }
 
   const url = body.url?.trim()
-  const normalizedUrl = (body.normalizedUrl || body.url || '').trim()
   const title = body.title?.trim()
-  if (!url || !normalizedUrl || !title) {
+  if (!url || !title) {
     throw new HTTPException(400, { message: 'url + title required' })
   }
+  // Canonicalise server-side — never trust the client's normalizedUrl. This is
+  // THE invariant: the stored key must match what derives the on-chain atom.
+  const normalizedUrl = normalizeUrl(url)
+  if (!normalizedUrl) throw new HTTPException(400, { message: 'invalid url' })
   const circleId = body.circleId ?? DEFAULT_CIRCLE
   const tags = (body.tags ?? [])
     .filter((t): t is Required<IncomingTag> => !!t?.id && !!t?.label)
