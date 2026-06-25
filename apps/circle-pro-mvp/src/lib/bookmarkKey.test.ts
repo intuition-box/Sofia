@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'bun:test'
 import { bookmarkKey } from './bookmarkKey'
 
 // bookmarkKey === normalizeUrl (@0xsofia/url-key). THE invariant: the same

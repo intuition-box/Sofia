@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'bun:test'
 import { parseBookmarksHtml, parseBookmarksTree } from './importBookmarks'
 
 // A trimmed Netscape "bookmarks.html" (Chrome/Brave/Firefox export shape).

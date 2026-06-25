@@ -1,0 +1,3 @@
+# Give `bun test` a DOM (happy-dom) so DOM-dependent tests (parseBookmarks) run.
+[test]
+preload = ["./happydom.ts"]

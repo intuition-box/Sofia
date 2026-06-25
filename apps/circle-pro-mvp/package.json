@@ -9,8 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "dependencies": {
     "@0xsofia/design-system": "workspace:*",
@@ -30,7 +30,6 @@
     "happy-dom": "^15.11.0",
     "react-grab": "^0.1.47",
     "typescript": "^5.9.3",
-    "vite": "6.3.5",
-    "vitest": "^2.1.8"
+    "vite": "6.3.5"
   }
 }
