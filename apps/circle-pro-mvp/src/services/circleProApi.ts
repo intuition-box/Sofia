@@ -70,6 +70,12 @@ async function api<T>(
   return (await res.json()) as T
 }
 
+/** True when an error is the membership gate refusing a write (403). Lets the
+ *  UI tell "not a member of this circle" apart from other failures. */
+export function isNotMemberError(e: unknown): boolean {
+  return e instanceof ApiError && e.status === 403
+}
+
 // ── Identity ──
 
 /** Caller's profile, or null when none exists yet (404 → pseudo gate). */
@@ -105,6 +111,20 @@ export const checkHandle = (token: string, handle: string) =>
   api<{ valid: boolean; available: boolean }>(
     token,
     `/profiles/check?handle=${encodeURIComponent(handle)}`,
+  )
+
+// ── Circles (membership) ──
+
+export interface CircleMembership {
+  /** On-chain group atom term_id — the canonical circleId. */
+  groupTermId: string
+  role: string
+}
+
+/** The circles the caller can write to (source for the circle picker). */
+export const getMyCircles = (token: string) =>
+  api<{ circles: CircleMembership[] }>(token, '/me/circles').then(
+    (r) => r.circles,
   )
 
 // ── Comments ──

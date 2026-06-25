@@ -10,6 +10,7 @@ import { applications } from './routes/applications'
 import { members } from './routes/members'
 import { notifications } from './routes/notifications'
 import { dev } from './routes/dev'
+import { internal } from './routes/internal'
 
 const app = new Hono<AppEnv>()
 
@@ -27,6 +28,9 @@ app.get('/health', (c) => c.text('ok'))
 
 // Dev-only seed route — token-guarded, no Privy (registered before auth).
 app.route('/', dev)
+
+// Server-to-server membership reads — shared-secret guarded, no Privy.
+app.route('/', internal)
 
 // Everything below requires a valid Privy bearer token.
 app.use('*', authMiddleware)

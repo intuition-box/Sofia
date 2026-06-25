@@ -6,6 +6,7 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../auth'
 import { getWallet, optionalAuthMiddleware } from '../auth'
 import { prisma } from '../db'
+import { assertMember } from '../membership'
 import { publicComment } from '../serialize'
 
 // Writes — mounted behind the global auth middleware (token required).
@@ -71,9 +72,12 @@ comments.post('/bookmarks/:key/comments', async (c) => {
   const text = body.text?.trim()
   if (!text) throw new HTTPException(400, { message: 'Empty comment' })
   if (text.length > 4000) throw new HTTPException(400, { message: 'Comment too long' })
+  const circleId = body.circleId ?? DEFAULT_CIRCLE
+  // Writes are members-only — group-api is the source of truth (no-op in dev).
+  await assertMember(wallet, circleId)
 
   const created = await prisma.comment.create({
-    data: { bookmarkKey, circleId: body.circleId ?? DEFAULT_CIRCLE, authorWallet: wallet, text },
+    data: { bookmarkKey, circleId, authorWallet: wallet, text },
     include: withMeta(wallet),
   })
   return c.json({ comment: publicComment(created) }, 201)

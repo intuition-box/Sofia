@@ -9,6 +9,7 @@ import { env } from './env'
 import { dev } from './routes/dev'
 import { auth as authRoutes } from './routes/auth'
 import { profile } from './routes/profile'
+import { me } from './routes/me'
 import { comments, commentsRead } from './routes/comments'
 import { bookmarks, bookmarksRead } from './routes/bookmarks'
 import { search } from './routes/search'
@@ -41,6 +42,7 @@ app.route('/', search)
 // Everything below requires a valid Privy bearer token (or dev impersonation).
 app.use('*', authMiddleware)
 app.route('/', profile)
+app.route('/', me)
 app.route('/', comments)
 app.route('/', bookmarks)
 

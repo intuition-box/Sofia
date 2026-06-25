@@ -35,6 +35,13 @@ export const env = {
   // Secret for signing circle-pro session JWTs (the SIWE → JWT path, used by
   // the extension). Required for SIWE auth; optional at boot so /health works.
   jwtSecret: optional('JWT_SECRET'),
+  // Membership source (group-api) — server-to-server reads to gate writes and
+  // populate the circle picker.
+  groupApiUrl: optional('GROUP_API_URL'),
+  groupApiInternalSecret: optional('GROUP_API_INTERNAL_SECRET'),
+  // Enforce the membership gate on writes. OFF in dev (so local flows + tests
+  // work without group-api running); ON in prod with group-api configured.
+  membershipEnforced: process.env.MEMBERSHIP_ENFORCED === 'true',
   // When set (dev only), enables /dev/seed-profile + header-based wallet
   // impersonation (x-dev-token + x-dev-wallet) so the API is curl-testable
   // without Privy. Force-empty in production.

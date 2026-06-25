@@ -7,6 +7,7 @@ import { normalizeUrl } from '@0xsofia/url-key'
 import type { AppEnv } from '../auth'
 import { getWallet, optionalAuthMiddleware } from '../auth'
 import { prisma } from '../db'
+import { assertMember } from '../membership'
 import { publicBookmark } from '../serialize'
 
 export const bookmarks = new Hono<AppEnv>() // writes (auth)
@@ -46,6 +47,8 @@ bookmarks.post('/bookmarks', async (c) => {
   const normalizedUrl = normalizeUrl(url)
   if (!normalizedUrl) throw new HTTPException(400, { message: 'invalid url' })
   const circleId = body.circleId ?? DEFAULT_CIRCLE
+  // Writes are members-only — group-api is the source of truth (no-op in dev).
+  await assertMember(wallet, circleId)
   const tags = (body.tags ?? [])
     .filter((t): t is Required<IncomingTag> => !!t?.id && !!t?.label)
     .map((t) => ({ tagId: t.id, label: t.label, color: t.color || '#8f8ca8', level: t.level || 'topic' }))

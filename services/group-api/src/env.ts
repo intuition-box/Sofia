@@ -34,6 +34,9 @@ export const env = {
   privyAppId: optional('PRIVY_APP_ID'),
   privyAppSecret: optional('PRIVY_APP_SECRET'),
   ablyApiKey: optional('ABLY_API_KEY'),
+  // Shared secret for server-to-server membership reads (circle-pro-api calls
+  // /internal/* with this in x-internal-secret). No Privy token needed.
+  internalSecret: optional('INTERNAL_SECRET'),
   indexerUrl:
     process.env.INTUITION_GRAPHQL_URL ?? 'https://mainnet.intuition.sh/v1/graphql',
   // When set (dev only), enables `/dev/seed-owner` + header-based wallet
