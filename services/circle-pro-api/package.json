@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -18,7 +19,9 @@
     "@0xsofia/url-key": "workspace:*",
     "@prisma/client": "^6.2.0",
     "@privy-io/server-auth": "^1.18.0",
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "jose": "^5.9.0",
+    "viem": "^2.0.0"
   },
   "devDependencies": {
     "@types/bun": "^1.1.0",

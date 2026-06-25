@@ -7,6 +7,7 @@ import type { AppEnv } from './auth'
 import { authMiddleware } from './auth'
 import { env } from './env'
 import { dev } from './routes/dev'
+import { auth as authRoutes } from './routes/auth'
 import { profile } from './routes/profile'
 import { comments, commentsRead } from './routes/comments'
 import { bookmarks, bookmarksRead } from './routes/bookmarks'
@@ -28,6 +29,9 @@ app.get('/health', (c) => c.text('ok'))
 
 // Dev-only seed route — token-guarded, no Privy (registered before auth).
 app.route('/', dev)
+
+// SIWE auth (public): nonce + signature → session JWT.
+app.route('/', authRoutes)
 
 // Public reads — optional auth (per-route), registered before the global guard.
 app.route('/', commentsRead)

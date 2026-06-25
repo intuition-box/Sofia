@@ -32,6 +32,9 @@ export const env = {
   databaseUrl: required('DATABASE_URL'),
   privyAppId: optional('PRIVY_APP_ID'),
   privyAppSecret: optional('PRIVY_APP_SECRET'),
+  // Secret for signing circle-pro session JWTs (the SIWE → JWT path, used by
+  // the extension). Required for SIWE auth; optional at boot so /health works.
+  jwtSecret: optional('JWT_SECRET'),
   // When set (dev only), enables /dev/seed-profile + header-based wallet
   // impersonation (x-dev-token + x-dev-wallet) so the API is curl-testable
   // without Privy. Force-empty in production.

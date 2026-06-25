@@ -99,6 +99,17 @@ model Bookmark {
   @@index([normalizedUrl])
 }
 
+/// One-time nonce for SIWE login. Issued by GET /auth/nonce, consumed by
+/// POST /auth/siwe. Marking it used (usedAt) prevents replay of a captured
+/// signature. Old unused nonces are swept by age.
+model AuthNonce {
+  value     String    @id
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+
+  @@index([createdAt])
+}
+
 /// A taxonomy tag on a bookmark (topic / category / niche slug). Its own row so
 /// search + tag hints can query/aggregate tags directly.
 model BookmarkTag {

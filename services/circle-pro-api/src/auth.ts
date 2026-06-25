@@ -5,6 +5,7 @@ import { PrivyClient } from '@privy-io/server-auth'
 import type { Context, MiddlewareHandler } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { env } from './env'
+import { verifySession } from './siwe'
 
 let privyClient: PrivyClient | null = null
 function privy(): PrivyClient {
@@ -57,6 +58,15 @@ export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
   const token = header.startsWith('Bearer ') ? header.slice(7) : ''
   if (!token) throw new HTTPException(401, { message: 'Missing bearer token' })
 
+  // Our own SIWE session JWT (wallet-native, used by the extension) — checked
+  // first, no network. Falls through to Privy for the web app's tokens.
+  const siweWallet = await verifySession(token)
+  if (siweWallet) {
+    c.set('wallet', siweWallet)
+    await next()
+    return
+  }
+
   let userId: string
   try {
     const claims = await privy().verifyAuthToken(token)
@@ -89,6 +99,13 @@ export const optionalAuthMiddleware: MiddlewareHandler<AppEnv> = async (c, next)
   const token = header.startsWith('Bearer ') ? header.slice(7) : ''
   if (!token) {
     c.set('wallet', '')
+    await next()
+    return
+  }
+
+  const siweWallet = await verifySession(token)
+  if (siweWallet) {
+    c.set('wallet', siweWallet)
     await next()
     return
   }
