@@ -11,7 +11,7 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CommentComposer, isMediaUrl } from '../components/CommentComposer'
-import { TopicIcon } from '../components/TopicIcon'
+import { DeptTagByName, DomainTagByTopic } from '../components/Tag'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
@@ -32,7 +32,6 @@ export interface PostItem {
 
 // Mock comment row — kept for Activity.tsx's "who-knows-what" surface.
 export function CommentRow({ c }: { c: Comment }) {
-  const team = TEAM_MAP[c.teamId]
   const grad = c.grad
   return (
     <div className={`pc${c.reply ? ' pc--reply' : ''}`}>
@@ -42,11 +41,6 @@ export function CommentRow({ c }: { c: Comment }) {
       <div className="pc-main">
         <div className="pc-head">
           <span className="pc-who">{c.who}</span>
-          {team ? (
-            <span className="team-tag" style={{ ['--c' as string]: team.color }}>
-              {team.label}
-            </span>
-          ) : null}
           <span className="pc-when">{c.when}</span>
         </div>
         {isMediaUrl(c.text) ? (
@@ -209,17 +203,8 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
         <div className="post-split">
           <div className="post-col-main">
         <div className="post-tags">
-          {team ? (
-            <span className="team-tag" style={{ ['--c' as string]: team.color }}>
-              {team.label}
-            </span>
-          ) : null}
-          {cat ? (
-            <span className="post-tag post-tag--topic" style={{ ['--c' as string]: cat.color }}>
-              <TopicIcon id={cat.id} size={13} />
-              {cat.label}
-            </span>
-          ) : null}
+          {team ? <DeptTagByName name={team.label} /> : null}
+          {cat ? <DomainTagByTopic id={cat.id} label={cat.label} /> : null}
           <span className="post-tag post-tag--type">{type === 'doc' ? 'Doc' : 'Link'}</span>
         </div>
 

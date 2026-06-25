@@ -19,11 +19,14 @@
   --tech: var(--work);
   --web3: var(--inspiration);
 
+  /* Body sans: Archivo (replaces the DS default Inter).
+     Overriding --ds-font-sans flows to body, --sans, and the --display fallback. */
+  --ds-font-sans: 'Archivo', system-ui, -apple-system, sans-serif;
   --sans: var(--ds-font-sans);
   --mono: var(--ds-font-mono);
-  /* The circle surface overrides the DS display face to Unbounded (same as the
-     explorer's circle view); falls back to the DS display font. */
-  --display: 'Unbounded', var(--ds-font-display);
+  /* Clash Display (Bold) is the ONE display face. Fall back to the sans
+     (Archivo), never to the DS serif display — headings must never render serif. */
+  --display: 'Clash Display', var(--ds-font-sans);
 
   --r-sm: 8px;
   --r-md: var(--ds-radius);
@@ -59,7 +62,7 @@ body {
   background: var(--ds-bg);
   color: var(--ds-ink);
   font-family: var(--ds-font-sans);
-  font-size: 14px;
+  font-size: 15.4px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

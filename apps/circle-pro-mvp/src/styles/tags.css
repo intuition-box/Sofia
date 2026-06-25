@@ -1,0 +1,131 @@
+/* ============================================================
+   Tag design system (LOCAL — app only, see data/tagStyles.ts).
+   Five families: Dept · Role · Domain · Skill · Tool.
+   Colours are fixed (theme-independent) so a tag reads the same on any
+   page surface. Geometry/typography here; per-instance colours inline.
+   ============================================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+.tag svg {
+  flex: none;
+}
+.tag > svg:first-child {
+  width: 13px;
+  height: 13px;
+}
+.tag-logo {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex: none;
+}
+
+/* Dept — TOP of the hierarchy: darkest solid fill (deep) + white text + white
+   group icon, no vote. The boldest tag so object type reads at a glance. */
+.tag--dept {
+  padding: 0 11px;
+  border-radius: 7px;
+  color: #fff;
+}
+
+/* Role — pastel tint, deep text + person icon, vote */
+.tag--role {
+  padding: 0 11px;
+  border-radius: 7px;
+}
+
+/* Domain — solid vivid fill, ink text + per-domain icon, vote */
+.tag--domain {
+  border-radius: 999px;
+}
+
+/* Skill — white pill, soft 1.5px border + deep text + award icon, vote */
+.tag--skill {
+  border-radius: 999px;
+  background: #fff;
+  border: 1.5px solid; /* border-color set inline per hue */
+}
+
+/* Tool — white pill, neutral 1px border + real favicon, vote */
+.tag--tool {
+  padding: 0 11px 0 9px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #ebe7de;
+  color: #37322a;
+}
+
+/* Shared vote affordance — chevron + count */
+.tag-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 3px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.tag-vote svg {
+  display: block;
+}
+.tag-vote-n {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Gallery (dev verification sheet, ?tags) ───────────────── */
+.tag-gallery {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: var(--ds-bg);
+}
+.tag-gallery-card {
+  width: min(840px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 36px 40px 40px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+}
+.tag-gallery-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  margin-bottom: 18px;
+}
+.tag-gallery-grid {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  row-gap: 20px;
+  column-gap: 20px;
+  align-items: center;
+}
+.tag-gallery-lab {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.tag-gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

@@ -12,6 +12,7 @@ import { Bookmarks } from './tabs/Bookmarks'
 import { Essential } from './tabs/Essential'
 import { TeamView, type TeamMeta } from './tabs/TeamView'
 import { Onboarding } from './onboarding/Onboarding'
+import { TagGallery } from './components/TagGallery'
 import { setImported } from './lib/imported'
 import { useAuth } from './hooks/useAuth'
 import { join } from './lib/gate'
@@ -25,9 +26,15 @@ import './styles/team.css'
 import './styles/surfaces.css'
 import './styles/members-roles.css'
 import './styles/activity-memory.css'
+import './styles/tags.css'
 import './styles/overlays.css'
 
+/** Dev-only tag design-system sheet: open the app with `?tags` in the URL. */
+const SHOW_TAG_GALLERY = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tags')
+
 export default function App() {
+  if (SHOW_TAG_GALLERY) return <TagGallery />
+
   const [tab, setTab] = useState<TabId>('essential')
   const [team, setTeam] = useState<TeamMeta | null>(null)
   const [onboarding, setOnboarding] = useState(true)

@@ -22,7 +22,7 @@
   margin: 0;
   font-family: var(--display);
   font-weight: 600;
-  font-size: clamp(24px, 3vw, 32px);
+  font-size: clamp(32px, 4.2vw, 46px);
   letter-spacing: -0.02em;
 }
 .tv-sub {

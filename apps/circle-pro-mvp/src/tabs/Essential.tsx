@@ -8,6 +8,11 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
+import { DeptTagByName, DomainTag, DomainTagByTopic, RoleTag, SkillTag } from '../components/Tag'
+import { topicHue, deptHue, type TagHueName } from '../data/tagStyles'
+
+/* Cycle Nordic hues across the taxonomy topics so each reads distinctly. */
+const DOMAIN_CYCLE: TagHueName[] = ['teal', 'indigo', 'violet', 'amber', 'pink', 'orange']
 import { CATEGORIES } from '../data/topics'
 import { avGrad, initials } from '../data/helpers'
 
@@ -15,14 +20,13 @@ interface Tool {
   name: string
   host: string
   desc: string
-  team: string
-  color: string
+  roles: string[]
   bm: number
 }
 const TOOLS: Tool[] = [
-  { name: 'Notion HQ', host: 'notion.so', desc: "The team's shared knowledge base & docs.", team: 'Marketing', color: '#3b82f6', bm: 28 },
-  { name: 'Figma', host: 'figma.com', desc: 'Design system & product mockups.', team: 'Development', color: '#8b5cf6', bm: 19 },
-  { name: 'Linear', host: 'linear.app', desc: 'Sprint tracking & dev roadmap.', team: 'Development', color: '#8b5cf6', bm: 15 },
+  { name: 'Notion HQ', host: 'notion.so', desc: "The team's shared knowledge base & docs.", roles: ['Writer', 'PM'], bm: 28 },
+  { name: 'Figma', host: 'figma.com', desc: 'Design system & product mockups.', roles: ['Designer'], bm: 19 },
+  { name: 'Linear', host: 'linear.app', desc: 'Sprint tracking & dev roadmap.', roles: ['PM', 'Dev'], bm: 15 },
 ]
 
 interface Commented {
@@ -77,11 +81,12 @@ const MEMBERS: Member[] = [
 ]
 
 const PILLS = [
-  { label: 'Marketing', color: '#3b82f6' },
-  { label: 'Development', color: '#8b5cf6' },
-  { label: 'Growth' },
-  { label: 'AI tooling' },
-  { label: 'Design' },
+  { label: 'Growth', kind: 'domain' },
+  { label: 'AI tooling', kind: 'domain' },
+  { label: 'Design', kind: 'domain' },
+  { label: 'Funding', kind: 'skill' },
+  { label: 'Security', kind: 'skill' },
+  { label: 'Research', kind: 'skill' },
 ] as const
 
 const TOPICS = CATEGORIES.slice(0, 8).map((c, i) => ({
@@ -90,6 +95,15 @@ const TOPICS = CATEGORIES.slice(0, 8).map((c, i) => ({
   color: c.color,
   count: 6 + ((i * 7 + 3) % 22),
 }))
+
+const SKILLS_USED = [
+  { label: 'Funding', dept: 'Marketing', role: 'Writer' },
+  { label: 'Security', dept: 'Engineering', role: 'Dev' },
+  { label: 'AI', dept: 'Design', role: 'Designer' },
+  { label: 'Governance', dept: 'Sales', role: 'PM' },
+  { label: 'Brand', dept: 'Marketing', role: 'Designer' },
+  { label: 'Research', dept: 'Product', role: 'Writer' },
+]
 
 const TEAMS = [
   { name: 'Engineering', color: '#3b82f6', members: 8, lead: 'Tom Bauer', focus: 'Protocol, frontend & infra' },
@@ -174,18 +188,15 @@ export function Essential() {
           </div>
         </div>
 
-        {/* Filter pills */}
+        {/* Filter pills — domain + skill tags (each family reads distinctly) */}
         <div className="es-pills">
-          {PILLS.map((p) => (
-            <button className="es-pill" key={p.label}>
-              {'color' in p && p.color ? (
-                <span className="es-pill-dot" style={{ background: p.color }} />
-              ) : (
-                <span className="es-pill-hash mono">#</span>
-              )}
-              {p.label}
-            </button>
-          ))}
+          {PILLS.map((p) =>
+            p.kind === 'skill' ? (
+              <SkillTag key={p.label} label={p.label} hue={topicHue(p.label)} />
+            ) : (
+              <DomainTagByTopic key={p.label} id={p.label} label={p.label} />
+            ),
+          )}
         </div>
 
         {/* Essential tools */}
@@ -202,7 +213,9 @@ export function Essential() {
                 </div>
                 <div className="es-tool-desc">{t.desc}</div>
                 <div className="es-tool-foot">
-                  <span className="es-team-tag" style={{ ['--c' as string]: t.color }}>{t.team}</span>
+                  {t.roles.map((r) => (
+                    <RoleTag key={r} label={r} hue={deptHue(r)} />
+                  ))}
                 </div>
               </a>
             ))}
@@ -211,16 +224,32 @@ export function Essential() {
 
         {/* Topics */}
         <section className="es-section">
-          <SectionHead title="Topics" action="See all" />
+          <SectionHead title="Collections" action="See all" />
           <div className="es-topics">
-            {TOPICS.map((t) => (
-              <a className="es-topic" key={t.id} style={{ ['--c' as string]: t.color }}>
-                <span className="es-topic-ic">
-                  <TopicIcon id={t.id} size={18} />
+            {TOPICS.map((t, i) => (
+              <DomainTag
+                key={t.id}
+                label={t.label}
+                hue={DOMAIN_CYCLE[i % DOMAIN_CYCLE.length]}
+                count={t.count}
+                icon={<TopicIcon id={t.id} size={13} />}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Most used skills — skill + the dept & role that lean on it */}
+        <section className="es-section">
+          <SectionHead title="Most used skills" action="See all" />
+          <div className="es-skills">
+            {SKILLS_USED.map((s) => (
+              <div className="es-skill-row" key={s.label}>
+                <SkillTag label={s.label} hue={topicHue(s.label)} />
+                <span className="es-skill-by">
+                  <DeptTagByName name={s.dept} />
+                  <RoleTag label={s.role} hue={deptHue(s.role)} />
                 </span>
-                <span className="es-topic-name">{t.label}</span>
-                <span className="es-topic-n mono">{t.count}</span>
-              </a>
+              </div>
             ))}
           </div>
         </section>
@@ -251,7 +280,6 @@ export function Essential() {
             {TEAMS.map((t) => (
               <a className="es-team" key={t.name} style={{ ['--c' as string]: t.color }}>
                 <div className="es-team-top">
-                  <span className="es-team-dot" />
                   <span className="es-team-name">{t.name}</span>
                   <span className="es-team-n mono">{t.members}</span>
                 </div>

@@ -10,9 +10,9 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ModuleHead } from '../components/primitives'
-import { MEMORY, MEMORY_KIND, ROLE_MAP, peopleByRole, personByHandle } from '../data/mock'
-import { avGrad, initials } from '../data/helpers'
+import { MEMORY, MEMORY_KIND, ROLE_MAP, peopleByRole } from '../data/mock'
 import { requireJoin } from '../lib/gate'
+import { MemoryView } from './MemoryView'
 import type { MemoryKind, MemoryRecord, RoleId } from '../data/types'
 
 interface MemoryProps {
@@ -21,9 +21,25 @@ interface MemoryProps {
 
 const KINDS: (MemoryKind | 'all')[] = ['all', 'thread', 'doc']
 
+/* Nordic tag-hue + Material Symbol per memory kind, so the filter chips read
+ * as tags (with an icon, like every Claude Design tag). */
+const KIND_HUE: Record<string, string> = {
+  thread: '#7FA088',
+  doc: '#6B8BA4',
+  decision: '#C9A24B',
+  signal: '#A47B9E',
+}
+const KIND_GLYPH: Record<string, string> = {
+  thread: 'forum',
+  doc: 'description',
+  decision: 'gavel',
+  signal: 'bolt',
+}
+
 export function Memory({ role = null }: MemoryProps) {
   const [kind, setKind] = useState<MemoryKind | 'all'>('all')
   const [showAll, setShowAll] = useState(false)
+  const [openMem, setOpenMem] = useState<MemoryRecord | null>(null)
 
   // team scope: a memory belongs to a team if any of its authors hold that role
   const team = role ? ROLE_MAP[role] : null
@@ -37,26 +53,22 @@ export function Memory({ role = null }: MemoryProps) {
   const renderMem = (m: MemoryRecord) => {
     const k = MEMORY_KIND[m.kind]
     return (
-      <div className="memcard" key={m.id} style={{ ['--c' as string]: k.color }}>
+      <div
+        className="memcard"
+        key={m.id}
+        style={{ ['--c' as string]: k.color }}
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          setShowAll(false)
+          setOpenMem(m)
+        }}
+      >
         <h4 className="memcard-title">{m.title}</h4>
         <div className="memcard-foot">
-          <div className="memcard-who">
-            {m.who.map((h) => {
-              const p = personByHandle(h)
-              return (
-                <span key={h} className="memcard-av" style={{ background: avGrad(p?.grad ?? 0) }} title={h}>
-                  {initials(h)}
-                </span>
-              )
-            })}
-            <span className="memcard-who-h mono">
-              {m.who[0]}
-              {m.who.length > 1 ? ` +${m.who.length - 1}` : ''}
-            </span>
-          </div>
-          <button className="memcard-open" onClick={() => requireJoin(`open "${m.title}"`)}>
-            {m.refs} refs <Icon name="arrow" />
-          </button>
+          <span className="memcard-open">
+            Open <Icon name="arrow" />
+          </span>
         </div>
       </div>
     )
@@ -80,8 +92,22 @@ export function Memory({ role = null }: MemoryProps) {
 
           <div className="mem-filters">
             {KINDS.map((k) => (
-              <button key={k} className={`mem-fil${kind === k ? ' active' : ''}`} onClick={() => setKind(k)}>
-                {k === 'all' ? 'All' : MEMORY_KIND[k].label + 's'}
+              <button
+                key={k}
+                className={`mem-fil${kind === k ? ' active' : ''}`}
+                style={k === 'all' ? undefined : { ['--fc' as string]: KIND_HUE[k] }}
+                onClick={() => setKind(k)}
+              >
+                {k === 'all' ? (
+                  'All'
+                ) : (
+                  <>
+                    <span className="topic-ms material-symbols-outlined" aria-hidden="true">
+                      {KIND_GLYPH[k]}
+                    </span>{' '}
+                    {MEMORY_KIND[k].label + 's'}
+                  </>
+                )}
               </button>
             ))}
             <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
@@ -111,6 +137,14 @@ export function Memory({ role = null }: MemoryProps) {
                     <div className="mem-grid">{filtered.map((m) => renderMem(m))}</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {openMem ? (
+            <div className="skmodal" role="dialog" aria-modal="true" onClick={() => setOpenMem(null)}>
+              <div className="skmodal-card skmodal-card--mv" onClick={(e) => e.stopPropagation()}>
+                <MemoryView mem={openMem} onClose={() => setOpenMem(null)} />
               </div>
             </div>
           ) : null}

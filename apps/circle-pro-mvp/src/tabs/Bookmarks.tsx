@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { TopicSelect } from '../components/TopicSelect'
+import { DeptTagByName } from '../components/Tag'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
@@ -262,9 +263,7 @@ export function Bookmarks() {
                         {services.length ? (
                           <span className="bk-shared-svcs">
                             {services.map((s) => (
-                              <span key={s.id} className="svc-tag">
-                                {s.label}
-                              </span>
+                              <DeptTagByName key={s.id} name={s.label} />
                             ))}
                           </span>
                         ) : null}

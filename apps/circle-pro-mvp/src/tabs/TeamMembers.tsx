@@ -3,8 +3,10 @@
  * Influence rail and votable Roles / Skills / Tools chips, ported from the
  * Claude Design "Circle Pro v2" member cards onto the app's .ccard styles.
  */
-import { useState } from 'react'
 import { Avatar } from '../components/primitives'
+import { Icon } from '../components/Icon'
+import { RoleTag, SkillTag, ToolTag } from '../components/Tag'
+import { deptHue, topicHue } from '../data/tagStyles'
 
 interface Chip {
   label: string
@@ -25,7 +27,7 @@ interface MemberV2 {
   tools: Chip[]
 }
 
-const SOCIALS = ['discord.com', 'github.com', 'x.com']
+const SOCIALS = ['discord', 'github', 'x'] as const
 
 const MEMBERS_V2: MemberV2[] = [
   {
@@ -105,7 +107,7 @@ const MEMBERS_V2: MemberV2[] = [
   },
 ]
 
-/* Votable Role / Skill / Tool chip (▲ count), local-state toggle. */
+/* Favicon URL for a tool chip (falls back to a guessed host). */
 const TOOL_HOSTS: Record<string, string> = {
   Figma: 'figma.com',
   Framer: 'framer.com',
@@ -116,40 +118,9 @@ const TOOL_HOSTS: Record<string, string> = {
   Obsidian: 'obsidian.md',
 }
 
-function Endo({ c }: { c: Chip }) {
-  const [on, setOn] = useState(false)
-  const host = c.glyph ? TOOL_HOSTS[c.label] : undefined
-  return (
-    <button
-      type="button"
-      className={`endo${on ? ' on' : ''}`}
-      style={{ ['--c' as string]: c.color }}
-      onClick={() => setOn((v) => !v)}
-    >
-      {host ? (
-        <img
-          className="endo-fav"
-          src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`}
-          alt=""
-          loading="lazy"
-          onError={(e) => {
-            ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-          }}
-        />
-      ) : c.glyph ? (
-        <b className="endo-glyph">{c.glyph}</b>
-      ) : (
-        <span className="endo-dot" />
-      )}
-      {c.label}
-      <span className="endo-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m6 15 6-6 6 6" />
-        </svg>
-        {c.n + (on ? 1 : 0)}
-      </span>
-    </button>
-  )
+function toolLogo(label: string): string {
+  const host = TOOL_HOSTS[label] ?? `${label.toLowerCase().replace(/\s+/g, '')}.com`
+  return `https://www.google.com/s2/favicons?domain=${host}&sz=64`
 }
 
 export function TeamMembers() {
@@ -167,14 +138,7 @@ export function TeamMembers() {
                 <div className="ccard-social">
                   {SOCIALS.map((s) => (
                     <span className="csoc" key={s}>
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${s}&sz=32`}
-                        alt=""
-                        loading="lazy"
-                        onError={(e) => {
-                          ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-                        }}
-                      />
+                      <Icon name={s} />
                     </span>
                   ))}
                 </div>
@@ -185,15 +149,27 @@ export function TeamMembers() {
             <dl className="cc-attrs">
               <div className="cc-attr">
                 <dt>Roles</dt>
-                <dd>{m.roles.map((c) => <Endo key={c.label} c={c} />)}</dd>
+                <dd>
+                  {m.roles.map((c) => (
+                    <RoleTag key={c.label} label={c.label} hue={deptHue(c.label)} count={c.n} />
+                  ))}
+                </dd>
               </div>
               <div className="cc-attr">
                 <dt>Skills</dt>
-                <dd>{m.skills.map((c) => <Endo key={c.label} c={c} />)}</dd>
+                <dd>
+                  {m.skills.map((c) => (
+                    <SkillTag key={c.label} label={c.label} hue={topicHue(c.label)} count={c.n} />
+                  ))}
+                </dd>
               </div>
               <div className="cc-attr">
                 <dt>Tools</dt>
-                <dd>{m.tools.map((c) => <Endo key={c.label} c={c} />)}</dd>
+                <dd>
+                  {m.tools.map((c) => (
+                    <ToolTag key={c.label} label={c.label} logo={toolLogo(c.label)} count={c.n} />
+                  ))}
+                </dd>
               </div>
             </dl>
           </div>

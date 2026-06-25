@@ -7,6 +7,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
 import { ModuleHead } from '../components/primitives'
+import { DeptTagByName, DomainTagByTopic, TopicGlyph, TagIcon, ToolTag } from '../components/Tag'
+import { TAG_HUES, deptHue, topicHue } from '../data/tagStyles'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { ROLE_MAP, SKILLS, TOOLS, TOPIC_MAP, peopleByRole } from '../data/mock'
 import { addSkillTool, addSkillUrl, createSkill, useSkillsStore, voteSkillUrl, type SkillsState } from '../lib/skills'
@@ -18,6 +20,19 @@ import { voteSeed } from '../components/VoteButton'
 import { CommentComposer } from '../components/CommentComposer'
 import { toast } from '../lib/toast'
 import type { RoleId } from '../data/types'
+
+/* Favicon host per skill-detail tool id (mock TOOLS carries no host). */
+const SKV_TOOL_HOST: Record<string, string> = {
+  figma: 'figma.com',
+  vscode: 'code.visualstudio.com',
+  cursor: 'cursor.com',
+  github: 'github.com',
+  foundry: 'getfoundry.sh',
+  notion: 'notion.so',
+  linear: 'linear.app',
+  framer: 'framer.com',
+  obsidian: 'obsidian.md',
+}
 
 interface ActivityProps {
   role?: RoleId | null
@@ -61,11 +76,7 @@ export function Activity({ role = null }: ActivityProps) {
       <button className="skcard" key={s.id} onClick={() => onOpen(s.id)}>
         <div className="skcard-top">
           <span className="sk-name">{s.name}</span>
-          {th ? (
-            <span className="sk-theme mono" style={{ color: th.color }}>
-              #{th.label}
-            </span>
-          ) : null}
+          {th ? <DomainTagByTopic id={s.theme ?? ''} label={th.label} /> : null}
         </div>
         <div className="sk-meta mono">
           {urls.length} link{urls.length === 1 ? '' : 's'} · {votes} vote{votes === 1 ? '' : 's'}
@@ -93,9 +104,16 @@ export function Activity({ role = null }: ActivityProps) {
               <button
                 key={f}
                 className={`mem-fil${skillFilter === f ? ' active' : ''}`}
+                style={f === 'all' ? undefined : { ['--fc' as string]: TAG_HUES[topicHue(f)].vivid }}
                 onClick={() => setSkillFilter(f)}
               >
-                {f === 'all' ? 'All' : f}
+                {f === 'all' ? (
+                  'All'
+                ) : (
+                  <>
+                    <TopicGlyph id={f} /> {f}
+                  </>
+                )}
               </button>
             ))}
             <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
@@ -286,12 +304,7 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
             {t.usedBy.map((uid) => {
               const u = TG_TEAMS[uid]
               if (!u) return null
-              return (
-                <span className="tg-used-tag" key={uid}>
-                  <span className="tg-used-dot" style={{ background: u.color }} />
-                  {u.name}
-                </span>
-              )
+              return <DeptTagByName key={uid} name={u.name} />
             })}
           </div>
         </div>
@@ -304,6 +317,10 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
 export function Tools() {
   const [openTool, setOpenTool] = useState<TgTool | null>(null)
   const [showAll, setShowAll] = useState(false)
+  const [team, setTeam] = useState('all')
+
+  const shownTools =
+    team === 'all' ? TOOLS_GRID : TOOLS_GRID.filter((t) => t.usedBy.some((u) => TG_TEAMS[u]?.name === team))
 
   const addCard = (
     <button className="tg-card--create" onClick={() => toast('Add a tool')}>
@@ -316,6 +333,25 @@ export function Tools() {
     <section className="module">
       <div className="tg-head-row">
         <h2 className="module-title">Tools</h2>
+      </div>
+
+      <div className="mem-filters">
+        {['all', 'Marketing', 'Design', 'Dev', 'Sales'].map((f) => (
+          <button
+            key={f}
+            className={`mem-fil${team === f ? ' active' : ''}`}
+            style={f === 'all' ? undefined : { ['--fc' as string]: TAG_HUES[deptHue(f)].vivid, ['--ft' as string]: '#fff' }}
+            onClick={() => setTeam(f)}
+          >
+            {f === 'all' ? (
+              'All'
+            ) : (
+              <>
+                <TagIcon name="users" color="currentColor" size={13} /> {f}
+              </>
+            )}
+          </button>
+        ))}
         <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
           View all
         </button>
@@ -323,7 +359,7 @@ export function Tools() {
 
       <div className="tg-grid">
         {addCard}
-        {TOOLS_GRID.slice(0, 3).map((t) => renderToolCard(t, setOpenTool))}
+        {shownTools.slice(0, 3).map((t) => renderToolCard(t, setOpenTool))}
       </div>
 
       {openTool ? (
@@ -344,7 +380,7 @@ export function Tools() {
             <div className="va-body sk-scroll">
               <div className="tg-grid">
                 {addCard}
-                {TOOLS_GRID.map((t) =>
+                {shownTools.map((t) =>
                   renderToolCard(t, (tool) => {
                     setShowAll(false)
                     setOpenTool(tool)
@@ -386,7 +422,6 @@ function ToolView({ tool, onClose }: { tool: TgTool; onClose: () => void }) {
           </div>
           <h1 className="skv-title">{tool.name}</h1>
           <p className="skv-desc">{tool.desc}</p>
-          <p className="skv-desc mono">{tool.host}</p>
 
           <div className="tlv-by">
             <span className="tlv-by-av" style={{ background: avGrad(tool.grad) }}>
@@ -452,7 +487,7 @@ function SkillModal({ onClose, children }: { onClose: () => void; children: Reac
 
 /* Pick a URL straight from My bookmarks — search across all, or browse folders.
    The label is taken from the bookmark's title automatically. */
-function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, title: string) => void; onClose: () => void }) {
+export function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, title: string) => void; onClose: () => void }) {
   const [path, setPath] = useState<string[]>([])
   const [q, setQ] = useState('')
   const needle = q.trim().toLowerCase()
@@ -547,25 +582,6 @@ function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, title: stri
 
 const PILL_DOTS = ['#ffc6b0', '#7bade0', '#6dd4a0', '#a78bdb', '#f59e0b', '#ec4899']
 
-/* Horizontal vote chip for resource/tool pills (▲ count), local-state mock. */
-function PillVote({ seed }: { seed: string }) {
-  const [on, setOn] = useState(false)
-  return (
-    <button
-      type="button"
-      className={`skv-vote${on ? ' on' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation()
-        setOn((v) => !v)
-      }}
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m6 15 6-6 6 6" />
-      </svg>
-      {voteSeed(seed) + (on ? 1 : 0)}
-    </button>
-  )
-}
 
 function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; onClose: () => void }) {
   const urls = [...(store.urls[vm.id] || [])].sort((a, b) => b.votes - a.votes)
@@ -596,11 +612,7 @@ function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; 
       <div className="skv-body">
         <div className="skv-main sk-scroll">
           <div className="skv-tags">
-            {th ? (
-              <span className="team-tag" style={{ ['--c' as string]: th.color }}>
-                {th.label}
-              </span>
-            ) : null}
+            {th ? <DomainTagByTopic id={vm.theme ?? ''} label={th.label} /> : null}
             <span className="skv-skilltag">
               <Icon name="package" /> Skill
             </span>
@@ -720,11 +732,12 @@ function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; 
                 const meta = TOOLS[id]
                 if (!meta) return null
                 return (
-                  <span className="skv-pill" key={id}>
-                    <span className="skv-pill-dot" style={{ background: meta.color }} />
-                    {meta.label}
-                    <PillVote seed={`sktool:${vm.id}:${id}`} />
-                  </span>
+                  <ToolTag
+                    key={id}
+                    label={meta.label}
+                    logo={`https://www.google.com/s2/favicons?domain=${SKV_TOOL_HOST[id] ?? `${id}.com`}&sz=64`}
+                    count={voteSeed(`sktool:${vm.id}:${id}`)}
+                  />
                 )
               })}
               <button className="skv-pill-add" onClick={() => setPicking(true)}>

@@ -11,17 +11,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { Icon } from '../components/Icon'
+import { DeptTagByName } from '../components/Tag'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { suggestCategory } from '../data/topics'
 import { proofFor } from '../lib/social'
 import { TEAM_MAP } from '../data/teams'
-import { sharedPeople, sharedTeamIds, countLinks } from '../data/folderTree'
+import { sharedPeople, sharedTeamIds, countLinks, allLinksDeep } from '../data/folderTree'
 import type { ImportedBookmark } from '../lib/imported'
 import { TopicSelect } from '../components/TopicSelect'
 import { avGrad, hostOf } from '../data/helpers'
 import './sort.css'
 
-type Step = 'welcome' | 'sort' | 'importing' | 'done'
+type Step = 'welcome' | 'sort' | 'join' | 'importing' | 'done'
 
 interface FlatLink {
   title: string
@@ -84,7 +85,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       return () => clearTimeout(t)
     }
     if (step === 'importing') {
-      const t = setTimeout(() => setStep('done'), 1500)
+      const t = setTimeout(() => setStep('done'), 2400)
       return () => clearTimeout(t)
     }
   }, [step])
@@ -101,8 +102,11 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
             topicOf={topicOf}
             onPick={(url, id) => setPicks((p) => ({ ...p, [url]: id }))}
             onBack={() => setStep('welcome')}
-            onImport={() => setStep('importing')}
+            onNext={() => setStep('join')}
           />
+        ) : null}
+        {step === 'join' ? (
+          <JoinTeam onBack={() => setStep('sort')} onJoin={() => setStep('importing')} />
         ) : null}
         {step === 'importing' ? <Importing total={allLinks.length} /> : null}
         {step === 'done' ? (
@@ -143,11 +147,10 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
             <img src={`https://cdn.jsdelivr.net/gh/alrra/browser-logos@main/src/${slug}/${slug}_64x64.png`} alt={name} />
           </button>
         ))}
+        <button className="ob-skip" onClick={onSkip}>
+          Skip
+        </button>
       </div>
-
-      <button className="ob-skip" onClick={onSkip}>
-        Skip
-      </button>
     </div>
   )
 }
@@ -160,13 +163,24 @@ interface SortProps {
   topicOf: (l: FlatLink) => string
   onPick: (url: string, id: string) => void
   onBack: () => void
-  onImport: () => void
+  onNext: () => void
 }
 
-function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onImport }: SortProps) {
+function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onNext }: SortProps) {
   const [path, setPath] = useState<string[]>([])
   const [openCrumb, setOpenCrumb] = useState<number | null>(null)
+  const allUrls = useMemo(() => allLinksDeep(MY_BOOKMARKS as BmNode[]).map((l) => l.url), [])
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(allUrls))
   const crumbsRef = useRef<HTMLElement>(null)
+  const allOn = selected.size >= allUrls.length
+
+  const toggleSel = (url: string) =>
+    setSelected((s) => {
+      const n = new Set(s)
+      if (n.has(url)) n.delete(url)
+      else n.add(url)
+      return n
+    })
 
   const currentNodes = useMemo<BmNode[]>(() => {
     let nodes = MY_BOOKMARKS as BmNode[]
@@ -240,9 +254,7 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
           {proofReady && sharedTeams.length ? (
             <span className="ob-overlap-teams">
               {sharedTeams.map((t) => (
-                <span key={t.id} className="team-tag" style={{ ['--c' as string]: t.color }}>
-                  {t.label}
-                </span>
+                <DeptTagByName key={t.id} name={t.label} />
               ))}
             </span>
           ) : null}
@@ -299,21 +311,41 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
             )
           },
         )}
+        <button
+          type="button"
+          className="obc-selall"
+          onClick={() => setSelected(allOn ? new Set() : new Set(allUrls))}
+        >
+          {allOn ? 'Deselect all' : 'Select all'}
+        </button>
       </nav>
 
       {links.length ? (
         <div className="kb-list obc-list">
-          {links.map((l) => (
-            <div className="kb-res" key={l.url}>
-              <Favicon host={hostOf(l.url)} />
-              <div className="kb-res-main">
-                <div className="kb-res-title">{l.title}</div>
-                <div className="obc-topic">
-                  <TopicSelect value={topicOf(l)} onChange={(id) => onPick(l.url, id)} />
+          {links.map((l) => {
+            const on = selected.has(l.url)
+            return (
+              <div className={`kb-res obc-row${on ? '' : ' obc-row--off'}`} key={l.url}>
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={on}
+                  aria-label={`Import ${l.title}`}
+                  className={`obc-check${on ? ' on' : ''}`}
+                  onClick={() => toggleSel(l.url)}
+                >
+                  {on ? <Check size={13} strokeWidth={3.2} /> : null}
+                </button>
+                <Favicon host={hostOf(l.url)} />
+                <div className="kb-res-main">
+                  <div className="kb-res-title">{l.title}</div>
+                  <div className="obc-topic">
+                    <TopicSelect value={topicOf(l)} onChange={(id) => onPick(l.url, id)} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       ) : (
         <p className="obc-empty">Open a folder above to start sorting.</p>
@@ -323,44 +355,110 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onIm
         <button className="ob-back" onClick={onBack}>
           Back
         </button>
-        <button className="ob-cta" onClick={onImport}>
-          Add {total} bookmarks to Intuition Core Team <ArrowRight size={16} />
+        <button className="ob-cta" onClick={onNext} disabled={selected.size === 0}>
+          Next · {selected.size} selected <ArrowRight size={16} />
         </button>
       </footer>
     </div>
   )
 }
 
-/* ── Act 3 — importing / done ─────────────────────────────────────────── */
+/* ── Act 2.5 — join the team (pre-filled invite) ──────────────────────── */
+function JoinTeam({ onBack, onJoin }: { onBack: () => void; onJoin: () => void }) {
+  const [code, setCode] = useState('INTUITION-CORE')
+  return (
+    <div className="ob-card ob-join">
+      <h2 className="ob-title ob-title--sm">Join your team</h2>
+      <p className="ob-lede ob-lede--sm">
+        You've been invited to a Circle. Confirm to join and bring your bookmarks in.
+      </p>
+
+      <div className="ob-join-team">
+        <span className="ob-join-av">IN</span>
+        <div className="ob-join-id">
+          <div className="ob-join-name">Intuition</div>
+          <div className="ob-join-sub mono">Core Team · 24 members</div>
+        </div>
+      </div>
+
+      <label className="ob-join-lab mono">Invite code</label>
+      <input
+        className="ob-join-input mono"
+        value={code}
+        onChange={(e) => setCode(e.target.value.toUpperCase())}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && code.trim()) onJoin()
+        }}
+      />
+
+      <footer className="ob-cat-foot">
+        <button className="ob-back" onClick={onBack}>
+          Back
+        </button>
+        <button className="ob-cta" onClick={onJoin} disabled={!code.trim()}>
+          Join <ArrowRight size={16} />
+        </button>
+      </footer>
+    </div>
+  )
+}
+
+/* ── Act 3 — importing (energy flux) / done ───────────────────────────── */
 function Importing({ total }: { total: number }) {
   return (
     <div className="ob-card ob-importing">
-      <div className="ob-spinner" />
-      <h2 className="ob-title ob-title--sm">Adding to Intuition Core Team</h2>
+      <div className="ob-flux" aria-hidden="true">
+        <div className="ob-flux-src">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span className="ob-flux-tile" key={i} />
+          ))}
+        </div>
+        <div className="ob-flux-wire">
+          {[0, 0.45, 0.9, 1.35].map((d, i) => (
+            <span className="ob-flux-dot" key={i} style={{ animationDelay: `${d}s` }} />
+          ))}
+        </div>
+        <div className="ob-flux-node">IN</div>
+      </div>
+      <h2 className="ob-title ob-title--sm">Joining Intuition</h2>
       <p className="ob-lede ob-lede--sm mono">
-        <b className="tnum">{total}</b> bookmarks · adding to Intuition Core Team
+        <b className="tnum">{total}</b> bookmarks flowing in
       </p>
     </div>
   )
 }
 
 function Done({ total, certifiedCount, onSee }: { total: number; certifiedCount: number; onSee: () => void }) {
+  const teamBase = 2400 // Intuition's existing collective knowledge
+  const teamTotal = teamBase + total
+  const share = Math.max(1, Math.round((total / teamTotal) * 100))
   return (
     <div className="ob-card ob-done">
       <div className="ob-check">
         <Check size={28} />
       </div>
-      <h1 className="ob-title">Your bookmarks are in</h1>
-      <div className="ob-done-stats">
-        <div className="ob-done-stat">
-          <b className="tnum">{total}</b>
-          <span>imported</span>
+      <h1 className="ob-title">You're part of Intuition</h1>
+
+      <div className="ob-cmp">
+        <div className="ob-cmp-heads">
+          <div className="ob-cmp-head">
+            <span className="ob-cmp-n tnum">{total}</span>
+            <span className="ob-cmp-lab">Your bookmarks</span>
+          </div>
+          <div className="ob-cmp-head ob-cmp-head--team">
+            <span className="ob-cmp-n tnum">{teamTotal.toLocaleString('en-US')}</span>
+            <span className="ob-cmp-lab">Intuition's knowledge</span>
+          </div>
         </div>
-        <div className="ob-done-stat">
-          <b className="tnum">{certifiedCount}</b>
-          <span>shared with the team</span>
+        <div className="ob-cmp-bar">
+          <span className="ob-cmp-bar-you" style={{ width: `${share}%` }} />
         </div>
+        <p className="ob-cmp-note">
+          Your knowledge is now <b className="tnum">{share}%</b> of the Circle's, and{' '}
+          <b className="tnum">{certifiedCount}</b> of your links were already kept by the team.
+        </p>
       </div>
+
       <button className="ob-cta" onClick={onSee}>
         Open my bookmarks <ArrowRight size={16} />
       </button>

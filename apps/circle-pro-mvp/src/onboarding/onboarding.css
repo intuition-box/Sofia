@@ -173,8 +173,7 @@
   height: 18px;
 }
 .ob-skip {
-  display: block;
-  margin: 24px auto 0;
+  margin-left: auto;
   border: none;
   background: transparent;
   color: var(--ds-muted);
@@ -883,4 +882,211 @@
   .ob-cta {
     justify-content: center;
   }
+}
+
+/* ── Act 2.5 — Join team (pre-filled invite) ───────────────── */
+.ob-join-team {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 22px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.ob-join-av {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-weight: 700;
+  font-size: 15px;
+  flex: none;
+}
+.ob-join-id {
+  flex: 1;
+  min-width: 0;
+}
+.ob-join-name {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.ob-join-sub {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.ob-join-badge {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+  background: var(--ds-accent-soft);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
+}
+.ob-join-lab {
+  display: block;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-bottom: 7px;
+}
+.ob-join-input {
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 15px 18px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--sunken);
+  color: var(--ds-ink);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.ob-join-input:focus {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, transparent);
+}
+
+/* ── Act 3 — energy flux (bookmarks → Intuition) ───────────── */
+.ob-flux {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto 28px;
+}
+.ob-flux-src {
+  display: grid;
+  grid-template-columns: repeat(3, 17px);
+  gap: 5px;
+  flex: none;
+}
+.ob-flux-tile {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: var(--ds-ink);
+}
+.ob-flux-wire {
+  position: relative;
+  width: 170px;
+  height: 2px;
+  margin: 0 16px;
+  background: var(--border-strong);
+}
+.ob-flux-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  animation: ob-flux-travel 1.8s linear infinite;
+}
+@keyframes ob-flux-travel {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(170px);
+    opacity: 0;
+  }
+}
+.ob-flux-node {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-weight: 700;
+  font-size: 16px;
+  flex: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob-flux-dot {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── Done — your knowledge vs Intuition (solid comparison) ─── */
+.ob-cmp {
+  margin: 24px 0 28px;
+}
+.ob-cmp-heads {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.ob-cmp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ob-cmp-head--team {
+  text-align: right;
+}
+.ob-cmp-n {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(30px, 6vw, 46px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-accent);
+}
+.ob-cmp-head--team .ob-cmp-n {
+  color: var(--ds-ink);
+}
+.ob-cmp-lab {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-muted);
+}
+.ob-cmp-bar {
+  position: relative;
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.ob-cmp-bar-you {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  min-width: 8px;
+  border-radius: var(--r-pill);
+  background: var(--ds-accent);
+}
+.ob-cmp-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+}
+.ob-cmp-note b {
+  color: var(--ds-ink);
 }
