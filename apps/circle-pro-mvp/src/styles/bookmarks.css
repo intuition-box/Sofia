@@ -452,33 +452,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bk-like {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: none;
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 10px;
-  border-radius: var(--r-pill);
-  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
-}
-.bk-like:hover {
-  color: var(--ds-ink);
-  border-color: var(--ds-accent);
-}
-.bk-like.on {
-  color: var(--ds-accent);
-  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--border-strong));
-  background: var(--ds-accent-soft);
-}
-.bk-like .ic svg {
-  width: 14px;
-  height: 14px;
-}
 /* Right column of a row: the like, with the service(s) that keep it underneath. */
 .bk-likes {
   display: flex;
@@ -801,30 +774,9 @@
 }
 
 /* ── Curation: add button, add form, drag grip, my context ─── */
+/* layout only — appearance from .btn--accent */
 .kb-add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 13px;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--ds-ink);
-  font-size: 12.5px;
-  font-weight: 600;
   white-space: nowrap;
-}
-.kb-add-btn:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 50%, var(--border-strong));
-}
-.kb-add-btn .ic svg {
-  width: 14px;
-  height: 14px;
-}
-.kb-add-btn--primary {
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  border-color: transparent;
 }
 .kb-addform {
   display: flex;

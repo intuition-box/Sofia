@@ -46,48 +46,11 @@
 .sk-create-input:focus {
   border-color: var(--ds-accent);
 }
-.skcard-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.sk-theme {
-  font-size: 10.5px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-.sk-meta {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 11px;
-  color: var(--ds-muted-soft);
-}
-/* Vote tally chip — same look as the vote buttons (chevron + count). */
-.sk-vote {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--border-strong);
-  color: var(--ds-muted);
-  font-family: var(--mono, monospace);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-}
-.sk-vote svg {
-  width: 11px;
-  height: 11px;
-}
 /* Favicons of the tools this skill leans on, on the skill card. */
 .skcard-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-top: 10px;
 }
 .skcard-tool {
   width: 30px;
@@ -97,13 +60,6 @@
   background: var(--surface-2);
   padding: 3px;
   object-fit: contain;
-}
-/* Domain tag (left) + vote (right) on one row, below the name. */
-.skcard-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 .skill-post {
   display: flex;
@@ -460,31 +416,6 @@
   margin-left: auto;
   display: flex;
   gap: 8px;
-}
-.skv-act {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 13px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border-strong);
-  background: var(--surface-2);
-  color: var(--ds-ink);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.skv-act:hover {
-  background: var(--surface-3);
-}
-.skv-act.on {
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-  color: #0c0b14;
-}
-.skv-act .ic svg {
-  width: 14px;
-  height: 14px;
 }
 .skv-title {
   margin: 0 0 12px;
@@ -849,18 +780,6 @@
 .mem-grid.mem-grid--compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.view-all-btn {
-  border: none;
-  background: none;
-  color: var(--ds-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color var(--t-fast) var(--ease);
-}
-.view-all-btn:hover {
-  color: var(--ds-ink);
-}
 .mem-viewall {
   margin-left: auto;
 }
@@ -1117,173 +1036,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.tg-card {
-  display: flex;
-  gap: 14px;
-  padding: 16px 17px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
-}
-.tg-card:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
-}
-.tg-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-.tg-card-head {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 10px;
-}
-.tg-icon {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--surface-2);
-  overflow: hidden;
-  flex: none;
-}
-.tg-icon-glyph {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--c);
-}
-.tg-icon-fav {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 20px;
-  height: 20px;
-}
-.tg-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ds-ink);
-}
-.tg-desc {
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ds-muted);
-  margin-bottom: 13px;
-  min-height: 36px;
-}
-.tg-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
-.tg-foot-lab {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-  flex: none;
-}
-.tg-used {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.tg-used-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  background: var(--surface-3);
-  font-size: 11px;
-  color: var(--ds-ink);
-}
-.tg-used-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-.tg-vote {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  flex: none;
-  align-self: center;
-  padding: 6px 11px;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--ds-muted);
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
-}
-.tg-vote:hover {
-  border-color: var(--ds-accent);
-}
-.tg-vote-arrow {
-  font-size: 11px;
-  line-height: 1;
-}
-.tg-vote-count {
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--ds-ink);
-}
-.tg-vote.on {
-  border-color: var(--ds-accent);
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-}
-.tg-vote.on .tg-vote-count {
-  color: var(--ds-on-accent);
-}
-.tg-card--add {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px 12px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 14px;
-  background: transparent;
-  color: var(--ds-muted);
-  cursor: pointer;
-}
-.tg-card--add:hover {
-  border-color: var(--ds-ink);
-  color: var(--ds-ink);
-}
-.tg-add-ic {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px dashed var(--border-strong);
-  font-size: 20px;
-}
-.tg-add-label {
-  font-size: 12px;
-  font-weight: 600;
-}
 .skv-rail {
   width: 380px;
   flex-shrink: 0;
@@ -1392,19 +1144,9 @@
   background: var(--surface-3);
   color: var(--ds-ink);
 }
+/* layout only — appearance from .btn--accent */
 .cc-send {
   flex: none;
-  padding: 7px 14px;
-  border: none;
-  border-radius: 8px;
-  background: var(--ds-accent);
-  color: #0c0b14;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.cc-send:hover {
-  filter: brightness(1.05);
 }
 .cc-pop {
   position: absolute;
@@ -1551,36 +1293,6 @@
 }
 
 /* Vote control (URLs + tools), like the explorer's upvote. */
-.vote-btn {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 4px 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
-}
-.vote-btn svg {
-  width: 14px;
-  height: 14px;
-}
-.vote-btn:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-ink);
-}
-.vote-btn.on {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
-  background: var(--ds-accent-soft);
-}
 .tv-feat-vote {
   align-self: flex-start;
   margin-top: 8px;
@@ -1792,30 +1504,8 @@ button.sk-tool-chip {
   gap: 9px;
   padding: 14px 16px;
 }
-/* head — big favicon + name (tool card; skill card uses the name alone) */
-.skcard-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-}
-.skcard-fav {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-}
-.skcard-fav img {
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
-}
-.skcard-desc {
+/* Descriptor slot — domain tag (skill) or description text (tool). */
+.skcard-sub {
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--ds-muted);
@@ -2698,27 +2388,6 @@ button.sk-tool-chip {
   width: 13px;
   height: 13px;
 }
-.mv-res-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.mv-res-add:hover {
-  border-color: var(--ds-muted);
-  color: var(--ds-ink);
-}
-.mv-res-add .ic svg {
-  width: 14px;
-  height: 14px;
-}
 
 /* add-resource flow: paste a link · or pick from bookmarks */
 .mv-add {
@@ -2760,20 +2429,6 @@ button.sk-tool-chip {
 .mv-add-input::placeholder {
   color: var(--ds-muted);
 }
-.mv-add-go {
-  flex: none;
-  border: none;
-  padding: 6px 14px;
-  border-radius: var(--r-sm);
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-.mv-add-go:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 .mv-add-or {
   display: flex;
   align-items: center;
@@ -2813,30 +2468,6 @@ button.sk-tool-chip {
 }
 
 /* ── travel timeline ── */
-.mv-vote {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-pill);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--ds-ink);
-  background: transparent;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
-    border-color var(--t-fast) var(--ease);
-}
-.mv-vote:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
-}
-.mv-vote.on {
-  color: var(--ds-on-accent);
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-}
 .mv-tl {
   position: relative;
   padding-left: 22px;

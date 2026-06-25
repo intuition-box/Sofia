@@ -326,18 +326,9 @@
   color: var(--ds-ink);
   margin: 0;
 }
+/* layout only — appearance from .btn--quiet */
 .es-sec-all {
   flex-shrink: 0;
-  border: none;
-  background: none;
-  color: var(--ds-accent);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-/* Light mode: black instead of peach (peach only pops on the dark surface). */
-:root:not(.dark) .es-sec-all {
-  color: var(--ds-ink);
 }
 
 /* ── Grid (tools + members) ────────────────────────────────── */

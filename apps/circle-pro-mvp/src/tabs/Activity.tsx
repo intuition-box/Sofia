@@ -4,6 +4,7 @@
  * adds a skill. Seeded skills come from mock data; everything added lives in
  * the skills store. (The old global Tools lens was removed — Skills only.)
  */
+// NOTE(audit 2026-06-25): fichier de 645 l. — extraire ToolView/Tools (~l.467-625) et SkillModal dans des modules dédiés (règle <800 l., 1 responsabilité/fichier). Non appliqué (consigne : annoter, ne pas refactorer).
 import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
 import { DomainTagByTopic, TopicGlyph, TagIcon } from '../components/Tag'
@@ -103,6 +104,7 @@ export function Activity({ role = null }: ActivityProps) {
   const submitCreate = () => {
     const name = draft.trim()
     if (!name) return
+    // TODO(audit 2026-06-25): cast trompeur — `role` est `RoleId | null` ; `(role as RoleId) || 'dev'` prétend que null est un RoleId. Remplacer par `role ?? 'dev'`.
     const id = createSkill(name, (role as RoleId) || 'dev')
     setDraft('')
     setCreating(false)
@@ -344,20 +346,20 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
       }}
     >
       <div className="skcard-main">
-        <div className="skcard-head">
-          <span className="skcard-fav">
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${t.host}&sz=64`}
-              alt=""
-              loading="lazy"
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-              }}
-            />
-          </span>
-          <span className="sk-name">{t.name}</span>
+        <span className="sk-name">{t.name}</span>
+        <div className="skcard-tools">
+          <img
+            className="skcard-tool"
+            src={`https://www.google.com/s2/favicons?domain=${t.host}&sz=64`}
+            alt=""
+            title={t.name}
+            loading="lazy"
+            onError={(e) => {
+              ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
+            }}
+          />
         </div>
-        <div className="skcard-desc">{t.desc}</div>
+        <span className="skcard-sub">{t.desc}</span>
       </div>
       <SkCardVote base={t.base} />
     </div>
@@ -473,6 +475,7 @@ function ToolView({ tool, onClose }: { tool: TgTool; onClose: () => void }) {
   const onCopy = () => {
     setCopied(true)
     toast('Tool copied to clipboard')
+    // NOTE(audit 2026-06-25): `window.setTimeout` incohérent avec le reste du code (utilise `setTimeout`).
     window.setTimeout(() => setCopied(false), 1700)
   }
 

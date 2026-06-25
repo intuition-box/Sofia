@@ -91,7 +91,7 @@ function ArchiveRead({ archive, onEdit }: { archive: ArchiveT; onEdit: () => voi
             </div>
           </div>
           <div className="ar-headbar-actions">
-            <button className="btn btn--accent btn--sm" onClick={onEdit}>
+            <button className="btn btn--outline" onClick={onEdit}>
               <Icon name="edit" /> Edit
             </button>
           </div>
