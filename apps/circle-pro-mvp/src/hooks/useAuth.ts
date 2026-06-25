@@ -4,7 +4,7 @@
  * (external first, for ENS resolution), login/logout, and a token getter.
  */
 import { useCallback, useMemo } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { usePrivy, type WalletWithMetadata } from '@privy-io/react-auth'
 
 export function useAuth() {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy()
@@ -15,8 +15,9 @@ export function useAuth() {
   // user's real wallet, not the Privy embedded one.
   const addresses = useMemo<string[]>(() => {
     if (!user) return []
-    const wallets = ((user.linkedAccounts ?? []) as any[]).filter(
-      (a) => a?.type === 'wallet' && typeof a.address === 'string',
+    const wallets = (user.linkedAccounts ?? []).filter(
+      (a): a is WalletWithMetadata =>
+        a.type === 'wallet' && typeof a.address === 'string',
     )
     const external = wallets.filter((a) => a.walletClientType !== 'privy')
     const embedded = wallets.filter((a) => a.walletClientType === 'privy')

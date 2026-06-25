@@ -30,16 +30,19 @@ function dedupe(list: PublicComment[]): PublicComment[] {
 }
 
 export function useComments(key: string) {
-  const { authenticated, token } = useAuth()
+  const { authenticated, token, wallet } = useAuth()
   const { circleId } = useCircle()
   const { profile } = useProfile()
   const qc = useQueryClient()
   // circleId in the key so switching workspace refetches the right thread.
-  const queryKey = ['comments', circleId, key]
+  // wallet too: `likedByMe` is per-viewer, so login/logout/wallet-switch must
+  // refetch rather than serve the previous identity's cached like state.
+  const queryKey = ['comments', circleId, key, wallet]
 
   const [extra, setExtra] = useState<PublicComment[]>([])
   const [extraHasMore, setExtraHasMore] = useState<boolean | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [extraError, setExtraError] = useState<string | null>(null)
 
   const q = useQuery({
     queryKey,
@@ -73,6 +76,9 @@ export function useComments(key: string) {
       const res = await listComments(t, key, { offset: items.length, circleId })
       setExtra((xs) => dedupe([...xs, ...res.comments]))
       setExtraHasMore(res.hasMore)
+      setExtraError(null)
+    } catch (e) {
+      setExtraError((e as Error).message || 'Could not load more comments')
     } finally {
       setLoadingMore(false)
     }
@@ -81,6 +87,7 @@ export function useComments(key: string) {
   const refresh = useCallback(() => {
     setExtra([])
     setExtraHasMore(null)
+    setExtraError(null)
     qc.invalidateQueries({ queryKey })
   }, [qc]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -111,9 +118,14 @@ export function useComments(key: string) {
         likedByMe: !c.likedByMe,
         likeCount: c.likeCount + (c.likedByMe ? -1 : 1),
       })
-      const t = await token()
-      const fresh = c.likedByMe ? await unlikeComment(t, c.id) : await likeComment(t, c.id)
-      patch(c.id, fresh)
+      try {
+        const t = await token()
+        const fresh = c.likedByMe ? await unlikeComment(t, c.id) : await likeComment(t, c.id)
+        patch(c.id, fresh)
+      } catch (e) {
+        patch(c.id, c) // network failed — roll the optimistic flip back
+        throw e
+      }
     },
     [token, patch],
   )
@@ -125,7 +137,7 @@ export function useComments(key: string) {
     hasMore,
     loadMore,
     refresh,
-    error: q.error ? (q.error as Error).message : null,
+    error: q.error ? (q.error as Error).message : extraError,
     // Write gating for the composer.
     canWrite: authenticated && !!profile,
     add,
