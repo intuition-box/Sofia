@@ -1,15 +1,16 @@
 {
   "name": "circle-pro-extension",
-  "displayName": "Sofia Pro — Add to team",
+  "displayName": "Sofia Pro — Share in Sofia",
   "version": "0.1.0",
   "private": true,
-  "description": "Right-click any page or link → Add to team. Frictionless team bookmarking.",
+  "description": "Right-click any page or link → Share in Sofia. Qualify it with the Sofia taxonomy, frictionless.",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package"
   },
   "dependencies": {
+    "@0xsofia/taxonomy": "workspace:*",
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0"
@@ -23,6 +24,6 @@
     "typescript": "^5.9.3"
   },
   "manifest": {
-    "permissions": ["contextMenus", "storage", "activeTab"]
+    "permissions": ["contextMenus", "storage", "activeTab", "history"]
   }
 }
