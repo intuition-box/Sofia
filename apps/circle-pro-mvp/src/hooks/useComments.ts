@@ -8,7 +8,7 @@
  * Reads are public (guests included); writes require auth + a profile, surfaced
  * via `canWrite`.
  */
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './useAuth'
 import { useCircle } from './useCircle'
@@ -37,7 +37,12 @@ export function useComments(key: string) {
   // circleId in the key so switching workspace refetches the right thread.
   // wallet too: `likedByMe` is per-viewer, so login/logout/wallet-switch must
   // refetch rather than serve the previous identity's cached like state.
-  const queryKey = ['comments', circleId, key, wallet]
+  // Memoized so patch/refresh can depend on it — otherwise their closures keep
+  // writing to / invalidating the entry from the render they were created on.
+  const queryKey = useMemo(
+    () => ['comments', circleId, key, wallet],
+    [circleId, key, wallet],
+  )
 
   const [extra, setExtra] = useState<PublicComment[]>([])
   const [extraHasMore, setExtraHasMore] = useState<boolean | null>(null)
@@ -65,7 +70,7 @@ export function useComments(key: string) {
       )
       setExtra((xs) => xs.map((c) => (c.id === id ? next : c)))
     },
-    [qc], // eslint-disable-line react-hooks/exhaustive-deps
+    [qc, queryKey],
   )
 
   const loadMore = useCallback(async () => {
@@ -89,7 +94,7 @@ export function useComments(key: string) {
     setExtraHasMore(null)
     setExtraError(null)
     qc.invalidateQueries({ queryKey })
-  }, [qc]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [qc, queryKey])
 
   const add = useCallback(
     async (text: string) => {
