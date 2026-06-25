@@ -1,3 +1,9 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25. Importé UNIQUEMENT par Memory.tsx (mort)
+ * → mort par transitivité.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * MemoryView — the detail view for a single memory record. Ported from the
  * Claude Design "Memory Detail" onto the app's design-system tokens.

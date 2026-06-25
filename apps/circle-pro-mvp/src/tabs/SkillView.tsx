@@ -279,6 +279,7 @@ function SkillPublished({ vm, store }: { vm: SkillVM; store: SkillsState }) {
         <span className="psk-sec-title">Steps</span>
       </div>
       <ol className="psk-steps">
+        {/* NOTE(audit 2026-06-25): key={i} (index) — liste en lecture seule ici, impact faible. */}
         {steps.map((s, i) => (
           <li className="psk-step" key={i}>
             <span className="psk-step-n mono">{String(i + 1).padStart(2, '0')}</span>
@@ -435,6 +436,7 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
             Ask Claude to draft
           </button>
         </div>
+        {/* TODO(audit 2026-06-25): key={i} sur liste ÉDITABLE (inputs réordonnables) → bug de réconciliation au réordon. Restructurer `steps` en {id,text} et keyer sur id. */}
         {steps.map((s, i) => (
           <div className="pske-step-row" key={i}>
             <span className="pske-step-n mono">{String(i + 1).padStart(2, '0')}</span>

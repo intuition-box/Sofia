@@ -1,3 +1,11 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25. Importé UNIQUEMENT par Members.tsx + Overview.tsx
+ * (tous deux orphelins) → mort par transitivité.
+ * RÉUTILISABLE : c'est exactement la « carte de topics » de la PO topic-first ;
+ * candidat n°1 à recâbler plutôt qu'à supprimer.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Topic cartography — a squarified treemap where each cell's area is the
  * topic's mark intensity. Clicking a cell scopes the Members view to that

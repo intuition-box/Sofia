@@ -1,3 +1,10 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25, non monté dans App.tsx (aucun importeur).
+ * Vue par rôle abandonnée. Entraîne Memory.tsx + MemoryView.tsx (morts par transitivité).
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * À recâbler ou supprimer dans une passe dédiée.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Roles — the teams you belong to. The team overview grid is dropped (that
  * tree lives in the left rail now); instead each of your teams shows its own

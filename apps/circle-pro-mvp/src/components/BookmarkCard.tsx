@@ -1,3 +1,10 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25. Importé UNIQUEMENT par Members.tsx (orphelin)
+ * → mort par transitivité. NB : la carte bookmark VIVANTE est rendue inline dans
+ * Bookmarks.tsx / Essential.tsx, pas via ce composant.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * One bookmark — feed-card layout: curator header → generated cover → title →
  * votes + intent/topic tags. Ported from `SignalCard` in `circle/Expertise.jsx`.

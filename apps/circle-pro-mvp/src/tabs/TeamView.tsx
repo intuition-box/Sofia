@@ -27,11 +27,13 @@ export interface TeamMeta {
 /** Map a navbar team to its closest functional role, to scope tools + memory. */
 const TEAM_ROLE: Record<string, RoleId> = { eng: 'dev', design: 'design', marketing: 'socials' }
 
+// NOTE(audit 2026-06-25): `FlatLink` défini 3× (ici, Bookmarks.tsx, Onboarding.tsx). Forme de base {title,url} à remonter dans data/types.ts.
 interface FlatLink {
   title: string
   url: string
 }
 
+// TODO(audit 2026-06-25): doublon de `allLinksDeep` (data/folderTree.ts). Importer celui-ci et supprimer cette copie.
 function allLinks(nodes: BmNode[], out: FlatLink[] = []): FlatLink[] {
   for (const x of nodes) {
     if (x.type === 'link') out.push({ title: x.title, url: x.url })
@@ -40,6 +42,7 @@ function allLinks(nodes: BmNode[], out: FlatLink[] = []): FlatLink[] {
   return out
 }
 
+// NOTE(audit 2026-06-25): `Favicon` dupliqué 3× (ici, Onboarding.tsx, Essential.tsx). À extraire dans components/Favicon.tsx (classes CSS différentes → passer la classe en prop, sans toucher au CSS).
 function Favicon({ host }: { host: string }) {
   const [err, setErr] = useState(false)
   if (err || !host) return <span className="tv-fav tv-fav--fb">{(host[0] || '?').toUpperCase()}</span>

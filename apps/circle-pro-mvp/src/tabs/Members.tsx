@@ -1,3 +1,10 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25, non monté dans App.tsx (aucun importeur).
+ * NB : ≠ TeamMembers.tsx, qui lui est VIVANT (rendu par TeamView). Roster non monté.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Entraîne BookmarkCard.tsx + TopicsTreemap.tsx (morts par transitivité via ce fichier).
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Members & expertise — one ranked table for two modes:
  *  · "all"    → members ranked by trust score

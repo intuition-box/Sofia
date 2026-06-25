@@ -1,3 +1,9 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25. Importé UNIQUEMENT par Roles.tsx (orphelin)
+ * → mort par transitivité. NB : ≠ l'onglet « Archive » de TeamView (= Archive.tsx, vivant).
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Collective memory — the Circle's shared context (decisions, threads, docs)
  * with an ask-and-retrieve box so members can recall "what did we decide about

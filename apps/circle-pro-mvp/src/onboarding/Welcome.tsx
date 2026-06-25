@@ -1,3 +1,9 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25, non monté (aucun importeur).
+ * Doublon : Onboarding.tsx définit sa propre étape Welcome interne et n'importe pas ce fichier.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Onboarding entry — placeholder welcome veil.
  *

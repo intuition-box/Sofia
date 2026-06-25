@@ -47,6 +47,7 @@ export function setContext(url: string, text: string): void {
   state = { ...state, context }
   emit()
 }
+// NOTE(audit 2026-06-25): export mort — `setOrder` n'est importé nulle part. À supprimer (ou implémenter le pin d'ordre prévu). Laissé en place (consigne : ne rien supprimer).
 export function setOrder(urls: string[]): void {
   state = { ...state, order: urls }
   emit()

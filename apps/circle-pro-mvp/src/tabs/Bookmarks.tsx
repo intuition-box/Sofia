@@ -23,6 +23,7 @@ import { PostDetail, type PostItem } from './PostDetail'
 
 const SHOWN_CAP = 60
 
+// NOTE(audit 2026-06-25): `FlatLink` dupliqué (cf. TeamView.tsx, Onboarding.tsx). À remonter dans data/types.ts.
 interface FlatLink {
   title: string
   url: string
