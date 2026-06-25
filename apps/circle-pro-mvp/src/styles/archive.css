@@ -70,19 +70,15 @@
 .ar-head {
   padding: 24px 28px 22px;
 }
-/* Header bar — CTA on the left, byline on the right (like the skill card). */
+/* Header bar — identity (avatar + name) left, CTA right, like the Skill /
+   Tool topbar: a flat row with a bottom rule. */
 .ar-headbar {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 10px 12px;
+  gap: 11px;
+  padding-bottom: 16px;
   margin-bottom: 18px;
-  border: 1px solid var(--border-strong);
-  border-radius: 12px;
-  background: var(--surface-2);
-}
-.ar-headbar .ar-byline {
-  margin: 0;
+  border-bottom: 1px solid var(--border);
 }
 .ar-headbar-actions {
   margin-left: auto;
@@ -361,6 +357,7 @@ a.ar-item:hover .ar-item-go {
 .ar-edit-bar {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -504,25 +501,10 @@ a.ar-item:hover .ar-item-go {
 .ar-pick {
   padding: 4px 28px 16px;
 }
+/* layout only — appearance comes from .btn--quiet */
 .ar-file {
   flex: 0 0 auto;
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 11px;
-  border-radius: 8px;
-  border: 1px solid var(--ds-accent);
-  background: var(--ds-accent-soft);
-  color: var(--ds-accent);
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-}
-.ar-file:hover {
-  filter: brightness(0.98);
+  align-self: center;
 }
 
 /* ── Create a category ──────────────────────────────────────────────────── */

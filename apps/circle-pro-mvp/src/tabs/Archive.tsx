@@ -26,18 +26,6 @@ import {
   type ArchiveItem,
 } from '../lib/archives'
 
-/* Small round monogram avatar. */
-function Av({ name, size = 19 }: { name: string; size?: number }) {
-  return (
-    <span
-      className="ar-av"
-      style={{ width: size, height: size, fontSize: size * 0.5, background: avGrad(name.length % 6) }}
-    >
-      {initials(name)}
-    </span>
-  )
-}
-
 export function Archive() {
   const archives = useArchivesStore()
   const [selId, setSelId] = useState(archives[0]?.id ?? '')
@@ -93,17 +81,17 @@ function ArchiveRead({ archive, onEdit }: { archive: ArchiveT; onEdit: () => voi
     <>
       <div className="ar-head">
         <div className="ar-headbar">
-          <div className="ar-byline">
-            <Av name={archive.createdBy} size={24} />
-            <span>
-              Created by <b>{archive.createdBy}</b>
+          <div className="psk-head">
+            <span className="psk-author-av" style={{ background: avGrad(archive.createdBy.length % 6) }}>
+              {initials(archive.createdBy)}
             </span>
+            <div className="psk-author-meta">
+              <div className="psk-author-name">{archive.createdBy}</div>
+              <div className="psk-author-sub mono">Created this archive</div>
+            </div>
           </div>
           <div className="ar-headbar-actions">
-            <button className="ar-add-btn" onClick={onEdit}>
-              <Icon name="plus" /> Add item
-            </button>
-            <button className="ar-edit-btn" onClick={onEdit}>
+            <button className="btn btn--accent btn--sm" onClick={onEdit}>
               <Icon name="edit" /> Edit
             </button>
           </div>
@@ -143,7 +131,7 @@ function ReadItem({ archiveId, catId, it }: { archiveId: string; catId: string; 
         {it.note ? <span className="ar-item-note">{it.note}</span> : null}
       </span>
       <button
-        className={`ar-vote${it.voted ? ' on' : ''}`}
+        className={`btn-vote btn-vote--sm${it.voted ? ' on' : ''}`}
         aria-pressed={it.voted}
         onClick={(e) => {
           e.preventDefault()
@@ -151,10 +139,12 @@ function ReadItem({ archiveId, catId, it }: { archiveId: string; catId: string; 
           voteItem(archiveId, catId, it.id)
         }}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m6 15 6-6 6 6" />
+        <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 19V5" />
+          <path d="M5 12l7-7 7 7" />
         </svg>
-        <span className="tnum">{it.votes}</span>
+        <span className="btn-vote-sep" />
+        <span className="btn-vote-n">{it.votes}</span>
       </button>
     </a>
   )
@@ -176,7 +166,7 @@ function ArchiveEdit({ archive, onDone }: { archive: ArchiveT; onDone: () => voi
     <>
       <div className="ar-head">
         <div className="ar-edit-bar">
-          <button className="ar-done" onClick={onDone}>
+          <button className="btn btn--outline btn--sm" onClick={onDone}>
             Done
           </button>
         </div>
@@ -240,7 +230,7 @@ function ArchiveEdit({ archive, onDone }: { archive: ArchiveT; onDone: () => voi
               </div>
             ) : (
               <div className="ar-additem-row">
-                <button className="ar-additem" onClick={() => setAddingTo(cat.id)}>
+                <button className="btn-add btn-add--row" onClick={() => setAddingTo(cat.id)}>
                   ＋ Add item to {cat.name}
                 </button>
               </div>
@@ -263,7 +253,7 @@ function ArchiveEdit({ archive, onDone }: { archive: ArchiveT; onDone: () => voi
               if (e.key === 'Enter') submitCat()
             }}
           />
-          <button className="ar-newcat-btn" onClick={submitCat}>
+          <button className="btn btn--accent btn--sm" onClick={submitCat}>
             Create
           </button>
         </div>
@@ -287,7 +277,7 @@ function EditItem({ cat, it }: { cat: ArchiveCategory; it: ArchiveItem }) {
         <span className="ar-item-host mono">{it.host}</span>
       </span>
       {cat.unsorted ? (
-        <button className="ar-file" onClick={() => toast('File into a category')}>
+        <button className="btn btn--quiet btn--sm ar-file" onClick={() => toast('File into a category')}>
           File →
         </button>
       ) : null}

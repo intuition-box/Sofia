@@ -138,7 +138,7 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
             <img src={`https://cdn.jsdelivr.net/gh/alrra/browser-logos@main/src/${slug}/${slug}_64x64.png`} alt={name} />
           </button>
         ))}
-        <button className="ob-skip" onClick={onSkip}>
+        <button className="btn btn--quiet btn--sm ob-skip" onClick={onSkip}>
           Skip
         </button>
       </div>
@@ -316,7 +316,7 @@ function Sort({ topicOf, onPick, onBack, onNext }: SortProps) {
       )}
 
       <footer className="ob-cat-foot">
-        <button className="ob-back" onClick={onBack}>
+        <button className="btn btn--quiet btn--sm ob-back" onClick={onBack}>
           Back
         </button>
         <button className="ob-cta" onClick={onNext} disabled={selected.size === 0}>
@@ -356,7 +356,7 @@ function JoinTeam({ onBack, onJoin }: { onBack: () => void; onJoin: () => void }
       />
 
       <footer className="ob-cat-foot">
-        <button className="ob-back" onClick={onBack}>
+        <button className="btn btn--quiet btn--sm ob-back" onClick={onBack}>
           Back
         </button>
         <button className="ob-cta" onClick={onJoin} disabled={!code.trim()}>

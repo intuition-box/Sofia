@@ -109,7 +109,7 @@ export function Memory({ role = null }: MemoryProps) {
                 )}
               </button>
             ))}
-            <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
+            <button className="btn btn--quiet btn--sm mem-viewall" onClick={() => setShowAll(true)}>
               View all
             </button>
           </div>

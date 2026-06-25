@@ -18,7 +18,7 @@ export function AccountButton() {
 
   if (!authenticated) {
     return (
-      <button className="btn btn-accent" onClick={() => login()}>
+      <button className="btn btn--accent btn--sm" onClick={() => login()}>
         Connect
       </button>
     )
@@ -27,7 +27,7 @@ export function AccountButton() {
   // Authenticated but the pseudo gate hasn't resolved yet.
   if (needsProfile || !profile) {
     return (
-      <button className="btn btn-sm" disabled>
+      <button className="btn btn--outline btn--sm" disabled>
         Connecting…
       </button>
     )

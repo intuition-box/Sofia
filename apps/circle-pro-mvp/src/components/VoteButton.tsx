@@ -15,7 +15,7 @@ export function VoteButton({ base, className }: VoteButtonProps) {
   return (
     <button
       type="button"
-      className={`vote-btn${on ? ' on' : ''}${className ? ` ${className}` : ''}`}
+      className={`btn-vote btn-vote--sm${on ? ' on' : ''}${className ? ` ${className}` : ''}`}
       aria-pressed={on}
       aria-label={on ? 'Remove vote' : 'Vote'}
       onClick={(e) => {
@@ -23,10 +23,12 @@ export function VoteButton({ base, className }: VoteButtonProps) {
         setOn((v) => !v)
       }}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m6 15 6-6 6 6" />
+      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 19V5" />
+        <path d="M5 12l7-7 7 7" />
       </svg>
-      <span className="tnum">{base + (on ? 1 : 0)}</span>
+      <span className="btn-vote-sep" />
+      <span className="btn-vote-n">{base + (on ? 1 : 0)}</span>
     </button>
   )
 }

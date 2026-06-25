@@ -207,7 +207,7 @@ export function Bookmarks() {
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <button className="kb-add-btn" onClick={() => setAdding((v) => !v)}>
+          <button className="btn btn--accent btn--sm kb-add-btn" onClick={() => setAdding((v) => !v)}>
             <Icon name="plus" /> Add bookmark
           </button>
         </div>
@@ -250,7 +250,7 @@ export function Bookmarks() {
                         <TopicSelect value={ctxId} onChange={(id) => setTopic(l.url, id)} />
                         <button
                           type="button"
-                          className={`bk-like${isLiked ? ' on' : ''}`}
+                          className={`btn-vote btn-vote--sm${isLiked ? ' on' : ''}`}
                           aria-pressed={isLiked}
                           aria-label="Like"
                           onClick={(e) => {
@@ -259,7 +259,8 @@ export function Bookmarks() {
                           }}
                         >
                           <Icon name="thumbup" />
-                          <span className="tnum">{likeCount}</span>
+                          <span className="btn-vote-sep" />
+                          <span className="btn-vote-n">{likeCount}</span>
                         </button>
                       </div>
                       {services.length ? (
@@ -390,8 +391,8 @@ function AddForm({
         rows={2}
       />
       <div className="kb-addactions">
-        <button className="ex-back" onClick={onCancel}>Cancel</button>
-        <button className="kb-add-btn kb-add-btn--primary" onClick={() => onSubmit(url, title, why)}>
+        <button className="btn btn--quiet btn--sm" onClick={onCancel}>Cancel</button>
+        <button className="btn btn--accent btn--sm" onClick={() => onSubmit(url, title, why)}>
           Add to my bookmarks
         </button>
       </div>

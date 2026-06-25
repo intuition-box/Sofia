@@ -54,9 +54,9 @@ export function CommentRow({ c }: { c: Comment }) {
         )}
         <div className="pc-actions">
           <span className="pc-like">
-            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg> {c.likes}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg> {c.likes}
           </span>
-          <button className="pc-reply">Reply</button>
+          <button className="btn btn--quiet btn--xs">Reply</button>
         </div>
       </div>
     </div>
@@ -136,10 +136,10 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
               autoFocus
             />
             <div className="post-why-actions">
-              <button className="ex-back" onClick={() => setEditing(false)}>
+              <button className="btn btn--quiet btn--sm" onClick={() => setEditing(false)}>
                 Cancel
               </button>
-              <button className="post-composer-send" disabled={busy} onClick={saveEdit}>
+              <button className="btn btn--accent btn--sm" disabled={busy} onClick={saveEdit}>
                 Save
               </button>
             </div>
@@ -155,14 +155,14 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
             className={`pc-like${c.likedByMe ? ' is-on' : ''}`}
             onClick={() => onToggleLike(c)}
           >
-            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg> {c.likeCount}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg> {c.likeCount}
           </button>
           {mine && !editing ? (
             <>
-              <button className="pc-reply" onClick={() => setEditing(true)}>
+              <button className="btn btn--quiet btn--xs" onClick={() => setEditing(true)}>
                 Edit
               </button>
-              <button className="pc-reply" onClick={() => onDelete(c.id)}>
+              <button className="btn btn--quiet btn--xs" onClick={() => onDelete(c.id)}>
                 Delete
               </button>
             </>
@@ -200,7 +200,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
   return (
     <div className="content">
       <article className="post post--split">
-        <button className="post-back" onClick={onBack}>
+        <button className="btn btn--quiet btn--sm post-back" onClick={onBack}>
           <Icon name="chevronLeft" /> Back to feed
         </button>
 
@@ -271,10 +271,10 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
 
         <div className="post-actions">
           <VoteButton base={voteSeed(item.url)} className="post-action-vote" />
-          <button className="post-action">
+          <button className="btn btn--outline btn--sm">
             <Icon name="bookmark" /> Save
           </button>
-          <button className="post-action">
+          <button className="btn btn--outline btn--sm">
             <Icon name="send" /> Share
           </button>
         </div>
@@ -306,7 +306,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
           )}
 
           {hasMore ? (
-            <button className="pc-more" disabled={loadingMore} onClick={loadMore}>
+            <button className="btn btn--outline btn--sm pc-more" disabled={loadingMore} onClick={loadMore}>
               {loadingMore ? 'Loading…' : 'Load more comments'}
             </button>
           ) : null}
@@ -314,7 +314,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
           {canWrite ? (
             <CommentComposer onSend={(content) => void add(content)} />
           ) : (
-            <button className="post-composer-signin" onClick={() => login()}>
+            <button className="btn btn--accent btn--sm post-composer-signin" onClick={() => login()}>
               <Icon name="send" />
               {authenticated ? 'Set your handle to comment' : 'Sign in to comment'}
             </button>

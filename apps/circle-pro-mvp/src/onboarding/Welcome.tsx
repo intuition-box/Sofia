@@ -38,10 +38,10 @@ export function Welcome({ onImport, onExplore }: WelcomeProps) {
           </div>
         </div>
         <div className="vbtns">
-          <button className="btn btn-accent vbtn-primary" onClick={onImport}>
+          <button className="btn btn--accent vbtn-primary" onClick={onImport}>
             <Icon name="download" /> Import your bookmarks
           </button>
-          <button className="btn btn-ghost vbtn-ghost" onClick={onExplore}>
+          <button className="btn btn--outline vbtn-ghost" onClick={onExplore}>
             Explore the workspace first
           </button>
         </div>

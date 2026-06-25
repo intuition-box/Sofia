@@ -42,7 +42,7 @@ export function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, titl
           onChange={(e) => setQ(e.target.value)}
           autoFocus
         />
-        <button className="ex-back" onClick={onClose}>
+        <button className="btn btn--quiet btn--sm" onClick={onClose}>
           Close
         </button>
       </div>

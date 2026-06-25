@@ -72,30 +72,25 @@ export function Activity({ role = null }: ActivityProps) {
     const th = s.theme ? TOPIC_MAP[s.theme] : null
     return (
       <button className="skcard" key={s.id} onClick={() => onOpen(s.id)}>
-        <div className="skcard-top">
+        <div className="skcard-main">
           <span className="sk-name">{s.name}</span>
+          {tools.length ? (
+            <div className="skcard-tools">
+              {tools.map((id) => (
+                <img
+                  key={id}
+                  className="skcard-tool"
+                  src={`https://www.google.com/s2/favicons?domain=${SKILL_TOOL_HOST[id] ?? `${id}.com`}&sz=64`}
+                  alt=""
+                  title={TOOLS[id]?.label ?? id}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          ) : null}
           {th ? <DomainTagByTopic id={s.theme ?? ''} label={th.label} /> : null}
         </div>
-        <div className="sk-meta">
-          <span className="mono">
-            {urls.length} link{urls.length === 1 ? '' : 's'}
-          </span>
-          <TgVote base={votes} />
-        </div>
-        {tools.length ? (
-          <div className="skcard-tools">
-            {tools.map((id) => (
-              <img
-                key={id}
-                className="skcard-tool"
-                src={`https://www.google.com/s2/favicons?domain=${SKILL_TOOL_HOST[id] ?? `${id}.com`}&sz=64`}
-                alt=""
-                title={TOOLS[id]?.label ?? id}
-                loading="lazy"
-              />
-            ))}
-          </div>
-        ) : null}
+        <SkCardVote base={votes} />
       </button>
     )
   }
@@ -135,7 +130,7 @@ export function Activity({ role = null }: ActivityProps) {
                 )}
               </button>
             ))}
-            <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
+            <button className="btn btn--quiet btn--sm mem-viewall" onClick={() => setShowAll(true)}>
               View all
             </button>
           </div>
@@ -152,7 +147,7 @@ export function Activity({ role = null }: ActivityProps) {
                 }}
               />
               <button
-                className="btn btn-sm"
+                className="btn btn--outline btn--sm"
                 onClick={() => {
                   setCreating(false)
                   setDraft('')
@@ -160,7 +155,7 @@ export function Activity({ role = null }: ActivityProps) {
               >
                 Cancel
               </button>
-              <button className="btn btn-accent btn-sm" onClick={submitCreate}>
+              <button className="btn btn--accent btn--sm" onClick={submitCreate}>
                 Create
               </button>
             </div>
@@ -307,12 +302,12 @@ const TOOL_EXTRAS: Record<string, ToolExtras> = {
 }
 const EMPTY_EXTRAS: ToolExtras = { plugins: [], packages: [], connects: [] }
 
-/* Vertical vote rail (▲ + count) on each tool card. */
-function TgVote({ base }: { base: number }) {
+/* Attached full-height vote segment on the right edge of a skill card. */
+function SkCardVote({ base }: { base: number }) {
   const [on, setOn] = useState(false)
   return (
     <span
-      className={`tg-vote${on ? ' on' : ''}`}
+      className={`skcard-vote${on ? ' on' : ''}`}
       role="button"
       tabIndex={0}
       onClick={(e) => {
@@ -326,16 +321,20 @@ function TgVote({ base }: { base: number }) {
         }
       }}
     >
-      <span className="tg-vote-arrow">▲</span>
-      <span className="tg-vote-count">{base + (on ? 1 : 0)}</span>
+      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 19V5" />
+        <path d="M5 12l7-7 7 7" />
+      </svg>
+      <span className="btn-vote-n">{base + (on ? 1 : 0)}</span>
     </span>
   )
 }
 
+/* Tool grid card — same shell as the skill card (.skcard + attached vote). */
 function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
   return (
     <div
-      className="tg-card"
+      className="skcard"
       key={t.id}
       role="button"
       tabIndex={0}
@@ -344,25 +343,23 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
         if (e.key === 'Enter') onOpen(t)
       }}
     >
-      <div className="tg-main">
-        <div className="tg-card-head">
-          <span className="tg-icon" style={{ ['--c' as string]: t.color }}>
-            <b className="tg-icon-glyph">{t.glyph}</b>
+      <div className="skcard-main">
+        <div className="skcard-head">
+          <span className="skcard-fav">
             <img
-              className="tg-icon-fav"
               src={`https://www.google.com/s2/favicons?domain=${t.host}&sz=64`}
               alt=""
               loading="lazy"
               onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
               }}
             />
           </span>
-          <span className="tg-name">{t.name}</span>
+          <span className="sk-name">{t.name}</span>
         </div>
-        <div className="tg-desc">{t.desc}</div>
+        <div className="skcard-desc">{t.desc}</div>
       </div>
-      <TgVote base={t.base} />
+      <SkCardVote base={t.base} />
     </div>
   )
 }
@@ -400,7 +397,7 @@ export function Tools() {
             <TagIcon name="award" color="currentColor" size={13} /> {f.label}
           </button>
         ))}
-        <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
+        <button className="btn btn--quiet btn--sm mem-viewall" onClick={() => setShowAll(true)}>
           View all
         </button>
       </div>

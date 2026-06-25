@@ -31,6 +31,9 @@ import './styles/skill-view.css'
 import './styles/tool-view.css'
 import './styles/tags.css'
 import './styles/overlays.css'
+/* Button system last so its variants win over any leftover per-surface button
+   appearance; retained classes keep only layout (margin/position). */
+import './styles/buttons.css'
 
 /** Dev-only tag design-system sheet: open the app with `?tags` in the URL. */
 const SHOW_TAG_GALLERY = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tags')

@@ -103,7 +103,7 @@ export function SearchResults({ search }: { search: Search }) {
       <div className="sr-head">
         <h2>“{results.query}”</h2>
         <span className="sr-count">{loading ? 'searching…' : `${total} results`}</span>
-        <button className="sr-back" onClick={clear}>
+        <button className="btn btn--quiet btn--sm sr-back" onClick={clear}>
           ← Back
         </button>
       </div>

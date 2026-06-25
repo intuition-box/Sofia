@@ -148,7 +148,7 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
                     if (e.key === 'Enter') addFromUrl()
                   }}
                 />
-                <button className="mv-add-go" disabled={!pasteUrl.trim()} onClick={addFromUrl}>
+                <button className="btn btn--accent btn--sm" disabled={!pasteUrl.trim()} onClick={addFromUrl}>
                   Add
                 </button>
               </div>
@@ -158,7 +158,7 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
               <BookmarkPicker onPick={addFromBookmark} onClose={() => setAdding(false)} />
             </div>
           ) : (
-            <button className="mv-res-add" onClick={() => setAdding(true)}>
+            <button className="btn-add btn-add--row" onClick={() => setAdding(true)}>
               <Icon name="plus" /> Add link or doc
             </button>
           )}
@@ -192,11 +192,16 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
           <h2 className="mv-sec-title">Endorsed by</h2>
           <button
             type="button"
-            className={`mv-vote${endorsed ? ' on' : ''}`}
+            className={`btn-vote btn-vote--sm${endorsed ? ' on' : ''}`}
             aria-pressed={endorsed}
             onClick={() => setEndorsed((v) => !v)}
           >
-            ▲ {endorseCount + (endorsed ? 1 : 0)}
+            <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5" />
+              <path d="M5 12l7-7 7 7" />
+            </svg>
+            <span className="btn-vote-sep" />
+            <span className="btn-vote-n">{endorseCount + (endorsed ? 1 : 0)}</span>
           </button>
         </div>
         <div className="mv-end-list">

@@ -115,7 +115,7 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
         <div className="skv-topbar-right">
           {!editing ? (
             <>
-              <button className="psk-edit" onClick={() => setEditing(true)}>
+              <button className="btn btn--outline" onClick={() => setEditing(true)}>
                 <Icon name="edit" /> Edit
               </button>
               <div className="psk-use-wrap">
@@ -138,7 +138,7 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
               </div>
             </>
           ) : null}
-          <button className="skv-icon" aria-label="Close" onClick={onClose}>
+          <button className="skv-icon btn-icon" aria-label="Close" onClick={onClose}>
             <Icon name="close" />
           </button>
         </div>
@@ -324,10 +324,10 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
   return (
     <div className="pske">
       <div className="pske-bar">
-        <button className="pske-btn" onClick={() => commit(false)}>
+        <button className="btn btn--outline btn--sm" onClick={() => commit(false)}>
           Save draft
         </button>
-        <button className="pske-btn pske-btn--primary" onClick={() => commit(true)}>
+        <button className="btn btn--accent btn--sm" onClick={() => commit(true)}>
           Publish skill
         </button>
       </div>
@@ -348,7 +348,7 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
       <div className="pske-tags">
         {th ? <DomainTagByTopic id={vm.theme ?? ''} label={th.label} /> : null}
         {roleLabel && vm.role ? <RoleTag label={roleLabel} hue={deptHue(vm.role)} /> : null}
-        <button className="pske-add-chip" onClick={() => toast('Tag picker coming soon')}>
+        <button className="btn-add btn-add--chip" onClick={() => toast('Tag picker coming soon')}>
           ＋ Tag
         </button>
       </div>
@@ -369,7 +369,7 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
               </span>
             )
           })}
-          <button className="pske-add-chip" onClick={() => setPicking((v) => !v)}>
+          <button className="btn-add btn-add--chip" onClick={() => setPicking((v) => !v)}>
             ＋ Add tool
           </button>
         </div>
@@ -416,7 +416,7 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
             onClose={() => setBkPick(false)}
           />
         ) : (
-          <button className="pske-add-row" onClick={() => setBkPick(true)}>
+          <button className="btn-add btn-add--row" onClick={() => setBkPick(true)}>
             ＋ Add a link, doc, repo or skill
           </button>
         )}
@@ -453,7 +453,7 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
             </button>
           </div>
         ))}
-        <button className="pske-add-row" onClick={() => setSteps((arr) => [...arr, ''])}>
+        <button className="btn-add btn-add--row" onClick={() => setSteps((arr) => [...arr, ''])}>
           ＋ Add step
         </button>
       </div>
