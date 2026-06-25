@@ -41,3 +41,16 @@ internal.get('/internal/memberships', async (c) => {
   })
   return c.json({ memberships })
 })
+
+/** GET /internal/members?groupTermId= → active members of a circle (for the
+ *  circle-pro Members tab). circle-pro-api joins these wallets to its profiles. */
+internal.get('/internal/members', async (c) => {
+  const groupTermId = c.req.query('groupTermId') ?? ''
+  if (!groupTermId) throw new HTTPException(400, { message: 'groupTermId required' })
+  const members = await prisma.membership.findMany({
+    where: { groupTermId, status: 'ACTIVE' },
+    select: { wallet: true, role: true },
+    orderBy: { createdAt: 'asc' },
+  })
+  return c.json({ members })
+})

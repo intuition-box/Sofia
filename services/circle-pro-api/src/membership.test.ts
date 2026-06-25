@@ -1,13 +1,26 @@
 // Membership client tests — the gate logic, group-api call shape, caching, and
 // the enforcement flag. group-api is stubbed via a fake fetch; env via a mutable
 // mock object the tests flip between cases. No Postgres / no network.
-import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
+import { describe, it, expect, beforeEach, afterEach, afterAll, mock } from 'bun:test'
 
 // Mutable mocked env — membership.ts reads these live, so tests flip them.
+// IMPORTANT: bun's mock.module is process-global, so this replaces './env' for
+// EVERY test file in the run. We therefore (a) mirror the real env fields from
+// process.env so siwe/api tests still see jwtSecret/devSeedToken/etc., and
+// (b) default the gate OFF + group-api unconfigured, flipping them on only
+// inside this file's own tests (beforeEach) and resetting after (afterAll).
 const env = {
-  groupApiUrl: 'http://group-api.test',
-  groupApiInternalSecret: 'sek',
-  membershipEnforced: true,
+  isProd: false,
+  port: 8789,
+  databaseUrl: process.env.DATABASE_URL ?? '',
+  privyAppId: process.env.PRIVY_APP_ID ?? '',
+  privyAppSecret: process.env.PRIVY_APP_SECRET ?? '',
+  jwtSecret: process.env.JWT_SECRET ?? '',
+  devSeedToken: process.env.DEV_SEED_TOKEN ?? '',
+  corsOrigins: (process.env.CORS_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  groupApiUrl: '',
+  groupApiInternalSecret: '',
+  membershipEnforced: false,
 }
 mock.module('./env', () => ({ env }))
 
@@ -36,6 +49,13 @@ beforeEach(() => {
 })
 afterEach(() => {
   globalThis.fetch = realFetch
+})
+// Leave the shared env mock in a benign state for other test files (gate off,
+// group-api unconfigured) so this file's mutations don't leak.
+afterAll(() => {
+  env.groupApiUrl = ''
+  env.groupApiInternalSecret = ''
+  env.membershipEnforced = false
 })
 
 describe('isMember', () => {

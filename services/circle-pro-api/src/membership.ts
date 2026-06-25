@@ -63,3 +63,20 @@ export async function listCircles(wallet: string): Promise<CircleMembership[]> {
   const { memberships } = (await res.json()) as { memberships: CircleMembership[] }
   return memberships
 }
+
+export interface CircleMemberRef {
+  wallet: string
+  role: string
+}
+
+/** Active members of a circle (wallet + role) — the Members tab joins these to
+ *  circle-pro profiles + derives expertise from their shared bookmarks. */
+export async function listMembers(circleId: string): Promise<CircleMemberRef[]> {
+  if (!groupApiConfigured()) return []
+  const res = await internalGet(
+    `/internal/members?groupTermId=${encodeURIComponent(circleId)}`,
+  )
+  if (!res.ok) throw new Error(`group-api members list failed: ${res.status}`)
+  const { members } = (await res.json()) as { members: CircleMemberRef[] }
+  return members
+}
