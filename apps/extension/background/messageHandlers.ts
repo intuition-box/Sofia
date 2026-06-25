@@ -216,6 +216,10 @@ export function setupMessageHandlers(): void {
         message.data?.siweMessage || message.siweMessage || ''
       const siweSignature =
         message.data?.siweSignature || message.siweSignature || ''
+      // Optional circle-pro session JWT, minted from the same signature on the
+      // /auth page. Authenticates writes to Sofia Pro (members-only backend).
+      const circleProToken =
+        message.data?.circleProToken || message.circleProToken || null
       if (walletAddress) {
         (async () => {
           try {
@@ -245,7 +249,13 @@ export function setupMessageHandlers(): void {
             }
             // Update lastActiveWallet
             await chrome.storage.local.set({ lastActiveWallet: walletAddress })
-            await chrome.storage.session.set({ walletAddress, walletType, pending_external_auth: true })
+            await chrome.storage.session.set({
+              walletAddress,
+              walletType,
+              pending_external_auth: true,
+              // Session-scoped (cleared on browser close), exp 12h server-side.
+              ...(circleProToken ? { circleProToken } : {})
+            })
             // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
             await XPServiceClass.migrateToWalletKeys(walletAddress)
             logger.info('Wallet connected from external page', { walletAddress, walletType })

@@ -6,6 +6,12 @@ const DOCS_BASE =
 const BLOG_BASE =
   import.meta.env.VITE_BLOG_URL || 'https://blog.sofia.intuition.box'
 
+// circle-pro-api — the /auth page mints a session JWT here so the extension can
+// write to Sofia Pro (members-only backend). Optional: if unreachable, wallet
+// connection still completes, just without the Pro token.
+export const CIRCLE_PRO_API_URL =
+  import.meta.env.VITE_CIRCLE_PRO_API_URL || 'https://circle-pro-api.sofia.intuition.box'
+
 export const URLS = {
   docs: {
     home: DOCS_BASE,

@@ -2,7 +2,15 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useWallets } from '@privy-io/react-auth'
 import { useWalletConnection } from '../lib/services/WalletProvider'
 import { sendToExtension, DEFAULT_EXTENSION_ID } from './oauthConfig'
+import { fetchCircleProNonce, exchangeCircleProToken } from './circleProAuth'
 import styles from './auth.module.css'
+
+/** A local random 16-char hex nonce — fallback when circle-pro-api is down. */
+function randomNonce(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
 
 function getExtensionId() {
   return (
@@ -16,13 +24,9 @@ function getExtensionId() {
  * the signature so it knows the wallet address actually belongs to the user
  * connecting, not a string the page chose to claim.
  */
-function buildSiweMessage(address: string): string {
+function buildSiweMessage(address: string, nonce: string): string {
   const domain = window.location.host
   const uri = window.location.origin
-  // 16-char hex nonce, fresh per connect
-  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(8)))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
   const issuedAt = new Date().toISOString()
   return [
     `${domain} wants you to sign in with your Ethereum account:`,
@@ -91,7 +95,12 @@ export function AuthPage() {
     signaturePending.current = true
     ;(async () => {
       try {
-        const siweMessage = buildSiweMessage(address)
+        // Reuse circle-pro-api's one-time nonce so the SAME signature also mints
+        // a Pro session JWT (no second wallet prompt). Falls back to a local
+        // nonce if circle-pro-api is unreachable — extension auth still works.
+        const circleProNonce = await fetchCircleProNonce(address)
+        const nonce = circleProNonce ?? randomNonce()
+        const siweMessage = buildSiweMessage(address, nonce)
 
         // Find the wallet matching the connected address. Privy may have
         // multiple wallets (e.g. an embedded one + the user's external one);
@@ -118,6 +127,17 @@ export function AuthPage() {
         // during the await above) sees hasSentRef.current === true and bails.
         hasSentRef.current = true
 
+        // Exchange the signature for a circle-pro session JWT (best-effort —
+        // only when we actually got circle-pro-api's nonce above).
+        const circleProToken = circleProNonce
+          ? await exchangeCircleProToken({
+              address,
+              message: siweMessage,
+              signature,
+              nonce: circleProNonce,
+            })
+          : null
+
         sendToExtension(
           {
             type: 'WALLET_CONNECTED',
@@ -125,6 +145,7 @@ export function AuthPage() {
             walletType: walletType || 'unknown',
             siweMessage,
             siweSignature: signature,
+            ...(circleProToken ? { circleProToken } : {}),
           },
           extensionId,
         )
