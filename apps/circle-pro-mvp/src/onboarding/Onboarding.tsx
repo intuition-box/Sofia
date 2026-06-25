@@ -12,11 +12,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { Icon } from '../components/Icon'
 import { DeptTagByName } from '../components/Tag'
-import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
+import { type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { suggestCategory } from '../data/topics'
+import { classify } from '../data/taxonomyNav'
 import { proofFor } from '../lib/social'
-import { TEAM_MAP } from '../data/teams'
+import { TEAM_MAP, teamFor } from '../data/teams'
 import { sharedPeople, sharedTeamIds, countLinks, allLinksDeep } from '../data/folderTree'
+import { addBookmark } from '../lib/mybookmarks'
+import { parseBookmarksTree } from '../lib/importBookmarks'
 import type { ImportedBookmark } from '../lib/imported'
 import { TopicSelect } from '../components/TopicSelect'
 import { avGrad, hostOf } from '../data/helpers'
@@ -56,12 +59,24 @@ interface OnboardingProps {
 
 export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   const [step, setStep] = useState<Step>('welcome')
+  const [tree, setTree] = useState<BmNode[]>([])
   const [picks, setPicks] = useState<Record<string, string>>({})
 
-  const allLinks = useMemo(() => flattenWithFolder(MY_BOOKMARKS as BmNode[], ''), [])
+  const allLinks = useMemo(() => flattenWithFolder(tree, ''), [tree])
   const certifiedCount = useMemo(() => allLinks.filter((l) => proofFor(l.url).certified).length, [allLinks])
 
   const topicOf = (l: FlatLink) => picks[l.url] ?? suggestCategory(l.folder, l.url)
+
+  // Persist the REAL imported bookmarks to the private (IndexedDB) store, then
+  // hand off to the app (which lands the user in My bookmarks).
+  const finish = () => {
+    for (const l of allLinks) {
+      const topicId = topicOf(l)
+      const { categoryId, nicheId } = classify(l.url, topicId)
+      addBookmark({ title: l.title, url: l.url, host: hostOf(l.url), topicId, categoryId, nicheId, teamId: teamFor(l.url) })
+    }
+    onComplete(buildImported())
+  }
 
   const buildImported = (): ImportedBookmark[] =>
     allLinks.map((l) => {
@@ -87,9 +102,18 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   return (
     <div className="ob">
       <div className={`ob-stage ob-stage--${step}`}>
-        {step === 'welcome' ? <Welcome onStart={() => setStep('sort')} onSkip={onSkip} /> : null}
+        {step === 'welcome' ? (
+          <Welcome
+            onLoaded={(t) => {
+              setTree(t)
+              setStep('sort')
+            }}
+            onSkip={onSkip}
+          />
+        ) : null}
         {step === 'sort' ? (
           <Sort
+            tree={tree}
             topicOf={topicOf}
             onPick={(url, id) => setPicks((p) => ({ ...p, [url]: id }))}
             onBack={() => setStep('welcome')}
@@ -101,7 +125,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
         ) : null}
         {step === 'importing' ? <Importing total={allLinks.length} /> : null}
         {step === 'done' ? (
-          <Done total={allLinks.length} certifiedCount={certifiedCount} onSee={() => onComplete(buildImported())} />
+          <Done total={allLinks.length} certifiedCount={certifiedCount} onSee={finish} />
         ) : null}
       </div>
     </div>
@@ -116,25 +140,59 @@ const BROWSERS: [string, string][] = [
   ['Edge', 'edge'],
 ]
 
-function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void }) {
+function Welcome({ onLoaded, onSkip }: { onLoaded: (tree: BmNode[]) => void; onSkip: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [err, setErr] = useState<string | null>(null)
+
+  const onFile = async (file: File) => {
+    setErr(null)
+    try {
+      const tree = parseBookmarksTree(await file.text())
+      if (!tree.length) {
+        setErr('No bookmarks found in that file.')
+        return
+      }
+      onLoaded(tree)
+    } catch {
+      setErr('Could not read that file.')
+    }
+  }
+  const pick = () => fileRef.current?.click()
+
   return (
     <div className="ob-card ob-welcome">
       <h1 className="ob-title">Import your bookmarks</h1>
       <p className="ob-lede">
-        Bring your Brave folders into Intuition Core Team — same folders, same order. You sort them into topics and
-        see who on the team already keeps the same things. Your folders are read locally — nothing is uploaded.
+        Export your browser bookmarks to a file, then choose it here — same folders, same order.
+        You sort them into topics and see who on the team already keeps the same things. Read
+        locally — nothing leaves your browser until you Share.
       </p>
 
-      <button className="ob-brave" onClick={onStart}>
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".html,text/html"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          if (f) void onFile(f)
+          e.target.value = ''
+        }}
+      />
+
+      <button className="ob-brave" onClick={pick}>
         <img className="ob-brave-logo" src="https://cdn.simpleicons.org/brave/FB542B" alt="" />
-        <span>Continue with Brave</span>
+        <span>Choose your bookmarks file</span>
         <ArrowRight size={17} className="ob-brave-go" />
       </button>
 
+      <p className="ob-hint mono">Browser → Bookmarks → Bookmark manager → Export to HTML</p>
+      {err ? <p className="ob-err">{err}</p> : null}
+
       <div className="ob-browsers">
-        <span className="ob-or">or</span>
+        <span className="ob-or">supported</span>
         {BROWSERS.map(([name, slug]) => (
-          <button key={slug} className="ob-browser" title={`Import from ${name}`} onClick={onStart}>
+          <button key={slug} className="ob-browser" title={`Export from ${name}, then choose the file`} onClick={pick}>
             <img src={`https://cdn.jsdelivr.net/gh/alrra/browser-logos@main/src/${slug}/${slug}_64x64.png`} alt={name} />
           </button>
         ))}
@@ -148,16 +206,17 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
 
 /* ── Act 2 — sort (folder browser) ────────────────────────────────────── */
 interface SortProps {
+  tree: BmNode[]
   topicOf: (l: FlatLink) => string
   onPick: (url: string, id: string) => void
   onBack: () => void
   onNext: () => void
 }
 
-function Sort({ topicOf, onPick, onBack, onNext }: SortProps) {
+function Sort({ tree, topicOf, onPick, onBack, onNext }: SortProps) {
   const [path, setPath] = useState<string[]>([])
   const [openCrumb, setOpenCrumb] = useState<number | null>(null)
-  const allUrls = useMemo(() => allLinksDeep(MY_BOOKMARKS as BmNode[]).map((l) => l.url), [])
+  const allUrls = useMemo(() => allLinksDeep(tree).map((l) => l.url), [tree])
   const [selected, setSelected] = useState<Set<string>>(() => new Set(allUrls))
   const crumbsRef = useRef<HTMLElement>(null)
   const allOn = selected.size >= allUrls.length
@@ -171,14 +230,14 @@ function Sort({ topicOf, onPick, onBack, onNext }: SortProps) {
     })
 
   const currentNodes = useMemo<BmNode[]>(() => {
-    let nodes = MY_BOOKMARKS as BmNode[]
+    let nodes = tree
     for (const seg of path) {
       const f = nodes.find((n) => n.type === 'folder' && n.name === seg) as BmFolder | undefined
       if (!f) return []
       nodes = f.children
     }
     return nodes
-  }, [path])
+  }, [tree, path])
 
   const folderName = path.length ? path[path.length - 1] : ''
   const links = useMemo<FlatLink[]>(
@@ -193,7 +252,7 @@ function Sort({ topicOf, onPick, onBack, onNext }: SortProps) {
   // Folder navigation mirrors My bookmarks: child folders live in each
   // breadcrumb crumb's dropdown, not as a separate chip row.
   const foldersAt = (c: number): BmFolder[] => {
-    let nodes = MY_BOOKMARKS as BmNode[]
+    let nodes = tree
     for (const seg of path.slice(0, c)) {
       const f = nodes.find((n) => n.type === 'folder' && n.name === seg) as BmFolder | undefined
       if (!f) return []

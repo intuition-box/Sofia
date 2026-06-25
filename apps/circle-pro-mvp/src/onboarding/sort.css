@@ -125,3 +125,17 @@
   color: var(--ds-ink);
   border-color: var(--ds-muted);
 }
+
+/* Welcome — file import hint + error */
+.ob-hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: var(--ds-muted);
+  text-align: center;
+}
+.ob-err {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--distrusted-p, #e87c7c);
+  text-align: center;
+}

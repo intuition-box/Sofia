@@ -22,7 +22,7 @@ import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
 import { postBookmark } from '../services/circleProApi'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { parseBookmarksHtml } from '../lib/importBookmarks'
-import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
+import { type BmNode, type BmFolder } from '../data/myBookmarks'
 import { hostOf } from '../data/helpers'
 import { countLinks, allLinksDeep } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
@@ -95,7 +95,7 @@ export function Bookmarks() {
       seen.add(n.url)
       return true
     })
-    return [...loose, ...(MY_BOOKMARKS as BmNode[])]
+    return loose
   }, [shared.items, my.added])
 
   // Walk the folder path to the nodes shown at the current level.
