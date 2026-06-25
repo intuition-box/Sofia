@@ -32,6 +32,7 @@
 }
 /* Featured "à la une" insert */
 .tv-featured {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   width: 100%;
@@ -42,6 +43,15 @@
   background: var(--surface);
   cursor: pointer;
   transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.vote-btn.tv-feat-vote {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  flex-direction: row;
+  gap: 5px;
+  background: var(--surface);
 }
 .tv-featured:hover {
   border-color: var(--border-strong);
@@ -136,7 +146,7 @@
 }
 .tv-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 70px 70px 84px;
+  grid-template-columns: minmax(0, 1fr) auto 64px 70px 70px 84px;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;

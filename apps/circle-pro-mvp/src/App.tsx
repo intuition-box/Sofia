@@ -26,6 +26,7 @@ import './styles/team.css'
 import './styles/surfaces.css'
 import './styles/members-roles.css'
 import './styles/activity-memory.css'
+import './styles/skill-view.css'
 import './styles/tags.css'
 import './styles/overlays.css'
 

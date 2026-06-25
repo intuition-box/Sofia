@@ -4,44 +4,22 @@
  * adds a skill. Seeded skills come from mock data; everything added lives in
  * the skills store. (The old global Tools lens was removed — Skills only.)
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
-import { DomainTagByTopic, TopicGlyph, TagIcon, ToolTag } from '../components/Tag'
+import { DomainTagByTopic, TopicGlyph, TagIcon } from '../components/Tag'
 import { TAG_HUES, deptHue, topicHue } from '../data/tagStyles'
-import { avGrad, hostOf, initials } from '../data/helpers'
-import { ROLE_MAP, SKILLS, TOOLS, TOPIC_MAP, peopleByRole } from '../data/mock'
-import { addSkillTool, addSkillUrl, createSkill, useSkillsStore, voteSkillUrl, type SkillsState, type SkillUrl } from '../lib/skills'
-import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
-import { allLinksDeep } from '../data/folderTree'
+import { avGrad, initials } from '../data/helpers'
+import { ROLE_MAP, SKILLS, TOPIC_MAP, peopleByRole } from '../data/mock'
+import { createSkill, useSkillsStore, type SkillVM } from '../lib/skills'
 import { commentsFor, type Comment } from '../lib/discussion'
 import { CommentRow } from './PostDetail'
-import { voteSeed } from '../components/VoteButton'
 import { CommentComposer } from '../components/CommentComposer'
+import { SkillView } from './SkillView'
 import { toast } from '../lib/toast'
 import type { RoleId } from '../data/types'
 
-/* Favicon host per skill-detail tool id (mock TOOLS carries no host). */
-const SKV_TOOL_HOST: Record<string, string> = {
-  figma: 'figma.com',
-  vscode: 'code.visualstudio.com',
-  cursor: 'cursor.com',
-  github: 'github.com',
-  foundry: 'getfoundry.sh',
-  notion: 'notion.so',
-  linear: 'linear.app',
-  framer: 'framer.com',
-  obsidian: 'obsidian.md',
-}
-
 interface ActivityProps {
   role?: RoleId | null
-}
-
-interface SkillVM {
-  id: string
-  name: string
-  who: string[]
-  theme?: string
 }
 
 export function Activity({ role = null }: ActivityProps) {
@@ -49,17 +27,18 @@ export function Activity({ role = null }: ActivityProps) {
   const teamHandles = role ? new Set(peopleByRole(role).map((p) => p.handle)) : null
   const store = useSkillsStore()
   const [openId, setOpenId] = useState<string | null>(null)
+  const [openEditing, setOpenEditing] = useState(false)
   const [creating, setCreating] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [skillFilter, setSkillFilter] = useState('all')
   const [draft, setDraft] = useState('')
 
   const seeded: SkillVM[] = (teamHandles ? SKILLS.filter((s) => s.who.some((h) => teamHandles.has(h))) : SKILLS).map(
-    (s) => ({ id: `seed:${s.skill}`, name: s.skill, who: s.who, theme: s.theme }),
+    (s) => ({ id: `seed:${s.skill}`, name: s.skill, who: s.who, theme: s.theme, role: s.role }),
   )
   const created: SkillVM[] = store.created
     .filter((c) => !role || c.role === role)
-    .map((c) => ({ id: c.id, name: c.name, who: ['You'] }))
+    .map((c) => ({ id: c.id, name: c.name, who: ['You'], role: c.role }))
   const skills = [...created, ...seeded]
   const shownSkills =
     skillFilter === 'all'
@@ -84,12 +63,18 @@ export function Activity({ role = null }: ActivityProps) {
     )
   }
 
+  const openSkill = (id: string) => {
+    setOpenEditing(false)
+    setOpenId(id)
+  }
+
   const submitCreate = () => {
     const name = draft.trim()
     if (!name) return
     const id = createSkill(name, (role as RoleId) || 'dev')
     setDraft('')
     setCreating(false)
+    setOpenEditing(true)
     setOpenId(id)
   }
 
@@ -149,13 +134,13 @@ export function Activity({ role = null }: ActivityProps) {
               <span className="skcard-create-plus">+</span>
               <span className="skcard-create-label">Add skills</span>
             </button>
-            {shownSkills.slice(0, 3).map((s) => renderSkill(s, setOpenId))}
+            {shownSkills.slice(0, 3).map((s) => renderSkill(s, openSkill))}
           </div>
         </>
 
         {open ? (
           <SkillModal onClose={() => setOpenId(null)}>
-            <SkillDetail vm={open} store={store} onClose={() => setOpenId(null)} />
+            <SkillView vm={open} store={store} onClose={() => setOpenId(null)} startEditing={openEditing} />
           </SkillModal>
         ) : null}
 
@@ -173,7 +158,7 @@ export function Activity({ role = null }: ActivityProps) {
                   {shownSkills.map((s) =>
                     renderSkill(s, (id) => {
                       setShowAll(false)
-                      setOpenId(id)
+                      openSkill(id)
                     }),
                   )}
                 </div>
@@ -183,24 +168,6 @@ export function Activity({ role = null }: ActivityProps) {
         ) : null}
     </section>
   )
-}
-
-/* Real domains for the team's tools, so each shows its actual favicon/logo
-   instead of a monogram glyph. */
-const TOOL_HOST: Record<string, string> = {
-  figma: 'figma.com',
-  vscode: 'code.visualstudio.com',
-  cursor: 'cursor.com',
-  github: 'github.com',
-  foundry: 'getfoundry.sh',
-  notion: 'notion.so',
-  linear: 'linear.app',
-  discord: 'discord.com',
-  framer: 'framer.com',
-  dune: 'dune.com',
-  snapshot: 'snapshot.org',
-  premiere: 'adobe.com',
-  obsidian: 'obsidian.md',
 }
 
 /* Tools — the team's actual toolset as a tidy grid of favicon pills. The skill
@@ -463,362 +430,6 @@ function SkillModal({ onClose, children }: { onClose: () => void; children: Reac
     <div className="skmodal" role="dialog" aria-modal="true" onClick={onClose}>
       <div className="skmodal-card skmodal-card--skv" onClick={(e) => e.stopPropagation()}>
         {children}
-      </div>
-    </div>
-  )
-}
-
-/* Pick a URL straight from My bookmarks — search across all, or browse folders.
-   The label is taken from the bookmark's title automatically. */
-export function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, title: string) => void; onClose: () => void }) {
-  const [path, setPath] = useState<string[]>([])
-  const [q, setQ] = useState('')
-  const needle = q.trim().toLowerCase()
-
-  const currentNodes = useMemo<BmNode[]>(() => {
-    let nodes = MY_BOOKMARKS as BmNode[]
-    for (const seg of path) {
-      const f = nodes.find((n) => n.type === 'folder' && n.name === seg) as BmFolder | undefined
-      if (!f) return []
-      nodes = f.children
-    }
-    return nodes
-  }, [path])
-
-  const folders = needle ? [] : currentNodes.filter((n): n is BmFolder => n.type === 'folder')
-  const links = needle
-    ? allLinksDeep(MY_BOOKMARKS as BmNode[])
-        .filter((l) => l.title.toLowerCase().includes(needle) || l.url.toLowerCase().includes(needle))
-        .slice(0, 40)
-    : currentNodes.filter((n): n is BmLink => n.type === 'link').map((l) => ({ title: l.title, url: l.url }))
-
-  return (
-    <div className="bkpick">
-      <div className="bkpick-bar">
-        <Icon name="search" />
-        <input
-          className="bkpick-search"
-          placeholder="Search your bookmarks…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          autoFocus
-        />
-        <button className="ex-back" onClick={onClose}>
-          Close
-        </button>
-      </div>
-
-      {!needle ? (
-        <nav className="bkpick-crumbs">
-          <button className="bkpick-crumb" onClick={() => setPath([])}>
-            My bookmarks
-          </button>
-          {path.map((seg, i) => (
-            <span className="bkpick-seg" key={`${seg}-${i}`}>
-              <span className="bkpick-sep" aria-hidden="true">›</span>
-              <button className="bkpick-crumb" onClick={() => setPath((p) => p.slice(0, i + 1))}>
-                {seg}
-              </button>
-            </span>
-          ))}
-        </nav>
-      ) : null}
-
-      {folders.length ? (
-        <div className="bkpick-folders">
-          {folders.map((f) => (
-            <button className="bkpick-folder" key={f.name} onClick={() => setPath((p) => [...p, f.name])}>
-              <Icon name="folder" />
-              {f.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="bkpick-list">
-        {links.length ? (
-          links.map((l) => (
-            <button className="bkpick-item" key={l.url} onClick={() => onPick(l.url, l.title)}>
-              <img
-                className="bkpick-fav"
-                src={`https://www.google.com/s2/favicons?domain=${hostOf(l.url)}&sz=64`}
-                alt=""
-                loading="lazy"
-                onError={(e) => {
-                  ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-                }}
-              />
-              <span className="bkpick-item-id">
-                <span className="bkpick-item-t">{l.title}</span>
-                <span className="bkpick-item-h mono">{hostOf(l.url)}</span>
-              </span>
-              <Icon name="plus" />
-            </button>
-          ))
-        ) : (
-          <p className="bkpick-empty">{needle ? 'No bookmark matches.' : 'Open a folder to see its links.'}</p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/** Extract a YouTube video id from common URL shapes (watch / youtu.be / embed). */
-function youtubeId(url: string): string | null {
-  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/)
-  return m ? m[1] : null
-}
-
-/* Rich resource card: a large 16:9 preview (or embedded YouTube player when the
-   link is a video), then a footer with favicon, title, host and the vote chip. */
-function ResCard({ x, onVote }: { x: SkillUrl; onVote: () => void }) {
-  const abs = x.url.startsWith('http') ? x.url : `https://${x.url}`
-  const host = hostOf(x.url)
-  const yt = youtubeId(x.url)
-  const [shotOk, setShotOk] = useState(true)
-  return (
-    <div className="skv-res">
-      {yt ? (
-        <div className="skv-res-video">
-          <iframe
-            src={`https://www.youtube.com/embed/${yt}`}
-            title={x.title}
-            loading="lazy"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      ) : (
-        <a className="skv-res-shot" href={abs} target="_blank" rel="noopener noreferrer">
-          {shotOk ? (
-            <img
-              className="skv-res-img"
-              src={`https://image.thum.io/get/width/760/crop/428/noanimate/${abs}`}
-              alt=""
-              loading="lazy"
-              onError={() => setShotOk(false)}
-            />
-          ) : (
-            <img className="skv-res-fav-lg" src={`https://www.google.com/s2/favicons?domain=${host}&sz=128`} alt="" />
-          )}
-        </a>
-      )}
-      <div className="skv-res-foot">
-        <span className="skv-res-fav">
-          <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`} alt="" loading="lazy" />
-        </span>
-        <span className="skv-res-id">
-          <a className="skv-res-title" href={abs} target="_blank" rel="noopener noreferrer">
-            {x.title}
-          </a>
-          <span className="skv-res-host mono">{host}</span>
-        </span>
-        <button type="button" className={`skv-vote${x.voted ? ' on' : ''}`} onClick={onVote}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m6 15 6-6 6 6" />
-          </svg>
-          {x.votes}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-
-function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; onClose: () => void }) {
-  const urls = [...(store.urls[vm.id] || [])].sort((a, b) => b.votes - a.votes)
-  const tools = store.tools[vm.id] || []
-  const th = vm.theme ? TOPIC_MAP[vm.theme] : null
-  const [picking, setPicking] = useState(false)
-  const [bkPick, setBkPick] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [tab, setTab] = useState<'comments' | 'activity'>('comments')
-  const [comments, setComments] = useState<Comment[]>(() => commentsFor(vm.id))
-
-  return (
-    <div className="skv">
-      <header className="skv-topbar">
-        <span className="skv-crumb mono">
-          <span className="skv-crumb-ic">
-            <Icon name="package" />
-          </span>
-          Skill
-        </span>
-        <span className="skv-crumb-sep">/</span>
-        <span className="skv-crumb-name">{vm.name}</span>
-        <button className="skv-icon" aria-label="Close" onClick={onClose}>
-          <Icon name="close" />
-        </button>
-      </header>
-
-      <div className="skv-body">
-        <div className="skv-main sk-scroll">
-          <div className="skv-tags">
-            {th ? <DomainTagByTopic id={vm.theme ?? ''} label={th.label} /> : null}
-            <span className="skv-skilltag">
-              <Icon name="package" /> Skill
-            </span>
-            <div className="skv-tag-actions">
-              <button className={`skv-act${saved ? ' on' : ''}`} onClick={() => setSaved((v) => !v)}>
-                <Icon name="bookmark" /> {saved ? 'Saved' : 'Save'}
-              </button>
-              <button className="skv-act">
-                <Icon name="send" /> Share
-              </button>
-            </div>
-          </div>
-
-          <h1 className="skv-title">{vm.name}</h1>
-          <p className="skv-desc">
-            The resources and tools the team actually reaches for to run {vm.name.toLowerCase()}.
-          </p>
-
-          <div className="mv-meta">
-            <span className="mv-meta-av" style={{ background: avGrad(voteSeed(vm.who[0] ?? vm.id) % 6) }}>
-              {initials(vm.who[0] ?? 'team')}
-            </span>
-            <span>
-              Created by <b>{vm.who[0] ?? 'the team'}</b> · added recently
-            </span>
-          </div>
-
-          <div className="mv-note">
-            <div className="mv-note-lab mono">Why they created it</div>
-            <p className="mv-note-body">
-              {vm.who[0] ?? 'The team'} started {vm.name} to gather the links and tools the team keeps reaching for — one place
-              instead of scattered bookmarks.
-            </p>
-          </div>
-
-          <div className="skv-sec-head">
-            <span className="skv-sec-title">Resources</span>
-            <span className="skv-sec-n mono">{urls.length}</span>
-            {!bkPick ? (
-              <button className="skv-sec-add" onClick={() => setBkPick(true)}>
-                <Icon name="plus" /> Add from bookmarks
-              </button>
-            ) : null}
-          </div>
-          {bkPick ? (
-            <BookmarkPicker
-              onPick={(u, t) => {
-                addSkillUrl(vm.id, u, t)
-                setBkPick(false)
-              }}
-              onClose={() => setBkPick(false)}
-            />
-          ) : null}
-          {urls.length ? (
-            <div className="skv-res-list">
-              {urls.map((x) => (
-                <ResCard key={x.id} x={x} onVote={() => voteSkillUrl(vm.id, x.id)} />
-              ))}
-              <button className="skv-res-add" onClick={() => setBkPick(true)}>
-                <Icon name="plus" /> Add resource
-              </button>
-            </div>
-          ) : (
-            <p className="sk-empty mono">No links yet — add the first resource.</p>
-          )}
-
-          <div className="skv-sec-head">
-            <span className="skv-sec-title">Tools</span>
-            <span className="skv-sec-n mono">{tools.length}</span>
-            {!picking ? (
-              <button className="skv-sec-add" onClick={() => setPicking(true)}>
-                <Icon name="plus" /> Add a tool
-              </button>
-            ) : null}
-          </div>
-          {picking ? (
-            <div className="sk-tool-picker">
-              {Object.entries(TOOLS)
-                .filter(([id]) => !tools.includes(id))
-                .map(([id, meta]) => {
-                  const host = TOOL_HOST[id]
-                  return (
-                    <button
-                      key={id}
-                      className="skv-pill skv-pill--pick"
-                      onClick={() => {
-                        addSkillTool(vm.id, id)
-                        setPicking(false)
-                      }}
-                    >
-                      <span className="skv-pill-ic">
-                        {host ? (
-                          <img
-                            src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`}
-                            alt=""
-                            loading="lazy"
-                            onError={(e) => {
-                              ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
-                            }}
-                          />
-                        ) : (
-                          <b style={{ color: meta.color }}>{meta.glyph}</b>
-                        )}
-                      </span>
-                      {meta.label}
-                    </button>
-                  )
-                })}
-            </div>
-          ) : null}
-          {tools.length ? (
-            <div className="skv-pills">
-              {tools.map((id) => {
-                const meta = TOOLS[id]
-                if (!meta) return null
-                return (
-                  <ToolTag
-                    key={id}
-                    label={meta.label}
-                    logo={`https://www.google.com/s2/favicons?domain=${SKV_TOOL_HOST[id] ?? `${id}.com`}&sz=64`}
-                    count={voteSeed(`sktool:${vm.id}:${id}`)}
-                  />
-                )
-              })}
-              <button className="skv-pill-add" onClick={() => setPicking(true)}>
-                <Icon name="plus" />
-              </button>
-            </div>
-          ) : (
-            <p className="sk-empty mono">No tools yet — add the ones this skill uses.</p>
-          )}
-        </div>
-
-        <aside className="skv-rail">
-          <div className="skv-rail-head">
-            <button className={`skv-tab${tab === 'comments' ? ' on' : ''}`} onClick={() => setTab('comments')}>
-              {comments.length} comments
-            </button>
-            <button className={`skv-tab${tab === 'activity' ? ' on' : ''}`} onClick={() => setTab('activity')}>
-              Activity
-            </button>
-          </div>
-          <div className="skv-rail-scroll sk-scroll">
-            {tab === 'comments' ? (
-              comments.length ? (
-                comments.map((c) => <CommentRow key={c.id} c={c} />)
-              ) : (
-                <p className="sk-empty mono">No comments yet.</p>
-              )
-            ) : (
-              <p className="sk-empty mono">No recent activity.</p>
-            )}
-          </div>
-          <div className="skv-composer">
-            <CommentComposer
-              onSend={(content) =>
-                setComments((cs) => [
-                  ...cs,
-                  { id: `${vm.id}#you-${cs.length}`, who: 'You', teamId: 'eng', grad: 0, when: 'now', text: content, likes: 0, reply: false },
-                ])
-              }
-            />
-          </div>
-        </aside>
       </div>
     </div>
   )

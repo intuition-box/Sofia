@@ -104,14 +104,14 @@ export function TeamView({ team }: { team: TeamMeta }) {
         </header>
 
         <div className="tv-tabs">
-          {(['overview', 'memory', 'skills', 'tools', 'members'] as const).map((v) => (
+          {(['overview', 'skills', 'tools', 'memory', 'members'] as const).map((v) => (
             <button
               key={v}
               type="button"
               className={`tv-tab${view === v ? ' on' : ''}`}
               onClick={() => setView(v)}
             >
-              {v === 'overview' ? 'Resources' : v[0].toUpperCase() + v.slice(1)}
+              {v === 'overview' ? 'Resources' : v === 'memory' ? 'Archive' : v[0].toUpperCase() + v.slice(1)}
             </button>
           ))}
         </div>
@@ -188,6 +188,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
             <div className="tv-row tv-row--head">
               <span className="tv-th-topic">Topic</span>
               <span className="tv-th-av" />
+              <span className="tv-th-num">Votes</span>
               <span className="tv-th-num">Replies</span>
               <span className="tv-th-num">Views</span>
               <span className="tv-th-num">Activity</span>
@@ -216,6 +217,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
                       </span>
                     ))}
                   </span>
+                  <span className="tv-num tnum tv-votes">▲ {voteSeed(l.url)}</span>
                   <span className="tv-num tnum">{m.replies}</span>
                   <span className="tv-num tnum">{m.views}</span>
                   <span className="tv-num tv-when">{m.when}</span>

@@ -1958,8 +1958,7 @@ button.sk-tool-chip {
 /* ── Memory ────────────────────────────────────────────────── */
 /* role-scoped variant: a team's own memory, rendered inside the Roles tab */
 .mem-team {
-  margin-top: 22px;
-  padding-top: 22px;
+  margin-top: 0;
 }
 .mem-team-sub {
   display: inline-flex;
@@ -1975,10 +1974,9 @@ button.sk-tool-chip {
   background: var(--c);
   flex-shrink: 0;
 }
-/* role-scoped activity, rendered inside the Roles tab */
+/* role-scoped activity, rendered inside its own tab */
 .act-team {
-  margin-top: 22px;
-  padding-top: 22px;
+  margin-top: 0;
 }
 .mem-empty {
   padding: 26px 20px;

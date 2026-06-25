@@ -21,6 +21,18 @@ export interface CreatedSkill {
   role: RoleId
 }
 
+/** View-model shared by the list (Activity) and the detail view (SkillView):
+ * a seeded skill or a user-created one, flattened to what the UI renders. */
+export interface SkillVM {
+  id: string
+  name: string
+  who: string[]
+  /** Taxonomy topic id → the Domain tag. Created skills have none. */
+  theme?: string
+  /** Owning role → the Role tag. */
+  role?: RoleId
+}
+
 export interface SkillsState {
   /** Skills the user created (newest first), shown next to the seeded ones. */
   created: CreatedSkill[]
@@ -28,9 +40,13 @@ export interface SkillsState {
   urls: Record<string, SkillUrl[]>
   /** Tool ids attached to a skill, keyed by skill id. */
   tools: Record<string, string[]>
+  /** "Why it's useful" blurb, keyed by skill id. */
+  desc: Record<string, string>
+  /** Ordered how-to steps, keyed by skill id. */
+  steps: Record<string, string[]>
 }
 
-let state: SkillsState = { created: [], urls: {}, tools: {} }
+let state: SkillsState = { created: [], urls: {}, tools: {}, desc: {}, steps: {} }
 const listeners = new Set<() => void>()
 const emit = () => {
   for (const l of listeners) l()
@@ -70,6 +86,36 @@ export function addSkillTool(skillId: string, toolId: string): void {
   const cur = state.tools[skillId] || []
   if (cur.includes(toolId)) return
   state = { ...state, tools: { ...state.tools, [skillId]: [...cur, toolId] } }
+  emit()
+}
+
+/** Rename a created skill (seeded skills are read-only). */
+export function renameSkill(id: string, name: string): void {
+  const n = name.trim()
+  if (!n) return
+  state = { ...state, created: state.created.map((c) => (c.id === id ? { ...c, name: n } : c)) }
+  emit()
+}
+
+export function removeSkillUrl(skillId: string, urlId: string): void {
+  state = { ...state, urls: { ...state.urls, [skillId]: (state.urls[skillId] || []).filter((u) => u.id !== urlId) } }
+  emit()
+}
+
+export function removeSkillTool(skillId: string, toolId: string): void {
+  state = { ...state, tools: { ...state.tools, [skillId]: (state.tools[skillId] || []).filter((t) => t !== toolId) } }
+  emit()
+}
+
+/** Set the "why it's useful" blurb for a skill. */
+export function setSkillDesc(skillId: string, desc: string): void {
+  state = { ...state, desc: { ...state.desc, [skillId]: desc } }
+  emit()
+}
+
+/** Replace the ordered step list for a skill. */
+export function setSkillSteps(skillId: string, steps: string[]): void {
+  state = { ...state, steps: { ...state.steps, [skillId]: steps } }
   emit()
 }
 

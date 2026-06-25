@@ -17,7 +17,7 @@ import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
 import { likedBy } from '../data/teammates'
 import { avGrad, initials } from '../data/helpers'
-import { voteSeed } from '../components/VoteButton'
+import { VoteButton, voteSeed } from '../components/VoteButton'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { useComments } from '../hooks/useComments'
 import { useAuth } from '../hooks/useAuth'
@@ -206,14 +206,6 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
 
         <div className="post-split">
           <div className="post-col-main">
-        <div className="post-tags">
-          {team ? <DeptTagByName name={team.label} /> : null}
-          {cat ? <DomainTagByTopic id={cat.id} label={cat.label} /> : null}
-          <span className="post-tag post-tag--type">{type === 'doc' ? 'Doc' : 'Link'}</span>
-        </div>
-
-        <h1 className="post-title">{item.title}</h1>
-
         <a className="post-preview" href={abs} target="_blank" rel="noopener noreferrer">
           <div className={`post-shot${shotOk ? '' : ' is-fallback'}`}>
             {shotOk ? (
@@ -251,6 +243,14 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
           </div>
         </a>
 
+        <h1 className="post-title">{item.title}</h1>
+
+        <div className="post-tags">
+          {team ? <DeptTagByName name={team.label} /> : null}
+          {cat ? <DomainTagByTopic id={cat.id} label={cat.label} /> : null}
+          <span className="post-tag post-tag--type">{type === 'doc' ? 'Doc' : 'Link'}</span>
+        </div>
+
         <div className="post-why">
           {sharer ? (
             <div className="post-why-by">
@@ -270,6 +270,7 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
         </div>
 
         <div className="post-actions">
+          <VoteButton base={voteSeed(item.url)} className="post-action-vote" />
           <button className="post-action">
             <Icon name="bookmark" /> Save
           </button>
