@@ -216,6 +216,18 @@ export const postBookmark = (
     body: JSON.stringify({ ...body, circleId }),
   }).then((r) => r.bookmark)
 
+/** Who in the circle has shared each URL — REAL social proof (replaces the mock
+ *  "who on your team keeps this"). Batched: pass every visible URL at once. */
+export const getSharers = (
+  token: string | null,
+  normalizedUrls: string[],
+  circleId: string = CIRCLE_ID,
+) =>
+  api<{ sharers: Record<string, PublicProfile[]> }>(token, '/bookmarks/sharers', {
+    method: 'POST',
+    body: JSON.stringify({ circleId, normalizedUrls }),
+  }).then((r) => r.sharers)
+
 // ── Search — the group's knowledge access ──
 
 export interface SearchComment {

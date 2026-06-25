@@ -10,9 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { TopicSelect } from '../components/TopicSelect'
-import { DomainTagByTopic } from '../components/Tag'
-import { TEAM_MAP, teamFor } from '../data/teams'
-import { likedBy } from '../data/teammates'
+import { teamFor } from '../data/teams'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
 import { addBookmark, setContext, setTopic, markShared, useMyBookmarks } from '../lib/mybookmarks'
@@ -20,11 +18,12 @@ import { toast } from '../lib/toast'
 import { useAuth } from '../hooks/useAuth'
 import { useCircle } from '../hooks/useCircle'
 import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
+import { useSharers } from '../hooks/useSharers'
 import { postBookmark, isNotMemberError } from '../services/circleProApi'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { parseBookmarksHtml } from '../lib/importBookmarks'
 import { type BmNode, type BmFolder } from '../data/myBookmarks'
-import { hostOf } from '../data/helpers'
+import { hostOf, avGrad } from '../data/helpers'
 import { countLinks, allLinksDeep } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
 import '../styles/bookmarks-view.css'
@@ -129,6 +128,10 @@ export function Bookmarks() {
 
   const currentFolderName = path.length ? path[path.length - 1] : ''
   const totalHere = needle || topicFilter !== 'all' ? links.length : countLinks(currentNodes)
+
+  // REAL social proof: who in the circle has shared each visible URL (batched).
+  const visibleKeys = useMemo(() => links.map((l) => bookmarkKey(l.url)), [links])
+  const sharersByUrl = useSharers(visibleKeys)
 
   // Child folders selectable from breadcrumb crumb `c` (0 = root "My bookmarks").
   const foldersAt = (c: number): BmFolder[] => {
@@ -325,13 +328,10 @@ export function Bookmarks() {
             <div className={`kb-feed ${view === 'grid' ? 'kb-grid4' : 'kb-list'}`}>
               {links.map((l) => {
                 const host = hostOf(l.url)
-                const liked = likedBy(l.url)
-                const services = [...new Set(liked.people.map((p) => p.teamId))]
-                  .map((id) => TEAM_MAP[id])
-                  .filter(Boolean)
+                const sharers = sharersByUrl[bookmarkKey(l.url)] ?? []
                 const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
                 const isLiked = likes.has(l.url)
-                const likeCount = liked.total + (isLiked ? 1 : 0)
+                const likeCount = isLiked ? 1 : 0
                 const isShared = my.shared[l.url] || sharedUrls.has(bookmarkKey(l.url))
                 const isSharing = sharingUrl === l.url
                 const abs = l.url.startsWith('http') ? l.url : `https://${l.url}`
@@ -365,12 +365,20 @@ export function Bookmarks() {
                           <span className="tnum">{likeCount}</span>
                         </button>
                       </div>
-                      {services.length ? (
-                        <div className="bk-likes" onClick={(e) => e.stopPropagation()}>
-                          <span className="bk-shared-svcs">
-                            {services.map((s) => (
-                              <DomainTagByTopic key={s.id} id={s.label} label={s.label} />
+                      {sharers.length ? (
+                        <div className="bk-sharers" onClick={(e) => e.stopPropagation()}>
+                          <span className="bk-sharers-avs">
+                            {sharers.slice(0, 5).map((p) => (
+                              <span
+                                key={p.wallet}
+                                className="bk-sharer-av"
+                                title={p.displayName}
+                                style={{ background: avGrad(p.avatarSeed) }}
+                              />
                             ))}
+                          </span>
+                          <span className="bk-sharers-label">
+                            Shared by {sharers.length} in the circle
                           </span>
                         </div>
                       ) : null}

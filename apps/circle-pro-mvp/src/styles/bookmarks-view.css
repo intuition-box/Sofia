@@ -71,8 +71,34 @@
   text-overflow: ellipsis;
 }
 .kb-list .bk-meta,
-.kb-list .bk-likes {
+.kb-list .bk-likes,
+.kb-list .bk-sharers {
   margin: 0;
+}
+
+/* ── Real social proof: who in the circle shared this URL ──── */
+.bk-sharers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.bk-sharers-avs {
+  display: inline-flex;
+}
+.bk-sharer-av {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  margin-left: -6px;
+}
+.bk-sharer-av:first-child {
+  margin-left: 0;
+}
+.bk-sharers-label {
+  font-size: 11.5px;
+  color: var(--ds-muted, #8f8ca8);
 }
 
 /* ── Share to group (private → shared) ─────────────────────── */
