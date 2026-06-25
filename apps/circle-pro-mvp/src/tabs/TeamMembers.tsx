@@ -5,8 +5,8 @@
  */
 import { Avatar } from '../components/primitives'
 import { Icon } from '../components/Icon'
-import { RoleTag, SkillTag, ToolTag } from '../components/Tag'
-import { deptHue, topicHue } from '../data/tagStyles'
+import { SkillTag, ToolTag } from '../components/Tag'
+import { topicHue } from '../data/tagStyles'
 
 interface Chip {
   label: string
@@ -147,14 +147,6 @@ export function TeamMembers() {
 
 
             <dl className="cc-attrs">
-              <div className="cc-attr">
-                <dt>Roles</dt>
-                <dd>
-                  {m.roles.map((c) => (
-                    <RoleTag key={c.label} label={c.label} hue={deptHue(c.label)} count={c.n} />
-                  ))}
-                </dd>
-              </div>
               <div className="cc-attr">
                 <dt>Skills</dt>
                 <dd>

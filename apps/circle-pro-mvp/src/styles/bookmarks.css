@@ -220,6 +220,13 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.bk-meta .bk-like {
+  margin-left: auto;
+}
+.bk-filter-row {
+  display: flex;
+  margin: 10px 0 16px;
+}
 /* Inline context dropdown lives directly in the card meta (no extra step). */
 .bk-meta .tsel-btn {
   width: auto;
@@ -400,6 +407,7 @@
 .bk-card--xl .bk-likes {
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -520,7 +528,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 .bk-addctx {
   display: inline-flex;

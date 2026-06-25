@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { TopicSelect } from '../components/TopicSelect'
-import { DeptTagByName } from '../components/Tag'
+import { DomainTagByTopic } from '../components/Tag'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
@@ -207,10 +207,13 @@ export function Bookmarks() {
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <TopicFilter value={topicFilter} options={CATEGORIES} onChange={setTopicFilter} />
           <button className="kb-add-btn" onClick={() => setAdding((v) => !v)}>
             <Icon name="plus" /> Add bookmark
           </button>
+        </div>
+
+        <div className="bk-filter-row">
+          <TopicFilter value={topicFilter} options={CATEGORIES} onChange={setTopicFilter} />
         </div>
 
         {adding ? <AddForm onSubmit={submitAdd} onCancel={() => setAdding(false)} /> : null}
@@ -245,8 +248,6 @@ export function Bookmarks() {
                       <div className="bk-title">{l.title}</div>
                       <div className="bk-meta" onClick={(e) => e.stopPropagation()}>
                         <TopicSelect value={ctxId} onChange={(id) => setTopic(l.url, id)} />
-                      </div>
-                      <div className="bk-likes">
                         <button
                           type="button"
                           className={`bk-like${isLiked ? ' on' : ''}`}
@@ -260,14 +261,16 @@ export function Bookmarks() {
                           <Icon name="thumbup" />
                           <span className="tnum">{likeCount}</span>
                         </button>
-                        {services.length ? (
+                      </div>
+                      {services.length ? (
+                        <div className="bk-likes" onClick={(e) => e.stopPropagation()}>
                           <span className="bk-shared-svcs">
                             {services.map((s) => (
-                              <DeptTagByName key={s.id} name={s.label} />
+                              <DomainTagByTopic key={s.id} id={s.label} label={s.label} />
                             ))}
                           </span>
-                        ) : null}
-                      </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 )

@@ -7,13 +7,8 @@
  */
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
-import { TopicIcon } from '../components/TopicIcon'
-import { DeptTagByName, DomainTag, DomainTagByTopic, RoleTag, SkillTag } from '../components/Tag'
-import { topicHue, deptHue, type TagHueName } from '../data/tagStyles'
-
-/* Cycle Nordic hues across the taxonomy topics so each reads distinctly. */
-const DOMAIN_CYCLE: TagHueName[] = ['teal', 'indigo', 'violet', 'amber', 'pink', 'orange']
-import { CATEGORIES } from '../data/topics'
+import { DomainTagByTopic, SkillTag } from '../components/Tag'
+import { topicHue } from '../data/tagStyles'
 import { avGrad, initials } from '../data/helpers'
 import { useSearch } from '../hooks/useSearch'
 import { SearchBar, SearchResults } from '../components/Search'
@@ -92,31 +87,6 @@ const PILLS = [
   { label: 'Research', kind: 'skill' },
 ] as const
 
-const TOPICS = CATEGORIES.slice(0, 8).map((c, i) => ({
-  id: c.id,
-  label: c.label,
-  color: c.color,
-  count: 6 + ((i * 7 + 3) % 22),
-}))
-
-const SKILLS_USED = [
-  { label: 'Funding', dept: 'Marketing', role: 'Writer' },
-  { label: 'Security', dept: 'Engineering', role: 'Dev' },
-  { label: 'AI', dept: 'Design', role: 'Designer' },
-  { label: 'Governance', dept: 'Sales', role: 'PM' },
-  { label: 'Brand', dept: 'Marketing', role: 'Designer' },
-  { label: 'Research', dept: 'Product', role: 'Writer' },
-]
-
-const TEAMS = [
-  { name: 'Engineering', color: '#3b82f6', members: 8, lead: 'Tom Bauer', focus: 'Protocol, frontend & infra' },
-  { name: 'Design', color: '#ec4899', members: 4, lead: 'Inès Roy', focus: 'Product & brand design' },
-  { name: 'Marketing', color: '#8b5cf6', members: 5, lead: 'Lina Moreau', focus: 'Growth, content & community' },
-  { name: 'Sales / BD', color: '#22c55e', members: 3, lead: 'Marc Petit', focus: 'Pipeline & partnerships' },
-  { name: 'Product', color: '#f59e0b', members: 3, lead: 'Mei Lin', focus: 'Roadmap & discovery' },
-  { name: 'Research', color: '#06b6d4', members: 2, lead: 'Hugo Lefebvre', focus: 'Mechanism & tokenomics' },
-]
-
 function Favicon({ host }: { host: string }) {
   return (
     <span className="es-fav">
@@ -153,9 +123,7 @@ function MemberCard({ m }: { m: Member }) {
       <div className="es-member-role">{m.role}</div>
       <div className="es-member-tags">
         {m.topics.map((t) => (
-          <span className="es-member-tag mono" key={t}>
-            #{t}
-          </span>
+          <DomainTagByTopic key={t} id={t} label={t} />
         ))}
       </div>
       <div className="es-member-stats mono">
@@ -208,44 +176,7 @@ export function Essential() {
                   </div>
                 </div>
                 <div className="es-tool-desc">{t.desc}</div>
-                <div className="es-tool-foot">
-                  {t.roles.map((r) => (
-                    <RoleTag key={r} label={r} hue={deptHue(r)} />
-                  ))}
-                </div>
               </a>
-            ))}
-          </div>
-        </section>
-
-        {/* Topics */}
-        <section className="es-section">
-          <SectionHead title="Collections" action="See all" />
-          <div className="es-topics">
-            {TOPICS.map((t, i) => (
-              <DomainTag
-                key={t.id}
-                label={t.label}
-                hue={DOMAIN_CYCLE[i % DOMAIN_CYCLE.length]}
-                count={t.count}
-                icon={<TopicIcon id={t.id} size={13} />}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Most used skills — skill + the dept & role that lean on it */}
-        <section className="es-section">
-          <SectionHead title="Most used skills" action="See all" />
-          <div className="es-skills">
-            {SKILLS_USED.map((s) => (
-              <div className="es-skill-row" key={s.label}>
-                <SkillTag label={s.label} hue={topicHue(s.label)} />
-                <span className="es-skill-by">
-                  <DeptTagByName name={s.dept} />
-                  <RoleTag label={s.role} hue={deptHue(s.role)} />
-                </span>
-              </div>
             ))}
           </div>
         </section>
@@ -264,23 +195,6 @@ export function Essential() {
                 <span className="es-rank-comments">
                   <Icon name="thumbup" /> {c.comments}
                 </span>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {/* Teams */}
-        <section className="es-section">
-          <SectionHead title="Teams" action="See all" />
-          <div className="es-grid-3">
-            {TEAMS.map((t) => (
-              <a className="es-team" key={t.name} style={{ ['--c' as string]: t.color }}>
-                <div className="es-team-top">
-                  <span className="es-team-name">{t.name}</span>
-                  <span className="es-team-n mono">{t.members}</span>
-                </div>
-                <div className="es-team-focus">{t.focus}</div>
-                <div className="es-team-lead mono">Lead · {t.lead}</div>
               </a>
             ))}
           </div>

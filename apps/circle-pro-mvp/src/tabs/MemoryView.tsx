@@ -13,7 +13,7 @@ import { RoleTag } from '../components/Tag'
 import { deptHue } from '../data/tagStyles'
 import { voteSeed } from '../components/VoteButton'
 import { BookmarkPicker } from './Activity'
-import { TOPIC_MAP, PEOPLE, ROLE_MAP } from '../data/mock'
+import { PEOPLE, ROLE_MAP } from '../data/mock'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import type { MemoryRecord, Person } from '../data/types'
 
@@ -22,14 +22,15 @@ interface Resource {
   type: 'link' | 'doc'
   title: string
   source: string
+  host: string
 }
 
 function seedResources(m: MemoryRecord): Resource[] {
   const list: Resource[] = [
-    { id: `${m.id}-r1`, type: 'link', title: m.title, source: `${TOPIC_MAP[m.topic]?.label.toLowerCase() ?? 'team'} · primary source` },
-    { id: `${m.id}-r2`, type: 'doc', title: 'Notes & decision template', source: 'Google Docs' },
+    { id: `${m.id}-r1`, type: 'link', title: m.title, source: 'notion.so', host: 'notion.so' },
+    { id: `${m.id}-r2`, type: 'doc', title: 'Notes & decision template', source: 'Google Docs', host: 'docs.google.com' },
   ]
-  if (m.refs > 6) list.push({ id: `${m.id}-r3`, type: 'link', title: 'Related framework', source: 'paste a link…' })
+  if (m.refs > 6) list.push({ id: `${m.id}-r3`, type: 'link', title: 'Related framework', source: 'candor.co', host: 'candor.co' })
   return list
 }
 
@@ -55,6 +56,7 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
   const [resources, setResources] = useState<Resource[]>(() => seedResources(mem))
   const [adding, setAdding] = useState(false)
   const [pasteUrl, setPasteUrl] = useState('')
+  const [endorsed, setEndorsed] = useState(false)
   const adder = mem.who[0]
   const adderGrad = PEOPLE.find((p) => p.handle === adder)?.grad ?? 0
 
@@ -71,10 +73,10 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
   const addFromUrl = () => {
     const url = pasteUrl.trim()
     if (!url) return
-    pushResource({ id: `${mem.id}-${resources.length}-${hostOf(url)}`, type: 'link', title: url.replace(/^https?:\/\//, ''), source: hostOf(url) })
+    pushResource({ id: `${mem.id}-${resources.length}-${hostOf(url)}`, type: 'link', title: url.replace(/^https?:\/\//, ''), source: hostOf(url), host: hostOf(url) })
   }
   const addFromBookmark = (url: string, title: string) =>
-    pushResource({ id: `${mem.id}-${resources.length}-${hostOf(url)}`, type: 'link', title, source: hostOf(url) })
+    pushResource({ id: `${mem.id}-${resources.length}-${hostOf(url)}`, type: 'link', title, source: hostOf(url), host: hostOf(url) })
   const removeResource = (id: string) => setResources((rs) => rs.filter((r) => r.id !== id))
 
   return (
@@ -86,6 +88,8 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
       </header>
 
       <div className="mv-scroll sk-scroll">
+        <div className="mv-split">
+        <div className="mv-col-main">
         <h1 className="mv-title">{mem.title}</h1>
         <div className="mv-meta">
           <span className="mv-meta-av" style={{ background: avGrad(adderGrad) }}>
@@ -96,6 +100,12 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
           </span>
         </div>
 
+        {/* the sharer's intent */}
+        <div className="mv-note">
+          <div className="mv-note-lab mono">Why this matters</div>
+          <p className="mv-note-body">{mem.snippet}</p>
+        </div>
+
         {/* resources */}
         <div className="mv-sec-head">
           <h2 className="mv-sec-title">Resources</h2>
@@ -104,8 +114,15 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
         <div className="mv-res-list">
           {resources.map((r) => (
             <div className="mv-res" key={r.id}>
-              <span className={`mv-res-ic mv-res-ic--${r.type}`}>
-                <Icon name={r.type === 'doc' ? 'folder' : 'ext'} />
+              <span className="mv-res-ic">
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${r.host}&sz=64`}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => {
+                    ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
+                  }}
+                />
               </span>
               <div className="mv-res-main">
                 <div className="mv-res-title">{r.title}</div>
@@ -146,13 +163,9 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
             </button>
           )}
         </div>
-
-        {/* the sharer's intent */}
-        <div className="mv-note">
-          <div className="mv-note-lab mono">Why this matters</div>
-          <p className="mv-note-body">{mem.snippet}</p>
         </div>
 
+        <div className="mv-col-side">
         {/* travel timeline */}
         <div className="mv-sec-head">
           <h2 className="mv-sec-title">How this memory traveled</h2>
@@ -177,7 +190,14 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
         {/* endorsers */}
         <div className="mv-sec-head">
           <h2 className="mv-sec-title">Endorsed by</h2>
-          <span className="mv-vote">▲ {endorseCount}</span>
+          <button
+            type="button"
+            className={`mv-vote${endorsed ? ' on' : ''}`}
+            aria-pressed={endorsed}
+            onClick={() => setEndorsed((v) => !v)}
+          >
+            ▲ {endorseCount + (endorsed ? 1 : 0)}
+          </button>
         </div>
         <div className="mv-end-list">
           {endorsers.map((p) => {
@@ -206,6 +226,8 @@ export function MemoryView({ mem, onClose }: { mem: MemoryRecord; onClose: () =>
             <span className="mv-end-more-txt">+{Math.max(endorseCount - 3, 1)} others endorsed this</span>
             <span className="mv-end-more-go">View all →</span>
           </button>
+        </div>
+        </div>
         </div>
       </div>
     </div>

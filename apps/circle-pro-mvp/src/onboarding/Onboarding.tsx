@@ -57,7 +57,6 @@ interface OnboardingProps {
 export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   const [step, setStep] = useState<Step>('welcome')
   const [picks, setPicks] = useState<Record<string, string>>({})
-  const [proofReady, setProofReady] = useState(false)
 
   const allLinks = useMemo(() => flattenWithFolder(MY_BOOKMARKS as BmNode[], ''), [])
   const certifiedCount = useMemo(() => allLinks.filter((l) => proofFor(l.url).certified).length, [allLinks])
@@ -79,11 +78,6 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
     })
 
   useEffect(() => {
-    if (step === 'sort') {
-      setProofReady(false)
-      const t = setTimeout(() => setProofReady(true), 900)
-      return () => clearTimeout(t)
-    }
     if (step === 'importing') {
       const t = setTimeout(() => setStep('done'), 2400)
       return () => clearTimeout(t)
@@ -96,9 +90,6 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
         {step === 'welcome' ? <Welcome onStart={() => setStep('sort')} onSkip={onSkip} /> : null}
         {step === 'sort' ? (
           <Sort
-            total={allLinks.length}
-            certifiedCount={certifiedCount}
-            proofReady={proofReady}
             topicOf={topicOf}
             onPick={(url, id) => setPicks((p) => ({ ...p, [url]: id }))}
             onBack={() => setStep('welcome')}
@@ -157,16 +148,13 @@ function Welcome({ onStart, onSkip }: { onStart: () => void; onSkip: () => void 
 
 /* ── Act 2 — sort (folder browser) ────────────────────────────────────── */
 interface SortProps {
-  total: number
-  certifiedCount: number
-  proofReady: boolean
   topicOf: (l: FlatLink) => string
   onPick: (url: string, id: string) => void
   onBack: () => void
   onNext: () => void
 }
 
-function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onNext }: SortProps) {
+function Sort({ topicOf, onPick, onBack, onNext }: SortProps) {
   const [path, setPath] = useState<string[]>([])
   const [openCrumb, setOpenCrumb] = useState<number | null>(null)
   const allUrls = useMemo(() => allLinksDeep(MY_BOOKMARKS as BmNode[]).map((l) => l.url), [])
@@ -201,11 +189,6 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onNe
     [currentNodes, folderName],
   )
 
-  const overlapPeople = useMemo(() => sharedPeople(MY_BOOKMARKS as BmNode[], 5), [])
-  const sharedTeams = useMemo(
-    () => sharedTeamIds(MY_BOOKMARKS as BmNode[]).map((id) => TEAM_MAP[id]).filter(Boolean),
-    [],
-  )
 
   // Folder navigation mirrors My bookmarks: child folders live in each
   // breadcrumb crumb's dropdown, not as a separate chip row.
@@ -241,25 +224,6 @@ function Sort({ total, certifiedCount, proofReady, topicOf, onPick, onBack, onNe
       <header className="ob-cat-head">
         <h2 className="ob-title ob-title--sm obc-title">Sort your bookmarks into Intuition Core Team's topics</h2>
       </header>
-
-      <div className={`ob-overlap${proofReady ? ' ready' : ''}`}>
-        <span className="ob-overlap-avs">
-          {overlapPeople.map((t, j) => (
-            <span key={t.name} className="ob-overlap-av" title={t.name} style={{ background: avGrad(t.grad), zIndex: 9 - j }} />
-          ))}
-        </span>
-        <p className="ob-overlap-txt">
-          <b className="tnum">{proofReady ? certifiedCount : '··'}</b> of your <b className="tnum">{total}</b> bookmarks
-          are already kept by people on <b>Intuition Core Team</b>.
-          {proofReady && sharedTeams.length ? (
-            <span className="ob-overlap-teams">
-              {sharedTeams.map((t) => (
-                <DeptTagByName key={t.id} name={t.label} />
-              ))}
-            </span>
-          ) : null}
-        </p>
-      </div>
 
       <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
         {[{ label: 'My bookmarks', c: 0 }, ...path.map((seg, i) => ({ label: seg, c: i + 1 }))].map(
@@ -428,6 +392,36 @@ function Importing({ total }: { total: number }) {
   )
 }
 
+/* Social proof — how much of your library the team already keeps. Lives on the
+   Done screen (two steps after Sort), self-contained so it owns its own data. */
+function TeamOverlap({ total, certifiedCount }: { total: number; certifiedCount: number }) {
+  const overlapPeople = useMemo(() => sharedPeople(MY_BOOKMARKS as BmNode[], 5), [])
+  const sharedTeams = useMemo(
+    () => sharedTeamIds(MY_BOOKMARKS as BmNode[]).map((id) => TEAM_MAP[id]).filter(Boolean),
+    [],
+  )
+  return (
+    <div className="ob-overlap ready">
+      <span className="ob-overlap-avs">
+        {overlapPeople.map((t, j) => (
+          <span key={t.name} className="ob-overlap-av" title={t.name} style={{ background: avGrad(t.grad), zIndex: 9 - j }} />
+        ))}
+      </span>
+      <p className="ob-overlap-txt">
+        <b className="tnum">{certifiedCount}</b> of your <b className="tnum">{total}</b> bookmarks are already kept by people
+        on <b>Intuition Core Team</b>.
+        {sharedTeams.length ? (
+          <span className="ob-overlap-teams">
+            {sharedTeams.map((t) => (
+              <DeptTagByName key={t.id} name={t.label} />
+            ))}
+          </span>
+        ) : null}
+      </p>
+    </div>
+  )
+}
+
 function Done({ total, certifiedCount, onSee }: { total: number; certifiedCount: number; onSee: () => void }) {
   const teamBase = 2400 // Intuition's existing collective knowledge
   const teamTotal = teamBase + total
@@ -454,10 +448,11 @@ function Done({ total, certifiedCount, onSee }: { total: number; certifiedCount:
           <span className="ob-cmp-bar-you" style={{ width: `${share}%` }} />
         </div>
         <p className="ob-cmp-note">
-          Your knowledge is now <b className="tnum">{share}%</b> of the Circle's, and{' '}
-          <b className="tnum">{certifiedCount}</b> of your links were already kept by the team.
+          Your knowledge is now <b className="tnum">{share}%</b> of the Circle's.
         </p>
       </div>
+
+      <TeamOverlap total={total} certifiedCount={certifiedCount} />
 
       <button className="ob-cta" onClick={onSee}>
         Open my bookmarks <ArrowRight size={16} />

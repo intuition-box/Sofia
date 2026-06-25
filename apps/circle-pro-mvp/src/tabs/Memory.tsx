@@ -9,8 +9,8 @@
  */
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
-import { ModuleHead } from '../components/primitives'
-import { MEMORY, MEMORY_KIND, ROLE_MAP, peopleByRole } from '../data/mock'
+import { MEMORY, MEMORY_KIND, ROLE_MAP, TOPIC_MAP, peopleByRole } from '../data/mock'
+import { DomainTagByTopic } from '../components/Tag'
 import { requireJoin } from '../lib/gate'
 import { MemoryView } from './MemoryView'
 import type { MemoryKind, MemoryRecord, RoleId } from '../data/types'
@@ -66,6 +66,7 @@ export function Memory({ role = null }: MemoryProps) {
       >
         <h4 className="memcard-title">{m.title}</h4>
         <div className="memcard-foot">
+          {TOPIC_MAP[m.topic] ? <DomainTagByTopic id={m.topic} label={TOPIC_MAP[m.topic].label} /> : null}
           <span className="memcard-open">
             Open <Icon name="arrow" />
           </span>
@@ -78,7 +79,6 @@ export function Memory({ role = null }: MemoryProps) {
     <section className={`module${team ? ' mem-team' : ''}`} id={team ? `memory-${role}` : 'memory'}>
       {base.length === 0 ? (
         <>
-          <ModuleHead title="Memory" />
           <div className="mem-empty">
             <p>
               No decisions, threads or docs recorded by the <b>{team ? team.label : 'Circle'}</b> team yet.
@@ -88,7 +88,6 @@ export function Memory({ role = null }: MemoryProps) {
         </>
       ) : (
         <>
-          <ModuleHead title="Memory" />
 
           <div className="mem-filters">
             {KINDS.map((k) => (

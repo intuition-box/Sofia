@@ -13,7 +13,6 @@ import { avGrad, hostOf, initials } from '../data/helpers'
 import { Activity, Tools } from './Activity'
 import { Memory } from './Memory'
 import { TeamMembers } from './TeamMembers'
-import { ModuleHead } from '../components/primitives'
 import { Icon } from '../components/Icon'
 import { VoteButton, voteSeed } from '../components/VoteButton'
 import type { RoleId } from '../data/types'
@@ -64,7 +63,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [shotOk, setShotOk] = useState(true)
   const [q, setQ] = useState('')
-  const [view, setView] = useState<'overview' | 'members'>('overview')
+  const [view, setView] = useState<'overview' | 'members' | 'memory' | 'skills' | 'tools'>('overview')
   const teamRole = TEAM_ROLE[team.id] ?? 'dev'
 
   const rows = useMemo(() => {
@@ -105,24 +104,26 @@ export function TeamView({ team }: { team: TeamMeta }) {
         </header>
 
         <div className="tv-tabs">
-          <button
-            type="button"
-            className={`tv-tab${view === 'overview' ? ' on' : ''}`}
-            onClick={() => setView('overview')}
-          >
-            Overview
-          </button>
-          <button
-            type="button"
-            className={`tv-tab${view === 'members' ? ' on' : ''}`}
-            onClick={() => setView('members')}
-          >
-            Members
-          </button>
+          {(['overview', 'memory', 'skills', 'tools', 'members'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={`tv-tab${view === v ? ' on' : ''}`}
+              onClick={() => setView(v)}
+            >
+              {v === 'overview' ? 'Resources' : v[0].toUpperCase() + v.slice(1)}
+            </button>
+          ))}
         </div>
 
         {view === 'members' ? (
           <TeamMembers />
+        ) : view === 'memory' ? (
+          <Memory role={teamRole} />
+        ) : view === 'skills' ? (
+          <Activity role={teamRole} />
+        ) : view === 'tools' ? (
+          <Tools />
         ) : (
           <>
         <form className="tv-search" onSubmit={(e) => e.preventDefault()}>
@@ -135,14 +136,6 @@ export function TeamView({ team }: { team: TeamMeta }) {
           />
         </form>
 
-        <div className="tv-cols">
-          <Memory role={teamRole} />
-          <Activity role={teamRole} />
-        </div>
-
-        <Tools />
-
-        <ModuleHead title="Activity" />
         {featured ? (
           <div
             className="tv-featured"

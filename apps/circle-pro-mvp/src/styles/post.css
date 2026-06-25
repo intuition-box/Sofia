@@ -221,16 +221,23 @@
   border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, transparent);
   margin-bottom: 18px;
 }
-.post-why-head {
+.post-why-by {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
-.post-why-body {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
+.post-why-by-meta {
+  min-width: 0;
+}
+.post-why-by-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.post-why-by-sub {
+  font-size: 11px;
+  color: var(--ds-muted);
 }
 .post-why-av {
   display: grid;
@@ -285,6 +292,17 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
+}
+.post-why-main {
+  flex: 1;
+  min-width: 0;
+}
+.post-why-who {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  margin-bottom: 3px;
 }
 .post-why-text {
   margin: 0;

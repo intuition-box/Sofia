@@ -499,6 +499,117 @@
   gap: 9px;
   margin-bottom: 24px;
 }
+
+/* Rich resource cards (big preview / YouTube embed + footer) */
+.skv-res-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.skv-res {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.skv-res:hover {
+  border-color: var(--border-strong);
+}
+.skv-res-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+.skv-res-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+.skv-res-shot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.skv-res-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.skv-res-fav-lg {
+  width: 56px;
+  height: 56px;
+  opacity: 0.5;
+}
+.skv-res-foot {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+}
+.skv-res-fav {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  flex: none;
+  overflow: hidden;
+}
+.skv-res-fav img {
+  width: 18px;
+  height: 18px;
+}
+.skv-res-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.skv-res-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skv-res-host {
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+.skv-res-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.skv-res-add:hover {
+  border-color: var(--ds-muted);
+  color: var(--ds-ink);
+}
+.skv-res-add .ic svg {
+  width: 14px;
+  height: 14px;
+}
 .skv-pill {
   display: inline-flex;
   align-items: center;
@@ -657,9 +768,10 @@
 .tlv-note-lab {
   margin-bottom: 6px;
   font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ds-accent);
+  color: var(--ds-ink);
 }
 .tlv-note-text {
   margin: 0;
@@ -1080,11 +1192,11 @@
 }
 .tg-vote.on {
   border-color: var(--ds-accent);
-  background: var(--ds-accent-soft);
-  color: var(--ds-accent);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
 }
 .tg-vote.on .tg-vote-count {
-  color: var(--ds-accent);
+  color: var(--ds-on-accent);
 }
 .tg-card--add {
   display: flex;
@@ -2196,12 +2308,38 @@ button.sk-tool-chip {
    resources · intent note · travel timeline · endorsers.
    ============================================================ */
 .skmodal-card--mv {
-  width: min(720px, 95vw);
+  width: min(1000px, 95vw);
   height: min(860px, 90vh);
   max-height: none;
   padding: 0;
   overflow: hidden;
   display: flex;
+}
+/* Two columns: main (title/resources/intent) left, traveled+endorsers right —
+   mirrors the URL detail split. */
+.mv-split {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+.mv-col-main {
+  flex: 1;
+  min-width: 0;
+}
+.mv-col-side {
+  width: 330px;
+  flex: none;
+}
+.mv-col-side .mv-sec-head:first-child {
+  margin-top: 0;
+}
+@media (max-width: 880px) {
+  .mv-split {
+    flex-direction: column;
+  }
+  .mv-col-side {
+    width: auto;
+  }
 }
 .mv {
   flex: 1;
@@ -2385,19 +2523,13 @@ button.sk-tool-chip {
   height: 34px;
   border-radius: 9px;
   flex: none;
-  color: var(--ds-ink);
+  overflow: hidden;
+  background: var(--surface-2);
 }
-.mv-res-ic--link {
-  background: color-mix(in srgb, var(--web3) 16%, transparent);
-  color: var(--web3);
-}
-.mv-res-ic--doc {
-  background: color-mix(in srgb, var(--learning) 16%, transparent);
-  color: var(--learning);
-}
-.mv-res-ic .ic svg {
-  width: 15px;
-  height: 15px;
+.mv-res-ic img {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 .mv-res-main {
   flex: 1;
@@ -2556,12 +2688,25 @@ button.sk-tool-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
   font-size: 11px;
   font-weight: 700;
-  border-radius: var(--r-pill);
+  cursor: pointer;
+  color: var(--ds-ink);
+  background: transparent;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.mv-vote:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+}
+.mv-vote.on {
   color: var(--ds-on-accent);
   background: var(--ds-accent);
-  padding: 3px 10px;
+  border-color: var(--ds-accent);
 }
 .mv-tl {
   position: relative;

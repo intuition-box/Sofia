@@ -16,6 +16,8 @@
   line-height: 1;
   white-space: nowrap;
   user-select: none;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 .tag svg {
   flex: none;
@@ -66,7 +68,14 @@
   color: #37322a;
 }
 
-/* Shared vote affordance — chevron + count */
+/* When voted, the vote chip becomes a full-height segment flush to the right
+   edge — so the tag drops its right padding and clips to the rounded corner. */
+.tag--voted {
+  padding-right: 0;
+  overflow: hidden;
+}
+
+/* Shared vote affordance — default: inline chevron + count. */
 .tag-vote {
   display: inline-flex;
   align-items: center;
@@ -84,6 +93,13 @@
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+/* Voted: a solid attached segment, full height, rounded on the left only. */
+.tag-vote.on {
+  align-self: stretch;
+  margin-left: 3px;
+  padding: 0 11px 0 12px;
+  border-radius: 999px 0 0 999px;
 }
 
 /* ── Gallery (dev verification sheet, ?tags) ───────────────── */

@@ -17,6 +17,7 @@ import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
 import { likedBy } from '../data/teammates'
 import { avGrad, initials } from '../data/helpers'
+import { voteSeed } from '../components/VoteButton'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { useComments } from '../hooks/useComments'
 import { useAuth } from '../hooks/useAuth'
@@ -29,6 +30,9 @@ export interface PostItem {
   topicId: string
   teamId: string
 }
+
+/* Deterministic "added on" date per link (mock — no real timestamp on bookmarks). */
+const WHEN = ['Jan 14', 'Feb 3', 'Feb 27', 'Mar 11', 'Mar 25', 'Apr 8', 'Apr 22', 'May 6']
 
 // Mock comment row — kept for Activity.tsx's "who-knows-what" surface.
 export function CommentRow({ c }: { c: Comment }) {
@@ -248,15 +252,19 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
         </a>
 
         <div className="post-why">
-          <div className="post-why-head">
-            <span className="post-why-lab mono">Why it's useful</span>
-          </div>
-          <div className="post-why-body">
-            {sharer ? (
-              <span className="post-why-av" style={{ background: avGrad(sharer.grad) }} title={sharer.name}>
+          {sharer ? (
+            <div className="post-why-by">
+              <span className="post-why-av" style={{ background: avGrad(sharer.grad) }}>
                 {initials(sharer.name)}
               </span>
-            ) : null}
+              <div className="post-why-by-meta">
+                <div className="post-why-by-name">{sharer.name}</div>
+                <div className="post-why-by-sub mono">Shared · {WHEN[voteSeed(item.url) % WHEN.length]}</div>
+              </div>
+            </div>
+          ) : null}
+          <div className="post-why-note">
+            <div className="post-why-lab mono">Why it's useful</div>
             <p className="post-why-text">{whyFor(item.url)}</p>
           </div>
         </div>

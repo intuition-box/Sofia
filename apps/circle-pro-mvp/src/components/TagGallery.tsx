@@ -6,7 +6,7 @@
  */
 import type { ReactNode } from 'react'
 import { DeptTag, RoleTag, DomainTag, SkillTag, ToolTag, TagIcon } from './Tag'
-import { DEPTS, ROLES, DOMAINS, SKILLS, TOOLS, TAG_DOMAIN_INK } from '../data/tagStyles'
+import { DEPTS, ROLES, DOMAINS, SKILLS, TOOLS } from '../data/tagStyles'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -40,7 +40,7 @@ export function TagGallery() {
                 label={d.label}
                 hue={d.hue}
                 count={d.count}
-                icon={<TagIcon name={d.icon} color={TAG_DOMAIN_INK} />}
+                icon={<TagIcon name={d.icon} color="currentColor" />}
               />
             ))}
           </Row>

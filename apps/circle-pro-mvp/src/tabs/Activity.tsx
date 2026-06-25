@@ -6,12 +6,11 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
-import { ModuleHead } from '../components/primitives'
-import { DeptTagByName, DomainTagByTopic, TopicGlyph, TagIcon, ToolTag } from '../components/Tag'
+import { DomainTagByTopic, TopicGlyph, TagIcon, ToolTag } from '../components/Tag'
 import { TAG_HUES, deptHue, topicHue } from '../data/tagStyles'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { ROLE_MAP, SKILLS, TOOLS, TOPIC_MAP, peopleByRole } from '../data/mock'
-import { addSkillTool, addSkillUrl, createSkill, useSkillsStore, voteSkillUrl, type SkillsState } from '../lib/skills'
+import { addSkillTool, addSkillUrl, createSkill, useSkillsStore, voteSkillUrl, type SkillsState, type SkillUrl } from '../lib/skills'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { allLinksDeep } from '../data/folderTree'
 import { commentsFor, type Comment } from '../lib/discussion'
@@ -96,8 +95,6 @@ export function Activity({ role = null }: ActivityProps) {
 
   return (
     <section className={`module${team ? ' act-team' : ''}`} id={team ? `activity-${role}` : 'activity-pro'}>
-      <ModuleHead title="Skills" />
-
       <>
           <div className="mem-filters">
             {['all', 'Funding', 'Security', 'Design'].map((f) => (
@@ -298,16 +295,6 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
           <span className="tg-name">{t.name}</span>
         </div>
         <div className="tg-desc">{t.desc}</div>
-        <div className="tg-foot">
-          <span className="tg-foot-lab mono">Used by</span>
-          <div className="tg-used">
-            {t.usedBy.map((uid) => {
-              const u = TG_TEAMS[uid]
-              if (!u) return null
-              return <DeptTagByName key={uid} name={u.name} />
-            })}
-          </div>
-        </div>
       </div>
       <TgVote base={t.base} />
     </div>
@@ -331,10 +318,6 @@ export function Tools() {
 
   return (
     <section className="module">
-      <div className="tg-head-row">
-        <h2 className="module-title">Tools</h2>
-      </div>
-
       <div className="mem-filters">
         {['all', 'Marketing', 'Design', 'Dev', 'Sales'].map((f) => (
           <button
@@ -580,7 +563,66 @@ export function BookmarkPicker({ onPick, onClose }: { onPick: (url: string, titl
   )
 }
 
-const PILL_DOTS = ['#ffc6b0', '#7bade0', '#6dd4a0', '#a78bdb', '#f59e0b', '#ec4899']
+/** Extract a YouTube video id from common URL shapes (watch / youtu.be / embed). */
+function youtubeId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/)
+  return m ? m[1] : null
+}
+
+/* Rich resource card: a large 16:9 preview (or embedded YouTube player when the
+   link is a video), then a footer with favicon, title, host and the vote chip. */
+function ResCard({ x, onVote }: { x: SkillUrl; onVote: () => void }) {
+  const abs = x.url.startsWith('http') ? x.url : `https://${x.url}`
+  const host = hostOf(x.url)
+  const yt = youtubeId(x.url)
+  const [shotOk, setShotOk] = useState(true)
+  return (
+    <div className="skv-res">
+      {yt ? (
+        <div className="skv-res-video">
+          <iframe
+            src={`https://www.youtube.com/embed/${yt}`}
+            title={x.title}
+            loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <a className="skv-res-shot" href={abs} target="_blank" rel="noopener noreferrer">
+          {shotOk ? (
+            <img
+              className="skv-res-img"
+              src={`https://image.thum.io/get/width/760/crop/428/noanimate/${abs}`}
+              alt=""
+              loading="lazy"
+              onError={() => setShotOk(false)}
+            />
+          ) : (
+            <img className="skv-res-fav-lg" src={`https://www.google.com/s2/favicons?domain=${host}&sz=128`} alt="" />
+          )}
+        </a>
+      )}
+      <div className="skv-res-foot">
+        <span className="skv-res-fav">
+          <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`} alt="" loading="lazy" />
+        </span>
+        <span className="skv-res-id">
+          <a className="skv-res-title" href={abs} target="_blank" rel="noopener noreferrer">
+            {x.title}
+          </a>
+          <span className="skv-res-host mono">{host}</span>
+        </span>
+        <button type="button" className={`skv-vote${x.voted ? ' on' : ''}`} onClick={onVote}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m6 15 6-6 6 6" />
+          </svg>
+          {x.votes}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 
 function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; onClose: () => void }) {
@@ -631,6 +673,23 @@ function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; 
             The resources and tools the team actually reaches for to run {vm.name.toLowerCase()}.
           </p>
 
+          <div className="mv-meta">
+            <span className="mv-meta-av" style={{ background: avGrad(voteSeed(vm.who[0] ?? vm.id) % 6) }}>
+              {initials(vm.who[0] ?? 'team')}
+            </span>
+            <span>
+              Created by <b>{vm.who[0] ?? 'the team'}</b> · added recently
+            </span>
+          </div>
+
+          <div className="mv-note">
+            <div className="mv-note-lab mono">Why they created it</div>
+            <p className="mv-note-body">
+              {vm.who[0] ?? 'The team'} started {vm.name} to gather the links and tools the team keeps reaching for — one place
+              instead of scattered bookmarks.
+            </p>
+          </div>
+
           <div className="skv-sec-head">
             <span className="skv-sec-title">Resources</span>
             <span className="skv-sec-n mono">{urls.length}</span>
@@ -650,32 +709,12 @@ function SkillDetail({ vm, store, onClose }: { vm: SkillVM; store: SkillsState; 
             />
           ) : null}
           {urls.length ? (
-            <div className="skv-pills">
-              {urls.map((x, i) => (
-                <span className="skv-pill" key={x.id}>
-                  <span className="skv-pill-dot" style={{ background: PILL_DOTS[i % PILL_DOTS.length] }} />
-                  <a
-                    className="skv-pill-name"
-                    href={x.url.startsWith('http') ? x.url : `https://${x.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {x.title}
-                  </a>
-                  <button
-                    type="button"
-                    className={`skv-vote${x.voted ? ' on' : ''}`}
-                    onClick={() => voteSkillUrl(vm.id, x.id)}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 15 6-6 6 6" />
-                    </svg>
-                    {x.votes}
-                  </button>
-                </span>
+            <div className="skv-res-list">
+              {urls.map((x) => (
+                <ResCard key={x.id} x={x} onVote={() => voteSkillUrl(vm.id, x.id)} />
               ))}
-              <button className="skv-pill-add" onClick={() => setBkPick(true)}>
-                <Icon name="plus" />
+              <button className="skv-res-add" onClick={() => setBkPick(true)}>
+                <Icon name="plus" /> Add resource
               </button>
             </div>
           ) : (

@@ -86,51 +86,55 @@ export function TagIcon({ name, color, size = 14 }: { name: GlyphName; color: st
   }
 }
 
-/* ── Shared vote affordance (chevron + count) ─────────────────────────── */
-interface VoteColors {
-  chevOff: string
-  chevOn: string
-  numOff: string
-  numOn: string
-}
-
-function TagVote({ base, colors }: { base: number; colors: VoteColors }) {
-  const [on, setOn] = useState(false)
+/* ── Shared vote affordance — chevron + count. Default: inline chevron+count in
+   muted "off" colours. Voted: becomes a full-height segment attached to the
+   right edge (rounded-left) with a solid `segBg` fill + `segInk` content, +1. ── */
+function TagVote({
+  count,
+  on,
+  onToggle,
+  offChev,
+  offNum,
+  segBg,
+  segInk,
+}: {
+  count: number
+  on: boolean
+  onToggle: () => void
+  offChev: string
+  offNum: string
+  segBg: string
+  segInk: string
+}) {
   return (
     <button
       type="button"
-      className="tag-vote"
+      className={`tag-vote${on ? ' on' : ''}`}
       aria-pressed={on}
       onClick={(e) => {
         e.stopPropagation()
-        setOn((v) => !v)
+        onToggle()
       }}
+      style={on ? { background: segBg } : undefined}
     >
       <svg
         width="11"
         height="11"
         viewBox="0 0 24 24"
-        fill="none"
-        stroke={on ? colors.chevOn : colors.chevOff}
+        fill={on ? segInk : 'none'}
+        stroke={on ? segInk : offChev}
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
         <path d="m18 15-6-6-6 6" />
       </svg>
-      <span className="tag-vote-n" style={{ color: on ? colors.numOn : colors.numOff }}>
-        {base + (on ? 1 : 0)}
+      <span className="tag-vote-n" style={{ color: on ? segInk : offNum }}>
+        {count + (on ? 1 : 0)}
       </span>
     </button>
   )
 }
-
-const hueVote = (h: (typeof TAG_HUES)[TagHueName]): VoteColors => ({
-  chevOff: h.soft,
-  chevOn: h.vivid,
-  numOff: h.softNum,
-  numOn: h.deep,
-})
 
 /* ── The five families (vote is optional via `count`) ──────────────────── */
 
@@ -151,13 +155,13 @@ export function DeptTagByName({ name }: { name: string }) {
   return <DeptTag label={name} hue={deptHue(name)} />
 }
 
-export function RoleTag({ label, hue, count }: { label: string; hue: TagHueName; count?: number }) {
+export function RoleTag({ label, hue }: { label: string; hue: TagHueName }) {
+  // Roles are no longer votable (updated Nordic sheet) — soft tint, display only.
   const h = TAG_HUES[hue]
   return (
     <span className="tag tag--role" style={{ background: h.tint, color: h.deep }}>
       <TagIcon name="user" color={h.vivid} />
       {label}
-      {count != null ? <TagVote base={count} colors={hueVote(h)} /> : null}
     </span>
   )
 }
@@ -174,14 +178,22 @@ export function DomainTag({
   count?: number
 }) {
   const h = TAG_HUES[hue]
+  const [on, setOn] = useState(false)
+  // Voted: the label keeps its vivid fill; only the vote chip becomes a dark
+  // segment (`deep` + white) attached to the right edge.
   return (
-    <span className="tag tag--domain" style={{ background: h.vivid, color: TAG_DOMAIN_INK }}>
+    <span className={`tag tag--domain${on ? ' tag--voted' : ''}`} style={{ background: h.vivid, color: TAG_DOMAIN_INK }}>
       {icon}
       {label}
       {count != null ? (
         <TagVote
-          base={count}
-          colors={{ chevOff: 'rgba(0,0,0,.4)', chevOn: TAG_DOMAIN_INK, numOff: 'rgba(0,0,0,.62)', numOn: TAG_DOMAIN_INK }}
+          count={count}
+          on={on}
+          onToggle={() => setOn((v) => !v)}
+          offChev="rgba(0,0,0,.4)"
+          offNum="rgba(0,0,0,.62)"
+          segBg={h.deep}
+          segInk="#fff"
         />
       ) : null}
     </span>
@@ -204,23 +216,29 @@ export function DomainTagByTopic({ id, label, count }: { id: string; label: stri
 
 export function SkillTag({ label, hue, count }: { label: string; hue: TagHueName; count?: number }) {
   const h = TAG_HUES[hue]
+  const [on, setOn] = useState(false)
+  // Voted: pill stays white/outline; only the vote chip fills with the vivid hue.
   return (
-    <span className="tag tag--skill" style={{ borderColor: h.soft, color: h.deep }}>
+    <span className={`tag tag--skill${on ? ' tag--voted' : ''}`} style={{ borderColor: h.soft, color: h.deep }}>
       <TagIcon name="award" color={h.vivid} />
       {label}
-      {count != null ? <TagVote base={count} colors={hueVote(h)} /> : null}
+      {count != null ? (
+        <TagVote count={count} on={on} onToggle={() => setOn((v) => !v)} offChev={h.soft} offNum={h.softNum} segBg={h.vivid} segInk="#fff" />
+      ) : null}
     </span>
   )
 }
 
 export function ToolTag({ label, logo, count }: { label: string; logo: string; count?: number }) {
   const n = TAG_NEUTRAL
+  const [on, setOn] = useState(false)
+  // Voted: white pill stays; only the vote chip fills with the brand accent + ink.
   return (
-    <span className="tag tag--tool">
+    <span className={`tag tag--tool${on ? ' tag--voted' : ''}`}>
       <img className="tag-logo" src={logo} alt="" loading="lazy" />
       {label}
       {count != null ? (
-        <TagVote base={count} colors={{ chevOff: n.soft, chevOn: n.vivid, numOff: n.softNum, numOn: n.deep }} />
+        <TagVote count={count} on={on} onToggle={() => setOn((v) => !v)} offChev={n.soft} offNum={n.softNum} segBg="var(--ds-accent)" segInk="#02000e" />
       ) : null}
     </span>
   )

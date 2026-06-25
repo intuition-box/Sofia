@@ -52,14 +52,15 @@
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   background: var(--surface);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
   padding: 18px 20px;
   margin-bottom: 14px;
-  transition: box-shadow var(--t-normal) var(--ease), border-color var(--t-normal) var(--ease);
+  transition: box-shadow var(--t-normal) var(--ease), border-color var(--t-normal) var(--ease),
+    transform var(--t-normal) var(--ease);
 }
 .es-search:hover {
   border-color: var(--border-strong);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.13);
+  transform: translateY(-2px);
 }
 .es-search-row {
   display: flex;
@@ -190,29 +191,11 @@
   margin-left: auto;
 }
 
-/* Most used skills — skill tag + the dept & role that lean on it */
+/* Most used skills — wrap of skill tags with usage counts */
 .es-skills {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-.es-skill-row {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  min-width: 0;
-  padding: 11px 13px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--surface);
-}
-.es-skill-by {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-width: 0;
 }
 @media (max-width: 720px) {
   .es-topics {
