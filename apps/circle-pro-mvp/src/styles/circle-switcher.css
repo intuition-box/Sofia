@@ -1,0 +1,122 @@
+/* Workspace (circle) switcher — compact dropdown that re-scopes the app. */
+
+.circle-switcher {
+  position: relative;
+  display: inline-flex;
+}
+
+.circle-switcher-trigger,
+.circle-switcher-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: var(--r-pill, 999px);
+  background: var(--ds-card, var(--surface));
+  color: var(--ds-ink);
+  font-family: var(--ds-font-sans, var(--sans));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--t-fast, 0.12s) var(--ease, ease),
+    background var(--t-fast, 0.12s) var(--ease, ease);
+}
+
+.circle-switcher-trigger:hover,
+.circle-switcher-cta:hover {
+  border-color: var(--ds-border-soft, var(--border-strong));
+  background: var(--ds-bg-subtle, var(--surface-2));
+}
+
+.circle-switcher-cta {
+  color: var(--ds-accent, var(--ds-ink));
+}
+
+.circle-switcher-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ds-accent, #ffc6b0);
+  flex: none;
+}
+
+.circle-switcher-label {
+  font-family: var(--ds-font-mono, var(--mono));
+  letter-spacing: -0.01em;
+}
+
+.circle-switcher-role {
+  padding: 2px 7px;
+  border-radius: var(--r-pill, 999px);
+  background: var(--ds-bg-subtle, var(--surface-2));
+  color: var(--ds-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.circle-switcher-role--demo {
+  color: var(--ds-on-accent, #02000e);
+  background: var(--ds-accent, #ffc6b0);
+}
+
+.circle-switcher-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 240px;
+  padding: 6px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: var(--r-md, 12px);
+  background: var(--ds-card, var(--surface));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.circle-switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--r-sm, 8px);
+  background: transparent;
+  color: var(--ds-ink);
+  font-family: var(--ds-font-sans, var(--sans));
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast, 0.12s) var(--ease, ease);
+}
+
+.circle-switcher-item:hover {
+  background: var(--ds-bg-subtle, var(--surface-2));
+}
+
+.circle-switcher-item.active {
+  background: var(--ds-accent-soft, var(--surface-3));
+}
+
+.circle-switcher-item-label {
+  flex: 1;
+  font-family: var(--ds-font-mono, var(--mono));
+}
+
+.circle-switcher-item-role {
+  color: var(--ds-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.circle-switcher-item--cta {
+  margin-top: 4px;
+  border-top: 1px solid var(--ds-border, var(--border));
+  border-radius: 0 0 var(--r-sm, 8px) var(--r-sm, 8px);
+  color: var(--ds-accent, var(--ds-ink));
+}
+
+.circle-switcher-item--cta .circle-switcher-item-label {
+  font-family: var(--ds-font-sans, var(--sans));
+}

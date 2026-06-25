@@ -5,10 +5,12 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
+import { useCircle } from './useCircle'
 import { listBookmarks, type PublicBookmark } from '../services/circleProApi'
 
 export function useSharedBookmarks(mine = true) {
   const { authenticated, token } = useAuth()
+  const { circleId } = useCircle()
   const [items, setItems] = useState<PublicBookmark[]>([])
 
   const refresh = useCallback(async () => {
@@ -19,12 +21,12 @@ export function useSharedBookmarks(mine = true) {
         setItems([])
         return
       }
-      const { bookmarks } = await listBookmarks(t, { mine })
+      const { bookmarks } = await listBookmarks(t, { mine, circleId })
       setItems(bookmarks)
     } catch {
       setItems([])
     }
-  }, [authenticated, token, mine])
+  }, [authenticated, token, mine, circleId])
 
   useEffect(() => {
     refresh()

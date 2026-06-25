@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
+import { CircleSwitcher } from './shell/CircleSwitcher'
 import { type TabId } from './shell/Header'
 import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
@@ -76,13 +77,20 @@ export default function App() {
             }}
             onSkip={() => setOnboarding(false)}
           />
-        ) : tab === 'essential' ? (
-          <Essential />
-        ) : tab === 'bookmarks' ? (
-          <Bookmarks />
-        ) : tab === 'team' && team ? (
-          <TeamView key={team.id} team={team} />
-        ) : null}
+        ) : (
+          <>
+            <div className="main-topbar">
+              <CircleSwitcher />
+            </div>
+            {tab === 'essential' ? (
+              <Essential />
+            ) : tab === 'bookmarks' ? (
+              <Bookmarks />
+            ) : tab === 'team' && team ? (
+              <TeamView key={team.id} team={team} />
+            ) : null}
+          </>
+        )}
       </main>
 
       <ProfileGate />

@@ -7,6 +7,7 @@ import type { ReactNode } from 'react'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PRIVY_APP_ID } from '../config'
+import { CircleProvider } from '../hooks/useCircle'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,7 +35,9 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }}
     >
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <CircleProvider>{children}</CircleProvider>
+      </QueryClientProvider>
     </PrivyProvider>
   )
 }

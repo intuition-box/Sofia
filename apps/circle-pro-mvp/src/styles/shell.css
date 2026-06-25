@@ -20,6 +20,12 @@
   flex-direction: column;
   gap: 26px;
 }
+/* Thin bar above the surfaces holding the workspace switcher. */
+.main-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
 
 /* ── Header ────────────────────────────────────────────────── */
 .cheader {

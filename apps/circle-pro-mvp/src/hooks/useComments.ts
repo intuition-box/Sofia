@@ -11,6 +11,7 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './useAuth'
+import { useCircle } from './useCircle'
 import { useProfile } from './useProfile'
 import {
   listComments,
@@ -30,9 +31,11 @@ function dedupe(list: PublicComment[]): PublicComment[] {
 
 export function useComments(key: string) {
   const { authenticated, token } = useAuth()
+  const { circleId } = useCircle()
   const { profile } = useProfile()
   const qc = useQueryClient()
-  const queryKey = ['comments', key]
+  // circleId in the key so switching workspace refetches the right thread.
+  const queryKey = ['comments', circleId, key]
 
   const [extra, setExtra] = useState<PublicComment[]>([])
   const [extraHasMore, setExtraHasMore] = useState<boolean | null>(null)
@@ -43,7 +46,7 @@ export function useComments(key: string) {
     enabled: !!key,
     queryFn: async (): Promise<CommentsPage> => {
       const t = authenticated ? await token() : null
-      return listComments(t, key, { offset: 0 })
+      return listComments(t, key, { offset: 0, circleId })
     },
   })
 
@@ -67,13 +70,13 @@ export function useComments(key: string) {
     setLoadingMore(true)
     try {
       const t = authenticated ? await token() : null
-      const res = await listComments(t, key, { offset: items.length })
+      const res = await listComments(t, key, { offset: items.length, circleId })
       setExtra((xs) => dedupe([...xs, ...res.comments]))
       setExtraHasMore(res.hasMore)
     } finally {
       setLoadingMore(false)
     }
-  }, [authenticated, token, key, items.length, hasMore, loadingMore])
+  }, [authenticated, token, key, items.length, hasMore, loadingMore, circleId])
 
   const refresh = useCallback(() => {
     setExtra([])
@@ -83,11 +86,11 @@ export function useComments(key: string) {
 
   const add = useCallback(
     async (text: string) => {
-      const created = await postComment(await token(), key, text)
+      const created = await postComment(await token(), key, text, circleId)
       setExtra((xs) => dedupe([...xs, created]))
       return created
     },
-    [token, key],
+    [token, key, circleId],
   )
 
   const edit = useCallback(

@@ -18,8 +18,9 @@ import { classify } from '../data/taxonomyNav'
 import { addBookmark, setContext, setTopic, markShared, useMyBookmarks } from '../lib/mybookmarks'
 import { toast } from '../lib/toast'
 import { useAuth } from '../hooks/useAuth'
+import { useCircle } from '../hooks/useCircle'
 import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
-import { postBookmark } from '../services/circleProApi'
+import { postBookmark, isNotMemberError } from '../services/circleProApi'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { parseBookmarksHtml } from '../lib/importBookmarks'
 import { type BmNode, type BmFolder } from '../data/myBookmarks'
@@ -60,6 +61,7 @@ function BkShot({ url, host }: { url: string; host: string }) {
 export function Bookmarks() {
   const my = useMyBookmarks()
   const { authenticated, token, login } = useAuth()
+  const { circleId } = useCircle()
   const shared = useSharedBookmarks(true)
   const [sharingUrl, setSharingUrl] = useState<string | null>(null)
   const sharedUrls = useMemo(
@@ -189,18 +191,26 @@ export function Bookmarks() {
     try {
       const topicId = my.topics[l.url] ?? suggestCategory('', l.url)
       const cat = CATEGORY_MAP[topicId]
-      await postBookmark(await token(), {
-        url: l.url,
-        normalizedUrl: bookmarkKey(l.url),
-        title: l.title || hostOf(l.url),
-        context: my.context[l.url] ?? '',
-        tags: cat ? [{ id: cat.id, label: cat.label, color: cat.color, level: 'category' }] : [],
-      })
+      await postBookmark(
+        await token(),
+        {
+          url: l.url,
+          normalizedUrl: bookmarkKey(l.url),
+          title: l.title || hostOf(l.url),
+          context: my.context[l.url] ?? '',
+          tags: cat ? [{ id: cat.id, label: cat.label, color: cat.color, level: 'category' }] : [],
+        },
+        circleId,
+      )
       markShared(l.url)
       shared.refresh()
       toast('Shared to the group')
-    } catch {
-      toast('Could not share — try again')
+    } catch (e) {
+      toast(
+        isNotMemberError(e)
+          ? "You're not a member of this circle"
+          : 'Could not share — try again',
+      )
     } finally {
       setSharingUrl(null)
     }

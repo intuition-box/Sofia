@@ -5,6 +5,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from './useAuth'
+import { useCircle } from './useCircle'
 import { localTaxonomyHints } from '../data/taxonomyHints'
 import {
   searchAll,
@@ -29,6 +30,7 @@ function mergeHints(local: SearchHint[], remote: SearchHint[], limit = 8): Searc
 
 export function useSearch() {
   const { authenticated, token } = useAuth()
+  const { circleId } = useCircle()
   const [query, setQuery] = useState('')
   const [remoteHints, setRemoteHints] = useState<SearchHint[]>([])
   const [results, setResults] = useState<SearchResults | null>(null)
@@ -72,14 +74,14 @@ export function useSearch() {
       setRemoteHints([])
       setLoading(true)
       try {
-        setResults(await searchAll(await getToken(), term))
+        setResults(await searchAll(await getToken(), term, circleId))
       } catch {
         setResults({ query: term, bookmarks: [], comments: [], people: [] })
       } finally {
         setLoading(false)
       }
     },
-    [query, getToken],
+    [query, getToken, circleId],
   )
 
   const clear = useCallback(() => {

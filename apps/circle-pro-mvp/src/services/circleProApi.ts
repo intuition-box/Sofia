@@ -141,11 +141,16 @@ export const listComments = (
     }&offset=${opts?.offset ?? 0}${opts?.limit ? `&limit=${opts.limit}` : ''}`,
   )
 
-export const postComment = (token: string, key: string, text: string) =>
+export const postComment = (
+  token: string,
+  key: string,
+  text: string,
+  circleId: string = CIRCLE_ID,
+) =>
   api<{ comment: PublicComment }>(
     token,
     `/bookmarks/${encodeURIComponent(key)}/comments`,
-    { method: 'POST', body: JSON.stringify({ text, circleId: CIRCLE_ID }) },
+    { method: 'POST', body: JSON.stringify({ text, circleId }) },
   ).then((r) => r.comment)
 
 export const editComment = (token: string, id: string, text: string) =>
@@ -204,10 +209,11 @@ export const listBookmarks = (
 export const postBookmark = (
   token: string,
   body: { url: string; normalizedUrl: string; title: string; context?: string; tags?: PublicTag[] },
+  circleId: string = CIRCLE_ID,
 ) =>
   api<{ bookmark: PublicBookmark }>(token, '/bookmarks', {
     method: 'POST',
-    body: JSON.stringify({ ...body, circleId: CIRCLE_ID }),
+    body: JSON.stringify({ ...body, circleId }),
   }).then((r) => r.bookmark)
 
 // ── Search — the group's knowledge access ──
@@ -234,10 +240,14 @@ export interface SearchHint {
   color?: string
 }
 
-export const searchAll = (token: string | null, q: string) =>
+export const searchAll = (
+  token: string | null,
+  q: string,
+  circleId: string = CIRCLE_ID,
+) =>
   api<SearchResults>(
     token,
-    `/search?circleId=${CIRCLE_ID}&q=${encodeURIComponent(q)}`,
+    `/search?circleId=${circleId}&q=${encodeURIComponent(q)}`,
   )
 
 export const searchHints = (token: string | null, q: string) =>
