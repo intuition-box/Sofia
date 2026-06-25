@@ -3,6 +3,12 @@ declare module "~src/components/WalletConnectionButton" {
   export default WalletConnectionButton
 }
 
+// Plasmo inline-text import (CSUI styles injected into the shadow DOM).
+declare module "data-text:*" {
+  const content: string;
+  export default content;
+}
+
 // Asset declarations
 declare module "*.svg" {
   const content: string;

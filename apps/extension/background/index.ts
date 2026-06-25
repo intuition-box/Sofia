@@ -4,6 +4,7 @@ import { initializeThemeIconManager } from "./themeIconManager";
 import { initializeRealtime } from "./realtime";
 import { createServiceLogger } from '../lib/utils/logger'
 import { getStoredWalletAddress } from '../lib/utils/walletStorage'
+import { initCircleProShare } from "./circleProShare"
 import "./oauth/index"; // Initialize OAuth service
 
 const logger = createServiceLogger('ServiceWorker')
@@ -94,6 +95,9 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 checkExistingConnection();
+
+// "Share in Sofia" right-click → circle-pro share modal.
+initCircleProShare();
 
 logger.info('Service Worker ready (Plasmo)');
 

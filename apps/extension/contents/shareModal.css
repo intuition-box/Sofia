@@ -1,0 +1,429 @@
+/* "Share in Sofia" injected modal — CSUI shadow DOM. Aligned to
+   @0xsofia/design-system (dark theme tokens). Ported from the circle-pro
+   prototype; the circle picker + auth states are the only additions. */
+
+/* Reset the modal's shadow host. */
+:host {
+  all: initial;
+}
+
+.sis-overlay {
+  /* Mirrors @0xsofia/design-system theme.css [data-theme="dark"]. */
+  --sis-bg: #0b0a12;
+  --sis-card: #13121f;
+  --sis-elev: #1c1a2b;
+  --sis-line: #25223a;
+  --sis-ink: #f5f3ff;
+  --sis-muted: #8f8ca8;
+  --sis-muted-soft: #55526c;
+  --sis-accent: #ffc6b0;
+  --sis-on-accent: #0b0a12;
+  --sis-radius: 10px;
+  --sis-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.sis-overlay,
+.sis-overlay * {
+  box-sizing: border-box;
+  font-family: var(--sis-font);
+}
+
+/* Hide scrollbars everywhere — content still scrolls, no visible bar. */
+.sis-overlay * {
+  scrollbar-width: none;
+}
+.sis-overlay *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ── Injected modal shell ────────────────────────────────────── */
+.sis-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 0, 14, 0.6);
+  backdrop-filter: blur(4px);
+}
+.sis-card {
+  width: min(860px, calc(100vw - 40px));
+  max-height: min(82vh, 660px);
+  display: flex;
+  flex-direction: column;
+  background: var(--sis-card);
+  color: var(--sis-ink);
+  border: 1px solid var(--sis-line);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.sis-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--sis-line);
+}
+.sis-logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--sis-accent);
+  color: var(--sis-on-accent);
+  font-weight: 800;
+  font-size: 14px;
+}
+.sis-head-t {
+  flex: 1;
+  font-size: 15px;
+  color: var(--sis-muted);
+}
+.sis-head-t b {
+  color: var(--sis-ink);
+  font-weight: 700;
+}
+.sis-close {
+  border: none;
+  background: transparent;
+  color: var(--sis-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.sis-close:hover {
+  color: var(--sis-ink);
+  background: var(--sis-elev);
+}
+.sis-cols {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 24px;
+  padding: 20px;
+  overflow-y: auto;
+}
+@media (max-width: 620px) {
+  .sis-cols {
+    grid-template-columns: 1fr;
+  }
+}
+.sis-left,
+.sis-right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Qualification fields ────────────────────────────────────── */
+.sis-field-lab {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--sis-muted);
+  margin: 0 0 6px;
+}
+.sis-fields .sis-field-lab:not(:first-of-type) {
+  margin-top: 16px;
+}
+.sis-title-input,
+.sis-context-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--sis-line);
+  border-radius: var(--sis-radius);
+  background: var(--sis-bg);
+  color: var(--sis-ink);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+.sis-title-input:focus,
+.sis-context-input:focus {
+  border-color: var(--sis-accent);
+}
+.sis-context-input {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.sis-tags {
+  position: relative;
+}
+.sis-tags-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 9px;
+  min-height: 42px;
+  border: 1px solid var(--sis-line);
+  border-radius: var(--sis-radius);
+  background: var(--sis-bg);
+}
+.sis-tags-field:focus-within {
+  border-color: var(--sis-accent);
+}
+.sis-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, var(--sis-line));
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  color: var(--sis-ink);
+}
+.sis-tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.sis-tag-x {
+  border: none;
+  background: transparent;
+  color: var(--sis-muted);
+  cursor: pointer;
+  font-size: 9px;
+  padding: 0;
+}
+.sis-tag-x:hover {
+  color: var(--sis-ink);
+}
+.sis-tags-input {
+  flex: 1;
+  min-width: 90px;
+  border: none;
+  background: transparent;
+  color: var(--sis-ink);
+  font-size: 13.5px;
+  outline: none;
+  padding: 3px;
+}
+.sis-suggest {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  background: var(--sis-card);
+  border: 1px solid var(--sis-line);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.sis-suggest-head {
+  padding: 9px 12px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sis-accent);
+}
+.sis-suggest-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--sis-ink);
+  cursor: pointer;
+  text-align: left;
+}
+.sis-suggest-row.active {
+  background: var(--sis-elev);
+}
+.sis-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.sis-suggest-label {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sis-suggest-path {
+  font-size: 10.5px;
+  color: var(--sis-muted);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Preview ─────────────────────────────────────────────────── */
+.sis-preview {
+  display: block;
+  border: 1px solid var(--sis-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--sis-bg);
+  aspect-ratio: 16 / 10;
+}
+.sis-shot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.sis-shot-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.sis-shot-fallback img {
+  width: 52px;
+  height: 52px;
+  opacity: 0.6;
+}
+.sis-host {
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--sis-muted);
+}
+
+/* ── Circle (workspace) picker ───────────────────────────────── */
+.sis-circle {
+  position: relative;
+  margin-top: 16px;
+}
+.sis-circle-trigger,
+.sis-circle-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--sis-line);
+  border-radius: var(--sis-radius);
+  background: var(--sis-bg);
+  color: var(--sis-ink);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+.sis-circle-trigger:hover {
+  border-color: var(--sis-muted-soft);
+}
+.sis-circle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sis-accent);
+  flex: none;
+}
+.sis-circle-label,
+.sis-circle-item-label {
+  flex: 1;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: -0.01em;
+}
+.sis-circle-role {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sis-elev);
+  color: var(--sis-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.sis-circle-caret {
+  color: var(--sis-muted);
+  font-size: 11px;
+}
+.sis-circle-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 6;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--sis-card);
+  border: 1px solid var(--sis-line);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.sis-circle-item {
+  border-color: transparent;
+}
+.sis-circle-item:hover {
+  background: var(--sis-elev);
+}
+.sis-circle-item.active {
+  border-color: var(--sis-line);
+}
+
+/* ── Auth / empty states ─────────────────────────────────────── */
+.sis-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--sis-line);
+  border-radius: var(--sis-radius);
+  background: var(--sis-bg);
+  color: var(--sis-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sis-note b {
+  color: var(--sis-ink);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.sis-foot {
+  padding: 16px 20px;
+  border-top: 1px solid var(--sis-line);
+}
+.sis-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--sis-radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.sis-btn--accent {
+  background: var(--sis-accent);
+  color: var(--sis-on-accent);
+}
+.sis-btn--accent:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.sis-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  background: var(--sis-card);
+  color: var(--sis-ink);
+  border: 1px solid var(--sis-line);
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
