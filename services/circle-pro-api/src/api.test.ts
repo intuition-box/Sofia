@@ -94,6 +94,29 @@ describe('bookmarks', () => {
     expect((await del(`/bookmarks/${id}`, other)).status).toBe(403)
     expect((await del(`/bookmarks/${id}`, owner)).status).toBe(200)
   })
+
+  test('sharers — real "who shared this URL" in the circle (deduped)', async () => {
+    const a = wallet()
+    const b = wallet()
+    await makeProfile(a)
+    await makeProfile(b)
+    const marker = 'shr' + crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+    const url = `https://sharers.example.com/${marker}`
+    await post('/bookmarks', a, { url, title: 'A shared' })
+    await post('/bookmarks', b, { url, title: 'B shared' })
+    // Re-share by A must NOT duplicate A in the sharer list.
+    await post('/bookmarks', a, { url, title: 'A again' })
+
+    const { sharers } = await post('/bookmarks/sharers', a, { normalizedUrls: [url] }).then((r) => r.json())
+    const list = sharers[url]
+    expect(list).toBeDefined()
+    expect(list.map((p: any) => p.wallet).sort()).toEqual([a, b].sort())
+  })
+
+  test('sharers — empty keys → empty map', async () => {
+    const { sharers } = await post('/bookmarks/sharers', wallet(), { normalizedUrls: [] }).then((r) => r.json())
+    expect(sharers).toEqual({})
+  })
 })
 
 describe('search', () => {

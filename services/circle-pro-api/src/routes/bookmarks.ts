@@ -8,13 +8,14 @@ import type { AppEnv } from '../auth'
 import { getWallet, optionalAuthMiddleware } from '../auth'
 import { prisma } from '../db'
 import { assertMember } from '../membership'
-import { publicBookmark } from '../serialize'
+import { publicBookmark, publicProfile, type PublicProfile } from '../serialize'
 
 export const bookmarks = new Hono<AppEnv>() // writes (auth)
 export const bookmarksRead = new Hono<AppEnv>() // reads (optional auth)
 
 const DEFAULT_CIRCLE = 'acme'
 const PAGE_SIZE = 40
+const MAX_SHARER_KEYS = 200
 const withMeta = { author: true, tags: true } as const
 
 type IncomingTag = { id?: string; label?: string; color?: string; level?: string }
@@ -84,6 +85,36 @@ bookmarks.delete('/bookmarks/:id', async (c) => {
   if (existing.authorWallet !== wallet) throw new HTTPException(403, { message: 'Not yours' })
   await prisma.bookmark.delete({ where: { id } })
   return c.json({ ok: true })
+})
+
+/**
+ * Who in the circle has shared each of these URLs — REAL social proof for the
+ * "who on your team keeps this link" stack. Batched: the My-bookmarks tab asks
+ * for every visible URL at once. Public read. POST (a body of keys, not a query).
+ */
+bookmarksRead.post('/bookmarks/sharers', optionalAuthMiddleware, async (c) => {
+  const body = (await c.req.json().catch(() => ({}))) as {
+    circleId?: string
+    normalizedUrls?: string[]
+  }
+  const circleId = body.circleId ?? DEFAULT_CIRCLE
+  const urls = Array.from(
+    new Set((body.normalizedUrls ?? []).filter((u): u is string => typeof u === 'string')),
+  ).slice(0, MAX_SHARER_KEYS)
+  if (!urls.length) return c.json({ sharers: {} })
+
+  const rows = await prisma.bookmark.findMany({
+    where: { circleId, normalizedUrl: { in: urls } },
+    include: { author: true },
+    orderBy: { createdAt: 'asc' },
+  })
+  // normalizedUrl → unique sharer profiles (oldest share first).
+  const sharers: Record<string, PublicProfile[]> = {}
+  for (const r of rows) {
+    const list = (sharers[r.normalizedUrl] ??= [])
+    if (!list.some((p) => p.wallet === r.author.wallet)) list.push(publicProfile(r.author))
+  }
+  return c.json({ sharers })
 })
 
 /** The circle's bookmarks (newest first), paginated. Public read. */
