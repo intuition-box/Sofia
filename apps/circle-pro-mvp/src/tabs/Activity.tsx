@@ -7,16 +7,35 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
 import { DomainTagByTopic, TopicGlyph, TagIcon } from '../components/Tag'
-import { TAG_HUES, deptHue, topicHue } from '../data/tagStyles'
+import { TAG_HUES, topicHue, type TagHueName } from '../data/tagStyles'
 import { avGrad, initials } from '../data/helpers'
-import { ROLE_MAP, SKILLS, TOPIC_MAP, peopleByRole } from '../data/mock'
+import { ROLE_MAP, SKILLS, TOOLS, TOPIC_MAP, peopleByRole } from '../data/mock'
 import { createSkill, useSkillsStore, type SkillVM } from '../lib/skills'
 import { commentsFor, type Comment } from '../lib/discussion'
 import { CommentRow } from './PostDetail'
 import { CommentComposer } from '../components/CommentComposer'
+import { voteSeed } from '../components/VoteButton'
 import { SkillView } from './SkillView'
 import { toast } from '../lib/toast'
 import type { RoleId } from '../data/types'
+
+/* Favicon host per tool id (the TOOLS map carries no host) — for the tool
+   favicons shown on a skill card. */
+const SKILL_TOOL_HOST: Record<string, string> = {
+  figma: 'figma.com',
+  vscode: 'code.visualstudio.com',
+  cursor: 'cursor.com',
+  github: 'github.com',
+  foundry: 'getfoundry.sh',
+  notion: 'notion.so',
+  linear: 'linear.app',
+  discord: 'discord.com',
+  framer: 'framer.com',
+  dune: 'dune.com',
+  snapshot: 'snapshot.org',
+  premiere: 'adobe.com',
+  obsidian: 'obsidian.md',
+}
 
 interface ActivityProps {
   role?: RoleId | null
@@ -49,6 +68,7 @@ export function Activity({ role = null }: ActivityProps) {
   const renderSkill = (s: SkillVM, onOpen: (id: string) => void) => {
     const urls = store.urls[s.id] || []
     const votes = urls.reduce((a, u) => a + u.votes, 0)
+    const tools = store.tools[s.id] || []
     const th = s.theme ? TOPIC_MAP[s.theme] : null
     return (
       <button className="skcard" key={s.id} onClick={() => onOpen(s.id)}>
@@ -56,9 +76,26 @@ export function Activity({ role = null }: ActivityProps) {
           <span className="sk-name">{s.name}</span>
           {th ? <DomainTagByTopic id={s.theme ?? ''} label={th.label} /> : null}
         </div>
-        <div className="sk-meta mono">
-          {urls.length} link{urls.length === 1 ? '' : 's'} · {votes} vote{votes === 1 ? '' : 's'}
+        <div className="sk-meta">
+          <span className="mono">
+            {urls.length} link{urls.length === 1 ? '' : 's'}
+          </span>
+          <TgVote base={votes} />
         </div>
+        {tools.length ? (
+          <div className="skcard-tools">
+            {tools.map((id) => (
+              <img
+                key={id}
+                className="skcard-tool"
+                src={`https://www.google.com/s2/favicons?domain=${SKILL_TOOL_HOST[id] ?? `${id}.com`}&sz=64`}
+                alt=""
+                title={TOOLS[id]?.label ?? id}
+                loading="lazy"
+              />
+            ))}
+          </div>
+        ) : null}
       </button>
     )
   }
@@ -134,7 +171,7 @@ export function Activity({ role = null }: ActivityProps) {
               <span className="skcard-create-plus">+</span>
               <span className="skcard-create-label">Add skills</span>
             </button>
-            {shownSkills.slice(0, 3).map((s) => renderSkill(s, openSkill))}
+            {shownSkills.slice(0, 8).map((s) => renderSkill(s, openSkill))}
           </div>
         </>
 
@@ -180,33 +217,95 @@ interface TgTool {
   host: string
   base: number
   desc: string
-  usedBy: string[]
+  /** Skills that lean on this tool — drives the skill filter. */
+  skills: string[]
   by: string
   note: string
   grad: number
 }
 
-const TG_TEAMS: Record<string, { name: string; color: string }> = {
-  marketing: { name: 'Marketing', color: '#8b5cf6' },
-  design: { name: 'Design', color: '#ec4899' },
-  sales: { name: 'Sales', color: '#22c55e' },
-  dev: { name: 'Dev', color: '#3b82f6' },
-  comms: { name: 'Comms', color: '#c14c8a' },
-  growth: { name: 'Growth', color: '#5cc4d6' },
-  data: { name: 'Data', color: '#7bade0' },
-  ops: { name: 'Ops', color: '#8f8ca8' },
-}
+/* Skill filters for the tools grid (award-tag style, like the Skills tab). */
+const TOOL_SKILL_FILTERS: { label: string; hue: TagHueName }[] = [
+  { label: 'Design systems', hue: 'violet' },
+  { label: 'Brand', hue: 'pink' },
+  { label: 'Community', hue: 'teal' },
+  { label: 'Analytics', hue: 'indigo' },
+]
 
 const TOOLS_GRID: TgTool[] = [
-  { id: 'figma', name: 'Figma', glyph: 'F', color: '#ec4899', host: 'figma.com', base: 18, desc: 'Design files, campaign one-pagers and the shared brand library.', usedBy: ['design', 'marketing'], by: 'Inès Roy', grad: 2, note: "Single source of truth for the brand — branch the library, don't fork it." },
-  { id: 'notion', name: 'Notion', glyph: 'N', color: '#e5e2f5', host: 'notion.so', base: 24, desc: 'Team wiki, creative briefs and the editorial calendar.', usedBy: ['marketing', 'ops', 'design'], by: 'Lina Moreau', grad: 0, note: 'Every brief and the editorial calendar live here — start new docs from a template.' },
-  { id: 'hubspot', name: 'HubSpot', glyph: 'H', color: '#f59e0b', host: 'hubspot.com', base: 12, desc: 'CRM, email sequences and lead scoring for inbound.', usedBy: ['sales', 'marketing'], by: 'Marc Petit', grad: 3, note: 'Inbound sequences and lead scoring — ping me for a seat before building a flow.' },
-  { id: 'linear', name: 'Linear', glyph: 'L', color: '#7bade0', host: 'linear.app', base: 15, desc: 'Roadmap and campaign task tracking across squads.', usedBy: ['dev', 'marketing'], by: 'Tom Bauer', grad: 5, note: 'We track campaign work in the Marketing team — keep titles action-first.' },
-  { id: 'dune', name: 'Dune', glyph: '≈', color: '#5cc4d6', host: 'dune.com', base: 9, desc: 'Funnel and on-chain analytics dashboards.', usedBy: ['data', 'growth'], by: 'Sofia Rossi', grad: 1, note: 'Funnel dashboards — the GTM board is pinned at the top of the workspace.' },
-  { id: 'webflow', name: 'Webflow', glyph: 'W', color: '#8a93f0', host: 'webflow.com', base: 11, desc: 'Landing pages and the public marketing site.', usedBy: ['design', 'marketing'], by: 'Inès Roy', grad: 2, note: 'Landing pages ship from here — always review staging before publishing.' },
-  { id: 'discord', name: 'Discord', glyph: 'D', color: '#8a93f0', host: 'discord.com', base: 17, desc: 'Community management and the ambassador program.', usedBy: ['comms', 'marketing'], by: 'Lina Moreau', grad: 0, note: 'Community and the ambassador program live in #ambassadors.' },
-  { id: 'framer', name: 'Framer', glyph: 'Fr', color: '#e5e2f5', host: 'framer.com', base: 7, desc: 'Interactive prototypes and quick microsites.', usedBy: ['design'], by: 'Inès Roy', grad: 2, note: 'Quick interactive prototypes for design reviews — not for production sites.' },
+  { id: 'figma', name: 'Figma', glyph: 'F', color: '#ec4899', host: 'figma.com', base: 18, desc: 'Design files, campaign one-pagers and the shared brand library.', skills: ['Design systems', 'Brand'], by: 'Inès Roy', grad: 2, note: "Single source of truth for the brand — branch the library, don't fork it." },
+  { id: 'notion', name: 'Notion', glyph: 'N', color: '#e5e2f5', host: 'notion.so', base: 24, desc: 'Team wiki, creative briefs and the editorial calendar.', skills: ['Brand', 'Community'], by: 'Lina Moreau', grad: 0, note: 'Every brief and the editorial calendar live here — start new docs from a template.' },
+  { id: 'hubspot', name: 'HubSpot', glyph: 'H', color: '#f59e0b', host: 'hubspot.com', base: 12, desc: 'CRM, email sequences and lead scoring for inbound.', skills: ['Community', 'Analytics'], by: 'Marc Petit', grad: 3, note: 'Inbound sequences and lead scoring — ping me for a seat before building a flow.' },
+  { id: 'linear', name: 'Linear', glyph: 'L', color: '#7bade0', host: 'linear.app', base: 15, desc: 'Roadmap and campaign task tracking across squads.', skills: ['Design systems', 'Analytics'], by: 'Tom Bauer', grad: 5, note: 'We track campaign work in the Marketing team — keep titles action-first.' },
+  { id: 'dune', name: 'Dune', glyph: '≈', color: '#5cc4d6', host: 'dune.com', base: 9, desc: 'Funnel and on-chain analytics dashboards.', skills: ['Analytics'], by: 'Sofia Rossi', grad: 1, note: 'Funnel dashboards — the GTM board is pinned at the top of the workspace.' },
+  { id: 'webflow', name: 'Webflow', glyph: 'W', color: '#8a93f0', host: 'webflow.com', base: 11, desc: 'Landing pages and the public marketing site.', skills: ['Design systems', 'Brand'], by: 'Inès Roy', grad: 2, note: 'Landing pages ship from here — always review staging before publishing.' },
+  { id: 'discord', name: 'Discord', glyph: 'D', color: '#8a93f0', host: 'discord.com', base: 17, desc: 'Community management and the ambassador program.', skills: ['Community'], by: 'Lina Moreau', grad: 0, note: 'Community and the ambassador program live in #ambassadors.' },
+  { id: 'framer', name: 'Framer', glyph: 'Fr', color: '#e5e2f5', host: 'framer.com', base: 7, desc: 'Interactive prototypes and quick microsites.', skills: ['Design systems'], by: 'Inès Roy', grad: 2, note: 'Quick interactive prototypes for design reviews — not for production sites.' },
 ]
+
+/* What the team bolts onto a tool: plugins, packages and the tools it connects
+   to. Keyed by tool id; tools without an entry just show empty sections. */
+interface ToolPlugin {
+  name: string
+  host: string
+  src: string
+  desc: string
+  by: string
+  grad: number
+  state: 'installed' | 'suggested'
+}
+interface ToolPackage {
+  name: string
+  cmd: string
+  desc: string
+  by: string
+  grad: number
+  version: string
+}
+interface ToolRel {
+  host: string
+  name: string
+  what: string
+}
+interface ToolExtras {
+  plugins: ToolPlugin[]
+  packages: ToolPackage[]
+  connects: ToolRel[]
+}
+
+const TOOL_EXTRAS: Record<string, ToolExtras> = {
+  figma: {
+    plugins: [
+      { name: 'Unsplash', host: 'unsplash.com', src: 'figma · community', desc: 'Real photography into frames instead of grey boxes.', by: 'you', grad: 4, state: 'installed' },
+      { name: 'Autoflow', host: 'autoflow.pro', src: 'figma · community', desc: 'User-flow arrows between frames. Used on the onboarding maps.', by: 'Maxime', grad: 2, state: 'installed' },
+      { name: 'Content Reel', host: 'microsoft.com', src: 'figma · community', desc: 'Realistic placeholder data for the Sofia leaderboard mocks.', by: 'Maxime', grad: 2, state: 'suggested' },
+    ],
+    packages: [
+      { name: '@figma/code-connect', cmd: 'npm i @figma/code-connect', desc: 'Maps components to our React codebase so design and code stay in sync.', by: 'you', grad: 4, version: 'v1.3.2' },
+    ],
+    connects: [
+      { host: 'cursor.com', name: 'Cursor', what: 'Export a selection as React' },
+      { host: 'notion.so', name: 'Notion', what: 'Embed live frames in the spec' },
+    ],
+  },
+  notion: {
+    plugins: [],
+    packages: [],
+    connects: [
+      { host: 'slack.com', name: 'Slack', what: 'Push page updates to a channel' },
+      { host: 'figma.com', name: 'Figma', what: 'Embed live frames in the spec' },
+    ],
+  },
+  linear: {
+    plugins: [],
+    packages: [],
+    connects: [
+      { host: 'github.com', name: 'GitHub', what: 'Link PRs to issues automatically' },
+      { host: 'slack.com', name: 'Slack', what: 'Triage straight from a channel' },
+    ],
+  },
+}
+const EMPTY_EXTRAS: ToolExtras = { plugins: [], packages: [], connects: [] }
 
 /* Vertical vote rail (▲ + count) on each tool card. */
 function TgVote({ base }: { base: number }) {
@@ -271,10 +370,9 @@ function renderToolCard(t: TgTool, onOpen: (t: TgTool) => void) {
 export function Tools() {
   const [openTool, setOpenTool] = useState<TgTool | null>(null)
   const [showAll, setShowAll] = useState(false)
-  const [team, setTeam] = useState('all')
+  const [skill, setSkill] = useState('all')
 
-  const shownTools =
-    team === 'all' ? TOOLS_GRID : TOOLS_GRID.filter((t) => t.usedBy.some((u) => TG_TEAMS[u]?.name === team))
+  const shownTools = skill === 'all' ? TOOLS_GRID : TOOLS_GRID.filter((t) => t.skills.includes(skill))
 
   const addCard = (
     <button className="tg-card--create" onClick={() => toast('Add a tool')}>
@@ -286,20 +384,20 @@ export function Tools() {
   return (
     <section className="module">
       <div className="mem-filters">
-        {['all', 'Marketing', 'Design', 'Dev', 'Sales'].map((f) => (
+        <button
+          className={`mem-fil${skill === 'all' ? ' active' : ''}`}
+          onClick={() => setSkill('all')}
+        >
+          All
+        </button>
+        {TOOL_SKILL_FILTERS.map((f) => (
           <button
-            key={f}
-            className={`mem-fil${team === f ? ' active' : ''}`}
-            style={f === 'all' ? undefined : { ['--fc' as string]: TAG_HUES[deptHue(f)].vivid, ['--ft' as string]: '#fff' }}
-            onClick={() => setTeam(f)}
+            key={f.label}
+            className={`mem-fil${skill === f.label ? ' active' : ''}`}
+            style={{ ['--fc' as string]: TAG_HUES[f.hue].vivid }}
+            onClick={() => setSkill(f.label)}
           >
-            {f === 'all' ? (
-              'All'
-            ) : (
-              <>
-                <TagIcon name="users" color="currentColor" size={13} /> {f}
-              </>
-            )}
+            <TagIcon name="award" color="currentColor" size={13} /> {f.label}
           </button>
         ))}
         <button className="view-all-btn mem-viewall" onClick={() => setShowAll(true)}>
@@ -345,48 +443,162 @@ export function Tools() {
   )
 }
 
-/* Tool modal — just the tool's thumbnail + a comments rail (no resources). */
+/* Horizontal upvote chip (arrow left + count) for a tool component. */
+function TldVote({ base }: { base: number }) {
+  const [on, setOn] = useState(false)
+  return (
+    <button
+      type="button"
+      className={`tld-vote${on ? ' on' : ''}`}
+      aria-pressed={on}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setOn((v) => !v)
+      }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m6 15 6-6 6 6" />
+      </svg>
+      <span className="tnum">{base + (on ? 1 : 0)}</span>
+    </button>
+  )
+}
+
+/* Tool detail — maintainer + "why", then what the team bolts onto it
+   (plugins, packages, connections), with the comments rail on the right. */
 function ToolView({ tool, onClose }: { tool: TgTool; onClose: () => void }) {
   const [comments, setComments] = useState<Comment[]>(() => commentsFor(`tool:${tool.id}`))
+  const [voted, setVoted] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const extras = TOOL_EXTRAS[tool.id] ?? EMPTY_EXTRAS
+
+  const onCopy = () => {
+    setCopied(true)
+    toast('Tool copied to clipboard')
+    window.setTimeout(() => setCopied(false), 1700)
+  }
 
   return (
     <div className="skv">
       <header className="skv-topbar">
-        <span className="skv-crumb mono">
-          <span className="skv-crumb-ic">
-            <Icon name="package" />
+        <div className="psk-head">
+          <span className="psk-author-av" style={{ background: avGrad(tool.grad) }}>
+            {initials(tool.by)}
           </span>
-          Tool
-        </span>
-        <span className="skv-crumb-sep">/</span>
-        <span className="skv-crumb-name">{tool.name}</span>
-        <button className="skv-icon" aria-label="Close" onClick={onClose}>
-          <Icon name="close" />
-        </button>
+          <div className="psk-author-meta">
+            <div className="psk-author-name">{tool.by}</div>
+            <div className="psk-author-sub mono">Added recently</div>
+          </div>
+        </div>
+        <div className="skv-topbar-right">
+          <div className="psk-use-wrap">
+            <div className="psk-use">
+              <button className="psk-use-main" onClick={onCopy}>
+                Copy tool
+              </button>
+              <button
+                className={`psk-use-vote${voted ? ' on' : ''}`}
+                aria-pressed={voted}
+                onClick={() => setVoted((v) => !v)}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m6 15 6-6 6 6" />
+                </svg>
+                {tool.base + (voted ? 1 : 0)}
+              </button>
+            </div>
+            {copied ? <span className="psk-copied">Copied to clipboard ✓</span> : null}
+          </div>
+          <button className="skv-icon" aria-label="Close" onClick={onClose}>
+            <Icon name="close" />
+          </button>
+        </div>
       </header>
 
       <div className="skv-body">
-        <div className="skv-main sk-scroll">
-          <div className="tlv-thumb">
-            <img className="tlv-thumb-img" src={`https://www.google.com/s2/favicons?domain=${tool.host}&sz=256`} alt="" />
-          </div>
+        <div className="skv-main sk-scroll tld-main">
           <h1 className="skv-title">{tool.name}</h1>
-          <p className="skv-desc">{tool.desc}</p>
+          <p className="psk-desc">{tool.desc}</p>
 
-          <div className="tlv-by">
-            <span className="tlv-by-av" style={{ background: avGrad(tool.grad) }}>
-              {initials(tool.by)}
-            </span>
-            <div className="tlv-by-meta">
-              <div className="tlv-by-name">{tool.by}</div>
-              <div className="tlv-by-sub mono">Maintainer · added recently</div>
+          <div className="psk-sec-head">
+            <span className="psk-sec-title">Why the team uses it</span>
+          </div>
+          <p className="tld-why">{tool.note}</p>
+
+          <div className="psk-sec-head">
+            <span className="psk-sec-title">Plugins</span>
+            <span className="psk-sec-n mono">{extras.plugins.length}</span>
+          </div>
+          {extras.plugins.length ? (
+            <div className="tld-list">
+              {extras.plugins.map((p) => (
+                <div className="tld-row" key={p.name}>
+                  <div className="tld-row-main">
+                    <span className="tld-row-ic">
+                      <img src={`https://www.google.com/s2/favicons?domain=${p.host}&sz=64`} alt="" loading="lazy" />
+                    </span>
+                    <span className="tld-row-id">
+                      <span className="tld-row-name">{p.name}</span>
+                    </span>
+                  </div>
+                  <TldVote base={voteSeed(p.name)} />
+                </div>
+              ))}
             </div>
-          </div>
+          ) : (
+            <p className="sk-empty mono">Nothing bolted on yet.</p>
+          )}
 
-          <div className="tlv-note">
-            <div className="tlv-note-lab mono">Why the team uses it</div>
-            <p className="tlv-note-text">{tool.note}</p>
+          <div className="psk-sec-head">
+            <span className="psk-sec-title">Packages</span>
+            <span className="psk-sec-n mono">{extras.packages.length}</span>
           </div>
+          {extras.packages.length ? (
+            <div className="tld-list">
+              {extras.packages.map((p) => (
+                <div className="tld-row" key={p.name}>
+                  <div className="tld-row-main">
+                    <span className="tld-row-ic">
+                      <img src="https://www.google.com/s2/favicons?domain=npmjs.com&sz=64" alt="" loading="lazy" />
+                    </span>
+                    <span className="tld-row-id">
+                      <span className="tld-row-name">{p.name}</span>
+                      <span className="tld-row-sub mono">{p.cmd}</span>
+                    </span>
+                  </div>
+                  <TldVote base={voteSeed(p.name)} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="sk-empty mono">No packages yet.</p>
+          )}
+
+          {extras.connects.length ? (
+            <>
+              <div className="psk-sec-head">
+                <span className="psk-sec-title">Connects to</span>
+                <span className="psk-sec-n mono">{extras.connects.length}</span>
+              </div>
+              <div className="tld-list">
+                {extras.connects.map((r) => (
+                  <div className="tld-row" key={r.name}>
+                    <div className="tld-row-main">
+                      <span className="tld-row-ic">
+                        <img src={`https://www.google.com/s2/favicons?domain=${r.host}&sz=64`} alt="" loading="lazy" />
+                      </span>
+                      <span className="tld-row-id">
+                        <span className="tld-row-name">{r.name}</span>
+                        <span className="tld-row-sub mono">{r.what}</span>
+                      </span>
+                    </div>
+                    <TldVote base={voteSeed(r.name)} />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
         </div>
 
         <aside className="skv-rail">

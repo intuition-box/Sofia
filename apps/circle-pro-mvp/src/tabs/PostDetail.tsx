@@ -54,7 +54,7 @@ export function CommentRow({ c }: { c: Comment }) {
         )}
         <div className="pc-actions">
           <span className="pc-like">
-            <Icon name="thumbup" /> {c.likes}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg> {c.likes}
           </span>
           <button className="pc-reply">Reply</button>
         </div>
@@ -155,7 +155,7 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
             className={`pc-like${c.likedByMe ? ' is-on' : ''}`}
             onClick={() => onToggleLike(c)}
           >
-            <Icon name="thumbup" /> {c.likeCount}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg> {c.likeCount}
           </button>
           {mine && !editing ? (
             <>

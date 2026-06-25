@@ -112,20 +112,30 @@
   width: 16px;
   height: 16px;
 }
+/* Claude's brand identity — warm "clay" surface + the Claude starburst. */
 .es-search-go {
   margin-left: auto;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e7c9b8;
   border-radius: var(--r-md);
-  background: var(--ds-accent);
-  color: #0c0b14;
+  background: #f5e5dc;
+  color: #3a2a20;
+  font-family: var(--display);
   font-size: 13px;
   font-weight: 600;
-  padding: 8px 18px;
+  padding: 8px 16px;
   cursor: pointer;
-  transition: filter var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease);
 }
 .es-search-go:hover {
-  filter: brightness(1.05);
+  background: #efd8cb;
+}
+.es-claude-logo {
+  width: 16px;
+  height: 11px;
+  flex: 0 0 auto;
 }
 
 /* ── Filter pills ──────────────────────────────────────────── */

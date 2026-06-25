@@ -11,7 +11,7 @@ import { suggestCategory } from '../data/topics'
 import { MY_BOOKMARKS, type BmNode } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { Activity, Tools } from './Activity'
-import { Memory } from './Memory'
+import { Archive } from './Archive'
 import { TeamMembers } from './TeamMembers'
 import { Icon } from '../components/Icon'
 import { VoteButton, voteSeed } from '../components/VoteButton'
@@ -119,7 +119,7 @@ export function TeamView({ team }: { team: TeamMeta }) {
         {view === 'members' ? (
           <TeamMembers />
         ) : view === 'memory' ? (
-          <Memory role={teamRole} />
+          <Archive />
         ) : view === 'skills' ? (
           <Activity role={teamRole} />
         ) : view === 'tools' ? (

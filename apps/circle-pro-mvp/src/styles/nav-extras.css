@@ -64,14 +64,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ns-circle-count {
-  font-family: var(--ds-font-mono);
-  font-size: 11px;
-  color: var(--ds-muted);
-}
 .ns-circle-avatars {
   display: flex;
+  align-items: center;
   padding-left: 16px;
+}
+/* Member tally — the emphasised number beside the avatars. */
+.ns-circle-tally {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+}
+.ns-circle-tally b {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  margin-right: 3px;
 }
 .ns-mav {
   width: 20px;

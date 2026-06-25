@@ -1,0 +1,121 @@
+/* ── Tool detail ──────────────────────────────────────────────────────────
+   Reuses the Skill view scaffold (.skv / topbar / .skv-title / .psk-desc /
+   .psk-sec-head). The plugins / packages / connections are card rows with an
+   attached full-height vote segment (Plugins List design). */
+
+.tld-why {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ds-ink-soft, var(--ds-ink));
+  max-width: 62ch;
+}
+
+/* More breathing room between the tool's sections. */
+.tld-main .psk-sec-head {
+  margin-top: 26px;
+}
+
+/* ── Card rows ──────────────────────────────────────────────────────────── */
+.tld-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tld-row {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.tld-row:hover {
+  border-color: var(--border-strong);
+}
+.tld-row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.tld-row-ic {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+}
+.tld-row-ic img {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: block;
+}
+.tld-row-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tld-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tld-row-sub {
+  font-size: 11.5px;
+  color: var(--ds-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Attached vote segment — full height, separated by a left border, peach when
+   voted (chevron + count). */
+.tld-vote {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 92px;
+  padding: 0 22px;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: var(--mono, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.14s var(--ease), color 0.14s var(--ease), border-color 0.14s var(--ease);
+}
+.tld-vote svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+.tld-vote:hover {
+  background: var(--surface-2);
+  color: var(--ds-ink);
+}
+.tld-vote.on {
+  background: var(--ds-accent);
+  color: #02000e;
+  border-left-color: var(--ds-accent);
+}
+.tld-vote .tnum {
+  font-variant-numeric: tabular-nums;
+}

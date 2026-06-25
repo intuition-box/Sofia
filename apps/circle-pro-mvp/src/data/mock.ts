@@ -399,6 +399,9 @@ const RAW_SKILLS: Skill[] = [
   { skill: 'Solidity / EVM', role: 'dev', who: ['bytewitch', 'fvngbill.eth'], signals: 29, confirmed: 16, trend: '+3', theme: 'defi' },
   { skill: 'Design systems', role: 'design', who: ['remy.design', 'ria.ux'], signals: 22, confirmed: 12, trend: '+7', theme: 'pubgoods' },
   { skill: 'Community ops', role: 'community', who: ['dana-dao', 'MKultra'], signals: 26, confirmed: 14, trend: '+5', theme: 'gov' },
+  { skill: 'Smart contract security', role: 'dev', who: ['bytewitch', '0xmara'], signals: 47, confirmed: 29, trend: '+11', theme: 'sec' },
+  { skill: 'Account abstraction', role: 'dev', who: ['lena-zk', 'fvngbill.eth'], signals: 39, confirmed: 23, trend: '+8', theme: 'devtool' },
+  { skill: 'Indexing & data pipelines', role: 'dev', who: ['0xsalt', 'bytewitch'], signals: 33, confirmed: 19, trend: '+6', theme: 'devtool' },
 ]
 export const SKILLS: Skill[] = RAW_SKILLS.map((s) => ({ ...s, theme: remapKey(s.theme) }))
 

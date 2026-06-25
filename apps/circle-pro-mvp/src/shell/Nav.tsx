@@ -115,7 +115,6 @@ export function Nav({
               <div className="ns-circle-head">
                 <span className="ns-circle-dot" style={{ background: c.color }} />
                 <span className="ns-circle-name">{c.name}</span>
-                <span className="ns-circle-count">{c.count}</span>
               </div>
               <div className="ns-circle-avatars">
                 {c.avs.map((g, j) => (

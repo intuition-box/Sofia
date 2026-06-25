@@ -60,6 +60,7 @@
   border-radius: var(--r-md);
   background: var(--ds-ink);
   overflow: hidden;
+  text-decoration: none;
 }
 .psk-use-main,
 .psk-use-vote {
@@ -70,6 +71,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  text-decoration: none;
   transition: background var(--t-fast) var(--ease);
 }
 .psk-use-main {
@@ -260,8 +262,8 @@
 }
 .psk-res-title {
   margin: 0;
-  font-family: var(--display);
-  font-weight: 600;
+  font-family: var(--ds-font-sans);
+  font-weight: 500;
   font-size: 14.5px;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -529,27 +531,30 @@
 .pske-steps-head .pske-lab {
   margin-bottom: 0;
 }
+/* Claude's brand identity — warm "clay" surface + the Claude starburst. */
 .pske-claude {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 12px;
+  gap: 8px;
+  padding: 7px 13px;
   border-radius: var(--r-md);
-  border: 1px solid var(--ds-accent);
-  background: var(--ds-accent-soft);
-  color: var(--ds-accent);
+  border: 1px solid #e7c9b8;
+  background: #f5e5dc;
+  color: #3a2a20;
   font-family: var(--display);
   font-weight: 600;
   font-size: 12.5px;
   cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
 }
 .pske-claude:hover {
-  filter: brightness(0.98);
+  background: #efd8cb;
 }
-.pske-claude .ic svg {
-  width: 14px;
-  height: 14px;
+.pske-claude-logo {
+  width: 16px;
+  height: 11px;
+  flex: 0 0 auto;
 }
 .pske-step-row {
   border-bottom: none;

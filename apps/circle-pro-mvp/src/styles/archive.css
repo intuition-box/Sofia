@@ -1,0 +1,577 @@
+/* ── Archive — named collection of saved items grouped into categories ─────
+   Read view + edit view, with an archive switcher on top. Built on the app's
+   design-system tokens; the gradient bar and category dots are intentional
+   accents. */
+
+.ar {
+  width: 100%;
+}
+
+/* ── Switcher ───────────────────────────────────────────────────────────── */
+.ar-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ar-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ds-muted);
+  font-family: var(--ds-font-sans);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.ar-tab:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-ink);
+}
+.ar-tab.on {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: #02000e;
+}
+.ar-tab-n {
+  font-size: 10.5px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  background: var(--surface-2);
+  color: var(--ds-muted);
+}
+.ar-tab.on .ar-tab-n {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--ds-bg);
+}
+.ar-tab--new {
+  border-style: dashed;
+}
+
+/* ── Card shell ─────────────────────────────────────────────────────────── */
+.ar-card {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: 0 22px 60px -42px rgba(0, 0, 0, 0.5);
+}
+.ar-bar {
+  height: 6px;
+  background: linear-gradient(90deg, #3b6fe0, #4f46e5);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.ar-head {
+  padding: 24px 28px 22px;
+}
+/* Header bar — CTA on the left, byline on the right (like the skill card). */
+.ar-headbar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.ar-headbar .ar-byline {
+  margin: 0;
+}
+.ar-headbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ar-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+.ar-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(30px, 4.2vw, 42px);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--ds-ink);
+}
+.ar-desc {
+  margin: 9px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  max-width: 60ch;
+}
+.ar-byline {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--ds-muted);
+}
+.ar-byline b {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.ar-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.ar-add-btn,
+.ar-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--r-md);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: filter var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.ar-add-btn {
+  padding: 10px 17px;
+  border: none;
+  background: var(--ds-accent);
+  color: #02000e;
+}
+.ar-add-btn:hover {
+  filter: brightness(0.96);
+}
+.ar-edit-btn {
+  padding: 9px 15px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.ar-edit-btn:hover {
+  border-color: var(--ds-accent);
+}
+.ar-add-btn .ic svg,
+.ar-edit-btn .ic svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Avatars + provenance ───────────────────────────────────────────────── */
+.ar-av {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--display);
+  font-weight: 600;
+}
+.ar-prov {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  font-size: 11.5px;
+  color: var(--ds-muted);
+}
+.ar-prov-avs {
+  display: inline-flex;
+}
+.ar-prov-avs .ar-av + .ar-av {
+  margin-left: -5px;
+  border: 1.5px solid var(--surface);
+}
+
+/* ── Categories ─────────────────────────────────────────────────────────── */
+.ar-cat {
+  border-top: 1px solid var(--border);
+}
+.ar-cat-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 28px 4px;
+}
+.ar-cat-head--edit {
+  padding-bottom: 8px;
+}
+.ar-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+.ar-cat-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.ar-cat-name--muted {
+  color: var(--ds-muted);
+}
+
+/* ── Item row ───────────────────────────────────────────────────────────── */
+.ar-item {
+  display: flex;
+  gap: 16px;
+  padding: 14px 28px;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid transparent;
+  transition: background var(--t-fast) var(--ease);
+}
+.ar-item + .ar-item {
+  border-top-color: var(--border);
+}
+a.ar-item:hover {
+  background: var(--surface-2);
+}
+.ar-item-fav {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+}
+.ar-item-fav img {
+  width: 26px;
+  height: 26px;
+}
+.ar-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ar-item-type-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 2px;
+}
+.ar-item-type {
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.ar-item-meta {
+  font-size: 10.5px;
+  color: var(--ds-muted);
+}
+/* Domain tag row under the title. */
+.ar-item-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.ar-item-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 16.5px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--ds-ink);
+}
+.ar-item-host {
+  font-size: 11.5px;
+  color: var(--ds-muted);
+  margin-top: 3px;
+}
+.ar-item-note {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ds-ink);
+  margin-top: 9px;
+  max-width: 58ch;
+}
+.ar-item-go {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  color: var(--ds-muted);
+}
+.ar-item-go svg {
+  width: 14px;
+  height: 14px;
+}
+a.ar-item:hover .ar-item-go {
+  color: var(--ds-ink);
+  border-color: var(--ds-accent);
+}
+
+/* ── Vote chip (archive header + items in edit) ─────────────────────────── */
+.ar-vote {
+  flex: 0 0 auto;
+  align-self: center;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ds-muted);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.ar-vote svg {
+  width: 13px;
+  height: 13px;
+}
+.ar-vote:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-ink);
+}
+.ar-vote.on {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent);
+  color: #02000e;
+}
+
+/* ── Edit view ──────────────────────────────────────────────────────────── */
+.ar-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ar-editing {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a9711b;
+  background: #fbefd6;
+  border: 1px solid #f0deb4;
+}
+.ar-editing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e2a23c;
+}
+.ar-done {
+  margin-left: auto;
+  padding: 9px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ds-ink);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.ar-done:hover {
+  border-color: var(--ds-accent);
+}
+.ar-lab {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-bottom: 6px;
+}
+.ar-name-in,
+.ar-desc-in {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ds-ink);
+  outline: none;
+  transition: background var(--t-fast) var(--ease);
+}
+.ar-name-in:focus,
+.ar-desc-in:focus {
+  background: var(--surface-3, var(--surface-2));
+}
+.ar-name-in {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.025em;
+  padding: 9px 13px;
+  margin-bottom: 14px;
+}
+.ar-desc-in {
+  font-size: 14.5px;
+  line-height: 1.5;
+  padding: 10px 13px;
+  resize: vertical;
+}
+.ar-cat-in {
+  flex: 1;
+  max-width: 280px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.ar-cat-in:focus {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.ar-cat-x {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+.ar-cat-x:hover {
+  color: var(--ds-ink);
+  background: var(--surface-2);
+}
+.ar-cat-x svg {
+  width: 15px;
+  height: 15px;
+}
+.ar-cat-name--static {
+  padding: 4px 8px;
+}
+.ar-item--edit {
+  align-items: flex-start;
+}
+.ar-additem-row {
+  padding: 4px 28px 16px;
+}
+.ar-additem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 9px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.ar-additem:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-accent);
+}
+.ar-pick {
+  padding: 4px 28px 16px;
+}
+.ar-file {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 8px;
+  border: 1px solid var(--ds-accent);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ar-file:hover {
+  filter: brightness(0.98);
+}
+
+/* ── Create a category ──────────────────────────────────────────────────── */
+.ar-newcat {
+  border-top: 1px solid var(--border);
+  padding: 18px 28px 22px;
+}
+.ar-newcat-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--ds-accent);
+  background: var(--ds-accent-soft);
+}
+.ar-newcat-ic {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: var(--ds-accent);
+  color: #02000e;
+}
+.ar-newcat-ic .ic svg {
+  width: 15px;
+  height: 15px;
+}
+.ar-newcat-in {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--ds-ink);
+}
+.ar-newcat-btn {
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: none;
+  background: var(--ds-accent);
+  color: #02000e;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ar-newcat-btn:hover {
+  filter: brightness(0.96);
+}

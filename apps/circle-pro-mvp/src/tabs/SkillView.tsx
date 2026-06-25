@@ -21,6 +21,7 @@ import {
   renameSkill,
   setSkillDesc,
   setSkillSteps,
+  voteSkillUrl,
   type SkillsState,
   type SkillUrl,
   type SkillVM,
@@ -113,7 +114,11 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
         ) : null}
         <div className="skv-topbar-right">
           {!editing ? (
-            <div className="psk-use-wrap">
+            <>
+              <button className="psk-edit" onClick={() => setEditing(true)}>
+                <Icon name="edit" /> Edit
+              </button>
+              <div className="psk-use-wrap">
               <div className="psk-use">
                 <button className="psk-use-main" onClick={onUse}>
                   Use this skill
@@ -130,7 +135,8 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
                 </button>
               </div>
               {copied ? <span className="psk-copied">Copied to clipboard ✓</span> : null}
-            </div>
+              </div>
+            </>
           ) : null}
           <button className="skv-icon" aria-label="Close" onClick={onClose}>
             <Icon name="close" />
@@ -143,7 +149,7 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
           {editing ? (
             <SkillEditor vm={vm} store={store} onDone={() => setEditing(false)} />
           ) : (
-            <SkillPublished vm={vm} store={store} onEdit={() => setEditing(true)} />
+            <SkillPublished vm={vm} store={store} />
           )}
         </div>
 
@@ -185,7 +191,7 @@ export function SkillView({ vm, store, onClose, startEditing = false }: SkillVie
 
 /* ── Published (read) view ─────────────────────────────────────────────── */
 
-function SkillPublished({ vm, store, onEdit }: { vm: SkillVM; store: SkillsState; onEdit: () => void }) {
+function SkillPublished({ vm, store }: { vm: SkillVM; store: SkillsState }) {
   const urls = [...(store.urls[vm.id] || [])].sort((a, b) => b.votes - a.votes)
   const tools = store.tools[vm.id] || []
   const steps = store.steps[vm.id]?.length ? store.steps[vm.id] : defaultSteps(vm)
@@ -194,12 +200,7 @@ function SkillPublished({ vm, store, onEdit }: { vm: SkillVM; store: SkillsState
 
   return (
     <>
-      <div className="psk-title-row">
-        <h1 className="skv-title">{vm.name}</h1>
-        <button className="psk-edit" onClick={onEdit}>
-          <Icon name="edit" /> Edit
-        </button>
-      </div>
+      <h1 className="skv-title">{vm.name}</h1>
       <p className="psk-desc">{descFor(vm, store.desc[vm.id])}</p>
 
       <div className="psk-sec-head">
@@ -235,27 +236,38 @@ function SkillPublished({ vm, store, onEdit }: { vm: SkillVM; store: SkillsState
         <span className="psk-sec-n mono">{urls.length}</span>
       </div>
       {urls.length ? (
-        <div className="psk-res-list">
+        <div className="tld-list">
           {urls.map((x) => {
             const abs = x.url.startsWith('http') ? x.url : `https://${x.url}`
             const host = hostOf(x.url)
             const t = resType(x.url)
             return (
-              <a className="psk-res-row" key={x.id} href={abs} target="_blank" rel="noopener noreferrer">
-                <span className="psk-res-ic">
-                  <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`} alt="" loading="lazy" />
-                </span>
-                <span className="psk-res-id">
-                  <span className="psk-res-title">{x.title}</span>
-                  <span className="psk-res-sub mono">
-                    <span className="psk-res-type" style={{ color: t.color }}>
-                      {t.label}
-                    </span>
-                    <span className="psk-res-dot">·</span>
-                    {host}
+              <div className="tld-row" key={x.id}>
+                <a className="tld-row-main" href={abs} target="_blank" rel="noopener noreferrer">
+                  <span className="tld-row-ic">
+                    <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=64`} alt="" loading="lazy" />
                   </span>
-                </span>
-              </a>
+                  <span className="tld-row-id">
+                    <span className="tld-row-name">{x.title}</span>
+                    <span className="tld-row-sub mono">
+                      <span className="psk-res-type" style={{ color: t.color }}>
+                        {t.label}
+                      </span>{' '}
+                      · {host}
+                    </span>
+                  </span>
+                </a>
+                <button
+                  className={`tld-vote${x.voted ? ' on' : ''}`}
+                  aria-pressed={x.voted}
+                  onClick={() => voteSkillUrl(vm.id, x.id)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m6 15 6-6 6 6" />
+                  </svg>
+                  <span className="tnum">{x.votes}</span>
+                </button>
+              </div>
             )
           })}
         </div>
@@ -414,7 +426,13 @@ function SkillEditor({ vm, store, onDone }: { vm: SkillVM; store: SkillsState; o
         <div className="pske-steps-head">
           <label className="pske-lab mono">Steps</label>
           <button className="pske-claude" onClick={draftSteps}>
-            <Icon name="bolt" /> Ask Claude to draft
+            <svg className="pske-claude-logo" viewBox="0 0 46 32" aria-hidden="true">
+              <path
+                fill="#d97757"
+                d="M8.9 25.6 17 21l.1-.4-.1-.2h-.4l-1.4-.1-4.6-.1-4-.2-3.9-.2-1-.2L0 18.3l.1-.6.8-.6.3.1 1.7.1 2.6.2 1.9.1 2.8.3h.4l.1-.2-.1-.1-.1-.1-2.2-1.5L6 13.4l-2.5-1.6-1.3-.9-.7-.9-.3-2 1.3-1.4 1.7.1.5.1L6.2 7l3.6 2.8 4.7 3.5.7.6.3-.2v-.2l-.3-.5-2.6-4.7-2.8-4.8-1.2-2-.4-1.2c-.1-.5-.2-.9-.2-1.4L8.9.1 9.7 0l2 .3.9.7 1.2 2.8 2 4.5 3.1 6.1.9 1.8.5 1.7.2.5h.3v-.3l.3-3.6.5-4.4.5-5.7.2-1.6.8-1.9L26.3.6l1.2.6.4.5-.6 1.5-.6 3.4-1 5.3-.7 3.5h.4l.4-.4 1.7-2.3 2.9-3.6 1.3-1.4 1.5-1.6.9-.8h1.8l1.3 2-.6 2-1.8 2.3-1.5 2-2.2 2.9-1.3 2.4.1.2h.3l4.6-1 2.5-.4 3-.5 1.3.6.2.7-.5 1.3-3.2.8-3.7.7-5.5 1.3-.1.1.2.2 2.5.2 1 .1h2.6l4.9.3 1.3.9.8 1-.2.8-2 1-2.6-.6-6.2-1.5-2.1-.5h-.3v.2l1.7 1.7 3.2 2.9 4 3.7.2.9-.5.8-.6-.1-3.6-2.7-1.4-1.2-3.1-2.6h-.2v.3l.7 1 3.8 5.7.2 1.7-.3.6-1 .3-1-.2-2.1-3-2.2-3.4-1.8-3-.2.1-1 11.2-.5.6-1.1.4-.9-.7-.5-1.1.5-2.2 1.1-2.8.8-2.3.8-2.8.4-1h-.2L8 27l-2.3.3-2 .2-1-.4-.2-.8.5-.5z"
+              />
+            </svg>
+            Ask Claude to draft
           </button>
         </div>
         {steps.map((s, i) => (

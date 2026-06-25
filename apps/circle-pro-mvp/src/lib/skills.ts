@@ -46,7 +46,49 @@ export interface SkillsState {
   steps: Record<string, string[]>
 }
 
-let state: SkillsState = { created: [], urls: {}, tools: {}, desc: {}, steps: {} }
+/** A seeded resource with a healthy vote tally so skills look lived-in. */
+const u = (id: string, url: string, title: string, votes: number): SkillUrl => ({ id, url, title, votes, voted: false })
+
+/* Pre-populate the engineering skills so they read as popular (resources +
+   votes + the tools they lean on). Keyed by the seeded skill id (`seed:<name>`). */
+const SEED_URLS: Record<string, SkillUrl[]> = {
+  'seed:Smart contract security': [
+    u('scs-1', 'https://github.com/crytic/slither', 'Slither — static analysis for Solidity', 41),
+    u('scs-2', 'https://github.com/foundry-rs/foundry', 'Foundry — fuzzing & invariant testing', 35),
+    u('scs-3', 'https://consensys.io/diligence/', 'ConsenSys Diligence — audit checklist', 27),
+    u('scs-4', 'https://swcregistry.io', 'SWC registry — known vulnerability classes', 19),
+  ],
+  'seed:Account abstraction': [
+    u('aa-1', 'https://eips.ethereum.org/EIPS/eip-4337', 'ERC-4337 — account abstraction spec', 33),
+    u('aa-2', 'https://docs.stackup.sh', 'Stackup — bundler & paymaster docs', 21),
+    u('aa-3', 'https://www.youtube.com/watch?v=account-abstraction', 'Smart accounts in production (talk)', 16),
+  ],
+  'seed:Indexing & data pipelines': [
+    u('idx-1', 'https://thegraph.com/docs/', 'The Graph — subgraph development', 28),
+    u('idx-2', 'https://dune.com', 'Dune — onchain analytics dashboards', 24),
+    u('idx-3', 'https://ponder.sh', 'Ponder — typesafe EVM indexing', 15),
+  ],
+  'seed:Solidity / EVM': [
+    u('sol-1', 'https://docs.soliditylang.org', 'Solidity language docs', 38),
+    u('sol-2', 'https://www.evm.codes', 'evm.codes — interactive opcode reference', 26),
+    u('sol-3', 'https://github.com/foundry-rs/foundry', 'Foundry — the dev toolkit', 31),
+  ],
+  'seed:ZK proving systems': [
+    u('zk-1', 'https://github.com/0xPARC/circom-ml', 'circom-ml — circuits for ML', 29),
+    u('zk-2', 'https://zkhack.dev', 'ZK Hack — puzzles & tutorials', 22),
+    u('zk-3', 'https://github.com/privacy-scaling-explorations', 'PSE — proving system research', 18),
+  ],
+}
+
+const SEED_TOOLS: Record<string, string[]> = {
+  'seed:Smart contract security': ['foundry', 'github'],
+  'seed:Account abstraction': ['vscode', 'github'],
+  'seed:Indexing & data pipelines': ['dune', 'github'],
+  'seed:Solidity / EVM': ['foundry', 'vscode'],
+  'seed:ZK proving systems': ['github', 'vscode'],
+}
+
+let state: SkillsState = { created: [], urls: SEED_URLS, tools: SEED_TOOLS, desc: {}, steps: {} }
 const listeners = new Set<() => void>()
 const emit = () => {
   for (const l of listeners) l()
