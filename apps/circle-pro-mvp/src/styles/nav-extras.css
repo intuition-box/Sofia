@@ -161,6 +161,48 @@
 .ns-auth-chip--top {
   margin-bottom: 14px;
 }
+
+/* Auth chip + sign-out menu (real connect/disconnect, top-left). */
+.ns-auth-wrap {
+  position: relative;
+}
+.ns-auth-wrap .ns-auth-chip {
+  width: 100%;
+}
+.ns-auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.ns-auth-menu {
+  position: absolute;
+  top: calc(100% - 6px);
+  left: 8px;
+  right: 8px;
+  z-index: 41;
+  padding: 6px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: 10px;
+  background: var(--ds-card, var(--surface));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+.ns-auth-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.ns-auth-menu-item:hover {
+  background: var(--ds-bg-subtle, var(--surface-2));
+}
 .ns-coll-fav {
   width: 16px;
   height: 16px;

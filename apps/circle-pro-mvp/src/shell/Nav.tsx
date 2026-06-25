@@ -15,6 +15,7 @@ import {
 import { Sparkles, Bookmark, Sun, Moon } from 'lucide-react'
 import { avGrad } from '../data/helpers'
 import { toast } from '../lib/toast'
+import { NavAuthChip } from './NavAuthChip'
 import { currentTheme, toggleTheme, type Theme } from '../lib/theme'
 import '@0xsofia/design-system/styles/nav-sidebar.css'
 import '../styles/nav-extras.css'
@@ -67,20 +68,7 @@ export function Nav({
 }) {
   return (
     <DsNavSidebar>
-      <button
-        type="button"
-        className="ns-auth-chip ns-auth-chip--top"
-        aria-label="Open your profile"
-        onClick={() => toast('Opening your profile')}
-      >
-        <span className="ns-auth-avatar ns-auth-avatar--fallback" style={{ background: avGrad(0) }}>
-          SC
-        </span>
-        <span className="ns-auth-meta">
-          <span className="ns-auth-name">Sam Chauché</span>
-          <span className="ns-auth-sub">sam@acme.com</span>
-        </span>
-      </button>
+      <NavAuthChip />
 
       <NavSection title="Navigation">
         <NavItem
