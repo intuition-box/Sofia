@@ -116,9 +116,11 @@ export const checkHandle = (token: string, handle: string) =>
 // ── Circles (membership) ──
 
 export interface CircleMembership {
-  /** On-chain group atom term_id — the canonical circleId. */
+  /** On-chain group atom term_id (or off-chain generated id) — the canonical circleId. */
   groupTermId: string
   role: string
+  /** Workspace name when known (off-chain circles have one), else null. */
+  name?: string | null
 }
 
 /** The circles the caller can write to (source for the circle picker). */
@@ -126,6 +128,25 @@ export const getMyCircles = (token: string) =>
   api<{ circles: CircleMembership[] }>(token, '/me/circles').then(
     (r) => r.circles,
   )
+
+export interface PublicCircle {
+  id: string
+  name: string
+  description: string | null
+  color: string | null
+  ownerWallet: string
+  termId: string | null
+}
+
+/** Create a workspace (off-chain): stores metadata + seeds you as OWNER. */
+export const createWorkspace = (
+  token: string,
+  body: { name: string; description?: string; color?: string },
+) =>
+  api<{ circle: PublicCircle }>(token, '/circles', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.circle)
 
 export interface MemberExpertise {
   tagId: string

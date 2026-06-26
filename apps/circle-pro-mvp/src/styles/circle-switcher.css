@@ -120,3 +120,29 @@
 .circle-switcher-item--cta .circle-switcher-item-label {
   font-family: var(--ds-font-sans, var(--sans));
 }
+
+/* Inline "create workspace" form. */
+.circle-switcher-create {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.circle-switcher-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: var(--r-md, 10px);
+  background: var(--ds-bg, var(--surface));
+  color: var(--ds-ink);
+  font-family: var(--ds-font-sans, var(--sans));
+  font-size: 13px;
+  outline: none;
+}
+.circle-switcher-input:focus {
+  border-color: var(--ds-accent, #ffc6b0);
+}
+.circle-switcher-item--cta .circle-switcher-create {
+  width: 100%;
+}

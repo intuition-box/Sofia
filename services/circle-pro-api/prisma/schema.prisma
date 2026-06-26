@@ -21,6 +21,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// A workspace. `id` IS the circleId used as the scope key everywhere
+/// (Bookmark.circleId, Comment.circleId, group-api Membership.groupTermId).
+/// Off-chain workspaces get a generated id; `termId` is filled once the
+/// workspace is minted as an on-chain group atom (migration path), so the scope
+/// key never changes when it goes on-chain.
+model Circle {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String?
+  /// Owner wallet (lowercased) — seeded as OWNER in group-api at creation.
+  ownerWallet String
+  /// On-chain group atom term_id, set when minted on-chain (null = off-chain).
+  termId      String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerWallet])
+}
+
 /// A wallet's public identity. Created on first login (the "choose a pseudo"
 /// gate). `handle` is the unique login-name; `displayName` is a free label.
 model Profile {

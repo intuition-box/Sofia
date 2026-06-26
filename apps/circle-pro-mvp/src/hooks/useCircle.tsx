@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react'
 import { CIRCLE_ID } from '../config'
-import { getMyCircles, type CircleMembership } from '../services/circleProApi'
+import { getMyCircles, createWorkspace, type CircleMembership } from '../services/circleProApi'
 import { useAuth } from './useAuth'
 
 const STORAGE_KEY = 'sofia:circle-pro:circleId'
@@ -33,6 +33,8 @@ interface CircleState {
   loading: boolean
   setCircle: (id: string) => void
   reload: () => void
+  /** Create a workspace, refresh, and switch to it. Returns the new circleId. */
+  create: (name: string) => Promise<string>
 }
 
 const CircleContext = createContext<CircleState | null>(null)
@@ -102,9 +104,19 @@ export function CircleProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const create = useCallback(
+    async (name: string) => {
+      const circle = await createWorkspace(await token(), { name })
+      await reload()
+      setCircle(circle.id)
+      return circle.id
+    },
+    [token, reload, setCircle],
+  )
+
   const value = useMemo<CircleState>(
-    () => ({ circles, circleId, isFallback, loading, setCircle, reload }),
-    [circles, circleId, isFallback, loading, setCircle, reload],
+    () => ({ circles, circleId, isFallback, loading, setCircle, reload, create }),
+    [circles, circleId, isFallback, loading, setCircle, reload, create],
   )
 
   return <CircleContext.Provider value={value}>{children}</CircleContext.Provider>

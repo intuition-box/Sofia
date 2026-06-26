@@ -1,5 +1,5 @@
 // Shared shaping + validation helpers for the public API surface.
-import type { Profile, Comment, Bookmark, BookmarkTag } from '@prisma/client'
+import type { Profile, Comment, Bookmark, BookmarkTag, Circle } from '@prisma/client'
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/
 
@@ -8,6 +8,27 @@ export function cleanHandle(raw: unknown): string | null {
   if (typeof raw !== 'string') return null
   const h = raw.trim().toLowerCase()
   return HANDLE_RE.test(h) ? h : null
+}
+
+export type PublicCircle = {
+  id: string
+  name: string
+  description: string | null
+  color: string | null
+  ownerWallet: string
+  /** On-chain group atom term_id once minted, else null (off-chain). */
+  termId: string | null
+}
+
+export function publicCircle(c: Circle): PublicCircle {
+  return {
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    color: c.color,
+    ownerWallet: c.ownerWallet,
+    termId: c.termId,
+  }
 }
 
 export type PublicProfile = {

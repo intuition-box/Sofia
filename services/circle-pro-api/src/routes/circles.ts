@@ -1,17 +1,56 @@
-// Circle-scoped reads — the Members tab. Members come from group-api (source of
-// truth); their profile + expertise are joined/derived here from circle-pro data.
+// Circle (workspace) routes: create + metadata + the Members and Activity reads.
+// Members come from group-api (source of truth); profile + expertise are
+// joined/derived here from circle-pro data.
 import { Hono } from 'hono'
+import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../auth'
-import { optionalAuthMiddleware } from '../auth'
+import { authMiddleware, optionalAuthMiddleware, getWallet } from '../auth'
 import { prisma } from '../db'
-import { listMembers } from '../membership'
+import { listMembers, seedMember } from '../membership'
 import { buildCircleMembers } from '../circleMembers'
 import { buildActivity } from '../circleActivity'
+import { publicCircle } from '../serialize'
 
 export const circles = new Hono<AppEnv>()
 
 const ACTIVITY_PAGE = 30
 const ACTIVITY_MAX_WINDOW = 300
+
+/**
+ * Create a workspace (off-chain). Generates the circleId, stores the metadata,
+ * and seeds the creator as OWNER in group-api (the gate's source of truth) so
+ * they can immediately write. `termId` stays null until it's minted on-chain.
+ */
+circles.post('/circles', authMiddleware, async (c) => {
+  const wallet = getWallet(c)
+  const body = (await c.req.json().catch(() => ({}))) as {
+    name?: string
+    description?: string
+    color?: string
+  }
+  const name = body.name?.trim()
+  if (!name) throw new HTTPException(400, { message: 'name required' })
+
+  const circle = await prisma.circle.create({
+    data: {
+      name,
+      description: body.description?.trim() || null,
+      color: body.color || null,
+      ownerWallet: wallet,
+    },
+  })
+  // Register the creator as OWNER in group-api so the membership gate lets them
+  // write. If this fails, surface it — the workspace exists but is unusable.
+  await seedMember(wallet, circle.id, 'OWNER')
+  return c.json({ circle: publicCircle(circle) }, 201)
+})
+
+/** GET /circles/:circleId → workspace metadata (name, etc.). Public read. */
+circles.get('/circles/:circleId', optionalAuthMiddleware, async (c) => {
+  const circle = await prisma.circle.findUnique({ where: { id: c.req.param('circleId') } })
+  if (!circle) throw new HTTPException(404, { message: 'Workspace not found' })
+  return c.json({ circle: publicCircle(circle) })
+})
 
 /** GET /circles/:circleId/members → members + role + profile + derived expertise. */
 circles.get('/circles/:circleId/members', optionalAuthMiddleware, async (c) => {

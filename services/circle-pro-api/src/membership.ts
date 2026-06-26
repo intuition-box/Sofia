@@ -64,6 +64,27 @@ export async function listCircles(wallet: string): Promise<CircleMembership[]> {
   return memberships
 }
 
+/** Seed/upsert a member in group-api (the gate's source of truth). Used when an
+ *  off-chain workspace is created (owner) and later when inviting members. */
+export async function seedMember(
+  wallet: string,
+  circleId: string,
+  role: string,
+): Promise<void> {
+  if (!groupApiConfigured()) {
+    throw new Error('group-api not configured — cannot seed membership')
+  }
+  const res = await fetch(`${env.groupApiUrl}/internal/membership`, {
+    method: 'POST',
+    headers: {
+      'x-internal-secret': env.groupApiInternalSecret,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ wallet: wallet.toLowerCase(), groupTermId: circleId, role }),
+  })
+  if (!res.ok) throw new Error(`group-api seed-member failed: ${res.status}`)
+}
+
 export interface CircleMemberRef {
   wallet: string
   role: string
