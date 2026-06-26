@@ -53,15 +53,21 @@ export async function assertMember(wallet: string, circleId: string): Promise<vo
   }
 }
 
-/** All circles `wallet` actively belongs to (for the picker). Not cached. */
+/** All circles `wallet` actively belongs to (for the picker). Not cached.
+ *  Degrades to [] if group-api is unreachable — the app shows "no workspace"
+ *  instead of a hard 500. */
 export async function listCircles(wallet: string): Promise<CircleMembership[]> {
   if (!groupApiConfigured()) return []
-  const res = await internalGet(
-    `/internal/memberships?wallet=${encodeURIComponent(wallet.toLowerCase())}`,
-  )
-  if (!res.ok) throw new Error(`group-api memberships list failed: ${res.status}`)
-  const { memberships } = (await res.json()) as { memberships: CircleMembership[] }
-  return memberships
+  try {
+    const res = await internalGet(
+      `/internal/memberships?wallet=${encodeURIComponent(wallet.toLowerCase())}`,
+    )
+    if (!res.ok) throw new Error(`group-api memberships list failed: ${res.status}`)
+    const { memberships } = (await res.json()) as { memberships: CircleMembership[] }
+    return memberships
+  } catch {
+    return []
+  }
 }
 
 /** Seed/upsert a member in group-api (the gate's source of truth). Used when an
@@ -94,10 +100,14 @@ export interface CircleMemberRef {
  *  circle-pro profiles + derives expertise from their shared bookmarks. */
 export async function listMembers(circleId: string): Promise<CircleMemberRef[]> {
   if (!groupApiConfigured()) return []
-  const res = await internalGet(
-    `/internal/members?groupTermId=${encodeURIComponent(circleId)}`,
-  )
-  if (!res.ok) throw new Error(`group-api members list failed: ${res.status}`)
-  const { members } = (await res.json()) as { members: CircleMemberRef[] }
-  return members
+  try {
+    const res = await internalGet(
+      `/internal/members?groupTermId=${encodeURIComponent(circleId)}`,
+    )
+    if (!res.ok) throw new Error(`group-api members list failed: ${res.status}`)
+    const { members } = (await res.json()) as { members: CircleMemberRef[] }
+    return members
+  } catch {
+    return []
+  }
 }

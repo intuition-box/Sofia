@@ -41,8 +41,16 @@ circles.post('/circles', authMiddleware, async (c) => {
     },
   })
   // Register the creator as OWNER in group-api so the membership gate lets them
-  // write. If this fails, surface it — the workspace exists but is unusable.
-  await seedMember(wallet, circle.id, 'OWNER')
+  // write. If this fails (group-api down), roll back the orphan workspace so the
+  // user can retry cleanly rather than owning an unusable circle.
+  try {
+    await seedMember(wallet, circle.id, 'OWNER')
+  } catch {
+    await prisma.circle.delete({ where: { id: circle.id } }).catch(() => {})
+    throw new HTTPException(503, {
+      message: 'Membership service unavailable — could not create the workspace. Is group-api running?',
+    })
+  }
   return c.json({ circle: publicCircle(circle) }, 201)
 })
 
