@@ -3,7 +3,7 @@
 // the whole join flow is testable against a made-up groupTermId.
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { MembershipRole } from '@prisma/client'
+import type { MembershipRole } from '../generated/prisma'
 import { prisma } from '../db'
 import { env } from '../env'
 

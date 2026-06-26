@@ -4,7 +4,7 @@
 import { PrivyClient } from '@privy-io/server-auth'
 import type { Context, MiddlewareHandler } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { MembershipRole } from '@prisma/client'
+import type { MembershipRole } from './generated/prisma'
 import { prisma } from './db'
 import { env } from './env'
 

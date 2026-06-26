@@ -2,7 +2,7 @@
 // fallback (Issue 2.2): access never depends on a single wallet.
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { MembershipRole } from '@prisma/client'
+import type { MembershipRole } from '../generated/prisma'
 import type { AppEnv } from '../auth'
 import { getWallet, requireRole } from '../auth'
 import { prisma } from '../db'

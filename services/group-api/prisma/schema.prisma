@@ -11,6 +11,10 @@
 
 generator client {
   provider      = "prisma-client-js"
+  // Dedicated output so this client doesn't collide with circle-pro-api's in the
+  // shared (hoisted) node_modules/@prisma/client — a single default output makes
+  // whichever service ran `prisma generate` last clobber the other's models.
+  output        = "../src/generated/prisma"
   // `native` for local dev, musl target for the alpine Docker runtime.
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }

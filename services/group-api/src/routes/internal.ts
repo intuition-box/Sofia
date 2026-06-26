@@ -4,7 +4,7 @@
 // end user may be SIWE-authed against circle-pro-api, not Privy).
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { MembershipRole } from '@prisma/client'
+import type { MembershipRole } from '../generated/prisma'
 import { prisma } from '../db'
 import { env } from '../env'
 

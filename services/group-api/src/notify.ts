@@ -1,6 +1,6 @@
 // Notification helper — persists the in-app notification (REST history) and
 // pushes it over Ably in one call so callers don't repeat both steps.
-import type { NotificationType, Prisma } from '@prisma/client'
+import type { NotificationType, Prisma } from './generated/prisma'
 import { prisma } from './db'
 import { publishToWallet } from './ably'
 
