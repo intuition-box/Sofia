@@ -80,6 +80,34 @@ bookmarks.post('/bookmarks', async (c) => {
   return c.json({ bookmark: publicBookmark(saved) }, 201)
 })
 
+/** Edit a bookmark's tags (and optional team) after sharing. Author-only. */
+bookmarks.patch('/bookmarks/:id', async (c) => {
+  const wallet = getWallet(c)
+  const id = c.req.param('id')
+  const existing = await prisma.bookmark.findUnique({ where: { id } })
+  if (!existing) throw new HTTPException(404, { message: 'Not found' })
+  if (existing.authorWallet !== wallet) throw new HTTPException(403, { message: 'Not yours' })
+
+  const body = (await c.req.json().catch(() => ({}))) as {
+    tags?: IncomingTag[]
+    departmentId?: string | null
+  }
+  const tags = (body.tags ?? [])
+    .filter((t): t is Required<IncomingTag> => !!t?.id && !!t?.label)
+    .map((t) => ({ tagId: t.id, label: t.label, color: t.color || '#8f8ca8', level: t.level || 'topic' }))
+
+  const saved = await prisma.bookmark.update({
+    where: { id },
+    data: {
+      tags: { deleteMany: {}, create: tags },
+      // Only touch the team when the field is present in the payload.
+      ...(body.departmentId !== undefined ? { departmentId: body.departmentId } : {}),
+    },
+    include: withMeta,
+  })
+  return c.json({ bookmark: publicBookmark(saved) })
+})
+
 /** Delete one of the caller's bookmarks. */
 bookmarks.delete('/bookmarks/:id', async (c) => {
   const wallet = getWallet(c)

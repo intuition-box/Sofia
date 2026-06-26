@@ -21,6 +21,7 @@ import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
 import { useSharers } from '../hooks/useSharers'
 import { useDepartments } from '../hooks/useDepartments'
 import { postBookmark, isNotMemberError } from '../services/circleProApi'
+import { TagEditor } from '../components/TagEditor'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { parseBookmarksHtml } from '../lib/importBookmarks'
 import { type BmNode, type BmFolder } from '../data/myBookmarks'
@@ -71,6 +72,12 @@ export function Bookmarks() {
     () => new Set(shared.items.map((b) => b.normalizedUrl)),
     [shared.items],
   )
+  // normalizedUrl → the backend bookmark (for editing tags after sharing).
+  const sharedByKey = useMemo(() => {
+    const m = new Map<string, (typeof shared.items)[number]>()
+    for (const b of shared.items) m.set(b.normalizedUrl, b)
+    return m
+  }, [shared.items])
   const [path, setPath] = useState<string[]>([])
   const [q, setQ] = useState('')
   const [topicFilter, setTopicFilter] = useState<string>('all')
@@ -389,9 +396,17 @@ export function Bookmarks() {
                       ) : null}
                       <div className="bk-share-row" onClick={(e) => e.stopPropagation()}>
                         {isShared ? (
-                          <span className="bk-share-badge">
-                            <Icon name="check" /> Shared
-                          </span>
+                          <>
+                            <span className="bk-share-badge">
+                              <Icon name="check" /> Shared
+                            </span>
+                            {sharedByKey.get(bookmarkKey(l.url)) ? (
+                              <TagEditor
+                                bookmark={sharedByKey.get(bookmarkKey(l.url))!}
+                                onSaved={shared.refresh}
+                              />
+                            ) : null}
+                          </>
                         ) : (
                           <>
                             {departments.length ? (

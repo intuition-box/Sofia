@@ -386,6 +386,17 @@ export const postBookmark = (
     body: JSON.stringify({ ...body, circleId }),
   }).then((r) => r.bookmark)
 
+/** Edit a shared bookmark's tags (and optional team) after the fact. Author-only. */
+export const updateBookmark = (
+  token: string,
+  id: string,
+  body: { tags?: PublicTag[]; departmentId?: string | null },
+) =>
+  api<{ bookmark: PublicBookmark }>(token, `/bookmarks/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  }).then((r) => r.bookmark)
+
 /** Who in the circle has shared each URL — REAL social proof (replaces the mock
  *  "who on your team keeps this"). Batched: pass every visible URL at once. */
 export const getSharers = (

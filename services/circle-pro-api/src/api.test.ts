@@ -113,6 +113,30 @@ describe('bookmarks', () => {
     expect(list.map((p: any) => p.wallet).sort()).toEqual([a, b].sort())
   })
 
+  test('edit tags (PATCH) — owner replaces tags; others get 403', async () => {
+    const owner = wallet()
+    const other = wallet()
+    await makeProfile(owner)
+    const created = await post('/bookmarks', owner, {
+      url: 'https://patch.example.com/a',
+      title: 'A',
+      tags: [{ id: 'devops', label: 'DevOps', color: '#7bade0', level: 'category' }],
+    }).then((r) => r.json())
+    const id = created.bookmark.id
+
+    // Non-owner → 403.
+    const patch = (p: string, w: string, b: unknown) =>
+      app.request(p, { method: 'PATCH', headers: H(w), body: JSON.stringify(b) })
+    expect((await patch(`/bookmarks/${id}`, other, { tags: [] })).status).toBe(403)
+
+    // Owner replaces the tags.
+    const updated = await patch(`/bookmarks/${id}`, owner, {
+      tags: [{ id: 'web-development', label: 'Web Development', color: '#7bade0', level: 'category' }],
+    }).then((r) => r.json())
+    expect(updated.bookmark.tags).toHaveLength(1)
+    expect(updated.bookmark.tags[0].id).toBe('web-development')
+  })
+
   test('sharers — empty keys → empty map', async () => {
     const { sharers } = await post('/bookmarks/sharers', wallet(), { normalizedUrls: [] }).then((r) => r.json())
     expect(sharers).toEqual({})
