@@ -4,21 +4,81 @@
  * tags each member has shared in the circle. Trust/influence/tools had no real
  * source and were dropped until a backend exists for them.
  */
+import { useState } from 'react'
 import { Avatar } from '../components/primitives'
 import { SkillTag } from '../components/Tag'
 import { topicHue } from '../data/tagStyles'
+import { useAuth } from '../hooks/useAuth'
+import { useCircle } from '../hooks/useCircle'
 import { useCircleMembers } from '../hooks/useCircleMembers'
+import { inviteMember } from '../services/circleProApi'
+import { toast } from '../lib/toast'
 
 const shortWallet = (w: string) => `${w.slice(0, 6)}…${w.slice(-4)}`
 
-export function TeamMembers() {
-  const { members, loading } = useCircleMembers()
+function InviteBar({ onInvited }: { onInvited: () => void }) {
+  const { authenticated, token, login } = useAuth()
+  const { circleId } = useCircle()
+  const [wallet, setWallet] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  if (loading) return <div className="tm-empty">Loading members…</div>
-  if (!members.length) {
-    return <div className="tm-empty">No members in this circle yet.</div>
+  const invite = async () => {
+    const w = wallet.trim()
+    if (!w || busy) return
+    if (!authenticated) {
+      login()
+      return
+    }
+    setBusy(true)
+    try {
+      await inviteMember(await token(), circleId, w)
+      setWallet('')
+      onInvited()
+      toast('Member invited')
+    } catch (e) {
+      const msg = /403/.test((e as Error).message) ? 'Only members can invite' : 'Could not invite — check the address'
+      toast(msg)
+    } finally {
+      setBusy(false)
+    }
   }
 
+  return (
+    <div className="tm-invite">
+      <input
+        className="tm-invite-input"
+        placeholder="Invite a wallet address (0x…)"
+        value={wallet}
+        onChange={(e) => setWallet(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') invite()
+        }}
+      />
+      <button type="button" className="btn btn-sm btn-accent" disabled={busy} onClick={invite}>
+        {busy ? '…' : 'Invite'}
+      </button>
+    </div>
+  )
+}
+
+export function TeamMembers() {
+  const { members, loading, refresh } = useCircleMembers()
+
+  return (
+    <div>
+      <InviteBar onInvited={refresh} />
+      {loading ? (
+        <div className="tm-empty">Loading members…</div>
+      ) : !members.length ? (
+        <div className="tm-empty">No members in this circle yet.</div>
+      ) : (
+        <MemberGrid members={members} />
+      )}
+    </div>
+  )
+}
+
+function MemberGrid({ members }: { members: ReturnType<typeof useCircleMembers>['members'] }) {
   return (
     <div className="ccard-grid tm-grid">
       {members.map((m) => {

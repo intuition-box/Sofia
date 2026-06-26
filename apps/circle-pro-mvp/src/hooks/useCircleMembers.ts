@@ -4,7 +4,7 @@
  * taxonomy tags each member has shared. Re-fetches on circle change. Public read
  * (a token is sent when signed in, not required).
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
 import { useCircle } from './useCircle'
 import { getCircleMembers, type CircleMember } from '../services/circleProApi'
@@ -15,24 +15,22 @@ export function useCircleMembers() {
   const [members, setMembers] = useState<CircleMember[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    let alive = true
+  const refresh = useCallback(async () => {
     setLoading(true)
-    ;(async () => {
-      try {
-        const t = authenticated ? await token() : null
-        const m = await getCircleMembers(t, circleId)
-        if (alive) setMembers(m)
-      } catch {
-        if (alive) setMembers([])
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-    return () => {
-      alive = false
+    try {
+      const t = authenticated ? await token() : null
+      const m = await getCircleMembers(t, circleId)
+      setMembers(m)
+    } catch {
+      setMembers([])
+    } finally {
+      setLoading(false)
     }
-  }, [circleId, authenticated, token])
+  }, [authenticated, token, circleId])
 
-  return { members, loading }
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  return { members, loading, refresh }
 }

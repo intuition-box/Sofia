@@ -172,6 +172,19 @@ export const getCircleMembers = (token: string | null, circleId: string = CIRCLE
     `/circles/${encodeURIComponent(circleId)}/members`,
   ).then((r) => r.members)
 
+/** Invite a wallet into the circle (members-only; seeds them in group-api). */
+export const inviteMember = (
+  token: string,
+  circleId: string,
+  wallet: string,
+  role?: string,
+) =>
+  api<{ ok: boolean; wallet: string; role: string }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/members`,
+    { method: 'POST', body: JSON.stringify({ wallet, role }) },
+  )
+
 export interface ActivityItem {
   kind: 'share' | 'comment'
   id: string

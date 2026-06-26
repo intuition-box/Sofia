@@ -6,13 +6,14 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../auth'
 import { authMiddleware, optionalAuthMiddleware, getWallet } from '../auth'
 import { prisma } from '../db'
-import { listMembers, seedMember } from '../membership'
+import { listMembers, seedMember, isMember } from '../membership'
 import { buildCircleMembers } from '../circleMembers'
 import { buildActivity } from '../circleActivity'
 import { publicCircle } from '../serialize'
 
 export const circles = new Hono<AppEnv>()
 
+const WALLET_RE = /^0x[a-f0-9]{40}$/
 const ACTIVITY_PAGE = 30
 const ACTIVITY_MAX_WINDOW = 300
 
@@ -43,6 +44,28 @@ circles.post('/circles', authMiddleware, async (c) => {
   // write. If this fails, surface it — the workspace exists but is unusable.
   await seedMember(wallet, circle.id, 'OWNER')
   return c.json({ circle: publicCircle(circle) }, 201)
+})
+
+/**
+ * Invite a wallet into the circle. Only an existing member can invite (always
+ * checked, independent of the global write-gate flag). Registers the invitee in
+ * group-api so the membership gate lets them write. Owner/admin-only + paid
+ * gating come later.
+ */
+circles.post('/circles/:circleId/members', authMiddleware, async (c) => {
+  const circleId = c.req.param('circleId')
+  const caller = getWallet(c)
+  if (!(await isMember(caller, circleId))) {
+    throw new HTTPException(403, { message: 'Only members can invite' })
+  }
+  const body = (await c.req.json().catch(() => ({}))) as { wallet?: string; role?: string }
+  const wallet = body.wallet?.trim().toLowerCase()
+  if (!wallet || !WALLET_RE.test(wallet)) {
+    throw new HTTPException(400, { message: 'valid wallet address required' })
+  }
+  const role = body.role === 'ADMIN' || body.role === 'MODERATOR' ? body.role : 'MEMBER'
+  await seedMember(wallet, circleId, role)
+  return c.json({ ok: true, wallet, role }, 201)
 })
 
 /** GET /circles/:circleId → workspace metadata (name, etc.). Public read. */

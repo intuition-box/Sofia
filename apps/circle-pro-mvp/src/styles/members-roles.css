@@ -23,6 +23,26 @@
   color: var(--ds-muted, #8f8ca8);
   font-size: 14px;
 }
+.tm-invite {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.tm-invite-input {
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: var(--r-md, 10px);
+  background: var(--ds-bg, var(--surface));
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono, var(--mono));
+  font-size: 13px;
+  outline: none;
+}
+.tm-invite-input:focus {
+  border-color: var(--ds-accent, #ffc6b0);
+}
 
 /* ── Members table ─────────────────────────────────────────── */
 table.ctab {
