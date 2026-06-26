@@ -147,3 +147,16 @@
   display: flex;
   margin-top: 6px;
 }
+
+/* Team picker on the share row. */
+.bk-share-team {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--ds-border, var(--border));
+  border-radius: 8px;
+  background: var(--ds-bg, var(--surface));
+  color: var(--ds-ink);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}

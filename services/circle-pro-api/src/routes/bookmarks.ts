@@ -35,6 +35,7 @@ bookmarks.post('/bookmarks', async (c) => {
     title?: string
     context?: string
     circleId?: string
+    departmentId?: string | null
     tags?: IncomingTag[]
   }
 
@@ -50,6 +51,7 @@ bookmarks.post('/bookmarks', async (c) => {
   const circleId = body.circleId ?? DEFAULT_CIRCLE
   // Writes are members-only — group-api is the source of truth (no-op in dev).
   await assertMember(wallet, circleId)
+  const departmentId = body.departmentId ?? null
   const tags = (body.tags ?? [])
     .filter((t): t is Required<IncomingTag> => !!t?.id && !!t?.label)
     .map((t) => ({ tagId: t.id, label: t.label, color: t.color || '#8f8ca8', level: t.level || 'topic' }))
@@ -60,6 +62,7 @@ bookmarks.post('/bookmarks', async (c) => {
       url,
       title,
       context: body.context?.trim() ?? '',
+      departmentId,
       tags: { deleteMany: {}, create: tags },
     },
     create: {
@@ -68,6 +71,7 @@ bookmarks.post('/bookmarks', async (c) => {
       title,
       context: body.context?.trim() ?? '',
       circleId,
+      departmentId,
       authorWallet: wallet,
       tags: { create: tags },
     },
@@ -123,9 +127,14 @@ bookmarksRead.get('/bookmarks', optionalAuthMiddleware, async (c) => {
   const offset = Math.max(0, Number(c.req.query('offset') ?? 0))
   const limit = Math.min(PAGE_SIZE, Math.max(1, Number(c.req.query('limit') ?? PAGE_SIZE)))
   const mineOnly = c.req.query('mine') === '1'
+  const departmentId = c.req.query('departmentId') || undefined
   const wallet = getWallet(c)
 
-  const where = mineOnly && wallet ? { circleId, authorWallet: wallet } : { circleId }
+  const where = {
+    circleId,
+    ...(mineOnly && wallet ? { authorWallet: wallet } : {}),
+    ...(departmentId ? { departmentId } : {}),
+  }
   const rows = await prisma.bookmark.findMany({
     where,
     orderBy: { createdAt: 'desc' },

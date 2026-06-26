@@ -172,6 +172,32 @@ export const getCircleMembers = (token: string | null, circleId: string = CIRCLE
     `/circles/${encodeURIComponent(circleId)}/members`,
   ).then((r) => r.members)
 
+export interface PublicDepartment {
+  id: string
+  circleId: string
+  name: string
+  color: string | null
+}
+
+/** Teams (departments) of a circle. Public read. */
+export const getDepartments = (token: string | null, circleId: string = CIRCLE_ID) =>
+  api<{ departments: PublicDepartment[] }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/departments`,
+  ).then((r) => r.departments)
+
+/** Create a team in the circle (members-only). */
+export const createDepartment = (
+  token: string,
+  circleId: string,
+  body: { name: string; color?: string },
+) =>
+  api<{ department: PublicDepartment }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/departments`,
+    { method: 'POST', body: JSON.stringify(body) },
+  ).then((r) => r.department)
+
 /** Invite a wallet into the circle (members-only; seeds them in group-api). */
 export const inviteMember = (
   token: string,
@@ -276,6 +302,7 @@ export interface PublicBookmark {
   title: string
   context: string
   circleId: string
+  departmentId: string | null
   author: PublicProfile
   tags: PublicTag[]
   createdAt: string
@@ -283,18 +310,25 @@ export interface PublicBookmark {
 
 export const listBookmarks = (
   token: string | null,
-  opts?: { mine?: boolean; offset?: number; circleId?: string },
+  opts?: { mine?: boolean; offset?: number; circleId?: string; departmentId?: string },
 ) =>
   api<{ bookmarks: PublicBookmark[]; hasMore: boolean }>(
     token,
     `/bookmarks?circleId=${opts?.circleId ?? CIRCLE_ID}&offset=${opts?.offset ?? 0}${
       opts?.mine ? '&mine=1' : ''
-    }`,
+    }${opts?.departmentId ? `&departmentId=${encodeURIComponent(opts.departmentId)}` : ''}`,
   )
 
 export const postBookmark = (
   token: string,
-  body: { url: string; normalizedUrl: string; title: string; context?: string; tags?: PublicTag[] },
+  body: {
+    url: string
+    normalizedUrl: string
+    title: string
+    context?: string
+    tags?: PublicTag[]
+    departmentId?: string | null
+  },
   circleId: string = CIRCLE_ID,
 ) =>
   api<{ bookmark: PublicBookmark }>(token, '/bookmarks', {

@@ -12,6 +12,8 @@ import { Bookmarks } from './tabs/Bookmarks'
 import { Essential } from './tabs/Essential'
 import { TeamMembers } from './tabs/TeamMembers'
 import { CircleActivity } from './tabs/CircleActivity'
+import { DepartmentView } from './tabs/DepartmentView'
+import type { PublicDepartment } from './services/circleProApi'
 import { Onboarding } from './onboarding/Onboarding'
 import { TagGallery } from './components/TagGallery'
 import { setImported } from './lib/imported'
@@ -36,6 +38,7 @@ export default function App() {
   if (SHOW_TAG_GALLERY) return <TagGallery />
 
   const [tab, setTab] = useState<NavTarget>('essential')
+  const [dept, setDept] = useState<PublicDepartment | null>(null)
   const [onboarding, setOnboarding] = useState(true)
 
   // Signing in unlocks the member-only surfaces (the local gate reflects real
@@ -47,12 +50,22 @@ export default function App() {
 
   const goTab = (t: NavTarget) => {
     setTab(t)
+    setDept(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const openDept = (d: PublicDepartment) => {
+    setDept(d)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
     <div className="app">
-      <Nav current={tab} onNav={goTab} />
+      <Nav
+        current={dept ? null : tab}
+        onNav={goTab}
+        activeDeptId={dept?.id ?? null}
+        onOpenDepartment={openDept}
+      />
       <main className="main">
         {onboarding ? (
           <Onboarding
@@ -69,7 +82,9 @@ export default function App() {
             <div className="main-topbar">
               <CircleSwitcher />
             </div>
-            {tab === 'essential' ? (
+            {dept ? (
+              <DepartmentView department={dept} onBack={() => setDept(null)} />
+            ) : tab === 'essential' ? (
               <Essential />
             ) : tab === 'bookmarks' ? (
               <Bookmarks />

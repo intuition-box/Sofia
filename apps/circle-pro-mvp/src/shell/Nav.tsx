@@ -1,8 +1,7 @@
 /**
- * Left rail — the REAL explorer nav. Uses the shared `@0xsofia/design-system`
- * primitives (NavSidebar / NavSection / NavItem) + lucide icons, like
- * `apps/explorer`'s NavSidebar. Every entry routes to a real surface (no mock
- * teams/collections); identity comes from NavAuthChip (Privy).
+ * Left rail — the REAL explorer nav. Navigation items route to real surfaces;
+ * the Teams section lists the workspace's departments (click → detail), like the
+ * old mock but backed by real data. Identity comes from NavAuthChip (Privy).
  */
 import { useState } from 'react'
 import {
@@ -12,7 +11,9 @@ import {
 } from '@0xsofia/design-system'
 import { Sparkles, Bookmark, Users, Activity, Sun, Moon } from 'lucide-react'
 import { NavAuthChip } from './NavAuthChip'
+import { NavTeams } from './NavTeams'
 import { currentTheme, toggleTheme, type Theme } from '../lib/theme'
+import type { PublicDepartment } from '../services/circleProApi'
 import '@0xsofia/design-system/styles/nav-sidebar.css'
 import '../styles/nav-extras.css'
 
@@ -31,9 +32,13 @@ function ThemeToggle() {
 export function Nav({
   current,
   onNav,
+  activeDeptId,
+  onOpenDepartment,
 }: {
   current: NavTarget | null
   onNav: (v: NavTarget) => void
+  activeDeptId: string | null
+  onOpenDepartment: (dept: PublicDepartment) => void
 }) {
   return (
     <DsNavSidebar>
@@ -69,6 +74,8 @@ export function Nav({
           onClick={() => onNav('activity')}
         />
       </NavSection>
+
+      <NavTeams activeId={activeDeptId} onOpen={onOpenDepartment} />
 
       <div className="ns-foot">
         <ThemeToggle />

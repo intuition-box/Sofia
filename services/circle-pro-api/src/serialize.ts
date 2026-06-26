@@ -1,5 +1,5 @@
 // Shared shaping + validation helpers for the public API surface.
-import type { Profile, Comment, Bookmark, BookmarkTag, Circle } from '@prisma/client'
+import type { Profile, Comment, Bookmark, BookmarkTag, Circle, Department } from '@prisma/client'
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/
 
@@ -31,6 +31,17 @@ export function publicCircle(c: Circle): PublicCircle {
   }
 }
 
+export type PublicDepartment = {
+  id: string
+  circleId: string
+  name: string
+  color: string | null
+}
+
+export function publicDepartment(d: Department): PublicDepartment {
+  return { id: d.id, circleId: d.circleId, name: d.name, color: d.color }
+}
+
 export type PublicProfile = {
   wallet: string
   handle: string
@@ -60,6 +71,7 @@ export type PublicBookmark = {
   title: string
   context: string
   circleId: string
+  departmentId: string | null
   author: PublicProfile
   tags: PublicTag[]
   createdAt: string
@@ -73,6 +85,7 @@ export function publicBookmark(b: BookmarkWithMeta): PublicBookmark {
     title: b.title,
     context: b.context,
     circleId: b.circleId,
+    departmentId: b.departmentId,
     author: publicProfile(b.author),
     tags: b.tags.map((t) => ({ id: t.tagId, label: t.label, color: t.color, level: t.level })),
     createdAt: b.createdAt.toISOString(),

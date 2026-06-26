@@ -41,6 +41,20 @@ model Circle {
   @@index([ownerWallet])
 }
 
+/// A team (department) inside a workspace — a user-created category to organise
+/// the circle (e.g. Engineering, Design). Scoped to its circle; names unique per
+/// circle. Bookmarks can later be filed under a department.
+model Department {
+  id        String   @id @default(cuid())
+  circleId  String
+  name      String
+  color     String?
+  createdAt DateTime @default(now())
+
+  @@unique([circleId, name])
+  @@index([circleId])
+}
+
 /// A wallet's public identity. Created on first login (the "choose a pseudo"
 /// gate). `handle` is the unique login-name; `displayName` is a free label.
 model Profile {
@@ -108,6 +122,8 @@ model Bookmark {
   /// The "why it's useful" note.
   context       String        @default("")
   circleId      String        @default("acme")
+  /// Optional team (Department) this bookmark is filed under, within the circle.
+  departmentId  String?
   authorWallet  String
   author        Profile       @relation(fields: [authorWallet], references: [wallet])
   tags          BookmarkTag[]
@@ -116,6 +132,7 @@ model Bookmark {
 
   @@unique([authorWallet, normalizedUrl, circleId])
   @@index([circleId, createdAt])
+  @@index([circleId, departmentId])
   @@index([normalizedUrl])
 }
 

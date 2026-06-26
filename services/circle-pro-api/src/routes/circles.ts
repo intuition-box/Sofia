@@ -6,10 +6,10 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../auth'
 import { authMiddleware, optionalAuthMiddleware, getWallet } from '../auth'
 import { prisma } from '../db'
-import { listMembers, seedMember, isMember } from '../membership'
+import { listMembers, seedMember, isMember, assertMember } from '../membership'
 import { buildCircleMembers } from '../circleMembers'
 import { buildActivity } from '../circleActivity'
-import { publicCircle } from '../serialize'
+import { publicCircle, publicDepartment } from '../serialize'
 
 export const circles = new Hono<AppEnv>()
 
@@ -74,6 +74,35 @@ circles.post('/circles/:circleId/members', authMiddleware, async (c) => {
   const role = body.role === 'ADMIN' || body.role === 'MODERATOR' ? body.role : 'MEMBER'
   await seedMember(wallet, circleId, role)
   return c.json({ ok: true, wallet, role }, 201)
+})
+
+/** GET /circles/:circleId/departments → the circle's teams. Public read. */
+circles.get('/circles/:circleId/departments', optionalAuthMiddleware, async (c) => {
+  const circleId = c.req.param('circleId')
+  const departments = await prisma.department.findMany({
+    where: { circleId },
+    orderBy: { createdAt: 'asc' },
+  })
+  return c.json({ departments: departments.map(publicDepartment) })
+})
+
+/** POST /circles/:circleId/departments → create a team (members-only write). */
+circles.post('/circles/:circleId/departments', authMiddleware, async (c) => {
+  const circleId = c.req.param('circleId')
+  await assertMember(getWallet(c), circleId)
+  const body = (await c.req.json().catch(() => ({}))) as { name?: string; color?: string }
+  const name = body.name?.trim()
+  if (!name) throw new HTTPException(400, { message: 'name required' })
+
+  const existing = await prisma.department.findUnique({
+    where: { circleId_name: { circleId, name } },
+  })
+  if (existing) throw new HTTPException(409, { message: 'A team with this name already exists' })
+
+  const dept = await prisma.department.create({
+    data: { circleId, name, color: body.color || null },
+  })
+  return c.json({ department: publicDepartment(dept) }, 201)
 })
 
 /** GET /circles/:circleId → workspace metadata (name, etc.). Public read. */

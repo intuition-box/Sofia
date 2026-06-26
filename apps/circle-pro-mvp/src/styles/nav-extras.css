@@ -294,3 +294,17 @@
   font-size: 11px;
   color: var(--ds-muted);
 }
+
+/* Inline "new team" create in the rail Teams section. */
+.ns-team-create { display: flex; gap: 6px; padding: 4px 6px; }
+.ns-team-input {
+  flex: 1; min-width: 0; height: 30px; padding: 0 8px;
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 8px;
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink); font-size: 13px; outline: none;
+}
+.ns-team-input:focus { border-color: var(--ds-accent, #ffc6b0); }
+.ns-team-create-btn {
+  border: none; border-radius: 8px; padding: 0 10px; cursor: pointer;
+  background: var(--ds-accent, #ffc6b0); color: #0b0a12; font-size: 12px; font-weight: 700;
+}
+.ns-circle.active { background: var(--ds-bg-subtle, var(--surface-2)); }

@@ -19,6 +19,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useCircle } from '../hooks/useCircle'
 import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
 import { useSharers } from '../hooks/useSharers'
+import { useDepartments } from '../hooks/useDepartments'
 import { postBookmark, isNotMemberError } from '../services/circleProApi'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { parseBookmarksHtml } from '../lib/importBookmarks'
@@ -61,8 +62,11 @@ export function Bookmarks() {
   const my = useMyBookmarks()
   const { authenticated, token, login } = useAuth()
   const { circleId } = useCircle()
+  const { departments } = useDepartments()
   const shared = useSharedBookmarks(true)
   const [sharingUrl, setSharingUrl] = useState<string | null>(null)
+  // Per-card team choice for the next Share (empty = no team).
+  const [shareDept, setShareDept] = useState<Record<string, string>>({})
   const sharedUrls = useMemo(
     () => new Set(shared.items.map((b) => b.normalizedUrl)),
     [shared.items],
@@ -202,6 +206,7 @@ export function Bookmarks() {
           title: l.title || hostOf(l.url),
           context: my.context[l.url] ?? '',
           tags: cat ? [{ id: cat.id, label: cat.label, color: cat.color, level: 'category' }] : [],
+          departmentId: shareDept[l.url] || null,
         },
         circleId,
       )
@@ -388,17 +393,36 @@ export function Bookmarks() {
                             <Icon name="check" /> Shared
                           </span>
                         ) : (
-                          <button
-                            type="button"
-                            className="bk-share-btn"
-                            disabled={isSharing}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              void shareBookmark(l)
-                            }}
-                          >
-                            <Icon name="send" /> {isSharing ? 'Sharing…' : 'Share'}
-                          </button>
+                          <>
+                            {departments.length ? (
+                              <select
+                                className="bk-share-team"
+                                value={shareDept[l.url] ?? ''}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) =>
+                                  setShareDept((s) => ({ ...s, [l.url]: e.target.value }))
+                                }
+                              >
+                                <option value="">No team</option>
+                                {departments.map((d) => (
+                                  <option key={d.id} value={d.id}>
+                                    {d.name}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : null}
+                            <button
+                              type="button"
+                              className="bk-share-btn"
+                              disabled={isSharing}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void shareBookmark(l)
+                              }}
+                            >
+                              <Icon name="send" /> {isSharing ? 'Sharing…' : 'Share'}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
