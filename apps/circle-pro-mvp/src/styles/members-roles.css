@@ -554,3 +554,28 @@ table.ctab th.num {
   background: var(--c);
   color: #0c0b14;
 }
+
+/* Endorsable skill/tool chips on member cards. */
+.mattr-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mattr {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px; border-radius: 999px;
+  border: 1px solid var(--ds-border, var(--border));
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.mattr:hover { border-color: var(--ds-border-soft, var(--border-strong)); }
+.mattr.on {
+  border-color: var(--ds-accent, #ffc6b0);
+  background: color-mix(in srgb, var(--ds-accent, #ffc6b0) 16%, transparent);
+}
+.mattr-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.mattr .tnum { color: var(--ds-muted, #8f8ca8); font-weight: 700; }
+.mattr.on .tnum { color: var(--ds-accent, #ffc6b0); }
+.mattr-add { color: var(--ds-muted, #8f8ca8); border-style: dashed; }
+.mattr-input {
+  height: 28px; width: 110px; padding: 0 8px;
+  border: 1px solid var(--ds-accent, #ffc6b0); border-radius: 999px;
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink); font-size: 12px; outline: none;
+}
+.cc-none { color: var(--ds-muted-soft, #55526c); font-size: 12px; }

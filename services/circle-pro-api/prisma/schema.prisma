@@ -41,6 +41,57 @@ model Circle {
   @@index([ownerWallet])
 }
 
+/// A circle's catalog of skills and tools (kind). Created on first use, reused
+/// after (names unique per circle+kind). Members get assigned these.
+enum AttributeKind {
+  SKILL
+  TOOL
+}
+
+model Attribute {
+  id        String            @id @default(cuid())
+  circleId  String
+  kind      AttributeKind
+  name      String
+  /// Display colour (skills) — tools fall back to a domain favicon in the UI.
+  color     String?
+  createdAt DateTime          @default(now())
+  members   MemberAttribute[]
+
+  @@unique([circleId, kind, name])
+  @@index([circleId, kind])
+}
+
+/// A member claiming a skill/tool. Others endorse it (the count). One row per
+/// (wallet, attribute).
+model MemberAttribute {
+  id           String        @id @default(cuid())
+  circleId     String
+  /// The member who has this skill/tool (lowercased wallet).
+  wallet       String
+  attributeId  String
+  attribute    Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  endorsements Endorsement[]
+
+  @@unique([wallet, attributeId])
+  @@index([circleId, wallet])
+  @@index([attributeId])
+}
+
+/// A vote that a member genuinely has a skill/tool. One per endorser.
+model Endorsement {
+  id                String          @id @default(cuid())
+  memberAttributeId String
+  memberAttribute   MemberAttribute @relation(fields: [memberAttributeId], references: [id], onDelete: Cascade)
+  /// Lowercased wallet of the endorser.
+  endorserWallet    String
+  createdAt         DateTime        @default(now())
+
+  @@unique([memberAttributeId, endorserWallet])
+  @@index([memberAttributeId])
+}
+
 /// A team (department) inside a workspace — a user-created category to organise
 /// the circle (e.g. Engineering, Design). Scoped to its circle; names unique per
 /// circle. Bookmarks can later be filed under a department.

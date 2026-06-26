@@ -155,6 +155,16 @@ export interface MemberExpertise {
   count: number
 }
 
+export interface MemberAttr {
+  memberAttributeId: string
+  attributeId: string
+  name: string
+  color: string | null
+  kind: 'SKILL' | 'TOOL'
+  count: number
+  endorsedByMe: boolean
+}
+
 export interface CircleMember {
   wallet: string
   role: string
@@ -163,7 +173,47 @@ export interface CircleMember {
   shareCount: number
   /** Most-used taxonomy tags in this circle (derived, most first). */
   expertise: MemberExpertise[]
+  /** Claimed skills (with endorsement counts). */
+  skills: MemberAttr[]
+  /** Claimed tools. */
+  tools: MemberAttr[]
 }
+
+/** Claim a skill/tool for yourself (find-or-create + self-assign). */
+export const addAttribute = (
+  token: string,
+  circleId: string,
+  kind: 'SKILL' | 'TOOL',
+  name: string,
+  color?: string,
+) =>
+  api<{ ok: boolean }>(token, `/circles/${encodeURIComponent(circleId)}/me/attributes`, {
+    method: 'POST',
+    body: JSON.stringify({ kind, name, color }),
+  })
+
+/** Drop one of your own skills/tools. */
+export const removeAttribute = (token: string, circleId: string, attributeId: string) =>
+  api<{ ok: boolean }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/me/attributes/${encodeURIComponent(attributeId)}`,
+    { method: 'DELETE' },
+  )
+
+/** Endorse (or un-endorse) a member's skill/tool. */
+export const endorseAttribute = (
+  token: string,
+  circleId: string,
+  memberAttributeId: string,
+  on: boolean,
+) =>
+  api<{ ok: boolean }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/member-attributes/${encodeURIComponent(
+      memberAttributeId,
+    )}/endorse`,
+    { method: on ? 'POST' : 'DELETE' },
+  )
 
 /** Members of a circle + role + profile + derived expertise. Public read. */
 export const getCircleMembers = (token: string | null, circleId: string = CIRCLE_ID) =>
