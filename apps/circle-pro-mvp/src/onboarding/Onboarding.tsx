@@ -3,8 +3,8 @@
  * you're joining already keeps the same things.
  *   1. welcome    — "Continue with Brave" (real provider logo)
  *   2. sort       — browse YOUR folder tree (same architecture as My bookmarks)
- *                   and drop each link into Intuition Core Team's topics; per row, who keeps it
- *   3. importing → done — add to Intuition Core Team, land in My bookmarks
+ *                   and drop each link into your workspace's topics; per row, who keeps it
+ *   3. importing → done — add to your workspace, land in My bookmarks
  *
  * Plain copy, real teammate names, no crypto handles.
  */
@@ -15,7 +15,6 @@ import { DeptTagByName } from '../components/Tag'
 import { MY_BOOKMARKS, type BmNode, type BmFolder, type BmLink } from '../data/myBookmarks'
 import { suggestCategory } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
-import { proofFor } from '../lib/social'
 import { TEAM_MAP, teamFor } from '../data/teams'
 import { sharedPeople, sharedTeamIds, countLinks, allLinksDeep } from '../data/folderTree'
 import { addBookmark } from '../lib/mybookmarks'
@@ -63,7 +62,9 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   const [picks, setPicks] = useState<Record<string, string>>({})
 
   const allLinks = useMemo(() => flattenWithFolder(tree, ''), [tree])
-  const certifiedCount = useMemo(() => allLinks.filter((l) => proofFor(l.url).certified).length, [allLinks])
+  // No fake "the team already keeps this" proof — real overlap will come from
+  // the backend (sharers) once the imports are shared.
+  const certifiedCount = 0
 
   const topicOf = (l: FlatLink) => picks[l.url] ?? suggestCategory(l.folder, l.url)
 
@@ -79,18 +80,15 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   }
 
   const buildImported = (): ImportedBookmark[] =>
-    allLinks.map((l) => {
-      const p = proofFor(l.url)
-      return {
-        title: l.title,
-        url: l.url,
-        host: hostOf(l.url),
-        topicId: topicOf(l),
-        likes: p.likes,
-        curators: p.curators,
-        certified: p.certified,
-      }
-    })
+    allLinks.map((l) => ({
+      title: l.title,
+      url: l.url,
+      host: hostOf(l.url),
+      topicId: topicOf(l),
+      likes: 0,
+      curators: 0,
+      certified: false,
+    }))
 
   useEffect(() => {
     if (step === 'importing') {
@@ -281,7 +279,7 @@ function Sort({ tree, topicOf, onPick, onBack, onNext }: SortProps) {
   return (
     <div className="ob-card ob-categorize">
       <header className="ob-cat-head">
-        <h2 className="ob-title ob-title--sm obc-title">Sort your bookmarks into Intuition Core Team's topics</h2>
+        <h2 className="ob-title ob-title--sm obc-title">Sort your bookmarks into your workspace's topics</h2>
       </header>
 
       <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
@@ -388,7 +386,7 @@ function Sort({ tree, topicOf, onPick, onBack, onNext }: SortProps) {
 
 /* ── Act 2.5 — join the team (pre-filled invite) ──────────────────────── */
 function JoinTeam({ onBack, onJoin }: { onBack: () => void; onJoin: () => void }) {
-  const [code, setCode] = useState('INTUITION-CORE')
+  const [code, setCode] = useState('')
   return (
     <div className="ob-card ob-join">
       <h2 className="ob-title ob-title--sm">Join your team</h2>
@@ -468,7 +466,7 @@ function TeamOverlap({ total, certifiedCount }: { total: number; certifiedCount:
       </span>
       <p className="ob-overlap-txt">
         <b className="tnum">{certifiedCount}</b> of your <b className="tnum">{total}</b> bookmarks are already kept by people
-        on <b>Intuition Core Team</b>.
+        on <b>your workspace</b>.
         {sharedTeams.length ? (
           <span className="ob-overlap-teams">
             {sharedTeams.map((t) => (

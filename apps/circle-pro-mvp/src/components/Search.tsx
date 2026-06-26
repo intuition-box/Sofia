@@ -5,7 +5,6 @@
  */
 import { Icon } from './Icon'
 import { avGrad, initials } from '../data/helpers'
-import { searchMock } from '../data/mockSearch'
 import type { useSearch } from '../hooks/useSearch'
 
 type Search = ReturnType<typeof useSearch>
@@ -83,14 +82,8 @@ export function SearchResults({ search }: { search: Search }) {
   const { results, loading, clear } = search
   if (!results) return null
 
-  const mock = searchMock(results.query)
   const total =
-    results.bookmarks.length +
-    results.comments.length +
-    results.people.length +
-    mock.tools.length +
-    mock.memory.length +
-    mock.skills.length
+    results.bookmarks.length + results.comments.length + results.people.length
 
   return (
     <div className="sr">
@@ -174,45 +167,6 @@ export function SearchResults({ search }: { search: Search }) {
         </section>
       ) : null}
 
-      {/* Mock sources — labelled "soon" until they have a backend */}
-      <MockSection title="Tools" soon hits={mock.tools} icon />
-      <MockSection title="Team memory" soon hits={mock.memory} />
-      <MockSection title="Skills" soon hits={mock.skills} />
     </div>
-  )
-}
-
-function MockSection({
-  title,
-  hits,
-  soon,
-  icon,
-}: {
-  title: string
-  hits: { id: string; title: string; sub: string; host?: string; color?: string }[]
-  soon?: boolean
-  icon?: boolean
-}) {
-  if (!hits.length) return null
-  return (
-    <section className="sr-section">
-      <div className="sr-sec-head">
-        <span className="sr-sec-title">{title}</span>
-        {soon ? <span className="sr-soon">soon</span> : null}
-      </div>
-      {hits.map((h) => (
-        <div className="sr-row" key={h.id}>
-          {icon && h.host ? (
-            <img className="sr-fav" src={fav(h.host)} alt="" />
-          ) : (
-            <span className="sr-tag-dot" style={{ background: h.color || 'var(--ds-muted)', marginTop: 7 }} />
-          )}
-          <div className="sr-body">
-            <div className="sr-title">{h.title}</div>
-            <div className="sr-sub">{h.sub}</div>
-          </div>
-        </div>
-      ))}
-    </section>
   )
 }
