@@ -76,13 +76,25 @@ export function initCircleProShare(): void {
   buildMenu()
 
   // API broker for the injected modal (content scripts can't fetch the backend).
+  // ALWAYS call sendResponse — a rejected handler that never responds leaves the
+  // modal's sendMessage hanging forever ("Loading your workspaces…" stuck).
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg?.type === "CIRCLE_PRO_LOAD") {
-      handleLoad().then(sendResponse)
+      handleLoad()
+        .then(sendResponse)
+        .catch((e) => {
+          logger.warn("handleLoad threw", e)
+          sendResponse({ signedOut: true, circles: [] })
+        })
       return true // async response
     }
     if (msg?.type === "CIRCLE_PRO_SHARE") {
-      handleShare(msg as ShareSubmitMessage).then(sendResponse)
+      handleShare(msg as ShareSubmitMessage)
+        .then(sendResponse)
+        .catch((e) => {
+          logger.warn("handleShare threw", e)
+          sendResponse({ ok: false, kind: "error", message: "Could not share" })
+        })
       return true // async response
     }
     return undefined // not ours — let other listeners handle it

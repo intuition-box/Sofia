@@ -29,6 +29,16 @@ export const getStyle = () => {
 
 const PICK_KEY = "sofia_pro_share_circle"
 
+// Ask the service worker, but never wait forever: if it doesn't answer in time
+// (asleep / another listener holds the channel), resolve undefined so the UI
+// leaves the "Loading…" state instead of hanging.
+function askBackground<T>(message: unknown, ms = 8000): Promise<T | undefined> {
+  return Promise.race([
+    chrome.runtime.sendMessage(message) as Promise<T>,
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms))
+  ]).catch(() => undefined)
+}
+
 interface Target {
   url: string
   title: string
@@ -73,15 +83,7 @@ function ShareModal() {
   // opens so an expired/cleared token surfaces immediately.
   const loadAuth = async () => {
     setAuthState("loading")
-    let res: ShareLoadResponse | undefined
-    try {
-      res = (await chrome.runtime.sendMessage({
-        type: "CIRCLE_PRO_LOAD"
-      })) as ShareLoadResponse | undefined
-    } catch {
-      // Service worker unreachable (asleep / no receiver) — treat as signed-out.
-      res = undefined
-    }
+    const res = await askBackground<ShareLoadResponse>({ type: "CIRCLE_PRO_LOAD" })
     if (!res || res.signedOut) {
       setAuthState("signed-out")
       return
@@ -138,21 +140,16 @@ function ShareModal() {
     if (!canShare || !circleId) return
     setSaving(true)
     try {
-      let res: ShareSubmitResponse | undefined
-      try {
-        res = (await chrome.runtime.sendMessage({
-          type: "CIRCLE_PRO_SHARE",
-          payload: {
-            url: target.url,
-            title: v.title.trim() || target.title,
-            context: v.context.trim(),
-            tags: v.contexts
-          },
-          circleId
-        })) as ShareSubmitResponse | undefined
-      } catch {
-        res = undefined // service worker unreachable
-      }
+      const res = await askBackground<ShareSubmitResponse>({
+        type: "CIRCLE_PRO_SHARE",
+        payload: {
+          url: target.url,
+          title: v.title.trim() || target.title,
+          context: v.context.trim(),
+          tags: v.contexts
+        },
+        circleId
+      })
 
       if (res?.ok) {
         setTarget(null)
