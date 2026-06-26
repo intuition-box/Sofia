@@ -869,13 +869,13 @@
   border-bottom: 1px solid var(--border);
 }
 .tv-tab {
-  padding: 9px 14px;
+  padding: 10px 16px;
   border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   background: none;
   color: var(--ds-muted);
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1492,7 +1492,7 @@ button.sk-tool-chip {
   transition: border-color 0.14s, transform 0.14s;
 }
 .skcard:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--border));
+  border-color: var(--border-strong);
   transform: translateY(-1px);
 }
 .skcard-main {
@@ -1514,13 +1514,13 @@ button.sk-tool-chip {
 .skcard-vote {
   flex: 0 0 auto;
   align-self: stretch;
+  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-width: 58px;
-  padding: 0 14px;
+  padding: 0;
   border-left: 1px solid var(--border);
   background: transparent;
   color: var(--ds-muted);

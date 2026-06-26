@@ -374,7 +374,7 @@ export function Tools() {
   const shownTools = skill === 'all' ? TOOLS_GRID : TOOLS_GRID.filter((t) => t.skills.includes(skill))
 
   const addCard = (
-    <button className="tg-card--create" onClick={() => toast('Add a tool')}>
+    <button className="skcard--create" onClick={() => toast('Add a tool')}>
       <span className="skcard-create-plus">+</span>
       <span className="skcard-create-label">Add a tool</span>
     </button>
@@ -404,7 +404,7 @@ export function Tools() {
         </button>
       </div>
 
-      <div className="tg-grid">
+      <div className="skcard-grid skcard-grid--compact">
         {addCard}
         {shownTools.slice(0, 3).map((t) => renderToolCard(t, setOpenTool))}
       </div>
@@ -425,7 +425,7 @@ export function Tools() {
               </button>
             </header>
             <div className="va-body sk-scroll">
-              <div className="tg-grid">
+              <div className="skcard-grid">
                 {addCard}
                 {shownTools.map((t) =>
                   renderToolCard(t, (tool) => {

@@ -77,10 +77,6 @@ export function TeamView({ team }: { team: TeamMeta }) {
       .slice(0, 40)
   }, [team.id])
 
-  if (selected) {
-    return <PostDetail item={selected} onBack={() => setSelected(null)} />
-  }
-
   const open = (l: FlatLink) => {
     setSelected({
       title: l.title,
@@ -232,6 +228,8 @@ export function TeamView({ team }: { team: TeamMeta }) {
           </>
         )}
       </div>
+
+      {selected ? <PostDetail item={selected} onBack={() => setSelected(null)} /> : null}
     </div>
   )
 }

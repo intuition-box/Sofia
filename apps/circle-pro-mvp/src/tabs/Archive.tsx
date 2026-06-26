@@ -117,21 +117,23 @@ function ArchiveRead({ archive, onEdit }: { archive: ArchiveT; onEdit: () => voi
 
 function ReadItem({ archiveId, catId, it }: { archiveId: string; catId: string; it: ArchiveItem }) {
   return (
-    <a className="ar-item" href={it.url} target="_blank" rel="noopener noreferrer">
-      <span className="ar-item-fav">
-        <img src={`https://www.google.com/s2/favicons?domain=${it.host}&sz=64`} alt="" loading="lazy" />
-      </span>
-      <span className="ar-item-body">
-        <span className="ar-item-title">{it.title}</span>
-        <span className="ar-item-tags">
-          <DomainTagByTopic id={it.topic} label={TOPIC_MAP[it.topic]?.label ?? it.topic} />
-          {it.meta ? <span className="ar-item-meta mono">{it.meta}</span> : null}
+    <a className="ar-item ar-item--read" href={it.url} target="_blank" rel="noopener noreferrer">
+      <span className="ar-item-content">
+        <span className="ar-item-fav">
+          <img src={`https://www.google.com/s2/favicons?domain=${it.host}&sz=64`} alt="" loading="lazy" />
         </span>
-        <span className="ar-item-host mono">{it.host}</span>
-        {it.note ? <span className="ar-item-note">{it.note}</span> : null}
+        <span className="ar-item-body">
+          <span className="ar-item-title">{it.title}</span>
+          <span className="ar-item-tags">
+            <DomainTagByTopic id={it.topic} label={TOPIC_MAP[it.topic]?.label ?? it.topic} />
+            {it.meta ? <span className="ar-item-meta mono">{it.meta}</span> : null}
+          </span>
+          <span className="ar-item-host mono">{it.host}</span>
+          {it.note ? <span className="ar-item-note">{it.note}</span> : null}
+        </span>
       </span>
       <button
-        className={`btn-vote btn-vote--sm${it.voted ? ' on' : ''}`}
+        className={`ar-item-vote${it.voted ? ' on' : ''}`}
         aria-pressed={it.voted}
         onClick={(e) => {
           e.preventDefault()
@@ -143,7 +145,6 @@ function ReadItem({ archiveId, catId, it }: { archiveId: string; catId: string; 
           <path d="M12 19V5" />
           <path d="M5 12l7-7 7 7" />
         </svg>
-        <span className="btn-vote-sep" />
         <span className="btn-vote-n">{it.votes}</span>
       </button>
     </a>

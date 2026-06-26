@@ -9,15 +9,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
-import { TopicSelect } from '../components/TopicSelect'
-import { DomainTagByTopic } from '../components/Tag'
-import { TEAM_MAP, teamFor } from '../data/teams'
+import { teamFor } from '../data/teams'
 import { likedBy } from '../data/teammates'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
-import { addBookmark, setContext, setTopic, useMyBookmarks } from '../lib/mybookmarks'
+import { addBookmark, setContext, useMyBookmarks } from '../lib/mybookmarks'
 import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
-import { hostOf } from '../data/helpers'
+import { avGrad, hostOf, initials } from '../data/helpers'
 import { countLinks, allLinksDeep } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
 
@@ -153,13 +151,28 @@ export function Bookmarks() {
     setPath([])
   }
 
-  if (selected) {
-    return <PostDetail item={selected} onBack={() => setSelected(null)} />
-  }
-
   return (
     <div className="content">
       <div className="kb">
+        {/* ── Library header: title · search · add ── */}
+        <header className="lib-head">
+          <h1 className="lib-head-title">My bookmarks</h1>
+          <div className="lib-head-right">
+            <div className="lib-search">
+              <Icon name="search" />
+              <input
+                className="lib-search-input"
+                placeholder="Search bookmarks…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
+            <button className="btn btn--accent btn--sm" onClick={() => setAdding((v) => !v)}>
+              <Icon name="plus" /> Add bookmark
+            </button>
+          </div>
+        </header>
+
         {/* ── Breadcrumb-driven folder navigation (always present) ── */}
         <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
           {[{ label: 'My bookmarks', c: 0 }, ...path.map((seg, i) => ({ label: seg, c: i + 1 }))].map(
@@ -197,22 +210,6 @@ export function Bookmarks() {
           )}
         </nav>
 
-        {/* ── Toolbar ── */}
-        <div className="fab-bar">
-          <div className="bk2-search">
-            <Icon name="search" />
-            <input
-              className="bk2-search-input"
-              placeholder="Search all my bookmarks…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <button className="btn btn--accent btn--sm kb-add-btn" onClick={() => setAdding((v) => !v)}>
-            <Icon name="plus" /> Add bookmark
-          </button>
-        </div>
-
         <div className="bk-filter-row">
           <TopicFilter value={topicFilter} options={CATEGORIES} onChange={setTopicFilter} />
         </div>
@@ -222,20 +219,20 @@ export function Bookmarks() {
         {/* ── Feed: resource title → who shares it + context → actions ── */}
         <div className="kb-resources">
           {links.length ? (
-            <div className="kb-feed kb-grid4">
+            <div className="kb-feed lib-grid">
               {links.map((l) => {
                 const host = hostOf(l.url)
                 const liked = likedBy(l.url)
-                const services = [...new Set(liked.people.map((p) => p.teamId))]
-                  .map((id) => TEAM_MAP[id])
-                  .filter(Boolean)
                 const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
+                const topicLabel = CATEGORY_MAP[ctxId]?.label
                 const isLiked = likes.has(l.url)
                 const likeCount = liked.total + (isLiked ? 1 : 0)
                 const abs = l.url.startsWith('http') ? l.url : `https://${l.url}`
+                const keepers = liked.people.slice(0, 3).map((p) => ({ name: p.name, grad: p.grad }))
+                const shown = keepers.length ? keepers : [{ name: 'You', grad: 0 }]
                 return (
                   <div
-                    className="bk-card bk-card--xl"
+                    className="lib-card"
                     key={l.url}
                     role="button"
                     tabIndex={0}
@@ -245,13 +242,23 @@ export function Bookmarks() {
                     }}
                   >
                     <BkShot url={abs} host={host} />
-                    <div className="bk-body">
-                      <div className="bk-title">{l.title}</div>
-                      <div className="bk-meta" onClick={(e) => e.stopPropagation()}>
-                        <TopicSelect value={ctxId} onChange={(id) => setTopic(l.url, id)} />
+                    <div className="lib-foot">
+                      <div className="lib-card-title">{l.title}</div>
+                      <div className="lib-card-meta">
+                        <span className="lib-card-avs">
+                          {shown.map((p, i) => (
+                            <span key={i} className="lib-card-av" style={{ background: avGrad(p.grad) }}>
+                              {initials(p.name)}
+                            </span>
+                          ))}
+                        </span>
+                        <span className="lib-card-sub mono">
+                          {host}
+                          {topicLabel ? ` · ${topicLabel}` : ''}
+                        </span>
                         <button
                           type="button"
-                          className={`btn-vote btn-vote--sm${isLiked ? ' on' : ''}`}
+                          className={`lib-card-like btn-vote btn-vote--sm${isLiked ? ' on' : ''}`}
                           aria-pressed={isLiked}
                           aria-label="Like"
                           onClick={(e) => {
@@ -264,15 +271,6 @@ export function Bookmarks() {
                           <span className="btn-vote-n">{likeCount}</span>
                         </button>
                       </div>
-                      {services.length ? (
-                        <div className="bk-likes" onClick={(e) => e.stopPropagation()}>
-                          <span className="bk-shared-svcs">
-                            {services.map((s) => (
-                              <DomainTagByTopic key={s.id} id={s.label} label={s.label} />
-                            ))}
-                          </span>
-                        </div>
-                      ) : null}
                     </div>
                   </div>
                 )
@@ -287,6 +285,8 @@ export function Bookmarks() {
           <p className="bk2-count mono">Showing {links.length} of {totalHere}</p>
         ) : null}
       </div>
+
+      {selected ? <PostDetail item={selected} onBack={() => setSelected(null)} /> : null}
     </div>
   )
 }
