@@ -371,3 +371,48 @@
 .dv-member:hover { background: var(--ds-bg-subtle, var(--surface-2)); }
 .dv-member-name { color: var(--ds-ink); font-size: 14px; flex: 1; }
 .dv-member-role { color: var(--ds-muted, #8f8ca8); font-size: 12px; text-transform: capitalize; }
+
+/* ── Skills containers (collaborative) ─────────────────────── */
+.sk-create, .skv-add { display: flex; gap: 8px; margin-bottom: 16px; }
+.sk-create-input, .skv-input {
+  flex: 1; height: 36px; padding: 0 12px;
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 10px;
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink); font-size: 14px; outline: none;
+}
+.sk-create-input:focus, .skv-input:focus { border-color: var(--ds-accent, #ffc6b0); }
+.sk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.sk-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 16px;
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 12px;
+  background: var(--ds-card, var(--surface)); cursor: pointer; text-align: left;
+}
+.sk-card:hover { border-color: var(--ds-border-soft, var(--border-strong)); }
+.sk-card-name { font-size: 15px; font-weight: 700; color: var(--ds-ink); }
+.sk-card-meta { font-size: 12px; color: var(--ds-muted, #8f8ca8); }
+
+.skv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.skv-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--ds-ink); }
+.skv-urls { display: flex; flex-direction: column; gap: 6px; }
+.skv-url { display: flex; align-items: center; gap: 10px; }
+.skv-vote {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  padding: 6px 10px; border-radius: 999px;
+  border: 1px solid var(--ds-border, var(--border)); background: transparent;
+  color: var(--ds-muted, #8f8ca8); font-size: 12px; cursor: pointer;
+}
+.skv-vote.on { border-color: var(--ds-accent, #ffc6b0); color: var(--ds-accent, #ffc6b0); }
+.skv-url-link {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+  padding: 10px 12px; border: 1px solid var(--ds-border, var(--border)); border-radius: 10px;
+  background: var(--ds-card, var(--surface)); text-decoration: none;
+}
+.skv-url-link:hover { border-color: var(--ds-border-soft, var(--border-strong)); }
+.skv-fav { width: 22px; height: 22px; border-radius: 5px; flex: none; }
+.skv-url-title { color: var(--ds-ink); font-size: 14px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skv-url-host { color: var(--ds-muted, #8f8ca8); font-size: 12px; flex: none; }
+.skv-tools { margin-top: 22px; }
+.skv-tools-head { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ds-muted, #8f8ca8); margin-bottom: 8px; }
+.skv-tools-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.skv-tool { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--ds-border, var(--border)); background: var(--ds-card, var(--surface)); color: var(--ds-ink); font-size: 13px; }
+.skv-tool img { width: 15px; height: 15px; border-radius: 3px; }
+.skv-tool-input { height: 30px; width: 100px; padding: 0 10px; border: 1px dashed var(--ds-border, var(--border)); border-radius: 999px; background: transparent; color: var(--ds-ink); font-size: 12px; outline: none; }

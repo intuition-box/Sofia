@@ -6,11 +6,10 @@
  */
 import { useMemo, useState } from 'react'
 import { Avatar } from '../components/primitives'
-import { SkillTag } from '../components/Tag'
-import { topicHue } from '../data/tagStyles'
 import { hostOf } from '../data/helpers'
 import { useDepartmentBookmarks } from '../hooks/useDepartmentBookmarks'
 import { useCircleMembers } from '../hooks/useCircleMembers'
+import { SkillsPanel } from '../components/SkillsPanel'
 import type { PublicBookmark, PublicDepartment } from '../services/circleProApi'
 
 type View = 'resources' | 'skills' | 'tools' | 'members' | 'memory'
@@ -75,11 +74,7 @@ export function DepartmentView({
   const { items, loading } = useDepartmentBookmarks(department.id)
   const { members } = useCircleMembers()
 
-  // Skills = the team's most-used taxonomy tags; Tools = its most-used hosts.
-  const skills = useMemo(
-    () => rank(items.flatMap((b) => b.tags), (t) => ({ id: t.id, label: t.label, color: t.color })),
-    [items],
-  )
+  // Tools = the team's most-used hosts (derived). Skills are real containers.
   const tools = useMemo(
     () => rank(items, (b) => { const h = hostOf(b.url); return h ? { id: h, label: h } : null }),
     [items],
@@ -103,20 +98,12 @@ export function DepartmentView({
           ))}
         </nav>
 
-        {loading && view !== 'members' && view !== 'memory' ? (
+        {view === 'skills' ? (
+          <SkillsPanel departmentId={department.id} />
+        ) : loading && view !== 'members' && view !== 'memory' ? (
           <div className="tm-empty">Loading…</div>
         ) : view === 'resources' ? (
           <Resources items={items} />
-        ) : view === 'skills' ? (
-          skills.length ? (
-            <div className="dv-chips">
-              {skills.map((s) => (
-                <SkillTag key={s.id} label={s.label} hue={topicHue(s.label)} count={s.count} />
-              ))}
-            </div>
-          ) : (
-            <div className="tm-empty">No skills yet — they emerge from the tags on shared bookmarks.</div>
-          )
         ) : view === 'tools' ? (
           tools.length ? (
             <div className="dv-chips">

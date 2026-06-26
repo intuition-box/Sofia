@@ -14,6 +14,7 @@ import { comments, commentsRead } from './routes/comments'
 import { bookmarks, bookmarksRead } from './routes/bookmarks'
 import { search } from './routes/search'
 import { circles } from './routes/circles'
+import { skills } from './routes/skills'
 
 export const app = new Hono<AppEnv>()
 
@@ -40,6 +41,7 @@ app.route('/', commentsRead)
 app.route('/', bookmarksRead)
 app.route('/', search)
 app.route('/', circles)
+app.route('/', skills)
 
 // Everything below requires a valid Privy bearer token (or dev impersonation).
 app.use('*', authMiddleware)

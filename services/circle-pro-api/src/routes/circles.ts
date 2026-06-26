@@ -8,7 +8,6 @@ import { authMiddleware, optionalAuthMiddleware, getWallet } from '../auth'
 import { prisma } from '../db'
 import { listMembers, seedMember, isMember, assertMember } from '../membership'
 import { buildCircleMembers } from '../circleMembers'
-import { buildMemberAttributes } from '../circleAttributes'
 import { buildActivity } from '../circleActivity'
 import { publicCircle, publicDepartment } from '../serialize'
 
@@ -113,92 +112,22 @@ circles.get('/circles/:circleId', optionalAuthMiddleware, async (c) => {
   return c.json({ circle: publicCircle(circle) })
 })
 
-/** GET /circles/:circleId/members → members + role + profile + derived expertise
- *  + their skills/tools (with endorsement counts). */
+/** GET /circles/:circleId/members → members + role + profile + derived expertise. */
 circles.get('/circles/:circleId/members', optionalAuthMiddleware, async (c) => {
   const circleId = c.req.param('circleId')
-  const caller = getWallet(c)
   const refs = await listMembers(circleId)
   if (!refs.length) return c.json({ members: [] })
 
   const wallets = refs.map((m) => m.wallet.toLowerCase())
-  const [profiles, bookmarks, attrRows] = await Promise.all([
+  const [profiles, bookmarks] = await Promise.all([
     prisma.profile.findMany({ where: { wallet: { in: wallets } } }),
     prisma.bookmark.findMany({
       where: { circleId, authorWallet: { in: wallets } },
       include: { tags: true },
     }),
-    prisma.memberAttribute.findMany({
-      where: { circleId, wallet: { in: wallets } },
-      include: { attribute: true, endorsements: { select: { endorserWallet: true } } },
-    }),
   ])
 
-  const attrs = buildMemberAttributes(attrRows, caller)
-  const members = buildCircleMembers(refs, profiles, bookmarks).map((m) => ({
-    ...m,
-    ...(attrs.get(m.wallet) ?? { skills: [], tools: [] }),
-  }))
-  return c.json({ members })
-})
-
-/** POST /circles/:circleId/me/attributes { kind, name, color? } — claim a
- *  skill/tool for yourself (find-or-create the catalog entry, then self-assign). */
-circles.post('/circles/:circleId/me/attributes', authMiddleware, async (c) => {
-  const circleId = c.req.param('circleId')
-  const wallet = getWallet(c)
-  await assertMember(wallet, circleId)
-  const body = (await c.req.json().catch(() => ({}))) as { kind?: string; name?: string; color?: string }
-  const kind = body.kind?.toUpperCase() === 'TOOL' ? 'TOOL' : 'SKILL'
-  const name = body.name?.trim()
-  if (!name) throw new HTTPException(400, { message: 'name required' })
-
-  const attribute = await prisma.attribute.upsert({
-    where: { circleId_kind_name: { circleId, kind, name } },
-    update: {},
-    create: { circleId, kind, name, color: body.color || null },
-  })
-  const ma = await prisma.memberAttribute.upsert({
-    where: { wallet_attributeId: { wallet, attributeId: attribute.id } },
-    update: {},
-    create: { circleId, wallet, attributeId: attribute.id },
-  })
-  return c.json({ ok: true, attributeId: attribute.id, memberAttributeId: ma.id }, 201)
-})
-
-/** DELETE /circles/:circleId/me/attributes/:attributeId — drop your own skill/tool. */
-circles.delete('/circles/:circleId/me/attributes/:attributeId', authMiddleware, async (c) => {
-  const wallet = getWallet(c)
-  await prisma.memberAttribute.deleteMany({
-    where: { wallet, attributeId: c.req.param('attributeId') },
-  })
-  return c.json({ ok: true })
-})
-
-/** POST /circles/:circleId/member-attributes/:maId/endorse — vote a member's
- *  skill/tool (idempotent, one per endorser). */
-circles.post('/circles/:circleId/member-attributes/:maId/endorse', authMiddleware, async (c) => {
-  const circleId = c.req.param('circleId')
-  const wallet = getWallet(c)
-  await assertMember(wallet, circleId)
-  const maId = c.req.param('maId')
-  const ma = await prisma.memberAttribute.findUnique({ where: { id: maId } })
-  if (!ma || ma.circleId !== circleId) throw new HTTPException(404, { message: 'Not found' })
-  await prisma.endorsement.upsert({
-    where: { memberAttributeId_endorserWallet: { memberAttributeId: maId, endorserWallet: wallet } },
-    update: {},
-    create: { memberAttributeId: maId, endorserWallet: wallet },
-  })
-  return c.json({ ok: true })
-})
-
-/** DELETE .../endorse — remove your endorsement. */
-circles.delete('/circles/:circleId/member-attributes/:maId/endorse', authMiddleware, async (c) => {
-  const wallet = getWallet(c)
-  await prisma.endorsement.deleteMany({
-    where: { memberAttributeId: c.req.param('maId'), endorserWallet: wallet },
-  })
-  return c.json({ ok: true })
+  return c.json({ members: buildCircleMembers(refs, profiles, bookmarks) })
 })
 
 /** GET /circles/:circleId/activity → merged shares+comments feed (newest first),

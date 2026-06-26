@@ -155,16 +155,6 @@ export interface MemberExpertise {
   count: number
 }
 
-export interface MemberAttr {
-  memberAttributeId: string
-  attributeId: string
-  name: string
-  color: string | null
-  kind: 'SKILL' | 'TOOL'
-  count: number
-  endorsedByMe: boolean
-}
-
 export interface CircleMember {
   wallet: string
   role: string
@@ -173,47 +163,7 @@ export interface CircleMember {
   shareCount: number
   /** Most-used taxonomy tags in this circle (derived, most first). */
   expertise: MemberExpertise[]
-  /** Claimed skills (with endorsement counts). */
-  skills: MemberAttr[]
-  /** Claimed tools. */
-  tools: MemberAttr[]
 }
-
-/** Claim a skill/tool for yourself (find-or-create + self-assign). */
-export const addAttribute = (
-  token: string,
-  circleId: string,
-  kind: 'SKILL' | 'TOOL',
-  name: string,
-  color?: string,
-) =>
-  api<{ ok: boolean }>(token, `/circles/${encodeURIComponent(circleId)}/me/attributes`, {
-    method: 'POST',
-    body: JSON.stringify({ kind, name, color }),
-  })
-
-/** Drop one of your own skills/tools. */
-export const removeAttribute = (token: string, circleId: string, attributeId: string) =>
-  api<{ ok: boolean }>(
-    token,
-    `/circles/${encodeURIComponent(circleId)}/me/attributes/${encodeURIComponent(attributeId)}`,
-    { method: 'DELETE' },
-  )
-
-/** Endorse (or un-endorse) a member's skill/tool. */
-export const endorseAttribute = (
-  token: string,
-  circleId: string,
-  memberAttributeId: string,
-  on: boolean,
-) =>
-  api<{ ok: boolean }>(
-    token,
-    `/circles/${encodeURIComponent(circleId)}/member-attributes/${encodeURIComponent(
-      memberAttributeId,
-    )}/endorse`,
-    { method: on ? 'POST' : 'DELETE' },
-  )
 
 /** Members of a circle + role + profile + derived expertise. Public read. */
 export const getCircleMembers = (token: string | null, circleId: string = CIRCLE_ID) =>
@@ -228,6 +178,85 @@ export interface PublicDepartment {
   name: string
   color: string | null
 }
+
+// ── Skills (collaborative knowledge containers) ──
+
+export interface SkillCard {
+  id: string
+  name: string
+  topic: string | null
+  departmentId: string | null
+  createdBy: string
+  urlCount: number
+  voteCount: number
+}
+export interface SkillUrlItem {
+  id: string
+  url: string
+  title: string
+  addedBy: string
+  voteCount: number
+  votedByMe: boolean
+}
+export interface SkillToolItem {
+  id: string
+  name: string
+  host: string | null
+}
+export interface SkillDetail {
+  id: string
+  circleId: string
+  departmentId: string | null
+  name: string
+  topic: string | null
+  createdBy: string
+  urls: SkillUrlItem[]
+  tools: SkillToolItem[]
+}
+
+/** Skills of a circle/team (cards with counts). Public read. */
+export const getSkills = (token: string | null, circleId: string, departmentId?: string) =>
+  api<{ skills: SkillCard[] }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/skills${departmentId ? `?departmentId=${encodeURIComponent(departmentId)}` : ''}`,
+  ).then((r) => r.skills)
+
+/** Create a skill container (members-only). */
+export const createSkill = (
+  token: string,
+  circleId: string,
+  body: { name: string; topic?: string; departmentId?: string },
+) =>
+  api<{ skill: SkillCard }>(token, `/circles/${encodeURIComponent(circleId)}/skills`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.skill)
+
+/** A skill's detail (URLs + votes + tools). Public read. */
+export const getSkill = (token: string | null, skillId: string) =>
+  api<{ skill: SkillDetail }>(token, `/skills/${encodeURIComponent(skillId)}`).then((r) => r.skill)
+
+/** Add a URL to a skill (auto-voted by you). */
+export const addSkillUrl = (token: string, skillId: string, body: { url: string; title?: string }) =>
+  api<{ url: SkillUrlItem }>(token, `/skills/${encodeURIComponent(skillId)}/urls`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.url)
+
+/** Toggle your vote on a skill URL. */
+export const voteSkillUrl = (token: string, skillId: string, urlId: string) =>
+  api<{ voted: boolean }>(
+    token,
+    `/skills/${encodeURIComponent(skillId)}/urls/${encodeURIComponent(urlId)}/vote`,
+    { method: 'POST' },
+  )
+
+/** Attach a tool to a skill. */
+export const addSkillTool = (token: string, skillId: string, body: { name: string; host?: string }) =>
+  api<{ tool: SkillToolItem }>(token, `/skills/${encodeURIComponent(skillId)}/tools`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.tool)
 
 /** Teams (departments) of a circle. Public read. */
 export const getDepartments = (token: string | null, circleId: string = CIRCLE_ID) =>

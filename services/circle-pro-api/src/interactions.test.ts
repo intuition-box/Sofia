@@ -92,6 +92,46 @@ describe('departments', () => {
   })
 })
 
+describe('skills (collaborative containers)', () => {
+  test('create → add URL (auto-voted) → vote toggle → add tool', async () => {
+    const w = wallet()
+    const circleId = cid()
+    const s = await post(`/circles/${circleId}/skills`, w, { name: 'ZK proving' }).then((r) => r.json())
+    expect(s.skill.name).toBe('ZK proving')
+    const skillId = s.skill.id
+
+    const { skills } = await get(`/circles/${circleId}/skills`).then((r) => r.json())
+    expect(skills.some((x: any) => x.id === skillId)).toBe(true)
+
+    // Add a URL — the adder auto-votes it.
+    const u = await post(`/skills/${skillId}/urls`, w, { url: 'https://zk.example/a', title: 'ZK paper' }).then((r) => r.json())
+    const urlId = u.url.id
+    let detail = await get(`/skills/${skillId}`, w).then((r) => r.json())
+    expect(detail.skill.urls[0]).toMatchObject({ voteCount: 1, votedByMe: true, title: 'ZK paper' })
+
+    // Another member votes → 2; un-votes → 1.
+    const voter = wallet()
+    await post(`/skills/${skillId}/urls/${urlId}/vote`, voter, {})
+    detail = await get(`/skills/${skillId}`).then((r) => r.json())
+    expect(detail.skill.urls[0].voteCount).toBe(2)
+    await post(`/skills/${skillId}/urls/${urlId}/vote`, voter, {})
+    detail = await get(`/skills/${skillId}`).then((r) => r.json())
+    expect(detail.skill.urls[0].voteCount).toBe(1)
+
+    // Add a tool.
+    await post(`/skills/${skillId}/tools`, w, { name: 'Foundry' })
+    detail = await get(`/skills/${skillId}`).then((r) => r.json())
+    expect(detail.skill.tools.some((t: any) => t.name === 'Foundry')).toBe(true)
+  })
+
+  test('validation: empty skill name → 400; url on unknown skill → 404', async () => {
+    const w = wallet()
+    const circleId = cid()
+    expect((await post(`/circles/${circleId}/skills`, w, { name: '' })).status).toBe(400)
+    expect((await post(`/skills/does-not-exist/urls`, w, { url: 'https://x' })).status).toBe(404)
+  })
+})
+
 describe('activity', () => {
   test('merges shares + comments for the circle (newest first)', async () => {
     const w = wallet()
@@ -109,37 +149,3 @@ describe('activity', () => {
   })
 })
 
-describe('attributes (skills/tools + endorse)', () => {
-  test('claim a skill (idempotent); empty name → 400', async () => {
-    const w = wallet()
-    const circleId = cid()
-    const r1 = await post(`/circles/${circleId}/me/attributes`, w, { kind: 'SKILL', name: 'ZK proving' })
-    expect(r1.status).toBe(201)
-    const body = await r1.json()
-    expect(body.memberAttributeId).toBeTruthy()
-    // re-claim is idempotent (same member-attribute).
-    const r2 = await post(`/circles/${circleId}/me/attributes`, w, { kind: 'SKILL', name: 'ZK proving' }).then((r) => r.json())
-    expect(r2.memberAttributeId).toBe(body.memberAttributeId)
-    expect((await post(`/circles/${circleId}/me/attributes`, w, { kind: 'SKILL', name: '' })).status).toBe(400)
-  })
-
-  test('endorse / un-endorse a member-attribute (idempotent)', async () => {
-    const owner = wallet()
-    const endorser = wallet()
-    const circleId = cid()
-    const { memberAttributeId } = await post(`/circles/${circleId}/me/attributes`, owner, {
-      kind: 'TOOL',
-      name: 'Figma',
-    }).then((r) => r.json())
-
-    expect((await post(`/circles/${circleId}/member-attributes/${memberAttributeId}/endorse`, endorser, {})).status).toBe(200)
-    // idempotent (one endorsement per endorser)
-    expect((await post(`/circles/${circleId}/member-attributes/${memberAttributeId}/endorse`, endorser, {})).status).toBe(200)
-    expect((await del(`/circles/${circleId}/member-attributes/${memberAttributeId}/endorse`, endorser)).status).toBe(200)
-  })
-
-  test('endorsing an unknown member-attribute → 404', async () => {
-    const circleId = cid()
-    expect((await post(`/circles/${circleId}/member-attributes/nope/endorse`, wallet(), {})).status).toBe(404)
-  })
-})

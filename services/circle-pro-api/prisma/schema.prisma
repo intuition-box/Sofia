@@ -41,55 +41,61 @@ model Circle {
   @@index([ownerWallet])
 }
 
-/// A circle's catalog of skills and tools (kind). Created on first use, reused
-/// after (names unique per circle+kind). Members get assigned these.
-enum AttributeKind {
-  SKILL
-  TOOL
-}
-
-model Attribute {
-  id        String            @id @default(cuid())
-  circleId  String
-  kind      AttributeKind
-  name      String
-  /// Display colour (skills) — tools fall back to a domain favicon in the UI.
-  color     String?
-  createdAt DateTime          @default(now())
-  members   MemberAttribute[]
-
-  @@unique([circleId, kind, name])
-  @@index([circleId, kind])
-}
-
-/// A member claiming a skill/tool. Others endorse it (the count). One row per
-/// (wallet, attribute).
-model MemberAttribute {
-  id           String        @id @default(cuid())
+/// A Skill — an open container the team builds together (like the mock): anyone
+/// in the circle creates one, adds URLs + tools to it, and votes on the URLs.
+/// Scoped to a team (departmentId) or the whole circle.
+model Skill {
+  id           String      @id @default(cuid())
   circleId     String
-  /// The member who has this skill/tool (lowercased wallet).
-  wallet       String
-  attributeId  String
-  attribute    Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  createdAt    DateTime      @default(now())
-  endorsements Endorsement[]
+  departmentId String?
+  name         String
+  /// Optional taxonomy topic id (the skill's theme).
+  topic        String?
+  /// Wallet that created it.
+  createdBy    String
+  createdAt    DateTime    @default(now())
+  urls         SkillUrl[]
+  tools        SkillTool[]
 
-  @@unique([wallet, attributeId])
-  @@index([circleId, wallet])
-  @@index([attributeId])
+  @@index([circleId, departmentId])
 }
 
-/// A vote that a member genuinely has a skill/tool. One per endorser.
-model Endorsement {
-  id                String          @id @default(cuid())
-  memberAttributeId String
-  memberAttribute   MemberAttribute @relation(fields: [memberAttributeId], references: [id], onDelete: Cascade)
-  /// Lowercased wallet of the endorser.
-  endorserWallet    String
-  createdAt         DateTime        @default(now())
+/// A URL added to a Skill. Members vote on it (SkillUrlVote = the count).
+model SkillUrl {
+  id        String         @id @default(cuid())
+  skillId   String
+  skill     Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  url       String
+  title     String
+  addedBy   String
+  createdAt DateTime       @default(now())
+  votes     SkillUrlVote[]
 
-  @@unique([memberAttributeId, endorserWallet])
-  @@index([memberAttributeId])
+  @@index([skillId])
+}
+
+/// One vote per (url, wallet).
+model SkillUrlVote {
+  id         String   @id @default(cuid())
+  skillUrlId String
+  skillUrl   SkillUrl @relation(fields: [skillUrlId], references: [id], onDelete: Cascade)
+  wallet     String
+  createdAt  DateTime @default(now())
+
+  @@unique([skillUrlId, wallet])
+  @@index([skillUrlId])
+}
+
+/// A tool attached to a Skill (name + optional host for the favicon).
+model SkillTool {
+  id      String @id @default(cuid())
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  name    String
+  host    String?
+
+  @@unique([skillId, name])
+  @@index([skillId])
 }
 
 /// A team (department) inside a workspace — a user-created category to organise
