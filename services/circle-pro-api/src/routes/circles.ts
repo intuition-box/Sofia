@@ -158,12 +158,12 @@ circles.post('/circles/:circleId/me/attributes', authMiddleware, async (c) => {
     update: {},
     create: { circleId, kind, name, color: body.color || null },
   })
-  await prisma.memberAttribute.upsert({
+  const ma = await prisma.memberAttribute.upsert({
     where: { wallet_attributeId: { wallet, attributeId: attribute.id } },
     update: {},
     create: { circleId, wallet, attributeId: attribute.id },
   })
-  return c.json({ ok: true }, 201)
+  return c.json({ ok: true, attributeId: attribute.id, memberAttributeId: ma.id }, 201)
 })
 
 /** DELETE /circles/:circleId/me/attributes/:attributeId — drop your own skill/tool. */
