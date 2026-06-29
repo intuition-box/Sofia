@@ -108,9 +108,9 @@ export function TeamView({
         ) : view === 'memory' ? (
           <Archive />
         ) : view === 'skills' ? (
-          <Activity />
+          <Activity departmentId={department.id} />
         ) : view === 'tools' ? (
-          <Tools />
+          <Tools departmentId={department.id} />
         ) : (
           <>
             <form className="tv-search" onSubmit={(e) => e.preventDefault()}>

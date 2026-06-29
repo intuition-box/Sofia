@@ -22,7 +22,6 @@ import { useComments } from '../hooks/useComments'
 import { useAuth } from '../hooks/useAuth'
 import { useCircle } from '../hooks/useCircle'
 import { useSharers } from '../hooks/useSharers'
-import { suggestCategory } from '../data/topics'
 import { toast } from '../lib/toast'
 import { postBookmark, isNotMemberError, type PublicComment } from '../services/circleProApi'
 
@@ -33,9 +32,6 @@ export interface PostItem {
   topicId: string
   teamId: string
 }
-
-/* Deterministic "added on" date per link (mock — no real timestamp on bookmarks). */
-const WHEN = ['Jan 14', 'Feb 3', 'Feb 27', 'Mar 11', 'Mar 25', 'Apr 8', 'Apr 22', 'May 6']
 
 // Mock comment row — kept for Activity.tsx's "who-knows-what" surface.
 export function CommentRow({ c }: { c: Comment }) {
