@@ -358,6 +358,17 @@
         "typescript": "^5.4.0",
       },
     },
+    "services/pin-proxy": {
+      "name": "pin-proxy",
+      "version": "0.1.0",
+      "dependencies": {
+        "hono": "^4.6.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "typescript": "^5.4.0",
+      },
+    },
   },
   "overrides": {
     "react": "18.2.0",
@@ -4046,6 +4057,8 @@
     "picomatch": ["picomatch@4.0.4", "", {}, "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A=="],
 
     "pify": ["pify@6.1.0", "", {}, "sha512-KocF8ve28eFjjuBKKGvzOBGzG8ew2OqOOSxTTZhirkzH7h3BI1vyzqlR0qbfcDBve1Yzo3FVlWUAtCRrbVN8Fw=="],
+
+    "pin-proxy": ["pin-proxy@workspace:services/pin-proxy"],
 
     "pino": ["pino@10.3.1", "", { "dependencies": { "@pinojs/redact": "^0.4.0", "atomic-sleep": "^1.0.0", "on-exit-leak-free": "^2.1.0", "pino-abstract-transport": "^3.0.0", "pino-std-serializers": "^7.0.0", "process-warning": "^5.0.0", "quick-format-unescaped": "^4.0.3", "real-require": "^0.2.0", "safe-stable-stringify": "^2.3.1", "sonic-boom": "^4.0.1", "thread-stream": "^4.0.0" }, "bin": { "pino": "bin.js" } }, "sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg=="],
 

@@ -13,6 +13,15 @@ const DEFAULT_MAX_CONCURRENT = 4
 
 let globalConfig: {
   apiUrl?: string
+  /** Authenticated pinning endpoint. Intuition gated `pinThing` (the only
+   *  GraphQL mutation we send) behind an API key on a dedicated host. The
+   *  network read endpoint (`apiUrl`) no longer accepts mutations at all, so
+   *  there is NO fallback — mutations must go here. In prod this points at a
+   *  backend proxy that injects the secret key server-side. */
+  pinApiUrl?: string
+  /** Optional Intuition API key, sent as the `apikey` header on mutations.
+   *  Direct mode only — left unset in prod, where the proxy holds the key. */
+  pinApiKey?: string
   maxConcurrent: number
 } = {
   apiUrl: DEFAULT_API_URL,
@@ -22,6 +31,10 @@ let globalConfig: {
 export function configureClient(config: {
   apiUrl: string
   wsUrl?: string
+  /** Authenticated pinning endpoint (e.g. the backend pin proxy URL). */
+  pinApiUrl?: string
+  /** Intuition API key for direct pinning (omit when using a proxy). */
+  pinApiKey?: string
   /** Max parallel HTTP requests through the fetcher.
    *  Defaults to 4 — caps the burst on first paint so the upstream
    *  Hasura/Kong gate doesn't 429 a wave of mounted hooks. */
@@ -30,6 +43,8 @@ export function configureClient(config: {
   globalConfig = {
     ...globalConfig,
     apiUrl: config.apiUrl,
+    pinApiUrl: config.pinApiUrl ?? globalConfig.pinApiUrl,
+    pinApiKey: config.pinApiKey ?? globalConfig.pinApiKey,
     maxConcurrent: config.maxConcurrent ?? globalConfig.maxConcurrent,
   }
   if (config.wsUrl) {
@@ -143,9 +158,18 @@ export function fetcher<TData, TVariables>(
   options?: RequestInit['headers'],
 ) {
   return async () => {
-    if (!globalConfig.apiUrl) {
+    // Intuition gated `pinThing` (our only mutation) behind an authenticated
+    // host — the network read endpoint no longer accepts mutations at all, so
+    // there is NO fallback. Route mutations to `pinApiUrl` (in prod a backend
+    // proxy that injects the secret `apikey` server-side; the key never ships
+    // in the client bundle). Reads stay on the network `apiUrl`.
+    const isMutation = /^\s*mutation\b/.test(query)
+    const url = isMutation ? globalConfig.pinApiUrl : globalConfig.apiUrl
+    if (!url) {
       throw new Error(
-        'GraphQL API URL not configured. Call configureClient first.',
+        isMutation
+          ? 'Pinning endpoint not configured. pinThing requires the authenticated pin proxy — call configureClient({ pinApiUrl }).'
+          : 'GraphQL API URL not configured. Call configureClient first.',
       )
     }
 
@@ -157,10 +181,18 @@ export function fetcher<TData, TVariables>(
     const start = isDev ? performance.now() : 0
     let status = 0
     try {
-      const res = await fetch(globalConfig.apiUrl, {
+      const res = await fetch(url, {
         method: 'POST',
-        ...fetchParams(),
-        ...options,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          ...(options as Record<string, string> | undefined),
+          // Direct mode only: when a raw key is configured (no proxy) it is
+          // sent as the `apikey` header. In proxy mode `pinApiKey` is unset
+          // and the proxy attaches the key itself.
+          ...(isMutation && globalConfig.pinApiKey
+            ? { apikey: globalConfig.pinApiKey }
+            : {}),
+        },
         body: JSON.stringify({ query, variables }),
       })
       status = res.status
