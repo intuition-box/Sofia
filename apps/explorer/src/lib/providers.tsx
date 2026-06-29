@@ -4,13 +4,24 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { PrivyProvider } from '@privy-io/react-auth'
 import { BrowserRouter } from 'react-router-dom'
 import { configureClient } from '@0xsofia/graphql'
-import { PRIVY_APP_ID, GRAPHQL_URL, GRAPHQL_WS_URL } from '../config'
+import {
+  PRIVY_APP_ID,
+  GRAPHQL_URL,
+  GRAPHQL_WS_URL,
+  PIN_PROXY_URL,
+} from '../config'
 import { intuitionChain } from './contracts/chainConfig'
 import { CartProvider } from '../hooks/useCart'
 import { ViewAsProvider } from '../hooks/useViewAs'
 
 // HTTP proxy (/v1/graphql) in dev for CORS, direct WSS for subscriptions.
-configureClient({ apiUrl: GRAPHQL_URL, wsUrl: GRAPHQL_WS_URL })
+// `pinApiUrl` routes pin mutations through the backend pin-proxy (the key
+// lives there, server-side — never in this bundle).
+configureClient({
+  apiUrl: GRAPHQL_URL,
+  wsUrl: GRAPHQL_WS_URL,
+  pinApiUrl: PIN_PROXY_URL,
+})
 
 const CACHE_MAX_AGE = 24 * 60 * 60 * 1000 // 24h
 

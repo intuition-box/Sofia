@@ -11,6 +11,11 @@ export const GRAPHQL_URL = import.meta.env.DEV
 export const GRAPHQL_WS_URL =
   (import.meta.env.VITE_GRAPHQL_WS_URL as string) ||
   'wss://mainnet.intuition.sh/v1/graphql'
+// Authenticated pinning endpoint. Intuition gated `pinThing` behind an API
+// key — the read endpoint above no longer accepts mutations. We route pins
+// through the backend pin-proxy (services/pin-proxy) which holds the key
+// server-side, so it never ships in this public bundle. URL only, no secret.
+export const PIN_PROXY_URL = import.meta.env.VITE_PIN_PROXY_URL as string
 export const EXPLORER_URL = 'https://explorer.intuition.systems'
 
 // ── Sofia Proxy Contract ──

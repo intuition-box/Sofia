@@ -24,9 +24,13 @@ import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkS
 import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 
-// Configure GraphQL client BEFORE the QueryProvider mounts
+// Configure GraphQL client BEFORE the QueryProvider mounts.
+// `pinApiUrl` routes pin mutations through the backend pin-proxy — Intuition
+// gated `pinThing` behind an API key, and that key must never ship in the
+// published extension bundle, so the proxy holds it server-side.
 configureClient({
-  apiUrl: 'https://mainnet.intuition.sh/v1/graphql'
+  apiUrl: 'https://mainnet.intuition.sh/v1/graphql',
+  pinApiUrl: process.env.PLASMO_PUBLIC_PIN_PROXY_URL
 })
 
 const SidePanelContent = () => {

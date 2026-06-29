@@ -43,6 +43,7 @@ COPY packages/quests/package.json ./packages/quests/
 COPY services/mastra/package.json ./services/mastra/
 COPY services/group-api/package.json ./services/group-api/
 COPY services/og-proxy/package.json ./services/og-proxy/
+COPY services/pin-proxy/package.json ./services/pin-proxy/
 
 RUN bun install --frozen-lockfile
 
