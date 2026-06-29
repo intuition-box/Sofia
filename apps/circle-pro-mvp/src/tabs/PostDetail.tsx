@@ -8,7 +8,7 @@
  *  - `PostCommentRow` — the REAL thread (PublicComment from circle-pro-api):
  *    public reads, auth+profile-gated writes (add/edit/delete/like).
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CommentComposer, isMediaUrl } from '../components/CommentComposer'
 import { DeptTagByName, DomainTagByTopic } from '../components/Tag'
@@ -17,7 +17,7 @@ import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
 import { likedBy } from '../data/teammates'
 import { avGrad, initials } from '../data/helpers'
-import { voteSeed } from '../components/VoteButton'
+import { VoteButton, voteSeed } from '../components/VoteButton'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { useComments } from '../hooks/useComments'
 import { useAuth } from '../hooks/useAuth'
@@ -54,9 +54,9 @@ export function CommentRow({ c }: { c: Comment }) {
         )}
         <div className="pc-actions">
           <span className="pc-like">
-            <Icon name="thumbup" /> {c.likes}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg> {c.likes}
           </span>
-          <button className="pc-reply">Reply</button>
+          <button className="btn btn--quiet btn--xs">Reply</button>
         </div>
       </div>
     </div>
@@ -136,10 +136,10 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
               autoFocus
             />
             <div className="post-why-actions">
-              <button className="ex-back" onClick={() => setEditing(false)}>
+              <button className="btn btn--quiet btn--sm" onClick={() => setEditing(false)}>
                 Cancel
               </button>
-              <button className="post-composer-send" disabled={busy} onClick={saveEdit}>
+              <button className="btn btn--accent btn--sm" disabled={busy} onClick={saveEdit}>
                 Save
               </button>
             </div>
@@ -155,14 +155,14 @@ function PostCommentRow({ c, mine, onEdit, onDelete, onToggleLike }: PostComment
             className={`pc-like${c.likedByMe ? ' is-on' : ''}`}
             onClick={() => onToggleLike(c)}
           >
-            <Icon name="thumbup" /> {c.likeCount}
+            <svg className="pc-like-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg> {c.likeCount}
           </button>
           {mine && !editing ? (
             <>
-              <button className="pc-reply" onClick={() => setEditing(true)}>
+              <button className="btn btn--quiet btn--xs" onClick={() => setEditing(true)}>
                 Edit
               </button>
-              <button className="pc-reply" onClick={() => onDelete(c.id)}>
+              <button className="btn btn--quiet btn--xs" onClick={() => onDelete(c.id)}>
                 Delete
               </button>
             </>
@@ -197,131 +197,147 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
   const sharer = likedBy(item.url).people[0]
   const [shotOk, setShotOk] = useState(true)
 
+  // Escape closes — same affordance as the skill / tool modals.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onBack()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onBack])
+
   return (
-    <div className="content">
-      <article className="post post--split">
-        <button className="post-back" onClick={onBack}>
-          <Icon name="chevronLeft" /> Back to feed
-        </button>
+    <div className="skmodal" role="dialog" aria-modal="true" onClick={onBack}>
+      <div className="skmodal-card skmodal-card--skv" onClick={(e) => e.stopPropagation()}>
+        <div className="skv">
+          <header className="skv-topbar">
+            {sharer ? (
+              <div className="psk-head">
+                <span className="psk-author-av" style={{ background: avGrad(sharer.grad) }}>
+                  {initials(sharer.name)}
+                </span>
+                <div className="psk-author-meta">
+                  <div className="psk-author-name">{sharer.name}</div>
+                  <div className="psk-author-sub mono">Shared · {WHEN[voteSeed(item.url) % WHEN.length]}</div>
+                </div>
+              </div>
+            ) : null}
+            <div className="skv-topbar-right">
+              <button className="btn btn--outline btn--sm">
+                <Icon name="bookmark" /> Save
+              </button>
+              <button className="btn btn--outline btn--sm">
+                <Icon name="send" /> Share
+              </button>
+              <button className="skv-icon btn-icon" aria-label="Close" onClick={onBack}>
+                <Icon name="close" />
+              </button>
+            </div>
+          </header>
 
-        <div className="post-split">
-          <div className="post-col-main">
-        <div className="post-tags">
-          {team ? <DeptTagByName name={team.label} /> : null}
-          {cat ? <DomainTagByTopic id={cat.id} label={cat.label} /> : null}
-          <span className="post-tag post-tag--type">{type === 'doc' ? 'Doc' : 'Link'}</span>
-        </div>
+          <div className="skv-body">
+            <div className="skv-main sk-scroll">
+              <h1 className="post-title">{item.title}</h1>
 
-        <h1 className="post-title">{item.title}</h1>
+              <div className="post-tags">
+                {team ? <DeptTagByName name={team.label} /> : null}
+                {cat ? <DomainTagByTopic id={cat.id} label={cat.label} /> : null}
+                <span className="post-tag post-tag--type">{type === 'doc' ? 'Doc' : 'Link'}</span>
+              </div>
 
-        <a className="post-preview" href={abs} target="_blank" rel="noopener noreferrer">
-          <div className={`post-shot${shotOk ? '' : ' is-fallback'}`}>
-            {shotOk ? (
-              <img
-                className="post-shot-img"
-                src={`https://image.thum.io/get/width/1200/crop/720/noanimate/${abs}`}
-                alt={`Preview of ${item.host}`}
-                loading="lazy"
-                onError={() => setShotOk(false)}
-              />
-            ) : (
-              <img
-                className="post-shot-fav"
-                src={`https://www.google.com/s2/favicons?domain=${item.host}&sz=128`}
-                alt=""
-              />
-            )}
-          </div>
-          <div className="post-preview-foot">
-            <span className="post-preview-fav">
-              <img
-                src={`https://www.google.com/s2/favicons?domain=${item.host}&sz=64`}
-                alt=""
-                onError={(e) => {
-                  ;(e.currentTarget as HTMLImageElement).style.display = 'none'
-                }}
-              />
-            </span>
-            <div className="post-preview-id">
-              <div className="post-preview-title">{item.title}</div>
-              <div className="post-preview-host mono">
-                {item.host} <Icon name="ext" />
+              <a className="post-preview" href={abs} target="_blank" rel="noopener noreferrer">
+                <div className={`post-shot${shotOk ? '' : ' is-fallback'}`}>
+                  {shotOk ? (
+                    <img
+                      className="post-shot-img"
+                      src={`https://image.thum.io/get/width/1200/crop/720/noanimate/${abs}`}
+                      alt={`Preview of ${item.host}`}
+                      loading="lazy"
+                      onError={() => setShotOk(false)}
+                    />
+                  ) : (
+                    <img
+                      className="post-shot-fav"
+                      src={`https://www.google.com/s2/favicons?domain=${item.host}&sz=128`}
+                      alt=""
+                    />
+                  )}
+                </div>
+                <div className="post-preview-foot">
+                  <span className="post-preview-fav">
+                    <img
+                      src={`https://www.google.com/s2/favicons?domain=${item.host}&sz=64`}
+                      alt=""
+                      onError={(e) => {
+                        ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                      }}
+                    />
+                  </span>
+                  <div className="post-preview-id">
+                    <div className="post-preview-title">{item.title}</div>
+                    <div className="post-preview-host mono">
+                      {item.host} <Icon name="ext" />
+                    </div>
+                  </div>
+                </div>
+              </a>
+
+              <div className="post-why">
+                <div className="post-why-note">
+                  <div className="post-why-lab mono">Why it's useful</div>
+                  <p className="post-why-text">{whyFor(item.url)}</p>
+                </div>
+              </div>
+
+              <div className="post-actions">
+                <VoteButton base={voteSeed(item.url)} className="post-action-vote" />
               </div>
             </div>
-          </div>
-        </a>
 
-        <div className="post-why">
-          {sharer ? (
-            <div className="post-why-by">
-              <span className="post-why-av" style={{ background: avGrad(sharer.grad) }}>
-                {initials(sharer.name)}
-              </span>
-              <div className="post-why-by-meta">
-                <div className="post-why-by-name">{sharer.name}</div>
-                <div className="post-why-by-sub mono">Shared · {WHEN[voteSeed(item.url) % WHEN.length]}</div>
+            <aside className="skv-rail">
+              <div className="skv-rail-head">
+                <span className="skv-tab on">
+                  {loading ? 'Comments' : `${comments.length} comment${comments.length === 1 ? '' : 's'}`}
+                </span>
               </div>
-            </div>
-          ) : null}
-          <div className="post-why-note">
-            <div className="post-why-lab mono">Why it's useful</div>
-            <p className="post-why-text">{whyFor(item.url)}</p>
+              <div className="skv-rail-scroll sk-scroll">
+                {loading ? (
+                  <p className="sk-empty mono">Loading…</p>
+                ) : comments.length === 0 ? (
+                  <p className="sk-empty mono">No comments yet — start the thread.</p>
+                ) : (
+                  comments.map((c) => (
+                    <PostCommentRow
+                      key={c.id}
+                      c={c}
+                      mine={!!wallet && c.author.wallet === wallet}
+                      onEdit={edit}
+                      onDelete={remove}
+                      onToggleLike={toggleLike}
+                    />
+                  ))
+                )}
+
+                {hasMore ? (
+                  <button className="btn btn--outline btn--sm pc-more" disabled={loadingMore} onClick={loadMore}>
+                    {loadingMore ? 'Loading…' : 'Load more comments'}
+                  </button>
+                ) : null}
+              </div>
+              <div className="skv-composer">
+                {canWrite ? (
+                  <CommentComposer onSend={(content) => void add(content)} />
+                ) : (
+                  <button className="btn btn--accent btn--sm post-composer-signin" onClick={() => login()}>
+                    <Icon name="send" />
+                    {authenticated ? 'Set your handle to comment' : 'Sign in to comment'}
+                  </button>
+                )}
+              </div>
+            </aside>
           </div>
         </div>
-
-        <div className="post-actions">
-          <button className="post-action">
-            <Icon name="bookmark" /> Save
-          </button>
-          <button className="post-action">
-            <Icon name="send" /> Share
-          </button>
-        </div>
-          </div>
-
-          <div className="post-col-side">
-        <div className="post-comments">
-          <h3 className="post-comments-h">
-            {loading
-              ? 'Comments'
-              : `${comments.length} comment${comments.length === 1 ? '' : 's'}`}
-          </h3>
-
-          {loading ? (
-            <p className="pc-empty mono">Loading…</p>
-          ) : comments.length === 0 ? (
-            <p className="pc-empty mono">No comments yet — start the thread.</p>
-          ) : (
-            comments.map((c) => (
-              <PostCommentRow
-                key={c.id}
-                c={c}
-                mine={!!wallet && c.author.wallet === wallet}
-                onEdit={edit}
-                onDelete={remove}
-                onToggleLike={toggleLike}
-              />
-            ))
-          )}
-
-          {hasMore ? (
-            <button className="pc-more" disabled={loadingMore} onClick={loadMore}>
-              {loadingMore ? 'Loading…' : 'Load more comments'}
-            </button>
-          ) : null}
-
-          {canWrite ? (
-            <CommentComposer onSend={(content) => void add(content)} />
-          ) : (
-            <button className="post-composer-signin" onClick={() => login()}>
-              <Icon name="send" />
-              {authenticated ? 'Set your handle to comment' : 'Sign in to comment'}
-            </button>
-          )}
-        </div>
-          </div>
-        </div>
-      </article>
+      </div>
     </div>
   )
 }

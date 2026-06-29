@@ -1,0 +1,513 @@
+/* ── Public skill view (psk) + editor (pske) ──────────────────────────────
+   The published read view and the create/edit form, both living in the left
+   column of the shared `.skv` modal (comments stay in the right rail). Built on
+   the app's design-system tokens; tags themselves come from the local Tag
+   components, so they carry the correct Nordic styles. */
+
+/* ── Published head: author · stats · use-this-skill ─────────────────────── */
+/* Topbar — author block (left) + Use control & close cross grouped (right).
+   Lifted above the body so the Use control's tooltip isn't clipped. */
+.skv-topbar {
+  position: relative;
+  z-index: 3;
+}
+.skv-topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.skv-topbar-right .skv-icon {
+  margin-left: 0;
+}
+.psk-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.psk-author-av {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+}
+.psk-author-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ds-ink);
+}
+.psk-author-sub {
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--ds-muted);
+}
+/* Dark combined control — "Use this skill" + an attached vote segment.
+   Sits in the topbar, right side, just left of the close cross. */
+.psk-use-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.psk-use {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: var(--r-md);
+  background: var(--ds-ink);
+  overflow: hidden;
+  text-decoration: none;
+}
+.psk-use-main,
+.psk-use-vote {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ds-bg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--t-fast) var(--ease);
+}
+.psk-use-main {
+  padding: 10px 16px;
+}
+.psk-use-main:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.psk-use-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 13px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.psk-use-vote svg {
+  width: 13px;
+  height: 13px;
+}
+.psk-use-vote.on {
+  background: var(--ds-accent);
+  color: #02000e;
+  border-left-color: transparent;
+}
+.psk-copied {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  padding: 6px 11px;
+  border-radius: var(--r-sm, 8px);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Title row + description ─────────────────────────────────────────────── */
+.psk-desc {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ds-muted);
+  max-width: 62ch;
+}
+
+/* ── Tags + tools rows ──────────────────────────────────────────────────── */
+.psk-tags,
+.psk-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.psk-row-lab {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-right: 2px;
+}
+.psk-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+}
+.psk-tool-fav {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: block;
+}
+
+/* ── Section heads ──────────────────────────────────────────────────────── */
+.psk-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 12px;
+}
+.psk-sec-head--steps {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.psk-sec-title {
+  font-family: var(--ds-font-sans);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--ds-ink);
+}
+.psk-sec-n {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.psk-sec-act {
+  margin-left: auto;
+}
+
+/* ── Resources — single-column list of horizontal rows ──────────────────── */
+.psk-res-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.psk-res-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.psk-res-row:hover {
+  transform: translateY(-1px);
+  border-color: var(--ds-accent);
+  box-shadow: 0 10px 22px -16px rgba(0, 0, 0, 0.3);
+}
+.psk-res-ic {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.psk-res-ic img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: block;
+}
+.psk-res-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.psk-res-title {
+  margin: 0;
+  font-family: var(--ds-font-sans);
+  font-weight: 500;
+  font-size: 14.5px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.psk-res-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.psk-res-type {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.psk-res-dot {
+  opacity: 0.5;
+}
+
+/* ── Steps (read) ───────────────────────────────────────────────────────── */
+.psk-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.psk-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ds-ink);
+}
+.psk-step:last-child {
+  border-bottom: none;
+}
+.psk-step-n,
+.pske-step-n {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+/* ── Editor (pske) ──────────────────────────────────────────────────────── */
+.pske {
+  display: flex;
+  flex-direction: column;
+}
+.pske-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.pske-lab {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-bottom: 6px;
+}
+.pske-title,
+.pske-area,
+.pske-step-in {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ds-ink);
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.pske-title:focus,
+.pske-area:focus,
+.pske-step-in:focus {
+  border-color: var(--ds-accent);
+}
+.pske-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  padding: 10px 13px;
+  margin-bottom: 14px;
+}
+.pske-area {
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 13px;
+  resize: vertical;
+  margin-bottom: 16px;
+}
+.pske-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pske-block {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.pske-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pske-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px 6px 7px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--ds-ink);
+}
+.pske-x {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-3, var(--border));
+  color: var(--ds-muted);
+  font-size: 9px;
+  cursor: pointer;
+}
+.pske-x:hover {
+  color: var(--ds-ink);
+}
+.pske-add-chip,
+.pske-add-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ds-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.pske-add-chip {
+  padding: 7px 13px;
+}
+.pske-add-row {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+.pske-add-chip:hover,
+.pske-add-row:hover {
+  color: var(--ds-ink);
+  border-color: var(--ds-accent);
+}
+.pske-tool-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.pske-tool-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px 6px 7px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--ds-ink);
+  cursor: pointer;
+}
+.pske-tool-opt:hover {
+  border-color: var(--ds-accent);
+}
+.pske-res-row,
+.pske-step-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pske-res-ic {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.pske-res-ic img {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: block;
+}
+.pske-res-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pske-steps-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pske-steps-head .pske-lab {
+  margin-bottom: 0;
+}
+/* Claude's brand identity — warm "clay" surface + the Claude starburst. */
+.pske-claude {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid #e7c9b8;
+  background: #f5e5dc;
+  color: #3a2a20;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
+}
+.pske-claude:hover {
+  background: #efd8cb;
+}
+.pske-claude-logo {
+  width: 16px;
+  height: 11px;
+  flex: 0 0 auto;
+}
+.pske-step-row {
+  border-bottom: none;
+  padding: 4px 0;
+}
+.pske-step-in {
+  flex: 1;
+  font-size: 14px;
+  padding: 8px 11px;
+}

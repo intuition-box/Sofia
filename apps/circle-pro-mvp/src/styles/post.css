@@ -72,17 +72,9 @@
     border-bottom: 1px solid var(--border);
   }
 }
+/* layout only — appearance from .btn--quiet */
 .post-back {
-  border: none;
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0;
   margin-bottom: 18px;
-}
-.post-back:hover {
-  color: var(--ds-ink);
 }
 .post-tags {
   display: flex;
@@ -120,8 +112,8 @@
   margin: 0 0 12px;
   font-family: var(--display);
   font-weight: 600;
-  font-size: clamp(22px, 2.6vw, 28px);
-  line-height: 1.2;
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.12;
   letter-spacing: -0.02em;
 }
 .post-by {
@@ -315,26 +307,6 @@
   gap: 8px;
   margin-bottom: 22px;
 }
-.post-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-pill);
-  background: transparent;
-  color: var(--ds-ink);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.post-action:hover {
-  background: var(--surface);
-}
-.post-action .ic svg {
-  width: 15px;
-  height: 15px;
-}
-
 /* ── Comments ──────────────────────────────────────────────── */
 .post-comments {
   border-top: 1px solid var(--border);
@@ -399,7 +371,8 @@
   align-items: center;
   gap: 4px;
 }
-.pc-like .ic svg {
+.pc-like .ic svg,
+.pc-like-arrow {
   width: 12px;
   height: 12px;
 }
@@ -443,19 +416,6 @@
 .post-composer-input::placeholder {
   color: var(--ds-muted);
 }
-.post-composer-send {
-  border: none;
-  padding: 7px 14px;
-  border-radius: var(--r-sm);
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-.post-composer-send:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
 
 /* ── Real comments (circle-pro-api) ────────────────────────── */
 .pc-handle {
@@ -481,25 +441,11 @@
   color: var(--ds-muted);
   padding: 6px 0 12px;
 }
+/* layout only — appearance from .btn--outline */
 .pc-more {
   display: block;
   width: 100%;
   margin: 4px 0 12px;
-  padding: 9px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-ink);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.pc-more:hover {
-  background: color-mix(in srgb, var(--ds-ink) 5%, transparent);
-}
-.pc-more:disabled {
-  opacity: 0.55;
-  cursor: default;
 }
 .pc--deleted .pc-text--muted {
   color: var(--ds-muted);
@@ -508,22 +454,8 @@
 .pc-av--ghost {
   background: color-mix(in srgb, var(--ds-ink) 10%, transparent);
 }
+/* layout only — appearance from .btn--accent */
 .post-composer-signin {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   margin-top: 4px;
-  padding: 11px 16px;
   width: 100%;
-  justify-content: center;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-ink);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.post-composer-signin:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 50%, transparent);
 }

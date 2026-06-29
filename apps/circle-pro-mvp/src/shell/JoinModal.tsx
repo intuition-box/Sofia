@@ -61,10 +61,10 @@ export function JoinModal() {
           ))}
         </ul>
         <div className="join-actions">
-          <button className="btn btn-accent" onClick={doJoin}>
+          <button className="btn btn--accent" onClick={doJoin}>
             Create account &amp; join
           </button>
-          <button className="btn" onClick={doJoin}>
+          <button className="btn btn--outline" onClick={doJoin}>
             Connect wallet
           </button>
         </div>

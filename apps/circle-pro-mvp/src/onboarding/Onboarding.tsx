@@ -24,8 +24,10 @@ import { TopicSelect } from '../components/TopicSelect'
 import { avGrad, hostOf } from '../data/helpers'
 import './sort.css'
 
+// NOTE(audit 2026-06-25): fichier de 462 l. — étapes Welcome/Sort/JoinTeam/Importing/Done en sous-composants inline. Candidat à découper (1 fichier/étape). Non appliqué.
 type Step = 'welcome' | 'sort' | 'join' | 'importing' | 'done'
 
+// NOTE(audit 2026-06-25): `FlatLink` dupliqué (cf. TeamView/Bookmarks), variante avec `folder`. Base {title,url} à remonter dans data/types.ts puis l'étendre ici.
 interface FlatLink {
   title: string
   url: string
@@ -41,6 +43,7 @@ function flattenWithFolder(nodes: BmNode[], folder: string): FlatLink[] {
   return out
 }
 
+// NOTE(audit 2026-06-25): `Favicon` dupliqué (cf. TeamView/Essential). À extraire dans components/Favicon.tsx (classe CSS en prop).
 function Favicon({ host }: { host: string }) {
   const [err, setErr] = useState(false)
   if (err || !host) return <span className="kb-res-fav kb-res-fav--fb">{(host[0] || '?').toUpperCase()}</span>
@@ -194,7 +197,7 @@ function Welcome({ onLoaded, onSkip }: { onLoaded: (tree: BmNode[]) => void; onS
             <img src={`https://cdn.jsdelivr.net/gh/alrra/browser-logos@main/src/${slug}/${slug}_64x64.png`} alt={name} />
           </button>
         ))}
-        <button className="ob-skip" onClick={onSkip}>
+        <button className="btn btn--quiet btn--sm ob-skip" onClick={onSkip}>
           Skip
         </button>
       </div>
@@ -373,7 +376,7 @@ function Sort({ tree, topicOf, onPick, onBack, onNext }: SortProps) {
       )}
 
       <footer className="ob-cat-foot">
-        <button className="ob-back" onClick={onBack}>
+        <button className="btn btn--quiet btn--sm ob-back" onClick={onBack}>
           Back
         </button>
         <button className="ob-cta" onClick={onNext} disabled={selected.size === 0}>
@@ -413,7 +416,7 @@ function JoinTeam({ onBack, onJoin }: { onBack: () => void; onJoin: () => void }
       />
 
       <footer className="ob-cat-foot">
-        <button className="ob-back" onClick={onBack}>
+        <button className="btn btn--quiet btn--sm ob-back" onClick={onBack}>
           Back
         </button>
         <button className="ob-cta" onClick={onJoin} disabled={!code.trim()}>

@@ -154,13 +154,13 @@ export function ProfileGate() {
 
             <div className="join-actions">
               <button
-                className="btn btn-accent"
+                className="btn btn--accent"
                 disabled={!valid || avail === 'taken' || avail === 'checking' || creating}
                 onClick={submit}
               >
                 {creating ? 'Creating…' : 'Continue'}
               </button>
-              <button className="btn" onClick={() => logout()}>
+              <button className="btn btn--outline" onClick={() => logout()}>
                 <Icon name="x" /> Sign out
               </button>
             </div>

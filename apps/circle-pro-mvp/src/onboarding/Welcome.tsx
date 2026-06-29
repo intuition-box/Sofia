@@ -1,3 +1,9 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ⚠️  CODE ORPHELIN — audit 2026-06-25, non monté (aucun importeur).
+ * Doublon : Onboarding.tsx définit sa propre étape Welcome interne et n'importe pas ce fichier.
+ * Vestige importé via Claude Design. Décision : TAGUÉ, non supprimé.
+ * Ne pas étendre tel quel. Garde-fou : ne pas toucher au code de Maxime.
+ * ──────────────────────────────────────────────────────────────────────── */
 /**
  * Onboarding entry — placeholder welcome veil.
  *
@@ -38,10 +44,10 @@ export function Welcome({ onImport, onExplore }: WelcomeProps) {
           </div>
         </div>
         <div className="vbtns">
-          <button className="btn btn-accent vbtn-primary" onClick={onImport}>
+          <button className="btn btn--accent vbtn-primary" onClick={onImport}>
             <Icon name="download" /> Import your bookmarks
           </button>
-          <button className="btn btn-ghost vbtn-ghost" onClick={onExplore}>
+          <button className="btn btn--outline vbtn-ghost" onClick={onExplore}>
             Explore the workspace first
           </button>
         </div>

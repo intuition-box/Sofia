@@ -106,7 +106,7 @@ function SectionHead({ title, action, onAction }: { title: string; action: strin
   return (
     <div className="es-sec-head">
       <h2 className="es-sec-title">{title}</h2>
-      <button className="es-sec-all" onClick={onAction}>
+      <button className="btn btn--quiet btn--sm es-sec-all" onClick={onAction}>
         {action} →
       </button>
     </div>

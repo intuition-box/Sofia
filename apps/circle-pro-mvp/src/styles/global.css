@@ -19,14 +19,14 @@
   --tech: var(--work);
   --web3: var(--inspiration);
 
-  /* Body sans: Archivo (replaces the DS default Inter).
+  /* Body sans: Hind Regular (replaces the DS default Inter).
      Overriding --ds-font-sans flows to body, --sans, and the --display fallback. */
-  --ds-font-sans: 'Archivo', system-ui, -apple-system, sans-serif;
+  --ds-font-sans: 'Hind', system-ui, -apple-system, sans-serif;
   --sans: var(--ds-font-sans);
   --mono: var(--ds-font-mono);
-  /* Clash Display (Bold) is the ONE display face. Fall back to the sans
-     (Archivo), never to the DS serif display — headings must never render serif. */
-  --display: 'Clash Display', var(--ds-font-sans);
+  /* Poppins SemiBold is the ONE display face. Fall back to the sans (Hind),
+     never to the DS serif display — headings must never render serif. */
+  --display: 'Poppins', var(--ds-font-sans);
 
   --r-sm: 8px;
   --r-md: var(--ds-radius);
@@ -144,50 +144,7 @@ textarea:focus-visible {
   background: transparent;
 }
 
-/* ── Buttons (design-system tokens) ────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 15px;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--r-pill);
-  background: var(--ds-card);
-  color: var(--ds-ink);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
-}
-.btn:hover {
-  background: var(--ds-bg-subtle);
-}
-.btn:active {
-  transform: translateY(1px);
-}
-.btn-sm {
-  padding: 6px 11px;
-  font-size: 12px;
-}
-.btn-accent {
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  border-color: transparent;
-}
-.btn-accent:hover {
-  background: color-mix(in srgb, var(--ds-accent) 88%, #fff);
-}
-.btn-ghost {
-  background: transparent;
-  border-color: var(--ds-border-soft);
-}
-.btn-ghost:hover {
-  background: var(--ds-card);
-}
-.btn .ic {
-  display: inline-flex;
-}
+/* Buttons live in buttons.css (Claude "Button Package" system). */
 
 /* Inline icon sizing */
 .ic {

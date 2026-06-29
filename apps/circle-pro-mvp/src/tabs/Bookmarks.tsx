@@ -9,31 +9,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
-import { TopicSelect } from '../components/TopicSelect'
 import { teamFor } from '../data/teams'
+import { likedBy } from '../data/teammates'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
-import { addBookmark, setContext, setTopic, markShared, useMyBookmarks } from '../lib/mybookmarks'
-import { toast } from '../lib/toast'
-import { useAuth } from '../hooks/useAuth'
-import { useCircle } from '../hooks/useCircle'
-import { useSharedBookmarks } from '../hooks/useSharedBookmarks'
-import { useSharers } from '../hooks/useSharers'
-import { useDepartments } from '../hooks/useDepartments'
-import { postBookmark, isNotMemberError } from '../services/circleProApi'
-import { TagEditor } from '../components/TagEditor'
-import { bookmarkKey } from '../lib/bookmarkKey'
-import { parseBookmarksHtml } from '../lib/importBookmarks'
-import { type BmNode, type BmFolder } from '../data/myBookmarks'
-import { hostOf, avGrad } from '../data/helpers'
+import { addBookmark, setContext, useMyBookmarks } from '../lib/mybookmarks'
+import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
+import { avGrad, hostOf, initials } from '../data/helpers'
 import { countLinks, allLinksDeep } from '../data/folderTree'
 import { PostDetail, type PostItem } from './PostDetail'
-import '../styles/bookmarks-view.css'
-
-type ViewMode = 'grid' | 'list'
 
 const SHOWN_CAP = 60
 
+// NOTE(audit 2026-06-25): `FlatLink` dupliqué (cf. TeamView.tsx, Onboarding.tsx). À remonter dans data/types.ts.
 interface FlatLink {
   title: string
   url: string
@@ -61,32 +49,13 @@ function BkShot({ url, host }: { url: string; host: string }) {
 
 export function Bookmarks() {
   const my = useMyBookmarks()
-  const { authenticated, token, login } = useAuth()
-  const { circleId } = useCircle()
-  const { departments } = useDepartments()
-  const shared = useSharedBookmarks(true)
-  const [sharingUrl, setSharingUrl] = useState<string | null>(null)
-  // Per-card team choice for the next Share (empty = no team).
-  const [shareDept, setShareDept] = useState<Record<string, string>>({})
-  const sharedUrls = useMemo(
-    () => new Set(shared.items.map((b) => b.normalizedUrl)),
-    [shared.items],
-  )
-  // normalizedUrl → the backend bookmark (for editing tags after sharing).
-  const sharedByKey = useMemo(() => {
-    const m = new Map<string, (typeof shared.items)[number]>()
-    for (const b of shared.items) m.set(b.normalizedUrl, b)
-    return m
-  }, [shared.items])
   const [path, setPath] = useState<string[]>([])
   const [q, setQ] = useState('')
   const [topicFilter, setTopicFilter] = useState<string>('all')
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [adding, setAdding] = useState(false)
-  const [view, setView] = useState<ViewMode>('grid')
   const [openCrumb, setOpenCrumb] = useState<number | null>(null)
   const crumbsRef = useRef<HTMLElement>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
   const [likes, setLikes] = useState<Set<string>>(() => new Set())
   const toggleLike = (url: string) =>
     setLikes((s) => {
@@ -96,19 +65,11 @@ export function Bookmarks() {
       return n
     })
 
-  // Root = your top folders, preceded by your real shared bookmarks (backend)
-  // and anything you've added by hand (loose), deduped by URL.
+  // Root = your top folders, preceded by anything you've added by hand (loose).
   const rootChildren = useMemo<BmNode[]>(() => {
-    const sharedNodes: BmNode[] = shared.items.map((b) => ({ type: 'link', title: b.title, url: b.url }))
     const added: BmNode[] = my.added.map((b) => ({ type: 'link', title: b.title, url: b.url }))
-    const seen = new Set<string>()
-    const loose = [...sharedNodes, ...added].filter((n) => {
-      if (n.type !== 'link' || seen.has(n.url)) return false
-      seen.add(n.url)
-      return true
-    })
-    return loose
-  }, [shared.items, my.added])
+    return [...added, ...(MY_BOOKMARKS as BmNode[])]
+  }, [my.added])
 
   // Walk the folder path to the nodes shown at the current level.
   const currentNodes = useMemo<BmNode[]>(() => {
@@ -139,10 +100,6 @@ export function Bookmarks() {
 
   const currentFolderName = path.length ? path[path.length - 1] : ''
   const totalHere = needle || topicFilter !== 'all' ? links.length : countLinks(currentNodes)
-
-  // REAL social proof: who in the circle has shared each visible URL (batched).
-  const visibleKeys = useMemo(() => links.map((l) => bookmarkKey(l.url)), [links])
-  const sharersByUrl = useSharers(visibleKeys)
 
   // Child folders selectable from breadcrumb crumb `c` (0 = root "My bookmarks").
   const foldersAt = (c: number): BmFolder[] => {
@@ -194,72 +151,28 @@ export function Bookmarks() {
     setPath([])
   }
 
-  // Share a private bookmark to the group — explicit, POSTs to the backend so it
-  // becomes searchable by everyone. Sign-in required.
-  const shareBookmark = async (l: FlatLink) => {
-    if (!authenticated) {
-      login()
-      return
-    }
-    setSharingUrl(l.url)
-    try {
-      const topicId = my.topics[l.url] ?? suggestCategory('', l.url)
-      const cat = CATEGORY_MAP[topicId]
-      await postBookmark(
-        await token(),
-        {
-          url: l.url,
-          normalizedUrl: bookmarkKey(l.url),
-          title: l.title || hostOf(l.url),
-          context: my.context[l.url] ?? '',
-          tags: cat ? [{ id: cat.id, label: cat.label, color: cat.color, level: 'category' }] : [],
-          departmentId: shareDept[l.url] || null,
-        },
-        circleId,
-      )
-      markShared(l.url)
-      shared.refresh()
-      toast('Shared to the group')
-    } catch (e) {
-      toast(
-        isNotMemberError(e)
-          ? "You're not a member of this circle"
-          : 'Could not share — try again',
-      )
-    } finally {
-      setSharingUrl(null)
-    }
-  }
-
-  // Sync = import a browser-exported bookmarks.html, add only the NEW links
-  // (not already in your local collection) so they float to the top, highlighted.
-  const handleSyncFile = async (file: File) => {
-    const parsed = parseBookmarksHtml(await file.text())
-    const existing = new Set(my.added.map((b) => b.url))
-    const fresh = parsed.filter((p) => !existing.has(p.url))
-    if (!fresh.length) {
-      toast('No new bookmarks to sync')
-      return
-    }
-    // Add oldest-first so the file order ends up top-down (addBookmark prepends).
-    for (let i = fresh.length - 1; i >= 0; i--) {
-      const p = fresh[i]
-      const host = hostOf(p.url)
-      const topicId = suggestCategory('', p.url)
-      const { categoryId, nicheId } = classify(p.url, topicId)
-      addBookmark({ title: p.title || host, url: p.url, host, topicId, categoryId, nicheId, teamId: teamFor(p.url) })
-    }
-    setPath([])
-    toast(`Synced ${fresh.length} new bookmark${fresh.length === 1 ? '' : 's'}`)
-  }
-
-  if (selected) {
-    return <PostDetail item={selected} onBack={() => setSelected(null)} />
-  }
-
   return (
     <div className="content">
       <div className="kb">
+        {/* ── Library header: title · search · add ── */}
+        <header className="lib-head">
+          <h1 className="lib-head-title">My bookmarks</h1>
+          <div className="lib-head-right">
+            <div className="lib-search">
+              <Icon name="search" />
+              <input
+                className="lib-search-input"
+                placeholder="Search bookmarks…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
+            <button className="btn btn--accent btn--sm" onClick={() => setAdding((v) => !v)}>
+              <Icon name="plus" /> Add bookmark
+            </button>
+          </div>
+        </header>
+
         {/* ── Breadcrumb-driven folder navigation (always present) ── */}
         <nav className="fab-crumbs" aria-label="Breadcrumb" ref={crumbsRef}>
           {[{ label: 'My bookmarks', c: 0 }, ...path.map((seg, i) => ({ label: seg, c: i + 1 }))].map(
@@ -297,37 +210,6 @@ export function Bookmarks() {
           )}
         </nav>
 
-        {/* ── Toolbar ── */}
-        <div className="fab-bar">
-          <div className="bk2-search">
-            <Icon name="search" />
-            <input
-              className="bk2-search-input"
-              placeholder="Search all my bookmarks…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <ViewToggle view={view} onChange={setView} />
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".html,text/html"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleSyncFile(f)
-              e.target.value = ''
-            }}
-          />
-          <button className="kb-add-btn" onClick={() => fileRef.current?.click()} title="Import your browser bookmarks (exported .html)">
-            <Icon name="download" /> Sync
-          </button>
-          <button className="kb-add-btn" onClick={() => setAdding((v) => !v)}>
-            <Icon name="plus" /> Add bookmark
-          </button>
-        </div>
-
         <div className="bk-filter-row">
           <TopicFilter value={topicFilter} options={CATEGORIES} onChange={setTopicFilter} />
         </div>
@@ -337,19 +219,20 @@ export function Bookmarks() {
         {/* ── Feed: resource title → who shares it + context → actions ── */}
         <div className="kb-resources">
           {links.length ? (
-            <div className={`kb-feed ${view === 'grid' ? 'kb-grid4' : 'kb-list'}`}>
+            <div className="kb-feed lib-grid">
               {links.map((l) => {
                 const host = hostOf(l.url)
-                const sharers = sharersByUrl[bookmarkKey(l.url)] ?? []
+                const liked = likedBy(l.url)
                 const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
+                const topicLabel = CATEGORY_MAP[ctxId]?.label
                 const isLiked = likes.has(l.url)
-                const likeCount = isLiked ? 1 : 0
-                const isShared = my.shared[l.url] || sharedUrls.has(bookmarkKey(l.url))
-                const isSharing = sharingUrl === l.url
+                const likeCount = liked.total + (isLiked ? 1 : 0)
                 const abs = l.url.startsWith('http') ? l.url : `https://${l.url}`
+                const keepers = liked.people.slice(0, 3).map((p) => ({ name: p.name, grad: p.grad }))
+                const shown = keepers.length ? keepers : [{ name: 'You', grad: 0 }]
                 return (
                   <div
-                    className="bk-card bk-card--xl"
+                    className="lib-card"
                     key={l.url}
                     role="button"
                     tabIndex={0}
@@ -359,13 +242,23 @@ export function Bookmarks() {
                     }}
                   >
                     <BkShot url={abs} host={host} />
-                    <div className="bk-body">
-                      <div className="bk-title">{l.title}</div>
-                      <div className="bk-meta" onClick={(e) => e.stopPropagation()}>
-                        <TopicSelect value={ctxId} onChange={(id) => setTopic(l.url, id)} />
+                    <div className="lib-foot">
+                      <div className="lib-card-title">{l.title}</div>
+                      <div className="lib-card-meta">
+                        <span className="lib-card-avs">
+                          {shown.map((p, i) => (
+                            <span key={i} className="lib-card-av" style={{ background: avGrad(p.grad) }}>
+                              {initials(p.name)}
+                            </span>
+                          ))}
+                        </span>
+                        <span className="lib-card-sub mono">
+                          {host}
+                          {topicLabel ? ` · ${topicLabel}` : ''}
+                        </span>
                         <button
                           type="button"
-                          className={`bk-like${isLiked ? ' on' : ''}`}
+                          className={`lib-card-like btn-vote btn-vote--sm${isLiked ? ' on' : ''}`}
                           aria-pressed={isLiked}
                           aria-label="Like"
                           onClick={(e) => {
@@ -374,71 +267,9 @@ export function Bookmarks() {
                           }}
                         >
                           <Icon name="thumbup" />
-                          <span className="tnum">{likeCount}</span>
+                          <span className="btn-vote-sep" />
+                          <span className="btn-vote-n">{likeCount}</span>
                         </button>
-                      </div>
-                      {sharers.length ? (
-                        <div className="bk-sharers" onClick={(e) => e.stopPropagation()}>
-                          <span className="bk-sharers-avs">
-                            {sharers.slice(0, 5).map((p) => (
-                              <span
-                                key={p.wallet}
-                                className="bk-sharer-av"
-                                title={p.displayName}
-                                style={{ background: avGrad(p.avatarSeed) }}
-                              />
-                            ))}
-                          </span>
-                          <span className="bk-sharers-label">
-                            Shared by {sharers.length} in the circle
-                          </span>
-                        </div>
-                      ) : null}
-                      <div className="bk-share-row" onClick={(e) => e.stopPropagation()}>
-                        {isShared ? (
-                          <>
-                            <span className="bk-share-badge">
-                              <Icon name="check" /> Shared
-                            </span>
-                            {sharedByKey.get(bookmarkKey(l.url)) ? (
-                              <TagEditor
-                                bookmark={sharedByKey.get(bookmarkKey(l.url))!}
-                                onSaved={shared.refresh}
-                              />
-                            ) : null}
-                          </>
-                        ) : (
-                          <>
-                            {departments.length ? (
-                              <select
-                                className="bk-share-team"
-                                value={shareDept[l.url] ?? ''}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) =>
-                                  setShareDept((s) => ({ ...s, [l.url]: e.target.value }))
-                                }
-                              >
-                                <option value="">No team</option>
-                                {departments.map((d) => (
-                                  <option key={d.id} value={d.id}>
-                                    {d.name}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : null}
-                            <button
-                              type="button"
-                              className="bk-share-btn"
-                              disabled={isSharing}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void shareBookmark(l)
-                              }}
-                            >
-                              <Icon name="send" /> {isSharing ? 'Sharing…' : 'Share'}
-                            </button>
-                          </>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -454,44 +285,8 @@ export function Bookmarks() {
           <p className="bk2-count mono">Showing {links.length} of {totalHere}</p>
         ) : null}
       </div>
-    </div>
-  )
-}
 
-/* ── Grid / list view toggle ───────────────────────────────────────────── */
-function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode) => void }) {
-  return (
-    <div className="bk-viewtoggle" role="group" aria-label="View">
-      <button
-        type="button"
-        className={`bk-view${view === 'grid' ? ' on' : ''}`}
-        aria-pressed={view === 'grid'}
-        aria-label="Grid view"
-        onClick={() => onChange('grid')}
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <rect x="3" y="3" width="8" height="8" rx="1.5" />
-          <rect x="13" y="3" width="8" height="8" rx="1.5" />
-          <rect x="3" y="13" width="8" height="8" rx="1.5" />
-          <rect x="13" y="13" width="8" height="8" rx="1.5" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        className={`bk-view${view === 'list' ? ' on' : ''}`}
-        aria-pressed={view === 'list'}
-        aria-label="List view"
-        onClick={() => onChange('list')}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="8" y1="6" x2="21" y2="6" />
-          <line x1="8" y1="12" x2="21" y2="12" />
-          <line x1="8" y1="18" x2="21" y2="18" />
-          <circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none" />
-        </svg>
-      </button>
+      {selected ? <PostDetail item={selected} onBack={() => setSelected(null)} /> : null}
     </div>
   )
 }
@@ -597,8 +392,8 @@ function AddForm({
         rows={2}
       />
       <div className="kb-addactions">
-        <button className="ex-back" onClick={onCancel}>Cancel</button>
-        <button className="kb-add-btn kb-add-btn--primary" onClick={() => onSubmit(url, title, why)}>
+        <button className="btn btn--quiet btn--sm" onClick={onCancel}>Cancel</button>
+        <button className="btn btn--accent btn--sm" onClick={() => onSubmit(url, title, why)}>
           Add to my bookmarks
         </button>
       </div>

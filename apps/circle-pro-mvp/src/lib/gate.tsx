@@ -87,7 +87,7 @@ export function Locked({ label, reason, minH, children }: LockedProps) {
           </span>
           <span className="lk-label">{label || 'Members-only view'}</span>
           <button
-            className="btn btn-accent btn-sm"
+            className="btn btn--accent btn--sm"
             onClick={() => requireJoin(reason || label || 'unlock this')}
           >
             Join to unlock

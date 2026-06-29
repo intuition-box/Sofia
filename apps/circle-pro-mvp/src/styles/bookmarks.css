@@ -264,7 +264,7 @@
   transition: border-color var(--t-fast) var(--ease);
 }
 .bk-filter-trigger:hover {
-  border-color: var(--ds-accent);
+  border-color: var(--border-strong);
 }
 .bk-filter-lab {
   font-size: 10px;
@@ -451,33 +451,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.bk-like {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: none;
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 10px;
-  border-radius: var(--r-pill);
-  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
-}
-.bk-like:hover {
-  color: var(--ds-ink);
-  border-color: var(--ds-accent);
-}
-.bk-like.on {
-  color: var(--ds-accent);
-  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--border-strong));
-  background: var(--ds-accent-soft);
-}
-.bk-like .ic svg {
-  width: 14px;
-  height: 14px;
 }
 /* Right column of a row: the like, with the service(s) that keep it underneath. */
 .bk-likes {
@@ -801,30 +774,9 @@
 }
 
 /* ── Curation: add button, add form, drag grip, my context ─── */
+/* layout only — appearance from .btn--accent */
 .kb-add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 13px;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--ds-ink);
-  font-size: 12.5px;
-  font-weight: 600;
   white-space: nowrap;
-}
-.kb-add-btn:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 50%, var(--border-strong));
-}
-.kb-add-btn .ic svg {
-  width: 14px;
-  height: 14px;
-}
-.kb-add-btn--primary {
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  border-color: transparent;
 }
 .kb-addform {
   display: flex;
@@ -951,4 +903,159 @@
 .fab-crumb--folder .ic svg {
   width: 18px;
   height: 18px;
+}
+
+/* ── Library-style page (header · 3-col card grid) ──────────────────────────
+   Bookmarks rebuilt on the Library reference: title + search + add header, a
+   grid of preview cards (screenshot inset, bold title, avatar + host meta). */
+.lib-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.lib-head-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(22px, 2.4vw, 28px);
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.lib-head-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lib-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: min(320px, 42vw);
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ds-muted);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.lib-search:focus-within {
+  border-color: var(--ds-accent);
+}
+.lib-search .ic svg {
+  width: 16px;
+  height: 16px;
+}
+.lib-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--ds-ink);
+}
+.lib-search-input::placeholder {
+  color: var(--ds-muted);
+}
+
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 960px) {
+  .lib-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 620px) {
+  .lib-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.lib-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.4);
+}
+/* Preview = the bookmark screenshot, inset and fully rounded (vs the old
+   edge-to-edge top shot). */
+.lib-card .bk-shot {
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: var(--surface-2);
+}
+.lib-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 0 3px 3px;
+}
+.lib-card-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lib-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lib-card-avs {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+.lib-card-av {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  color: #fff;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 8.5px;
+}
+.lib-card-av + .lib-card-av {
+  margin-left: -6px;
+}
+.lib-card-sub {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lib-card-like {
+  flex: 0 0 auto;
+  margin-left: auto;
 }

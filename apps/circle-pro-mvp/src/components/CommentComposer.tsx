@@ -170,7 +170,7 @@ export function CommentComposer({ onSend, avatarSeed = 0, you = 'YO' }: CommentC
         >
           GIF
         </button>
-        <button type="button" className="cc-send" onClick={submitText}>
+        <button type="button" className="btn btn--accent btn--sm cc-send" onClick={submitText}>
           Send
         </button>
       </div>

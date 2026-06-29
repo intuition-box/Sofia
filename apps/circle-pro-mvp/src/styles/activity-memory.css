@@ -103,20 +103,20 @@
 .sk-create-input:focus {
   border-color: var(--ds-accent);
 }
-.skcard-top {
+/* Favicons of the tools this skill leans on, on the skill card. */
+.skcard-tools {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 7px;
 }
-.sk-theme {
-  font-size: 10.5px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-.sk-meta {
-  font-size: 11px;
-  color: var(--ds-muted-soft);
+.skcard-tool {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 3px;
+  object-fit: contain;
 }
 .skill-post {
   display: flex;
@@ -414,21 +414,24 @@
   font-weight: 600;
   color: var(--ds-ink);
 }
+/* Close button — the Button Package icon look (black on hover). */
 .skv-icon {
   margin-left: auto;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 9px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--btn-border);
   background: transparent;
   color: var(--ds-muted);
   cursor: pointer;
+  transition: background 0.14s var(--ease), color 0.14s var(--ease), border-color 0.14s var(--ease);
 }
 .skv-icon:hover {
-  background: var(--surface-2);
-  color: var(--ds-ink);
+  background: var(--btn-noir);
+  color: #fff;
+  border-color: var(--btn-noir);
 }
 .skv-icon .ic svg {
   width: 16px;
@@ -471,38 +474,13 @@
   display: flex;
   gap: 8px;
 }
-.skv-act {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 13px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border-strong);
-  background: var(--surface-2);
-  color: var(--ds-ink);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.skv-act:hover {
-  background: var(--surface-3);
-}
-.skv-act.on {
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-  color: #0c0b14;
-}
-.skv-act .ic svg {
-  width: 14px;
-  height: 14px;
-}
 .skv-title {
   margin: 0 0 12px;
   font-family: var(--display);
   font-weight: 600;
-  font-size: clamp(26px, 3vw, 36px);
-  line-height: 1.06;
-  letter-spacing: -0.01em;
+  font-size: clamp(30px, 3.4vw, 42px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .skv-desc {
@@ -859,18 +837,6 @@
 .mem-grid.mem-grid--compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.view-all-btn {
-  border: none;
-  background: none;
-  color: var(--ds-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color var(--t-fast) var(--ease);
-}
-.view-all-btn:hover {
-  color: var(--ds-ink);
-}
 .mem-viewall {
   margin-left: auto;
 }
@@ -909,7 +875,8 @@
   margin: 0;
   font-family: var(--display);
   font-weight: 600;
-  font-size: 18px;
+  font-size: 21px;
+  letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .va-head .skv-icon {
@@ -959,13 +926,13 @@
   border-bottom: 1px solid var(--border);
 }
 .tv-tab {
-  padding: 9px 14px;
+  padding: 10px 16px;
   border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   background: none;
   color: var(--ds-muted);
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1022,6 +989,7 @@
 }
 
 /* Create-new skill card — empty dashed square, first in the grid. */
+/* Create cards — the Button Package +Add look (dashed → peach fill on hover). */
 .skcard--create,
 .memcard--create,
 .tg-card--create {
@@ -1029,22 +997,30 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 110px;
   padding: 20px;
-  border: 1px dashed var(--border-strong);
+  border: 1.5px dashed var(--btn-dash);
   border-radius: var(--r-md);
-  background: transparent;
+  background: var(--surface);
   color: var(--ds-muted);
   cursor: pointer;
   text-align: center;
-  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
 .skcard--create:hover,
 .memcard--create:hover,
 .tg-card--create:hover {
-  border-color: var(--ds-ink);
-  color: var(--ds-ink);
+  background: var(--btn-peach);
+  border-color: var(--btn-peach);
+  border-style: solid;
+  color: var(--btn-noir);
+}
+.skcard--create:hover .skcard-create-label,
+.memcard--create:hover .skcard-create-label,
+.tg-card--create:hover .skcard-create-label {
+  color: var(--btn-noir);
 }
 .skcard-create-plus {
   font-family: var(--display);
@@ -1053,9 +1029,9 @@
   line-height: 1;
 }
 .skcard-create-label {
-  font-family: var(--display);
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--ds-font-sans);
+  font-size: 16.5px;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--ds-ink);
 }
@@ -1116,174 +1092,6 @@
   .tg-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-.tg-card {
-  display: flex;
-  gap: 14px;
-  padding: 16px 17px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
-}
-.tg-card:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
-}
-.tg-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-.tg-card-head {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 10px;
-}
-.tg-icon {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--surface-2);
-  overflow: hidden;
-  flex: none;
-}
-.tg-icon-glyph {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--c);
-}
-.tg-icon-fav {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 20px;
-  height: 20px;
-}
-.tg-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ds-ink);
-}
-.tg-desc {
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ds-muted);
-  margin-bottom: 13px;
-  min-height: 36px;
-}
-.tg-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
-.tg-foot-lab {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-  flex: none;
-}
-.tg-used {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.tg-used-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  background: var(--surface-3);
-  font-size: 11px;
-  color: var(--ds-ink);
-}
-.tg-used-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-.tg-vote {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  width: 46px;
-  flex: none;
-  align-self: flex-start;
-  padding: 9px 0;
-  border-radius: 10px;
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--ds-muted);
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
-}
-.tg-vote:hover {
-  border-color: var(--ds-accent);
-}
-.tg-vote-arrow {
-  font-size: 11px;
-  line-height: 1;
-}
-.tg-vote-count {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--ds-ink);
-}
-.tg-vote.on {
-  border-color: var(--ds-accent);
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-}
-.tg-vote.on .tg-vote-count {
-  color: var(--ds-on-accent);
-}
-.tg-card--add {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px 12px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 14px;
-  background: transparent;
-  color: var(--ds-muted);
-  cursor: pointer;
-}
-.tg-card--add:hover {
-  border-color: var(--ds-ink);
-  color: var(--ds-ink);
-}
-.tg-add-ic {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px dashed var(--border-strong);
-  font-size: 20px;
-}
-.tg-add-label {
-  font-size: 12px;
-  font-weight: 600;
 }
 .skv-rail {
   width: 380px;
@@ -1393,19 +1201,9 @@
   background: var(--surface-3);
   color: var(--ds-ink);
 }
+/* layout only — appearance from .btn--accent */
 .cc-send {
   flex: none;
-  padding: 7px 14px;
-  border: none;
-  border-radius: 8px;
-  background: var(--ds-accent);
-  color: #0c0b14;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.cc-send:hover {
-  filter: brightness(1.05);
 }
 .cc-pop {
   position: absolute;
@@ -1552,36 +1350,6 @@
 }
 
 /* Vote control (URLs + tools), like the explorer's upvote. */
-.vote-btn {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 4px 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
-}
-.vote-btn svg {
-  width: 14px;
-  height: 14px;
-}
-.vote-btn:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-ink);
-}
-.vote-btn.on {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
-  background: var(--ds-accent-soft);
-}
 .tv-feat-vote {
   align-self: flex-start;
   margin-top: 8px;
@@ -1768,9 +1536,9 @@ button.sk-tool-chip {
 }
 .skcard {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   background: var(--surface);
@@ -1781,8 +1549,61 @@ button.sk-tool-chip {
   transition: border-color 0.14s, transform 0.14s;
 }
 .skcard:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--border));
+  border-color: var(--border-strong);
   transform: translateY(-1px);
+}
+.skcard-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 14px 16px;
+}
+/* Descriptor slot — domain tag (skill) or description text (tool). */
+.skcard-sub {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ds-muted);
+}
+/* Attached full-height vote segment on the right (square), like the tool packages. */
+.skcard-vote {
+  flex: 0 0 auto;
+  align-self: stretch;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.14s var(--ease), color 0.14s var(--ease), border-color 0.14s var(--ease);
+}
+.skcard-vote svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+}
+.skcard-vote:hover {
+  background: var(--surface-2);
+  color: var(--ds-ink);
+}
+.skcard-vote.on {
+  background: var(--btn-peach);
+  border-left-color: var(--btn-peach);
+  color: var(--btn-noir);
+}
+.skcard-vote.on svg {
+  fill: currentColor;
 }
 .skcard-head {
   display: flex;
@@ -2015,8 +1836,7 @@ button.sk-tool-chip {
 /* ── Memory ────────────────────────────────────────────────── */
 /* role-scoped variant: a team's own memory, rendered inside the Roles tab */
 .mem-team {
-  margin-top: 22px;
-  padding-top: 22px;
+  margin-top: 0;
 }
 .mem-team-sub {
   display: inline-flex;
@@ -2032,10 +1852,9 @@ button.sk-tool-chip {
   background: var(--c);
   flex-shrink: 0;
 }
-/* role-scoped activity, rendered inside the Roles tab */
+/* role-scoped activity, rendered inside its own tab */
 .act-team {
-  margin-top: 22px;
-  padding-top: 22px;
+  margin-top: 0;
 }
 .mem-empty {
   padding: 26px 20px;
@@ -2626,27 +2445,6 @@ button.sk-tool-chip {
   width: 13px;
   height: 13px;
 }
-.mv-res-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--ds-muted);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.mv-res-add:hover {
-  border-color: var(--ds-muted);
-  color: var(--ds-ink);
-}
-.mv-res-add .ic svg {
-  width: 14px;
-  height: 14px;
-}
 
 /* add-resource flow: paste a link · or pick from bookmarks */
 .mv-add {
@@ -2688,20 +2486,6 @@ button.sk-tool-chip {
 .mv-add-input::placeholder {
   color: var(--ds-muted);
 }
-.mv-add-go {
-  flex: none;
-  border: none;
-  padding: 6px 14px;
-  border-radius: var(--r-sm);
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-.mv-add-go:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 .mv-add-or {
   display: flex;
   align-items: center;
@@ -2741,30 +2525,6 @@ button.sk-tool-chip {
 }
 
 /* ── travel timeline ── */
-.mv-vote {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-pill);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--ds-ink);
-  background: transparent;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
-    border-color var(--t-fast) var(--ease);
-}
-.mv-vote:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
-}
-.mv-vote.on {
-  color: var(--ds-on-accent);
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-}
 .mv-tl {
   position: relative;
   padding-left: 22px;
