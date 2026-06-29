@@ -59,6 +59,26 @@ skills.post('/circles/:circleId/skills', authMiddleware, async (c) => {
   return c.json({ skill }, 201)
 })
 
+/** GET /circles/:circleId/tools?departmentId= → all tools across the team's
+ *  skills, deduped by name with a usage count. Public read. */
+skills.get('/circles/:circleId/tools', optionalAuthMiddleware, async (c) => {
+  const circleId = c.req.param('circleId')
+  const departmentId = c.req.query('departmentId') || undefined
+  const rows = await prisma.skillTool.findMany({
+    where: { skill: { circleId, ...(departmentId ? { departmentId } : {}) } },
+    include: { skill: { select: { name: true } } },
+  })
+  const byName = new Map<string, { name: string; host: string | null; count: number; skills: string[] }>()
+  for (const t of rows) {
+    const cur = byName.get(t.name) ?? { name: t.name, host: t.host, count: 0, skills: [] }
+    cur.count++
+    cur.skills.push(t.skill.name)
+    if (!cur.host && t.host) cur.host = t.host
+    byName.set(t.name, cur)
+  }
+  return c.json({ tools: [...byName.values()].sort((a, b) => b.count - a.count) })
+})
+
 // ── Skill detail + contributions ──
 
 /** GET /skills/:skillId → URLs (with vote counts + votedByMe) + tools. Public. */

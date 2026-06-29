@@ -98,6 +98,32 @@ model SkillTool {
   @@index([skillId])
 }
 
+/// The team's collective memory (the mock's Memory): decisions, threads, docs,
+/// signals the team records so they can recall "what did we decide about X?"
+/// instead of relitigating it. Anyone in the circle creates one. Team-scoped.
+enum MemoryKind {
+  DOC
+  THREAD
+  DECISION
+  SIGNAL
+}
+
+model Memory {
+  id           String     @id @default(cuid())
+  circleId     String
+  departmentId String?
+  authorWallet String
+  kind         MemoryKind @default(DOC)
+  title        String
+  body         String?
+  url          String?
+  /// Optional taxonomy topic id.
+  topic        String?
+  createdAt    DateTime   @default(now())
+
+  @@index([circleId, departmentId])
+}
+
 /// A team (department) inside a workspace — a user-created category to organise
 /// the circle (e.g. Engineering, Design). Scoped to its circle; names unique per
 /// circle. Bookmarks can later be filed under a department.

@@ -130,6 +130,45 @@ describe('skills (collaborative containers)', () => {
     expect((await post(`/circles/${circleId}/skills`, w, { name: '' })).status).toBe(400)
     expect((await post(`/skills/does-not-exist/urls`, w, { url: 'https://x' })).status).toBe(404)
   })
+
+  test('team tools = all tools across the team skills (deduped + counted)', async () => {
+    const w = wallet()
+    const circleId = cid()
+    const a = await post(`/circles/${circleId}/skills`, w, { name: 'A' }).then((r) => r.json())
+    const b = await post(`/circles/${circleId}/skills`, w, { name: 'B' }).then((r) => r.json())
+    await post(`/skills/${a.skill.id}/tools`, w, { name: 'Figma' })
+    await post(`/skills/${b.skill.id}/tools`, w, { name: 'Figma' })
+    const { tools } = await get(`/circles/${circleId}/tools`).then((r) => r.json())
+    const figma = tools.find((t: any) => t.name === 'Figma')
+    expect(figma.count).toBe(2)
+  })
+})
+
+describe('memory', () => {
+  test('record + list + filter by kind; author-only delete; title required', async () => {
+    const w = wallet()
+    const circleId = cid()
+    const r = await post(`/circles/${circleId}/memory`, w, {
+      kind: 'DECISION',
+      title: 'Chose Postgres',
+      body: 'over Mongo',
+    }).then((res) => res.json())
+    expect(r.memory.kind).toBe('DECISION')
+    const id = r.memory.id
+
+    const { memory } = await get(`/circles/${circleId}/memory`).then((res) => res.json())
+    expect(memory.some((m: any) => m.id === id)).toBe(true)
+
+    // kind filter excludes it (it's a DECISION, not a DOC)
+    const { memory: docs } = await get(`/circles/${circleId}/memory?kind=DOC`).then((res) => res.json())
+    expect(docs.some((m: any) => m.id === id)).toBe(false)
+
+    expect((await post(`/circles/${circleId}/memory`, w, { title: '' })).status).toBe(400)
+
+    const other = wallet()
+    expect((await del(`/memory/${id}`, other)).status).toBe(403)
+    expect((await del(`/memory/${id}`, w)).status).toBe(200)
+  })
 })
 
 describe('activity', () => {

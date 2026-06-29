@@ -258,6 +258,63 @@ export const addSkillTool = (token: string, skillId: string, body: { name: strin
     body: JSON.stringify(body),
   }).then((r) => r.tool)
 
+export interface TeamTool {
+  name: string
+  host: string | null
+  count: number
+  skills: string[]
+}
+
+/** All tools across a team's skills (deduped, with usage count). Public read. */
+export const getTeamTools = (token: string | null, circleId: string, departmentId?: string) =>
+  api<{ tools: TeamTool[] }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/tools${departmentId ? `?departmentId=${encodeURIComponent(departmentId)}` : ''}`,
+  ).then((r) => r.tools)
+
+// ── Memory (collective context) ──
+
+export type MemoryKind = 'DOC' | 'THREAD' | 'DECISION' | 'SIGNAL'
+
+export interface MemoryRecord {
+  id: string
+  circleId: string
+  departmentId: string | null
+  authorWallet: string
+  kind: MemoryKind
+  title: string
+  body: string | null
+  url: string | null
+  topic: string | null
+  createdAt: string
+}
+
+/** The team's memory records (newest first). Public read. */
+export const getMemory = (
+  token: string | null,
+  circleId: string,
+  opts?: { departmentId?: string; kind?: MemoryKind },
+) =>
+  api<{ memory: MemoryRecord[] }>(
+    token,
+    `/circles/${encodeURIComponent(circleId)}/memory?${opts?.departmentId ? `departmentId=${encodeURIComponent(opts.departmentId)}&` : ''}${opts?.kind ? `kind=${opts.kind}` : ''}`,
+  ).then((r) => r.memory)
+
+/** Record a memory (members-only). */
+export const createMemory = (
+  token: string,
+  circleId: string,
+  body: { kind: MemoryKind; title: string; body?: string; url?: string; departmentId?: string },
+) =>
+  api<{ memory: MemoryRecord }>(token, `/circles/${encodeURIComponent(circleId)}/memory`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.memory)
+
+/** Delete a memory record (author-only). */
+export const deleteMemory = (token: string, id: string) =>
+  api<{ ok: boolean }>(token, `/memory/${encodeURIComponent(id)}`, { method: 'DELETE' })
+
 /** Teams (departments) of a circle. Public read. */
 export const getDepartments = (token: string | null, circleId: string = CIRCLE_ID) =>
   api<{ departments: PublicDepartment[] }>(

@@ -2928,3 +2928,57 @@ button.sk-tool-chip {
   color: var(--ds-muted);
   flex: none;
 }
+
+/* ── Real Memory panel ─────────────────────────────────────── */
+.mem-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.mem-ask {
+  flex: 1; height: 38px; padding: 0 14px;
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 999px;
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink); font-size: 14px; outline: none;
+}
+.mem-ask:focus { border-color: var(--ds-accent, #ffc6b0); }
+.mem-filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.mem-fil {
+  padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: 13px;
+  border: 1px solid var(--ds-border, var(--border)); background: transparent; color: var(--ds-muted, #8f8ca8);
+}
+.mem-fil.on { color: var(--ds-ink); border-color: var(--ds-accent, #ffc6b0); }
+.mem-form {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; padding: 14px;
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 12px; background: var(--ds-card, var(--surface));
+}
+.mem-form-row { display: flex; gap: 8px; }
+.mem-kind, .mem-title, .mem-url, .mem-body {
+  border: 1px solid var(--ds-border, var(--border)); border-radius: 8px;
+  background: var(--ds-bg, var(--surface)); color: var(--ds-ink); font-size: 14px; outline: none; padding: 8px 10px;
+}
+.mem-kind { flex: none; }
+.mem-title { flex: 1; }
+.mem-body { resize: vertical; font-family: inherit; }
+.mem-save { align-self: flex-start; }
+.mem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.memcard {
+  display: flex; flex-direction: column; gap: 6px; padding: 14px;
+  border: 1px solid var(--ds-border, var(--border)); border-top: 3px solid var(--ds-muted, #8f8ca8);
+  border-radius: 12px; background: var(--ds-card, var(--surface));
+}
+.memcard-kind { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.memcard-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ds-ink); }
+.memcard-body { margin: 0; font-size: 13px; color: var(--ds-muted, #8f8ca8); line-height: 1.5; }
+.memcard-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ds-muted, #8f8ca8); margin-top: 4px; }
+.memcard-foot a { color: var(--ds-accent, #ffc6b0); }
+
+/* Real comment rows in the skill rail. */
+.skv-cmt { display: flex; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--ds-border, var(--border)); }
+.skv-cmt-av { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #0b0a12; }
+.skv-cmt-body { min-width: 0; }
+.skv-cmt-name { font-size: 13px; font-weight: 600; color: var(--ds-ink); }
+.skv-cmt-name .mono { color: var(--ds-muted, #8f8ca8); font-weight: 400; font-size: 11px; }
+.skv-cmt-text { margin: 2px 0 0; font-size: 13px; color: var(--ds-ink); line-height: 1.45; }
+
+/* Theme picker in the skill create row. */
+.sk-create-topic {
+  height: 36px; padding: 0 10px; border-radius: 8px;
+  border: 1px solid var(--ds-border, var(--border)); background: var(--ds-bg, var(--surface));
+  color: var(--ds-ink); font-size: 13px; outline: none;
+}

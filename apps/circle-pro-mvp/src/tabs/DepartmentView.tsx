@@ -1,16 +1,19 @@
 /**
  * DepartmentView — a team's detail page (the real version of the old mock
- * TeamView). Sub-tabs: Resources (the team's shared bookmarks), Skills + Tools
- * (DERIVED from those bookmarks' tags + hosts), Members (the circle members),
- * and Memory (a placeholder until that backend exists). All real except Memory.
+ * TeamView). Sub-tabs: Resources (the team's shared bookmarks), Skills (real
+ * collaborative containers), Tools (all tools across the team's skills), Members,
+ * and Memory (the team's collective context). All real.
  */
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Avatar } from '../components/primitives'
 import { hostOf } from '../data/helpers'
+import { useAuth } from '../hooks/useAuth'
+import { useCircle } from '../hooks/useCircle'
 import { useDepartmentBookmarks } from '../hooks/useDepartmentBookmarks'
 import { useCircleMembers } from '../hooks/useCircleMembers'
 import { SkillsPanel } from '../components/SkillsPanel'
-import type { PublicBookmark, PublicDepartment } from '../services/circleProApi'
+import { MemoryPanel } from '../components/MemoryPanel'
+import { getTeamTools, type PublicBookmark, type PublicDepartment, type TeamTool } from '../services/circleProApi'
 
 type View = 'resources' | 'skills' | 'tools' | 'members' | 'memory'
 const TABS: { id: View; label: string }[] = [
@@ -23,17 +26,43 @@ const TABS: { id: View; label: string }[] = [
 
 const shortWallet = (w: string) => `${w.slice(0, 6)}…${w.slice(-4)}`
 
-/** Count occurrences and return the most frequent first. */
-function rank<T>(rows: T[], key: (t: T) => { id: string; label: string; color?: string } | null) {
-  const m = new Map<string, { id: string; label: string; color?: string; count: number }>()
-  for (const r of rows) {
-    const k = key(r)
-    if (!k) continue
-    const cur = m.get(k.id) ?? { ...k, count: 0 }
-    cur.count++
-    m.set(k.id, cur)
+/** Tools tab — every tool the team attached to its skills (deduped + counted). */
+function TeamTools({ departmentId }: { departmentId: string }) {
+  const { authenticated, token } = useAuth()
+  const { circleId } = useCircle()
+  const [tools, setTools] = useState<TeamTool[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const t = authenticated ? await token() : null
+      setTools(await getTeamTools(t, circleId, departmentId))
+    } catch {
+      setTools([])
+    } finally {
+      setLoading(false)
+    }
+  }, [authenticated, token, circleId, departmentId])
+  useEffect(() => {
+    load()
+  }, [load])
+
+  if (loading) return <div className="tm-empty">Loading tools…</div>
+  if (!tools.length) {
+    return <div className="tm-empty">No tools yet — add tools inside the team's skills.</div>
   }
-  return [...m.values()].sort((a, b) => b.count - a.count)
+  return (
+    <div className="dv-chips">
+      {tools.map((t) => (
+        <span className="dv-tool" key={t.name} title={t.skills.join(', ')}>
+          <img src={`https://www.google.com/s2/favicons?domain=${t.host || hostOf(t.name) || t.name}&sz=64`} alt="" />
+          {t.name}
+          <b className="tnum">{t.count}</b>
+        </span>
+      ))}
+    </div>
+  )
 }
 
 function Resources({ items }: { items: PublicBookmark[] }) {
@@ -74,12 +103,6 @@ export function DepartmentView({
   const { items, loading } = useDepartmentBookmarks(department.id)
   const { members } = useCircleMembers()
 
-  // Tools = the team's most-used hosts (derived). Skills are real containers.
-  const tools = useMemo(
-    () => rank(items, (b) => { const h = hostOf(b.url); return h ? { id: h, label: h } : null }),
-    [items],
-  )
-
   return (
     <div className="content">
       <div className="dv">
@@ -100,24 +123,14 @@ export function DepartmentView({
 
         {view === 'skills' ? (
           <SkillsPanel departmentId={department.id} />
-        ) : loading && view !== 'members' && view !== 'memory' ? (
+        ) : view === 'tools' ? (
+          <TeamTools departmentId={department.id} />
+        ) : view === 'memory' ? (
+          <MemoryPanel departmentId={department.id} />
+        ) : loading && view !== 'members' ? (
           <div className="tm-empty">Loading…</div>
         ) : view === 'resources' ? (
           <Resources items={items} />
-        ) : view === 'tools' ? (
-          tools.length ? (
-            <div className="dv-chips">
-              {tools.map((t) => (
-                <span className="dv-tool" key={t.id}>
-                  <img src={`https://www.google.com/s2/favicons?domain=${t.id}&sz=64`} alt="" />
-                  {t.label}
-                  <b className="tnum">{t.count}</b>
-                </span>
-              ))}
-            </div>
-          ) : (
-            <div className="tm-empty">No tools yet — they emerge from the domains shared here.</div>
-          )
         ) : view === 'members' ? (
           members.length ? (
             <div className="dv-members">
@@ -132,9 +145,7 @@ export function DepartmentView({
           ) : (
             <div className="tm-empty">No members yet.</div>
           )
-        ) : (
-          <div className="tm-empty">Memory — a curated knowledge base for the team. Coming soon.</div>
-        )}
+        ) : null}
       </div>
     </div>
   )
