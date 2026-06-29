@@ -12,7 +12,7 @@ vote on debate claims, track streaks, and explore the entire Sofia taxonomy. We 
 redesigned the landing page from scratch and announced the upcoming Alpha Reward Program
 launching April 27.
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Sofia Explorer
 

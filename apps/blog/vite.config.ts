@@ -39,7 +39,7 @@ import path from 'node:path'
    produce a clean plain-text excerpt suitable for index cards. */
 function extractExcerptText(raw: string): string {
   const body = raw.replace(/^---[\s\S]*?---\s*/m, '')
-  const truncateIdx = body.search(/\{\s*\/\*\s*truncate\s*\*\/\s*\}/)
+  const truncateIdx = body.search(/\{\s*\/[*_]\s*truncate\s*[*_]\/\s*\}/)
   const head = truncateIdx >= 0 ? body.slice(0, truncateIdx) : body
   const firstPara = head
     .split(/\n\s*\n/)
@@ -83,7 +83,7 @@ function remarkStripTruncate() {
       if (
         child.type === 'paragraph' &&
         flatten(child)
-          .replace(/[{}\/*\s]/g, '')
+          .replace(/[{}\/*_\s]/g, '')
           .toLowerCase() === 'truncate'
       ) {
         return false

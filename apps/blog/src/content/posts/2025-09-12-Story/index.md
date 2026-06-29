@@ -18,7 +18,7 @@ After 30 minutes spent browsing meaningless ads, Instagram Reels, and random twe
 
 So we asked ourselves: why are algorithms optimized for retention, not relevance? Why can't our closest friends easily recommend what matters to us?
 
-{/_ truncate _/}
+{/* truncate */}
 
 ## Designing Sofia
 
