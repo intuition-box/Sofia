@@ -22,7 +22,13 @@ export interface AvailDotProps {
   title?: string
 }
 
-export function AvailDot({ avail, dotOnly, label, className, title }: AvailDotProps) {
+export function AvailDot({
+  avail,
+  dotOnly,
+  label,
+  className,
+  title,
+}: AvailDotProps) {
   const cls = `ds-avail ds-avail--${avail}${className ? ` ${className}` : ''}`
   return (
     <span className={cls} title={title ?? LABELS[avail]}>

@@ -50,7 +50,10 @@ function squarify(items: TreemapNode[], W: number, H: number): Rect[] {
   const worst = (r: Array<{ area: number }>, area: number, s: number) => {
     const max = Math.max(...r.map((it) => it.area))
     const min = Math.min(...r.map((it) => it.area))
-    return Math.max((s * s * max) / (area * area), (area * area) / (s * s * min))
+    return Math.max(
+      (s * s * max) / (area * area),
+      (area * area) / (s * s * min),
+    )
   }
   const flush = () => {
     const s = rowArea
@@ -172,11 +175,17 @@ export function Treemap({
     <div
       className={className ? `ds-tmap ${className}` : 'ds-tmap'}
       ref={wrapRef}
-      style={{ height }}>
+      style={{ height }}
+    >
       {rects.map((r) => {
         const big = r.w > 150 && r.h > 90
         const med = r.w > 96 && r.h > 56
-        const sz = Math.min(30, Math.sqrt(r.w * r.h) / 7, (r.w - 26) / 6.2, r.h / 3)
+        const sz = Math.min(
+          30,
+          Math.sqrt(r.w * r.h) / 7,
+          (r.w - 26) / 6.2,
+          r.h / 3,
+        )
         const labelSize = Math.max(13, Number.isFinite(sz) ? sz : 13)
         const dimmed = active != null && active !== r.id
         return (
@@ -190,9 +199,15 @@ export function Treemap({
               height: r.h,
               ['--ds-cell' as string]: r.color,
             }}
-            onClick={() => onSelect?.(r.id)}>
+            onClick={() => onSelect?.(r.id)}
+          >
             <div className="ds-tmap-cell-inner">
-              <div className="ds-tmap-meta" style={{ visibility: med && r.meta != null ? 'visible' : 'hidden' }}>
+              <div
+                className="ds-tmap-meta"
+                style={{
+                  visibility: med && r.meta != null ? 'visible' : 'hidden',
+                }}
+              >
                 <span className="dot" />
                 {r.meta}
               </div>
@@ -200,10 +215,14 @@ export function Treemap({
                 <div className="ds-tmap-label" style={{ fontSize: labelSize }}>
                   {r.label}
                 </div>
-                {big && sparkline ? <Sparkline seed={r.seed ?? r.value} /> : null}
+                {big && sparkline ? (
+                  <Sparkline seed={r.seed ?? r.value} />
+                ) : null}
               </div>
             </div>
-            {active === r.id ? <span className="ds-tmap-picked">{scopedLabel}</span> : null}
+            {active === r.id ? (
+              <span className="ds-tmap-picked">{scopedLabel}</span>
+            ) : null}
           </div>
         )
       })}

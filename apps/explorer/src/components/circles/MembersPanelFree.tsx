@@ -83,9 +83,7 @@ export default function MembersPanelFree({
     const q = query.trim().toLowerCase()
     if (!q) return ranked
     return ranked.filter((m) => {
-      const ens = m.walletAddress
-        ? getDisplay(m.walletAddress as Address)
-        : ''
+      const ens = m.walletAddress ? getDisplay(m.walletAddress as Address) : ''
       return (
         m.label.toLowerCase().includes(q) ||
         (ens ? ens.toLowerCase().includes(q) : false)
@@ -150,8 +148,7 @@ export default function MembersPanelFree({
               const shortAddr = m.walletAddress
                 ? shortAddress(m.walletAddress)
                 : ''
-              const displayName =
-                ens && ens !== shortAddr ? ens : m.label
+              const displayName = ens && ens !== shortAddr ? ens : m.label
               const count = activity.signalsForMember(m)
               const active = activity.isActive(m)
               const streakDays = streaks.streakForMember(m)
@@ -171,9 +168,7 @@ export default function MembersPanelFree({
                       <span
                         className="cf-mdot"
                         style={{
-                          background: active
-                            ? 'var(--trusted)'
-                            : 'var(--fun)',
+                          background: active ? 'var(--trusted)' : 'var(--fun)',
                         }}
                         aria-hidden="true"
                       />

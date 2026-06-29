@@ -150,10 +150,7 @@ export async function fetchUserAttributes(
   })
   const json = await res.json()
   const atoms: RawAtom[] = json?.data?.atoms ?? []
-  const triples: RawTriple[] = atoms.flatMap(
-    (a) => a?.as_subject_triples ?? [],
-  )
-
+  const triples: RawTriple[] = atoms.flatMap((a) => a?.as_subject_triples ?? [])
 
   // Dedupe by attribute id; an attribute endorsed twice keeps the higher count.
   const byId = new Map<string, UserAttribute>()

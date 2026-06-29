@@ -40,8 +40,7 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/notifications': {
     color: '#A8D8EA',
     title: 'Notifications',
-    subtitle:
-      'Join requests, approvals and role changes across your circles.',
+    subtitle: 'Join requests, approvals and role changes across your circles.',
     glow: 'rgba(168,216,234,0.4)',
   },
   '/profile': {

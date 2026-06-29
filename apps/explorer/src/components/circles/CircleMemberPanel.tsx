@@ -12,12 +12,28 @@ import type { CalendarCell } from '@0xsofia/design-system'
 import CircleTrustDelegate from './CircleTrustDelegate'
 import type { ExpertiseRow, MemberDomain } from '@/types/circlePro'
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
 const WEEKS = 18
 // Fixed reference date keeps cell labels deterministic across renders.
 const TODAY = new Date(2026, 5, 1)
 
-function buildCells(seed: number, score: number): { cells: CalendarCell[][]; total: number } {
+function buildCells(
+  seed: number,
+  score: number,
+): { cells: CalendarCell[][]; total: number } {
   let v = seed * 9301 + 49297
   const rand = () => {
     v = (v * 9301 + 49297) % 233280
@@ -40,14 +56,37 @@ function buildCells(seed: number, score: number): { cells: CalendarCell[][]; tot
       const dt = new Date(TODAY.getTime() - daysAgo * 86400000)
       const count = level === 0 ? 0 : level + Math.floor(rand() * 2)
       total += count
-      col.push({ level, count, label: `${MONTHS[dt.getMonth()]} ${dt.getDate()}` })
+      col.push({
+        level,
+        count,
+        label: `${MONTHS[dt.getMonth()]} ${dt.getDate()}`,
+      })
     }
     cells.push(col)
   }
   return { cells, total }
 }
 
-const MONTH_LABELS = ['Feb', '', '', 'Mar', '', '', '', 'Apr', '', '', '', 'May', '', '', '', 'Jun', '', '']
+const MONTH_LABELS = [
+  'Feb',
+  '',
+  '',
+  'Mar',
+  '',
+  '',
+  '',
+  'Apr',
+  '',
+  '',
+  '',
+  'May',
+  '',
+  '',
+  '',
+  'Jun',
+  '',
+  '',
+]
 
 interface CircleMemberPanelProps {
   row: ExpertiseRow
@@ -93,7 +132,13 @@ export default function CircleMemberPanel({
 
   const stats: Array<{ k: string; v: string | number; c?: string }> = [
     { k: 'Trust score', v: row.trustScore },
-    { k: inDomain ? `${domainLabel} expertise` : `${primary?.label ?? 'Top'} expertise`, v: level, c: accent },
+    {
+      k: inDomain
+        ? `${domainLabel} expertise`
+        : `${primary?.label ?? 'Top'} expertise`,
+      v: level,
+      c: accent,
+    },
     { k: 'TRUST staked', v: row.stake.toLocaleString('en-US') },
     { k: 'Peer-confirms', v: row.peers },
   ]
@@ -116,7 +161,10 @@ export default function CircleMemberPanel({
       <div className="lead-stats">
         {stats.map((s) => (
           <div className="lead-stat" key={s.k}>
-            <span className="lead-stat-v tnum" style={s.c ? { color: s.c } : undefined}>
+            <span
+              className="lead-stat-v tnum"
+              style={s.c ? { color: s.c } : undefined}
+            >
               {s.v}
             </span>
             <span className="lead-stat-k">{s.k}</span>

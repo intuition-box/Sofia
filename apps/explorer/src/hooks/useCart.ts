@@ -53,7 +53,12 @@ export interface CartItem {
    *   - 'create-skill'   → atomCreationService (mints skill/tool atom) +
    *                        createTriples ([you → is_skilled_in/uses → skill])
    *  Defaults to 'deposit' for back-compat with existing callers. */
-  kind?: 'deposit' | 'create-triple' | 'create-circle' | 'redeem' | 'create-skill'
+  kind?:
+    | 'deposit'
+    | 'create-triple'
+    | 'create-circle'
+    | 'redeem'
+    | 'create-skill'
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string

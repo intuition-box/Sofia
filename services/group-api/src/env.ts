@@ -11,7 +11,8 @@ function required(name: string): string {
 // error only when actually used, so `/health` + migrations work without them.
 function optional(name: string): string {
   const v = process.env[name]
-  if (!v) console.warn(`[group-api] ${name} not set — related features disabled`)
+  if (!v)
+    console.warn(`[group-api] ${name} not set — related features disabled`)
   return v ?? ''
 }
 
@@ -35,7 +36,8 @@ export const env = {
   privyAppSecret: optional('PRIVY_APP_SECRET'),
   ablyApiKey: optional('ABLY_API_KEY'),
   indexerUrl:
-    process.env.INTUITION_GRAPHQL_URL ?? 'https://mainnet.intuition.sh/v1/graphql',
+    process.env.INTUITION_GRAPHQL_URL ??
+    'https://mainnet.intuition.sh/v1/graphql',
   // When set (dev only), enables `/dev/seed-owner` + header-based wallet
   // impersonation (`x-dev-token` + `x-dev-wallet`) so the whole API is
   // curl-testable without Privy. Force-empty in production — the backdoor can

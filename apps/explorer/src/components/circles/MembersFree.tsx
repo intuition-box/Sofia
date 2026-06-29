@@ -89,7 +89,11 @@ export default function MembersFree({
       </div>
 
       <div className="cf-module-foot">
-        <button type="button" className="cf-btn cf-btn-ghost" onClick={onViewAll}>
+        <button
+          type="button"
+          className="cf-btn cf-btn-ghost"
+          onClick={onViewAll}
+        >
           View all {totalMembers} members
           <ArrowRight className="cf-btn-icon" aria-hidden="true" />
         </button>

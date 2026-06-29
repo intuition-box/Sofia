@@ -150,7 +150,9 @@ describe('ensService.getAvatarUrl', () => {
     // The exact invariant MemberAvatar relies on: the same wallet renders an
     // identical avatar everywhere, regardless of the casing the call site uses.
     const lower = getAvatarUrl('0x5555555555555555555555555555555555555555')
-    const upper = getAvatarUrl('0x5555555555555555555555555555555555555555'.toUpperCase())
+    const upper = getAvatarUrl(
+      '0x5555555555555555555555555555555555555555'.toUpperCase(),
+    )
     expect(lower).toBe(upper)
   })
 

@@ -54,7 +54,13 @@ members.post('/groups/:groupTermId/members/:wallet/role', async (c) => {
   const updated = await prisma.membership.upsert({
     where: { wallet_groupTermId: { wallet: target, groupTermId } },
     update: { role, status: 'ACTIVE' },
-    create: { wallet: target, groupTermId, role, status: 'ACTIVE', approvedAt: new Date() },
+    create: {
+      wallet: target,
+      groupTermId,
+      role,
+      status: 'ACTIVE',
+      approvedAt: new Date(),
+    },
   })
   await prisma.event.create({
     data: {
@@ -95,7 +101,13 @@ members.delete('/groups/:groupTermId/members/:wallet', async (c) => {
   const updated = await prisma.membership.upsert({
     where: { wallet_groupTermId: { wallet: target, groupTermId } },
     update: { status: 'BANNED', bannedBy: caller },
-    create: { wallet: target, groupTermId, role: 'MEMBER', status: 'BANNED', bannedBy: caller },
+    create: {
+      wallet: target,
+      groupTermId,
+      role: 'MEMBER',
+      status: 'BANNED',
+      bannedBy: caller,
+    },
   })
   await prisma.event.create({
     data: {

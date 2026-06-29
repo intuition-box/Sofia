@@ -48,7 +48,10 @@ export default function ExploreHome({
     <div className="hm-home">
       {/* Search sits above the blocks (Reddit /explore style). */}
       <div className="hm-search hm-search--top">
-        <MagnifierIcon className="hm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+        <MagnifierIcon
+          className="hm-search-icon h-3.5 w-3.5"
+          aria-hidden="true"
+        />
         <input
           type="search"
           className="hm-search-input"

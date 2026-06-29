@@ -1,10 +1,7 @@
 # On-chain platform catalog — platform atoms + their category relationships
 # from the Intuition knowledge graph (`platform → has_tag → category`). Drives
 # the on-chain replacement for the static platformCatalog data.
-query GetPlatformTriples(
-  $predicateId: String!
-  $categoryTermIds: [String!]!
-) {
+query GetPlatformTriples($predicateId: String!, $categoryTermIds: [String!]!) {
   triples(
     where: {
       predicate_id: { _eq: $predicateId }

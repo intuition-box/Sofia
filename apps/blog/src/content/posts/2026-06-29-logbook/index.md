@@ -13,7 +13,7 @@ a paid knowledge base for teams that lives as its own surface, built on a
 colleague design and rewired piece by piece onto a real backend. Around it we
 hardened the foundations the production incidents kept exposing.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## A new surface: Sofia Pro
 

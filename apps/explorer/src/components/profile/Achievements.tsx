@@ -56,7 +56,8 @@ export default function Achievements({
     )
   }
 
-  const pct = data.xpNext > 0 ? Math.round((data.xpInto / data.xpNext) * 100) : 0
+  const pct =
+    data.xpNext > 0 ? Math.round((data.xpInto / data.xpNext) * 100) : 0
   // Gold column only when the owner actually has a positive balance — never
   // render a bare "0" (and never for other users; Gold is private).
   const showGold = self && gold != null && gold > 0

@@ -20,7 +20,9 @@
   font-size: 22px;
   line-height: 1;
   letter-spacing: -0.02em;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   margin: 0;
   color: var(--ds-ink);
 }

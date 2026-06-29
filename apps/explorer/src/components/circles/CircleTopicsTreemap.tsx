@@ -63,10 +63,7 @@ function Sparkline({ seed }: SparklineProps) {
   return (
     <div className="cf-tmap-spark" aria-hidden="true">
       {bars.map((b, i) => (
-        <i
-          key={i}
-          style={{ height: `${b * 100}%`, opacity: 0.35 + b * 0.4 }}
-        />
+        <i key={i} style={{ height: `${b * 100}%`, opacity: 0.35 + b * 0.4 }} />
       ))}
     </div>
   )

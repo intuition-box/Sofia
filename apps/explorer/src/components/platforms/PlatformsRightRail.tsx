@@ -106,9 +106,7 @@ export default function PlatformsRightRail() {
       totalInvested: formatMCap(totalRaw.toString()),
       best: sorted[0] ?? null,
       worst: sorted[sorted.length - 1] ?? null,
-      held: [...held].sort(
-        (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
-      ),
+      held: [...held].sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0)),
     }
   }, [authenticated, markets])
 

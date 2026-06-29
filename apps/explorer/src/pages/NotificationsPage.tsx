@@ -62,7 +62,8 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 className="np-readall"
-                onClick={() => markAllRead()}>
+                onClick={() => markAllRead()}
+              >
                 Mark all read
               </button>
             )}
@@ -96,8 +97,10 @@ export default function NotificationsPage() {
         ) : (
           <ul className="np-list">
             {notifications.map((n) => {
-              const meta =
-                TYPE_META[n.type] ?? { icon: Bell, tone: 'info' as Tone }
+              const meta = TYPE_META[n.type] ?? {
+                icon: Bell,
+                tone: 'info' as Tone,
+              }
               const Icon = meta.icon
               const groupTermId =
                 typeof n.metadata?.groupTermId === 'string'
@@ -114,7 +117,9 @@ export default function NotificationsPage() {
                   </div>
                   <div className="np-row-meta">
                     <span className="np-row-when">{timeAgo(n.createdAt)}</span>
-                    {!n.readAt && <span className="np-dot" aria-label="unread" />}
+                    {!n.readAt && (
+                      <span className="np-dot" aria-label="unread" />
+                    )}
                   </div>
                 </>
               )
@@ -122,9 +127,13 @@ export default function NotificationsPage() {
                 <li
                   key={n.id}
                   className={`np-row${n.readAt ? '' : ' is-unread'}`}
-                  onClick={() => !n.readAt && markRead(n.id)}>
+                  onClick={() => !n.readAt && markRead(n.id)}
+                >
                   {groupTermId ? (
-                    <Link to={`/circles/${groupTermId}`} className="np-row-link">
+                    <Link
+                      to={`/circles/${groupTermId}`}
+                      className="np-row-link"
+                    >
                       {body}
                     </Link>
                   ) : (

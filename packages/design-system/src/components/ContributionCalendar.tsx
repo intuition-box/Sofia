@@ -44,7 +44,11 @@ export function ContributionCalendar({
   className,
 }: ContributionCalendarProps) {
   const bodyRef = useRef<HTMLDivElement>(null)
-  const [tip, setTip] = useState<{ x: number; y: number; cell: CalendarCell } | null>(null)
+  const [tip, setTip] = useState<{
+    x: number
+    y: number
+    cell: CalendarCell
+  } | null>(null)
 
   const move = (e: React.MouseEvent, cell: CalendarCell) => {
     const r = bodyRef.current?.getBoundingClientRect()
@@ -60,13 +64,20 @@ export function ContributionCalendar({
         </div>
       )}
       {months && months.length > 0 && (
-        <div className="ds-cal-months" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
+        <div
+          className="ds-cal-months"
+          style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}
+        >
           {months.map((m, i) => (
             <span key={i}>{m}</span>
           ))}
         </div>
       )}
-      <div className="ds-cal-body" ref={bodyRef} onMouseLeave={() => setTip(null)}>
+      <div
+        className="ds-cal-body"
+        ref={bodyRef}
+        onMouseLeave={() => setTip(null)}
+      >
         <div className="ds-cal-grid" style={{ ['--ds-cell' as string]: color }}>
           {cells.map((col, wi) => (
             <div className="ds-cal-col" key={wi}>
@@ -84,14 +95,19 @@ export function ContributionCalendar({
         {tip && (
           <div className="ds-cal-tip" style={{ left: tip.x, top: tip.y }}>
             <b className="tnum">
-              {tip.cell.count ? `${tip.cell.count} certification${tip.cell.count > 1 ? 's' : ''}` : 'No activity'}
+              {tip.cell.count
+                ? `${tip.cell.count} certification${tip.cell.count > 1 ? 's' : ''}`
+                : 'No activity'}
             </b>
             <span>{tip.cell.label}</span>
           </div>
         )}
       </div>
       {legend && (
-        <div className="ds-cal-legend" style={{ ['--ds-cell' as string]: color }}>
+        <div
+          className="ds-cal-legend"
+          style={{ ['--ds-cell' as string]: color }}
+        >
           <span>Less</span>
           <i className="ds-cal-cell l0" />
           <i className="ds-cal-cell l1" />

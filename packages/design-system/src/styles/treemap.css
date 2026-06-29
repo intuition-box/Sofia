@@ -24,7 +24,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(
+  background:
+    linear-gradient(
       155deg,
       color-mix(in srgb, var(--ds-cell) 30%, transparent) 0%,
       color-mix(in srgb, var(--ds-cell) 9%, transparent) 60%,
@@ -63,7 +64,9 @@
   letter-spacing: -0.02em;
   line-height: 0.98;
   color: var(--ds-ink);
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   max-width: 100%;
   overflow-wrap: anywhere;
   text-wrap: balance;

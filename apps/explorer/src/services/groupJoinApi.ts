@@ -79,7 +79,11 @@ export const getMembership = (token: string, groupTermId: string) =>
     `/me/membership?groupTermId=${encodeURIComponent(groupTermId)}`,
   )
 
-export const requestJoin = (token: string, groupTermId: string, answers?: unknown) =>
+export const requestJoin = (
+  token: string,
+  groupTermId: string,
+  answers?: unknown,
+) =>
   api<{ application: Application }>(
     token,
     `/groups/${encodeURIComponent(groupTermId)}/applications`,

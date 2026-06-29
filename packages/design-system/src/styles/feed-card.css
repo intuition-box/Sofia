@@ -872,8 +872,14 @@
   animation: menu-in 0.12s ease;
 }
 @keyframes menu-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .fc-kebab-item {
   display: flex;
@@ -931,37 +937,105 @@
 .fc-card--s-md {
   border-radius: 16px;
 }
-.fc-card--s-md .fc-hd { padding: 13px 14px 11px; }
-.fc-card--s-md .fc-avatar { width: 34px; height: 34px; font-size: 11px; }
-.fc-card--s-md .fc-handle { font-size: 13px; }
-.fc-card--s-md .fc-when { font-size: 10px; }
-.fc-card--s-md .fc-media { aspect-ratio: 360 / 170; }
-.fc-card--s-md .fc-media-domain { left: 10px; bottom: 10px; }
-.fc-card--s-md .fc-body { padding: 13px 14px 12px; }
-.fc-card--s-md .fc-card-title { font-size: 14.5px; }
-.fc-card--s-md .fc-foot { padding: 11px 14px 13px; }
-.fc-card--s-md .fc-vote { font-size: 11.5px; padding: 6px 10px; }
-.fc-card--s-md .fc-vote svg { width: 14px; height: 14px; }
+.fc-card--s-md .fc-hd {
+  padding: 13px 14px 11px;
+}
+.fc-card--s-md .fc-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 11px;
+}
+.fc-card--s-md .fc-handle {
+  font-size: 13px;
+}
+.fc-card--s-md .fc-when {
+  font-size: 10px;
+}
+.fc-card--s-md .fc-media {
+  aspect-ratio: 360 / 170;
+}
+.fc-card--s-md .fc-media-domain {
+  left: 10px;
+  bottom: 10px;
+}
+.fc-card--s-md .fc-body {
+  padding: 13px 14px 12px;
+}
+.fc-card--s-md .fc-card-title {
+  font-size: 14.5px;
+}
+.fc-card--s-md .fc-foot {
+  padding: 11px 14px 13px;
+}
+.fc-card--s-md .fc-vote {
+  font-size: 11.5px;
+  padding: 6px 10px;
+}
+.fc-card--s-md .fc-vote svg {
+  width: 14px;
+  height: 14px;
+}
 
 /* Small — 300px context */
 .fc-card--s-sm {
   border-radius: 14px;
 }
-.fc-card--s-sm .fc-hd { padding: 12px 13px 10px; }
-.fc-card--s-sm .fc-avatar { width: 30px; height: 30px; font-size: 10px; }
-.fc-card--s-sm .fc-handle { font-size: 12.5px; }
-.fc-card--s-sm .fc-when { font-size: 10px; }
-.fc-card--s-sm .fc-media { aspect-ratio: 300 / 132; }
-.fc-card--s-sm .fc-media-domain { left: 9px; bottom: 9px; padding: 4px 7px; }
-.fc-card--s-sm .fc-media-fav { width: 15px; height: 15px; }
-.fc-card--s-sm .fc-media-fav img { width: 10px; height: 10px; }
-.fc-card--s-sm .fc-media-domain span { font-size: 10px; }
-.fc-card--s-sm .fc-body { padding: 12px 13px 11px; }
-.fc-card--s-sm .fc-card-title { font-size: 13px; }
-.fc-card--s-sm .fc-foot { padding: 10px 13px 12px; }
-.fc-card--s-sm .fc-vote { font-size: 11px; padding: 6px 9px; border-radius: 8px; gap: 5px; }
-.fc-card--s-sm .fc-vote svg { width: 13px; height: 13px; }
-.fc-card--s-sm .fc-verb { font-size: 9px; padding: 3px 8px; }
+.fc-card--s-sm .fc-hd {
+  padding: 12px 13px 10px;
+}
+.fc-card--s-sm .fc-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 10px;
+}
+.fc-card--s-sm .fc-handle {
+  font-size: 12.5px;
+}
+.fc-card--s-sm .fc-when {
+  font-size: 10px;
+}
+.fc-card--s-sm .fc-media {
+  aspect-ratio: 300 / 132;
+}
+.fc-card--s-sm .fc-media-domain {
+  left: 9px;
+  bottom: 9px;
+  padding: 4px 7px;
+}
+.fc-card--s-sm .fc-media-fav {
+  width: 15px;
+  height: 15px;
+}
+.fc-card--s-sm .fc-media-fav img {
+  width: 10px;
+  height: 10px;
+}
+.fc-card--s-sm .fc-media-domain span {
+  font-size: 10px;
+}
+.fc-card--s-sm .fc-body {
+  padding: 12px 13px 11px;
+}
+.fc-card--s-sm .fc-card-title {
+  font-size: 13px;
+}
+.fc-card--s-sm .fc-foot {
+  padding: 10px 13px 12px;
+}
+.fc-card--s-sm .fc-vote {
+  font-size: 11px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  gap: 5px;
+}
+.fc-card--s-sm .fc-vote svg {
+  width: 13px;
+  height: 13px;
+}
+.fc-card--s-sm .fc-verb {
+  font-size: 9px;
+  padding: 3px 8px;
+}
 
 /* Extra-small — list row (no full-bleed hero) */
 .fc-card--s-xs {
@@ -1066,9 +1140,15 @@
   align-items: center;
   gap: 4px;
 }
-.fc-xs-vote.u.on { color: var(--trusted, #3ed08a); }
-.fc-xs-vote.d.on { color: var(--distrusted, #ef5a5a); }
-.fc-xs-votes--hidden { display: none; }
+.fc-xs-vote.u.on {
+  color: var(--trusted, #3ed08a);
+}
+.fc-xs-vote.d.on {
+  color: var(--distrusted, #ef5a5a);
+}
+.fc-xs-votes--hidden {
+  display: none;
+}
 /* Timestamp, bottom-left of the xs footer. */
 .fc-xs-when {
   font-family: 'JetBrains Mono', monospace;

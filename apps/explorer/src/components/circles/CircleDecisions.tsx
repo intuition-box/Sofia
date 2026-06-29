@@ -27,7 +27,8 @@ function StackBar({ yes, no }: { yes: number; no: number }) {
     <div className="dec-bar weighted">
       <div className="dec-bar-cap">
         <span className={`dec-cap-yes${lead === 'yes' ? ' lead' : ''}`}>
-          <i className="d" />Yes <b className="tnum">{yes}%</b>
+          <i className="d" />
+          Yes <b className="tnum">{yes}%</b>
         </span>
         <span className={`dec-cap-no${lead === 'no' ? ' lead' : ''}`}>
           <b className="tnum">{no}%</b> No <i className="d" />
@@ -62,10 +63,19 @@ function VoteModal({
   const pios = Math.max(0, Math.round(level / 22))
   return (
     <div className="dec-modal-overlay" onClick={onClose}>
-      <div className="dec-modal" onClick={(e) => e.stopPropagation()} style={{ ['--c' as string]: dec.topicColor }}>
+      <div
+        className="dec-modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ ['--c' as string]: dec.topicColor }}
+      >
         <div className="dec-modal-head">
           <span className="dec-modal-eyebrow">Your vote on this question</span>
-          <button type="button" className="drill-close" onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            className="drill-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
             ✕
           </button>
         </div>
@@ -73,7 +83,10 @@ function VoteModal({
 
         <div className="dec-topic-row">
           <span className="dec-topic-lab">Topic detected</span>
-          <span className="dec-tag" style={{ ['--c' as string]: dec.topicColor }}>
+          <span
+            className="dec-tag"
+            style={{ ['--c' as string]: dec.topicColor }}
+          >
             <i />
             {dec.topicLabel}
           </span>
@@ -81,16 +94,20 @@ function VoteModal({
 
         <div className="dec-weight-box">
           <div className="dec-weight-line">
-            <span className="dec-weight-lab">Your expertise score in {dec.topicLabel}</span>
+            <span className="dec-weight-lab">
+              Your expertise score in {dec.topicLabel}
+            </span>
             <span className="dec-weight-val tnum">{weight.toFixed(1)}×</span>
           </div>
           {low ? (
             <>
               <p className="dec-weight-note">
-                You have limited signal in this topic — your vote counts, but with reduced weight.
+                You have limited signal in this topic — your vote counts, but
+                with reduced weight.
               </p>
               <div className="dec-weight-hint">
-                <Icon name="bolt" /> Want more weight on these decisions? Start marking {dec.topicLabel} content.
+                <Icon name="bolt" /> Want more weight on these decisions? Start
+                marking {dec.topicLabel} content.
               </div>
             </>
           ) : (
@@ -98,30 +115,46 @@ function VoteModal({
               <p className="dec-weight-sub">Based on</p>
               <ul className="dec-weight-basis">
                 <li>
-                  <b className="tnum">{signals}</b> signals marked in {dec.topicLabel}
+                  <b className="tnum">{signals}</b> signals marked in{' '}
+                  {dec.topicLabel}
                 </li>
                 <li>
-                  <b className="tnum">{pios}</b> Pioneer marks in {dec.topicLabel}
+                  <b className="tnum">{pios}</b> Pioneer marks in{' '}
+                  {dec.topicLabel}
                 </li>
                 <li>
-                  Peer-confirmed by <b className="tnum">{peers}</b> {dec.topicLabel}-aligned members
+                  Peer-confirmed by <b className="tnum">{peers}</b>{' '}
+                  {dec.topicLabel}-aligned members
                 </li>
               </ul>
               <p className="dec-weight-count">
-                Your vote will count as <b className="tnum">{weight.toFixed(1)}</b> weighted points.
+                Your vote will count as{' '}
+                <b className="tnum">{weight.toFixed(1)}</b> weighted points.
               </p>
             </>
           )}
         </div>
 
         <div className="dec-vote-actions">
-          <button type="button" className="btn btn-accent dec-yes" onClick={() => onVote('yes')}>
+          <button
+            type="button"
+            className="btn btn-accent dec-yes"
+            onClick={() => onVote('yes')}
+          >
             Vote Yes
           </button>
-          <button type="button" className="btn dec-no" onClick={() => onVote('no')}>
+          <button
+            type="button"
+            className="btn dec-no"
+            onClick={() => onVote('no')}
+          >
             Vote No
           </button>
-          <button type="button" className="btn btn-ghost" onClick={() => onVote('abstain')}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onVote('abstain')}
+          >
             Abstain
           </button>
         </div>
@@ -136,17 +169,27 @@ function VoteModal({
 function HowModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="dec-modal-overlay" onClick={onClose}>
-      <div className="dec-modal dec-modal-sm" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="dec-modal dec-modal-sm"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="dec-modal-head">
           <span className="dec-modal-eyebrow">How is weight calculated?</span>
-          <button type="button" className="drill-close" onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            className="drill-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
             ✕
           </button>
         </div>
         <p className="dec-how-body">
-          Your weight on a question is your <b>expertise score in its topic</b> — signal coherence + TRUST
-          staked + peer-confirmation. Pioneers and high-signal contributors weigh more. It is{' '}
-          <b>expertise-weighted, not token-weighted</b>: holding more tokens does not buy a louder vote.
+          Your weight on a question is your <b>expertise score in its topic</b>{' '}
+          — signal coherence + TRUST staked + peer-confirmation. Pioneers and
+          high-signal contributors weigh more. It is{' '}
+          <b>expertise-weighted, not token-weighted</b>: holding more tokens
+          does not buy a louder vote.
         </p>
         <a className="dec-how-src" href="#" onClick={(e) => e.preventDefault()}>
           Read the open-source formula <Icon name="ext" />
@@ -173,7 +216,10 @@ function DecisionCard({
 }) {
   const [breakdown, setBreakdown] = useState(false)
   return (
-    <div className="panel dec-card" style={{ ['--c' as string]: dec.topicColor }}>
+    <div
+      className="panel dec-card"
+      style={{ ['--c' as string]: dec.topicColor }}
+    >
       <div className="dec-head">
         <p className="dec-q">{dec.question}</p>
         <div className="dec-meta">
@@ -182,7 +228,8 @@ function DecisionCard({
             className="dec-tag"
             style={{ ['--c' as string]: dec.topicColor }}
             onClick={() => onTheme(dec.topicSlug)}
-            title={`Highlight ${dec.topicLabel} on the map`}>
+            title={`Highlight ${dec.topicLabel} on the map`}
+          >
             <i />
             {dec.topicLabel}
           </button>
@@ -210,7 +257,11 @@ function DecisionCard({
               />
             ))}
           </div>
-          <button type="button" className="dec-breakdown-link" onClick={() => setBreakdown((b) => !b)}>
+          <button
+            type="button"
+            className="dec-breakdown-link"
+            onClick={() => setBreakdown((b) => !b)}
+          >
             {breakdown ? 'Hide breakdown' : 'See full breakdown'}
           </button>
         </div>
@@ -219,14 +270,23 @@ function DecisionCard({
           {userVote ? (
             <div className="dec-yourvote">
               <Icon name="check" /> You voted <b>{userVote}</b> · your weight{' '}
-              <span className="tnum">{weight.toFixed(1)}×</span> ({dec.topicLabel})
+              <span className="tnum">{weight.toFixed(1)}×</span> (
+              {dec.topicLabel})
             </div>
           ) : (
             <>
-              <button type="button" className="btn btn-accent" onClick={onOpenVote}>
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={onOpenVote}
+              >
                 Cast your weighted vote
               </button>
-              <button type="button" className="dec-how-link inline" onClick={onOpenHow}>
+              <button
+                type="button"
+                className="dec-how-link inline"
+                onClick={onOpenHow}
+              >
                 How is weight calculated?
               </button>
             </>
@@ -247,7 +307,8 @@ function DecisionCard({
             ))}
           </div>
           <p className="dec-bd-more">
-            + {dec.totalVoters - dec.voters.length} more members voted · weighted tally updates live
+            + {dec.totalVoters - dec.voters.length} more members voted ·
+            weighted tally updates live
           </p>
         </div>
       ) : null}
@@ -255,7 +316,13 @@ function DecisionCard({
   )
 }
 
-function QueueItem({ q, onTheme }: { q: QueueDecision; onTheme: (slug: string) => void }) {
+function QueueItem({
+  q,
+  onTheme,
+}: {
+  q: QueueDecision
+  onTheme: (slug: string) => void
+}) {
   const open = q.status === 'open'
   return (
     <div className="dq-item" style={{ ['--c' as string]: q.topicColor }}>
@@ -264,7 +331,8 @@ function QueueItem({ q, onTheme }: { q: QueueDecision; onTheme: (slug: string) =
           type="button"
           className="dec-tag dq-tag"
           onClick={() => onTheme(q.topicSlug)}
-          title={`Highlight ${q.topicLabel} on the map`}>
+          title={`Highlight ${q.topicLabel} on the map`}
+        >
           <i />
           {q.topicLabel}
         </button>
@@ -274,13 +342,16 @@ function QueueItem({ q, onTheme }: { q: QueueDecision; onTheme: (slug: string) =
             closes {q.closes}d
           </span>
         ) : (
-          <span className={`dq-status ${q.result}`}>{q.result === 'passed' ? 'Passed' : 'Rejected'}</span>
+          <span className={`dq-status ${q.result}`}>
+            {q.result === 'passed' ? 'Passed' : 'Rejected'}
+          </span>
         )}
       </div>
       <p className="dq-q">{q.question}</p>
       {open ? (
         <div className="dq-foot">
-          <span className="tnum">{q.voters}</span> members voted · weighted tally live
+          <span className="tnum">{q.voters}</span> members voted · weighted
+          tally live
         </div>
       ) : (
         <div className="dq-result">
@@ -288,7 +359,8 @@ function QueueItem({ q, onTheme }: { q: QueueDecision; onTheme: (slug: string) =
             <i style={{ width: `${q.weighted?.yes ?? 0}%` }} />
           </div>
           <span className="dq-result-txt">
-            Yes <b className="tnum">{q.weighted?.yes ?? 0}%</b> · {q.voters} voted
+            Yes <b className="tnum">{q.weighted?.yes ?? 0}%</b> · {q.voters}{' '}
+            voted
           </span>
         </div>
       )}
@@ -296,12 +368,19 @@ function QueueItem({ q, onTheme }: { q: QueueDecision; onTheme: (slug: string) =
   )
 }
 
-export default function CircleDecisions({ data, onTheme }: CircleDecisionsProps) {
+export default function CircleDecisions({
+  data,
+  onTheme,
+}: CircleDecisionsProps) {
   const { decisions, queue, meta, viewerExpertise } = data
   const [votes, setVotes] = useState<Record<string, VoteChoice>>({})
-  const [modal, setModal] = useState<{ kind: 'vote' | 'how'; dec?: CircleDecision } | null>(null)
+  const [modal, setModal] = useState<{
+    kind: 'vote' | 'how'
+    dec?: CircleDecision
+  } | null>(null)
 
-  const weightFor = (slug: string) => expertiseWeight(viewerExpertise.get(slug) ?? 0)
+  const weightFor = (slug: string) =>
+    expertiseWeight(viewerExpertise.get(slug) ?? 0)
 
   const castVote = (dec: CircleDecision, choice: VoteChoice) => {
     setVotes((v) => ({ ...v, [dec.id]: choice }))
@@ -351,7 +430,11 @@ export default function CircleDecisions({ data, onTheme }: CircleDecisionsProps)
                 <QueueItem key={q.id} q={q} onTheme={onTheme} />
               ))}
             </div>
-            <a className="btn btn-ghost btn-sm dq-all" href="#" onClick={(e) => e.preventDefault()}>
+            <a
+              className="btn btn-ghost btn-sm dq-all"
+              href="#"
+              onClick={(e) => e.preventDefault()}
+            >
               View all {meta.open + meta.closed} decisions <Icon name="arrow" />
             </a>
           </aside>
@@ -368,7 +451,9 @@ export default function CircleDecisions({ data, onTheme }: CircleDecisionsProps)
           onHow={() => setModal({ kind: 'how', dec: modal.dec })}
         />
       ) : null}
-      {modal?.kind === 'how' ? <HowModal onClose={() => setModal(null)} /> : null}
+      {modal?.kind === 'how' ? (
+        <HowModal onClose={() => setModal(null)} />
+      ) : null}
     </section>
   )
 }

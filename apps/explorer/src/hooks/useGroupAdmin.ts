@@ -30,7 +30,10 @@ export function useIsGroupAdmin(groupTermId: string | null) {
   }
 }
 
-export function useGroupApplications(groupTermId: string | null, enabled: boolean) {
+export function useGroupApplications(
+  groupTermId: string | null,
+  enabled: boolean,
+) {
   const { getAccessToken } = usePrivy()
   const query = useQuery({
     queryKey: ['groupApplications', groupTermId],

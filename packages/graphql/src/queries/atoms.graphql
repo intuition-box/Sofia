@@ -198,10 +198,7 @@ query FindAtomIds($where: atoms_bool_exp = {}, $limit: Int = 100) {
 query FindAccountAtoms($addresses: [String!]!) {
   atoms(
     where: {
-      _and: [
-        { data: { _in: $addresses } }
-        { type: { _eq: "Account" } }
-      ]
+      _and: [{ data: { _in: $addresses } }, { type: { _eq: "Account" } }]
     }
   ) {
     term_id

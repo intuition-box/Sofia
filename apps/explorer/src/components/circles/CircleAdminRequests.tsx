@@ -54,14 +54,16 @@ export default function CircleAdminRequests({
                   type="button"
                   className="gj-btn gj-btn-approve"
                   disabled={pending}
-                  onClick={() => approve(a.id)}>
+                  onClick={() => approve(a.id)}
+                >
                   Approve
                 </button>
                 <button
                   type="button"
                   className="gj-btn gj-btn-reject"
                   disabled={pending}
-                  onClick={() => reject(a.id)}>
+                  onClick={() => reject(a.id)}
+                >
                   Reject
                 </button>
               </div>

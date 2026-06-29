@@ -12,7 +12,9 @@ let privyClient: PrivyClient | null = null
 function privy(): PrivyClient {
   if (!privyClient) {
     if (!env.privyAppId || !env.privyAppSecret) {
-      throw new HTTPException(503, { message: 'Auth not configured (PRIVY_APP_ID/SECRET)' })
+      throw new HTTPException(503, {
+        message: 'Auth not configured (PRIVY_APP_ID/SECRET)',
+      })
     }
     privyClient = new PrivyClient(env.privyAppId, env.privyAppSecret)
   }

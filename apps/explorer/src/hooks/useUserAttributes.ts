@@ -20,7 +20,10 @@ export function useUserAttributes(
   const addresses =
     address == null ? [] : Array.isArray(address) ? address : [address]
   // Stable, order-independent cache key across the linked wallet set.
-  const key = addresses.map((a) => a.toLowerCase()).sort().join(',')
+  const key = addresses
+    .map((a) => a.toLowerCase())
+    .sort()
+    .join(',')
   // The viewer set affects the `viewerEndorsed` flag, so it's part of the key.
   const viewerKey = viewerAddresses
     .map((a) => a.toLowerCase())

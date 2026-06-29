@@ -11,12 +11,14 @@ roles), adapted to **wallet/Privy** identity + the **on-chain group atom
 term_id** instead of NextAuth userId + communityId.
 
 ## Stack
+
 - **Bun + Hono** (HTTP), boots via `bun src/index.ts`
 - **Prisma + Postgres** (relational store)
 - **Privy** server-side JWT verification (`@privy-io/server-auth`)
 - **Ably** realtime notifications (`notif:{wallet}` channel)
 
 ## Develop
+
 ```bash
 cp .env.example .env      # fill DATABASE_URL, PRIVY_*, ABLY_API_KEY
 bun install
@@ -25,24 +27,26 @@ bun run dev               # http://localhost:8788
 ```
 
 ## API (all routes require `Authorization: Bearer <privy token>`, except /health)
-| Method | Path | Role | Purpose |
-|---|---|---|---|
-| GET | `/health` | — | liveness |
-| POST | `/groups/:groupTermId/applications` | any | request to join |
-| GET | `/groups/:groupTermId/applications?status=pending` | reviewer | list requests |
-| POST | `/applications/:id/approve` · `/reject` | reviewer | decide |
-| GET | `/me/membership?groupTermId=` | any | my status (drives the join CTA) |
-| GET | `/groups/:groupTermId/members` | any | roster + roles |
-| GET | `/groups/:groupTermId/me/is-admin` | any | can I review? |
-| POST | `/groups/:groupTermId/members/:wallet/role` | owner | promote/demote |
-| DELETE | `/groups/:groupTermId/members/:wallet` | owner/admin | ban |
-| GET | `/me/notifications` · POST `/notifications/:id/read` | any | notif history |
-| GET | `/ably/token` | any | scoped realtime token |
+
+| Method | Path                                                 | Role        | Purpose                         |
+| ------ | ---------------------------------------------------- | ----------- | ------------------------------- |
+| GET    | `/health`                                            | —           | liveness                        |
+| POST   | `/groups/:groupTermId/applications`                  | any         | request to join                 |
+| GET    | `/groups/:groupTermId/applications?status=pending`   | reviewer    | list requests                   |
+| POST   | `/applications/:id/approve` · `/reject`              | reviewer    | decide                          |
+| GET    | `/me/membership?groupTermId=`                        | any         | my status (drives the join CTA) |
+| GET    | `/groups/:groupTermId/members`                       | any         | roster + roles                  |
+| GET    | `/groups/:groupTermId/me/is-admin`                   | any         | can I review?                   |
+| POST   | `/groups/:groupTermId/members/:wallet/role`          | owner       | promote/demote                  |
+| DELETE | `/groups/:groupTermId/members/:wallet`               | owner/admin | ban                             |
+| GET    | `/me/notifications` · POST `/notifications/:id/read` | any         | notif history                   |
+| GET    | `/ably/token`                                        | any         | scoped realtime token           |
 
 Reviewer = OWNER / ADMIN / MODERATOR. The owner is seeded automatically from the
 group atom's on-chain creator on first interaction.
 
 ## Deploy (Coolify)
+
 Build context = `services/group-api`, Dockerfile = `Dockerfile`, port `8788`.
 Env: `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ABLY_API_KEY`,
 `INTUITION_GRAPHQL_URL`, `CORS_ORIGINS`. The container runs

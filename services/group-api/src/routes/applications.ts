@@ -126,10 +126,19 @@ applications.post('/applications/:id/approve', async (c) => {
   const [updated] = await prisma.$transaction([
     prisma.application.update({
       where: { id },
-      data: { status: 'APPROVED', reviewerWallet: reviewer, reviewedAt: new Date() },
+      data: {
+        status: 'APPROVED',
+        reviewerWallet: reviewer,
+        reviewedAt: new Date(),
+      },
     }),
     prisma.membership.upsert({
-      where: { wallet_groupTermId: { wallet: app.wallet, groupTermId: app.groupTermId } },
+      where: {
+        wallet_groupTermId: {
+          wallet: app.wallet,
+          groupTermId: app.groupTermId,
+        },
+      },
       update: { status: 'ACTIVE', approvedAt: new Date() },
       create: {
         wallet: app.wallet,
@@ -166,7 +175,9 @@ applications.post('/applications/:id/reject', async (c) => {
   const id = c.req.param('id')
   const body = (await c.req.json().catch(() => ({}))) as { note?: string }
   const note =
-    typeof body.note === 'string' ? body.note.slice(0, MAX_NOTE_CHARS) : undefined
+    typeof body.note === 'string'
+      ? body.note.slice(0, MAX_NOTE_CHARS)
+      : undefined
 
   const app = await prisma.application.findUnique({ where: { id } })
   if (!app) throw new HTTPException(404, { message: 'Application not found' })
@@ -205,7 +216,8 @@ applications.post('/applications/:id/reject', async (c) => {
 applications.get('/me/membership', async (c) => {
   const wallet = getWallet(c)
   const groupTermId = c.req.query('groupTermId')
-  if (!groupTermId) throw new HTTPException(400, { message: 'groupTermId required' })
+  if (!groupTermId)
+    throw new HTTPException(400, { message: 'groupTermId required' })
 
   const [membership, application] = await Promise.all([
     prisma.membership.findUnique({

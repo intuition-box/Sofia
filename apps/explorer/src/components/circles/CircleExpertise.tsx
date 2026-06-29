@@ -10,7 +10,13 @@
  * `CircleDetailView`). DS primitives: Avatar, AvailDot, Icon, ModuleHead.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Avatar, AvailDot, Icon, ModuleHead, toast } from '@0xsofia/design-system'
+import {
+  Avatar,
+  AvailDot,
+  Icon,
+  ModuleHead,
+  toast,
+} from '@0xsofia/design-system'
 import type { CircleItem } from '@/services/circleService'
 import type { ExpertiseRow, MemberDomain } from '@/types/circlePro'
 import CircleMemberPanel from './CircleMemberPanel'
@@ -35,7 +41,11 @@ interface CircleExpertiseProps {
 const DOMAIN_EXPERT_MIN = 40
 
 function scoreColor(s: number): string {
-  return s >= 80 ? 'var(--trusted-p)' : s >= 60 ? 'var(--ds-ink)' : 'var(--ds-muted)'
+  return s >= 80
+    ? 'var(--trusted-p)'
+    : s >= 60
+      ? 'var(--ds-ink)'
+      : 'var(--ds-muted)'
 }
 
 function ReachIcons({ handle }: { handle: string }) {
@@ -45,23 +55,51 @@ function ReachIcons({ handle }: { handle: string }) {
   }
   return (
     <div className="reach-icons">
-      <button type="button" className="rec-chan" title={`Reach ${handle} on X`} onClick={stop(`Opening X for ${handle}`)}>
+      <button
+        type="button"
+        className="rec-chan"
+        title={`Reach ${handle} on X`}
+        onClick={stop(`Opening X for ${handle}`)}
+      >
         <Icon name="x" />
       </button>
-      <button type="button" className="rec-chan" title={`Reach ${handle} on Discord`} onClick={stop(`Opening Discord for ${handle}`)}>
+      <button
+        type="button"
+        className="rec-chan"
+        title={`Reach ${handle} on Discord`}
+        onClick={stop(`Opening Discord for ${handle}`)}
+      >
         <Icon name="discord" />
       </button>
-      <button type="button" className="rec-chan" title={`Reach ${handle} on Telegram`} onClick={stop(`Opening Telegram for ${handle}`)}>
+      <button
+        type="button"
+        className="rec-chan"
+        title={`Reach ${handle} on Telegram`}
+        onClick={stop(`Opening Telegram for ${handle}`)}
+      >
         <Icon name="telegram" />
       </button>
-      <button type="button" className="rec-chan" title={`Email ${handle}`} onClick={stop(`Drafting an email to ${handle}`)}>
+      <button
+        type="button"
+        className="rec-chan"
+        title={`Email ${handle}`}
+        onClick={stop(`Drafting an email to ${handle}`)}
+      >
         <Icon name="gmail" />
       </button>
     </div>
   )
 }
 
-function SignalCard({ item, color, label }: { item: CircleItem; color: string; label: string }) {
+function SignalCard({
+  item,
+  color,
+  label,
+}: {
+  item: CircleItem
+  color: string
+  label: string
+}) {
   const intent = item.intentions[0]
   return (
     <a
@@ -70,12 +108,15 @@ function SignalCard({ item, color, label }: { item: CircleItem; color: string; l
       target="_blank"
       rel="noreferrer"
       style={{ ['--c' as string]: color }}
-      onClick={(e) => e.stopPropagation()}>
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="cp-sig-head">
         {item.favicon ? (
           <img className="cp-sig-fav" src={item.favicon} alt="" />
         ) : (
-          <span className="cp-sig-fav cp-sig-fav--empty">{item.domain[0]?.toUpperCase()}</span>
+          <span className="cp-sig-fav cp-sig-fav--empty">
+            {item.domain[0]?.toUpperCase()}
+          </span>
         )}
         <span className="cp-sig-domain">{item.domain}</span>
       </div>
@@ -104,11 +145,23 @@ interface RowProps {
   onSelect: () => void
 }
 
-function MemberRow({ row, rank, metricColor, metricVal, metricUnit, metricSub, leading, selected, onSelect }: RowProps) {
+function MemberRow({
+  row,
+  rank,
+  metricColor,
+  metricVal,
+  metricUnit,
+  metricSub,
+  leading,
+  selected,
+  onSelect,
+}: RowProps) {
   const { member } = row
   return (
     <tr className={selected ? 'mem-tr open' : 'mem-tr'}>
-      <td className={`c-rank tnum${rank <= 3 ? ' top r' + rank : ''}`}>{String(rank).padStart(2, '0')}</td>
+      <td className={`c-rank tnum${rank <= 3 ? ' top r' + rank : ''}`}>
+        {String(rank).padStart(2, '0')}
+      </td>
       <td className="c-member">
         <div className="cmem">
           <Avatar label={member.label} imageUrl={member.image} size={34} />
@@ -116,7 +169,11 @@ function MemberRow({ row, rank, metricColor, metricVal, metricUnit, metricSub, l
             <div className="h">
               <AvailDot avail={row.avail} dotOnly className="av-dot-inline" />
               {member.label}
-              {row.core ? <span className="core-badge" title="Core contributor">Core</span> : null}
+              {row.core ? (
+                <span className="core-badge" title="Core contributor">
+                  Core
+                </span>
+              ) : null}
               {leading ? <span className="vt-leading">Leading</span> : null}
             </div>
             <ReachIcons handle={member.label} />
@@ -145,7 +202,13 @@ function MemberRow({ row, rank, metricColor, metricVal, metricUnit, metricSub, l
         </div>
       </td>
       <td className="mem-act-cell">
-        <button type="button" className={selected ? 'btn btn-sm trust-btn on' : 'btn btn-sm trust-btn'} onClick={onSelect}>
+        <button
+          type="button"
+          className={
+            selected ? 'btn btn-sm trust-btn on' : 'btn btn-sm trust-btn'
+          }
+          onClick={onSelect}
+        >
           {selected ? 'Viewing' : 'Trust'}
         </button>
       </td>
@@ -153,7 +216,14 @@ function MemberRow({ row, rank, metricColor, metricVal, metricUnit, metricSub, l
   )
 }
 
-export default function CircleExpertise({ rows, topicMeta, topDomains, domain, onClearDomain, feedItems }: CircleExpertiseProps) {
+export default function CircleExpertise({
+  rows,
+  topicMeta,
+  topDomains,
+  domain,
+  onClearDomain,
+  feedItems,
+}: CircleExpertiseProps) {
   const isAll = !domain || domain === 'all'
   const theme = isAll ? null : topicMeta(domain as string)
 
@@ -189,13 +259,18 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
   const signals = useMemo(() => {
     if (isAll) return []
     const slug = domain as string
-    return feedItems.filter((it) => (it.topicContexts ?? []).includes(slug)).slice(0, 6)
+    return feedItems
+      .filter((it) => (it.topicContexts ?? []).includes(slug))
+      .slice(0, 6)
   }, [feedItems, isAll, domain])
 
   const onStakeInternal = (handle: string, slugs: string[], amount: number) => {
     if (isAll || !domain) return
     if (!slugs.includes(domain)) return
-    setAdded((a) => ({ ...a, [`${domain}:${handle}`]: (a[`${domain}:${handle}`] ?? 0) + amount }))
+    setAdded((a) => ({
+      ...a,
+      [`${domain}:${handle}`]: (a[`${domain}:${handle}`] ?? 0) + amount,
+    }))
   }
 
   return (
@@ -206,7 +281,8 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
           <div className="vt-q" style={{ ['--c' as string]: theme.color }}>
             <div className="vt-q-line">
               <span className="vt-q-text">
-                Most expert member in <b style={{ color: theme.color }}>{theme.label}</b>
+                Most expert member in{' '}
+                <b style={{ color: theme.color }}>{theme.label}</b>
               </span>
               <button type="button" className="ex-back" onClick={onClearDomain}>
                 ‹ Overall trust
@@ -222,7 +298,12 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
             </p>
             <div className="cp-sig-grid">
               {signals.map((it) => (
-                <SignalCard key={it.id} item={it} color={theme.color} label={theme.label} />
+                <SignalCard
+                  key={it.id}
+                  item={it}
+                  color={theme.color}
+                  label={theme.label}
+                />
               ))}
             </div>
           </div>
@@ -236,7 +317,9 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
                   <th className="c-rank">#</th>
                   <th>Member</th>
                   <th>Streak</th>
-                  <th className="num mm-th">{isAll ? 'Trust score' : 'Backing'}</th>
+                  <th className="num mm-th">
+                    {isAll ? 'Trust score' : 'Backing'}
+                  </th>
                   <th className="num">Trust</th>
                 </tr>
               </thead>
@@ -247,8 +330,14 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
                     row={v.row}
                     rank={i + 1}
                     isAll={isAll}
-                    metricColor={isAll ? scoreColor(v.row.trustScore) : (theme?.color ?? 'var(--ds-ink)')}
-                    metricVal={isAll ? v.row.trustScore : v.stake.toLocaleString('en-US')}
+                    metricColor={
+                      isAll
+                        ? scoreColor(v.row.trustScore)
+                        : (theme?.color ?? 'var(--ds-ink)')
+                    }
+                    metricVal={
+                      isAll ? v.row.trustScore : v.stake.toLocaleString('en-US')
+                    }
                     metricUnit={isAll ? undefined : 'TRUST'}
                     metricSub={
                       isAll ? (
@@ -256,12 +345,19 @@ export default function CircleExpertise({ rows, topicMeta, topDomains, domain, o
                       ) : (
                         <>
                           {v.row.backers} backers
-                          {v.mine ? <span className="cand-you"> · you +{v.mine.toLocaleString('en-US')}</span> : null}
+                          {v.mine ? (
+                            <span className="cand-you">
+                              {' '}
+                              · you +{v.mine.toLocaleString('en-US')}
+                            </span>
+                          ) : null}
                         </>
                       )
                     }
                     leading={!isAll && i === 0}
-                    selected={!!selRow && v.row.member.label === selRow.member.label}
+                    selected={
+                      !!selRow && v.row.member.label === selRow.member.label
+                    }
                     onSelect={() => setSelHandle(v.row.member.label)}
                   />
                 ))}

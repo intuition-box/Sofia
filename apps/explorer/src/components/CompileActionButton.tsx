@@ -216,9 +216,7 @@ export default function CompileActionButton({
         title={title}
         onClick={handleClick}
         style={
-          color
-            ? ({ ['--action-color']: color } as CSSProperties)
-            : undefined
+          color ? ({ ['--action-color']: color } as CSSProperties) : undefined
         }
       >
         {icon && (

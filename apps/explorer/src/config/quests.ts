@@ -24,8 +24,7 @@ export const HAS_TAG_PREDICATE_ID =
 
 // Bot that signs verified social-link triples (mainnet). Social-link quests
 // only count when this verifier is the triple creator.
-export const BOT_VERIFIER_ADDRESS =
-  '0xCd62c554bdEF0501158Bd6513e0654cd3cc8ae88'
+export const BOT_VERIFIER_ADDRESS = '0xCd62c554bdEF0501158Bd6513e0654cd3cc8ae88'
 
 // Verified-social predicate label → quest id (mirrors QuestBadgeService).
 export const PREDICATE_TO_QUEST_ID: Record<string, string> = {

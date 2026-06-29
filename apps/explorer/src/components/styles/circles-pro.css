@@ -56,7 +56,11 @@
   background: var(--ds-bg-subtle);
   color: var(--ds-ink-soft);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s,
+    transform 0.1s;
   text-decoration: none;
 }
 .cp-pro .btn:hover {
@@ -290,7 +294,9 @@
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
   cursor: pointer;
-  transition: color 0.13s, border-color 0.13s;
+  transition:
+    color 0.13s,
+    border-color 0.13s;
 }
 .cp-pro .rec-chan:hover {
   color: var(--ds-ink);
@@ -316,7 +322,9 @@
   font-weight: 700;
   font-size: 21px;
   letter-spacing: -0.02em;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   color: var(--ds-ink);
 }
 .cp-pro .ex-back {
@@ -330,7 +338,9 @@
   border-radius: 7px;
   padding: 5px 11px;
   cursor: pointer;
-  transition: color 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    border-color 0.14s;
 }
 .cp-pro .ex-back:hover {
   color: var(--ds-ink);
@@ -566,7 +576,9 @@
   border: 1px solid var(--ds-border);
   background: var(--ds-bg-subtle);
   text-decoration: none;
-  transition: border-color 0.14s, transform 0.14s;
+  transition:
+    border-color 0.14s,
+    transform 0.14s;
 }
 .cp-pro .cp-sig:hover {
   border-color: color-mix(in srgb, var(--c) 50%, var(--ds-border));
@@ -701,7 +713,9 @@
   font-weight: 700;
   font-size: 19px;
   letter-spacing: -0.02em;
-  font-variation-settings: 'SOFT' 30, 'opsz' 144;
+  font-variation-settings:
+    'SOFT' 30,
+    'opsz' 144;
   color: var(--ds-ink);
   margin: 0;
   line-height: 1.2;

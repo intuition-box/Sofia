@@ -70,12 +70,12 @@ export VITE_PIN_PROXY_URL=http://localhost:8790/pin
 
 ## Env vars
 
-| Name                     | Default                                     | Purpose                                          |
-| ------------------------ | ------------------------------------------- | ------------------------------------------------ |
-| `INTUITION_PIN_API_KEY`  | _(unset → 503)_                             | Intuition API key, sent as `apikey` header       |
-| `PIN_ALLOWED_ORIGINS`    | _(dev/test ext + explorer/sofia domains)_   | CSV allowlist; overrides default; `scheme://*` and `*` supported |
-| `INTUITION_PIN_URL`      | `https://pin.intuition.systems/v1/graphql`  | Upstream pin endpoint                            |
-| `PORT`                   | `8790`                                      | HTTP port                                        |
+| Name                    | Default                                    | Purpose                                                          |
+| ----------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `INTUITION_PIN_API_KEY` | _(unset → 503)_                            | Intuition API key, sent as `apikey` header                       |
+| `PIN_ALLOWED_ORIGINS`   | _(dev/test ext + explorer/sofia domains)_  | CSV allowlist; overrides default; `scheme://*` and `*` supported |
+| `INTUITION_PIN_URL`     | `https://pin.intuition.systems/v1/graphql` | Upstream pin endpoint                                            |
+| `PORT`                  | `8790`                                     | HTTP port                                                        |
 
 ## Security notes
 

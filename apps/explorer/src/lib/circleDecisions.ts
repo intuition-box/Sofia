@@ -38,7 +38,8 @@ export function expertiseWeight(level: number): number {
 
 function seed(str: string): number {
   let h = 0
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) % 1_000_000
+  for (let i = 0; i < str.length; i++)
+    h = (h * 31 + str.charCodeAt(i)) % 1_000_000
   return h
 }
 
@@ -47,7 +48,12 @@ export function buildCircleDecisions(
   rows: ExpertiseRow[],
 ): CircleDecisionsData {
   if (topics.length === 0) {
-    return { decisions: [], queue: [], meta: { open: 0, closed: 0 }, viewerExpertise: new Map() }
+    return {
+      decisions: [],
+      queue: [],
+      meta: { open: 0, closed: 0 },
+      viewerExpertise: new Map(),
+    }
   }
 
   const active = topics.slice(0, MAX_ACTIVE)
@@ -69,8 +75,12 @@ export function buildCircleDecisions(
       vote: ((s + j) % 5 === 0 ? 'no' : 'yes') as 'yes' | 'no',
     }))
 
-    const wYes = voters.filter((v) => v.vote === 'yes').reduce((a, v) => a + v.weight, 0)
-    const wNo = voters.filter((v) => v.vote === 'no').reduce((a, v) => a + v.weight, 0)
+    const wYes = voters
+      .filter((v) => v.vote === 'yes')
+      .reduce((a, v) => a + v.weight, 0)
+    const wNo = voters
+      .filter((v) => v.vote === 'no')
+      .reduce((a, v) => a + v.weight, 0)
     const wTot = wYes + wNo || 1
     const yes = Math.round((wYes / wTot) * 100)
     const hcYes = voters.filter((v) => v.vote === 'yes').length
@@ -78,11 +88,15 @@ export function buildCircleDecisions(
 
     return {
       id: `dec-${topic.slug}`,
-      question: QUESTION_TEMPLATES[i % QUESTION_TEMPLATES.length].replace('{label}', topic.label),
+      question: QUESTION_TEMPLATES[i % QUESTION_TEMPLATES.length].replace(
+        '{label}',
+        topic.label,
+      ),
       topicSlug: topic.slug,
       topicLabel: topic.label,
       topicColor: topic.color,
-      author: voters[0]?.handle ?? AUTHOR_FALLBACKS[s % AUTHOR_FALLBACKS.length],
+      author:
+        voters[0]?.handle ?? AUTHOR_FALLBACKS[s % AUTHOR_FALLBACKS.length],
       ago: 1 + (s % 6),
       closes: 1 + (s % 9),
       weighted: { yes, no: 100 - yes },
@@ -98,7 +112,9 @@ export function buildCircleDecisions(
     const yes = 40 + (s % 55)
     return {
       id: `dq-${topic.slug}`,
-      question: QUESTION_TEMPLATES[(i + MAX_ACTIVE) % QUESTION_TEMPLATES.length].replace('{label}', topic.label),
+      question: QUESTION_TEMPLATES[
+        (i + MAX_ACTIVE) % QUESTION_TEMPLATES.length
+      ].replace('{label}', topic.label),
       topicSlug: topic.slug,
       topicLabel: topic.label,
       topicColor: topic.color,
@@ -111,7 +127,8 @@ export function buildCircleDecisions(
   })
 
   const closed = queue.filter((q) => q.status === 'closed').length + 9
-  const open = decisions.length + queue.filter((q) => q.status === 'open').length
+  const open =
+    decisions.length + queue.filter((q) => q.status === 'open').length
 
   // Viewer's per-topic expertise (mock). Spread so some topics fall below 1×
   // (the "limited signal" modal state) and others above.

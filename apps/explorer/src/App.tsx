@@ -256,7 +256,9 @@ export default function App() {
           onToggleCollapse={toggleNavCollapsed}
         />
         {showRightSidebar && (
-          <RightSidebar hidden={isProfilePage || isNotificationsPage || cartOpen} />
+          <RightSidebar
+            hidden={isProfilePage || isNotificationsPage || cartOpen}
+          />
         )}
 
         <CartDrawer

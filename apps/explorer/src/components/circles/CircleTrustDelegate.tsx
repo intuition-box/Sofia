@@ -32,7 +32,9 @@ export default function CircleTrustDelegate({
   const [stake, setStake] = useState(50)
 
   const toggle = (slug: string) =>
-    setSel((s) => (s.includes(slug) ? s.filter((x) => x !== slug) : [...s, slug]))
+    setSel((s) =>
+      s.includes(slug) ? s.filter((x) => x !== slug) : [...s, slug],
+    )
 
   const confirm = () => {
     if (!sel.length) return
@@ -48,7 +50,9 @@ export default function CircleTrustDelegate({
 
   return (
     <div className="mem-trust">
-      <p className="drill-col-title">Delegate trust — pick one or more domains</p>
+      <p className="drill-col-title">
+        Delegate trust — pick one or more domains
+      </p>
       <div className="trust-chips">
         {domains.map((d) => {
           const on = sel.includes(d.slug)
@@ -66,7 +70,8 @@ export default function CircleTrustDelegate({
                     }
                   : undefined
               }
-              onClick={() => toggle(d.slug)}>
+              onClick={() => toggle(d.slug)}
+            >
               <i className="dot" style={{ background: d.color }} />
               {d.label}
               <b className="tnum trust-chip-lvl">{d.level}</b>
@@ -83,7 +88,8 @@ export default function CircleTrustDelegate({
               key={p}
               type="button"
               className={stake === p ? 'stake-step on' : 'stake-step'}
-              onClick={() => setStake(p)}>
+              onClick={() => setStake(p)}
+            >
               {p}
             </button>
           ))}
@@ -95,7 +101,10 @@ export default function CircleTrustDelegate({
         className="btn btn-accent trust-confirm"
         onClick={confirm}
         disabled={!sel.length}
-        style={!sel.length ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
+        style={
+          !sel.length ? { opacity: 0.5, cursor: 'not-allowed' } : undefined
+        }
+      >
         <Icon name="bolt" />{' '}
         {sel.length
           ? `Trust in ${sel.length} domain${sel.length > 1 ? 's' : ''} · ${stake} TRUST`

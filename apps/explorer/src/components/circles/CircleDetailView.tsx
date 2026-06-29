@@ -193,7 +193,9 @@ export default function CircleDetailView({
     setDomain((d) => (d === id ? null : id))
     if (typeof document !== 'undefined') {
       requestAnimationFrame(() => {
-        document.getElementById('cp-members')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        document
+          .getElementById('cp-members')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     }
   }
@@ -208,7 +210,9 @@ export default function CircleDetailView({
     setDomain(slug)
     if (typeof document !== 'undefined') {
       requestAnimationFrame(() => {
-        document.getElementById('cp-topics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        document
+          .getElementById('cp-topics')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     }
   }
@@ -306,9 +310,7 @@ export default function CircleDetailView({
           keeps its original 3-col info strip (members card + most active +
           topics) + plain feed below. */}
       {isFree ? (
-        <div
-          className={`crd-free-gated-wrap${gated ? ' is-gated' : ''}`}
-        >
+        <div className={`crd-free-gated-wrap${gated ? ' is-gated' : ''}`}>
           {/* When a non-member views a locked group, the whole content
               column blurs (`content-gated`) and the `CircleJoinGate`
               overlay floats above it. `aria-hidden` mirrors the visual
@@ -342,33 +344,34 @@ export default function CircleDetailView({
                   <CircleDecisions data={decisions} onTheme={highlightTopic} />
                 ) : (
                   <>
-                <section className="module" id="cp-topics">
-                  <ModuleHead title="Topics" />
-                  <Treemap
-                    nodes={treemapNodes}
-                    selectedId={domain}
-                    onSelect={pickDomain}
-                  />
-                </section>
-                <CircleExpertise
-                  rows={expertise.rows}
-                  topicMeta={expertise.topicMeta}
-                  topDomains={expertise.topDomains}
-                  domain={domain}
-                  onClearDomain={() => setDomain(null)}
-                  feedItems={feedItems}
-                />
-                <section
-                  className="cf-module crd-activity-module"
-                  aria-labelledby="cf-activity-title">
-                  <CircleFeedSection
-                    addresses={circle.addresses}
-                    circleName={circle.name}
-                    members={circle.members}
-                    hideTitle
-                    moduleTitle="Activity"
-                  />
-                </section>
+                    <section className="module" id="cp-topics">
+                      <ModuleHead title="Topics" />
+                      <Treemap
+                        nodes={treemapNodes}
+                        selectedId={domain}
+                        onSelect={pickDomain}
+                      />
+                    </section>
+                    <CircleExpertise
+                      rows={expertise.rows}
+                      topicMeta={expertise.topicMeta}
+                      topDomains={expertise.topDomains}
+                      domain={domain}
+                      onClearDomain={() => setDomain(null)}
+                      feedItems={feedItems}
+                    />
+                    <section
+                      className="cf-module crd-activity-module"
+                      aria-labelledby="cf-activity-title"
+                    >
+                      <CircleFeedSection
+                        addresses={circle.addresses}
+                        circleName={circle.name}
+                        members={circle.members}
+                        hideTitle
+                        moduleTitle="Activity"
+                      />
+                    </section>
                   </>
                 )}
               </div>

@@ -18,7 +18,9 @@
   box-shadow: 0 14px 36px -12px rgba(0, 0, 0, 0.6);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   display: flex;
   align-items: center;
   gap: 9px;

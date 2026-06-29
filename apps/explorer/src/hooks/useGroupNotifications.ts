@@ -95,11 +95,13 @@ export function useNotificationsRealtime() {
           },
         })
         client = realtime
-        realtime.channels.get(`notif:${wallet}`).subscribe('notification', () => {
-          qc.invalidateQueries({ queryKey: KEY })
-          qc.invalidateQueries({ queryKey: ['groupApplications'] })
-          qc.invalidateQueries({ queryKey: ['groupMembership'] })
-        })
+        realtime.channels
+          .get(`notif:${wallet}`)
+          .subscribe('notification', () => {
+            qc.invalidateQueries({ queryKey: KEY })
+            qc.invalidateQueries({ queryKey: ['groupApplications'] })
+            qc.invalidateQueries({ queryKey: ['groupMembership'] })
+          })
       } catch (err) {
         console.warn('[notifications] Ably unavailable', err)
       }

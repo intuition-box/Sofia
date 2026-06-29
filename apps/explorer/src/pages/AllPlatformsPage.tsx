@@ -98,7 +98,10 @@ export default function AllPlatformsPage() {
 
       <div className="pm-filters">
         <div className="pm-filter-group pm-filter-search">
-          <MagnifierIcon className="pm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+          <MagnifierIcon
+            className="pm-search-icon h-3.5 w-3.5"
+            aria-hidden="true"
+          />
           <input
             type="search"
             className="pm-search-input"

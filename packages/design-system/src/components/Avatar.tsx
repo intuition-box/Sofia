@@ -43,7 +43,8 @@ export function avatarInitials(label: string): string {
 /** Stable gradient index from a label (when no explicit gradient is given). */
 function hashIndex(label: string): number {
   let h = 0
-  for (let i = 0; i < label.length; i++) h = (h * 31 + label.charCodeAt(i)) % 100000
+  for (let i = 0; i < label.length; i++)
+    h = (h * 31 + label.charCodeAt(i)) % 100000
   return h
 }
 
@@ -100,7 +101,8 @@ export function Avatar({
         background: gradientCss(gradient, label),
         fontSize: Math.round(size * 0.36),
         ...style,
-      }}>
+      }}
+    >
       {imageUrl ? (
         <img
           className="ds-avatar-img"

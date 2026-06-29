@@ -14,7 +14,9 @@ const GROUP_CREATOR_QUERY = `
 `
 
 /** Fetch the wallet that created a group atom (lowercased), or null. */
-export async function fetchGroupOwner(groupTermId: string): Promise<string | null> {
+export async function fetchGroupOwner(
+  groupTermId: string,
+): Promise<string | null> {
   try {
     const res = await fetch(env.indexerUrl, {
       method: 'POST',
@@ -41,7 +43,9 @@ export async function fetchGroupOwner(groupTermId: string): Promise<string | nul
  * concurrency-safe (the unique (wallet, groupTermId) constraint absorbs races).
  * Returns the owner wallet, or null if the indexer couldn't resolve it.
  */
-export async function ensureGroupSeeded(groupTermId: string): Promise<string | null> {
+export async function ensureGroupSeeded(
+  groupTermId: string,
+): Promise<string | null> {
   const existingOwner = await prisma.membership.findFirst({
     where: { groupTermId, role: 'OWNER' },
   })

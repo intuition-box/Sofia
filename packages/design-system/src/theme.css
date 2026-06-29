@@ -126,8 +126,8 @@
 [data-theme='light'],
 [data-theme='dark'],
 .dark {
-  --ds-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
-    monospace;
+  --ds-font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ds-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Shared layout constants. */

@@ -64,7 +64,11 @@ describe('<MemberAvatar />', () => {
   })
 
   it('falls back to coloured initials only when there is no wallet to seed', () => {
-    const member = makeMember({ label: 'Zoe', image: null, walletAddress: undefined })
+    const member = makeMember({
+      label: 'Zoe',
+      image: null,
+      walletAddress: undefined,
+    })
     const { container } = render(<MemberAvatar member={member} />)
     expect(container.querySelector('img')).toBeNull()
     expect(container.textContent).toContain('ZO')

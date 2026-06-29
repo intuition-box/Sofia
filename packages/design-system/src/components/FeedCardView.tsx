@@ -137,8 +137,7 @@ function OwnerMenu({ onDelete }: { onDelete: () => void }) {
   useEffect(() => {
     if (!open) return
     const close = (e: Event) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     const onKey = (e: globalThis.KeyboardEvent) =>
       e.key === 'Escape' && setOpen(false)
@@ -377,25 +376,26 @@ export function FeedCardView({
               the clipped thumb without being cut off. */}
           <div className="fc-xs-thumb-wrap">
             <div className="fc-xs-thumb">
-              {renderMedia
-                ? renderMedia(mediaCtx('thumb', 'fc-xs-thumb-img'))
-                : thumbnailSrc
-                  ? (
-                    <img
-                      src={thumbnailSrc}
-                      alt=""
-                      className="fc-xs-thumb-img"
-                      style={{ objectFit: 'contain', padding: '6px', background: '#fff', borderRadius: '8px' }}
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                  )
-                  : null}
+              {renderMedia ? (
+                renderMedia(mediaCtx('thumb', 'fc-xs-thumb-img'))
+              ) : thumbnailSrc ? (
+                <img
+                  src={thumbnailSrc}
+                  alt=""
+                  className="fc-xs-thumb-img"
+                  style={{
+                    objectFit: 'contain',
+                    padding: '6px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                  }}
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
+              ) : null}
             </div>
-            {badgeSlot && (
-              <span className="fc-xs-badge">{badgeSlot}</span>
-            )}
+            {badgeSlot && <span className="fc-xs-badge">{badgeSlot}</span>}
           </div>
           {/* Main */}
           <div className="fc-xs-main">
@@ -412,7 +412,8 @@ export function FeedCardView({
                         className="fc-avatar-img"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+                          ;(e.target as HTMLImageElement).style.visibility =
+                            'hidden'
                         }}
                       />
                     ) : (
@@ -424,7 +425,12 @@ export function FeedCardView({
                   <span className="fc-xs-handle">{handleSlot ?? handle}</span>
                 )}
                 {isOwner && onDelete && (
-                  <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
+                  <OwnerMenu
+                    onDelete={() => {
+                      setRemoved(true)
+                      onDelete()
+                    }}
+                  />
                 )}
               </div>
             )}
@@ -442,7 +448,9 @@ export function FeedCardView({
               {when && <span className="fc-xs-when">{when}</span>}
               {domain && <span className="fc-xs-domain">{domain}</span>}
               {/* up < 0 = caller opts out of vote display (e.g. cart context) */}
-              <div className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}>
+              <div
+                className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}
+              >
                 <span
                   className={`fc-xs-vote u${userUp ? ' on' : ''}`}
                   onClick={onVote ? vote('support') : undefined}
@@ -499,7 +507,12 @@ export function FeedCardView({
             <div className="fc-when">{when}</div>
           </div>
           {isOwner && onDelete && (
-            <OwnerMenu onDelete={() => { setRemoved(true); onDelete() }} />
+            <OwnerMenu
+              onDelete={() => {
+                setRemoved(true)
+                onDelete()
+              }}
+            />
           )}
         </div>
       </header>
@@ -540,7 +553,11 @@ export function FeedCardView({
             <button
               type="button"
               className={`fc-vote up${userUp ? ' on' : ''}${canUp ? '' : ' is-disabled'}`}
-              aria-label={canUp ? `Support (${up})` : `Support off — ${voteDisabledReason}`}
+              aria-label={
+                canUp
+                  ? `Support (${up})`
+                  : `Support off — ${voteDisabledReason}`
+              }
               aria-pressed={userUp}
               aria-disabled={!canUp}
               onClick={canUp ? vote('support') : (e) => e.stopPropagation()}
@@ -556,7 +573,11 @@ export function FeedCardView({
             <button
               type="button"
               className={`fc-vote down${userDown ? ' on' : ''}${canDown ? '' : ' is-disabled'}`}
-              aria-label={canDown ? `Oppose (${down})` : `Oppose off — ${voteDisabledReason}`}
+              aria-label={
+                canDown
+                  ? `Oppose (${down})`
+                  : `Oppose off — ${voteDisabledReason}`
+              }
               aria-pressed={userDown}
               aria-disabled={!canDown}
               onClick={canDown ? vote('oppose') : (e) => e.stopPropagation()}

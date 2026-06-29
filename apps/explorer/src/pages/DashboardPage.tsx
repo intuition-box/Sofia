@@ -40,7 +40,7 @@ const EXPLORE_LOADER_MESSAGES = [
   'Mapping what people actually trust…',
   'Curating discoveries worth your time…',
   'Connecting atoms across the graph…',
-  'Almost there — sorting the freshest activity…'
+  'Almost there — sorting the freshest activity…',
 ]
 
 /** Build a Set of platform IDs that belong to a given Sofia topic */

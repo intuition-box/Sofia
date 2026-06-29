@@ -126,7 +126,11 @@ export async function fetchAchievements(
       // verified social links → quest id by predicate label
       for (const t of socialLinks) {
         const objLabel = t?.object?.label
-        if (!objLabel || objLabel.includes('[object') || objLabel.includes('{')) {
+        if (
+          !objLabel ||
+          objLabel.includes('[object') ||
+          objLabel.includes('{')
+        ) {
           continue
         }
         const predLabel = t?.predicate?.label?.toLowerCase()

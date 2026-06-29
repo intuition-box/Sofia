@@ -144,7 +144,10 @@ function AttributeAdder({
   return (
     <div className="pa-adder">
       <span className="pa-adder-field">
-        <MagnifierIcon className="pa-adder-icon h-3.5 w-3.5" aria-hidden="true" />
+        <MagnifierIcon
+          className="pa-adder-icon h-3.5 w-3.5"
+          aria-hidden="true"
+        />
         <input
           type="search"
           className="pa-adder-input"
@@ -276,7 +279,10 @@ function withPending(
   pending: DisplayAttribute[],
 ): DisplayAttribute[] {
   const have = new Set(confirmed.map((a) => a.label.toLowerCase()))
-  return [...confirmed, ...pending.filter((p) => !have.has(p.label.toLowerCase()))]
+  return [
+    ...confirmed,
+    ...pending.filter((p) => !have.has(p.label.toLowerCase())),
+  ]
 }
 
 export default function ProfileAttributes({

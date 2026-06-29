@@ -32,21 +32,21 @@ antérieure qui embarquait le process MCP.
 
 ### Variables d'environnement (UI Phala)
 
-| Variable | Description |
-| --- | --- |
-| `NODE_ENV` | `production` |
-| `DATABASE_URL` | `file:/app/data/mastra.db` (volume DStack chiffré) |
-| `TOKEN_ENCRYPTION_KEY` | 32 bytes hex (64 chars) — REQUIS pour oauth_tokens |
-| `BOT_PRIVATE_KEY` | Clé privée du bot Human Attestor (NEUVE) |
-| `*_CLIENT_ID` / `*_CLIENT_SECRET` | OAuth (à remettre seulement pour les apps recréées) |
-| `GRAPH_API_KEY`, `NEYNAR_API_KEY`, `OPENSEA_API_KEY`, `ETH_MAINNET_RPC` | Signal fetchers |
+| Variable                                                                | Description                                         |
+| ----------------------------------------------------------------------- | --------------------------------------------------- |
+| `NODE_ENV`                                                              | `production`                                        |
+| `DATABASE_URL`                                                          | `file:/app/data/mastra.db` (volume DStack chiffré)  |
+| `TOKEN_ENCRYPTION_KEY`                                                  | 32 bytes hex (64 chars) — REQUIS pour oauth_tokens  |
+| `BOT_PRIVATE_KEY`                                                       | Clé privée du bot Human Attestor (NEUVE)            |
+| `*_CLIENT_ID` / `*_CLIENT_SECRET`                                       | OAuth (à remettre seulement pour les apps recréées) |
+| `GRAPH_API_KEY`, `NEYNAR_API_KEY`, `OPENSEA_API_KEY`, `ETH_MAINNET_RPC` | Signal fetchers                                     |
 
 Pas de var GaiaNet/MCP — config morte supprimée.
 
 ### Volume DStack chiffré
 
-| Mount Path | Description |
-| --- | --- |
+| Mount Path  | Description                                                                        |
+| ----------- | ---------------------------------------------------------------------------------- |
 | `/app/data` | LibSQL persisté (`mastra.db` + tokens OAuth) — **doit être monté**, sinon éphémère |
 
 ### Ports
@@ -88,12 +88,12 @@ curl http://localhost:4111/health
 
 ## Endpoints
 
-| Endpoint | Description |
-| --- | --- |
-| `GET /health` | Health check |
-| `GET /oauth/:platform/authorize` | Démarre l'OAuth |
-| `POST /oauth/:platform/callback` | Échange code → token |
-| `POST /api/workflows/{id}/start-async` | Lance un workflow |
+| Endpoint                               | Description          |
+| -------------------------------------- | -------------------- |
+| `GET /health`                          | Health check         |
+| `GET /oauth/:platform/authorize`       | Démarre l'OAuth      |
+| `POST /oauth/:platform/callback`       | Échange code → token |
+| `POST /api/workflows/{id}/start-async` | Lance un workflow    |
 
 Workflows : `socialVerifierWorkflow`, `linkSocialWorkflow`, `signalFetcherWorkflow`.
 

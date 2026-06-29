@@ -201,216 +201,221 @@ export default function Leaderboard({
       {/* Table — alpha / pool / trust share this one; streak & topic render
           their own self-contained tables below. */}
       {isSharedTable && (
-      <div className="overflow-x-auto">
-        <table className="lb-table">
-          {!isTrust && (
-            <thead>
-              <tr className="lb-border-row">
-                <th className="lb-rank-head">#</th>
-                <th className="lb-cell-head">User</th>
-                {columns.map((col) => {
-                  const active =
-                    (isAlpha ? alphaSortBy : poolSortBy) === col.key
-                  return (
-                    <th
-                      key={col.key}
-                      className={`lb-cell-head-num${active ? ' lb-sort-active' : ''}`}
-                      onClick={() =>
-                        isAlpha
-                          ? setAlphaSortBy(col.key as AlphaSortOption)
-                          : setPoolSortBy(col.key as PoolSortOption)
-                      }
-                    >
-                      {col.label}
-                      {active && ' ▼'}
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-          )}
-          {isTrust && (
-            <thead>
-              <tr className="lb-border-row">
-                <th className="lb-rank-head">#</th>
-                <th className="lb-cell-head">User</th>
-                {TRUST_COLUMNS.map((col) => {
-                  const active = trustSortBy === col.key
-                  return (
-                    <th
-                      key={col.key}
-                      className={`lb-cell-head-num${active ? ' lb-sort-active' : ''}`}
-                      onClick={() => setTrustSortBy(col.key)}
-                    >
-                      {col.label}
-                      {active && ' ▼'}
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-          )}
-          <tbody>
-            {loading &&
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="lb-border-row">
-                  <td colSpan={2 + columns.length} className="lb-cell">
-                    <div className="lb-skeleton bg-muted animate-pulse" />
+        <div className="overflow-x-auto">
+          <table className="lb-table">
+            {!isTrust && (
+              <thead>
+                <tr className="lb-border-row">
+                  <th className="lb-rank-head">#</th>
+                  <th className="lb-cell-head">User</th>
+                  {columns.map((col) => {
+                    const active =
+                      (isAlpha ? alphaSortBy : poolSortBy) === col.key
+                    return (
+                      <th
+                        key={col.key}
+                        className={`lb-cell-head-num${active ? ' lb-sort-active' : ''}`}
+                        onClick={() =>
+                          isAlpha
+                            ? setAlphaSortBy(col.key as AlphaSortOption)
+                            : setPoolSortBy(col.key as PoolSortOption)
+                        }
+                      >
+                        {col.label}
+                        {active && ' ▼'}
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+            )}
+            {isTrust && (
+              <thead>
+                <tr className="lb-border-row">
+                  <th className="lb-rank-head">#</th>
+                  <th className="lb-cell-head">User</th>
+                  {TRUST_COLUMNS.map((col) => {
+                    const active = trustSortBy === col.key
+                    return (
+                      <th
+                        key={col.key}
+                        className={`lb-cell-head-num${active ? ' lb-sort-active' : ''}`}
+                        onClick={() => setTrustSortBy(col.key)}
+                      >
+                        {col.label}
+                        {active && ' ▼'}
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {loading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="lb-border-row">
+                    <td colSpan={2 + columns.length} className="lb-cell">
+                      <div className="lb-skeleton bg-muted animate-pulse" />
+                    </td>
+                  </tr>
+                ))}
+
+              {error && (
+                <tr>
+                  <td colSpan={2 + columns.length} className="lb-error">
+                    {error}
                   </td>
                 </tr>
-              ))}
+              )}
 
-            {error && (
-              <tr>
-                <td colSpan={2 + columns.length} className="lb-error">
-                  {error}
-                </td>
-              </tr>
-            )}
+              {!loading &&
+                !error &&
+                isAlpha &&
+                sortedAlpha.map((user, i) => {
+                  const rank = i + 1
+                  const isSelf =
+                    connectedAddress &&
+                    user.address.toLowerCase() ===
+                      connectedAddress.toLowerCase()
+                  const cls =
+                    'lb-border-row' +
+                    (isSelf ? ' lb-self-row' : '') +
+                    (rank <= 3 ? ' lb-top-row' : '')
+                  return (
+                    <tr key={user.address} className={cls}>
+                      <RankCell rank={rank} />
+                      <td className="lb-cell">
+                        <a
+                          href={`${EXPLORER_URL}/address/${user.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="lb-user-link"
+                        >
+                          <img
+                            src={getAvatar(user.address)}
+                            alt=""
+                            className="lb-avatar"
+                          />
+                          <span className="lb-username">
+                            {getDisplay(user.address)}
+                          </span>
+                        </a>
+                      </td>
+                      <td className="lb-cell-num">
+                        {user.intentions.toLocaleString()}
+                      </td>
+                      <td className="lb-cell-num">{user.pioneer}</td>
+                      <td className="lb-cell-num">
+                        {formatTrust(user.trustVolume)}
+                      </td>
+                      <td className="lb-cell-num">
+                        {user.tx.toLocaleString()}
+                      </td>
+                    </tr>
+                  )
+                })}
 
-            {!loading &&
-              !error &&
-              isAlpha &&
-              sortedAlpha.map((user, i) => {
-                const rank = i + 1
-                const isSelf =
-                  connectedAddress &&
-                  user.address.toLowerCase() === connectedAddress.toLowerCase()
-                const cls =
-                  'lb-border-row' +
-                  (isSelf ? ' lb-self-row' : '') +
-                  (rank <= 3 ? ' lb-top-row' : '')
-                return (
-                  <tr key={user.address} className={cls}>
-                    <RankCell rank={rank} />
-                    <td className="lb-cell">
-                      <a
-                        href={`${EXPLORER_URL}/address/${user.address}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="lb-user-link"
+              {!loading &&
+                !error &&
+                isTrust &&
+                sortedTrust.map((entry, i) => {
+                  const rank = i + 1
+                  const addr = entry.address as Address
+                  const isSelf =
+                    connectedAddress &&
+                    addr.toLowerCase() === connectedAddress.toLowerCase()
+                  const cls =
+                    'lb-border-row' +
+                    (isSelf ? ' lb-self-row' : '') +
+                    (rank <= 3 ? ' lb-top-row' : '')
+                  return (
+                    <tr key={addr} className={cls}>
+                      <RankCell rank={rank} />
+                      <td className="lb-cell">
+                        <a
+                          href={`${EXPLORER_URL}/address/${addr}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="lb-user-link"
+                        >
+                          <img
+                            src={getAvatar(addr)}
+                            alt=""
+                            className="lb-avatar"
+                          />
+                          <span className="lb-username">
+                            {getDisplay(addr)}
+                          </span>
+                        </a>
+                      </td>
+                      <td className="lb-cell-num">{entry.score.toFixed(4)}</td>
+                      <td className="lb-cell-num">
+                        {(entry.confidence * 100).toFixed(1)}%
+                      </td>
+                      <td className="lb-cell-num">{entry.pathCount}</td>
+                    </tr>
+                  )
+                })}
+
+              {!loading &&
+                !error &&
+                activeTab === 'pool' &&
+                sortedPool.map((pos, i) => {
+                  const rank = i + 1
+                  const isSelf =
+                    connectedAddress &&
+                    pos.address.toLowerCase() === connectedAddress.toLowerCase()
+                  const cls =
+                    'lb-border-row' +
+                    (isSelf ? ' lb-self-row' : '') +
+                    (rank <= 3 ? ' lb-top-row' : '')
+                  return (
+                    <tr key={pos.address} className={cls}>
+                      <RankCell rank={rank} />
+                      <td className="lb-cell">
+                        <a
+                          href={`${EXPLORER_URL}/address/${pos.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="lb-user-link"
+                        >
+                          <img
+                            src={getAvatar(pos.address)}
+                            alt=""
+                            className="lb-avatar"
+                          />
+                          <span className="lb-username">
+                            {getDisplay(pos.address)}
+                          </span>
+                        </a>
+                      </td>
+                      <td className="lb-cell-num">
+                        {formatTrust(pos.currentValue)}
+                      </td>
+                      <td
+                        className={
+                          'lb-cell-num ' +
+                          (pos.pnl >= 0n ? 'lb-positive' : 'lb-negative')
+                        }
                       >
-                        <img
-                          src={getAvatar(user.address)}
-                          alt=""
-                          className="lb-avatar"
-                        />
-                        <span className="lb-username">
-                          {getDisplay(user.address)}
-                        </span>
-                      </a>
-                    </td>
-                    <td className="lb-cell-num">
-                      {user.intentions.toLocaleString()}
-                    </td>
-                    <td className="lb-cell-num">{user.pioneer}</td>
-                    <td className="lb-cell-num">
-                      {formatTrust(user.trustVolume)}
-                    </td>
-                    <td className="lb-cell-num">{user.tx.toLocaleString()}</td>
-                  </tr>
-                )
-              })}
-
-            {!loading &&
-              !error &&
-              isTrust &&
-              sortedTrust.map((entry, i) => {
-                const rank = i + 1
-                const addr = entry.address as Address
-                const isSelf =
-                  connectedAddress &&
-                  addr.toLowerCase() === connectedAddress.toLowerCase()
-                const cls =
-                  'lb-border-row' +
-                  (isSelf ? ' lb-self-row' : '') +
-                  (rank <= 3 ? ' lb-top-row' : '')
-                return (
-                  <tr key={addr} className={cls}>
-                    <RankCell rank={rank} />
-                    <td className="lb-cell">
-                      <a
-                        href={`${EXPLORER_URL}/address/${addr}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="lb-user-link"
+                        {pos.pnl >= 0n ? '+' : ''}
+                        {formatTrust(pos.pnl)}
+                      </td>
+                      <td
+                        className={
+                          'lb-cell-num ' +
+                          (pos.pnlPercent >= 0 ? 'lb-positive' : 'lb-negative')
+                        }
                       >
-                        <img
-                          src={getAvatar(addr)}
-                          alt=""
-                          className="lb-avatar"
-                        />
-                        <span className="lb-username">{getDisplay(addr)}</span>
-                      </a>
-                    </td>
-                    <td className="lb-cell-num">{entry.score.toFixed(4)}</td>
-                    <td className="lb-cell-num">
-                      {(entry.confidence * 100).toFixed(1)}%
-                    </td>
-                    <td className="lb-cell-num">{entry.pathCount}</td>
-                  </tr>
-                )
-              })}
-
-            {!loading &&
-              !error &&
-              activeTab === 'pool' &&
-              sortedPool.map((pos, i) => {
-                const rank = i + 1
-                const isSelf =
-                  connectedAddress &&
-                  pos.address.toLowerCase() === connectedAddress.toLowerCase()
-                const cls =
-                  'lb-border-row' +
-                  (isSelf ? ' lb-self-row' : '') +
-                  (rank <= 3 ? ' lb-top-row' : '')
-                return (
-                  <tr key={pos.address} className={cls}>
-                    <RankCell rank={rank} />
-                    <td className="lb-cell">
-                      <a
-                        href={`${EXPLORER_URL}/address/${pos.address}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="lb-user-link"
-                      >
-                        <img
-                          src={getAvatar(pos.address)}
-                          alt=""
-                          className="lb-avatar"
-                        />
-                        <span className="lb-username">
-                          {getDisplay(pos.address)}
-                        </span>
-                      </a>
-                    </td>
-                    <td className="lb-cell-num">
-                      {formatTrust(pos.currentValue)}
-                    </td>
-                    <td
-                      className={
-                        'lb-cell-num ' +
-                        (pos.pnl >= 0n ? 'lb-positive' : 'lb-negative')
-                      }
-                    >
-                      {pos.pnl >= 0n ? '+' : ''}
-                      {formatTrust(pos.pnl)}
-                    </td>
-                    <td
-                      className={
-                        'lb-cell-num ' +
-                        (pos.pnlPercent >= 0 ? 'lb-positive' : 'lb-negative')
-                      }
-                    >
-                      {pos.pnlPercent >= 0 ? '+' : ''}
-                      {pos.pnlPercent.toFixed(1)}%
-                    </td>
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
-      </div>
+                        {pos.pnlPercent >= 0 ? '+' : ''}
+                        {pos.pnlPercent.toFixed(1)}%
+                      </td>
+                    </tr>
+                  )
+                })}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {isStreak && (

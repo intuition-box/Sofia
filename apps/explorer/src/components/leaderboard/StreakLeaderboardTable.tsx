@@ -145,10 +145,10 @@ export default function StreakLeaderboardTable({
                         <span className="lb-username">{getDisplay(addr)}</span>
                       </a>
                     </td>
+                    <td className="lb-cell-num">{entry.streakDays}🔥</td>
                     <td className="lb-cell-num">
-                      {entry.streakDays}🔥
+                      {formatShares(entry.shares)}
                     </td>
-                    <td className="lb-cell-num">{formatShares(entry.shares)}</td>
                   </tr>
                 )
               })}

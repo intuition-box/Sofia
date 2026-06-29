@@ -39,21 +39,21 @@ core/
 
 ## Stack per surface
 
-| Surface                  | Framework                                        | Key libs                                       |
-| ------------------------ | ------------------------------------------------ | ---------------------------------------------- |
-| `apps/extension`         | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind      |
-| `apps/explorer`          | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI, Ably      |
-| `apps/landing`           | [Vite](https://vitejs.dev/) + React 19           | Privy, Viem, React Router, GSAP                |
-| `apps/og`                | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                     |
-| `apps/doc`               | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                       |
-| `apps/blog`              | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                       |
-| `packages/graphql`       | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query   |
-| `packages/design-system` | TS source workspace                              | shared theme tokens, components, hooks         |
-| `packages/taxonomy`      | TS source workspace                              | topics/categories/niches + atom registry       |
-| `packages/quests`        | TS source workspace                              | quest definitions + XP math                    |
-| `services/group-api`     | [Hono](https://hono.dev/) + Bun                  | Prisma/Postgres, Privy server-auth, Ably       |
-| `services/og-proxy`      | [Hono](https://hono.dev/) + Bun                  | OG image proxy                                 |
-| `services/mastra`        | [Mastra](https://mastra.ai/)                     | `@mastra/core`, Viem                           |
+| Surface                  | Framework                                        | Key libs                                     |
+| ------------------------ | ------------------------------------------------ | -------------------------------------------- |
+| `apps/extension`         | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
+| `apps/explorer`          | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI, Ably    |
+| `apps/landing`           | [Vite](https://vitejs.dev/) + React 19           | Privy, Viem, React Router, GSAP              |
+| `apps/og`                | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
+| `apps/doc`               | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                    |
+| `apps/blog`              | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                    |
+| `packages/graphql`       | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
+| `packages/design-system` | TS source workspace                              | shared theme tokens, components, hooks       |
+| `packages/taxonomy`      | TS source workspace                              | topics/categories/niches + atom registry     |
+| `packages/quests`        | TS source workspace                              | quest definitions + XP math                  |
+| `services/group-api`     | [Hono](https://hono.dev/) + Bun                  | Prisma/Postgres, Privy server-auth, Ably     |
+| `services/og-proxy`      | [Hono](https://hono.dev/) + Bun                  | OG image proxy                               |
+| `services/mastra`        | [Mastra](https://mastra.ai/)                     | `@mastra/core`, Viem                         |
 
 ## Requirements
 
@@ -74,13 +74,13 @@ bun install
 
 Copy the per-app `.env` files (they are **gitignored**):
 
-| Target                                                | Variables                                                                                       |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Target                                                | Variables                                                                                                   |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `apps/explorer/.env`                                  | `VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID`, `VITE_OG_BASE_URL`, `VITE_MCP_TRUST_URL`, `VITE_GROUP_API_URL` |
-| `apps/extension/.env.development` / `.env.production` | `PLASMO_PUBLIC_*` vars (network, server URL, Privy, etc.)                                        |
-| `apps/og/.env.local`                                  | `@vercel/kv` connection string                                                                  |
-| `services/group-api/.env`                             | `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ABLY_API_KEY`, `CORS_ORIGINS`              |
-| `services/mastra/.env`                                | `GAIANET_*`, `DATABASE_URL`, `MCP_SERVER_URL`                                                    |
+| `apps/extension/.env.development` / `.env.production` | `PLASMO_PUBLIC_*` vars (network, server URL, Privy, etc.)                                                   |
+| `apps/og/.env.local`                                  | `@vercel/kv` connection string                                                                              |
+| `services/group-api/.env`                             | `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ABLY_API_KEY`, `CORS_ORIGINS`                          |
+| `services/mastra/.env`                                | `GAIANET_*`, `DATABASE_URL`, `MCP_SERVER_URL`                                                               |
 
 Build the GraphQL package once (codegen regenerates `src/generated/index.ts`):
 
@@ -107,7 +107,7 @@ Root shortcuts (defined in the top-level `package.json`):
 | `bun run dev:og`                            | OG proxy (Hono + Bun)                                        |
 | `bun run dev:doc`                           | Docs site (Vite)                                             |
 | `bun run dev:blog`                          | Blog (Vite)                                                  |
-| `bun run dev:group-api`                     | group-join API (Hono + Bun) on `localhost:8788`             |
+| `bun run dev:group-api`                     | group-join API (Hono + Bun) on `localhost:8788`              |
 | `bun run dev:mastra`                        | Mastra AI workflows                                          |
 | `bun run --filter @0xsofia/graphql codegen` | Regenerate GraphQL types                                     |
 

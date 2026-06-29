@@ -44,7 +44,8 @@ const CORE_COUNT = 4
 /** Stable pseudo-random seed from a wallet — keeps mock backing deterministic. */
 function seedFromWallet(wallet: string): number {
   let h = 0
-  for (let i = 0; i < wallet.length; i++) h = (h * 31 + wallet.charCodeAt(i)) % 1_000_000
+  for (let i = 0; i < wallet.length; i++)
+    h = (h * 31 + wallet.charCodeAt(i)) % 1_000_000
   return h
 }
 

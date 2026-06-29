@@ -216,7 +216,9 @@ export default function CircleHeaderFree({
             </span>
             <span className="cf-kpi-value">
               {decisionsMeta?.open ?? 0}
-              <span className="cf-kpi-unit">/ {decisionsMeta?.closed ?? 0}</span>
+              <span className="cf-kpi-unit">
+                / {decisionsMeta?.closed ?? 0}
+              </span>
             </span>
             <span className="cf-kpi-delta is-up">
               {decisionsActive ? '‹ Back to Circle' : 'Open vote room →'}

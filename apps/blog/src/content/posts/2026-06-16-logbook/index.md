@@ -15,7 +15,7 @@ gate who gets in, with an actual backend behind the request. The scores page
 got a narrative instead of a number. And the extension learned to turn a
 certification into a card you can share.
 
-{/* truncate */}
+{/_ truncate _/}
 
 ## The Explore page became real
 

@@ -14,6 +14,7 @@ Audit de sécurité + rotation des secrets, **2026-06-10**.
 ## Correctifs appliqués
 
 ### 1. Backdoor dev désactivé de force en prod — [env.ts](src/env.ts)
+
 `authMiddleware` ([auth.ts](src/auth.ts)) accepte une impersonation de wallet via les
 en-têtes `x-dev-token` + `x-dev-wallet` quand `DEV_SEED_TOKEN` est défini. C'était une
 clé maîtresse (lire/écrire la BDD comme n'importe quel wallet, se nommer OWNER via
@@ -23,16 +24,17 @@ est physiquement inexécutable en prod, même si la variable traîne dans l'envi
 Un `DEV_SEED_TOKEN` présent en prod est loggé en erreur au boot.
 
 ### 2. Validation / plafond sur les écritures — [applications.ts](src/routes/applications.ts)
+
 `sanitizeAnswers()` : rejette `answers` non-objet (400) ou > 8 Ko (413). `note` borné à
 1000 caractères. Empêche un appelant authentifié de stocker des blobs arbitraires.
 
 ## Rotation des secrets (tous avaient été exposés en clair)
 
-| Secret | Gravité | État |
-|---|---|---|
-| `DATABASE_URL` (Neon) | 🔴 critique (accès direct BDD) | ✅ tournée |
-| `PRIVY_APP_SECRET` | 🟠 élevée (auth) | ✅ tourné |
-| `ABLY_API_KEY` | 🟡 faible (pub/sub notifs temps-réel) | ⏳ ancienne clé supprimée, à recréer |
+| Secret                | Gravité                               | État                                 |
+| --------------------- | ------------------------------------- | ------------------------------------ |
+| `DATABASE_URL` (Neon) | 🔴 critique (accès direct BDD)        | ✅ tournée                           |
+| `PRIVY_APP_SECRET`    | 🟠 élevée (auth)                      | ✅ tourné                            |
+| `ABLY_API_KEY`        | 🟡 faible (pub/sub notifs temps-réel) | ⏳ ancienne clé supprimée, à recréer |
 
 Le `.env` est gitignoré et **n'a jamais été commité** (vérifié) — rotation par précaution
 car les valeurs avaient transité dans une session d'assistance.

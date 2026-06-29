@@ -33,7 +33,8 @@ dev.post('/dev/seed-owner', async (c) => {
 
   const wallet = body.wallet.toLowerCase()
   const role =
-    ROLES.find((r) => r === body.role?.toUpperCase()) ?? ('OWNER' as MembershipRole)
+    ROLES.find((r) => r === body.role?.toUpperCase()) ??
+    ('OWNER' as MembershipRole)
 
   const membership = await prisma.membership.upsert({
     where: { wallet_groupTermId: { wallet, groupTermId: body.groupTermId } },

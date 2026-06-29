@@ -35,7 +35,11 @@ export function Toaster() {
   }, [])
 
   return (
-    <div className={msg ? 'ds-toast ds-toast--show' : 'ds-toast'} role="status" aria-live="polite">
+    <div
+      className={msg ? 'ds-toast ds-toast--show' : 'ds-toast'}
+      role="status"
+      aria-live="polite"
+    >
       <Icon name="check" /> {msg}
     </div>
   )

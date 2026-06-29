@@ -47,7 +47,9 @@ export async function fetchTopicCertifications(
   if (!topicTermId) return []
 
   // Step 1: get cert triple IDs linked to this topic
-  const ctxData = await useGetTopicContextTriplesQuery.fetcher({ topicTermId })()
+  const ctxData = await useGetTopicContextTriplesQuery.fetcher({
+    topicTermId,
+  })()
   const contextTriples = ctxData.triples || []
   const certTermIds = contextTriples
     .map((t: any) => t.subject_id)

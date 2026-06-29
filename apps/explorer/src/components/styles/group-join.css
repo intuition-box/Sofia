@@ -77,7 +77,9 @@
   background: var(--ds-bg-subtle);
   color: var(--ds-ink-soft);
   cursor: pointer;
-  transition: filter 0.13s, border-color 0.13s;
+  transition:
+    filter 0.13s,
+    border-color 0.13s;
 }
 .gj-btn:disabled {
   opacity: 0.5;
@@ -95,4 +97,3 @@
   border-color: var(--intent-distrusted, #ef4444);
   color: var(--intent-distrusted, #ef4444);
 }
-
