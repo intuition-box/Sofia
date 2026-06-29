@@ -10,13 +10,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TopicIcon } from '../components/TopicIcon'
 import { teamFor } from '../data/teams'
-import { likedBy } from '../data/teammates'
 import { suggestCategory, CATEGORY_MAP, CATEGORIES } from '../data/topics'
 import { classify } from '../data/taxonomyNav'
 import { addBookmark, setContext, useMyBookmarks } from '../lib/mybookmarks'
 import { MY_BOOKMARKS, type BmNode, type BmFolder } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { countLinks, allLinksDeep } from '../data/folderTree'
+import { useSharers } from '../hooks/useSharers'
+import { bookmarkKey } from '../lib/bookmarkKey'
 import { PostDetail, type PostItem } from './PostDetail'
 
 const SHOWN_CAP = 60
@@ -100,6 +101,10 @@ export function Bookmarks() {
 
   const currentFolderName = path.length ? path[path.length - 1] : ''
   const totalHere = needle || topicFilter !== 'all' ? links.length : countLinks(currentNodes)
+
+  // REAL social proof: who in the circle has shared each visible URL (batched).
+  const visibleKeys = useMemo(() => links.map((l) => bookmarkKey(l.url)), [links])
+  const sharers = useSharers(visibleKeys)
 
   // Child folders selectable from breadcrumb crumb `c` (0 = root "My bookmarks").
   const foldersAt = (c: number): BmFolder[] => {
@@ -222,13 +227,13 @@ export function Bookmarks() {
             <div className="kb-feed lib-grid">
               {links.map((l) => {
                 const host = hostOf(l.url)
-                const liked = likedBy(l.url)
+                const people = sharers[bookmarkKey(l.url)] ?? []
                 const ctxId = my.topics[l.url] ?? suggestCategory('', l.url)
                 const topicLabel = CATEGORY_MAP[ctxId]?.label
                 const isLiked = likes.has(l.url)
-                const likeCount = liked.total + (isLiked ? 1 : 0)
+                const likeCount = people.length + (isLiked ? 1 : 0)
                 const abs = l.url.startsWith('http') ? l.url : `https://${l.url}`
-                const keepers = liked.people.slice(0, 3).map((p) => ({ name: p.name, grad: p.grad }))
+                const keepers = people.slice(0, 3).map((p) => ({ name: p.displayName, grad: p.avatarSeed }))
                 const shown = keepers.length ? keepers : [{ name: 'You', grad: 0 }]
                 return (
                   <div

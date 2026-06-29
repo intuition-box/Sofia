@@ -15,13 +15,16 @@ import { DeptTagByName, DomainTagByTopic } from '../components/Tag'
 import { CATEGORY_MAP } from '../data/topics'
 import { TEAM_MAP } from '../data/teams'
 import { docType, whyFor, type Comment } from '../lib/discussion'
-import { likedBy } from '../data/teammates'
 import { avGrad, initials } from '../data/helpers'
 import { VoteButton, voteSeed } from '../components/VoteButton'
 import { bookmarkKey } from '../lib/bookmarkKey'
 import { useComments } from '../hooks/useComments'
 import { useAuth } from '../hooks/useAuth'
-import type { PublicComment } from '../services/circleProApi'
+import { useCircle } from '../hooks/useCircle'
+import { useSharers } from '../hooks/useSharers'
+import { suggestCategory } from '../data/topics'
+import { toast } from '../lib/toast'
+import { postBookmark, isNotMemberError, type PublicComment } from '../services/circleProApi'
 
 export interface PostItem {
   title: string
@@ -180,7 +183,8 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
   const abs = item.url.startsWith('http') ? item.url : `https://${item.url}`
 
   const key = bookmarkKey(item.url)
-  const { wallet, authenticated, login } = useAuth()
+  const { wallet, authenticated, login, token } = useAuth()
+  const { circleId } = useCircle()
   const {
     items: comments,
     loading,
@@ -194,8 +198,31 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
     toggleLike,
   } = useComments(key)
 
-  const sharer = likedBy(item.url).people[0]
+  // REAL sharer: the first person in the circle who shared this URL.
+  const sharedPeople = useSharers([key])
+  const sharer = sharedPeople[key]?.[0]
   const [shotOk, setShotOk] = useState(true)
+  const [sharing, setSharing] = useState(false)
+  const [shared, setShared] = useState(false)
+
+  const share = async () => {
+    if (sharing || shared) return
+    if (!authenticated) return login()
+    setSharing(true)
+    try {
+      await postBookmark(
+        await token(),
+        { url: item.url, normalizedUrl: key, title: item.title, context: '', tags: [], departmentId: null },
+        circleId,
+      )
+      setShared(true)
+      toast('Shared to your circle')
+    } catch (e) {
+      toast(isNotMemberError(e) ? 'Join this circle to share' : 'Could not share')
+    } finally {
+      setSharing(false)
+    }
+  }
 
   // Escape closes — same affordance as the skill / tool modals.
   useEffect(() => {
@@ -213,12 +240,12 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
           <header className="skv-topbar">
             {sharer ? (
               <div className="psk-head">
-                <span className="psk-author-av" style={{ background: avGrad(sharer.grad) }}>
-                  {initials(sharer.name)}
+                <span className="psk-author-av" style={{ background: avGrad(sharer.avatarSeed) }}>
+                  {initials(sharer.displayName)}
                 </span>
                 <div className="psk-author-meta">
-                  <div className="psk-author-name">{sharer.name}</div>
-                  <div className="psk-author-sub mono">Shared · {WHEN[voteSeed(item.url) % WHEN.length]}</div>
+                  <div className="psk-author-name">{sharer.displayName}</div>
+                  <div className="psk-author-sub mono">Shared · in the circle</div>
                 </div>
               </div>
             ) : null}
@@ -226,8 +253,8 @@ export function PostDetail({ item, onBack }: { item: PostItem; onBack: () => voi
               <button className="btn btn--outline btn--sm">
                 <Icon name="bookmark" /> Save
               </button>
-              <button className="btn btn--outline btn--sm">
-                <Icon name="send" /> Share
+              <button className="btn btn--outline btn--sm" onClick={share} disabled={sharing || shared}>
+                <Icon name="send" /> {shared ? 'Shared' : sharing ? 'Sharing…' : 'Share'}
               </button>
               <button className="skv-icon btn-icon" aria-label="Close" onClick={onBack}>
                 <Icon name="close" />
