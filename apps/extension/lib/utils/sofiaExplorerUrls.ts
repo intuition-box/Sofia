@@ -32,7 +32,6 @@ export const getProfilePlatformUrl = (domain: string): string =>
 export const getExplorerHomeUrl = (): string => `${base}/feed`
 
 /** URL to the signed-in user's own profile in Sofia Explorer.
- *  Pinned to the production explorer subdomain with the `/profil`
- *  path (no trailing "e") as explicitly requested by the product owner. */
+ *  Pinned to the production explorer subdomain with the `/profile` path. */
 export const getProfileUrl = (): string =>
-  "https://explorer.sofia.intuition.box/profil"
+  "https://explorer.sofia.intuition.box/profile"
