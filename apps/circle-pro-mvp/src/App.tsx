@@ -1,21 +1,22 @@
 /**
- * Sofia Pro — app shell. Onboarding veil → a topic-first personal knowledge
- * base. Two surfaces only: My bookmarks (the home) and Overview. Members is a
- * drill-in from the Overview topic map. All data is mocked.
+ * Sofia Pro — app shell. Onboarding veil → the workspace's knowledge base.
+ * Top-level surfaces: Essential and My bookmarks; clicking a team in the rail
+ * opens its detail (TeamView). Multi-tenant via the CircleSwitcher. Real data.
  */
 import { useEffect, useState } from 'react'
 import { Nav } from './shell/Nav'
+import { CircleSwitcher } from './shell/CircleSwitcher'
 import { ProfileGate } from './shell/ProfileGate'
 import { Toast, toast } from './lib/toast'
 import { Bookmarks } from './tabs/Bookmarks'
 import { Essential } from './tabs/Essential'
-import { TeamView, type TeamMeta } from './tabs/TeamView'
+import { TeamView } from './tabs/TeamView'
+import type { PublicDepartment } from './services/circleProApi'
 import { Onboarding } from './onboarding/Onboarding'
 import { TagGallery } from './components/TagGallery'
 import { setImported } from './lib/imported'
 import { useAuth } from './hooks/useAuth'
 import { join } from './lib/gate'
-import { TEAM_MAP } from './data/teams'
 import './onboarding/onboarding.css'
 import './styles/shell.css'
 import './styles/bookmarks.css'
@@ -34,7 +35,7 @@ import './styles/overlays.css'
    appearance; retained classes keep only layout (margin/position). */
 import './styles/buttons.css'
 
-type TabId = 'essential' | 'bookmarks' | 'team'
+type Tab = 'essential' | 'bookmarks'
 
 /** Dev-only tag design-system sheet: open the app with `?tags` in the URL. */
 const SHOW_TAG_GALLERY = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tags')
@@ -42,35 +43,34 @@ const SHOW_TAG_GALLERY = typeof window !== 'undefined' && new URLSearchParams(wi
 export default function App() {
   if (SHOW_TAG_GALLERY) return <TagGallery />
 
-  const [tab, setTab] = useState<TabId>('essential')
-  const [team, setTeam] = useState<TeamMeta | null>(null)
+  const [tab, setTab] = useState<Tab>('essential')
+  const [dept, setDept] = useState<PublicDepartment | null>(null)
   const [onboarding, setOnboarding] = useState(true)
 
-  // Signing in unlocks the member-only surfaces (the mock gate reflects real
+  // Signing in unlocks the member-only surfaces (the local gate reflects real
   // auth). Guests still browse the public page.
   const { authenticated } = useAuth()
   useEffect(() => {
     if (authenticated) join()
   }, [authenticated])
 
-  const goTab = (t: TabId) => {
+  const goTab = (t: Tab) => {
     setTab(t)
+    setDept(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  const openTeam = (id: string) => {
-    const t = TEAM_MAP[id]
-    if (!t) return
-    setTeam({ id, label: t.label, color: t.color })
-    setTab('team')
+  const openDept = (d: PublicDepartment) => {
+    setDept(d)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
     <div className="app">
       <Nav
-        current={tab === 'bookmarks' ? 'bookmarks' : tab === 'essential' ? 'essential' : null}
-        onNav={(v) => goTab(v)}
-        onOpenTeam={openTeam}
+        current={dept ? null : tab}
+        onNav={goTab}
+        activeDeptId={dept?.id ?? null}
+        onOpenDepartment={openDept}
       />
       <main className="main">
         {onboarding ? (
@@ -79,17 +79,24 @@ export default function App() {
               setImported(items)
               setOnboarding(false)
               goTab('bookmarks')
-              toast(`Imported ${items.length} bookmarks into Intuition Core Team`)
+              toast(`Imported ${items.length} bookmarks`)
             }}
             onSkip={() => setOnboarding(false)}
           />
-        ) : tab === 'essential' ? (
-          <Essential />
-        ) : tab === 'bookmarks' ? (
-          <Bookmarks />
-        ) : tab === 'team' && team ? (
-          <TeamView key={team.id} team={team} />
-        ) : null}
+        ) : (
+          <>
+            <div className="main-topbar">
+              <CircleSwitcher />
+            </div>
+            {dept ? (
+              <TeamView key={dept.id} department={dept} onBack={() => setDept(null)} />
+            ) : tab === 'essential' ? (
+              <Essential />
+            ) : (
+              <Bookmarks />
+            )}
+          </>
+        )}
       </main>
 
       <ProfileGate />

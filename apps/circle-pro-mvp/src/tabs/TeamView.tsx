@@ -1,48 +1,22 @@
 /**
- * TeamView — opens as a tab (after Overview) when you click a team in the rail.
- * For now: a detailed table of the bookmarks that team keeps, and which of its
- * members keep each one. The "team votes to add a favourite → it shows up here"
- * logic comes next; this is the surface it lands in. Click a row → its detail.
+ * TeamView — a team's (department's) detail page. Opens when you click a team in
+ * the rail. Tabs: Resources (the team's real shared bookmarks, with who in the
+ * circle keeps each), Skills, Tools, Archive (memory) and Members. The colleague's
+ * design, wired to the real backend.
  */
 import { useMemo, useState } from 'react'
-import { likedBy } from '../data/teammates'
-import { teamFor } from '../data/teams'
 import { suggestCategory } from '../data/topics'
-import { MY_BOOKMARKS, type BmNode } from '../data/myBookmarks'
 import { avGrad, hostOf, initials } from '../data/helpers'
 import { Activity, Tools } from './Activity'
 import { Archive } from './Archive'
 import { TeamMembers } from './TeamMembers'
 import { Icon } from '../components/Icon'
 import { VoteButton, voteSeed } from '../components/VoteButton'
-import type { RoleId } from '../data/types'
 import { PostDetail, type PostItem } from './PostDetail'
+import { useDepartmentBookmarks } from '../hooks/useDepartmentBookmarks'
+import { useSharers } from '../hooks/useSharers'
+import type { PublicBookmark, PublicDepartment } from '../services/circleProApi'
 
-export interface TeamMeta {
-  id: string
-  label: string
-  color: string
-}
-
-/** Map a navbar team to its closest functional role, to scope tools + memory. */
-const TEAM_ROLE: Record<string, RoleId> = { eng: 'dev', design: 'design', marketing: 'socials' }
-
-// NOTE(audit 2026-06-25): `FlatLink` défini 3× (ici, Bookmarks.tsx, Onboarding.tsx). Forme de base {title,url} à remonter dans data/types.ts.
-interface FlatLink {
-  title: string
-  url: string
-}
-
-// TODO(audit 2026-06-25): doublon de `allLinksDeep` (data/folderTree.ts). Importer celui-ci et supprimer cette copie.
-function allLinks(nodes: BmNode[], out: FlatLink[] = []): FlatLink[] {
-  for (const x of nodes) {
-    if (x.type === 'link') out.push({ title: x.title, url: x.url })
-    else allLinks(x.children, out)
-  }
-  return out
-}
-
-// NOTE(audit 2026-06-25): `Favicon` dupliqué 3× (ici, Onboarding.tsx, Essential.tsx). À extraire dans components/Favicon.tsx (classes CSS différentes → passer la classe en prop, sans toucher au CSS).
 function Favicon({ host }: { host: string }) {
   const [err, setErr] = useState(false)
   if (err || !host) return <span className="tv-fav tv-fav--fb">{(host[0] || '?').toUpperCase()}</span>
@@ -62,43 +36,57 @@ function rowMeta(url: string): { replies: number; views: number; when: string } 
   return { replies: h % 7, views: 6 + (h2 % 55), when: WHEN[h % WHEN.length] }
 }
 
-export function TeamView({ team }: { team: TeamMeta }) {
+export function TeamView({
+  department,
+  onBack,
+}: {
+  department: PublicDepartment
+  onBack: () => void
+}) {
   const [selected, setSelected] = useState<PostItem | null>(null)
   const [shotOk, setShotOk] = useState(true)
   const [q, setQ] = useState('')
   const [view, setView] = useState<'overview' | 'members' | 'memory' | 'skills' | 'tools'>('overview')
-  const teamRole = TEAM_ROLE[team.id] ?? 'dev'
 
-  const rows = useMemo(() => {
-    return allLinks(MY_BOOKMARKS as BmNode[])
-      .map((l) => ({ l, people: likedBy(l.url).people.filter((p) => p.teamId === team.id) }))
-      .filter((r) => r.people.length > 0)
-      .sort((a, b) => b.people.length - a.people.length)
-      .slice(0, 40)
-  }, [team.id])
+  const { items } = useDepartmentBookmarks(department.id)
+  const keys = useMemo(() => items.map((b) => b.normalizedUrl), [items])
+  const sharers = useSharers(keys)
 
-  const open = (l: FlatLink) => {
+  // Each resource row carries the real people in the circle who keep it (falls
+  // back to the author when nobody else has shared the URL yet).
+  const rows = useMemo(
+    () =>
+      items
+        .map((b) => ({ b, people: sharers[b.normalizedUrl]?.length ? sharers[b.normalizedUrl] : [b.author] }))
+        .sort((a, b) => b.people.length - a.people.length),
+    [items, sharers],
+  )
+
+  const open = (b: PublicBookmark) => {
     setSelected({
-      title: l.title,
-      url: l.url,
-      host: hostOf(l.url),
-      topicId: suggestCategory('', l.url),
-      teamId: teamFor(l.url),
+      title: b.title,
+      url: b.url,
+      host: hostOf(b.url),
+      topicId: suggestCategory('', b.url),
+      teamId: department.id,
     })
   }
 
   const needle = q.trim().toLowerCase()
-  const visibleRows = needle ? rows.filter((r) => r.l.title.toLowerCase().includes(needle)) : rows
+  const visibleRows = needle ? rows.filter((r) => r.b.title.toLowerCase().includes(needle)) : rows
   const featured = visibleRows[0]
   const rest = visibleRows.slice(1)
-  const featAbs = featured ? (featured.l.url.startsWith('http') ? featured.l.url : `https://${featured.l.url}`) : ''
+  const featAbs = featured ? (featured.b.url.startsWith('http') ? featured.b.url : `https://${featured.b.url}`) : ''
 
   return (
     <div className="content">
       <div className="tv">
         <header className="tv-head">
-          <h1 className="tv-title" style={{ color: team.color }}>
-            {team.label} team
+          <button type="button" className="btn btn--quiet btn--sm" onClick={onBack}>
+            ← Teams
+          </button>
+          <h1 className="tv-title" style={{ color: department.color || undefined }}>
+            {department.name} team
           </h1>
         </header>
 
@@ -120,111 +108,111 @@ export function TeamView({ team }: { team: TeamMeta }) {
         ) : view === 'memory' ? (
           <Archive />
         ) : view === 'skills' ? (
-          <Activity role={teamRole} />
+          <Activity />
         ) : view === 'tools' ? (
           <Tools />
         ) : (
           <>
-        <form className="tv-search" onSubmit={(e) => e.preventDefault()}>
-          <Icon name="search" />
-          <input
-            className="tv-search-input"
-            placeholder={`Search ${team.label} — tools, skills, memory, links…`}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </form>
+            <form className="tv-search" onSubmit={(e) => e.preventDefault()}>
+              <Icon name="search" />
+              <input
+                className="tv-search-input"
+                placeholder={`Search ${department.name} — tools, skills, memory, links…`}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </form>
 
-        {featured ? (
-          <div
-            className="tv-featured"
-            style={{ ['--c' as string]: team.color }}
-            role="button"
-            tabIndex={0}
-            onClick={() => open(featured.l)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') open(featured.l)
-            }}
-          >
-            <span className="tv-feat-shot">
-              {shotOk ? (
-                <img
-                  className="tv-feat-img"
-                  src={`https://image.thum.io/get/width/640/crop/440/noanimate/${featAbs}`}
-                  alt=""
-                  loading="lazy"
-                  onError={() => setShotOk(false)}
-                />
-              ) : (
-                <img className="tv-feat-fav" src={`https://www.google.com/s2/favicons?domain=${hostOf(featured.l.url)}&sz=128`} alt="" />
-              )}
-            </span>
-            <span className="tv-feat-body">
-              <span className="tv-feat-eyebrow">Featured</span>
-              <span className="tv-feat-title">{featured.l.title}</span>
-              <span className="tv-feat-host mono">{hostOf(featured.l.url)}</span>
-              <span className="tv-feat-people">
-                <span className="tv-feat-avs">
-                  {featured.people.slice(0, 5).map((p, j) => (
-                    <span key={p.name} className="tv-feat-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }}>
-                      {initials(p.name)}
+            {featured ? (
+              <div
+                className="tv-featured"
+                style={{ ['--c' as string]: department.color || '#8f8ca8' }}
+                role="button"
+                tabIndex={0}
+                onClick={() => open(featured.b)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') open(featured.b)
+                }}
+              >
+                <span className="tv-feat-shot">
+                  {shotOk ? (
+                    <img
+                      className="tv-feat-img"
+                      src={`https://image.thum.io/get/width/640/crop/440/noanimate/${featAbs}`}
+                      alt=""
+                      loading="lazy"
+                      onError={() => setShotOk(false)}
+                    />
+                  ) : (
+                    <img className="tv-feat-fav" src={`https://www.google.com/s2/favicons?domain=${hostOf(featured.b.url)}&sz=128`} alt="" />
+                  )}
+                </span>
+                <span className="tv-feat-body">
+                  <span className="tv-feat-eyebrow">Featured</span>
+                  <span className="tv-feat-title">{featured.b.title}</span>
+                  <span className="tv-feat-host mono">{hostOf(featured.b.url)}</span>
+                  <span className="tv-feat-people">
+                    <span className="tv-feat-avs">
+                      {featured.people.slice(0, 5).map((p, j) => (
+                        <span key={p.wallet} className="tv-feat-av" title={p.displayName} style={{ background: avGrad(p.avatarSeed), zIndex: 9 - j }}>
+                          {initials(p.displayName)}
+                        </span>
+                      ))}
                     </span>
-                  ))}
+                    <span>
+                      <b className="tnum">{featured.people.length}</b> in {department.name} keep this
+                    </span>
+                  </span>
+                  <VoteButton base={voteSeed(featured.b.url)} className="tv-feat-vote" />
                 </span>
-                <span>
-                  <b className="tnum">{featured.people.length}</b> in {team.label} comment
-                </span>
-              </span>
-              <VoteButton base={voteSeed(featured.l.url)} className="tv-feat-vote" />
-            </span>
-          </div>
-        ) : (
-          <p className="bk2-empty">No bookmarks kept by {team.label} yet.</p>
-        )}
+              </div>
+            ) : (
+              <p className="bk2-empty">No bookmarks kept by {department.name} yet.</p>
+            )}
 
-        {rest.length ? (
-          <div className="tv-table">
-            <div className="tv-row tv-row--head">
-              <span className="tv-th-topic">Topic</span>
-              <span className="tv-th-av" />
-              <span className="tv-th-num">Votes</span>
-              <span className="tv-th-num">Replies</span>
-              <span className="tv-th-num">Views</span>
-              <span className="tv-th-num">Activity</span>
-            </div>
-            {rest.map(({ l, people }) => {
-              const m = rowMeta(l.url)
-              return (
-                <div
-                  className="tv-row"
-                  key={l.url}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => open(l)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') open(l)
-                  }}
-                >
-                  <span className="tv-res">
-                    <Favicon host={hostOf(l.url)} />
-                    <span className="tv-res-t">{l.title}</span>
-                  </span>
-                  <span className="tv-avs">
-                    {people.slice(0, 4).map((p, j) => (
-                      <span key={p.name} className="tv-av" title={p.name} style={{ background: avGrad(p.grad), zIndex: 9 - j }}>
-                        {initials(p.name)}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="tv-num tnum tv-votes">▲ {voteSeed(l.url)}</span>
-                  <span className="tv-num tnum">{m.replies}</span>
-                  <span className="tv-num tnum">{m.views}</span>
-                  <span className="tv-num tv-when">{m.when}</span>
+            {rest.length ? (
+              <div className="tv-table">
+                <div className="tv-row tv-row--head">
+                  <span className="tv-th-topic">Topic</span>
+                  <span className="tv-th-av" />
+                  <span className="tv-th-num">Votes</span>
+                  <span className="tv-th-num">Replies</span>
+                  <span className="tv-th-num">Views</span>
+                  <span className="tv-th-num">Activity</span>
                 </div>
-              )
-            })}
-          </div>
-        ) : null}
+                {rest.map(({ b, people }) => {
+                  const m = rowMeta(b.url)
+                  return (
+                    <div
+                      className="tv-row"
+                      key={b.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => open(b)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') open(b)
+                      }}
+                    >
+                      <span className="tv-res">
+                        <Favicon host={hostOf(b.url)} />
+                        <span className="tv-res-t">{b.title}</span>
+                      </span>
+                      <span className="tv-avs">
+                        {people.slice(0, 4).map((p, j) => (
+                          <span key={p.wallet} className="tv-av" title={p.displayName} style={{ background: avGrad(p.avatarSeed), zIndex: 9 - j }}>
+                            {initials(p.displayName)}
+                          </span>
+                        ))}
+                      </span>
+                      <span className="tv-num tnum tv-votes">▲ {voteSeed(b.url)}</span>
+                      <span className="tv-num tnum">{m.replies}</span>
+                      <span className="tv-num tnum">{m.views}</span>
+                      <span className="tv-num tv-when">{m.when}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
           </>
         )}
       </div>
