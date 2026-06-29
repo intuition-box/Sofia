@@ -55,7 +55,7 @@ function gradientCss(gradient: AvatarProps['gradient'], label: string): string {
       : AVATAR_GRADIENTS[
           (typeof gradient === 'number' ? gradient : hashIndex(label)) %
             AVATAR_GRADIENTS.length
-        ]
+        ]!
   return `linear-gradient(140deg, ${pair[0]}, ${pair[1]})`
 }
 

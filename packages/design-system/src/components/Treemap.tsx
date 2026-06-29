@@ -84,6 +84,7 @@ function squarify(items: TreemapNode[], W: number, H: number): Rect[] {
 
   while (q.length) {
     const it = q[0]
+    if (!it) break
     if (row.length === 0) {
       row.push(it)
       rowArea += it.area
