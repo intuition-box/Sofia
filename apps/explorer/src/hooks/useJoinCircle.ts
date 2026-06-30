@@ -37,8 +37,7 @@ export interface UseJoinCircleResult {
 
 const REASON_HINT: Record<JoinBlockedReason, string> = {
   'no-wallet': 'Connect your wallet to join',
-  'no-account-atom':
-    'Make any cert first to register your account on Intuition',
+  'no-account-atom': 'You need an Intuition identity to join this Circle.',
   loading: 'Resolving your identity…',
 }
 

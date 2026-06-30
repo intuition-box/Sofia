@@ -179,7 +179,18 @@ export default function CircleJoinGate({
           joinStatus === 'approved' &&
           !inCart &&
           disabled &&
-          disabledReason && <span className="jg-hint">{disabledReason}</span>}
+          disabledReason && (
+            <span className="jg-hint">
+              {disabledReason}{' '}
+              <a
+                href="https://portal.intuition.systems"
+                target="_blank"
+                rel="noreferrer"
+                className="jg-hint-link">
+                Create your identity on the Intuition portal →
+              </a>
+            </span>
+          )}
 
         {authenticated && joinStatus !== 'approved' && (
           <button

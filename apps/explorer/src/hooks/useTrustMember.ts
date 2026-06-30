@@ -42,8 +42,7 @@ export interface UseTrustMemberResult {
 
 const REASON_HINT: Record<TrustBlockedReason, string> = {
   'no-wallet': 'Connect your wallet to trust',
-  'no-account-atom':
-    'Make any cert first to register your account on Intuition',
+  'no-account-atom': 'You need an Intuition identity to trust members.',
   loading: 'Resolving your identity…',
 }
 

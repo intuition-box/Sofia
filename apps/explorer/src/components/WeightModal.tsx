@@ -545,16 +545,24 @@ export default function WeightModal({
           if (!r.success) {
             allOk = false
           } else {
-            // Group panels read these queries, refresh after a join so
-            // the user shows up immediately.
-            qc.invalidateQueries({ queryKey: ['groups-list'] })
-            qc.invalidateQueries({ queryKey: ['group-detail'] })
-            // A declared skill/tool ([you → is_skilled_in/uses → X]) lands via
-            // this create path — refresh the profile's skills/tools (and the
-            // master profile) so it shows up without waiting on the 10-min
-            // staleTime.
-            qc.invalidateQueries({ queryKey: ['userAttributes'] })
-            qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            // Group panels read these queries, refresh after a join so the
+            // user shows up. A declared skill/tool ([you → is_skilled_in/uses →
+            // X]) lands via this same create path — refresh those too.
+            const refreshAfterMint = () => {
+              qc.invalidateQueries({ queryKey: ['groups-list'] })
+              qc.invalidateQueries({ queryKey: ['group-detail'] })
+              qc.invalidateQueries({ queryKey: ['userAttributes'] })
+              qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            }
+            refreshAfterMint()
+            // The indexer lags the chain by a few seconds, so the immediate
+            // refetch above returns the pre-mint state and re-caches it (the
+            // join gate would stay locked even after a manual reload). Re-run
+            // on a short schedule so the new membership/skill surfaces on its
+            // own once the indexer catches up — no manual reload needed.
+            for (const delay of [4000, 9000, 18000]) {
+              setTimeout(refreshAfterMint, delay)
+            }
           }
         } finally {
           setCreateTripleProcessing(false)
