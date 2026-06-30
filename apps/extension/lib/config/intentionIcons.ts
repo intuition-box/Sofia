@@ -7,12 +7,12 @@
 import {
   Briefcase,
   GraduationCap,
-  Smile,
-  Sparkles,
-  ShoppingBag,
   Music,
   ShieldCheck,
   ShieldX,
+  ShoppingBag,
+  Smile,
+  Sparkles,
   type LucideIcon
 } from "lucide-react"
 

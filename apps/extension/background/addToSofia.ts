@@ -8,37 +8,47 @@
 // PRO (later): the prototype brokered circle-pro-api calls here (CIRCLE_PRO_LOAD
 // / CIRCLE_PRO_SHARE → workspace bookmarks). That broker is kept commented at the
 // bottom so the Pro version can revive it.
-import { createServiceLogger } from "../lib/utils/logger"
-import { cartService } from "../lib/services"
-import { getFaviconUrl } from "../lib/utils"
-import { getStoredWalletAddress } from "../lib/utils/walletStorage"
-import { INTENTION_PREDICATES } from "../types/discovery"
+import type {
+  AddToCartMessage,
+  AddToCartResponse,
+  AtomSuggestion,
+  SearchAtomsResponse
+} from "../lib/addToSofia/types"
 import {
   intuitionGraphqlClient,
   SearchUrlAtomsDocument
 } from "../lib/clients/graphql-client"
-import type {
-  AddToCartMessage,
-  AddToCartResponse,
-  SearchAtomsResponse,
-  AtomSuggestion
-} from "../lib/addToSofia/types"
+import { cartService } from "../lib/services"
+import { getFaviconUrl } from "../lib/utils"
+import { createServiceLogger } from "../lib/utils/logger"
+import { getStoredWalletAddress } from "../lib/utils/walletStorage"
+import { INTENTION_PREDICATES } from "../types/discovery"
 
 const logger = createServiceLogger("AddToSofia")
 
 const MENU_ID = "add-to-sofia"
-const CONTEXTS: chrome.contextMenus.ContextType[] = ["page", "link", "selection"]
+const CONTEXTS: chrome.contextMenus.ContextType[] = [
+  "page",
+  "link",
+  "selection"
+]
 
 function buildMenu() {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: MENU_ID, title: "Add to Sofia", contexts: CONTEXTS })
+    chrome.contextMenus.create({
+      id: MENU_ID,
+      title: "Add to Sofia",
+      contexts: CONTEXTS
+    })
   })
 }
 
 // Queue the qualified page into the connected wallet's cart. No wallet → the
 // modal prompts a connect; an unknown predicate / duplicate is rejected by
 // CartService.addItem (returns false).
-export async function handleAddToCart(msg: AddToCartMessage): Promise<AddToCartResponse> {
+export async function handleAddToCart(
+  msg: AddToCartMessage
+): Promise<AddToCartResponse> {
   const wallet = await getStoredWalletAddress()
   if (!wallet) return { ok: false, reason: "no-wallet" }
   try {
@@ -63,7 +73,9 @@ export async function handleAddToCart(msg: AddToCartMessage): Promise<AddToCartR
 // Title autocomplete: find existing url/thing atoms matching the typed string,
 // so the user reuses a canonical atom instead of minting a duplicate. Runs in
 // the SW because content scripts can't reach the indexer (CORS).
-export async function handleSearchAtoms(query: string): Promise<SearchAtomsResponse> {
+export async function handleSearchAtoms(
+  query: string
+): Promise<SearchAtomsResponse> {
   const q = query.trim()
   if (q.length < 2) return { atoms: [] }
   try {
@@ -73,7 +85,8 @@ export async function handleSearchAtoms(query: string): Promise<SearchAtomsRespo
     })
     const atoms: AtomSuggestion[] = (data?.atoms ?? []).map((a: any) => ({
       termId: a.term_id,
-      label: a.label || a.value?.thing?.name || a.value?.thing?.url || a.term_id,
+      label:
+        a.label || a.value?.thing?.name || a.value?.thing?.url || a.term_id,
       url: a.value?.thing?.url ?? null,
       image: a.image ?? null
     }))
@@ -104,11 +117,15 @@ export function initAddToSofia(): void {
     const url = info.linkUrl || info.pageUrl || tab.url || ""
     const title = isLink ? url : tab.title || url
 
-    chrome.tabs.sendMessage(tab.id, { type: "ADD_TO_SOFIA_OPEN", url, title, isLink }, () => {
-      // The content script isn't present on tabs opened before the extension
-      // loaded (or on restricted pages) — swallow the "no receiver" error.
-      void chrome.runtime.lastError
-    })
+    chrome.tabs.sendMessage(
+      tab.id,
+      { type: "ADD_TO_SOFIA_OPEN", url, title, isLink },
+      () => {
+        // The content script isn't present on tabs opened before the extension
+        // loaded (or on restricted pages) — swallow the "no receiver" error.
+        void chrome.runtime.lastError
+      }
+    )
   })
 
   logger.info("Add to Sofia context menu registered")

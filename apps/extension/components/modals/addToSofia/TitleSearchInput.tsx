@@ -5,8 +5,8 @@
 // duplicate; typing freely clears the pick → a new atom is created from the URL.
 import { useEffect, useRef, useState } from "react"
 
-import { getFaviconUrl } from "~lib/utils"
 import type { AtomSuggestion, SearchAtomsResponse } from "~lib/addToSofia/types"
+import { getFaviconUrl } from "~lib/utils"
 
 interface TitleSearchInputProps {
   value: string
@@ -18,7 +18,12 @@ interface TitleSearchInputProps {
   picked?: boolean
 }
 
-export function TitleSearchInput({ value, onChange, onPick, picked }: TitleSearchInputProps) {
+export function TitleSearchInput({
+  value,
+  onChange,
+  onPick,
+  picked
+}: TitleSearchInputProps) {
   const [matches, setMatches] = useState<AtomSuggestion[]>([])
   const [active, setActive] = useState(0)
   const [focused, setFocused] = useState(false)

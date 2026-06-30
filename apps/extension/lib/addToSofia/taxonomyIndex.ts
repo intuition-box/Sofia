@@ -44,7 +44,11 @@ export const TAXONOMY_INDEX: TaxoNode[] = SOFIA_TOPICS.flatMap((t) => {
 })
 
 /** Top matches for a query, excluding ids already selected. */
-export function searchTaxonomy(query: string, exclude: Set<string>, limit = 10): TaxoNode[] {
+export function searchTaxonomy(
+  query: string,
+  exclude: Set<string>,
+  limit = 10
+): TaxoNode[] {
   const q = query.trim().toLowerCase()
   if (!q) return []
   const out: TaxoNode[] = []

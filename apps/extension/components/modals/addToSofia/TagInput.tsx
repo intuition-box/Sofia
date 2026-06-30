@@ -3,9 +3,9 @@
 // tags inferred from the page metadata (before typing); typing then searches.
 import { useMemo, useRef, useState, type CSSProperties } from "react"
 
-import type { Context } from "~lib/addToSofia/types"
 import { suggestFromText } from "~lib/addToSofia/suggest"
 import { searchTaxonomy, type TaxoNode } from "~lib/addToSofia/taxonomyIndex"
+import type { Context } from "~lib/addToSofia/types"
 
 interface TagInputProps {
   selected: Context[]
@@ -20,7 +20,10 @@ export function TagInput({ selected, onChange, hints = "" }: TagInputProps) {
   const [focused, setFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const selectedIds = useMemo(() => new Set(selected.map((c) => c.id)), [selected])
+  const selectedIds = useMemo(
+    () => new Set(selected.map((c) => c.id)),
+    [selected]
+  )
 
   // Typing → search; empty + focused → suggestions from the page metadata.
   const fromMeta = !query.trim()
@@ -31,7 +34,10 @@ export function TagInput({ selected, onChange, hints = "" }: TagInputProps) {
   }, [query, selectedIds, focused, hints])
 
   const add = (c: Context) => {
-    onChange([...selected, { id: c.id, label: c.label, color: c.color, level: c.level }])
+    onChange([
+      ...selected,
+      { id: c.id, label: c.label, color: c.color, level: c.level }
+    ])
     setQuery("")
     setActive(0)
     inputRef.current?.focus()
@@ -58,10 +64,16 @@ export function TagInput({ selected, onChange, hints = "" }: TagInputProps) {
     <div className="sis-tags">
       <div className="sis-tags-field">
         {selected.map((c) => (
-          <span className="sis-tag" key={c.id} style={{ "--c": c.color } as CSSProperties}>
+          <span
+            className="sis-tag"
+            key={c.id}
+            style={{ "--c": c.color } as CSSProperties}>
             <span className="sis-tag-dot" style={{ background: c.color }} />
             {c.label}
-            <button className="sis-tag-x" onClick={() => remove(c.id)} aria-label="Remove">
+            <button
+              className="sis-tag-x"
+              onClick={() => remove(c.id)}
+              aria-label="Remove">
               ✕
             </button>
           </span>
@@ -83,7 +95,9 @@ export function TagInput({ selected, onChange, hints = "" }: TagInputProps) {
 
       {matches.length ? (
         <div className="sis-suggest">
-          {fromMeta ? <div className="sis-suggest-head">Suggested from this page</div> : null}
+          {fromMeta ? (
+            <div className="sis-suggest-head">Suggested from this page</div>
+          ) : null}
           {matches.map((m, i) => (
             <button
               key={m.id}

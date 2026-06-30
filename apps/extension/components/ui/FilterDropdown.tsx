@@ -189,9 +189,7 @@ export default function FilterDropdown({
   const activeOption =
     value === "all" ? null : options.find((o) => o.id === value)
   const showPlaceholder = !activeOption && placeholder != null
-  const activeLabel = activeOption
-    ? activeOption.label
-    : (placeholder ?? "All")
+  const activeLabel = activeOption ? activeOption.label : placeholder ?? "All"
   const dotColor = activeOption?.color ?? MUTED
 
   const handleSelect = (id: string) => {
@@ -207,7 +205,7 @@ export default function FilterDropdown({
         role="listbox"
         style={{
           top: popRect.top,
-          left: popRect.left,
+          left: popRect.left
         }}>
         <div
           className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>

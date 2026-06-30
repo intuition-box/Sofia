@@ -8,11 +8,11 @@ import type { CSSProperties } from "react"
 
 import { TagInput } from "~components/modals/addToSofia/TagInput"
 import { TitleSearchInput } from "~components/modals/addToSofia/TitleSearchInput"
-import { INTENTION_ICONS } from "~lib/config/intentionIcons"
 import type { Context } from "~lib/addToSofia/types"
+import { INTENTION_ICONS } from "~lib/config/intentionIcons"
 import {
-  INTENTION_ITEMS,
   INTENTION_CONFIG,
+  INTENTION_ITEMS,
   type IntentionPurpose
 } from "~types/intentionCategories"
 
@@ -77,7 +77,11 @@ export function QualifyFields({ value, onChange, hints }: QualifyFieldsProps) {
               // Single-select; click the active one to clear it.
               onClick={() => set("intention", on ? null : it.key)}>
               {Glyph ? (
-                <Glyph className="sis-intention-glyph" size={14} style={{ color }} />
+                <Glyph
+                  className="sis-intention-glyph"
+                  size={14}
+                  style={{ color }}
+                />
               ) : null}
               {INTENTION_CONFIG[it.type].label}
             </button>

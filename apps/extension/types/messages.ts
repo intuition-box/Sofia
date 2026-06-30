@@ -5,43 +5,43 @@
 
 // Chrome runtime message types
 export type MessageType =
-  | 'GET_TAB_ID'
-  | 'PAGE_DATA'
-  | 'PAGE_DURATION'
-  | 'SEND_CHATBOT_MESSAGE'
-  | 'FETCH_BOOKMARKS'
-  | 'IMPORT_SELECTED_BOOKMARKS'
-  | 'TRIPLET_PUBLISHED'
-  | 'INITIALIZE_BADGE'
-  | 'GET_PAGE_DATA'
-  | 'GET_CLEAN_URL'
-  | 'URL_CHANGED'
-  | 'WALLET_CONNECTED'
-  | 'WALLET_DISCONNECTED'
+  | "GET_TAB_ID"
+  | "PAGE_DATA"
+  | "PAGE_DURATION"
+  | "SEND_CHATBOT_MESSAGE"
+  | "FETCH_BOOKMARKS"
+  | "IMPORT_SELECTED_BOOKMARKS"
+  | "TRIPLET_PUBLISHED"
+  | "INITIALIZE_BADGE"
+  | "GET_PAGE_DATA"
+  | "GET_CLEAN_URL"
+  | "URL_CHANGED"
+  | "WALLET_CONNECTED"
+  | "WALLET_DISCONNECTED"
   // Intention Groups messages
-  | 'GET_INTENTION_GROUPS'
-  | 'GET_GROUP_DETAILS'
-  | 'CERTIFY_URL'
-  | 'REMOVE_URL_FROM_GROUP'
-  | 'DELETE_GROUP'
-  | 'UPDATE_GROUP_LEVEL'
-  | 'LEVEL_UP_GROUP'
-  | 'PREVIEW_LEVEL_UP'
-  | 'TRACK_URL'
+  | "GET_INTENTION_GROUPS"
+  | "GET_GROUP_DETAILS"
+  | "CERTIFY_URL"
+  | "REMOVE_URL_FROM_GROUP"
+  | "DELETE_GROUP"
+  | "UPDATE_GROUP_LEVEL"
+  | "LEVEL_UP_GROUP"
+  | "PREVIEW_LEVEL_UP"
+  | "TRACK_URL"
   // Deep link from share page
-  | 'DEEP_LINK_PROFILE'
+  | "DEEP_LINK_PROFILE"
   // Onboarding first claim from landing page
-  | 'FIRST_CLAIM'
+  | "FIRST_CLAIM"
   // Open the onboarding tutorial from the landing page
-  | 'OPEN_TUTORIAL'
+  | "OPEN_TUTORIAL"
   // Wallet bridge messages
-  | 'WALLET_REQUEST'
-  | 'WALLET_EVENT'
+  | "WALLET_REQUEST"
+  | "WALLET_EVENT"
   // Browsing nudge (red icon badge — reset on cart action / side panel open)
-  | 'NUDGE_DISMISSED'
+  | "NUDGE_DISMISSED"
   // Add to Sofia (right-click modal → cart + existing-atom search)
-  | 'ADD_TO_CART'
-  | 'SEARCH_ATOMS'
+  | "ADD_TO_CART"
+  | "SEARCH_ATOMS"
 
 export interface ChromeMessage {
   type: MessageType
@@ -83,7 +83,7 @@ export interface SofiaMessage {
   content: { text: string } | ParsedSofiaMessage
   created_at: number
   processed: boolean
-  type?: 'raw_message' | 'parsed_message'
+  type?: "raw_message" | "parsed_message"
 }
 
 /** Legacy alias kept for storage layer (storeMessage accepts the SofiaMessage shape). */

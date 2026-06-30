@@ -7,17 +7,18 @@
 // batch-certification CART (the content script can't touch the cart's IndexedDB
 // itself). No workspace, no backend POST — that's the Pro path, kept as
 // commented `// PRO (later):` blocks below.
-import { useEffect, useState } from "react"
 import sofiaLogo from "data-base64:~assets/icon-dark-128.png"
+import { useEffect, useState } from "react"
 
 import {
-  QualifyFields,
   emptyQualify,
+  QualifyFields,
   type QualifyValue
 } from "~components/modals/addToSofia/QualifyFields"
+import type { AddToCartResponse } from "~lib/addToSofia/types"
 import { hostOf } from "~lib/addToSofia/url"
 import { getFaviconUrl } from "~lib/utils"
-import type { AddToCartResponse } from "~lib/addToSofia/types"
+
 // PRO (later): workspace picker + circle-pro session types.
 // import { CirclePicker } from "~components/modals/addToSofia/CirclePicker"
 // import type { CircleMembership, ShareLoadResponse, ShareSubmitResponse } from "~lib/addToSofia/types"
@@ -28,7 +29,9 @@ import type { AddToCartResponse } from "~lib/addToSofia/types"
 function askBackground<T>(message: unknown, ms = 8000): Promise<T | undefined> {
   return Promise.race([
     chrome.runtime.sendMessage(message) as Promise<T>,
-    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms))
+    new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), ms)
+    )
   ]).catch(() => undefined)
 }
 
@@ -69,10 +72,18 @@ export default function AddToSofiaModal() {
   // mvp-intuition-pro branch for the full loadAuth / CirclePicker wiring.
 
   useEffect(() => {
-    const onMessage = (msg: { type?: string; url?: string; title?: string; isLink?: boolean }) => {
+    const onMessage = (msg: {
+      type?: string
+      url?: string
+      title?: string
+      isLink?: boolean
+    }) => {
       if (msg?.type !== "ADD_TO_SOFIA_OPEN") return
       const url = msg.url || location.href
-      const t = msg.title && msg.title !== url ? msg.title : document.title || hostOf(url)
+      const t =
+        msg.title && msg.title !== url
+          ? msg.title
+          : document.title || hostOf(url)
       // A link share can't read the linked page's DOM — fall back to its host.
       const isPage = !msg.isLink || url === location.href
       setHints(isPage ? pageMetadata() : `${t} ${hostOf(url)}`)
@@ -100,7 +111,9 @@ export default function AddToSofiaModal() {
   }
 
   const close = () => setTarget(null)
-  const abs = target.url.startsWith("http") ? target.url : `https://${target.url}`
+  const abs = target.url.startsWith("http")
+    ? target.url
+    : `https://${target.url}`
   const canAdd = !!v.intention && !saving
 
   const add = async () => {
@@ -159,7 +172,11 @@ export default function AddToSofiaModal() {
 
           <div className="sis-right">
             <label className="sis-field-lab">Preview</label>
-            <a className="sis-preview" href={abs} target="_blank" rel="noopener noreferrer">
+            <a
+              className="sis-preview"
+              href={abs}
+              target="_blank"
+              rel="noopener noreferrer">
               {shotOk ? (
                 <img
                   className="sis-shot"

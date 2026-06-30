@@ -2,8 +2,8 @@
 // content scripts discovered in contents/, so this file must live here — but
 // it's just a thin shell: the modal itself lives in
 // components/modals/addToSofia/AddToSofiaModal.tsx.
-import type { PlasmoCSConfig } from "plasmo"
 import styleText from "data-text:~contents/addToSofia.css"
+import type { PlasmoCSConfig } from "plasmo"
 
 import AddToSofiaModal from "~components/modals/addToSofia/AddToSofiaModal"
 

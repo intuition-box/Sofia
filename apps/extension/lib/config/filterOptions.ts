@@ -10,10 +10,10 @@
  */
 import { createElement, type ReactNode } from "react"
 
-import { getTopicIcon, TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
-import { INTENTION_ICONS } from "./intentionIcons"
 import { INTENTION_CONFIG } from "../../types/intentionCategories"
 import type { IntentionType } from "../../types/intentionCategories"
+import { INTENTION_ICONS } from "./intentionIcons"
+import { getTopicIcon, TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
 
 export interface FilterOptionConfig {
   id: string
