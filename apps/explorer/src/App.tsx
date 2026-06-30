@@ -38,7 +38,8 @@ const ComposePage = lazy(() => import('./pages/ComposePage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
-const VotePage = lazy(() => import('./pages/VotePage'))
+// Vote tab hidden for now (kept for a future update — see the commented route below).
+// const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
 import { useViewAs } from './hooks/useViewAs'
@@ -102,7 +103,6 @@ export default function App() {
     location.pathname.startsWith('/explore') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
-    location.pathname.startsWith('/vote') ||
     location.pathname.startsWith('/streaks') ||
     location.pathname.startsWith('/leaderboard')
   // Notifications also surfaces the connected user's ProfileDrawer on the
@@ -410,6 +410,10 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Vote tab hidden for now (kept for a future update). The nav
+                    item + this route are disabled so /vote is not reachable by
+                    URL. Restore by uncommenting the VotePage import, this route,
+                    and the nav item in NavSidebar.
                 <Route
                   path="/vote"
                   element={
@@ -418,6 +422,7 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                */}
               </Routes>
             </Suspense>
           </RouteErrorBoundary>

@@ -21,6 +21,10 @@
 import { ShieldCheck, Lock, Sparkles, Zap, Check } from 'lucide-react'
 import type { CircleStats } from '@/services/circleStats'
 
+// Decisions tab is hidden for now (kept in the code for a future Pro update).
+// Flip to `true` to restore the locked/unlocked Decisions KPI tiles.
+const SHOW_DECISIONS = false
+
 interface CircleHeaderFreeProps {
   name: string
   description: string
@@ -170,7 +174,7 @@ export default function CircleHeaderFree({
           <span className="cf-kpi-delta is-flat">active in last 7 days</span>
         </div>
 
-        {showPlan && (
+        {SHOW_DECISIONS && showPlan && (
           <button
             type="button"
             className={`cf-kpi cf-kpi-locked${
@@ -198,7 +202,7 @@ export default function CircleHeaderFree({
           </button>
         )}
 
-        {decisionsUnlocked && (
+        {SHOW_DECISIONS && decisionsUnlocked && (
           <button
             type="button"
             className={`cf-kpi cf-kpi-nav${decisionsActive ? ' is-active' : ''}`}

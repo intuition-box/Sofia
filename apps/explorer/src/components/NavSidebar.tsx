@@ -9,7 +9,6 @@ import {
 import {
   Home,
   Bell,
-  Vote,
   Globe,
   Wallet,
   ShoppingCart,
@@ -117,7 +116,9 @@ export function NavSidebar({
   }[] = [
     { to: '/platforms', icon: LineChart, label: 'Markets', public: false },
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
-    { to: '/vote', icon: Vote, label: 'Vote', public: false },
+    // Vote tab hidden for now (kept for a future update). To restore: re-add
+    // `Vote` to the lucide import above and uncomment the line below.
+    // { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
 
   const renderItem = (item: {
