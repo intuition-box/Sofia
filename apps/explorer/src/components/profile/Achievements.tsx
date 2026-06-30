@@ -8,8 +8,11 @@
  * extension isn't installed the column is omitted and the panel is 2-col.
  */
 import { useState } from 'react'
+import { Puzzle } from 'lucide-react'
 import { SectionH2 } from '@0xsofia/design-system'
 import type { Achievements as AchievementsData } from '@/services/achievementsService'
+import { useExtensionInstalled } from '@/hooks/useExtensionInstalled'
+import { CHROME_STORE_URL } from '@/utils/sofiaDetect'
 import '@/components/styles/achievements.css'
 
 interface AchievementsProps {
@@ -35,6 +38,33 @@ export default function Achievements({
   self,
 }: AchievementsProps) {
   const [expanded, setExpanded] = useState(false)
+  const extensionInstalled = useExtensionInstalled()
+
+  // Quests + XP are earned through the extension. When the owner is viewing
+  // their own profile and we can't detect the extension — either absent, or
+  // an older build that doesn't announce itself via the data-sofia-extension
+  // marker — nudge them to install or update it. The on-chain badges/level
+  // still render; this just unblocks quest progress. Never shown to other
+  // visitors (quests aren't theirs to act on).
+  const installCta =
+    self && !extensionInstalled ? (
+      <a
+        className="ach-install-cta"
+        href={CHROME_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span className="ach-install-cta__icon" aria-hidden="true">
+          <Puzzle className="h-4 w-4" />
+        </span>
+        <span className="ach-install-cta__text">
+          Install or update the Sofia extension to progress your quests
+        </span>
+        <span className="ach-install-cta__arrow" aria-hidden="true">
+          →
+        </span>
+      </a>
+    ) : null
 
   if (loading) {
     return (
@@ -52,6 +82,7 @@ export default function Achievements({
         <div className="ach-empty">
           No achievements yet. Certify pages and claim quests to earn XP.
         </div>
+        {installCta}
       </section>
     )
   }
@@ -66,6 +97,8 @@ export default function Achievements({
   return (
     <section className="pp-section">
       <SectionH2>Achievements</SectionH2>
+
+      {installCta}
 
       <div className={`ach-panel${showGold ? '' : ' no-gold'}`}>
         {/* Level + XP */}

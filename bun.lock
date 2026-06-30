@@ -156,7 +156,7 @@
     },
     "apps/extension": {
       "name": "extension",
-      "version": "1.0.3",
+      "version": "1.1.0",
       "dependencies": {
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",

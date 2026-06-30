@@ -462,16 +462,6 @@
   color: var(--ds-muted);
   font-weight: 600;
 }
-/* Live pulse dot — same animation rhythm as the hero stats so the
-   live indicator reads consistently across surfaces. */
-.cr-card-stat-pulse {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--trusted, #6dd4a0);
-  animation: crd-hero-pulse 1.8s ease-in-out infinite;
-}
-
 .cr-avatars {
   display: flex;
   align-items: center;

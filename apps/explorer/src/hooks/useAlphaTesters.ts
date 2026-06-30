@@ -23,7 +23,7 @@ async function loadAlphaTesters(): Promise<AlphaTestersData> {
 }
 
 export function useAlphaTesters() {
-  const { data, isLoading, error } = useQuery<AlphaTestersData>({
+  const { data, isLoading, error, refetch } = useQuery<AlphaTestersData>({
     queryKey: ['alphaTesters'],
     queryFn: loadAlphaTesters,
     initialData: INITIAL_DATA,
@@ -34,6 +34,11 @@ export function useAlphaTesters() {
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchInterval: REFRESH_INTERVAL,
+    // The fetcher resumes from its cached block cursor, so a failed scan is
+    // cheap to retry — but cap RQ's automatic retries so a hard RPC outage
+    // doesn't spin endlessly. The user can also retry manually from the UI.
+    retry: 1,
+    retryDelay: 3_000,
   })
 
   return {
@@ -44,5 +49,6 @@ export function useAlphaTesters() {
         ? error.message
         : String(error)
       : null,
+    refetch,
   }
 }

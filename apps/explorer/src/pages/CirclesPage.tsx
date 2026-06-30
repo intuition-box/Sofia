@@ -122,7 +122,7 @@ function DiscoverGroupsSection({
   return (
     <>
       <div className="cr-section-head">
-        <h2 className="cr-section-title">Discover groups</h2>
+        <h2 className="cr-section-title">discover groups</h2>
       </div>
       {isLoading && groups.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading groups…</p>
