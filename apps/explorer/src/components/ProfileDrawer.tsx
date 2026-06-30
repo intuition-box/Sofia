@@ -46,6 +46,11 @@ function formatStatCount(n: number): string {
 // for recovery. Bounds the multi-identity surface and keeps the manage UI tidy.
 const MAX_LINKED_WALLETS = 2
 
+// "Link another wallet" is hidden for launch — we ship single-wallet simple.
+// The whole multi-wallet feature (read-only union, unlink, cap) stays in the
+// code; flip this to `true` to re-enable the link affordance.
+const SHOW_LINK_WALLET = false
+
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { authenticated, user, unlinkWallet } = usePrivy()
   const navigate = useNavigate()
@@ -388,16 +393,18 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       )}
 
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={onLink}
-                        className="ns-auth-menu-action"
-                        disabled={atWalletLimit}
-                      >
-                        <Wallet className="h-4 w-4" />
-                        {atWalletLimit
-                          ? `Wallet limit reached (${MAX_LINKED_WALLETS}/${MAX_LINKED_WALLETS})`
-                          : 'Link another wallet'}
-                      </DropdownMenuItem>
+                      {SHOW_LINK_WALLET && (
+                        <DropdownMenuItem
+                          onClick={onLink}
+                          className="ns-auth-menu-action"
+                          disabled={atWalletLimit}
+                        >
+                          <Wallet className="h-4 w-4" />
+                          {atWalletLimit
+                            ? `Wallet limit reached (${MAX_LINKED_WALLETS}/${MAX_LINKED_WALLETS})`
+                            : 'Link another wallet'}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => logout()}
                         className="ns-auth-menu-action ns-auth-menu-action--danger"
