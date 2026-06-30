@@ -80,7 +80,9 @@ const SOCIALS_QUERY = `
 
 interface RawSocialTriple {
   created_at?: string | null
-  subject?: { value?: { account?: { id?: string | null } | null } | null } | null
+  subject?: {
+    value?: { account?: { id?: string | null } | null } | null
+  } | null
   predicate?: { label?: string | null } | null
   object?: { label?: string | null } | null
 }
@@ -157,7 +159,10 @@ export async function fetchVerifiedSocials(
   }
 
   // wallet(lower) → platform → { link, createdAt } keeping the latest valid.
-  const byWallet = new Map<string, Map<SocialPlatform, { link: SocialLink; at: string }>>()
+  const byWallet = new Map<
+    string,
+    Map<SocialPlatform, { link: SocialLink; at: string }>
+  >()
 
   for (const t of triples) {
     const account = t.subject?.value?.account?.id

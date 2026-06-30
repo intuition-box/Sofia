@@ -42,9 +42,7 @@ export default function MembersFree({
 }: MembersFreeProps) {
   const top3 = ranked.slice(0, 3)
   const { socials } = useVerifiedSocials(
-    top3
-      .map((m) => m.walletAddress)
-      .filter((x): x is string => !!x),
+    top3.map((m) => m.walletAddress).filter((x): x is string => !!x),
   )
 
   return (

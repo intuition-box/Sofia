@@ -18,7 +18,8 @@ const EMPTY: SocialsByWallet = {}
 
 export function useVerifiedSocials(wallets: string[] | string | undefined) {
   const list = useMemo(() => {
-    const arr = wallets == null ? [] : Array.isArray(wallets) ? wallets : [wallets]
+    const arr =
+      wallets == null ? [] : Array.isArray(wallets) ? wallets : [wallets]
     // De-dupe + stable order so the cache key is deterministic.
     return [...new Set(arr.filter(Boolean))].sort()
   }, [wallets])
