@@ -65,6 +65,16 @@ function formatShare(raw: string): string {
   return num >= 1 ? num.toFixed(2) : num.toFixed(4)
 }
 
+// On-chain atom images may be `ipfs://CID` URIs the browser can't fetch
+// directly — rewrite them to an HTTP gateway so the <img> loads.
+function resolvePlatformImage(url?: string): string | undefined {
+  if (!url) return undefined
+  if (url.startsWith('ipfs://')) {
+    return `https://ipfs.io/ipfs/${url.slice('ipfs://'.length).replace(/^ipfs\//, '')}`
+  }
+  return url
+}
+
 export default function AllPlatformsPage() {
   const { ranked, isLoading: marketsLoading } = usePlatformMarket()
   const { platformById } = usePlatformCatalog()
@@ -176,6 +186,7 @@ export default function AllPlatformsPage() {
 
           {rows.map((market, i) => {
             const slug = ATOM_ID_TO_PLATFORM.get(market.termId) ?? ''
+            const onChainImg = resolvePlatformImage(market.image)
             const entry = slug ? platformById(slug) : undefined
             const topicColor = entry?.color ?? 'var(--ds-accent)'
             const host = entry?.website
@@ -198,14 +209,21 @@ export default function AllPlatformsPage() {
 
                 <span className="pm-dex-name" role="cell">
                   <span className="pm-dex-favicon">
-                    {slug ? (
+                    {slug || onChainImg ? (
                       <img
-                        src={`/favicons/${slug}.png`}
+                        src={slug ? `/favicons/${slug}.png` : onChainImg}
                         alt=""
-                        onError={(e) =>
-                          ((e.target as HTMLImageElement).style.display =
-                            'none')
-                        }
+                        onError={(e) => {
+                          // Prefer the curated local favicon; if it's missing
+                          // (e.g. newly added atoms), fall back to the atom's
+                          // on-chain image before giving up.
+                          const img = e.target as HTMLImageElement
+                          if (onChainImg && img.src !== onChainImg) {
+                            img.src = onChainImg
+                          } else {
+                            img.style.display = 'none'
+                          }
+                        }}
                       />
                     ) : null}
                   </span>

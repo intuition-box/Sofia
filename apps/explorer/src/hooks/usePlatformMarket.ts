@@ -38,7 +38,10 @@ export function usePlatformMarket() {
   const walletAddress = user?.wallet?.address
 
   const { data, isLoading, error } = useQuery<PlatformVaultData[]>({
-    queryKey: ['platformMarket', walletAddress],
+    // Include the platform-set size so adding platforms (PLATFORM_ATOM_IDS)
+    // busts the persisted cache instead of serving a stale list that omits the
+    // new atoms.
+    queryKey: ['platformMarket', walletAddress, ALL_PLATFORM_TERM_IDS.length],
     queryFn: () => fetchAllPlatformMarkets(walletAddress),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
