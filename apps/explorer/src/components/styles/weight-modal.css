@@ -326,7 +326,7 @@
 .wm-reward-title {
   margin: 0;
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: clamp(38px, 13cqi, 56px);
   line-height: 0.9;
   letter-spacing: -0.045em;

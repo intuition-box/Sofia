@@ -77,18 +77,18 @@
 }
 .amp .b3-drop {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-variation-settings:
     'SOFT' 30,
     'opsz' 144;
   font-size: 76px;
   line-height: 0.82;
   letter-spacing: -0.06em;
-  color: #ffffff;
+  color: var(--ds-ink);
 }
 .amp .b3-h1 {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-variation-settings:
     'SOFT' 30,
     'opsz' 144;
@@ -96,7 +96,7 @@
   line-height: 0.88;
   letter-spacing: -0.04em;
   margin: 18px 0 0 -2px;
-  color: #ffffff;
+  color: var(--ds-ink);
 }
 .amp .b3-sub {
   font-family: 'Geist', sans-serif;
@@ -118,18 +118,18 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.5);
+  color: color-mix(in srgb, var(--ds-ink) 50%, transparent);
   margin-right: 2px;
 }
 .amp .b3-preset {
   padding: 5px 11px;
   background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border: 1px dashed color-mix(in srgb, var(--ds-ink) 40%, transparent);
   border-radius: 999px;
   font: inherit;
   font-size: 11.5px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--ds-ink);
   cursor: pointer;
   transition:
     background 0.12s,
@@ -137,8 +137,8 @@
   letter-spacing: -0.005em;
 }
 .amp .b3-preset:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.7);
+  background: color-mix(in srgb, var(--ds-ink) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ds-ink) 70%, transparent);
   border-style: solid;
 }
 .amp .b3-preset:disabled {
@@ -160,8 +160,8 @@
   align-items: center;
   gap: 10px 12px;
   padding: 10px 14px 10px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
   border-radius: 10px;
   opacity: 0.58;
   transition:
@@ -171,9 +171,9 @@
 }
 .amp .b3-row.is-on {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: #f7f6f517;
-  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-subtle));
+  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border));
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.25);
 }
 /* Left accent bar removed per design — the row reads cleaner without it. */
 .amp .b3-check {
@@ -216,7 +216,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.55);
+  color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
   font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
@@ -247,10 +247,10 @@
   align-self: center;
   gap: 4px;
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 22px;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--ds-ink);
   line-height: 1;
 }
 .amp .b3-row-trust-unit {
@@ -258,10 +258,10 @@
   font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.5);
+  color: color-mix(in srgb, var(--ds-ink) 50%, transparent);
 }
 .amp .b3-row:not(.is-on) .b3-row-trust {
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--ds-ink) 40%, transparent);
 }
 
 /* Weight tiers (Light / Medium / Strong) — full-width second row of the
@@ -269,10 +269,10 @@
 .amp .b3-tiers {
   grid-column: 1 / -1;
   display: flex;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--ds-border);
   border-radius: 6px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--ds-bg);
 }
 .amp .b3-tier {
   flex: 1;
@@ -283,9 +283,9 @@
   min-width: 0;
   background: transparent;
   border: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid var(--ds-border);
   font-family: inherit;
-  color: #ffffff;
+  color: var(--ds-ink);
   cursor: pointer;
   line-height: 1;
   transition: background 0.12s;
@@ -294,11 +294,11 @@
   border-right: 0;
 }
 .amp .b3-tier:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--ds-ink) 6%, transparent);
 }
 .amp .b3-tier.is-on {
   background: var(--ds-accent);
-  color: #0a0a0a;
+  color: var(--ds-on-accent);
 }
 .amp .b3-tier-label {
   font-size: 9.5px;
@@ -358,6 +358,7 @@
   padding: 8px;
   border: 1px dashed var(--ds-accent);
   border-radius: 6px;
+  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   font-weight: 700;
@@ -372,7 +373,7 @@
 
 /* Ledger */
 .amp .b3-ledger {
-  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  border-top: 1px dashed color-mix(in srgb, var(--ds-ink) 30%, transparent);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -384,10 +385,10 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   padding: 3px 0;
-  color: rgba(255, 255, 255, 0.75);
+  color: color-mix(in srgb, var(--ds-ink) 75%, transparent);
 }
 .amp .b3-ledger-row--muted {
-  color: rgba(255, 255, 255, 0.45);
+  color: color-mix(in srgb, var(--ds-ink) 45%, transparent);
   margin-top: 2px;
 }
 .amp .b3-ledger-row.wm-cost-insufficient {
@@ -397,9 +398,9 @@
   font-family: var(--ds-font-display);
   font-weight: 700;
   font-size: 19px;
-  color: #ffffff;
+  color: var(--ds-ink);
   padding: 8px 0 4px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  border-top: 1px dashed color-mix(in srgb, var(--ds-ink) 30%, transparent);
   margin-top: 6px;
   letter-spacing: -0.01em;
 }
@@ -429,12 +430,12 @@
     opacity 0.12s;
 }
 .amp .b3-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--ds-ink) 6%, transparent);
 }
 .amp .b3-btn--primary {
   flex: 1;
-  background: #ffffff;
-  color: #000000;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
   border-color: rgba(42, 26, 10, 0.85);
   display: inline-flex;
   align-items: center;
@@ -443,7 +444,7 @@
 }
 .amp .b3-btn--primary:hover:not(:disabled) {
   background: var(--ds-accent);
-  color: #000000;
+  color: var(--ds-bg);
 }
 .amp .b3-btn--primary:disabled,
 .amp .b3-btn:disabled {
@@ -459,5 +460,5 @@
   border-radius: 999px;
   background: rgba(42, 26, 10, 0.08);
   border: 1px solid rgba(42, 26, 10, 0.28);
-  color: #000000;
+  color: var(--ds-bg);
 }

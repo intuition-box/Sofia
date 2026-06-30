@@ -44,6 +44,18 @@
 html {
   font-family: var(--ds-font-sans);
 }
+
+/* White-mode borders — the DS light tokens (#ececf0 / #f3f2f5) are nearly
+   invisible on a white surface ("on voit rien"). Bump them to a clearly
+   readable grey. Scoped to [data-theme='light'] ONLY so dark mode keeps its
+   own border tokens untouched. */
+[data-theme='light'] {
+  --ds-border: #d4d2dc;
+  --ds-border-soft: #e4e2ec;
+  /* shadcn border token (Card / Dialog / Input / Button) — light default is
+     black @10%, also too faint on white. */
+  --border: rgba(0, 0, 0, 0.16);
+}
 /* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it
    out as a fixed left rail matching the existing .main-content margin. */
 .nav-sidebar {

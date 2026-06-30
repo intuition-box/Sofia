@@ -23,7 +23,7 @@
 .hm-head h2 {
   font-family: var(--ds-font-display);
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   margin: 0 0 6px;
@@ -165,12 +165,13 @@
   overflow: hidden;
   min-height: 128px;
 }
-/* Unified card hover (shared with .hm-circle + the feed .fc-card): lift +
-   solid peach fill + peach border + soft shadow. Shadow only on hover. */
+/* Unified card hover (shared with .hm-circle + .cr-card): lift + peach TINT
+   fill + solid peach border + soft shadow. A tint (not solid peach) keeps the
+   surface dark enough in dark mode that the white text stays readable. */
 .hm-tile:hover {
   transform: translateY(-2px);
   border-color: var(--ds-accent);
-  background: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 .hm-tile:focus-visible {
@@ -355,7 +356,7 @@
 .hm-drill-label {
   font-family: var(--ds-font-display);
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--drill-color);
   line-height: 1;
@@ -569,7 +570,7 @@
   margin: 0;
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
@@ -656,7 +657,7 @@
 .hm-circle:focus-visible {
   transform: translateY(-2px);
   border-color: var(--ds-accent);
-  background: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   outline: none;
 }
@@ -677,7 +678,7 @@
   color: var(--ds-ink);
   font-family: var(--ds-font-display);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   overflow: hidden;
 }
 .hm-circle-logo img {

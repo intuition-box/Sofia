@@ -97,7 +97,7 @@
 }
 .ps-rank {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 76px;
   line-height: 0.85;
   letter-spacing: -0.03em;
@@ -252,7 +252,7 @@
 }
 .ps-stat-value {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 26px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -276,7 +276,7 @@
 .ps-empty-title {
   font-family: var(--ds-font-display);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }

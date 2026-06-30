@@ -53,7 +53,7 @@
   display: grid;
   place-items: center;
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 22px;
   letter-spacing: -0.02em;
   color: #ffffff;
@@ -70,7 +70,7 @@
 }
 .cf-header-name {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 30px;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -169,13 +169,14 @@
   color: var(--ds-on-accent);
 }
 .cf-btn-member {
-  background: color-mix(in srgb, var(--trusted) 14%, var(--ds-bg-subtle));
-  border-color: color-mix(in srgb, var(--trusted) 40%, transparent);
-  color: var(--trusted);
+  background: var(--trusted);
+  border-color: transparent;
+  color: #02000e;
 }
 .cf-btn-member:hover {
-  border-color: color-mix(in srgb, var(--trusted) 60%, transparent);
-  color: var(--trusted);
+  background: color-mix(in srgb, var(--trusted) 88%, #000);
+  border-color: transparent;
+  color: #02000e;
 }
 .cf-btn-ghost {
   background: transparent;
@@ -223,7 +224,7 @@
 }
 .cf-kpi-value {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 28px;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -343,7 +344,7 @@
 }
 .cf-module-title {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 22px;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -374,7 +375,7 @@
 }
 .cf-mrank {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 16px;
   color: var(--ds-muted-soft);
   width: 14px;
@@ -436,7 +437,7 @@
 }
 .cf-mstat b {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 19px;
   letter-spacing: -0.02em;
   color: var(--ds-ink);

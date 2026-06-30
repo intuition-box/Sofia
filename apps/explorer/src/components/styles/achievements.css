@@ -18,7 +18,7 @@
   grid-template-columns: 1.1fr 0.7fr 2fr;
   border: 1px solid var(--ds-border-soft);
   border-radius: 14px;
-  background: var(--ds-bg-subtle);
+  background: transparent;
   overflow: hidden;
 }
 .ach-panel.no-gold {
@@ -51,7 +51,7 @@
 }
 .ach-lvl {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 22px;
   color: var(--ds-ink);
   letter-spacing: -0.01em;
@@ -89,7 +89,7 @@
 }
 .ach-gold-v {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 27px;
   color: #e8c87a;
   letter-spacing: -0.01em;
@@ -136,6 +136,8 @@
   border-radius: 6px;
   padding: 4px 9px;
   transition: all 0.13s;
+  /* Informational spans, not clickable — no hand cursor. */
+  cursor: default;
 }
 .ach-badge-dot {
   width: 6px;
