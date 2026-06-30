@@ -28,6 +28,9 @@ members.get('/groups/:groupTermId/members', async (c) => {
 members.get('/groups/:groupTermId/me/is-admin', async (c) => {
   const wallet = getWallet(c)
   const groupTermId = c.req.param('groupTermId')
+  // Seed the owner here too, so an owner opening their circle is recognised
+  // immediately — even before anyone has requested to join.
+  await ensureGroupSeeded(groupTermId)
   const m = await prisma.membership.findUnique({
     where: { wallet_groupTermId: { wallet, groupTermId } },
   })
