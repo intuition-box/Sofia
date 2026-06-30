@@ -8,8 +8,12 @@
  * a `window.postMessage` request — so this needs NO extension id and NO config
  * on either side.
  *
- * Degrades silently: if the extension isn't installed, nothing answers and
- * `gold` stays null, so the Achievements UI omits the Gold column.
+ * Degrades silently: `gold` stays null when no balance can be read, so the
+ * Achievements UI omits the Gold column. Note a null here does NOT mean the
+ * extension is absent — it also covers "installed but this wallet has zero /
+ * no stored balance". For a true install check use `useExtensionInstalled`
+ * (the `data-sofia-extension` marker set by `contents/tracking.ts`), which
+ * works even when goldBridge never replies (e.g. logged-out extension).
  */
 import { useEffect, useState } from 'react'
 
