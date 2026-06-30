@@ -323,9 +323,8 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  /* Dark-surface card — matches the design handoff (the explorer feed
-     renders on the dark shell). */
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  /* Flat at rest — elevation only on hover (see .fc-card:hover). The
+     transition still lists box-shadow so the hover lift animates in. */
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -334,7 +333,7 @@
 }
 .fc-card:hover {
   border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
-  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   transform: translateY(-2px);
 }
 .fc-card:focus-visible {
@@ -502,7 +501,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--ds-muted);
-  background: var(--ds-bg-subtle);
+  background: transparent;
   border: 1px solid var(--ds-border);
   border-radius: 9px;
   padding: 7px 12px;
@@ -572,15 +571,24 @@
   opacity: 1;
   transform: translateY(0);
 }
+/* Voted — solid fill so the active state reads at a glance. */
 .fc-vote.up.on {
-  color: var(--trusted);
-  border-color: color-mix(in srgb, var(--trusted) 45%, transparent);
-  background: color-mix(in srgb, var(--trusted) 12%, transparent);
+  color: #02000e;
+  border-color: transparent;
+  background: var(--trusted);
+}
+.fc-vote.up.on:hover:not(:disabled):not(.is-static) {
+  color: #02000e;
+  background: color-mix(in srgb, var(--trusted) 88%, #000);
 }
 .fc-vote.down.on {
-  color: var(--distrusted);
-  border-color: color-mix(in srgb, var(--distrusted) 45%, transparent);
-  background: color-mix(in srgb, var(--distrusted) 12%, transparent);
+  color: #02000e;
+  border-color: transparent;
+  background: var(--distrusted);
+}
+.fc-vote.down.on:hover:not(:disabled):not(.is-static) {
+  color: #02000e;
+  background: color-mix(in srgb, var(--distrusted) 88%, #000);
 }
 
 /* Verb chips — tinted fill + dot + text in the intent color (`--vc`,

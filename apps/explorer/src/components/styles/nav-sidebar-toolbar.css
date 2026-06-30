@@ -7,7 +7,76 @@
  * DS `.nav-*` items and the (removed) `.hdr-*` header classes.
  */
 
-/* ── Cart button (bottom cluster, just above the profile chip) ─────── */
+/* ── Top cluster — profile chip + cart, in place of the brand row ──────
+ * Mirrors the old `.nav-brand` spacing (bottom border + 22/24px rhythm)
+ * so the rail keeps the same separated header band. Profile sits on the
+ * first row (with the collapse chevron right-aligned); the cart stacks
+ * directly underneath. */
+.ns-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ds-border);
+}
+.ns-top-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+/* Profile chip / Connect button take the row; the chevron rides the end. */
+.ns-top-row .ns-auth-chip,
+.ns-top-row .ns-auth-connect {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+/* Collapsed rail — stack everything, icon-only, hide the profile meta. */
+.nav-collapsed .ns-top {
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.nav-collapsed .ns-top-row {
+  flex-direction: column;
+  gap: 8px;
+}
+.nav-collapsed .ns-top-row .ns-auth-chip {
+  justify-content: center;
+  padding: 8px;
+}
+.nav-collapsed .ns-auth-meta {
+  display: none;
+}
+/* The theme toggle reuses .nav-toggle's square styling but must NOT inherit
+   the collapsed-state chevron rotation (that's only for the collapse arrow). */
+.nav-collapsed .ns-theme-toggle {
+  transform: none;
+}
+/* Smaller, lighter theme icon — explicit so it doesn't depend on the utility
+   class (h-3 = 12px felt too heavy in the wider button). */
+.ns-theme-toggle svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 1.75;
+}
+
+/* Control row under the profile — theme toggle + collapse, each fills half
+   the width for a tidy two-button bar. Stacks vertically when collapsed. */
+.ns-top-controls {
+  display: flex;
+  gap: 8px;
+}
+.ns-top-controls .nav-toggle {
+  flex: 1;
+  margin-left: 0;
+}
+.nav-collapsed .ns-top-controls {
+  flex-direction: column;
+}
+
+/* ── Cart button (top cluster, just below the profile chip) ─────── */
 
 .ns-cart-btn {
   position: relative;
@@ -271,26 +340,17 @@
   padding: 8px 10px;
   width: 100%;
   border-radius: 12px;
-  border: 1px solid var(--ds-border);
-  /* Same peach-tinted gradient as the right-rail ProfileDrawer banner —
-     ties the connected-profile chip visually to the user surface. */
-  background: linear-gradient(
-    170deg,
-    color-mix(in oklab, var(--ds-accent) 12%, var(--ds-bg)) 0%,
-    var(--ds-bg) 80%
-  );
-  color: var(--ds-ink);
+  border: 1px solid transparent;
+  /* Solid peach — the connected-profile chip is the user's accent anchor. */
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
 }
 .ns-auth-chip:hover {
-  border-color: var(--ds-ink-soft);
-  background: linear-gradient(
-    170deg,
-    color-mix(in oklab, var(--ds-accent) 18%, var(--ds-bg)) 0%,
-    var(--ds-bg-subtle) 80%
-  );
+  border-color: transparent;
+  background: color-mix(in srgb, var(--ds-accent) 88%, #000);
 }
 /* No focus outline on the chip — after closing the menu the default
    ring (and the peach `:focus-visible` previously) stayed visible and
@@ -304,12 +364,8 @@
    — no darker "pressed" look after closing. */
 .ns-auth-chip[data-state='open'],
 .ns-auth-chip[data-state='closed'] {
-  border-color: var(--ds-border);
-  background: linear-gradient(
-    170deg,
-    color-mix(in oklab, var(--ds-accent) 12%, var(--ds-bg)) 0%,
-    var(--ds-bg) 80%
-  );
+  border-color: transparent;
+  background: var(--ds-accent);
 }
 
 .ns-auth-avatar {
@@ -326,8 +382,9 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--ds-accent) 25%, var(--ds-card));
-  color: var(--ds-accent-ink);
+  /* Dark circle + peach initials — contrasts on the solid peach chip. */
+  background: var(--ds-on-accent);
+  color: var(--ds-accent);
 }
 
 .ns-auth-meta {
@@ -340,7 +397,8 @@
 .ns-auth-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--ds-ink);
+  /* Dark ink on the solid peach chip — readable in both themes. */
+  color: var(--ds-on-accent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -349,19 +407,10 @@
 .ns-auth-sub {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: var(--ds-muted);
+  color: color-mix(in srgb, var(--ds-on-accent) 62%, transparent);
   font-variant-numeric: tabular-nums;
 }
 
-/* Bottom cluster wrapper — holds the cart, auth block + countdown and pins
-   the whole group to the bottom of the rail (whether auth renders or
-   not). Items stack with a 10px gap. */
-.ns-bottom {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 .ns-auth-chip,
 .ns-auth-connect {
   margin: 0;

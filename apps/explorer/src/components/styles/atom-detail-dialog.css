@@ -29,7 +29,7 @@
   gap: 14px;
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   font-variation-settings:
@@ -71,9 +71,9 @@
   min-width: 0;
 }
 .add-title-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   line-height: 1.1;
@@ -111,9 +111,9 @@
   font-weight: 600;
 }
 .add-metric-value {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;

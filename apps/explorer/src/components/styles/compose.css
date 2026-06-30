@@ -30,7 +30,7 @@
   margin: 0;
   font-family: var(--ds-font-display);
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   font-variation-settings:
     'SOFT' 30,
@@ -119,7 +119,7 @@
   padding: 0 4px 14px;
   font-family: var(--ds-font-display);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   font-variation-settings:
@@ -152,22 +152,28 @@
   color: inherit;
   width: 100%;
 }
+/* Unified card hover (same as explore / circles): lift + peach tint fill +
+   solid peach border + soft shadow. A selected card keeps its solid peach
+   fill (the .selected rule below wins on background). */
 .select-card:hover {
-  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -16px
-    color-mix(in srgb, var(--ds-ink) 35%, transparent);
-}
-.select-card.selected {
-  border-color: var(--ds-ink);
-  background: var(--ds-bg-subtle);
-  box-shadow: 0 0 0 1px var(--ds-ink) inset;
-}
-[data-theme='dark'] .select-card.selected,
-.dark .select-card.selected {
-  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-card));
+  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
   border-color: var(--ds-accent);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
+}
+/* Selected — solid peach fill in both themes. Text is forced to
+   --ds-on-accent because the labels use --ds-ink, which is light in dark mode
+   and would vanish on the peach fill. */
+.select-card.selected {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent);
   box-shadow: 0 0 0 1px var(--ds-accent) inset;
+}
+.select-card.selected .who-name,
+.select-card.selected .who-sub,
+.select-card.selected .what-name,
+.select-card.selected .what-name > span {
+  color: var(--ds-on-accent);
 }
 
 .select-card .check {
@@ -186,22 +192,14 @@
   color: var(--ds-bg);
   transition: all 0.18s ease;
 }
+/* Check on a selected (peach) card — dark circle + peach tick, both themes. */
 .select-card.selected .check {
-  background: var(--ds-ink);
-  border-color: var(--ds-ink);
+  background: var(--ds-on-accent);
+  border-color: var(--ds-on-accent);
 }
 .select-card.selected .check::after {
   content: '✓';
-  color: var(--ds-bg);
-}
-[data-theme='dark'] .select-card.selected .check,
-.dark .select-card.selected .check {
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-}
-[data-theme='dark'] .select-card.selected .check::after,
-.dark .select-card.selected .check::after {
-  color: var(--ds-on-accent);
+  color: var(--ds-accent);
 }
 
 /* Who card */
@@ -215,9 +213,9 @@
   justify-content: space-between;
 }
 .who-card .who-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--ds-ink);
@@ -306,7 +304,7 @@
   flex: 1;
   font-family: var(--ds-font-display);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.1;
   font-variation-settings:

@@ -226,7 +226,7 @@
   margin: 0;
   font-family: var(--ds-font-display);
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.015em;
   color: var(--ds-ink);
   font-variation-settings:
@@ -286,7 +286,7 @@
 .sp-pedestal-rank {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.24em;
   color: rgba(0, 0, 0, 0.45);
 }
@@ -434,7 +434,7 @@
 .sp-row-trust-num {
   font-family: var(--ds-font-display);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   letter-spacing: -0.02em;
   font-variation-settings:

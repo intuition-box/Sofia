@@ -626,7 +626,7 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -659,7 +659,7 @@
 
 .ig-card-score-value {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   color: var(--foreground);
 }
@@ -1158,7 +1158,7 @@
 }
 .pp-public-hero-initials {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 32px;
   color: rgba(0, 0, 0, 0.7);
   letter-spacing: -0.02em;

@@ -11,6 +11,17 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
+// Announce the extension's presence to the page. The Sofia explorer reads
+// this marker (useExtensionInstalled / sofiaDetect) to gate its "install
+// Sofia" prompts and the auto-certify deep link. Set unconditionally and
+// BEFORE any tracking opt-in check — presence is not data collection, so a
+// logged-out or tracking-disabled install must still be detectable. Top
+// frame only: the page reads the top-level <html>, and writing it in every
+// subframe is wasted work.
+if (window === window.top) {
+  document.documentElement.dataset.sofiaExtension = "true"
+}
+
 // Function to check if tracking is enabled.
 // Opt-in by design: collection only happens after the user explicitly
 // enables tracking in onboarding or Settings. Any non-`true` storage

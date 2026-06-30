@@ -85,7 +85,7 @@
 
 .ip-stat-value {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   color: var(--foreground);
 }
@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -233,7 +233,7 @@
 
 .ip-niche-score-value {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -536,7 +536,7 @@
 .ip-cert-holders {
   font-family: var(--ds-font-display);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
   color: var(--ds-ink);

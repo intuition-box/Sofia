@@ -73,14 +73,14 @@
   justify-content: space-between;
   padding: 18px 22px;
   border-bottom: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
+  background: #0b0a12;
 }
 .lb-title {
   font-family: var(--ds-font-display);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--ds-ink);
+  color: #fff;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -229,13 +229,57 @@
   border-radius: 4px;
 }
 
-/* ── Error ── */
+/* ── Error / empty states ── */
+/* Legacy single-line cell — still used by StreakLeaderboardTable. */
 .lb-error {
   padding: 12px 16px;
   font-size: 14px;
   vertical-align: middle;
   text-align: center;
   color: var(--ds-muted);
+}
+.lb-state-cell {
+  padding: 0;
+}
+.lb-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+}
+.lb-state-title {
+  font-family: var(--ds-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.lb-state-msg {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  max-width: 360px;
+}
+.lb-state--error .lb-state-title {
+  color: var(--distrusted, #e87c7c);
+}
+.lb-retry {
+  margin-top: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.lb-retry:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
 }
 
 /* ── P&L colors (aligned with TopPlatforms `.pc-plat-delta`) ── */
@@ -320,7 +364,7 @@
   margin: 6px 0 0;
   font-family: var(--ds-font-display);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }

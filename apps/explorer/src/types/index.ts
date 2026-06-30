@@ -116,10 +116,9 @@ export interface LeaderboardProps {
   alphaData?: AlphaTester[]
   alphaLoading?: boolean
   alphaError?: string | null
-  poolData?: PoolPosition[] | null
-  poolLoading?: boolean
-  poolError?: string | null
   connectedAddress?: Address | null
+  /** Re-run the on-chain scan after a failed/empty load. */
+  onRetry?: () => void
 }
 
 // ── User Stats ──

@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin } from '@privy-io/react-auth'
 import {
   NavSidebar as DsNavSidebar,
-  NavBrand,
   NavSection,
   NavItem,
 } from '@0xsofia/design-system'
@@ -16,15 +15,18 @@ import {
   Layers,
   Trophy,
   LineChart,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import type { Address } from 'viem'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useTheme } from '../hooks/useTheme'
 import { getAvatarUrl } from '../services/ensService'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -76,6 +78,7 @@ export function NavSidebar({
     )
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
+  const { theme, toggleTheme } = useTheme()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -88,6 +91,13 @@ export function NavSidebar({
     | { name?: string; profilePictureUrl?: string; email?: string }
     | undefined
   const profileAvatar = googleAccount?.profilePictureUrl || ensAvatar || ''
+  // Graceful fallback for unloadable avatars (Google pics that 403, on-chain
+  // `ipfs://` images the browser can't fetch, dead ENS URLs). Mirrors
+  // MemberAvatar's onError pattern so the chip never shows a broken-image
+  // icon — it drops to the coloured initials instead. Keyed on the src so a
+  // newly-resolved avatar re-shows automatically without an effect.
+  const [failedAvatarSrc, setFailedAvatarSrc] = useState<string | null>(null)
+  const showAvatar = !!profileAvatar && profileAvatar !== failedAvatarSrc
   const profileName =
     googleAccount?.name ||
     ensName ||
@@ -155,13 +165,97 @@ export function NavSidebar({
 
   return (
     <DsNavSidebar>
-      <NavBrand
-        name="Sofia Explorer"
-        tag="v1.0"
-        collapsed={collapsed}
-        onToggleCollapse={onToggleCollapse}
-        logo={<img src="/logo.png" alt="" className="nav-brand-logo" />}
-      />
+      {/* Top cluster — replaces the brand row. User profile sits on top,
+          then a control row (theme toggle + collapse), then the cart. */}
+      <div className="ns-top">
+        <div className="ns-top-row">
+          {ready && !authenticated && (
+            <Button
+              size="sm"
+              className="ns-auth-connect"
+              onClick={() => login()}
+            >
+              <Wallet className="h-4 w-4 mr-1" />
+              Connect
+            </Button>
+          )}
+          {ready && authenticated && (
+            <button
+              type="button"
+              className="ns-auth-chip"
+              aria-label="Open your profile"
+              onClick={() => navigate('/profile')}
+            >
+              {showAvatar ? (
+                <img
+                  src={profileAvatar}
+                  alt={profileName}
+                  referrerPolicy="no-referrer"
+                  className="ns-auth-avatar"
+                  onError={() => setFailedAvatarSrc(profileAvatar)}
+                />
+              ) : (
+                <span className="ns-auth-avatar ns-auth-avatar--fallback">
+                  {profileName.slice(0, 2).toUpperCase()}
+                </span>
+              )}
+              <span className="ns-auth-meta">
+                <span className="ns-auth-name">{profileName}</span>
+                {displayAddr && (
+                  <span className="ns-auth-sub">{displayAddr}</span>
+                )}
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Controls — theme toggle + collapse, sit below the profile. */}
+        <div className="ns-top-controls">
+          <button
+            type="button"
+            className="nav-toggle ns-theme-toggle"
+            onClick={toggleTheme}
+            aria-label={
+              theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+            title={
+              theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-3 w-3" />
+            ) : (
+              <Moon className="h-3 w-3" />
+            )}
+          </button>
+          {onToggleCollapse && (
+            <button
+              type="button"
+              className="nav-toggle"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              ‹
+            </button>
+          )}
+        </div>
+
+        {/* Cart — sits directly below the profile chip. */}
+        <button
+          type="button"
+          className={`ns-cart-btn${cart.count > 0 ? ' ns-cart-btn--filled' : ''}`}
+          onClick={onCartClick}
+          aria-label="Cart"
+          title="Cart"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span className="ns-cart-label">Cart</span>
+          {cart.count > 0 && (
+            <span className="ns-cart-count">{cart.count}</span>
+          )}
+        </button>
+      </div>
 
       <NavSection title="Navigation">{navItems.map(renderItem)}</NavSection>
 
@@ -296,60 +390,6 @@ export function NavSidebar({
           )}
         </NavSection>
       ) : null}
-
-      {/* Bottom cluster — countdown sits on top, auth (profile/disconnect)
-          pinned right below it. margin-top:auto on .ns-bottom pulls the
-          whole group to the bottom of the rail. */}
-      <div className="ns-bottom">
-        {/* Cart — pinned just above the profile chip. */}
-        <button
-          type="button"
-          className={`ns-cart-btn${cart.count > 0 ? ' ns-cart-btn--filled' : ''}`}
-          onClick={onCartClick}
-          aria-label="Cart"
-          title="Cart"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          <span className="ns-cart-label">Cart</span>
-          {cart.count > 0 && (
-            <span className="ns-cart-count">{cart.count}</span>
-          )}
-        </button>
-
-        {ready && !authenticated && (
-          <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
-            <Wallet className="h-4 w-4 mr-1" />
-            Connect
-          </Button>
-        )}
-        {ready && authenticated && (
-          <button
-            type="button"
-            className="ns-auth-chip"
-            aria-label="Open your profile"
-            onClick={() => navigate('/profile')}
-          >
-            {profileAvatar ? (
-              <img
-                src={profileAvatar}
-                alt={profileName}
-                referrerPolicy="no-referrer"
-                className="ns-auth-avatar"
-              />
-            ) : (
-              <span className="ns-auth-avatar ns-auth-avatar--fallback">
-                {profileName.slice(0, 2).toUpperCase()}
-              </span>
-            )}
-            <span className="ns-auth-meta">
-              <span className="ns-auth-name">{profileName}</span>
-              {displayAddr && (
-                <span className="ns-auth-sub">{displayAddr}</span>
-              )}
-            </span>
-          </button>
-        )}
-      </div>
     </DsNavSidebar>
   )
 }

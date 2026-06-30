@@ -344,8 +344,9 @@ export default function DashboardPage() {
             {/* URL count + verb filter on one row. The count sits left, the
                 intention pills to its right. The verb bar is drill-only: a
                 topic drill uses it as a client-side sub-filter; a verb drill
-                re-drills to another verb. The activity view shows the count
-                alone (no drill to narrow). */}
+                re-drills to another verb, and "All" opens the full feed (all
+                verbs) instead of bouncing back to the Explore home. The
+                activity view shows the count alone (no drill to narrow). */}
             <div className="dp-filter-row">
               <span className="dp-url-count">
                 {filteredItems.length} url
@@ -360,7 +361,10 @@ export default function DashboardPage() {
                   }
                   onChange={(id) => {
                     if (drill.kind === 'verb') {
-                      setDrill(id === 'all' ? null : { kind: 'verb', id })
+                      // "All" → full activity feed (every verb), staying in the
+                      // feed view; a specific verb re-drills.
+                      if (id === 'all') showActivity()
+                      else setDrill({ kind: 'verb', id })
                     } else {
                       setVerbFilter(id)
                     }
