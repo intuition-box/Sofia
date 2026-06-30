@@ -45,6 +45,12 @@ const WEIGHT_TIERS = [
 
 const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
 
+// A circle mints a dedicated `{owner} | circle_owner | {circle}` triple so the
+// group-api can resolve the owner deterministically. Only when the predicate
+// atom is configured (minted) — 0 otherwise, so the batch and the cost
+// estimate stay in lockstep. See PREDICATE_IDS.CIRCLE_OWNER.
+const OWNER_TRIPLE_COUNT = PREDICATE_IDS.CIRCLE_OWNER ? 1 : 0
+
 /** Turn a raw wallet/viem error into a single human-readable line — the
  *  unmodified message dumps chain id, calldata and contract address, which
  *  overflows the panel and means nothing to the user. */
@@ -206,7 +212,7 @@ export default function WeightModal({
         const validTopics = item.circleDraft.topicIds.filter(
           (slug) => !!TOPIC_ATOM_IDS[slug],
         )
-        const tripleCount = 1 + validTopics.length
+        const tripleCount = 1 + OWNER_TRIPLE_COUNT + validTopics.length
         deposits += tripleCount
         creates += tripleCount
       } else if (item.kind === 'create-triple') {
@@ -414,7 +420,7 @@ export default function WeightModal({
           const validTopicIds = draft.topicIds.filter(
             (slug) => !!TOPIC_ATOM_IDS[slug],
           )
-          const tripleCount = 1 + validTopicIds.length
+          const tripleCount = 1 + OWNER_TRIPLE_COUNT + validTopicIds.length
           const perTripleAmount = Math.max(
             totalAmount / tripleCount,
             MIN_SIGNAL_TRUST,
@@ -427,6 +433,19 @@ export default function WeightModal({
             objectId: atomId,
             signalTrust: perTripleAmount,
           })
+
+          // Ownership: account → circle_owner → circle. The deterministic
+          // signal the group-api reads to seed the circle's OWNER (the atom's
+          // `creator` is the proxy; MEMBER_OF can't distinguish creator from
+          // joiner). Skipped while the predicate atom is unminted.
+          if (PREDICATE_IDS.CIRCLE_OWNER) {
+            createItems.push({
+              subjectId: userAtomId,
+              predicateId: PREDICATE_IDS.CIRCLE_OWNER,
+              objectId: atomId,
+              signalTrust: perTripleAmount,
+            })
+          }
 
           // Topic tags: circle → has_tag → topic (one per selected topic)
           for (const topicSlug of validTopicIds) {
