@@ -8,7 +8,7 @@
 // itself). No workspace, no backend POST — that's the Pro path, kept as
 // commented `// PRO (later):` blocks below.
 import { useEffect, useState } from "react"
-import sofiaLogo from "data-base64:~assets/icon-light-128.png"
+import sofiaLogo from "data-base64:~assets/icon-dark-128.png"
 
 import {
   QualifyFields,
@@ -163,7 +163,10 @@ export default function AddToSofiaModal() {
               {shotOk ? (
                 <img
                   className="sis-shot"
-                  src={`https://image.thum.io/get/width/600/crop/420/noanimate/${abs}`}
+                  // viewportWidth renders the page at a desktop width so the
+                  // capture isn't a zoomed-in mobile crop; width scales the
+                  // output down into the preview box.
+                  src={`https://image.thum.io/get/viewportWidth/1440/width/640/crop/400/noanimate/${abs}`}
                   alt=""
                   onError={() => setShotOk(false)}
                 />
