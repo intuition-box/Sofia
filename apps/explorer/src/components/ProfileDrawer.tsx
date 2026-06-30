@@ -368,7 +368,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                                 <span className="ns-auth-menu-wallet-addr">
                                   {short}
                                 </span>
-                                {w.isPrimary ? (
+                                {w.connected ? (
                                   <span className="ns-auth-menu-wallet-tag">
                                     active
                                   </span>
