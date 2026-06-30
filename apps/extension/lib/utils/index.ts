@@ -6,6 +6,9 @@
 // Logging
 export { logger, createHookLogger, createServiceLogger } from "./logger"
 
+// Blockchain gas
+export { explicitGasLimit } from "./gasLimit"
+
 // URL & Content
 export { normalizeUrl } from "./normalizeUrl"
 export { cleanTitle, getDisplayTitle } from "./cleanTitle"
