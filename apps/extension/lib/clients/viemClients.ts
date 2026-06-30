@@ -1,9 +1,25 @@
-import { createWalletClient, custom, createPublicClient, http } from 'viem'
+import { createWalletClient, custom, createPublicClient, http, fallback } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
 import { createBoundProvider } from '../services/walletProvider'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('ViemClients')
+
+/**
+ * Resilient read transport over every RPC url the chain advertises.
+ *
+ * Today `rpcUrls.default.http` holds a single endpoint, so a transient network
+ * blip ("Failed to fetch") used to surface as a hard error mid-transaction.
+ * Each endpoint now retries before failing, and `fallback()` rotates to the
+ * next url on persistent failure — so adding a backup RPC is just appending a
+ * url to `rpcUrls.default.http` in chainConfig, no code change here.
+ */
+const buildRpcTransport = () =>
+    fallback(
+        SELECTED_CHAIN.rpcUrls.default.http.map((url) =>
+            http(url, { retryCount: 3, retryDelay: 300, timeout: 15_000 })
+        )
+    )
 
 /**
  * Wait for a tab to finish loading (content scripts inject on "complete")
@@ -67,7 +83,7 @@ async function ensureHttpsTabForWallet(): Promise<number> {
 export const getPublicClient = () => {
     return createPublicClient({
         chain: SELECTED_CHAIN,
-        transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
+        transport: buildRpcTransport(),
     })
 }
 
@@ -99,11 +115,11 @@ export const getClients = async () => {
         })
     }
 
-    // Use HTTP transport for public client to avoid wallet RPC issues
-    // Automatically uses the correct RPC based on SELECTED_CHAIN (testnet or mainnet)
+    // Resilient HTTP transport (retry + Caldera fallback) for reads/simulation,
+    // independent of the wallet RPC. Picks the right chain (testnet or mainnet).
     const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,
-        transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
+        transport: buildRpcTransport(),
     })
 
     logger.debug('Clients ready', { tabId })

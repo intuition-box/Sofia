@@ -16,8 +16,17 @@ export const intuitionMainnet = defineChain({
     symbol: 'TRUST',
   },
   rpcUrls: {
-    public: { http: ['https://rpc.intuition.systems'], webSocket: ['wss://rpc.intuition.systems'] },
-    default: { http: ['https://rpc.intuition.systems'], webSocket: ['wss://rpc.intuition.systems'] },
+    // Primary + Caldera backup (Intuition mainnet runs on Caldera). buildRpcTransport
+    // wraps these in viem fallback() so a transient failure on the first rotates to
+    // the second instead of failing the transaction.
+    public: {
+      http: ['https://rpc.intuition.systems', 'https://intuition.calderachain.xyz/http'],
+      webSocket: ['wss://rpc.intuition.systems'],
+    },
+    default: {
+      http: ['https://rpc.intuition.systems', 'https://intuition.calderachain.xyz/http'],
+      webSocket: ['wss://rpc.intuition.systems'],
+    },
   },
   blockExplorers: {
     default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
