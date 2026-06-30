@@ -55,7 +55,14 @@ const WALLET_RDNS_REGISTRY: Record<string, string[]> = {
 function resolveExpectedRdns(walletType: string | null): string[] {
   if (!walletType) return []
   const key = walletType.toLowerCase().trim()
-  return WALLET_RDNS_REGISTRY[key] ?? []
+  // Privy is inconsistent with the `_wallet` suffix: it reports "rabby_wallet"
+  // and "coinbase_wallet" but "metamask". Our registry keys mirror that mix, so
+  // a raw lookup misses whenever the suffix differs (e.g. registry "rabby" vs
+  // Privy "rabby_wallet"). Toggle the suffix and retry so either form resolves.
+  const alt = key.endsWith("_wallet")
+    ? key.replace(/_wallet$/, "")
+    : `${key}_wallet`
+  return WALLET_RDNS_REGISTRY[key] ?? WALLET_RDNS_REGISTRY[alt] ?? []
 }
 
 // ── Tab resolution ─────────────────────────────────────────────────────────
