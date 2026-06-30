@@ -18,9 +18,9 @@ export interface LinkedWallet {
  *   by signing the Privy link flow (`user.linkedAccounts`). Persists even when a
  *   wallet isn't connected, so someone who lost access to an old wallet still
  *   sees its on-chain data. Components that aggregate user data use this.
- * - `primary` — the ACTING identity: the currently connected wallet. Every write
- *   (vote / cert / deposit) is signed by it. Switching the connected wallet
- *   switches the primary; there is no manual selection.
+ * - `primary` — the ACTING identity: the account's primary (login) wallet
+ *   (`user.wallet`). Every write (vote / cert / deposit) is signed by it, and it
+ *   is stable across linking — linking another wallet never changes who acts.
  * - `wallets` — per-wallet status for the manage UI (connected / primary).
  *
  * The Intuition indexer stores account IDs in EIP-55 mixed case, so the returned
@@ -51,7 +51,7 @@ export function useLinkedWallets() {
       }
     }
 
-    // Connected = currently usable wallets (can sign). First one acts.
+    // Connected = currently usable wallets (can sign).
     const connected = new Set<string>()
     for (const w of wallets) {
       try {
@@ -60,13 +60,28 @@ export function useLinkedWallets() {
         // skip
       }
     }
+
+    // Acting identity = the account's primary (login) wallet, from
+    // `user.wallet`. Stable across linking — linking a wallet adds it to the
+    // read union but must NOT change who acts. Falls back to the first
+    // connected wallet only if Privy hasn't surfaced a primary.
     let primary: Address | undefined
-    for (const w of wallets) {
+    const primaryRaw = user?.wallet?.address
+    if (primaryRaw) {
       try {
-        primary = getAddress(w.address)
-        break
+        primary = getAddress(primaryRaw)
       } catch {
         // skip
+      }
+    }
+    if (!primary) {
+      for (const w of wallets) {
+        try {
+          primary = getAddress(w.address)
+          break
+        } catch {
+          // skip
+        }
       }
     }
 
