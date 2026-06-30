@@ -19,7 +19,6 @@
   height: 100%;
   display: block;
   transform: rotate(-90deg);
-  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.35));
 }
 .donut-seg {
   cursor: pointer;
@@ -65,9 +64,9 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--ds-border);
-  background: var(--ds-bg-subtle);
-  color: var(--ds-ink-soft);
+  border: 1px solid var(--ds-accent);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -76,12 +75,13 @@
   white-space: nowrap;
   cursor: pointer;
   transition:
+    background 0.14s ease,
     border-color 0.14s ease,
     color 0.14s ease;
 }
 .donut-view-btn:hover {
-  border-color: var(--ds-accent);
-  color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 88%, #000);
+  border-color: color-mix(in srgb, var(--ds-accent) 88%, #000);
 }
 .donut-num {
   font-family: var(--ds-font-display);

@@ -77,7 +77,7 @@
   place-items: center;
   color: #ffffff;
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 28px;
   letter-spacing: -0.02em;
 }
@@ -92,7 +92,7 @@
 }
 .jg-title {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 26px;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -122,7 +122,7 @@
 }
 .jg-stat b {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 22px;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
@@ -293,7 +293,7 @@
 }
 .lock-title {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 22px;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -375,7 +375,7 @@
 }
 .up-band-title {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 22px;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -396,7 +396,7 @@
 }
 .up-band-amt {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 30px;
   letter-spacing: -0.03em;
   color: var(--ds-ink);
@@ -516,7 +516,7 @@
 }
 .pro-modal-title {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 27px;
   line-height: 1.08;
   letter-spacing: -0.02em;
@@ -572,7 +572,7 @@
 }
 .pro-modal-feat-title {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   letter-spacing: -0.01em;
   color: var(--ds-ink);

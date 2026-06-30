@@ -109,7 +109,7 @@
 }
 .sr-hero-value {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: clamp(64px, 10vw, 132px);
   line-height: 0.88;
   letter-spacing: -0.03em;
@@ -184,7 +184,7 @@
 }
 .sr-cell-value {
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 38px;
   line-height: 1;
   letter-spacing: -0.02em;

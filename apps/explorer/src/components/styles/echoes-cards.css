@@ -154,7 +154,7 @@
   padding: 0;
 }
 .echo-domain {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-weight: 700;
   font-size: 15px;
   letter-spacing: -0.02em;

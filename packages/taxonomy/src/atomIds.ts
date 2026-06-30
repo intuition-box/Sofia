@@ -344,7 +344,7 @@ export const CATEGORY_ATOM_IDS: Record<string, string> = {
   habits: '0x78ba392e7215fbdbc1331965a8c93d9bd8e9a7be4a57040e103f74852d8349bf',
 }
 
-// 137 platform atoms
+// 145 platform atoms
 export const PLATFORM_ATOM_IDS: Record<string, string> = {
   kaggle: '0x3e516a63cd85babd3b74243b4ae7779fc849fcc35927ea6715901aec96a40917',
   npm: '0xa622c47f40479d8e07c4c6546c723c455c5ff078ca2eabbc2e30c222b903d818',
@@ -487,8 +487,6 @@ export const PLATFORM_ATOM_IDS: Record<string, string> = {
     '0x3fc0431f2bc02e1082d160f217bd480b2d914827b602a708468d0378b85805a1',
   linkedin:
     '0x936c76a01cba4341d030a3fd440727a133adcc939415260612c5fa56a328f33a',
-  snapchat:
-    '0xea78ab0e8e3cfa2a0141ecfeed556b83b1aa259ddb5b215a52c4e3b607b0cbb0',
   telegram:
     '0xa42b62bb165efffd79253638f98addc49e8dac05cb048068d92225d574cbcccd',
   netflix: '0x45e96072ae54de9ddc8f7e0dcc42d8ce54c3259ded01792b2f29cbd3bdbf9485',
@@ -514,13 +512,11 @@ export const PLATFORM_ATOM_IDS: Record<string, string> = {
   medium: '0x480102572295ef47a12aa85ad6920a3af952e0327e4833f33041864d27ce7f1b',
   substack:
     '0x2524f7800e33b0d6e5ae46ac7c982a2f7c4ce7c4c72952b08231ec3e2e23eb69',
-  slack: '0xa9a669d5d7174ea6fe323f981013096089cd3437f7bd2d18d22c50a76aa42677',
   'epic-games':
     '0x515e3ccf859d2f3c6823054c33a6d2dac234edbe64e76d7e300a2368a2d5adfb',
   gog: '0x077f3c22e0a9880816c0e738a5108c2fee3064e82ad244b9ba594b117aefee17',
   playstation:
     '0xb3636daef22b6686e8ec3d2463e50518ba24e612cb7593f30f84bc21efbe5b80',
-  xbox: '0xa00f1dd4f5b70606b31e1711ee76ff1f0ee967802d209cc5ecb39ff2617188ea',
   rarible: '0x1b25d3e6258672b496ceface83fa83f38b12dfca6728ffa95e86770f9dcd7e7b',
   uniswap: '0xef2b7fde9d0cbaa7937f90b59c2c95857fe3f58c0ea11bf62d18828da0283557',
   aave: '0x59463a595c78194737369f6b5ac01fa2f18a23bb44e689bd86499abf2f48e385',
@@ -547,6 +543,24 @@ export const PLATFORM_ATOM_IDS: Record<string, string> = {
     '0xd9d1a20cd86e0983320ac95ae57518ccc418db58b9b6e6f28176ad8ead5d0cd3',
   blizzard:
     '0x3ee6ce7b3f80e9e14faca248065052a236b3e023593a75f790fcbb1ccb83e410',
+  // ── AI assistants (Intuition atoms, added manually) ──
+  claude: '0xe84e42ad15ffabedeca8a6bcd3992fbd13872cda003c057223467073dfe1acd7',
+  chatgpt: '0xbf6bc0684d0beb59cd0406775da673d7a08e42d65fd7a5fe0eaaf550ce59ddd6',
+  gemini: '0xd636a4a0e854eb0752dd88bbf6b91c007acf31a9ea930f11b6b4e5ef273dad47',
+  // ── Web3 / DeFi / DAO (Intuition atoms, added manually) ──
+  makerdao:
+    '0x45946564f89eece577b16224d7e784fed0fa1916d984575cb43cb7cd1f1d083a',
+  optimism:
+    '0xa072cd2b20f00ad8c5f7d2fa3a87ae6e3c462f1c19c72222edd0e9487b9f1c72',
+  arbitrum:
+    '0x9d46ae79ca3fd7696f4e167b21b87b1738cb00198a66900d6886999271ec0ad5',
+  compound:
+    '0x12391e24de7e177404b82b4a10c6067646d222ff7497658bcb5668b27ec8c2da',
+  curve: '0x84fabeb0d98a02b06faec5aa4cb97c332e41594b63fd58bdfa6e8a542a8c3d1d',
+  gitcoin: '0x133970d042cff4d281b42744b2a84b4f5336a6a19319343daef7aa3dd0359767',
+  safe: '0xa9841c14066d637280eee907480fcadea2fcadc3183ce286e18dca707888d861',
+  balancer:
+    '0x763fee6fc848efdf44c6fa227a2d3fbc850e716ad5602ab8e0ec5eda6469a787',
 }
 
 // Reverse lookups: atomId -> slug

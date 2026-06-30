@@ -129,7 +129,7 @@
 .cp-pro .ctab .c-rank {
   font-family: var(--ds-font-display);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 30;
   color: var(--ds-muted-soft);
@@ -243,7 +243,7 @@
 }
 .cp-pro .mem-metric .big {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 21px;
   letter-spacing: -0.02em;
   font-variation-settings: 'SOFT' 30;

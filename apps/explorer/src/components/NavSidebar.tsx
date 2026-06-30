@@ -15,6 +15,8 @@ import {
   Layers,
   Trophy,
   LineChart,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useMemo, useState } from 'react'
@@ -24,6 +26,7 @@ import { useGroups } from '../hooks/useGroups'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useTheme } from '../hooks/useTheme'
 import { getAvatarUrl } from '../services/ensService'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -75,6 +78,7 @@ export function NavSidebar({
     )
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
+  const { theme, toggleTheme } = useTheme()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)
@@ -159,8 +163,7 @@ export function NavSidebar({
   return (
     <DsNavSidebar>
       {/* Top cluster — replaces the brand row. User profile sits on top,
-          the cart pinned directly below it. The collapse chevron rides
-          along on the profile row (right-aligned). */}
+          then a control row (theme toggle + collapse), then the cart. */}
       <div className="ns-top">
         <div className="ns-top-row">
           {ready && !authenticated && (
@@ -201,6 +204,27 @@ export function NavSidebar({
               </span>
             </button>
           )}
+        </div>
+
+        {/* Controls — theme toggle + collapse, sit below the profile. */}
+        <div className="ns-top-controls">
+          <button
+            type="button"
+            className="nav-toggle ns-theme-toggle"
+            onClick={toggleTheme}
+            aria-label={
+              theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+            title={
+              theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-3 w-3" />
+            ) : (
+              <Moon className="h-3 w-3" />
+            )}
+          </button>
           {onToggleCollapse && (
             <button
               type="button"

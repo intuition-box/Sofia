@@ -30,7 +30,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -69,7 +69,8 @@
    intentionally left loud. */
 .pa-chip {
   --pa-chip-c: var(--ds-ink-soft);
-  --pa-vote-c: #e2924b;
+  /* Peach accent (DS, theme-aware) for the endorse pastille. */
+  --pa-vote-c: var(--ds-accent);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -136,9 +137,10 @@
   color: var(--ds-muted);
 }
 
-/* Upvote control — chevron + supporter count in warm amber, matching the
-   reference "^ N" pill. On votable chips (public profile) it's the endorse
-   button; on the owner's own chips it's a static read-out of the count. */
+/* Upvote control — chevron + supporter count in the peach accent. On votable
+   chips (public profile) it's the endorse button; on the owner's own chips
+   it's a static read-out of the count. Text uses --ds-accent-ink so it stays
+   readable on the soft peach tint in both themes. */
 .pa-chip-vote {
   display: inline-flex;
   align-items: center;
@@ -147,7 +149,7 @@
   border: none;
   border-radius: 8px;
   background: color-mix(in srgb, var(--pa-vote-c) 14%, transparent);
-  color: var(--pa-vote-c);
+  color: var(--ds-accent-ink);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
@@ -179,8 +181,8 @@
 }
 
 /* Voted — the connected viewer already backs this chip. The whole pill takes a
-   warm amber edge and the upvote control fills solid, so "I already voted on
-   this" reads at a glance (vs the outline default = not yet voted). */
+   peach edge and the upvote control fills solid, so "I already voted on this"
+   reads at a glance (vs the outline default = not yet voted). */
 .pa-chip--mine {
   border-color: color-mix(in srgb, var(--pa-vote-c) 55%, transparent);
   background: color-mix(in srgb, var(--pa-vote-c) 9%, transparent);
@@ -192,7 +194,7 @@
 .pa-chip-vote--voted,
 .pa-chip-vote--static.pa-chip-vote--voted {
   background: var(--pa-vote-c);
-  color: #1f1505;
+  color: var(--ds-on-accent);
 }
 .pa-chip-vote--voted:hover,
 .pa-chip-vote--voted:focus-visible {

@@ -162,7 +162,7 @@
 }
 .cr-section-title {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 22px;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
@@ -300,7 +300,7 @@
 }
 .grp-member-stat-num {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 16px;
   color: var(--ds-ink);
   line-height: 1;
@@ -331,11 +331,14 @@
   color: inherit;
   width: 100%;
 }
+/* Unified card hover (same as the explore page): lift + peach TINT fill +
+   solid peach border + soft shadow. A tint keeps the surface dark enough in
+   dark mode that the white text stays readable. Shadow only on hover. */
 .cr-card:hover {
-  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -18px
-    color-mix(in srgb, var(--ds-ink) 35%, transparent);
+  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
+  border-color: var(--ds-accent);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 
 .cr-card-head {
@@ -353,7 +356,7 @@
   display: grid;
   place-items: center;
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 16px;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -367,9 +370,9 @@
   min-width: 0;
 }
 .cr-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
@@ -416,7 +419,7 @@
   border-radius: 10px;
   border: 1px solid var(--ds-border-soft);
   overflow: hidden;
-  background: var(--ds-bg-subtle);
+  background: transparent;
   /* Pinned to the bottom of the card so every card in the /circles
      grid aligns its stats row on the same baseline, regardless of
      how long the description above it runs. */
@@ -442,7 +445,7 @@
 }
 .cr-card-stat-num {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 28px;
   color: var(--ds-ink);
   line-height: 1;
@@ -568,7 +571,9 @@
   min-height: 188px;
 }
 .cr-card-new:hover {
-  border-color: var(--ds-ink);
+  border-style: solid;
+  border-color: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
   color: var(--ds-ink);
 }
 .cr-card-new-plus {
@@ -581,7 +586,7 @@
 .cr-card-new-label {
   font-family: var(--ds-font-display);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   font-style: italic;
   color: var(--ds-ink);
   letter-spacing: -0.01em;
@@ -633,7 +638,7 @@
   display: grid;
   place-items: center;
   font-family: var(--ds-font-display);
-  font-weight: 900;
+  font-weight: 800;
   font-size: 24px;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -722,7 +727,7 @@
 .crd-hero-name {
   font-family: var(--ds-font-display);
   font-size: 32px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--ds-ink);
   font-variation-settings:
@@ -803,7 +808,7 @@
 }
 .crd-hero-stat__num {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   line-height: 1;
   font-variation-settings:
@@ -884,7 +889,7 @@
 .crd-actions-big {
   font-family: var(--ds-font-display);
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--ds-ink);
@@ -1089,7 +1094,7 @@
 .crd-active-rank {
   grid-row: 1 / span 2;
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 18px;
   color: var(--ds-muted);
   line-height: 1;
@@ -1300,7 +1305,7 @@
 .crd-members-panel-title {
   font-family: var(--ds-font-display);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--ds-ink);
   letter-spacing: -0.02em;
 }
@@ -1520,7 +1525,7 @@
 .crd-feed-title {
   font-family: var(--ds-font-display);
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.025em;
   color: var(--ds-ink);
   margin: 0 0 6px;
@@ -1736,7 +1741,7 @@
 .crd-stat-value {
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   line-height: 1;
   display: inline-flex;
@@ -1814,7 +1819,7 @@
 .crd-feed-cta__title {
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   margin: 4px 0 0;
   font-variation-settings:
@@ -2610,7 +2615,7 @@
   margin: 0;
   font-family: var(--ds-font-display);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   font-variation-settings:

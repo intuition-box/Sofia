@@ -82,7 +82,7 @@
 .pm-search-input {
   width: 100%;
   padding: 7px 32px 7px 40px;
-  border-radius: 999px;
+  border-radius: 10px;
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
   color: var(--ds-ink);
@@ -211,14 +211,14 @@
   padding: 12px 18px;
 }
 .pm-dex-head {
-  background: var(--ds-bg-subtle);
+  background: #0b0a12;
   border-bottom: 1px solid var(--ds-border-soft);
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ds-muted);
+  color: rgba(255, 255, 255, 0.55);
 }
 .pm-dex-head > span:first-child {
   text-align: center;
@@ -232,10 +232,10 @@
   transition: color 0.12s ease;
 }
 .pm-dex-sortable:hover {
-  color: var(--ds-ink);
+  color: #fff;
 }
 .pm-dex-sortable.sorted {
-  color: var(--ds-ink);
+  color: #fff;
 }
 
 .pm-dex-row {
@@ -313,9 +313,9 @@
   gap: 8px;
 }
 .pm-dex-label {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
   line-height: 1;
@@ -363,9 +363,9 @@
   white-space: nowrap;
 }
 .pm-dex-num-big {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ds-ink);
   letter-spacing: -0.02em;
   line-height: 1;
@@ -378,14 +378,14 @@
 }
 .pm-dex-price,
 .pm-dex-holders {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .pm-dex-pnl {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.02em;

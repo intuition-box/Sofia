@@ -41,7 +41,7 @@
 .pf-ts-header-title {
   font-family: var(--ds-font-display);
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 4px 0 6px;
@@ -83,7 +83,7 @@
 .pf-ts-header-stat-value {
   font-family: var(--ds-font-display);
   font-size: 48px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
   color: #6dd4a0;
@@ -147,7 +147,7 @@
 .pf-trust-topic-score {
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--topic-color, var(--ds-ink));
   line-height: 1;

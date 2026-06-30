@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Geist:wght@300..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Roboto:wght@300;400;500;700;900&family=Oswald:wght@400;500;600;700&family=Unbounded:wght@400..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Geist:wght@300..900&family=Hind:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Poppins:wght@500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Oswald:wght@400;500;600;700&family=Unbounded:wght@400..800&display=swap"
       rel="stylesheet"
     />
     <link
@@ -18,8 +18,17 @@
   </head>
   <body>
     <script>
-      // Dark is the only theme — always applied, no light/white mode.
-      document.documentElement.classList.add('dark')
+      // Theme init before first paint (anti-FOUC). Reads the persisted
+      // preference; defaults to dark. Mirror of hooks/useTheme.ts.
+      ;(function () {
+        try {
+          var t = localStorage.getItem('sofia-theme') || 'dark'
+          document.documentElement.setAttribute('data-theme', t)
+          if (t === 'dark') document.documentElement.classList.add('dark')
+        } catch (e) {
+          document.documentElement.classList.add('dark')
+        }
+      })()
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
