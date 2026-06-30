@@ -39,6 +39,9 @@ interface CircleHeaderFreeProps {
    *  has none, so its plan badge, Upgrade button and locked Decisions
    *  KPI are suppressed. */
   showPlan: boolean
+  /** Hide the header action buttons (join / upgrade) while the join gate
+   *  overlay is showing, so the gate is the single, unambiguous join CTA. */
+  hideActions?: boolean
   /** Fires when a non-member clicks "Enter this Circle". */
   onJoin?: () => void
   /** Fires for any Pro-gated affordance (Upgrade button). */
@@ -70,6 +73,7 @@ export default function CircleHeaderFree({
   totalMembers,
   isMember,
   showPlan,
+  hideActions = false,
   onJoin,
   onUpgrade,
   onMemberClick,
@@ -105,37 +109,39 @@ export default function CircleHeaderFree({
               )}
             </div>
             <p className="cf-header-desc">{description}</p>
-            <div className="cf-header-actions">
-              {isMember ? (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-member"
-                  onClick={onMemberClick}
-                >
-                  <Check className="cf-btn-icon" aria-hidden="true" />
-                  Member
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-pro"
-                  onClick={onJoin}
-                >
-                  <Zap className="cf-btn-icon" aria-hidden="true" />
-                  Enter this Circle
-                </button>
-              )}
-              {showPlan && (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-pro"
-                  onClick={onUpgrade}
-                >
-                  <Sparkles className="cf-btn-icon" aria-hidden="true" />
-                  Upgrade to Pro
-                </button>
-              )}
-            </div>
+            {!hideActions && (
+              <div className="cf-header-actions">
+                {isMember ? (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-member"
+                    onClick={onMemberClick}
+                  >
+                    <Check className="cf-btn-icon" aria-hidden="true" />
+                    Member
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-pro"
+                    onClick={onJoin}
+                  >
+                    <Zap className="cf-btn-icon" aria-hidden="true" />
+                    Enter this Circle
+                  </button>
+                )}
+                {showPlan && (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-pro"
+                    onClick={onUpgrade}
+                  >
+                    <Sparkles className="cf-btn-icon" aria-hidden="true" />
+                    Upgrade to Pro
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
