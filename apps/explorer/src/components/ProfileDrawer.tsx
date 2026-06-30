@@ -42,6 +42,10 @@ function formatStatCount(n: number): string {
 
 // ── Main component ────────────────────────────────────────────────────
 
+// Cap linked wallets at 2: the acting (connected) wallet + one secondary kept
+// for recovery. Bounds the multi-identity surface and keeps the manage UI tidy.
+const MAX_LINKED_WALLETS = 2
+
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { authenticated, user, unlinkWallet } = usePrivy()
   const navigate = useNavigate()
@@ -68,8 +72,16 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       .catch(() => {})
   }
 
-  // Link another wallet — warns before opening Privy's connect + sign flow.
+  // Link another wallet — capped at 2 (the acting wallet + one secondary, for
+  // recovery), then warns before opening Privy's connect + sign flow.
+  const atWalletLimit = walletList.length >= MAX_LINKED_WALLETS
   const onLink = () => {
+    if (atWalletLimit) {
+      window.alert(
+        `You can link up to ${MAX_LINKED_WALLETS} wallets. Unlink one first to add another.`,
+      )
+      return
+    }
     const ok = window.confirm(
       `Link another wallet?\n\nYou'll connect it and sign to prove you own it. ` +
         `Its on-chain data is then shown in your view (read-only). The wallet ` +
@@ -379,9 +391,12 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       <DropdownMenuItem
                         onClick={onLink}
                         className="ns-auth-menu-action"
+                        disabled={atWalletLimit}
                       >
                         <Wallet className="h-4 w-4" />
-                        Link another wallet
+                        {atWalletLimit
+                          ? `Wallet limit reached (${MAX_LINKED_WALLETS}/${MAX_LINKED_WALLETS})`
+                          : 'Link another wallet'}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => logout()}
