@@ -204,3 +204,35 @@ query FindAccountAtoms($addresses: [String!]!) {
     term_id
   }
 }
+
+# Add-to-Sofia title autocomplete: existing url/thing atoms matching a typed
+# string by label / thing name / thing url. Most-staked first so the canonical
+# atom for a URL surfaces at the top. See apps/extension background SEARCH_ATOMS.
+query SearchUrlAtoms($like: String!, $limit: Int!) {
+  atoms(
+    order_by: { term: { total_market_cap: desc } }
+    limit: $limit
+    where: {
+      _and: [
+        { value: { thing: { url: { _is_null: false } } } }
+        {
+          _or: [
+            { label: { _ilike: $like } }
+            { value: { thing: { name: { _ilike: $like } } } }
+            { value: { thing: { url: { _ilike: $like } } } }
+          ]
+        }
+      ]
+    }
+  ) {
+    term_id
+    label
+    image
+    value {
+      thing {
+        url
+        name
+      }
+    }
+  }
+}

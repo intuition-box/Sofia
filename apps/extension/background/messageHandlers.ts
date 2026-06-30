@@ -15,6 +15,8 @@ import { getAllBookmarks } from "./messageSenders"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { IntentionGroupsService } from "../lib/database"
+import { handleAddToCart, handleSearchAtoms } from "./addToSofia"
+import type { AddToCartMessage, SearchAtomsMessage } from "../lib/addToSofia/types"
 import { createServiceLogger } from '../lib/utils/logger'
 
 const logger = createServiceLogger('MessageHandlers')
@@ -706,6 +708,27 @@ export function setupMessageHandlers(): void {
           logger.error("DEEP_LINK_PROFILE error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
+        return true
+
+      // ── Add to Sofia (right-click modal → cart) ──
+      // Routed here (not via a separate listener) so the central "Unknown
+      // message type" fallback below can't win the sendResponse race.
+      case "ADD_TO_CART":
+        handleAddToCart(message as unknown as AddToCartMessage)
+          .then(sendResponse)
+          .catch((error) => {
+            logger.warn("ADD_TO_CART handler error", error)
+            sendResponse({ ok: false, reason: "error" })
+          })
+        return true
+
+      case "SEARCH_ATOMS":
+        handleSearchAtoms((message as unknown as SearchAtomsMessage).query)
+          .then(sendResponse)
+          .catch((error) => {
+            logger.warn("SEARCH_ATOMS handler error", error)
+            sendResponse({ atoms: [] })
+          })
         return true
 
     }

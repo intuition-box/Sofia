@@ -99,20 +99,31 @@ export const useCreateTripleOnChain = () => {
       // Collect unique predicates and objects
       const uniquePredicates = new Set<string>()
       const uniqueObjects = new Map<string, { name: string; description?: string; url: string; image?: string }>()
+      // objectKey -> existing atom term_id, for items that picked an existing
+      // atom in the title search (deposit on it, don't create a new one).
+      const reusedObjects = new Map<string, string>()
 
       for (const input of inputs) {
         uniquePredicates.add(input.predicateName)
         const objectKey = input.objectData.url || input.objectData.name
-        uniqueObjects.set(objectKey, {
-          name: input.objectData.name,
-          description: input.objectData.description,
-          url: input.objectData.url,
-          image: input.objectData.image
-        })
+        if (input.objectTermId) {
+          reusedObjects.set(objectKey, input.objectTermId)
+        } else {
+          uniqueObjects.set(objectKey, {
+            name: input.objectData.name,
+            description: input.objectData.description,
+            url: input.objectData.url,
+            image: input.objectData.image
+          })
+        }
       }
 
       const atomResults = new Map<string, string>() // key -> vaultId
       atomResults.set('user:I', userAtom.vaultId)
+      // Pre-resolve reused object atoms — no IPFS pin / no creation tx for them.
+      for (const [objectKey, termId] of reusedObjects.entries()) {
+        atomResults.set(`object:${objectKey}`, termId)
+      }
 
       // Collect ALL atoms to create (predicates + objects) and create in SINGLE tx
       const atomsToPinAndCreate: (AtomIPFSData & { key: string })[] = []
@@ -134,6 +145,8 @@ export const useCreateTripleOnChain = () => {
 
       // Add all objects to create
       for (const [objectKey, objData] of uniqueObjects.entries()) {
+        // A reused (existing) atom is already resolved — never recreate it.
+        if (reusedObjects.has(objectKey)) continue
         atomsToPinAndCreate.push({
           name: objData.name,
           description: objData.description || "Contenu visité par l'utilisateur.",

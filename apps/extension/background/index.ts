@@ -4,9 +4,14 @@ import { initializeThemeIconManager } from "./themeIconManager";
 import { initializeRealtime } from "./realtime";
 import { createServiceLogger } from '../lib/utils/logger'
 import { getStoredWalletAddress } from '../lib/utils/walletStorage'
+import { initAddToSofia } from "./addToSofia";
 import "./oauth/index"; // Initialize OAuth service
 
 const logger = createServiceLogger('ServiceWorker')
+
+// Right-click "Add to Sofia" → modal → cart. Registers its context menu +
+// listeners synchronously at top level (Chrome requires this for SW events).
+initAddToSofia()
 
 // Exported function to initialize when wallet connects (called from messageHandlers)
 export async function initializeOnWalletConnect(): Promise<void> {

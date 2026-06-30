@@ -88,6 +88,10 @@ export interface CartItemRecord {
   /** All chosen context slugs (topics and/or categories). One `in context of`
    *  triple is minted per entry. */
   interestContexts?: string[]
+  /** When set, the page maps to this EXISTING object atom (picked in the
+   *  Add-to-Sofia title search) — the batch deposits on it instead of creating
+   *  a new atom from the URL. */
+  objectTermId?: string | null
   voteAction?: "support" | "oppose"  // If present, this is a vote item (not a certification)
   tripleTermId?: string              // Vault ID for direct deposit (votes only)
 }
