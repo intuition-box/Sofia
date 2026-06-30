@@ -1,6 +1,11 @@
 import { memo, useMemo } from "react"
 
-import { INTENTION_CONFIG, type IntentionType } from "~/types/intentionCategories"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
+import {
+  INTENTION_CONFIG,
+  type IntentionType
+} from "~/types/intentionCategories"
+
 import FilterDropdown, { type FilterOption } from "./FilterDropdown"
 
 interface IntentionSelectorProps {
@@ -33,14 +38,24 @@ const OPTION_TYPES: IntentionType[] = [
  * cleared. The parent owns the value and queues/removes the cart item.
  */
 export const IntentionSelector = memo(
-  ({ selected, onSelect, onClear, disabled = false }: IntentionSelectorProps) => {
+  ({
+    selected,
+    onSelect,
+    onClear,
+    disabled = false
+  }: IntentionSelectorProps) => {
     const options = useMemo<FilterOption[]>(
       () =>
-        OPTION_TYPES.map((type) => ({
-          id: type,
-          label: INTENTION_CONFIG[type].label,
-          color: INTENTION_CONFIG[type].color
-        })),
+        OPTION_TYPES.map((type) => {
+          const Icon = INTENTION_ICONS[type]
+          const color = INTENTION_CONFIG[type].color
+          return {
+            id: type,
+            label: INTENTION_CONFIG[type].label,
+            color,
+            node: <Icon size={14} style={{ color }} />
+          }
+        }),
       []
     )
 

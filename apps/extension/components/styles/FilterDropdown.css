@@ -265,3 +265,12 @@
   color: var(--ds-ink);
   border-color: var(--ds-ink);
 }
+
+/* Pre-rendered icon (lucide verb glyph) — replaces the colored dot in the
+   Intention picker. Sizing comes from the icon's own `size` prop. */
+.ext-filter-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}

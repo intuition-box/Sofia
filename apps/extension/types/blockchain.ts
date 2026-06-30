@@ -50,6 +50,9 @@ export interface BatchTripleInput {
   predicateName: string
   objectData: AtomIPFSData
   customWeight?: bigint
+  /** Existing object atom term_id to deposit on (from the Add-to-Sofia title
+   *  search). When set, the batch skips creating an object atom from objectData. */
+  objectTermId?: string
 }
 
 export interface BatchTripleResult extends BlockchainResult {

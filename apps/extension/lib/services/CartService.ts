@@ -84,6 +84,20 @@ class CartServiceClass {
     }
   }
 
+  /**
+   * Cross-context signal: a mutation happened (e.g. the Add-to-Sofia modal added
+   * an item via the service worker). Other contexts (the open side panel) reload
+   * from IndexedDB — the source of truth — on this ping. Only fired by mutations
+   * (add/remove/clear), never by loadCart, so it can't loop.
+   */
+  private pingCartChanged() {
+    try {
+      chrome.storage.session.set({ cartPing: Date.now() }).catch(() => {})
+    } catch {
+      // Not in extension context
+    }
+  }
+
   private initializeStore() {
     if (this.initialized) return
     this.initialized = true
@@ -101,6 +115,11 @@ class CartServiceClass {
             this.loaded = false
             this.updateState({ items: [], count: 0 })
           }
+        }
+        // Another context mutated the cart (e.g. the Add-to-Sofia modal via the
+        // service worker) — reload from IndexedDB so this view reflects it.
+        if (area === "session" && changes.cartPing && this.currentWallet) {
+          this.loadCart(this.currentWallet, true)
         }
       })
     } catch {
@@ -134,7 +153,8 @@ class CartServiceClass {
     predicateName: string,
     intention: IntentionPurpose | null,
     faviconUrl: string | null,
-    interestContexts?: string[]
+    interestContexts?: string[],
+    objectTermId?: string | null
   ): Promise<boolean> {
     // Reject free-form predicate strings to prevent silent on-chain creation
     // of attacker-shaped predicate atoms (lookalike trailing space, homograph,
@@ -168,12 +188,14 @@ class CartServiceClass {
       interestContext: interestContexts?.[0] ?? null,
       interestContexts:
         interestContexts && interestContexts.length ? interestContexts : undefined,
+      objectTermId: objectTermId ?? null,
     }
 
     try {
       await CartDataService.addItem(record)
       const items = [...this.state.items, record]
       this.updateState({ items, count: items.length })
+      this.pingCartChanged()
       logger.info("Item added to cart", { normalizedLabel, predicateName })
       // Reset browsing nudge counter on cart action
       chrome.runtime
@@ -321,6 +343,7 @@ class CartServiceClass {
       await CartDataService.removeItem(itemId)
       const items = this.state.items.filter(item => item.id !== itemId)
       this.updateState({ items, count: items.length })
+      this.pingCartChanged()
       logger.info("Item removed from cart", { itemId })
     } catch (error) {
       logger.error("Failed to remove item from cart", { error })
@@ -331,6 +354,7 @@ class CartServiceClass {
     try {
       await CartDataService.clearByWallet(walletAddress.toLowerCase())
       this.updateState({ items: [], count: 0 })
+      this.pingCartChanged()
       logger.info("Cart cleared", { wallet: walletAddress.slice(0, 8) })
     } catch (error) {
       logger.error("Failed to clear cart", { error })
@@ -354,7 +378,10 @@ class CartServiceClass {
         description: `Page: ${item.normalizedUrl}`,
         url: item.url,
         image: item.faviconUrl || undefined
-      }
+      },
+      // Reuse an existing atom when one was picked in the title search; else
+      // the batch creates the object atom from objectData (URL) as usual.
+      objectTermId: item.objectTermId || undefined
     }))
   }
 

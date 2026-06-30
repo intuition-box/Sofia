@@ -8,9 +8,12 @@
  *
  * Shape matches FilterDropdown's `FilterOption` (id/label/color).
  */
-import { getTopicIcon, TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
+import { createElement, type ReactNode } from "react"
+
 import { INTENTION_CONFIG } from "../../types/intentionCategories"
 import type { IntentionType } from "../../types/intentionCategories"
+import { INTENTION_ICONS } from "./intentionIcons"
+import { getTopicIcon, TOPIC_COLORS, TOPIC_LABELS } from "./topicConfig"
 
 export interface FilterOptionConfig {
   id: string
@@ -19,6 +22,8 @@ export interface FilterOptionConfig {
   /** Material Symbols glyph name (topics only — verbs use a plain dot,
    *  exactly like the explorer's verb vs. topic dropdowns). */
   icon?: string
+  /** Pre-rendered icon (lucide verb glyph) — replaces the dot for verbs. */
+  node?: ReactNode
 }
 
 export const VERB_FILTER_OPTIONS: FilterOptionConfig[] = (
@@ -26,7 +31,16 @@ export const VERB_FILTER_OPTIONS: FilterOptionConfig[] = (
     IntentionType,
     { label: string; color: string }
   ][]
-).map(([id, cfg]) => ({ id, label: cfg.label, color: cfg.color }))
+).map(([id, cfg]) => ({
+  id,
+  label: cfg.label,
+  color: cfg.color,
+  // Same lucide glyph as the modal + IntentionSelector (shared source).
+  node: createElement(INTENTION_ICONS[id], {
+    size: 14,
+    style: { color: cfg.color }
+  })
+}))
 
 export const TOPIC_FILTER_OPTIONS: FilterOptionConfig[] = Object.entries(
   TOPIC_LABELS

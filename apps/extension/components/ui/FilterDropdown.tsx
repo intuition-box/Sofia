@@ -7,7 +7,13 @@
  * like CircleFeedSection in the explorer.
  */
 import { ChevronDown } from "lucide-react"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode
+} from "react"
 import { createPortal } from "react-dom"
 
 import "../styles/FilterDropdown.css"
@@ -24,6 +30,9 @@ export interface FilterOption {
   /** Image URL (e.g. a favicon). When set it replaces the colored dot
    *  entirely with the image — used by the Domain filter. */
   iconUrl?: string
+  /** Pre-rendered icon element (e.g. a lucide glyph). When set it replaces
+   *  the colored dot — used by the Intention picker for verb icons. */
+  node?: ReactNode
 }
 
 interface FilterDropdownProps {
@@ -79,13 +88,22 @@ function Swatch({
   base,
   color,
   icon,
-  iconUrl
+  iconUrl,
+  node
 }: {
   base: string
   color: string
   icon?: string
   iconUrl?: string
+  node?: ReactNode
 }) {
+  if (node) {
+    return (
+      <span className="ext-filter-node" aria-hidden="true">
+        {node}
+      </span>
+    )
+  }
   if (iconUrl) {
     return (
       <img
@@ -171,9 +189,7 @@ export default function FilterDropdown({
   const activeOption =
     value === "all" ? null : options.find((o) => o.id === value)
   const showPlaceholder = !activeOption && placeholder != null
-  const activeLabel = activeOption
-    ? activeOption.label
-    : (placeholder ?? "All")
+  const activeLabel = activeOption ? activeOption.label : placeholder ?? "All"
   const dotColor = activeOption?.color ?? MUTED
 
   const handleSelect = (id: string) => {
@@ -189,7 +205,7 @@ export default function FilterDropdown({
         role="listbox"
         style={{
           top: popRect.top,
-          left: popRect.left,
+          left: popRect.left
         }}>
         <div
           className={`ext-filter-pop__grid${singleColumn ? " ext-filter-pop__grid--single" : ""}`}>
@@ -213,6 +229,7 @@ export default function FilterDropdown({
                 color={o.color ?? MUTED}
                 icon={o.icon}
                 iconUrl={o.iconUrl}
+                node={o.node}
               />
               {o.label}
             </button>
@@ -243,6 +260,7 @@ export default function FilterDropdown({
           color={dotColor}
           icon={activeOption?.icon}
           iconUrl={activeOption?.iconUrl}
+          node={activeOption?.node}
         />
         <span className="ext-filter-trigger__label">{label}</span>
         <span
