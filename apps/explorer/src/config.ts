@@ -86,6 +86,15 @@ export const PREDICATE_IDS = {
   // tracks OAuth-derived platform memberships.
   MEMBER_OF:
     '0xe489948c4bd4fa6f50f402434996b90942ab67585a71c71d81dff8e624f661d4',
+  // The `circle_owner` semantic atom — minted alongside a circle as
+  // `{owner} | circle_owner | {circle}` so the group-api can resolve the
+  // human owner deterministically (the atom's `creator` is always the
+  // SofiaFeeProxy; MEMBER_OF can't tell a creator from a later joiner).
+  // EMPTY until the predicate atom is minted on-chain — circle creation
+  // skips the owner triple while empty, and the backend falls back to the
+  // earliest MEMBER_OF. Paste the minted term_id here + set
+  // CIRCLE_OWNER_PREDICATE_ID on the group-api to activate it.
+  CIRCLE_OWNER: '',
 }
 
 // ── Subject IDs (mainnet) ──

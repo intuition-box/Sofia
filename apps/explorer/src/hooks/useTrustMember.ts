@@ -42,16 +42,20 @@ export interface UseTrustMemberResult {
 
 const REASON_HINT: Record<TrustBlockedReason, string> = {
   'no-wallet': 'Connect your wallet to trust',
-  'no-account-atom':
-    'Make any cert first to register your account on Intuition',
+  'no-account-atom': 'You need an Intuition identity to trust members.',
   loading: 'Resolving your identity…',
 }
 
 export function useTrustMember(
   member: TrustCircleAccount | null,
 ): UseTrustMemberResult {
-  const { user, authenticated } = usePrivy()
-  const userWallet = user?.wallet?.address
+  const { authenticated } = usePrivy()
+  // Identity wallet. On an external-wallet login Privy may leave `user.wallet`
+  // (→ `primary`) and `useWallets()` empty (extension provider conflicts) — the
+  // proven address then lives only in `user.linkedAccounts` (→ `addresses`), so
+  // fall back to the first linked address.
+  const { primary, addresses: userWallets } = useLinkedWallets()
+  const userWallet = primary ?? userWallets[0]
   const {
     termId: userAccountAtomId,
     exists: accountAtomExists,
@@ -61,7 +65,6 @@ export function useTrustMember(
   // User's existing trust ring — used to flip the button to "Trusted"
   // once the member is already an anchor. Shares the same useTrustCircle
   // cache as the NavSidebar / CircleDetailView so this read is free.
-  const { addresses: userWallets } = useLinkedWallets()
   const { accounts: trustedAccounts } = useTrustCircle(userWallets)
 
   const memberTermId = member?.termId ?? null

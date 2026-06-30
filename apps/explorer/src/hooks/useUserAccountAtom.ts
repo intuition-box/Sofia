@@ -34,8 +34,18 @@ export function useUserAccountAtom(address: string | undefined): Result {
   }, [address])
 
   const { data, isLoading, error } = useGetAccountAtomByWalletQuery(
-    { addresses: checksum ? [checksum, checksum.toLowerCase()] : [] },
-    { enabled: Boolean(checksum) },
+    // `_ilike` matches the indexer's mixed-case address regardless of the case
+    // we pass, so a single value is enough (no checksum/lowercase pair needed).
+    { address: checksum ?? '' },
+    {
+      enabled: Boolean(checksum),
+      // This is a gating prerequisite (no account atom → join/trust blocked).
+      // It must never be served stale from the 10-min persisted cache: a wallet
+      // that just made its first cert has to see `exists: true` immediately, so
+      // we always refetch fresh on mount.
+      staleTime: 0,
+      refetchOnMount: 'always',
+    },
   )
 
   const atom = data?.atoms?.[0]

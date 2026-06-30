@@ -22,7 +22,6 @@
  */
 import { useLogin } from '@privy-io/react-auth'
 import { Zap, Check } from 'lucide-react'
-import { circleProModal } from './CircleProModal'
 
 interface JoinGateStat {
   label: string
@@ -92,8 +91,19 @@ export default function CircleJoinGate({
         <span className="jg-logo" style={{ background: circleColor }}>
           {circleName.slice(0, 1).toUpperCase()}
         </span>
-        <div className="jg-eyebrow">Members-only Circle</div>
-        <h2 className="jg-title">Enter the {circleName} Circle</h2>
+        {joinStatus === 'approved' ? (
+          <div className="jg-eyebrow jg-eyebrow--approved">
+            <Check className="jg-eyebrow-ic" aria-hidden="true" />
+            Request approved
+          </div>
+        ) : (
+          <div className="jg-eyebrow">Members-only Circle</div>
+        )}
+        <h2 className="jg-title">
+          {joinStatus === 'approved'
+            ? `Become a member of ${circleName}`
+            : `Enter the ${circleName} Circle`}
+        </h2>
         <p className="jg-sub">
           {!authenticated
             ? 'Connect your wallet to request access to this Circle.'
@@ -102,7 +112,7 @@ export default function CircleJoinGate({
               : joinStatus === 'rejected'
                 ? 'Your request was declined. You can ask again later.'
                 : joinStatus === 'approved'
-                  ? "You're approved! Add your membership to the cart to finish joining on-chain."
+                  ? "You're in — mint your membership on-chain to finish joining."
                   : 'An admin reviews new members. Free — your wallet is your membership.'}
         </p>
 
@@ -145,7 +155,7 @@ export default function CircleJoinGate({
               disabled={disabled}
             >
               <Zap className="jg-cta-ic" aria-hidden="true" />
-              Enter this Circle
+              Become a member
             </button>
           )
         ) : (
@@ -168,17 +178,19 @@ export default function CircleJoinGate({
           joinStatus === 'approved' &&
           !inCart &&
           disabled &&
-          disabledReason && <span className="jg-hint">{disabledReason}</span>}
-
-        {authenticated && (
-          <button
-            type="button"
-            className="jg-alt"
-            onClick={() => circleProModal()}
-          >
-            or upgrade to Pro for full analytics
-          </button>
-        )}
+          disabledReason && (
+            <span className="jg-hint">
+              {disabledReason}{' '}
+              <a
+                href="https://portal.intuition.systems"
+                target="_blank"
+                rel="noreferrer"
+                className="jg-hint-link"
+              >
+                Create your identity on the Intuition portal →
+              </a>
+            </span>
+          )}
       </div>
     </div>
   )

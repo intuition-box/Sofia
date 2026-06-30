@@ -272,6 +272,29 @@
   border-radius: 4px;
 }
 
+/* Unlink action on a read-only linked wallet (right-aligned in the row). */
+.ns-auth-menu-wallet-unlink {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted, var(--ds-ink));
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.ns-auth-menu-wallet-unlink:hover {
+  color: var(--ds-danger, #e5484d);
+  background: color-mix(in srgb, var(--ds-danger, #e5484d) 14%, transparent);
+}
+
 /* Action rows — "Link another wallet" / "Disconnect". */
 .ns-auth-menu-action {
   display: flex;

@@ -38,6 +38,17 @@ export const env = {
   indexerUrl:
     process.env.INTUITION_GRAPHQL_URL ??
     'https://mainnet.intuition.sh/v1/graphql',
+  // term_id of the dedicated `circle_owner` predicate atom. Empty until that
+  // predicate is minted on-chain — owner resolution then falls back to the
+  // earliest MEMBER_OF triple. See `src/predicates.ts`.
+  circleOwnerPredicateId: process.env.CIRCLE_OWNER_PREDICATE_ID ?? '',
+  // The SofiaFeeProxy is recorded as every cart-minted atom's on-chain
+  // `creator`. An OWNER row holding this address is therefore a stale seed from
+  // the old creator-based logic — `ensureGroupSeeded` re-resolves over it.
+  feeProxyAddress: (
+    process.env.FEE_PROXY_ADDRESS ??
+    '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c'
+  ).toLowerCase(),
   // When set (dev only), enables `/dev/seed-owner` + header-based wallet
   // impersonation (`x-dev-token` + `x-dev-wallet`) so the whole API is
   // curl-testable without Privy. Force-empty in production — the backdoor can

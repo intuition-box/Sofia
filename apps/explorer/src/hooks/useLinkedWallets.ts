@@ -2,40 +2,107 @@ import { useMemo } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { getAddress, type Address } from 'viem'
 
+/** One wallet attached to the user's account, for the manage UI. */
+export interface LinkedWallet {
+  address: Address
+  /** True when this wallet is currently connected (it can sign). */
+  connected: boolean
+  /** True when this is the acting wallet (the connected one that signs). */
+  isPrimary: boolean
+}
+
 /**
- * Returns all Privy-linked wallet addresses for the current user, checksummed
- * via EIP-55. Components that aggregate user data across wallets should use
- * `addresses`. Components that sign or act under a single identity should use
- * `primary` (defaults to the first linked wallet).
+ * Wallets attached to the current user.
  *
- * The Intuition indexer stores account IDs in EIP-55 mixed case, so the
- * returned addresses are safe to pass directly to queries that filter with
- * `_in` (exact match).
+ * - `addresses` — the READ union: every wallet the user has proven ownership of
+ *   by signing the Privy link flow (`user.linkedAccounts`). Persists even when a
+ *   wallet isn't connected, so someone who lost access to an old wallet still
+ *   sees its on-chain data. Components that aggregate user data use this.
+ * - `primary` — the ACTING identity: the account's primary (login) wallet
+ *   (`user.wallet`). Every write (vote / cert / deposit) is signed by it, and it
+ *   is stable across linking — linking another wallet never changes who acts.
+ * - `wallets` — per-wallet status for the manage UI (connected / primary).
+ *
+ * The Intuition indexer stores account IDs in EIP-55 mixed case, so the returned
+ * addresses are safe to pass directly to queries that filter with `_in`.
  */
 export function useLinkedWallets() {
-  const { authenticated } = usePrivy()
+  const { authenticated, user } = usePrivy()
   const { wallets } = useWallets()
 
   return useMemo(() => {
-    if (!authenticated || wallets.length === 0) {
+    if (!authenticated) {
       return {
         addresses: [] as Address[],
         primary: undefined as Address | undefined,
+        wallets: [] as LinkedWallet[],
       }
     }
 
-    const addresses: Address[] = []
+    // Linked = proven-by-signature wallets (persist while disconnected).
+    const linked: Address[] = []
+    for (const acc of user?.linkedAccounts ?? []) {
+      if (acc.type === 'wallet' && typeof acc.address === 'string') {
+        try {
+          linked.push(getAddress(acc.address))
+        } catch {
+          // invalid address shape — skip silently
+        }
+      }
+    }
+
+    // Connected = currently usable wallets (can sign).
+    const connected = new Set<string>()
     for (const w of wallets) {
       try {
-        addresses.push(getAddress(w.address))
+        connected.add(getAddress(w.address).toLowerCase())
       } catch {
-        // invalid address shape — skip silently
+        // skip
       }
     }
 
-    return {
-      addresses,
-      primary: addresses[0],
+    // Acting identity = the account's primary (login) wallet, from
+    // `user.wallet`. Stable across linking — linking a wallet adds it to the
+    // read union but must NOT change who acts. Falls back to the first
+    // connected wallet only if Privy hasn't surfaced a primary.
+    let primary: Address | undefined
+    const primaryRaw = user?.wallet?.address
+    if (primaryRaw) {
+      try {
+        primary = getAddress(primaryRaw)
+      } catch {
+        // skip
+      }
     }
-  }, [authenticated, wallets])
+    if (!primary) {
+      for (const w of wallets) {
+        try {
+          primary = getAddress(w.address)
+          break
+        } catch {
+          // skip
+        }
+      }
+    }
+
+    // Read union = the linked set, plus the connected primary as a safety net
+    // (it is normally already linked), deduped.
+    const seen = new Set<string>()
+    const addresses: Address[] = []
+    for (const a of [...linked, ...(primary ? [primary] : [])]) {
+      const key = a.toLowerCase()
+      if (!seen.has(key)) {
+        seen.add(key)
+        addresses.push(a)
+      }
+    }
+
+    const list: LinkedWallet[] = addresses.map((a) => ({
+      address: a,
+      connected: connected.has(a.toLowerCase()),
+      isPrimary: !!primary && a.toLowerCase() === primary.toLowerCase(),
+    }))
+
+    return { addresses, primary, wallets: list }
+  }, [authenticated, user, wallets])
 }

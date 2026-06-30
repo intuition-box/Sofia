@@ -15,6 +15,7 @@ import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../config/chainConfig'
 import { BlockchainService } from './blockchainService'
 import { createServiceLogger } from '../utils/logger'
+import { explicitGasLimit } from '../utils/gasLimit'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../config/constants'
 import type { AtomIPFSData, AtomCreationResult } from '../../types/blockchain'
 import type { Address } from 'viem'
@@ -189,24 +190,42 @@ class AtomServiceClass {
       })
 
       try {
+        const writeArgs = [address as Address, encodedDataArray, depositsArray, CREATION_CURVE_ID] as const
+
         // Simulate first
         const simulation = await publicClient.simulateContract({
           address: contractAddress,
           abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
-          args: [address as Address, encodedDataArray, depositsArray, CREATION_CURVE_ID],
+          args: writeArgs,
           value: totalCost,
           account: walletClient.account
         })
+
+        // Explicit gas limit so the wallet never falls back to the 2^50 block
+        // limit on large batches (~146k gas/atom measured; fallback is generous)
+        const gas = await explicitGasLimit(
+          publicClient,
+          {
+            address: contractAddress,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'createAtoms',
+            args: writeArgs,
+            value: totalCost,
+            account: address as `0x${string}`
+          },
+          BigInt(newAtoms.length) * 1_000_000n + 1_000_000n
+        )
 
         // Execute single transaction for all atoms
         const txHash = await walletClient.writeContract({
           address: contractAddress,
           abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
-          args: [address as Address, encodedDataArray, depositsArray, CREATION_CURVE_ID],
+          args: writeArgs,
           value: totalCost,
           chain: SELECTED_CHAIN,
+          gas,
           account: address as `0x${string}`
         })
 

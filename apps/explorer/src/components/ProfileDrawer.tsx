@@ -42,8 +42,17 @@ function formatStatCount(n: number): string {
 
 // ── Main component ────────────────────────────────────────────────────
 
+// Cap linked wallets at 2: the acting (connected) wallet + one secondary kept
+// for recovery. Bounds the multi-identity surface and keeps the manage UI tidy.
+const MAX_LINKED_WALLETS = 2
+
+// "Link another wallet" is hidden for launch — we ship single-wallet simple.
+// The whole multi-wallet feature (read-only union, unlink, cap) stays in the
+// code; flip this to `true` to re-enable the link affordance.
+const SHOW_LINK_WALLET = false
+
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
-  const { authenticated, user } = usePrivy()
+  const { authenticated, user, unlinkWallet } = usePrivy()
   const navigate = useNavigate()
   // On disconnect, leave the now-unauthenticated route for the landing page.
   const { logout } = useLogout({ onSuccess: () => navigate('/') })
@@ -51,8 +60,41 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     onSuccess: () => window.location.reload(),
   })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses, primary: primaryWallet } =
-    useLinkedWallets()
+  const { addresses: linkedAddresses, wallets: walletList } = useLinkedWallets()
+
+  // Unlink a read-only wallet from the account (removes its data from the
+  // union). Privy proves ownership on link, so only signed wallets are here.
+  const onUnlink = (addr: string) => {
+    const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+    const ok = window.confirm(
+      `Unlink ${short}?\n\nIts on-chain data will be removed from your view ` +
+        `(profile, signals, positions). You can link it again later by ` +
+        `reconnecting and signing.`,
+    )
+    if (!ok) return
+    void unlinkWallet(addr)
+      .then(() => window.location.reload())
+      .catch(() => {})
+  }
+
+  // Link another wallet — capped at 2 (the acting wallet + one secondary, for
+  // recovery), then warns before opening Privy's connect + sign flow.
+  const atWalletLimit = walletList.length >= MAX_LINKED_WALLETS
+  const onLink = () => {
+    if (atWalletLimit) {
+      window.alert(
+        `You can link up to ${MAX_LINKED_WALLETS} wallets. Unlink one first to add another.`,
+      )
+      return
+    }
+    const ok = window.confirm(
+      `Link another wallet?\n\nYou'll connect it and sign to prove you own it. ` +
+        `Its on-chain data is then shown in your view (read-only). The wallet ` +
+        `you're connected with stays the one that acts and signs.`,
+    )
+    if (!ok) return
+    linkWallet()
+  }
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
@@ -304,35 +346,45 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                         {copied ? 'Copied' : 'Copy address'}
                       </DropdownMenuItem>
 
-                      {linkedAddresses.length > 0 && (
+                      {walletList.length > 0 && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuLabel className="ns-auth-menu-label">
                             Wallets
                           </DropdownMenuLabel>
-                          {linkedAddresses.map((addr) => {
-                            const isPrimary =
-                              primaryWallet?.toLowerCase() ===
-                              addr.toLowerCase()
-                            const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                          {walletList.map((w) => {
+                            const short = `${w.address.slice(0, 6)}…${w.address.slice(-4)}`
                             return (
                               <DropdownMenuItem
-                                key={addr}
+                                key={w.address}
                                 className="ns-auth-menu-wallet"
                                 onSelect={(e) => e.preventDefault()}
-                                title={addr}
+                                title={w.address}
                               >
                                 <span
-                                  className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                                  className={`ns-auth-menu-dot${w.isPrimary ? ' is-primary' : ''}`}
                                   aria-hidden="true"
                                 />
                                 <span className="ns-auth-menu-wallet-addr">
                                   {short}
                                 </span>
-                                {isPrimary && (
+                                {w.connected ? (
                                   <span className="ns-auth-menu-wallet-tag">
-                                    primary
+                                    active
                                   </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="ns-auth-menu-wallet-unlink"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      onUnlink(w.address)
+                                    }}
+                                    title="Unlink this wallet (removes its data from your view)"
+                                  >
+                                    Unlink
+                                  </button>
                                 )}
                               </DropdownMenuItem>
                             )
@@ -341,13 +393,18 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                       )}
 
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => linkWallet()}
-                        className="ns-auth-menu-action"
-                      >
-                        <Wallet className="h-4 w-4" />
-                        Link another wallet
-                      </DropdownMenuItem>
+                      {SHOW_LINK_WALLET && (
+                        <DropdownMenuItem
+                          onClick={onLink}
+                          className="ns-auth-menu-action"
+                          disabled={atWalletLimit}
+                        >
+                          <Wallet className="h-4 w-4" />
+                          {atWalletLimit
+                            ? `Wallet limit reached (${MAX_LINKED_WALLETS}/${MAX_LINKED_WALLETS})`
+                            : 'Link another wallet'}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => logout()}
                         className="ns-auth-menu-action ns-auth-menu-action--danger"

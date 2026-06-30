@@ -13,6 +13,7 @@
 import { useCallback, useMemo } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { useUserAccountAtom } from './useUserAccountAtom'
+import { useLinkedWallets } from './useLinkedWallets'
 import { useCart } from './useCart'
 import { buildJoinCartItem, joinCartId } from '@/services/circleJoinService'
 import type { CircleData } from '@/types/circle'
@@ -36,14 +37,20 @@ export interface UseJoinCircleResult {
 
 const REASON_HINT: Record<JoinBlockedReason, string> = {
   'no-wallet': 'Connect your wallet to join',
-  'no-account-atom':
-    'Make any cert first to register your account on Intuition',
+  'no-account-atom': 'You need an Intuition identity to join this Circle.',
   loading: 'Resolving your identity…',
 }
 
 export function useJoinCircle(circle: CircleData | null): UseJoinCircleResult {
-  const { user, authenticated } = usePrivy()
-  const userWallet = user?.wallet?.address
+  const { authenticated } = usePrivy()
+  // Identity wallet. On an external-wallet login Privy may leave `user.wallet`
+  // (→ `primary`) empty AND `useWallets()` empty when several wallet extensions
+  // fight over the injected provider — the proven address then lives only in
+  // `user.linkedAccounts` (→ `addresses`). So fall back to the first linked
+  // address; otherwise the account atom never resolves and the button stays
+  // disabled.
+  const { primary, addresses } = useLinkedWallets()
+  const userWallet = primary ?? addresses[0]
   const {
     termId: userAccountAtomId,
     exists: accountAtomExists,

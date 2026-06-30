@@ -148,10 +148,17 @@ export default function CircleProModal({
           <button
             type="button"
             className="cf-btn cf-btn-pro pro-modal-cta"
-            onClick={close}
+            onClick={() => {
+              window.open(
+                'https://discord.gg/sofia3',
+                '_blank',
+                'noopener,noreferrer',
+              )
+              close()
+            }}
           >
             <Sparkles className="pro-modal-cta-ic" aria-hidden="true" />
-            Contact the team
+            Join our Discord
           </button>
         </div>
       </div>

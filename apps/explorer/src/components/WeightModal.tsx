@@ -45,6 +45,12 @@ const WEIGHT_TIERS = [
 
 const TOPIC_BY_ID = new Map(SOFIA_TOPICS.map((t) => [t.id, t]))
 
+// A circle mints a dedicated `{owner} | circle_owner | {circle}` triple so the
+// group-api can resolve the owner deterministically. Only when the predicate
+// atom is configured (minted) — 0 otherwise, so the batch and the cost
+// estimate stay in lockstep. See PREDICATE_IDS.CIRCLE_OWNER.
+const OWNER_TRIPLE_COUNT = PREDICATE_IDS.CIRCLE_OWNER ? 1 : 0
+
 /** Turn a raw wallet/viem error into a single human-readable line — the
  *  unmodified message dumps chain id, calldata and contract address, which
  *  overflows the panel and means nothing to the user. */
@@ -206,7 +212,7 @@ export default function WeightModal({
         const validTopics = item.circleDraft.topicIds.filter(
           (slug) => !!TOPIC_ATOM_IDS[slug],
         )
-        const tripleCount = 1 + validTopics.length
+        const tripleCount = 1 + OWNER_TRIPLE_COUNT + validTopics.length
         deposits += tripleCount
         creates += tripleCount
       } else if (item.kind === 'create-triple') {
@@ -414,7 +420,7 @@ export default function WeightModal({
           const validTopicIds = draft.topicIds.filter(
             (slug) => !!TOPIC_ATOM_IDS[slug],
           )
-          const tripleCount = 1 + validTopicIds.length
+          const tripleCount = 1 + OWNER_TRIPLE_COUNT + validTopicIds.length
           const perTripleAmount = Math.max(
             totalAmount / tripleCount,
             MIN_SIGNAL_TRUST,
@@ -427,6 +433,19 @@ export default function WeightModal({
             objectId: atomId,
             signalTrust: perTripleAmount,
           })
+
+          // Ownership: account → circle_owner → circle. The deterministic
+          // signal the group-api reads to seed the circle's OWNER (the atom's
+          // `creator` is the proxy; MEMBER_OF can't distinguish creator from
+          // joiner). Skipped while the predicate atom is unminted.
+          if (PREDICATE_IDS.CIRCLE_OWNER) {
+            createItems.push({
+              subjectId: userAtomId,
+              predicateId: PREDICATE_IDS.CIRCLE_OWNER,
+              objectId: atomId,
+              signalTrust: perTripleAmount,
+            })
+          }
 
           // Topic tags: circle → has_tag → topic (one per selected topic)
           for (const topicSlug of validTopicIds) {
@@ -526,16 +545,24 @@ export default function WeightModal({
           if (!r.success) {
             allOk = false
           } else {
-            // Group panels read these queries, refresh after a join so
-            // the user shows up immediately.
-            qc.invalidateQueries({ queryKey: ['groups-list'] })
-            qc.invalidateQueries({ queryKey: ['group-detail'] })
-            // A declared skill/tool ([you → is_skilled_in/uses → X]) lands via
-            // this create path — refresh the profile's skills/tools (and the
-            // master profile) so it shows up without waiting on the 10-min
-            // staleTime.
-            qc.invalidateQueries({ queryKey: ['userAttributes'] })
-            qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            // Group panels read these queries, refresh after a join so the
+            // user shows up. A declared skill/tool ([you → is_skilled_in/uses →
+            // X]) lands via this same create path — refresh those too.
+            const refreshAfterMint = () => {
+              qc.invalidateQueries({ queryKey: ['groups-list'] })
+              qc.invalidateQueries({ queryKey: ['group-detail'] })
+              qc.invalidateQueries({ queryKey: ['userAttributes'] })
+              qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            }
+            refreshAfterMint()
+            // The indexer lags the chain by a few seconds, so the immediate
+            // refetch above returns the pre-mint state and re-caches it (the
+            // join gate would stay locked even after a manual reload). Re-run
+            // on a short schedule so the new membership/skill surfaces on its
+            // own once the indexer catches up — no manual reload needed.
+            for (const delay of [4000, 9000, 18000]) {
+              setTimeout(refreshAfterMint, delay)
+            }
           }
         } finally {
           setCreateTripleProcessing(false)

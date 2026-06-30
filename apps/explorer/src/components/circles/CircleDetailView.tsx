@@ -260,6 +260,7 @@ export default function CircleDetailView({
           totalMembers={circle.members.length}
           isMember={circle.isMember}
           showPlan={showPlan}
+          hideActions={gated}
           onJoin={onJoin}
           onUpgrade={upgrade}
           onMemberClick={memberClick}

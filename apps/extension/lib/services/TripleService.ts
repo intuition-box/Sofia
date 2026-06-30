@@ -24,6 +24,7 @@ import { BlockchainService } from './blockchainService'
 import { globalStakeService } from './GlobalStakeService'
 import { platformPoolService } from './PlatformPoolService'
 import { createServiceLogger } from '../utils/logger'
+import { explicitGasLimit } from '../utils/gasLimit'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS } from '../config/constants'
 import { getPredicateIdByName } from '../config/predicateConstants'
 import type { TripleOnChainResult, BatchTripleResult } from '../../types/blockchain'
@@ -94,36 +95,48 @@ class TripleServiceClass {
       totalValue: totalValue.toString()
     })
 
+    const depositArgs = [
+      address as Address,
+      termIds as Address[],
+      curveIds,
+      assets,
+      minShares
+    ] as const
+
     // Simulate first
     await publicClient.simulateContract({
       address: contractAddress as Address,
       abi: SofiaFeeProxyAbi,
       functionName: 'depositBatch',
-      args: [
-        address as Address,
-        termIds as Address[],
-        curveIds,
-        assets,
-        minShares
-      ],
+      args: depositArgs,
       value: totalValue,
       account: walletClient.account
     })
+
+    // Explicit gas limit so the wallet never falls back to the 2^50 block
+    // limit on large batches (~600k gas/item heuristic; over-estimate is free)
+    const gas = await explicitGasLimit(
+      publicClient,
+      {
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'depositBatch',
+        args: depositArgs,
+        value: totalValue,
+        account: address as Address
+      },
+      BigInt(termIds.length) * 600_000n + 1_000_000n
+    )
 
     // Execute
     const hash = await walletClient.writeContract({
       address: contractAddress as Address,
       abi: SofiaFeeProxyAbi,
       functionName: 'depositBatch',
-      args: [
-        address as Address,
-        termIds as Address[],
-        curveIds,
-        assets,
-        minShares
-      ],
+      args: depositArgs,
       value: totalValue,
       chain: SELECTED_CHAIN,
+      gas,
       maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
       maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
       account: address as Address
@@ -521,23 +534,41 @@ class TripleServiceClass {
         const multiVaultCost = (tripleCost * BigInt(triplesToCreate.length)) + totalDeposit
         const totalValue = await BlockchainService.getTotalCreationCost(depositCount, totalDeposit, multiVaultCost)
 
+        const createArgs = [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID] as const
+
         try {
           const simulation = await publicClient.simulateContract({
             address: contractAddress,
             abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
-            args: [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
+            args: createArgs,
             value: totalValue,
             account: walletClient.account
           })
+
+          // Explicit gas limit so the wallet never falls back to the 2^50 block
+          // limit on large batches (~417k gas/triple measured; fallback generous)
+          const gas = await explicitGasLimit(
+            publicClient,
+            {
+              address: contractAddress,
+              abi: SofiaFeeProxyAbi,
+              functionName: 'createTriples',
+              args: createArgs,
+              value: totalValue,
+              account: address as Address
+            },
+            BigInt(triplesToCreate.length) * 1_000_000n + 1_000_000n
+          )
 
           const hash = await walletClient.writeContract({
             address: contractAddress,
             abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
-            args: [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
+            args: createArgs,
             value: totalValue,
             chain: SELECTED_CHAIN,
+            gas,
             maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
             maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
             account: address as Address

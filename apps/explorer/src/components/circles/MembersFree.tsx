@@ -11,7 +11,7 @@
  * Members with no streak entry drop the streak token rather than show a
  * fabricated number.
  */
-import { ArrowRight, Lock } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { MemberActivityResult } from '@/hooks/useMemberActivity'
 import type { MemberStreaksResult } from '@/hooks/useMemberStreaks'
@@ -97,12 +97,6 @@ export default function MembersFree({
           View all {totalMembers} members
           <ArrowRight className="cf-btn-icon" aria-hidden="true" />
         </button>
-        {showPlan && (
-          <button type="button" className="cf-prohint" onClick={onUpgrade}>
-            <Lock className="cf-prohint-icon" aria-hidden="true" />
-            Rank by expertise &amp; delegate trust with Pro
-          </button>
-        )}
       </div>
     </section>
   )

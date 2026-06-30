@@ -21,6 +21,10 @@
 import { ShieldCheck, Lock, Sparkles, Zap, Check } from 'lucide-react'
 import type { CircleStats } from '@/services/circleStats'
 
+// Decisions tab is hidden for now (kept in the code for a future Pro update).
+// Flip to `true` to restore the locked/unlocked Decisions KPI tiles.
+const SHOW_DECISIONS = false
+
 interface CircleHeaderFreeProps {
   name: string
   description: string
@@ -35,6 +39,9 @@ interface CircleHeaderFreeProps {
    *  has none, so its plan badge, Upgrade button and locked Decisions
    *  KPI are suppressed. */
   showPlan: boolean
+  /** Hide the header action buttons (join / upgrade) while the join gate
+   *  overlay is showing, so the gate is the single, unambiguous join CTA. */
+  hideActions?: boolean
   /** Fires when a non-member clicks "Enter this Circle". */
   onJoin?: () => void
   /** Fires for any Pro-gated affordance (Upgrade button). */
@@ -66,6 +73,7 @@ export default function CircleHeaderFree({
   totalMembers,
   isMember,
   showPlan,
+  hideActions = false,
   onJoin,
   onUpgrade,
   onMemberClick,
@@ -101,43 +109,49 @@ export default function CircleHeaderFree({
               )}
             </div>
             <p className="cf-header-desc">{description}</p>
-            <div className="cf-header-actions">
-              {isMember ? (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-member"
-                  onClick={onMemberClick}
-                >
-                  <Check className="cf-btn-icon" aria-hidden="true" />
-                  Member
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-pro"
-                  onClick={onJoin}
-                >
-                  <Zap className="cf-btn-icon" aria-hidden="true" />
-                  Enter this Circle
-                </button>
-              )}
-              {showPlan && (
-                <button
-                  type="button"
-                  className="cf-btn cf-btn-pro"
-                  onClick={onUpgrade}
-                >
-                  <Sparkles className="cf-btn-icon" aria-hidden="true" />
-                  Upgrade to Pro
-                </button>
-              )}
-            </div>
+            {!hideActions && (
+              <div className="cf-header-actions">
+                {isMember ? (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-member"
+                    onClick={onMemberClick}
+                  >
+                    <Check className="cf-btn-icon" aria-hidden="true" />
+                    Member
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-pro"
+                    onClick={onJoin}
+                  >
+                    <Zap className="cf-btn-icon" aria-hidden="true" />
+                    Enter this Circle
+                  </button>
+                )}
+                {showPlan && (
+                  <button
+                    type="button"
+                    className="cf-btn cf-btn-pro"
+                    onClick={onUpgrade}
+                  >
+                    <Sparkles className="cf-btn-icon" aria-hidden="true" />
+                    Upgrade to Pro
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <div
-        className={`cf-kpis${showPlan || decisionsUnlocked ? '' : ' cf-kpis--duo'}`}
+        className={`cf-kpis${
+          SHOW_DECISIONS && (showPlan || decisionsUnlocked)
+            ? ''
+            : ' cf-kpis--duo'
+        }`}
         role="group"
         aria-label="Circle metrics"
       >
@@ -170,7 +184,7 @@ export default function CircleHeaderFree({
           <span className="cf-kpi-delta is-flat">active in last 7 days</span>
         </div>
 
-        {showPlan && (
+        {SHOW_DECISIONS && showPlan && (
           <button
             type="button"
             className={`cf-kpi cf-kpi-locked${
@@ -198,7 +212,7 @@ export default function CircleHeaderFree({
           </button>
         )}
 
-        {decisionsUnlocked && (
+        {SHOW_DECISIONS && decisionsUnlocked && (
           <button
             type="button"
             className={`cf-kpi cf-kpi-nav${decisionsActive ? ' is-active' : ''}`}

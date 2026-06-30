@@ -369,11 +369,19 @@ query GetMyTrustCircle(
   }
 }
 
-# Query to find user's Account atom by wallet address
-query GetAccountAtomByWallet($addresses: [String!]!) {
+# Query to find user's Account atom by wallet address.
+# Match case-insensitively on the account relationship (`value.account.id`):
+# the indexer stores addresses in a mixed case that is NEITHER viem's EIP-55
+# checksum NOR lowercase, so an exact `_in`/`_eq` filter silently misses and the
+# user looks like they have no on-chain identity (join/trust buttons stay
+# disabled). `_ilike` is the project rule for any address comparison.
+query GetAccountAtomByWallet($address: String!) {
   atoms(
     where: {
-      _and: [{ data: { _in: $addresses } }, { type: { _eq: "Account" } }]
+      _and: [
+        { type: { _eq: "Account" } }
+        { value: { account: { id: { _ilike: $address } } } }
+      ]
     }
     limit: 1
   ) {

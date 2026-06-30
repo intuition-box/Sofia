@@ -14,18 +14,23 @@ import { applyOptimisticPosition } from '@/lib/realtime/derivations'
 export type { DepositResult, BatchDepositItem }
 
 export function useDeposit() {
-  const { authenticated } = usePrivy()
+  const { authenticated, user } = usePrivy()
   const { wallets } = useWallets()
   const qc = useQueryClient()
   const [processing, setProcessing] = useState(false)
   const [txResult, setTxResult] = useState<DepositResult | null>(null)
 
-  /** Resolve the first connected wallet or throw */
+  /** Resolve the acting wallet (the account's primary/login wallet) or throw.
+   *  Anchored on `user.wallet` so linking another wallet never switches who
+   *  signs; falls back to the first connected wallet. */
   const requireWallet = useCallback(() => {
     if (!authenticated || wallets.length === 0)
       throw new Error('No wallet connected')
-    return wallets[0]
-  }, [authenticated, wallets])
+    const primary = user?.wallet?.address?.toLowerCase()
+    return (
+      wallets.find((w) => w.address.toLowerCase() === primary) ?? wallets[0]
+    )
+  }, [authenticated, wallets, user])
 
   /** Single deposit */
   const deposit = useCallback(
@@ -108,11 +113,14 @@ export function useDeposit() {
     [requireWallet, deposit, qc],
   )
 
-  /** Get user balance on Intuition chain */
+  /** Get the acting wallet's balance on the Intuition chain */
   const getBalance = useCallback(async (): Promise<string> => {
     if (wallets.length === 0) return '0'
-    return fetchBalance(wallets[0].address)
-  }, [wallets])
+    const primary = user?.wallet?.address?.toLowerCase()
+    const acting =
+      wallets.find((w) => w.address.toLowerCase() === primary) ?? wallets[0]
+    return fetchBalance(acting.address)
+  }, [wallets, user])
 
   const reset = useCallback(() => setTxResult(null), [])
 
