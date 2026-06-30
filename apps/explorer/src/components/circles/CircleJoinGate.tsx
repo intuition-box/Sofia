@@ -185,7 +185,8 @@ export default function CircleJoinGate({
                 href="https://portal.intuition.systems"
                 target="_blank"
                 rel="noreferrer"
-                className="jg-hint-link">
+                className="jg-hint-link"
+              >
                 Create your identity on the Intuition portal →
               </a>
             </span>

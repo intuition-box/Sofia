@@ -8,9 +8,13 @@ import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 
 let mockAuthenticated = true
 let mockWallets: Array<{ address: string }> = []
+let mockUser: {
+  wallet?: { address: string }
+  linkedAccounts?: Array<{ type: string; address?: string }>
+} | null = null
 
 vi.mock('@privy-io/react-auth', () => ({
-  usePrivy: () => ({ authenticated: mockAuthenticated }),
+  usePrivy: () => ({ authenticated: mockAuthenticated, user: mockUser }),
   useWallets: () => ({ wallets: mockWallets }),
 }))
 
@@ -20,6 +24,7 @@ describe('useLinkedWallets', () => {
   beforeEach(() => {
     mockAuthenticated = true
     mockWallets = []
+    mockUser = null
   })
 
   it('returns empty addresses when no wallet is connected', () => {
@@ -49,10 +54,21 @@ describe('useLinkedWallets', () => {
   })
 
   it('returns multiple checksummed addresses in order', () => {
-    mockWallets = [
-      { address: '0x8ba1f109551bd432803012645ac136ddd64dba72' },
-      { address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' },
-    ]
+    // The read union now comes from the proven `user.linkedAccounts`, not
+    // `useWallets()`. `primary` is the login wallet (`user.wallet`).
+    mockUser = {
+      wallet: { address: '0x8ba1f109551bd432803012645ac136ddd64dba72' },
+      linkedAccounts: [
+        {
+          type: 'wallet',
+          address: '0x8ba1f109551bd432803012645ac136ddd64dba72',
+        },
+        {
+          type: 'wallet',
+          address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+        },
+      ],
+    }
     const { result } = renderHook(() => useLinkedWallets())
     expect(result.current.addresses).toHaveLength(2)
     expect(result.current.primary).toBe(result.current.addresses[0])

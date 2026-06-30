@@ -16,6 +16,6 @@
 // plus the legacy "is a member of" Thing still present on older circles. Both
 // must be considered when finding the earliest member.
 export const MEMBER_OF_PREDICATE_IDS = [
-  "0xe489948c4bd4fa6f50f402434996b90942ab67585a71c71d81dff8e624f661d4",
-  "0x72b43d4202fe2070725a41e4ff1c83def872b3befadc0627edcc23ffa11b1c66",
+  '0xe489948c4bd4fa6f50f402434996b90942ab67585a71c71d81dff8e624f661d4',
+  '0x72b43d4202fe2070725a41e4ff1c83def872b3befadc0627edcc23ffa11b1c66',
 ] as const

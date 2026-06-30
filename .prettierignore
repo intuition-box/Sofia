@@ -22,3 +22,8 @@ apps/extension/
 apps/landing/public/blog/
 apps/landing/public/docs/
 apps/landing/Sofia Landing 2/
+
+# Blog posts are MDX: they use `{/* truncate */}` comments (consumed by the
+# blog's truncate plugin). Prettier's markdown parser rewrites `*` → `_`, which
+# breaks the marker. Keep the posts intact — they're not plain markdown.
+apps/blog/src/content/posts/
