@@ -5,7 +5,17 @@
  * stays visible at rest.
  */
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import {
+  ChevronDown,
+  ShieldCheck,
+  Briefcase,
+  GraduationCap,
+  Sparkles,
+  Smile,
+  ShoppingBag,
+  Music,
+  type LucideIcon,
+} from 'lucide-react'
 import {
   Popover,
   PopoverTrigger,
@@ -15,41 +25,53 @@ import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
 
 export type VerbFilterId = 'all' | IntentionType
 
-const VERBS: { id: IntentionType; label: string; color: string }[] = [
+const VERBS: {
+  id: IntentionType
+  label: string
+  color: string
+  Icon: LucideIcon
+}[] = [
   {
     id: 'trusted',
     label: INTENTION_CONFIG.trusted.label,
     color: INTENTION_CONFIG.trusted.color,
+    Icon: ShieldCheck,
   },
   {
     id: 'work',
     label: INTENTION_CONFIG.work.label,
     color: INTENTION_CONFIG.work.color,
+    Icon: Briefcase,
   },
   {
     id: 'learning',
     label: INTENTION_CONFIG.learning.label,
     color: INTENTION_CONFIG.learning.color,
+    Icon: GraduationCap,
   },
   {
     id: 'inspiration',
     label: INTENTION_CONFIG.inspiration.label,
     color: INTENTION_CONFIG.inspiration.color,
+    Icon: Sparkles,
   },
   {
     id: 'fun',
     label: INTENTION_CONFIG.fun.label,
     color: INTENTION_CONFIG.fun.color,
+    Icon: Smile,
   },
   {
     id: 'buying',
     label: INTENTION_CONFIG.buying.label,
     color: INTENTION_CONFIG.buying.color,
+    Icon: ShoppingBag,
   },
   {
     id: 'music',
     label: INTENTION_CONFIG.music.label,
     color: INTENTION_CONFIG.music.color,
+    Icon: Music,
   },
 ]
 
@@ -81,11 +103,19 @@ export default function CircleVerbFilterDropdown({
           className="crd-filter-trigger"
           aria-label="Filter by verb"
         >
-          <span
-            className="crd-filter-trigger__dot"
-            style={{ background: dotColor }}
-            aria-hidden="true"
-          />
+          {activeVerb ? (
+            <activeVerb.Icon
+              className="crd-filter-trigger__ic"
+              style={{ color: activeVerb.color }}
+              aria-hidden="true"
+            />
+          ) : (
+            <span
+              className="crd-filter-trigger__dot"
+              style={{ background: dotColor }}
+              aria-hidden="true"
+            />
+          )}
           <span className="crd-filter-trigger__label">Intention</span>
           <span className="crd-filter-trigger__value">{activeLabel}</span>
           <ChevronDown size={12} className="crd-filter-trigger__chev" />
@@ -116,9 +146,9 @@ export default function CircleVerbFilterDropdown({
               }`}
               onClick={() => handleSelect(v.id)}
             >
-              <span
-                className="crd-filter-pop__dot"
-                style={{ background: v.color }}
+              <v.Icon
+                className="crd-filter-pop__ic"
+                style={{ color: v.color }}
                 aria-hidden="true"
               />
               {v.label}

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/popover'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { avatarColor } from '@/utils/avatarColor'
+import { getAvatarUrl } from '@/services/ensService'
 
 interface CircleMemberFilterDropdownProps {
   /** `'all'` or the member's `walletAddress ?? termId`. */
@@ -54,11 +55,28 @@ export default function CircleMemberFilterDropdown({
           className="crd-filter-trigger crd-filter-trigger--wide"
           aria-label="Filter by member"
         >
-          <span
-            className="crd-filter-trigger__dot"
-            style={{ background: dotColor }}
-            aria-hidden="true"
-          />
+          {activeMember ? (
+            <img
+              className="crd-filter-trigger__av"
+              src={
+                activeMember.image ||
+                getAvatarUrl(activeMember.walletAddress ?? activeMember.termId)
+              }
+              onError={(e) => {
+                e.currentTarget.src = getAvatarUrl(
+                  activeMember.walletAddress ?? activeMember.termId,
+                )
+              }}
+              alt=""
+              style={{ background: avatarColor(activeMember.label) }}
+            />
+          ) : (
+            <span
+              className="crd-filter-trigger__dot"
+              style={{ background: dotColor }}
+              aria-hidden="true"
+            />
+          )}
           <span className="crd-filter-trigger__label">Member</span>
           <span className="crd-filter-trigger__value">{activeLabel}</span>
           <ChevronDown size={12} className="crd-filter-trigger__chev" />
@@ -98,10 +116,16 @@ export default function CircleMemberFilterDropdown({
                 onClick={() => handleSelect(value)}
                 title={m.label}
               >
-                <span
-                  className="crd-filter-pop__dot"
+                <img
+                  className="crd-filter-pop__av"
+                  src={m.image || getAvatarUrl(m.walletAddress ?? m.termId)}
+                  onError={(e) => {
+                    e.currentTarget.src = getAvatarUrl(
+                      m.walletAddress ?? m.termId,
+                    )
+                  }}
+                  alt=""
                   style={{ background: avatarColor(m.label) }}
-                  aria-hidden="true"
                 />
                 {m.label}
               </button>

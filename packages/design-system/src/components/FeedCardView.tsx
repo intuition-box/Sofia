@@ -186,6 +186,9 @@ function OwnerMenu({ onDelete }: { onDelete: () => void }) {
 export interface FeedCardVerb {
   label: string
   color?: string
+  /** Optional leading icon (consumer-provided, e.g. a lucide glyph). Falls
+   *  back to the coloured dot when absent. */
+  icon?: ReactNode
 }
 
 export interface FeedCardTopic {
@@ -335,7 +338,7 @@ export function FeedCardView({
           className="fc-verb"
           style={v.color ? { ['--vc' as string]: v.color } : undefined}
         >
-          <i aria-hidden="true" />
+          {v.icon ?? <i aria-hidden="true" />}
           {v.label}
         </span>
       ),

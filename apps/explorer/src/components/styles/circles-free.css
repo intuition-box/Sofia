@@ -344,7 +344,7 @@
 }
 .cf-module-title {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 22px;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -437,7 +437,7 @@
 }
 .cf-mstat b {
   font-family: var(--ds-font-display);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 19px;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
@@ -569,7 +569,7 @@
 .cf-tmap-label {
   display: block;
   font-family: var(--ds-font-display);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 0.98;
   color: var(--ds-ink);
