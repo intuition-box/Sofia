@@ -22,7 +22,6 @@
  */
 import { useLogin } from '@privy-io/react-auth'
 import { Zap, Check } from 'lucide-react'
-import { circleProModal } from './CircleProModal'
 
 interface JoinGateStat {
   label: string
@@ -191,16 +190,6 @@ export default function CircleJoinGate({
               </a>
             </span>
           )}
-
-        {authenticated && joinStatus !== 'approved' && (
-          <button
-            type="button"
-            className="jg-alt"
-            onClick={() => circleProModal()}
-          >
-            or upgrade to Pro for full analytics
-          </button>
-        )}
       </div>
     </div>
   )

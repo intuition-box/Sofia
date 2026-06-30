@@ -17,7 +17,6 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import type { Address } from 'viem'
-import { Lock } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { MemberActivityResult } from '@/hooks/useMemberActivity'
@@ -190,12 +189,6 @@ export default function MembersPanelFree({
 
         <div className="cf-panel-foot">
           <span className="cf-panel-foot-note">Sorted by activity</span>
-          {showPlan && (
-            <button type="button" className="cf-prohint" onClick={onUpgrade}>
-              <Lock className="cf-prohint-icon" aria-hidden="true" />
-              Rank by expertise with Pro
-            </button>
-          )}
         </div>
       </aside>
     </>
