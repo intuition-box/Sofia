@@ -55,7 +55,7 @@ export const ZONE_NODES: Record<
       className={`${styles.heroRoot} ${variant === 'peach' ? 'on-peach' : ''}`}
     >
       <h1 className={`h-display ${styles.heroTitle}`}>
-        From surfing the web to <em>owning&nbsp;it.</em>
+        Community, think <em>smarter.</em>
       </h1>
       <div className={styles.heroActions}>
         <a
