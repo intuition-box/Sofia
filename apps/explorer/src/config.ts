@@ -28,11 +28,11 @@ export const MULTIVAULT_ADDRESS: Address =
 export const BLOCK_CHUNK = 50_000n
 export const REFRESH_INTERVAL = 120_000 // 2 min
 
-// ── Season Config (modifier ici pour changer de saison) ──
-export const SEASON_NAME = 'Alpha Tester Reward Program'
-export const SEASON_START = new Date('2026-03-27T00:00:00Z')
-export const SEASON_END = new Date('2026-04-27T00:00:00Z')
-export const SEASON_START_BLOCK = 2379165n
+// ── Leaderboard indexing ──
+// Block the Sofia proxy went live at. The alpha-tester leaderboard scans
+// TransactionForwarded events from here up to the current block with NO end
+// cutoff — it's a perpetual, all-time board, not a dated season window.
+export const INDEX_START_BLOCK = 2379165n
 
 // ── Beta Season Pool vault ──
 export const SEASON_POOL_TERM_ID =

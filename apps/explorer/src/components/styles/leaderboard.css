@@ -85,6 +85,19 @@
   align-items: center;
   gap: 12px;
 }
+/* Single-view label (replaces the old tab group). */
+.lb-subtitle {
+  font-family: var(--ds-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-accent-ink, var(--ds-ink));
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, var(--ds-border));
+  border-radius: 999px;
+  padding: 4px 10px;
+}
 .lb-tab-group {
   display: flex;
   gap: 4px;

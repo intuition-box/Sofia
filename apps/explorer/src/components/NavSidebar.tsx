@@ -226,7 +226,9 @@ export function NavSidebar({
         >
           <ShoppingCart className="h-4 w-4" />
           <span className="ns-cart-label">Cart</span>
-          {cart.count > 0 && <span className="ns-cart-count">{cart.count}</span>}
+          {cart.count > 0 && (
+            <span className="ns-cart-count">{cart.count}</span>
+          )}
         </button>
       </div>
 

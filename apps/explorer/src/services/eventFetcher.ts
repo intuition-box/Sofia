@@ -1,12 +1,7 @@
 import { parseAbiItem } from 'viem'
 import type { Address } from 'viem'
 import { rpcClient } from './rpcClient'
-import {
-  SOFIA_PROXY_ADDRESS,
-  BLOCK_CHUNK,
-  SEASON_START,
-  SEASON_START_BLOCK,
-} from '../config'
+import { SOFIA_PROXY_ADDRESS, BLOCK_CHUNK, INDEX_START_BLOCK } from '../config'
 import type { TransactionForwardedEvent } from '../types'
 
 const TX_FORWARDED_EVENT = parseAbiItem(
@@ -66,14 +61,9 @@ export class EventFetcher {
   }
 
   private async _resolveStartBlock(): Promise<bigint> {
-    if (SEASON_START_BLOCK > 0n) return SEASON_START_BLOCK
-
-    const currentBlock = await rpcClient.getBlockNumber()
-    const now = Date.now()
-    const seasonStartMs = SEASON_START.getTime()
-    const diffSec = Math.floor((now - seasonStartMs) / 1000)
-    const estimated = currentBlock - BigInt(diffSec)
-    return estimated > 0n ? estimated : 1n
+    // Fixed deployment block — index everything the proxy ever emitted, with
+    // no date-based window. Fall back to block 1 only if it's misconfigured.
+    return INDEX_START_BLOCK > 0n ? INDEX_START_BLOCK : 1n
   }
 
   private async _getLogsInChunks(fromBlock: bigint, toBlock: bigint) {
