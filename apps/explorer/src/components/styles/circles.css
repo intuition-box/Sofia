@@ -367,7 +367,7 @@
   min-width: 0;
 }
 .cr-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 19px;
   font-weight: 800;
   line-height: 1.1;

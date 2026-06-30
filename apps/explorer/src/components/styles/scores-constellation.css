@@ -653,7 +653,7 @@
   color: var(--ds-accent);
 }
 .sc2-pr-rank {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 72px;
   line-height: 0.9;
@@ -714,7 +714,7 @@
   color: var(--ds-muted);
 }
 .sc2-ps-v {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -748,7 +748,7 @@
   color: var(--ds-muted);
 }
 .sc2-pos-line-v {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 13.5px;
   color: var(--ds-ink);
 }
@@ -767,7 +767,7 @@
   border-radius: 13px;
   background: var(--ds-accent);
   color: #02000e;
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.01em;

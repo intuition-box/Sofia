@@ -12,14 +12,13 @@
    - No raw hex for palette/surface — only --ds-* / intent tokens.
    ============================================================ */
 
-/* Claude Design fonts — scoped to the circle detail so the rest of the app
-   keeps its faces. Unbounded = display/titles + big numbers; Inter = body;
-   JetBrains Mono = labels/eyebrows/meta (used literally in the rules below).
-   Overriding --ds-font-display here flips every `var(--ds-font-display)`
-   title in this subtree to Unbounded. */
+/* Circle detail inherits the app-wide "Intuition Pro" combo: Poppins for
+   display/titles + big numbers, Hind for body. JetBrains Mono = labels /
+   eyebrows / meta (used literally in the rules below). These two lines just
+   restate the global defaults so the subtree stays explicit. */
 .crd-detail {
-  --ds-font-display: 'Unbounded', sans-serif;
-  font-family: 'Inter', system-ui, sans-serif;
+  --ds-font-display: 'Poppins', 'Hind', system-ui, sans-serif;
+  font-family: var(--ds-font-sans);
 }
 
 /* ── Circle header (identity + actions + KPI band) ─────────────

@@ -47,7 +47,7 @@
 }
 
 .prr-pulse-value {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-weight: 800;
   font-size: 20px;
   line-height: 1;
@@ -120,7 +120,7 @@
 .prr-row-name {
   flex: 1;
   min-width: 0;
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -131,7 +131,7 @@
 }
 
 .prr-row-stat {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -165,7 +165,7 @@
 }
 
 .prr-mover-name {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -176,7 +176,7 @@
 }
 
 .prr-mover-pct {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -212,7 +212,7 @@
 }
 
 .prr-position-name {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.02em;

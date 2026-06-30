@@ -215,7 +215,7 @@
   justify-content: space-between;
 }
 .who-card .who-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;

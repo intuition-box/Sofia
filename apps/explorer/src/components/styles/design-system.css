@@ -24,7 +24,26 @@
 @import '@0xsofia/design-system/styles/section-h2.css';
 @import '@0xsofia/design-system/styles/echoes-sort-tabs.css';
 
-/* ── Explorer-specific positioning of the design-system nav sidebar ── */
+/* ── "Intuition Pro" font combo (explorer-wide override) ──────────────
+   Display: Poppins (heavy). Body: Hind. Overriding the two DS font tokens
+   here — after the theme.css import, so this wins the cascade — flows the
+   combo to every heading/body that references them, without touching the
+   shared package. Headings stay BOLD: section-h2 already uses weight 800,
+   page-hero 900, and Poppins is loaded up to 900. Display falls back to
+   Hind, never to the DS serif (Frank Ruhl Libre) — titles never go serif. */
+:root,
+[data-theme='light'],
+[data-theme='dark'],
+.dark {
+  --ds-font-sans: 'Hind', system-ui, -apple-system, sans-serif;
+  --ds-font-display: 'Poppins', 'Hind', system-ui, sans-serif;
+}
+/* Default body face → Hind. Unlayered + loaded after the Tailwind output, so
+   it wins over the base font. Components that hardcode their own face (Geist,
+   Unbounded, JetBrains Mono) keep it; this only sets the untagged default. */
+html {
+  font-family: var(--ds-font-sans);
+}
 /* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it
    out as a fixed left rail matching the existing .main-content margin. */
 .nav-sidebar {

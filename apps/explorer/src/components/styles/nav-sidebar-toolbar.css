@@ -49,6 +49,25 @@
 .nav-collapsed .ns-auth-meta {
   display: none;
 }
+/* The theme toggle reuses .nav-toggle's square styling but must NOT inherit
+   the collapsed-state chevron rotation (that's only for the collapse arrow). */
+.nav-collapsed .ns-theme-toggle {
+  transform: none;
+}
+
+/* Control row under the profile — theme toggle + collapse, each fills half
+   the width for a tidy two-button bar. Stacks vertically when collapsed. */
+.ns-top-controls {
+  display: flex;
+  gap: 8px;
+}
+.ns-top-controls .nav-toggle {
+  flex: 1;
+  margin-left: 0;
+}
+.nav-collapsed .ns-top-controls {
+  flex-direction: column;
+}
 
 /* ── Cart button (top cluster, just below the profile chip) ─────── */
 

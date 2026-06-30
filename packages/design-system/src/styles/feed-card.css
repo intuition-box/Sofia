@@ -323,9 +323,8 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  /* Dark-surface card — matches the design handoff (the explorer feed
-     renders on the dark shell). */
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  /* Flat at rest — elevation only on hover (see .fc-card:hover). The
+     transition still lists box-shadow so the hover lift animates in. */
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -334,7 +333,7 @@
 }
 .fc-card:hover {
   border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
-  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   transform: translateY(-2px);
 }
 .fc-card:focus-visible {

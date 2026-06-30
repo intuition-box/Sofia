@@ -313,7 +313,7 @@
   gap: 8px;
 }
 .pm-dex-label {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -363,7 +363,7 @@
   white-space: nowrap;
 }
 .pm-dex-num-big {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 800;
   color: var(--ds-ink);
@@ -378,14 +378,14 @@
 }
 .pm-dex-price,
 .pm-dex-holders {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }
 .pm-dex-pnl {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.02em;

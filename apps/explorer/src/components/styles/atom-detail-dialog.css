@@ -71,7 +71,7 @@
   min-width: 0;
 }
 .add-title-name {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -111,7 +111,7 @@
   font-weight: 600;
 }
 .add-metric-value {
-  font-family: 'Unbounded', system-ui, sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 800;
   color: var(--ds-ink);

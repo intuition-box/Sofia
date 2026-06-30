@@ -165,10 +165,13 @@
   overflow: hidden;
   min-height: 128px;
 }
+/* Unified card hover (shared with .hm-circle + the feed .fc-card): lift +
+   solid peach fill + peach border + soft shadow. Shadow only on hover. */
 .hm-tile:hover {
   transform: translateY(-2px);
   border-color: var(--ds-accent);
-  background: color-mix(in oklab, var(--ds-accent) 9%, var(--ds-card));
+  background: var(--ds-accent);
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 .hm-tile:focus-visible {
   outline: 2px solid var(--ds-accent);
@@ -176,7 +179,7 @@
 }
 
 .hm-tile-label {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -652,7 +655,8 @@
 .hm-circle:hover,
 .hm-circle:focus-visible {
   transform: translateY(-2px);
-  border-color: var(--ds-ink-soft);
+  border-color: var(--ds-accent);
+  background: var(--ds-accent);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   outline: none;
 }
@@ -692,7 +696,7 @@
   min-width: 0;
 }
 .hm-circle-name {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
