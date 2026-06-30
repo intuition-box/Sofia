@@ -10,8 +10,8 @@
  * cleans the URL, and auto-opens the Sofia side panel.
  */
 
-// TODO: replace with real Chrome Web Store URL once published
-export const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/sofia'
+export const CHROME_STORE_URL =
+  'https://chromewebstore.google.com/detail/sofia/ldohfencfbbelhgfppgdmgmghodhjodb'
 
 function isSofiaInstalled(): boolean {
   return document.documentElement.dataset.sofiaExtension === 'true'
