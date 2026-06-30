@@ -8,7 +8,6 @@ import {
 import {
   Home,
   Bell,
-  Vote,
   Globe,
   Wallet,
   ShoppingCart,
@@ -123,7 +122,6 @@ export function NavSidebar({
   }[] = [
     { to: '/platforms', icon: LineChart, label: 'Markets', public: false },
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
-    { to: '/vote', icon: Vote, label: 'Vote', public: false },
   ]
 
   const renderItem = (item: {

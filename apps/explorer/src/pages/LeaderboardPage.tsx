@@ -2,7 +2,6 @@ import { usePrivy } from '@privy-io/react-auth'
 import type { Address } from 'viem'
 import { useAlphaTesters } from '../hooks/useAlphaTesters'
 import Leaderboard from '../components/Leaderboard'
-import FooterCTA from '../components/FooterCTA'
 import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
@@ -15,6 +14,7 @@ export default function LeaderboardPage() {
     leaderboard: alphaData,
     loading: alphaLoading,
     error: alphaError,
+    refetch,
   } = useAlphaTesters()
 
   const pc = PAGE_COLORS['/leaderboard']
@@ -32,9 +32,8 @@ export default function LeaderboardPage() {
           alphaLoading={alphaLoading}
           alphaError={alphaError}
           connectedAddress={walletAddress ?? null}
+          onRetry={() => refetch()}
         />
-
-        <FooterCTA />
       </div>
     </div>
   )

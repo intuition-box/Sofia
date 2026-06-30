@@ -1,8 +1,7 @@
 /**
- * ExploreHome — the default Explore landing. Three stacked blocks
- * (Topics / Circles / Activity, Reddit /explore style) plus an identity
- * header. Topic tiles drill into the feed; "View all" on Activity hands
- * back to the parent to open the full feed.
+ * ExploreHome — the default Explore landing. Stacked blocks
+ * (Topics / Circles, Reddit /explore style) plus an identity header.
+ * Topic tiles drill into the feed.
  */
 import { useState } from 'react'
 import { X } from 'lucide-react'
@@ -13,7 +12,6 @@ import InterestTilesGrid from './InterestTilesGrid'
 import type { InterestPreset } from './useInterestTiles'
 import HomeSection from './HomeSection'
 import CirclesSection from './CirclesSection'
-import ActivitySection from './ActivitySection'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
 
 const TOPICS_PREVIEW = 6
@@ -39,7 +37,7 @@ export default function ExploreHome({
 }: ExploreHomeProps) {
   const [topicQuery, setTopicQuery] = useState('')
   const [topicsExpanded, setTopicsExpanded] = useState(false)
-  const { lastVisit, markVisited } = useLastVisit()
+  const { markVisited } = useLastVisit()
   useMarkVisitedOnMount(markVisited)
 
   const searching = topicQuery.trim().length > 0
@@ -94,17 +92,6 @@ export default function ExploreHome({
 
       {/* ── Circles ────────────────────────────────────────────── */}
       <CirclesSection />
-
-      {/* ── Activity ───────────────────────────────────────────── */}
-      <ActivitySection
-        items={items}
-        getDisplay={getDisplay}
-        getAvatar={getAvatar}
-        ownAddresses={ownAddresses}
-        onDeposit={onDeposit}
-        lastVisit={lastVisit}
-        onSeeAll={onSeeAllActivity}
-      />
     </div>
   )
 }

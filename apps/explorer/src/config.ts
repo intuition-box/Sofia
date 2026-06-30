@@ -29,7 +29,7 @@ export const BLOCK_CHUNK = 50_000n
 export const REFRESH_INTERVAL = 120_000 // 2 min
 
 // ── Leaderboard indexing ──
-// Block the Sofia proxy went live at. The alpha-tester leaderboard scans
+// Block the Sofia proxy went live at. The leaderboard scans
 // TransactionForwarded events from here up to the current block with NO end
 // cutoff — it's a perpetual, all-time board, not a dated season window.
 export const INDEX_START_BLOCK = 2379165n

@@ -117,6 +117,8 @@ export interface LeaderboardProps {
   alphaLoading?: boolean
   alphaError?: string | null
   connectedAddress?: Address | null
+  /** Re-run the on-chain scan after a failed/empty load. */
+  onRetry?: () => void
 }
 
 // ── User Stats ──

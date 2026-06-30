@@ -48,6 +48,7 @@ export default function Leaderboard({
   alphaLoading,
   alphaError,
   connectedAddress,
+  onRetry,
 }: LeaderboardProps) {
   const [alphaSortBy, setAlphaSortBy] = useState<AlphaSortOption>('TX')
 
@@ -67,10 +68,8 @@ export default function Leaderboard({
 
   return (
     <Card className="overflow-hidden lb-card">
-      {/* Header — single Alpha Testers view. */}
       <div className="lb-header">
         <span className="lb-title">Leaderboard</span>
-        <span className="lb-subtitle">Alpha Testers</span>
       </div>
 
       <div className="overflow-x-auto">
@@ -106,8 +105,24 @@ export default function Leaderboard({
 
             {alphaError && (
               <tr>
-                <td colSpan={colSpan} className="lb-error">
-                  {alphaError}
+                <td colSpan={colSpan} className="lb-state-cell">
+                  <div className="lb-state lb-state--error">
+                    <span className="lb-state-title">
+                      Couldn&apos;t load the leaderboard
+                    </span>
+                    <span className="lb-state-msg">
+                      The network is busy or rate-limited.
+                    </span>
+                    {onRetry && (
+                      <button
+                        type="button"
+                        className="lb-retry"
+                        onClick={() => onRetry()}
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )}
@@ -157,8 +172,13 @@ export default function Leaderboard({
 
             {!alphaLoading && !alphaError && sortedAlpha.length === 0 && (
               <tr>
-                <td colSpan={colSpan} className="lb-error">
-                  No alpha testers yet.
+                <td colSpan={colSpan} className="lb-state-cell">
+                  <div className="lb-state">
+                    <span className="lb-state-title">No activity yet</span>
+                    <span className="lb-state-msg">
+                      Certify pages on-chain to climb the board.
+                    </span>
+                  </div>
                 </td>
               </tr>
             )}

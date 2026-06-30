@@ -25,38 +25,21 @@ export class EventFetcher {
   }
 
   private async _doFetch(): Promise<TransactionForwardedEvent[]> {
-    if (!this.startBlock) {
+    if (this.startBlock === null) {
       this.startBlock = await this._resolveStartBlock()
-      this.lastScannedBlock = this.startBlock
+      // Nothing scanned yet — the first range begins at startBlock.
+      this.lastScannedBlock = this.startBlock - 1n
     }
 
     const currentBlock = await rpcClient.getBlockNumber()
+    if (currentBlock <= this.lastScannedBlock) return this.events
 
-    if (currentBlock <= this.lastScannedBlock && this.events.length > 0) {
-      return this.events
-    }
-
-    const fromBlock =
-      this.events.length > 0 ? this.lastScannedBlock + 1n : this.startBlock
-
-    const newLogs = await this._getLogsInChunks(fromBlock, currentBlock)
-
-    if (newLogs.length > 0) {
-      const newEvents: TransactionForwardedEvent[] = newLogs.map((log) => ({
-        operation: log.args.operation ?? 'unknown',
-        user: (log.args.user ?? '0x') as Address,
-        sofiaFee: log.args.sofiaFee ?? 0n,
-        multiVaultValue: log.args.multiVaultValue ?? 0n,
-        totalReceived: log.args.totalReceived ?? 0n,
-        blockNumber: log.blockNumber,
-        txHash: log.transactionHash,
-      }))
-
-      this.events.push(...newEvents)
-      this.events.sort((a, b) => Number(a.blockNumber - b.blockNumber))
-    }
-
-    this.lastScannedBlock = currentBlock
+    // Resume from the first unscanned block. Progress is committed per chunk
+    // (see _scanRange) so a mid-scan RPC failure keeps everything fetched so
+    // far — the next call continues from there instead of restarting from the
+    // deployment block, which is what made a single 429 re-scan the whole
+    // chain and spray hundreds of redundant getLogs calls.
+    await this._scanRange(this.lastScannedBlock + 1n, currentBlock)
     return this.events
   }
 
@@ -66,10 +49,7 @@ export class EventFetcher {
     return INDEX_START_BLOCK > 0n ? INDEX_START_BLOCK : 1n
   }
 
-  private async _getLogsInChunks(fromBlock: bigint, toBlock: bigint) {
-    const allLogs: Awaited<
-      ReturnType<typeof rpcClient.getLogs<typeof TX_FORWARDED_EVENT>>
-    > = []
+  private async _scanRange(fromBlock: bigint, toBlock: bigint): Promise<void> {
     let cursor = fromBlock
 
     while (cursor <= toBlock) {
@@ -85,11 +65,25 @@ export class EventFetcher {
         toBlock: end,
       })
 
-      allLogs.push(...(logs as any))
+      if (logs.length > 0) {
+        const newEvents: TransactionForwardedEvent[] = logs.map((log) => ({
+          operation: log.args.operation ?? 'unknown',
+          user: (log.args.user ?? '0x') as Address,
+          sofiaFee: log.args.sofiaFee ?? 0n,
+          multiVaultValue: log.args.multiVaultValue ?? 0n,
+          totalReceived: log.args.totalReceived ?? 0n,
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+        }))
+        this.events.push(...newEvents)
+        this.events.sort((a, b) => Number(a.blockNumber - b.blockNumber))
+      }
+
+      // Commit progress after every chunk so a failure on a later chunk never
+      // discards the blocks already scanned.
+      this.lastScannedBlock = end
       cursor = end + 1n
     }
-
-    return allLogs
   }
 
   get cachedEventCount(): number {
