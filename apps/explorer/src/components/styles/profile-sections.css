@@ -1455,6 +1455,45 @@
   width: 16px;
   height: 16px;
 }
+/* Verified but not web-addressable (Discord/Twitch ids) — static badge,
+   no clickable affordance. On hover a verified check fades in. */
+.ppa-social.is-verified-badge {
+  cursor: default;
+  position: relative;
+  overflow: visible;
+}
+.ppa-social.is-verified-badge:hover {
+  color: var(--ds-muted);
+  border-color: var(--ds-border);
+  transform: none;
+}
+.ppa-social .social-verified-check {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--trusted);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  pointer-events: none;
+}
+.ppa-social .social-verified-check > svg {
+  width: 9px;
+  height: 9px;
+}
+.ppa-social.is-verified-badge:hover .social-verified-check {
+  opacity: 1;
+  transform: scale(1);
+}
 
 /* Topics use the shared <TopicPill> (styles/pills.css); we only own
    the wrapping row here. */

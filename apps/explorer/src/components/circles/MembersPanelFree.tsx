@@ -22,9 +22,10 @@ import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { MemberActivityResult } from '@/hooks/useMemberActivity'
 import type { MemberStreaksResult } from '@/hooks/useMemberStreaks'
 import { useEnsNames } from '@/hooks/useEnsNames'
+import { useVerifiedSocials } from '@/hooks/useVerifiedSocials'
+import SocialLinks from '@/components/profile/SocialLinks'
 import MemberAvatar from './MemberAvatar'
 import MemberTrustToggle from './MemberTrustToggle'
-import MemberSocialLinks from './MemberSocialLinks'
 
 interface MembersPanelFreeProps {
   open: boolean
@@ -77,6 +78,8 @@ export default function MembersPanelFree({
     [ranked],
   )
   const { getDisplay } = useEnsNames(addresses)
+  // One batched query for every member's bot-verified socials.
+  const { socials } = useVerifiedSocials(addresses)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -174,7 +177,15 @@ export default function MembersPanelFree({
                       {streakDays ? `${streakDays}d streak · ` : ''}
                       {active ? 'Active' : 'Quiet'}
                     </div>
-                    <MemberSocialLinks member={m} />
+                    <SocialLinks
+                      variant="member"
+                      ownerLabel={displayName}
+                      socials={
+                        m.walletAddress
+                          ? (socials[m.walletAddress.toLowerCase()] ?? [])
+                          : []
+                      }
+                    />
                   </div>
                   <div className="cf-panel-stat">
                     <b>{count}</b>
