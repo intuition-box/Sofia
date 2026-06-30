@@ -43,7 +43,7 @@ function formatStatCount(n: number): string {
 // ── Main component ────────────────────────────────────────────────────
 
 export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
-  const { authenticated, user } = usePrivy()
+  const { authenticated, user, unlinkWallet } = usePrivy()
   const navigate = useNavigate()
   // On disconnect, leave the now-unauthenticated route for the landing page.
   const { logout } = useLogout({ onSuccess: () => navigate('/') })
@@ -51,8 +51,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
     onSuccess: () => window.location.reload(),
   })
   const address = user?.wallet?.address ?? ''
-  const { addresses: linkedAddresses, primary: primaryWallet } =
-    useLinkedWallets()
+  const { addresses: linkedAddresses, wallets: walletList } = useLinkedWallets()
+
+  // Unlink a read-only wallet from the account (removes its data from the
+  // union). Privy proves ownership on link, so only signed wallets are here.
+  const onUnlink = (addr: string) => {
+    void unlinkWallet(addr)
+      .then(() => window.location.reload())
+      .catch(() => {})
+  }
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
   )
@@ -304,35 +311,45 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                         {copied ? 'Copied' : 'Copy address'}
                       </DropdownMenuItem>
 
-                      {linkedAddresses.length > 0 && (
+                      {walletList.length > 0 && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuLabel className="ns-auth-menu-label">
                             Wallets
                           </DropdownMenuLabel>
-                          {linkedAddresses.map((addr) => {
-                            const isPrimary =
-                              primaryWallet?.toLowerCase() ===
-                              addr.toLowerCase()
-                            const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                          {walletList.map((w) => {
+                            const short = `${w.address.slice(0, 6)}…${w.address.slice(-4)}`
                             return (
                               <DropdownMenuItem
-                                key={addr}
+                                key={w.address}
                                 className="ns-auth-menu-wallet"
                                 onSelect={(e) => e.preventDefault()}
-                                title={addr}
+                                title={w.address}
                               >
                                 <span
-                                  className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                                  className={`ns-auth-menu-dot${w.isPrimary ? ' is-primary' : ''}`}
                                   aria-hidden="true"
                                 />
                                 <span className="ns-auth-menu-wallet-addr">
                                   {short}
                                 </span>
-                                {isPrimary && (
+                                {w.isPrimary ? (
                                   <span className="ns-auth-menu-wallet-tag">
-                                    primary
+                                    active
                                   </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="ns-auth-menu-wallet-unlink"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      onUnlink(w.address)
+                                    }}
+                                    title="Unlink this wallet (removes its data from your view)"
+                                  >
+                                    Unlink
+                                  </button>
                                 )}
                               </DropdownMenuItem>
                             )
