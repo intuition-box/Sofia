@@ -262,6 +262,7 @@
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   line-height: 1;
   background: transparent;
 }
@@ -402,6 +403,14 @@
   color: var(--ds-muted-soft);
   margin-top: 3px;
 }
+/* Topic / verb tags under the handle (replacing the timestamp). */
+.fc-hd-tags {
+  margin-top: 7px;
+}
+.fc-hd-tags .fc-chips,
+.fc-hd-tags .fc-chips--measure {
+  justify-content: flex-start;
+}
 
 /* Media — full-bleed preview, kept at the handoff's 432:232 ratio so it
    scales with the card width instead of a fixed pixel height. */
@@ -471,7 +480,26 @@
   gap: 10px;
   margin-top: auto;
   padding: 13px 16px 15px;
-  border-top: 1px solid var(--ds-border-soft);
+}
+/* Votes-only footer stacks: site title on its own line, votes below. */
+.fc-foot--votes-only {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+/* Site name — pushed to the far right of the footer, opposite the votes.
+   Styled like the old title that sat above the tags (sans, ink). */
+.fc-foot-domain {
+  max-width: 100%;
+  min-width: 0;
+  font-family: var(--ds-font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* Chips wrap fills remaining space after the vote buttons */
 .fc-foot .fc-chips-wrap {
@@ -711,6 +739,13 @@
   background: var(--vc, var(--ds-muted));
   flex-shrink: 0;
 }
+/* Consumer-provided verb icon (replaces the dot) — inherits the verb colour
+   via currentColor (.fc-verb sets `color: var(--vc)`). */
+.fc-verb-ic {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
 /* Topics reuse the shared <TopicPill> (.sf-topic-pill, styles/pills.css) —
    black glyph on the topic color — so the feed cards match the topic pills
    used across echoes / drawer / profile. */
@@ -794,6 +829,12 @@
   display: inline-block;
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
+/* Verb icon — replaces the plain dot; tinted with the intent colour inline. */
+.vf-chip-ic {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
 
 /* ── Media domain badge (bottom-left of the preview image) ──────────────── */
 /* Corner badge — pinned top-right of the media area (e.g. Pioneer marker). */
@@ -806,11 +847,14 @@
 .fc-media-domain {
   position: absolute;
   left: 12px;
+  right: 12px;
   bottom: 12px;
   z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
   background: rgba(7, 6, 14, 0.72);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -824,6 +868,9 @@
   font-size: 11px;
   color: #fff;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .fc-media-fav {
   width: 18px;

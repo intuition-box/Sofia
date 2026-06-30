@@ -6,6 +6,7 @@ import type { AggregatedCert } from '@/lib/perspectiveAggregation'
 import FeedCardView from '@/components/feed/FeedCardView'
 import type { FeedCardVerb } from '@/components/feed/FeedCardView'
 import { INTENTION_COLORS } from '@/config/intentions'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import '@/components/styles/feed-card.css'
 
 interface PerspectiveItemCardProps {
@@ -20,11 +21,15 @@ export default function PerspectiveItemCard({
 }: PerspectiveItemCardProps) {
   const certifierCount = item.certifierWallets.length
 
-  const verbs: FeedCardVerb[] = item.intentions.slice(0, 2).map((label) => ({
-    label,
-    color:
-      intentionColors[label] ?? INTENTION_COLORS[label] ?? 'var(--ds-muted)',
-  }))
+  const verbs: FeedCardVerb[] = item.intentions.slice(0, 2).map((label) => {
+    const Icon = getIntentionIconByLabel(label)
+    return {
+      label,
+      color:
+        intentionColors[label] ?? INTENTION_COLORS[label] ?? 'var(--ds-muted)',
+      icon: Icon ? <Icon className="fc-verb-ic" /> : undefined,
+    }
+  })
 
   return (
     <FeedCardView

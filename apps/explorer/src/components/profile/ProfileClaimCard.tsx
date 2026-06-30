@@ -8,13 +8,14 @@
  * one-line reason separated by a dashed border.
  */
 import type { AnchorHTMLAttributes } from 'react'
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { FaviconWrapper } from '@0xsofia/design-system'
 import {
   INTENTION_CONFIG,
   LABEL_TO_INTENTION,
   type IntentionType,
 } from '@/config/intentions'
+import { INTENTION_ICONS } from '@/config/intentionIcons'
 
 export type ClaimPosition = 'support' | 'oppose' | 'certify'
 export type ClaimBadge = 'early' | 'pioneer' | 'viral' | 'contrarian'
@@ -153,17 +154,22 @@ export default function ProfileClaimCard({
         />
       </div>
       <div className="pf-claim-stats">
-        {intentSlug && (
-          <span className={`fc-verb-tag pf-claim-verb ${intentSlug}`}>
-            {verbLabel}
-          </span>
-        )}
+        {intentSlug &&
+          (() => {
+            const VerbIcon = INTENTION_ICONS[intentSlug]
+            return (
+              <span className={`fc-verb-tag pf-claim-verb ${intentSlug}`}>
+                {VerbIcon ? <VerbIcon className="fc-verb-ic" /> : null}
+                {verbLabel}
+              </span>
+            )
+          })()}
         <span className="pf-claim-stat support">
-          <ThumbsUp size={14} />
+          <ChevronUp size={14} />
           <span className="pf-claim-stat-val">{supportCount}</span>
         </span>
         <span className="pf-claim-stat oppose">
-          <ThumbsDown size={14} />
+          <ChevronDown size={14} />
           <span className="pf-claim-stat-val">{opposeCount}</span>
         </span>
       </div>

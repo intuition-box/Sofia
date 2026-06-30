@@ -10,6 +10,7 @@ import AtomDetailDialog from './AtomDetailDialog'
 import type { TrendingPlatform } from '@/types'
 import { usePrivy } from '@privy-io/react-auth'
 import { formatEther } from 'viem'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 
 function formatMCap(raw: string): string {
   const num = parseFloat(formatEther(BigInt(raw || '0')))
@@ -96,20 +97,24 @@ export default function TrendingCard({
           )}
         </div>
         <div className="ip-trending-meta">
-          {platform.intentions.map(({ category, count, color }) => (
-            <Badge
-              key={category}
-              variant="secondary"
-              className="ip-trending-badge"
-              style={{
-                color,
-                backgroundColor: `${color}15`,
-                border: `1px solid ${color}30`,
-              }}
-            >
-              {category} {count}
-            </Badge>
-          ))}
+          {platform.intentions.map(({ category, count, color }) => {
+            const VerbIcon = getIntentionIconByLabel(category)
+            return (
+              <Badge
+                key={category}
+                variant="secondary"
+                className="ip-trending-badge"
+                style={{
+                  color,
+                  backgroundColor: `${color}15`,
+                  border: `1px solid ${color}30`,
+                }}
+              >
+                {VerbIcon ? <VerbIcon /> : null}
+                {category} {count}
+              </Badge>
+            )
+          })}
           <span className="ip-trending-stat">
             <Users className="h-3 w-3" /> {platform.totalCertifiers}
           </span>

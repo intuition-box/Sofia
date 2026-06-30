@@ -71,6 +71,7 @@ function CirclesListSection() {
   return (
     <div className="pf-view cr-page">
       <PageHero
+        background="#CDB4F6"
         title="Circles"
         description={
           authenticated

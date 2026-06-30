@@ -348,10 +348,6 @@ export default function DashboardPage() {
                 verbs) instead of bouncing back to the Explore home. The
                 activity view shows the count alone (no drill to narrow). */}
             <div className="dp-filter-row">
-              <span className="dp-url-count">
-                {filteredItems.length} url
-                {filteredItems.length === 1 ? '' : 's'}
-              </span>
               {drill && (
                 <CircleVerbFilter
                   active={
@@ -371,6 +367,10 @@ export default function DashboardPage() {
                   }}
                 />
               )}
+              <span className="dp-url-count">
+                {filteredItems.length} url
+                {filteredItems.length === 1 ? '' : 's'}
+              </span>
             </div>
 
             {/* Error */}

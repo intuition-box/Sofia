@@ -175,6 +175,7 @@ export default function ComposePage() {
   return (
     <div className="page-content page-enter compose-page">
       <PageHero
+        background="#A8D8C8"
         title="Compose"
         description="Mix circles and topics to compile a focused perspective of the network."
       />

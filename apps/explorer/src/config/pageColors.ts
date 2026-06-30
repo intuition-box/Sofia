@@ -11,11 +11,11 @@ export interface PageColorConfig {
  */
 export const PAGE_COLORS: Record<string, PageColorConfig> = {
   '/explore': {
-    color: '#ffc6b0',
+    color: '#FFB4A2',
     title: 'Explore',
     subtitle:
       'Discover URLs certified by the whole community and add your own signals.',
-    glow: 'rgba(255,198,176,0.4)',
+    glow: 'rgba(255,180,162,0.4)',
   },
   '/leaderboard': {
     color: '#F5D58A',

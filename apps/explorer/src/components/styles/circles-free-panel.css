@@ -298,11 +298,11 @@
   color: var(--ds-muted);
   border-color: var(--ds-border);
 }
-/* trusted state: solid green, with hover-swap to red "Distrust" */
+/* trusted state: solid green, with hover-swap to solid red "Distrust" */
 .cf-trust-btn.is-trusted {
-  background: color-mix(in srgb, var(--intent-trusted) 18%, transparent);
-  border-color: color-mix(in srgb, var(--intent-trusted) 55%, transparent);
-  color: var(--intent-trusted);
+  background: var(--intent-trusted);
+  border-color: transparent;
+  color: var(--intent-ink, #02000e);
 }
 .cf-trust-default {
   display: inline-flex;
@@ -318,9 +318,9 @@
   display: none;
 }
 .cf-trust-btn.is-trusted:hover {
-  background: color-mix(in srgb, var(--intent-distrusted) 18%, transparent);
-  border-color: color-mix(in srgb, var(--intent-distrusted) 60%, transparent);
-  color: var(--intent-distrusted);
+  background: var(--intent-distrusted);
+  border-color: transparent;
+  color: #ffffff;
 }
 .cf-trust-btn.is-trusted:hover .cf-trust-default {
   display: none;

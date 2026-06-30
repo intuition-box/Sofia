@@ -9,6 +9,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { CircleItem } from '@/services/circleService'
 import { INTENTION_COLORS } from '@/config/intentions'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { extractDomain, timeAgo } from '@/utils/formatting'
 import FeedCardView, {
@@ -59,7 +60,14 @@ export default function CircleFeedCard({
   const verbs: FeedCardVerb[] = item.intentions
     .filter((l) => !l.startsWith('quest:'))
     .slice(0, 2)
-    .map((label) => ({ label, color: INTENTION_COLORS[label] }))
+    .map((label) => {
+      const Icon = getIntentionIconByLabel(label)
+      return {
+        label,
+        color: INTENTION_COLORS[label],
+        icon: Icon ? <Icon className="fc-verb-ic" /> : undefined,
+      }
+    })
 
   const topics: FeedCardTopic[] = [
     ...item.topicContexts

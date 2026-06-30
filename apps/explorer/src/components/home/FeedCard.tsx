@@ -15,6 +15,7 @@ import FeedCardView, {
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
@@ -58,10 +59,14 @@ export default function FeedCard({
   const canSupport = item.contextTriples.some((c) => c.termId)
   const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
-  const verbs: FeedCardVerb[] = item.intentions.map((label) => ({
-    label,
-    color: INTENTION_COLORS[label],
-  }))
+  const verbs: FeedCardVerb[] = item.intentions.map((label) => {
+    const Icon = getIntentionIconByLabel(label)
+    return {
+      label,
+      color: INTENTION_COLORS[label],
+      icon: Icon ? <Icon className="fc-verb-ic" /> : undefined,
+    }
+  })
 
   const topics: FeedCardTopic[] = [
     ...(item.topicContexts ?? []).map((slug) => {

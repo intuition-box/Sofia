@@ -11,6 +11,7 @@ import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType,
 } from '@/config/intentions'
+import { INTENTION_ICONS } from '@/config/intentionIcons'
 import { extractDomain, cleanLabel, timeAgo } from '@/utils/formatting'
 import FeedCardView, {
   type FeedCardVerb,
@@ -50,8 +51,15 @@ export default function CertFeedCard({
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
   const intentType = predicateLabelToIntentionType(cert.intention)
   const verbCfg = intentType ? INTENTION_CONFIG[intentType] : undefined
+  const VerbIcon = intentType ? INTENTION_ICONS[intentType] : null
   const verbs: FeedCardVerb[] = verbCfg
-    ? [{ label: verbCfg.label, color: verbCfg.color }]
+    ? [
+        {
+          label: verbCfg.label,
+          color: verbCfg.color,
+          icon: VerbIcon ? <VerbIcon className="fc-verb-ic" /> : undefined,
+        },
+      ]
     : []
   // Rolled-up topic pills + the precise category pills (parent topic glyph).
   const topics: FeedCardTopic[] = [

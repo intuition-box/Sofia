@@ -11,6 +11,7 @@
  *   - TopicPill : black icon on the topic's color, border of that color.
  */
 import { getTopicIcon } from '@/config/topicEmoji'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 
 interface TopicPillProps {
   topicId: string
@@ -54,11 +55,13 @@ interface VerbPillProps {
 /** A verb/intention rendered as an outlined pill: text + border in the
  *  intent color, transparent fill. */
 export function VerbPill({ label, color }: VerbPillProps) {
+  const Icon = getIntentionIconByLabel(label)
   return (
     <span
       className="sf-verb-pill"
       style={color ? { ['--pill-color' as string]: color } : undefined}
     >
+      {Icon ? <Icon className="sf-verb-pill-ic" aria-hidden="true" /> : null}
       {label}
     </span>
   )

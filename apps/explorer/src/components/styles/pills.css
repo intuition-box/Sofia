@@ -10,6 +10,7 @@
 .sf-verb-pill {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
@@ -17,6 +18,12 @@
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
+}
+/* Verb icon — inherits the pill's intent colour via currentColor. */
+.sf-verb-pill-ic {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 /* ── Verb — outlined: text + border in the intent color, no fill.

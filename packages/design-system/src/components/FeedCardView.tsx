@@ -28,7 +28,7 @@
 import { createPortal } from 'react-dom'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useState, useRef, useEffect } from 'react'
-import { ThumbsUp, ThumbsDown, MoreVertical, Trash2 } from 'lucide-react'
+import { ChevronUp, ChevronDown, MoreVertical, Trash2 } from 'lucide-react'
 import { useChipOverflow, useAnchoredTooltip } from '../lib'
 
 /** Sizes matching the Claude Design Feed Card spec. */
@@ -186,6 +186,9 @@ function OwnerMenu({ onDelete }: { onDelete: () => void }) {
 export interface FeedCardVerb {
   label: string
   color?: string
+  /** Optional leading icon (consumer-provided, e.g. a lucide glyph). Falls
+   *  back to the coloured dot when absent. */
+  icon?: ReactNode
 }
 
 export interface FeedCardTopic {
@@ -335,7 +338,7 @@ export function FeedCardView({
           className="fc-verb"
           style={v.color ? { ['--vc' as string]: v.color } : undefined}
         >
-          <i aria-hidden="true" />
+          {v.icon ?? <i aria-hidden="true" />}
           {v.label}
         </span>
       ),
@@ -456,7 +459,7 @@ export function FeedCardView({
                   onClick={onVote ? vote('support') : undefined}
                   style={onVote ? { cursor: 'pointer' } : undefined}
                 >
-                  <ThumbsUp size={12} aria-hidden="true" />
+                  <ChevronUp size={12} aria-hidden="true" />
                   {hideVoteCounts ? null : up}
                 </span>
                 <span
@@ -464,7 +467,7 @@ export function FeedCardView({
                   onClick={onVote ? vote('oppose') : undefined}
                   style={onVote ? { cursor: 'pointer' } : undefined}
                 >
-                  <ThumbsDown size={12} aria-hidden="true" />
+                  <ChevronDown size={12} aria-hidden="true" />
                   {hideVoteCounts ? null : down}
                 </span>
               </div>
@@ -504,7 +507,11 @@ export function FeedCardView({
           </span>
           <div className="fc-hd-id">
             <div className="fc-handle">{handleSlot ?? handle}</div>
-            <div className="fc-when">{when}</div>
+            {/* Topic / verb tags take the place of the timestamp under the
+                handle (the `when` prop is still surfaced in the xs variant). */}
+            <div className="fc-hd-tags">
+              <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
+            </div>
           </div>
           {isOwner && onDelete && (
             <OwnerMenu
@@ -517,37 +524,20 @@ export function FeedCardView({
         </div>
       </header>
 
-      {/* Media with domain badge — image injected by the caller */}
+      {/* Media — image injected by the caller. The site name moved to the
+          footer (right of the votes); no on-image badge. */}
       <div className="fc-media">
         {renderMedia?.(mediaCtx('card', 'fc-media-img'))}
-        {showDomainBadge && domain && (
-          <div className="fc-media-domain">
-            <span className="fc-media-fav">
-              <img
-                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-                alt=""
-                width={12}
-                height={12}
-                onError={(e) => {
-                  ;(e.target as HTMLImageElement).style.display = 'none'
-                }}
-              />
-            </span>
-            <span>{domain}</span>
-          </div>
-        )}
         {cornerBadge && <div className="fc-media-corner">{cornerBadge}</div>}
       </div>
 
-      {/* Title + context chips (verb / topic / category) directly below it */}
-      <div className="fc-body">
-        <h3 className="fc-card-title">{title}</h3>
-        <ChipOverflowRow chips={chipNodes} trailing={addContextSlot} />
-      </div>
-
-      {/* Footer — votes only (chips moved below the title above) */}
+      {/* Footer — site title on its own line, votes on the line below. */}
       <footer className="fc-foot fc-foot--votes-only">
-        {/* Votes — left side */}
+        {/* Site name — its own line, above the votes. */}
+        {(title || domain) && (
+          <span className="fc-foot-domain">{title || domain}</span>
+        )}
+        {/* Votes — bottom line */}
         {onVote ? (
           <div className="fc-votes">
             <button
@@ -562,7 +552,7 @@ export function FeedCardView({
               aria-disabled={!canUp}
               onClick={canUp ? vote('support') : (e) => e.stopPropagation()}
             >
-              <ThumbsUp aria-hidden="true" />
+              <ChevronUp aria-hidden="true" />
               {hideVoteCounts ? null : up}
               {!canUp && (
                 <span className="fc-vote-tip" role="tooltip">
@@ -582,7 +572,7 @@ export function FeedCardView({
               aria-disabled={!canDown}
               onClick={canDown ? vote('oppose') : (e) => e.stopPropagation()}
             >
-              <ThumbsDown aria-hidden="true" />
+              <ChevronDown aria-hidden="true" />
               {hideVoteCounts ? null : down}
               {!canDown && (
                 <span className="fc-vote-tip" role="tooltip">
@@ -594,11 +584,11 @@ export function FeedCardView({
         ) : (
           <div className="fc-votes">
             <span className="fc-vote up is-static">
-              <ThumbsUp aria-hidden="true" />
+              <ChevronUp aria-hidden="true" />
               {hideVoteCounts ? null : up}
             </span>
             <span className="fc-vote down is-static">
-              <ThumbsDown aria-hidden="true" />
+              <ChevronDown aria-hidden="true" />
               {hideVoteCounts ? null : down}
             </span>
           </div>
