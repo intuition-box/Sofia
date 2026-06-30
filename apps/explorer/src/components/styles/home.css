@@ -570,7 +570,7 @@
   margin: 0;
   font-family: var(--ds-font-display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--ds-ink);
 }

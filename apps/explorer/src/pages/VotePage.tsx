@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react'
 import { formatEther } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
-import { ChevronLeft, ChevronRight, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useDebateClaims } from '@/hooks/useDebateClaims'
 import { usePrefetchClaimDialogs } from '@/hooks/useClaimPositions'
@@ -259,7 +259,7 @@ export default function VotePage() {
                     handleVote('support')
                   }}
                 >
-                  <ThumbsUp className="h-4 w-4" />
+                  <ChevronUp className="h-4 w-4" />
                   {userVote === 'support' ? 'Supported' : 'Support'}
                 </button>
                 <button
@@ -273,7 +273,7 @@ export default function VotePage() {
                     handleVote('oppose')
                   }}
                 >
-                  <ThumbsDown className="h-4 w-4" />
+                  <ChevronDown className="h-4 w-4" />
                   {userVote === 'oppose' ? 'Opposed' : 'Oppose'}
                 </button>
               </div>

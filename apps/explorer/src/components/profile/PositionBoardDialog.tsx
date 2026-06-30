@@ -3,6 +3,7 @@ import { useVaultTooltip, formatEth } from '@/hooks/useVaultTooltip'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { intentionBadgeStyle } from '@/config/intentions'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import { useEffect } from 'react'
 import { Users, TrendingUp, TrendingDown } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -112,6 +113,10 @@ export default function PositionBoardDialog({
               className="pbd-badge"
               style={intentionBadgeStyle(intentionColor)}
             >
+              {(() => {
+                const VerbIcon = getIntentionIconByLabel(intention)
+                return VerbIcon ? <VerbIcon /> : null
+              })()}
               {intention}
             </span>
           </DialogTitle>

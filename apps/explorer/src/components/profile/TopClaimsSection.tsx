@@ -10,6 +10,7 @@ import {
   intentionBadgeStyle,
   LABEL_TO_INTENTION,
 } from '@/config/intentions'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import { formatEth } from '@/services/vaultTooltipService'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -41,6 +42,7 @@ function TopClaimCard({
     LABEL_TO_INTENTION[claim.predicateLabel.trim().toLowerCase()] ??
     claim.predicateLabel
   const color = INTENTION_COLORS_BY_LABEL[intention] ?? '#888888'
+  const VerbIcon = getIntentionIconByLabel(intention)
   const totalMcap = formatEth(String(claim.totalMarketCap))
   const posCount = claim.stats.supportCount + claim.stats.opposeCount
   const [boardOpen, setBoardOpen] = useState(false)
@@ -93,6 +95,7 @@ function TopClaimCard({
         <div className="tc-actions">
           <IntentionTooltip termId={claim.termId} color={color}>
             <span className="tc-badge" style={intentionBadgeStyle(color)}>
+              {VerbIcon ? <VerbIcon /> : null}
               {intention}
             </span>
           </IntentionTooltip>

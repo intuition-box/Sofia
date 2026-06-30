@@ -30,9 +30,15 @@
   padding: 3px 8px;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   border-radius: 6px;
   white-space: nowrap;
   margin-left: auto;
+}
+.pbd-badge svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 /* ── Metrics ── */
