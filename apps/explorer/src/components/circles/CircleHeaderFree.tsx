@@ -141,7 +141,11 @@ export default function CircleHeaderFree({
       </div>
 
       <div
-        className={`cf-kpis${showPlan || decisionsUnlocked ? '' : ' cf-kpis--duo'}`}
+        className={`cf-kpis${
+          SHOW_DECISIONS && (showPlan || decisionsUnlocked)
+            ? ''
+            : ' cf-kpis--duo'
+        }`}
         role="group"
         aria-label="Circle metrics"
       >
