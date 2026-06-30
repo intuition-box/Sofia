@@ -345,6 +345,8 @@
 /* Header — avatar + identity + star rating */
 .fc-hd {
   padding: 15px 16px 13px;
+  /* Subtle tinted band — theme-aware via --ds-bg-subtle. */
+  background: var(--ds-bg-subtle);
 }
 .fc-hd-top {
   display: flex;
@@ -486,6 +488,8 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
+  /* Same subtle tinted band as the header. */
+  background: var(--ds-bg-subtle);
 }
 /* Site name — pushed to the far right of the footer, opposite the votes.
    Styled like the old title that sat above the tags (sans, ink). */

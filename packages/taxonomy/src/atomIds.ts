@@ -543,10 +543,14 @@ export const PLATFORM_ATOM_IDS: Record<string, string> = {
     '0xd9d1a20cd86e0983320ac95ae57518ccc418db58b9b6e6f28176ad8ead5d0cd3',
   blizzard:
     '0x3ee6ce7b3f80e9e14faca248065052a236b3e023593a75f790fcbb1ccb83e410',
-  // ── AI assistants (Intuition atoms, added manually) ──
+  // ── AI assistants + labs (Intuition atoms, added manually) ──
   claude: '0xe84e42ad15ffabedeca8a6bcd3992fbd13872cda003c057223467073dfe1acd7',
   chatgpt: '0xbf6bc0684d0beb59cd0406775da673d7a08e42d65fd7a5fe0eaaf550ce59ddd6',
   gemini: '0xd636a4a0e854eb0752dd88bbf6b91c007acf31a9ea930f11b6b4e5ef273dad47',
+  anthropic:
+    '0x13503cd28a866f27492fb2eed3b7839350356bcd61c0082f3dd743d8c908ae59',
+  openai: '0x45898f6782774bfe31cd6cc01111d99bd444d31ec7c09bc41e9e21ec44c2eef8',
+  google: '0xf4d3f659ac40e144cccb2dc21434982a88147000272cf917ddba4e98d49f27dc',
   // ── Web3 / DeFi / DAO (Intuition atoms, added manually) ──
   makerdao:
     '0x45946564f89eece577b16224d7e784fed0fa1916d984575cb43cb7cd1f1d083a',
