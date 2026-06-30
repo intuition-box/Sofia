@@ -39,6 +39,9 @@ export type MessageType =
   | 'WALLET_EVENT'
   // Browsing nudge (red icon badge — reset on cart action / side panel open)
   | 'NUDGE_DISMISSED'
+  // Add to Sofia (right-click modal → cart + existing-atom search)
+  | 'ADD_TO_CART'
+  | 'SEARCH_ATOMS'
 
 export interface ChromeMessage {
   type: MessageType
