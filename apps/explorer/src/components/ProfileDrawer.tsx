@@ -56,9 +56,27 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   // Unlink a read-only wallet from the account (removes its data from the
   // union). Privy proves ownership on link, so only signed wallets are here.
   const onUnlink = (addr: string) => {
+    const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+    const ok = window.confirm(
+      `Unlink ${short}?\n\nIts on-chain data will be removed from your view ` +
+        `(profile, signals, positions). You can link it again later by ` +
+        `reconnecting and signing.`,
+    )
+    if (!ok) return
     void unlinkWallet(addr)
       .then(() => window.location.reload())
       .catch(() => {})
+  }
+
+  // Link another wallet — warns before opening Privy's connect + sign flow.
+  const onLink = () => {
+    const ok = window.confirm(
+      `Link another wallet?\n\nYou'll connect it and sign to prove you own it. ` +
+        `Its on-chain data is then shown in your view (read-only). The wallet ` +
+        `you're connected with stays the one that acts and signs.`,
+    )
+    if (!ok) return
+    linkWallet()
   }
   const { getDisplay, getAvatar } = useEnsNames(
     address ? [address as Address] : [],
@@ -359,7 +377,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
 
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => linkWallet()}
+                        onClick={onLink}
                         className="ns-auth-menu-action"
                       >
                         <Wallet className="h-4 w-4" />
