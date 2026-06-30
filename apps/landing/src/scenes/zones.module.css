@@ -39,6 +39,15 @@
   min-height: 0;
 }
 
+/* "smarter." — same treatment as the explorer's not-connected hero
+   (.lp-headline em): italic Fraunces with the ss01 stylistic alternate and
+   the peach accent. On a peach slab the global `.on-peach .h-display em` ink
+   override still wins (higher specificity), keeping it readable. */
+.heroTitle em {
+  font-feature-settings: 'ss01';
+  color: var(--ds-accent, #ffc6b0);
+}
+
 .heroActions {
   display: flex;
   gap: 12px;
