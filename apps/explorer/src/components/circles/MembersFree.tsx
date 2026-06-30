@@ -15,8 +15,9 @@ import { ArrowRight } from 'lucide-react'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import type { MemberActivityResult } from '@/hooks/useMemberActivity'
 import type { MemberStreaksResult } from '@/hooks/useMemberStreaks'
+import { useVerifiedSocials } from '@/hooks/useVerifiedSocials'
+import SocialLinks from '@/components/profile/SocialLinks'
 import MemberAvatar from './MemberAvatar'
-import MemberSocialLinks from './MemberSocialLinks'
 
 interface MembersFreeProps {
   /** Roster already ranked by activity (most active first). */
@@ -40,6 +41,11 @@ export default function MembersFree({
   showPlan,
 }: MembersFreeProps) {
   const top3 = ranked.slice(0, 3)
+  const { socials } = useVerifiedSocials(
+    top3
+      .map((m) => m.walletAddress)
+      .filter((x): x is string => !!x),
+  )
 
   return (
     <section className="cf-module" aria-labelledby="cf-members-title">
@@ -77,7 +83,15 @@ export default function MembersFree({
                   {streakDays ? `${streakDays}d streak · ` : ''}
                   {active ? 'Active' : 'Quiet'}
                 </div>
-                <MemberSocialLinks member={m} />
+                <SocialLinks
+                  variant="member"
+                  ownerLabel={m.label}
+                  socials={
+                    m.walletAddress
+                      ? (socials[m.walletAddress.toLowerCase()] ?? [])
+                      : []
+                  }
+                />
               </div>
               <div className="cf-mstat">
                 <b>{count}</b>
