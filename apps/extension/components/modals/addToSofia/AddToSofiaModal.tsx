@@ -163,10 +163,10 @@ export default function AddToSofiaModal() {
               {shotOk ? (
                 <img
                   className="sis-shot"
-                  // viewportWidth renders the page at a desktop width so the
-                  // capture isn't a zoomed-in mobile crop; width scales the
-                  // output down into the preview box.
-                  src={`https://image.thum.io/get/viewportWidth/1440/width/640/crop/400/noanimate/${abs}`}
+                  // thum.io renders the page at `width` px wide, so a LARGE
+                  // width = desktop layout (dezoomed). The CSS box then scales
+                  // it down; crop keeps the 16:10 ratio.
+                  src={`https://image.thum.io/get/width/1440/crop/900/noanimate/${abs}`}
                   alt=""
                   onError={() => setShotOk(false)}
                 />
