@@ -1,0 +1,151 @@
+/* ============================================================
+   PageHint — a one-time, non-invasive bottom-right callout that
+   explains a page the first time the user opens it. Uses the
+   explorer --ds-* tokens; own fade-in, no other dependency.
+   ============================================================ */
+
+.phint {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 99001;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  animation: phint-in 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.phint--bottom-left {
+  left: 20px;
+  right: auto;
+}
+.phint--top-right {
+  top: 20px;
+  bottom: auto;
+}
+
+/* Blocking backdrop — sits above the cart drawer (z 10000) but below the card,
+   so nothing can be clicked (e.g. Sign) until the user reads and dismisses. */
+.phint-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99000;
+  background: color-mix(in srgb, var(--ds-bg) 45%, transparent);
+  animation: phint-in 0.2s ease;
+}
+
+.phint-card {
+  position: relative;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+.phint-spark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--ds-accent);
+  color: var(--ds-bg);
+}
+.phint-spark svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Icon + title on one row (icon beside the title, not above it). */
+.phint-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 22px;
+}
+.phint-title {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ds-ink);
+  margin: 0;
+}
+
+/* Titled pill groups above the Explore hint copy (Intentions vs Topics), so
+   the difference is shown, not just told. Tinted via --pc like the feed. */
+.phint-group {
+  margin: 12px 0 0;
+}
+.phint-group-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin: 0 0 5px;
+}
+.phint-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+/* The pills themselves reuse the feed's .fc-verb class (see FeedPillsDemo) so
+   they render exactly like the real feed pills. */
+
+.phint-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  margin: 10px 0 0;
+  text-wrap: pretty;
+}
+.phint-text b {
+  color: var(--ds-ink-soft);
+}
+
+.phint-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+.phint-btn:hover {
+  background: var(--ds-accent);
+  color: #000;
+}
+
+.phint-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ds-muted);
+  font-size: 13px;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+.phint-close:hover {
+  color: var(--ds-ink);
+}
+
+@keyframes phint-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

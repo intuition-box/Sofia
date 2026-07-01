@@ -106,7 +106,7 @@ export default function MembersFree({
           className="cf-btn cf-btn-ghost"
           onClick={onViewAll}
         >
-          View all {totalMembers} members
+          View all
           <ArrowRight className="cf-btn-icon" aria-hidden="true" />
         </button>
       </div>

@@ -26,6 +26,7 @@ import { useVerifiedSocials } from '@/hooks/useVerifiedSocials'
 import SocialLinks from '@/components/profile/SocialLinks'
 import MemberAvatar from './MemberAvatar'
 import MemberTrustToggle from './MemberTrustToggle'
+import TrustAddPanel from './TrustAddPanel'
 
 interface MembersPanelFreeProps {
   open: boolean
@@ -41,6 +42,9 @@ interface MembersPanelFreeProps {
   showPlan: boolean
   onUpgrade: () => void
   onToast: (message: string) => void
+  /** Enables the "search people and add them" section. True only for the
+   *  user's personal Trust Circle (adding = trusting a person on-chain). */
+  allowTrustAdd?: boolean
 }
 
 const shortAddress = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`
@@ -57,8 +61,12 @@ export default function MembersPanelFree({
   showPlan,
   onUpgrade,
   onToast,
+  allowTrustAdd = false,
 }: MembersPanelFreeProps) {
   const [query, setQuery] = useState('')
+  // The "add people" search lives in its own empty side panel, opened from
+  // the header "+ Add" button, so it never clutters the members roster.
+  const [addOpen, setAddOpen] = useState(false)
 
   // Close on Escape for keyboard users.
   useEffect(() => {
@@ -115,14 +123,25 @@ export default function MembersPanelFree({
               {activeCount} active
             </div>
           </div>
-          <button
-            type="button"
-            className="cf-panel-close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          <div className="cf-panel-head-actions">
+            {allowTrustAdd && (
+              <button
+                type="button"
+                className="cf-panel-add-btn"
+                onClick={() => setAddOpen(true)}
+              >
+                + Add
+              </button>
+            )}
+            <button
+              type="button"
+              className="cf-panel-close"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="cf-panel-search">
@@ -202,6 +221,15 @@ export default function MembersPanelFree({
           <span className="cf-panel-foot-note">Sorted by activity</span>
         </div>
       </aside>
+
+      {allowTrustAdd && (
+        <TrustAddPanel
+          open={addOpen}
+          onClose={() => setAddOpen(false)}
+          ranked={ranked}
+          onToast={onToast}
+        />
+      )}
     </>
   )
 }

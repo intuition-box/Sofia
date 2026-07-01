@@ -32,6 +32,11 @@
     stroke-dasharray 0.6s ease,
     stroke-dashoffset 0.6s ease;
 }
+/* Empty state — the neutral placeholder ring shown for a brand-new user
+   with no score. Non-interactive: it's a muted full ring, not a segment. */
+.donut-seg--empty {
+  cursor: default;
+}
 .donut.dim .donut-seg {
   opacity: 0.32;
 }

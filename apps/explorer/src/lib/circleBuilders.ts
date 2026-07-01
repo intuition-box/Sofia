@@ -76,7 +76,7 @@ export function buildTrustCircle(
     name: options.name ?? 'Trust Circle',
     description:
       options.description ??
-      'People whose taste you value — their signals shape your feed. Today this is your personal trust circle; circles you join from the broader network will show up here too.',
+      'People whose taste you value. Their signals shape your feed. Today this is your personal trust circle; circles you join from the broader network will show up here too.',
     color: options.color ?? DEFAULT_TRUST_COLOR,
     members: [...trustMembers],
     addresses: [...addresses],

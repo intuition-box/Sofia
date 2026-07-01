@@ -320,17 +320,29 @@
 
 /* ── Auth: Connect button & avatar chip ─────────────────────────── */
 
+/* Monochrome, theme-inverted: ink (black in light / white in dark) fill with
+   bg text, so it reads as a solid black button on white mode and vice versa. */
 .ns-auth-connect {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
-  border-radius: 999px;
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
+  border-radius: 8px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
   font-weight: 700;
+  line-height: 1;
   box-shadow: 0 4px 14px -6px
-    color-mix(in srgb, var(--ds-accent) 60%, transparent);
+    color-mix(in srgb, var(--ds-ink) 45%, transparent);
+}
+.ns-auth-connect svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
 }
 .ns-auth-connect:hover {
-  background: color-mix(in srgb, var(--ds-accent) 90%, #000);
+  background: color-mix(in srgb, var(--ds-ink) 85%, var(--ds-bg));
 }
 
 .ns-auth-chip {
@@ -341,16 +353,18 @@
   width: 100%;
   border-radius: 12px;
   border: 1px solid transparent;
-  /* Solid peach — the connected-profile chip is the user's accent anchor. */
-  background: var(--ds-accent);
-  color: var(--ds-on-accent);
+  /* Inverts with the theme: black in white mode, white in dark mode.
+     --ds-ink flips per theme (dark ink on light, light ink on dark) and
+     --ds-bg is its contrast, so text stays readable on the chip. */
+  background: var(--ds-ink);
+  color: var(--ds-bg);
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
 }
 .ns-auth-chip:hover {
   border-color: transparent;
-  background: color-mix(in srgb, var(--ds-accent) 88%, #000);
+  background: color-mix(in srgb, var(--ds-ink) 88%, var(--ds-bg));
 }
 /* No focus outline on the chip — after closing the menu the default
    ring (and the peach `:focus-visible` previously) stayed visible and
@@ -365,7 +379,7 @@
 .ns-auth-chip[data-state='open'],
 .ns-auth-chip[data-state='closed'] {
   border-color: transparent;
-  background: var(--ds-accent);
+  background: var(--ds-ink);
 }
 
 .ns-auth-avatar {
@@ -382,9 +396,9 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  /* Dark circle + peach initials — contrasts on the solid peach chip. */
-  background: var(--ds-on-accent);
-  color: var(--ds-accent);
+  /* Contrasts on the ink chip: a bg-colored disc with ink initials. */
+  background: var(--ds-bg);
+  color: var(--ds-ink);
 }
 
 .ns-auth-meta {
@@ -397,8 +411,8 @@
 .ns-auth-name {
   font-size: 13px;
   font-weight: 600;
-  /* Dark ink on the solid peach chip — readable in both themes. */
-  color: var(--ds-on-accent);
+  /* Contrast color on the ink chip (flips with the theme). */
+  color: var(--ds-bg);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -407,7 +421,7 @@
 .ns-auth-sub {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: color-mix(in srgb, var(--ds-on-accent) 62%, transparent);
+  color: color-mix(in srgb, var(--ds-bg) 62%, transparent);
   font-variant-numeric: tabular-nums;
 }
 

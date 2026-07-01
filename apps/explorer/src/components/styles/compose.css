@@ -139,7 +139,7 @@
 .select-card {
   position: relative;
   padding: 16px 18px;
-  background: var(--ds-card);
+  background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
   border-radius: 12px;
   cursor: pointer;
@@ -152,13 +152,12 @@
   color: inherit;
   width: 100%;
 }
-/* Unified card hover (same as explore / circles): lift + peach tint fill +
-   solid peach border + soft shadow. A selected card keeps its solid peach
-   fill (the .selected rule below wins on background). */
+/* Card hover (same as explore / circles): keep the --ds-bg-subtle surface (no
+   accent fill), darken the border neutrally, lift with a soft shadow. A
+   selected card keeps its solid peach fill (the .selected rule below wins). */
 .select-card:hover {
   transform: translateY(-2px);
-  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
-  border-color: var(--ds-accent);
+  border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 /* Selected — solid peach fill in both themes. Text is forced to
@@ -228,7 +227,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 2px solid var(--ds-card);
+  border: 2px solid var(--ds-bg-subtle);
   margin-left: -8px;
   display: inline-flex;
   align-items: center;

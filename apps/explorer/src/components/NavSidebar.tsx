@@ -201,7 +201,7 @@ export function NavSidebar({
               className="ns-auth-connect"
               onClick={() => login()}
             >
-              <Wallet className="h-4 w-4 mr-1" />
+              <Wallet className="h-5 w-5" />
               Connect
             </Button>
           )}

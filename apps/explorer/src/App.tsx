@@ -18,8 +18,8 @@ import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
-import { useExplorerOnboarding } from './hooks/useExplorerOnboarding'
-import OnboardingTour from './components/onboarding/OnboardingTour'
+import PageHint from './components/onboarding/PageHint'
+import FeedPillsDemo from './components/onboarding/FeedPillsDemo'
 import { RightRailProvider } from './contexts/RightRailContext'
 import WsStatusBadge from './components/WsStatusBadge'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
@@ -95,7 +95,6 @@ export default function App() {
   const { login } = useLogin()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =
     useNavCollapse()
-  const onboarding = useExplorerOnboarding()
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
     location.pathname.startsWith('/profile') ||
@@ -226,11 +225,61 @@ export default function App() {
         <RealtimeSyncBoundary />
         {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
         <InterestsHydrationBoundary />
-        {/* First-run guided tour — portals to <body>; opens on first login. */}
-        <OnboardingTour
-          active={onboarding.active}
-          onClose={onboarding.dismiss}
-        />
+        {/* Per-page contextual hints: a small, non-invasive bottom-right card
+            explaining a page the first time the user opens it. No welcome
+            modal, no forced tour: the user discovers the app freely. */}
+        <PageHint
+          storageKey="sofia:hint-explore"
+          path="/explore"
+          title="Reading the feed"
+          illustration={<FeedPillsDemo />}>
+          Each card is a page someone certified. Its pills show the{' '}
+          <b>intention</b> (why they saved it) and the <b>topics</b> it belongs
+          to. The arrows are <b>support / oppose</b> votes: back a card to add
+          your weight and tell others it's worth trusting.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-circles"
+          path="/circles"
+          title="Joining a Circle">
+          Open a Circle and press <b>Join</b> to add its members to the people
+          you trust. Joining needs an <b>Intuition identity</b>: mint your atom
+          ID on the Intuition portal first, otherwise Join stays locked.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-compose"
+          path="/compose"
+          title="Compose a perspective">
+          Combine a <b>circle</b> and a <b>topic</b> into your own lens on the
+          network. Apply <b>Merge</b>, <b>Intersect</b>, <b>Subtract</b> or{' '}
+          <b>Contrast</b> to compile a focused view of what they certify.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-markets"
+          path="/platforms"
+          title="Markets">
+          Spot trending platforms early and <b>stake</b> before the crowd does.
+          Back a platform to grow with its signal, and track its market cap and
+          your position.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-profile"
+          path="/profile"
+          title="Your reputation">
+          Every page you certify grows a <b>score per topic</b>, backed by the
+          people who trust you. Keep certifying. This is where it takes shape.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-cart"
+          whenVisible=".cd-aside.cd-open"
+          anchor="top-right"
+          blocking
+          title="Your cart">
+          Everything you certify or join stacks here, so you can review it and
+          sign it all in one batch. For each item you pick a weight,{' '}
+          <b>Light</b>, <b>Medium</b> or <b>Strong</b>: the more you stake, the
+          stronger the signal you put behind it.
+        </PageHint>
         <WsStatusBadge />
 
         {/* Mobile chrome — fixed top header + bottom nav. Both are

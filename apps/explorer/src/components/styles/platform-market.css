@@ -213,12 +213,12 @@
 .pm-dex-head {
   background: #0b0a12;
   border-bottom: 1px solid var(--ds-border-soft);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  /* Font matches the Leaderboard title (.lb-title): Poppins display, bold. */
+  font-family: var(--ds-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
 }
 .pm-dex-head > span:first-child {
   text-align: center;

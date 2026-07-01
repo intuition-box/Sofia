@@ -153,28 +153,26 @@ export default function ProfileCharts({
               </span>
             </div>
             <div className="pc-score-donut">
-              {pieSlices.length > 0 ? (
-                <TopicScorePie
-                  slices={pieSlices}
-                  focus={hoverTopic}
-                  setFocus={setHoverTopic}
-                  onViewDetails={onViewScores}
-                  refining={refining}
-                  onSelectTopic={
-                    onSelectTopic
-                      ? (id) => {
-                          // Only real topics have an interest page — skip the
-                          // synthetic general / trusted / distrusted slices.
-                          if (topicById(id)) onSelectTopic(id)
-                        }
-                      : undefined
-                  }
-                />
-              ) : (
-                <p className="pc-score-empty">
-                  Certify pages to build your score.
-                </p>
-              )}
+              {/* The donut is ALWAYS rendered — with no certs it falls back to
+                  a neutral "0" placeholder ring (handled inside TopicScorePie)
+                  instead of a text CTA, so the score visual is always the
+                  primary element. */}
+              <TopicScorePie
+                slices={pieSlices}
+                focus={hoverTopic}
+                setFocus={setHoverTopic}
+                onViewDetails={onViewScores}
+                refining={refining}
+                onSelectTopic={
+                  onSelectTopic
+                    ? (id) => {
+                        // Only real topics have an interest page — skip the
+                        // synthetic general / trusted / distrusted slices.
+                        if (topicById(id)) onSelectTopic(id)
+                      }
+                    : undefined
+                }
+              />
             </div>
           </div>
           <div className="pc-main-right">
