@@ -52,6 +52,9 @@ export interface CartItem {
    *   - 'redeem'         → MultiVault.redeem (retrieves all shares)
    *   - 'create-skill'   → atomCreationService (mints skill/tool atom) +
    *                        createTriples ([you → is_skilled_in/uses → skill])
+   *   - 'create-context' → atomCreationService (mints the taxonomy context
+   *                        atom if missing) + createTriples
+   *                        ([cert → in_context_of → context])
    *  Defaults to 'deposit' for back-compat with existing callers. */
   kind?:
     | 'deposit'
@@ -59,6 +62,7 @@ export interface CartItem {
     | 'create-circle'
     | 'redeem'
     | 'create-skill'
+    | 'create-context'
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string
@@ -68,6 +72,12 @@ export interface CartItem {
   circleDraft?: CircleDraft
   /** Required when `kind === 'create-skill'`. */
   skillDraft?: SkillDraft
+  /** Required when `kind === 'create-context'`. Subject (`subjectId`) is the
+   *  cert term_id and `predicateId` is in_context_of; this carries the
+   *  canonical payload to mint the object context atom idempotently. */
+  contextDraft?: {
+    payload: { name: string; description: string; image: string; url: string }
+  }
 }
 
 interface CartContextValue {
