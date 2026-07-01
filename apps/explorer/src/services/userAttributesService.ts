@@ -47,6 +47,7 @@ const GET_USER_ATTRIBUTES = `
         term_id
         object {
           label
+          data
         }
         term {
           vaults(where: { curve_id: { _eq: "1" } }) {
@@ -88,7 +89,7 @@ export interface UserAttributes {
 
 interface RawTriple {
   term_id?: string | null
-  object?: { label?: string | null } | null
+  object?: { label?: string | null; data?: string | null } | null
   term?: {
     vaults?:
       | {
@@ -101,6 +102,42 @@ interface RawTriple {
 
 interface RawAtom {
   as_subject_triples?: RawTriple[] | null
+}
+
+// Resolve a freshly-minted atom's canonical name from its pinned IPFS Thing
+// when the indexer hasn't classified it yet (type "Unknown", label null). Only
+// fires for the handful of unresolved atoms; results are memoised per-uri so a
+// panel re-render never refetches. Failures degrade silently to null.
+const IPFS_GATEWAY = 'https://ipfs.io/ipfs/'
+const THING_NAME_TTL_MS = 6000
+const thingNameCache = new Map<string, string | null>()
+
+async function resolveThingName(
+  dataUri: string | null | undefined,
+): Promise<string | null> {
+  if (!dataUri || !dataUri.startsWith('ipfs://')) return null
+  if (thingNameCache.has(dataUri)) return thingNameCache.get(dataUri) ?? null
+  const cid = dataUri.slice('ipfs://'.length)
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), THING_NAME_TTL_MS)
+    const res = await fetch(`${IPFS_GATEWAY}${cid}`, {
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) {
+      thingNameCache.set(dataUri, null)
+      return null
+    }
+    const json = await res.json()
+    const name = typeof json?.name === 'string' ? json.name : null
+    thingNameCache.set(dataUri, name)
+    return name
+  } catch {
+    // Network / abort / parse failure — don't poison the cache permanently so
+    // a later panel open can retry once the gateway responds.
+    return null
+  }
 }
 
 export async function fetchUserAttributes(
@@ -152,13 +189,27 @@ export async function fetchUserAttributes(
   const atoms: RawAtom[] = json?.data?.atoms ?? []
   const triples: RawTriple[] = atoms.flatMap((a) => a?.as_subject_triples ?? [])
 
+  // Resolve each triple to a known attribute: by the indexed label first, then
+  // by the atom's pinned Thing `name` (covers freshly-minted atoms the indexer
+  // hasn't classified yet — otherwise a just-declared skill/tool would vanish
+  // from the panel until Intuition's Thing resolver catches up).
+  const resolved = await Promise.all(
+    triples.map(async (triple) => {
+      const label = triple?.object?.label
+      let attr = label ? getAttributeByLabel(label) : undefined
+      if (!attr) {
+        const name = await resolveThingName(triple?.object?.data)
+        if (name) attr = getAttributeByLabel(name)
+      }
+      return attr ? { triple, attr } : null
+    }),
+  )
+
   // Dedupe by attribute id; an attribute endorsed twice keeps the higher count.
   const byId = new Map<string, UserAttribute>()
-  for (const triple of triples) {
-    const label = triple?.object?.label
-    if (!label) continue
-    const attr = getAttributeByLabel(label)
-    if (!attr) continue // not a recognised skill/tool — drop generic "uses".
+  for (const entry of resolved) {
+    if (!entry) continue
+    const { triple, attr } = entry
     const vault = triple?.term?.vaults?.[0]
     const count = Number(vault?.position_count ?? 0)
     const viewerEndorsed = (vault?.viewerPositions?.length ?? 0) > 0

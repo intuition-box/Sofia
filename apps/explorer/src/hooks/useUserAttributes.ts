@@ -70,3 +70,45 @@ export function removeAttributesFromCache(
       : old,
   )
 }
+
+/**
+ * Optimistically insert just-declared skills/tools into the profile owner's
+ * attributes cache so the chip appears the instant the create tx confirms —
+ * without waiting on the indexer (which lags a few seconds, and longer to
+ * resolve a brand-new atom's Thing metadata). The scheduled refetch reconciles
+ * the real termId/endorserCount once indexed; dedupe-by-id prevents doubles.
+ *
+ * Scoped to cache entries whose address key includes `ownerAddress` so a
+ * visited profile's cache is never polluted with the current user's additions.
+ */
+export function addAttributesToCache(
+  qc: QueryClient,
+  ownerAddress: string,
+  attrs: readonly UserAttribute[],
+): void {
+  if (!attrs.length || !ownerAddress) return
+  const owner = ownerAddress.toLowerCase()
+  const skillsAdd = attrs.filter((a) => a.category === 'skill')
+  const toolsAdd = attrs.filter((a) => a.category === 'tool')
+  const merge = (list: UserAttribute[], add: UserAttribute[]) => {
+    const have = new Set(list.map((x) => x.id))
+    const fresh = add.filter((a) => !have.has(a.id))
+    return fresh.length ? [...fresh, ...list] : list
+  }
+  for (const q of qc
+    .getQueryCache()
+    .findAll({ queryKey: ['userAttributes'] })) {
+    // key shape: ['userAttributes', addrKey, viewerKey]; addrKey is the sorted,
+    // lowercased, comma-joined address set from the hook.
+    const addrKey = String(q.queryKey[1] ?? '')
+    if (!addrKey.split(',').includes(owner)) continue
+    qc.setQueryData<UserAttributes>(q.queryKey, (old) =>
+      old
+        ? {
+            skills: merge(old.skills, skillsAdd),
+            tools: merge(old.tools, toolsAdd),
+          }
+        : old,
+    )
+  }
+}

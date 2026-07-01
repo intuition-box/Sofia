@@ -7,7 +7,12 @@ import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
 import { removeCertsFromProfileCache } from '../hooks/useUserOnChainProfile'
-import { removeAttributesFromCache } from '../hooks/useUserAttributes'
+import {
+  removeAttributesFromCache,
+  addAttributesToCache,
+} from '../hooks/useUserAttributes'
+import type { UserAttribute } from '../services/userAttributesService'
+import { getAttributeByLabel } from '@0xsofia/taxonomy'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import {
@@ -592,7 +597,40 @@ export default function WeightModal({
               qc.invalidateQueries({ queryKey: ['userAttributes'] })
               qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
             }
-            refreshAfterMint()
+            // Immediate refresh for the join gate + profile. userAttributes is
+            // deliberately excluded here: refetching now returns pre-index state
+            // and would wipe the optimistic chip below before the indexer has
+            // the triple. It reconciles on the scheduled runs instead.
+            qc.invalidateQueries({ queryKey: ['groups-list'] })
+            qc.invalidateQueries({ queryKey: ['group-detail'] })
+            qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            // Optimistic: surface the just-declared skills/tools immediately,
+            // before the indexer even acknowledges the new atoms. The scheduled
+            // refetch below reconciles the real termId/endorserCount; the
+            // resilient name-fallback in userAttributesService keeps a
+            // still-unresolved atom in the list so the chip doesn't flicker out.
+            if (skillIndices.length > 0) {
+              const owner = wallets[0]?.address
+              const declared = skillIndices.flatMap((idx) => {
+                const draft = items[idx].skillDraft
+                const attr = draft && getAttributeByLabel(draft.label)
+                return attr
+                  ? [
+                      {
+                        id: attr.id,
+                        label: attr.label,
+                        category: attr.category,
+                        endorserCount: 1,
+                        viewerEndorsed: true,
+                        termId: '',
+                      } as UserAttribute,
+                    ]
+                  : []
+              })
+              if (owner && declared.length) {
+                addAttributesToCache(qc, owner, declared)
+              }
+            }
             // The indexer lags the chain by a few seconds, so the immediate
             // refetch above returns the pre-mint state and re-caches it (the
             // join gate would stay locked even after a manual reload). Re-run
