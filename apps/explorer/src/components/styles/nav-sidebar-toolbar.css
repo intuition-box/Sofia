@@ -333,8 +333,7 @@
   color: var(--ds-bg);
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 4px 14px -6px
-    color-mix(in srgb, var(--ds-ink) 45%, transparent);
+  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--ds-ink) 45%, transparent);
 }
 .ns-auth-connect svg {
   flex: 0 0 auto;

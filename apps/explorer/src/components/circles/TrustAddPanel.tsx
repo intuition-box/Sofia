@@ -149,13 +149,19 @@ export default function TrustAddPanel({
               const m = toMember(a)
               return (
                 <div className="cf-panel-row" key={a.termId}>
-                  <MemberAvatar member={m} className="cf-panel-avatar" linkable />
+                  <MemberAvatar
+                    member={m}
+                    className="cf-panel-avatar"
+                    linkable
+                  />
                   <div className="cf-panel-id">
                     <div className="cf-panel-handle" title={a.label}>
                       {a.label}
                     </div>
                     {a.data && (
-                      <div className="cf-panel-meta">{shortAddress(a.data)}</div>
+                      <div className="cf-panel-meta">
+                        {shortAddress(a.data)}
+                      </div>
                     )}
                   </div>
                   <MemberTrustToggle member={m} onToast={onToast} />

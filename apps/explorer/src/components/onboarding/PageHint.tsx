@@ -134,13 +134,15 @@ export default function PageHint({
         className={`phint phint--${anchor}`}
         role="dialog"
         aria-modal={blocking || undefined}
-        aria-label={title}>
+        aria-label={title}
+      >
         <div className="phint-card">
           <button
             type="button"
             className="phint-close"
             onClick={dismiss}
-            aria-label="Dismiss">
+            aria-label="Dismiss"
+          >
             ✕
           </button>
           <div className="phint-head">

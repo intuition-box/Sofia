@@ -21,13 +21,13 @@ const INTENTIONS: IntentionType[] = [
   'fun',
   'inspiration',
   'buying',
-  'trusted'
+  'trusted',
 ]
 const TOPICS: { slug: string; label: string }[] = [
   { slug: 'web3-crypto', label: 'Web3' },
   { slug: 'tech-dev', label: 'Tech' },
   { slug: 'ai', label: 'AI' },
-  { slug: 'design-creative', label: 'Design' }
+  { slug: 'design-creative', label: 'Design' },
 ]
 
 export default function FeedPillsDemo() {
@@ -43,7 +43,8 @@ export default function FeedPillsDemo() {
               <span
                 key={type}
                 className="fc-verb"
-                style={{ ['--vc']: cfg.color } as CSSProperties}>
+                style={{ ['--vc']: cfg.color } as CSSProperties}
+              >
                 <Icon className="fc-verb-ic" />
                 {cfg.label}
               </span>

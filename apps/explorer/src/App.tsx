@@ -232,7 +232,8 @@ export default function App() {
           storageKey="sofia:hint-explore"
           path="/explore"
           title="Reading the feed"
-          illustration={<FeedPillsDemo />}>
+          illustration={<FeedPillsDemo />}
+        >
           Each card is a page someone certified. Its pills show the{' '}
           <b>intention</b> (why they saved it) and the <b>topics</b> it belongs
           to. The arrows are <b>support / oppose</b> votes: back a card to add
@@ -241,7 +242,8 @@ export default function App() {
         <PageHint
           storageKey="sofia:hint-circles"
           path="/circles"
-          title="Joining a Circle">
+          title="Joining a Circle"
+        >
           Open a Circle and press <b>Join</b> to add its members to the people
           you trust. Joining needs an <b>Intuition identity</b>: mint your atom
           ID on the Intuition portal first, otherwise Join stays locked.
@@ -249,7 +251,8 @@ export default function App() {
         <PageHint
           storageKey="sofia:hint-compose"
           path="/compose"
-          title="Compose a perspective">
+          title="Compose a perspective"
+        >
           Combine a <b>circle</b> and a <b>topic</b> into your own lens on the
           network. Apply <b>Merge</b>, <b>Intersect</b>, <b>Subtract</b> or{' '}
           <b>Contrast</b> to compile a focused view of what they certify.
@@ -257,7 +260,8 @@ export default function App() {
         <PageHint
           storageKey="sofia:hint-markets"
           path="/platforms"
-          title="Markets">
+          title="Markets"
+        >
           Spot trending platforms early and <b>stake</b> before the crowd does.
           Back a platform to grow with its signal, and track its market cap and
           your position.
@@ -265,7 +269,8 @@ export default function App() {
         <PageHint
           storageKey="sofia:hint-profile"
           path="/profile"
-          title="Your reputation">
+          title="Your reputation"
+        >
           Every page you certify grows a <b>score per topic</b>, backed by the
           people who trust you. Keep certifying. This is where it takes shape.
         </PageHint>
@@ -274,7 +279,8 @@ export default function App() {
           whenVisible=".cd-aside.cd-open"
           anchor="top-right"
           blocking
-          title="Your cart">
+          title="Your cart"
+        >
           Everything you certify or join stacks here, so you can review it and
           sign it all in one batch. For each item you pick a weight,{' '}
           <b>Light</b>, <b>Medium</b> or <b>Strong</b>: the more you stake, the
