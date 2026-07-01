@@ -75,7 +75,11 @@ const dockItem = (index: number) => (): Element | null =>
  *  Echo later, even when the user already has other certifications. */
 let markedDomain: string | null = null
 
-const norm = (s: string) => s.toLowerCase().trim().replace(/^www\./, "")
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .trim()
+    .replace(/^www\./, "")
 
 const captureActiveDomain = () => {
   try {
@@ -105,14 +109,13 @@ const captureMarkedVerb = () => {
   if (last.predicateName === "trusts") key = "trusted"
   else if (last.predicateName === "distrust") key = "distrusted"
   else if (last.intention) key = last.intention
-  if (key && INTENTION_CONFIG[key]) markedVerbLabel = INTENTION_CONFIG[key].label
+  if (key && INTENTION_CONFIG[key])
+    markedVerbLabel = INTENTION_CONFIG[key].label
 }
 
 /** Resolve the bookmark category card for the marked verb (fallback: first). */
 const markedCategoryCard = (): Element | null => {
-  const cards = Array.from(
-    document.querySelectorAll(".bookmark-card--colored")
-  )
+  const cards = Array.from(document.querySelectorAll(".bookmark-card--colored"))
   if (markedVerbLabel) {
     const m = cards.find(
       (c) => c.querySelector("h4")?.textContent?.trim() === markedVerbLabel
@@ -128,11 +131,20 @@ const markedEchoCard = (): Element | null => {
   if (markedDomain) {
     const match = cards.find((c) => {
       const t = norm(c.querySelector(".group-bento-title")?.textContent ?? "")
-      return !!t && (t === markedDomain || t.includes(markedDomain!) || markedDomain!.includes(t))
+      return (
+        !!t &&
+        (t === markedDomain ||
+          t.includes(markedDomain!) ||
+          markedDomain!.includes(t))
+      )
     })
     if (match) return match
   }
-  return document.querySelector(".group-bento-card.is-fresh-mark") ?? cards[0] ?? null
+  return (
+    document.querySelector(".group-bento-card.is-fresh-mark") ??
+    cards[0] ??
+    null
+  )
 }
 
 /** The curator we showcase in the Circle steps — reliably has marks to vote on. */
@@ -192,7 +204,9 @@ const openCircleFeed = (): (() => void) => {
     ) as HTMLElement | null
     if (homeCrumb) homeCrumb.click()
     else
-      (document.querySelector(".trust-circle-banner") as HTMLElement | null)?.click()
+      (
+        document.querySelector(".trust-circle-banner") as HTMLElement | null
+      )?.click()
     if (tries++ < 14) setTimeout(tick, 160)
   }
   tick()
@@ -209,31 +223,34 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Choose why this page matters",
     body: "You're on a page right now. Tap an intention to tell Sofia what it means to you.",
     cta: "Tap an intention",
-    learn:
-      "What you just did is called a Mark — your own signal about a page.",
+    learn: "What you just did is called a Mark — your own signal about a page.",
     complete: { kind: "cartAdd" },
     onEnter: captureActiveDomain
   },
   {
     key: "context",
-    // The "In context of" trigger — matched by its unique aria-label (the
-    // intention trigger is also .ext-filter-trigger--wide, so a class selector
-    // grabs the wrong one).
-    target: '[aria-label="Add a topic or category context"]',
+    // Verbs + contexts now live in one combobox — highlight the field. The
+    // context rows carry `.is-context`, so completion only fires on a topic /
+    // category tick, not a verb (verbs share `.ext-ctx-row.is-active`).
+    target: ".ext-cat-field",
     requires: "mark",
     title: "What's it about?",
     body: "Tag your mark with a <b>context</b> — a topic like Tech, Web3 or Music. Pick at least one.",
     cta: "Choose a context",
-    learn: "Contexts make your signal richer and searchable — and let others vote on it.",
-    complete: { kind: "domAppear", selector: ".ext-ctx-row.is-active" }
+    learn:
+      "Contexts make your signal richer and searchable — and let others vote on it.",
+    complete: {
+      kind: "domAppear",
+      selector: ".ext-ctx-row.is-context.is-active"
+    }
   },
   {
     key: "validate",
     target: ".validate-btn",
     requires: "mark",
     title: "It went to your cart",
-    body: "Nothing was sent anywhere yet — your mark is just queued. Press <b>Validate</b> to review it and open your cart.",
-    cta: "Press Validate",
+    body: "Nothing was sent anywhere yet — your mark is just queued. Press <b>Save</b> to review it and open your cart.",
+    cta: "Press Save",
     learn: "Marks batch up — you decide when to commit them, all at once.",
     complete: { kind: "winEvent", event: "sofia:open-cart" },
     // The mark is queued now — remember its verb for the Bookmarks step.
@@ -298,7 +315,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "See what you certified",
     body: "Here's the page you marked, now <b>on-chain</b>. Open it to see exactly what you claimed.",
     cta: "Open your mark",
-    learn: "That's your claim — the URL plus the intention you chose, verifiable by anyone.",
+    learn:
+      "That's your claim — the URL plus the intention you chose, verifiable by anyone.",
     complete: { kind: "domAppear", selector: ".url-row.expanded" }
   },
   {
@@ -311,7 +329,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "It's a bookmark too",
     body: "Every mark is also filed as a <b>bookmark</b>, grouped by intention. Open the Bookmarks tab.",
     cta: "Open Bookmarks",
-    learn: "A second lens on your marks — organised by the intention you chose.",
+    learn:
+      "A second lens on your marks — organised by the intention you chose.",
     complete: { kind: "domAppear", selector: ".bookmarks-container" }
   },
   {
@@ -331,7 +350,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "There's your page",
     body: "Your marked page, filed under this intention. Open it to revisit your claim.",
     cta: "Open the page",
-    learn: "Your marks are browsable by intention — a clean map of what you trust, learn, and enjoy.",
+    learn:
+      "Your marks are browsable by intention — a clean map of what you trust, learn, and enjoy.",
     complete: { kind: "domClick", selector: ".category-detail .url-row" }
   },
   {
@@ -341,7 +361,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Now, your network",
     body: "Reputation is collective. Switch to Circles to find people worth following.",
     cta: "Open Circles",
-    learn: "Your Circle is the people you trust — their marks flow into one feed.",
+    learn:
+      "Your Circle is the people you trust — their marks flow into one feed.",
     complete: { kind: "route", page: "circles" }
   },
   {
@@ -351,7 +372,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Follow someone you trust",
     body: `We searched for <b>${FEATURED_CURATOR}</b> — an active curator. Add them to your Circle.`,
     cta: "Add to your Circle",
-    learn: "Trusting a person backs everything they curate — it shapes your whole circle.",
+    learn:
+      "Trusting a person backs everything they curate — it shapes your whole circle.",
     // Clicking "add" opens the trust weight modal (strength + Amplify).
     complete: { kind: "domAppear", selector: ".b3-tiers" },
     onEnter: () => seedAccountSearch(FEATURED_CURATOR)

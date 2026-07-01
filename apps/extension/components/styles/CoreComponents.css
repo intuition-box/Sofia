@@ -102,7 +102,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 12px;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -117,7 +117,7 @@
   border: none;
   background: var(--btn-primary-bg);
   color: var(--btn-primary-fg);
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 14px;
   font-weight: 700;
   box-shadow: var(--btn-primary-shadow);
@@ -170,7 +170,7 @@
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -237,7 +237,7 @@
   cursor: pointer;
   margin-top: 16px;
   transition: all 0.3s ease;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-weight: 500;
 }
 

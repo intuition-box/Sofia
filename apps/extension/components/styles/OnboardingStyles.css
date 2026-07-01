@@ -37,7 +37,7 @@
 }
 
 .onboarding-description {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   color: var(--ds-muted);
   font-size: 14px;
   line-height: 1.5;
@@ -227,7 +227,7 @@
 }
 
 .onboarding-consent-text {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   line-height: 1.5;
   color: var(--ds-muted);

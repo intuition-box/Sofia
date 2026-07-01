@@ -16,7 +16,7 @@
 .user-profile-status-note {
   font-size: 12px;
   color: rgba(251, 247, 245, 0.5);
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   margin-top: 8px;
   text-align: center;
   font-style: italic;
@@ -27,6 +27,6 @@
   padding: 40px 20px;
   text-align: center;
   color: #ff6b6b;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 14px;
 }

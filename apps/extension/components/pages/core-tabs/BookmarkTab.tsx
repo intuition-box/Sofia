@@ -21,6 +21,7 @@ import '../../styles/CategoryStyles.css'
 import '../../styles/CircleFeedTab.css'
 import { createHookLogger } from '../../../lib/utils/logger'
 import { getFaviconUrl } from '~/lib/utils'
+import { INTENTION_ICONS } from '~/lib/config/intentionIcons'
 
 const logger = createHookLogger('BookmarkTab')
 
@@ -343,6 +344,7 @@ const BookmarkTab = () => {
                   const categoryDomains = [...new Set(
                     category.urls.map(u => u.domain)
                   )]
+                  const CatIcon = INTENTION_ICONS[category.id]
                   return (
                     <div
                       key={category.id}
@@ -356,7 +358,9 @@ const BookmarkTab = () => {
                       <div className="bookmark-item">
                         <div className="bookmark-header-content">
                           <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="bookmark-card-dot" aria-hidden="true" />
+                            {CatIcon && (
+                              <CatIcon className="bookmark-card-ic" aria-hidden="true" />
+                            )}
                             <h4 style={{ margin: 0 }}>{category.label}</h4>
                           </div>
                           <div className="bookmark-list-meta">

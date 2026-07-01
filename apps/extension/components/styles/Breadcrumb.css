@@ -28,7 +28,7 @@
 }
 
 .sf-bc-crumb {
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Hind", ui-sans-serif, system-ui, sans-serif;
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--bc-color, var(--ds-muted));

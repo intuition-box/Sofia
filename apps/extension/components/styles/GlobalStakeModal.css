@@ -8,7 +8,7 @@
 }
 
 .gs-modal__title {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -16,7 +16,7 @@
 }
 
 .gs-modal__subtitle {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -45,14 +45,14 @@
 }
 
 .gs-modal__position-label {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
 }
 
 .gs-modal__position-value {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -119,5 +119,5 @@
   padding: 24px 0;
   color: rgba(255, 255, 255, 0.35);
   font-size: 14px;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
 }

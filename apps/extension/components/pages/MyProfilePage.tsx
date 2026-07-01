@@ -8,9 +8,16 @@ import '../styles/CorePage.css'
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 const HistoryTab = lazy(() => import('./core-tabs/HistoryTab'))
-const ConnectTab = lazy(() => import('./my-profile-tabs/SocialsTab'))
 
-type MyProfileTab = 'Echoes' | 'Bookmarks' | 'History' | 'Connect'
+type MyProfileTab = 'Echoes' | 'Bookmarks' | 'History'
+
+// Display labels — internal keys stay stable (external `initialTab` intents
+// still reference 'Echoes'/'Bookmarks'); only the visible text changes.
+const TAB_LABELS: Record<MyProfileTab, string> = {
+  Echoes: 'Bookmark',
+  Bookmarks: 'Collection',
+  History: 'History'
+}
 
 const MyProfilePage = () => {
   const { myProfileIntent } = useRouter()
@@ -31,7 +38,7 @@ const MyProfilePage = () => {
   return (
     <div className="page">
       <div className="pf-echoes-sort core-page-tabs" role="group" aria-label="Switch view">
-        {(['Echoes', 'Bookmarks', 'History', 'Connect'] as MyProfileTab[]).map(tab => (
+        {(['Echoes', 'Bookmarks', 'History'] as MyProfileTab[]).map(tab => (
           <button
             key={tab}
             type="button"
@@ -39,7 +46,7 @@ const MyProfilePage = () => {
             className={`pf-sort-btn ${activeGraphTab === tab ? 'active' : ''}`}
             aria-pressed={activeGraphTab === tab}
           >
-            {tab}
+            {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
@@ -54,7 +61,6 @@ const MyProfilePage = () => {
               setExpandedTriplet={setExpandedHistoryTriplet}
             />
           )}
-          {activeGraphTab === 'Connect' && <ConnectTab />}
         </Suspense>
       </div>
     </div>

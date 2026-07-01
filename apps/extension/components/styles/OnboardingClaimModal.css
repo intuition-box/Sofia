@@ -102,7 +102,7 @@
 
 /* Redirect hint on success */
 .onboarding-redirect-hint {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: var(--font-size-sm);
   color: var(--ds-muted);
   margin-top: var(--spacing-sm);
