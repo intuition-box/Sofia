@@ -12,8 +12,6 @@ import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { userCertsToActivityInputs } from '../hooks/useIntentionGroups'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
-import { useVerifiedSocials } from '../hooks/useVerifiedSocials'
-import SocialLinks from '../components/profile/SocialLinks'
 import LastActivitySection from '../components/profile/LastActivitySection'
 import ProfileCharts from '../components/profile/ProfileCharts'
 import Achievements from '../components/profile/Achievements'
@@ -50,13 +48,6 @@ export default function ProfilePage() {
   const { getStatus } = usePlatformConnections()
   const { score: trustCompositeScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
-  // Bot-verified socials for the profile being viewed (self or view-as).
-  const { socials: verifiedSocials } = useVerifiedSocials(
-    address ? [address] : undefined,
-  )
-  const socialLinks = address
-    ? (verifiedSocials[address.toLowerCase()] ?? [])
-    : []
   const certCountsByTopic = useUserCertCountsByTopic(activityAddresses)
   // Every topic is scored now (#521); the donut + details panel show the
   // full split, so we hand the chart bundle the complete topic list.
@@ -195,10 +186,6 @@ export default function ProfilePage() {
       )}
 
       <div className="pp-sections">
-        {/* Verified socials — bot-attested links from the graph. Hidden
-            entirely when nothing is verified (component returns null). */}
-        <SocialLinks variant="aside" socials={socialLinks} />
-
         {/* Profile charts — radar + details (with inline interest pills)
             + calendar. The Overview details panel now embeds the compact
             interest rail directly, so we no longer render a standalone

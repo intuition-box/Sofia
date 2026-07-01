@@ -26,7 +26,10 @@ import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
 import FeedCardView from '@/components/feed/FeedCardView'
 import { useUserPlatformInvests } from '@/hooks/useUserPlatformInvests'
+import { useVerifiedSocials } from '../hooks/useVerifiedSocials'
 import ProfileAttributes from '@/components/profile/ProfileAttributes'
+import SocialLinks from '@/components/profile/SocialLinks'
+import type { SocialLink } from '@/services/socialsService'
 import '@/components/styles/feed-card.css'
 import './styles/profile-drawer.css'
 
@@ -109,6 +112,21 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { groups } = useGroups()
   const positions = useUserPositionTermIds(linkedAddresses)
   const { invests: platformInvests } = useUserPlatformInvests(linkedAddresses)
+  // Bot-verified socials, merged across every linked wallet (a social may
+  // have been attested under any of them). Dedupe by platform so the icon
+  // row under the name shows each network once.
+  const { socials: verifiedSocials } = useVerifiedSocials(
+    linkedAddresses.length ? linkedAddresses : undefined,
+  )
+  const socialLinks = useMemo<SocialLink[]>(() => {
+    const byPlatform = new Map<string, SocialLink>()
+    for (const addr of linkedAddresses) {
+      for (const s of verifiedSocials[addr.toLowerCase()] ?? []) {
+        if (!byPlatform.has(s.platform)) byPlatform.set(s.platform, s)
+      }
+    }
+    return [...byPlatform.values()]
+  }, [verifiedSocials, linkedAddresses])
   const circlesCount = useMemo(() => {
     if (linkedAddresses.length === 0) return 1
     const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
@@ -417,6 +435,10 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                 </span>
               )}
             </div>
+
+            {/* Verified socials — bot-attested icons, right under the name.
+                Renders nothing when the wallet has no verified social. */}
+            <SocialLinks variant="aside" socials={socialLinks} />
           </div>
 
           {/* Skills & Tools — declare your own (on-chain), others endorse */}
