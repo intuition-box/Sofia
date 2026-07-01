@@ -29,6 +29,11 @@ const TOOL_PREDICATE_ID = ATTESTATION_TYPES.TOOL_ENDORSE.termId
 // filter by `wallet_id`: the indexer sets that to the atom's minter, which is
 // usually a different address than the account holder, so it matches nothing.
 // We pass both checksummed and lowercased forms since `data` casing varies.
+//
+// The triple filter requires the OWNER to still hold a position (shares > 0):
+// a `[you → uses/is_skilled_in → X]` triple lives on-chain forever, so without
+// this a redeemed skill/tool would reappear on the next refetch. Gating on the
+// owner's own stake makes redeem a real, permanent removal.
 const GET_USER_ATTRIBUTES = `
   query UserAttributes(
     $addresses: [String!]!
@@ -41,7 +46,17 @@ const GET_USER_ATTRIBUTES = `
       }
     ) {
       as_subject_triples(
-        where: { predicate_id: { _in: $predicateIds } }
+        where: {
+          predicate_id: { _in: $predicateIds }
+          term: {
+            vaults: {
+              positions: {
+                account_id: { _in: $addresses }
+                shares: { _gt: "0" }
+              }
+            }
+          }
+        }
         limit: 300
       ) {
         term_id
