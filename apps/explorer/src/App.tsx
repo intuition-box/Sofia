@@ -18,6 +18,8 @@ import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
+import { useExplorerOnboarding } from './hooks/useExplorerOnboarding'
+import OnboardingTour from './components/onboarding/OnboardingTour'
 import { RightRailProvider } from './contexts/RightRailContext'
 import WsStatusBadge from './components/WsStatusBadge'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
@@ -93,6 +95,7 @@ export default function App() {
   const { login } = useLogin()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =
     useNavCollapse()
+  const onboarding = useExplorerOnboarding()
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
     location.pathname.startsWith('/profile') ||
@@ -223,6 +226,11 @@ export default function App() {
         <RealtimeSyncBoundary />
         {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
         <InterestsHydrationBoundary />
+        {/* First-run guided tour — portals to <body>; opens on first login. */}
+        <OnboardingTour
+          active={onboarding.active}
+          onClose={onboarding.dismiss}
+        />
         <WsStatusBadge />
 
         {/* Mobile chrome — fixed top header + bottom nav. Both are

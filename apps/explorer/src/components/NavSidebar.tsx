@@ -111,10 +111,30 @@ export function NavSidebar({
     icon: typeof Home
     label: string
     public: boolean
+    /** Onboarding-tour anchor (spotlight target). */
+    tour?: string
   }[] = [
-    { to: '/explore', icon: Globe, label: 'Explore', public: true },
-    { to: '/circles', icon: Users, label: 'Circles', public: false },
-    { to: '/compose', icon: Layers, label: 'Compose', public: false },
+    {
+      to: '/explore',
+      icon: Globe,
+      label: 'Explore',
+      public: true,
+      tour: 'nav-explore',
+    },
+    {
+      to: '/circles',
+      icon: Users,
+      label: 'Circles',
+      public: false,
+      tour: 'nav-circles',
+    },
+    {
+      to: '/compose',
+      icon: Layers,
+      label: 'Compose',
+      public: false,
+      tour: 'nav-compose',
+    },
     { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
   ]
 
@@ -136,6 +156,7 @@ export function NavSidebar({
     icon: typeof Home
     label: string
     public: boolean
+    tour?: string
   }) => {
     const locked = !item.public && !authenticated
     const active = location.pathname === item.to
@@ -152,7 +173,12 @@ export function NavSidebar({
       )
     }
     return (
-      <Link key={item.to} to={item.to} style={{ display: 'block' }}>
+      <Link
+        key={item.to}
+        to={item.to}
+        style={{ display: 'block' }}
+        data-tour={item.tour}
+      >
         <NavItem
           as="button"
           icon={<Icon className="h-4 w-4" />}

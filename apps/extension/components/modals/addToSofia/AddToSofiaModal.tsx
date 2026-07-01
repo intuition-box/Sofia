@@ -15,7 +15,10 @@ import {
   QualifyFields,
   type QualifyValue
 } from "~components/modals/addToSofia/QualifyFields"
-import type { AddToCartResponse } from "~lib/addToSofia/types"
+import type {
+  AddToCartResponse,
+  AddToSofiaStatusResponse
+} from "~lib/addToSofia/types"
 import { hostOf } from "~lib/addToSofia/url"
 import { getFaviconUrl } from "~lib/utils"
 
@@ -66,6 +69,9 @@ export default function AddToSofiaModal() {
   const [done, setDone] = useState(false)
   const [shotOk, setShotOk] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
+  // null = unknown (status not yet resolved). false → the modal swaps its
+  // primary action for a "connect" button that opens the side panel.
+  const [connected, setConnected] = useState<boolean | null>(null)
 
   // PRO (later): backend session + workspace state, resolved when the modal
   // opens via the service worker (the JWT stays in the worker). See the
@@ -91,6 +97,12 @@ export default function AddToSofiaModal() {
       setShotOk(true)
       setDone(false)
       setTarget({ url, title: t })
+      // Resolve wallet-connection state so we can render a connect-first
+      // affordance. Unknown → treat as connected (never block the happy path).
+      setConnected(null)
+      void askBackground<AddToSofiaStatusResponse>({
+        type: "ADD_TO_SOFIA_STATUS"
+      }).then((res) => setConnected(res ? res.connected : true))
       // PRO (later): void loadAuth()
     }
     chrome.runtime.onMessage.addListener(onMessage)
@@ -116,6 +128,18 @@ export default function AddToSofiaModal() {
     : `https://${target.url}`
   const canAdd = !!v.intention && !saving
 
+  // Open the side panel so the user can connect. Called SYNCHRONOUSLY from the
+  // button's onClick (no await before) — chrome.sidePanel.open() requires an
+  // active user gesture, which a message dispatched during the click preserves.
+  const connect = () => {
+    try {
+      chrome.runtime.sendMessage({ type: "open_sidepanel" })
+    } catch {
+      // SW asleep / no receiver — nothing else we can do from the page.
+    }
+    setTarget(null)
+  }
+
   const add = async () => {
     if (!v.intention || saving) return
     setSaving(true)
@@ -136,13 +160,24 @@ export default function AddToSofiaModal() {
           setTarget(null)
           setDone(false)
         }, 1300)
+      } else if (res?.reason === "no-wallet") {
+        // Raced a disconnect after the open-time check — reflect it and open
+        // the side panel so the user can connect (best-effort; the gesture may
+        // be stale after the await, but the open-time pre-check covers the
+        // normal case).
+        setConnected(false)
+        try {
+          chrome.runtime.sendMessage({ type: "open_sidepanel" })
+        } catch {
+          // ignore — SW asleep / no receiver
+        }
+        setToast("Connect your wallet in the Sofia side panel first")
+        setTimeout(() => setToast(null), 2600)
       } else {
         const msg =
-          res?.reason === "no-wallet"
-            ? "Connect your wallet in the Sofia side panel first"
-            : res?.reason === "duplicate"
-              ? "Already in your cart"
-              : "Couldn't add — try again"
+          res?.reason === "duplicate"
+            ? "Already in your cart"
+            : "Couldn't add — try again"
         setToast(msg)
         setTimeout(() => setToast(null), 2600)
       }
@@ -163,6 +198,12 @@ export default function AddToSofiaModal() {
             ✕
           </button>
         </header>
+
+        {connected === false && (
+          <div className="sis-connect-note">
+            Connect your wallet to add this page. Opening the Sofia side panel…
+          </div>
+        )}
 
         <div className="sis-cols">
           <div className="sis-left">
@@ -198,12 +239,18 @@ export default function AddToSofiaModal() {
         </div>
 
         <footer className="sis-foot">
-          <button
-            className={`sis-btn sis-btn--accent${done ? " sis-btn--done" : ""}`}
-            disabled={!canAdd || done}
-            onClick={add}>
-            {done ? "✓ Added to Sofia" : saving ? "Adding…" : "Add to Sofia"}
-          </button>
+          {connected === false ? (
+            <button className="sis-btn sis-btn--accent" onClick={connect}>
+              Connect to Sofia
+            </button>
+          ) : (
+            <button
+              className={`sis-btn sis-btn--accent${done ? " sis-btn--done" : ""}`}
+              disabled={!canAdd || done}
+              onClick={add}>
+              {done ? "✓ Added to Sofia" : saving ? "Adding…" : "Add to Sofia"}
+            </button>
+          )}
         </footer>
       </div>
     </div>
