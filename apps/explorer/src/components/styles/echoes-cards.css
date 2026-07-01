@@ -80,15 +80,17 @@
   object-fit: cover;
   display: block;
 }
-/* bottom fade so the body reads cleanly under the image */
+/* Subtle bottom fade for a clean transition into the card body — only the
+   lower quarter, at a soft tint (was transparent 50% → 88% card, which read
+   as a strong white layer over half the image in light mode). */
 .echo-media::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    transparent 50%,
-    color-mix(in srgb, var(--ds-card) 88%, transparent)
+    transparent 74%,
+    color-mix(in srgb, var(--ds-card) 55%, transparent)
   );
   pointer-events: none;
 }

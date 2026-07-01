@@ -15,6 +15,7 @@ import type { UserAttribute } from '../services/userAttributesService'
 import { getAttributeByLabel } from '@0xsofia/taxonomy'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
+import { addOptimisticTrust } from '../lib/realtime/optimisticTrust'
 import {
   ATOM_ID_TO_TOPIC,
   HAS_TAG_PREDICATE_ID,
@@ -649,6 +650,10 @@ export default function WeightModal({
               qc.invalidateQueries({ queryKey: ['group-detail'] })
               qc.invalidateQueries({ queryKey: ['userAttributes'] })
               qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+              // Trusting a person mints an I→TRUSTS→account triple; refetch the
+              // Trust Circle so the new member reconciles from the optimistic
+              // placeholder to the real indexed triple.
+              qc.invalidateQueries({ queryKey: ['trustCircle'] })
             }
             // Immediate refresh for the join gate + profile. userAttributes is
             // deliberately excluded here: refetching now returns pre-index state
@@ -683,6 +688,29 @@ export default function WeightModal({
               if (owner && declared.length) {
                 addAttributesToCache(qc, owner, declared)
               }
+            }
+            // Optimistic: surface just-trusted members in the Trust Circle
+            // immediately. A signed trust triple WILL be indexed, so we show
+            // the member now (placeholder) and let the scheduled refetch above
+            // reconcile it with the real indexed account (see optimisticTrust +
+            // useTrustCircle).
+            const trustItems = items.filter(
+              (it) =>
+                it.kind === 'create-triple' &&
+                it.predicateId === PREDICATE_IDS.TRUSTS &&
+                !!it.objectId,
+            )
+            for (const it of trustItems) {
+              addOptimisticTrust(qc, {
+                id: `optimistic-${it.objectId}`,
+                termId: it.objectId as string,
+                tripleId: `optimistic-${it.objectId}`,
+                label: it.title || 'New member',
+                image: it.favicon || null,
+                walletAddress: undefined,
+                trustAmount: 0,
+                createdAt: Date.now(),
+              })
             }
             // The indexer lags the chain by a few seconds, so the immediate
             // refetch above returns the pre-mint state and re-caches it (the
