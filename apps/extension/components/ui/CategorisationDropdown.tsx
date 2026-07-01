@@ -273,7 +273,7 @@ export const CategorisationDropdown = memo(
             className="ext-ctx-check"
             onClick={() => onToggleIntention(type)}
             aria-label={`Tag with ${INTENTION_CONFIG[type].label}`}>
-            {isSel && <Check size={12} aria-hidden />}
+            {isSel && <Check size={15} strokeWidth={3} aria-hidden />}
           </button>
           <button
             type="button"
@@ -344,7 +344,7 @@ export const CategorisationDropdown = memo(
                             onClick={() => toggleContext(topic.id)}
                             aria-label={`Tag with ${label}`}>
                             {(isSel || isDone) && (
-                              <Check size={12} aria-hidden />
+                              <Check size={15} strokeWidth={3} aria-hidden />
                             )}
                           </button>
                           <button
@@ -393,7 +393,11 @@ export const CategorisationDropdown = memo(
                                       onClick={() => toggleContext(cat.id)}
                                       aria-label={`Tag with ${cat.label}`}>
                                       {(cSel || cDone) && (
-                                        <Check size={12} aria-hidden />
+                                        <Check
+                                          size={15}
+                                          strokeWidth={3}
+                                          aria-hidden
+                                        />
                                       )}
                                     </button>
                                     <button
