@@ -99,6 +99,42 @@
   color: var(--ds-ink);
 }
 
+/* Owner "delete" affordance — mirrors .ctx-card-remove from the Context
+   Manager. Collapsed by default; revealed on chip hover/focus, red on its
+   own hover. Clicking queues a redeem (recover stake) into the cart. */
+.pa-chip-remove {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ds-muted-soft);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition:
+    width 0.13s ease,
+    opacity 0.13s ease,
+    color 0.13s ease,
+    background 0.13s ease,
+    border-color 0.13s ease;
+}
+.pa-chip:hover .pa-chip-remove,
+.pa-chip:focus-within .pa-chip-remove {
+  width: 18px;
+  opacity: 1;
+}
+.pa-chip-remove:hover {
+  color: var(--distrusted, #ef5a5a);
+  background: color-mix(in srgb, var(--distrusted, #ef5a5a) 10%, transparent);
+  border-color: color-mix(in srgb, var(--distrusted, #ef5a5a) 30%, transparent);
+}
+
 /* Queued declaration — added but not yet minted on-chain. Dashed border +
    transparent fill so it reads as a placeholder distinct from a confirmed
    chip; a small "queued" tag spells it out. */

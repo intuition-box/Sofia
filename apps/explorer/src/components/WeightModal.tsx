@@ -7,6 +7,7 @@ import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
 import { removeCertsFromProfileCache } from '../hooks/useUserOnChainProfile'
+import { removeAttributesFromCache } from '../hooks/useUserAttributes'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import {
@@ -353,7 +354,11 @@ export default function WeightModal({
       // and re-persists the stale row, so it reappears on reload. staleTime
       // reconciles on the next natural refetch once the indexer catches up.
       if (redeemedOk.length > 0) {
+        // A redeemed termId is either a URL cert (profile cache) or a
+        // skill/tool declaration (attributes cache) — filter both; the one
+        // that doesn't match is a no-op.
         removeCertsFromProfileCache(qc, redeemedOk)
+        removeAttributesFromCache(qc, redeemedOk)
       }
       if (allOk) {
         // A redeem-only cart has no deposit/create result to drive the
