@@ -40,5 +40,8 @@ console.log(`reputation-api listening on http://0.0.0.0:${env.port}`)
 export default {
   port: env.port,
   hostname: '0.0.0.0',
+  // Bun's default idleTimeout (10s) would drop slow requests; the compute
+  // endpoint is fire-and-forget so this only cushions read latency spikes.
+  idleTimeout: 60,
   fetch: app.fetch,
 }

@@ -42,9 +42,14 @@ let running = false
 /**
  * POST /internal/leaderboard/compute
  * Header: x-compute-token: <LEADERBOARD_COMPUTE_TOKEN>
- * Recomputes the snapshot. 404 when no token is configured (feature disabled).
+ *
+ * Fire-and-forget: the job runs for minutes (an MCP pass per unique address), so
+ * we kick it off and return 202 immediately rather than holding the connection
+ * (Bun's idleTimeout would drop a silent long request anyway). The cron only
+ * needs the ack; results land in the snapshot when the run finishes. 404 when no
+ * token is configured (feature disabled).
  */
-leaderboard.post('/internal/leaderboard/compute', async (c) => {
+leaderboard.post('/internal/leaderboard/compute', (c) => {
   if (!env.computeToken) throw new HTTPException(404, { message: 'Not found' })
   if (c.req.header('x-compute-token') !== env.computeToken) {
     throw new HTTPException(403, { message: 'Bad compute token' })
@@ -54,10 +59,11 @@ leaderboard.post('/internal/leaderboard/compute', async (c) => {
   }
 
   running = true
-  try {
-    const stats = await computeLeaderboard()
-    return c.json({ ok: true, stats })
-  } finally {
-    running = false
-  }
+  void computeLeaderboard()
+    .catch((err) => console.error('[leaderboard] compute failed', err))
+    .finally(() => {
+      running = false
+    })
+
+  return c.json({ started: true }, 202)
 })
