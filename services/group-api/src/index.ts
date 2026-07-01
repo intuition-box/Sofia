@@ -7,6 +7,7 @@ import type { AppEnv } from './auth'
 import { authMiddleware } from './auth'
 import { env } from './env'
 import { applications } from './routes/applications'
+import { invitations } from './routes/invitations'
 import { members } from './routes/members'
 import { notifications } from './routes/notifications'
 import { dev } from './routes/dev'
@@ -31,6 +32,7 @@ app.route('/', dev)
 // Everything below requires a valid Privy bearer token.
 app.use('*', authMiddleware)
 app.route('/', applications)
+app.route('/', invitations)
 app.route('/', members)
 app.route('/', notifications)
 

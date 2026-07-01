@@ -158,6 +158,23 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+/* Invitation accept/decline pair — stacked full-width, accept on top. */
+.jg-invite-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.jg-cta--ghost {
+  background: transparent;
+  border: 1px solid
+    var(--ds-border, color-mix(in srgb, var(--foreground) 18%, transparent));
+  color: var(--ds-muted);
+}
+.jg-cta--ghost:hover:not(:disabled) {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+}
 .jg-cta-ic {
   width: 14px;
   height: 14px;

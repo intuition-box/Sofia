@@ -11,6 +11,7 @@ export type MembershipRole = 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER'
 export type MembershipState = 'ACTIVE' | 'BANNED'
 export type ApplicationState =
   | 'PENDING'
+  | 'INVITED'
   | 'APPROVED'
   | 'REJECTED'
   | 'WITHDRAWN'
@@ -110,6 +111,33 @@ export const rejectApplication = (token: string, id: string, note?: string) =>
     method: 'POST',
     body: JSON.stringify({ note }),
   })
+
+// ── Invitations ──
+/** Invite N wallets to a circle (any authenticated caller). Each invitee gets
+ *  an INVITED application + a notification; they accept/decline to join. */
+export const inviteMembers = (
+  token: string,
+  groupTermId: string,
+  wallets: string[],
+) =>
+  api<{ invited: string[]; skipped: string[] }>(
+    token,
+    `/groups/${encodeURIComponent(groupTermId)}/invitations`,
+    { method: 'POST', body: JSON.stringify({ wallets }) },
+  )
+
+/** The invitee accepts (→ ACTIVE membership, unlocks the on-chain mint) or
+ *  declines their pending invitation. */
+export const respondInvitation = (
+  token: string,
+  groupTermId: string,
+  accept: boolean,
+) =>
+  api<{ application: Application }>(
+    token,
+    `/groups/${encodeURIComponent(groupTermId)}/invitations/respond`,
+    { method: 'POST', body: JSON.stringify({ accept }) },
+  )
 
 // ── Roles / admin ──
 export const getIsAdmin = (token: string, groupTermId: string) =>

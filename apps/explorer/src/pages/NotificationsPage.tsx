@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import {
   Bell,
   CheckCircle2,
+  MailPlus,
   ShieldCheck,
   UserPlus,
   XCircle,
@@ -26,6 +27,8 @@ const TYPE_META: Record<string, { icon: LucideIcon; tone: Tone }> = {
   JOIN_APPROVED: { icon: CheckCircle2, tone: 'positive' },
   JOIN_REJECTED: { icon: XCircle, tone: 'negative' },
   ROLE_UPDATED: { icon: ShieldCheck, tone: 'info' },
+  INVITED: { icon: MailPlus, tone: 'info' },
+  INVITE_ACCEPTED: { icon: CheckCircle2, tone: 'positive' },
 }
 
 function timeAgo(iso: string): string {

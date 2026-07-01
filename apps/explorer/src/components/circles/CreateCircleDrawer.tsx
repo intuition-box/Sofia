@@ -173,6 +173,10 @@ export default function CreateCircleDrawer({
       name: draft.name.trim(),
       description: draft.description.trim(),
       topicIds: draft.topicIds,
+      // Carry the picked accounts' wallets — WeightModal invites them via the
+      // group-api once the circle atom is minted (they accept, then mint their
+      // own MEMBER_OF). Lowercased to match the backend's wallet identity.
+      members: draft.members.map((m) => m.address.toLowerCase()),
     }
 
     // Pick the first selected topic's color for the cart item border —

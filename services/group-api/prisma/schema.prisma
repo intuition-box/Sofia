@@ -34,6 +34,8 @@ enum MembershipStatus {
 
 enum ApplicationStatus {
   PENDING
+  // Owner/member invited this wallet; it awaits the invitee's accept/decline.
+  INVITED
   APPROVED
   REJECTED
   WITHDRAWN
@@ -48,6 +50,9 @@ enum EventType {
   JOIN_WITHDRAWN
   ROLE_UPDATED
   MEMBER_BANNED
+  MEMBER_INVITED
+  INVITE_ACCEPTED
+  INVITE_DECLINED
 }
 
 enum NotificationType {
@@ -55,6 +60,10 @@ enum NotificationType {
   JOIN_APPROVED
   JOIN_REJECTED
   ROLE_UPDATED
+  // Someone invited the recipient to a circle (they must accept, then mint).
+  INVITED
+  // An invitee accepted — surfaced back to the inviter.
+  INVITE_ACCEPTED
 }
 
 /// A wallet's role + status within an on-chain group. The owner is seeded
