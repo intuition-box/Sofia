@@ -180,13 +180,18 @@ export default function OnboardingTour({
       }
       setRect({ x: r.x, y: r.y, w: r.width, h: r.height })
     }
-    const t = setTimeout(measure, 60)
-    const iv = setInterval(measure, 300)
+    // Measure immediately, then keep re-measuring. A MutationObserver catches
+    // async-rendered targets (e.g. a circle hero that loads after navigation)
+    // the instant they mount, so the spotlight doesn't lag behind the page.
+    measure()
+    const iv = setInterval(measure, 120)
+    const mo = new MutationObserver(measure)
+    mo.observe(document.body, { subtree: true, childList: true })
     window.addEventListener('resize', measure)
     window.addEventListener('scroll', measure, true)
     return () => {
-      clearTimeout(t)
       clearInterval(iv)
+      mo.disconnect()
       window.removeEventListener('resize', measure)
       window.removeEventListener('scroll', measure, true)
     }
