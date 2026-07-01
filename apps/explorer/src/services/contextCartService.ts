@@ -17,7 +17,7 @@
  */
 
 import { IN_CONTEXT_OF_PREDICATE_ID } from '@/config/atomIds'
-import { contextAtomIdForSlug } from '@/config/contextNodes'
+import { contextAtomRefForSlug } from '@/config/contextNodes'
 import type { CartItem } from '@/hooks/useCart'
 
 export interface AddContextInput {
@@ -43,9 +43,10 @@ export function contextCartId(certTermId: string, topicSlug: string): string {
 
 /**
  * Build a cart item that, once submitted, mints a nested
- * `(cert, in_context_of, topic)` triple. Returns `null` when the
- * topic slug isn't in the local taxonomy so callers can short-circuit
- * without throwing.
+ * `(cert, in_context_of, topic)` triple. When the context atom already exists
+ * it's a plain `create-triple`; when it doesn't, it becomes a `create-context`
+ * item that mints the canonical atom (idempotently) before linking. Returns
+ * `null` only when the slug isn't in the taxonomy at all.
  */
 export function buildContextCartItem(input: AddContextInput): CartItem | null {
   const {
@@ -57,23 +58,36 @@ export function buildContextCartItem(input: AddContextInput): CartItem | null {
     certFavicon,
   } = input
   // `topicSlug` is a context slug — a topic OR a category slug.
-  const topicAtomId = contextAtomIdForSlug(topicSlug)
-  if (!certTermId || !topicAtomId) return null
+  const ref = contextAtomRefForSlug(topicSlug)
+  if (!certTermId || !ref) return null
 
-  return {
+  const base = {
     id: contextCartId(certTermId, topicSlug),
-    kind: 'create-triple',
-    side: 'support',
+    side: 'support' as const,
     // Placeholder for cart dedupe; the actual triple_id is computed
     // by SofiaFeeProxy.calculateTripleId at submit time.
     termId: `triple-${certTermId}-${topicSlug}`,
     subjectId: certTermId,
     predicateId: IN_CONTEXT_OF_PREDICATE_ID,
-    objectId: topicAtomId,
     intention: `Context · ${topicLabel}`,
     title: certTitle,
     favicon: certFavicon ?? '',
     intentionColor: topicColor,
+  }
+
+  // No atom yet → mint the canonical context atom at submit, then link.
+  if (ref.kind === 'mint') {
+    return {
+      ...base,
+      kind: 'create-context',
+      contextDraft: { payload: ref.payload },
+    }
+  }
+
+  return {
+    ...base,
+    kind: 'create-triple',
+    objectId: ref.termId,
   }
 }
 

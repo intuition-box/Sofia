@@ -287,6 +287,9 @@ export default function WeightModal({
     const circleIndices: number[] = []
     /** Indices of 'create-skill' items — mint skill/tool atom then triple. */
     const skillIndices: number[] = []
+    /** Indices of 'create-context' items — mint the taxonomy context atom (if
+     *  missing) then the [cert → in_context_of → context] triple. */
+    const contextIndices: number[] = []
     items.forEach((item, i) => {
       const amount = getAmount(i)
       if (item.kind === 'redeem') {
@@ -307,6 +310,8 @@ export default function WeightModal({
         circleIndices.push(i)
       } else if (item.kind === 'create-skill' && item.skillDraft) {
         skillIndices.push(i)
+      } else if (item.kind === 'create-context' && item.contextDraft) {
+        contextIndices.push(i)
       } else {
         depositItems.push({ termId: item.termId, amountTrust: amount })
       }
@@ -556,6 +561,54 @@ export default function WeightModal({
           createItems.push({
             subjectId: userAtomId,
             predicateId: draft.predicateId,
+            objectId: atomId,
+            signalTrust: Math.max(getAmount(idx), MIN_SIGNAL_TRUST),
+          })
+        })
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        setCreateTripleProcessing(false)
+        return
+      }
+    }
+
+    // Phase A' (contexts) — mint any taxonomy context atom that isn't on-chain
+    // yet (idempotent: an existing atom is reused with no atom tx), then push
+    // the [cert → in_context_of → context] triple into the batch. Unlike
+    // skills/circles the subject is the CERT term_id, not the user's account.
+    if (contextIndices.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        const payloads: AtomIPFSPayload[] = contextIndices.map(
+          (idx) => items[idx].contextDraft!.payload,
+        )
+        const atomBatch = await executeCreateAtomsBatch(
+          wallets[0],
+          payloads,
+          pinThing,
+        )
+        if (!atomBatch.success) {
+          setCreateTripleResult({
+            success: false,
+            error: atomBatch.error ?? 'Context atom creation failed',
+          })
+          return
+        }
+        contextIndices.forEach((idx, i) => {
+          const atomId = atomBatch.results[i]?.atomId
+          const item = items[idx]
+          if (!atomId || !item.subjectId || !item.predicateId) return
+          createItems.push({
+            subjectId: item.subjectId,
+            predicateId: item.predicateId,
             objectId: atomId,
             signalTrust: Math.max(getAmount(idx), MIN_SIGNAL_TRUST),
           })
