@@ -68,6 +68,14 @@ export const GROUP_API_URL =
     ? 'http://localhost:8788'
     : 'https://group-api.sofia.intuition.box')
 
+// reputation-api — precomputed reputation leaderboard. Public read endpoint,
+// called directly (the service sets CORS for the explorer origin).
+export const REPUTATION_API_URL =
+  (import.meta.env.VITE_REPUTATION_API_URL as string) ||
+  (import.meta.env.DEV
+    ? 'http://localhost:8790'
+    : 'https://reputation-api.sofia.intuition.box')
+
 // ── Predicate IDs (mainnet) ──
 export const PREDICATE_IDS = {
   TRUSTS: '0x3a73f3b1613d166eea141a25a2adc70db9304ab3c4e90daecad05f86487c3ee9',

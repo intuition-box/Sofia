@@ -12,6 +12,7 @@ import InterestTilesGrid from './InterestTilesGrid'
 import type { InterestPreset } from './useInterestTiles'
 import HomeSection from './HomeSection'
 import CirclesSection from './CirclesSection'
+import TopVoicesSection from './TopVoicesSection'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
 
 const TOPICS_PREVIEW = 6
@@ -89,6 +90,9 @@ export default function ExploreHome({
           limit={searching || topicsExpanded ? undefined : TOPICS_PREVIEW}
         />
       </HomeSection>
+
+      {/* ── Top voices ─────────────────────────────────────────── */}
+      <TopVoicesSection />
 
       {/* ── Circles ────────────────────────────────────────────── */}
       <CirclesSection />
