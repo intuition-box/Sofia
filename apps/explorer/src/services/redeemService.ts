@@ -15,6 +15,11 @@ import {
 import type { WalletDescriptor } from './depositService'
 
 const CURVE_ID = 1n
+// Positions can sit on Linear (1n, explorer creations/deposits) OR Progressive
+// (2n, the extension's regular deposits). A redeem must target the curve the
+// shares actually live on — reading only 1n silently no-ops on a 2n position
+// (looks like "tx validated" with no wallet popup). Scan both, newest first.
+const REDEEM_CURVE_IDS = [1n, 2n] as const
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,6 +29,10 @@ export interface RedeemResult {
   success: boolean
   txHash?: string
   error?: string
+  /** True when there was nothing to redeem (the wallet holds 0 shares on this
+   *  vault) — no transaction was sent. Callers must not report this as a
+   *  validated tx nor optimistically drop the item from any list. */
+  noop?: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -41,14 +50,31 @@ const publicClient = createPublicClient({
 export async function getShares(
   account: string,
   termId: string,
+  curveId: bigint = CURVE_ID,
 ): Promise<bigint> {
   return (await publicClient.readContract({
     address: MULTI_VAULT_ADDRESS,
     abi: MultiVaultAbi,
     functionName: 'getShares',
-    args: [account as `0x${string}`, termId as `0x${string}`, CURVE_ID],
+    args: [account as `0x${string}`, termId as `0x${string}`, curveId],
     authorizationList: undefined,
   })) as bigint
+}
+
+/**
+ * Find the bonding curve on which `account` actually holds shares for `termId`.
+ * Returns the first curve (Linear then Progressive) with a non-zero balance, or
+ * null when the account holds nothing on any curve.
+ */
+async function findFundedCurve(
+  account: string,
+  termId: string,
+): Promise<{ curveId: bigint; shares: bigint } | null> {
+  for (const curveId of REDEEM_CURVE_IDS) {
+    const shares = await getShares(account, termId, curveId)
+    if (shares > 0n) return { curveId, shares }
+  }
+  return null
 }
 
 /**
@@ -98,11 +124,21 @@ export async function redeemAtom(
   const provider = await wallet.getEthereumProvider()
   const address = wallet.address as `0x${string}`
 
-  // Read current shares if not provided
-  const shares = sharesToRedeem ?? (await getShares(address, termId))
-
-  if (shares === 0n) {
-    return { success: true } // nothing to redeem
+  // Locate the curve the shares actually live on (Linear or Progressive). When
+  // an explicit amount is passed we trust the primary curve; otherwise scan.
+  let curveId = CURVE_ID
+  let shares: bigint
+  if (sharesToRedeem != null) {
+    shares = sharesToRedeem
+  } else {
+    const funded = await findFundedCurve(address, termId)
+    if (!funded) {
+      // Nothing on any curve — no tx to send. Flag as a no-op so callers don't
+      // fake a "validated" success or drop the item from the UI.
+      return { success: true, noop: true }
+    }
+    curveId = funded.curveId
+    shares = funded.shares
   }
 
   const walletClient = createWalletClient({
@@ -114,7 +150,7 @@ export async function redeemAtom(
   const args = [
     address,
     termId as `0x${string}`,
-    CURVE_ID,
+    curveId,
     shares,
     0n, // minAssets
   ] as const

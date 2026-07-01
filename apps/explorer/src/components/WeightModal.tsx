@@ -322,6 +322,7 @@ export default function WeightModal({
       const wallet = wallets[0]
       let lastRedeemHash: string | undefined
       const redeemedOk: string[] = []
+      let noopCount = 0
       setCreateTripleProcessing(true)
       setCreateTripleResult(null)
       try {
@@ -333,6 +334,10 @@ export default function WeightModal({
               success: false,
               error: r.error ?? 'Redeem failed',
             })
+          } else if (r.noop) {
+            // No shares on any curve → nothing was redeemed. Don't treat this
+            // as a real redemption: no cache drop, no synthetic success.
+            noopCount++
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
             clearOptimisticPosition(qc, wallet.address, termId)
@@ -369,7 +374,17 @@ export default function WeightModal({
           createItems.length === 0 &&
           circleIndices.length === 0
         ) {
-          setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+          if (redeemedOk.length > 0) {
+            setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+          } else if (noopCount > 0) {
+            // Every redeem found 0 shares — no wallet popup ever appeared.
+            // Report it honestly instead of a phantom "validated".
+            setCreateTripleResult({
+              success: false,
+              error:
+                'Nothing to redeem — you hold no stake on this from this wallet.',
+            })
+          }
         }
       }
     }
