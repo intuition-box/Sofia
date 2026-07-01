@@ -28,6 +28,9 @@ const CONTEXT_LIMIT = 50_000
 /** Minimal cert shape consumed by `buildReputationClaims` + cert counting. */
 export interface ProfileCert {
   termId: string
+  /** Predicate label, e.g. "visits for work" / "trusts" / "distrust" — drives
+   *  the general vs trust/distrust vs topic cert-count split. */
+  intention: string
   /** The account's earliest position timestamp on this cert (ISO). */
   certifiedAt: string
   /** Rolled-up topic slugs (category tags roll up to their parent topic). */
@@ -110,6 +113,7 @@ export async function fetchCandidateProfile(
   // Step 1 — paginate the account's cert triples.
   const rawTriples: {
     term_id?: string | null
+    predicate?: { label?: string | null } | null
     positions?: { created_at?: string | null }[] | null
   }[] = []
   for (let page = 0; page < MAX_PAGES; page++) {
@@ -174,6 +178,7 @@ export async function fetchCandidateProfile(
     }
     return {
       termId,
+      intention: t.predicate?.label ?? '',
       certifiedAt,
       topicSlugs: [...(topicSlugsByCert.get(termId) ?? [])],
     }

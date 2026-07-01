@@ -4,33 +4,45 @@ import { prisma } from '../db'
 import { env } from '../env'
 import { computeLeaderboard } from '../computeLeaderboard'
 
-const OVERALL = '__overall__'
-
 export const leaderboard = new Hono()
 
 /**
- * GET /leaderboard?limit=50&offset=0
- * Public. Reads the precomputed `__overall__` snapshot — zero scoring here.
+ * GET /leaderboard            → every snapshot row (per bucket) so the client can
+ *                               derive the overall (sum a wallet's buckets) AND
+ *                               each per-topic ranking. Zero scoring here.
+ * GET /leaderboard?topic=<id> → just that bucket's ranking, top `limit`.
+ *
+ * A "bucket" is a real topic slug, or one of the reserved __general__ /
+ * __trusts__ / __distrust__ buckets holding the non-topic cert points.
  */
 leaderboard.get('/leaderboard', async (c) => {
-  const limit = Math.min(Number(c.req.query('limit') ?? 50) || 50, 200)
-  const offset = Math.max(Number(c.req.query('offset') ?? 0) || 0, 0)
+  const topic = c.req.query('topic')?.trim()
 
+  if (topic) {
+    const limit = Math.min(Number(c.req.query('limit') ?? 50) || 50, 200)
+    const rows = await prisma.reputationSnapshot.findMany({
+      where: { topicId: topic },
+      orderBy: { rank: 'asc' },
+      take: limit,
+    })
+    return c.json({
+      topic,
+      entries: rows.map((r) => ({ wallet: r.wallet, score: r.score, rank: r.rank })),
+      computedAt: rows[0]?.computedAt ?? null,
+    })
+  }
+
+  // Full snapshot — the client groups by wallet (overall) and by topic.
   const rows = await prisma.reputationSnapshot.findMany({
-    where: { topicId: OVERALL },
-    orderBy: { rank: 'asc' },
-    take: limit,
-    skip: offset,
+    orderBy: [{ topicId: 'asc' }, { rank: 'asc' }],
   })
-
   return c.json({
-    entries: rows.map((r) => ({
+    rows: rows.map((r) => ({
       wallet: r.wallet,
+      topicId: r.topicId,
       score: r.score,
       rank: r.rank,
     })),
-    // The whole batch shares one timestamp — surface it so the UI can show
-    // "updated X ago". Null when no snapshot has ever been computed.
     computedAt: rows[0]?.computedAt ?? null,
   })
 })
