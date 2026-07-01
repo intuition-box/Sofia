@@ -42,6 +42,8 @@ export type MessageType =
   // Add to Sofia (right-click modal → cart + existing-atom search)
   | "ADD_TO_CART"
   | "SEARCH_ATOMS"
+  // Add to Sofia connection pre-check (modal open → is a wallet connected?)
+  | "ADD_TO_SOFIA_STATUS"
 
 export interface ChromeMessage {
   type: MessageType

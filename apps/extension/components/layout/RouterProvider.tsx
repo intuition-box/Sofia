@@ -25,7 +25,7 @@ export interface FirstClaimData {
   url: string
 }
 
-export type MyProfileTabKey = 'Echoes' | 'Bookmarks' | 'History' | 'Connect'
+export type MyProfileTabKey = 'Echoes' | 'Bookmarks' | 'History'
 
 /**
  * Transient navigation hint consumed by MyProfilePage / EchoesTab on mount.

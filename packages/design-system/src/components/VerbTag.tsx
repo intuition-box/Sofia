@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { IntentionSlug } from '../palette'
 
 export interface VerbTagProps {
@@ -7,6 +8,8 @@ export interface VerbTagProps {
   /** Display label. Required — consumers own the label lookup (explorer
    *  reads `INTENTION_CONFIG[intent].label`). */
   label: string
+  /** Optional leading icon (e.g. a lucide glyph). Sized via `.fc-verb-ic`. */
+  icon?: ReactNode
   /** Accessible title tooltip. */
   title?: string
   /** Extra classes to compose onto `.fc-verb-tag`. */
@@ -23,12 +26,19 @@ export interface VerbTagProps {
  * Requires the stylesheet to be imported at least once in the consuming app:
  *   `@import "@0xsofia/design-system/styles/verb-tag.css";`
  */
-export function VerbTag({ intent, label, title, className }: VerbTagProps) {
+export function VerbTag({
+  intent,
+  label,
+  icon,
+  title,
+  className,
+}: VerbTagProps) {
   const cls = className
     ? `fc-verb-tag ${intent} ${className}`
     : `fc-verb-tag ${intent}`
   return (
     <span className={cls} title={title ?? label}>
+      {icon}
       {label}
     </span>
   )

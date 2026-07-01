@@ -372,7 +372,7 @@
     color 0.2s ease,
     border-color 0.2s ease,
     transform 0.15s ease;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   letter-spacing: 0.3px;
 }
 
@@ -659,7 +659,7 @@
   flex: 1;
   padding: 12px 16px;
   border-radius: 50px;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -684,7 +684,7 @@
   border: none;
   color: var(--btn-primary-fg);
   font-weight: 700;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   box-shadow: var(--btn-primary-shadow);
   border-radius: var(--btn-primary-radius);
   transition:
@@ -1172,7 +1172,7 @@
    as .amplify-btn-inline. */
 .stake-btn {
   border-radius: 8px;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 700;
   border: 1px solid transparent;
@@ -1291,7 +1291,7 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  font-family: "Inter Tight", "Geist", sans-serif;
+  font-family: "Inter Tight", "Hind", sans-serif;
 }
 
 .rc-stub {
@@ -1614,7 +1614,7 @@
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: transparent;
   color: #ffffff;
-  font-family: "Inter Tight", "Geist", sans-serif;
+  font-family: "Inter Tight", "Hind", sans-serif;
   font-weight: 600;
   font-size: 12px;
   text-decoration: none;
@@ -1662,7 +1662,7 @@
 }
 
 .gs-slider-label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1752,7 +1752,7 @@
 }
 
 .gs-slider-breakdown-label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;
@@ -1761,7 +1761,7 @@
 }
 
 .gs-slider-breakdown-value {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -1772,7 +1772,7 @@
 }
 
 .gs-slider-minimum-hint {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.3);
   text-align: center;
@@ -1794,7 +1794,7 @@
 }
 
 .pp-item-slider__label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 9px;
   font-weight: 600;
   color: rgba(34, 211, 238, 0.7);
@@ -2000,7 +2000,7 @@
   background: var(--ds-bg);
   color: var(--ds-ink-soft);
   cursor: pointer;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 500;
   transition:
@@ -2104,7 +2104,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--ds-ink);
@@ -2153,7 +2153,7 @@
 }
 
 .weight-modal-cost-note {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.25);
   margin: 2px 0 0 0;
@@ -2713,7 +2713,7 @@
   color: #ffffff;
 }
 .amp .b3-sub {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-style: normal;
   font-size: 13px;
   font-weight: 500;
@@ -2884,7 +2884,7 @@
   color: var(--ds-ink);
   margin-top: 3px;
   letter-spacing: -0.005em;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

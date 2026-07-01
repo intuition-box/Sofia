@@ -12,6 +12,7 @@ import type { IntentionSlug } from "@0xsofia/design-system"
 
 import { PP_FEE_DENOMINATOR } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { getFaviconUrl } from "~/lib/utils"
 import {
   INTENTION_CONFIG,
@@ -28,6 +29,12 @@ import {
   type DetectPlatformFn,
   type WeightOptionId
 } from "./types"
+
+/** Leading lucide glyph for a verb tag — mirrors the Stats panel + Mark chips. */
+const verbIcon = (type: IntentionType) => {
+  const Icon = INTENTION_ICONS[type]
+  return Icon ? <Icon className="fc-verb-ic" /> : undefined
+}
 
 interface WeightBasketRowProps {
   triplet: ModalTriplet
@@ -105,7 +112,9 @@ export default function WeightBasketRow({
     return (
       <div
         className={`b3-row b3-row--trust tcard${on ? " is-on" : ""}`}
-        style={{ "--tc": intentEntry?.color ?? "#22c55e" } as React.CSSProperties}>
+        style={
+          { "--tc": intentEntry?.color ?? "#22c55e" } as React.CSSProperties
+        }>
         <div className="tcard-row">
           <button
             className="tcard-check"
@@ -259,6 +268,7 @@ export default function WeightBasketRow({
             <VerbTag
               intent={intentKey as IntentionSlug}
               label={intentEntry.label}
+              icon={verbIcon(intentKey as IntentionType)}
             />
           )}
           <ContextPills slugs={ctxSlugs} />

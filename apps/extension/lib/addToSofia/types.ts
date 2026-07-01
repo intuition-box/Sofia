@@ -56,6 +56,17 @@ export interface AddToCartResponse {
   reason?: "no-wallet" | "duplicate" | "error"
 }
 
+/** Ask the SW whether a wallet is connected (content script → background).
+ *  Sent when the modal opens so it can render a connect-first affordance
+ *  (the content script can't read chrome.storage.session itself). */
+export interface AddToSofiaStatusMessage {
+  type: "ADD_TO_SOFIA_STATUS"
+}
+
+export interface AddToSofiaStatusResponse {
+  connected: boolean
+}
+
 // ── Title autocomplete: search existing url/thing atoms ──
 // The modal (content script) can't reach the indexer (CORS) so it asks the
 // service worker, which runs the SearchUrlAtoms query via intuitionGraphqlClient.

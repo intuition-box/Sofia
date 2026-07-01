@@ -2556,7 +2556,88 @@ export const SOFIA_TOPICS: Topic[] = [
     icon: 'smart_toy',
     color: '#a78bfa',
     primaryPlatforms: [],
-    categories: [],
+    categories: [
+      {
+        id: 'ai-llms',
+        label: 'LLMs & Chatbots',
+        niches: [
+          { id: 'ai-chatgpt', label: 'ChatGPT / OpenAI' },
+          { id: 'ai-claude', label: 'Claude / Anthropic' },
+          { id: 'ai-gemini', label: 'Gemini / Google' },
+          { id: 'ai-open-llms', label: 'Open models (Llama, Mistral)' },
+        ],
+      },
+      {
+        id: 'ai-agents',
+        label: 'AI Agents & Automation',
+        niches: [
+          { id: 'ai-autonomous-agents', label: 'Autonomous agents' },
+          { id: 'ai-multi-agent', label: 'Multi-agent systems' },
+          { id: 'ai-rag', label: 'RAG & retrieval' },
+          { id: 'ai-agent-frameworks', label: 'Agent frameworks' },
+        ],
+      },
+      {
+        id: 'ai-image-video',
+        label: 'Image & Video Generation',
+        niches: [
+          { id: 'ai-image-gen', label: 'Image (Midjourney, DALL·E)' },
+          { id: 'ai-video-gen', label: 'Video (Sora, Runway)' },
+          { id: 'ai-3d-gen', label: '3D & assets' },
+          { id: 'ai-media-editing', label: 'AI editing & upscaling' },
+        ],
+      },
+      {
+        id: 'ai-coding',
+        label: 'AI Coding Assistants',
+        niches: [
+          { id: 'ai-copilot', label: 'GitHub Copilot' },
+          { id: 'ai-cursor', label: 'Cursor & AI IDEs' },
+          { id: 'ai-code-agents', label: 'Coding agents' },
+          { id: 'ai-code-review', label: 'AI code review' },
+        ],
+      },
+      {
+        id: 'ai-research-ml',
+        label: 'ML & Research',
+        niches: [
+          { id: 'ai-ml-papers', label: 'Research & papers' },
+          { id: 'ai-training', label: 'Training & fine-tuning' },
+          { id: 'ai-mlops-infra', label: 'MLOps & infra' },
+          { id: 'ai-datasets', label: 'Datasets & benchmarks' },
+        ],
+      },
+      {
+        id: 'ai-voice-audio',
+        label: 'Voice & Audio AI',
+        niches: [
+          { id: 'ai-tts', label: 'Text-to-speech' },
+          { id: 'ai-speech-rec', label: 'Speech recognition' },
+          { id: 'ai-music-ai', label: 'Music generation' },
+          { id: 'ai-voice-clone', label: 'Voice cloning' },
+        ],
+      },
+      {
+        id: 'ai-prompting',
+        label: 'Prompt Engineering',
+        niches: [
+          { id: 'ai-prompt-techniques', label: 'Techniques' },
+          { id: 'ai-prompt-libraries', label: 'Prompt libraries' },
+          { id: 'ai-context-eng', label: 'Context engineering' },
+          { id: 'ai-evals', label: 'Evals & testing' },
+        ],
+      },
+      {
+        id: 'ai-safety',
+        label: 'AI Safety & Ethics',
+        niches: [
+          { id: 'ai-alignment', label: 'Alignment' },
+          { id: 'ai-bias', label: 'Bias & fairness' },
+          { id: 'ai-regulation', label: 'Regulation & policy' },
+          { id: 'ai-interpretability', label: 'Interpretability' },
+        ],
+      },
+    ],
   },
   // =========================================================================
   // 16. TOOLING  (taggable context — generic "tool" atom)
@@ -2567,7 +2648,88 @@ export const SOFIA_TOPICS: Topic[] = [
     icon: 'build',
     color: '#f59e0b',
     primaryPlatforms: [],
-    categories: [],
+    categories: [
+      {
+        id: 'tool-dev',
+        label: 'Developer Tools',
+        niches: [
+          { id: 'tool-ide', label: 'IDEs & editors' },
+          { id: 'tool-cli', label: 'CLI & terminal' },
+          { id: 'tool-vcs', label: 'Git & version control' },
+          { id: 'tool-debug', label: 'Debugging & profiling' },
+        ],
+      },
+      {
+        id: 'tool-nocode',
+        label: 'No-code / Low-code',
+        niches: [
+          { id: 'tool-app-builders', label: 'App builders (Bubble, Webflow)' },
+          { id: 'tool-internal', label: 'Internal tools (Retool)' },
+          { id: 'tool-nocode-db', label: 'Databases (Airtable, Notion)' },
+          { id: 'tool-nocode-automation', label: 'No-code automation' },
+        ],
+      },
+      {
+        id: 'tool-productivity',
+        label: 'Productivity & Notes',
+        niches: [
+          { id: 'tool-notes', label: 'Notes (Notion, Obsidian)' },
+          { id: 'tool-tasks', label: 'Tasks & PM (Linear, Todoist)' },
+          { id: 'tool-docs', label: 'Docs & wikis' },
+          { id: 'tool-calendar', label: 'Calendar & scheduling' },
+        ],
+      },
+      {
+        id: 'tool-design',
+        label: 'Design Tools',
+        niches: [
+          { id: 'tool-figma', label: 'Figma & UI design' },
+          { id: 'tool-prototyping', label: 'Prototyping' },
+          { id: 'tool-image-edit', label: 'Image editing' },
+          { id: 'tool-whiteboard', label: 'Whiteboards (Miro, FigJam)' },
+        ],
+      },
+      {
+        id: 'tool-automation',
+        label: 'Automation & Workflows',
+        niches: [
+          { id: 'tool-zapier', label: 'Zapier & Make' },
+          { id: 'tool-workflow', label: 'Workflow engines (n8n)' },
+          { id: 'tool-scripting', label: 'Scripting' },
+          { id: 'tool-rpa', label: 'RPA' },
+        ],
+      },
+      {
+        id: 'tool-data',
+        label: 'Data & Analytics',
+        niches: [
+          { id: 'tool-spreadsheets', label: 'Spreadsheets' },
+          { id: 'tool-bi', label: 'Dashboards & BI' },
+          { id: 'tool-etl', label: 'ETL & pipelines' },
+          { id: 'tool-dataviz', label: 'Data viz' },
+        ],
+      },
+      {
+        id: 'tool-api',
+        label: 'APIs & SDKs',
+        niches: [
+          { id: 'tool-api-clients', label: 'API clients (Postman)' },
+          { id: 'tool-sdks', label: 'SDKs & libraries' },
+          { id: 'tool-webhooks', label: 'Webhooks' },
+          { id: 'tool-integrations', label: 'Integrations' },
+        ],
+      },
+      {
+        id: 'tool-browser',
+        label: 'Browser Extensions',
+        niches: [
+          { id: 'tool-ext-productivity', label: 'Productivity extensions' },
+          { id: 'tool-ext-dev', label: 'Dev extensions' },
+          { id: 'tool-ext-privacy', label: 'Privacy extensions' },
+          { id: 'tool-ext-shopping', label: 'Shopping extensions' },
+        ],
+      },
+    ],
   },
 ]
 

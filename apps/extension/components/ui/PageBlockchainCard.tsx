@@ -21,21 +21,34 @@ import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import {
   INTENTION_CONFIG,
-  type IntentionType,
-  predicateLabelToIntentionType
+  predicateLabelToIntentionType,
+  type IntentionType
 } from "~/types/intentionCategories"
 
 import { useRouter } from "../layout/RouterProvider"
 import WeightModal from "../modals/WeightModal"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import { IntentionSelector } from "./IntentionSelector"
-import { InterestContextSelector } from "./InterestContextSelector"
+import { CategorisationDropdown } from "./CategorisationDropdown"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageStatsSkeleton } from "./Skeleton"
 
 import "../styles/PageBlockchainCard.css"
+
+// IntentionPurpose (e.g. "for_work") → IntentionType (e.g. "work"), so the
+// verbs queued in the cart (stored as purposes) map back to the dropdown's
+// type-keyed selection.
+const PURPOSE_TO_TYPE = Object.fromEntries(
+  (
+    Object.entries(INTENTION_CONFIG) as [
+      IntentionType,
+      { intentionPurpose: IntentionPurpose | null }
+    ][]
+  )
+    .filter(([, v]) => v.intentionPurpose)
+    .map(([type, v]) => [v.intentionPurpose as string, type])
+) as Record<string, IntentionType>
 
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
@@ -123,10 +136,6 @@ const PageBlockchainCard = () => {
   // topicConfig, not the user's staked positions. Topic positions are
   // no longer needed here.
   const [selectedContexts, setSelectedContexts] = useState<string[]>([])
-  // Single active intention picked in the dropdown (null = placeholder).
-  // Drives what's queued in the cart; switching/clearing toggles the cart.
-  const [selectedIntention, setSelectedIntention] =
-    useState<IntentionType | null>(null)
 
   // Cart
   const cart = useCart()
@@ -233,23 +242,20 @@ const PageBlockchainCard = () => {
     [handleAddToCart, handleAddTrustToCart]
   )
 
-  // Dropdown pick: switch the single active intention. Removes the previous
-  // one from the cart (toggle off) before queueing the new pick.
-  const handleSelectIntention = useCallback(
-    (type: IntentionType) => {
-      if (!currentUrl || type === selectedIntention) return
-      if (selectedIntention) toggleIntentionInCart(selectedIntention)
-      toggleIntentionInCart(type)
-      setSelectedIntention(type)
-    },
-    [currentUrl, selectedIntention, toggleIntentionInCart]
-  )
-
-  // Clear the dropdown: drop the queued intention and reset to placeholder.
-  const handleClearIntention = useCallback(() => {
-    if (selectedIntention) toggleIntentionInCart(selectedIntention)
-    setSelectedIntention(null)
-  }, [selectedIntention, toggleIntentionInCart])
+  // Verbs currently selected = what's queued in the cart for this page. The
+  // combobox is multi-select, so we derive the set from the cart (single
+  // source of truth) rather than tracking a separate active pick. Toggling a
+  // verb just adds/removes its cart item.
+  const selectedIntentionTypes = useMemo<IntentionType[]>(() => {
+    const types: IntentionType[] = []
+    if (trustInCart) types.push("trusted")
+    if (distrustInCart) types.push("distrusted")
+    for (const purpose of cartIntentionsForPage) {
+      const type = PURPOSE_TO_TYPE[purpose]
+      if (type) types.push(type)
+    }
+    return types
+  }, [trustInCart, distrustInCart, cartIntentionsForPage])
 
   // Reset cart-burst animation flag once the animation has played
   useEffect(() => {
@@ -320,17 +326,13 @@ const PageBlockchainCard = () => {
           {/* Actions panel — Intentions + Context grouped under one section */}
           {!isRestricted && (
             <div className="actions-panel">
-              <div className="actions-panel-title">Actions on this page</div>
-              <div className="cert-section cert-actions-row">
-                <IntentionSelector
-                  selected={selectedIntention}
-                  onSelect={handleSelectIntention}
-                  onClear={handleClearIntention}
-                  disabled={modal.intentionState.loading}
-                />
-                <InterestContextSelector
+              <div className="actions-panel-title">Tags on this page</div>
+              <div className="cert-section">
+                <CategorisationDropdown
+                  selectedIntentions={selectedIntentionTypes}
+                  onToggleIntention={toggleIntentionInCart}
                   selectedContexts={selectedContexts}
-                  onChange={(slugs) => {
+                  onChangeContexts={(slugs) => {
                     setSelectedContexts(slugs)
                     if (!currentUrl) return
                     cart.updateContextForUrl(currentUrl, slugs)
@@ -433,7 +435,9 @@ const PageBlockchainCard = () => {
                                 i.interestContexts ??
                                 (i.interestContext ? [i.interestContext] : [])
                             )
-                            .filter((c): c is string => !!c && !!contextLabel(c))
+                            .filter(
+                              (c): c is string => !!c && !!contextLabel(c)
+                            )
                         )
                       ).map((slug) => ({
                         label: contextLabel(slug)!,
@@ -526,7 +530,7 @@ const PageBlockchainCard = () => {
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent("sofia:open-cart"))
                   }}>
-                  Validate
+                  Save
                 </button>
               </div>
             </div>

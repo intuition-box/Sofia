@@ -170,7 +170,7 @@
 
 .hp-lede {
   margin: 0 0 8px;
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Hind", ui-sans-serif, system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.45;
   color: color-mix(in srgb, var(--ds-ink) 70%, transparent);
@@ -195,7 +195,7 @@
   width: 100%;
   padding: 12px 18px;
   border-radius: var(--btn-primary-radius, 8px);
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Hind", ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -267,7 +267,7 @@
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Hind", ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   color: color-mix(in srgb, var(--ds-ink) 55%, transparent);
   text-align: center;

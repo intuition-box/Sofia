@@ -42,6 +42,7 @@ export default function TrustCircleCard({
     <button
       type="button"
       className="cr-card"
+      data-tour="circle-card"
       onClick={() => navigate('/circles/trust')}
     >
       <div className="cr-card-head">

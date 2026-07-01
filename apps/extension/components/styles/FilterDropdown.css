@@ -64,7 +64,7 @@
   font-weight: 600;
 }
 .ext-filter-trigger__value {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--ds-ink);
@@ -192,7 +192,7 @@
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ds-ink);
