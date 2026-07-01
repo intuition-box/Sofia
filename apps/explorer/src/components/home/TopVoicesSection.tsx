@@ -1,73 +1,65 @@
 /**
- * TopVoicesSection — Explore-home block ranking accounts by their precomputed
- * reputation score (served by reputation-api; no scoring on read). A preview of
- * the top N; each row links to the account's profile.
+ * TopVoicesSection — Explore-home block ranking accounts by reputation.
+ * Default view is the overall ranking (summed buckets, derived client-side); a
+ * topic picker switches to that topic's ranking (fills TopicLeaderboardTable).
  */
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import type { Address } from 'viem'
-import { Avatar } from '@0xsofia/design-system'
+import { useMemo, useState } from 'react'
+import CircleTopicFilterDropdown, {
+  type TopicFilterId,
+} from '@/components/circles/CircleTopicFilterDropdown'
+import TopicLeaderboardTable from '@/components/leaderboard/TopicLeaderboardTable'
 import { useReputationLeaderboard } from '@/hooks/useReputationLeaderboard'
-import { useEnsNames } from '@/hooks/useEnsNames'
 import { timeAgo } from '@/utils/formatting'
 import HomeSection from './HomeSection'
 
 const PREVIEW = 8
 
 export default function TopVoicesSection() {
-  const { entries, computedAt, loading, error } = useReputationLeaderboard(PREVIEW)
+  const { overall, entriesForTopic, computedAt, loading, error } =
+    useReputationLeaderboard()
+  const [topic, setTopic] = useState<TopicFilterId>('all')
+  const [expanded, setExpanded] = useState(false)
 
-  const addresses = useMemo<Address[]>(
-    () => entries.map((e) => e.wallet as Address),
-    [entries],
+  const entries = useMemo(
+    () => (topic === 'all' ? overall : entriesForTopic(topic)),
+    [topic, overall, entriesForTopic],
   )
-  const { getDisplay, getAvatar } = useEnsNames(addresses)
+  const visible = expanded ? entries : entries.slice(0, PREVIEW)
 
-  // Hide the block entirely until there's a snapshot — same quiet fallback the
-  // other home sections use rather than showing an empty shell.
-  if (!loading && (error || entries.length === 0)) return null
+  // Hide the block entirely until there's a snapshot — quiet fallback like the
+  // other home sections.
+  if (!loading && (error || overall.length === 0)) return null
 
   return (
-    <HomeSection title="Top voices">
-      {loading ? (
-        <p className="hm-empty">Loading top voices…</p>
-      ) : (
-        <>
-          <ol className="flex flex-col gap-1">
-            {entries.map((entry) => {
-              const addr = entry.wallet as Address
-              return (
-                <li key={entry.wallet}>
-                  <Link
-                    to={`/profile/${entry.wallet}`}
-                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
-                  >
-                    <span className="w-5 shrink-0 text-right text-sm tabular-nums text-white/40">
-                      {entry.rank}
-                    </span>
-                    <Avatar
-                      label={getDisplay(addr)}
-                      imageUrl={getAvatar(addr)}
-                      size={28}
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm text-white/90">
-                      {getDisplay(addr)}
-                    </span>
-                    <span className="shrink-0 text-sm font-medium tabular-nums text-white/70">
-                      {Math.round(entry.score).toLocaleString()}
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ol>
-          {computedAt && (
-            <p className="mt-2 px-2 text-xs text-white/30">
-              Updated {timeAgo(computedAt)}
-            </p>
-          )}
-        </>
-      )}
+    <HomeSection
+      title="Top voices"
+      action={
+        entries.length > PREVIEW
+          ? {
+              label: expanded ? 'Show less' : 'View all',
+              onClick: () => setExpanded((v) => !v),
+            }
+          : undefined
+      }
+    >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
+        {computedAt && (
+          <span className="text-xs text-white/30">
+            Updated {timeAgo(computedAt)}
+          </span>
+        )}
+      </div>
+
+      <TopicLeaderboardTable
+        entries={visible}
+        loading={loading}
+        emptyLabel={
+          topic === 'all'
+            ? 'No ranked accounts yet.'
+            : 'No accounts ranked in this topic yet.'
+        }
+      />
     </HomeSection>
   )
 }
