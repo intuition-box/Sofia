@@ -7,7 +7,6 @@
 // batch-certification CART (the content script can't touch the cart's IndexedDB
 // itself). No workspace, no backend POST — that's the Pro path, kept as
 // commented `// PRO (later):` blocks below.
-import sofiaLogo from "data-base64:~assets/icon-dark-128.png"
 import { useEffect, useState } from "react"
 
 import {
@@ -126,7 +125,7 @@ export default function AddToSofiaModal() {
   const abs = target.url.startsWith("http")
     ? target.url
     : `https://${target.url}`
-  const canAdd = !!v.intention && !saving
+  const canAdd = v.intentions.length > 0 && !saving
 
   // Open the side panel so the user can connect. Called SYNCHRONOUSLY from the
   // button's onClick (no await before) — chrome.sidePanel.open() requires an
@@ -141,14 +140,14 @@ export default function AddToSofiaModal() {
   }
 
   const add = async () => {
-    if (!v.intention || saving) return
+    if (!v.intentions.length || saving) return
     setSaving(true)
     try {
       const res = await askBackground<AddToCartResponse>({
         type: "ADD_TO_CART",
         url: target.url,
         title: v.title.trim() || target.title,
-        intention: v.intention,
+        intentions: v.intentions,
         contextSlugs: v.contexts.map((c) => c.id),
         objectTermId: v.objectTermId
       })
@@ -189,15 +188,9 @@ export default function AddToSofiaModal() {
   return (
     <div className="sis-overlay" onClick={close}>
       <div className="sis-card" onClick={(e) => e.stopPropagation()}>
-        <header className="sis-head">
-          <img className="sis-logo" src={sofiaLogo} alt="Sofia" />
-          <div className="sis-head-t">
-            Add to <b>Sofia</b>
-          </div>
-          <button className="sis-close" onClick={close} aria-label="Close">
-            ✕
-          </button>
-        </header>
+        <button className="sis-close" onClick={close} aria-label="Close">
+          ✕
+        </button>
 
         {connected === false && (
           <div className="sis-connect-note">
@@ -212,29 +205,31 @@ export default function AddToSofiaModal() {
           </div>
 
           <div className="sis-right">
-            <label className="sis-field-lab">Preview</label>
-            <a
-              className="sis-preview"
-              href={abs}
-              target="_blank"
-              rel="noopener noreferrer">
-              {shotOk ? (
-                <img
-                  className="sis-shot"
-                  // thum.io renders the page at `width` px wide, so a LARGE
-                  // width = desktop layout (dezoomed). The CSS box then scales
-                  // it down; crop keeps the 16:10 ratio.
-                  src={`https://image.thum.io/get/width/1440/crop/900/noanimate/${abs}`}
-                  alt=""
-                  onError={() => setShotOk(false)}
-                />
-              ) : (
-                <div className="sis-shot-fallback">
-                  <img src={getFaviconUrl(target.url, 128)} alt="" />
-                </div>
-              )}
-            </a>
-            <div className="sis-host">{hostOf(target.url)}</div>
+            <section className="sis-section">
+              <label className="sis-field-lab">Preview</label>
+              <a
+                className="sis-preview"
+                href={abs}
+                target="_blank"
+                rel="noopener noreferrer">
+                {shotOk ? (
+                  <img
+                    className="sis-shot"
+                    // thum.io renders the page at `width` px wide, so a LARGE
+                    // width = desktop layout (dezoomed). The CSS box then scales
+                    // it down; crop keeps the 16:10 ratio.
+                    src={`https://image.thum.io/get/width/1440/crop/900/noanimate/${abs}`}
+                    alt=""
+                    onError={() => setShotOk(false)}
+                  />
+                ) : (
+                  <div className="sis-shot-fallback">
+                    <img src={getFaviconUrl(target.url, 128)} alt="" />
+                  </div>
+                )}
+              </a>
+              <div className="sis-host">{hostOf(target.url)}</div>
+            </section>
           </div>
         </div>
 
@@ -248,7 +243,11 @@ export default function AddToSofiaModal() {
               className={`sis-btn sis-btn--accent${done ? " sis-btn--done" : ""}`}
               disabled={!canAdd || done}
               onClick={add}>
-              {done ? "✓ Added to Sofia" : saving ? "Adding…" : "Add to Sofia"}
+              {done
+                ? "✓ Added to my cart"
+                : saving
+                  ? "Adding…"
+                  : "Add to my cart"}
             </button>
           )}
         </footer>

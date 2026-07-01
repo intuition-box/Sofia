@@ -4,6 +4,7 @@
 import { useMemo, useRef, useState, type CSSProperties } from "react"
 
 import { suggestFromText } from "~lib/addToSofia/suggest"
+import { getTopicLucideIcon } from "~lib/config/topicIcons"
 import { searchTaxonomy, type TaxoNode } from "~lib/addToSofia/taxonomyIndex"
 import type { Context } from "~lib/addToSofia/types"
 
@@ -98,18 +99,25 @@ export function TagInput({ selected, onChange, hints = "" }: TagInputProps) {
           {fromMeta ? (
             <div className="sis-suggest-head">Suggested from this page</div>
           ) : null}
-          {matches.map((m, i) => (
-            <button
-              key={m.id}
-              className={`sis-suggest-row${i === active ? " active" : ""}`}
-              onMouseDown={(e) => e.preventDefault()}
-              onMouseEnter={() => setActive(i)}
-              onClick={() => add(m)}>
-              <span className="sis-dot" style={{ background: m.color }} />
-              <span className="sis-suggest-label">{m.label}</span>
-              <span className="sis-suggest-path">{m.path}</span>
-            </button>
-          ))}
+          {matches.map((m, i) => {
+            const Icon = getTopicLucideIcon(m.topicId)
+            return (
+              <button
+                key={m.id}
+                className={`sis-suggest-row${i === active ? " active" : ""}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => add(m)}>
+                <Icon
+                  className="sis-suggest-ico"
+                  size={15}
+                  style={{ color: m.color }}
+                />
+                <span className="sis-suggest-label">{m.label}</span>
+                <span className="sis-suggest-path">{m.path}</span>
+              </button>
+            )
+          })}
         </div>
       ) : null}
     </div>

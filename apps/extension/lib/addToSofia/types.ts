@@ -1,9 +1,9 @@
 // Shared types for the "Add to Sofia" flow (right-click → modal → extension
 // cart). Kept isolated under lib/addToSofia/ so the whole feature stays lift-ready.
 //
-// NON-PRO (active): the modal qualifies a page with a title, ONE intention
-// (the cart predicate) and taxonomy tags (the cart's interestContexts), then
-// pushes it into the extension's batch-certification cart.
+// NON-PRO (active): the modal qualifies a page with a title, one or more
+// intentions (a cart predicate each) and taxonomy tags (the cart's
+// interestContexts), then pushes it into the extension's batch-certification cart.
 //
 // PRO (later): the prototype also sent a free-text `context` note + a workspace
 // (circleId) to circle-pro-api. That path is preserved as commented code in the
@@ -40,8 +40,8 @@ export interface AddToCartMessage {
   type: "ADD_TO_CART"
   url: string
   title: string
-  /** The chosen intention → drives the cart item's predicate. */
-  intention: IntentionPurpose
+  /** Chosen intentions → one cart item (predicate) added per selection. */
+  intentions: IntentionPurpose[]
   /** Taxonomy tag ids → the cart item's interestContexts (slugs). */
   contextSlugs: string[]
   /** When the user picked an existing Intuition atom in the title search, its

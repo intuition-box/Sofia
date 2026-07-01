@@ -18,8 +18,14 @@
   --sis-muted-soft: #55526c;
   --sis-accent: #ffc6b0;
   --sis-on-accent: #0b0a12;
+  /* mirrors design-system --intent-trusted (vivid green) for success/picked. */
+  --sis-ok: #22c55e;
   --sis-radius: 10px;
+  /* Type hierarchy (design-system): sans for body, mono for eyebrow labels.
+     Both fall back to system faces on pages that don't ship the web font. */
   --sis-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sis-font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .sis-overlay,
@@ -53,6 +59,8 @@
   max-height: min(90vh, 800px);
   display: flex;
   flex-direction: column;
+  /* anchor for the floating close button (header removed). */
+  position: relative;
   background: var(--sis-card);
   color: var(--sis-ink);
   border: 1px solid var(--sis-line);
@@ -62,50 +70,29 @@
      ABOVE the card body/footer instead of being clipped inside it. */
   overflow: visible;
 }
-.sis-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--sis-line);
-}
-.sis-logo {
+.sis-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  flex: none;
-  border-radius: 8px;
-  background: var(--sis-accent);
-  color: var(--sis-on-accent);
-  font-weight: 800;
-  font-size: 14px;
-}
-.sis-head-t {
-  flex: 1;
-  font-size: 15px;
-  color: var(--sis-muted);
-}
-.sis-head-t b {
-  color: var(--sis-ink);
-  font-weight: 700;
-}
-.sis-close {
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
   color: var(--sis-muted);
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 .sis-close:hover {
   color: var(--sis-ink);
   background: var(--sis-elev);
 }
 .sis-connect-note {
-  margin: 0 20px;
-  margin-top: 16px;
+  /* top clears the floating close button (no header anymore). */
+  margin: 44px 22px 0;
   padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--sis-accent) 30%, transparent);
   background: color-mix(in srgb, var(--sis-accent) 12%, transparent);
@@ -117,11 +104,16 @@
 .sis-cols {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
-  gap: 24px;
-  padding: 20px;
+  gap: 22px;
+  /* top clears the floating close button (no header anymore). */
+  padding: 42px 22px 22px;
   /* visible so the absolutely-positioned tag suggestions escape this
      container and float over the rest of the modal. */
   overflow: visible;
+}
+/* When the connect note is shown it already provides the top gap. */
+.sis-connect-note + .sis-cols {
+  padding-top: 16px;
 }
 @media (max-width: 620px) {
   .sis-cols {
@@ -136,15 +128,25 @@
 }
 
 /* ── Qualification fields ────────────────────────────────────── */
-.sis-field-lab {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--sis-muted);
-  margin: 0 0 6px;
+.sis-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
-.sis-fields .sis-field-lab:not(:first-of-type) {
-  margin-top: 16px;
+/* One section = a label grouped with its field. */
+.sis-section {
+  display: flex;
+  flex-direction: column;
+}
+.sis-field-lab {
+  /* Eyebrow label — mono face, tracked + uppercase (design-system hierarchy). */
+  font-family: var(--sis-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sis-muted);
+  margin: 0 0 8px;
 }
 .sis-title-input,
 .sis-context-input {
@@ -239,9 +241,10 @@
 }
 .sis-suggest-head {
   padding: 9px 12px 5px;
+  font-family: var(--sis-font-mono);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sis-accent);
 }
@@ -264,6 +267,10 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex: none;
+}
+/* Topic icon (lucide SVG) in a suggestion row — sized via the `size` prop. */
+.sis-suggest-ico {
   flex: none;
 }
 .sis-suggest-label {
@@ -405,7 +412,7 @@
 
 /* ── Buttons ─────────────────────────────────────────────────── */
 .sis-foot {
-  padding: 16px 20px;
+  padding: 18px 22px;
   border-top: 1px solid var(--sis-line);
 }
 .sis-btn {
@@ -447,17 +454,17 @@
 .sis-intentions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
 }
 .sis-intention {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
+  padding: 6px 11px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: #c9ccd6;
+  border: 1px solid var(--sis-line);
+  background: var(--sis-bg);
+  color: var(--sis-muted);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -468,12 +475,12 @@
 }
 .sis-intention:hover {
   border-color: var(--c);
-  color: #fff;
+  color: var(--sis-ink);
 }
 .sis-intention.on {
   border-color: var(--c);
   background: color-mix(in srgb, var(--c) 18%, transparent);
-  color: #fff;
+  color: var(--sis-ink);
 }
 .sis-intention-dot {
   width: 8px;
@@ -487,7 +494,7 @@
   position: relative;
 }
 .sis-title-input.is-picked {
-  border-color: #22c55e;
+  border-color: var(--sis-ok);
   padding-right: 78px;
 }
 .sis-title-badge {
@@ -497,7 +504,7 @@
   transform: translateY(-50%);
   font-size: 10px;
   font-weight: 700;
-  color: #22c55e;
+  color: var(--sis-ok);
   pointer-events: none;
 }
 .sis-suggest-fav {
@@ -506,14 +513,7 @@
   border-radius: 4px;
   flex: none;
   object-fit: cover;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* ── Header logo (Sofia mark, replaces the "S" placeholder) ── */
-.sis-logo {
-  display: block;
-  background: transparent;
-  object-fit: contain;
+  background: var(--sis-elev);
 }
 
 /* Intention glyph (lucide, same icons as the explorer) — don't shrink. */
@@ -524,7 +524,7 @@
 /* ── Success state: button turns green with a check after adding ── */
 .sis-btn--done,
 .sis-btn--done:disabled {
-  background: #22c55e !important;
+  background: var(--sis-ok) !important;
   color: #fff !important;
   opacity: 1 !important;
   cursor: default;
