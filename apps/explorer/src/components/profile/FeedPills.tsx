@@ -1,17 +1,20 @@
 /**
- * FeedPills — the ONE source of truth for the topic + verb pills shown
- * across every feed surface (circle, explore/home, profile Echoes, the
- * ProfileDrawer activity rows and the public-profile rail). Before this,
- * each surface re-styled its own `.fc-tag` / `.group-bento-tag` /
- * `.pd-la-topic` / `.ppa-topic` (and duplicate `.fc-verb-tag`) so the
- * same pill looked different depending on where you were.
+ * FeedPills — thin wrappers over the shared design-system pills so every feed
+ * surface (circle, explore/home, profile Echoes, the ProfileDrawer activity
+ * rows and the public-profile rail) renders the ONE canonical pill. The DS
+ * owns the look (verb-tag.css / topic-pill.css); these wrappers keep the
+ * explorer's ergonomic API — resolving the icon/glyph from the app taxonomy —
+ * and delegate rendering. Previously each pill had its own `.sf-*-pill` CSS.
  *
- * Visual contract (see styles/pills.css):
- *   - VerbPill  : solid intent-colored fill, black text.
- *   - TopicPill : black icon on the topic's color, border of that color.
+ * Visual contract (design-system):
+ *   - VerbPill  : outlined — intent-colored text + border + icon, no fill.
+ *   - TopicPill : filled disc — black glyph + label on the topic color.
  */
-import { getTopicIcon } from '@/config/topicEmoji'
+import { TopicPill as DSTopicPill } from '@0xsofia/design-system'
+import type { CSSProperties } from 'react'
+
 import { getIntentionIconByLabel } from '@/config/intentionIcons'
+import { getTopicIcon } from '@/config/topicEmoji'
 
 interface TopicPillProps {
   topicId: string
@@ -23,45 +26,37 @@ interface TopicPillProps {
   iconOnly?: boolean
 }
 
-/** A topic rendered as a colored pill: black glyph on the topic color,
- *  border of the same color. With `iconOnly`, collapses to a colored disc
- *  carrying just the glyph (label still exposed via the tooltip/aria). */
+/** A topic rendered as a colored disc (black glyph + label), via the shared DS
+ *  <TopicPill>. The glyph name is resolved from the explorer taxonomy. */
 export function TopicPill({ topicId, color, label, iconOnly }: TopicPillProps) {
   return (
-    <span
-      className={`sf-topic-pill${iconOnly ? ' sf-topic-pill--icon' : ''}`}
-      style={{ ['--pill-color' as string]: color || 'var(--ds-accent)' }}
-      title={iconOnly ? label : undefined}
-      aria-label={iconOnly ? label : undefined}
-    >
-      <span
-        className="material-symbols-outlined sf-topic-pill-glyph"
-        aria-hidden="true"
-      >
-        {getTopicIcon(topicId)}
-      </span>
-      {iconOnly ? null : label}
-    </span>
+    <DSTopicPill
+      color={color}
+      label={label}
+      glyph={getTopicIcon(topicId)}
+      iconOnly={iconOnly}
+    />
   )
 }
 
 interface VerbPillProps {
   label: string
   /** Intent color (design-system INTENTION_COLORS) — drives the text +
-   *  border. Undefined → neutral. */
+   *  border + icon. Undefined → neutral. */
   color?: string
 }
 
-/** A verb/intention rendered as an outlined pill: text + border in the
- *  intent color, transparent fill. */
+/** A verb/intention rendered as an outlined pill (intent-colored text + border
+ *  + icon, transparent fill) via the canonical DS `.fc-verb-tag`, colour-driven
+ *  through `--vc` so no intent slug is needed. */
 export function VerbPill({ label, color }: VerbPillProps) {
   const Icon = getIntentionIconByLabel(label)
   return (
     <span
-      className="sf-verb-pill"
-      style={color ? { ['--pill-color' as string]: color } : undefined}
+      className="fc-verb-tag"
+      style={color ? ({ ['--vc']: color } as CSSProperties) : undefined}
     >
-      {Icon ? <Icon className="sf-verb-pill-ic" aria-hidden="true" /> : null}
+      {Icon ? <Icon className="fc-verb-ic" aria-hidden="true" /> : null}
       {label}
     </span>
   )

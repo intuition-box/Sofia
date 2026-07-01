@@ -156,31 +156,17 @@ export default function CircleHeaderFree({
         aria-label="Circle metrics"
       >
         <div className="cf-kpi">
-          <span className="cf-kpi-label">
-            <span
-              className="cf-kpi-dot"
-              style={{ background: 'var(--learning)' }}
-              aria-hidden="true"
-            />
-            Signals marked
-          </span>
           <span className="cf-kpi-value">{signals}</span>
+          <span className="cf-kpi-label">Signals marked</span>
           <span className="cf-kpi-delta is-up">marked on-chain</span>
         </div>
 
         <div className="cf-kpi">
-          <span className="cf-kpi-label">
-            <span
-              className="cf-kpi-dot"
-              style={{ background: 'var(--inspiration)' }}
-              aria-hidden="true"
-            />
-            Active curators
-          </span>
           <span className="cf-kpi-value">
             {active}
             <span className="cf-kpi-unit">/ {totalMembers}</span>
           </span>
+          <span className="cf-kpi-label">Active curators</span>
           <span className="cf-kpi-delta is-flat">active in last 7 days</span>
         </div>
 
@@ -194,14 +180,7 @@ export default function CircleHeaderFree({
             aria-pressed={decisionsActive}
             aria-label="Decisions — a Pro feature. Open to preview."
           >
-            <span className="cf-kpi-label">
-              <span
-                className="cf-kpi-dot"
-                style={{ background: 'var(--ds-accent)' }}
-                aria-hidden="true"
-              />
-              Decisions
-            </span>
+            <span className="cf-kpi-label">Decisions</span>
             <span className="cf-kpi-lock-glyph">
               <Lock aria-hidden="true" />
             </span>
@@ -220,14 +199,7 @@ export default function CircleHeaderFree({
             aria-pressed={decisionsActive}
             aria-label="Open the Decisions room"
           >
-            <span className="cf-kpi-label">
-              <span
-                className="cf-kpi-dot"
-                style={{ background: 'var(--ds-accent)' }}
-                aria-hidden="true"
-              />
-              Decisions
-            </span>
+            <span className="cf-kpi-label">Decisions</span>
             <span className="cf-kpi-value">
               {decisionsMeta?.open ?? 0}
               <span className="cf-kpi-unit">

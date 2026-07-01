@@ -333,12 +333,15 @@ export function FeedCardView({
       label: v.label,
       color: v.color,
       node: (
+        // Canonical verb pill (compact) — outlined, colour-driven via `--vc`.
+        // Shares `.fc-verb-tag` (verb-tag.css) so feed chips match every other
+        // verb pill across the apps.
         <span
           key={`v-${v.label}`}
-          className="fc-verb"
+          className="fc-verb-tag fc-verb-tag--sm"
           style={v.color ? { ['--vc' as string]: v.color } : undefined}
         >
-          {v.icon ?? <i aria-hidden="true" />}
+          {v.icon ?? null}
           {v.label}
         </span>
       ),

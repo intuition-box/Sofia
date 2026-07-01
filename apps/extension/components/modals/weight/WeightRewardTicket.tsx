@@ -3,11 +3,15 @@
  * reward is claimed: ticket header, the list of marked pages, the Pioneer /
  * Explorer / Contributor tier ladder, the Gold ledger, and share/close actions.
  */
-import { UserBadge } from "@0xsofia/design-system"
+import { TopicPill, UserBadge } from "@0xsofia/design-system"
 
 import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { contextLabel } from "~/lib/config/contextDisplay"
+import {
+  contextColor,
+  contextIcon,
+  contextLabel
+} from "~/lib/config/contextDisplay"
 
 import contributorBadge from "../../ui/img/badges/contributor.png"
 import explorerBadge from "../../ui/img/badges/explorer.png"
@@ -91,9 +95,13 @@ export default function WeightRewardTicket({
                   ).map((slug) => {
                     const l = contextLabel(slug)
                     return l ? (
-                      <span className="rc-mark-ctx" key={slug}>
-                        {l}
-                      </span>
+                      <TopicPill
+                        key={slug}
+                        color={contextColor(slug)}
+                        label={l}
+                        glyph={contextIcon(slug)}
+                        size="sm"
+                      />
                     ) : null
                   })}
                   <span className="rc-mark-host">{hostFromUrl(t.url)}</span>
@@ -107,8 +115,14 @@ export default function WeightRewardTicket({
             {TIER_ORDER.map((tier) => {
               const earned = discoveryReward.status.toLowerCase() === tier
               return (
-                <div className={`rc-tier${earned ? " is-earned" : ""}`} key={tier}>
-                  <UserBadge tier={tier} iconUrl={BADGE_IMAGES[tier]} size={32} />
+                <div
+                  className={`rc-tier${earned ? " is-earned" : ""}`}
+                  key={tier}>
+                  <UserBadge
+                    tier={tier}
+                    iconUrl={BADGE_IMAGES[tier]}
+                    size={32}
+                  />
                   <span className="rc-tier-label">
                     {tier.charAt(0).toUpperCase() + tier.slice(1)}
                   </span>

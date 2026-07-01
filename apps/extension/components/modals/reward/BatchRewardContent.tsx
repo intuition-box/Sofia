@@ -16,7 +16,13 @@
 import { FeedCardView, UserBadge, VerbTag } from "@0xsofia/design-system"
 import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
 import { useGetTriplesWithPositionsQuery } from "@0xsofia/graphql"
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react"
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties
+} from "react"
 
 import {
   useBatchRewards,
@@ -24,6 +30,7 @@ import {
   useTrustCircle,
   useWalletFromStorage
 } from "~/hooks"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
@@ -47,6 +54,13 @@ const BADGE_IMAGES: Record<UserBadgeTier, string> = {
 const logger = createHookLogger("BatchRewardContent")
 const OG_BASE_URL = "https://sofia-og.vercel.app"
 
+/** Leading intention glyph for a feed verb chip — same helper used by the
+ *  Trust Circle feed so every verb reads the same across the side panel. */
+const verbIcon = (type: IntentionType) => {
+  const Icon = INTENTION_ICONS[type]
+  return Icon ? <Icon className="fc-verb-ic" /> : undefined
+}
+
 const TIER_ORDER = ["pioneer", "explorer", "contributor"] as const
 
 type Phase = "loading" | "animation"
@@ -69,7 +83,11 @@ const ordinal = (n: number): string => {
 }
 
 const avInitials = (label: string): string =>
-  (label || "?").replace(/^0x/i, "").replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "?"
+  (label || "?")
+    .replace(/^0x/i, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 2)
+    .toUpperCase() || "?"
 
 export interface BatchRewardContentProps {
   /** Items submitted in the batch. */
@@ -403,7 +421,8 @@ const BatchRewardContent = ({
                     }
                     alt=""
                     onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.visibility = "hidden"
+                      ;(e.target as HTMLImageElement).style.visibility =
+                        "hidden"
                     }}
                   />
                 </div>
@@ -495,16 +514,34 @@ const BatchRewardContent = ({
       ? TOPIC_LABELS[item.interestContext]
       : null
     const circleStack = circleAccounts.slice(0, 3)
-    const circleOverflow = Math.max(0, circleAccounts.length - circleStack.length)
+    const circleOverflow = Math.max(
+      0,
+      circleAccounts.length - circleStack.length
+    )
     const ladder: {
       tier: UserBadgeTier
       label: string
       rank: string
       color: string
     }[] = [
-      { tier: "pioneer", label: "Pioneer", rank: "1st", color: "var(--rc-pioneer)" },
-      { tier: "explorer", label: "Explorer", rank: "2–10", color: "var(--rc-explorer)" },
-      { tier: "contributor", label: "Contributor", rank: "11+", color: "var(--rc-contributor)" }
+      {
+        tier: "pioneer",
+        label: "Pioneer",
+        rank: "1st",
+        color: "var(--rc-pioneer)"
+      },
+      {
+        tier: "explorer",
+        label: "Explorer",
+        rank: "2–10",
+        color: "var(--rc-explorer)"
+      },
+      {
+        tier: "contributor",
+        label: "Contributor",
+        rank: "11+",
+        color: "var(--rc-contributor)"
+      }
     ]
 
     return (
@@ -559,7 +596,13 @@ const BatchRewardContent = ({
                 domain={hostFromUrl(item.url)}
                 verbs={
                   intentEntry
-                    ? [{ label: intentEntry.label, color: intentEntry.color }]
+                    ? [
+                        {
+                          label: intentEntry.label,
+                          color: intentEntry.color,
+                          icon: intentKey ? verbIcon(intentKey) : undefined
+                        }
+                      ]
                     : []
                 }
                 up={-1}
@@ -644,7 +687,9 @@ const BatchRewardContent = ({
                       </span>
                     ))}
                     {circleOverflow > 0 && (
-                      <span className="rc-av rc-av--more">+{circleOverflow}</span>
+                      <span className="rc-av rc-av--more">
+                        +{circleOverflow}
+                      </span>
                     )}
                   </span>
                 )}
@@ -729,7 +774,13 @@ const BatchRewardContent = ({
                   domain={hostFromUrl(item.url)}
                   verbs={
                     intentEntry
-                      ? [{ label: intentEntry.label, color: intentEntry.color }]
+                      ? [
+                          {
+                            label: intentEntry.label,
+                            color: intentEntry.color,
+                            icon: intentKey ? verbIcon(intentKey) : undefined
+                          }
+                        ]
                       : []
                   }
                   up={-1}

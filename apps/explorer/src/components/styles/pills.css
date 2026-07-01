@@ -1,66 +1,10 @@
-/* ── Unified feed pills (topic + verb) ───────────────────────────────
- * One source of truth for the pills rendered by <TopicPill> / <VerbPill>
- * across circle / explore / Echoes / ProfileDrawer / public-profile rail.
- * Imported globally from App.tsx so every surface gets the same look.
+/* ── Feed pills (topic + verb) ───────────────────────────────────────
+ * MOVED TO THE DESIGN SYSTEM during the pill unification.
  *
- *   VerbPill  : solid intent fill, black text.
- *   TopicPill : black icon on the topic color, border of that color. */
-
-.sf-topic-pill,
-.sf-verb-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
-/* Verb icon — inherits the pill's intent colour via currentColor. */
-.sf-verb-pill-ic {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-
-/* ── Verb — outlined: text + border in the intent color, no fill.
-   `--pill-color` is the design-system intent color (INTENTION_COLORS),
-   set inline by <VerbPill>; falls back to neutral when unknown. ── */
-.sf-verb-pill {
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--pill-color, var(--ds-ink));
-  border: 1px solid var(--pill-color, var(--ds-border));
-}
-
-/* ── Topic — black icon on the topic color, border of that color ── */
-.sf-topic-pill {
-  gap: 5px;
-  padding: 4px 10px 4px 7px;
-  border-radius: 999px;
-  color: #000;
-  background: var(--pill-color, var(--ds-accent));
-  border: 1px solid var(--pill-color, var(--ds-border));
-}
-/* Icon-only variant — equal padding so the rounded pill reads as a
-   colored disc carrying just the glyph (no label). */
-.sf-topic-pill--icon {
-  gap: 0;
-  padding: 4px;
-}
-.sf-topic-pill-glyph {
-  font-size: 14px;
-  line-height: 1;
-  color: #000;
-  /* Material Symbols variable-font axes — keep the glyph compact + bold
-     so it reads at 14px the way the old TopicBadge disc did. */
-  font-variation-settings:
-    'FILL' 1,
-    'wght' 500,
-    'GRAD' 0,
-    'opsz' 20;
-}
+ *   VerbPill  → `.fc-verb-tag`  (verb-tag.css)   — outlined, intent color.
+ *   TopicPill → `.sf-topic-pill` (topic-pill.css) — filled disc, black glyph.
+ *
+ * Both stylesheets are imported in styles/design-system.css, so the pills
+ * render identically here and in the extension. <TopicPill> / <VerbPill>
+ * (profile/FeedPills.tsx) are now thin wrappers over the DS components.
+ * This file is intentionally empty — kept so the App.tsx import stays valid. */

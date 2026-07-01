@@ -337,16 +337,14 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 4px 14px -6px
-    color-mix(in srgb, var(--ds-accent) 65%, transparent);
+  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--ds-accent) 65%, transparent);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
 .pd-journey-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -6px
-    color-mix(in srgb, var(--ds-accent) 80%, transparent);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--ds-accent) 80%, transparent);
 }
 .pd-journey-arrow {
   font-family: 'JetBrains Mono', monospace;
@@ -464,10 +462,10 @@ a.pd-la-row:hover {
   color: var(--ds-ink);
 }
 
-/* Verb + topic use the shared <VerbPill> / <TopicPill> (styles/pills.css).
-   Here they sit inline inside the activity sentence (a -webkit-box), so
-   nudge spacing + baseline alignment for the running-text context. */
-.pd-la-title .sf-verb-pill,
+/* Verb + topic use the shared <VerbPill> (.fc-verb-tag) / <TopicPill>
+   (.sf-topic-pill). Here they sit inline inside the activity sentence (a
+   -webkit-box), so nudge spacing + baseline alignment for the running text. */
+.pd-la-title .fc-verb-tag,
 .pd-la-title .sf-topic-pill {
   margin-right: 6px;
   vertical-align: middle;

@@ -1,10 +1,11 @@
 import {
   FeedCardView,
+  TopicPill,
   type FeedCardTopic,
   type FeedCardVerb
 } from "@0xsofia/design-system"
 import { useFindUserPositionsOnTriplesQuery } from "@0xsofia/graphql"
-import { useMemo, useState, type CSSProperties } from "react"
+import { useMemo, useState } from "react"
 import { getAddress } from "viem"
 
 import {
@@ -23,6 +24,7 @@ import {
   TOPIC_FILTER_OPTIONS,
   VERB_FILTER_OPTIONS
 } from "~/lib/config/filterOptions"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { getFaviconUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import type { IntentionType } from "~/types/intentionCategories"
@@ -59,6 +61,13 @@ const formatTimestamp = (timestamp: string) => {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString()
+}
+
+/** Leading intention glyph for a feed verb chip — mirrors the Stats panel,
+ *  Amplify Mark chips, and WeightModal so every verb reads the same. */
+const verbIcon = (type: IntentionType) => {
+  const Icon = INTENTION_ICONS[type]
+  return Icon ? <Icon className="fc-verb-ic" /> : undefined
 }
 
 type ViewState =
@@ -338,9 +347,7 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
       )
     ).then((results) => {
       if (results.some(Boolean)) {
-        setLocalVotes((prev) =>
-          new Map(prev).set(group.groupKey, voteAction)
-        )
+        setLocalVotes((prev) => new Map(prev).set(group.groupKey, voteAction))
       }
     })
   }
@@ -437,7 +444,10 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
           />
           <Breadcrumb
             crumbs={[
-              { label: "Circles", onClick: () => setViewState({ type: "feed" }) },
+              {
+                label: "Circles",
+                onClick: () => setViewState({ type: "feed" })
+              },
               { label: viewState.label }
             ]}
           />
@@ -599,7 +609,9 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
               group.contexts.length > 0
                 ? group.contexts.some((c) => c.opposeTermId)
                 : group.intentions.some((i) => i.counterTermId)
-            const hasVotableTriple = group.intentions.some((i) => i.tripleTermId)
+            const hasVotableTriple = group.intentions.some(
+              (i) => i.tripleTermId
+            )
 
             // Topic/category context pills — the triples a vote stakes on.
             const topics: FeedCardTopic[] = group.contextSlugs.flatMap(
@@ -618,7 +630,8 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                 ? []
                 : group.intentions.map((i) => ({
                     label: INTENTION_CONFIG[i.intentionType].label,
-                    color: INTENTION_CONFIG[i.intentionType].color
+                    color: INTENTION_CONFIG[i.intentionType].color,
+                    icon: verbIcon(i.intentionType)
                   }))
 
             return (
@@ -685,16 +698,11 @@ const CircleFeedTab = ({ onViewMembers }: CircleFeedTabProps = {}) => {
                   />
                 )}
                 renderTopic={(t) => (
-                  <span
-                    className="sf-topic-pill"
-                    style={{ "--pill-color": t.color } as CSSProperties}>
-                    <span
-                      className="material-symbols-outlined sf-topic-pill-glyph"
-                      aria-hidden>
-                      {contextIcon(t.id)}
-                    </span>
-                    {t.label}
-                  </span>
+                  <TopicPill
+                    color={t.color}
+                    label={t.label}
+                    glyph={contextIcon(t.id)}
+                  />
                 )}
               />
             )

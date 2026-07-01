@@ -9,6 +9,7 @@
 @import '@0xsofia/design-system/theme.css';
 @import '@0xsofia/design-system/styles/favicon.css';
 @import '@0xsofia/design-system/styles/verb-tag.css';
+@import '@0xsofia/design-system/styles/topic-pill.css';
 @import '@0xsofia/design-system/styles/user-badge.css';
 @import '@0xsofia/design-system/styles/bento.css';
 @import '@0xsofia/design-system/styles/interests.css';
@@ -138,8 +139,7 @@ html {
   background: var(--ds-card);
   color: var(--ds-ink);
   border: 1px solid var(--ds-border);
-  box-shadow: 0 18px 40px -24px
-    color-mix(in srgb, var(--ds-ink) 60%, transparent);
+  box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--ds-ink) 60%, transparent);
 }
 [data-slot='select-item'] {
   color: var(--ds-ink);
@@ -165,8 +165,7 @@ html {
   background: var(--ds-card);
   color: var(--ds-ink);
   border: 1px solid var(--ds-border);
-  box-shadow: 0 30px 80px -40px
-    color-mix(in srgb, var(--ds-ink) 80%, transparent);
+  box-shadow: 0 30px 80px -40px color-mix(in srgb, var(--ds-ink) 80%, transparent);
 }
 
 /* ── Radix DropdownMenu content ──
@@ -176,8 +175,7 @@ html {
   background: color-mix(in srgb, var(--ds-card) 80%, transparent);
   color: var(--ds-ink);
   border: 1px solid var(--ds-border);
-  box-shadow: 0 18px 48px -20px
-    color-mix(in srgb, var(--ds-ink) 60%, transparent);
+  box-shadow: 0 18px 48px -20px color-mix(in srgb, var(--ds-ink) 60%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }

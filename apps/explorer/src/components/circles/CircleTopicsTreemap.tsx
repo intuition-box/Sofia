@@ -182,7 +182,6 @@ function TreemapCell({ cell, onPick }: TreemapCellProps) {
           className="cf-tmap-meta"
           style={{ visibility: med ? 'visible' : 'hidden' }}
         >
-          <span className="cf-tmap-dot" aria-hidden="true" />
           {cell.signals} certifications
         </span>
         <span className="cf-tmap-cell-foot">

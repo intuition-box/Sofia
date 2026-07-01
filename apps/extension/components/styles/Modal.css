@@ -1473,32 +1473,8 @@
   gap: 6px;
   flex-wrap: wrap;
 }
-/* Topic pill — same size & font as the DS <VerbTag> (.fc-verb-tag), but
-   the topic color applies to the text + border, not the background. */
-.rc-mark-ctx {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid var(--tag-color, var(--ds-accent));
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tag-color, var(--ds-accent));
-  white-space: nowrap;
-}
-.rc-mark-ctx-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--tag-color, var(--ds-accent));
-  flex: 0 0 auto;
-}
+/* `.rc-mark-ctx` (reward-ticket topic tag) was removed during the pill
+   unification — WeightRewardTicket now renders the shared DS <TopicPill>. */
 .rc-mark-title {
   font-size: 13px;
   font-weight: 600;
@@ -2550,59 +2526,10 @@
   display: none;
 }
 
-/* Music / topic / intention tag */
-/* Topic tag — same size & font as the DS <VerbTag> (.fc-verb-tag), but
-   the topic color applies to the text + border, not the background. */
-.amp .amp-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 11px;
-  border-radius: 6px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background: transparent;
-  border: 1px solid var(--tag-color, var(--ds-accent));
-  color: var(--tag-color, var(--ds-accent));
-}
-
-/* Within the Amplify modal, verb pills match the explorer's WeightModal
-   VerbPill — outlined (intent-color text + border, transparent fill) rather
-   than the filled feed-card VerbTag. `currentColor` ties the border to the
-   per-intent text color so each intent needs only a single color rule. */
-.amp .b3-row-tags .fc-verb-tag {
-  background: transparent;
-  border: 1px solid currentColor;
-  padding: 4px 10px;
-  color: var(--ds-accent);
-}
-.amp .b3-row-tags .fc-verb-tag.trusted {
-  color: var(--trusted);
-}
-.amp .b3-row-tags .fc-verb-tag.distrusted {
-  color: var(--distrusted);
-}
-.amp .b3-row-tags .fc-verb-tag.work {
-  color: var(--work);
-}
-.amp .b3-row-tags .fc-verb-tag.learning {
-  color: var(--learning);
-}
-.amp .b3-row-tags .fc-verb-tag.fun {
-  color: var(--fun);
-}
-.amp .b3-row-tags .fc-verb-tag.inspiration {
-  color: var(--inspiration);
-}
-.amp .b3-row-tags .fc-verb-tag.buying {
-  color: var(--buying);
-}
-.amp .b3-row-tags .fc-verb-tag.music {
-  color: var(--music);
-}
+/* Amplify pills unified: `.amp-tag` (dead) and the `.amp .b3-row-tags
+   .fc-verb-tag` pastel override were removed during the pill unification.
+   The Amplify basket renders the shared DS <VerbTag> (outlined, vivid intent
+   color) + <ContextPills> → <TopicPill>, matching every other surface. */
 
 /* Ticket (foreground, parchment) */
 .amp .b3-ticket {
@@ -3298,8 +3225,7 @@
   border-radius: 16px;
   overflow: hidden;
   padding: 14px 16px 16px;
-  background:
-    radial-gradient(
+  background: radial-gradient(
       120% 100% at 50% -20%,
       color-mix(in srgb, var(--tc, var(--color-success)) 13%, transparent),
       transparent 55%
@@ -3308,7 +3234,8 @@
   border: 1px solid
     color-mix(in srgb, var(--tc, var(--color-success)) 36%, var(--ds-border));
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--tc, var(--color-success)) 10%, transparent),
+    0 0 0 1px
+      color-mix(in srgb, var(--tc, var(--color-success)) 10%, transparent),
     0 14px 40px rgba(34, 197, 94, 0.07);
 }
 .tcard-row {
@@ -3383,8 +3310,10 @@
 }
 .bond-p.you .bond-av {
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--tc, var(--color-success)) 55%, transparent),
-    0 0 18px color-mix(in srgb, var(--tc, var(--color-success)) 25%, transparent);
+    0 0 0 2px
+      color-mix(in srgb, var(--tc, var(--color-success)) 55%, transparent),
+    0 0 18px
+      color-mix(in srgb, var(--tc, var(--color-success)) 25%, transparent);
 }
 .bond-mid {
   flex: 1;
@@ -3457,7 +3386,8 @@
     color-mix(in srgb, var(--tc, var(--color-success)) 50%, transparent);
   border-radius: 999px;
   padding: 5px 11px;
-  box-shadow: 0 0 14px color-mix(in srgb, var(--tc, var(--color-success)) 20%, transparent);
+  box-shadow: 0 0 14px
+    color-mix(in srgb, var(--tc, var(--color-success)) 20%, transparent);
 }
 .bond-verb svg {
   width: 11px;
@@ -3848,7 +3778,8 @@
   line-height: 0.95;
   letter-spacing: -0.03em;
   color: var(--color-success);
-  text-shadow: 0 0 30px color-mix(in srgb, var(--color-success) 35%, transparent);
+  text-shadow: 0 0 30px
+    color-mix(in srgb, var(--color-success) 35%, transparent);
 }
 .rc-sn-new.is-oppose {
   color: var(--color-error);
@@ -3898,7 +3829,8 @@
   z-index: 2;
   background: radial-gradient(circle at 38% 32%, #ffb59a, #e8628c 70%, #b6407a);
   border-color: var(--color-success);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 30%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-success) 30%, transparent);
 }
 .rc-bk--you.is-oppose {
   border-color: var(--color-error);

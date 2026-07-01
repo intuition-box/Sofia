@@ -53,13 +53,36 @@
   min-width: 0;
 }
 
-/* ── chip (selected tag) — a removable variant of the shared .fc-verb-tag.
-   The base look (ink text, colored icon, subtle fill, radius) comes from
-   .fc-verb-tag; this modifier only adds room + the × button. Topic chips get
-   their colored border from --verb-color (verbs get it from the intent rule). */
+/* ── chip (selected tag) — SELF-CONTAINED dropdown chip.
+   The dropdown intentionally keeps its own look (ink text + subtle intent
+   fill + colored icon/border), decoupled from the unified `.fc-verb-tag`
+   pill so the pill unification doesn't alter the combobox. `--verb-color`
+   (the intent/topic color) is set inline by CategorisationDropdown. */
 .ext-cat-chip {
-  padding-right: 5px;
-  border-color: var(--verb-color, var(--ds-border));
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ds-ink);
+  padding: 5px 5px 5px 11px;
+  border-radius: 5px;
+  border: 1px solid var(--verb-color, var(--ds-border));
+  background: color-mix(
+    in srgb,
+    var(--verb-color, transparent) 12%,
+    transparent
+  );
+}
+.ext-cat-chip .fc-verb-ic {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--verb-color, currentColor);
 }
 .ext-cat-chip-glyph {
   font-family: "Material Symbols Outlined", sans-serif;

@@ -49,12 +49,16 @@ export default function MembersFree({
     <section className="cf-module" aria-labelledby="cf-members-title">
       <div className="cf-module-head">
         <h2 id="cf-members-title" className="cf-module-title">
-          Members
+          Most active members
         </h2>
-        <span className="cf-module-note">
-          Most active · {totalMembers}{' '}
-          {totalMembers === 1 ? 'member' : 'members'}
-        </span>
+        <button
+          type="button"
+          className="cf-module-note cf-module-link"
+          onClick={onViewAll}
+        >
+          View all
+          <ArrowRight className="cf-btn-icon" aria-hidden="true" />
+        </button>
       </div>
 
       <div className="cf-top3">
@@ -86,7 +90,7 @@ export default function MembersFree({
                   ownerLabel={m.label}
                   socials={
                     m.walletAddress
-                      ? (socials[m.walletAddress.toLowerCase()] ?? [])
+                      ? socials[m.walletAddress.toLowerCase()] ?? []
                       : []
                   }
                 />
@@ -98,17 +102,6 @@ export default function MembersFree({
             </div>
           )
         })}
-      </div>
-
-      <div className="cf-module-foot">
-        <button
-          type="button"
-          className="cf-btn cf-btn-ghost"
-          onClick={onViewAll}
-        >
-          View all
-          <ArrowRight className="cf-btn-icon" aria-hidden="true" />
-        </button>
       </div>
     </section>
   )

@@ -246,58 +246,9 @@
   color: var(--ds-ink);
 }
 
-/* Verb tag — outlined: text + border in the intent colour, no fill.
-   Mirrors the shared <VerbPill> (.sf-verb-pill); kept in sync so the
-   surfaces still on .fc-verb-tag (ProfileClaimCard, BadgeDetailPage,
-   PlatformDetailPage) match the feeds. */
-.fc-verb-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  padding: 5px 11px;
-  border-radius: 6px;
-  border: 1px solid var(--ds-border);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  line-height: 1;
-  background: transparent;
-}
-.fc-verb-tag.trusted {
-  color: var(--intent-trusted);
-  border-color: var(--intent-trusted);
-}
-.fc-verb-tag.distrusted {
-  color: var(--intent-distrusted);
-  border-color: var(--intent-distrusted);
-}
-.fc-verb-tag.work {
-  color: var(--intent-work);
-  border-color: var(--intent-work);
-}
-.fc-verb-tag.learning {
-  color: var(--intent-learning);
-  border-color: var(--intent-learning);
-}
-.fc-verb-tag.fun {
-  color: var(--intent-fun);
-  border-color: var(--intent-fun);
-}
-.fc-verb-tag.inspiration {
-  color: var(--intent-inspiration);
-  border-color: var(--intent-inspiration);
-}
-.fc-verb-tag.buying {
-  color: var(--intent-buying);
-  border-color: var(--intent-buying);
-}
-.fc-verb-tag.music {
-  color: var(--intent-music);
-  border-color: var(--intent-music);
-}
+/* Verb tag (.fc-verb-tag) now lives ONLY in verb-tag.css — single source of
+   truth for the outlined verb pill. The duplicate block that used to sit here
+   was removed during the pill unification; import verb-tag.css to get it. */
 
 /* ── Feed card (Claude Design "Feed Card" handoff) ─────────────────
    The current feed card, shared by the explore feed (home FeedCard) and
@@ -686,8 +637,7 @@
   background: var(--ds-ink);
   color: var(--ds-bg);
   pointer-events: none;
-  box-shadow: 0 10px 28px -10px
-    color-mix(in srgb, var(--ds-ink) 65%, transparent);
+  box-shadow: 0 10px 28px -10px color-mix(in srgb, var(--ds-ink) 65%, transparent);
   z-index: 10000;
 }
 .fc-more-tip::after {
@@ -721,38 +671,10 @@
   text-overflow: ellipsis;
   min-width: 0;
 }
-.fc-verb {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--vc, var(--ds-ink-soft));
-  padding: 4px 9px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--vc, var(--ds-muted)) 13%, transparent);
-  border: 1px solid
-    color-mix(in srgb, var(--vc, var(--ds-muted)) 34%, transparent);
-}
-.fc-verb i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--vc, var(--ds-muted));
-  flex-shrink: 0;
-}
-/* Consumer-provided verb icon (replaces the dot) — inherits the verb colour
-   via currentColor (.fc-verb sets `color: var(--vc)`). */
-.fc-verb-ic {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-/* Topics reuse the shared <TopicPill> (.sf-topic-pill, styles/pills.css) —
-   black glyph on the topic color — so the feed cards match the topic pills
-   used across echoes / drawer / profile. */
+/* Feed-card verb chips now render the canonical `.fc-verb-tag fc-verb-tag--sm`
+   (verb-tag.css) — outlined, colour-driven via `--vc`. The old `.fc-verb`
+   (tinted fill + dot) was removed during the pill unification.
+   Topics render the shared <TopicPill> (.sf-topic-pill, topic-pill.css). */
 
 /* Masonry column layout (CSS columns — no JS needed). */
 /* Row-major grid (was CSS-columns masonry). Items flow left-to-right
@@ -1090,10 +1012,6 @@
 .fc-card--s-sm .fc-vote svg {
   width: 13px;
   height: 13px;
-}
-.fc-card--s-sm .fc-verb {
-  font-size: 9px;
-  padding: 3px 8px;
 }
 
 /* Extra-small — list row (no full-bleed hero) */
