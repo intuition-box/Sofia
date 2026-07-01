@@ -56,7 +56,7 @@ export default function HomePage() {
         <span className="hp-eyebrow">S.01 · CONNECT</span>
 
         <h1 className="hp-headline">
-          Your web, <em>mapped.</em>
+          Community think <em>smarter.</em>
         </h1>
 
         <p className="hp-lede">

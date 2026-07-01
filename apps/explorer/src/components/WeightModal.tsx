@@ -6,6 +6,13 @@ import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
+import { removeCertsFromProfileCache } from '../hooks/useUserOnChainProfile'
+import {
+  removeAttributesFromCache,
+  addAttributesToCache,
+} from '../hooks/useUserAttributes'
+import type { UserAttribute } from '../services/userAttributesService'
+import { getAttributeByLabel } from '@0xsofia/taxonomy'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import {
@@ -194,6 +201,14 @@ export default function WeightModal({
     )
   }, [items, weights, customValues])
 
+  // A redeem-only cart deposits nothing (totalDeposit === 0) yet is a valid,
+  // signable action — it recovers TRUST. Track it so the submit button isn't
+  // gated by the `totalDeposit <= 0` "nothing to do" guard below.
+  const hasRedeem = useMemo(
+    () => items.some((it) => it.kind === 'redeem'),
+    [items],
+  )
+
   const balNum = balance ? parseFloat(balance) : 0
 
   // Each cart item maps to one or more on-chain operations:
@@ -311,6 +326,8 @@ export default function WeightModal({
       }
       const wallet = wallets[0]
       let lastRedeemHash: string | undefined
+      const redeemedOk: string[] = []
+      let noopCount = 0
       setCreateTripleProcessing(true)
       setCreateTripleResult(null)
       try {
@@ -322,9 +339,14 @@ export default function WeightModal({
               success: false,
               error: r.error ?? 'Redeem failed',
             })
+          } else if (r.noop) {
+            // No shares on any curve → nothing was redeemed. Don't treat this
+            // as a real redemption: no cache drop, no synthetic success.
+            noopCount++
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
             clearOptimisticPosition(qc, wallet.address, termId)
+            redeemedOk.push(termId)
           }
         }
       } catch (err) {
@@ -336,8 +358,19 @@ export default function WeightModal({
       } finally {
         setCreateTripleProcessing(false)
       }
+      // Drop the redeemed certs from the profile cache immediately — the tx
+      // passed, so the vault is empty. Don't invalidate/refetch here: that
+      // races the indexer (still reporting the position for a few seconds)
+      // and re-persists the stale row, so it reappears on reload. staleTime
+      // reconciles on the next natural refetch once the indexer catches up.
+      if (redeemedOk.length > 0) {
+        // A redeemed termId is either a URL cert (profile cache) or a
+        // skill/tool declaration (attributes cache) — filter both; the one
+        // that doesn't match is a no-op.
+        removeCertsFromProfileCache(qc, redeemedOk)
+        removeAttributesFromCache(qc, redeemedOk)
+      }
       if (allOk) {
-        qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
         // A redeem-only cart has no deposit/create result to drive the
         // success screen — synthesize one so the panel shows "validated"
         // and the Close tap hands off to onSuccess (clears the cart).
@@ -346,7 +379,17 @@ export default function WeightModal({
           createItems.length === 0 &&
           circleIndices.length === 0
         ) {
-          setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+          if (redeemedOk.length > 0) {
+            setCreateTripleResult({ success: true, txHash: lastRedeemHash })
+          } else if (noopCount > 0) {
+            // Every redeem found 0 shares — no wallet popup ever appeared.
+            // Report it honestly instead of a phantom "validated".
+            setCreateTripleResult({
+              success: false,
+              error:
+                'Nothing to redeem — you hold no stake on this from this wallet.',
+            })
+          }
         }
       }
     }
@@ -554,7 +597,40 @@ export default function WeightModal({
               qc.invalidateQueries({ queryKey: ['userAttributes'] })
               qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
             }
-            refreshAfterMint()
+            // Immediate refresh for the join gate + profile. userAttributes is
+            // deliberately excluded here: refetching now returns pre-index state
+            // and would wipe the optimistic chip below before the indexer has
+            // the triple. It reconciles on the scheduled runs instead.
+            qc.invalidateQueries({ queryKey: ['groups-list'] })
+            qc.invalidateQueries({ queryKey: ['group-detail'] })
+            qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
+            // Optimistic: surface the just-declared skills/tools immediately,
+            // before the indexer even acknowledges the new atoms. The scheduled
+            // refetch below reconciles the real termId/endorserCount; the
+            // resilient name-fallback in userAttributesService keeps a
+            // still-unresolved atom in the list so the chip doesn't flicker out.
+            if (skillIndices.length > 0) {
+              const owner = wallets[0]?.address
+              const declared = skillIndices.flatMap((idx) => {
+                const draft = items[idx].skillDraft
+                const attr = draft && getAttributeByLabel(draft.label)
+                return attr
+                  ? [
+                      {
+                        id: attr.id,
+                        label: attr.label,
+                        category: attr.category,
+                        endorserCount: 1,
+                        viewerEndorsed: true,
+                        termId: '',
+                      } as UserAttribute,
+                    ]
+                  : []
+              })
+              if (owner && declared.length) {
+                addAttributesToCache(qc, owner, declared)
+              }
+            }
             // The indexer lags the chain by a few seconds, so the immediate
             // refetch above returns the pre-mint state and re-caches it (the
             // join gate would stay locked even after a manual reload). Re-run
@@ -959,12 +1035,12 @@ export default function WeightModal({
                   processing ||
                   verifying ||
                   missingTripleIds.length > 0 ||
-                  totalDeposit <= 0 ||
+                  (totalDeposit <= 0 && !hasRedeem) ||
                   balNum < breakdown.totalEstimate
                 }
               >
                 {processing ? 'Signing…' : verifying ? 'Verifying…' : 'Sign'}
-                {!processing && !verifying && (
+                {!processing && !verifying && breakdown.totalEstimate > 0 && (
                   <span className="b3-btn-amt">
                     {formatTrust(breakdown.totalEstimate)} T
                   </span>

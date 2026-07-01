@@ -50,7 +50,7 @@
 }
 
 .stats-section .stat-sublabel {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   color: var(--ds-muted);
   margin-top: 2px;
@@ -163,7 +163,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.8);
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
@@ -187,7 +187,7 @@
   border: 1px solid var(--ds-border);
   border-radius: 999px;
   color: var(--ds-ink);
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -408,7 +408,7 @@
   border: none;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -559,14 +559,14 @@
 }
 
 .badge-label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .badge-count {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 28px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -611,13 +611,13 @@
   align-items: center;
   justify-content: center;
   color: #000;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 700;
 }
 
 .xp-progress-text {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -648,7 +648,7 @@
 }
 
 .mechanism-title {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -657,7 +657,7 @@
 }
 
 .mechanism-content {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
@@ -1028,7 +1028,7 @@
 }
 
 .achievements-section-label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -1301,7 +1301,7 @@
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
 }
 
 /* Claimable achievements (golden glow) */
@@ -1332,7 +1332,7 @@
   padding: 6px 10px;
   border: none;
   border-radius: 6px;
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -1412,7 +1412,7 @@
 }
 
 .season-pool-title {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--ds-ink);
@@ -1435,7 +1435,7 @@
 }
 
 .season-pool-label {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
@@ -1444,14 +1444,14 @@
 }
 
 .season-pool-value {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
 
 .season-pool-pct {
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 11px;
   font-weight: 500;
 }
@@ -1477,7 +1477,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.75);
-  font-family: "Geist", sans-serif;
+  font-family: "Hind", sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;

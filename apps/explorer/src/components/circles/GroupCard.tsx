@@ -59,6 +59,7 @@ export default function GroupCard({ group }: GroupCardProps) {
     <button
       type="button"
       className="cr-card"
+      data-tour="circle-card"
       onClick={() => navigate(`/circles/${group.termId}`)}
     >
       <div className="cr-card-head">

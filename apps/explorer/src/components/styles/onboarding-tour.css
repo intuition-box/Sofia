@@ -1,0 +1,367 @@
+/* ============================================================
+   Onboarding guided tour — coachmarks (spotlight + bubble)
+   Overlays the REAL explorer UI. Visual-only: the spotlight is
+   pointer-events:none so the user interacts with the real
+   component underneath. Ported from the extension's
+   OnboardingTour.css, using the explorer --ds-* color tokens.
+   Spacing / radius / font-size are literal (the explorer has no
+   --spacing-*/
+--radius-* token set).
+   ============================================================ */
+
+/* ── Full-screen veil (no target) ───────────────────────────
+   Used only for centered / measuring steps. Same blur/tint as the
+   welcome veil, which renders reliably full-screen. */
+.tour-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: color-mix(in srgb, var(--ds-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Spotlight (scrim + hole) ───────────────────────────────
+   A transparent box over the target. Its huge box-shadow paints the
+   dim/faded scrim over the WHOLE viewport (same tint as the welcome
+   veil) while the box itself stays clear — a sharp hole on the
+   highlighted element. box-shadow renders reliably (unlike
+   backdrop-filter cutouts). pointer-events:none → the real UI in
+   the hole stays clickable. */
+.tour-spot {
+  position: fixed;
+  z-index: 100000;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--ds-bg) 93%, transparent);
+  pointer-events: none;
+  transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-spot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 15px;
+  border: 2px solid var(--ds-accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ds-accent) 60%, transparent);
+  animation: tour-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ── Bubble (coachmark) ─────────────────────────────────────*/
+.tour-bubble {
+  position: fixed;
+  z-index: 100002;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 15px;
+  padding: 18px 17px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  transition:
+    left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-bubble-arrow {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  transform: rotate(45deg);
+}
+.tour-bubble-arrow.is-top {
+  top: -7px;
+  border-right: none;
+  border-bottom: none;
+}
+.tour-bubble-arrow.is-bottom {
+  bottom: -7px;
+  border-left: none;
+  border-top: none;
+}
+
+.tour-bubble-step {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+
+.tour-bubble-title {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ds-ink);
+  margin: 9px 0 0;
+}
+
+.tour-bubble-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ds-muted);
+  margin: 9px 0 0;
+  text-wrap: pretty;
+}
+.tour-bubble-body b {
+  color: var(--ds-ink-soft);
+}
+
+.tour-bubble-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Slim progress bar — scales to any step count. */
+.tour-bubble-bar {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ds-border);
+  overflow: hidden;
+}
+.tour-bubble-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ds-accent);
+  transition: width 0.3s ease;
+}
+
+.tour-bubble-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-accent);
+}
+.tour-bubble-cta svg {
+  width: 14px;
+  height: 14px;
+  animation: tour-nudge 1.4s ease-in-out infinite;
+}
+@keyframes tour-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+/* Fallback affordance — appears only if a step's target can't be
+   found, so the tour never hard-locks. */
+.tour-bubble-skipstep {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-bg);
+  background: var(--ds-accent);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+/* ── Skip-tour pill ─────────────────────────────────────────*/
+.tour-skip {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 100002;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+  background: color-mix(in srgb, var(--ds-card) 70%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.tour-skip:hover {
+  color: var(--ds-ink);
+}
+
+/* ── Welcome / done veil ────────────────────────────────────*/
+.tour-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--ds-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 18px;
+  animation: tour-fade-in 0.3s ease;
+}
+
+.tour-vcard {
+  width: 100%;
+  max-width: 380px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.tour-vlogo {
+  width: 60px;
+  height: 60px;
+  border-radius: 17px;
+  margin: 0 auto;
+  background: var(--ds-accent);
+  color: var(--ds-bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 30px;
+}
+.tour-vlogo svg {
+  width: 30px;
+  height: 30px;
+}
+
+.tour-vtitle {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ds-ink);
+  margin: 18px 0 0;
+}
+
+.tour-vtext {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ds-muted);
+  margin: 14px 0 0;
+  text-wrap: pretty;
+}
+.tour-vtext b {
+  color: var(--ds-ink-soft);
+}
+
+.tour-vbtns {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 22px;
+}
+.tour-vbtn-primary {
+  padding: 13px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background 0.15s ease;
+}
+.tour-vbtn-primary:hover {
+  background: var(--ds-accent);
+}
+.tour-vbtn-ghost {
+  padding: 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--ds-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  transition: color 0.15s ease;
+}
+.tour-vbtn-ghost:hover {
+  color: var(--ds-ink);
+}
+
+/* Optional CTA link inside a veil (e.g. install-extension link). */
+.tour-vlink {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ds-accent);
+  text-decoration: none;
+}
+.tour-vlink:hover {
+  text-decoration: underline;
+}
+
+/* ── Confetti (success) ─────────────────────────────────────*/
+.tour-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.tour-confetti i {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: tour-fall linear forwards;
+}
+.tour-confetti i.c0 {
+  background: var(--ds-accent);
+}
+.tour-confetti i.c1 {
+  background: #6dd4a0;
+}
+.tour-confetti i.c2 {
+  background: #5cc4d6;
+}
+.tour-confetti i.c3 {
+  background: #e0a458;
+}
+.tour-confetti i.c4 {
+  background: var(--ds-ink-soft);
+}
+@keyframes tour-fall {
+  to {
+    transform: translateY(105vh) rotate(540deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes tour-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

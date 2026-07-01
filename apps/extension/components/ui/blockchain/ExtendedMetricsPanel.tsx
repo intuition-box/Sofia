@@ -9,10 +9,17 @@ import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
-import { INTENTION_ITEMS, predicateLabelToIntentionType } from "~/types/intentionCategories"
+import { INTENTION_ITEMS, predicateLabelToIntentionType, type IntentionType } from "~/types/intentionCategories"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { VerbTag } from "@0xsofia/design-system"
 import type { RankedPosition } from "~/lib/utils"
 import PagePositionBoard from "../PagePositionBoard"
+
+/** Leading lucide glyph for a verb tag — mirrors the explorer's verb icons. */
+const verbIcon = (type: IntentionType) => {
+  const Icon = INTENTION_ICONS[type]
+  return Icon ? <Icon className="fc-verb-ic" /> : undefined
+}
 
 // Local formatter — `getTotalShares` already returns a decimal number
 // (shares / 1e18), so we just need thousands separators here.
@@ -163,6 +170,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
                           <VerbTag
                             intent={intentSlug}
                             label={triplet.predicate.label}
+                            icon={verbIcon(intentSlug)}
                             className="triplet-predicate-tag"
                           />
                         ) : (
@@ -200,7 +208,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
             ) : (
               <div className="intentions-progress-list">
                 <div className="intention-progress-item">
-                  <VerbTag intent="trusted" label="trusted" />
+                  <VerbTag intent="trusted" label="trusted" icon={verbIcon("trusted")} />
                   <div className="progress-track">
                     <div
                       className="progress-fill trusted"
@@ -212,7 +220,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
                   <span className="intention-count">{activeTrust}</span>
                 </div>
                 <div className="intention-progress-item">
-                  <VerbTag intent="distrusted" label="distrusted" />
+                  <VerbTag intent="distrusted" label="distrusted" icon={verbIcon("distrusted")} />
                   <div className="progress-track">
                     <div
                       className="progress-fill distrusted"
@@ -225,7 +233,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
                 </div>
                 {INTENTION_ITEMS.map(({ key, label, type }) => (
                   <div key={key} className="intention-progress-item">
-                    <VerbTag intent={type} label={label} />
+                    <VerbTag intent={type} label={label} icon={verbIcon(type)} />
                     <div className="progress-track">
                       <div
                         className={`progress-fill ${type}`}

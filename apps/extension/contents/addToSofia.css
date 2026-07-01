@@ -103,6 +103,17 @@
   color: var(--sis-ink);
   background: var(--sis-elev);
 }
+.sis-connect-note {
+  margin: 0 20px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--sis-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--sis-accent) 12%, transparent);
+  border-radius: var(--sis-radius);
+  color: var(--sis-accent);
+  font-size: 12px;
+  line-height: 1.4;
+}
 .sis-cols {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;

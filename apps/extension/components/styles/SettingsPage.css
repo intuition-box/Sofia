@@ -499,7 +499,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
 }
 
 .button-3d:hover:not(:disabled) {
@@ -547,7 +547,7 @@
   transition: 0.15s ease;
   cursor: pointer;
   min-width: 120px;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   position: relative;
   overflow: hidden;
   font-size: 14px;
@@ -600,7 +600,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   font-weight: 600;
   background: var(--ds-bg-subtle);
@@ -641,7 +641,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   font-weight: 600;
   background: var(--ds-bg-subtle);

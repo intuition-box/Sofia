@@ -11,6 +11,7 @@
 import type {
   AddToCartMessage,
   AddToCartResponse,
+  AddToSofiaStatusResponse,
   AtomSuggestion,
   SearchAtomsResponse
 } from "../lib/addToSofia/types"
@@ -68,6 +69,15 @@ export async function handleAddToCart(
     logger.warn("addItem failed", e)
     return { ok: false, reason: "error" }
   }
+}
+
+// Connection pre-check for the modal: the content script can't read
+// chrome.storage.session (wallet lives there, not exposed to content contexts),
+// so it asks the SW on open. Drives the modal's connect-first affordance — when
+// disconnected it swaps its primary button for one that opens the side panel.
+export async function handleAddToSofiaStatus(): Promise<AddToSofiaStatusResponse> {
+  const wallet = await getStoredWalletAddress()
+  return { connected: !!wallet }
 }
 
 // Title autocomplete: find existing url/thing atoms matching the typed string,

@@ -21,7 +21,11 @@ import {
 } from "../lib/services"
 import { createServiceLogger } from "../lib/utils/logger"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { handleAddToCart, handleSearchAtoms } from "./addToSofia"
+import {
+  handleAddToCart,
+  handleAddToSofiaStatus,
+  handleSearchAtoms
+} from "./addToSofia"
 import { sendMessage } from "./agentRouter"
 import { initializeOnWalletConnect } from "./index"
 import { getAllBookmarks } from "./messageSenders"
@@ -929,6 +933,15 @@ export function setupMessageHandlers(): void {
               .catch((error) => {
                 logger.warn("SEARCH_ATOMS handler error", error)
                 sendResponse({ atoms: [] })
+              })
+            return true
+
+          case "ADD_TO_SOFIA_STATUS":
+            handleAddToSofiaStatus()
+              .then(sendResponse)
+              .catch((error) => {
+                logger.warn("ADD_TO_SOFIA_STATUS handler error", error)
+                sendResponse({ connected: false })
               })
             return true
         }

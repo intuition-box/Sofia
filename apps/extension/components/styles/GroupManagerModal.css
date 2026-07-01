@@ -99,7 +99,7 @@
   border-radius: 10px;
   background: var(--ds-bg-subtle);
   color: var(--ds-ink);
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 13px;
   outline: none;
   transition: border-color 0.15s ease, background 0.15s ease;
@@ -526,7 +526,7 @@
   background: var(--fun);
   color: #000;
   border: none;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 13px;
   font-weight: 500;
 }

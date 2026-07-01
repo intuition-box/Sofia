@@ -107,7 +107,7 @@
 
 .scope-toggle--lg .scope-btn {
   padding: 8px 16px;
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--ds-muted);
@@ -290,7 +290,7 @@
 .triplets-section .triplet-text .object {
   padding: 4px 8px;
   border-radius: var(--radius-md, 8px);
-  font-family: 'Geist', sans-serif;
+  font-family: 'Hind', sans-serif;
   font-size: var(--font-size-xs, 10px);
   font-weight: 500;
   background: var(--ds-card);

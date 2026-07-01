@@ -12,11 +12,12 @@
  * The declared chips are read on-chain via useUserAttributes.
  */
 import { useState, useMemo } from 'react'
-import { Plus, ChevronUp, Sparkles, Wrench } from 'lucide-react'
+import { Plus, ChevronUp, Sparkles, Wrench, Trash2 } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { SKILLS, TOOLS, type Attribute } from '@0xsofia/taxonomy'
 import { useUserAttributes } from '@/hooks/useUserAttributes'
 import { useDeclareSkill } from '@/hooks/useDeclareSkill'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useCart } from '@/hooks/useCart'
 import type { UserAttribute } from '@/services/userAttributesService'
@@ -50,15 +51,22 @@ interface ProfileAttributesProps {
 function AttributeChips({
   items,
   onEndorse,
+  canRedeem,
+  onRedeem,
 }: {
   items: DisplayAttribute[]
   onEndorse?: (attr: UserAttribute) => void
+  /** Owner view: each confirmed chip gets a trash button that queues a
+   *  redeem (recovers the declaration's stake) into the cart. */
+  canRedeem?: boolean
+  onRedeem?: (attr: UserAttribute) => void
 }) {
   return (
     <ul className="pa-chips">
       {items.map((a) => {
         const votable = !!onEndorse && !a.pending
         const voted = !a.pending && a.viewerEndorsed
+        const redeemable = !!canRedeem && !a.pending && !!a.termId
         return (
           <li
             key={a.id}
@@ -74,6 +82,17 @@ function AttributeChips({
             }
           >
             <span className="pa-chip-label">{a.label}</span>
+            {redeemable && (
+              <button
+                type="button"
+                className="pa-chip-remove"
+                title={`Remove ${a.label} — recover your stake`}
+                aria-label={`Remove ${a.label}`}
+                onClick={() => onRedeem!(a)}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
             {a.pending ? (
               <span className="pa-chip-tag" aria-label="Pending declaration">
                 queued
@@ -186,12 +205,14 @@ function AttributeGroup({
   onEndorse,
   canDeclare,
   onEdit,
+  onRedeem,
 }: {
   kind: 'skill' | 'tool'
   items: DisplayAttribute[]
   onEndorse?: (attr: UserAttribute) => void
   canDeclare?: boolean
   onEdit: () => void
+  onRedeem?: (attr: UserAttribute) => void
 }) {
   const Icon = kind === 'skill' ? Sparkles : Wrench
 
@@ -215,7 +236,12 @@ function AttributeGroup({
       </div>
 
       {items.length ? (
-        <AttributeChips items={items} onEndorse={onEndorse} />
+        <AttributeChips
+          items={items}
+          onEndorse={onEndorse}
+          canRedeem={canDeclare}
+          onRedeem={onRedeem}
+        />
       ) : (
         <p className="pa-empty">
           {canDeclare
@@ -295,8 +321,15 @@ export default function ProfileAttributes({
   const { addresses: viewerAddresses } = useLinkedWallets()
   const { skills, tools, loading } = useUserAttributes(address, viewerAddresses)
   const { declare } = useDeclareSkill()
+  const { redeemCert } = useRedeemCert()
   const cart = useCart()
   const [editOpen, setEditOpen] = useState(false)
+
+  // Owner "delete" = redeem the declaration's stake. Skills/tools have no
+  // source URL, so pass an empty one (the redeem item only needs the triple
+  // termId + a label). Same cart → MultiVault.redeem flow as URL certs.
+  const redeemAttribute = (attr: UserAttribute) =>
+    redeemCert(attr.termId, attr.label, '')
 
   // Skill/tool declarations the owner just added sit in the cart as
   // `create-skill` items until the cart is submitted on-chain. Surface them as
@@ -340,6 +373,7 @@ export default function ProfileAttributes({
             onEndorse={onEndorse}
             canDeclare={canDeclare}
             onEdit={() => setEditOpen(true)}
+            onRedeem={redeemAttribute}
           />
           <AttributeGroup
             kind="tool"
@@ -347,6 +381,7 @@ export default function ProfileAttributes({
             onEndorse={onEndorse}
             canDeclare={canDeclare}
             onEdit={() => setEditOpen(true)}
+            onRedeem={redeemAttribute}
           />
         </div>
       )}
