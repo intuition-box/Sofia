@@ -533,7 +533,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(
+  background:
+    linear-gradient(
       155deg,
       color-mix(in srgb, var(--c) 30%, transparent) 0%,
       color-mix(in srgb, var(--c) 9%, transparent) 60%,

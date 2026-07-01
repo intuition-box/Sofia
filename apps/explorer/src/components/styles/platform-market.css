@@ -245,16 +245,6 @@
   position: relative;
   color: var(--ds-ink);
 }
-.pm-dex-row::before {
-  /* Topic-colored rail on the left edge of each row. */
-  content: '';
-  position: absolute;
-  inset: 6px auto 6px 0;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--topic-color, var(--ds-accent));
-  opacity: 0.75;
-}
 .pm-dex-row:last-child {
   border-bottom: none;
 }

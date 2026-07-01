@@ -158,7 +158,6 @@ export default function CircleHeaderFree({
         <div className="cf-kpi">
           <span className="cf-kpi-value">{signals}</span>
           <span className="cf-kpi-label">Signals marked</span>
-          <span className="cf-kpi-delta is-up">marked on-chain</span>
         </div>
 
         <div className="cf-kpi">
@@ -167,7 +166,6 @@ export default function CircleHeaderFree({
             <span className="cf-kpi-unit">/ {totalMembers}</span>
           </span>
           <span className="cf-kpi-label">Active curators</span>
-          <span className="cf-kpi-delta is-flat">active in last 7 days</span>
         </div>
 
         {SHOW_DECISIONS && showPlan && (

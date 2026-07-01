@@ -22,6 +22,19 @@ export interface PlatformVaultData {
   userPnlPct: number | null
 }
 
+// On-chain atom images may be `ipfs://CID` URIs the browser can't fetch
+// directly — rewrite them to an HTTP gateway so an <img> loads. Shared by the
+// platforms list and the right rail so both resolve the same fallback image.
+export function resolvePlatformImage(url?: string): string | undefined {
+  if (!url) return undefined
+  if (url.startsWith('ipfs://')) {
+    return `https://ipfs.io/ipfs/${url
+      .slice('ipfs://'.length)
+      .replace(/^ipfs\//, '')}`
+  }
+  return url
+}
+
 // ── GraphQL ──
 
 const GET_ATOM_VAULT_STATS = `

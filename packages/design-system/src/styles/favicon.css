@@ -32,3 +32,18 @@
   object-fit: contain;
   display: block;
 }
+
+/* Letter fallback — shown when the favicon image is missing or fails to load,
+   so the box never renders empty. Dark ink on the white favicon surface. */
+.favicon-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--ds-font-display, system-ui, sans-serif);
+  font-weight: 700;
+  font-size: calc(var(--fav-size) * 0.5);
+  line-height: 1;
+  color: #02000e;
+  text-transform: uppercase;
+}

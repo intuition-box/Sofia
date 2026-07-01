@@ -90,7 +90,7 @@ export default function MembersFree({
                   ownerLabel={m.label}
                   socials={
                     m.walletAddress
-                      ? socials[m.walletAddress.toLowerCase()] ?? []
+                      ? (socials[m.walletAddress.toLowerCase()] ?? [])
                       : []
                   }
                 />

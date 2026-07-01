@@ -637,7 +637,8 @@
   background: var(--ds-ink);
   color: var(--ds-bg);
   pointer-events: none;
-  box-shadow: 0 10px 28px -10px color-mix(in srgb, var(--ds-ink) 65%, transparent);
+  box-shadow: 0 10px 28px -10px
+    color-mix(in srgb, var(--ds-ink) 65%, transparent);
   z-index: 10000;
 }
 .fc-more-tip::after {
@@ -1122,6 +1123,19 @@
 }
 .fc-xs-vote.d.on {
   color: var(--distrusted, #ef5a5a);
+}
+/* Pending vote — queued in the cart, awaiting on-chain confirmation. A dashed
+   green accent confirms the click registered before the tx settles. */
+.fc-vote.is-pending {
+  border-style: dashed;
+  border-color: var(--intent-trusted, #22c55e);
+  color: var(--intent-trusted, #22c55e);
+}
+.fc-xs-vote.is-pending {
+  border: 1px dashed var(--intent-trusted, #22c55e);
+  border-radius: 6px;
+  padding: 1px 5px;
+  color: var(--intent-trusted, #22c55e);
 }
 .fc-xs-votes--hidden {
   display: none;
