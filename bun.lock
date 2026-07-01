@@ -382,6 +382,23 @@
         "typescript": "^5.4.0",
       },
     },
+    "services/reputation-api": {
+      "name": "reputation-api",
+      "version": "0.1.0",
+      "dependencies": {
+        "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/reputation": "workspace:*",
+        "@0xsofia/taxonomy": "workspace:*",
+        "@prisma/client": "^6.2.0",
+        "hono": "^4.6.0",
+        "viem": "^2.21.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "prisma": "^6.2.0",
+        "typescript": "^5.4.0",
+      },
+    },
   },
   "overrides": {
     "react": "18.2.0",
@@ -4354,6 +4371,8 @@
     "remove-trailing-separator": ["remove-trailing-separator@1.1.0", "", {}, "sha512-/hS+Y0u3aOfIETiaiirUFwDBDzmXPvO+jAfKTitUngIPzdKc6Z0LoFjM/CK5PL4C+eKwHohlHAb6H0VFfmmUsw=="],
 
     "remove-trailing-spaces": ["remove-trailing-spaces@1.0.9", "", {}, "sha512-xzG7w5IRijvIkHIjDk65URsJJ7k4J95wmcArY5PRcmjldIOl7oTvG8+X2Ag690R7SfwiOcHrWZKVc1Pp5WIOzA=="],
+
+    "reputation-api": ["reputation-api@workspace:services/reputation-api"],
 
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 
