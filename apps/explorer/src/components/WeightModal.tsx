@@ -6,6 +6,7 @@ import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
+import { removeCertsFromProfileCache } from '../hooks/useUserOnChainProfile'
 import type { CartItem } from '../hooks/useCart'
 import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import {
@@ -194,6 +195,14 @@ export default function WeightModal({
     )
   }, [items, weights, customValues])
 
+  // A redeem-only cart deposits nothing (totalDeposit === 0) yet is a valid,
+  // signable action — it recovers TRUST. Track it so the submit button isn't
+  // gated by the `totalDeposit <= 0` "nothing to do" guard below.
+  const hasRedeem = useMemo(
+    () => items.some((it) => it.kind === 'redeem'),
+    [items],
+  )
+
   const balNum = balance ? parseFloat(balance) : 0
 
   // Each cart item maps to one or more on-chain operations:
@@ -311,6 +320,7 @@ export default function WeightModal({
       }
       const wallet = wallets[0]
       let lastRedeemHash: string | undefined
+      const redeemedOk: string[] = []
       setCreateTripleProcessing(true)
       setCreateTripleResult(null)
       try {
@@ -325,6 +335,7 @@ export default function WeightModal({
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
             clearOptimisticPosition(qc, wallet.address, termId)
+            redeemedOk.push(termId)
           }
         }
       } catch (err) {
@@ -336,8 +347,15 @@ export default function WeightModal({
       } finally {
         setCreateTripleProcessing(false)
       }
+      // Drop the redeemed certs from the profile cache immediately — the tx
+      // passed, so the vault is empty. Don't invalidate/refetch here: that
+      // races the indexer (still reporting the position for a few seconds)
+      // and re-persists the stale row, so it reappears on reload. staleTime
+      // reconciles on the next natural refetch once the indexer catches up.
+      if (redeemedOk.length > 0) {
+        removeCertsFromProfileCache(qc, redeemedOk)
+      }
       if (allOk) {
-        qc.invalidateQueries({ queryKey: ['user-onchain-profile'] })
         // A redeem-only cart has no deposit/create result to drive the
         // success screen — synthesize one so the panel shows "validated"
         // and the Close tap hands off to onSuccess (clears the cart).
@@ -959,12 +977,12 @@ export default function WeightModal({
                   processing ||
                   verifying ||
                   missingTripleIds.length > 0 ||
-                  totalDeposit <= 0 ||
+                  (totalDeposit <= 0 && !hasRedeem) ||
                   balNum < breakdown.totalEstimate
                 }
               >
                 {processing ? 'Signing…' : verifying ? 'Verifying…' : 'Sign'}
-                {!processing && !verifying && (
+                {!processing && !verifying && breakdown.totalEstimate > 0 && (
                   <span className="b3-btn-amt">
                     {formatTrust(breakdown.totalEstimate)} T
                   </span>

@@ -9,7 +9,7 @@
  * fetch fires per session/key.
  */
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, type QueryClient } from '@tanstack/react-query'
 import {
   fetchUserOnChainProfile,
   type UserOnChainProfile,
@@ -119,4 +119,34 @@ function safeBigInt(v: string | number | null | undefined): bigint {
   } catch {
     return 0n
   }
+}
+
+/**
+ * Optimistically drop redeemed certs from the profile cache. A redeem
+ * empties the user's vault, so the cert should vanish from the Context
+ * Manager the instant the tx confirms — waiting on an `invalidateQueries`
+ * refetch races the indexer (which still reports the position for a few
+ * seconds post-tx) and re-persists the stale row, so it reappears on
+ * reload. Removing the row locally is the race-free source of truth; the
+ * next natural refetch (staleTime) reconciles once the indexer catches up.
+ *
+ * Writes into every wallet-set variant of the key so linked-wallet
+ * profiles stay consistent.
+ */
+export function removeCertsFromProfileCache(
+  qc: QueryClient,
+  termIds: readonly string[],
+): void {
+  if (termIds.length === 0) return
+  const drop = new Set(termIds.map((t) => t.toLowerCase()))
+  qc.setQueriesData<PersistedProfile>(
+    { queryKey: ['user-onchain-profile'] },
+    (old) =>
+      old
+        ? {
+            ...old,
+            certs: old.certs.filter((c) => !drop.has(c.termId.toLowerCase())),
+          }
+        : old,
+  )
 }
