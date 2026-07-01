@@ -19,7 +19,7 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const { ready, authenticated } = usePrivy()
   const { login } = useLogin({
-    onComplete: () => navigate('/profile'),
+    onComplete: () => navigate('/explore'),
   })
   // Live on-chain group count — feeds the "Discover Circles" badge so
   // the CTA reads as a real, populated network rather than a static
@@ -29,7 +29,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (ready && authenticated) {
-      navigate('/profile', { replace: true })
+      navigate('/explore', { replace: true })
     }
   }, [ready, authenticated, navigate])
 

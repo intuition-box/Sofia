@@ -316,7 +316,7 @@
 
 .cr-card {
   position: relative;
-  background: var(--ds-card);
+  background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
   border-radius: 16px;
   padding: 28px 28px 24px;
@@ -331,13 +331,13 @@
   color: inherit;
   width: 100%;
 }
-/* Unified card hover (same as the explore page): lift + peach TINT fill +
-   solid peach border + soft shadow. A tint keeps the surface dark enough in
-   dark mode that the white text stays readable. Shadow only on hover. */
+/* Unified card hover — identical to the feed / explore cards (.fc-card:hover):
+   keep the --ds-card surface (no accent tint), darken the border neutrally, and
+   lift with a soft shadow. This reads correctly in white mode, where an accent
+   fill looked off. Shadow only on hover. */
 .cr-card:hover {
   transform: translateY(-2px);
-  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
-  border-color: var(--ds-accent);
+  border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 

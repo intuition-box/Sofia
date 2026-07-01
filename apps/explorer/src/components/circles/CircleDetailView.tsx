@@ -481,6 +481,7 @@ export default function CircleDetailView({
           showPlan={showPlan}
           onUpgrade={upgrade}
           onToast={circleUpsellToast}
+          allowTrustAdd={circle.kind === 'trust'}
         />
       ) : (
         <AllMembersPanel

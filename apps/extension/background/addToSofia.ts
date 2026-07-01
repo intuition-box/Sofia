@@ -44,27 +44,36 @@ function buildMenu() {
   })
 }
 
-// Queue the qualified page into the connected wallet's cart. No wallet → the
-// modal prompts a connect; an unknown predicate / duplicate is rejected by
-// CartService.addItem (returns false).
+// Queue the qualified page into the connected wallet's cart — ONE cart item per
+// chosen intention (the cart's compound key is wallet:url:predicate, so multiple
+// predicates on the same URL coexist). No wallet → the modal prompts a connect;
+// an unknown predicate / duplicate is rejected by CartService.addItem (returns
+// false). We report ok when at least one item was queued; all-duplicate → the
+// "already in your cart" toast.
 export async function handleAddToCart(
   msg: AddToCartMessage
 ): Promise<AddToCartResponse> {
   const wallet = await getStoredWalletAddress()
   if (!wallet) return { ok: false, reason: "no-wallet" }
+  const intentions = msg.intentions ?? []
+  if (!intentions.length) return { ok: false, reason: "error" }
   try {
-    const predicateName = INTENTION_PREDICATES[msg.intention]
-    const added = await cartService.addItem(
-      wallet,
-      msg.url,
-      msg.title || null,
-      predicateName,
-      msg.intention,
-      getFaviconUrl(msg.url, 128),
-      msg.contextSlugs,
-      msg.objectTermId
-    )
-    return added ? { ok: true } : { ok: false, reason: "duplicate" }
+    const favicon = getFaviconUrl(msg.url, 128)
+    let anyAdded = false
+    for (const intention of intentions) {
+      const added = await cartService.addItem(
+        wallet,
+        msg.url,
+        msg.title || null,
+        INTENTION_PREDICATES[intention],
+        intention,
+        favicon,
+        msg.contextSlugs,
+        msg.objectTermId
+      )
+      anyAdded = anyAdded || added
+    }
+    return anyAdded ? { ok: true } : { ok: false, reason: "duplicate" }
   } catch (e) {
     logger.warn("addItem failed", e)
     return { ok: false, reason: "error" }

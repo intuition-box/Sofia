@@ -154,7 +154,7 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: var(--ds-card);
+  background: var(--ds-bg-subtle);
   border: 1px solid var(--ds-border);
   cursor: pointer;
   transition:
@@ -165,13 +165,12 @@
   overflow: hidden;
   min-height: 128px;
 }
-/* Unified card hover (shared with .hm-circle + .cr-card): lift + peach TINT
-   fill + solid peach border + soft shadow. A tint (not solid peach) keeps the
-   surface dark enough in dark mode that the white text stays readable. */
+/* Card hover — identical to the feed cards (.fc-card:hover): keep the
+   --ds-card surface (no accent fill), darken the border neutrally, lift with a
+   soft shadow. Same behavior in light and dark mode. */
 .hm-tile:hover {
   transform: translateY(-2px);
-  border-color: var(--ds-accent);
-  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
+  border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
 }
 .hm-tile:focus-visible {
@@ -646,7 +645,7 @@
   padding: 16px 18px;
   border: 1px solid var(--ds-border);
   border-radius: 14px;
-  background: var(--ds-card);
+  background: var(--ds-bg-subtle);
   cursor: pointer;
   transition:
     transform 0.15s ease,
@@ -656,8 +655,7 @@
 .hm-circle:hover,
 .hm-circle:focus-visible {
   transform: translateY(-2px);
-  border-color: var(--ds-accent);
-  background: color-mix(in oklab, var(--ds-accent) 22%, var(--ds-card));
+  border-color: color-mix(in srgb, var(--ds-border) 55%, var(--ds-ink) 14%);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   outline: none;
 }

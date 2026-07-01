@@ -53,54 +53,89 @@ export default function TopicScorePie({
   const [centerHover, setCenterHover] = useState(false)
   const total = slices.reduce((a, s) => a + s.score, 0)
 
+  // Empty state — a brand-new user with no score. Render a single neutral
+  // full ring (grey "0" donut) instead of hiding the donut behind a CTA, so
+  // the score visual is always present. The placeholder slice isn't
+  // interactive (no focus / no drill-in).
+  const isEmpty = slices.length === 0 || total <= 0
+
   // Build contiguous arc segments sized by share of total.
   let acc = 0
-  const segs = slices.map((s) => {
-    const len = total > 0 ? (s.score / total) * C : 0
-    const seg = { slice: s, dash: len, off: -acc }
-    acc += len
-    return seg
-  })
+  const segs = isEmpty
+    ? [
+        {
+          slice: {
+            id: '__empty__',
+            label: '',
+            emoji: '',
+            color: 'var(--ds-border)',
+            score: 0,
+          },
+          dash: C,
+          off: 0,
+        },
+      ]
+    : slices.map((s) => {
+        const len = total > 0 ? (s.score / total) * C : 0
+        const seg = { slice: s, dash: len, off: -acc }
+        acc += len
+        return seg
+      })
 
   const focused = focus ? (slices.find((s) => s.id === focus) ?? null) : null
 
   return (
     <div className={`donut${focus ? ' dim' : ''}`}>
       <svg className="donut-svg" viewBox="0 0 248 248">
-        {segs.map((s) => (
-          <circle
-            key={s.slice.id}
-            className={`donut-seg${focus === s.slice.id ? ' hot' : ''}`}
-            cx={124}
-            cy={124}
-            r={R}
-            fill="none"
-            stroke={s.slice.color}
-            strokeWidth={SW}
-            strokeLinecap="butt"
-            strokeDasharray={`${s.dash.toFixed(2)} ${(C - s.dash).toFixed(2)}`}
-            strokeDashoffset={s.off.toFixed(2)}
-            role="button"
-            tabIndex={0}
-            aria-label={
-              onSelectTopic
-                ? `${s.slice.label}: ${Math.round(s.slice.score)} — view topic`
-                : `${s.slice.label}: ${Math.round(s.slice.score)}`
-            }
-            style={onSelectTopic ? { cursor: 'pointer' } : undefined}
-            onMouseEnter={() => setFocus(s.slice.id)}
-            onMouseLeave={() => setFocus(null)}
-            onFocus={() => setFocus(s.slice.id)}
-            onBlur={() => setFocus(null)}
-            onClick={() => onSelectTopic?.(s.slice.id)}
-            onKeyDown={(e) => {
-              if (onSelectTopic && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault()
-                onSelectTopic(s.slice.id)
+        {segs.map((s) =>
+          isEmpty ? (
+            <circle
+              key={s.slice.id}
+              className="donut-seg donut-seg--empty"
+              cx={124}
+              cy={124}
+              r={R}
+              fill="none"
+              stroke={s.slice.color}
+              strokeWidth={SW}
+              strokeLinecap="butt"
+              aria-hidden="true"
+            />
+          ) : (
+            <circle
+              key={s.slice.id}
+              className={`donut-seg${focus === s.slice.id ? ' hot' : ''}`}
+              cx={124}
+              cy={124}
+              r={R}
+              fill="none"
+              stroke={s.slice.color}
+              strokeWidth={SW}
+              strokeLinecap="butt"
+              strokeDasharray={`${s.dash.toFixed(2)} ${(C - s.dash).toFixed(2)}`}
+              strokeDashoffset={s.off.toFixed(2)}
+              role="button"
+              tabIndex={0}
+              aria-label={
+                onSelectTopic
+                  ? `${s.slice.label}: ${Math.round(s.slice.score)} — view topic`
+                  : `${s.slice.label}: ${Math.round(s.slice.score)}`
               }
-            }}
-          />
-        ))}
+              style={onSelectTopic ? { cursor: 'pointer' } : undefined}
+              onMouseEnter={() => setFocus(s.slice.id)}
+              onMouseLeave={() => setFocus(null)}
+              onFocus={() => setFocus(s.slice.id)}
+              onBlur={() => setFocus(null)}
+              onClick={() => onSelectTopic?.(s.slice.id)}
+              onKeyDown={(e) => {
+                if (onSelectTopic && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault()
+                  onSelectTopic(s.slice.id)
+                }
+              }}
+            />
+          ),
+        )}
       </svg>
       <div
         className={`donut-center${focused ? ' has-focus' : ''}`}
@@ -140,7 +175,11 @@ export default function TopicScorePie({
               {Math.round(total).toLocaleString()}
             </span>
             <span className={`donut-cap${refining ? ' refining' : ''}`}>
-              {refining ? 'refining trust…' : 'Total score'}
+              {refining
+                ? 'refining trust…'
+                : isEmpty
+                  ? 'Certify to start'
+                  : 'Total score'}
             </span>
           </>
         )}

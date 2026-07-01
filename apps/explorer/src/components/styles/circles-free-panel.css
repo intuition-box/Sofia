@@ -118,6 +118,46 @@
 .cf-panel-search input::placeholder {
   color: var(--ds-muted-soft);
 }
+/* ── Header actions + "+ Add" button (Trust Circle) ──────────── */
+.cf-panel-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+/* Primary action: solid peach fill with readable dark text. On hover it
+   flips to ink (black in white mode, white in dark mode) with contrasting
+   text (--ds-bg), so the label stays legible in both themes. */
+.cf-panel-add-btn {
+  /* Matches the circle buttons (.cf-btn): JetBrains Mono, 11px, weight 600. */
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  transition:
+    background 0.13s ease,
+    color 0.13s ease;
+}
+.cf-panel-add-btn:hover {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}
+
+/* Stacked variant — the "Add people" panel opens above the Members panel. */
+.cf-panel-scrim--stacked {
+  z-index: 108;
+}
+.cf-panel--stacked {
+  z-index: 110;
+}
+
 .cf-panel-list {
   flex: 1;
   overflow-y: auto;
