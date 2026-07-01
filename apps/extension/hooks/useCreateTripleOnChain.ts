@@ -225,7 +225,15 @@ export const useCreateTripleOnChain = () => {
    * Subject = cert triple vault ID, Predicate = "in context of", Object = topic atom.
    */
   const createContextTriplesBatch = async (
-    contextItems: { certTripleVaultId: string; topicTermId: string }[]
+    contextItems: {
+      certTripleVaultId: string
+      /** Set when the context atom is already on-chain (registry hit). */
+      topicTermId?: string
+      /** Set when the context atom must be minted first (registry miss). The
+       *  canonical Sofia taxonomy payload — same as the explorer's, so both
+       *  dedup to one shared atom. */
+      mintPayload?: { name: string; description: string; url: string }
+    }[]
   ): Promise<BatchTripleResult> => {
     try {
       if (!address) {
@@ -251,12 +259,45 @@ export const useCreateTripleOnChain = () => {
         logger.info("Created 'in context of' predicate atom", { predicateVaultId })
       }
 
-      // Build resolved triples: certTriple → "in context of" → topicAtom
-      const resolvedTriples: ResolvedTriple[] = contextItems.map(item => ({
-        subjectId: item.certTripleVaultId,
-        predicateId: predicateVaultId!,
-        objectId: item.topicTermId,
-      }))
+      // Mint any context object atoms that aren't on-chain yet (registry miss).
+      // createAtomsFromPinned is idempotent — an existing atom is resolved, not
+      // re-minted. Keyed by atom name (= taxonomy label, unique per context).
+      const mintByName: Record<string, string> = {}
+      const toMint = contextItems.filter(i => !i.topicTermId && i.mintPayload)
+      if (toMint.length > 0) {
+        const uniquePayloads = Array.from(
+          new Map(toMint.map(i => [i.mintPayload!.name, i.mintPayload!])).values()
+        )
+        const pinned = await Promise.all(
+          uniquePayloads.map(p => pinAtomToIPFS(p))
+        )
+        const created = await createAtomsFromPinned(pinned)
+        for (const [name, atom] of Object.entries(created)) {
+          mintByName[name] = atom.vaultId
+        }
+        logger.info("Minted/resolved context atoms", { count: uniquePayloads.length })
+      }
+
+      // Build resolved triples: certTriple → "in context of" → contextAtom.
+      // Drop any item whose object couldn't be resolved (mint failure) so a
+      // bad context never poisons the whole batch.
+      const resolvedTriples: ResolvedTriple[] = contextItems
+        .map(item => {
+          const objectId =
+            item.topicTermId ??
+            (item.mintPayload ? mintByName[item.mintPayload.name] : undefined)
+          if (!objectId) return null
+          return {
+            subjectId: item.certTripleVaultId,
+            predicateId: predicateVaultId!,
+            objectId,
+          }
+        })
+        .filter(Boolean) as ResolvedTriple[]
+
+      if (resolvedTriples.length === 0) {
+        return { success: true, results: [], failedTriples: [] }
+      }
 
       return tripleService.createTriplesBatch(resolvedTriples, address)
     } catch (error) {

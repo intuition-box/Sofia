@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 
-import { contextAtomIdForSlug } from "@0xsofia/taxonomy"
+import { contextAtomRefForSlug } from "@0xsofia/taxonomy"
 import type { CartItemRecord } from "~/lib/database"
 import {
   BlockchainService,
@@ -157,17 +157,36 @@ export const useCartSubmit = () => {
                 return []
               }
               // One `in context of` triple per context — a slug is a topic OR
-              // a category, resolved to its on-chain atom either way.
+              // a category. Hybrid resolve: use the registered atom when known,
+              // else carry the canonical payload so the atom is minted (once,
+              // idempotently) at submit instead of silently dropped.
               return slugs
                 .map((slug) => {
-                  const topicTermId = contextAtomIdForSlug(slug)
-                  return topicTermId
-                    ? { certTripleVaultId: tripleVaultId, topicTermId }
-                    : null
+                  const ref = contextAtomRefForSlug(slug)
+                  if (!ref) return null
+                  if (ref.kind === "known") {
+                    return {
+                      certTripleVaultId: tripleVaultId,
+                      topicTermId: ref.termId
+                    }
+                  }
+                  return {
+                    certTripleVaultId: tripleVaultId,
+                    mintPayload: {
+                      name: ref.payload.name,
+                      description: ref.payload.description,
+                      url: ref.payload.url
+                    }
+                  }
                 })
                 .filter(Boolean) as {
                 certTripleVaultId: string
-                topicTermId: string
+                topicTermId?: string
+                mintPayload?: {
+                  name: string
+                  description: string
+                  url: string
+                }
               }[]
             })
 

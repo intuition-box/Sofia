@@ -69,7 +69,11 @@ export function contextAtomPayload(
 ): ContextAtomPayload {
   return {
     name: label,
-    description: '',
+    // NON-EMPTY on purpose: the extension's AtomService substitutes a default
+    // description when this is empty, which would change the pinned JSON (and
+    // thus the atom id) vs the explorer. A fixed constant keeps both apps
+    // byte-identical so they dedup to the same on-chain atom.
+    description: 'Sofia taxonomy context',
     image: '',
     url: `sofia:context:${slug}`,
   }
