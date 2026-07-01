@@ -56,16 +56,6 @@
   text-align: left;
 }
 
-.ns-circle-count {
-  margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--ds-muted);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
 .ns-circle-avatars {
   display: flex;
   align-items: center;

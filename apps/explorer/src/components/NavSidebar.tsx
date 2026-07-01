@@ -301,9 +301,6 @@ export function NavSidebar({
                 >
                   <div className="ns-circle-head">
                     <span className="ns-circle-name">Trust Circle</span>
-                    <span className="ns-circle-count">
-                      {trustCircle.length}
-                    </span>
                   </div>
                   <div className="ns-circle-avatars">
                     {trustCircle.slice(0, 5).map((a) => {
@@ -357,9 +354,6 @@ export function NavSidebar({
                   >
                     <div className="ns-circle-head">
                       <span className="ns-circle-name">{group.label}</span>
-                      <span className="ns-circle-count">
-                        {group.memberCount}
-                      </span>
                     </div>
                     <div className="ns-circle-avatars">
                       {previewMembers.map((m) => {
