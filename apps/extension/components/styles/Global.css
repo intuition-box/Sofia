@@ -12,6 +12,7 @@
 @import "@0xsofia/design-system/theme.css";
 @import "@0xsofia/design-system/styles/feed-card.css";
 @import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/topic-pill.css";
 @import "@0xsofia/design-system/styles/user-badge.css";
 @import "@0xsofia/design-system/styles/bento.css";
 @import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
@@ -42,56 +43,12 @@
   --ds-font-display: "Poppins", "Hind", system-ui, sans-serif;
 }
 
-/* Unified verb/tag style — extension-scoped theme of the shared DS
-   `.fc-verb-tag` (verb-tag.css). One look everywhere in the side panel:
-   ink text (white on the pinned-dark theme) + colored icon/border + a subtle
-   color fill, tighter radius. `--verb-color` (the intent color) drives the
-   icon + fill so the Categorisation chips and the Stats tags render identically.
-   Scoped here rather than in the DS so the explorer's feed tags keep their own
-   look. Per-intent rules match the DS specificity and win by cascade order. */
-.fc-verb-tag {
-  border-radius: 5px;
-  background: color-mix(
-    in srgb,
-    var(--verb-color, transparent) 12%,
-    transparent
-  );
-}
-.fc-verb-tag .fc-verb-ic {
-  color: var(--verb-color, currentColor);
-}
-.fc-verb-tag.trusted {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-trusted);
-}
-.fc-verb-tag.distrusted {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-distrusted);
-}
-.fc-verb-tag.work {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-work);
-}
-.fc-verb-tag.learning {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-learning);
-}
-.fc-verb-tag.fun {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-fun);
-}
-.fc-verb-tag.inspiration {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-inspiration);
-}
-.fc-verb-tag.buying {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-buying);
-}
-.fc-verb-tag.music {
-  color: var(--ds-ink);
-  --verb-color: var(--intent-music);
-}
+/* Verb pills (`.fc-verb-tag`) + feed-card verb chips (`.fc-verb-tag--sm`) now
+   use the canonical DS look (outlined — intent-colored text + border + icon,
+   transparent fill) straight from verb-tag.css. The extension's old filled /
+   white-ink overrides were removed during the pill unification. The only
+   surface that keeps a filled chip is the Categorisation dropdown, which owns
+   its self-contained `.ext-cat-chip` (CategorisationDropdown.css). */
 
 /* Reset CSS global */
 * {

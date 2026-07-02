@@ -90,8 +90,8 @@
   flex-wrap: wrap;
   gap: 6px;
 }
-/* The pills themselves reuse the feed's .fc-verb class (see FeedPillsDemo) so
-   they render exactly like the real feed pills. */
+/* The pills themselves reuse the feed's canonical `.fc-verb-tag--sm` /
+   <TopicPill> (see FeedPillsDemo) so they render exactly like the real feed. */
 
 .phint-text {
   font-size: 13px;

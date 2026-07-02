@@ -4,9 +4,15 @@
  * metadata, and an expandable section with intention + context selectors.
  */
 
+import { TopicPill, VerbTag } from "@0xsofia/design-system"
 import { useState } from "react"
 
-import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
+import {
+  contextColor,
+  contextIcon,
+  contextLabel
+} from "~/lib/config/contextDisplay"
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import {
   formatDuration,
   formatShortDate,
@@ -17,8 +23,8 @@ import {
   CERTIFICATION_LIST,
   INTENTION_CONFIG,
   INTENTION_ITEMS,
-  type IntentionType,
-  TRUST_ITEMS
+  TRUST_ITEMS,
+  type IntentionType
 } from "~/types/intentionCategories"
 import type { GroupUrlRecord } from "~types/database"
 
@@ -187,28 +193,28 @@ function UrlRow({
             {((isCertifiedOnChain && allCertInfos.length > 0) ||
               certifiedContexts.length > 0) && (
               <div className="cert-badges">
-                {allCertInfos.map((certInfo) => (
-                  <span
-                    key={certInfo.type}
-                    className="cert-badge on-chain"
-                    style={{ backgroundColor: certInfo.color }}
-                    title={`Marked as ${certInfo.label} (on-chain)`}>
-                    {certInfo.label}
-                  </span>
-                ))}
-                {certifiedContexts.map((slug) => {
-                  const label = TOPIC_LABELS[slug] || slug
-                  const color = TOPIC_COLORS[slug] || "var(--ds-accent)"
+                {allCertInfos.map((certInfo) => {
+                  const Icon = INTENTION_ICONS[certInfo.type]
                   return (
-                    <span
-                      key={`ctx-${slug}`}
-                      className="cert-badge cert-badge--context"
-                      style={{ color, borderColor: color }}
-                      title={`Marked in context of ${label}`}>
-                      {label}
-                    </span>
+                    <VerbTag
+                      key={certInfo.type}
+                      intent={certInfo.type}
+                      label={certInfo.label}
+                      icon={Icon ? <Icon className="fc-verb-ic" /> : undefined}
+                      title={`Marked as ${certInfo.label} (on-chain)`}
+                    />
                   )
                 })}
+                {certifiedContexts.map((slug) => (
+                  <TopicPill
+                    key={`ctx-${slug}`}
+                    color={contextColor(slug)}
+                    label={contextLabel(slug) ?? slug}
+                    glyph={contextIcon(slug)}
+                    size="sm"
+                    title={`Marked in context of ${contextLabel(slug) ?? slug}`}
+                  />
+                ))}
               </div>
             )}
             <span className="url-date">

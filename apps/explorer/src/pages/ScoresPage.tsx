@@ -55,6 +55,7 @@ import FeedCardView, {
   type FeedCardTopic,
 } from '@/components/feed/FeedCardView'
 import ContextPicker from '@/components/ContextPicker'
+import { TopicPill } from '@/components/profile/FeedPills'
 import { categoryPills } from '@/config/contextNodes'
 import { ScoresDonut, type Seg } from '@/components/scores/ScoresDonut'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
@@ -538,16 +539,12 @@ export default function ScoresPage() {
                 key={r.slug}
                 onClick={() => setSel(r.slug)}
               >
-                <span
-                  className="sc2-rank-dot"
-                  style={{ background: r.color }}
+                <TopicPill
+                  iconOnly
+                  topicId={r.slug}
+                  color={r.color}
+                  label={r.label}
                 />
-                <span
-                  className="material-symbols-outlined sc2-rank-glyph"
-                  aria-hidden="true"
-                >
-                  {getTopicIcon(r.slug)}
-                </span>
                 <span className="sc2-rank-label">{r.label}</span>
                 <span
                   className={`sc2-rank-score${r.score === 0 ? ' zero' : ''}`}

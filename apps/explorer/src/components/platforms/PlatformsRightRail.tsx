@@ -18,7 +18,10 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
-import type { PlatformVaultData } from '@/services/platformMarketService'
+import {
+  resolvePlatformImage,
+  type PlatformVaultData,
+} from '@/services/platformMarketService'
 import '@/components/styles/platforms-right-rail.css'
 
 function formatMCap(raw: string): string {
@@ -178,7 +181,8 @@ export default function PlatformsRightRail() {
                     <span className="prr-row-rank">{i + 1}</span>
                     <FaviconWrapper
                       size={24}
-                      src={`/favicons/${slug}.png`}
+                      src={slug ? `/favicons/${slug}.png` : undefined}
+                      fallbackSrc={resolvePlatformImage(market.image)}
                       alt={market.label}
                     />
                     <span className="prr-row-name">{market.label}</span>
@@ -223,7 +227,12 @@ export default function PlatformsRightRail() {
                 <FaviconWrapper
                   className="prr-mover-fav"
                   size={20}
-                  src={`/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.best.termId) || ''}.png`}
+                  src={
+                    ATOM_ID_TO_PLATFORM.get(myPositions.best.termId)
+                      ? `/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.best.termId)}.png`
+                      : undefined
+                  }
+                  fallbackSrc={resolvePlatformImage(myPositions.best.image)}
                   alt={myPositions.best.label}
                 />
                 <span className="prr-mover-name">{myPositions.best.label}</span>
@@ -240,7 +249,12 @@ export default function PlatformsRightRail() {
                   <FaviconWrapper
                     className="prr-mover-fav"
                     size={20}
-                    src={`/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.worst.termId) || ''}.png`}
+                    src={
+                      ATOM_ID_TO_PLATFORM.get(myPositions.worst.termId)
+                        ? `/favicons/${ATOM_ID_TO_PLATFORM.get(myPositions.worst.termId)}.png`
+                        : undefined
+                    }
+                    fallbackSrc={resolvePlatformImage(myPositions.worst.image)}
                     alt={myPositions.worst.label}
                   />
                   <span className="prr-mover-name">
@@ -268,7 +282,8 @@ export default function PlatformsRightRail() {
                   <li key={market.termId} className="prr-position">
                     <FaviconWrapper
                       size={20}
-                      src={`/favicons/${slug}.png`}
+                      src={slug ? `/favicons/${slug}.png` : undefined}
+                      fallbackSrc={resolvePlatformImage(market.image)}
                       alt={market.label}
                     />
                     <span className="prr-position-name">{market.label}</span>

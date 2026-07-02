@@ -4,8 +4,9 @@
  * (what it's about) is shown, not just told.
  *
  * Matches the explore feed exactly (see FeedCardView): intentions render as the
- * `.fc-verb` chip (tinted, lucide icon), topics render via <TopicPill> (solid
- * topic color, black glyph) — the same components the feed cards use.
+ * canonical `.fc-verb-tag--sm` chip (outlined, intent-colored text + border +
+ * lucide icon), topics render via <TopicPill> (solid topic color, black glyph)
+ * — the same pills the feed cards use.
  */
 
 import type { CSSProperties } from 'react'
@@ -42,7 +43,7 @@ export default function FeedPillsDemo() {
             return (
               <span
                 key={type}
-                className="fc-verb"
+                className="fc-verb-tag fc-verb-tag--sm"
                 style={{ ['--vc']: cfg.color } as CSSProperties}
               >
                 <Icon className="fc-verb-ic" />

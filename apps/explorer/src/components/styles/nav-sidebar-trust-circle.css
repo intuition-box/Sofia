@@ -47,13 +47,6 @@
   margin-bottom: 8px;
 }
 
-.ns-circle-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
 .ns-circle-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -63,20 +56,9 @@
   text-align: left;
 }
 
-.ns-circle-count {
-  margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--ds-muted);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
 .ns-circle-avatars {
   display: flex;
   align-items: center;
-  padding-left: 15px;
 }
 
 .ns-mav {
@@ -108,14 +90,4 @@
 [data-theme='dark'] .ns-mav-more,
 .dark .ns-mav-more {
   background: var(--ds-border);
-}
-
-.ns-mav-add {
-  background: var(--ds-ink);
-  color: var(--ds-bg);
-  cursor: default;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1;
-  margin-left: 4px;
 }

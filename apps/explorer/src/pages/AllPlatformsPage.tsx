@@ -22,7 +22,10 @@ import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useProvideRightRail } from '@/contexts/RightRailContext'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
-import type { PlatformVaultData } from '@/services/platformMarketService'
+import {
+  resolvePlatformImage,
+  type PlatformVaultData,
+} from '@/services/platformMarketService'
 import '@/components/styles/pages.css'
 import '@/components/styles/platform-market.css'
 
@@ -63,16 +66,6 @@ function formatMCap(raw: string): string {
 function formatShare(raw: string): string {
   const num = parseFloat(formatEther(BigInt(raw || '0')))
   return num >= 1 ? num.toFixed(2) : num.toFixed(4)
-}
-
-// On-chain atom images may be `ipfs://CID` URIs the browser can't fetch
-// directly — rewrite them to an HTTP gateway so the <img> loads.
-function resolvePlatformImage(url?: string): string | undefined {
-  if (!url) return undefined
-  if (url.startsWith('ipfs://')) {
-    return `https://ipfs.io/ipfs/${url.slice('ipfs://'.length).replace(/^ipfs\//, '')}`
-  }
-  return url
 }
 
 export default function AllPlatformsPage() {

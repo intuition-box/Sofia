@@ -16,6 +16,7 @@ import FeedCardView, {
 import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
 import { getIntentionIconByLabel } from '@/config/intentionIcons'
+import { useCart } from '@/hooks/useCart'
 import '@/components/styles/feed-card.css'
 
 interface FeedCardProps {
@@ -59,6 +60,23 @@ export default function FeedCard({
   const canSupport = item.contextTriples.some((c) => c.termId)
   const canOppose = item.contextTriples.some((c) => c.counterTermId)
 
+  // Queued-in-cart state — a like/dislike goes to the cart first and settles
+  // on-chain at batch submit. Mark the matching thumb as pending (dashed green)
+  // so the click gives immediate feedback while the tx is still unconfirmed.
+  const { items: cartItems } = useCart()
+  const pendingUp = item.contextTriples.some(
+    (c) =>
+      c.termId &&
+      cartItems.some((ci) => ci.termId === c.termId && ci.side === 'support'),
+  )
+  const pendingDown = item.contextTriples.some(
+    (c) =>
+      c.counterTermId &&
+      cartItems.some(
+        (ci) => ci.termId === c.counterTermId && ci.side === 'oppose',
+      ),
+  )
+
   const verbs: FeedCardVerb[] = item.intentions.map((label) => {
     const Icon = getIntentionIconByLabel(label)
     return {
@@ -99,6 +117,8 @@ export default function FeedCard({
       down={opposes}
       userUp={userSupported}
       userDown={userOpposed}
+      pendingUp={pendingUp}
+      pendingDown={pendingDown}
       canUp={canSupport}
       canDown={canOppose}
       onVote={onDeposit ? (side) => onDeposit(side, item) : undefined}

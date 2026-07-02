@@ -17,6 +17,20 @@ import {
 } from '@0xsofia/design-system'
 import { UrlPreview } from '@/components/UrlPreview'
 import { TopicPill } from '@/components/profile/FeedPills'
+import { getIntentionIconByLabel } from '@/config/intentionIcons'
+
+/** Inject the intent glyph into every verb chip that doesn't already carry one,
+ *  resolved from the verb label — so feed cards show the colored icon + label
+ *  (matching every other verb pill) instead of a bare label. */
+function withVerbIcons(verbs: FeedCardViewProps['verbs']) {
+  return verbs.map((v) => {
+    if (v.icon) return v
+    const Icon = getIntentionIconByLabel(v.label)
+    return Icon
+      ? { ...v, icon: <Icon className="fc-verb-ic" aria-hidden="true" /> }
+      : v
+  })
+}
 
 export type {
   FeedCardSize,
@@ -61,6 +75,7 @@ export default function FeedCardView(props: FeedCardViewProps) {
   return (
     <DSFeedCardView
       {...props}
+      verbs={withVerbIcons(props.verbs)}
       renderMedia={renderMedia}
       renderTopic={props.renderTopic ?? defaultRenderTopic}
     />

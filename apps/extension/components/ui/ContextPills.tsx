@@ -5,14 +5,17 @@
  * explorer (dot + label per hidden context). Ported from the explorer's
  * ChipOverflowRow (glitch-free: a hidden mirror is measured pre-paint).
  */
-import type { CSSProperties } from "react"
+import {
+  TopicPill,
+  useAnchoredTooltip,
+  useChipOverflow
+} from "@0xsofia/design-system"
 import { createPortal } from "react-dom"
-import { useChipOverflow, useAnchoredTooltip } from "@0xsofia/design-system"
 
 import {
   contextColor,
   contextIcon,
-  contextLabel,
+  contextLabel
 } from "~/lib/config/contextDisplay"
 
 import "../styles/ContextPicker.css"
@@ -30,7 +33,7 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
       slug,
       label: contextLabel(slug),
       color: contextColor(slug),
-      icon: contextIcon(slug),
+      icon: contextIcon(slug)
     }))
     .filter((c): c is ResolvedPill => Boolean(c.label))
 
@@ -42,24 +45,20 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
   if (total === 0) return null
 
   const hidden = chips.slice(shown)
+  // Visible pills use the shared DS <TopicPill>; the hidden mirror below keeps
+  // raw `.sf-topic-pill` spans (same class → same width) carrying `data-chip`
+  // for the overflow measure.
   const pill = (c: ResolvedPill) => (
-    <span
-      key={c.slug}
-      className="sf-topic-pill"
-      style={{ "--pill-color": c.color } as CSSProperties}>
-      <span
-        className="material-symbols-outlined sf-topic-pill-glyph"
-        aria-hidden>
-        {c.icon}
-      </span>
-      {c.label}
-    </span>
+    <TopicPill key={c.slug} color={c.color} label={c.label} glyph={c.icon} />
   )
 
   return (
     <div className="ext-cp-wrap">
       {/* hidden mirror — all chips, measured for the first-line fit */}
-      <div className="ext-cp-row ext-cp-row--measure" ref={mirrorRef} aria-hidden>
+      <div
+        className="ext-cp-row ext-cp-row--measure"
+        ref={mirrorRef}
+        aria-hidden>
         {chips.map((c) => (
           <span key={c.slug} data-chip="1" className="sf-topic-pill">
             <span
@@ -111,7 +110,7 @@ export default function ContextPills({ slugs }: { slugs: string[] }) {
               </div>
             ))}
           </div>,
-          document.body,
+          document.body
         )}
     </div>
   )

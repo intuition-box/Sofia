@@ -800,31 +800,10 @@
   align-items: center;
 }
 
-.cert-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 11px;
-  border-radius: 6px;
-  color: #000;
-  font-family: var(--font-family-mono, "JetBrains Mono", monospace);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  flex-shrink: 0;
-  border: none;
-}
-
-/* Topic/context badge — same size & font as the verb badge, but the
-   topic color applies to the text + border instead of the background
-   (color + borderColor injected inline from the topic palette). */
-.cert-badge--context {
-  background: transparent;
-  border: 1px solid currentColor;
-}
+/* `.cert-badge` (filled verb badge) and `.cert-badge--context` (outlined topic
+   badge) were removed during the pill unification. UrlRow + HistoryTab now
+   render the shared DS <VerbTag> / <TopicPill>. The `.cert-badges` flex
+   container above is kept — it still wraps those pills. */
 
 .empty-urls {
   text-align: center;
@@ -1097,10 +1076,6 @@
   width: 12px;
   height: 12px;
   margin-left: 4px;
-}
-
-.cert-badge.on-chain {
-  box-shadow: none;
 }
 
 .amplify-btn .loading-text {

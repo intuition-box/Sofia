@@ -19,6 +19,7 @@
     "./styles/favicon.css": "./src/styles/favicon.css",
     "./styles/feed-card.css": "./src/styles/feed-card.css",
     "./styles/verb-tag.css": "./src/styles/verb-tag.css",
+    "./styles/topic-pill.css": "./src/styles/topic-pill.css",
     "./styles/user-badge.css": "./src/styles/user-badge.css",
     "./styles/interests.css": "./src/styles/interests.css",
     "./styles/nav-sidebar.css": "./src/styles/nav-sidebar.css",

@@ -178,15 +178,10 @@
   border-color: transparent;
   color: #02000e;
 }
-.cf-btn-ghost {
-  background: transparent;
-}
-
 /* ── KPI band ────────────────────────────────────────────────── */
 .cf-kpis {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--ds-border-soft);
 }
 /* Trust Circle has no locked "Decisions" tile — drop to two columns so the
    remaining KPIs fill the band instead of leaving a gap. */
@@ -215,12 +210,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ds-muted);
-}
-.cf-kpi-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 .cf-kpi-value {
   font-family: var(--ds-font-display);
@@ -359,6 +348,25 @@
   text-transform: uppercase;
   color: var(--ds-muted);
 }
+/* Clickable "View all" variant of the note — sits top-right of the module
+   head, replacing the old foot button. */
+.cf-module-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.cf-module-link:hover {
+  color: var(--ds-ink);
+}
+.cf-module-link .cf-btn-icon {
+  width: 13px;
+  height: 13px;
+}
 .cf-top3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -452,14 +460,6 @@
   color: var(--ds-muted-soft);
   margin-top: 4px;
 }
-.cf-module-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
 /* Peach "Pro hint" pill — shared by module foot + panel foot. */
 .cf-prohint {
   display: inline-flex;
@@ -587,13 +587,6 @@
   align-items: center;
   gap: 8px;
   opacity: 0.92;
-}
-.cf-tmap-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--c);
-  flex-shrink: 0;
 }
 .cf-tmap-spark {
   display: flex;

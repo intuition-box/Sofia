@@ -228,6 +228,10 @@ export interface FeedCardViewProps {
   down: number
   userUp?: boolean
   userDown?: boolean
+  /** Awaiting on-chain confirmation (queued in the cart). The matching vote
+   *  button shows a dashed accent to signal the pending state. */
+  pendingUp?: boolean
+  pendingDown?: boolean
   canUp?: boolean
   canDown?: boolean
   /** Render the vote thumbs WITHOUT their numeric counts — for toggle-style
@@ -283,6 +287,8 @@ export function FeedCardView({
   down,
   userUp,
   userDown,
+  pendingUp = false,
+  pendingDown = false,
   canUp = true,
   canDown = true,
   hideVoteCounts = false,
@@ -333,12 +339,15 @@ export function FeedCardView({
       label: v.label,
       color: v.color,
       node: (
+        // Canonical verb pill (compact) — outlined, colour-driven via `--vc`.
+        // Shares `.fc-verb-tag` (verb-tag.css) so feed chips match every other
+        // verb pill across the apps.
         <span
           key={`v-${v.label}`}
-          className="fc-verb"
+          className="fc-verb-tag fc-verb-tag--sm"
           style={v.color ? { ['--vc' as string]: v.color } : undefined}
         >
-          {v.icon ?? <i aria-hidden="true" />}
+          {v.icon ?? null}
           {v.label}
         </span>
       ),
@@ -455,7 +464,7 @@ export function FeedCardView({
                 className={`fc-xs-votes${up < 0 ? ' fc-xs-votes--hidden' : ''}`}
               >
                 <span
-                  className={`fc-xs-vote u${userUp ? ' on' : ''}`}
+                  className={`fc-xs-vote u${userUp ? ' on' : ''}${pendingUp ? ' is-pending' : ''}`}
                   onClick={onVote ? vote('support') : undefined}
                   style={onVote ? { cursor: 'pointer' } : undefined}
                 >
@@ -463,7 +472,7 @@ export function FeedCardView({
                   {hideVoteCounts ? null : up}
                 </span>
                 <span
-                  className={`fc-xs-vote d${userDown ? ' on' : ''}`}
+                  className={`fc-xs-vote d${userDown ? ' on' : ''}${pendingDown ? ' is-pending' : ''}`}
                   onClick={onVote ? vote('oppose') : undefined}
                   style={onVote ? { cursor: 'pointer' } : undefined}
                 >
@@ -542,7 +551,7 @@ export function FeedCardView({
           <div className="fc-votes">
             <button
               type="button"
-              className={`fc-vote up${userUp ? ' on' : ''}${canUp ? '' : ' is-disabled'}`}
+              className={`fc-vote up${userUp ? ' on' : ''}${pendingUp ? ' is-pending' : ''}${canUp ? '' : ' is-disabled'}`}
               aria-label={
                 canUp
                   ? `Support (${up})`
@@ -562,7 +571,7 @@ export function FeedCardView({
             </button>
             <button
               type="button"
-              className={`fc-vote down${userDown ? ' on' : ''}${canDown ? '' : ' is-disabled'}`}
+              className={`fc-vote down${userDown ? ' on' : ''}${pendingDown ? ' is-pending' : ''}${canDown ? '' : ' is-disabled'}`}
               aria-label={
                 canDown
                   ? `Oppose (${down})`

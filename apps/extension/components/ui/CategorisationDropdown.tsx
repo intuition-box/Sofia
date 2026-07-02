@@ -203,13 +203,16 @@ export const CategorisationDropdown = memo(
 
     const noResults = verbRows.length === 0 && topicEntries.length === 0
 
-    // ── chips (field) — reuse the shared .fc-verb-tag look so they render
-    // identically to the Stats tags. Verbs carry their intent class; topics
-    // pass their color through --verb-color. ──
+    // ── chips (field) — SELF-CONTAINED `.ext-cat-chip` (decoupled from the
+    // unified `.fc-verb-tag` pill). Both verbs and topics drive their color
+    // through --verb-color so the dropdown keeps its own look. ──
     const verbChips = selectedIntentions.map((type) => {
       const Icon = INTENTION_ICONS[type]
       return (
-        <span key={`v-${type}`} className={`fc-verb-tag ${type} ext-cat-chip`}>
+        <span
+          key={`v-${type}`}
+          className="ext-cat-chip"
+          style={{ ["--verb-color" as string]: INTENTION_CONFIG[type].color }}>
           <Icon className="fc-verb-ic" aria-hidden />
           <span>{INTENTION_CONFIG[type].label}</span>
           <button
@@ -231,7 +234,7 @@ export const CategorisationDropdown = memo(
       return (
         <span
           key={`c-${slug}`}
-          className="fc-verb-tag ext-cat-chip"
+          className="ext-cat-chip"
           style={{ ["--verb-color" as string]: color }}>
           <span
             className="ext-cat-chip-glyph material-symbols-outlined"

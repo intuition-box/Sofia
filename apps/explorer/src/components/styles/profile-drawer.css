@@ -464,10 +464,10 @@ a.pd-la-row:hover {
   color: var(--ds-ink);
 }
 
-/* Verb + topic use the shared <VerbPill> / <TopicPill> (styles/pills.css).
-   Here they sit inline inside the activity sentence (a -webkit-box), so
-   nudge spacing + baseline alignment for the running-text context. */
-.pd-la-title .sf-verb-pill,
+/* Verb + topic use the shared <VerbPill> (.fc-verb-tag) / <TopicPill>
+   (.sf-topic-pill). Here they sit inline inside the activity sentence (a
+   -webkit-box), so nudge spacing + baseline alignment for the running text. */
+.pd-la-title .fc-verb-tag,
 .pd-la-title .sf-topic-pill {
   margin-right: 6px;
   vertical-align: middle;

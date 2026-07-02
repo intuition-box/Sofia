@@ -1,6 +1,7 @@
 export * from './FaviconWrapper'
 export * from './FeedCardView'
 export * from './VerbTag'
+export * from './TopicPill'
 export * from './UserBadge'
 export * from './GroupBentoCard'
 export * from './InterestsGrid'

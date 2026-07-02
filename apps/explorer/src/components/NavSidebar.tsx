@@ -300,14 +300,7 @@ export function NavSidebar({
                   title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
                 >
                   <div className="ns-circle-head">
-                    <span
-                      className="ns-circle-dot"
-                      style={{ background: 'var(--trusted, #6dd4a0)' }}
-                    />
                     <span className="ns-circle-name">Trust Circle</span>
-                    <span className="ns-circle-count">
-                      {trustCircle.length}
-                    </span>
                   </div>
                   <div className="ns-circle-avatars">
                     {trustCircle.slice(0, 5).map((a) => {
@@ -339,9 +332,6 @@ export function NavSidebar({
                         +{trustCircle.length - 5}
                       </span>
                     )}
-                    <span className="ns-mav ns-mav-add" aria-hidden="true">
-                      +
-                    </span>
                   </div>
                 </Link>
               )}
@@ -350,7 +340,6 @@ export function NavSidebar({
                   the rail reads as a single uniform list of "circles
                   this user belongs to". */}
               {joinedGroups.map((group) => {
-                const dotColor = avatarColor(group.termId || group.label)
                 const previewMembers = group.memberships.slice(0, 5)
                 const extra = Math.max(
                   0,
@@ -364,14 +353,7 @@ export function NavSidebar({
                     title={`${group.label} — ${group.memberCount} member${group.memberCount === 1 ? '' : 's'}`}
                   >
                     <div className="ns-circle-head">
-                      <span
-                        className="ns-circle-dot"
-                        style={{ background: dotColor }}
-                      />
                       <span className="ns-circle-name">{group.label}</span>
-                      <span className="ns-circle-count">
-                        {group.memberCount}
-                      </span>
                     </div>
                     <div className="ns-circle-avatars">
                       {previewMembers.map((m) => {
