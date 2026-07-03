@@ -766,73 +766,78 @@
   color: var(--ds-muted);
   white-space: nowrap;
 }
-.hm-voices {
-  all: unset;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.hm-voices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
 }
-.hm-voices li {
-  list-style: none;
-}
-.hm-voice {
+.hm-vcard {
   all: unset;
   box-sizing: border-box;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid transparent;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  background: var(--ds-card);
   cursor: pointer;
   transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
     background 0.15s ease,
-    border-color 0.15s ease;
+    box-shadow 0.15s ease;
 }
-.hm-voice:hover,
-.hm-voice:focus-visible {
-  background: color-mix(in oklab, var(--ds-accent) 12%, var(--ds-card));
-  border-color: var(--ds-border);
+.hm-vcard:hover,
+.hm-vcard:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--ds-accent);
+  background: color-mix(in oklab, var(--ds-accent) 10%, var(--ds-card));
+  box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
   outline: none;
 }
-.hm-voice-rank {
+.hm-vcard-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.hm-vcard-avatar {
   flex-shrink: 0;
-  width: 22px;
-  text-align: center;
-  font-family: var(--ds-font-display);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ds-muted);
-  font-variant-numeric: tabular-nums;
+  border-radius: 12px;
 }
-.hm-voice-rank.is-podium {
-  color: var(--ds-accent);
-}
-.hm-voice-id {
+.hm-vcard-id {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
-  flex: 1;
 }
-.hm-voice-name {
+.hm-vcard-name {
   color: var(--ds-ink);
-  font-size: 14px;
+  font-family: var(--ds-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-vcard-sub {
+  color: var(--ds-muted);
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.hm-voice-topics {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.hm-voice-score {
-  flex-shrink: 0;
+.hm-vcard-bio {
+  margin: 0;
   color: var(--ds-ink-soft);
-  font-size: 14px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
