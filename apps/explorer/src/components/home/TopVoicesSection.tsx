@@ -15,8 +15,14 @@ import HomeSection from './HomeSection'
 const PREVIEW = 8
 
 export default function TopVoicesSection() {
-  const { overall, entriesForTopic, computedAt, loading, error } =
-    useReputationLeaderboard()
+  const {
+    overall,
+    entriesForTopic,
+    topTopicsByWallet,
+    computedAt,
+    loading,
+    error,
+  } = useReputationLeaderboard()
   const [topic, setTopic] = useState<TopicFilterId>('all')
   const [expanded, setExpanded] = useState(false)
 
@@ -42,10 +48,10 @@ export default function TopVoicesSection() {
           : undefined
       }
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="hm-voices-bar">
         <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
         {computedAt && (
-          <span className="text-xs text-white/30">
+          <span className="hm-voices-updated">
             Updated {timeAgo(computedAt)}
           </span>
         )}
@@ -53,6 +59,7 @@ export default function TopVoicesSection() {
 
       <TopicLeaderboardTable
         entries={visible}
+        topTopicsByWallet={topTopicsByWallet}
         loading={loading}
         emptyLabel={
           topic === 'all'

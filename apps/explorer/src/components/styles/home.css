@@ -750,3 +750,89 @@
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
 }
+
+/* ── Top voices (reputation leaderboard) ──────────────────────────────
+   Ranked account list on the Explore home. Row style mirrors .hm-circle
+   (--ds tokens, accent-tint hover) so it sits in the same visual family. */
+.hm-voices-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.hm-voices-updated {
+  font-size: 12px;
+  color: var(--ds-muted);
+  white-space: nowrap;
+}
+.hm-voices {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hm-voices li {
+  list-style: none;
+}
+.hm-voice {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.hm-voice:hover,
+.hm-voice:focus-visible {
+  background: color-mix(in oklab, var(--ds-accent) 12%, var(--ds-card));
+  border-color: var(--ds-border);
+  outline: none;
+}
+.hm-voice-rank {
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+  font-family: var(--ds-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+.hm-voice-rank.is-podium {
+  color: var(--ds-accent);
+}
+.hm-voice-id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.hm-voice-name {
+  color: var(--ds-ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-voice-topics {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hm-voice-score {
+  flex-shrink: 0;
+  color: var(--ds-ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

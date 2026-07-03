@@ -31,7 +31,9 @@ async function fetchSnapshot(): Promise<SnapshotResponse> {
   return res.json()
 }
 
-function rank(entries: { wallet: string; score: number }[]): LeaderboardEntry[] {
+function rank(
+  entries: { wallet: string; score: number }[],
+): LeaderboardEntry[] {
   return entries
     .sort((a, b) => b.score - a.score)
     .map((e, i) => ({ ...e, rank: i + 1 }))
@@ -66,7 +68,8 @@ export function useReputationLeaderboard() {
 
   // Real topics that have at least one ranked account (for the picker).
   const topics = useMemo(
-    () => [...new Set(rows.map((r) => r.topicId))].filter((t) => !RESERVED.has(t)),
+    () =>
+      [...new Set(rows.map((r) => r.topicId))].filter((t) => !RESERVED.has(t)),
     [rows],
   )
 
@@ -86,10 +89,34 @@ export function useReputationLeaderboard() {
     return map
   }, [rows, topics])
 
+  // Each wallet's strongest real topics (highest-scoring buckets, reserved
+  // buckets excluded) — the "most-marked topics" chips shown per row.
+  const topTopicsByWallet = useMemo(() => {
+    const byWallet = new Map<string, { topicId: string; score: number }[]>()
+    for (const r of rows) {
+      if (RESERVED.has(r.topicId)) continue
+      const arr = byWallet.get(r.wallet) ?? []
+      arr.push({ topicId: r.topicId, score: r.score })
+      byWallet.set(r.wallet, arr)
+    }
+    const out = new Map<string, string[]>()
+    for (const [wallet, arr] of byWallet) {
+      out.set(
+        wallet,
+        arr
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .map((x) => x.topicId),
+      )
+    }
+    return out
+  }, [rows])
+
   return {
     overall,
     topics,
     entriesForTopic: (topicId: string) => byTopic.get(topicId) ?? [],
+    topTopicsByWallet,
     computedAt: data?.computedAt ?? null,
     loading: isLoading && !data,
     error: error ? String(error) : null,
