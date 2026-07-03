@@ -767,13 +767,18 @@
   white-space: nowrap;
 }
 .hm-voices-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 .hm-vcard {
   all: unset;
   box-sizing: border-box;
+  flex: 0 0 240px;
+  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   gap: 12px;

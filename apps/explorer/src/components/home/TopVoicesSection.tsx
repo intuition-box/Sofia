@@ -1,7 +1,8 @@
 /**
- * TopVoicesSection — Explore-home block ranking accounts by reputation.
- * Default view is the overall ranking (summed buckets, derived client-side); a
- * topic picker switches to that topic's ranking (fills TopicLeaderboardTable).
+ * TopVoicesSection — Explore-home block ranking accounts by reputation. A single
+ * horizontal row of profile cards (scrolls when it overflows). Default view is
+ * the overall ranking (summed buckets, derived client-side); the topic picker
+ * switches to that topic's ranking.
  */
 import { useMemo, useState } from 'react'
 import CircleTopicFilterDropdown, {
@@ -11,8 +12,6 @@ import TopicLeaderboardTable from '@/components/leaderboard/TopicLeaderboardTabl
 import { useReputationLeaderboard } from '@/hooks/useReputationLeaderboard'
 import { timeAgo } from '@/utils/formatting'
 import HomeSection from './HomeSection'
-
-const PREVIEW = 8
 
 export default function TopVoicesSection() {
   const {
@@ -24,30 +23,18 @@ export default function TopVoicesSection() {
     error,
   } = useReputationLeaderboard()
   const [topic, setTopic] = useState<TopicFilterId>('all')
-  const [expanded, setExpanded] = useState(false)
 
   const entries = useMemo(
     () => (topic === 'all' ? overall : entriesForTopic(topic)),
     [topic, overall, entriesForTopic],
   )
-  const visible = expanded ? entries : entries.slice(0, PREVIEW)
 
   // Hide the block entirely until there's a snapshot — quiet fallback like the
   // other home sections.
   if (!loading && (error || overall.length === 0)) return null
 
   return (
-    <HomeSection
-      title="Top voices"
-      action={
-        entries.length > PREVIEW
-          ? {
-              label: expanded ? 'Show less' : 'View all',
-              onClick: () => setExpanded((v) => !v),
-            }
-          : undefined
-      }
-    >
+    <HomeSection title="Top voices">
       <div className="hm-voices-bar">
         <CircleTopicFilterDropdown active={topic} onChange={setTopic} />
         {computedAt && (
@@ -58,7 +45,7 @@ export default function TopVoicesSection() {
       </div>
 
       <TopicLeaderboardTable
-        entries={visible}
+        entries={entries}
         topTopicsByWallet={topTopicsByWallet}
         loading={loading}
         emptyLabel={

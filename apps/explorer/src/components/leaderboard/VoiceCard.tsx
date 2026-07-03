@@ -44,7 +44,7 @@ export default function VoiceCard({
         <span className="hm-vcard-id">
           <span className="hm-vcard-name">{display}</span>
           <span className="hm-vcard-sub">
-            Top voice{topicLabel ? ` · ${topicLabel}` : ''}
+            {topicLabel ?? `${wallet.slice(0, 6)}…${wallet.slice(-4)}`}
           </span>
         </span>
         <span className="hm-vcard-score" title="Reputation score">
