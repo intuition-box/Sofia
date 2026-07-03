@@ -46,6 +46,7 @@ export default function TopicLeaderboardTable({
             display={getDisplay(addr)}
             avatar={getAvatar(addr)}
             topicLabel={topSlug ? topicById[topSlug]?.label : undefined}
+            score={entry.score}
             socials={socials[entry.wallet.toLowerCase()] ?? []}
           />
         )

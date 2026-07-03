@@ -812,6 +812,20 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
+}
+.hm-vcard-score {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ds-accent) 18%, transparent);
+  color: var(--ds-accent);
+  font-family: var(--ds-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
 }
 .hm-vcard-name {
   color: var(--ds-ink);

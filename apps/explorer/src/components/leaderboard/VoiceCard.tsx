@@ -15,6 +15,8 @@ interface VoiceCardProps {
   avatar: string
   /** Label of the account's strongest topic, for the "Top voice · X" line. */
   topicLabel?: string
+  /** Reputation score for the active view (overall or the picked topic). */
+  score: number
   socials: SocialLink[]
   /** Optional bio — wired to a backend later; omitted when absent. */
   bio?: string
@@ -25,6 +27,7 @@ export default function VoiceCard({
   display,
   avatar,
   topicLabel,
+  score,
   socials,
   bio,
 }: VoiceCardProps) {
@@ -43,6 +46,9 @@ export default function VoiceCard({
           <span className="hm-vcard-sub">
             Top voice{topicLabel ? ` · ${topicLabel}` : ''}
           </span>
+        </span>
+        <span className="hm-vcard-score" title="Reputation score">
+          {Math.round(score).toLocaleString()}
         </span>
       </div>
 
