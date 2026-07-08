@@ -26,7 +26,10 @@
   background: var(--ds-bg);
   color: var(--ds-ink);
   box-sizing: border-box;
-  overflow: hidden;
+  /* Scroll instead of clipping: on short panels / high zoom the auth block
+   * (Connect button + footer) used to slip below the fold with no way to
+   * reach it. Let the page scroll once its two halves hit their floors. */
+  overflow-y: auto;
 }
 
 /* ── Top half — peach plate with identity diagram ───── */
@@ -34,7 +37,9 @@
 .hp-visual {
   position: relative;
   flex: 1 1 50%;
-  min-height: 0;
+  /* Keep a meaningful peach plate but let it yield space on short panels;
+   * below this floor the page scrolls rather than shrinking it away. */
+  min-height: 180px;
   background: var(--ds-accent);
   color: var(--ds-on-accent);
   display: flex;
@@ -133,14 +138,16 @@
 
 .hp-auth {
   flex: 1 1 50%;
-  min-height: 0;
+  /* Never compress below its own content — the Connect button and footer
+   * must always be reachable (via page scroll if the panel is too short). */
+  min-height: min-content;
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 24px 24px 22px;
   background: var(--ds-bg);
   color: var(--ds-ink);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hp-eyebrow {
