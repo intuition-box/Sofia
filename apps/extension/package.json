@@ -1,7 +1,7 @@
 {
   "name": "extension",
   "displayName": "Sofia",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Mark the web with one click. Your signals become collective intelligence — no one owns the data, not even us.",
   "author": "me",
   "scripts": {
