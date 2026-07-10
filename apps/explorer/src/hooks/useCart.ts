@@ -17,6 +17,10 @@ export interface CircleDraft {
   /** Topic atom slugs (keys of TOPIC_ATOM_IDS) — one has_tag triple per
    *  entry is minted alongside the membership triple. */
   topicIds: string[]
+  /** Lowercased wallet addresses to invite once the circle atom is minted.
+   *  Each gets an INVITED application + notification via the group-api (they
+   *  accept, then mint their own MEMBER_OF triple). Optional/empty = no invites. */
+  members?: string[]
 }
 
 /** Draft payload carried by a `kind: 'create-skill'` cart item. WeightModal

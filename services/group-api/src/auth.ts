@@ -33,7 +33,16 @@ async function resolveWallet(userId: string): Promise<string | null> {
   const cached = walletCache.get(userId)
   if (cached && Date.now() - cached.at < WALLET_TTL) return cached.wallet
 
-  const user = await privy().getUser(userId)
+  // Privy API failures (bad app id/secret, outage, rate limit) must surface as a
+  // clear 503 — not bubble up as an opaque 500 that takes down every authed
+  // route with no hint of the cause.
+  let user: Awaited<ReturnType<PrivyClient['getUser']>>
+  try {
+    user = await privy().getUser(userId)
+  } catch (err) {
+    console.error('[group-api] Privy getUser failed', err)
+    throw new HTTPException(503, { message: 'Auth upstream unavailable' })
+  }
   const fromEmbedded = user.wallet?.address
   const fromLinked = user.linkedAccounts.find(
     (a): a is typeof a & { address: string } =>

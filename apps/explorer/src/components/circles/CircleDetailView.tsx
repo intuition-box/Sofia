@@ -32,7 +32,11 @@ import { useCircleTopicCounts } from '@/hooks/useCircleTopicCounts'
 import { useCircleListStats } from '@/hooks/useCircleListStats'
 import { useMemberActivity } from '@/hooks/useMemberActivity'
 import { useMemberStreaks } from '@/hooks/useMemberStreaks'
-import { useMembershipStatus, useRequestJoin } from '@/hooks/useGroupMembership'
+import {
+  useMembershipStatus,
+  useRequestJoin,
+  useRespondInvitation,
+} from '@/hooks/useGroupMembership'
 import CircleDetailHero from './CircleDetailHero'
 import CircleHeaderFree from './CircleHeaderFree'
 import CircleMembersCard from './CircleMembersCard'
@@ -139,14 +143,21 @@ export default function CircleDetailView({
   const groupTermId = circle.kind === 'group' ? circle.id : null
   const membership = useMembershipStatus(groupTermId)
   const { request: requestJoin, requesting } = useRequestJoin(groupTermId)
-  const joinStatus: 'none' | 'pending' | 'approved' | 'rejected' =
+  const {
+    accept: acceptInvite,
+    decline: declineInvite,
+    responding,
+  } = useRespondInvitation(groupTermId)
+  const joinStatus: 'none' | 'invited' | 'pending' | 'approved' | 'rejected' =
     membership.isApproved
       ? 'approved'
-      : membership.isPending
-        ? 'pending'
-        : membership.isRejected
-          ? 'rejected'
-          : 'none'
+      : membership.isInvited
+        ? 'invited'
+        : membership.isPending
+          ? 'pending'
+          : membership.isRejected
+            ? 'rejected'
+            : 'none'
   // Non-auth visitor landing on a locked group: the blurred-feed
   // teaser doesn't help — turn the whole activity slot into a
   // Connect / Install Sofia CTA so the visitor has a clear next step.
@@ -423,6 +434,9 @@ export default function CircleDetailView({
               joinStatus={joinStatus}
               onRequest={requestJoin}
               requesting={requesting}
+              onAccept={acceptInvite}
+              onDecline={declineInvite}
+              responding={responding}
               onJoin={onJoin}
               inCart={joinInCart}
               disabled={joinDisabled}

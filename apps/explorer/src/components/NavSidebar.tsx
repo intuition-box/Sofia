@@ -27,6 +27,7 @@ import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useTheme } from '../hooks/useTheme'
+import { useNotificationsRealtime } from '../hooks/useGroupNotifications'
 import { getAvatarUrl } from '../services/ensService'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -79,6 +80,11 @@ export function NavSidebar({
   }, [authenticated, linkedAddresses, allGroups])
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
+  // Mount the Ably subscription ONCE here (always-mounted rail): a realtime push
+  // to notif:{wallet} refreshes the notifications / applications / membership
+  // caches so the bell + admin panel + join gate update live instead of waiting
+  // on the 30s REST poll.
+  useNotificationsRealtime()
 
   const addresses: Address[] = address ? [address as Address] : []
   const { getDisplay, getAvatar } = useEnsNames(addresses)

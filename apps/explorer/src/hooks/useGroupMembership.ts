@@ -6,7 +6,11 @@
  */
 import { usePrivy } from '@privy-io/react-auth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getMembership, requestJoin } from '@/services/groupJoinApi'
+import {
+  getMembership,
+  requestJoin,
+  respondInvitation,
+} from '@/services/groupJoinApi'
 
 const KEY = (groupTermId: string | null) => ['groupMembership', groupTermId]
 
@@ -37,6 +41,8 @@ export function useMembershipStatus(groupTermId: string | null) {
     appStatus,
     isMember,
     isApproved,
+    // Invited = someone added this wallet; awaiting the invitee's accept/decline.
+    isInvited: appStatus === 'INVITED',
     isPending: appStatus === 'PENDING',
     isRejected: appStatus === 'REJECTED',
     refetch: query.refetch,
@@ -59,6 +65,30 @@ export function useRequestJoin(groupTermId: string | null) {
   return {
     request: () => mutation.mutate(),
     requesting: mutation.isPending,
+    error: mutation.error ? String(mutation.error) : null,
+  }
+}
+
+/** Accept or decline a pending circle invitation. Accepting flips the caller's
+ *  application → APPROVED + ACTIVE membership, so the join gate unlocks the
+ *  on-chain mint (same end-state as an approved join request). */
+export function useRespondInvitation(groupTermId: string | null) {
+  const { getAccessToken } = usePrivy()
+  const qc = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: async (accept: boolean) => {
+      const token = await getAccessToken()
+      if (!token || !groupTermId) throw new Error('Not ready')
+      return respondInvitation(token, groupTermId, accept)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY(groupTermId) }),
+  })
+
+  return {
+    accept: () => mutation.mutate(true),
+    decline: () => mutation.mutate(false),
+    responding: mutation.isPending,
     error: mutation.error ? String(mutation.error) : null,
   }
 }

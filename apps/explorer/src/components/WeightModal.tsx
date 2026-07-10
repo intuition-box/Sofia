@@ -30,6 +30,7 @@ import {
   type CreateTripleResult,
 } from '../services/tripleCreationService'
 import { redeemAtom } from '../services/redeemService'
+import { inviteMembers } from '../services/groupJoinApi'
 import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
@@ -130,7 +131,7 @@ export default function WeightModal({
     getBalance,
   } = useDeposit()
   const { estimate } = useFeeEstimate()
-  const { authenticated } = usePrivy()
+  const { authenticated, getAccessToken } = usePrivy()
   const { wallets } = useWallets()
   const qc = useQueryClient()
   // Resolve the wallet's Account atom term_id — required as the subject
@@ -283,6 +284,9 @@ export default function WeightModal({
     const depositItems: { termId: string; amountTrust: number }[] = []
     const createItems: BatchCreateTripleItem[] = []
     const redeemTermIds: string[] = []
+    /** Circle atomId → wallets to invite, collected as circle atoms mint so we
+     *  can fire the group-api invitations once the triple batch confirms. */
+    const circleInvites: { atomId: string; members: string[] }[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
@@ -465,6 +469,11 @@ export default function WeightModal({
           const item = items[idx]
           const draft = item.circleDraft!
           const totalAmount = getAmount(idx)
+
+          // Queue the invitees for this circle (sent after the triple batch
+          // confirms, once the circle atomId is a real on-chain group).
+          const members = (draft.members ?? []).filter(Boolean)
+          if (members.length > 0) circleInvites.push({ atomId, members })
 
           const validTopicIds = draft.topicIds.filter(
             (slug) => !!TOPIC_ATOM_IDS[slug],
@@ -720,6 +729,27 @@ export default function WeightModal({
             for (const delay of [4000, 9000, 18000]) {
               setTimeout(refreshAfterMint, delay)
             }
+
+            // Fire circle invitations (best-effort): each invitee gets an
+            // INVITED application + notification via the group-api and accepts
+            // to join. Never blocks or fails the mint — the circle exists
+            // on-chain regardless of whether the off-chain invites land.
+            if (circleInvites.length > 0) {
+              try {
+                const token = await getAccessToken()
+                if (token) {
+                  await Promise.all(
+                    circleInvites.map((ci) =>
+                      inviteMembers(token, ci.atomId, ci.members).catch((e) => {
+                        console.warn('[invite] failed', ci.atomId, e)
+                      }),
+                    ),
+                  )
+                }
+              } catch (e) {
+                console.warn('[invite] could not send invitations', e)
+              }
+            }
           }
         } finally {
           setCreateTripleProcessing(false)
@@ -745,6 +775,7 @@ export default function WeightModal({
     userAccountAtom.exists,
     userAccountAtom.termId,
     pinThing,
+    getAccessToken,
   ])
 
   const handleClose = () => {

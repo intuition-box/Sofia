@@ -41,14 +41,19 @@ interface CircleJoinGateProps {
   signalCount?: number
   /** Whether the viewer is authenticated (has a wallet to join with). */
   authenticated: boolean
-  /** Gated-join state from the backend. `none` → request, `pending` →
-   *  awaiting review, `approved` → unlock the on-chain mint, `rejected` →
-   *  declined. */
-  joinStatus?: 'none' | 'pending' | 'approved' | 'rejected'
+  /** Gated-join state from the backend. `none` → request, `invited` → accept a
+   *  pending invitation, `pending` → awaiting review, `approved` → unlock the
+   *  on-chain mint, `rejected` → declined. */
+  joinStatus?: 'none' | 'invited' | 'pending' | 'approved' | 'rejected'
   /** Submits a join request to the backend (shown when `joinStatus==='none'`). */
   onRequest?: () => void
   /** Request submission in flight. */
   requesting?: boolean
+  /** Accept / decline a pending invitation (shown when `joinStatus==='invited'`). */
+  onAccept?: () => void
+  onDecline?: () => void
+  /** Invitation response in flight. */
+  responding?: boolean
   /** Fires the cart-based on-chain mint — used once `joinStatus==='approved'`. */
   onJoin?: () => void
   /** Join already queued in the cart → CTA shows a confirmation status. */
@@ -68,6 +73,9 @@ export default function CircleJoinGate({
   joinStatus = 'none',
   onRequest,
   requesting = false,
+  onAccept,
+  onDecline,
+  responding = false,
   onJoin,
   inCart = false,
   disabled = false,
@@ -96,24 +104,33 @@ export default function CircleJoinGate({
             <Check className="jg-eyebrow-ic" aria-hidden="true" />
             Request approved
           </div>
+        ) : joinStatus === 'invited' ? (
+          <div className="jg-eyebrow jg-eyebrow--approved">
+            <Check className="jg-eyebrow-ic" aria-hidden="true" />
+            You're invited
+          </div>
         ) : (
           <div className="jg-eyebrow">Members-only Circle</div>
         )}
         <h2 className="jg-title">
           {joinStatus === 'approved'
             ? `Become a member of ${circleName}`
-            : `Enter the ${circleName} Circle`}
+            : joinStatus === 'invited'
+              ? `You're invited to ${circleName}`
+              : `Enter the ${circleName} Circle`}
         </h2>
         <p className="jg-sub">
           {!authenticated
             ? 'Connect your wallet to request access to this Circle.'
-            : joinStatus === 'pending'
-              ? "Your request is in review — you'll be notified when an admin decides."
-              : joinStatus === 'rejected'
-                ? 'Your request was declined. You can ask again later.'
-                : joinStatus === 'approved'
-                  ? "You're in — mint your membership on-chain to finish joining."
-                  : 'An admin reviews new members. Free — your wallet is your membership.'}
+            : joinStatus === 'invited'
+              ? 'You were invited to this Circle. Accept to become a member, then mint your membership on-chain.'
+              : joinStatus === 'pending'
+                ? "Your request is in review — you'll be notified when an admin decides."
+                : joinStatus === 'rejected'
+                  ? 'Your request was declined. You can ask again later.'
+                  : joinStatus === 'approved'
+                    ? "You're in — mint your membership on-chain to finish joining."
+                    : 'An admin reviews new members. Free — your wallet is your membership.'}
         </p>
 
         {stats.length > 0 && (
@@ -136,6 +153,26 @@ export default function CircleJoinGate({
             <Zap className="jg-cta-ic" aria-hidden="true" />
             Connect to enter
           </button>
+        ) : joinStatus === 'invited' ? (
+          <div className="jg-invite-actions">
+            <button
+              type="button"
+              className="cf-btn cf-btn-pro jg-cta"
+              onClick={() => onAccept?.()}
+              disabled={responding}
+            >
+              <Zap className="jg-cta-ic" aria-hidden="true" />
+              {responding ? 'Accepting…' : 'Accept invitation'}
+            </button>
+            <button
+              type="button"
+              className="cf-btn jg-cta jg-cta--ghost"
+              onClick={() => onDecline?.()}
+              disabled={responding}
+            >
+              Decline
+            </button>
+          </div>
         ) : joinStatus === 'pending' ? (
           <span className="jg-status">
             <Check className="jg-status-ic" aria-hidden="true" />
