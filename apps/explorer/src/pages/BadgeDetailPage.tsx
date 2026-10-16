@@ -49,14 +49,14 @@ const TIERS: Record<Tier, TierMeta> = {
   explorer: {
     id: 'explorer',
     label: 'Explorer',
-    description: 'Supported before consensus — 2 to 10 holders.',
+    description: 'Supported before consensus — 2 to 10 supporters.',
     icon: '/badges/explorer.png',
     match: (n) => n >= 2 && n <= 10,
   },
   contributor: {
     id: 'contributor',
     label: 'Contributor',
-    description: 'Your signal spread across the network — 11+ holders.',
+    description: 'Your signal spread across the network — 11+ supporters.',
     icon: '/badges/contributor.png',
     match: (n) => n >= 11,
   },

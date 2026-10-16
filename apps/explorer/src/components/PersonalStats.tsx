@@ -109,12 +109,12 @@ export default function PersonalStats({
     poolRows.push(
       { label: 'Pool Rank', value: `#${poolRank}` },
       {
-        label: 'P&L',
+        label: 'Change',
         value: `${poolData.pnl >= 0n ? '+' : ''}${formatTrust(poolData.pnl)}`,
         variant: poolData.pnl >= 0n ? 'positive' : 'negative',
       },
       {
-        label: 'P&L %',
+        label: 'Change %',
         value: `${poolData.pnlPercent >= 0 ? '+' : ''}${poolData.pnlPercent.toFixed(1)}%`,
         variant: poolData.pnlPercent >= 0 ? 'positive' : 'negative',
       },

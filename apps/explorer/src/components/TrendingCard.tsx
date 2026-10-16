@@ -59,7 +59,7 @@ export default function TrendingCard({
           side: 'support',
           termId: market.termId,
           title: platform.platformName,
-          intention: 'Invest',
+          intention: 'Take position',
           intentionColor: '#10B981',
           favicon: platform.favicon,
           kind: 'deposit',
@@ -154,7 +154,7 @@ export default function TrendingCard({
                 {formatPrice(market.sharePrice)}
               </span>
               <span className="ip-trending-market-stat">
-                <Users className="h-3 w-3" /> {market.positionCount}
+                <Users className="h-3 w-3" /> {market.supporterCount}
               </span>
             </div>
             <Button
@@ -163,7 +163,7 @@ export default function TrendingCard({
               className="ip-trending-invest-btn"
               onClick={handleInvest}
             >
-              <ShoppingCart className="h-3 w-3" /> Stake
+              <ShoppingCart className="h-3 w-3" /> Take position
             </Button>
           </div>
         )}

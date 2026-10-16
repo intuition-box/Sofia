@@ -1,17 +1,22 @@
 /**
- * AtomDetailDialog — platform market detail modal opened from the
- * `/platforms` grid. Proto-aligned: kicker + Fraunces title with the
- * platform favicon in a white rounded container, KPI tiles, compact
- * holders leaderboard, primary Stake CTA that drops the platform
- * into the cart.
+ * AtomDetailDialog — platform detail modal opened from the `/platforms`
+ * grid. Proto-aligned: kicker + Fraunces title with the platform favicon
+ * in a white rounded container, KPI tiles, compact supporters
+ * leaderboard, primary "Take position" CTA that drops the platform into
+ * the cart, and a partial-exit row (25/50/100%) when the user holds a
+ * position.
  */
 
 import { useClaimPositions } from '@/hooks/useClaimPositions'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
+import { useRedeemCert } from '@/hooks/useRedeemCert'
 import type { PlatformVaultData } from '@/services/platformMarketService'
+import type { RedeemPercent } from '@/services/redeemService'
+import { formatTrust, formatTrustChange } from '@/utils/formatting'
 import {
   DollarSign,
+  Wallet,
   TrendingUp,
   Users,
   Coins,
@@ -36,7 +41,11 @@ interface AtomDetailDialogProps {
   platformName: string
   favicon: string
   walletAddress?: string
+  /** Platform website — used for the exit row's favicon in the cart. */
+  website?: string
 }
+
+const EXIT_PERCENTS: RedeemPercent[] = [25, 50, 100]
 
 function formatEth(raw: string): string {
   const num = parseFloat(formatEther(BigInt(raw || '0')))
@@ -69,12 +78,17 @@ export default function AtomDetailDialog({
   platformName,
   favicon,
   walletAddress,
+  website,
 }: AtomDetailDialogProps) {
   const { positions, loading: posLoading } = useClaimPositions(
     market.termId,
     100,
   )
   const cart = useCart()
+  const { redeemCert } = useRedeemCert()
+  const hasPosition = BigInt(market.userShares || '0') > 0n
+  const userChange = BigInt(market.userChange || '0')
+  const changeColor = userChange >= 0n ? '#22c55e' : '#ef4444'
 
   const userRank = walletAddress
     ? positions.findIndex(
@@ -84,13 +98,18 @@ export default function AtomDetailDialog({
 
   const inCart = cart.items.some((c) => c.termId === market.termId)
 
-  const handleInvest = () => {
+  const handleExit = (percent: RedeemPercent) => {
+    redeemCert(market.termId, platformName, website ?? '', percent)
+    onOpenChange(false)
+  }
+
+  const handleTakePosition = () => {
     const item: CartItem = {
       id: `invest-${market.termId}`,
       side: 'support',
       termId: market.termId,
       title: platformName,
-      intention: 'Invest',
+      intention: 'Take position',
       intentionColor: 'var(--ds-accent)',
       favicon,
       // Platform atom vault — not a triple, skip triple verification
@@ -118,13 +137,13 @@ export default function AtomDetailDialog({
                 />
               </span>
               <div className="add-title-block">
-                <span className="add-kicker">Markets</span>
+                <span className="add-kicker">Platforms</span>
                 <span className="add-title-name">{platformName}</span>
               </div>
             </div>
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Market details for {platformName}
+            Platform details for {platformName}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +155,7 @@ export default function AtomDetailDialog({
                 className="h-3.5 w-3.5"
                 style={{ color: '#10b981' }}
               />
-              <span className="add-metric-label">Market cap</span>
+              <span className="add-metric-label">Total staked</span>
             </div>
             <span className="add-metric-value">
               {formatMCap(market.marketCap)} T
@@ -166,29 +185,37 @@ export default function AtomDetailDialog({
           <div className="add-metric">
             <div className="add-metric-head">
               <Users className="h-3.5 w-3.5" style={{ color: '#a78bdb' }} />
-              <span className="add-metric-label">Holders</span>
+              <span className="add-metric-label">Supporters</span>
             </div>
-            <span className="add-metric-value">{market.positionCount}</span>
+            <span className="add-metric-value">{market.supporterCount}</span>
           </div>
+          {hasPosition && (
+            <div className="add-metric">
+              <div className="add-metric-head">
+                <Wallet
+                  className="h-3.5 w-3.5"
+                  style={{ color: 'var(--ds-accent)' }}
+                />
+                <span className="add-metric-label">Position value</span>
+              </div>
+              <span className="add-metric-value">
+                {formatTrust(BigInt(market.userValue || '0'))}
+              </span>
+            </div>
+          )}
           {market.userPnlPct !== null && (
             <div className="add-metric">
               <div className="add-metric-head">
                 <BarChart3
                   className="h-3.5 w-3.5"
-                  style={{
-                    color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444',
-                  }}
+                  style={{ color: changeColor }}
                 />
-                <span className="add-metric-label">Your P&L</span>
+                <span className="add-metric-label">Change</span>
               </div>
-              <span
-                className="add-metric-value"
-                style={{
-                  color: market.userPnlPct >= 0 ? '#22c55e' : '#ef4444',
-                }}
-              >
+              <span className="add-metric-value" style={{ color: changeColor }}>
+                {formatTrustChange(userChange)} (
                 {market.userPnlPct >= 0 ? '+' : ''}
-                {market.userPnlPct}%
+                {market.userPnlPct}%)
               </span>
             </div>
           )}
@@ -210,7 +237,7 @@ export default function AtomDetailDialog({
         <div className="add-leaderboard">
           <div className="add-lb-title">
             <Trophy className="h-3.5 w-3.5" />
-            Top holders
+            Top supporters
           </div>
           <div className="add-lb-header">
             <span className="add-lb-col-rank">#</span>
@@ -218,9 +245,9 @@ export default function AtomDetailDialog({
             <span className="add-lb-col-shares">Shares</span>
           </div>
           {posLoading ? (
-            <div className="add-lb-empty">Loading holders…</div>
+            <div className="add-lb-empty">Loading supporters…</div>
           ) : positions.length === 0 ? (
-            <div className="add-lb-empty">No holders yet — be first.</div>
+            <div className="add-lb-empty">No supporters yet — be first.</div>
           ) : (
             <div className="add-lb-rows">
               {positions.map((pos, i) => {
@@ -250,22 +277,48 @@ export default function AtomDetailDialog({
           )}
         </div>
 
-        {/* Invest action */}
+        {/* Take-position action */}
         <div className="add-actions">
           {!walletAddress ? (
-            <div className="add-no-wallet">Connect a wallet to stake</div>
+            <div className="add-no-wallet">
+              Connect a wallet to take a position
+            </div>
           ) : (
             <button
               type="button"
               className="add-btn-invest"
-              onClick={handleInvest}
+              onClick={handleTakePosition}
               disabled={inCart}
             >
               <TrendingUp className="h-4 w-4" />
-              {inCart ? 'Added to cart' : `Stake in ${platformName}`}
+              {inCart ? 'Added to cart' : `Take a position on ${platformName}`}
             </button>
           )}
         </div>
+
+        {/* Exit position — partial (25/50%) or full. Queued in the cart like
+            any other action so the user confirms it in the same flow. */}
+        {walletAddress && hasPosition && (
+          <div className="add-exit">
+            <span className="add-exit-label">Exit position</span>
+            <div className="add-exit-options">
+              {EXIT_PERCENTS.map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  className="add-exit-btn"
+                  onClick={() => handleExit(pct)}
+                >
+                  {pct}%
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <p className="add-disclaimer">
+          Position value can go down. Rewards are not guaranteed.
+        </p>
       </DialogContent>
     </Dialog>
   )

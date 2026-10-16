@@ -12,6 +12,7 @@ import InterestTilesGrid from './InterestTilesGrid'
 import type { InterestPreset } from './useInterestTiles'
 import HomeSection from './HomeSection'
 import CirclesSection from './CirclesSection'
+import { FEATURES } from '@/config/features'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
 
 const TOPICS_PREVIEW = 6
@@ -91,7 +92,7 @@ export default function ExploreHome({
       </HomeSection>
 
       {/* ── Circles ────────────────────────────────────────────── */}
-      <CirclesSection />
+      {FEATURES.circles && <CirclesSection />}
     </div>
   )
 }

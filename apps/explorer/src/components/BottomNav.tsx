@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
-import { Globe, Users, Layers, User } from 'lucide-react'
+import { Globe, Users, Layers, LineChart, User } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { FEATURES } from '../config/features'
 
 interface BottomNavItem {
   to: string
@@ -13,18 +14,39 @@ interface BottomNavItem {
   authRequired?: boolean
 }
 
-const NAV_ITEMS: BottomNavItem[] = [
+const ALL_NAV_ITEMS: (BottomNavItem & { enabled?: boolean })[] = [
   { to: '/explore', label: 'Explore', icon: Globe },
-  { to: '/circles', label: 'Circles', icon: Users, authRequired: true },
+  {
+    to: '/circles',
+    label: 'Circles',
+    icon: Users,
+    authRequired: true,
+    enabled: FEATURES.circles,
+  },
   {
     to: '/compose',
     label: 'Compose',
     icon: Layers,
     primary: true,
     authRequired: true,
+    enabled: FEATURES.compose,
+  },
+  // Stands in for Circles/Compose while those are flagged off, so the bar
+  // still exposes the main market surface on mobile.
+  {
+    to: '/platforms',
+    label: 'Platforms',
+    icon: LineChart,
+    authRequired: true,
+    enabled: !FEATURES.circles && !FEATURES.compose,
   },
   { to: '/profile', label: 'Profile', icon: User, authRequired: true },
 ]
+
+/** Entries whose feature flag is on (see config/features.ts). */
+const NAV_ITEMS: BottomNavItem[] = ALL_NAV_ITEMS.filter(
+  (item) => item.enabled !== false,
+)
 
 interface BottomNavProps {
   /** When false (user not logged in), auth-required entries get a

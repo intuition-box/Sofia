@@ -13,6 +13,7 @@ import { usePrivy, useLogin } from '@privy-io/react-auth'
 import { TopicsIntentions } from '@/components/TopicsIntentions'
 import { HexSplit } from '@/components/HexSplit'
 import { useGroups } from '@/hooks/useGroups'
+import { FEATURES } from '@/config/features'
 import '@/components/styles/landing.css'
 
 export default function LandingPage() {
@@ -24,7 +25,7 @@ export default function LandingPage() {
   // Live on-chain group count — feeds the "Discover Circles" badge so
   // the CTA reads as a real, populated network rather than a static
   // pitch button. Falls back gracefully if the fetch is in-flight.
-  const { groups } = useGroups()
+  const { groups } = useGroups({ enabled: FEATURES.circles })
   const circleCount = groups.length
 
   useEffect(() => {
@@ -142,33 +143,35 @@ export default function LandingPage() {
                 <span className="lp-arrow">→</span>
               </button>
 
-              <button
-                type="button"
-                className="lp-btn lp-btn-quiet"
-                onClick={() => navigate('/circles')}
-              >
-                <span className="lp-icon" aria-hidden>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <circle cx="12" cy="12" r="4.5" />
-                  </svg>
-                </span>
-                Discover Circles
-                {circleCount > 0 && (
-                  <span className="lp-btn-badge">
-                    <span className="lp-btn-badge-dot" aria-hidden />
-                    {circleCount} live
+              {FEATURES.circles && (
+                <button
+                  type="button"
+                  className="lp-btn lp-btn-quiet"
+                  onClick={() => navigate('/circles')}
+                >
+                  <span className="lp-icon" aria-hidden>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <circle cx="12" cy="12" r="4.5" />
+                    </svg>
                   </span>
-                )}
-                <span className="lp-arrow">→</span>
-              </button>
+                  Discover Circles
+                  {circleCount > 0 && (
+                    <span className="lp-btn-badge">
+                      <span className="lp-btn-badge-dot" aria-hidden />
+                      {circleCount} live
+                    </span>
+                  )}
+                  <span className="lp-arrow">→</span>
+                </button>
+              )}
               <button
                 type="button"
                 className="lp-btn lp-btn-quiet"

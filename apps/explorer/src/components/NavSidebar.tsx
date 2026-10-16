@@ -15,6 +15,7 @@ import {
   Layers,
   Trophy,
   LineChart,
+  Vote,
   Sun,
   Moon,
 } from 'lucide-react'
@@ -23,6 +24,7 @@ import { useMemo, useState } from 'react'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useGroups } from '../hooks/useGroups'
+import { FEATURES } from '../config/features'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useEnsNames } from '../hooks/useEnsNames'
@@ -60,13 +62,15 @@ export function NavSidebar({
   // (user.wallet.address) can be an embedded/undefined wallet, which left the
   // nav avatar blank even though the same user resolved fine on their profile.
   const address = primaryWallet ?? user?.wallet?.address ?? ''
+  // Circles hidden (FEATURES.circles) → pass no address so the trust-circle
+  // query stays disabled and the rail fires no request for it.
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
-    address ? [address] : undefined,
+    FEATURES.circles && address ? [address] : undefined,
   )
   // Joined on-chain groups — the user is the subject of an
   // `is_member_of` claim. We piggyback on the shared useGroups cache
   // (also consumed by /circles) so there's no extra fetch from the rail.
-  const { groups: allGroups } = useGroups()
+  const { groups: allGroups } = useGroups({ enabled: FEATURES.circles })
   const joinedGroups = useMemo(() => {
     if (!authenticated || linkedAddresses.length === 0) return []
     const userWallets = new Set(linkedAddresses.map((a) => a.toLowerCase()))
@@ -113,6 +117,8 @@ export function NavSidebar({
     public: boolean
     /** Onboarding-tour anchor (spotlight target). */
     tour?: string
+    /** Feature flag gating the entry — hidden while false. */
+    enabled?: boolean
   }[] = [
     {
       to: '/explore',
@@ -127,6 +133,7 @@ export function NavSidebar({
       label: 'Circles',
       public: false,
       tour: 'nav-circles',
+      enabled: FEATURES.circles,
     },
     {
       to: '/compose',
@@ -134,8 +141,15 @@ export function NavSidebar({
       label: 'Compose',
       public: false,
       tour: 'nav-compose',
+      enabled: FEATURES.compose,
     },
-    { to: '/notifications', icon: Bell, label: 'Notifications', public: false },
+    {
+      to: '/notifications',
+      icon: Bell,
+      label: 'Notifications',
+      public: false,
+      enabled: FEATURES.notifications,
+    },
   ]
 
   const quickLinks: {
@@ -143,13 +157,20 @@ export function NavSidebar({
     icon: typeof Home
     label: string
     public: boolean
+    enabled?: boolean
   }[] = [
-    { to: '/platforms', icon: LineChart, label: 'Markets', public: false },
+    { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
-    // Vote tab hidden for now (kept for a future update). To restore: re-add
-    // `Vote` to the lucide import above and uncomment the line below.
-    // { to: '/vote', icon: Vote, label: 'Vote', public: false },
+    {
+      to: '/vote',
+      icon: Vote,
+      label: 'Vote',
+      public: false,
+      enabled: FEATURES.vote,
+    },
   ]
+
+  const isVisible = (item: { enabled?: boolean }) => item.enabled !== false
 
   const renderItem = (item: {
     to: string
@@ -283,11 +304,15 @@ export function NavSidebar({
         </button>
       </div>
 
-      <NavSection title="Navigation">{navItems.map(renderItem)}</NavSection>
+      <NavSection title="Navigation">
+        {navItems.filter(isVisible).map(renderItem)}
+      </NavSection>
 
-      <NavSection title="Quick Access">{quickLinks.map(renderItem)}</NavSection>
+      <NavSection title="Quick Access">
+        {quickLinks.filter(isVisible).map(renderItem)}
+      </NavSection>
 
-      {authenticated ? (
+      {FEATURES.circles && authenticated ? (
         <NavSection title="Circles">
           {trustLoading ? (
             <p className="ns-tc-empty">Loading…</p>

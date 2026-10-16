@@ -17,8 +17,9 @@ import {
 const STALE_TIME_MS = 5 * 60 * 1000
 const GC_TIME_MS = 60 * 60 * 1000
 
-/** All groups discovered on-chain. */
-export function useGroups(): {
+/** All groups discovered on-chain. Pass `enabled: false` to skip the fetch
+ *  (e.g. while Circles are hidden behind FEATURES.circles). */
+export function useGroups({ enabled = true }: { enabled?: boolean } = {}): {
   groups: GroupEntry[]
   isLoading: boolean
   error: string | null
@@ -27,6 +28,7 @@ export function useGroups(): {
   const { data, isLoading, error, refetch } = useQuery<GroupEntry[]>({
     queryKey: ['groups-list'],
     queryFn: fetchAllGroups,
+    enabled,
     staleTime: STALE_TIME_MS,
     gcTime: GC_TIME_MS,
     refetchOnWindowFocus: false,

@@ -815,19 +815,19 @@ export default function ScoresPage() {
                           1,
                           Math.round((userPool.rank / userPool.total) * 100),
                         )}
-                        % of stakers this season.
+                        % of supporters this season.
                       </div>
                       <span
                         className={`sc2-pr-pnl${userPool.position.pnlPercent < 0 ? ' neg' : ''}`}
                       >
                         {userPool.position.pnlPercent >= 0 ? '▲ +' : '▼ '}
-                        {userPool.position.pnlPercent.toFixed(1)}% return
+                        {userPool.position.pnlPercent.toFixed(1)}% change
                       </span>
                     </>
                   ) : (
                     <div className="sc2-pr-cap" style={{ marginTop: 16 }}>
-                      No position yet — stake into the Beta Season Pool to
-                      appear here.
+                      No position yet — take a position on the Beta Season Pool
+                      to appear here.
                     </div>
                   )}
                 </div>
@@ -835,14 +835,14 @@ export default function ScoresPage() {
                   {vaultStats && (
                     <div className="sc2-pool-stats3">
                       <div className="sc2-ps">
-                        <div className="sc2-ps-k">TVL</div>
+                        <div className="sc2-ps-k">Total staked</div>
                         <div className="sc2-ps-v">
                           {parseFloat(formatEther(vaultStats.tvl)).toFixed(0)}
                           <small> T</small>
                         </div>
                       </div>
                       <div className="sc2-ps">
-                        <div className="sc2-ps-k">Stakers</div>
+                        <div className="sc2-ps-k">Supporters</div>
                         <div className="sc2-ps-v">
                           {vaultStats.totalStakers.toLocaleString()}
                         </div>
@@ -860,7 +860,7 @@ export default function ScoresPage() {
                   {userPool && (
                     <div className="sc2-pos-lines">
                       <div className="sc2-pos-line">
-                        <span className="sc2-pos-line-k">Current value</span>
+                        <span className="sc2-pos-line-k">Position value</span>
                         <span className="sc2-pos-line-v">
                           {formatTrust(userPool.position.currentValue)}
                         </span>
@@ -872,7 +872,7 @@ export default function ScoresPage() {
                         </span>
                       </div>
                       <div className="sc2-pos-line">
-                        <span className="sc2-pos-line-k">Unrealized PnL</span>
+                        <span className="sc2-pos-line-k">Change</span>
                         <span
                           className={`sc2-pos-line-v${userPool.position.pnl >= 0n ? ' up' : ' down'}`}
                         >
@@ -892,7 +892,7 @@ export default function ScoresPage() {
                         redeemCert(SEASON_POOL_TERM_ID, 'Beta Season Pool', '')
                       }
                     >
-                      Redeem position
+                      Exit position
                     </button>
                   )}
                 </div>

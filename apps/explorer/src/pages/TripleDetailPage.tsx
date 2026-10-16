@@ -95,7 +95,7 @@ export default function TripleDetailPage() {
 
       {indexed && (
         <>
-          <SectionTitle>Holders</SectionTitle>
+          <SectionTitle>Supporters</SectionTitle>
           <ul className="triple-detail__positions">
             {positions.map((p, i) => (
               <li

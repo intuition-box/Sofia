@@ -207,6 +207,10 @@ export default function DepositModal({
                 </span>
               </div>
 
+              <p className="text-xs text-muted-foreground text-center">
+                Position value can go down. Rewards are not guaranteed.
+              </p>
+
               {/* Submit */}
               <Button
                 className="w-full"

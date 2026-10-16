@@ -236,6 +236,7 @@ export default function PlatformDetailPage() {
           platformName={platformMarket.label || decodedDomain}
           favicon={getFaviconUrl(decodedDomain, 64)}
           walletAddress={address}
+          website={decodedDomain}
         />
       )}
 
@@ -270,7 +271,7 @@ export default function PlatformDetailPage() {
                 onClick={() => setInvestOpen(true)}
               >
                 <TrendingUp className="h-4 w-4" />
-                Invest on {decodedDomain}
+                Take a position on {decodedDomain}
               </button>
             ) : (
               <SectionTitle>Certifications on this platform</SectionTitle>

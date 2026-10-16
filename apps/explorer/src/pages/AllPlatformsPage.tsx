@@ -1,8 +1,9 @@
 /**
- * AllPlatformsPage (`/platforms`) — Markets browser.
+ * AllPlatformsPage (`/platforms`) — Platforms browser.
  *
- * DEX-style rows (favicon, ticker, mcap, price, holders, P&L, Stake CTA).
- * Topic colour accents the rank pill and the Stake button.
+ * DEX-style rows (favicon, name, total staked, share price, supporters, your
+ * change in TRUST + %, Take-position CTA). Topic colour accents the rank pill
+ * and the CTA.
  *
  * NOTE: a "Connect" view (topic-grouped PlatformGrid connector) is hidden for
  * now — the platform connection flow isn't finished. See LIVE_PLATFORM_IDS in
@@ -21,6 +22,7 @@ import PlatformsRightRail from '@/components/platforms/PlatformsRightRail'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useProvideRightRail } from '@/contexts/RightRailContext'
 import { PAGE_COLORS } from '@/config/pageColors'
+import { formatTrustChange } from '@/utils/formatting'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
   resolvePlatformImage,
@@ -32,9 +34,9 @@ import '@/components/styles/platform-market.css'
 type SortKey = 'mcap' | 'holders' | 'price' | 'name'
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'mcap', label: 'Market Cap' },
-  { key: 'holders', label: 'Holders' },
-  { key: 'price', label: 'Price' },
+  { key: 'mcap', label: 'Total staked' },
+  { key: 'holders', label: 'Supporters' },
+  { key: 'price', label: 'Share price' },
   { key: 'name', label: 'A–Z' },
 ]
 
@@ -49,7 +51,7 @@ function compareMarkets(
     case 'price':
       return Number(BigInt(b.sharePrice) - BigInt(a.sharePrice))
     case 'holders':
-      return b.positionCount - a.positionCount
+      return b.supporterCount - a.supporterCount
     case 'name':
       return a.label.localeCompare(b.label)
   }
@@ -148,7 +150,7 @@ export default function AllPlatformsPage() {
       ) : rows.length === 0 ? (
         <div className="pm-empty">No platforms match your search.</div>
       ) : (
-        <div className="pm-dex" role="table" aria-label="Platforms market">
+        <div className="pm-dex" role="table" aria-label="Platforms">
           <div className="pm-dex-head" role="row">
             <span role="columnheader">#</span>
             <span role="columnheader">Platform</span>
@@ -157,23 +159,23 @@ export default function AllPlatformsPage() {
               className={`pm-dex-sortable${sortBy === 'mcap' ? ' sorted' : ''}`}
               onClick={() => setSortBy('mcap')}
             >
-              Market cap
+              Total staked
             </span>
             <span
               role="columnheader"
               className={`pm-dex-sortable${sortBy === 'price' ? ' sorted' : ''}`}
               onClick={() => setSortBy('price')}
             >
-              Price
+              Share price
             </span>
             <span
               role="columnheader"
               className={`pm-dex-sortable${sortBy === 'holders' ? ' sorted' : ''}`}
               onClick={() => setSortBy('holders')}
             >
-              Holders
+              Supporters
             </span>
-            <span role="columnheader">P&amp;L</span>
+            <span role="columnheader">Your change</span>
             <span role="columnheader" aria-label="Action" />
           </div>
 
@@ -238,11 +240,20 @@ export default function AllPlatformsPage() {
                 </span>
 
                 <span className="pm-dex-holders" role="cell">
-                  {market.positionCount}
+                  {market.supporterCount}
                 </span>
 
                 <span className={`pm-dex-pnl ${pnlClass}`} role="cell">
-                  {pnl == null ? '—' : `${pnl >= 0 ? '+' : ''}${pnl}%`}
+                  {pnl == null ? (
+                    '—'
+                  ) : (
+                    <>
+                      <span>{formatTrustChange(market.userChange)}</span>
+                      <span className="pm-dex-pnl-pct">
+                        {`${pnl >= 0 ? '+' : ''}${pnl}%`}
+                      </span>
+                    </>
+                  )}
                 </span>
 
                 <span className="pm-dex-action" role="cell">
@@ -256,7 +267,7 @@ export default function AllPlatformsPage() {
                     }}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
-                    Stake
+                    Take position
                   </button>
                 </span>
               </div>
@@ -275,6 +286,10 @@ export default function AllPlatformsPage() {
           platformName={selectedMarket.label}
           favicon={`/favicons/${ATOM_ID_TO_PLATFORM.get(selectedMarket.termId) || ''}.png`}
           walletAddress={walletAddress}
+          website={
+            platformById(ATOM_ID_TO_PLATFORM.get(selectedMarket.termId) ?? '')
+              ?.website
+          }
         />
       )}
     </div>

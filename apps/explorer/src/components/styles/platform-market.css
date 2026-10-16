@@ -205,7 +205,7 @@
 .pm-dex-head,
 .pm-dex-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 140px 110px 90px 90px 120px;
+  grid-template-columns: 40px minmax(0, 1fr) 140px 110px 90px 110px 140px;
   gap: 14px;
   align-items: center;
   padding: 12px 18px;
@@ -381,6 +381,18 @@
   letter-spacing: -0.02em;
   color: var(--ds-muted);
 }
+.pm-dex-pnl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+.pm-dex-pnl-pct {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.8;
+}
 .pm-dex-pnl.up {
   color: #22c55e;
 }
@@ -388,7 +400,7 @@
   color: #ef4444;
 }
 
-/* Invest CTA */
+/* Take-position CTA */
 .pm-dex-action {
   display: flex;
   justify-content: flex-end;
@@ -419,7 +431,7 @@
 @media (max-width: 1100px) {
   .pm-dex-head,
   .pm-dex-row {
-    grid-template-columns: 40px minmax(0, 1fr) 140px 110px 120px;
+    grid-template-columns: 40px minmax(0, 1fr) 140px 110px 140px;
   }
   .pm-dex-head > span:nth-child(5),
   .pm-dex-head > span:nth-child(6),
@@ -431,7 +443,7 @@
 @media (max-width: 720px) {
   .pm-dex-head,
   .pm-dex-row {
-    grid-template-columns: 32px minmax(0, 1fr) 100px 110px;
+    grid-template-columns: 32px minmax(0, 1fr) 100px 130px;
   }
   .pm-dex-head > span:nth-child(4),
   .pm-dex-row > .pm-dex-price {

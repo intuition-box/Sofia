@@ -2,10 +2,12 @@
  * PlatformsRightRail — right-sidebar content for `/platforms`.
  *
  * Rendered into `<RightSidebar>` via `useProvideRightRail()`. Three
- * modules, oriented around decision-making on the market:
- *   1. Market Pulse   — aggregate KPIs (TVL, holders, active count, top gainer).
- *   2. Most Held      — top 5 platforms by positionCount.
- *   3. Your Positions — user holdings summary; CTA when empty.
+ * modules:
+ *   1. Platform Pulse — aggregate KPIs (total staked, positions, active
+ *                       platforms, your total position value).
+ *   2. Most Supported — top 5 platforms by distinct supporters.
+ *   3. Your Positions — value + change in TRUST, best/worst position, exit;
+ *                       CTA when empty.
  *
  * All typography/colors from DS tokens (`--ds-*`), no shadcn Card.
  */
@@ -18,6 +20,7 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
+import { formatTrustChange } from '@/utils/formatting'
 import {
   resolvePlatformImage,
   type PlatformVaultData,
@@ -48,39 +51,27 @@ export default function PlatformsRightRail() {
 
   const pulse = useMemo(() => {
     if (markets.length === 0) {
-      return {
-        tvl: '0',
-        holders: 0,
-        active: 0,
-        topGainer: null as PlatformVaultData | null,
-      }
+      return { tvl: '0', positions: 0, active: 0 }
     }
     const tvlRaw = markets.reduce(
       (acc, m) => acc + BigInt(m.marketCap || '0'),
       0n,
     )
-    const holders = markets.reduce((acc, m) => acc + m.positionCount, 0)
-    const active = markets.filter((m) => m.positionCount > 0).length
-    // Top gainer = highest userPnlPct (falls back to most held when no user data).
-    const withPnl = markets.filter((m) => m.userPnlPct != null)
-    const topGainer =
-      withPnl.length > 0
-        ? [...withPnl].sort(
-            (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
-          )[0]
-        : null
+    // Σ distinct supporters per platform = number of (wallet, platform)
+    // positions. Not a wallet count: one wallet on 3 platforms counts 3.
+    const positions = markets.reduce((acc, m) => acc + m.supporterCount, 0)
+    const active = markets.filter((m) => m.supporterCount > 0).length
     return {
       tvl: formatMCap(tvlRaw.toString()),
-      holders,
+      positions,
       active,
-      topGainer,
     }
   }, [markets])
 
   const mostHeld = useMemo(
     () =>
       [...markets]
-        .sort((a, b) => b.positionCount - a.positionCount)
+        .sort((a, b) => b.supporterCount - a.supporterCount)
         .slice(0, 5),
     [markets],
   )
@@ -91,7 +82,9 @@ export default function PlatformsRightRail() {
     if (held.length === 0)
       return {
         count: 0,
-        totalInvested: '0',
+        totalStaked: '0',
+        totalValue: '0',
+        totalChange: 0n,
         best: null as PlatformVaultData | null,
         worst: null as PlatformVaultData | null,
         held: [] as PlatformVaultData[],
@@ -100,13 +93,19 @@ export default function PlatformsRightRail() {
       (acc, m) => acc + BigInt(m.userDeposited || '0'),
       0n,
     )
+    const valueRaw = held.reduce(
+      (acc, m) => acc + BigInt(m.userValue || '0'),
+      0n,
+    )
     const withPnl = held.filter((m) => m.userPnlPct != null)
     const sorted = [...withPnl].sort(
       (a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0),
     )
     return {
       count: held.length,
-      totalInvested: formatMCap(totalRaw.toString()),
+      totalStaked: formatMCap(totalRaw.toString()),
+      totalValue: formatMCap(valueRaw.toString()),
+      totalChange: valueRaw - totalRaw,
       best: sorted[0] ?? null,
       worst: sorted[sorted.length - 1] ?? null,
       held: [...held].sort((a, b) => (b.userPnlPct ?? 0) - (a.userPnlPct ?? 0)),
@@ -117,56 +116,44 @@ export default function PlatformsRightRail() {
     <>
       {/* ── Market Pulse ──────────────────────────────────────────── */}
       <section className="prr-card">
-        <h3 className="prr-card-title">Market Pulse</h3>
+        <h3 className="prr-card-title">Platform Pulse</h3>
         <div className="prr-pulse-grid">
           <div className="prr-pulse-stat">
             <span className="prr-pulse-value">
               {isLoading ? '—' : pulse.tvl}
             </span>
-            <span className="prr-pulse-label">TVL (T)</span>
+            <span className="prr-pulse-label">Total staked (T)</span>
           </div>
           <div className="prr-pulse-stat">
             <span className="prr-pulse-value">
-              {isLoading ? '—' : compactNumber(pulse.holders)}
+              {isLoading ? '—' : compactNumber(pulse.positions)}
             </span>
-            <span className="prr-pulse-label">Holders</span>
+            <span className="prr-pulse-label">Positions</span>
           </div>
           <div className="prr-pulse-stat">
             <span className="prr-pulse-value">
               {isLoading ? '—' : pulse.active}
             </span>
-            <span className="prr-pulse-label">Active</span>
+            <span className="prr-pulse-label">Active platforms</span>
           </div>
           <div className="prr-pulse-stat">
-            {pulse.topGainer ? (
-              <>
-                <span
-                  className="prr-pulse-value prr-pulse-value--up"
-                  title={pulse.topGainer.label}
-                >
-                  ▲ {Math.abs(pulse.topGainer.userPnlPct ?? 0).toFixed(1)}%
-                </span>
-                <span className="prr-pulse-label">
-                  {pulse.topGainer.label.slice(0, 10)}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="prr-pulse-value">—</span>
-                <span className="prr-pulse-label">Top gainer</span>
-              </>
-            )}
+            <span className="prr-pulse-value">
+              {myPositions && myPositions.count > 0
+                ? myPositions.totalValue
+                : '—'}
+            </span>
+            <span className="prr-pulse-label">Your value (T)</span>
           </div>
         </div>
       </section>
 
       {/* ── Most Held ─────────────────────────────────────────────── */}
       <section className="prr-card">
-        <h3 className="prr-card-title">Most Held</h3>
+        <h3 className="prr-card-title">Most Supported</h3>
         {isLoading ? (
-          <p className="prr-empty">Loading markets…</p>
+          <p className="prr-empty">Loading platforms…</p>
         ) : mostHeld.length === 0 ? (
-          <p className="prr-empty">No markets yet.</p>
+          <p className="prr-empty">No platforms yet.</p>
         ) : (
           <ul className="prr-list">
             {mostHeld.map((market, i) => {
@@ -186,7 +173,12 @@ export default function PlatformsRightRail() {
                       alt={market.label}
                     />
                     <span className="prr-row-name">{market.label}</span>
-                    <span className="prr-row-stat">{market.positionCount}</span>
+                    <span
+                      className="prr-row-stat"
+                      title={`${market.supporterCount} supporters`}
+                    >
+                      {market.supporterCount}
+                    </span>
                   </button>
                 </li>
               )
@@ -204,8 +196,8 @@ export default function PlatformsRightRail() {
           </p>
         ) : myPositions.count === 0 ? (
           <p className="prr-empty">
-            You don't hold any platform yet. Stake from any card to start
-            tracking here.
+            You don't have a position on any platform yet. Take a position from
+            any card to start tracking it here.
           </p>
         ) : (
           <>
@@ -216,9 +208,27 @@ export default function PlatformsRightRail() {
               </div>
               <div className="prr-pulse-stat">
                 <span className="prr-pulse-value">
-                  {myPositions.totalInvested}
+                  {myPositions.totalStaked}
                 </span>
                 <span className="prr-pulse-label">Staked (T)</span>
+              </div>
+              <div className="prr-pulse-stat">
+                <span className="prr-pulse-value">
+                  {myPositions.totalValue}
+                </span>
+                <span className="prr-pulse-label">Position value (T)</span>
+              </div>
+              <div className="prr-pulse-stat">
+                <span
+                  className={`prr-pulse-value ${
+                    myPositions.totalChange >= 0n
+                      ? 'prr-pulse-value--up'
+                      : 'prr-pulse-value--down'
+                  }`}
+                >
+                  {formatTrustChange(myPositions.totalChange)}
+                </span>
+                <span className="prr-pulse-label">Change</span>
               </div>
             </div>
             {myPositions.best && myPositions.best.userPnlPct != null && (
@@ -236,8 +246,16 @@ export default function PlatformsRightRail() {
                   alt={myPositions.best.label}
                 />
                 <span className="prr-mover-name">{myPositions.best.label}</span>
-                <span className="prr-mover-pct prr-mover-pct--up">
-                  ▲ {myPositions.best.userPnlPct.toFixed(1)}%
+                <span
+                  className={`prr-mover-pct ${
+                    myPositions.best.userPnlPct >= 0
+                      ? 'prr-mover-pct--up'
+                      : 'prr-mover-pct--down'
+                  }`}
+                  title={formatTrustChange(myPositions.best.userChange)}
+                >
+                  {myPositions.best.userPnlPct >= 0 ? '▲' : '▼'}{' '}
+                  {Math.abs(myPositions.best.userPnlPct).toFixed(1)}%
                 </span>
               </div>
             )}
@@ -266,6 +284,7 @@ export default function PlatformsRightRail() {
                         ? 'prr-mover-pct--up'
                         : 'prr-mover-pct--down'
                     }`}
+                    title={formatTrustChange(myPositions.worst.userChange)}
                   >
                     {myPositions.worst.userPnlPct >= 0 ? '▲' : '▼'}{' '}
                     {Math.abs(myPositions.worst.userPnlPct).toFixed(1)}%
@@ -294,7 +313,7 @@ export default function PlatformsRightRail() {
                         redeemCert(market.termId, market.label, website)
                       }
                     >
-                      Redeem
+                      Exit
                     </button>
                   </li>
                 )
@@ -314,6 +333,10 @@ export default function PlatformsRightRail() {
           platformName={selected.label}
           favicon={`/favicons/${ATOM_ID_TO_PLATFORM.get(selected.termId) || ''}.png`}
           walletAddress={walletAddress}
+          website={
+            platformById(ATOM_ID_TO_PLATFORM.get(selected.termId) ?? '')
+              ?.website
+          }
         />
       )}
     </>

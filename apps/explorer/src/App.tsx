@@ -40,11 +40,12 @@ const ComposePage = lazy(() => import('./pages/ComposePage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
-// Vote tab hidden for now (kept for a future update — see the commented route below).
-// const VotePage = lazy(() => import('./pages/VotePage'))
+// Vote tab hidden behind FEATURES.vote (kept for a future update).
+const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
 import { useViewAs } from './hooks/useViewAs'
+import { FEATURES } from './config/features'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
 import './components/styles/mobile-shell.css'
@@ -60,6 +61,10 @@ const PERSONAL_PROFILE_SEGMENTS = new Set([
   'interest',
   'platform',
 ])
+
+/** Element rendered in place of a route whose feature flag is off — the
+ *  page stays in the codebase but is unreachable by URL. */
+const HIDDEN_ROUTE = <Navigate to="/explore" replace />
 
 function InterestsHydrationBoundary() {
   useInterestsHydration()
@@ -239,32 +244,36 @@ export default function App() {
           to. The arrows are <b>support / oppose</b> votes: back a card to add
           your weight and tell others it's worth trusting.
         </PageHint>
-        <PageHint
-          storageKey="sofia:hint-circles"
-          path="/circles"
-          title="Joining a Circle"
-        >
-          Open a Circle and press <b>Join</b> to add its members to the people
-          you trust. Joining needs an <b>Intuition identity</b>: mint your atom
-          ID on the Intuition portal first, otherwise Join stays locked.
-        </PageHint>
-        <PageHint
-          storageKey="sofia:hint-compose"
-          path="/compose"
-          title="Compose a perspective"
-        >
-          Combine a <b>circle</b> and a <b>topic</b> into your own lens on the
-          network. Apply <b>Merge</b>, <b>Intersect</b>, <b>Subtract</b> or{' '}
-          <b>Contrast</b> to compile a focused view of what they certify.
-        </PageHint>
+        {FEATURES.circles && (
+          <PageHint
+            storageKey="sofia:hint-circles"
+            path="/circles"
+            title="Joining a Circle"
+          >
+            Open a Circle and press <b>Join</b> to add its members to the people
+            you trust. Joining needs an <b>Intuition identity</b>: mint your
+            atom ID on the Intuition portal first, otherwise Join stays locked.
+          </PageHint>
+        )}
+        {FEATURES.compose && (
+          <PageHint
+            storageKey="sofia:hint-compose"
+            path="/compose"
+            title="Compose a perspective"
+          >
+            Combine a <b>circle</b> and a <b>topic</b> into your own lens on the
+            network. Apply <b>Merge</b>, <b>Intersect</b>, <b>Subtract</b> or{' '}
+            <b>Contrast</b> to compile a focused view of what they certify.
+          </PageHint>
+        )}
         <PageHint
           storageKey="sofia:hint-markets"
           path="/platforms"
-          title="Markets"
+          title="Platforms"
         >
-          Spot trending platforms early and <b>stake</b> before the crowd does.
-          Back a platform to grow with its signal, and track its market cap and
-          your position.
+          Spot the platforms that matter early and <b>take a position</b>. Each
+          page you certify also strengthens your position on its platform. Track
+          its total staked and your position value here.
         </PageHint>
         <PageHint
           storageKey="sofia:hint-profile"
@@ -281,10 +290,10 @@ export default function App() {
           blocking
           title="Your cart"
         >
-          Everything you certify or join stacks here, so you can review it and
-          sign it all in one batch. For each item you pick a weight,{' '}
-          <b>Light</b>, <b>Medium</b> or <b>Strong</b>: the more you stake, the
-          stronger the signal you put behind it.
+          Every position you take stacks here, so you can review it and sign it
+          all in one batch. For each item you pick a weight, <b>Light</b>,{' '}
+          <b>Medium</b> or <b>Strong</b>: the more you stake, the stronger the
+          signal you put behind it.
         </PageHint>
         <WsStatusBadge />
 
@@ -383,9 +392,13 @@ export default function App() {
                 <Route
                   path="/notifications"
                   element={
-                    <ProtectedRoute>
-                      <NotificationsPage />
-                    </ProtectedRoute>
+                    FEATURES.notifications ? (
+                      <ProtectedRoute>
+                        <NotificationsPage />
+                      </ProtectedRoute>
+                    ) : (
+                      HIDDEN_ROUTE
+                    )
                   }
                 />
                 <Route
@@ -440,29 +453,45 @@ export default function App() {
                     on-chain groups and their members without connecting.
                     Join + create actions surface a Connect CTA via the
                     locked overlay when no wallet is linked. */}
-                <Route path="/circles" element={<CirclesPage />} />
+                <Route
+                  path="/circles"
+                  element={FEATURES.circles ? <CirclesPage /> : HIDDEN_ROUTE}
+                />
                 {/* Legacy redirect — older share links pointed to
                     `/circles/group/:termId`. The unified detail page
                     lives at `/circles/:id` now. */}
                 <Route
                   path="/circles/group/:id"
-                  element={<LegacyGroupRedirect />}
+                  element={
+                    FEATURES.circles ? <LegacyGroupRedirect /> : HIDDEN_ROUTE
+                  }
                 />
-                <Route path="/circles/:id" element={<CirclesPage />} />
+                <Route
+                  path="/circles/:id"
+                  element={FEATURES.circles ? <CirclesPage /> : HIDDEN_ROUTE}
+                />
                 <Route
                   path="/compose"
                   element={
-                    <ProtectedRoute>
-                      <ComposePage />
-                    </ProtectedRoute>
+                    FEATURES.compose ? (
+                      <ProtectedRoute>
+                        <ComposePage />
+                      </ProtectedRoute>
+                    ) : (
+                      HIDDEN_ROUTE
+                    )
                   }
                 />
                 <Route
                   path="/perspective/:mode"
                   element={
-                    <ProtectedRoute>
-                      <PerspectivePage />
-                    </ProtectedRoute>
+                    FEATURES.compose ? (
+                      <ProtectedRoute>
+                        <PerspectivePage />
+                      </ProtectedRoute>
+                    ) : (
+                      HIDDEN_ROUTE
+                    )
                   }
                 />
                 <Route
@@ -473,19 +502,20 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
-                {/* Vote tab hidden for now (kept for a future update). The nav
-                    item + this route are disabled so /vote is not reachable by
-                    URL. Restore by uncommenting the VotePage import, this route,
-                    and the nav item in NavSidebar.
+                {/* Vote tab hidden behind FEATURES.vote (kept for a future
+                    update) — /vote redirects to /explore while the flag is off. */}
                 <Route
                   path="/vote"
                   element={
-                    <ProtectedRoute>
-                      <VotePage />
-                    </ProtectedRoute>
+                    FEATURES.vote ? (
+                      <ProtectedRoute>
+                        <VotePage />
+                      </ProtectedRoute>
+                    ) : (
+                      HIDDEN_ROUTE
+                    )
                   }
                 />
-                */}
               </Routes>
             </Suspense>
           </RouteErrorBoundary>

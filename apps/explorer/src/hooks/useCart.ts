@@ -7,6 +7,7 @@ import {
   createElement,
 } from 'react'
 import type { ReactNode } from 'react'
+import type { RedeemPercent } from '@/services/redeemService'
 
 /** Draft payload carried by a `kind: 'create-circle'` cart item. The
  *  drawer collects this; WeightModal expands it into a circle atom +
@@ -49,7 +50,8 @@ export interface CartItem {
    *   - 'create-triple'  → SofiaFeeProxy.createTriples (atoms must exist)
    *   - 'create-circle'  → atomCreationService + createTriples (mints
    *                        circle atom + membership + has_tag triples)
-   *   - 'redeem'         → MultiVault.redeem (retrieves all shares)
+   *   - 'redeem'         → MultiVault.redeem (exits `redeemPercent` of the
+   *                        shares held, all of them by default)
    *   - 'create-skill'   → atomCreationService (mints skill/tool atom) +
    *                        createTriples ([you → is_skilled_in/uses → skill])
    *   - 'create-context' → atomCreationService (mints the taxonomy context
@@ -68,6 +70,9 @@ export interface CartItem {
   subjectId?: string
   predicateId?: string
   objectId?: string
+  /** `kind === 'redeem'` only: share of the position to exit (25/50/100).
+   *  Defaults to 100 (full exit). */
+  redeemPercent?: RedeemPercent
   /** Required when `kind === 'create-circle'`. */
   circleDraft?: CircleDraft
   /** Required when `kind === 'create-skill'`. */

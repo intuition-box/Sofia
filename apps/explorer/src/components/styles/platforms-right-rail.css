@@ -63,6 +63,10 @@
   color: var(--trusted, #6dd4a0);
 }
 
+.prr-pulse-value--down {
+  color: var(--distrusted, #ef4444);
+}
+
 .prr-pulse-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;

@@ -62,19 +62,32 @@ export async function getShares(
 }
 
 /**
- * Find the bonding curve on which `account` actually holds shares for `termId`.
- * Returns the first curve (Linear then Progressive) with a non-zero balance, or
- * null when the account holds nothing on any curve.
+ * Every bonding curve on which `account` holds shares for `termId` (Linear
+ * then Progressive). Empty when the account holds nothing on any curve.
  */
-async function findFundedCurve(
+async function findFundedCurves(
   account: string,
   termId: string,
-): Promise<{ curveId: bigint; shares: bigint } | null> {
-  for (const curveId of REDEEM_CURVE_IDS) {
-    const shares = await getShares(account, termId, curveId)
-    if (shares > 0n) return { curveId, shares }
-  }
-  return null
+): Promise<{ curveId: bigint; shares: bigint }[]> {
+  const balances = await Promise.all(
+    REDEEM_CURVE_IDS.map(async (curveId) => ({
+      curveId,
+      shares: await getShares(account, termId, curveId),
+    })),
+  )
+  return balances.filter((b) => b.shares > 0n)
+}
+
+/** Share of a position to exit, in percent of the shares held. */
+export type RedeemPercent = 25 | 50 | 100
+
+/** `shares × percent / 100`, exact (no rounding) for a full exit. */
+export function sharesForPercent(
+  shares: bigint,
+  percent: RedeemPercent,
+): bigint {
+  if (percent >= 100) return shares
+  return (shares * BigInt(percent)) / 100n
 }
 
 /**
@@ -112,33 +125,37 @@ export async function getSharesBatchChunked(
 }
 
 // ---------------------------------------------------------------------------
-// Redeem a single atom position (all shares)
+// Redeem a single atom position (all shares, or a percentage of them)
 // ---------------------------------------------------------------------------
 
 export async function redeemAtom(
   wallet: WalletDescriptor,
   termId: string,
   sharesToRedeem?: bigint,
+  percent: RedeemPercent = 100,
 ): Promise<RedeemResult> {
   await wallet.switchChain(intuitionChain.id)
   const provider = await wallet.getEthereumProvider()
   const address = wallet.address as `0x${string}`
 
-  // Locate the curve the shares actually live on (Linear or Progressive). When
-  // an explicit amount is passed we trust the primary curve; otherwise scan.
-  let curveId = CURVE_ID
-  let shares: bigint
+  // Locate the curves the shares actually live on (Linear and/or
+  // Progressive). When an explicit amount is passed we trust the primary
+  // curve; otherwise scan both and exit `percent` of each.
+  let legs: { curveId: bigint; shares: bigint }[]
   if (sharesToRedeem != null) {
-    shares = sharesToRedeem
+    legs = [{ curveId: CURVE_ID, shares: sharesToRedeem }]
   } else {
-    const funded = await findFundedCurve(address, termId)
-    if (!funded) {
-      // Nothing on any curve — no tx to send. Flag as a no-op so callers don't
-      // fake a "validated" success or drop the item from the UI.
-      return { success: true, noop: true }
-    }
-    curveId = funded.curveId
-    shares = funded.shares
+    legs = (await findFundedCurves(address, termId))
+      .map((f) => ({
+        curveId: f.curveId,
+        shares: sharesForPercent(f.shares, percent),
+      }))
+      .filter((l) => l.shares > 0n)
+  }
+  if (legs.length === 0) {
+    // Nothing on any curve — no tx to send. Flag as a no-op so callers don't
+    // fake a "validated" success or drop the item from the UI.
+    return { success: true, noop: true }
   }
 
   const walletClient = createWalletClient({
@@ -147,6 +164,42 @@ export async function redeemAtom(
     transport: custom(provider),
   })
 
+  // Position on both curves → one redeemBatch tx (same termId, one leg per
+  // curve) so the whole position exits, not just the Linear side.
+  if (legs.length > 1) {
+    const batchConfig = {
+      address: MULTI_VAULT_ADDRESS,
+      abi: MultiVaultAbi,
+      functionName: 'redeemBatch',
+      args: [
+        address,
+        legs.map(() => termId as `0x${string}`),
+        legs.map((l) => l.curveId),
+        legs.map((l) => l.shares),
+        legs.map(() => 0n),
+      ],
+      account: address,
+    } as const
+    await publicClient.simulateContract(batchConfig)
+    const batchGas = await explicitGasLimit(
+      publicClient,
+      batchConfig,
+      2_000_000n,
+    )
+    const batchHash = await walletClient.writeContract({
+      ...batchConfig,
+      gas: batchGas,
+      chain: intuitionChain,
+    })
+    const batchReceipt = await publicClient.waitForTransactionReceipt({
+      hash: batchHash,
+    })
+    return batchReceipt.status === 'success'
+      ? { success: true, txHash: batchHash }
+      : { success: false, error: 'Transaction reverted' }
+  }
+
+  const { curveId, shares } = legs[0]
   const args = [
     address,
     termId as `0x${string}`,

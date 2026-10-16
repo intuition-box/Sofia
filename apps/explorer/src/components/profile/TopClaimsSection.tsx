@@ -171,7 +171,7 @@ function PlatformPositionCard({
           </div>
           <div className="tc-stat-block">
             <Users className="h-3 w-3" />
-            <span className="tc-stat-value">{market.positionCount}</span>
+            <span className="tc-stat-value">{market.supporterCount}</span>
           </div>
           {market.userPnlPct !== null && (
             <div

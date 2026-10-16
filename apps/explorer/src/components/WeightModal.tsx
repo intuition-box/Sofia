@@ -29,7 +29,7 @@ import {
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
-import { redeemAtom } from '../services/redeemService'
+import { redeemAtom, type RedeemPercent } from '../services/redeemService'
 import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
@@ -146,9 +146,10 @@ export default function WeightModal({
           (it) =>
             (it.kind ?? 'deposit') === 'deposit' &&
             it.kind !== 'redeem' &&
-            // Platform atom vaults (Invest) are atoms, not triples — skip
-            // the triple-existence check or it always fails.
+            // Platform atom vaults (platform positions) are atoms, not
+            // triples — skip the triple-existence check or it always fails.
             it.intention !== 'Invest' &&
+            it.intention !== 'Take position' &&
             !it.id.startsWith('invest-'),
         )
         .map((it) => it.termId),
@@ -282,7 +283,7 @@ export default function WeightModal({
   const handleSubmit = useCallback(async () => {
     const depositItems: { termId: string; amountTrust: number }[] = []
     const createItems: BatchCreateTripleItem[] = []
-    const redeemTermIds: string[] = []
+    const redeemItems: { termId: string; percent: RedeemPercent }[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
@@ -294,7 +295,10 @@ export default function WeightModal({
     items.forEach((item, i) => {
       const amount = getAmount(i)
       if (item.kind === 'redeem') {
-        redeemTermIds.push(item.termId)
+        redeemItems.push({
+          termId: item.termId,
+          percent: item.redeemPercent ?? 100,
+        })
       } else if (
         item.kind === 'create-triple' &&
         item.subjectId &&
@@ -325,7 +329,7 @@ export default function WeightModal({
     // the loop is wrapped — otherwise a rejected popup leaves the panel stuck
     // with no error. `createTripleProcessing` drives the spinner since redeem
     // takes neither the deposit nor the create-triple path.
-    if (redeemTermIds.length > 0) {
+    if (redeemItems.length > 0) {
       if (!authenticated || wallets.length === 0) {
         setCreateTripleResult({ success: false, error: 'No wallet connected' })
         return
@@ -333,17 +337,20 @@ export default function WeightModal({
       const wallet = wallets[0]
       let lastRedeemHash: string | undefined
       const redeemedOk: string[] = []
+      /** Full exits only — a partial exit keeps a position, so its row must
+       *  stay in the profile / attributes caches. */
+      const fullyExited: string[] = []
       let noopCount = 0
       setCreateTripleProcessing(true)
       setCreateTripleResult(null)
       try {
-        for (const termId of redeemTermIds) {
-          const r = await redeemAtom(wallet, termId)
+        for (const { termId, percent } of redeemItems) {
+          const r = await redeemAtom(wallet, termId, undefined, percent)
           if (!r.success) {
             allOk = false
             setCreateTripleResult({
               success: false,
-              error: r.error ?? 'Redeem failed',
+              error: r.error ?? 'Exit failed',
             })
           } else if (r.noop) {
             // No shares on any curve → nothing was redeemed. Don't treat this
@@ -351,8 +358,11 @@ export default function WeightModal({
             noopCount++
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
-            clearOptimisticPosition(qc, wallet.address, termId)
             redeemedOk.push(termId)
+            if (percent === 100) {
+              clearOptimisticPosition(qc, wallet.address, termId)
+              fullyExited.push(termId)
+            }
           }
         }
       } catch (err) {
@@ -369,12 +379,12 @@ export default function WeightModal({
       // races the indexer (still reporting the position for a few seconds)
       // and re-persists the stale row, so it reappears on reload. staleTime
       // reconciles on the next natural refetch once the indexer catches up.
-      if (redeemedOk.length > 0) {
+      if (fullyExited.length > 0) {
         // A redeemed termId is either a URL cert (profile cache) or a
         // skill/tool declaration (attributes cache) — filter both; the one
         // that doesn't match is a no-op.
-        removeCertsFromProfileCache(qc, redeemedOk)
-        removeAttributesFromCache(qc, redeemedOk)
+        removeCertsFromProfileCache(qc, fullyExited)
+        removeAttributesFromCache(qc, fullyExited)
       }
       if (allOk) {
         // A redeem-only cart has no deposit/create result to drive the
@@ -393,7 +403,7 @@ export default function WeightModal({
             setCreateTripleResult({
               success: false,
               error:
-                'Nothing to redeem — you hold no stake on this from this wallet.',
+                'Nothing to exit — you hold no position on this from this wallet.',
             })
           }
         }
@@ -924,7 +934,11 @@ export default function WeightModal({
 
                       {isRedeem ? (
                         <div className="b3-row-trust b3-row-trust--redeem">
-                          <span className="b3-row-trust-unit">REDEEM</span>
+                          <span className="b3-row-trust-unit">
+                            {(item.redeemPercent ?? 100) < 100
+                              ? `EXIT ${item.redeemPercent}%`
+                              : 'EXIT'}
+                          </span>
                         </div>
                       ) : (
                         <div className="b3-row-trust">
@@ -938,7 +952,9 @@ export default function WeightModal({
                       {isRedeem ? (
                         <div className="b3-tiers b3-tiers--redeem">
                           <span className="b3-tier-label">
-                            All shares returned
+                            {(item.redeemPercent ?? 100) < 100
+                              ? `${item.redeemPercent}% of your shares returned`
+                              : 'All shares returned'}
                           </span>
                         </div>
                       ) : (
@@ -1100,6 +1116,15 @@ export default function WeightModal({
                 </p>
               </div>
             </div>
+          )}
+
+          {!txResult && (
+            <p
+              className="text-xs text-muted-foreground"
+              style={{ margin: '0 0 8px', textAlign: 'center' }}
+            >
+              Position value can go down. Rewards are not guaranteed.
+            </p>
           )}
 
           {/* Footer actions */}

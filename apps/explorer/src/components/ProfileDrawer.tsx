@@ -15,6 +15,7 @@ import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { useUserOnChainProfile } from '../hooks/useUserOnChainProfile'
 import { useGroups } from '@/hooks/useGroups'
+import { FEATURES } from '@/config/features'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
 import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
@@ -109,7 +110,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { profile } = useUserOnChainProfile(linkedAddresses)
   // Circle impact stats — Trust Circle is implicit (+1) and we add every
   // on-chain group the user is the subject of an `is_member_of` claim in.
-  const { groups } = useGroups()
+  const { groups } = useGroups({ enabled: FEATURES.circles })
   const positions = useUserPositionTermIds(linkedAddresses)
   const { invests: platformInvests } = useUserPlatformInvests(linkedAddresses)
   // Bot-verified socials, merged across every linked wallet (a social may
@@ -215,7 +216,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           favicon: e.favicon,
           timestamp: e.ts,
           isOppose: false,
-          verb: { label: 'Stake', color: '#10B981' } as Verb,
+          verb: { label: 'Position', color: '#10B981' } as Verb,
           topic: null as TopicChip | null,
         }
       }
@@ -457,16 +458,22 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
               footprint read together before any of the analytic
               surfaces (score donut, last activity). */}
           <div className="pd-section">
-            <p className="pd-section-title">Circle impact</p>
+            <p className="pd-section-title">
+              {FEATURES.circles ? 'Circle impact' : 'Your impact'}
+            </p>
             <div
               className="pd-impact-row"
               role="group"
-              aria-label="My impact in circles"
+              aria-label={
+                FEATURES.circles ? 'My impact in circles' : 'My impact'
+              }
             >
-              <div className="pd-impact-cell">
-                <span className="pd-impact-num">{circlesCount}</span>
-                <span className="pd-impact-label">Circles</span>
-              </div>
+              {FEATURES.circles && (
+                <div className="pd-impact-cell">
+                  <span className="pd-impact-num">{circlesCount}</span>
+                  <span className="pd-impact-label">Circles</span>
+                </div>
+              )}
               <div className="pd-impact-cell">
                 <span className="pd-impact-num">
                   {formatStatCount(profile.certs.length)}
@@ -477,7 +484,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                 <span className="pd-impact-num">
                   {formatStatCount(positions.size)}
                 </span>
-                <span className="pd-impact-label">Votes</span>
+                <span className="pd-impact-label">Positions</span>
               </div>
             </div>
           </div>
