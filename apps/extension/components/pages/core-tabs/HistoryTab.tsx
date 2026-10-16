@@ -106,7 +106,7 @@ const HistoryTab = ({
     try {
       const result = await redeemPosition(termId)
       if (!result.success) {
-        alert(`Redeem failed: ${result.error}`)
+        alert(`Exit failed: ${result.error}`)
         return
       }
       setRedeemedIds((prev) => new Set(prev).add(termId))
@@ -245,7 +245,7 @@ const HistoryTab = ({
         <div className="empty-state">
           <p>Connect your wallet</p>
           <p className="empty-subtext">
-            Connect your wallet to view your on-chain triplets
+            Connect your wallet to view your positions
           </p>
         </div>
       </div>
@@ -260,7 +260,7 @@ const HistoryTab = ({
         <div className="category-search-container">
           <input
             type="text"
-            placeholder="Search your history..."
+            placeholder="Search your positions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="category-search-input"
@@ -280,7 +280,7 @@ const HistoryTab = ({
       <div
         className="scope-toggle echoes-sort-toggle"
         role="group"
-        aria-label="Sort history by">
+        aria-label="Sort positions by">
         {SORT_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -447,7 +447,7 @@ const HistoryTab = ({
                               alt=""
                               className="portal-button-icon"
                             />
-                            Stake
+                            Add to position
                           </button>
                           <button
                             type="button"
@@ -477,8 +477,8 @@ const HistoryTab = ({
                             className="portal-button portal-button--danger portal-button--icon"
                             onClick={() => handleRedeem(tripletItem.id)}
                             disabled={redeemingIds.has(tripletItem.id)}
-                            title="Redeem position"
-                            aria-label="Redeem position">
+                            title="Exit position"
+                            aria-label="Exit position">
                             {redeemingIds.has(tripletItem.id) ? (
                               "..."
                             ) : (
@@ -513,9 +513,9 @@ const HistoryTab = ({
         </div>
       ) : triplets.length > 0 ? (
         <div className="empty-state">
-          <p>No triplets match your search</p>
+          <p>No positions match your search</p>
           <p className="empty-subtext">
-            Try adjusting your search or clear it to see all triplets.
+            Try adjusting your search or clear it to see all positions.
           </p>
         </div>
       ) : isLoading ? (
@@ -524,7 +524,7 @@ const HistoryTab = ({
         </div>
       ) : (
         <div className="empty-state">
-          <p>No signals found</p>
+          <p>No positions yet</p>
         </div>
       )}
 

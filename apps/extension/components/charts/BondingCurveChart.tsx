@@ -1,6 +1,6 @@
-import { useBondingCurveData } from '../../hooks'
-import type { CurveType, TimeRange } from '../../types/bonding-curve'
-import SofiaLoader from '../ui/SofiaLoader'
+import { useBondingCurveData } from "../../hooks"
+import type { CurveType, TimeRange } from "../../types/bonding-curve"
+import SofiaLoader from "../ui/SofiaLoader"
 
 interface BondingCurveChartProps {
   tripleId: string
@@ -22,22 +22,28 @@ function formatPrice(value: number): string {
 export function BondingCurveChart({
   tripleId,
   curveId,
-  walletAddress = '',
-  className = ''
+  walletAddress = "",
+  className = ""
 }: BondingCurveChartProps) {
-  const timeRange: TimeRange = 'all'
+  const timeRange: TimeRange = "all"
 
-  const { currentPrice, priceChange, isLoading, error, userShares, marketCap, totalInvested, totalRedeemed } = useBondingCurveData(
-    tripleId,
-    curveId,
-    walletAddress,
-    timeRange
-  )
+  const {
+    currentPrice,
+    priceChange,
+    isLoading,
+    error,
+    userShares,
+    marketCap,
+    totalInvested,
+    totalRedeemed
+  } = useBondingCurveData(tripleId, curveId, walletAddress, timeRange)
 
   if (isLoading) {
     return (
       <div className={`stake-chart-section ${className}`}>
-        <div className="stake-chart-loading"><SofiaLoader size={150} /></div>
+        <div className="stake-chart-loading">
+          <SofiaLoader size={150} />
+        </div>
       </div>
     )
   }
@@ -51,18 +57,19 @@ export function BondingCurveChart({
   }
 
   // Calculate metrics for display
-  const totalBalanceWei = BigInt(marketCap || '0')
-  const totalBalance = totalBalanceWei > 0n
-    ? parseFloat((Number(totalBalanceWei) / 1e18).toFixed(4))
-    : 0
+  const totalBalanceWei = BigInt(marketCap || "0")
+  const totalBalance =
+    totalBalanceWei > 0n
+      ? parseFloat((Number(totalBalanceWei) / 1e18).toFixed(4))
+      : 0
 
-  const currentSharePrice = parseFloat(currentPrice || '0')
-  const userSharesNum = parseFloat(userShares || '0')
+  const currentSharePrice = parseFloat(currentPrice || "0")
+  const userSharesNum = parseFloat(userShares || "0")
   const positionValue = userSharesNum * currentSharePrice
 
   // P&L calculation: Total P&L = (current value + total redeemed) - total invested
-  const totalInvestedNum = parseFloat(totalInvested || '0')
-  const totalRedeemedNum = parseFloat(totalRedeemed || '0')
+  const totalInvestedNum = parseFloat(totalInvested || "0")
+  const totalRedeemedNum = parseFloat(totalRedeemed || "0")
   const totalValue = positionValue + totalRedeemedNum
   const pnl = totalValue - totalInvestedNum
 
@@ -74,8 +81,9 @@ export function BondingCurveChart({
           <div className="stake-chart-balance-label">Total Market Cap</div>
           <div className="stake-chart-balance-value">
             {formatPrice(totalBalance)}
-            <span className={`stake-chart-balance-change ${priceChange?.isPositive ? 'positive' : 'negative'}`}>
-              {priceChange?.percentage || '+0%'}
+            <span
+              className={`stake-chart-balance-change ${priceChange?.isPositive ? "positive" : "negative"}`}>
+              {priceChange?.percentage || "+0%"}
             </span>
           </div>
         </div>
@@ -84,23 +92,29 @@ export function BondingCurveChart({
         <div className="stake-chart-metrics">
           <div className="stake-chart-metric">
             <span className="stake-chart-metric-label">Share Price</span>
-            <span className="stake-chart-metric-value">{currentSharePrice.toFixed(4)}</span>
+            <span className="stake-chart-metric-value">
+              {currentSharePrice.toFixed(4)}
+            </span>
           </div>
           <div className="stake-chart-metric">
             <span className="stake-chart-metric-label">My Shares</span>
-            <span className="stake-chart-metric-value">{userSharesNum.toFixed(2)}</span>
+            <span className="stake-chart-metric-value">
+              {userSharesNum.toFixed(2)}
+            </span>
           </div>
           <div className="stake-chart-metric">
-            <span className="stake-chart-metric-label">Current Value</span>
-            <span className="stake-chart-metric-value">{positionValue.toFixed(4)}</span>
+            <span className="stake-chart-metric-label">Position value</span>
+            <span className="stake-chart-metric-value">
+              {positionValue.toFixed(4)}
+            </span>
           </div>
           <div className="stake-chart-metric">
-            <span className="stake-chart-metric-label">P&L</span>
+            <span className="stake-chart-metric-label">Variation</span>
             <span
               className="stake-chart-metric-value"
-              style={{ color: pnl >= 0 ? '#10b981' : '#ef4444' }}
-            >
-              {pnl >= 0 ? '+' : ''}{pnl.toFixed(4)}
+              style={{ color: pnl >= 0 ? "#10b981" : "#ef4444" }}>
+              {pnl >= 0 ? "+" : ""}
+              {pnl.toFixed(4)}
             </span>
           </div>
         </div>

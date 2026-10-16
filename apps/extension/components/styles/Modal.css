@@ -2974,6 +2974,10 @@
   padding: 3px 0;
   color: rgba(255, 255, 255, 0.75);
 }
+.amp .b3-disclaimer {
+  font-size: 11px;
+  margin-top: 10px;
+}
 .amp .b3-ledger-row--muted {
   color: rgba(255, 255, 255, 0.45);
   margin-top: 2px;

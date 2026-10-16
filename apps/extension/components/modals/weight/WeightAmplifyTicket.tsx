@@ -12,7 +12,6 @@ import type { Dispatch, SetStateAction } from "react"
 import type { ModalTriplet } from "~/hooks"
 
 import SofiaLoader from "../../ui/SofiaLoader"
-import WeightBasketRow from "./WeightBasketRow"
 import {
   formatTrust,
   weightOptions,
@@ -20,6 +19,7 @@ import {
   type WeightBreakdown,
   type WeightOptionId
 } from "./types"
+import WeightBasketRow from "./WeightBasketRow"
 
 interface CurveSelector {
   selected: "linear" | "progressive"
@@ -227,7 +227,9 @@ export default function WeightAmplifyTicket({
               <div className="gs-slider-section">
                 <div className="gs-slider-header">
                   <span className="gs-slider-label">Beta Season Pool</span>
-                  <span className="gs-slider-value">{gsPercentage / 1000}%</span>
+                  <span className="gs-slider-value">
+                    {gsPercentage / 1000}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -299,6 +301,10 @@ export default function WeightAmplifyTicket({
               <span>{formatTrust(userBalance)} TRUST</span>
             </div>
           </div>
+
+          <p className="b3-sub b3-disclaimer">
+            Position value can go down. Rewards are not guaranteed.
+          </p>
 
           <div className="b3-actions">
             <button

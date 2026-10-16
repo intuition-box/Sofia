@@ -31,6 +31,10 @@ export const getProfilePlatformUrl = (domain: string): string =>
 /** Root URL of Sofia Explorer. */
 export const getExplorerHomeUrl = (): string => `${base}/feed`
 
+/** URL to the season & missions surface of Sofia Explorer (quests, points,
+ *  leaderboard). TODO: point to `/season` once the Explorer ships it. */
+export const getExplorerSeasonUrl = (): string => `${base}/leaderboard`
+
 /** URL to the signed-in user's own profile in Sofia Explorer.
  *  Pinned to the production explorer subdomain with the `/profile` path. */
 export const getProfileUrl = (): string =>

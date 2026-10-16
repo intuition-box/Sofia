@@ -7,18 +7,21 @@
  * Uses the same visual language as WeightModal (pills, cost breakdown, processing states).
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
+import { formatUnits, getAddress, parseEther } from "viem"
 import { useBalance } from "wagmi"
-import { formatUnits, parseEther, getAddress } from "viem"
+
 import {
-  useWalletFromStorage,
-  useGlobalStake,
   useDepositGlobalStake,
-  useRedeemGlobalStake
+  useGlobalStake,
+  useRedeemGlobalStake,
+  useWalletFromStorage
 } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
+
 import SofiaLoader from "../ui/SofiaLoader"
+
 import "../styles/Modal.css"
 import "../styles/GlobalStakeModal.css"
 
@@ -53,11 +56,7 @@ const redeemOptions: AmountOption[] = [
   { id: "100", label: "100%", value: 100 }
 ]
 
-const GlobalStakeModal = ({
-  isOpen,
-  mode,
-  onClose
-}: GlobalStakeModalProps) => {
+const GlobalStakeModal = ({ isOpen, mode, onClose }: GlobalStakeModalProps) => {
   const { walletAddress } = useWalletFromStorage()
   const { position: gsPosition, vaultStats } = useGlobalStake()
   const {
@@ -71,9 +70,7 @@ const GlobalStakeModal = ({
     loading: redeemLoading
   } = useRedeemGlobalStake()
 
-  const checksumAddress = walletAddress
-    ? getAddress(walletAddress)
-    : undefined
+  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
   const { data: balanceData } = useBalance({ address: checksumAddress })
   const userBalance = balanceData
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
@@ -125,11 +122,15 @@ const GlobalStakeModal = ({
 
     let cancelled = false
     const amountWei = parseEther(amount.toString())
-    previewDeposit(amountWei).then((shares) => {
-      if (!cancelled) setPreviewShares(shares)
-    }).catch(() => {})
+    previewDeposit(amountWei)
+      .then((shares) => {
+        if (!cancelled) setPreviewShares(shares)
+      })
+      .catch(() => {})
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [isOpen, mode, getDepositAmount, previewDeposit])
 
   // Preview redeem assets
@@ -140,11 +141,15 @@ const GlobalStakeModal = ({
     const pct = parseInt(redeemPercent) || 100
     const sharesToRedeem = (gsPosition.shares * BigInt(pct)) / 100n
 
-    previewRedeem(sharesToRedeem).then((assets) => {
-      if (!cancelled) setPreviewAssets(assets)
-    }).catch(() => {})
+    previewRedeem(sharesToRedeem)
+      .then((assets) => {
+        if (!cancelled) setPreviewAssets(assets)
+      })
+      .catch(() => {})
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [isOpen, mode, redeemPercent, gsPosition, previewRedeem])
 
   const handleDeposit = async () => {
@@ -167,9 +172,10 @@ const GlobalStakeModal = ({
     if (!gsPosition || gsPosition.shares === 0n) return
 
     const pct = parseInt(redeemPercent) || 100
-    const sharesToRedeem = pct >= 100
-      ? undefined // redeem all
-      : (gsPosition.shares * BigInt(pct)) / 100n
+    const sharesToRedeem =
+      pct >= 100
+        ? undefined // redeem all
+        : (gsPosition.shares * BigInt(pct)) / 100n
 
     const result = await redeem(sharesToRedeem)
 
@@ -206,21 +212,16 @@ const GlobalStakeModal = ({
     : 0n
 
   return createPortal(
-    <div
-      className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
+    <div className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
       <div className="modal-content">
         <div className="modal-body">
           {/* Title */}
           {!txSuccess && !txError && (
             <div className="gs-modal__header">
               <h2 className="gs-modal__title">
-                {mode === "deposit"
-                  ? "Add to Pool"
-                  : "Redeem Position"}
+                {mode === "deposit" ? "Add to Pool" : "Redeem Position"}
               </h2>
-              <p className="gs-modal__subtitle">
-                Beta Season Pool
-              </p>
+              <p className="gs-modal__subtitle">Beta Season Pool</p>
             </div>
           )}
 
@@ -228,17 +229,13 @@ const GlobalStakeModal = ({
           {!txSuccess && gsPosition && (
             <div className="gs-modal__position">
               <div className="gs-modal__position-row">
-                <span className="gs-modal__position-label">
-                  Your stake
-                </span>
+                <span className="gs-modal__position-label">Your position</span>
                 <span className="gs-modal__position-value">
                   {fmtBigint(gsPosition.currentValue)} TRUST
                 </span>
               </div>
               <div className="gs-modal__position-row">
-                <span className="gs-modal__position-label">
-                  P&L
-                </span>
+                <span className="gs-modal__position-label">Variation</span>
                 <span
                   className={`gs-modal__position-value ${gsPosition.profitLoss >= 0n ? "gs-modal__positive" : "gs-modal__negative"}`}>
                   {gsPosition.profitLoss >= 0n ? "+" : ""}
@@ -249,9 +246,7 @@ const GlobalStakeModal = ({
               </div>
               {vaultStats && (
                 <div className="gs-modal__position-row">
-                  <span className="gs-modal__position-label">
-                    TVL
-                  </span>
+                  <span className="gs-modal__position-label">TVL</span>
                   <span className="gs-modal__position-value">
                     {fmtBigint(vaultStats.tvl)} TRUST
                   </span>
@@ -271,9 +266,8 @@ const GlobalStakeModal = ({
                   value={
                     selectedPill === "custom"
                       ? customValue
-                      : depositOptions.find(
-                          (o) => o.id === selectedPill
-                        )?.value || ""
+                      : depositOptions.find((o) => o.id === selectedPill)
+                          ?.value || ""
                   }
                   onChange={(e) => {
                     setSelectedPill("custom")
@@ -331,9 +325,7 @@ const GlobalStakeModal = ({
                     {redeemOptions.map((opt) => (
                       <button
                         key={opt.id}
-                        onClick={() =>
-                          setRedeemPercent(opt.id)
-                        }
+                        onClick={() => setRedeemPercent(opt.id)}
                         className={`weight-modal-pill ${redeemPercent === opt.id ? "selected" : ""}`}
                         disabled={isProcessing}>
                         {opt.label}
@@ -355,9 +347,7 @@ const GlobalStakeModal = ({
                   </div>
                 </>
               ) : (
-                <div className="gs-modal__empty">
-                  No position to redeem
-                </div>
+                <div className="gs-modal__empty">No position to redeem</div>
               )}
             </>
           )}
@@ -368,9 +358,7 @@ const GlobalStakeModal = ({
               <SofiaLoader size={60} />
               <div className="modal-processing-text">
                 <p className="modal-processing-title">
-                  {mode === "deposit"
-                    ? "Depositing..."
-                    : "Redeeming..."}
+                  {mode === "deposit" ? "Depositing..." : "Redeeming..."}
                 </p>
                 <p className="modal-processing-step">
                   Confirming transaction...
@@ -394,9 +382,17 @@ const GlobalStakeModal = ({
                 <div className="reward-claimed-top">
                   <h2 className="reward-claimed-title">
                     {mode === "deposit" ? (
-                      <>Deposit<br />Confirmed!</>
+                      <>
+                        Deposit
+                        <br />
+                        Confirmed!
+                      </>
                     ) : (
-                      <>Position<br />Redeemed!</>
+                      <>
+                        Position
+                        <br />
+                        Redeemed!
+                      </>
                     )}
                   </h2>
                   <p className="reward-claimed-subtitle">
@@ -415,9 +411,7 @@ const GlobalStakeModal = ({
                       View on Explorer →
                     </a>
                   )}
-                  <button
-                    className="reward-continue-btn"
-                    onClick={handleClose}>
+                  <button className="reward-continue-btn" onClick={handleClose}>
                     Done
                   </button>
                 </div>
@@ -430,9 +424,7 @@ const GlobalStakeModal = ({
             <div className="modal-error-section">
               <div className="modal-error-icon">❌</div>
               <div className="modal-error-text">
-                <p className="modal-error-title">
-                  Transaction Failed
-                </p>
+                <p className="modal-error-title">Transaction Failed</p>
                 <p className="modal-error-message">{txError}</p>
               </div>
             </div>
@@ -440,44 +432,40 @@ const GlobalStakeModal = ({
 
           {/* Actions — hidden during success overlay */}
           {!txSuccess && (
-          <div className="modal-actions">
-            <button
-              className="stake-btn stake-btn-cancel"
-              onClick={handleClose}
-              disabled={isProcessing}>
-              {txError ? "Close" : "Cancel"}
-            </button>
-            {!txError && (
+            <div className="modal-actions">
               <button
-                className="modal-btn primary gs-modal__cta"
-                onClick={
-                  mode === "deposit" ? handleDeposit : handleRedeem
-                }
-                disabled={
-                  isProcessing ||
-                  insufficientBalance ||
-                  (mode === "deposit" && depositAmount <= 0) ||
-                  (mode === "redeem" &&
-                    (!gsPosition || gsPosition.shares === 0n))
-                }>
-                {isProcessing
-                  ? "Processing..."
-                  : mode === "deposit"
-                    ? "Deposit"
-                    : "Redeem"}
-              </button>
-            )}
-            {txError && (
-              <button
-                className="modal-btn primary gs-modal__cta"
-                onClick={
-                  mode === "deposit" ? handleDeposit : handleRedeem
-                }
+                className="stake-btn stake-btn-cancel"
+                onClick={handleClose}
                 disabled={isProcessing}>
-                Retry
+                {txError ? "Close" : "Cancel"}
               </button>
-            )}
-          </div>
+              {!txError && (
+                <button
+                  className="modal-btn primary gs-modal__cta"
+                  onClick={mode === "deposit" ? handleDeposit : handleRedeem}
+                  disabled={
+                    isProcessing ||
+                    insufficientBalance ||
+                    (mode === "deposit" && depositAmount <= 0) ||
+                    (mode === "redeem" &&
+                      (!gsPosition || gsPosition.shares === 0n))
+                  }>
+                  {isProcessing
+                    ? "Processing..."
+                    : mode === "deposit"
+                      ? "Deposit"
+                      : "Redeem"}
+                </button>
+              )}
+              {txError && (
+                <button
+                  className="modal-btn primary gs-modal__cta"
+                  onClick={mode === "deposit" ? handleDeposit : handleRedeem}
+                  disabled={isProcessing}>
+                  Retry
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

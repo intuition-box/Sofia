@@ -4,15 +4,24 @@
  *   Domain | Page | Certifiers | Signals
  */
 
-import React, { useState, useMemo, memo } from "react"
+import React, { memo, useMemo, useState } from "react"
+
 import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
+
 import "../../styles/ExtendedMetricsPanel.css"
-import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
-import type { IntentionPurpose } from "~/types/discovery"
-import { INTENTION_ITEMS, predicateLabelToIntentionType, type IntentionType } from "~/types/intentionCategories"
-import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
+
 import { VerbTag } from "@0xsofia/design-system"
+
+import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import type { RankedPosition } from "~/lib/utils"
+import type { IntentionPurpose } from "~/types/discovery"
+import {
+  INTENTION_ITEMS,
+  predicateLabelToIntentionType,
+  type IntentionType
+} from "~/types/intentionCategories"
+import type { PageBlockchainCounts, PageBlockchainTriplet } from "~/types/page"
+
 import PagePositionBoard from "../PagePositionBoard"
 
 /** Leading lucide glyph for a verb tag — mirrors the explorer's verb icons. */
@@ -50,210 +59,227 @@ interface ExtendedMetricsPanelProps {
   onTripletClick: (tripletId: string) => void
 }
 
-const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
-  counts,
-  triplets,
-  intentionStats,
-  pageIntentionStats,
-  intentionTotal,
-  pageIntentionTotal,
-  maxIntentionCount,
-  pageMaxIntentionCount,
-  intentionStatsLoading,
-  currentUrl,
-  positions,
-  userPosition,
-  totalPositions,
-  positionsLoading,
-  onTripletClick
-}) => {
-  const [filterScope, setFilterScope] = useState<FilterScope>("page")
+const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
+  ({
+    counts,
+    triplets,
+    intentionStats,
+    pageIntentionStats,
+    intentionTotal,
+    pageIntentionTotal,
+    maxIntentionCount,
+    pageMaxIntentionCount,
+    intentionStatsLoading,
+    currentUrl,
+    positions,
+    userPosition,
+    totalPositions,
+    positionsLoading,
+    onTripletClick
+  }) => {
+    const [filterScope, setFilterScope] = useState<FilterScope>("page")
 
-  const hostname = useMemo(() => {
-    if (!currentUrl) return null
-    try { return new URL(currentUrl).hostname.replace(/^www\./, "") } catch { return null }
-  }, [currentUrl])
+    const hostname = useMemo(() => {
+      if (!currentUrl) return null
+      try {
+        return new URL(currentUrl).hostname.replace(/^www\./, "")
+      } catch {
+        return null
+      }
+    }, [currentUrl])
 
-  // Select active stats based on scope (only relevant for domain/page)
-  const activeTrust =
-    filterScope === "domain"
-      ? counts.domainTrustCount
-      : counts.trustCount
-  const activeDistrust =
-    filterScope === "domain"
-      ? counts.domainDistrustCount
-      : counts.distrustCount
-  const activeIntentions =
-    filterScope === "domain" ? intentionStats : pageIntentionStats
-  const activeTotal =
-    filterScope === "domain" ? intentionTotal : pageIntentionTotal
-  const activeMax =
-    filterScope === "domain" ? maxIntentionCount : pageMaxIntentionCount
+    // Select active stats based on scope (only relevant for domain/page)
+    const activeTrust =
+      filterScope === "domain" ? counts.domainTrustCount : counts.trustCount
+    const activeDistrust =
+      filterScope === "domain"
+        ? counts.domainDistrustCount
+        : counts.distrustCount
+    const activeIntentions =
+      filterScope === "domain" ? intentionStats : pageIntentionStats
+    const activeTotal =
+      filterScope === "domain" ? intentionTotal : pageIntentionTotal
+    const activeMax =
+      filterScope === "domain" ? maxIntentionCount : pageMaxIntentionCount
 
-  // Include trust/distrust in max for proportional progress bars
-  const effectiveMax = Math.max(activeMax, activeTrust, activeDistrust)
+    // Include trust/distrust in max for proportional progress bars
+    const effectiveMax = Math.max(activeMax, activeTrust, activeDistrust)
 
-  // Triplets sorted by newest only (sort UI removed)
-  const sortedTriplets = useMemo(() => {
-    return [...triplets].sort((a, b) =>
-      (b.created_at || "").localeCompare(a.created_at || "")
-    )
-  }, [triplets])
+    // Triplets sorted by newest only (sort UI removed)
+    const sortedTriplets = useMemo(() => {
+      return [...triplets].sort((a, b) =>
+        (b.created_at || "").localeCompare(a.created_at || "")
+      )
+    }, [triplets])
 
-  const scopeLabel =
-    filterScope === "domain"
-      ? hostname || "domain"
-      : "this page"
+    const scopeLabel =
+      filterScope === "domain" ? hostname || "domain" : "this page"
 
-  return (
-    <div className="extended-metrics-panel">
-      <div className="intentions-stats-section">
-        <div className="section-header">
-          <span className="section-title">Stats on {scopeLabel}</span>
-          <div className="scope-toggle">
-            <button
-              className={`scope-btn ${filterScope === "domain" ? "active" : ""}`}
-              onClick={() => setFilterScope("domain")}
-            >
-              Domain
-            </button>
-            <button
-              className={`scope-btn ${filterScope === "page" ? "active" : ""}`}
-              onClick={() => setFilterScope("page")}
-            >
-              Page
-            </button>
-            <button
-              className={`scope-btn ${filterScope === "certifiers" ? "active" : ""}`}
-              onClick={() => setFilterScope("certifiers")}
-            >
-              Certifiers
-            </button>
-            <button
-              className={`scope-btn ${filterScope === "signals" ? "active" : ""}`}
-              onClick={() => setFilterScope("signals")}
-            >
-              Signals
-            </button>
-          </div>
-        </div>
-
-        {filterScope === "certifiers" && (
-          <PagePositionBoard
-            positions={positions}
-            userPosition={userPosition}
-            totalPositions={totalPositions}
-            variant="expanded"
-            loading={positionsLoading}
-          />
-        )}
-
-        {filterScope === "signals" && (
-          <div className="triplets-section">
-            <div className="section-subheader">
-              <span className="intentions-total">{counts.triplesCount} signals</span>
+    return (
+      <div className="extended-metrics-panel">
+        <div className="intentions-stats-section">
+          <div className="section-header">
+            <span className="section-title">Stats on {scopeLabel}</span>
+            <div className="scope-toggle">
+              <button
+                className={`scope-btn ${filterScope === "domain" ? "active" : ""}`}
+                onClick={() => setFilterScope("domain")}>
+                Domain
+              </button>
+              <button
+                className={`scope-btn ${filterScope === "page" ? "active" : ""}`}
+                onClick={() => setFilterScope("page")}>
+                Page
+              </button>
+              <button
+                className={`scope-btn ${filterScope === "certifiers" ? "active" : ""}`}
+                onClick={() => setFilterScope("certifiers")}>
+                Supporters
+              </button>
+              <button
+                className={`scope-btn ${filterScope === "signals" ? "active" : ""}`}
+                onClick={() => setFilterScope("signals")}>
+                Signals
+              </button>
             </div>
-            {sortedTriplets.length > 0 ? (
-              <div className="triplets-list">
-                {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
-                  const shares = getTotalShares(triplet)
-                  const intentSlug = predicateLabelToIntentionType(triplet.predicate.label)
-                  return (
-                    <div
-                      key={triplet.term_id}
-                      className="triplet-item clickable"
-                      onClick={() => onTripletClick(triplet.term_id)}
-                    >
-                      <div className="triplet-text">
-                        <span className="subject">{triplet.subject.label}</span>
-                        {intentSlug ? (
-                          <VerbTag
-                            intent={intentSlug}
-                            label={triplet.predicate.label}
-                            icon={verbIcon(intentSlug)}
-                            className="triplet-predicate-tag"
-                          />
-                        ) : (
-                          <span className="predicate">{triplet.predicate.label}</span>
-                        )}
-                        <span className="object">{triplet.object.label}</span>
-                        {shares > 0 && (
-                          <span className="tvl-badge">
-                            {formatTrustDecimal(shares)} TRUST
+          </div>
+
+          {filterScope === "certifiers" && (
+            <PagePositionBoard
+              positions={positions}
+              userPosition={userPosition}
+              totalPositions={totalPositions}
+              variant="expanded"
+              loading={positionsLoading}
+            />
+          )}
+
+          {filterScope === "signals" && (
+            <div className="triplets-section">
+              <div className="section-subheader">
+                <span className="intentions-total">
+                  {counts.triplesCount} signals
+                </span>
+              </div>
+              {sortedTriplets.length > 0 ? (
+                <div className="triplets-list">
+                  {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
+                    const shares = getTotalShares(triplet)
+                    const intentSlug = predicateLabelToIntentionType(
+                      triplet.predicate.label
+                    )
+                    return (
+                      <div
+                        key={triplet.term_id}
+                        className="triplet-item clickable"
+                        onClick={() => onTripletClick(triplet.term_id)}>
+                        <div className="triplet-text">
+                          <span className="subject">
+                            {triplet.subject.label}
                           </span>
-                        )}
+                          {intentSlug ? (
+                            <VerbTag
+                              intent={intentSlug}
+                              label={triplet.predicate.label}
+                              icon={verbIcon(intentSlug)}
+                              className="triplet-predicate-tag"
+                            />
+                          ) : (
+                            <span className="predicate">
+                              {triplet.predicate.label}
+                            </span>
+                          )}
+                          <span className="object">{triplet.object.label}</span>
+                          {shares > 0 && (
+                            <span className="tvl-badge">
+                              {formatTrustDecimal(shares)} TRUST
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="intentions-loading">No signals yet</div>
-            )}
-          </div>
-        )}
-
-        {(filterScope === "domain" || filterScope === "page") && (
-          <>
-            <div className="section-subheader">
-              <span className="intentions-total">
-                {activeTotal + activeTrust + activeDistrust} total
-              </span>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="intentions-loading">No signals yet</div>
+              )}
             </div>
+          )}
 
-            {intentionStatsLoading ? (
-              <div className="intentions-loading">
-                <div className="loading-spinner small"></div>
+          {(filterScope === "domain" || filterScope === "page") && (
+            <>
+              <div className="section-subheader">
+                <span className="intentions-total">
+                  {activeTotal + activeTrust + activeDistrust} total
+                </span>
               </div>
-            ) : (
-              <div className="intentions-progress-list">
-                <div className="intention-progress-item">
-                  <VerbTag intent="trusted" label="trusted" icon={verbIcon("trusted")} />
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill trusted"
-                      style={{
-                        width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
-                      }}
-                    />
-                  </div>
-                  <span className="intention-count">{activeTrust}</span>
+
+              {intentionStatsLoading ? (
+                <div className="intentions-loading">
+                  <div className="loading-spinner small"></div>
                 </div>
-                <div className="intention-progress-item">
-                  <VerbTag intent="distrusted" label="distrusted" icon={verbIcon("distrusted")} />
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill distrusted"
-                      style={{
-                        width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
-                      }}
+              ) : (
+                <div className="intentions-progress-list">
+                  <div className="intention-progress-item">
+                    <VerbTag
+                      intent="trusted"
+                      label="trusted"
+                      icon={verbIcon("trusted")}
                     />
-                  </div>
-                  <span className="intention-count">{activeDistrust}</span>
-                </div>
-                {INTENTION_ITEMS.map(({ key, label, type }) => (
-                  <div key={key} className="intention-progress-item">
-                    <VerbTag intent={type} label={label} icon={verbIcon(type)} />
                     <div className="progress-track">
                       <div
-                        className={`progress-fill ${type}`}
+                        className="progress-fill trusted"
                         style={{
-                          width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
+                          width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
                         }}
                       />
                     </div>
-                    <span className="intention-count">
-                      {activeIntentions[key]}
-                    </span>
+                    <span className="intention-count">{activeTrust}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+                  <div className="intention-progress-item">
+                    <VerbTag
+                      intent="distrusted"
+                      label="distrusted"
+                      icon={verbIcon("distrusted")}
+                    />
+                    <div className="progress-track">
+                      <div
+                        className="progress-fill distrusted"
+                        style={{
+                          width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
+                        }}
+                      />
+                    </div>
+                    <span className="intention-count">{activeDistrust}</span>
+                  </div>
+                  {INTENTION_ITEMS.map(({ key, label, type }) => (
+                    <div key={key} className="intention-progress-item">
+                      <VerbTag
+                        intent={type}
+                        label={label}
+                        icon={verbIcon(type)}
+                      />
+                      <div className="progress-track">
+                        <div
+                          className={`progress-fill ${type}`}
+                          style={{
+                            width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
+                          }}
+                        />
+                      </div>
+                      <span className="intention-count">
+                        {activeIntentions[key]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 export default ExtendedMetricsPanel

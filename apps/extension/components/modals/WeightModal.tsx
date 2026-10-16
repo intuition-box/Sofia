@@ -610,6 +610,12 @@ const WeightModal = ({
                   </>
                 )}
 
+                {isFormState && (
+                  <p className="modal-description">
+                    Position value can go down. Rewards are not guaranteed.
+                  </p>
+                )}
+
                 {!rewardClaimed && !(transactionSuccess && discoveryReward) && (
                   <WeightActions
                     isProcessing={isProcessing}

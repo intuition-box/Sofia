@@ -1,40 +1,42 @@
+import { configureClient } from "@0xsofia/graphql"
 import { useEffect, useState } from "react"
-import { WagmiProvider } from 'wagmi'
-import { configureClient } from '@0xsofia/graphql'
+import { WagmiProvider } from "wagmi"
+
 import "./components/styles/Global.css"
 
-import { wagmiConfig } from "./lib/config/wagmi"
-import { QueryProvider } from "./lib/providers/queryProvider"
-import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
-import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
-
+import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
+import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
+import OnboardingTour from "./components/onboarding/OnboardingTour"
+import CirclesPage from "./components/pages/CirclesPage"
 // Pages
 import HomePage from "./components/pages/HomePage"
 import MarkPage from "./components/pages/MarkPage"
-import SettingsPage from "./components/pages/SettingsPage"
 import MyProfilePage from "./components/pages/MyProfilePage"
-import CirclesPage from "./components/pages/CirclesPage"
-import ScorePage from "./components/pages/ScorePage"
-import UserProfilePage from "./components/pages/UserProfilePage"
-import OnboardingImportPage from "./components/pages/OnboardingImportPage"
-import OnboardingTour from "./components/onboarding/OnboardingTour"
 import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkSelectPage"
-import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
+import OnboardingImportPage from "./components/pages/OnboardingImportPage"
+import ScorePage from "./components/pages/ScorePage"
+import SettingsPage from "./components/pages/SettingsPage"
+import UserProfilePage from "./components/pages/UserProfilePage"
+import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
+import { FEATURES } from "./lib/config/features"
+import { wagmiConfig } from "./lib/config/wagmi"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
+import { QueryProvider } from "./lib/providers/queryProvider"
 
 // Configure GraphQL client BEFORE the QueryProvider mounts.
 // `pinApiUrl` routes pin mutations through the backend pin-proxy — Intuition
 // gated `pinThing` behind an API key, and that key must never ship in the
 // published extension bundle, so the proxy holds it server-side.
 configureClient({
-  apiUrl: 'https://mainnet.intuition.sh/v1/graphql',
+  apiUrl: "https://mainnet.intuition.sh/v1/graphql",
   pinApiUrl: process.env.PLASMO_PUBLIC_PIN_PROXY_URL
 })
 
 const SidePanelContent = () => {
-  const { currentPage, navigateTo, firstClaimData, setFirstClaimData } = useRouter()
+  const { currentPage, navigateTo, firstClaimData, setFirstClaimData } =
+    useRouter()
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
@@ -48,41 +50,51 @@ const SidePanelContent = () => {
 
   // Automatic page management based on connection state
   useEffect(() => {
-    if (authenticated && walletAddress && currentPage === 'home') {
+    if (authenticated && walletAddress && currentPage === "home") {
       // Onboarding is gated by consent, not by groups. Until the user has
       // explicitly accepted or declined browsing tracking we route them to the
       // guided tour, whose welcome screen carries the consent checkbox — Chrome
       // Web Store policy requires consent before any data collection.
-      chrome.storage.sync.get('tracking_consent_seen').then(({ tracking_consent_seen }) => {
-        if (!tracking_consent_seen) {
-          chrome.storage.session.remove('pending_external_auth')
-          navigateTo('onboarding-tutorial')
-          setOnboardingChecked(true)
-          return
-        }
-
-        chrome.storage.session.get('pending_external_auth').then(result => {
-          if (result.pending_external_auth) {
-            chrome.storage.session.remove('pending_external_auth')
-            navigateTo('mark')
+      chrome.storage.sync
+        .get("tracking_consent_seen")
+        .then(({ tracking_consent_seen }) => {
+          if (!tracking_consent_seen) {
+            chrome.storage.session.remove("pending_external_auth")
+            navigateTo("onboarding-tutorial")
             setOnboardingChecked(true)
             return
           }
-          IntentionGroupsService.getAllGroups().then(groups => {
-            if (groups.length === 0) {
-              navigateTo('onboarding-import')
-            } else {
-              navigateTo('mark')
+
+          chrome.storage.session.get("pending_external_auth").then((result) => {
+            if (result.pending_external_auth) {
+              chrome.storage.session.remove("pending_external_auth")
+              navigateTo("mark")
+              setOnboardingChecked(true)
+              return
             }
-            setOnboardingChecked(true)
-          }).catch(() => {
-            navigateTo('mark')
-            setOnboardingChecked(true)
+            // Bookmark import seeds Echoes groups — skip it while Echoes is hidden.
+            if (!FEATURES.echoes) {
+              navigateTo("mark")
+              setOnboardingChecked(true)
+              return
+            }
+            IntentionGroupsService.getAllGroups()
+              .then((groups) => {
+                if (groups.length === 0) {
+                  navigateTo("onboarding-import")
+                } else {
+                  navigateTo("mark")
+                }
+                setOnboardingChecked(true)
+              })
+              .catch(() => {
+                navigateTo("mark")
+                setOnboardingChecked(true)
+              })
           })
         })
-      })
-    } else if (!authenticated && currentPage !== 'home') {
-      navigateTo('home')
+    } else if (!authenticated && currentPage !== "home") {
+      navigateTo("home")
     }
   }, [authenticated, walletAddress, currentPage, navigateTo])
 
@@ -90,22 +102,22 @@ const SidePanelContent = () => {
     if (!authenticated || !walletAddress) return <HomePage />
 
     switch (currentPage) {
-      case 'home':
-      case 'mark':
+      case "home":
+      case "mark":
         return <MarkPage />
-      case 'settings':
+      case "settings":
         return <SettingsPage />
-      case 'my-profile':
+      case "my-profile":
         return <MyProfilePage />
-      case 'circles':
-        return <CirclesPage />
-      case 'score':
-        return <ScorePage />
-      case 'user-profile':
+      case "circles":
+        return FEATURES.circles ? <CirclesPage /> : <MarkPage />
+      case "score":
+        return FEATURES.score ? <ScorePage /> : <MarkPage />
+      case "user-profile":
         return <UserProfilePage />
-      case 'onboarding-import':
+      case "onboarding-import":
         return <OnboardingImportPage />
-      case 'onboarding-select':
+      case "onboarding-select":
         return <OnboardingBookmarkSelectPage />
       // 'onboarding-tutorial' is now handled by the OnboardingTour overlay,
       // which redirects to 'mark' and runs coachmarks over the real UI.
@@ -145,6 +157,5 @@ function SidePanel() {
     </QueryProvider>
   )
 }
-
 
 export default SidePanel

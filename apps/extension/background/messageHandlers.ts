@@ -7,6 +7,7 @@ import type {
   SearchAtomsMessage
 } from "../lib/addToSofia/types"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
+import { FEATURES } from "../lib/config/features"
 import { IntentionGroupsService } from "../lib/database"
 import {
   badgeService,
@@ -775,12 +776,15 @@ export function setupMessageHandlers(): void {
                 sendResponse({ success: false, error: "url required" })
                 return true
               }
-              sessionTracker.trackUrl({
-                url: trackUrl,
-                title: trackTitle || trackUrl,
-                duration,
-                favicon
-              })
+              // Session tracking only feeds Echoes groups — skip while hidden.
+              if (FEATURES.echoes) {
+                sessionTracker.trackUrl({
+                  url: trackUrl,
+                  title: trackTitle || trackUrl,
+                  duration,
+                  favicon
+                })
+              }
               browsingNudgeService.incrementAndCheck()
               sendResponse({ success: true })
             } catch (error) {

@@ -30,6 +30,7 @@ import {
   useTrustCircle,
   useWalletFromStorage
 } from "~/hooks"
+import { FEATURES } from "~/lib/config/features"
 import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
@@ -662,7 +663,11 @@ const BatchRewardContent = ({
                   </svg>
                 </span>
                 <p className="rc-ms-line">
-                  <b>Visible to your circle</b>
+                  <b>
+                    {FEATURES.circles
+                      ? "Visible to your circle"
+                      : "Visible to everyone"}
+                  </b>
                   {topic ? <> — strengthens your {topic} expertise.</> : "."}
                 </p>
                 {circleStack.length > 0 && (
@@ -719,7 +724,7 @@ const BatchRewardContent = ({
                 <button
                   className="rc-btn rc-btn--primary"
                   onClick={handleViewEchoes}>
-                  View my Echo →
+                  {FEATURES.echoes ? "View my Echo →" : "View my positions →"}
                 </button>
               )}
               <button

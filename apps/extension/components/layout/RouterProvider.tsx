@@ -1,10 +1,31 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import type { BookmarkData } from '~types/bookmarks'
-import { createHookLogger } from '../../lib/utils/logger'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from "react"
 
-const logger = createHookLogger('RouterProvider')
+import type { BookmarkData } from "~types/bookmarks"
 
-type Page = 'home' | 'settings' | 'mark' | 'my-profile' | 'circles' | 'score' | 'recommendations' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
+import { FEATURES } from "../../lib/config/features"
+import { createHookLogger } from "../../lib/utils/logger"
+
+const logger = createHookLogger("RouterProvider")
+
+type Page =
+  | "home"
+  | "settings"
+  | "mark"
+  | "my-profile"
+  | "circles"
+  | "score"
+  | "recommendations"
+  | "user-profile"
+  | "discovery-profile"
+  | "onboarding-import"
+  | "onboarding-select"
+  | "onboarding-tutorial"
 
 export interface UserProfileData {
   termId: string
@@ -25,7 +46,7 @@ export interface FirstClaimData {
   url: string
 }
 
-export type MyProfileTabKey = 'Echoes' | 'Bookmarks' | 'History'
+export type MyProfileTabKey = "Echoes" | "Bookmarks" | "History"
 
 /**
  * Transient navigation hint consumed by MyProfilePage / EchoesTab on mount.
@@ -60,6 +81,13 @@ interface RouterContextType {
   setMyProfileIntent: (intent: MyProfileIntent | null) => void
 }
 
+/** Pages hidden behind a feature flag resolve to the Page (mark) view. */
+const resolvePage = (page: Page): Page => {
+  if (page === "circles" && !FEATURES.circles) return "mark"
+  if (page === "score" && !FEATURES.score) return "mark"
+  return page
+}
+
 const RouterContext = createContext<RouterContextType | undefined>(undefined)
 
 interface RouterProviderProps {
@@ -69,25 +97,32 @@ interface RouterProviderProps {
 
 export const RouterProvider = ({
   children,
-  initialPage = 'home'
+  initialPage = "home"
 }: RouterProviderProps) => {
   const [currentPage, setCurrentPage] = useState<Page>(initialPage)
   const [history, setHistory] = useState<Page[]>([initialPage])
-  const [userProfileData, setUserProfileData] = useState<UserProfileData | null>(null)
+  const [userProfileData, setUserProfileData] =
+    useState<UserProfileData | null>(null)
   const [searchContext, setSearchContext] = useState<SearchContext | null>(null)
   const [activeTab, setActiveTab] = useState<string | null>(null)
-  const [onboardingBookmarks, setOnboardingBookmarks] = useState<BookmarkData[]>([])
-  const [firstClaimData, setFirstClaimData] = useState<FirstClaimData | null>(null)
-  const [myProfileIntent, setMyProfileIntent] = useState<MyProfileIntent | null>(null)
+  const [onboardingBookmarks, setOnboardingBookmarks] = useState<
+    BookmarkData[]
+  >([])
+  const [firstClaimData, setFirstClaimData] = useState<FirstClaimData | null>(
+    null
+  )
+  const [myProfileIntent, setMyProfileIntent] =
+    useState<MyProfileIntent | null>(null)
 
-  const navigateTo = (page: Page, data?: any) => {
+  const navigateTo = (requestedPage: Page, data?: any) => {
+    const page = resolvePage(requestedPage)
     setCurrentPage(page)
-    setHistory(prev => [...prev, page])
+    setHistory((prev) => [...prev, page])
 
     // If navigating to user-profile, store the user data
-    if (page === 'user-profile' && data) {
+    if (page === "user-profile" && data) {
       setUserProfileData(data)
-    } else if (page !== 'user-profile') {
+    } else if (page !== "user-profile") {
       // Clear user profile data when navigating away
       setUserProfileData(null)
     }
@@ -101,7 +136,7 @@ export const RouterProvider = ({
       setCurrentPage(previousPage)
 
       // Clear user profile data when going back from user-profile
-      if (currentPage === 'user-profile') {
+      if (currentPage === "user-profile") {
         setUserProfileData(null)
       }
     }
@@ -110,33 +145,33 @@ export const RouterProvider = ({
   // Check for pending deep link profile navigation
   const handlePendingProfile = useCallback(async () => {
     try {
-      const result = await chrome.storage.session.get('pending_profile_view')
+      const result = await chrome.storage.session.get("pending_profile_view")
       const pending = result.pending_profile_view
       if (pending?.walletAddress) {
         // Clear intent immediately to prevent re-navigation
-        await chrome.storage.session.remove('pending_profile_view')
-        navigateTo('user-profile', {
-          termId: pending.termId || '',
-          label: pending.label || '',
-          walletAddress: pending.walletAddress,
+        await chrome.storage.session.remove("pending_profile_view")
+        navigateTo("user-profile", {
+          termId: pending.termId || "",
+          label: pending.label || "",
+          walletAddress: pending.walletAddress
         })
       }
     } catch (err) {
-      logger.error('Failed to check pending profile', err)
+      logger.error("Failed to check pending profile", err)
     }
   }, [])
 
   // Check for pending first claim from landing page
   const handlePendingFirstClaim = useCallback(async () => {
     try {
-      const result = await chrome.storage.session.get('pending_first_claim')
+      const result = await chrome.storage.session.get("pending_first_claim")
       const pending = result.pending_first_claim
       if (pending?.url) {
-        await chrome.storage.session.remove('pending_first_claim')
+        await chrome.storage.session.remove("pending_first_claim")
         setFirstClaimData({ url: pending.url })
       }
     } catch (err) {
-      logger.error('Failed to check pending first claim', err)
+      logger.error("Failed to check pending first claim", err)
     }
   }, [])
 
@@ -145,13 +180,13 @@ export const RouterProvider = ({
   // the default mark/onboarding-import redirect.
   const handlePendingTutorial = useCallback(async () => {
     try {
-      const result = await chrome.storage.session.get('pending_tutorial')
+      const result = await chrome.storage.session.get("pending_tutorial")
       if (result.pending_tutorial) {
-        await chrome.storage.session.remove('pending_tutorial')
-        navigateTo('onboarding-tutorial')
+        await chrome.storage.session.remove("pending_tutorial")
+        navigateTo("onboarding-tutorial")
       }
     } catch (err) {
-      logger.error('Failed to check pending tutorial', err)
+      logger.error("Failed to check pending tutorial", err)
     }
   }, [])
 
@@ -165,8 +200,11 @@ export const RouterProvider = ({
     }, 500)
 
     // Instant check when side panel is already open and a new deep link arrives
-    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
-      if (area === 'session') {
+    const listener = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string
+    ) => {
+      if (area === "session") {
         if (changes.pending_profile_view?.newValue) {
           handlePendingProfile()
         }
@@ -205,16 +243,14 @@ export const RouterProvider = ({
   }
 
   return (
-    <RouterContext.Provider value={value}>
-      {children}
-    </RouterContext.Provider>
+    <RouterContext.Provider value={value}>{children}</RouterContext.Provider>
   )
 }
 
 export const useRouter = (): RouterContextType => {
   const context = useContext(RouterContext)
   if (!context) {
-    throw new Error('useRouter must be used within a RouterProvider')
+    throw new Error("useRouter must be used within a RouterProvider")
   }
   return context
 }

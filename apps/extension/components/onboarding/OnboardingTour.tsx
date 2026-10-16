@@ -15,13 +15,23 @@
  * the welcome → tour → done state machine on top of it.
  */
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from "react"
 import { createPortal } from "react-dom"
+
 import { Storage } from "@plasmohq/storage"
 
+import { FEATURES } from "~/lib/config/features"
 import { cartService, txEventBus } from "~/lib/services"
+
 import { useRouter } from "../layout/RouterProvider"
 import { TOUR_STEPS } from "./tourSteps"
+
 import "../styles/OnboardingTour.css"
 
 const storage = new Storage()
@@ -48,20 +58,35 @@ const clamp = (v: number, lo: number, hi: number) =>
 
 // ── inline icons (kept local; no extra deps) ──
 const IconSpark = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
-    strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round">
     <path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2" />
   </svg>
 )
 const IconArrow = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-    strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round">
     <path d="M5 12h14M13 6l6 6-6 6" />
   </svg>
 )
 const IconCheck = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
-    strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    strokeLinejoin="round">
     <path d="M20 6 9 17l-5-5" />
   </svg>
 )
@@ -556,20 +581,36 @@ const OnboardingTour = () => {
             <div className="tour-vcard">
               <div className="tour-vlogo">{skipped ? "S" : <IconCheck />}</div>
               <h1 className="tour-vtitle">
-                {skipped ? "You're all set" : "You made your first Mark"}
+                {skipped
+                  ? "You're all set"
+                  : FEATURES.circles
+                    ? "You made your first Mark"
+                    : "You took your first position"}
               </h1>
               <p className="tour-vtext">
-                {skipped ? (
+                {skipped && !FEATURES.circles ? (
+                  <>
+                    Jump in whenever — take a position on a page that matters
+                    and follow it from your profile.
+                  </>
+                ) : skipped ? (
                   <>
                     Jump in whenever — mark a page, build your Circle, and your
                     reputation starts growing.
                   </>
+                ) : !FEATURES.circles ? (
+                  <>
+                    You took a position on a page and gave it weight. Find it
+                    under <b>Bookmarks</b> and <b>Positions</b> in your profile
+                    — it's all verifiable on the Explorer. Position value can go
+                    down. Rewards are not guaranteed.
+                  </>
                 ) : (
                   <>
                     You marked a page, gave it weight, started your{" "}
-                    <b>Echoes</b>, grew your <b>Circle</b>, and weighed in with a{" "}
-                    <b>vote</b>. That's the whole loop — and it's all verifiable
-                    on the Explorer.
+                    <b>Echoes</b>, grew your <b>Circle</b>, and weighed in with
+                    a <b>vote</b>. That's the whole loop — and it's all
+                    verifiable on the Explorer.
                   </>
                 )}
               </p>
@@ -579,30 +620,35 @@ const OnboardingTour = () => {
                   onClick={() => setPhase("idle")}>
                   Start marking
                 </button>
-                <button
-                  className="tour-vbtn-ghost"
-                  onClick={() => {
-                    // Mirror Settings → Import Data: fetch bookmarks, then go
-                    // to the bookmark selection page.
-                    setPhase("idle")
-                    try {
-                      chrome.runtime.sendMessage(
-                        { type: "FETCH_BOOKMARKS" },
-                        (response) => {
-                          if (response?.success && response.bookmarks?.length) {
-                            setOnboardingBookmarks(response.bookmarks)
-                            navigateTo("onboarding-select")
-                          } else {
-                            navigateTo("onboarding-import")
+                {FEATURES.echoes && (
+                  <button
+                    className="tour-vbtn-ghost"
+                    onClick={() => {
+                      // Mirror Settings → Import Data: fetch bookmarks, then go
+                      // to the bookmark selection page.
+                      setPhase("idle")
+                      try {
+                        chrome.runtime.sendMessage(
+                          { type: "FETCH_BOOKMARKS" },
+                          (response) => {
+                            if (
+                              response?.success &&
+                              response.bookmarks?.length
+                            ) {
+                              setOnboardingBookmarks(response.bookmarks)
+                              navigateTo("onboarding-select")
+                            } else {
+                              navigateTo("onboarding-import")
+                            }
                           }
-                        }
-                      )
-                    } catch {
-                      navigateTo("onboarding-import")
-                    }
-                  }}>
-                  Import your bookmarks
-                </button>
+                        )
+                      } catch {
+                        navigateTo("onboarding-import")
+                      }
+                    }}>
+                    Import your bookmarks
+                  </button>
+                )}
               </div>
             </div>
           </div>

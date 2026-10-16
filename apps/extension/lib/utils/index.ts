@@ -117,5 +117,6 @@ export {
   getAtomUrl,
   getProfilePlatformUrl,
   getExplorerHomeUrl,
+  getExplorerSeasonUrl,
   getProfileUrl
 } from "./sofiaExplorerUrls"

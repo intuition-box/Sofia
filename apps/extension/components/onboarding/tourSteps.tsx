@@ -13,6 +13,7 @@
  *  - copy       : title / body / cta / learn (concept named AFTER the act).
  */
 
+import { FEATURES } from "~/lib/config/features"
 import { cartService } from "~/lib/services"
 import { INTENTION_CONFIG } from "~/types/intentionCategories"
 
@@ -215,7 +216,7 @@ const openCircleFeed = (): (() => void) => {
   }
 }
 
-export const TOUR_STEPS: TourStep[] = [
+const ALL_TOUR_STEPS: TourStep[] = [
   {
     key: "intent",
     target: ".actions-panel",
@@ -312,7 +313,7 @@ export const TOUR_STEPS: TourStep[] = [
       document.querySelector(".url-row.on-chain") ??
       document.querySelector(".url-row"),
     requires: "my-profile",
-    title: "See what you certified",
+    title: "See your claim",
     body: "Here's the page you marked, now <b>on-chain</b>. Open it to see exactly what you claimed.",
     cta: "Open your mark",
     learn:
@@ -464,3 +465,28 @@ export const TOUR_STEPS: TourStep[] = [
     holdWhile: ".b3-loading"
   }
 ]
+
+/** Steps that walk through Echoes (domain groups) — hidden with FEATURES.echoes. */
+const ECHOES_STEP_KEYS = new Set(["echo-detail", "url-row"])
+
+/** Copy for the post-Mark step when Echoes is hidden: point at Positions. */
+const PROFILE_STEP_WITHOUT_ECHOES: Partial<TourStep> = {
+  title: "Your position is live",
+  body: "Every page you take a position on shows up in your profile, under <b>Bookmarks</b> and <b>Positions</b>. Open it.",
+  learn: "Positions list every claim you hold, with its current value."
+}
+
+/**
+ * Active tour, filtered by feature flags: without Circles the tour ends on the
+ * Bookmarks steps; without Echoes it skips the Echo walkthrough.
+ */
+export const TOUR_STEPS: TourStep[] = ALL_TOUR_STEPS.filter(
+  (step) =>
+    (FEATURES.circles || step.requires !== "circles") &&
+    (FEATURES.circles || step.key !== "circle") &&
+    (FEATURES.echoes || !ECHOES_STEP_KEYS.has(step.key))
+).map((step) =>
+  step.key === "echoes" && !FEATURES.echoes
+    ? { ...step, ...PROFILE_STEP_WITHOUT_ECHOES }
+    : step
+)
