@@ -186,7 +186,10 @@ export function NavSidebar({
     tour?: string
   }) => {
     const locked = !item.public && !authenticated
-    const active = location.pathname === item.to
+    // `/positions/:address` keeps the Positions entry highlighted.
+    const active =
+      location.pathname === item.to ||
+      (item.to === '/positions' && location.pathname.startsWith('/positions/'))
     const Icon = item.icon
     if (locked) {
       return (
