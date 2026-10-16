@@ -344,8 +344,12 @@ export const CATEGORY_ATOM_IDS: Record<string, string> = {
   habits: '0x78ba392e7215fbdbc1331965a8c93d9bd8e9a7be4a57040e103f74852d8349bf',
 }
 
-// 145 platform atoms
+// 151 platform atoms
 export const PLATFORM_ATOM_IDS: Record<string, string> = {
+  snapchat:
+    '0xea78ab0e8e3cfa2a0141ecfeed556b83b1aa259ddb5b215a52c4e3b607b0cbb0',
+  slack: '0xa9a669d5d7174ea6fe323f981013096089cd3437f7bd2d18d22c50a76aa42677',
+  xbox: '0xa00f1dd4f5b70606b31e1711ee76ff1f0ee967802d209cc5ecb39ff2617188ea',
   kaggle: '0x3e516a63cd85babd3b74243b4ae7779fc849fcc35927ea6715901aec96a40917',
   npm: '0xa622c47f40479d8e07c4c6546c723c455c5ff078ca2eabbc2e30c222b903d818',
   pypi: '0x1bc5f1b8c4c47fd71a9775bdb25b4feba22b111cc0d2aded486b1e7cfcb78d7a',

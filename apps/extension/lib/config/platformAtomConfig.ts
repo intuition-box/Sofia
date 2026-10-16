@@ -8,19 +8,8 @@
 
 import { PLATFORM_ATOM_IDS as TAXONOMY_PLATFORM_ATOM_IDS } from "@0xsofia/taxonomy"
 
-// Platforms the extension already splits to but that are not (yet) in
-// `@0xsofia/taxonomy`. TODO: move into packages/taxonomy, then drop this map.
-const EXTENSION_ONLY_PLATFORM_ATOM_IDS: Record<string, string> = {
-  snapchat:
-    "0xea78ab0e8e3cfa2a0141ecfeed556b83b1aa259ddb5b215a52c4e3b607b0cbb0",
-  slack: "0xa9a669d5d7174ea6fe323f981013096089cd3437f7bd2d18d22c50a76aa42677",
-  xbox: "0xa00f1dd4f5b70606b31e1711ee76ff1f0ee967802d209cc5ecb39ff2617188ea"
-}
-
-export const PLATFORM_ATOM_IDS: Record<string, string> = {
-  ...EXTENSION_ONLY_PLATFORM_ATOM_IDS,
-  ...TAXONOMY_PLATFORM_ATOM_IDS
-}
+export const PLATFORM_ATOM_IDS: Record<string, string> =
+  TAXONOMY_PLATFORM_ATOM_IDS
 
 // Domain → platform slug mapping
 // Keys = output of extractDomain() (normalized: lowercase, stripped www/open/m/app/web prefixes)
