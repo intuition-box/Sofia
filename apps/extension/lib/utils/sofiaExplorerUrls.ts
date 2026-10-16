@@ -6,10 +6,10 @@
  * the extension drives users back into Sofia rather than to the upstream Intuition portal.
  *
  * Override the base URL at build time:
- *   PLASMO_PUBLIC_EXPLORER_URL=https://sofia.intuition.box pnpm build
+ *   PLASMO_PUBLIC_EXPLORER_URL=https://explorer.sofia.intuition.box pnpm build
  */
 
-const DEFAULT_EXPLORER_URL = "https://sofia.intuition.box"
+const DEFAULT_EXPLORER_URL = "https://explorer.sofia.intuition.box"
 
 const SOFIA_EXPLORER_BASE =
   process.env.PLASMO_PUBLIC_EXPLORER_URL || DEFAULT_EXPLORER_URL
@@ -35,7 +35,5 @@ export const getExplorerHomeUrl = (): string => `${base}/feed`
  *  leaderboard). TODO: point to `/season` once the Explorer ships it. */
 export const getExplorerSeasonUrl = (): string => `${base}/leaderboard`
 
-/** URL to the signed-in user's own profile in Sofia Explorer.
- *  Pinned to the production explorer subdomain with the `/profile` path. */
-export const getProfileUrl = (): string =>
-  "https://explorer.sofia.intuition.box/profile"
+/** URL to the signed-in user's own profile in Sofia Explorer. */
+export const getProfileUrl = (): string => `${base}/profile`
