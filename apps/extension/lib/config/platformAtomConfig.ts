@@ -159,7 +159,6 @@ export const DOMAIN_TO_PLATFORM_SLUG: Record<string, string> = {
   "gemini.google.com": "gemini",
   "anthropic.com": "anthropic",
   "openai.com": "openai",
-  "google.com": "google",
   "makerdao.com": "makerdao",
   "optimism.io": "optimism",
   "arbitrum.io": "arbitrum",

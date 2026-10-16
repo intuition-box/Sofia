@@ -8,10 +8,12 @@
 export const FEATURES = {
   /** Circles page (trust circle, circle feed, votes from the feed). */
   circles: false,
-  /** Echoes tab (domain groups, levels) + browsing session tracking feeding it. */
-  echoes: false,
-  /** Score page (quests, XP, Gold, achievements) — moved to the Explorer. */
-  score: false,
+  /** Echoes tab (shown as "Bookmark": domain groups, levels). Kept ON: it is
+   *  the bookmark view users know — hiding it would lose functionality. */
+  echoes: true,
+  /** Score page (quests, XP, Gold, achievements). Kept ON until the Explorer
+   *  can claim quest rewards — it is the only claim surface today. */
+  score: true,
   /** Socials tab (OAuth-linked accounts + social verification). */
   socials: false,
   /** AI features (Mastra / GaiaNet — decommissioned). */

@@ -21,7 +21,7 @@ export function useRedeemCert() {
       certTermId: string,
       title: string,
       url: string,
-      percent: RedeemPercent = 100,
+      percent?: RedeemPercent,
     ) => {
       const domain = extractDomain(url) || ''
       const favicon = domain ? getFaviconUrl(domain) : ''

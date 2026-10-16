@@ -283,7 +283,7 @@ export default function WeightModal({
   const handleSubmit = useCallback(async () => {
     const depositItems: { termId: string; amountTrust: number }[] = []
     const createItems: BatchCreateTripleItem[] = []
-    const redeemItems: { termId: string; percent: RedeemPercent }[] = []
+    const redeemItems: { termId: string; percent?: RedeemPercent }[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
@@ -297,7 +297,7 @@ export default function WeightModal({
       if (item.kind === 'redeem') {
         redeemItems.push({
           termId: item.termId,
-          percent: item.redeemPercent ?? 100,
+          percent: item.redeemPercent,
         })
       } else if (
         item.kind === 'create-triple' &&
@@ -359,7 +359,7 @@ export default function WeightModal({
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
             redeemedOk.push(termId)
-            if (percent === 100) {
+            if ((percent ?? 100) === 100) {
               clearOptimisticPosition(qc, wallet.address, termId)
               fullyExited.push(termId)
             }

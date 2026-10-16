@@ -132,7 +132,7 @@ export async function redeemAtom(
   wallet: WalletDescriptor,
   termId: string,
   sharesToRedeem?: bigint,
-  percent: RedeemPercent = 100,
+  percent?: RedeemPercent,
 ): Promise<RedeemResult> {
   await wallet.switchChain(intuitionChain.id)
   const provider = await wallet.getEthereumProvider()
@@ -140,10 +140,14 @@ export async function redeemAtom(
 
   // Locate the curves the shares actually live on (Linear and/or
   // Progressive). When an explicit amount is passed we trust the primary
-  // curve; otherwise scan both and exit `percent` of each.
+  // curve. Without `percent` (legacy callers) we keep the historical
+  // behaviour: all shares of the first funded curve. With `percent` (partial
+  // exit flow) we exit that share of every funded curve.
   let legs: { curveId: bigint; shares: bigint }[]
   if (sharesToRedeem != null) {
     legs = [{ curveId: CURVE_ID, shares: sharesToRedeem }]
+  } else if (percent == null) {
+    legs = (await findFundedCurves(address, termId)).slice(0, 1)
   } else {
     legs = (await findFundedCurves(address, termId))
       .map((f) => ({
