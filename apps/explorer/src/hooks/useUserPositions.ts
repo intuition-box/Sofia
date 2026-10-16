@@ -1,10 +1,13 @@
 /**
- * useUserPositions — the connected wallet's active positions (platforms,
- * atoms, claims) plus the summary header figures, for `/positions`.
+ * useUserPositions — a wallet's active positions (platforms, atoms,
+ * claims) plus the summary header figures, for `/positions` and
+ * `/positions/:address`.
  *
  * Not a paginated feed: the summary (total value, change, "brought to
  * platforms") must cover every position, so the service walks all pages
- * up front. Uses the active Privy wallet — the one an exit redeems from.
+ * up front. Defaults to the active Privy wallet — the one an exit redeems
+ * from; pass `address` to read any other wallet (read-only), or `null`
+ * while that address is still unknown (e.g. ENS resolving) to stay idle.
  */
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -35,9 +38,12 @@ export interface UseUserPositionsResult {
   refresh: () => void
 }
 
-export function useUserPositions(): UseUserPositionsResult {
+export function useUserPositions(
+  address?: string | null,
+): UseUserPositionsResult {
   const { user } = usePrivy()
-  const walletAddress = user?.wallet?.address
+  const walletAddress =
+    address === undefined ? user?.wallet?.address : address || undefined
 
   // The indexer stores account_id in mixed casings — query both.
   const addresses = useMemo(() => {

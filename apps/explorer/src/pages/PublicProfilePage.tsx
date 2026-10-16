@@ -13,11 +13,10 @@
  * connected user. The custom hero inlines the viewed user's ENS avatar.
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { isAddress } from 'viem'
+import { useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import type { Address } from 'viem'
-import { X } from 'lucide-react'
+import { PieChart, X } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { SectionH2 } from '@0xsofia/design-system'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
@@ -30,7 +29,7 @@ import { useReputationScores } from '@/hooks/useReputationScores'
 import { useDerivedReputation } from '@/hooks/useDerivedReputation'
 import { useSignals } from '@/hooks/useSignals'
 import { useAddressInterests } from '@/hooks/useAddressInterests'
-import { resolveEnsToAddress } from '@/services/ensService'
+import { useResolvedAddress } from '@/hooks/useResolvedAddress'
 import type { ConnectionStatus } from '@/types/reputation'
 import { MAX_INTERESTS } from '@/components/profile/InterestsGrid'
 import ProfileCharts from '@/components/profile/ProfileCharts'
@@ -47,37 +46,16 @@ const MAX_CATEGORIES = 6
 
 export default function PublicProfilePage() {
   const { address: rawAddress } = useParams<{ address: string }>()
-  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null)
-  const [resolving, setResolving] = useState(false)
-  const [resolveError, setResolveError] = useState<string | null>(null)
   const [echoesSearch, setEchoesSearch] = useState('')
 
   // Resolve ENS (`.eth` / `.box`) or validate the raw address. The
   // page renders only once `resolvedAddress` is set so downstream
   // hooks always see a stable canonical address.
-  useEffect(() => {
-    if (!rawAddress) return
-    setResolvedAddress(null)
-    setResolveError(null)
-
-    if (isAddress(rawAddress)) {
-      setResolvedAddress(rawAddress)
-      return
-    }
-
-    if (rawAddress.endsWith('.eth') || rawAddress.endsWith('.box')) {
-      setResolving(true)
-      resolveEnsToAddress(rawAddress)
-        .then((addr) => {
-          if (addr) setResolvedAddress(addr)
-          else setResolveError(`Could not resolve "${rawAddress}"`)
-        })
-        .catch(() => setResolveError(`Could not resolve "${rawAddress}"`))
-        .finally(() => setResolving(false))
-    } else {
-      setResolveError('Invalid address or ENS name')
-    }
-  }, [rawAddress])
+  const {
+    address: resolvedAddress,
+    resolving,
+    error: resolveError,
+  } = useResolvedAddress(rawAddress)
 
   const walletAddress = resolvedAddress || undefined
   const addresses = useMemo<Address[]>(
@@ -220,6 +198,13 @@ export default function PublicProfilePage() {
               <p className="ph-description">{heroDescription}</p>
             )}
           </div>
+          <Link
+            to={`/positions/${walletAddress || rawAddress}`}
+            className="pp-hero-link"
+          >
+            <PieChart className="h-3.5 w-3.5" aria-hidden />
+            Positions
+          </Link>
           <ProfileTrustButton
             walletAddress={walletAddress}
             displayName={displayName || shortAddress}

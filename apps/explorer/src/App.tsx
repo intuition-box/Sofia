@@ -401,6 +401,9 @@ export default function App() {
                 {/* Public route: the page itself prompts a logged-out
                     visitor to connect instead of redirecting away. */}
                 <Route path="/positions" element={<PositionsPage />} />
+                {/* Any wallet's positions (address or ENS), read-only
+                    unless it is the connected wallet. */}
+                <Route path="/positions/:address" element={<PositionsPage />} />
                 <Route
                   path="/profile/:address"
                   element={<PublicProfilePage />}

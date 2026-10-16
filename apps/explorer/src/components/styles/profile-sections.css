@@ -1510,3 +1510,37 @@
     display: none;
   }
 }
+
+/* ── Hero "Positions" link ───────────────────────────────────────── */
+/* Secondary pill in the profile heroes (own + public) leading to the
+   wallet's positions page. Hero banners are pastel in both themes and
+   their text is a fixed dark ink (page-hero.css), so this pill is too. */
+.pp-hero-link {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  background: transparent;
+  color: #1a1a1a;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.pp-hero-link:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+.pp-hero-link--below {
+  margin-top: 16px;
+}

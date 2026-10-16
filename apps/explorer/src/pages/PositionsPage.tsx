@@ -1,20 +1,29 @@
 /**
- * PositionsPage (`/positions`) — the connected wallet's positions across
- * platforms, claims and other atoms.
+ * PositionsPage — a wallet's positions across platforms, claims and other
+ * atoms, laid out like a profile showcase.
  *
- * Summary header (total value, change, count, TRUST brought to platforms),
- * a kind filter, then one row per position: deposited, value, change in
- * TRUST + %, and partial / full exit (25 / 50 / 100 %) queued in the cart
- * through useRedeemCert — the same flow as the platform dialog.
+ * - `/positions` — the connected wallet (prompts to connect when logged out).
+ * - `/positions/:address` — any wallet, address or ENS (same resolution as
+ *   `/profile/:address`). Read-only unless it is the connected wallet.
+ *
+ * Identity hero (avatar, name, address copy, profile link, share), summary
+ * tiles (total value, change, count, TRUST brought to platforms), then one
+ * section per kind — Platforms / Claims / Atoms — sorted by position value.
+ * Each row: deposited, value, change in TRUST + %, and, on your own wallet,
+ * partial / full exit (25 / 50 / 100 %) queued in the cart through
+ * useRedeemCert — the same flow as the platform dialog.
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import { useLogin, usePrivy } from '@privy-io/react-auth'
-import { PageHero, FaviconWrapper } from '@0xsofia/design-system'
+import { PageHero, FaviconWrapper, SectionH2 } from '@0xsofia/design-system'
 import { RefreshCw, Wallet } from 'lucide-react'
 import { useUserPositions } from '@/hooks/useUserPositions'
+import { useResolvedAddress } from '@/hooks/useResolvedAddress'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import SofiaLoader from '@/components/ui/SofiaLoader'
+import PositionsHero from '@/components/profile/PositionsHero'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
@@ -33,13 +42,10 @@ import '@/components/styles/pages.css'
 import '@/components/styles/platform-market.css'
 import '@/components/styles/market-pages.css'
 
-type KindFilter = 'all' | MarketPositionKind
-
-const KIND_FILTERS: { key: KindFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'platform', label: 'Platforms' },
-  { key: 'claim', label: 'Claims' },
-  { key: 'atom', label: 'Atoms' },
+const SECTIONS: { kind: MarketPositionKind; title: string }[] = [
+  { kind: 'platform', title: 'Platforms' },
+  { kind: 'claim', title: 'Claims' },
+  { kind: 'atom', title: 'Atoms' },
 ]
 
 const EXIT_PERCENTS: RedeemPercent[] = [25, 50, 100]
@@ -67,8 +73,12 @@ function describe(p: MarketPosition): string {
 
 export default function PositionsPage() {
   const pc = PAGE_COLORS['/positions']
-  const { ready, authenticated } = usePrivy()
+  const { address: rawAddress } = useParams<{ address: string }>()
+  const { ready, authenticated, user } = usePrivy()
   const { login } = useLogin()
+  const resolved = useResolvedAddress(rawAddress)
+  // `/positions` → active wallet (undefined); `/positions/:address` → the
+  // resolved wallet, or null (idle) while ENS resolves.
   const {
     walletAddress,
     positions,
@@ -78,26 +88,25 @@ export default function PositionsPage() {
     error,
     truncated,
     refresh,
-  } = useUserPositions()
+  } = useUserPositions(rawAddress ? resolved.address : undefined)
   const { platformById } = usePlatformCatalog()
   const { redeemCert } = useRedeemCert()
-  const [kind, setKind] = useState<KindFilter>('all')
 
-  const counts = useMemo(() => {
-    const c: Record<KindFilter, number> = {
-      all: positions.length,
-      platform: 0,
-      claim: 0,
-      atom: 0,
-    }
-    for (const p of positions) c[p.kind] += 1
-    return c
-  }, [positions])
+  const ownAddress = authenticated ? user?.wallet?.address : undefined
+  // Exits redeem from the active wallet, so only offer them on its own page.
+  const isOwn =
+    !!ownAddress &&
+    !!walletAddress &&
+    ownAddress.toLowerCase() === walletAddress.toLowerCase()
 
-  const rows = useMemo(
+  // Positions arrive sorted by value (largest first); grouping keeps that.
+  const sections = useMemo(
     () =>
-      kind === 'all' ? positions : positions.filter((p) => p.kind === kind),
-    [positions, kind],
+      SECTIONS.map((s) => ({
+        ...s,
+        rows: positions.filter((p) => p.kind === s.kind),
+      })).filter((s) => s.rows.length > 0),
+    [positions],
   )
 
   const iconFor = (p: MarketPosition): { src?: string; fallback?: string } => {
@@ -121,6 +130,67 @@ export default function PositionsPage() {
     redeemCert(p.termId, p.title, url, percent)
   }
 
+  const renderRow = (p: MarketPosition) => {
+    const icon = iconFor(p)
+    return (
+      <div key={p.termId} className="mk-table-row" role="row">
+        <span className="mk-name" role="cell">
+          <FaviconWrapper
+            size={32}
+            src={icon.src}
+            fallbackSrc={icon.fallback}
+            alt={p.domain || p.title}
+          />
+          <span className="mk-name-text">
+            <span className="mk-title">
+              {p.url ? (
+                <a href={p.url} target="_blank" rel="noreferrer">
+                  {p.title}
+                </a>
+              ) : (
+                p.title
+              )}
+              {p.side === 'oppose' && (
+                <span className="mk-side-pill">Oppose</span>
+              )}
+            </span>
+            <span className="mk-host">{describe(p)}</span>
+          </span>
+        </span>
+        <span className="mk-num" role="cell">
+          {formatTrust(BigInt(p.deposited))}
+        </span>
+        <span className="mk-num" role="cell">
+          {formatTrust(BigInt(p.value))}
+        </span>
+        <span
+          className={`mk-num mk-change ${changeClass(p.change)}`}
+          role="cell"
+        >
+          {formatTrustChange(p.change)}
+          {p.changePct != null && (
+            <span className="mk-change-pct">{formatPct(p.changePct)}</span>
+          )}
+        </span>
+        {isOwn && (
+          <span className="mk-exit" role="cell">
+            {EXIT_PERCENTS.map((pct) => (
+              <button
+                key={pct}
+                type="button"
+                className="mk-exit-btn"
+                onClick={() => handleExit(p, pct)}
+                aria-label={`Exit ${pct}% of your position on ${p.title}`}
+              >
+                {pct}%
+              </button>
+            ))}
+          </span>
+        )}
+      </div>
+    )
+  }
+
   const hero = (
     <PageHero
       background={pc.color}
@@ -131,7 +201,23 @@ export default function PositionsPage() {
 
   if (!ready) return null
 
-  if (!authenticated || !walletAddress) {
+  // `/positions/:address` — resolving (or about to) / unresolvable.
+  if (rawAddress && !walletAddress) {
+    return (
+      <div className="page-content page-enter">
+        {hero}
+        {resolved.error ? (
+          <div className="pm-empty">{resolved.error}</div>
+        ) : (
+          <div className="pm-loader">
+            <SofiaLoader size={48} />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (!walletAddress || (!rawAddress && !authenticated)) {
     return (
       <div className="page-content page-enter">
         {hero}
@@ -153,7 +239,11 @@ export default function PositionsPage() {
 
   return (
     <div className="page-content page-enter">
-      {hero}
+      <PositionsHero
+        walletAddress={walletAddress}
+        isOwn={isOwn}
+        background={pc.color}
+      />
 
       <section className="mk-summary" aria-label="Positions summary">
         <div className="mk-summary-stat">
@@ -194,23 +284,7 @@ export default function PositionsPage() {
         </div>
       </section>
 
-      <div className="pm-filters">
-        <div className="pm-filter-group">
-          <span className="pm-filter-label">Show</span>
-          <div className="pm-chips">
-            {KIND_FILTERS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                className={`pm-chip${kind === key ? ' active' : ''}`}
-                onClick={() => setKind(key)}
-                aria-pressed={kind === key}
-              >
-                {label} {counts[key]}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="mk-toolbar">
         <button
           type="button"
           className="pm-chip mk-refresh"
@@ -232,93 +306,52 @@ export default function PositionsPage() {
         </div>
       ) : error && positions.length === 0 ? (
         <div className="pm-empty">
-          Couldn't load your positions.{' '}
+          Couldn't load {isOwn ? 'your' : 'these'} positions.{' '}
           <button type="button" className="mk-link-btn" onClick={refresh}>
             Retry
           </button>
         </div>
-      ) : rows.length === 0 ? (
+      ) : positions.length === 0 ? (
         <div className="pm-empty">
-          {positions.length === 0
+          {isOwn
             ? "You don't have any position yet. Take a position on a platform or a page to track it here."
-            : 'No position of this kind.'}
+            : "This wallet doesn't hold any position yet."}
         </div>
       ) : (
-        <div className="mk-table" role="table" aria-label="Your positions">
-          <div className="mk-table-head" role="row">
-            <span role="columnheader">Position</span>
-            <span role="columnheader">Deposited</span>
-            <span role="columnheader">Value</span>
-            <span role="columnheader">Change</span>
-            <span role="columnheader">Exit position</span>
-          </div>
-          {rows.map((p) => {
-            const icon = iconFor(p)
-            return (
-              <div key={p.termId} className="mk-table-row" role="row">
-                <span className="mk-name" role="cell">
-                  <FaviconWrapper
-                    size={32}
-                    src={icon.src}
-                    fallbackSrc={icon.fallback}
-                    alt={p.domain || p.title}
-                  />
-                  <span className="mk-name-text">
-                    <span className="mk-title">
-                      {p.url ? (
-                        <a href={p.url} target="_blank" rel="noreferrer">
-                          {p.title}
-                        </a>
-                      ) : (
-                        p.title
-                      )}
-                      {p.side === 'oppose' && (
-                        <span className="mk-side-pill">Oppose</span>
-                      )}
-                    </span>
-                    <span className="mk-host">{describe(p)}</span>
-                  </span>
-                </span>
-                <span className="mk-num" role="cell">
-                  {formatTrust(BigInt(p.deposited))}
-                </span>
-                <span className="mk-num" role="cell">
-                  {formatTrust(BigInt(p.value))}
-                </span>
-                <span
-                  className={`mk-num mk-change ${changeClass(p.change)}`}
-                  role="cell"
-                >
-                  {formatTrustChange(p.change)}
-                  {p.changePct != null && (
-                    <span className="mk-change-pct">
-                      {formatPct(p.changePct)}
-                    </span>
-                  )}
-                </span>
-                <span className="mk-exit" role="cell">
-                  {EXIT_PERCENTS.map((pct) => (
-                    <button
-                      key={pct}
-                      type="button"
-                      className="mk-exit-btn"
-                      onClick={() => handleExit(p, pct)}
-                      aria-label={`Exit ${pct}% of your position on ${p.title}`}
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-                </span>
+        <div className="mk-sections">
+          {sections.map((section) => (
+            <section
+              key={section.kind}
+              className="mk-section"
+              aria-label={section.title}
+            >
+              <div className="mk-section-head">
+                <SectionH2>{section.title}</SectionH2>
+                <span className="mk-section-count">{section.rows.length}</span>
               </div>
-            )
-          })}
+              <div
+                className={`mk-table${isOwn ? '' : ' mk-table--readonly'}`}
+                role="table"
+                aria-label={section.title}
+              >
+                <div className="mk-table-head" role="row">
+                  <span role="columnheader">Position</span>
+                  <span role="columnheader">Deposited</span>
+                  <span role="columnheader">Value</span>
+                  <span role="columnheader">Change</span>
+                  {isOwn && <span role="columnheader">Exit position</span>}
+                </div>
+                {section.rows.map((p) => renderRow(p))}
+              </div>
+            </section>
+          ))}
         </div>
       )}
 
       {truncated && (
         <p className="mk-note">
-          Showing your 2,000 most recent positions — the summary leaves out
-          older ones.
+          Showing the 2,000 most recent positions — the summary leaves out older
+          ones.
         </p>
       )}
       <p className="mk-disclaimer">

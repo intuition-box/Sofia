@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useViewAs } from '@/hooks/useViewAs'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
@@ -20,7 +20,7 @@ import { useExtensionGold } from '../hooks/useExtensionGold'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User, Tags, ArrowUpRight, X } from 'lucide-react'
+import { Wallet, User, Tags, ArrowUpRight, X, PieChart } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { PageHero, SectionH2 } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
@@ -122,7 +122,17 @@ export default function ProfilePage() {
         title={isViewingAs ? shortAddr : pc.title}
         description={heroDescription}
         background={pc.color}
-      />
+      >
+        {/* Positions of the wallet on display — your own (with exits) or,
+            in view-as mode, the viewed wallet's read-only page. */}
+        <Link
+          to={isViewingAs ? `/positions/${viewAsAddress}` : '/positions'}
+          className="pp-hero-link pp-hero-link--below"
+        >
+          <PieChart className="h-3.5 w-3.5" aria-hidden />
+          Positions
+        </Link>
+      </PageHero>
 
       {/* View-as banner */}
       {isViewingAs && (
