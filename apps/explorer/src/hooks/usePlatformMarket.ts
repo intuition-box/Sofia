@@ -6,7 +6,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { usePrivy } from '@privy-io/react-auth'
 import {
+  fetchPlatformEcosystem,
   fetchPlatformVaultStats,
+  type PlatformEcosystemByTermId,
+  type PlatformEcosystemStats,
   type PlatformVaultData,
 } from '@/services/platformMarketService'
 import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
@@ -91,6 +94,31 @@ export function useSinglePlatformMarket(platformSlug: string) {
 
   return {
     market: data?.[0] || null,
+    isLoading,
+    error: error ? String(error) : null,
+  }
+}
+
+/**
+ * usePlatformEcosystem — activity on every atom that represents the same
+ * platform across the Intuition graph (read-only context; positions are
+ * still taken on the Sofia platform atom). One batched query for all
+ * platforms, cached like the market data.
+ */
+export function usePlatformEcosystem(enabled: boolean = true) {
+  const { data, isLoading, error } = useQuery<PlatformEcosystemByTermId>({
+    queryKey: ['platformEcosystem', 'v1', ALL_PLATFORM_TERM_IDS.length],
+    queryFn: fetchPlatformEcosystem,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 2,
+    enabled,
+  })
+
+  return {
+    getEcosystem: (termId: string): PlatformEcosystemStats | undefined =>
+      data?.[termId],
     isLoading,
     error: error ? String(error) : null,
   }

@@ -15,10 +15,14 @@ import { PageHero } from '@0xsofia/design-system'
 import { TrendingUp, X } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { formatEther } from 'viem'
-import { usePlatformMarket } from '@/hooks/usePlatformMarket'
+import {
+  usePlatformEcosystem,
+  usePlatformMarket,
+} from '@/hooks/usePlatformMarket'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
 import PlatformsRightRail from '@/components/platforms/PlatformsRightRail'
+import EcosystemFigure from '@/components/platforms/EcosystemFigure'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { useProvideRightRail } from '@/contexts/RightRailContext'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -73,6 +77,7 @@ function formatShare(raw: string): string {
 export default function AllPlatformsPage() {
   const { ranked, isLoading: marketsLoading } = usePlatformMarket()
   const { platformById } = usePlatformCatalog()
+  const { getEcosystem } = usePlatformEcosystem()
   const { user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const pc = PAGE_COLORS['/profile/platforms']
@@ -225,6 +230,7 @@ export default function AllPlatformsPage() {
                   <span className="pm-dex-name-text">
                     <span className="pm-dex-label">{market.label}</span>
                     <span className="pm-dex-host">{host}</span>
+                    <EcosystemFigure stats={getEcosystem(market.termId)} />
                   </span>
                 </span>
 

@@ -1,7 +1,8 @@
 # Market refocus — Trending + Positions pages (apps/explorer).
 #
-# Trending ranks pages (the object atom of Sofia page claims) by the positions
-# opened on their claims inside a time window, then backfills the details of
+# Trending ranks pages (web atoms grouped by normalized URL / platform) by the
+# positions opened on their claims inside a time window — Sofia page claims
+# plus canonical support claims from any app — then backfills the details of
 # the ranked pages one page of results at a time.
 
 # Latest positions on Sofia page claims, newest first. The caller pages
@@ -30,26 +31,118 @@ query GetTrendingPagePositions(
       triple {
         term_id
         object_id
+        object {
+          ...TrendingObjectKey
+        }
       }
     }
   }
 }
 
-# Every Sofia claim on a set of pages: metadata, vault totals (all curves),
-# current supporters and the earliest positions ("first to signal").
+# What the ranking needs to resolve a claim's object to a web key (URL or
+# platform): new atoms keep the URL in value.thing.url, old ones in the label.
+fragment TrendingObjectKey on atoms {
+  term_id
+  label
+  value {
+    thing {
+      url
+    }
+  }
+}
+
+# Latest positions on claims from ANY app whose predicate is a canonical
+# support-type predicate (recommends, uses, …) and whose object looks like a
+# web atom: an http(s) URL in value.thing.url or the label, or an exact
+# platform label. Same walk as GetTrendingPagePositions (newest first, the
+# caller stops at its cutoff). The caller excludes predicates that the Sofia
+# walk already covers by label, so the two walks never overlap.
+query GetEcosystemPagePositions(
+  $predicateIds: [String!]!
+  $objectLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: {
+      shares: { _gt: "0" }
+      term: {
+        triple: {
+          predicate_id: { _in: $predicateIds }
+          object: {
+            _or: [
+              { value: { thing: { url: { _ilike: "http%" } } } }
+              { label: { _ilike: "http%" } }
+              { label: { _in: $objectLabels } }
+            ]
+          }
+        }
+      }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    account_id
+    created_at
+    term {
+      triple {
+        term_id
+        object_id
+        object {
+          ...TrendingObjectKey
+        }
+      }
+    }
+  }
+}
+
+# Every page claim (Sofia predicates by label, canonical support predicates by
+# id) on a set of web atoms: the ranked object atoms plus every other atom that
+# stores the same URL (exact variants) or platform label, so duplicates across
+# atoms and apps merge client-side. Metadata, vault totals (all curves),
+# current supporters and the earliest positions ("first to signal"). The
+# indexer caps a page at 100 rows: the caller pages by term_id.
 query GetTrendingPageDetails(
   $objectIds: [String!]!
+  $objectUrls: [String!]!
+  $objectLabels: [String!]!
   $predicateLabels: [String!]!
+  $predicateIds: [String!]!
+  $limit: Int!
+  $offset: Int!
 ) {
   triples(
     where: {
-      object_id: { _in: $objectIds }
-      predicate: { label: { _in: $predicateLabels } }
+      _and: [
+        {
+          _or: [
+            { predicate: { label: { _in: $predicateLabels } } }
+            { predicate_id: { _in: $predicateIds } }
+          ]
+        }
+        {
+          _or: [
+            { object_id: { _in: $objectIds } }
+            { object: { value: { thing: { url: { _in: $objectUrls } } } } }
+            { object: { label: { _in: $objectLabels } } }
+          ]
+        }
+      ]
     }
+    order_by: { term_id: asc }
+    limit: $limit
+    offset: $offset
   ) {
     term_id
     counter_term_id
     object_id
+    subject_id
+    subject {
+      term_id
+      label
+    }
     predicate {
       term_id
       label
@@ -74,6 +167,64 @@ query GetTrendingPageDetails(
         id
         label
         image
+      }
+    }
+  }
+}
+
+# Platform ecosystem — every atom that may represent one of the platforms:
+# the Sofia platform atoms themselves (term_id), atoms storing the platform's
+# website (exact URL variants) and atoms with an exact platform label. The
+# caller resolves each atom to a platform client-side (conservatively) and
+# sums the atom's own vaults plus its support-type claims. Nested arrays are
+# capped at 100 rows by the indexer. Paged by term_id.
+query GetPlatformEcosystemAtoms(
+  $termIds: [String!]!
+  $urls: [String!]!
+  $labels: [String!]!
+  $predicateLabels: [String!]!
+  $predicateIds: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  atoms(
+    where: {
+      _or: [
+        { term_id: { _in: $termIds } }
+        { value: { thing: { url: { _in: $urls } } } }
+        { label: { _in: $labels } }
+      ]
+    }
+    order_by: { term_id: asc }
+    limit: $limit
+    offset: $offset
+  ) {
+    ...TrendingObjectKey
+    term {
+      vaults {
+        market_cap
+      }
+    }
+    positions(where: { shares: { _gt: "0" } }, limit: 100) {
+      account_id
+    }
+    as_object_triples(
+      where: {
+        _or: [
+          { predicate: { label: { _in: $predicateLabels } } }
+          { predicate_id: { _in: $predicateIds } }
+        ]
+      }
+      limit: 100
+    ) {
+      term_id
+      term {
+        vaults {
+          market_cap
+        }
+      }
+      positions(where: { shares: { _gt: "0" } }, limit: 100) {
+        account_id
       }
     }
   }

@@ -336,6 +336,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Ecosystem figure — activity on every atom representing the platform */
+.pm-eco {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ds-muted);
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* Metrics */
 .pm-dex-mcap,

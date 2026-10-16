@@ -11,9 +11,15 @@ import { useClaimPositions } from '@/hooks/useClaimPositions'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/hooks/useCart'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
+import { usePlatformEcosystem } from '@/hooks/usePlatformMarket'
+import {
+  ecosystemText,
+  hasEcosystemActivity,
+} from '@/components/platforms/EcosystemFigure'
 import type { PlatformVaultData } from '@/services/platformMarketService'
 import type { RedeemPercent } from '@/services/redeemService'
 import { formatTrust, formatTrustChange } from '@/utils/formatting'
+import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
   DollarSign,
   Wallet,
@@ -86,6 +92,11 @@ export default function AtomDetailDialog({
   )
   const cart = useCart()
   const { redeemCert } = useRedeemCert()
+  // Only platform atoms have an ecosystem figure — don't fetch it otherwise.
+  const { getEcosystem } = usePlatformEcosystem(
+    ATOM_ID_TO_PLATFORM.has(market.termId),
+  )
+  const ecosystem = getEcosystem(market.termId)
   const hasPosition = BigInt(market.userShares || '0') > 0n
   const userChange = BigInt(market.userChange || '0')
   const changeColor = userChange >= 0n ? '#22c55e' : '#ef4444'
@@ -232,6 +243,22 @@ export default function AtomDetailDialog({
             </div>
           )}
         </div>
+
+        {/* Ecosystem — read-only context: every atom representing this
+            platform on Intuition. The numbers above (and the position) are
+            the Sofia atom's. */}
+        {hasEcosystemActivity(ecosystem) && (
+          <div className="add-eco">
+            <span className="add-eco-title">
+              Across the Intuition ecosystem
+            </span>
+            <span className="add-eco-value">{ecosystemText(ecosystem)}</span>
+            <span className="add-eco-note">
+              Other apps created their own atoms for {platformName}. Taking a
+              position uses the Sofia atom above.
+            </span>
+          </div>
+        )}
 
         {/* Holders leaderboard */}
         <div className="add-leaderboard">

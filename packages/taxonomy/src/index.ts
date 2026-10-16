@@ -9,6 +9,7 @@
  *   - topicIcons   → Material Symbols glyph + emoji + short-label maps
  *   - labels       → canonical TOPIC_LABEL + TOPIC_META (icon/color)
  *   - attributes   → skills/tools taxonomy + endorsement predicates (from Atlas)
+ *   - canonicalAtoms → canonical Intuition ontology atoms (predicates, `I`)
  */
 export * from './types'
 export * from './taxonomy'
@@ -17,3 +18,4 @@ export * from './contextNodes'
 export * from './topicIcons'
 export * from './labels'
 export * from './attributes'
+export * from './canonicalAtoms'

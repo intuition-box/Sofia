@@ -18,6 +18,9 @@ import {
 import { fetchWithRetry } from '@/utils/fetchRetry'
 
 const BATCH_SIZE = 20
+/** Bump when the persisted ranking / page shape changes (v2: pages keyed by
+ *  web key across atoms and apps) so old cache entries are never read. */
+const CACHE_VERSION = 'v2'
 const STALE = 10 * 60 * 1000
 const GC = 24 * 60 * 60 * 1000
 
@@ -42,7 +45,7 @@ export function useTrendingPages(
   timeWindow: TrendingWindow,
 ): UseTrendingPagesResult {
   const ranking = useQuery({
-    queryKey: ['trending-pages-ranking', timeWindow],
+    queryKey: ['trending-pages-ranking', CACHE_VERSION, timeWindow],
     queryFn: () => fetchWithRetry(() => fetchTrendingRanking(timeWindow)),
     staleTime: STALE,
     gcTime: GC,
@@ -54,8 +57,9 @@ export function useTrendingPages(
   const firstPage = useQuery({
     queryKey: [
       'trending-pages',
+      CACHE_VERSION,
       timeWindow,
-      firstSlice.map((r) => `${r.objectId}:${r.windowPositions}`).join(','),
+      firstSlice.map((r) => `${r.key}:${r.windowPositions}`).join(','),
     ],
     queryFn: () => fetchWithRetry(() => fetchTrendingPageDetails(firstSlice)),
     enabled: ranking.isSuccess,

@@ -5,8 +5,25 @@
  * one vault per bonding curve that users can take a position in.
  */
 
-import { useGetPositionsQuery } from '@0xsofia/graphql'
+import {
+  useGetPositionsQuery,
+  useGetPlatformEcosystemAtomsQuery,
+  type GetPlatformEcosystemAtomsQuery,
+} from '@0xsofia/graphql'
 import { GRAPHQL_URL } from '@/config'
+import {
+  ATOM_ID_TO_PLATFORM,
+  CANONICAL_PREDICATE_IDS,
+  CANONICAL_SUPPORT_PREDICATE_LABELS,
+  PLATFORM_ATOM_IDS,
+} from '@/config/atomIds'
+import {
+  platformLabelVariants,
+  platformRefBySlug,
+  resolveWebKey,
+  urlVariants,
+} from '@/utils/webAtom'
+import { SOFIA_PREDICATE_LABELS } from './sofiaFeedService'
 
 // ── Types ──
 
@@ -95,8 +112,10 @@ interface AtomRow {
 
 const WAD = 10n ** 18n
 // Supporter pages — positions with shares > 0 on the batch's platform vaults.
-const SUPPORTERS_PAGE = 1000
-const SUPPORTERS_MAX_PAGES = 20
+// The indexer caps every list at 100 rows, so pages must be ≤ 100 or the
+// `rows.length < SUPPORTERS_PAGE` stop fires after the first page.
+const SUPPORTERS_PAGE = 100
+const SUPPORTERS_MAX_PAGES = 50
 
 /**
  * Distinct supporter wallets per platform term_id, across every curve vault.
@@ -237,4 +256,184 @@ export async function fetchPlatformVaultStats(
   const atoms: AtomRow[] = json.data?.atoms || []
 
   return atoms.map((atom) => aggregatePlatformVaults(atom, supporters))
+}
+
+// ── Ecosystem (all atoms that represent the same platform) ──
+//
+// Read-only context next to the Sofia vault numbers above: other Intuition
+// apps create their own atoms for a platform ("YouTube" recommended elsewhere
+// is not our YouTube atom). The ecosystem figure sums the activity on every
+// atom that resolves to the same platform (utils/webAtom: same website, or an
+// exact platform label on an atom without a URL). Taking a position still
+// targets the Sofia platform atom only.
+
+export interface PlatformEcosystemStats {
+  /** Sofia platform atom term_id. */
+  termId: string
+  /** Distinct atoms representing the platform (Sofia's included). */
+  atomCount: number
+  /** Distinct wallets in position on any of those atoms or on their
+   *  support claims. Nested lists are capped at 100 rows per term by the
+   *  indexer, so a very busy term may be undercounted. */
+  supporters: number
+  /** Σ market cap of those atoms' vaults + their support claims (raw wei). */
+  totalStaked: string
+  /** Support claims (Sofia + canonical predicates) on those atoms. */
+  claimCount: number
+}
+
+/** Plain record (persisted React Query cache — no Map). */
+export type PlatformEcosystemByTermId = Record<string, PlatformEcosystemStats>
+
+type EcosystemAtomRow = GetPlatformEcosystemAtomsQuery['atoms'][number]
+
+/** Positive claim predicates read on platform atoms. */
+const ECOSYSTEM_CLAIM_LABELS: string[] = SOFIA_PREDICATE_LABELS.filter(
+  (l) => l !== 'distrust',
+)
+const ECOSYSTEM_CLAIM_IDS: string[] = CANONICAL_SUPPORT_PREDICATE_LABELS.map(
+  (l) => CANONICAL_PREDICATE_IDS[l],
+)
+
+function vaultsStaked(
+  term: { vaults: { market_cap?: string | null }[] } | null | undefined,
+): bigint {
+  let total = 0n
+  for (const v of term?.vaults ?? []) total += BigInt(v.market_cap || '0')
+  return total
+}
+
+/**
+ * Group candidate atoms by platform and sum their activity. An atom belongs
+ * to a Sofia platform when it IS the platform atom, or when it resolves to
+ * the platform's key (its catalog website, or the URL the Sofia atom itself
+ * stores). Atoms resolving nowhere are ignored. Every Sofia platform atom in
+ * `rows` gets an entry.
+ */
+export function aggregatePlatformEcosystem(
+  rows: readonly EcosystemAtomRow[],
+): PlatformEcosystemByTermId {
+  // key → Sofia platform term_id
+  const keyToTermId: Record<string, string> = {}
+  for (const [slug, termId] of Object.entries(PLATFORM_ATOM_IDS)) {
+    const key = platformRefBySlug(slug)?.key
+    if (key) keyToTermId[key] ??= termId
+  }
+  // The URL a Sofia platform atom stores is an alias of its platform.
+  for (const row of rows) {
+    if (!ATOM_ID_TO_PLATFORM.get(row.term_id)) continue
+    const urlKey = resolveWebKey({ label: row.label, value: row.value })
+    if (urlKey) keyToTermId[urlKey] ??= row.term_id
+  }
+
+  const groups: Record<
+    string,
+    {
+      atoms: Record<string, true>
+      wallets: Record<string, true>
+      claims: Record<string, true>
+      staked: bigint
+    }
+  > = {}
+  const seenAtom: Record<string, true> = {}
+  for (const row of rows) {
+    if (seenAtom[row.term_id]) continue
+    seenAtom[row.term_id] = true
+    const key = resolveWebKey(row)
+    const platformTermId = ATOM_ID_TO_PLATFORM.get(row.term_id)
+      ? row.term_id
+      : key
+        ? keyToTermId[key]
+        : undefined
+    if (!platformTermId) continue
+    const g = (groups[platformTermId] ??= {
+      atoms: {},
+      wallets: {},
+      claims: {},
+      staked: 0n,
+    })
+    g.atoms[row.term_id] = true
+    g.staked += vaultsStaked(row.term)
+    for (const p of row.positions) g.wallets[p.account_id.toLowerCase()] = true
+    for (const t of row.as_object_triples) {
+      if (g.claims[t.term_id]) continue
+      g.claims[t.term_id] = true
+      g.staked += vaultsStaked(t.term)
+      for (const p of t.positions) {
+        g.wallets[p.account_id.toLowerCase()] = true
+      }
+    }
+  }
+
+  const out: PlatformEcosystemByTermId = {}
+  for (const [termId, g] of Object.entries(groups)) {
+    out[termId] = {
+      termId,
+      atomCount: Object.keys(g.atoms).length,
+      supporters: Object.keys(g.wallets).length,
+      totalStaked: String(g.staked),
+      claimCount: Object.keys(g.claims).length,
+    }
+  }
+  return out
+}
+
+/** Indexer lookups for the ecosystem query: Sofia platform atoms + exact
+ *  website / label variants of each platform. */
+export function platformEcosystemLookups(): {
+  termIds: string[]
+  urls: string[]
+  labels: string[]
+} {
+  const urls = new Set<string>()
+  const labels = new Set<string>()
+  for (const slug of Object.keys(PLATFORM_ATOM_IDS)) {
+    const ref = platformRefBySlug(slug)
+    if (!ref) continue
+    for (const u of urlVariants(ref.key)) urls.add(u)
+    for (const l of platformLabelVariants(ref)) labels.add(l)
+  }
+  return {
+    termIds: [...new Set(Object.values(PLATFORM_ATOM_IDS))],
+    urls: [...urls],
+    labels: [...labels],
+  }
+}
+
+const ECOSYSTEM_PAGE = 100
+const ECOSYSTEM_MAX_PAGES = 20
+const ECOSYSTEM_CONCURRENCY = 4
+
+/**
+ * Ecosystem figures for every Sofia platform, in one batched query paged by
+ * term_id (~8 pages of 100 atoms on mainnet, fetched 4 at a time).
+ */
+export async function fetchPlatformEcosystem(): Promise<PlatformEcosystemByTermId> {
+  const lookups = platformEcosystemLookups()
+  const fetchPage = async (page: number) =>
+    (
+      await useGetPlatformEcosystemAtomsQuery.fetcher({
+        ...lookups,
+        predicateLabels: ECOSYSTEM_CLAIM_LABELS,
+        predicateIds: ECOSYSTEM_CLAIM_IDS,
+        limit: ECOSYSTEM_PAGE,
+        offset: page * ECOSYSTEM_PAGE,
+      })()
+    ).atoms ?? []
+
+  const rows: EcosystemAtomRow[] = []
+  for (
+    let start = 0;
+    start < ECOSYSTEM_MAX_PAGES;
+    start += ECOSYSTEM_CONCURRENCY
+  ) {
+    const pages = Array.from(
+      { length: Math.min(ECOSYSTEM_CONCURRENCY, ECOSYSTEM_MAX_PAGES - start) },
+      (_, i) => start + i,
+    )
+    const batches = await Promise.all(pages.map(fetchPage))
+    for (const b of batches) rows.push(...b)
+    if (batches.some((b) => b.length < ECOSYSTEM_PAGE)) break
+  }
+  return aggregatePlatformEcosystem(rows)
 }
