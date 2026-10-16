@@ -82,6 +82,34 @@ class TxEventBusClass {
       }
     }
   }
+
+  /**
+   * Service worker → UI contexts. Each extension context has its own bus, so
+   * a publish done by the worker (right-click) must be relayed for the side
+   * panel to refresh. No-op when no panel is open.
+   */
+  relayToUi(type: TxEventType, txHash?: string): void {
+    chrome.runtime
+      .sendMessage({ type: "TX_EVENT", event: type, txHash })
+      .catch(() => {
+        // No UI context listening — nothing to refresh
+      })
+  }
+
+  /** UI side of relayToUi: re-emit worker TX events locally. */
+  listenToWorker(): () => void {
+    const listener = (message: {
+      type?: string
+      event?: TxEventType
+      txHash?: string
+    }) => {
+      if (message?.type === "TX_EVENT" && message.event) {
+        this.emit(message.event, message.txHash)
+      }
+    }
+    chrome.runtime.onMessage.addListener(listener)
+    return () => chrome.runtime.onMessage.removeListener(listener)
+  }
 }
 
 export const txEventBus = new TxEventBusClass()

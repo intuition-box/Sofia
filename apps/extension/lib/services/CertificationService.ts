@@ -25,7 +25,9 @@ import type { CartItemRecord } from "../../types/database"
 import { getPublicClient } from "../clients/viemClients"
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from "../config/constants"
 import { getSigner } from "../signer"
+import { getFaviconUrl } from "../utils/formatters"
 import { createServiceLogger } from "../utils/logger"
+import { normalizeUrl } from "../utils/normalizeUrl"
 import { atomService } from "./AtomService"
 import { BlockchainService } from "./blockchainService"
 import { cartService } from "./CartService"
@@ -62,6 +64,12 @@ export interface DepositResult {
   success: boolean
   txHash?: Hash
   error?: string
+}
+
+export interface QuickPublishTarget {
+  url: string
+  title: string | null
+  predicateName: string
 }
 
 export interface SubmitCartResult {
@@ -524,6 +532,48 @@ class CertificationServiceClass {
       const errorMessage =
         error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       return { success: false, error: `Deposit failed: ${errorMessage}` }
+    }
+  }
+
+  /**
+   * Publish one page with one predicate right now (right-click), without
+   * touching the cart. Never throws — errors land in `error`.
+   */
+  async publishNow(
+    wallet: string,
+    target: QuickPublishTarget,
+    weight: bigint
+  ): Promise<DepositResult> {
+    try {
+      const { label } = normalizeUrl(target.url)
+      // Same object atom shape as cartService.toBatchInputs → same atom
+      const result = await this.createTriplesBatch(wallet, [
+        {
+          predicateName: target.predicateName,
+          objectData: {
+            name: target.title || label,
+            description: `Page: ${label}`,
+            url: target.url,
+            image: getFaviconUrl(target.url, 128) || undefined
+          },
+          customWeight: weight
+        }
+      ])
+      if (!result.success) {
+        return { success: false, error: result.error ?? "Publish failed" }
+      }
+      questTrackingService.recordCertificationActivity()
+      const txHash = result.results[0]?.txHash as Hash | undefined
+      txEventBus.emit("certification", txHash)
+      txEventBus.relayToUi("certification", txHash)
+      return { success: true, txHash }
+    } catch (error) {
+      logger.error("publishNow failed", error)
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      }
     }
   }
 

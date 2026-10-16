@@ -22,11 +22,14 @@ import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 import { FEATURES } from "./lib/config/features"
 import { wagmiConfig } from "./lib/config/wagmi"
 import { configureSofiaGraphql } from "./lib/clients/graphql-client"
+import { txEventBus } from "./lib/services"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 import { QueryProvider } from "./lib/providers/queryProvider"
 
 // Configure GraphQL client BEFORE the QueryProvider mounts.
 configureSofiaGraphql()
+// Publishes done by the service worker (right-click) refresh the panel too.
+txEventBus.listenToWorker()
 
 const SidePanelContent = () => {
   const { currentPage, navigateTo, firstClaimData, setFirstClaimData } =

@@ -20,12 +20,14 @@
   --sis-on-accent: #0b0a12;
   /* mirrors design-system --intent-trusted (vivid green) for success/picked. */
   --sis-ok: #22c55e;
+  /* mirrors design-system --intent-distrusted for errors. */
+  --sis-error: #ef4444;
   --sis-radius: 10px;
   /* Type hierarchy (design-system): sans for body, mono for eyebrow labels.
      Both fall back to system faces on pages that don't ship the web font. */
   --sis-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --sis-font-mono:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sis-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
 .sis-overlay,
@@ -448,6 +450,25 @@
   font-size: 13px;
   font-weight: 600;
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
+
+/* Right-click publish feedback (SOFIA_TOAST) */
+.sis-toast--pending {
+  opacity: 0.9;
+}
+
+.sis-toast--success {
+  border-color: var(--sis-ok);
+}
+
+.sis-toast--error {
+  border-color: var(--sis-error);
+}
+
+.sis-toast-link {
+  margin-left: 10px;
+  color: inherit;
+  text-decoration: underline;
 }
 
 /* ── Intention picker (non-pro): single-select chips, --c per intention ── */

@@ -19,29 +19,184 @@ import {
   intuitionGraphqlClient,
   SearchUrlAtomsDocument
 } from "../lib/clients/graphql-client"
-import { cartService } from "../lib/services"
-import { getFaviconUrl } from "../lib/utils"
+import { getAuthUrl } from "../lib/config/externalAuth"
+import { cartService, certificationService } from "../lib/services"
+import { sessionStore } from "../lib/signer"
+import { getFaviconUrl, getProfileUrl } from "../lib/utils"
 import { createServiceLogger } from "../lib/utils/logger"
 import { getStoredWalletAddress } from "../lib/utils/walletStorage"
 import { INTENTION_PREDICATES } from "../types/discovery"
+import {
+  INTENTION_CONFIG,
+  type IntentionConfigEntry,
+  type IntentionType
+} from "../types/intentionCategories"
 
 const logger = createServiceLogger("AddToSofia")
 
-const MENU_ID = "add-to-sofia"
+const ROOT_ID = "sofia-root"
+const MORE_ID = "sofia-more"
+const PUBLISH_PREFIX = "sofia-pub:"
 const CONTEXTS: chrome.contextMenus.ContextType[] = [
   "page",
   "link",
   "selection"
 ]
+const DOCUMENT_PATTERNS = ["http://*/*", "https://*/*"]
+
+/** Right-click publish amount — the WeightModal "Medium" preset (0.5 TRUST) */
+const QUICK_PUBLISH_WEIGHT = 500000000000000000n
+const QUICK_PUBLISH_LABEL = "0.5 TRUST"
+
+// Intentions (Work…Music), then Trust / Distrust — straight from the single
+// source of truth, no local list.
+const CONFIG_ENTRIES = Object.entries(INTENTION_CONFIG) as [
+  IntentionType,
+  IntentionConfigEntry
+][]
+const MENU_GROUPS = [
+  CONFIG_ENTRIES.filter(([, v]) => v.intentionPurpose !== null),
+  CONFIG_ENTRIES.filter(([, v]) => v.intentionPurpose === null)
+]
 
 function buildMenu() {
   chrome.contextMenus.removeAll(() => {
+    const base = { contexts: CONTEXTS, documentUrlPatterns: DOCUMENT_PATTERNS }
+    const child = { ...base, parentId: ROOT_ID }
+    chrome.contextMenus.create({ ...base, id: ROOT_ID, title: "Sofia" })
+    MENU_GROUPS.forEach((group, i) => {
+      for (const [type, entry] of group) {
+        chrome.contextMenus.create({
+          ...child,
+          id: `${PUBLISH_PREFIX}${type}`,
+          title: entry.label
+        })
+      }
+      chrome.contextMenus.create({
+        ...child,
+        id: `sofia-sep-${i}`,
+        type: "separator"
+      })
+    })
     chrome.contextMenus.create({
-      id: MENU_ID,
-      title: "Add to Sofia",
-      contexts: CONTEXTS
+      ...child,
+      id: MORE_ID,
+      title: "More options…"
     })
   })
+}
+
+// ── In-page feedback ────────────────────────────────────────────────────────
+
+type ToastKind = "pending" | "success" | "error"
+
+function toast(
+  tabId: number,
+  id: string,
+  kind: ToastKind,
+  text: string,
+  link?: { href: string; label: string }
+) {
+  chrome.tabs.sendMessage(
+    tabId,
+    { type: "SOFIA_TOAST", id, kind, text, link },
+    () => {
+      // No content script (restricted page / tab opened before install)
+      void chrome.runtime.lastError
+    }
+  )
+}
+
+/** Readable tail of a wrapped error ("Batch creation failed: X" → "X") */
+const readableError = (message: string) => {
+  const firstLine = message.split("\n")[0]
+  const parts = firstLine.split("failed: ")
+  return parts[parts.length - 1] || "Publish failed — try again"
+}
+
+// MV3 kills an idle worker after ~30s; a publish (atoms + triple + receipts)
+// can take longer. Any extension API call resets the idle timer.
+async function withKeepAlive<T>(work: () => Promise<T>): Promise<T> {
+  const timer = setInterval(() => void chrome.runtime.getPlatformInfo(), 20_000)
+  try {
+    return await work()
+  } finally {
+    clearInterval(timer)
+  }
+}
+
+const inFlight = new Set<string>()
+
+/**
+ * Right-click → intention. With an active "publish without popup" permission
+ * it publishes right away (no panel, no popup); otherwise it queues the page
+ * in the cart and tells the user how to enable one-click publishing.
+ */
+async function handleQuickPublish(
+  tabId: number,
+  url: string,
+  title: string | null,
+  type: IntentionType
+) {
+  const entry = INTENTION_CONFIG[type]
+  const predicateName = entry.predicateLabel
+  if (!predicateName) return
+  const toastId = `${type}:${url}`
+
+  const wallet = await getStoredWalletAddress()
+  if (!wallet) {
+    toast(tabId, toastId, "error", "Connect your wallet to Sofia first")
+    chrome.tabs.create({ url: getAuthUrl({ autoLogin: true }) })
+    return
+  }
+
+  const session = await sessionStore.getActive(wallet)
+  if (!session) {
+    const added = await cartService.addItem(
+      wallet,
+      url,
+      title,
+      predicateName,
+      entry.intentionPurpose,
+      getFaviconUrl(url, 128)
+    )
+    toast(
+      tabId,
+      toastId,
+      added ? "success" : "error",
+      added
+        ? `Added to your cart · ${entry.label} — enable "Publish without popup" in Settings to publish in one click`
+        : "Already in your cart"
+    )
+    return
+  }
+
+  const key = `${predicateName}|${url}`
+  if (inFlight.has(key)) return
+  inFlight.add(key)
+  toast(tabId, toastId, "pending", `Publishing · ${entry.label}…`)
+  try {
+    const result = await withKeepAlive(() =>
+      certificationService.publishNow(
+        wallet,
+        { url, title, predicateName },
+        QUICK_PUBLISH_WEIGHT
+      )
+    )
+    if (result.success) {
+      toast(
+        tabId,
+        toastId,
+        "success",
+        `Published · ${entry.label} · ${QUICK_PUBLISH_LABEL}`,
+        { href: getProfileUrl(), label: "View" }
+      )
+    } else {
+      toast(tabId, toastId, "error", readableError(result.error ?? ""))
+    }
+  } finally {
+    inFlight.delete(key)
+  }
 }
 
 // Queue the qualified page into the connected wallet's cart — ONE cart item per
@@ -129,13 +284,28 @@ export function initAddToSofia(): void {
   // separately, so the modal must be served from inside that switch.
 
   chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId !== MENU_ID || !tab?.id) return
+    const menuId = String(info.menuItemId)
+    if (!tab?.id || !menuId.startsWith("sofia-")) return
 
     // A right-clicked link wins over the page itself.
     const isLink = !!info.linkUrl
     const url = info.linkUrl || info.pageUrl || tab.url || ""
-    const title = isLink ? url : tab.title || url
+    if (!url) return
 
+    if (menuId.startsWith(PUBLISH_PREFIX)) {
+      const type = menuId.slice(PUBLISH_PREFIX.length) as IntentionType
+      if (!(type in INTENTION_CONFIG)) return
+      void handleQuickPublish(
+        tab.id,
+        url,
+        isLink ? null : tab.title || null,
+        type
+      )
+      return
+    }
+
+    if (menuId !== MORE_ID) return
+    const title = isLink ? url : tab.title || url
     chrome.tabs.sendMessage(
       tab.id,
       { type: "ADD_TO_SOFIA_OPEN", url, title, isLink },

@@ -42,6 +42,20 @@ interface Target {
   title: string
 }
 
+/** Right-click publish feedback pushed by the service worker (SOFIA_TOAST) */
+interface PublishToast {
+  id: string
+  kind: "pending" | "success" | "error"
+  text: string
+  link?: { href: string; label: string }
+}
+
+const TOAST_ICON: Record<PublishToast["kind"], string> = {
+  pending: "…",
+  success: "✓",
+  error: "✕"
+}
+
 // Metadata blob for the current page — feeds the tag field's suggestions.
 function pageMetadata(): string {
   const meta = (sel: string) =>
@@ -71,6 +85,30 @@ export default function AddToSofiaModal() {
   // null = unknown (status not yet resolved). false → the modal swaps its
   // primary action for a "connect" button that opens the side panel.
   const [connected, setConnected] = useState<boolean | null>(null)
+  const [publishToast, setPublishToast] = useState<PublishToast | null>(null)
+
+  useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    const onMessage = (msg: PublishToast & { type?: string }) => {
+      if (msg?.type !== "SOFIA_TOAST") return
+      clearTimeout(hideTimer)
+      setPublishToast({
+        id: msg.id,
+        kind: msg.kind,
+        text: msg.text,
+        link: msg.link
+      })
+      // Pending stays until the result replaces it
+      if (msg.kind !== "pending") {
+        hideTimer = setTimeout(() => setPublishToast(null), 4500)
+      }
+    }
+    chrome.runtime.onMessage.addListener(onMessage)
+    return () => {
+      clearTimeout(hideTimer)
+      chrome.runtime.onMessage.removeListener(onMessage)
+    }
+  }, [])
 
   // PRO (later): backend session + workspace state, resolved when the modal
   // opens via the service worker (the JWT stays in the worker). See the
@@ -118,6 +156,22 @@ export default function AddToSofiaModal() {
   }, [target])
 
   if (!target) {
+    if (publishToast) {
+      return (
+        <div className={`sis-toast sis-toast--${publishToast.kind}`}>
+          {TOAST_ICON[publishToast.kind]} {publishToast.text}
+          {publishToast.link && (
+            <a
+              className="sis-toast-link"
+              href={publishToast.link.href}
+              target="_blank"
+              rel="noopener noreferrer">
+              {publishToast.link.label} →
+            </a>
+          )}
+        </div>
+      )
+    }
     return toast ? <div className="sis-toast">✓ {toast}</div> : null
   }
 
