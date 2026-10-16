@@ -114,3 +114,27 @@ export function sendToExtension(
     window.opener.postMessage(message, '*')
   }
 }
+
+/** Like sendToExtension, but resolves with the extension's response. */
+export function sendToExtensionAsync<T = { success: boolean; error?: string }>(
+  message: Record<string, unknown>,
+  extensionId: string,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    if (!extensionId || extensionId === DEFAULT_EXTENSION_ID) {
+      reject(new Error('Missing extension id — open this page from Sofia.'))
+      return
+    }
+    try {
+      chrome.runtime.sendMessage(extensionId, message, (response) => {
+        if (!response) {
+          reject(new Error('Sofia extension did not answer.'))
+          return
+        }
+        resolve(response as T)
+      })
+    } catch {
+      reject(new Error('Sofia extension not reachable in this browser.'))
+    }
+  })
+}

@@ -101,3 +101,4 @@ export { usePlatformPool, PP_FEE_DENOMINATOR } from './usePlatformPool'
 
 // Tracking
 export { useTracking } from './useTracking'
+export { useDelegatedPublishing } from './useDelegatedPublishing'

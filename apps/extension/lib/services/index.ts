@@ -9,6 +9,8 @@ export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
 export { certificationService } from './CertificationService'
 export type { ContextTripleItem, ObjectAtomData, SubmitCartResult } from './CertificationService'
+export { delegationService } from './DelegationService'
+export type { DelegationGrant, DelegationState, DelegationStatus } from './DelegationService'
 
 // Wallet
 export { createBoundProvider } from './walletProvider'

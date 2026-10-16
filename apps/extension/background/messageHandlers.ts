@@ -11,6 +11,7 @@ import { IntentionGroupsService } from "../lib/database"
 import {
   badgeService,
   browsingNudgeService,
+  delegationService,
   groupManager,
   levelUpService,
   pageDataService,
@@ -421,6 +422,37 @@ export function setupMessageHandlers(): void {
             })
           }
         })()
+        return true
+      }
+
+      // "Publish without popup" activation page (/activate)
+      if (message.type === "DELEGATION_GRANTED") {
+        delegationService
+          .handleGranted(message.data)
+          .then(() => sendResponse({ success: true }))
+          .catch((error) => {
+            logger.error("Failed to store delegation", error)
+            sendResponse({
+              success: false,
+              error: error instanceof Error ? error.message : "Unknown error"
+            })
+          })
+        return true
+      }
+
+      if (message.type === "GET_DELEGATION") {
+        delegationService
+          .getDelegationForRevoke(message.data?.wallet ?? "")
+          .then((delegation) => sendResponse({ success: true, delegation }))
+          .catch(() => sendResponse({ success: false, delegation: null }))
+        return true
+      }
+
+      if (message.type === "DELEGATION_REVOKED") {
+        delegationService
+          .confirmRevoked(message.data?.wallet ?? "")
+          .then(() => sendResponse({ success: true }))
+          .catch(() => sendResponse({ success: false }))
         return true
       }
 

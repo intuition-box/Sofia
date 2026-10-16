@@ -7,6 +7,7 @@ import './styles/global.css'
 import App from './App'
 import { AuthPage } from './auth/AuthPage'
 import { AuthLogout } from './auth/AuthLogout'
+import { ActivatePage } from './activate/ActivatePage'
 import { OAuthInitiate } from './auth/OAuthInitiate'
 import { OAuthCallback } from './auth/OAuthCallback'
 import { OAUTH_PLATFORMS } from './auth/oauthConfig'
@@ -28,6 +29,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<App />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/logout" element={<AuthLogout />} />
+            <Route path="/activate" element={<ActivatePage />} />
             {OAUTH_PLATFORMS.flatMap((p) => [
               <Route
                 key={p}

@@ -4,6 +4,7 @@ import { useTracking } from '../../hooks'
 import { useWalletFromStorage, disconnectWallet } from '../../hooks'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
+import DelegatedPublishingSettings from '../ui/DelegatedPublishingSettings'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import { Storage } from '@plasmohq/storage'
 import { tripletsDataService, userSettingsService } from '../../lib/database'
@@ -111,6 +112,7 @@ const SettingsPage = () => {
         key.startsWith('currency_migration_v1') ||
         key.startsWith('quest_progress_') ||
         key.startsWith('social_attestation') ||
+        key.startsWith('delegated_session_') ||
         key === 'lastActiveWallet'
       )
       if (keysToRemove.length > 0) {
@@ -170,6 +172,9 @@ const SettingsPage = () => {
           <WalletConnectionButton />
         </div>
       </div>
+
+      {/* === Publish without popup === */}
+      <DelegatedPublishingSettings />
 
       {/* === Data & Privacy === */}
       <div className="settings-section">

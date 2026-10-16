@@ -14,7 +14,7 @@ const logger = createServiceLogger('ViemClients')
  * next url on persistent failure — so adding a backup RPC is just appending a
  * url to `rpcUrls.default.http` in chainConfig, no code change here.
  */
-const buildRpcTransport = () =>
+export const buildRpcTransport = () =>
     fallback(
         SELECTED_CHAIN.rpcUrls.default.http.map((url) =>
             http(url, { retryCount: 3, retryDelay: 300, timeout: 15_000 })
