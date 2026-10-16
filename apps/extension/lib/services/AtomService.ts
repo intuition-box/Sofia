@@ -9,10 +9,11 @@
  * - blockchainService.ts: low-level blockchain operations
  */
 
-import { getClients, getPublicClient } from '../clients/viemClients'
+import { getPublicClient } from '../clients/viemClients'
+import { getSigner } from '../signer'
 import { stringToHex } from 'viem'
+import { usePinThingMutation } from '@0xsofia/graphql'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
-import { SELECTED_CHAIN } from '../config/chainConfig'
 import { BlockchainService } from './blockchainService'
 import { createServiceLogger } from '../utils/logger'
 import { explicitGasLimit } from '../utils/gasLimit'
@@ -35,13 +36,20 @@ export interface PinnedAtomData {
   encodedData: `0x${string}`
 }
 
-/** Type for the IPFS pinning function (injected from React hook) */
+/** Type for the IPFS pinning function */
 export type PinThingFn = (vars: {
   name: string
   description: string
   image: string
   url: string
-}) => Promise<{ pinThing?: { uri?: string } | null }>
+}) => Promise<{ pinThing?: { uri?: string | null } | null }>
+
+/**
+ * Plain (non-hook) pin through the generated fetcher — works in the side panel
+ * and in the service worker. Requires configureSofiaGraphql() (pin-proxy URL).
+ */
+export const pinThingViaProxy: PinThingFn = (vars) =>
+  usePinThingMutation.fetcher(vars)()
 
 class AtomServiceClass {
   /**
@@ -102,7 +110,10 @@ class AtomServiceClass {
    * Pin atom data to IPFS without creating on-chain.
    * Use this to batch pin multiple atoms before creating them in a single tx.
    */
-  async pinAtomToIPFS(atomData: AtomIPFSData, pinThing: PinThingFn): Promise<PinnedAtomData> {
+  async pinAtomToIPFS(
+    atomData: AtomIPFSData,
+    pinThing: PinThingFn = pinThingViaProxy
+  ): Promise<PinnedAtomData> {
     if (!pinThing) {
       throw new Error('IPFS pinning service not available. Please try again.')
     }
@@ -172,7 +183,8 @@ class AtomServiceClass {
 
     // Create all new atoms in ONE transaction
     if (newAtoms.length > 0) {
-      const { walletClient, publicClient } = await getClients()
+      const signer = await getSigner()
+      const publicClient = getPublicClient()
       const atomCost = await BlockchainService.getAtomCost()
       const contractAddress = BlockchainService.getContractAddress()
 
@@ -199,7 +211,7 @@ class AtomServiceClass {
           functionName: 'createAtoms',
           args: writeArgs,
           value: totalCost,
-          account: walletClient.account
+          account: signer.account
         })
 
         // Explicit gas limit so the wallet never falls back to the 2^50 block
@@ -212,21 +224,19 @@ class AtomServiceClass {
             functionName: 'createAtoms',
             args: writeArgs,
             value: totalCost,
-            account: address as `0x${string}`
+            account: signer.account
           },
           BigInt(newAtoms.length) * 1_000_000n + 1_000_000n
         )
 
         // Execute single transaction for all atoms
-        const txHash = await walletClient.writeContract({
+        const txHash = await signer.writeContract({
           address: contractAddress,
           abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
           args: writeArgs,
           value: totalCost,
-          chain: SELECTED_CHAIN,
-          gas,
-          account: address as `0x${string}`
+          gas
         })
 
         logger.debug('Batch atom creation tx sent', { txHash, count: newAtoms.length })
@@ -271,17 +281,15 @@ class AtomServiceClass {
                 functionName: 'createAtoms',
                 args: [address as Address, [newAtom.encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
                 value: atomCost,
-                account: walletClient.account
+                account: signer.account
               })
 
-              const txHash = await walletClient.writeContract({
+              const txHash = await signer.writeContract({
                 address: contractAddress,
                 abi: SofiaFeeProxyAbi,
                 functionName: 'createAtoms',
                 args: [address as Address, [newAtom.encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
-                value: atomCost,
-                chain: SELECTED_CHAIN,
-                account: address as `0x${string}`
+                value: atomCost
               })
 
               const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
@@ -338,7 +346,7 @@ class AtomServiceClass {
         ipfsUriLength: ipfsUri.length
       })
 
-      const { walletClient } = await getClients()
+      const signer = await getSigner()
 
       // Get atom cost using service
       const atomCost = await BlockchainService.getAtomCost()
@@ -381,7 +389,7 @@ class AtomServiceClass {
           functionName: 'createAtoms',
           args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
           value: totalCost,
-          account: walletClient.account
+          account: signer.account
         })
 
         const simulatedVaultIds = simulation.result as `0x${string}`[]
@@ -403,15 +411,13 @@ class AtomServiceClass {
           simulationConfirmed: true
         })
 
-        const txHash = await walletClient.writeContract({
+        const txHash = await signer.writeContract({
           address: BlockchainService.getContractAddress(),
           abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
           args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
           value: totalCost,
-          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-          chain: SELECTED_CHAIN,
-          account: address as `0x${string}`
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS
         })
 
         logger.debug('Transaction sent', { txHash })
@@ -472,7 +478,7 @@ class AtomServiceClass {
   async createAtomsBatch(
     atomsData: AtomIPFSData[],
     address: string,
-    pinThing: PinThingFn
+    pinThing: PinThingFn = pinThingViaProxy
   ): Promise<{ [key: string]: AtomCreationResult }> {
     try {
       logger.debug('Creating atoms batch', { count: atomsData.length })
@@ -537,7 +543,7 @@ class AtomServiceClass {
 
       // Create new atoms sequentially to handle AtomExists errors gracefully
       if (newAtoms.length > 0) {
-        const { walletClient } = await getClients()
+        const signer = await getSigner()
         const publicClient = getPublicClient()
         const atomCost = await BlockchainService.getAtomCost()
         const totalCost = await BlockchainService.getTotalCreationCost(0, 0n, atomCost)
@@ -553,18 +559,16 @@ class AtomServiceClass {
               functionName: 'createAtoms',
               args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
               value: totalCost,
-              account: walletClient.account
+              account: signer.account
             })
 
-            const txHash = await walletClient.writeContract({
+            const txHash = await signer.writeContract({
               address: contractAddress,
               abi: SofiaFeeProxyAbi,
               functionName: 'createAtoms',
               args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
               value: totalCost,
-              gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-              chain: SELECTED_CHAIN,
-              account: address as `0x${string}`
+              gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS
             })
 
             const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })

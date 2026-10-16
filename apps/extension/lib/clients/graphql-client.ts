@@ -1,7 +1,21 @@
+import { configureClient } from '@0xsofia/graphql'
 import { API_CONFIG } from '../config/chainConfig'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('GraphQLClient')
+
+/**
+ * Configure the shared @0xsofia/graphql client. Called by every extension
+ * context that runs generated queries or pins atoms (side panel + service
+ * worker). `pinApiUrl` routes pin mutations through the backend pin-proxy —
+ * Intuition gated `pinThing` behind an API key, and that key must never ship
+ * in the published extension bundle, so the proxy holds it server-side.
+ */
+export const configureSofiaGraphql = () =>
+  configureClient({
+    apiUrl: 'https://mainnet.intuition.sh/v1/graphql',
+    pinApiUrl: process.env.PLASMO_PUBLIC_PIN_PROXY_URL
+  })
 
 // Cache for GraphQL responses (TTL: 30 seconds)
 const CACHE_TTL_MS = 30000

@@ -80,6 +80,11 @@ class GlobalStakeServiceClass {
     return config.enabled && !!config.termId && config.termId !== "0x0000000000000000000000000000000000000000000000000000000000000000"
   }
 
+  /** Load the wallet's % override without subscribing (service-worker path). */
+  async ensureLoaded(wallet: string): Promise<void> {
+    await this.loadUserPreference(wallet.toLowerCase())
+  }
+
   /** Returns effective percentage: user override > config default */
   getUserPercentage(): number {
     return this.userPercentageOverride ?? this.state.config.percentage

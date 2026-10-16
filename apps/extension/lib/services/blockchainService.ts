@@ -1,4 +1,5 @@
-import { getClients, getPublicClient } from '../clients/viemClients'
+import { getPublicClient } from '../clients/viemClients'
+import { getSigner } from '../signer'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
@@ -26,7 +27,7 @@ import type { AtomCheckResult, TripleCheckResult, FeeParams, ProtocolCosts } fro
 // resolved function exists at runtime via the ABI bytes, the TS layer is
 // purely for ergonomics.
 const MultiVaultAbiTyped = MultiVaultAbi as Abi
-import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS } from '../config/chainConfig'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('BlockchainService')
@@ -509,7 +510,6 @@ export class BlockchainService {
     userAddress: string,
     tripleTermId: string
   ): Promise<bigint> {
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
 
     return await publicClient.readContract({
@@ -533,7 +533,6 @@ export class BlockchainService {
     userAddress: string,
     atomTermId: string
   ): Promise<bigint> {
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
 
     return await publicClient.readContract({
@@ -553,7 +552,6 @@ export class BlockchainService {
    * Get atom cost from contract (reads from MultiVault)
    */
   static async getAtomCost(): Promise<bigint> {
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
 
     return await publicClient.readContract({
@@ -568,7 +566,6 @@ export class BlockchainService {
    * Get triple cost from contract (reads from MultiVault)
    */
   static async getTripleCost(): Promise<bigint> {
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
 
     const cost = await publicClient.readContract({
@@ -625,14 +622,11 @@ export class BlockchainService {
    * @returns Transaction hash
    */
   static async requestProxyApproval(): Promise<`0x${string}`> {
-    const { walletClient } = await getClients()
-    const [address] = await walletClient.getAddresses()
+    const signer = await getSigner()
 
-    const hash = await walletClient.writeContract({
-      chain: SELECTED_CHAIN,
-      account: address,
+    const hash = await signer.writeContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-      abi: MultiVaultAbi,
+      abi: MultiVaultAbiTyped,
       functionName: 'approve',
       args: [this.PROXY_ADDRESS as `0x${string}`, this.ApprovalTypes.DEPOSIT]
     })

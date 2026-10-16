@@ -16,10 +16,10 @@
  * - GlobalStakeService.ts: split calculation for global stake
  */
 
-import { getClients, getPublicClient } from '../clients/viemClients'
+import { getPublicClient } from '../clients/viemClients'
+import { getSigner } from '../signer'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
-import { SELECTED_CHAIN } from '../config/chainConfig'
 import { BlockchainService } from './blockchainService'
 import { globalStakeService } from './GlobalStakeService'
 import { platformPoolService } from './PlatformPoolService'
@@ -76,7 +76,8 @@ class TripleServiceClass {
     curveIds: bigint[],
     assets: bigint[]
   ): Promise<Hash> {
-    const { walletClient, publicClient } = await getClients()
+    const signer = await getSigner()
+    const publicClient = getPublicClient()
     const contractAddress = BlockchainService.getContractAddress()
 
     const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
@@ -110,7 +111,7 @@ class TripleServiceClass {
       functionName: 'depositBatch',
       args: depositArgs,
       value: totalValue,
-      account: walletClient.account
+      account: signer.account
     })
 
     // Explicit gas limit so the wallet never falls back to the 2^50 block
@@ -123,23 +124,21 @@ class TripleServiceClass {
         functionName: 'depositBatch',
         args: depositArgs,
         value: totalValue,
-        account: address as Address
+        account: signer.account
       },
       BigInt(termIds.length) * 600_000n + 1_000_000n
     )
 
     // Execute
-    const hash = await walletClient.writeContract({
+    const hash = await signer.writeContract({
       address: contractAddress as Address,
       abi: SofiaFeeProxyAbi,
       functionName: 'depositBatch',
       args: depositArgs,
       value: totalValue,
-      chain: SELECTED_CHAIN,
       gas,
       maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-      maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-      account: address as Address
+      maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
     })
 
     return hash
@@ -286,7 +285,7 @@ class TripleServiceClass {
           // Single deposit (GS disabled or amount too small)
           const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
 
-          const { walletClient } = await getClients()
+          const signer = await getSigner()
           const contractAddress = BlockchainService.getContractAddress()
 
           await publicClient.simulateContract({
@@ -300,10 +299,10 @@ class TripleServiceClass {
               0n
             ],
             value: totalDepositCost,
-            account: walletClient.account
+            account: signer.account
           })
 
-          hash = await walletClient.writeContract({
+          hash = await signer.writeContract({
             address: contractAddress as Address,
             abi: SofiaFeeProxyAbi,
             functionName: 'deposit',
@@ -314,10 +313,8 @@ class TripleServiceClass {
               0n
             ],
             value: totalDepositCost,
-            chain: SELECTED_CHAIN,
             maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
           })
         }
 
@@ -339,7 +336,8 @@ class TripleServiceClass {
         }
       } else {
         // Triple doesn't exist — create it
-        const { walletClient, publicClient } = await getClients()
+        const signer = await getSigner()
+        const publicClient = getPublicClient()
         const contractAddress = BlockchainService.getContractAddress()
 
         const tripleCost = await BlockchainService.getTripleCost()
@@ -380,10 +378,10 @@ class TripleServiceClass {
           functionName: 'createTriples',
           args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [signalDeposit], CREATION_CURVE_ID],
           value: totalCost,
-          account: walletClient.account
+          account: signer.account
         })
 
-        const hash = await walletClient.writeContract({
+        const hash = await signer.writeContract({
           address: contractAddress as Address,
           abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
@@ -396,10 +394,8 @@ class TripleServiceClass {
             CREATION_CURVE_ID
           ],
           value: totalCost,
-          chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-          account: address as Address
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
         })
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -414,7 +410,7 @@ class TripleServiceClass {
             const config = globalStakeService.getConfig()
             const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
 
-            const gsHash = await walletClient.writeContract({
+            const gsHash = await signer.writeContract({
               address: contractAddress as Address,
               abi: SofiaFeeProxyAbi,
               functionName: 'deposit',
@@ -425,10 +421,8 @@ class TripleServiceClass {
                 0n
               ],
               value: gsCost,
-              chain: SELECTED_CHAIN,
               maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-              maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-              account: address as Address
+              maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
             })
 
             await publicClient.waitForTransactionReceipt({ hash: gsHash })
@@ -506,7 +500,8 @@ class TripleServiceClass {
 
       // Batch create new triples
       if (triplesToCreate.length > 0) {
-        const { walletClient, publicClient } = await getClients()
+        const signer = await getSigner()
+        const publicClient = getPublicClient()
         const contractAddress: Address = BlockchainService.getContractAddress() as Address
         const tripleCost = await BlockchainService.getTripleCost()
 
@@ -543,7 +538,7 @@ class TripleServiceClass {
             functionName: 'createTriples',
             args: createArgs,
             value: totalValue,
-            account: walletClient.account
+            account: signer.account
           })
 
           // Explicit gas limit so the wallet never falls back to the 2^50 block
@@ -556,22 +551,20 @@ class TripleServiceClass {
               functionName: 'createTriples',
               args: createArgs,
               value: totalValue,
-              account: address as Address
+              account: signer.account
             },
             BigInt(triplesToCreate.length) * 1_000_000n + 1_000_000n
           )
 
-          const hash = await walletClient.writeContract({
+          const hash = await signer.writeContract({
             address: contractAddress,
             abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
             args: createArgs,
             value: totalValue,
-            chain: SELECTED_CHAIN,
             gas,
             maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
           })
           const receipt = await publicClient.waitForTransactionReceipt({ hash })
 

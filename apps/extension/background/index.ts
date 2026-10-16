@@ -5,9 +5,13 @@ import { initializeRealtime } from "./realtime";
 import { createServiceLogger } from '../lib/utils/logger'
 import { getStoredWalletAddress } from '../lib/utils/walletStorage'
 import { initAddToSofia } from "./addToSofia";
+import { configureSofiaGraphql } from "../lib/clients/graphql-client";
 import "./oauth/index"; // Initialize OAuth service
 
 const logger = createServiceLogger('ServiceWorker')
+
+// Generated queries + atom pinning run here too (publish from the worker).
+configureSofiaGraphql()
 
 // Right-click "Add to Sofia" → modal → cart. Registers its context menu +
 // listeners synchronously at top level (Chrome requires this for SW events).

@@ -57,6 +57,11 @@ class PlatformPoolServiceClass {
     return this.state.enabled
   }
 
+  /** Load the wallet's % override without subscribing (service-worker path). */
+  async ensureLoaded(wallet: string): Promise<void> {
+    await this.loadUserPreference(wallet.toLowerCase())
+  }
+
   getUserPercentage(): number {
     return this.userPercentageOverride ?? DEFAULT_PERCENTAGE
   }

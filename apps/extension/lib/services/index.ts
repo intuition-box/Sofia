@@ -7,6 +7,8 @@
 export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
+export { certificationService } from './CertificationService'
+export type { ContextTripleItem, ObjectAtomData, SubmitCartResult } from './CertificationService'
 
 // Wallet
 export { createBoundProvider } from './walletProvider'

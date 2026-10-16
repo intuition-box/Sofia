@@ -1,4 +1,3 @@
-import { configureClient } from "@0xsofia/graphql"
 import { useEffect, useState } from "react"
 import { WagmiProvider } from "wagmi"
 
@@ -22,17 +21,12 @@ import UserProfilePage from "./components/pages/UserProfilePage"
 import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 import { FEATURES } from "./lib/config/features"
 import { wagmiConfig } from "./lib/config/wagmi"
+import { configureSofiaGraphql } from "./lib/clients/graphql-client"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 import { QueryProvider } from "./lib/providers/queryProvider"
 
 // Configure GraphQL client BEFORE the QueryProvider mounts.
-// `pinApiUrl` routes pin mutations through the backend pin-proxy — Intuition
-// gated `pinThing` behind an API key, and that key must never ship in the
-// published extension bundle, so the proxy holds it server-side.
-configureClient({
-  apiUrl: "https://mainnet.intuition.sh/v1/graphql",
-  pinApiUrl: process.env.PLASMO_PUBLIC_PIN_PROXY_URL
-})
+configureSofiaGraphql()
 
 const SidePanelContent = () => {
   const { currentPage, navigateTo, firstClaimData, setFirstClaimData } =
