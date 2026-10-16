@@ -19,8 +19,10 @@ import '@/components/styles/landing.css'
 export default function LandingPage() {
   const navigate = useNavigate()
   const { ready, authenticated } = usePrivy()
+  // Post-login landing = Platforms (market refocus). The logged-out
+  // "browse" button below still opens the public Explore feed.
   const { login } = useLogin({
-    onComplete: () => navigate('/explore'),
+    onComplete: () => navigate('/platforms'),
   })
   // Live on-chain group count — feeds the "Discover Circles" badge so
   // the CTA reads as a real, populated network rather than a static
@@ -30,7 +32,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (ready && authenticated) {
-      navigate('/explore', { replace: true })
+      navigate('/platforms', { replace: true })
     }
   }, [ready, authenticated, navigate])
 

@@ -174,7 +174,7 @@ export default function PositionBoardDialog({
                 </div>
                 {stats.userPnlPct !== null && (
                   <div className="pbd-metric pbd-metric--pnl">
-                    <span className="pbd-metric-label">Your P&L</span>
+                    <span className="pbd-metric-label">Your change</span>
                     <span
                       className="pbd-pnl-value"
                       style={{

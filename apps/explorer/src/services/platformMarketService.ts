@@ -64,6 +64,7 @@ const GET_ATOM_VAULT_STATS = `
           positions(where: { account_id: { _ilike: $address } }) {
             shares
             total_deposit_assets_after_total_fees
+            total_redeem_assets_for_receiver
           }
         }
       }
@@ -81,6 +82,7 @@ interface VaultRow {
   positions?: {
     shares?: string | null
     total_deposit_assets_after_total_fees?: string | null
+    total_redeem_assets_for_receiver?: string | null
   }[]
 }
 
@@ -137,6 +139,20 @@ async function fetchDistinctSupporters(
 }
 
 /** Pure aggregation of one platform atom's curve vaults (exported for tests). */
+/**
+ * Deposits still "in" a position: total deposited minus what was already
+ * taken out, floored at 0 so a partial exit doesn't distort the change.
+ */
+export function netDeposited(p: {
+  total_deposit_assets_after_total_fees?: string | null
+  total_redeem_assets_for_receiver?: string | null
+}): bigint {
+  const net =
+    BigInt(p.total_deposit_assets_after_total_fees || '0') -
+    BigInt(p.total_redeem_assets_for_receiver || '0')
+  return net > 0n ? net : 0n
+}
+
 export function aggregatePlatformVaults(
   atom: AtomRow,
   supporters: Map<string, number> | null,
@@ -166,7 +182,7 @@ export function aggregatePlatformVaults(
       if (shares === 0n) continue
       userShares += shares
       userValue += (shares * sp) / WAD
-      userDeposited += BigInt(p.total_deposit_assets_after_total_fees || '0')
+      userDeposited += netDeposited(p)
     }
   }
 

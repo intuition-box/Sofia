@@ -17,10 +17,24 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
       'Discover URLs certified by the whole community and add your own signals.',
     glow: 'rgba(255,180,162,0.4)',
   },
+  '/trending': {
+    color: '#FFD6A5',
+    title: 'Trending',
+    subtitle:
+      'See the pages gaining positions right now and who signaled them first.',
+    glow: 'rgba(255,214,165,0.4)',
+  },
+  '/positions': {
+    color: '#A0C4FF',
+    title: 'Positions',
+    subtitle:
+      'Track the value and change of every position you hold, and exit when you want.',
+    glow: 'rgba(160,196,255,0.4)',
+  },
   '/leaderboard': {
     color: '#F5D58A',
-    title: 'Leaderboard',
-    subtitle: 'See the top Sofia users and where you stand.',
+    title: 'Season',
+    subtitle: 'See the top Sofia users this season and where you stand.',
     glow: 'rgba(245,213,138,0.4)',
   },
   '/streaks': {

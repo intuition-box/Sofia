@@ -1,5 +1,13 @@
 import { NavLink } from 'react-router-dom'
-import { Globe, Users, Layers, LineChart, User } from 'lucide-react'
+import {
+  Globe,
+  Users,
+  Layers,
+  LineChart,
+  Flame,
+  PieChart,
+  User,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { FEATURES } from '../config/features'
 
@@ -14,7 +22,12 @@ interface BottomNavItem {
   authRequired?: boolean
 }
 
+// Market refocus order: Platforms, Trending, Positions, Explore. Season
+// (/leaderboard) stays in the drawer nav — the bar keeps five slots.
 const ALL_NAV_ITEMS: (BottomNavItem & { enabled?: boolean })[] = [
+  { to: '/platforms', label: 'Platforms', icon: LineChart, authRequired: true },
+  { to: '/trending', label: 'Trending', icon: Flame },
+  { to: '/positions', label: 'Positions', icon: PieChart },
   { to: '/explore', label: 'Explore', icon: Globe },
   {
     to: '/circles',
@@ -30,15 +43,6 @@ const ALL_NAV_ITEMS: (BottomNavItem & { enabled?: boolean })[] = [
     primary: true,
     authRequired: true,
     enabled: FEATURES.compose,
-  },
-  // Stands in for Circles/Compose while those are flagged off, so the bar
-  // still exposes the main market surface on mobile.
-  {
-    to: '/platforms',
-    label: 'Platforms',
-    icon: LineChart,
-    authRequired: true,
-    enabled: !FEATURES.circles && !FEATURES.compose,
   },
   { to: '/profile', label: 'Profile', icon: User, authRequired: true },
 ]

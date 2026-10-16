@@ -15,6 +15,8 @@ import {
   Layers,
   Trophy,
   LineChart,
+  Flame,
+  PieChart,
   Vote,
   Sun,
   Moon,
@@ -120,6 +122,10 @@ export function NavSidebar({
     /** Feature flag gating the entry — hidden while false. */
     enabled?: boolean
   }[] = [
+    // Market refocus order: Platforms, Trending, Positions, Explore, Season.
+    { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
+    { to: '/trending', icon: Flame, label: 'Trending', public: true },
+    { to: '/positions', icon: PieChart, label: 'Positions', public: true },
     {
       to: '/explore',
       icon: Globe,
@@ -127,6 +133,8 @@ export function NavSidebar({
       public: true,
       tour: 'nav-explore',
     },
+    // Season = the leaderboard for now; streaks are reachable from there.
+    { to: '/leaderboard', icon: Trophy, label: 'Season', public: false },
     {
       to: '/circles',
       icon: Users,
@@ -159,8 +167,6 @@ export function NavSidebar({
     public: boolean
     enabled?: boolean
   }[] = [
-    { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
-    { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: false },
     {
       to: '/vote',
       icon: Vote,
@@ -308,9 +314,11 @@ export function NavSidebar({
         {navItems.filter(isVisible).map(renderItem)}
       </NavSection>
 
-      <NavSection title="Quick Access">
-        {quickLinks.filter(isVisible).map(renderItem)}
-      </NavSection>
+      {quickLinks.some(isVisible) && (
+        <NavSection title="Quick Access">
+          {quickLinks.filter(isVisible).map(renderItem)}
+        </NavSection>
+      )}
 
       {FEATURES.circles && authenticated ? (
         <NavSection title="Circles">

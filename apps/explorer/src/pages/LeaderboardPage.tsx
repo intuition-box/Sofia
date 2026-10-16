@@ -1,10 +1,14 @@
+import { Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
+import { Flame } from 'lucide-react'
 import type { Address } from 'viem'
 import { useAlphaTesters } from '../hooks/useAlphaTesters'
 import Leaderboard from '../components/Leaderboard'
 import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
+import '@/components/styles/platform-market.css'
+import '@/components/styles/market-pages.css'
 
 export default function LeaderboardPage() {
   const { user } = usePrivy()
@@ -27,6 +31,13 @@ export default function LeaderboardPage() {
         description={pc.subtitle}
       />
       <div className="space-y-6 page-content page-enter">
+        {/* Season hub (nav "Season") — streaks live on their own page. */}
+        <div className="mk-season-links">
+          <Link to="/streaks" className="pm-chip mk-season-link">
+            <Flame className="h-3 w-3" aria-hidden />
+            Streaks
+          </Link>
+        </div>
         <Leaderboard
           alphaData={alphaData}
           alphaLoading={alphaLoading}

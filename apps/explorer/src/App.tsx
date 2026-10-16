@@ -40,6 +40,8 @@ const ComposePage = lazy(() => import('./pages/ComposePage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
+const TrendingPage = lazy(() => import('./pages/TrendingPage'))
+const PositionsPage = lazy(() => import('./pages/PositionsPage'))
 // Vote tab hidden behind FEATURES.vote (kept for a future update).
 const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
@@ -108,6 +110,8 @@ export default function App() {
   const isFullWidthPage =
     location.pathname.startsWith('/circles') ||
     location.pathname.startsWith('/explore') ||
+    location.pathname.startsWith('/trending') ||
+    location.pathname.startsWith('/positions') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
     location.pathname.startsWith('/streaks') ||
@@ -276,6 +280,25 @@ export default function App() {
           its total staked and your position value here.
         </PageHint>
         <PageHint
+          storageKey="sofia:hint-trending"
+          path="/trending"
+          title="Trending pages"
+        >
+          Pages ranked by the <b>positions</b> opened on them in the selected
+          window. <b>First to signal</b> shows who took a position before
+          everyone else. <b>Take position</b> adds the page's main claim to your
+          cart.
+        </PageHint>
+        <PageHint
+          storageKey="sofia:hint-positions"
+          path="/positions"
+          title="Your positions"
+        >
+          Every position you hold on platforms and claims, with its <b>value</b>{' '}
+          and <b>change</b> since you deposited. Exit 25%, 50% or all of a
+          position: the exit goes through your cart. Position value can go down.
+        </PageHint>
+        <PageHint
           storageKey="sofia:hint-profile"
           path="/profile"
           title="Your reputation"
@@ -374,6 +397,10 @@ export default function App() {
                   element={<Navigate to="/explore" replace />}
                 />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/trending" element={<TrendingPage />} />
+                {/* Public route: the page itself prompts a logged-out
+                    visitor to connect instead of redirecting away. */}
+                <Route path="/positions" element={<PositionsPage />} />
                 <Route
                   path="/profile/:address"
                   element={<PublicProfilePage />}

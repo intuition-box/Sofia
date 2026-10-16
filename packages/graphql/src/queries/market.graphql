@@ -1,0 +1,148 @@
+# Market refocus — Trending + Positions pages (apps/explorer).
+#
+# Trending ranks pages (the object atom of Sofia page claims) by the positions
+# opened on their claims inside a time window, then backfills the details of
+# the ranked pages one page of results at a time.
+
+# Latest positions on Sofia page claims, newest first. The caller pages
+# through and stops at its window cutoff: a `created_at: { _gte }` filter here
+# makes the indexer scan instead of walking the created_at index (24s vs <1s
+# on a quiet window). Rows on the counter term (oppose) also resolve
+# `term.triple` — compare `term_id` to `triple.term_id` to keep support only.
+query GetTrendingPagePositions(
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: {
+      shares: { _gt: "0" }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    account_id
+    created_at
+    term {
+      triple {
+        term_id
+        object_id
+      }
+    }
+  }
+}
+
+# Every Sofia claim on a set of pages: metadata, vault totals (all curves),
+# current supporters and the earliest positions ("first to signal").
+query GetTrendingPageDetails(
+  $objectIds: [String!]!
+  $predicateLabels: [String!]!
+) {
+  triples(
+    where: {
+      object_id: { _in: $objectIds }
+      predicate: { label: { _in: $predicateLabels } }
+    }
+  ) {
+    term_id
+    counter_term_id
+    object_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults {
+        curve_id
+        market_cap
+        position_count
+      }
+    }
+    supporters: positions(where: { shares: { _gt: "0" } }, limit: 1000) {
+      account_id
+    }
+    firstPositions: positions(order_by: { created_at: asc }, limit: 3) {
+      account_id
+      created_at
+      account {
+        id
+        label
+        image
+      }
+    }
+  }
+}
+
+# Every active position of a wallet set (atoms AND claims, both sides of a
+# claim), newest first. Positions-first on purpose: filtering `triples` by a
+# nested `positions` / `counter_positions` _or is ~10x slower on the indexer.
+# A CounterTriple term still resolves `term.triple`, so the oppose side comes
+# with its claim. Value / change are computed per curve client-side (shares
+# are curve-local). The indexer caps a page at 100 rows.
+query GetUserMarketPositions(
+  $addresses: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: { account_id: { _in: $addresses }, shares: { _gt: "0" } }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    curve_id
+    shares
+    total_deposit_assets_after_total_fees
+    total_redeem_assets_for_receiver
+    created_at
+    vault {
+      current_share_price
+      market_cap
+      position_count
+    }
+    term {
+      type
+      atom {
+        term_id
+        label
+        image
+        value {
+          thing {
+            url
+            name
+          }
+        }
+      }
+      triple {
+        term_id
+        counter_term_id
+        subject {
+          term_id
+          label
+        }
+        predicate {
+          term_id
+          label
+        }
+        object {
+          term_id
+          label
+          image
+          value {
+            thing {
+              url
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
