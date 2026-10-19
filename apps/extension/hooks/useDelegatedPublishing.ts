@@ -69,6 +69,7 @@ export const useDelegatedPublishing = () => {
     error,
     refresh,
     activate: run((w) => delegationService.startActivation(w)),
+    editLimits: run((w) => delegationService.startUpdate(w)),
     topUp: run((w) => delegationService.openTopUp(w)),
     fundBudget: run((w) => delegationService.openFund(w)),
     withdrawBudget: run((w) => delegationService.openWithdraw(w)),

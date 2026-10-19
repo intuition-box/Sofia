@@ -6,10 +6,17 @@
  * Signing itself lives in lib/signer (delegatedSigner picks the session up).
  */
 
-import { getAddress, isAddressEqual, type Address, type Hex } from "viem"
+import {
+  formatEther,
+  getAddress,
+  isAddressEqual,
+  type Address,
+  type Hex
+} from "viem"
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts"
 
 import { getPublicClient } from "../clients/viemClients"
+import { BLOCKCHAIN_CONFIG } from "../config/chainConfig"
 import {
   ACTIVATE_PAGE_URL,
   DELEGATION_MANAGER_ADDRESS,
@@ -62,7 +69,13 @@ export interface DelegationGrant {
   deploy?: { factory: string; factoryData: string }
 }
 
-type PageAction = "activate" | "topup" | "fund" | "withdraw" | "revoke"
+type PageAction =
+  | "activate"
+  | "update"
+  | "topup"
+  | "fund"
+  | "withdraw"
+  | "revoke"
 
 class DelegationServiceClass {
   private async getSmartAccount(wallet: string): Promise<Address | null> {
@@ -129,7 +142,7 @@ class DelegationServiceClass {
   }
 
   /** New session key, kept pending until the page sends the delegation back */
-  async startActivation(wallet: string): Promise<void> {
+  private async newPendingSession(wallet: string): Promise<Address> {
     const sessionPrivateKey = generatePrivateKey()
     const sessionAddress = privateKeyToAccount(sessionPrivateKey).address
     await sessionStore.savePending({
@@ -138,8 +151,70 @@ class DelegationServiceClass {
       sessionAddress,
       createdAt: Date.now()
     })
+    return sessionAddress
+  }
+
+  async startActivation(wallet: string): Promise<void> {
+    const sessionAddress = await this.newPendingSession(wallet)
     logger.info("Activation started", { sessionAddress })
     this.openPage("activate", { wallet, sessionKey: sessionAddress })
+  }
+
+  /**
+   * Change the limits of an active permission. Caveats are signed, so this is
+   * a NEW delegation (one signature) to a NEW session key; on grant the old
+   * key's gas moves to the new one and the old key is dropped — the previous
+   * delegation becomes unusable since nobody holds its redeemer key anymore.
+   */
+  async startUpdate(wallet: string): Promise<void> {
+    const session = await sessionStore.get(wallet)
+    if (!session) throw new Error("No publishing permission to edit")
+    const sessionAddress = await this.newPendingSession(wallet)
+    const kind = session.kind ?? "7702"
+    logger.info("Limits update started", { sessionAddress })
+    this.openPage("update", {
+      wallet,
+      sessionKey: sessionAddress,
+      kind,
+      ...(kind === "hybrid" && session.delegator
+        ? { account: session.delegator }
+        : {}),
+      daily: formatEther(BigInt(session.dailyCap)),
+      perAction: formatEther(BigInt(session.maxPerAction))
+    })
+  }
+
+  /** Move what's left on a retired session key to the new one (best effort) */
+  private async sweepGas(from: DelegatedSession, to: Address): Promise<void> {
+    try {
+      const publicClient = getPublicClient()
+      const account = privateKeyToAccount(from.sessionPrivateKey)
+      const balance = await publicClient.getBalance({
+        address: account.address
+      })
+      const gas = 21_000n
+      const maxFeePerGas: bigint = BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS
+      const value = balance - gas * maxFeePerGas
+      if (value <= 0n) return
+      const serializedTransaction = await account.signTransaction({
+        chainId: publicClient.chain.id,
+        type: "eip1559",
+        to,
+        value,
+        gas,
+        maxFeePerGas,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        nonce: await publicClient.getTransactionCount({
+          address: account.address
+        })
+      })
+      await publicClient.sendRawTransaction({ serializedTransaction })
+      logger.info("Moved gas to the new session key", {
+        value: formatEther(value)
+      })
+    } catch (error) {
+      logger.warn("Could not move gas from the previous session key", error)
+    }
   }
 
   async openTopUp(wallet: string): Promise<void> {
@@ -256,7 +331,14 @@ class DelegationServiceClass {
           }
         : undefined
     }
+    const previous = await sessionStore.get(pending.wallet)
     await sessionStore.save(session)
+    if (
+      previous &&
+      !isAddressEqual(previous.sessionAddress, pending.sessionAddress)
+    ) {
+      await this.sweepGas(previous, pending.sessionAddress)
+    }
     if (isHybrid) {
       await chrome.storage.local.set({
         [`${ACCOUNT_PREFIX}${pending.wallet.toLowerCase()}`]: delegator

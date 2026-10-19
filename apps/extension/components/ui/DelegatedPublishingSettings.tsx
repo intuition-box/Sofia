@@ -5,16 +5,45 @@ import { useDelegatedPublishing } from "~/hooks"
 const formatTrust = (wei: bigint | null) =>
   wei === null ? "—" : `${Number(formatEther(wei)).toFixed(3)} TRUST`
 
+const formatLimit = (wei: bigint | null) =>
+  wei === null ? "—" : `${Number(formatEther(wei))} TRUST`
+
 const formatDate = (seconds: number | null) =>
   seconds === null ? "—" : new Date(seconds * 1000).toLocaleDateString()
 
-/** Settings section: publish without wallet popups (delegated session key) */
+const shortAddress = (address: string) =>
+  `${address.slice(0, 6)}…${address.slice(-4)}`
+
+/** One read-only line of the current setup */
+const SetupRow = ({
+  label,
+  value,
+  hint
+}: {
+  label: string
+  value: string
+  hint?: string
+}) => (
+  <div className="settings-item">
+    <div className="settings-item-content">
+      <span>{label}</span>
+      {hint && <span className="settings-item-description">{hint}</span>}
+    </div>
+    <div className="wallet-address-display">{value}</div>
+  </div>
+)
+
+/**
+ * Settings section: publish without wallet popups. Shows how it is set up
+ * (mode, limits, validity, gas, budget) and lets the user edit it any time.
+ */
 const DelegatedPublishingSettings = () => {
   const {
     status,
     loading,
     error,
     activate,
+    editLimits,
     topUp,
     fundBudget,
     withdrawBudget,
@@ -24,11 +53,11 @@ const DelegatedPublishingSettings = () => {
   if (!status) return null
 
   const isActive = status.state === "active"
-  // Hybrid (wallets without 7702): a Sofia account holds the budget. It stays
-  // withdrawable after disabling.
-  const hasBudgetAccount = !!status.smartAccount
+  const isConfigured = status.state !== "inactive"
+  const isHybrid = status.kind === "hybrid"
+  // The hybrid budget stays withdrawable even after disabling
   const showBudget =
-    hasBudgetAccount && (status.kind === "hybrid" || (status.budget ?? 0n) > 0n)
+    !!status.smartAccount && (isHybrid || (status.budget ?? 0n) > 0n)
 
   return (
     <div className="settings-section">
@@ -37,7 +66,7 @@ const DelegatedPublishingSettings = () => {
           <span>Publish without popup</span>
           <span className="settings-item-description">
             {isActive
-              ? `Active until ${formatDate(status.expiresAt)} · up to ${formatTrust(status.dailyCap)}/day`
+              ? "On — Sofia publishes for you, within the limits below."
               : status.state === "expired"
                 ? "Your permission expired — re-enable it to skip wallet popups."
                 : "Sign once, then publish without wallet popups. Positions always land in your wallet; Sofia can only deposit into them, within your limits."}
@@ -53,63 +82,87 @@ const DelegatedPublishingSettings = () => {
         )}
       </div>
 
-      {isActive && (
+      {isConfigured && (
         <>
-          <div className="settings-item">
-            <div className="settings-item-content">
-              <span>Publishing gas</span>
-              <span className="settings-item-description">
-                {status.gasLow
-                  ? "Low — top it up to keep publishing without popups."
-                  : "Pays the network fee of each publication."}
-              </span>
-            </div>
-            <div className="wallet-address-display">
-              {formatTrust(status.gasBalance)}
-            </div>
-          </div>
-
-          <div className="settings-item">
-            <button className="wallet-connect-button" onClick={topUp}>
-              Top up gas
-            </button>
-            <button
-              className="delete-button-3d destructive"
-              onClick={deactivate}>
-              Disable
-            </button>
-          </div>
+          <SetupRow
+            label="Mode"
+            value={
+              isHybrid && status.smartAccount
+                ? shortAddress(status.smartAccount)
+                : "Your wallet"
+            }
+            hint={
+              isHybrid
+                ? "Your own Sofia account holds the publishing budget."
+                : "Your wallet is a MetaMask smart account; TRUST stays in it."
+            }
+          />
+          <SetupRow label="Max per day" value={formatLimit(status.dailyCap)} />
+          <SetupRow
+            label="Max per action"
+            value={formatLimit(status.maxPerAction)}
+          />
+          <SetupRow
+            label={isActive ? "Valid until" : "Expired on"}
+            value={formatDate(status.expiresAt)}
+          />
         </>
       )}
 
+      {isActive && (
+        <SetupRow
+          label="Publishing gas"
+          value={formatTrust(status.gasBalance)}
+          hint={
+            status.gasLow
+              ? "Low — top it up to keep publishing without popups."
+              : "Pays the network fee of each publication."
+          }
+        />
+      )}
+
       {showBudget && (
-        <>
-          <div className="settings-item">
-            <div className="settings-item-content">
-              <span>Publishing budget</span>
-              <span className="settings-item-description">
-                TRUST in your own Sofia account (your wallet doesn't support
-                smart accounts). Withdraw it any time.
-              </span>
-            </div>
-            <div className="wallet-address-display">
-              {formatTrust(status.budget)}
-            </div>
-          </div>
-          <div className="settings-item">
-            {isActive && (
-              <button className="wallet-connect-button" onClick={fundBudget}>
-                Top up budget
-              </button>
-            )}
+        <SetupRow
+          label="Publishing budget"
+          value={formatTrust(status.budget)}
+          hint="Withdraw it to your wallet any time."
+        />
+      )}
+
+      {isActive && (
+        <div className="settings-item">
+          <button className="wallet-connect-button" onClick={editLimits}>
+            Edit limits
+          </button>
+          <button className="wallet-connect-button" onClick={topUp}>
+            Top up gas
+          </button>
+        </div>
+      )}
+
+      {(showBudget || isActive) && (
+        <div className="settings-item">
+          {isActive && isHybrid && (
+            <button className="wallet-connect-button" onClick={fundBudget}>
+              Top up budget
+            </button>
+          )}
+          {showBudget && (
             <button
               className="delete-button-3d"
               onClick={withdrawBudget}
               disabled={!status.budget}>
               Withdraw
             </button>
-          </div>
-        </>
+          )}
+          {isActive && (
+            <button
+              className="delete-button-3d destructive"
+              onClick={deactivate}>
+              Disable
+            </button>
+          )}
+        </div>
       )}
 
       {error && (

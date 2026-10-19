@@ -33,7 +33,7 @@ import styles from '../auth/auth.module.css'
 import { AmountField } from './AmountField'
 import limitStyles from './activate.module.css'
 
-type Action = 'activate' | 'topup' | 'fund' | 'withdraw' | 'revoke'
+type Action = 'activate' | 'update' | 'topup' | 'fund' | 'withdraw' | 'revoke'
 type Phase = 'idle' | 'working' | 'done' | 'error'
 
 const DEFAULT_BUDGET = '10'
@@ -54,6 +54,11 @@ function readParams() {
   const sessionKey = q.get('sessionKey') ?? ''
   const account = q.get('account') ?? ''
   const network = (q.get('network') ?? 'mainnet') as NetworkName
+  const kind = q.get('kind')
+  const amount = (key: string) => {
+    const v = q.get(key)
+    return v && Number(v) > 0 ? v : null
+  }
   return {
     action: (q.get('action') ?? 'activate') as Action,
     extensionId: q.get('extensionId') || DEFAULT_EXTENSION_ID,
@@ -62,11 +67,17 @@ function readParams() {
     /** Hybrid smart account (fund / withdraw) */
     account: isAddress(account) ? getAddress(account) : null,
     net: NETWORKS[network] ?? null,
+    /** update: current setup, to prefill the form */
+    kind:
+      kind === '7702' || kind === 'hybrid' ? (kind as ActivationKind) : null,
+    daily: amount('daily'),
+    perAction: amount('perAction'),
   }
 }
 
 const TITLES: Record<Action, string> = {
   activate: 'Publish without popup',
+  update: 'Edit publishing limits',
   topup: 'Top up publishing gas',
   fund: 'Top up publishing budget',
   withdraw: 'Withdraw publishing budget',
@@ -75,6 +86,7 @@ const TITLES: Record<Action, string> = {
 
 const DONE: Record<Action, string> = {
   activate: 'Publishing without popup is on',
+  update: 'New limits saved',
   topup: 'Gas topped up',
   fund: 'Budget topped up',
   withdraw: 'Budget sent back to your wallet',
@@ -89,9 +101,11 @@ export function ActivatePage() {
   const [phase, setPhase] = useState<Phase>('idle')
   const [step, setStep] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [kind, setKind] = useState<ActivationKind | null>(null)
-  const [dailyCap, setDailyCap] = useState(DEFAULT_DAILY_CAP)
-  const [maxPerAction, setMaxPerAction] = useState(DEFAULT_MAX_PER_ACTION)
+  const [kind, setKind] = useState<ActivationKind | null>(params.kind)
+  const [dailyCap, setDailyCap] = useState(params.daily ?? DEFAULT_DAILY_CAP)
+  const [maxPerAction, setMaxPerAction] = useState(
+    params.perAction ?? DEFAULT_MAX_PER_ACTION,
+  )
   const [budget, setBudget] = useState(DEFAULT_BUDGET)
   // Same guard as AuthPage: Privy mutating `wallets` mid-flow must never
   // re-trigger a wallet popup.
@@ -165,18 +179,119 @@ export function ActivatePage() {
     }
   }, [])
 
+  const readLimits = () => {
+    const limits = {
+      dailyCap: toWei(dailyCap, 'the daily limit'),
+      maxPerAction: toWei(maxPerAction, 'the per-action limit'),
+    }
+    if (limits.maxPerAction > limits.dailyCap) {
+      throw new Error('The per-action limit cannot exceed the daily limit.')
+    }
+    return limits
+  }
+
+  const sendGrant = async (
+    grant: Record<string, unknown>,
+    limits: { dailyCap: bigint; maxPerAction: bigint },
+  ) => {
+    const net = params.net!
+    setStep('Sending the permission to Sofia…')
+    const res = await sendToExtensionAsync(
+      {
+        type: 'DELEGATION_GRANTED',
+        data: {
+          ...grant,
+          wallet: expected,
+          dailyCap: limits.dailyCap.toString(),
+          maxPerAction: limits.maxPerAction.toString(),
+          delegationManager: getSmartAccountsEnvironment(net.chain.id)
+            .DelegationManager,
+          chainId: net.chain.id,
+        },
+      },
+      params.extensionId,
+    )
+    if (!res.success)
+      throw new Error(res.error ?? 'The extension refused the permission.')
+  }
+
+  /**
+   * New limits = a new delegation to a new session key (one signature, no
+   * transaction). The extension moves the gas over and drops the old key.
+   */
+  const update = () =>
+    run(async () => {
+      const net = params.net!
+      const wallet = expected as Address
+      const sessionKey = params.sessionKey as Address
+      const limits = readLimits()
+      setStep('Sign your new limits in your wallet')
+      const clients = await getClients()
+      if (kind === 'hybrid') {
+        const { account, factory, factoryData } = await hybridSmartAccount(
+          clients,
+          wallet,
+        )
+        const { delegation, expiresAt } = await signPublishingDelegation(
+          clients,
+          net,
+          account,
+          wallet,
+          sessionKey,
+          limits,
+        )
+        setStep('Verifying the permission…')
+        await probeDelegation(
+          clients,
+          net,
+          account.address,
+          wallet,
+          sessionKey,
+          delegation,
+          { factory, factoryData },
+        )
+        await sendGrant(
+          {
+            kind: 'hybrid',
+            delegator: account.address,
+            deploy: { factory, factoryData },
+            delegation,
+            expiresAt,
+          },
+          limits,
+        )
+      } else {
+        const account = await eoaSmartAccount(clients, wallet)
+        const { delegation, expiresAt } = await signPublishingDelegation(
+          clients,
+          net,
+          account,
+          wallet,
+          sessionKey,
+          limits,
+        )
+        setStep('Verifying the permission…')
+        await probeDelegation(
+          clients,
+          net,
+          wallet,
+          wallet,
+          sessionKey,
+          delegation,
+        )
+        await sendGrant(
+          { kind: '7702', delegator: wallet, delegation, expiresAt },
+          limits,
+        )
+      }
+    })
+
   const activate = () =>
     run(async () => {
       const net = params.net!
       const wallet = expected as Address
       const sessionKey = params.sessionKey as Address
-      const limits = {
-        dailyCap: toWei(dailyCap, 'the daily limit'),
-        maxPerAction: toWei(maxPerAction, 'the per-action limit'),
-      }
-      if (limits.maxPerAction > limits.dailyCap) {
-        throw new Error('The per-action limit cannot exceed the daily limit.')
-      }
+      const limits = readLimits()
 
       setStep('Checking your wallet…')
       const clients = await getClients()
@@ -253,24 +368,7 @@ export function ActivatePage() {
         grant = { kind: '7702', delegator: wallet, delegation, expiresAt }
       }
 
-      setStep('Sending the permission to Sofia…')
-      const res = await sendToExtensionAsync(
-        {
-          type: 'DELEGATION_GRANTED',
-          data: {
-            ...grant,
-            wallet,
-            dailyCap: limits.dailyCap.toString(),
-            maxPerAction: limits.maxPerAction.toString(),
-            delegationManager: getSmartAccountsEnvironment(net.chain.id)
-              .DelegationManager,
-            chainId: net.chain.id,
-          },
-        },
-        params.extensionId,
-      )
-      if (!res.success)
-        throw new Error(res.error ?? 'The extension refused the permission.')
+      await sendGrant(grant, limits)
     })
 
   const topUp = () =>
@@ -325,13 +423,16 @@ export function ActivatePage() {
       }
     })
 
-  const needsSessionKey = ['activate', 'topup'].includes(params.action)
+  const needsSessionKey = ['activate', 'update', 'topup'].includes(
+    params.action,
+  )
   const needsAccount = ['fund', 'withdraw'].includes(params.action)
   const invalidLink =
     !params.net ||
     !expected ||
     (needsSessionKey && !params.sessionKey) ||
-    (needsAccount && !params.account)
+    (needsAccount && !params.account) ||
+    (params.action === 'update' && !params.kind)
 
   const budgetInput = (
     <AmountField
@@ -397,7 +498,7 @@ export function ActivatePage() {
               You can close this tab and go back to Sofia.
             </p>
           </>
-        ) : params.action === 'activate' ? (
+        ) : params.action === 'activate' || params.action === 'update' ? (
           !kind ? (
             <>
               <div className={styles.spinner} />
@@ -406,14 +507,18 @@ export function ActivatePage() {
           ) : (
             <>
               <p className={styles.subtext}>
-                {kind === '7702'
-                  ? 'One confirmation + one signature, then Sofia publishes for you without wallet popups. Your TRUST stays in your wallet.'
-                  : 'Your wallet sends a publishing budget to your own Sofia account (3 confirmations), then one signature. Sofia publishes from that budget without popups; you can withdraw it any time.'}{' '}
+                {params.action === 'update'
+                  ? 'Pick your new limits — one signature, no transaction. Your previous limits stop working right away.'
+                  : kind === '7702'
+                    ? 'One confirmation + one signature, then Sofia publishes for you without wallet popups. Your TRUST stays in your wallet.'
+                    : 'Your wallet sends a publishing budget to your own Sofia account (3 confirmations), then one signature. Sofia publishes from that budget without popups; you can withdraw it any time.'}{' '}
                 Positions always land in your wallet, and Sofia can only deposit
                 into them, within these limits, for {DURATION_DAYS} days.
               </p>
               <div className={limitStyles.limits}>
-                {kind === 'hybrid' && budgetInput}
+                {kind === 'hybrid' &&
+                  params.action === 'activate' &&
+                  budgetInput}
                 <AmountField
                   label="Max per day"
                   value={dailyCap}
@@ -428,8 +533,11 @@ export function ActivatePage() {
                 />
               </div>
               {error && <p className={styles.subtext}>{error}</p>}
-              <button className={styles.claimBtn} onClick={activate}>
-                Enable
+              <button
+                className={styles.claimBtn}
+                onClick={params.action === 'update' ? update : activate}
+              >
+                {params.action === 'update' ? 'Save limits' : 'Enable'}
               </button>
             </>
           )
