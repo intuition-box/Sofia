@@ -70,6 +70,8 @@ export const useDelegatedPublishing = () => {
     refresh,
     activate: run((w) => delegationService.startActivation(w)),
     topUp: run((w) => delegationService.openTopUp(w)),
+    fundBudget: run((w) => delegationService.openFund(w)),
+    withdrawBudget: run((w) => delegationService.openWithdraw(w)),
     deactivate: run((w) => delegationService.deactivate(w))
   }
 }

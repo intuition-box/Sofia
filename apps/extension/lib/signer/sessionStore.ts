@@ -16,11 +16,24 @@ import type { SerializedDelegation } from "./delegation"
 export const SESSION_KEY_PREFIX = "delegated_session_"
 const PENDING_KEY = "delegated_session_pending"
 
+/**
+ * "7702": the user's EOA is the smart account (msg.sender = wallet).
+ * "hybrid": a HybridDeleGator owned by the wallet holds a TRUST budget and
+ * executes (msg.sender = that account); shares still go to the wallet.
+ */
+export type DelegationKind = "7702" | "hybrid"
+
 export interface DelegatedSession {
   wallet: Address
   sessionPrivateKey: Hex
   sessionAddress: Address
   delegation: SerializedDelegation
+  /** Absent on sessions created before hybrid support → "7702" */
+  kind?: DelegationKind
+  /** Account that executes the calls (the wallet for 7702) */
+  delegator?: Address
+  /** Hybrid only: deploys the smart account on first use */
+  deploy?: { factory: Address; factoryData: Hex }
   /** unix seconds */
   expiresAt: number
   /** wei, as decimal strings */

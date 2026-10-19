@@ -10,12 +10,25 @@ const formatDate = (seconds: number | null) =>
 
 /** Settings section: publish without wallet popups (delegated session key) */
 const DelegatedPublishingSettings = () => {
-  const { status, loading, error, activate, topUp, deactivate } =
-    useDelegatedPublishing()
+  const {
+    status,
+    loading,
+    error,
+    activate,
+    topUp,
+    fundBudget,
+    withdrawBudget,
+    deactivate
+  } = useDelegatedPublishing()
 
   if (!status) return null
 
   const isActive = status.state === "active"
+  // Hybrid (wallets without 7702): a Sofia account holds the budget. It stays
+  // withdrawable after disabling.
+  const hasBudgetAccount = !!status.smartAccount
+  const showBudget =
+    hasBudgetAccount && (status.kind === "hybrid" || (status.budget ?? 0n) > 0n)
 
   return (
     <div className="settings-section">
@@ -27,7 +40,7 @@ const DelegatedPublishingSettings = () => {
               ? `Active until ${formatDate(status.expiresAt)} · up to ${formatTrust(status.dailyCap)}/day`
               : status.state === "expired"
                 ? "Your permission expired — re-enable it to skip wallet popups."
-                : "Sign once, then publish without wallet popups. Your TRUST and positions stay in your wallet. MetaMask only for now."}
+                : "Sign once, then publish without wallet popups. Positions always land in your wallet; Sofia can only deposit into them, within your limits."}
           </span>
         </div>
         {!isActive && (
@@ -64,6 +77,36 @@ const DelegatedPublishingSettings = () => {
               className="delete-button-3d destructive"
               onClick={deactivate}>
               Disable
+            </button>
+          </div>
+        </>
+      )}
+
+      {showBudget && (
+        <>
+          <div className="settings-item">
+            <div className="settings-item-content">
+              <span>Publishing budget</span>
+              <span className="settings-item-description">
+                TRUST in your own Sofia account (your wallet doesn't support
+                smart accounts). Withdraw it any time.
+              </span>
+            </div>
+            <div className="wallet-address-display">
+              {formatTrust(status.budget)}
+            </div>
+          </div>
+          <div className="settings-item">
+            {isActive && (
+              <button className="wallet-connect-button" onClick={fundBudget}>
+                Top up budget
+              </button>
+            )}
+            <button
+              className="delete-button-3d"
+              onClick={withdrawBudget}
+              disabled={!status.budget}>
+              Withdraw
             </button>
           </div>
         </>

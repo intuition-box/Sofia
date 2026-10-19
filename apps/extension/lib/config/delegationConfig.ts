@@ -13,6 +13,10 @@ export const DELEGATION_MANAGER_ADDRESS =
 export const EIP7702_STATELESS_DELEGATOR_ADDRESS =
   "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B" as const
 
+/** Deploys HybridDeleGator smart accounts (wallets without 7702) */
+export const SIMPLE_FACTORY_ADDRESS =
+  "0x69Aa2f9fe1572F1B640E1bbc512f5c3a734fc77c" as const
+
 /** Root delegation (no parent) */
 export const ROOT_AUTHORITY =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" as const

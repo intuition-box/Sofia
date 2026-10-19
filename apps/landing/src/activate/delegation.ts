@@ -1,10 +1,14 @@
 /**
  * "Publish without popup" — on-chain side of the activation page.
  *
- * The user's EOA is upgraded (EIP-7702, by MetaMask) to the MetaMask smart
- * account, then signs ONE delegation letting the extension's session key
- * deposit through the Sofia fee proxy on the user's behalf — receiver forced
- * to the user, capped per action and per day, expiring.
+ * Two ways to get a MetaMask smart account that can delegate:
+ * - "7702": the user's EOA itself is upgraded (MetaMask). msg.sender stays the
+ *   user, TRUST stays in the wallet.
+ * - "hybrid": wallets without 7702 (Rabby…) get a HybridDeleGator owned by the
+ *   EOA, funded with a budget. Shares still go to the EOA (receiver).
+ * Either way the user signs ONE delegation letting the extension's session
+ * key deposit through the Sofia fee proxy — receiver forced to the user,
+ * capped per action and per day, expiring.
  */
 
 import {
@@ -16,6 +20,7 @@ import {
   Implementation,
   toMetaMaskSmartAccount,
   type Delegation,
+  type MetaMaskSmartAccount,
 } from '@metamask/smart-accounts-kit'
 import {
   createPublicClient,
@@ -206,21 +211,84 @@ export interface DelegationLimits {
   maxPerAction: bigint
 }
 
-/** Build + sign the scoped delegation (ONE signature, no gas). */
-export async function signPublishingDelegation(
-  clients: Clients,
-  net: NetworkConfig,
-  address: Address,
-  sessionKey: Address,
-  limits: DelegationLimits,
-): Promise<{ delegation: Delegation; expiresAt: number }> {
-  const environment = getSmartAccountsEnvironment(net.chain.id)
-  const account = await toMetaMaskSmartAccount({
+export type ActivationKind = '7702' | 'hybrid'
+
+/** The user's EOA itself, upgraded via 7702 */
+export const eoaSmartAccount = (clients: Clients, address: Address) =>
+  toMetaMaskSmartAccount({
     client: clients.publicClient,
     implementation: Implementation.Stateless7702,
     address,
     signer: { walletClient: clients.walletClient },
   })
+
+/** Counterfactual HybridDeleGator owned by the EOA (same address every time) */
+export async function hybridSmartAccount(clients: Clients, owner: Address) {
+  const account = await toMetaMaskSmartAccount({
+    client: clients.publicClient,
+    implementation: Implementation.Hybrid,
+    deployParams: [owner, [], [], []],
+    deploySalt: '0x',
+    signer: { walletClient: clients.walletClient },
+  })
+  const { factory, factoryData } = await account.getFactoryArgs()
+  if (!factory || !factoryData) {
+    throw new Error('Could not compute the Sofia smart account.')
+  }
+  return { account, factory, factoryData }
+}
+
+/**
+ * Hybrid setup, plain transactions (these wallets can't batch): approve the
+ * proxy on MultiVault, fund the smart account's budget, fund the session gas.
+ */
+export async function fundHybrid(
+  { walletClient, publicClient }: Clients,
+  net: NetworkConfig,
+  smartAccount: Address,
+  sessionKey: Address,
+  budget: bigint,
+  onStep: (label: string) => void,
+) {
+  const send = async (label: string, run: () => Promise<Hex>) => {
+    onStep(label)
+    const hash = await run()
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    if (receipt.status !== 'success') throw new Error(`${label} failed.`)
+  }
+  await send('Confirm 1/3: allow the Sofia proxy to deposit for you', () =>
+    walletClient.writeContract({
+      address: net.multiVault,
+      abi: multiVaultApproveAbi,
+      functionName: 'approve',
+      args: [net.proxy, APPROVAL_DEPOSIT],
+    }),
+  )
+  await send('Confirm 2/3: send your publishing budget', () =>
+    walletClient.sendTransaction({ to: smartAccount, value: budget }),
+  )
+  await send('Confirm 3/3: send the publishing gas', () =>
+    walletClient.sendTransaction({
+      to: sessionKey,
+      value: SESSION_GAS_FUNDING,
+    }),
+  )
+}
+
+/**
+ * Build + sign the scoped delegation (ONE signature, no gas). `delegator` is
+ * the account that executes (EOA for 7702, smart account for hybrid);
+ * `receiver` is always the user's EOA — it receives the shares.
+ */
+export async function signPublishingDelegation(
+  clients: Clients,
+  net: NetworkConfig,
+  delegator: MetaMaskSmartAccount,
+  receiver: Address,
+  sessionKey: Address,
+  limits: DelegationLimits,
+): Promise<{ delegation: Delegation; expiresAt: number }> {
+  const environment = getSmartAccountsEnvironment(net.chain.id)
 
   // Chain clock, not browser clock: Intuition block timestamps can lag local
   // time by minutes, and a period starting "in the future" rejects deposits.
@@ -229,7 +297,7 @@ export async function signPublishingDelegation(
 
   const delegation = createDelegation({
     environment,
-    from: address,
+    from: delegator.address,
     to: sessionKey,
     scope: {
       type: ScopeType.FunctionCall,
@@ -242,7 +310,7 @@ export async function signPublishingDelegation(
       ],
       valueLte: { maxValue: limits.maxPerAction },
       // receiver (1st arg, calldata offset 4) is always the user
-      allowedCalldata: [{ startIndex: 4, value: pad(address, { size: 32 }) }],
+      allowedCalldata: [{ startIndex: 4, value: pad(receiver, { size: 32 }) }],
     },
     caveats: [
       {
@@ -256,31 +324,23 @@ export async function signPublishingDelegation(
     ],
   })
 
-  const signature = await account.signDelegation({ delegation })
+  const signature = await delegator.signDelegation({ delegation })
   return { delegation: { ...delegation, signature }, expiresAt }
 }
 
-/**
- * Pre-flight: eth_call the session key redeeming a small real deposit. Proves
- * signature + caveats work before handing the delegation to the extension.
- * Skipped (returns false) when the wallet can't cover the probe deposit.
- */
-export async function probeDelegation(
+/** Calldata: the session key redeems a small real deposit for `receiver` */
+async function probeRedeemData(
   { publicClient }: Clients,
   net: NetworkConfig,
-  address: Address,
-  sessionKey: Address,
+  receiver: Address,
   delegation: Delegation,
-): Promise<boolean> {
+) {
   const value = await publicClient.readContract({
     address: net.proxy,
     abi: proxyAbi,
     functionName: 'getTotalDepositCost',
     args: [parseEther('0.01')],
   })
-  const balance = await publicClient.getBalance({ address })
-  if (balance < value) return false
-
   const data = contracts.DelegationManager.encode.redeemDelegations({
     delegations: [[delegation]],
     modes: [ExecutionMode.SingleDefault],
@@ -292,17 +352,55 @@ export async function probeDelegation(
           callData: encodeFunctionData({
             abi: proxyAbi,
             functionName: 'deposit',
-            args: [address, net.probeTerm, 1n, 0n],
+            args: [receiver, net.probeTerm, 1n, 0n],
           }),
         },
       ],
     ],
   })
-  await publicClient.call({
-    account: sessionKey,
-    to: getSmartAccountsEnvironment(net.chain.id).DelegationManager,
-    data,
-  })
+  return { value, data }
+}
+
+/**
+ * Pre-flight: simulate the session key redeeming a small real deposit (and,
+ * for a not-yet-deployed hybrid account, deploying it first). Proves
+ * signature + caveats work before handing the delegation to the extension.
+ * Skipped (returns false) when the delegator can't cover the probe deposit.
+ */
+export async function probeDelegation(
+  clients: Clients,
+  net: NetworkConfig,
+  delegatorAddress: Address,
+  receiver: Address,
+  sessionKey: Address,
+  delegation: Delegation,
+  deploy?: { factory: Address; factoryData: Hex },
+): Promise<boolean> {
+  const { publicClient } = clients
+  const { value, data } = await probeRedeemData(
+    clients,
+    net,
+    receiver,
+    delegation,
+  )
+  const balance = await publicClient.getBalance({ address: delegatorAddress })
+  if (balance < value) return false
+
+  const manager = getSmartAccountsEnvironment(net.chain.id).DelegationManager
+  const deployed = !!(await publicClient.getCode({ address: delegatorAddress }))
+  const calls = [
+    ...(deploy && !deployed
+      ? [{ account: sessionKey, to: deploy.factory, data: deploy.factoryData }]
+      : []),
+    { account: sessionKey, to: manager, data },
+  ]
+  const [block] = await publicClient.simulateBlocks({ blocks: [{ calls }] })
+  const failed = block.calls.find((c) => c.status !== 'success')
+  if (failed) {
+    throw new Error(
+      `The permission check failed: ${failed.error?.message ?? 'reverted'}`,
+    )
+  }
   return true
 }
 
@@ -317,15 +415,112 @@ export async function topUpSessionGas(
   await publicClient.waitForTransactionReceipt({ hash })
 }
 
-/** disableDelegation must come from the delegator = the user's account */
-export async function disableDelegationOnChain(
+export async function fundBudget(
   { walletClient, publicClient }: Clients,
-  net: NetworkConfig,
-  delegation: Delegation,
+  smartAccount: Address,
+  amount: bigint,
 ) {
   const hash = await walletClient.sendTransaction({
-    to: getSmartAccountsEnvironment(net.chain.id).DelegationManager,
-    data: contracts.DelegationManager.encode.disableDelegation({ delegation }),
+    to: smartAccount,
+    value: amount,
   })
   await publicClient.waitForTransactionReceipt({ hash })
+}
+
+/** The kit doesn't export ScopeConfig — derive it from createDelegation */
+type DelegationScope = NonNullable<
+  Parameters<typeof createDelegation>[0]['scope']
+>
+
+/**
+ * A HybridDeleGator only executes through the EntryPoint (no bundler here) or
+ * through a delegation. So the owner signs a narrow delegation to ITSELF and
+ * redeems it on the DelegationManager — one signature + one transaction.
+ */
+async function ownerRedeem(
+  clients: Clients,
+  net: NetworkConfig,
+  owner: Address,
+  scope: DelegationScope,
+  call: { target: Address; value: bigint; callData: Hex },
+) {
+  const { account } = await hybridSmartAccount(clients, owner)
+  const environment = getSmartAccountsEnvironment(net.chain.id)
+  const delegation = createDelegation({
+    environment,
+    from: account.address,
+    to: owner,
+    scope,
+    caveats: [{ type: 'redeemer', redeemers: [owner] }],
+  })
+  const signed = {
+    ...delegation,
+    signature: await account.signDelegation({ delegation }),
+  }
+  const hash = await clients.walletClient.sendTransaction({
+    to: environment.DelegationManager,
+    data: contracts.DelegationManager.encode.redeemDelegations({
+      delegations: [[signed]],
+      modes: [ExecutionMode.SingleDefault],
+      executions: [[call]],
+    }),
+  })
+  await clients.publicClient.waitForTransactionReceipt({ hash })
+}
+
+/** Send the whole hybrid budget back to the owner's wallet */
+export async function withdrawBudget(
+  clients: Clients,
+  net: NetworkConfig,
+  owner: Address,
+  smartAccount: Address,
+) {
+  const balance = await clients.publicClient.getBalance({
+    address: smartAccount,
+  })
+  if (balance === 0n) return
+  await ownerRedeem(
+    clients,
+    net,
+    owner,
+    { type: ScopeType.NativeTokenTransferAmount, maxAmount: balance },
+    { target: owner, value: balance, callData: '0x' },
+  )
+}
+
+/**
+ * disableDelegation must come from the delegator: the EOA itself (7702), or
+ * the hybrid smart account through an owner delegation.
+ */
+export async function disableDelegationOnChain(
+  clients: Clients,
+  net: NetworkConfig,
+  owner: Address,
+  delegation: Delegation,
+) {
+  const manager = getSmartAccountsEnvironment(net.chain.id).DelegationManager
+  const callData = contracts.DelegationManager.encode.disableDelegation({
+    delegation,
+  })
+  if (delegation.delegator.toLowerCase() === owner.toLowerCase()) {
+    const hash = await clients.walletClient.sendTransaction({
+      to: manager,
+      data: callData,
+    })
+    await clients.publicClient.waitForTransactionReceipt({ hash })
+    return
+  }
+  await ownerRedeem(
+    clients,
+    net,
+    owner,
+    {
+      type: ScopeType.FunctionCall,
+      targets: [manager],
+      selectors: [
+        'disableDelegation((address,address,bytes32,(address,bytes,bytes)[],uint256,bytes))',
+      ],
+    },
+    { target: manager, value: 0n, callData },
+  )
 }

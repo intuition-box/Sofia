@@ -16,6 +16,7 @@ export {
   sessionStore,
   SESSION_KEY_PREFIX,
   type DelegatedSession,
+  type DelegationKind,
   type PendingSession
 } from "./sessionStore"
 
