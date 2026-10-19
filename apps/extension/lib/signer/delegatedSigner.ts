@@ -16,6 +16,7 @@ import {
   getAddress,
   isAddressEqual,
   parseAbi,
+  parseEther,
   type Abi,
   type Chain
 } from "viem"
@@ -29,6 +30,7 @@ import {
 } from "../config/delegationConfig"
 import {
   buildRedeemArgs,
+  buildRedeemArgsFromContext,
   DelegationManagerAbi,
   deserializeDelegation
 } from "./delegation"
@@ -67,7 +69,120 @@ const toFriendlyError = (error: unknown): Error => {
   return match ? new DelegationError(match[1]) : (error as Error)
 }
 
+/** What a pull leaves on the session key for the next transactions' gas */
+const GAS_BUFFER = parseEther("0.01")
+
+/**
+ * "7715": MetaMask's native-token periodic permission only allows plain TRUST
+ * transfers. So the session key pulls exactly what a write needs (+ a small
+ * gas buffer) from the user's wallet — capped per day by MetaMask — then
+ * sends the write itself with receiver = wallet. The per-action limit is
+ * enforced here.
+ */
+function createPermissionSigner(session: DelegatedSession): TxSigner {
+  const wallet = getAddress(session.wallet)
+  const context = session.permissionContext
+  if (!context) throw new DelegationError("Publishing permission is missing.")
+  const sessionAccount = privateKeyToAccount(session.sessionPrivateKey)
+  const chain = SELECTED_CHAIN as Chain
+  const sessionClient = createWalletClient({
+    account: sessionAccount,
+    chain,
+    transport: buildRpcTransport()
+  })
+  const publicClient = getPublicClient()
+  const maxPerAction = BigInt(session.maxPerAction)
+  const fees = (request: {
+    maxFeePerGas?: bigint
+    maxPriorityFeePerGas?: bigint
+  }) => {
+    const maxFeePerGas: bigint =
+      request.maxFeePerGas ?? BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS
+    const maxPriorityFeePerGas: bigint =
+      request.maxPriorityFeePerGas ?? BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
+    return { maxFeePerGas, maxPriorityFeePerGas }
+  }
+
+  /** Pull TRUST from the wallet to the session key through the permission */
+  const pull = async (amount: bigint) => {
+    const redeem = {
+      address: DELEGATION_MANAGER_ADDRESS,
+      abi: DelegationManagerAbi,
+      functionName: "redeemDelegations",
+      args: buildRedeemArgsFromContext(context, {
+        target: sessionAccount.address,
+        value: amount,
+        callData: "0x"
+      })
+    } as const
+    const estimate = await publicClient.estimateContractGas({
+      ...redeem,
+      account: sessionAccount.address
+    })
+    const hash = await sessionClient.writeContract({
+      ...redeem,
+      chain,
+      account: sessionAccount,
+      gas: (estimate * 130n) / 100n,
+      ...fees({})
+    })
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    if (receipt.status !== "success") {
+      throw new DelegationError("Could not use your publishing permission.")
+    }
+  }
+
+  return {
+    kind: "delegated",
+    // Simulations run as the wallet (it holds the TRUST); the proxy doesn't
+    // check msg.sender — shares go to `receiver`.
+    account: wallet,
+    receiver: wallet,
+    async writeContract(request) {
+      const value = request.value ?? 0n
+      if (value > maxPerAction) {
+        throw new DelegationError(
+          "Amount above your per-action publishing limit."
+        )
+      }
+      const balance = await publicClient.getBalance({
+        address: sessionAccount.address
+      })
+      if (balance < MIN_SESSION_GAS) {
+        throw new DelegationError(
+          `Publishing gas is low (${formatEther(balance)} TRUST) — top it up in Settings.`
+        )
+      }
+      const missing = value + GAS_BUFFER - balance
+      if (missing > 0n) {
+        try {
+          await pull(missing)
+        } catch (error) {
+          throw toFriendlyError(error)
+        }
+      }
+      try {
+        return await sessionClient.writeContract({
+          address: request.address,
+          abi: request.abi,
+          functionName: request.functionName,
+          args: request.args,
+          value,
+          chain,
+          account: sessionAccount,
+          gas: request.gas,
+          ...fees(request)
+        })
+      } catch (error) {
+        throw toFriendlyError(error)
+      }
+    }
+  }
+}
+
 export function createDelegatedSigner(session: DelegatedSession): TxSigner {
+  if (session.kind === "7715") return createPermissionSigner(session)
+
   const wallet = getAddress(session.wallet)
   const isHybrid = session.kind === "hybrid"
   const delegator = getAddress(session.delegator ?? session.wallet)

@@ -25,6 +25,8 @@ import {
   SIMPLE_FACTORY_ADDRESS
 } from "../config/delegationConfig"
 import {
+  decodePermissionContext,
+  serializeDelegation,
   sessionStore,
   type DelegatedSession,
   type DelegationKind,
@@ -57,7 +59,10 @@ export interface DelegationStatus {
 /** Payload posted by the activation page (DELEGATION_GRANTED) */
 export interface DelegationGrant {
   wallet: string
-  delegation: SerializedDelegation
+  /** 7702 / hybrid: the delegation the user signed */
+  delegation?: SerializedDelegation
+  /** 7715: permission context granted by MetaMask (Delegation[], leaf first) */
+  permissionContext?: string
   expiresAt: number
   dailyCap: string
   maxPerAction: string
@@ -270,14 +275,31 @@ class DelegationServiceClass {
     const pending = await sessionStore.getPending()
     if (!pending) throw new Error("No pending activation")
 
-    const { delegation } = grant
     const kind: DelegationKind = grant.kind ?? "7702"
-    const delegator = (grant.delegator ?? pending.wallet) as Address
     const isHybrid = kind === "hybrid"
+    const isPermission = kind === "7715"
+    const delegator = (grant.delegator ?? pending.wallet) as Address
+
+    // 7715: MetaMask's context may hold a chain (leaf first, root last) —
+    // the leaf must target our session key, the root must be the wallet.
+    let delegation: SerializedDelegation
+    let rootDelegator: Address
+    if (isPermission) {
+      if (!grant.permissionContext) throw new Error("Missing permission")
+      const chain = decodePermissionContext(grant.permissionContext as Hex)
+      if (!chain.length) throw new Error("Empty permission")
+      delegation = serializeDelegation(chain[0])
+      rootDelegator = chain[chain.length - 1].delegator
+    } else {
+      if (!grant.delegation) throw new Error("Missing delegation")
+      delegation = grant.delegation
+      rootDelegator = delegation.delegator
+    }
+
     const checks: [boolean, string][] = [
       [isAddressEqual(grant.wallet as Address, pending.wallet), "wallet"],
       [isAddressEqual(delegation.delegate, pending.sessionAddress), "delegate"],
-      [isAddressEqual(delegation.delegator, delegator), "delegator"],
+      [isAddressEqual(rootDelegator, delegator), "delegator"],
       // 7702: the wallet itself delegates. Hybrid: its own smart account,
       // deployed by the known MetaMask factory (owner checked on deploy).
       [
@@ -296,7 +318,10 @@ class DelegationServiceClass {
             grant.deploy.factoryData.length > 2),
         "deploy"
       ],
-      [delegation.authority.toLowerCase() === ROOT_AUTHORITY, "authority"],
+      [
+        isPermission || delegation.authority.toLowerCase() === ROOT_AUTHORITY,
+        "authority"
+      ],
       [delegation.caveats.length > 0, "caveats"],
       [delegation.signature.length > 2, "signature"],
       [
@@ -329,6 +354,9 @@ class DelegationServiceClass {
             factory: grant.deploy!.factory as Address,
             factoryData: grant.deploy!.factoryData as Hex
           }
+        : undefined,
+      permissionContext: isPermission
+        ? (grant.permissionContext as Hex)
         : undefined
     }
     const previous = await sessionStore.get(pending.wallet)

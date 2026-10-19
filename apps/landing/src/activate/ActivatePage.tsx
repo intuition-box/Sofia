@@ -21,6 +21,9 @@ import {
   hybridSmartAccount,
   isUpgraded,
   probeDelegation,
+  probePermission,
+  requestPublishingPermission,
+  supportsPermissions,
   signPublishingDelegation,
   supportsSmartAccount,
   topUpSessionGas,
@@ -69,7 +72,9 @@ function readParams() {
     net: NETWORKS[network] ?? null,
     /** update: current setup, to prefill the form */
     kind:
-      kind === '7702' || kind === 'hybrid' ? (kind as ActivationKind) : null,
+      kind === '7702' || kind === 'hybrid' || kind === '7715'
+        ? (kind as ActivationKind)
+        : null,
     daily: amount('daily'),
     perAction: amount('perAction'),
   }
@@ -154,6 +159,14 @@ export function ActivatePage() {
     ;(async () => {
       try {
         const clients = await getClients(false)
+        // Best path: MetaMask Advanced Permissions (TRUST stays in the wallet)
+        if (await supportsPermissions(clients, params.net!)) {
+          if (!cancelled) {
+            setCanBatch(true)
+            setKind('7715')
+          }
+          return
+        }
         const batch =
           (await isUpgraded(clients, expected, params.net!.chain.id)) ||
           (await supportsSmartAccount(clients, params.net!))
@@ -245,6 +258,27 @@ export function ActivatePage() {
       const limits = readLimits()
       track('Sign your new limits in your wallet')
       const clients = await getClients()
+      if (kind === '7715') {
+        track('Approve the new limits in MetaMask')
+        const permission = await requestPublishingPermission(
+          clients,
+          net,
+          sessionKey,
+          limits.dailyCap,
+        )
+        track('Verifying the permission…')
+        await probePermission(clients, net, sessionKey, permission.context)
+        await sendGrant(
+          {
+            kind: '7715',
+            delegator: wallet,
+            permissionContext: permission.context,
+            expiresAt: permission.expiresAt,
+          },
+          limits,
+        )
+        return
+      }
       if (kind === 'hybrid') {
         const { account, factory, factoryData } = await hybridSmartAccount(
           clients,
@@ -315,7 +349,25 @@ export function ActivatePage() {
       const clients = await getClients()
 
       let grant: Record<string, unknown>
-      if (kind === 'hybrid') {
+      if (kind === '7715') {
+        track('Confirm in your wallet: approval + publishing gas')
+        await upgradeApproveAndFund(clients, net, wallet, sessionKey)
+        track('Approve the publishing permission in MetaMask')
+        const permission = await requestPublishingPermission(
+          clients,
+          net,
+          sessionKey,
+          limits.dailyCap,
+        )
+        track('Verifying the permission…')
+        await probePermission(clients, net, sessionKey, permission.context)
+        grant = {
+          kind: '7715',
+          delegator: wallet,
+          permissionContext: permission.context,
+          expiresAt: permission.expiresAt,
+        }
+      } else if (kind === 'hybrid') {
         const { account, factory, factoryData } = await hybridSmartAccount(
           clients,
           wallet,
@@ -527,10 +579,12 @@ export function ActivatePage() {
             <>
               <p className={styles.subtext}>
                 {params.action === 'update'
-                  ? 'Pick your new limits — one signature, no transaction. Your previous limits stop working right away.'
-                  : kind === '7702'
-                    ? 'One confirmation + one signature, then Sofia publishes for you without wallet popups. Your TRUST stays in your wallet.'
-                    : `${canBatch ? 'One confirmation' : 'Three confirmations'} + one signature: your wallet sends a publishing budget to your own Sofia account, then Sofia publishes from it without popups. Withdraw it any time.`}{' '}
+                  ? 'Pick your new limits — one approval, no transaction. Your previous limits stop working right away.'
+                  : kind === '7715'
+                    ? 'One confirmation, then MetaMask asks you to allow Sofia to use up to your daily limit. TRUST stays in your wallet and only leaves it when you publish — no popups.'
+                    : kind === '7702'
+                      ? 'One confirmation + one signature, then Sofia publishes for you without wallet popups. Your TRUST stays in your wallet.'
+                      : `${canBatch ? 'One confirmation' : 'Three confirmations'} + one signature: your wallet sends a publishing budget to your own Sofia account, then Sofia publishes from it without popups. Withdraw it any time.`}{' '}
                 Positions always land in your wallet, and Sofia can only deposit
                 into them, within these limits, for {DURATION_DAYS} days.
               </p>

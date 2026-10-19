@@ -20,8 +20,12 @@ const PENDING_KEY = "delegated_session_pending"
  * "7702": the user's EOA is the smart account (msg.sender = wallet).
  * "hybrid": a HybridDeleGator owned by the wallet holds a TRUST budget and
  * executes (msg.sender = that account); shares still go to the wallet.
+ * "7715": MetaMask granted a native-token periodic permission (Advanced
+ * Permissions). It only allows plain TRUST transfers, so the session key
+ * pulls what it needs from the wallet, then deposits itself (msg.sender =
+ * session key, receiver = wallet).
  */
-export type DelegationKind = "7702" | "hybrid"
+export type DelegationKind = "7702" | "hybrid" | "7715"
 
 export interface DelegatedSession {
   wallet: Address
@@ -34,6 +38,8 @@ export interface DelegatedSession {
   delegator?: Address
   /** Hybrid only: deploys the smart account on first use */
   deploy?: { factory: Address; factoryData: Hex }
+  /** 7715 only: permission context granted by the wallet */
+  permissionContext?: Hex
   /** unix seconds */
   expiresAt: number
   /** wei, as decimal strings */

@@ -22,12 +22,14 @@ import {
   type Delegation,
   type MetaMaskSmartAccount,
 } from '@metamask/smart-accounts-kit'
+import { erc7715ProviderActions } from '@metamask/smart-accounts-kit/actions'
 import {
   createPublicClient,
   createWalletClient,
   custom,
   defineChain,
   encodeFunctionData,
+  encodePacked,
   http,
   pad,
   parseEther,
@@ -263,12 +265,134 @@ export async function upgradeApproveAndFund(
   )
 }
 
+/**
+ * MetaMask Advanced Permissions (ERC-7715): does the wallet grant a
+ * native-token periodic permission on this chain? (Intuition: yes.)
+ */
+export async function supportsPermissions(
+  { walletClient }: Clients,
+  net: NetworkConfig,
+): Promise<boolean> {
+  try {
+    const supported = await walletClient
+      .extend(erc7715ProviderActions())
+      .getSupportedExecutionPermissions()
+    return (
+      supported['native-token-periodic']?.chainIds.includes(net.chain.id) ??
+      false
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * MetaMask's own permission screen: "Sofia can use up to X TRUST per day".
+ * The permission only allows TRUST transfers to the session key — the
+ * extension pulls what a publication needs, then deposits for the user.
+ * The period starts on the CHAIN clock (it lags wall time by minutes) when
+ * MetaMask accepts it, otherwise at MetaMask's own "now".
+ */
+export async function requestPublishingPermission(
+  clients: Clients,
+  net: NetworkConfig,
+  sessionKey: Address,
+  dailyCap: bigint,
+): Promise<{ context: Hex; delegationManager: Address; expiresAt: number }> {
+  const permissions = clients.walletClient.extend(erc7715ProviderActions())
+  const now = Number((await clients.publicClient.getBlock()).timestamp)
+  const expiresAt = now + DURATION_DAYS * 86400
+  const request = (startTime?: number) =>
+    permissions.requestExecutionPermissions([
+      {
+        chainId: net.chain.id,
+        expiry: expiresAt,
+        to: sessionKey,
+        permission: {
+          type: 'native-token-periodic',
+          isAdjustmentAllowed: true,
+          data: {
+            periodAmount: dailyCap,
+            periodDuration: 86400,
+            startTime,
+            justification: 'Publish on Sofia without wallet popups',
+          },
+        },
+      },
+    ])
+  let granted
+  try {
+    granted = await request(now - 3600)
+  } catch (error) {
+    if (error instanceof Error && /reject|denied|cancel/i.test(error.message)) {
+      throw error
+    }
+    granted = await request()
+  }
+  const [permission] = granted
+  if (!permission?.context) throw new Error('MetaMask granted no permission.')
+  return {
+    context: permission.context,
+    delegationManager: permission.delegationManager,
+    expiresAt,
+  }
+}
+
+/**
+ * Pre-flight: simulate the session key pulling a little TRUST through the
+ * granted permission. A period that hasn't started yet (MetaMask clock vs
+ * chain clock) is not fatal — it opens within minutes.
+ */
+export async function probePermission(
+  { publicClient }: Clients,
+  net: NetworkConfig,
+  sessionKey: Address,
+  context: Hex,
+) {
+  const data = encodeFunctionData({
+    abi: [
+      {
+        type: 'function',
+        name: 'redeemDelegations',
+        inputs: [
+          { name: '_permissionContexts', type: 'bytes[]' },
+          { name: '_modes', type: 'bytes32[]' },
+          { name: '_executionCallDatas', type: 'bytes[]' },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+    ] as const,
+    functionName: 'redeemDelegations',
+    args: [
+      [context],
+      [ExecutionMode.SingleDefault],
+      [
+        encodePacked(
+          ['address', 'uint256', 'bytes'],
+          [sessionKey, parseEther('0.001'), '0x'],
+        ),
+      ],
+    ],
+  })
+  try {
+    await publicClient.call({
+      account: sessionKey,
+      to: getSmartAccountsEnvironment(net.chain.id).DelegationManager,
+      data,
+    })
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('not-started')) return
+    throw error
+  }
+}
+
 export interface DelegationLimits {
   dailyCap: bigint
   maxPerAction: bigint
 }
 
-export type ActivationKind = '7702' | 'hybrid'
+export type ActivationKind = '7702' | 'hybrid' | '7715'
 
 /** The user's EOA itself, upgraded via 7702 */
 export const eoaSmartAccount = (clients: Clients, address: Address) =>

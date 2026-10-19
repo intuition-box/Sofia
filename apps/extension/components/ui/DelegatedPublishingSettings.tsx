@@ -94,7 +94,9 @@ const DelegatedPublishingSettings = () => {
             hint={
               isHybrid
                 ? "Your own Sofia account holds the publishing budget."
-                : "Your wallet is a MetaMask smart account; TRUST stays in it."
+                : status.kind === "7715"
+                  ? "MetaMask permission — TRUST leaves your wallet only when you publish."
+                  : "Your wallet is a MetaMask smart account; TRUST stays in it."
             }
           />
           <SetupRow label="Max per day" value={formatLimit(status.dailyCap)} />

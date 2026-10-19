@@ -6,6 +6,7 @@
  */
 
 import {
+  decodeAbiParameters,
   encodeAbiParameters,
   encodeFunctionData,
   encodePacked,
@@ -104,24 +105,50 @@ export interface DelegatedCall {
   callData: Hex
 }
 
+const DELEGATION_ARRAY = [{ ...DELEGATION_TUPLE, type: "tuple[]" }] as const
+
+/** Permission context = abi-encoded Delegation[] (leaf first) */
+export const encodePermissionContext = (delegation: SignedDelegation): Hex =>
+  encodeAbiParameters(DELEGATION_ARRAY, [[delegation]])
+
+/** Decode a permission context (e.g. one granted by MetaMask via ERC-7715) */
+export function decodePermissionContext(context: Hex): SignedDelegation[] {
+  const [delegations] = decodeAbiParameters(DELEGATION_ARRAY, context)
+  return delegations.map((d) => ({
+    delegate: d.delegate,
+    delegator: d.delegator,
+    authority: d.authority,
+    caveats: d.caveats.map((c) => ({
+      enforcer: c.enforcer,
+      terms: c.terms,
+      args: c.args
+    })),
+    salt: d.salt,
+    signature: d.signature
+  }))
+}
+
 /**
  * redeemDelegations args executing `call` as the delegator, authorised by a
- * single root delegation.
+ * permission context (one delegation, or a chain granted by the wallet).
  */
-export function buildRedeemArgs(
-  delegation: SignedDelegation,
+export function buildRedeemArgsFromContext(
+  permissionContext: Hex,
   call: DelegatedCall
 ): readonly [Hex[], Hex[], Hex[]] {
-  const permissionContext = encodeAbiParameters(
-    [{ ...DELEGATION_TUPLE, type: "tuple[]" }],
-    [[delegation]]
-  )
   const executionCallData = encodePacked(
     ["address", "uint256", "bytes"],
     [call.target, call.value, call.callData]
   )
   return [[permissionContext], [SINGLE_DEFAULT_MODE], [executionCallData]]
 }
+
+/** Same, for a single root delegation */
+export const buildRedeemArgs = (
+  delegation: SignedDelegation,
+  call: DelegatedCall
+): readonly [Hex[], Hex[], Hex[]] =>
+  buildRedeemArgsFromContext(encodePermissionContext(delegation), call)
 
 /** Calldata for DelegationManager.redeemDelegations (see buildRedeemArgs) */
 export const encodeRedeemDelegations = (

@@ -6,6 +6,7 @@ import type { SignerFactory, TxSigner } from "./types"
 
 export type { ContractWrite, SignerFactory, TxSigner } from "./types"
 export {
+  decodePermissionContext,
   serializeDelegation,
   deserializeDelegation,
   type SerializedDelegation,
