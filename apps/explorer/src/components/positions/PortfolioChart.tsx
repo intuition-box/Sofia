@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react'
 import {
   Area,
   AreaChart,
-  Line,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   YAxis,
@@ -65,10 +65,19 @@ export default function PortfolioChart({
   const [range, setRange] = useState<PortfolioRange>('1M')
   const [hover, setHover] = useState<number | null>(null)
 
-  const data = useMemo(() => sliceRange(points, range), [points, range])
+  // Plot the P&L (value − net put in): taking gains out lowers both sides
+  // equally, so an exit doesn't read as a drop.
+  const data = useMemo(
+    () =>
+      sliceRange(points, range).map((p) => ({
+        ...p,
+        pnl: p.value - p.invested,
+      })),
+    [points, range],
+  )
   const perf = useMemo(() => performance(data), [data])
   // Scrubbing: the headline follows the finger / cursor
-  const shown: PortfolioPoint | undefined =
+  const shown: (PortfolioPoint & { pnl: number }) | undefined =
     hover != null ? data[hover] : data[data.length - 1]
   const shownPerf = useMemo(
     () => (hover != null ? performance(data.slice(0, hover + 1)) : perf),
@@ -86,9 +95,12 @@ export default function PortfolioChart({
   if (error || points.length < 2) return null
 
   return (
-    <section className="pf-chart" aria-label="Position value over time">
+    <section className="pf-chart" aria-label="Profit and loss over time">
       <div className="pf-head">
-        <span className="pf-value">{shown ? trust(shown.value) : '—'}</span>
+        <span className="pf-kicker">Total P&amp;L</span>
+        <span className={`pf-value ${shown && shown.pnl < 0 ? 'down' : 'up'}`}>
+          {shown ? signed(shown.pnl) : '—'}
+        </span>
         <span className={`pf-perf ${shownPerf.change >= 0 ? 'up' : 'down'}`}>
           {signed(shownPerf.change)}
           {shownPerf.pct != null &&
@@ -119,24 +131,25 @@ export default function PortfolioChart({
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <YAxis hide domain={['dataMin', 'dataMax']} />
+            <YAxis
+              hide
+              domain={[
+                (min: number) => Math.min(min, 0),
+                (max: number) => Math.max(max, 0),
+              ]}
+            />
             <Tooltip
               content={() => null}
               cursor={{ stroke: 'var(--ds-muted)', strokeDasharray: '3 3' }}
             />
-            <Line
-              type="monotone"
-              dataKey="invested"
-              stroke="var(--ds-muted)"
-              strokeWidth={1}
+            <ReferenceLine
+              y={0}
+              stroke="var(--ds-border)"
               strokeDasharray="4 4"
-              dot={false}
-              activeDot={false}
-              isAnimationActive={false}
             />
             <Area
               type="monotone"
-              dataKey="value"
+              dataKey="pnl"
               stroke={color}
               strokeWidth={2.5}
               fill="url(#pf-fill)"
@@ -165,9 +178,11 @@ export default function PortfolioChart({
             </button>
           ))}
         </div>
-        <span className="pf-legend">
-          <span className="pf-legend-dash" aria-hidden /> Net put in
-        </span>
+        {shown && (
+          <span className="pf-legend">
+            Value {trust(shown.value)} · Put in {trust(shown.invested)}
+          </span>
+        )}
       </div>
     </section>
   )

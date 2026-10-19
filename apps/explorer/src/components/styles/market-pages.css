@@ -776,9 +776,19 @@
   font-size: 11px;
   color: var(--ds-muted);
 }
-.pf-legend-dash {
-  width: 16px;
-  border-top: 1px dashed var(--ds-muted);
+
+.pf-kicker {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.pf-value.up {
+  color: #22c55e;
+}
+.pf-value.down {
+  color: #ef4444;
 }
 @media (max-width: 640px) {
   .pf-chart {
