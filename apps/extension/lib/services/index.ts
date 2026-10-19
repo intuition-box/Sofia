@@ -8,7 +8,7 @@ export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
 export { certificationService } from './CertificationService'
-export type { ContextTripleItem, ObjectAtomData, QuickPublishTarget, SubmitCartResult } from './CertificationService'
+export type { ContextTripleItem, ObjectAtomData, QuickPublishResult, QuickPublishTarget, SubmitCartResult } from './CertificationService'
 export { delegationService } from './DelegationService'
 export type { DelegationGrant, DelegationState, DelegationStatus } from './DelegationService'
 

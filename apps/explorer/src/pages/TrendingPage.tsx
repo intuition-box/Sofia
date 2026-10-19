@@ -18,6 +18,7 @@ import { TrendingUp, Users } from 'lucide-react'
 import { useTrendingPages } from '@/hooks/useTrendingPages'
 import { useCart } from '@/hooks/useCart'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
+import MissionsPanel from '@/components/trending/MissionsPanel'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -241,6 +242,8 @@ export default function TrendingPage() {
         title={pc.title}
         description={pc.subtitle}
       />
+
+      <MissionsPanel walletAddress={user?.wallet?.address} />
 
       <div className="pm-filters">
         <div className="pm-filter-group">

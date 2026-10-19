@@ -69,6 +69,11 @@ export interface QuickPublishTarget {
   predicateName: string
 }
 
+export interface QuickPublishResult extends DepositResult {
+  /** Object atom (the page) the claim points to */
+  objectId?: string
+}
+
 export interface SubmitCartResult {
   /** null when the cart was refused before any transaction */
   batchResult: BatchTripleResult | null
@@ -471,7 +476,7 @@ class CertificationServiceClass {
     wallet: string,
     target: QuickPublishTarget,
     weight: bigint
-  ): Promise<DepositResult> {
+  ): Promise<QuickPublishResult> {
     try {
       const { label } = normalizeUrl(target.url)
       // Same object atom shape as cartService.toBatchInputs → same atom
@@ -493,7 +498,11 @@ class CertificationServiceClass {
       const txHash = result.results[0]?.txHash as Hash | undefined
       txEventBus.emit("certification", txHash)
       txEventBus.relayToUi("certification", txHash)
-      return { success: true, txHash }
+      return {
+        success: true,
+        txHash,
+        objectId: result.results[0]?.objectVaultId
+      }
     } catch (error) {
       logger.error("publishNow failed", error)
       return {

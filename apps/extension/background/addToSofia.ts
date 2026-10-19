@@ -8,6 +8,9 @@
 // PRO (later): the prototype brokered circle-pro-api calls here (CIRCLE_PRO_LOAD
 // / CIRCLE_PRO_SHARE → workspace bookmarks). That broker is kept commented at the
 // bottom so the Pro version can revive it.
+import { computeDailyMissions, type MissionPosition } from "@0xsofia/quests"
+import { getAddress } from "viem"
+
 import type {
   AddToCartMessage,
   AddToCartResponse,
@@ -16,6 +19,7 @@ import type {
   SearchAtomsResponse
 } from "../lib/addToSofia/types"
 import {
+  GetUserMarketPositionsDocument,
   intuitionGraphqlClient,
   SearchUrlAtomsDocument
 } from "../lib/clients/graphql-client"
@@ -165,6 +169,54 @@ async function withKeepAlive<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * Trend Hunter "Express 3 interests" progress for the toast (best effort,
+ * never blocks the publish). The just-published page is added locally in
+ * case the indexer hasn't seen it yet.
+ */
+async function dailyMissionLabel(
+  wallet: string,
+  publishedObjectId?: string
+): Promise<string> {
+  try {
+    const addresses = [wallet.toLowerCase(), getAddress(wallet)]
+    const data = await intuitionGraphqlClient.request(
+      GetUserMarketPositionsDocument,
+      { addresses, limit: 100, offset: 0 }
+    )
+    const positions: MissionPosition[] = []
+    for (const row of data?.positions ?? []) {
+      const triple = row.term?.triple
+      if (!triple?.object?.term_id) continue
+      positions.push({
+        claimTermId: triple.term_id,
+        pageKey: triple.object.term_id,
+        createdAt: Date.parse(row.created_at),
+        deposit: BigInt(row.total_deposit_assets_after_total_fees ?? "0")
+      })
+    }
+    if (publishedObjectId) {
+      positions.push({
+        claimTermId: "just-published",
+        pageKey: publishedObjectId,
+        createdAt: Date.now(),
+        deposit: QUICK_PUBLISH_WEIGHT
+      })
+    }
+    const [express] = computeDailyMissions({
+      positions,
+      trendingKeys: new Set(),
+      pioneerClaimIds: new Set()
+    })
+    return express.done
+      ? " · Daily mission ✓"
+      : ` · Mission ${express.progress}/${express.target}`
+  } catch (error) {
+    logger.warn("Mission progress unavailable", error)
+    return ""
+  }
+}
+
 const inFlight = new Set<string>()
 
 /**
@@ -224,11 +276,12 @@ async function handleQuickPublish(
       )
     )
     if (result.success) {
+      const mission = await dailyMissionLabel(wallet, result.objectId)
       toast(
         tabId,
         toastId,
         "success",
-        `Published · ${entry.label} · ${QUICK_PUBLISH_LABEL}`,
+        `Published · ${entry.label} · ${QUICK_PUBLISH_LABEL}${mission}`,
         { href: getProfileUrl(), label: "View" }
       )
     } else {
