@@ -35,6 +35,10 @@ export const REFRESH_INTERVAL = 120_000 // 2 min
 export const INDEX_START_BLOCK = 2379165n
 
 // ── Beta Season Pool vault ──
+/** MetaMask Delegation Framework (extension "publish without popup") */
+export const DELEGATION_MANAGER_ADDRESS =
+  '0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3' as const
+
 export const SEASON_POOL_TERM_ID =
   '0xd1315af387fa4148375918e4917466d2ba36c49d07c547c9e04c881b76437d10'
 export const SEASON_POOL_CURVE_ID = 1
