@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    // DOM alongside bun so the shared `@0xsofia/graphql` package (fetch /
+    // Headers / RequestInit typings) type-checks when imported as raw source.
+    "lib": ["ES2022", "DOM"],
+    "types": ["bun"],
+    "strict": true,
+    "noImplicitAny": true,
+    // noUnusedLocals/Parameters left OFF: this service imports workspace
+    // packages as raw .ts, and enabling them would flag tolerated dead code in
+    // those shared packages (checked under their own, looser configs), not our
+    // code.
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

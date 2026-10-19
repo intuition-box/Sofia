@@ -1,0 +1,39 @@
+// reputation-api — Prisma schema
+//
+// A single table: the precomputed reputation-leaderboard snapshot. The
+// `computeLeaderboard` job (cron-triggered) writes it in bulk; `GET /leaderboard`
+// reads it raw (zero scoring on the read path). Kept in its own service/DB so
+// the reputation domain stays decoupled from group membership (group-api).
+
+generator client {
+  provider      = "prisma-client-js"
+  // `native` for local dev, musl target for the alpine Docker runtime.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// One row per (wallet, topicId). The synthetic topicId `__overall__` holds the
+/// sum-of-topics ranking surfaced on the Explore page; real topic slugs (added
+/// in a later phase) back the per-topic leaderboards. The whole batch shares one
+/// `computedAt` so the read path can report a single "updated X ago".
+model ReputationSnapshot {
+  id         String   @id @default(cuid())
+  /// Lowercased EIP-55 wallet address.
+  wallet     String
+  /// Real topic slug, or the synthetic `__overall__` bucket for the total.
+  topicId    String
+  /// Reputation score for this bucket (Σ A+B across topics for `__overall__`).
+  /// Float — scores are unbounded and non-integer after the multipliers.
+  score      Float
+  /// 1-based rank within the bucket, ordered by score desc at compute time.
+  rank       Int
+  /// When this row was computed (whole batch shares one timestamp).
+  computedAt DateTime @default(now())
+
+  @@unique([wallet, topicId])
+  @@index([topicId, rank])
+}
