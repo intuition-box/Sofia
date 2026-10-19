@@ -828,8 +828,19 @@
     rgba(252, 211, 77, 0.35),
     transparent 65%
   );
-  animation: sp-glow 4s ease-in-out infinite;
+  animation: th-glow 4s ease-in-out infinite;
   z-index: -1;
+}
+@keyframes th-glow {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
 }
 .th-hero-top {
   display: flex;
@@ -1055,5 +1066,139 @@
   }
   .th-row-calls {
     display: none;
+  }
+}
+
+/* ── Trend Hunter hero on /trending (missions) ─────────────────── */
+.th-hunt {
+  margin: 0 0 20px;
+}
+.th-hunt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+.th-rank-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(252, 211, 77, 0.35);
+  color: #f5f3ff;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.th-rank-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.th-rank-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  color: #fcd34d;
+}
+.th-missions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.th-mission {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+.th-mission.is-done {
+  border-color: rgba(34, 197, 94, 0.6);
+  background: rgba(34, 197, 94, 0.12);
+}
+.th-mission-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.th-mission-period {
+  font-family: var(--ds-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 255, 0.55);
+}
+.th-mission-count {
+  display: inline-flex;
+  font-family: var(--ds-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #f5f3ff;
+}
+.th-mission.is-done .th-mission-count {
+  color: #22c55e;
+}
+.th-mission-title {
+  font-family: var(--ds-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #f5f3ff;
+}
+.th-mission-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(245, 243, 255, 0.65);
+}
+.th-mission-bar {
+  height: 4px;
+  margin-top: auto;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.th-mission-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f59e0b, #fcd34d);
+  transition: width 0.4s ease;
+}
+.th-mission.is-done .th-mission-bar > span {
+  background: #22c55e;
+}
+.th-mission-loading {
+  margin-top: 20px;
+  font-family: var(--ds-font-mono);
+  font-size: 12px;
+  color: rgba(245, 243, 255, 0.6);
+}
+.th-connect {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: #fcd34d;
+  color: #1a1238;
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .th-hunt-head {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
