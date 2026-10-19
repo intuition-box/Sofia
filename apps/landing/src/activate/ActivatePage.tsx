@@ -102,6 +102,8 @@ export function ActivatePage() {
   const [step, setStep] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [kind, setKind] = useState<ActivationKind | null>(params.kind)
+  // Wallet can batch calls (EIP-5792) → one confirmation instead of three
+  const [canBatch, setCanBatch] = useState(false)
   const [dailyCap, setDailyCap] = useState(params.daily ?? DEFAULT_DAILY_CAP)
   const [maxPerAction, setMaxPerAction] = useState(
     params.perAction ?? DEFAULT_MAX_PER_ACTION,
@@ -110,6 +112,12 @@ export function ActivatePage() {
   // Same guard as AuthPage: Privy mutating `wallets` mid-flow must never
   // re-trigger a wallet popup.
   const busy = useRef(false)
+  // Last step shown — prefixed to errors so we know where a flow broke
+  const stepRef = useRef('')
+  const track = useCallback((label: string) => {
+    stepRef.current = label
+    setStep(label)
+  }, [])
 
   const expected = params.wallet
   const wrongWallet =
@@ -133,8 +141,12 @@ export function ActivatePage() {
     [wallets, expected, params.net],
   )
 
-  // Pick the path once the right wallet is connected: 7702 when the wallet
-  // can upgrade (MetaMask), otherwise a Sofia smart account with a budget.
+  // Activation always uses the user's own Sofia smart account (hybrid):
+  // MetaMask refuses to let a website sign a delegation whose delegator is
+  // one of its own accounts ("External signature requests cannot sign
+  // delegations for internal accounts"), which rules out the 7702 path until
+  // MetaMask offers ERC-7715 permissions on Intuition. Wallets that can batch
+  // calls (MetaMask) fund it in one confirmation.
   useEffect(() => {
     if (params.action !== 'activate' || !isConnected || wrongWallet) return
     if (!expected || !params.net || kind) return
@@ -142,10 +154,13 @@ export function ActivatePage() {
     ;(async () => {
       try {
         const clients = await getClients(false)
-        const can7702 =
+        const batch =
           (await isUpgraded(clients, expected, params.net!.chain.id)) ||
           (await supportsSmartAccount(clients, params.net!))
-        if (!cancelled) setKind(can7702 ? '7702' : 'hybrid')
+        if (!cancelled) {
+          setCanBatch(batch)
+          setKind('hybrid')
+        }
       } catch {
         if (!cancelled) setKind('hybrid')
       }
@@ -168,11 +183,14 @@ export function ActivatePage() {
     busy.current = true
     setError(null)
     setPhase('working')
+    stepRef.current = ''
     try {
       await flow()
       setPhase('done')
     } catch (err) {
-      setError(err instanceof Error ? err.message.split('\n')[0] : String(err))
+      const message =
+        err instanceof Error ? err.message.split('\n')[0] : String(err)
+      setError(stepRef.current ? `${stepRef.current} → ${message}` : message)
       setPhase('error')
     } finally {
       busy.current = false
@@ -195,7 +213,7 @@ export function ActivatePage() {
     limits: { dailyCap: bigint; maxPerAction: bigint },
   ) => {
     const net = params.net!
-    setStep('Sending the permission to Sofia…')
+    track('Sending the permission to Sofia…')
     const res = await sendToExtensionAsync(
       {
         type: 'DELEGATION_GRANTED',
@@ -225,7 +243,7 @@ export function ActivatePage() {
       const wallet = expected as Address
       const sessionKey = params.sessionKey as Address
       const limits = readLimits()
-      setStep('Sign your new limits in your wallet')
+      track('Sign your new limits in your wallet')
       const clients = await getClients()
       if (kind === 'hybrid') {
         const { account, factory, factoryData } = await hybridSmartAccount(
@@ -240,7 +258,7 @@ export function ActivatePage() {
           sessionKey,
           limits,
         )
-        setStep('Verifying the permission…')
+        track('Verifying the permission…')
         await probeDelegation(
           clients,
           net,
@@ -270,7 +288,7 @@ export function ActivatePage() {
           sessionKey,
           limits,
         )
-        setStep('Verifying the permission…')
+        track('Verifying the permission…')
         await probeDelegation(
           clients,
           net,
@@ -293,7 +311,7 @@ export function ActivatePage() {
       const sessionKey = params.sessionKey as Address
       const limits = readLimits()
 
-      setStep('Checking your wallet…')
+      track('Checking your wallet…')
       const clients = await getClients()
 
       let grant: Record<string, unknown>
@@ -308,9 +326,10 @@ export function ActivatePage() {
           account.address,
           sessionKey,
           toWei(budget, 'the budget'),
-          setStep,
+          track,
+          canBatch,
         )
-        setStep('Sign the publishing permission in your wallet')
+        track('Sign the publishing permission in your wallet')
         const { delegation, expiresAt } = await signPublishingDelegation(
           clients,
           net,
@@ -319,7 +338,7 @@ export function ActivatePage() {
           sessionKey,
           limits,
         )
-        setStep('Verifying the permission…')
+        track('Verifying the permission…')
         await probeDelegation(
           clients,
           net,
@@ -337,16 +356,16 @@ export function ActivatePage() {
           expiresAt,
         }
       } else {
-        setStep(
+        track(
           'Confirm in your wallet: smart account + approval + publishing gas',
         )
-        await upgradeApproveAndFund(clients, net, sessionKey)
+        await upgradeApproveAndFund(clients, net, wallet, sessionKey)
         if (!(await isUpgraded(clients, wallet, net.chain.id))) {
           throw new Error(
             'Your account was not upgraded to a smart account. Accept the upgrade in MetaMask and retry.',
           )
         }
-        setStep('Sign the publishing permission in your wallet')
+        track('Sign the publishing permission in your wallet')
         const account = await eoaSmartAccount(clients, wallet)
         const { delegation, expiresAt } = await signPublishingDelegation(
           clients,
@@ -356,7 +375,7 @@ export function ActivatePage() {
           sessionKey,
           limits,
         )
-        setStep('Verifying the permission…')
+        track('Verifying the permission…')
         await probeDelegation(
           clients,
           net,
@@ -373,13 +392,13 @@ export function ActivatePage() {
 
   const topUp = () =>
     run(async () => {
-      setStep('Confirm the transfer in your wallet')
+      track('Confirm the transfer in your wallet')
       await topUpSessionGas(await getClients(), params.sessionKey as Address)
     })
 
   const fund = () =>
     run(async () => {
-      setStep('Confirm the transfer in your wallet')
+      track('Confirm the transfer in your wallet')
       await fundBudget(
         await getClients(),
         params.account as Address,
@@ -389,7 +408,7 @@ export function ActivatePage() {
 
   const withdraw = () =>
     run(async () => {
-      setStep('Sign, then confirm the withdrawal in your wallet')
+      track('Sign, then confirm the withdrawal in your wallet')
       await withdrawBudget(
         await getClients(),
         params.net!,
@@ -400,7 +419,7 @@ export function ActivatePage() {
 
   const revoke = () =>
     run(async () => {
-      setStep('Fetching the permission from Sofia…')
+      track('Fetching the permission from Sofia…')
       const res = await sendToExtensionAsync<{
         success: boolean
         delegation: Delegation | null
@@ -409,7 +428,7 @@ export function ActivatePage() {
         params.extensionId,
       )
       if (res.delegation) {
-        setStep('Confirm in your wallet to disable the permission on-chain')
+        track('Confirm in your wallet to disable the permission on-chain')
         await disableDelegationOnChain(
           await getClients(),
           params.net!,
@@ -511,7 +530,7 @@ export function ActivatePage() {
                   ? 'Pick your new limits — one signature, no transaction. Your previous limits stop working right away.'
                   : kind === '7702'
                     ? 'One confirmation + one signature, then Sofia publishes for you without wallet popups. Your TRUST stays in your wallet.'
-                    : 'Your wallet sends a publishing budget to your own Sofia account (3 confirmations), then one signature. Sofia publishes from that budget without popups; you can withdraw it any time.'}{' '}
+                    : `${canBatch ? 'One confirmation' : 'Three confirmations'} + one signature: your wallet sends a publishing budget to your own Sofia account, then Sofia publishes from it without popups. Withdraw it any time.`}{' '}
                 Positions always land in your wallet, and Sofia can only deposit
                 into them, within these limits, for {DURATION_DAYS} days.
               </p>

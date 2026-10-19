@@ -177,33 +177,90 @@ export async function isUpgraded(
   return code?.toLowerCase() === `0xef0100${impl.slice(2)}`.toLowerCase()
 }
 
+/** Poll an on-chain condition (every 2s) until true or timeout */
+async function waitOnChain(
+  check: () => Promise<boolean>,
+  timeoutMs: number,
+): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (await check().catch(() => false)) return true
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+  }
+  return false
+}
+
+type BatchCall = { to: Address; data?: Hex; value?: bigint }
+
+/**
+ * One wallet confirmation for several calls (EIP-5792 atomic batch).
+ * MetaMask can answer wallet_sendCalls / wallet_getCallsStatus with an
+ * "internal error" on Intuition even though the batch went through, so the
+ * outcome is confirmed on-chain with `confirmed`.
+ */
+async function sendBatch(
+  { walletClient }: Clients,
+  calls: BatchCall[],
+  confirmed: () => Promise<boolean>,
+) {
+  let id: string | undefined
+  let sendError: unknown
+  try {
+    ;({ id } = await walletClient.sendCalls({ forceAtomic: true, calls }))
+  } catch (error) {
+    sendError = error
+  }
+
+  if (id) {
+    try {
+      const result = await walletClient.waitForCallsStatus({
+        id,
+        timeout: 180_000,
+      })
+      if (result.status === 'success') return
+      if (result.status === 'failure') {
+        throw new Error('The transaction failed in your wallet.')
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('failed in your'))
+        throw error
+      // Status unsupported by the wallet on this chain → check on-chain below
+    }
+  }
+
+  if (await waitOnChain(confirmed, sendError ? 60_000 : 180_000)) return
+  throw sendError instanceof Error
+    ? sendError
+    : new Error('The transaction was not confirmed.')
+}
+
+const approveCall = (net: NetworkConfig): BatchCall => ({
+  to: net.multiVault,
+  data: encodeFunctionData({
+    abi: multiVaultApproveAbi,
+    functionName: 'approve',
+    args: [net.proxy, APPROVAL_DEPOSIT],
+  }),
+})
+
 /**
  * ONE confirmation: approve the proxy on MultiVault + fund the session key's
  * gas, as an atomic batch — MetaMask offers the smart-account upgrade here.
  */
 export async function upgradeApproveAndFund(
-  { walletClient }: Clients,
+  clients: Clients,
   net: NetworkConfig,
+  wallet: Address,
   sessionKey: Address,
 ) {
-  const { id } = await walletClient.sendCalls({
-    forceAtomic: true,
-    calls: [
-      {
-        to: net.multiVault,
-        data: encodeFunctionData({
-          abi: multiVaultApproveAbi,
-          functionName: 'approve',
-          args: [net.proxy, APPROVAL_DEPOSIT],
-        }),
-      },
-      { to: sessionKey, value: SESSION_GAS_FUNDING },
-    ],
-  })
-  const result = await walletClient.waitForCallsStatus({ id, timeout: 180_000 })
-  if (result.status !== 'success') {
-    throw new Error('The activation transaction failed in your wallet.')
-  }
+  await sendBatch(
+    clients,
+    [approveCall(net), { to: sessionKey, value: SESSION_GAS_FUNDING }],
+    async () =>
+      (await isUpgraded(clients, wallet, net.chain.id)) &&
+      (await clients.publicClient.getBalance({ address: sessionKey })) >=
+        SESSION_GAS_FUNDING,
+  )
 }
 
 export interface DelegationLimits {
@@ -239,17 +296,42 @@ export async function hybridSmartAccount(clients: Clients, owner: Address) {
 }
 
 /**
- * Hybrid setup, plain transactions (these wallets can't batch): approve the
- * proxy on MultiVault, fund the smart account's budget, fund the session gas.
+ * Hybrid setup: approve the proxy on MultiVault, fund the smart account's
+ * budget, fund the session gas. One confirmation when the wallet can batch
+ * (MetaMask), otherwise three plain transactions.
  */
 export async function fundHybrid(
-  { walletClient, publicClient }: Clients,
+  clients: Clients,
   net: NetworkConfig,
   smartAccount: Address,
   sessionKey: Address,
   budget: bigint,
   onStep: (label: string) => void,
+  batch: boolean,
 ) {
+  const { walletClient, publicClient } = clients
+  if (batch) {
+    onStep('Confirm in your wallet: approval + publishing budget + gas')
+    const budgetBefore = await publicClient.getBalance({
+      address: smartAccount,
+    })
+    const gasBefore = await publicClient.getBalance({ address: sessionKey })
+    await sendBatch(
+      clients,
+      [
+        approveCall(net),
+        { to: smartAccount, value: budget },
+        { to: sessionKey, value: SESSION_GAS_FUNDING },
+      ],
+      async () =>
+        (await publicClient.getBalance({ address: smartAccount })) >=
+          budgetBefore + budget &&
+        (await publicClient.getBalance({ address: sessionKey })) >=
+          gasBefore + SESSION_GAS_FUNDING,
+    )
+    return
+  }
+
   const send = async (label: string, run: () => Promise<Hex>) => {
     onStep(label)
     const hash = await run()
