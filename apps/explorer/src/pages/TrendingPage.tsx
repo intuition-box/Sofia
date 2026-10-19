@@ -31,7 +31,6 @@ import { getAvatarUrl } from '@/services/ensService'
 import {
   TRENDING_WINDOWS,
   type ClaimSource,
-  type TrendingClaimSummary,
   type TrendingPage as TrendingPageItem,
   type TrendingWindow,
 } from '@/services/trendingPagesService'
@@ -59,16 +58,8 @@ const SOURCE_TEXT: Record<ClaimSource, string> = {
   ecosystem: 'Intuition ecosystem',
 }
 
-/** How many claims a card lists before "+N more". */
-const VISIBLE_CLAIMS = 3
-
 function sourcesText(sources: readonly ClaimSource[]): string {
   return sources.map((s) => SOURCE_TEXT[s]).join(' + ')
-}
-
-function claimText(claim: TrendingClaimSummary): string {
-  const subject = claim.subjectLabel || '…'
-  return `${subject} · ${claimMeta(claim.predicateLabel).label}`
 }
 
 interface TrendingRowProps {
@@ -173,24 +164,6 @@ function TrendingRow({
                 </li>
               )
             })}
-          </ul>
-        )}
-        {page.claims.length > 0 && (
-          <ul className="mk-claims" aria-label="Claims behind this page">
-            {page.claims.slice(0, VISIBLE_CLAIMS).map((c) => (
-              <li
-                key={c.termId}
-                className={`mk-claim mk-claim--${c.source}`}
-                title={`${SOURCE_TEXT[c.source]} · ${c.supporters} supporter${c.supporters === 1 ? '' : 's'} · ${formatTrust(BigInt(c.staked))}`}
-              >
-                {claimText(c)}
-              </li>
-            ))}
-            {page.claims.length > VISIBLE_CLAIMS && (
-              <li className="mk-claim mk-claim--more">
-                +{page.claims.length - VISIBLE_CLAIMS} more
-              </li>
-            )}
           </ul>
         )}
       </div>
