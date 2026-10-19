@@ -37,3 +37,49 @@ model ReputationSnapshot {
   @@unique([wallet, topicId])
   @@index([topicId, rank])
 }
+
+/// Trend Hunter monthly ranking (docs/plans/TREND_HUNTER_SPEC.md §4, §6).
+/// Unlike ReputationSnapshot, history is KEPT: one row per (month, wallet),
+/// the current month is rewritten on each run, past months stay frozen.
+model TrendHunterMonth {
+  id         String   @id @default(cuid())
+  /// "YYYY-MM" (UTC).
+  month      String
+  /// Lowercased wallet address.
+  wallet     String
+  /// Σ credibility of the accounts that positioned after the wallet on a
+  /// claim where it was among the first 3, within the month.
+  flair      Float
+  /// 1-based rank within the month, by flair desc.
+  rank       Int
+  /// Claims "called" this month (≥ 5 credible followers after the wallet).
+  calls      Int
+  computedAt DateTime @default(now())
+
+  @@unique([month, wallet])
+  @@index([month, rank])
+  @@index([wallet])
+}
+
+/// The month's best early calls — "Spotted by @x, N days before the next 5".
+model EarlySignal {
+  id         String   @id @default(cuid())
+  month      String
+  /// Triple term_id of the claim.
+  claimId    String
+  /// The spotter (first position on the claim), lowercased.
+  wallet     String
+  /// Days between the spotter's position and the 5th credible follower's.
+  leadDays   Int
+  /// Credible followers (credibility > 0) who positioned this month.
+  followers  Int
+  /// 1-based rank within the month.
+  rank       Int
+  /// Object atom of the claim, for display (label + URL when known).
+  pageLabel  String?
+  pageUrl    String?
+  computedAt DateTime @default(now())
+
+  @@unique([month, claimId])
+  @@index([month, rank])
+}

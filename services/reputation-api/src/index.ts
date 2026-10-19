@@ -6,6 +6,7 @@ import { HTTPException } from 'hono/http-exception'
 import { env } from './env'
 import { ensureGraphqlConfigured } from './graphql'
 import { leaderboard } from './routes/leaderboard'
+import { trendHunters } from './routes/trendHunters'
 
 // Point the shared GraphQL client at the indexer once, at boot.
 ensureGraphqlConfigured()
@@ -26,6 +27,7 @@ app.get('/health', (c) => c.text('ok'))
 
 // Public read + token-guarded compute (no user auth — reputation is public).
 app.route('/', leaderboard)
+app.route('/', trendHunters)
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
