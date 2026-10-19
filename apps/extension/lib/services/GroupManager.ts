@@ -5,7 +5,7 @@
  */
 
 import { IntentionGroupsService } from '../database/indexedDB-methods'
-import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '~types/database'
+import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 import { createServiceLogger } from '../utils/logger'
 import { calculateDominantCertification } from '../utils/certificationHelpers'
@@ -248,40 +248,6 @@ class GroupManagerService {
       removedUrls: group.urls.filter(u => u.removed).length,
       certificationBreakdown: this.getCertificationBreakdown(group)
     }
-  }
-
-  /**
-   * Update group after level up
-   */
-  async updateAfterLevelUp(
-    groupId: string,
-    newLevel: number,
-    newPredicate: string,
-    reason: string,
-    xpSpent: number
-  ): Promise<boolean> {
-    const group = await IntentionGroupsService.getGroup(groupId)
-    if (!group) return false
-
-    const change: PredicateChangeRecord = {
-      fromPredicate: group.currentPredicate,
-      toPredicate: newPredicate,
-      fromLevel: group.level,
-      toLevel: newLevel,
-      changedAt: Date.now(),
-      xpSpent,
-      reason
-    }
-
-    group.level = newLevel
-    group.currentPredicate = newPredicate
-    group.predicateHistory.push(change)
-    group.updatedAt = Date.now()
-
-    await IntentionGroupsService.saveGroup(group)
-    logger.info('Level up', { groupId, newLevel, newPredicate })
-
-    return true
   }
 
   /**

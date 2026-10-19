@@ -35,15 +35,10 @@ import {
   // Sofia-specific (Phase 3.A)
   deriveTrustCircle,
   deriveFollowing,
-  deriveDailyStreak,
   deriveVerifiedOAuthPlatforms,
   deriveIntentionGroups,
   realtimeKeys
 } from "./derivations"
-import {
-  DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_VOTE_ATOM_ID
-} from "~/lib/config/chainConfig"
 import {
   markConnecting,
   markConnected,
@@ -58,18 +53,13 @@ import {
  * positions and this one sits below the cap (1 TRUST stake on a daily atom
  * is trivially buried under certification triples with larger shares).
  *
- * Contents:
- * - DAILY_CERTIFICATION_ATOM_ID → powers deriveDailyStreak.certifiedToday
- * - DAILY_VOTE_ATOM_ID → powers deriveDailyStreak.votedToday
+ * Contents: none today (the daily-streak atoms left with the quest system).
  *
  * Future candidates (require dynamic resolution, not hardcoded):
  * - The user's Account atom term_id → drives followers count (requires an
  *   initial HTTP fetch via findAccountAtom(walletAddress) at connect time)
  */
-const TRACKED_TERM_IDS: string[] = [
-  DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_VOTE_ATOM_ID
-]
+const TRACKED_TERM_IDS: string[] = []
 
 const toQueryString = (doc: unknown): string => {
   if (typeof doc === "string") return doc
@@ -247,10 +237,6 @@ export class SubscriptionManager {
       qc.setQueryData(
         realtimeKeys.following(wallet),
         deriveFollowing(positions)
-      )
-      qc.setQueryData(
-        realtimeKeys.dailyStreak(wallet),
-        deriveDailyStreak(positions)
       )
       qc.setQueryData(
         realtimeKeys.verifiedOAuthPlatforms(wallet),

@@ -31,9 +31,7 @@ import { normalizeUrl } from "../utils/normalizeUrl"
 import { atomService } from "./AtomService"
 import { BlockchainService } from "./blockchainService"
 import { cartService } from "./CartService"
-import { goldService } from "./GoldService"
 import { platformPoolService } from "./PlatformPoolService"
-import { questTrackingService } from "./QuestTrackingService"
 import { tripleService, type ResolvedTriple } from "./TripleService"
 import { txEventBus } from "./TxEventBus"
 
@@ -492,7 +490,6 @@ class CertificationServiceClass {
       if (!result.success) {
         return { success: false, error: result.error ?? "Publish failed" }
       }
-      questTrackingService.recordCertificationActivity()
       const txHash = result.results[0]?.txHash as Hash | undefined
       txEventBus.emit("certification", txHash)
       txEventBus.relayToUi("certification", txHash)
@@ -596,14 +593,6 @@ class CertificationServiceClass {
         continue
       }
       votesSucceeded++
-      // Track vote for Gold
-      try {
-        await questTrackingService.recordVoteActivity()
-        const dailyCount = await questTrackingService.getDailyVoteCount()
-        await goldService.addVoteGold(wallet, dailyCount)
-      } catch {
-        // Non-critical
-      }
     }
     return votesSucceeded
   }
@@ -702,9 +691,6 @@ class CertificationServiceClass {
           }
         }
 
-        for (let i = 0; i < certItems.length; i++) {
-          questTrackingService.recordCertificationActivity()
-        }
         // URLs are now validated on-chain — empty the cart immediately
         // (incl. items that were already in the cart before this run).
         // The reward screen renders from its own snapshot, so this is safe.

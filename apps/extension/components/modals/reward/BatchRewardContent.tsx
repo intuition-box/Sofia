@@ -4,12 +4,12 @@
  * Inner content of the post-tx reward experience.
  * Renders inside the same surface as WeightModal (Phase 3a stitching).
  *
- * Flow: `loading` → auto-claim → `animation` (single screen). The user no longer
- * has to click "Claim All Rewards" — the gold is claimed automatically as soon as
- * the rewards are computed. The animation phase shows the Mark(s) the user just
- * created on the editorial reward ticket (.rc — pure-CSS ember scene, no video).
+ * Flow: `loading` → `animation` (single screen). Once each page's discovery
+ * tier (Pioneer / Explorer / Contributor) is computed, the animation phase shows
+ * the Mark(s) the user just created on the editorial ticket (.rc — pure-CSS
+ * ember scene, no video). Feedback only — no currency.
  *
- * Owns its phase state and consumes useBatchRewards / useGoldSystem directly.
+ * Owns its phase state and consumes useBatchRewards directly.
  * Host component owns the surrounding overlay and is responsible for calling onClose.
  */
 
@@ -19,14 +19,12 @@ import { useGetTriplesWithPositionsQuery } from "@0xsofia/graphql"
 import {
   Fragment,
   useEffect,
-  useRef,
   useState,
   type CSSProperties
 } from "react"
 
 import {
   useBatchRewards,
-  useGoldSystem,
   useTrustCircle,
   useWalletFromStorage
 } from "~/hooks"
@@ -117,9 +115,7 @@ const BatchRewardContent = ({
   onViewEchoes,
   enabled
 }: BatchRewardContentProps) => {
-  const { rewards, loading, claimed, totalGoldInBatch, claimAll, reset } =
-    useBatchRewards(items, enabled)
-  const { totalGold } = useGoldSystem()
+  const { rewards, loading, reset } = useBatchRewards(items, enabled)
   const { walletAddress } = useWalletFromStorage()
   // Circle members who'll see this Mark in their feed (avatars + count).
   const { accounts: circleAccounts } = useTrustCircle(walletAddress)
@@ -146,40 +142,16 @@ const BatchRewardContent = ({
   const [mixedStage, setMixedStage] = useState<"captured" | "amplified">(
     "captured"
   )
-  const autoClaimedRef = useRef(false)
 
-  // Drive the phase machine off of useBatchRewards state.
+  // Leave the loading phase once the tiers are computed (or there are none,
+  // e.g. a vote-only batch — votes earn no discovery tier).
   useEffect(() => {
     if (loading) {
       if (phase !== "loading") setPhase("loading")
       return
     }
-    if (rewards.length === 0) {
-      // No discovery rewards to claim — e.g. a vote-only / amplify batch
-      // (liking a circle Mark earns no Pioneer/Explorer tier). Leave the
-      // loading phase so the surface shows a confirmation instead of
-      // spinning on "Capturing your Marks…" forever.
-      if (phase === "loading") setPhase("animation")
-      return
-    }
-
-    // Auto-claim as soon as rewards are computed, then move to the animation phase.
-    // The user no longer needs an intermediate "Claim All Rewards" click —
-    // the BatchRewardContent screen acts as the single post-tx surface.
-    if (!claimed && !autoClaimedRef.current && enabled) {
-      autoClaimedRef.current = true
-      claimAll()
-        .then(() => setPhase("animation"))
-        .catch((err) => {
-          logger.error("Auto-claim failed", err)
-          // Fall through to animation phase anyway so the user can still close —
-          // the rewards remain claimable on next open.
-          setPhase("animation")
-        })
-    } else if (claimed && phase === "loading") {
-      setPhase("animation")
-    }
-  }, [loading, rewards.length, claimed, enabled, claimAll, phase])
+    if (phase === "loading") setPhase("animation")
+  }, [loading, phase])
 
   const pioneerCount = rewards.filter((r) => r.tier === "Pioneer").length
   const explorerCount = rewards.filter((r) => r.tier === "Explorer").length
@@ -194,7 +166,6 @@ const BatchRewardContent = ({
     reset()
     setPhase("loading")
     setMixedStage("captured")
-    autoClaimedRef.current = false
     onClose()
   }
 
@@ -202,7 +173,6 @@ const BatchRewardContent = ({
     if (onViewEchoes) {
       reset()
       setPhase("loading")
-      autoClaimedRef.current = false
       onViewEchoes()
     } else {
       handleClose()
@@ -242,7 +212,7 @@ const BatchRewardContent = ({
 
       const tweetText =
         `I just Marked ${rewards.length} page${rewards.length > 1 ? "s" : ""} on @0xSofia ` +
-        `(${tierParts.join(", ")}) and earned ${totalGoldInBatch} Gold!`
+        `(${tierParts.join(", ")})`
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +
@@ -282,7 +252,7 @@ const BatchRewardContent = ({
 
   // No discovery rewards (vote-only / amplify batch): a like or support on a
   // circle Mark deposits on an existing triple, so there's no Pioneer/Explorer
-  // tier or Gold. Show a purpose-built confirmation, not the empty reward
+  // discovery tier. Show a purpose-built confirmation, not the empty reward
   // ticket (which would read "Marks captured / 0 G").
   const voteOnly = items.length > 0 && items.every((i) => i.voteAction)
   const showAmplified = voteOnly || (isMixed && mixedStage === "amplified")
@@ -460,8 +430,7 @@ const BatchRewardContent = ({
 
               <div className="rc-amp-foot">
                 <span className="rc-amp-foot-v">+{signalCount}</span>
-                Signal{signalCount > 1 ? "s" : ""} amplified · no Gold for
-                amplifying
+                Signal{signalCount > 1 ? "s" : ""} amplified
               </div>
 
               <div className="rc-actions">
@@ -701,18 +670,6 @@ const BatchRewardContent = ({
               </div>
             </div>
 
-            {/* Gold ledger — unchanged mechanism, kept on screen */}
-            <div className="rc-ledger">
-              <div className="rc-ledger-row">
-                <span>Gold earned</span>
-                <span>+ {totalGoldInBatch} G</span>
-              </div>
-              <div className="rc-ledger-row rc-ledger-total">
-                <span>Balance</span>
-                <span>{totalGold.toLocaleString()} G</span>
-              </div>
-            </div>
-
             <div className="rc-actions">
               {isMixed ? (
                 <button
@@ -845,17 +802,6 @@ const BatchRewardContent = ({
               })}
             </div>
           )}
-
-          <div className="rc-ledger">
-            <div className="rc-ledger-row">
-              <span>Gold earned</span>
-              <span>+ {totalGoldInBatch} G</span>
-            </div>
-            <div className="rc-ledger-row rc-ledger-total">
-              <span>Balance</span>
-              <span>{totalGold.toLocaleString()} G</span>
-            </div>
-          </div>
 
           <div className="rc-actions">
             {isMixed ? (

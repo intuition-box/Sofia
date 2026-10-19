@@ -41,10 +41,6 @@ export interface WeightBreakdown {
   depositCount: number
 }
 
-export interface DiscoveryReward {
-  status: "Pioneer" | "Explorer" | "Contributor"
-  gold: number
-}
 
 export const formatTrust = (val: number): string => {
   if (val === 0) return "0"

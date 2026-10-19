@@ -15,7 +15,6 @@ import MarkPage from "./components/pages/MarkPage"
 import MyProfilePage from "./components/pages/MyProfilePage"
 import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkSelectPage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
-import ScorePage from "./components/pages/ScorePage"
 import SettingsPage from "./components/pages/SettingsPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
@@ -108,8 +107,6 @@ const SidePanelContent = () => {
         return <MyProfilePage />
       case "circles":
         return FEATURES.circles ? <CirclesPage /> : <MarkPage />
-      case "score":
-        return FEATURES.score ? <ScorePage /> : <MarkPage />
       case "user-profile":
         return <UserProfilePage />
       case "onboarding-import":

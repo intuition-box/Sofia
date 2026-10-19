@@ -18,7 +18,6 @@ export { useTrustAccount } from './useTrustAccount'
 export { useIntuitionTriplets } from './useIntuitionTriplets'
 export { usePageBlockchainData } from './usePageBlockchainData'
 export { useBondingCurveData } from './useBondingCurveData'
-export { useUserAtomStats } from './useUserAtomStats'
 export { useGetAtomAccount } from './useGetAtomAccount'
 export type { AccountAtom } from './useGetAtomAccount'
 export { useAccountStats } from './useAccountStats'
@@ -43,12 +42,8 @@ export { default as useIntentionCategories } from './useIntentionCategories'
 
 // Certifications & Discovery
 export { useUserCertifications, getCertificationForUrl } from './useUserCertifications'
-export { useDiscoveryScore } from './useDiscoveryScore'
-export { useUserDiscoveryScore } from './useUserDiscoveryScore'
 export { useTrendingCertifications } from './useTrendingCertifications'
 export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTrendingCertifications'
-export { usePageDiscovery } from './usePageDiscovery'
-export { useDiscoveryReward } from './useDiscoveryReward'
 export { usePagePositions } from './usePagePositions'
 
 // Onboarding
@@ -58,25 +53,14 @@ export type { UseOnboardingClaimResult } from './useOnboardingClaim'
 // UI Hooks
 export { useFavicon } from './useFavicon'
 export { useCredibilityAnalysis, getTotalShares, type CredibilityAnalysis } from './useCredibilityAnalysis'
-export { useCertificationModal } from './useCertificationModal'
-export type { ModalTriplet } from './useCertificationModal'
+export type { ModalTriplet } from '../types/blockchain'
 
 // Quest & XP
-export { useQuestSystem } from './useQuestSystem'
-export { useUserQuests } from './useUserQuests'
-export { useGoldSystem } from './useGoldSystem'
-export { useDailyStreakProfit } from './useDailyStreakProfit'
-export type { DailyStreakProfitData } from './useDailyStreakProfit'
-export { useStreakLeaderboard } from './useStreakLeaderboard'
-export type { LeaderboardEntry } from './useStreakLeaderboard'
-export { useOnChainStreak } from './useOnChainStreak'
-export type { OnChainStreakResult } from './useOnChainStreak'
 
 // Global Stake
 export { useFeeEstimate } from './useFeeEstimate'
 
 // UI Utilities
-export { useCardStack } from './useCardStack'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'
@@ -84,8 +68,6 @@ export { useBookmarks } from './useBookmarks'
 // Recommendations & Interest
 
 // Topic Interests (from Sofia Explorer)
-export { useTopicInterests } from './useTopicInterests'
-export type { TopicInterestsResult } from './useTopicInterests'
 
 // Cart
 export { useCart } from './useCart'

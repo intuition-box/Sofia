@@ -28,7 +28,7 @@ interface PageBlockchainHeaderProps {
   isRestricted: boolean
   restrictionMessage: string | null
   onToggleMetrics: () => void
-  onNavigateDiscovery: () => void
+  onNavigateDiscovery?: () => void
 }
 
 const getPotentialBadgeType = (total: number): UserBadgeTier => {
@@ -128,9 +128,9 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
 
           {/* Discovery Badge */}
           <div
-            className={`discovery-badge-compact clickable badge-${badgeType}`}
+            className={`discovery-badge-compact${onNavigateDiscovery ? " clickable" : ""} badge-${badgeType}`}
             onClick={onNavigateDiscovery}
-            title="View discovery stats"
+            title={onNavigateDiscovery ? "View discovery stats" : undefined}
           >
             <UserBadge tier={badgeType} iconUrl={badgeImages[badgeType]} size={56} />
             {totalCertifications > 0 ? (

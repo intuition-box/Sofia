@@ -8,7 +8,6 @@ export type MessageType =
   | "GET_TAB_ID"
   | "PAGE_DATA"
   | "PAGE_DURATION"
-  | "SEND_CHATBOT_MESSAGE"
   | "FETCH_BOOKMARKS"
   | "IMPORT_SELECTED_BOOKMARKS"
   | "TRIPLET_PUBLISHED"
@@ -25,8 +24,6 @@ export type MessageType =
   | "REMOVE_URL_FROM_GROUP"
   | "DELETE_GROUP"
   | "UPDATE_GROUP_LEVEL"
-  | "LEVEL_UP_GROUP"
-  | "PREVIEW_LEVEL_UP"
   | "TRACK_URL"
   // Deep link from share page
   | "DEEP_LINK_PROFILE"

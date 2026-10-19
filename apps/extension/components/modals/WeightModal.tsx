@@ -6,7 +6,6 @@ import { useBalance } from "wagmi"
 import {
   PP_FEE_DENOMINATOR,
   useFeeEstimate,
-  useGoldSystem,
   usePlatformPool,
   useWalletFromStorage
 } from "~/hooks"
@@ -18,14 +17,12 @@ import {
   DEFAULT_WEIGHT,
   formatTrust,
   getWeightValue,
-  type DiscoveryReward,
   type WeightOptionId
 } from "./weight/types"
 import WeightActions from "./weight/WeightActions"
 import WeightAmplifyTicket from "./weight/WeightAmplifyTicket"
 import WeightApplyAllBar from "./weight/WeightApplyAllBar"
 import WeightItem from "./weight/WeightItem"
-import WeightRewardTicket from "./weight/WeightRewardTicket"
 import WeightSuccessCard from "./weight/WeightSuccessCard"
 import WeightTotal from "./weight/WeightTotal"
 
@@ -43,9 +40,6 @@ interface WeightModalProps {
   createdCount?: number
   depositCount?: number
   isIntentionCertification?: boolean
-  discoveryReward?: DiscoveryReward | null
-  onClaimReward?: () => Promise<void>
-  rewardClaimed?: boolean
   /** When set, hide weight selection and use this fixed deposit value (in TRUST) */
   fixedDeposit?: number
   /** Override creation cost estimation assumptions (default: isNewTriple=true, newAtomCount=1) */
@@ -60,7 +54,6 @@ interface WeightModalProps {
   /** Pre-selected weight option when the modal opens (default: 'default' / 0.5 TRUST) */
   initialWeight?: WeightOptionId
   /** Show XP cube animation on success (for quest/XP claim flows) */
-  showXpAnimation?: boolean
   /** Optional curve selector for debate claims (linear=1 / progressive=2) */
   curveSelector?: {
     selected: "linear" | "progressive"
@@ -95,14 +88,10 @@ const WeightModal = ({
   transactionHash,
   createdCount = 0,
   depositCount = 0,
-  discoveryReward,
-  onClaimReward,
-  rewardClaimed = false,
   fixedDeposit,
   estimateOptions,
   submitLabel,
   initialWeight = DEFAULT_WEIGHT,
-  showXpAnimation = false,
   curveSelector,
   positionBoard,
   successContent,
@@ -143,7 +132,6 @@ const WeightModal = ({
       : `Platform Pool (${detectedPlatforms.length})`
 
   const { walletAddress } = useWalletFromStorage()
-  const { totalGold } = useGoldSystem()
   const { estimate } = useFeeEstimate()
 
   const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
@@ -207,10 +195,6 @@ const WeightModal = ({
     estimateOptions?.needsContextPredicateAtom ?? false
 
   const activeCount = triplets.length - removedIndices.size
-  const keptTriplets = useMemo(
-    () => triplets.filter((_, i) => !removedIndices.has(i)),
-    [triplets, removedIndices]
-  )
   const breakdown = useMemo(() => {
     let totalTrust = 0
     if (fixedDeposit != null) {
@@ -348,7 +332,7 @@ const WeightModal = ({
   // an empty `triplets` must NOT unmount the modal while a success/reward
   // surface is active — only bail when there's genuinely nothing to show.
   const keepOpenForReward =
-    showSuccessHandoff || (rewardClaimed && !!discoveryReward)
+    showSuccessHandoff
 
   if (!isOpen || (triplets.length === 0 && !keepOpenForReward)) return null
 
@@ -358,20 +342,19 @@ const WeightModal = ({
   // Processing stays inside the Amplify ticket (loading overlay below) —
   // we no longer fall back to the legacy dark modal-body during a tx.
   const showAmpForm =
-    isFormState && !showSuccessHandoff && !(rewardClaimed && discoveryReward)
+    isFormState && !showSuccessHandoff
 
   return createPortal(
     <div className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
       <div className="modal-content">
-        {!(rewardClaimed && discoveryReward) && showSuccessHandoff && (
+        {showSuccessHandoff && (
           <div
             key="success-handoff"
             className="modal-body modal-body--success-handoff">
             {successContent}
           </div>
         )}
-        {!(rewardClaimed && discoveryReward) &&
-          !showSuccessHandoff &&
+        {!showSuccessHandoff &&
           !showAmpForm && (
             <>
               <div className="modal-body">
@@ -392,7 +375,6 @@ const WeightModal = ({
                   />
                 )}
 
-                {!(transactionSuccess && discoveryReward) && (
                   <div className="modal-triplets-list">
                     {triplets.map((triplet, index) => {
                       if (removedIndices.has(index)) return null
@@ -419,7 +401,6 @@ const WeightModal = ({
                       )
                     })}
                   </div>
-                )}
 
                 {isFormState && curveSelector && (
                   <div className="curve-selector">
@@ -456,10 +437,6 @@ const WeightModal = ({
                     transactionHash={transactionHash}
                     createdCount={createdCount}
                     depositCount={depositCount}
-                    showXpAnimation={showXpAnimation}
-                    discoveryReward={discoveryReward}
-                    rewardClaimed={rewardClaimed}
-                    onClaimReward={onClaimReward}
                     positionBoard={positionBoard}
                   />
                 )}
@@ -499,7 +476,6 @@ const WeightModal = ({
                   </p>
                 )}
 
-                {!rewardClaimed && !(transactionSuccess && discoveryReward) && (
                   <WeightActions
                     isProcessing={isProcessing}
                     transactionSuccess={transactionSuccess}
@@ -511,7 +487,6 @@ const WeightModal = ({
                     onClose={handleClose}
                     onSubmit={handleSubmit}
                   />
-                )}
               </div>
             </>
           )}
@@ -543,15 +518,6 @@ const WeightModal = ({
           />
         )}
 
-        {rewardClaimed && discoveryReward && (
-          <WeightRewardTicket
-            discoveryReward={discoveryReward}
-            transactionHash={transactionHash}
-            keptTriplets={keptTriplets}
-            totalGold={totalGold}
-            onClose={handleClose}
-          />
-        )}
       </div>
     </div>,
     document.body

@@ -284,7 +284,7 @@ const ALL_TOUR_STEPS: TourStep[] = [
   },
   {
     key: "echoes",
-    target: dockItem(1), // Mark · My Profile · Circles · Score · Settings
+    target: dockItem(1), // Page · My Profile · Settings
     requires: "mark",
     title: "Your reputation just started",
     body: "Every page you mark is grouped by site into an <b>Echo</b>. Open your profile to see yours.",
@@ -354,6 +354,18 @@ const ALL_TOUR_STEPS: TourStep[] = [
     learn:
       "Your marks are browsable by intention — a clean map of what you trust, learn, and enjoy.",
     complete: { kind: "domClick", selector: ".category-detail .url-row" }
+  },
+  {
+    key: "one-click",
+    // Page · My Profile · (Circles) · Settings
+    target: dockItem(FEATURES.circles ? 3 : 2),
+    requires: "my-profile",
+    title: "Next time: one click",
+    body: "Right-click any page → <b>Sofia</b> → pick an intention to publish it without opening Sofia. Turn on <b>Publish without popup</b> in Settings to skip wallet confirmations.",
+    cta: "Open Settings",
+    learn:
+      "One signature, then Sofia publishes for you — within the limits you set, your TRUST stays in your wallet.",
+    complete: { kind: "route", page: "settings" }
   },
   {
     key: "circle",

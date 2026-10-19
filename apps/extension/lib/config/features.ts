@@ -11,13 +11,8 @@ export const FEATURES = {
   /** Echoes tab (shown as "Bookmark": domain groups, levels). Kept ON: it is
    *  the bookmark view users know — hiding it would lose functionality. */
   echoes: true,
-  /** Score page (quests, XP, Gold, achievements). Kept ON until the Explorer
-   *  can claim quest rewards — it is the only claim surface today. */
-  score: true,
   /** Socials tab (OAuth-linked accounts + social verification). */
-  socials: false,
-  /** AI features (Mastra / GaiaNet — decommissioned). */
-  ai: false
+  socials: false
 } as const
 
 export type FeatureName = keyof typeof FEATURES

@@ -1,15 +1,15 @@
 /**
  * useBatchRewards Hook
- * Fetches per-page certification counts after batch TX,
- * computes reward tiers, and manages bulk gold claiming.
+ * Fetches per-page certification counts after a batch TX and computes each
+ * page's discovery tier (Pioneer = first, Explorer = early, Contributor).
+ * Feedback only — no currency attached.
  */
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { discoveryScoreService } from "~/lib/services"
 import { PREDICATE_IDS } from "../lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
-import { DISCOVERY_GOLD_REWARDS, DISCOVERY_THRESHOLDS } from "~/types/discovery"
+import { DISCOVERY_THRESHOLDS } from "~/types/discovery"
 import { PageCertificationDataDocument } from "@0xsofia/graphql"
 import type { CartItemRecord } from "~/lib/database"
 
@@ -31,20 +31,13 @@ const CERTIFICATION_PREDICATE_IDS = [
 export interface BatchRewardItem {
   item: CartItemRecord
   tier: "Pioneer" | "Explorer" | "Contributor"
-  gold: number
   rank: number
 }
 
-function computeTier(prevTotal: number): {
-  tier: "Pioneer" | "Explorer" | "Contributor"
-  gold: number
-} {
-  if (prevTotal === 0) {
-    return { tier: "Pioneer", gold: DISCOVERY_GOLD_REWARDS.PIONEER }
-  } else if (prevTotal < DISCOVERY_THRESHOLDS.EXPLORER_MAX) {
-    return { tier: "Explorer", gold: DISCOVERY_GOLD_REWARDS.EXPLORER }
-  }
-  return { tier: "Contributor", gold: DISCOVERY_GOLD_REWARDS.CONTRIBUTOR }
+function computeTier(prevTotal: number): BatchRewardItem["tier"] {
+  if (prevTotal === 0) return "Pioneer"
+  if (prevTotal < DISCOVERY_THRESHOLDS.EXPLORER_MAX) return "Explorer"
+  return "Contributor"
 }
 
 /** Extract hostname from URL */
@@ -133,8 +126,6 @@ export const useBatchRewards = (
 ) => {
   const [rewards, setRewards] = useState<BatchRewardItem[]>([])
   const [loading, setLoading] = useState(false)
-  const [claimed, setClaimed] = useState(false)
-  const [totalGoldInBatch, setTotalGoldInBatch] = useState(0)
   const fetchedRef = useRef(false)
 
   // Fetch cert counts and compute rewards when TX succeeds
@@ -155,7 +146,6 @@ export const useBatchRewards = (
       const certItems = items.filter(item => !item.voteAction)
       if (certItems.length === 0) {
         setRewards([])
-        setTotalGoldInBatch(0)
         setLoading(false)
         return
       }
@@ -191,52 +181,21 @@ export const useBatchRewards = (
         const totalOnUrl = urlCounts.get(item.url) || 0
         // User just certified, so prevTotal = total - 1
         const prevTotal = Math.max(0, totalOnUrl - 1)
-        const { tier, gold } = computeTier(prevTotal)
-
-        return {
-          item,
-          tier,
-          gold,
-          rank: totalOnUrl
-        }
+        return { item, tier: computeTier(prevTotal), rank: totalOnUrl }
       })
 
-      const batchTotal = rewardItems.reduce((sum, r) => sum + r.gold, 0)
       setRewards(rewardItems)
-      setTotalGoldInBatch(batchTotal)
       setLoading(false)
-
-      logger.info("Batch rewards computed", {
-        count: rewardItems.length,
-        totalGold: batchTotal
-      })
+      logger.info("Discovery tiers computed", { count: rewardItems.length })
     }
 
     compute()
     return () => { cancelled = true }
   }, [txSuccess, items])
 
-  // Claim all rewards at once
-  const claimAll = useCallback(async () => {
-    if (claimed || rewards.length === 0) return
-
-    try {
-      await discoveryScoreService.claimGold(totalGoldInBatch)
-      setClaimed(true)
-      logger.info("All rewards claimed", {
-        count: rewards.length,
-        totalGold: totalGoldInBatch
-      })
-    } catch (err) {
-      logger.error("Failed to claim all rewards", { error: err })
-    }
-  }, [rewards, claimed, totalGoldInBatch])
-
   // Reset state
   const reset = useCallback(() => {
     setRewards([])
-    setClaimed(false)
-    setTotalGoldInBatch(0)
     setLoading(false)
     fetchedRef.current = false
   }, [])
@@ -244,9 +203,6 @@ export const useBatchRewards = (
   return {
     rewards,
     loading,
-    claimed,
-    totalGoldInBatch,
-    claimAll,
     reset
   }
 }

@@ -30,13 +30,7 @@ export {
 // IPFS
 export { batchFetchIPFS } from "./ipfsCache"
 
-// Quest & Storage Helpers
-export {
-  calculateLevelFromXP,
-  calculateXPForNextLevel,
-  getClaimId,
-  computeQuestStatuses
-} from "./questStatusHelpers"
+// Storage Helpers
 export { getWalletKey } from "./storageKeyUtils"
 
 // Cache & Async
@@ -71,16 +65,7 @@ export {
   sumCertifications
 } from "./certificationHelpers"
 
-// Discovery Calculations
-export {
-  buildPagePositionMap,
-  calculateDiscoveryRanking,
-  calculateDiscoveryGold,
-  buildDiscoveryStats
-} from "./discoveryUtils"
 
-// Streak Calculations
-export { calculateStreaks, extractUserActivityDates } from "./streakUtils"
 
 // Fee Calculation
 export { estimateCertificationCost } from "./feeCalculation"

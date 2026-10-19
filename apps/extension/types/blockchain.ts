@@ -3,6 +3,8 @@
  * Eliminates type duplication across hooks
  */
 
+import type { IntentionPurpose, IntentionType } from "./intentionCategories"
+
 // Base blockchain result
 export interface BlockchainResult {
   success: boolean
@@ -95,4 +97,21 @@ export interface CostEstimate {
   depositCount: number
   contextTripleCost: number   // TX2: context triple creation + min deposit (0 if no context)
   platformPoolAmount: number  // Platform pool deposit (0 if no platform detected)
+}
+
+// Triplet row shown in the WeightModal (cart, Echoes certify)
+export interface ModalTriplet {
+  id: string
+  triplet: {
+    subject: string
+    predicate: string
+    object: string
+  }
+  description: string
+  url: string
+  intention?: IntentionPurpose | IntentionType
+  /** Primary context (= interestContexts[0]) — back-compat. */
+  interestContext?: string | null
+  /** All context slugs (topics and/or categories) for multi-pill display. */
+  interestContexts?: string[]
 }

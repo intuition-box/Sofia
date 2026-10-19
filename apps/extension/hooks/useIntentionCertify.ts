@@ -6,7 +6,7 @@ import { ERROR_MESSAGES } from '../lib/config/constants'
 import { INTENTION_MIN_STAKE } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { INTENTION_PREDICATES } from '../types/discovery'
-import { questTrackingService, txEventBus } from '../lib/services'
+import { txEventBus } from '../lib/services'
 import { normalizeUrl } from '../lib/utils/normalizeUrl'
 import { cleanTitle } from '../lib/utils/cleanTitle'
 import { getFaviconUrl } from '../lib/utils'
@@ -141,7 +141,6 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       txEventBus.emit("certification", result.txHash)
 
       // Track certification for daily quest
-      questTrackingService.recordCertificationActivity()
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
@@ -162,7 +161,6 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setError(null)
 
         // Track certification for daily quest (even if triple existed)
-        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage
@@ -255,7 +253,6 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       txEventBus.emit("certification", result.txHash)
 
       // Track certification for daily quest
-      questTrackingService.recordCertificationActivity()
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
@@ -276,7 +273,6 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setError(null)
 
         // Track certification for daily quest (even if triple existed)
-        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage

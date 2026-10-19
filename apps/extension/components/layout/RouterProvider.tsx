@@ -19,8 +19,6 @@ type Page =
   | "mark"
   | "my-profile"
   | "circles"
-  | "score"
-  | "recommendations"
   | "user-profile"
   | "discovery-profile"
   | "onboarding-import"
@@ -84,7 +82,6 @@ interface RouterContextType {
 /** Pages hidden behind a feature flag resolve to the Page (mark) view. */
 const resolvePage = (page: Page): Page => {
   if (page === "circles" && !FEATURES.circles) return "mark"
-  if (page === "score" && !FEATURES.score) return "mark"
   return page
 }
 

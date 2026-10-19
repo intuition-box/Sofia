@@ -13,10 +13,8 @@ import {
   browsingNudgeService,
   delegationService,
   groupManager,
-  levelUpService,
   pageDataService,
   sessionTracker,
-  XPServiceClass,
   type DomainCluster,
   type TrackedUrl
 } from "../lib/services"
@@ -27,7 +25,6 @@ import {
   handleAddToSofiaStatus,
   handleSearchAtoms
 } from "./addToSofia"
-import { sendMessage } from "./agentRouter"
 import { initializeOnWalletConnect } from "./index"
 import { getAllBookmarks } from "./messageSenders"
 import { oauthService } from "./oauth"
@@ -197,7 +194,6 @@ const SUPPORTED_OAUTH_PLATFORMS = [
 // URL_CHANGED) is intentionally NOT in this set: those are content-script-
 // emitted by design.
 const SIDEPANEL_ONLY_MESSAGES = new Set<string>([
-  "SEND_CHATBOT_MESSAGE",
   "FETCH_BOOKMARKS",
   "IMPORT_SELECTED_BOOKMARKS",
   "GET_INTENTION_GROUPS",
@@ -206,8 +202,6 @@ const SIDEPANEL_ONLY_MESSAGES = new Set<string>([
   "REMOVE_URL_FROM_GROUP",
   "DELETE_GROUP",
   "UPDATE_GROUP_LEVEL",
-  "LEVEL_UP_GROUP",
-  "PREVIEW_LEVEL_UP",
   "INITIALIZE_BADGE",
   "TRIPLET_PUBLISHED",
   "WALLET_DISCONNECTED",
@@ -298,8 +292,6 @@ export function setupMessageHandlers(): void {
                 walletType,
                 pending_external_auth: true
               })
-              // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
-              await XPServiceClass.migrateToWalletKeys(walletAddress)
               logger.info("Wallet connected from external page", {
                 walletAddress,
                 walletType
@@ -501,18 +493,6 @@ export function setupMessageHandlers(): void {
           case "PAGE_DURATION":
             pageDataService.handlePageDuration(message)
             break
-
-          case "SEND_CHATBOT_MESSAGE":
-            // Handle chatbot message from sidepanel (ChatPage)
-            // Socket runs in service worker context, not in sidepanel context
-            try {
-              await sendMessage("CHATBOT", message.text)
-              sendResponse({ success: true })
-            } catch (error) {
-              logger.error("Failed to send chatbot message", error)
-              sendResponse({ success: false, error: error.message })
-            }
-            return true
 
           case "FETCH_BOOKMARKS":
             // Return bookmarks list without processing (for selection UI)
@@ -827,67 +807,6 @@ export function setupMessageHandlers(): void {
           case "NUDGE_DISMISSED":
             browsingNudgeService.resetCounter()
             sendResponse({ success: true })
-            return true
-
-          case "LEVEL_UP_GROUP":
-            try {
-              const {
-                groupId: levelUpGroupId,
-                certificationBreakdown,
-                targetLevel
-              } = message.data || message
-              if (!levelUpGroupId) {
-                sendResponse({ success: false, error: "groupId required" })
-                return true
-              }
-              logger.info(
-                `[messageHandlers] Level up request for group: ${levelUpGroupId}`,
-                { targetLevel }
-              )
-              const levelUpResult = await levelUpService.levelUp(
-                levelUpGroupId,
-                certificationBreakdown,
-                targetLevel
-              )
-              sendResponse({
-                success: levelUpResult.success,
-                ...levelUpResult
-              })
-            } catch (error) {
-              logger.error("LEVEL_UP_GROUP error", error)
-              sendResponse({
-                success: false,
-                error: error instanceof Error ? error.message : "Unknown error"
-              })
-            }
-            return true
-
-          case "PREVIEW_LEVEL_UP":
-            try {
-              const {
-                groupId: previewGroupId,
-                targetLevel: previewTargetLevel
-              } = message.data || message
-              if (!previewGroupId) {
-                sendResponse({ success: false, error: "groupId required" })
-                return true
-              }
-              const preview = await levelUpService.previewLevelUp(
-                previewGroupId,
-                previewTargetLevel
-              )
-              if (preview) {
-                sendResponse({ success: true, ...preview })
-              } else {
-                sendResponse({ success: false, error: "Group not found" })
-              }
-            } catch (error) {
-              logger.error("PREVIEW_LEVEL_UP error", error)
-              sendResponse({
-                success: false,
-                error: error instanceof Error ? error.message : "Unknown error"
-              })
-            }
             return true
 
           // =====================================================

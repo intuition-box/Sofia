@@ -9,7 +9,6 @@ import PlatformPoolSettings from '../ui/PlatformPoolSettings'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import { Storage } from '@plasmohq/storage'
 import { tripletsDataService, userSettingsService } from '../../lib/database'
-import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 import { createHookLogger } from '../../lib/utils/logger'
@@ -120,12 +119,6 @@ const SettingsPage = () => {
         await chrome.storage.local.remove(keysToRemove)
       }
 
-      // Clear recommendations cache (if user has account)
-      if (account) {
-        await RecommendationService.clearCache(account)
-        logger.info('Recommendations cache cleared for account', account)
-      }
-
       // Clear IndexedDB completely
       const databases = await indexedDB.databases()
       for (const db of databases) {
@@ -139,7 +132,7 @@ const SettingsPage = () => {
         }
       }
 
-      alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet, Recommendations, and Images!')
+      alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet and Images!')
     } catch (error) {
       logger.error('Failed to clear storage', error)
       alert('Failed to clear storage. Please try again.')

@@ -11,13 +11,8 @@
  * return the same output. Makes them trivially testable and cacheable.
  */
 
-import type { QueryClient } from "@tanstack/react-query"
 import type { WatchUserPositionsSubscription } from "@0xsofia/graphql"
 import {
-  DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_STREAK_STAKE,
-  DAILY_VOTE_ATOM_ID,
-  DAILY_VOTE_STAKE,
   PREDICATE_IDS
 } from "~/lib/config/chainConfig"
 import { INTENTION_PREDICATE_IDS as INTENTION_PREDICATE_IDS_ARRAY } from "~/lib/config/predicateConstants"
@@ -44,7 +39,6 @@ export const realtimeKeys = {
   trustCircle: (wallet: string) => ["trust-circle", wallet] as const,
   following: (wallet: string) => ["following", wallet] as const,
   followers: (wallet: string) => ["followers", wallet] as const,
-  dailyStreak: (wallet: string) => ["daily-streak", wallet] as const,
   verifiedOAuthPlatforms: (wallet: string) =>
     ["verified-oauth-platforms", wallet] as const,
   intentionGroups: (wallet: string) => ["intention-groups", wallet] as const
@@ -175,37 +169,6 @@ export function deriveFollowing(positions: Position[]): FollowingEntry[] {
     }
   }
   return Array.from(byTriple.values())
-}
-
-// ── Daily streak status ─────────────────────────────────────────────────────
-
-export interface DailyStreakStatus {
-  /** True if the user currently has shares > 0 on the daily-certification atom. */
-  certifiedToday: boolean
-  /** True if the user currently has shares > 0 on the daily-vote atom. */
-  votedToday: boolean
-  certificationShares: string
-  voteShares: string
-}
-
-/**
- * Phase 3.A scope: live quest completion status (boolean "did I do it today?").
- * The full streak count (consecutive days) stays HTTP for now — it's computed
- * from deposits history, which isn't part of the positions subscription.
- *
- * Requires DAILY_CERTIFICATION_ATOM_ID and DAILY_VOTE_ATOM_ID to be in
- * TRACKED_TERM_IDS so low-share positions (1 TRUST minimum) aren't dropped
- * by Hasura's top-500 cap.
- */
-export function deriveDailyStreak(positions: Position[]): DailyStreakStatus {
-  const cert = positions.find((p) => p.term_id === DAILY_CERTIFICATION_ATOM_ID)
-  const vote = positions.find((p) => p.term_id === DAILY_VOTE_ATOM_ID)
-  return {
-    certifiedToday: !!cert && sharesToBigInt(cert.shares) > 0n,
-    votedToday: !!vote && sharesToBigInt(vote.shares) > 0n,
-    certificationShares: String(cert?.shares ?? "0"),
-    voteShares: String(vote?.shares ?? "0")
-  }
 }
 
 // ── Verified OAuth platforms ────────────────────────────────────────────────
@@ -355,73 +318,6 @@ export function deriveUserProfile(
     totalAtomPositions: stats.totalAtomPositions,
     totalStaked: stats.totalStaked,
     verifiedPlatforms: stats.verifiedPlatforms
-  }
-}
-
-// ── Optimistic updates ──────────────────────────────────────────────────────
-//
-// Applied client-side right after the user clicks an action, so the UI
-// reflects the change in 0ms instead of waiting the 3-5s indexer lag
-// before the WS pushes the real state. When the WS eventually arrives,
-// it overwrites the same query key with the authoritative value (in
-// practice identical to the optimistic one for daily streak, so it's
-// effectively a no-op refresh).
-
-export type DailyStreakKind = "cert" | "vote"
-
-/**
- * Flip the daily-streak cache key to reflect a fresh cert/vote deposit.
- * Returns a rollback function that restores the previous snapshot — call
- * it from the transaction's catch block if the TX fails or the user
- * cancels.
- *
- * Usage:
- *   const rollback = applyOptimisticDailyStreak(qc, wallet, "cert")
- *   try { await claimTx() } catch (err) { rollback(); throw err }
- */
-export function applyOptimisticDailyStreak(
-  qc: QueryClient,
-  walletAddress: string,
-  kind: DailyStreakKind
-): () => void {
-  const wallet = walletAddress.toLowerCase()
-  const key = realtimeKeys.dailyStreak(wallet)
-  const previous = qc.getQueryData<DailyStreakStatus>(key)
-
-  // Use the chainConfig stake constants as the optimistic share amount.
-  // When the WS overwrites this shortly after, the real value will be
-  // equivalent (same stake, same atom) — effectively a no-op refresh.
-  const baseline: DailyStreakStatus = previous ?? {
-    certifiedToday: false,
-    votedToday: false,
-    certificationShares: "0",
-    voteShares: "0"
-  }
-
-  const next: DailyStreakStatus = {
-    ...baseline,
-    ...(kind === "cert"
-      ? {
-          certifiedToday: true,
-          certificationShares: DAILY_STREAK_STAKE.toString()
-        }
-      : {
-          votedToday: true,
-          voteShares: DAILY_VOTE_STAKE.toString()
-        })
-  }
-
-  qc.setQueryData<DailyStreakStatus>(key, next)
-
-  return () => {
-    // Restore the exact snapshot we had before the optimistic apply.
-    // If previous was undefined (first action of the session), remove
-    // the entry so consumers fall back to their own defaults.
-    if (previous === undefined) {
-      qc.removeQueries({ queryKey: key, exact: true })
-    } else {
-      qc.setQueryData<DailyStreakStatus>(key, previous)
-    }
   }
 }
 

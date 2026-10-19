@@ -25,11 +25,8 @@ import type { GroupUrlRecord } from "~types/database"
 import {
   getCertificationForUrl,
   useCart,
-  useDiscoveryReward,
-  useDiscoveryScore,
   useGroupOnChainCertifications,
   useIntentionCertify,
-  usePageDiscovery,
   useRedeemTriple,
   useUserCertifications,
   useWalletFromStorage,
@@ -125,14 +122,6 @@ const GroupDetailView = ({
     title?: string // Page title for atom name
   } | null>(null)
 
-  // Discovery reward hooks (same pattern as PageBlockchainCard)
-  const { claimDiscoveryGold, refetch: refetchDiscoveryScore } =
-    useDiscoveryScore()
-  const reward = useDiscoveryReward()
-  const {
-    totalCertifications: pendingUrlCertCount,
-    refetch: refetchPendingDiscovery
-  } = usePageDiscovery(pendingCertification?.url || null)
 
   // Cart: add intention to cart
   const handleAddToCart = async (
@@ -196,8 +185,6 @@ const GroupDetailView = ({
     return () => clearTimeout(timer)
   }, [cartToast])
 
-  // Ref to capture pre-certification count before the transaction
-  const prevDiscoveryTotalRef = useRef<number>(0)
   // On-chain certification hook
   const {
     certifyWithIntention,
@@ -293,9 +280,6 @@ const GroupDetailView = ({
 
     const { url, intention, oauthPredicate, title } = pendingCertification
 
-    // Capture pre-certification count BEFORE the transaction
-    prevDiscoveryTotalRef.current = pendingUrlCertCount
-
     setProcessingUrls((prev) => new Set(prev).add(url))
 
     try {
@@ -334,13 +318,6 @@ const GroupDetailView = ({
       // Refetch on-chain data to update stats
       await refetchOnChain()
 
-      // Refetch discovery data and calculate reward based on pre-cert position
-      await refetchPendingDiscovery()
-      reward.calculateAndTriggerReward(prevDiscoveryTotalRef.current)
-
-      // Refetch global discovery score so StatsTab updates
-      refetchDiscoveryScore()
-
       // Also refresh the parent group to update merged data
       if (onRefresh) {
         await onRefresh()
@@ -362,7 +339,6 @@ const GroupDetailView = ({
     setModalTriplets([])
     setPendingCertification(null)
     resetIntention()
-    reward.resetReward()
   }
 
   const handleRemove = async (url: string) => {
@@ -519,10 +495,6 @@ const GroupDetailView = ({
             createdCount={intentionOperationType === "created" ? 1 : 0}
             depositCount={intentionOperationType === "deposit" ? 1 : 0}
             isIntentionCertification={true}
-            showXpAnimation={true}
-            discoveryReward={intentionSuccess ? reward.discoveryReward : null}
-            onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
-            rewardClaimed={reward.rewardClaimed}
             onClose={handleModalClose}
             onSubmit={handleModalSubmit}
           />,

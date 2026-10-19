@@ -1,10 +1,9 @@
-import { Pencil, PieChart, Settings, Trophy, User, Users } from "lucide-react"
+import { Pencil, Settings, User, Users } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { FEATURES } from "~/lib/config/features"
-import { getExplorerSeasonUrl } from "~/lib/utils"
 
-import { useCart, useQuestSystem, useWalletFromStorage } from "../../hooks"
+import { useCart, useWalletFromStorage } from "../../hooks"
 import CartDrawer, { CartFab } from "../ui/CartDrawer"
 import Dock, { DockItemData } from "../ui/NavigationBar"
 import { useRouter } from "./RouterProvider"
@@ -13,7 +12,6 @@ const BottomNavigation = () => {
   const { walletAddress, authenticated } = useWalletFromStorage()
   const account = authenticated ? walletAddress : null
   const { navigateTo } = useRouter()
-  const { claimableQuests } = useQuestSystem()
   const { count: cartCount } = useCart()
   const [showCartDrawer, setShowCartDrawer] = useState(false)
 
@@ -26,10 +24,8 @@ const BottomNavigation = () => {
 
   if (!account) return null
 
-  const hasClaimable = claimableQuests.length > 0
-
-  // Hidden features (FEATURES flags) drop out of the dock; their pages stay
-  // in the codebase. Season & missions now live in the Explorer.
+  // Page · My Profile · Settings. Hidden features (FEATURES flags) drop out
+  // of the dock; their pages stay in the codebase.
   const dockItems: DockItemData[] = [
     {
       icon: <Pencil size={24} />,
@@ -50,20 +46,6 @@ const BottomNavigation = () => {
           }
         ]
       : []),
-    FEATURES.score
-      ? {
-          icon: <PieChart size={24} />,
-          label: "Score",
-          onClick: () => navigateTo("score"),
-          className: hasClaimable ? "has-claimable" : ""
-        }
-      : {
-          icon: <Trophy size={24} />,
-          label: "Season & missions",
-          onClick: () => {
-            chrome.tabs.create({ url: getExplorerSeasonUrl() })
-          }
-        },
     {
       icon: <Settings size={24} />,
       label: "Settings",

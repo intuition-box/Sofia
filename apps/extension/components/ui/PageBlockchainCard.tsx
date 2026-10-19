@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { createPortal } from "react-dom"
 
 import {
   getCertificationForUrl,
   useCart,
-  useCertificationModal,
   useCredibilityAnalysis,
-  useDiscoveryReward,
-  useDiscoveryScore,
   useFavicon,
   usePageBlockchainData,
   usePagePositions,
-  useTrustCircle,
   useUserCertifications,
   useWalletFromStorage
 } from "~/hooks"
@@ -25,8 +20,6 @@ import {
   type IntentionType
 } from "~/types/intentionCategories"
 
-import { useRouter } from "../layout/RouterProvider"
-import WeightModal from "../modals/WeightModal"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
 import { CategorisationDropdown } from "./CategorisationDropdown"
@@ -50,8 +43,10 @@ const PURPOSE_TO_TYPE = Object.fromEntries(
     .map(([type, v]) => [v.intentionPurpose as string, type])
 ) as Record<string, IntentionType>
 
+// Trust-circle highlighting belongs to Circles (hidden) — stable empty list
+const NO_TRUST_CIRCLE: string[] = []
+
 const PageBlockchainCard = () => {
-  const { navigateTo } = useRouter()
 
   // Data hooks
   const {
@@ -77,31 +72,19 @@ const PageBlockchainCard = () => {
     pauseRefresh,
     resumeRefresh
   } = usePageBlockchainData()
-  const { claimDiscoveryGold } = useDiscoveryScore()
 
   // Extracted hooks
   const { faviconUrl, faviconError } = useFavicon(currentUrl)
   const analysis = useCredibilityAnalysis(counts, atomsList)
-  const reward = useDiscoveryReward()
-  const modal = useCertificationModal()
   const { walletAddress } = useWalletFromStorage()
-  const { accounts: trustCircleAccounts } = useTrustCircle(walletAddress)
   const { certifications, refetch: refetchCertifications } =
     useUserCertifications(walletAddress)
-
-  const trustCircleAddresses = useMemo(
-    () =>
-      trustCircleAccounts
-        .map((a) => a.walletAddress)
-        .filter((addr): addr is string => !!addr),
-    [trustCircleAccounts]
-  )
 
   const { positions, userPosition, totalPositions } = usePagePositions(
     certTriples,
     pageAtomIds,
     walletAddress,
-    trustCircleAddresses
+    NO_TRUST_CIRCLE
   )
 
   const {
@@ -307,7 +290,6 @@ const PageBlockchainCard = () => {
             isRestricted={isRestricted}
             restrictionMessage={restrictionMessage}
             onToggleMetrics={() => setShowExtendedMetrics(!showExtendedMetrics)}
-            onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
           {/* Share CTA — sits between the URL header and the actions panel.
@@ -373,7 +355,6 @@ const PageBlockchainCard = () => {
                       )
                     }
                   }}
-                  disabled={modal.intentionState.loading}
                   certifiedContexts={certifiedContexts}
                 />
               </div>
@@ -578,64 +559,6 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
-      {modal.showWeightModal &&
-        createPortal(
-          <WeightModal
-            isOpen={modal.showWeightModal}
-            triplets={modal.modalTriplets}
-            isProcessing={modal.intentionState.loading}
-            transactionSuccess={modal.intentionState.success}
-            transactionError={modal.intentionState.error || undefined}
-            transactionHash={modal.intentionState.transactionHash || undefined}
-            createdCount={
-              modal.intentionState.operationType === "created" ? 1 : 0
-            }
-            depositCount={
-              modal.intentionState.operationType === "deposit" ? 1 : 0
-            }
-            isIntentionCertification={!!modal.modalTriplets[0]?.intention}
-            discoveryReward={reward.discoveryReward}
-            onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
-            rewardClaimed={reward.rewardClaimed}
-            showXpAnimation={true}
-            positionBoard={
-              <>
-                <PagePositionBoard
-                  positions={positions}
-                  userPosition={userPosition}
-                  totalPositions={totalPositions}
-                  variant="compact"
-                  loading={totalPositions === 0}
-                />
-                <ShareCertificationButton
-                  pageUrl={currentUrl}
-                  pageTitle={pageTitle}
-                  userStatus={userPosition?.status ?? null}
-                  userRank={userPosition?.rank ?? null}
-                  totalPositions={totalPositions}
-                />
-              </>
-            }
-            onClose={() => {
-              modal.handleModalClose()
-              reward.resetReward()
-              refetchCertifications()
-            }}
-            onSubmit={(customWeights) =>
-              modal.handleModalSubmit(customWeights, {
-                currentUrl,
-                pageTitle,
-                totalCertifications,
-                userHasCertified: effectiveUserHasCertified,
-                pauseRefresh,
-                resumeRefresh,
-                fetchDataForCurrentPage,
-                calculateAndTriggerReward: reward.calculateAndTriggerReward
-              })
-            }
-          />,
-          document.body
-        )}
     </div>
   )
 }
