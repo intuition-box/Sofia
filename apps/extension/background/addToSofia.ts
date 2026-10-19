@@ -64,7 +64,19 @@ function buildMenu() {
     const base = { contexts: CONTEXTS, documentUrlPatterns: DOCUMENT_PATTERNS }
     const child = { ...base, parentId: ROOT_ID }
     chrome.contextMenus.create({ ...base, id: ROOT_ID, title: "Sofia" })
+    // The full qualification modal (categories, tags, title autocomplete)
+    // comes first; the one-click intentions follow.
+    chrome.contextMenus.create({
+      ...child,
+      id: MORE_ID,
+      title: "Add to Sofia…"
+    })
     MENU_GROUPS.forEach((group, i) => {
+      chrome.contextMenus.create({
+        ...child,
+        id: `sofia-sep-${i}`,
+        type: "separator"
+      })
       for (const [type, entry] of group) {
         chrome.contextMenus.create({
           ...child,
@@ -72,18 +84,53 @@ function buildMenu() {
           title: entry.label
         })
       }
-      chrome.contextMenus.create({
-        ...child,
-        id: `sofia-sep-${i}`,
-        type: "separator"
-      })
-    })
-    chrome.contextMenus.create({
-      ...child,
-      id: MORE_ID,
-      title: "More options…"
     })
   })
+}
+
+// ── Talking to the page ─────────────────────────────────────────────────────
+
+const MODAL_SCRIPT = chrome.runtime
+  .getManifest()
+  .content_scripts?.flatMap((c) => c.js ?? [])
+  .find((file) => file.includes("add-to-sofia-modal"))
+
+const NO_RECEIVER = "Receiving end does not exist"
+
+/**
+ * Deliver a message to the page's modal content script. Tabs opened before
+ * the extension was (re)loaded have no content script — inject it on demand
+ * instead of silently doing nothing, then retry while it mounts.
+ */
+async function sendToPage(tabId: number, message: object): Promise<boolean> {
+  try {
+    await chrome.tabs.sendMessage(tabId, message)
+    return true
+  } catch (error) {
+    // Delivered but nobody answered → fine. Only a missing receiver needs work.
+    if (!String(error).includes(NO_RECEIVER)) return true
+  }
+  if (!MODAL_SCRIPT) return false
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: [MODAL_SCRIPT]
+    })
+  } catch (error) {
+    logger.warn("Can't inject the Sofia modal in this tab", error)
+    return false
+  }
+  // The modal registers its listener once React has mounted
+  for (let attempt = 0; attempt < 10; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    try {
+      await chrome.tabs.sendMessage(tabId, message)
+      return true
+    } catch (error) {
+      if (!String(error).includes(NO_RECEIVER)) return true
+    }
+  }
+  return false
 }
 
 // ── In-page feedback ────────────────────────────────────────────────────────
@@ -97,14 +144,7 @@ function toast(
   text: string,
   link?: { href: string; label: string }
 ) {
-  chrome.tabs.sendMessage(
-    tabId,
-    { type: "SOFIA_TOAST", id, kind, text, link },
-    () => {
-      // No content script (restricted page / tab opened before install)
-      void chrome.runtime.lastError
-    }
-  )
+  void sendToPage(tabId, { type: "SOFIA_TOAST", id, kind, text, link })
 }
 
 /** Readable tail of a wrapped error ("Batch creation failed: X" → "X") */
@@ -306,15 +346,7 @@ export function initAddToSofia(): void {
 
     if (menuId !== MORE_ID) return
     const title = isLink ? url : tab.title || url
-    chrome.tabs.sendMessage(
-      tab.id,
-      { type: "ADD_TO_SOFIA_OPEN", url, title, isLink },
-      () => {
-        // The content script isn't present on tabs opened before the extension
-        // loaded (or on restricted pages) — swallow the "no receiver" error.
-        void chrome.runtime.lastError
-      }
-    )
+    void sendToPage(tab.id, { type: "ADD_TO_SOFIA_OPEN", url, title, isLink })
   })
 
   logger.info("Add to Sofia context menu registered")
