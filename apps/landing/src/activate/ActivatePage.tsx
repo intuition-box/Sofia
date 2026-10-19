@@ -30,11 +30,23 @@ import {
   type NetworkName,
 } from './delegation'
 import styles from '../auth/auth.module.css'
+import { AmountField } from './AmountField'
+import limitStyles from './activate.module.css'
 
 type Action = 'activate' | 'topup' | 'fund' | 'withdraw' | 'revoke'
 type Phase = 'idle' | 'working' | 'done' | 'error'
 
 const DEFAULT_BUDGET = '10'
+const BUDGET_PRESETS = ['5', '10', '25'] as const
+const DAILY_CAP_PRESETS = ['5', '10', '25'] as const
+const PER_ACTION_PRESETS = ['1', '5', '10'] as const
+
+/** "" or "0" can't become a limit — fail with a readable message */
+const toWei = (value: string, what: string) => {
+  if (!value || Number(value) <= 0)
+    throw new Error(`Enter an amount for ${what}.`)
+  return parseEther(value)
+}
 
 function readParams() {
   const q = new URLSearchParams(window.location.search)
@@ -159,8 +171,8 @@ export function ActivatePage() {
       const wallet = expected as Address
       const sessionKey = params.sessionKey as Address
       const limits = {
-        dailyCap: parseEther(dailyCap),
-        maxPerAction: parseEther(maxPerAction),
+        dailyCap: toWei(dailyCap, 'the daily limit'),
+        maxPerAction: toWei(maxPerAction, 'the per-action limit'),
       }
       if (limits.maxPerAction > limits.dailyCap) {
         throw new Error('The per-action limit cannot exceed the daily limit.')
@@ -180,7 +192,7 @@ export function ActivatePage() {
           net,
           account.address,
           sessionKey,
-          parseEther(budget),
+          toWei(budget, 'the budget'),
           setStep,
         )
         setStep('Sign the publishing permission in your wallet')
@@ -273,7 +285,7 @@ export function ActivatePage() {
       await fundBudget(
         await getClients(),
         params.account as Address,
-        parseEther(budget),
+        toWei(budget, 'the budget'),
       )
     })
 
@@ -322,16 +334,12 @@ export function ActivatePage() {
     (needsAccount && !params.account)
 
   const budgetInput = (
-    <label className={styles.instructionsText}>
-      Budget (TRUST){' '}
-      <input
-        type="number"
-        min="0.5"
-        step="0.5"
-        value={budget}
-        onChange={(e) => setBudget(e.target.value)}
-      />
-    </label>
+    <AmountField
+      label="Publishing budget"
+      value={budget}
+      presets={BUDGET_PRESETS}
+      onChange={setBudget}
+    />
   )
 
   return (
@@ -404,28 +412,20 @@ export function ActivatePage() {
                 Positions always land in your wallet, and Sofia can only deposit
                 into them, within these limits, for {DURATION_DAYS} days.
               </p>
-              <div className={styles.instructions}>
+              <div className={limitStyles.limits}>
                 {kind === 'hybrid' && budgetInput}
-                <label className={styles.instructionsText}>
-                  Max per day (TRUST){' '}
-                  <input
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value={dailyCap}
-                    onChange={(e) => setDailyCap(e.target.value)}
-                  />
-                </label>
-                <label className={styles.instructionsText}>
-                  Max per action (TRUST){' '}
-                  <input
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value={maxPerAction}
-                    onChange={(e) => setMaxPerAction(e.target.value)}
-                  />
-                </label>
+                <AmountField
+                  label="Max per day"
+                  value={dailyCap}
+                  presets={DAILY_CAP_PRESETS}
+                  onChange={setDailyCap}
+                />
+                <AmountField
+                  label="Max per action"
+                  value={maxPerAction}
+                  presets={PER_ACTION_PRESETS}
+                  onChange={setMaxPerAction}
+                />
               </div>
               {error && <p className={styles.subtext}>{error}</p>}
               <button className={styles.claimBtn} onClick={activate}>
@@ -436,7 +436,7 @@ export function ActivatePage() {
         ) : (
           <>
             {params.action === 'fund' && (
-              <div className={styles.instructions}>{budgetInput}</div>
+              <div className={limitStyles.limits}>{budgetInput}</div>
             )}
             {error && <p className={styles.subtext}>{error}</p>}
             {params.action === 'revoke' ? (
