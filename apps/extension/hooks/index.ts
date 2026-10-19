@@ -11,8 +11,6 @@ export { useCreateAtom } from './useCreateAtom'
 export { useCreateTripleOnChain } from './useCreateTripleOnChain'
 export { useWeightOnChain } from './useWeightOnChain'
 export { useRedeemTriple } from './useRedeemTriple'
-export { useRedeemGlobalStake } from './useRedeemGlobalStake'
-export { useDepositGlobalStake } from './useDepositGlobalStake'
 export { useIntentionCertify } from './useIntentionCertify'
 export { useTrustAccount } from './useTrustAccount'
 
@@ -75,7 +73,6 @@ export { useOnChainStreak } from './useOnChainStreak'
 export type { OnChainStreakResult } from './useOnChainStreak'
 
 // Global Stake
-export { useGlobalStake, GS_FEE_DENOMINATOR } from './useGlobalStake'
 export { useFeeEstimate } from './useFeeEstimate'
 
 // UI Utilities

@@ -13,7 +13,7 @@
  * - hooks/useTrustAccount.ts: Trust hook (uses createTripleOnChain)
  * - AtomService.ts: atom creation
  * - blockchainService.ts: low-level blockchain operations
- * - GlobalStakeService.ts: split calculation for global stake
+ * - PlatformPoolService.ts: platform pool share, taken out of the stake
  */
 
 import { getPublicClient } from '../clients/viemClients'
@@ -21,7 +21,6 @@ import { getSigner } from '../signer'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { BlockchainService } from './blockchainService'
-import { globalStakeService } from './GlobalStakeService'
 import { platformPoolService } from './PlatformPoolService'
 import { createServiceLogger } from '../utils/logger'
 import { explicitGasLimit } from '../utils/gasLimit'
@@ -145,9 +144,9 @@ class TripleServiceClass {
   }
 
   /**
-   * Append GS + PP entries to batch arrays in a SINGLE pass.
-   * Computes the combined signal ratio once, avoiding double-scaling.
-   * Mutates the arrays in place.
+   * Take the platform pool share OUT of the stake: scale the signal entries
+   * down by the pool amount, then append one pool entry per platform.
+   * The user pays exactly `totalDepositAmount`. Mutates the arrays in place.
    */
   private appendPoolDeposits(
     termIds: string[],
@@ -158,23 +157,17 @@ class TripleServiceClass {
   ): void {
     if (totalDepositAmount === 0n) return
 
-    const gsEnabled = globalStakeService.isEnabled()
-    const gsSplit = gsEnabled ? globalStakeService.calculateSplit(totalDepositAmount) : null
-    const gsConfig = gsEnabled ? globalStakeService.getConfig() : null
-
     const ppEnabled = platformPoolService.isEnabled() && platformTermIds.length > 0
     const ppSplit = ppEnabled ? platformPoolService.calculateSplit(totalDepositAmount) : null
 
-    // Calculate combined signal ratio in one pass
-    // signal = total - gsAmount - ppAmount
-    const gsAmount = gsSplit?.globalAmount ?? 0n
-    const ppAmount = ppSplit?.platformAmount ?? 0n
-    const signalAmount = totalDepositAmount - gsAmount - ppAmount
+    if (!ppSplit) return
+
+    const ppAmount = ppSplit.platformAmount
+    const signalAmount = totalDepositAmount - ppAmount
 
     if (signalAmount <= 0n) {
       logger.warn("Pool deposits would consume entire deposit, skipping", {
         total: totalDepositAmount.toString(),
-        gs: gsAmount.toString(),
         pp: ppAmount.toString()
       })
       return
@@ -186,29 +179,17 @@ class TripleServiceClass {
       assets[i] = (assets[i] * signalAmount) / totalDepositAmount
     }
 
-    // Append GS entry
-    if (gsSplit && gsConfig) {
-      termIds.push(gsConfig.termId)
-      curveIds.push(gsConfig.curveId)
-      assets.push(gsAmount)
-      logger.debug("GS appended", { amount: gsAmount.toString() })
-    }
-
     // Append PP entries (split equally per platform)
-    if (ppSplit && platformTermIds.length > 0) {
-      const perPlatform = ppAmount / BigInt(platformTermIds.length)
-      if (perPlatform > 0n) {
-        for (const termId of platformTermIds) {
-          termIds.push(termId)
-          curveIds.push(1n)
-          assets.push(perPlatform)
-        }
-        logger.debug("PP appended", {
-          count: platformTermIds.length,
-          perPlatform: perPlatform.toString()
-        })
-      }
+    const perPlatform = ppAmount / BigInt(platformTermIds.length)
+    for (const termId of platformTermIds) {
+      termIds.push(termId)
+      curveIds.push(1n)
+      assets.push(perPlatform)
     }
+    logger.debug("PP appended", {
+      count: platformTermIds.length,
+      perPlatform: perPlatform.toString()
+    })
   }
 
   /**
@@ -233,10 +214,10 @@ class TripleServiceClass {
    * Create or deposit on a triple with already-resolved vault IDs.
    *
    * When the triple exists and global stake is enabled, uses depositBatch
-   * to combine main deposit + GS deposit in a single TX.
+   * to combine main deposit + platform pool deposit in a single TX.
    *
    * When the triple doesn't exist, creates it first, then does a separate
-   * GS deposit (can't mix createTriples + depositBatch).
+   * platform pool deposit (can't mix createTriples + depositBatch).
    *
    * @param depositCurveId - Curve for deposits. Default 2n (progressive).
    *   Votes use 1n (linear) via CREATION_CURVE_ID.
@@ -273,7 +254,7 @@ class TripleServiceClass {
         const curveIds = [depositCurveId]
         const assets = [depositAmount]
 
-        // Append GS + PP if enabled (single pass, no double-scaling)
+        // Append platform pool entries if enabled (taken out of the stake)
         this.appendPoolDeposits(termIds, curveIds, assets, depositAmount, [])
 
         let hash: Hash
@@ -282,7 +263,7 @@ class TripleServiceClass {
           // depositBatch: main + pools in 1 TX
           hash = await this.executeDepositBatch(address, termIds, curveIds, assets)
         } else {
-          // Single deposit (GS disabled or amount too small)
+          // Single deposit (no platform pool for this deposit)
           const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
 
           const signer = await getSigner()
@@ -343,11 +324,7 @@ class TripleServiceClass {
         const tripleCost = await BlockchainService.getTripleCost()
         const totalDeposit = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
 
-        // Split deposit: reduce signal amount if GS enabled, GS deposited separately after create
-        const split = globalStakeService.isEnabled()
-          ? globalStakeService.calculateSplit(totalDeposit)
-          : null
-        const signalDeposit = split ? split.mainAmount : totalDeposit
+        const signalDeposit = totalDeposit
 
         const multiVaultCost = tripleCost + signalDeposit
         const totalCost = await BlockchainService.getTotalCreationCost(1, signalDeposit, multiVaultCost)
@@ -367,7 +344,6 @@ class TripleServiceClass {
           objectId,
           tripleVaultId,
           signalDeposit: signalDeposit.toString(),
-          gsAmount: split?.globalAmount?.toString() || '0',
           totalCost: totalCost.toString()
         })
 
@@ -402,34 +378,6 @@ class TripleServiceClass {
 
         if (receipt.status !== 'success') {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-        }
-
-        // Global stake deposit after successful create (separate TX, non-blocking on failure)
-        if (split) {
-          try {
-            const config = globalStakeService.getConfig()
-            const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
-
-            const gsHash = await signer.writeContract({
-              address: contractAddress as Address,
-              abi: SofiaFeeProxyAbi,
-              functionName: 'deposit',
-              args: [
-                address as Address,
-                config.termId as Address,
-                config.curveId,
-                0n
-              ],
-              value: gsCost,
-              maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-              maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
-            })
-
-            await publicClient.waitForTransactionReceipt({ hash: gsHash })
-            logger.info('Global stake deposit after create succeeded')
-          } catch (gsError) {
-            logger.warn('Global stake deposit failed (non-blocking)', gsError)
-          }
         }
 
         return {
@@ -513,15 +461,16 @@ class TripleServiceClass {
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
 
-        // Split: reduce signal amounts if GS enabled, GS deposited separately after create
+        // Platform pool share is taken OUT of the stake: scale the signal
+        // deposits down, the pool deposits go in a depositBatch after create.
         const totalOriginal = originalAmounts.reduce((sum, a) => sum + a, 0n)
-        const batchSplit = globalStakeService.isEnabled()
-          ? globalStakeService.calculateSplit(totalOriginal)
+        const createPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
+        const ppSplit = createPlatformTermIds.length > 0
+          ? platformPoolService.calculateSplit(totalOriginal)
           : null
 
-        // Scale down each deposit proportionally if GS active
-        const depositAmounts = batchSplit
-          ? originalAmounts.map(a => (a * batchSplit.mainAmount) / totalOriginal)
+        const depositAmounts = ppSplit
+          ? originalAmounts.map(a => (a * ppSplit.mainAmount) / totalOriginal)
           : originalAmounts
 
         const depositCount = depositAmounts.filter(a => a > 0n).length
@@ -587,29 +536,18 @@ class TripleServiceClass {
             })
           }
 
-          // Global stake + platform pool after batch create (separate TX, non-blocking)
+          // Platform pool deposits after creation (separate TX, non-blocking),
+          // one per unique platform — the share already left the signal above
           const postCreateTermIds: string[] = []
           const postCreateCurveIds: bigint[] = []
           const postCreateAssets: bigint[] = []
 
-          if (batchSplit) {
-            const config = globalStakeService.getConfig()
-            postCreateTermIds.push(config.termId)
-            postCreateCurveIds.push(config.curveId)
-            postCreateAssets.push(batchSplit.globalAmount)
-          }
-
-          // Platform pool deposits after creation (one per unique platform)
-          const createPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
-          if (createPlatformTermIds.length > 0) {
-            const ppSplit = platformPoolService.calculateSplit(totalDeposit)
-            if (ppSplit) {
-              const perPlatform = ppSplit.platformAmount / BigInt(createPlatformTermIds.length)
-              for (const ptId of createPlatformTermIds) {
-                postCreateTermIds.push(ptId)
-                postCreateCurveIds.push(1n)
-                postCreateAssets.push(perPlatform)
-              }
+          if (ppSplit) {
+            const perPlatform = ppSplit.platformAmount / BigInt(createPlatformTermIds.length)
+            for (const ptId of createPlatformTermIds) {
+              postCreateTermIds.push(ptId)
+              postCreateCurveIds.push(1n)
+              postCreateAssets.push(perPlatform)
             }
           }
 
@@ -622,7 +560,7 @@ class TripleServiceClass {
                 postCreateAssets
               )
               await publicClient.waitForTransactionReceipt({ hash: postCreateHash })
-              logger.info('Post-create deposits succeeded (GS + platform pool)', {
+              logger.info('Post-create platform pool deposits succeeded', {
                 entries: postCreateTermIds.length
               })
             } catch (postError) {
@@ -669,7 +607,7 @@ class TripleServiceClass {
               fallbackAssets.push(depositAmount)
             }
 
-            // Append GS + PP in single pass
+            // Append platform pool entries (taken out of the stake)
             const totalFallbackDeposit = fallbackAssets.reduce((sum, a) => sum + a, 0n)
             const fallbackPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
             this.appendPoolDeposits(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit, fallbackPlatformTermIds)
@@ -721,12 +659,12 @@ class TripleServiceClass {
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
 
-        // Append GS + PP in single pass
+        // Append platform pool entries (taken out of the stake)
         const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
         const depositPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
         this.appendPoolDeposits(termIds, curveIds, assets, totalDeposit, depositPlatformTermIds)
 
-        // Single depositBatch for all existing triple deposits + GS + PP
+        // Single depositBatch for all existing triple deposits + platform pool
         const depositHash = await this.executeDepositBatch(
           address,
           termIds,

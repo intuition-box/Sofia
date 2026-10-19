@@ -51,8 +51,8 @@ interface WeightBasketRowProps {
   lockedSingle: boolean
   ppEnabled: boolean
   detectPlatformFromUrl: DetectPlatformFn
+  /** Platform pool share (0–80000 / 100000) — set once in Settings */
   getPpForSlug: (slug: string) => number
-  setPpForSlug: (slug: string, pct: number) => void
   onToggle: () => void
   onWeightSelect: (id: WeightOptionId) => void
 }
@@ -68,7 +68,6 @@ export default function WeightBasketRow({
   ppEnabled,
   detectPlatformFromUrl,
   getPpForSlug,
-  setPpForSlug,
   onToggle,
   onWeightSelect
 }: WeightBasketRowProps) {
@@ -310,24 +309,6 @@ export default function WeightBasketRow({
               {platform.label} · whole platform
             </span>
             <span className="b3-dest-ctl">
-              <input
-                type="range"
-                min={0}
-                max={100000}
-                step={1000}
-                value={getPpForSlug(platform.slug)}
-                onChange={(e) =>
-                  setPpForSlug(platform.slug, Number(e.target.value))
-                }
-                disabled={!on || isProcessing}
-                aria-label={`${platform.label} share`}
-                className="b3-dest-range"
-                style={
-                  {
-                    "--pp-fill": `${getPpForSlug(platform.slug) / 1000}%`
-                  } as React.CSSProperties
-                }
-              />
               <span className="b3-dest-pct">
                 {(getPpForSlug(platform.slug) / 1000).toFixed(0)}%
               </span>

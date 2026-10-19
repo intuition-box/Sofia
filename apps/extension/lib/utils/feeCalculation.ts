@@ -1,4 +1,13 @@
-import type { FeeParams, ProtocolCosts, CostEstimate } from "../../types/blockchain"
+import type {
+  CostEstimate,
+  FeeParams,
+  ProtocolCosts
+} from "../../types/blockchain"
+
+/** Platform pool share denominator (PlatformPoolService) */
+const PP_DENOMINATOR = 100000
+/** PlatformPoolService.MIN_PLATFORM_DEPOSIT, in TRUST */
+const MIN_PLATFORM_DEPOSIT = 0.01
 
 /**
  * Pure function to estimate the total cost of a certification action.
@@ -8,16 +17,12 @@ import type { FeeParams, ProtocolCosts, CostEstimate } from "../../types/blockch
  * passed in — this function does zero network calls.
  *
  * @param depositTrust   Total deposit chosen by user (e.g. 0.5 TRUST)
- * @param gsPercentage   Global Stake slider value (0-100000, denom 100000)
- * @param gsDenominator  Global Stake denominator (100000)
  * @param feeParams      Fee params read from SofiaFeeProxy contract
  * @param protocolCosts  Protocol costs read from MultiVault contract
  * @param options        Optional flags for CREATE vs DEPOSIT path
  */
 export function estimateCertificationCost(
   depositTrust: number,
-  gsPercentage: number,
-  gsDenominator: number,
   feeParams: FeeParams,
   protocolCosts: ProtocolCosts,
   options?: {
@@ -32,8 +37,10 @@ export function estimateCertificationCost(
     contextTripleCount?: number
     /** True if "in context of" predicate atom must be created (mainnet first use) */
     needsContextPredicateAtom?: boolean
-    /** Platform pool percentage (0-100000, same denominator as GS) */
+    /** Platform pool share of the stake (0-80000, denominator 100000) */
     ppPercentage?: number
+    /** Unique platforms in the batch — one pool deposit entry each */
+    platformCount?: number
   }
 ): CostEstimate {
   const { depositFixed, depositPct, creationFixed, feeDenom } = feeParams
@@ -45,18 +52,20 @@ export function estimateCertificationCost(
   const contextTripleCount = options?.contextTripleCount ?? 0
   const needsContextPredicateAtom = options?.needsContextPredicateAtom ?? false
   const ppPercentage = options?.ppPercentage ?? 0
+  const platformCount = options?.platformCount ?? (ppPercentage > 0 ? 1 : 0)
 
   const atomCostTrust = Number(atomCost) / 1e18
 
-  // --- Deposit split (GS + Platform Pool) ---
-  const poolFraction = gsPercentage / gsDenominator
-  const ppFraction = ppPercentage / gsDenominator
-  const poolAmount = depositTrust * poolFraction
-  const platformPoolAmount = depositTrust * ppFraction
-  const signalAmount = depositTrust - poolAmount - platformPoolAmount
-  // Each item gets deposit entries: signal + GS (if > 0) + PP (if > 0)
-  const depositsPerItem = 1 + (poolAmount > 0 ? 1 : 0) + (platformPoolAmount > 0 ? 1 : 0)
-  const depositCount = depositsPerItem * itemCount
+  // --- Deposit split: the platform pool share is taken OUT of the stake ---
+  // (below the 0.01 TRUST minimum the service skips it — mirror that)
+  const rawPlatformAmount =
+    platformCount > 0 ? depositTrust * (ppPercentage / PP_DENOMINATOR) : 0
+  const platformPoolAmount =
+    rawPlatformAmount >= MIN_PLATFORM_DEPOSIT ? rawPlatformAmount : 0
+  const signalAmount = depositTrust - platformPoolAmount
+  const platformEntries = platformPoolAmount > 0 ? platformCount : 0
+  // One signal entry per item + one pool entry per unique platform
+  const depositCount = itemCount + platformEntries
 
   // --- Sofia fees (from SofiaFeeProxy) ---
   // Fixed fee: depositFixedFee per deposit entry
@@ -99,43 +108,28 @@ export function estimateCertificationCost(
       ? atomCostTrust + creationFixedPerUnit
       : 0
     contextTripleCost =
-      (ctxTripleCost * contextTripleCount) +
-      (minDeposit * contextTripleCount) +
-      ctxSofiaFixed + ctxSofiaPct + ctxCreationFixed +
+      ctxTripleCost * contextTripleCount +
+      minDeposit * contextTripleCount +
+      ctxSofiaFixed +
+      ctxSofiaPct +
+      ctxCreationFixed +
       ctxPredicateAtomCost
   }
 
-  // --- Post-create deposit fees (GS + PP are deposited in separate TX after creation) ---
-  // Each separate deposit entry incurs its own sofia fixed + % fees
-  let postCreateFees = 0
-  if (isNewTriple) {
-    let postCreateEntries = 0
-    let postCreateTotal = 0
-    // GS deposit
-    if (poolAmount > 0) {
-      postCreateEntries++
-      postCreateTotal += poolAmount
-    }
-    // PP deposit(s)
-    if (platformPoolAmount > 0) {
-      postCreateEntries++
-      postCreateTotal += platformPoolAmount
-    }
-    if (postCreateEntries > 0) {
-      postCreateFees =
-        (fixedFeePerDeposit * postCreateEntries) +
-        (pctRate * postCreateTotal)
-    }
-  }
-
   // --- Totals ---
-  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost + contextTripleCost + postCreateFees
+  // (on the CREATE path the pool entries go in a separate depositBatch after
+  // creation — their fixed fees are already counted in depositCount above)
+  const totalFees =
+    sofiaFixedFee +
+    sofiaPercentFee +
+    creationFixedFeeTotal +
+    creationCost +
+    contextTripleCost
   const totalEstimate = depositTrust + totalFees
 
   return {
     depositAmount: depositTrust,
     signalAmount,
-    poolAmount,
     platformPoolAmount,
     creationCost,
     sofiaFixedFee,
@@ -144,6 +138,6 @@ export function estimateCertificationCost(
     totalFees,
     totalEstimate,
     depositCount,
-    contextTripleCost,
+    contextTripleCost
   }
 }

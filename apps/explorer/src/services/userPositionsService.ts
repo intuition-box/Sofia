@@ -14,6 +14,7 @@ import {
   useGetUserMarketPositionsQuery,
   type GetUserMarketPositionsQuery,
 } from '@0xsofia/graphql'
+import { SEASON_POOL_TERM_ID } from '@/config'
 import { extractDomain } from '@/utils/formatting'
 import { netDeposited } from './platformMarketService'
 
@@ -189,7 +190,12 @@ export function aggregateUserPositions(
       kind: platformTermIds.has(termId.toLowerCase()) ? 'platform' : 'atom',
       side: null,
       claimTermId: null,
-      title: atom?.value?.thing?.name || atom?.label || 'Atom',
+      // The Beta season ended — deposits no longer flow there, but existing
+      // shares stay withdrawable from here (Exit).
+      title:
+        termId.toLowerCase() === SEASON_POOL_TERM_ID.toLowerCase()
+          ? 'Beta Season Pool (ended)'
+          : atom?.value?.thing?.name || atom?.label || 'Atom',
       predicateLabel: null,
       subjectLabel: null,
       url,

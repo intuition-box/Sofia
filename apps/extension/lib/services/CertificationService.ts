@@ -31,7 +31,6 @@ import { normalizeUrl } from "../utils/normalizeUrl"
 import { atomService } from "./AtomService"
 import { BlockchainService } from "./blockchainService"
 import { cartService } from "./CartService"
-import { globalStakeService } from "./GlobalStakeService"
 import { goldService } from "./GoldService"
 import { platformPoolService } from "./PlatformPoolService"
 import { questTrackingService } from "./QuestTrackingService"
@@ -80,12 +79,9 @@ export interface SubmitCartResult {
 }
 
 class CertificationServiceClass {
-  /** Load per-wallet pool preferences (no React subscriber in the worker). */
+  /** Load the wallet's pool preference (no React subscriber in the worker). */
   private async preparePools(wallet: string): Promise<void> {
-    await Promise.all([
-      globalStakeService.ensureLoaded(wallet),
-      platformPoolService.ensureLoaded(wallet)
-    ])
+    await platformPoolService.ensureLoaded(wallet)
   }
 
   /** Certify one object with one predicate (create or deposit). */
@@ -409,11 +405,7 @@ class CertificationServiceClass {
     }
   }
 
-  /**
-   * Deposit with automatic Global Stake pool split.
-   * If GS is enabled and split is valid, uses depositBatch (1 TX for signal + pool).
-   * Otherwise falls back to a single deposit. Never throws.
-   */
+  /** Single deposit on an existing triple (no pool split). Never throws. */
   async depositWithPool(
     wallet: string,
     tripleVaultId: string,
@@ -425,95 +417,34 @@ class CertificationServiceClass {
         throw new Error("No wallet connected")
       }
 
-      await globalStakeService.ensureLoaded(wallet)
-      const split = globalStakeService.isEnabled()
-        ? globalStakeService.calculateSplit(depositAmount)
-        : null
-
       const signer = await getSigner()
       const publicClient = getPublicClient()
       const contractAddress = BlockchainService.getContractAddress()
-      let hash: Hash
 
-      if (split) {
-        // depositBatch: signal vault + GS pool vault = 1 confirmation
-        const config = globalStakeService.getConfig()
-        const termIds = [tripleVaultId as Address, config.termId as Address]
-        const curveIds = [curveId, config.curveId]
-        const assets = [split.mainAmount, split.globalAmount]
-        const minShares = await BlockchainService.previewDepositMinSharesBatch(
-          termIds,
-          curveIds,
-          assets
-        )
-        const totalDeposit = split.mainAmount + split.globalAmount
-        const fee = await BlockchainService.calculateDepositFee(2, totalDeposit)
-        const totalValue = totalDeposit + fee
+      const totalCost =
+        await BlockchainService.getTotalDepositCost(depositAmount)
+      const minShares = await BlockchainService.previewDepositMinShares(
+        tripleVaultId,
+        curveId,
+        depositAmount
+      )
 
-        logger.debug("depositWithPool batch", {
-          signalAmount: split.mainAmount.toString(),
-          globalAmount: split.globalAmount.toString(),
-          fee: fee.toString(),
-          totalValue: totalValue.toString()
-        })
+      logger.debug("deposit", {
+        depositAmount: depositAmount.toString(),
+        totalCost: totalCost.toString(),
+        curveId: curveId.toString()
+      })
 
-        const args = [
-          wallet as Address,
-          termIds,
-          curveIds,
-          assets,
-          minShares
-        ] as const
-
-        await publicClient.simulateContract({
-          address: contractAddress,
-          abi: SofiaFeeProxyAbi,
-          functionName: "depositBatch",
-          args,
-          value: totalValue,
-          account: signer.account
-        })
-
-        hash = await signer.writeContract({
-          address: contractAddress,
-          abi: SofiaFeeProxyAbi,
-          functionName: "depositBatch",
-          args,
-          value: totalValue
-        })
-      } else {
-        // Single deposit (GS disabled or amount too small)
-        const totalCost =
-          await BlockchainService.getTotalDepositCost(depositAmount)
-
-        logger.debug("depositWithPool single", {
-          depositAmount: depositAmount.toString(),
-          totalCost: totalCost.toString(),
-          curveId: curveId.toString()
-        })
-
-        const minShares = await BlockchainService.previewDepositMinShares(
-          tripleVaultId,
-          curveId,
-          depositAmount
-        )
-
-        hash = await signer.writeContract({
-          address: contractAddress,
-          abi: SofiaFeeProxyAbi,
-          functionName: "deposit",
-          args: [
-            wallet as Address,
-            tripleVaultId as Address,
-            curveId,
-            minShares
-          ],
-          value: totalCost,
-          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
-        })
-      }
+      const hash = await signer.writeContract({
+        address: contractAddress,
+        abi: SofiaFeeProxyAbi,
+        functionName: "deposit",
+        args: [wallet as Address, tripleVaultId as Address, curveId, minShares],
+        value: totalCost,
+        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
+      })
 
       logger.debug("Deposit transaction sent", { hash })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -524,11 +455,10 @@ class CertificationServiceClass {
         )
       }
 
-      logger.debug("depositWithPool successful", { hash })
       txEventBus.emit("deposit", hash)
       return { success: true, txHash: hash }
     } catch (error) {
-      logger.error("depositWithPool failed", error)
+      logger.error("Deposit failed", error)
       const errorMessage =
         error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       return { success: false, error: `Deposit failed: ${errorMessage}` }

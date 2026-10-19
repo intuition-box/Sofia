@@ -5,6 +5,7 @@ import { useWalletFromStorage, disconnectWallet } from '../../hooks'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import DelegatedPublishingSettings from '../ui/DelegatedPublishingSettings'
+import PlatformPoolSettings from '../ui/PlatformPoolSettings'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import { Storage } from '@plasmohq/storage'
 import { tripletsDataService, userSettingsService } from '../../lib/database'
@@ -175,6 +176,9 @@ const SettingsPage = () => {
 
       {/* === Publish without popup === */}
       <DelegatedPublishingSettings />
+
+      {/* === Platform pool (one share for cart + right-click) === */}
+      <PlatformPoolSettings />
 
       {/* === Data & Privacy === */}
       <div className="settings-section">

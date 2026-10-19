@@ -8,7 +8,6 @@ import {
   useFeeEstimate,
   useOnboardingClaim
 } from "~/hooks"
-import { globalStakeService } from "~/lib/services"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { getIntentionBadge } from "~/types/intentionCategories"
 import { createHookLogger } from "~/lib/utils"
@@ -31,12 +30,10 @@ const weightOptions: WeightOption[] = [
   { id: "max", label: "Max", value: 10, description: "10 TRUST" }
 ]
 
-const FEE_DENOMINATOR = 100000
-
 const STEP_HINTS = [
   "This is your first claim — a trust signal on the Intuition protocol.",
   "Choose how much TRUST to stake on this signal.",
-  "Allocate a portion to the Beta Season Pool.",
+  "Your stake goes to this page — it stays your position.",
   "Review the total cost before confirming.",
   "Confirm your first claim on-chain!"
 ]
@@ -72,10 +69,6 @@ const OnboardingClaimModal = ({
     useState<WeightOption["id"] | null>(null)
   const [customValue, setCustomValue] = useState("")
   const [processingStep, setProcessingStep] = useState("")
-  const [gsPercentage, setGsPercentage] = useState<number>(() =>
-    globalStakeService.getUserPercentage()
-  )
-  const [gsInteracted, setGsInteracted] = useState(false)
   const [alreadyClaimed, setAlreadyClaimed] = useState(false)
 
   const { walletAddress } = useWalletFromStorage()
@@ -86,8 +79,6 @@ const OnboardingClaimModal = ({
   const userBalance = balanceData
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
-
-  const gsEnabled = globalStakeService.isEnabled()
 
   // Check if already claimed on mount
   useEffect(() => {
@@ -101,13 +92,6 @@ const OnboardingClaimModal = ({
       })
     }
   }, [isOpen, walletAddress, hasCompletedFirstClaim, onClose])
-
-  // Resync GS preference when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setGsPercentage(globalStakeService.getUserPercentage())
-    }
-  }, [isOpen])
 
   // Processing animation steps
   useEffect(() => {
@@ -163,37 +147,10 @@ const OnboardingClaimModal = ({
 
     const createOpts = { isNewTriple: true, newAtomCount: 1 }
 
-    if (totalTrust <= 0 || !gsEnabled) {
-      const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
-      return {
-        totalTrust,
-        signalAmount: totalTrust,
-        poolAmount: 0,
-        belowMinimum: false,
-        creationCost: costEstimate?.creationCost ?? 0,
-        sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
-        sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
-        totalFees: costEstimate?.totalFees ?? 0,
-        totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
-        depositCount: costEstimate?.depositCount ?? 1
-      }
-    }
-
-    const poolAmount = (totalTrust * gsPercentage) / FEE_DENOMINATOR
-    const signalAmount = totalTrust - poolAmount
-    const config = globalStakeService.getConfig()
-    const minDeposit = Number(config.minGlobalDeposit) / 1e18
-    const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
-
-    const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
     const costEstimate =
-      estimate?.(totalTrust, effectiveGsPercentage, createOpts) ?? null
-
+      totalTrust > 0 ? (estimate?.(totalTrust, createOpts) ?? null) : null
     return {
       totalTrust,
-      signalAmount,
-      poolAmount,
-      belowMinimum,
       creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
@@ -201,14 +158,10 @@ const OnboardingClaimModal = ({
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeight, customValue, gsPercentage, gsEnabled, estimate])
+  }, [selectedWeight, customValue, estimate])
 
   const handleSubmit = useCallback(async () => {
     try {
-      if (gsEnabled) {
-        globalStakeService.setUserPercentage(gsPercentage)
-      }
-
       const minimumValue = weightOptions.find(
         (opt) => opt.id === "minimum"
       )!.value!
@@ -235,22 +188,20 @@ const OnboardingClaimModal = ({
     } catch (error) {
       logger.error("Failed to submit onboarding claim", error)
     }
-  }, [selectedWeight, customValue, gsPercentage, gsEnabled, submitClaim])
+  }, [selectedWeight, customValue, submitClaim])
 
   const handleClose = useCallback(() => {
     reset()
     setSelectedWeight(null)
     setCustomValue("")
-    setGsInteracted(false)
     onClose()
   }, [reset, onClose])
 
   // Can continue to next step?
   const canContinue = useMemo(() => {
     if (step === 2) return selectedWeight !== null
-    if (step === 3) return gsInteracted
     return true
-  }, [step, selectedWeight, gsInteracted])
+  }, [step, selectedWeight])
 
   const handleContinue = useCallback(() => {
     if (!canContinue) return
@@ -417,61 +368,6 @@ const OnboardingClaimModal = ({
                 </div>
               )}
 
-              {/* Step 3+: Global Stake slider */}
-              {isFormState && gsEnabled && (
-                <div
-                  className={`onboarding-section ${step >= 3 ? "visible" : ""} ${step === 3 ? "highlighted" : ""}`}
-                >
-                  <div className="gs-slider-section">
-                    <div className="gs-slider-header">
-                      <span className="gs-slider-label">Beta Season Pool</span>
-                      <span className="gs-slider-value">
-                        {gsPercentage / 1000}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={50000}
-                      step={1000}
-                      value={gsPercentage}
-                      onChange={(e) => {
-                        setGsPercentage(Number(e.target.value))
-                        setGsInteracted(true)
-                      }}
-                      className="gs-slider-input"
-                      style={
-                        {
-                          "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
-                        } as React.CSSProperties
-                      }
-                      disabled={txLoading}
-                    />
-                    <div className="gs-slider-breakdown">
-                      <div className="gs-slider-breakdown-item">
-                        <span className="gs-slider-breakdown-label">Signal</span>
-                        <span className="gs-slider-breakdown-value">
-                          {formatTrust(breakdown.signalAmount)} TRUST
-                        </span>
-                      </div>
-                      <div className="gs-slider-breakdown-item">
-                        <span className="gs-slider-breakdown-label">
-                          Beta Season Pool
-                        </span>
-                        <span className="gs-slider-breakdown-value pool">
-                          {formatTrust(breakdown.poolAmount)} TRUST
-                        </span>
-                      </div>
-                    </div>
-                    {breakdown.belowMinimum && (
-                      <span className="gs-slider-minimum-hint">
-                        Below minimum — pool contribution skipped
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Step 4+: Cost ledger (b3) */}
               {isFormState && (
                 <div
@@ -482,24 +378,6 @@ const OnboardingClaimModal = ({
                       <span>Deposit</span>
                       <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
                     </div>
-                    {gsEnabled &&
-                      gsPercentage > 0 &&
-                      !breakdown.belowMinimum && (
-                        <>
-                          <div className="b3-ledger-row">
-                            <span>Signal</span>
-                            <span>
-                              {formatTrust(breakdown.signalAmount)} TRUST
-                            </span>
-                          </div>
-                          <div className="b3-ledger-row">
-                            <span>Beta Season Pool</span>
-                            <span>
-                              {formatTrust(breakdown.poolAmount)} TRUST
-                            </span>
-                          </div>
-                        </>
-                      )}
                     {breakdown.totalFees > 0 && (
                       <div className="b3-ledger-row">
                         <span>Fees</span>

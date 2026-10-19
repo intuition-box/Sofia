@@ -10,8 +10,6 @@ import { formatTrust, type WeightBreakdown } from "./types"
 export interface WeightTotalProps {
   breakdown: WeightBreakdown
   userBalance: number
-  gsEnabled: boolean
-  gsPercentage: number
   hasPlatforms: boolean
   platformLabel: string
   fixedDeposit?: number
@@ -20,15 +18,12 @@ export interface WeightTotalProps {
 const WeightTotal = ({
   breakdown,
   userBalance,
-  gsEnabled,
-  gsPercentage,
   hasPlatforms,
   platformLabel,
   fixedDeposit
 }: WeightTotalProps) => {
   const insufficient = breakdown.totalEstimate > userBalance
-  const showGsSplit =
-    gsEnabled && gsPercentage > 0 && !breakdown.belowMinimum
+  const showPlatformSplit = hasPlatforms && breakdown.platformPoolAmount > 0
   const showFees = breakdown.totalFees > 0
 
   return (
@@ -45,7 +40,7 @@ const WeightTotal = ({
         </div>
       </div>
 
-      {(showGsSplit || hasPlatforms || showFees) && (
+      {(showPlatformSplit || showFees) && (
         <details className="weight-total__details">
           <summary>Breakdown</summary>
 
@@ -54,24 +49,17 @@ const WeightTotal = ({
             <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
           </div>
 
-          {showGsSplit && (
+          {showPlatformSplit && (
             <>
               <div className="weight-total__row weight-total__row--sub">
-                <span>Signal</span>
+                <span>Signal (this page)</span>
                 <span>{formatTrust(breakdown.signalAmount)} TRUST</span>
               </div>
               <div className="weight-total__row weight-total__row--sub">
-                <span>Beta Season Pool</span>
-                <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
+                <span>{platformLabel}</span>
+                <span>{formatTrust(breakdown.platformPoolAmount)} TRUST</span>
               </div>
             </>
-          )}
-
-          {hasPlatforms && breakdown.platformPoolAmount > 0 && (
-            <div className="weight-total__row weight-total__row--sub">
-              <span>{platformLabel}</span>
-              <span>{formatTrust(breakdown.platformPoolAmount)} TRUST</span>
-            </div>
           )}
 
           {showFees && (

@@ -38,13 +38,11 @@ import {
   deriveDailyStreak,
   deriveVerifiedOAuthPlatforms,
   deriveIntentionGroups,
-  deriveGlobalStakePosition,
   realtimeKeys
 } from "./derivations"
 import {
   DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_VOTE_ATOM_ID,
-  GLOBAL_STAKE
+  DAILY_VOTE_ATOM_ID
 } from "~/lib/config/chainConfig"
 import {
   markConnecting,
@@ -63,7 +61,6 @@ import {
  * Contents:
  * - DAILY_CERTIFICATION_ATOM_ID → powers deriveDailyStreak.certifiedToday
  * - DAILY_VOTE_ATOM_ID → powers deriveDailyStreak.votedToday
- * - GLOBAL_STAKE.TERM_ID → powers deriveGlobalStakePosition (Beta pool)
  *
  * Future candidates (require dynamic resolution, not hardcoded):
  * - The user's Account atom term_id → drives followers count (requires an
@@ -71,8 +68,7 @@ import {
  */
 const TRACKED_TERM_IDS: string[] = [
   DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_VOTE_ATOM_ID,
-  GLOBAL_STAKE.TERM_ID
+  DAILY_VOTE_ATOM_ID
 ]
 
 const toQueryString = (doc: unknown): string => {
@@ -263,10 +259,6 @@ export class SubscriptionManager {
       qc.setQueryData(
         realtimeKeys.intentionGroups(wallet),
         deriveIntentionGroups(positions)
-      )
-      qc.setQueryData(
-        realtimeKeys.globalStakePosition(wallet),
-        deriveGlobalStakePosition(positions)
       )
 
       // Aggregate views — consumed by profile UI.

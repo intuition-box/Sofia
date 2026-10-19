@@ -21,9 +21,8 @@ import '../styles/CircleFeedTab.css'
 
 const ScoreTab = lazy(() => import('./score-tabs/ScoreTab'))
 const AchievementsTab = lazy(() => import('./score-tabs/AchievementsTab'))
-const PoolTab = lazy(() => import('./score-tabs/PoolTab'))
 
-type ScoreTab = 'stats' | 'quests' | 'pool'
+type ScoreTab = 'stats' | 'quests'
 
 const ScorePage = () => {
   const [activeTab, setActiveTab] = useState<ScoreTab>('stats')
@@ -97,14 +96,6 @@ const ScorePage = () => {
             >
               Quests
             </button>
-            <button
-              type="button"
-              className={`sub-tab ${activeTab === 'pool' ? 'active' : ''}`}
-              aria-pressed={activeTab === 'pool'}
-              onClick={() => setActiveTab('pool')}
-            >
-              Pool
-            </button>
           </div>
           <button
             type="button"
@@ -164,7 +155,6 @@ const ScorePage = () => {
               voteActivityDates={userProgress.voteActivityDates}
             />
           )}
-          {activeTab === 'pool' && <PoolTab />}
         </Suspense>
       </div>
     </div>

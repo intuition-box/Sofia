@@ -40,13 +40,9 @@ interface WeightAmplifyTicketProps {
   ppEnabled: boolean
   detectPlatformFromUrl: DetectPlatformFn
   getPpForSlug: (slug: string) => number
-  setPpForSlug: (slug: string, pct: number) => void
   onApplyAll: (optionId: WeightOptionId) => void
   onWeightSelect: (index: number, optionId: WeightOptionId) => void
   curveSelector?: CurveSelector
-  gsEnabled: boolean
-  gsPercentage: number
-  setGsPercentage: (pct: number) => void
   breakdown: WeightBreakdown
   platformLabel: string
   userBalance: number
@@ -69,13 +65,9 @@ export default function WeightAmplifyTicket({
   ppEnabled,
   detectPlatformFromUrl,
   getPpForSlug,
-  setPpForSlug,
   onApplyAll,
   onWeightSelect,
   curveSelector,
-  gsEnabled,
-  gsPercentage,
-  setGsPercentage,
   breakdown,
   platformLabel,
   userBalance,
@@ -188,7 +180,6 @@ export default function WeightAmplifyTicket({
                   ppEnabled={ppEnabled}
                   detectPlatformFromUrl={detectPlatformFromUrl}
                   getPpForSlug={getPpForSlug}
-                  setPpForSlug={setPpForSlug}
                   onToggle={() => toggleRow(index, triplet, on)}
                   onWeightSelect={(id) => onWeightSelect(index, id)}
                 />
@@ -222,66 +213,11 @@ export default function WeightAmplifyTicket({
             </div>
           )}
 
-          {gsEnabled && (
-            <div className="b3-extra">
-              <div className="gs-slider-section">
-                <div className="gs-slider-header">
-                  <span className="gs-slider-label">Beta Season Pool</span>
-                  <span className="gs-slider-value">
-                    {gsPercentage / 1000}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={50000}
-                  step={1000}
-                  value={gsPercentage}
-                  onChange={(e) => setGsPercentage(Number(e.target.value))}
-                  className="gs-slider-input"
-                  style={
-                    {
-                      "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
-                    } as React.CSSProperties
-                  }
-                  disabled={isProcessing}
-                />
-                <div className="gs-slider-breakdown">
-                  <div className="gs-slider-breakdown-item">
-                    <span className="gs-slider-breakdown-label">Signal</span>
-                    <span className="gs-slider-breakdown-value">
-                      {formatTrust(breakdown.signalAmount)} TRUST
-                    </span>
-                  </div>
-                  <div className="gs-slider-breakdown-item">
-                    <span className="gs-slider-breakdown-label">
-                      Beta Season Pool
-                    </span>
-                    <span className="gs-slider-breakdown-value pool">
-                      {formatTrust(breakdown.poolAmount)} TRUST
-                    </span>
-                  </div>
-                </div>
-                {breakdown.belowMinimum && (
-                  <span className="gs-slider-minimum-hint">
-                    Below minimum — pool contribution skipped
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
           <div className="b3-ledger">
             <div className="b3-ledger-row">
               <span>Subtotal</span>
               <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
             </div>
-            {breakdown.poolAmount > 0 && (
-              <div className="b3-ledger-row">
-                <span>Beta Season Pool</span>
-                <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
-              </div>
-            )}
             {breakdown.platformPoolAmount > 0 && (
               <div className="b3-ledger-row">
                 <span>{platformLabel}</span>

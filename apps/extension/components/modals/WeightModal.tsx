@@ -4,10 +4,8 @@ import { formatUnits, getAddress } from "viem"
 import { useBalance } from "wagmi"
 
 import {
-  GS_FEE_DENOMINATOR,
   PP_FEE_DENOMINATOR,
   useFeeEstimate,
-  useGlobalStake,
   useGoldSystem,
   usePlatformPool,
   useWalletFromStorage
@@ -116,27 +114,14 @@ const WeightModal = ({
   const [selectedWeights, setSelectedWeights] = useState<WeightOptionId[]>([])
   const [processingStep, setProcessingStep] = useState("")
 
-  const { gsEnabled, gsConfig, getUserPercentage, setUserPercentage } =
-    useGlobalStake()
-  const [gsPercentage, setGsPercentage] = useState<number>(() =>
-    getUserPercentage()
-  )
-
+  // One platform pool share for every platform, set in Settings (0–80%),
+  // taken out of the stake — never added on top.
   const {
     ppEnabled,
-    getUserPercentage: getPPPercentage,
-    setUserPercentage: setPPPercentage,
+    percentage: ppPercentage,
     detectPlatformFromUrl
   } = usePlatformPool()
-  const [ppPerPlatform, setPpPerPlatform] = useState<Record<string, number>>({})
-
-  const setPpForSlug = (slug: string, pct: number) => {
-    setPpPerPlatform((prev) => ({ ...prev, [slug]: pct }))
-  }
-
-  const getPpForSlug = (slug: string): number => {
-    return ppPerPlatform[slug] ?? getPPPercentage()
-  }
+  const getPpForSlug = (): number => ppPercentage
 
   const detectedPlatforms = useMemo(() => {
     const seen = new Set<string>()
@@ -167,13 +152,6 @@ const WeightModal = ({
   const userBalance = balanceData
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
-
-  useEffect(() => {
-    if (isOpen) {
-      setGsPercentage(getUserPercentage())
-      setPpPerPlatform({})
-    }
-  }, [isOpen, getUserPercentage, getPPPercentage])
 
   const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set())
   const [globalWeight, setGlobalWeight] =
@@ -254,11 +232,7 @@ const WeightModal = ({
           : 0
       return n + c
     }, 0)
-    const totalPPPercentage = hasPlatforms
-      ? detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) /
-        detectedPlatforms.length
-      : 0
-    const effectivePP = Math.round(totalPPPercentage)
+    const effectivePP = ppEnabled && hasPlatforms ? ppPercentage : 0
     const createOpts = {
       isNewTriple,
       newAtomCount,
@@ -267,45 +241,20 @@ const WeightModal = ({
       contextTripleCount,
       needsContextPredicateAtom:
         needsContextPredicateAtom && contextTripleCount > 0,
-      ppPercentage: effectivePP
+      ppPercentage: effectivePP,
+      platformCount: detectedPlatforms.length
     }
 
-    if (totalTrust <= 0 || !gsEnabled) {
-      const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
-      const platformPoolAmount = (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
-      return {
-        totalTrust,
-        signalAmount: totalTrust - platformPoolAmount,
-        poolAmount: 0,
-        platformPoolAmount,
-        belowMinimum: false,
-        creationCost: costEstimate?.creationCost ?? 0,
-        sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
-        sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
-        contextTripleCost: costEstimate?.contextTripleCost ?? 0,
-        totalFees: costEstimate?.totalFees ?? 0,
-        totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
-        depositCount: costEstimate?.depositCount ?? 1
-      }
-    }
-
-    const poolAmount = (totalTrust * gsPercentage) / GS_FEE_DENOMINATOR
-    const platformPoolAmount = (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
-    const signalAmount = totalTrust - poolAmount - platformPoolAmount
-    const minDeposit = Number(gsConfig.minGlobalDeposit) / 1e18
-    const perItemPool = activeCount > 0 ? poolAmount / activeCount : poolAmount
-    const belowMinimum = perItemPool > 0 && perItemPool < minDeposit
-
-    const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
     const costEstimate =
-      estimate?.(totalTrust, effectiveGsPercentage, createOpts) ?? null
+      totalTrust > 0 ? (estimate?.(totalTrust, createOpts) ?? null) : null
+    const platformPoolAmount =
+      costEstimate?.platformPoolAmount ??
+      (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
 
     return {
       totalTrust,
-      signalAmount,
-      poolAmount,
+      signalAmount: totalTrust - platformPoolAmount,
       platformPoolAmount,
-      belowMinimum,
       creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
@@ -316,10 +265,8 @@ const WeightModal = ({
     }
   }, [
     selectedWeights,
-    gsPercentage,
-    ppPerPlatform,
-    gsEnabled,
-    gsConfig,
+    ppPercentage,
+    ppEnabled,
     estimate,
     fixedDeposit,
     isNewTriple,
@@ -335,16 +282,6 @@ const WeightModal = ({
 
   const handleSubmit = async () => {
     try {
-      if (gsEnabled) {
-        setUserPercentage(gsPercentage)
-      }
-      if (ppEnabled && hasPlatforms) {
-        const avgPP =
-          detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) /
-          detectedPlatforms.length
-        setPPPercentage(Math.round(avgPP))
-      }
-
       const weightBigIntArray: (bigint | null)[] = selectedWeights.map(
         (selectedWeight, index) => {
           if (removedIndices.has(index)) return null
@@ -442,7 +379,7 @@ const WeightModal = ({
                   <p className="modal-description">
                     {fixedDeposit != null
                       ? "Review the cost breakdown before confirming."
-                      : "Set your deposit, allocate to pools, review fees and confirm."}
+                      : "Set your deposit, review fees and confirm."}
                   </p>
                 )}
 
@@ -470,10 +407,7 @@ const WeightModal = ({
                           fixedDeposit={fixedDeposit}
                           showRemoveButton={triplets.length > 1}
                           canRemove={activeCount > 1}
-                          ppEnabled={ppEnabled}
                           detectPlatformFromUrl={detectPlatformFromUrl}
-                          getPpForSlug={getPpForSlug}
-                          onPpChange={setPpForSlug}
                           onWeightSelect={handleWeightSelection}
                           onRemove={() => {
                             setRemovedIndices((prev) =>
@@ -507,61 +441,10 @@ const WeightModal = ({
                   </div>
                 )}
 
-                {isFormState && gsEnabled && (
-                  <div className="gs-slider-section">
-                    <div className="gs-slider-header">
-                      <span className="gs-slider-label">Beta Season Pool</span>
-                      <span className="gs-slider-value">
-                        {gsPercentage / 1000}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={50000}
-                      step={1000}
-                      value={gsPercentage}
-                      onChange={(e) => setGsPercentage(Number(e.target.value))}
-                      className="gs-slider-input"
-                      style={
-                        {
-                          "--gs-fill-pct": `${(gsPercentage / 50000) * 100}%`
-                        } as React.CSSProperties
-                      }
-                      disabled={isProcessing}
-                    />
-                    <div className="gs-slider-breakdown">
-                      <div className="gs-slider-breakdown-item">
-                        <span className="gs-slider-breakdown-label">
-                          Signal
-                        </span>
-                        <span className="gs-slider-breakdown-value">
-                          {formatTrust(breakdown.signalAmount)} TRUST
-                        </span>
-                      </div>
-                      <div className="gs-slider-breakdown-item">
-                        <span className="gs-slider-breakdown-label">
-                          Beta Season Pool
-                        </span>
-                        <span className="gs-slider-breakdown-value pool">
-                          {formatTrust(breakdown.poolAmount)} TRUST
-                        </span>
-                      </div>
-                    </div>
-                    {breakdown.belowMinimum && (
-                      <span className="gs-slider-minimum-hint">
-                        Below minimum — pool contribution skipped
-                      </span>
-                    )}
-                  </div>
-                )}
-
                 {isFormState && (
                   <WeightTotal
                     breakdown={breakdown}
                     userBalance={userBalance}
-                    gsEnabled={gsEnabled}
-                    gsPercentage={gsPercentage}
                     hasPlatforms={hasPlatforms}
                     platformLabel={platformLabel}
                     fixedDeposit={fixedDeposit}
@@ -648,13 +531,9 @@ const WeightModal = ({
             ppEnabled={ppEnabled}
             detectPlatformFromUrl={detectPlatformFromUrl}
             getPpForSlug={getPpForSlug}
-            setPpForSlug={setPpForSlug}
             onApplyAll={handleApplyAll}
             onWeightSelect={handleWeightSelection}
             curveSelector={curveSelector}
-            gsEnabled={gsEnabled}
-            gsPercentage={gsPercentage}
-            setGsPercentage={setGsPercentage}
             breakdown={breakdown}
             platformLabel={platformLabel}
             userBalance={userBalance}

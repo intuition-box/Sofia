@@ -31,9 +31,7 @@ export const getWeightValue = (id: WeightOptionId): number => {
 export interface WeightBreakdown {
   totalTrust: number
   signalAmount: number
-  poolAmount: number
   platformPoolAmount: number
-  belowMinimum: boolean
   creationCost: number
   sofiaFixedFee: number
   sofiaPercentFee: number

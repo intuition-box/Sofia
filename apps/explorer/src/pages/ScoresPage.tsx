@@ -59,7 +59,6 @@ import { TopicPill } from '@/components/profile/FeedPills'
 import { categoryPills } from '@/config/contextNodes'
 import { ScoresDonut, type Seg } from '@/components/scores/ScoresDonut'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
-import { SEASON_POOL_TERM_ID } from '@/config'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
 
@@ -883,17 +882,11 @@ export default function ScoresPage() {
                     </div>
                   )}
                   {userPool && (
-                    <button
-                      type="button"
-                      className="sc2-pool-redeem"
-                      disabled
-                      aria-disabled="true"
-                      onClick={() =>
-                        redeemCert(SEASON_POOL_TERM_ID, 'Beta Season Pool', '')
-                      }
-                    >
+                    // The season ended: exit from the Positions page, which
+                    // lists the pool as "Beta Season Pool (ended)".
+                    <Link to="/positions" className="sc2-pool-redeem">
                       Exit position
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>

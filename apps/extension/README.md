@@ -231,7 +231,7 @@ Click intention/trust/distrust pill
 **WeightModal** is the unified transaction confirmation UI across all flows (certify, vote, follow, trust/distrust, quest claim). It displays:
 - Intention badge (colored tag with intention type)
 - Deposit amount selection (0.01, 0.5, 1, 5, 10 TRUST + custom)
-- Beta Season Pool slider (split deposit between signal vault and shared pool)
+- Platform pool share (read-only, set in Settings) when the page belongs to a known platform
 - Fee breakdown grouped by source: Sofia fees + Intuition protocol fees
 
 ---
@@ -349,13 +349,14 @@ AI analyzes your on-chain certifications to build your interest profile:
 - Curated on-chain lists queryable via `has_tag` predicate
 - Displayed with market cap and position count
 
-#### Beta Season Pool
-A shared staking vault where a percentage of each deposit is automatically allocated:
-- **Default split:** 20% of deposit goes to the Beta Season Pool, 80% to signal vault
-- **Adjustable:** Users can set 0–50% via a slider in WeightModal
-- **Stats card** on the Profile Stats tab shows: My Stake, P&L (profit/loss), total stakers
-- **On-chain vault:** Linear bonding curve (curveId=1), tracked via `GlobalStakeService`
-- **Minimum deposit:** 0.01 TRUST — below this, pool contribution is skipped
+#### Platform pool
+When a page belongs to a known platform (GitHub, YouTube…), part of the stake also backs the platform's atom:
+- **Taken out of the stake**, never added on top — the user pays exactly the amount chosen
+- **One share for everything** (cart and right-click): 10% by default, 0–80% in Settings (`PlatformPoolService`)
+- **The shares stay the user's** (receiver = user wallet); linear curve (curveId=1), one entry per unique platform
+- **Minimum:** 0.01 TRUST — below this, the platform share is skipped
+
+The Beta Season Pool (Feb–Apr 2026) is over: deposits no longer go there. Existing shares stay withdrawable from the explorer's Positions page.
 
 ---
 
@@ -438,7 +439,7 @@ User Transaction
 
 #### Fee Transparency
 Before confirming, WeightModal shows a real-time cost breakdown:
-- **Deposit** — user-selected amount, split into Signal + Beta Season Pool
+- **Deposit** — user-selected amount, split into Signal + platform pool (when a platform is detected)
 - **Fees** — total, with sub-items: Sofia fee (fixed + 5%) and Intuition fee (creation only, zero for existing triples)
 - **Total** — deposit + all fees
 - Fee params are read from on-chain contracts via `BlockchainService` and cached in memory

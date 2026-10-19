@@ -226,7 +226,6 @@ const ScoreTab = ({ trustedByCount, level = 1, totalXP = 0 }: ScoreTabProps) => 
         </div>
       </div>
 
-      {/* Beta Season Pool now lives in its own PoolTab — see ScorePage. */}
     </div>
   )
 }

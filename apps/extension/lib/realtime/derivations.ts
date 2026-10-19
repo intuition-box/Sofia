@@ -18,7 +18,6 @@ import {
   DAILY_STREAK_STAKE,
   DAILY_VOTE_ATOM_ID,
   DAILY_VOTE_STAKE,
-  GLOBAL_STAKE,
   PREDICATE_IDS
 } from "~/lib/config/chainConfig"
 import { INTENTION_PREDICATE_IDS as INTENTION_PREDICATE_IDS_ARRAY } from "~/lib/config/predicateConstants"
@@ -48,9 +47,7 @@ export const realtimeKeys = {
   dailyStreak: (wallet: string) => ["daily-streak", wallet] as const,
   verifiedOAuthPlatforms: (wallet: string) =>
     ["verified-oauth-platforms", wallet] as const,
-  intentionGroups: (wallet: string) => ["intention-groups", wallet] as const,
-  globalStakePosition: (wallet: string) =>
-    ["global-stake-position", wallet] as const
+  intentionGroups: (wallet: string) => ["intention-groups", wallet] as const
 }
 
 // ── BigInt helpers (stable cache shape) ─────────────────────────────────────
@@ -272,28 +269,6 @@ export function deriveIntentionGroups(
     }
   }
   return Array.from(byUrl.values())
-}
-
-// ── Global stake position ───────────────────────────────────────────────────
-
-export interface GlobalStakePositionView {
-  shares: string
-  hasPosition: boolean
-}
-
-/**
- * User's position on the Beta season global stake atom. The GLOBAL_STAKE.TERM_ID
- * must be in TRACKED_TERM_IDS so we receive updates regardless of whether
- * this position is in the user's top-500 by shares.
- */
-export function deriveGlobalStakePosition(
-  positions: Position[]
-): GlobalStakePositionView {
-  const p = positions.find((pos) => pos.term_id === GLOBAL_STAKE.TERM_ID)
-  return {
-    shares: String(p?.shares ?? "0"),
-    hasPosition: !!p && sharesToBigInt(p.shares) > 0n
-  }
 }
 
 // ── User profile / stats (real implementations) ─────────────────────────────

@@ -6,8 +6,6 @@ import { createHookLogger } from "~/lib/utils"
 
 const logger = createHookLogger("useFeeEstimate")
 
-const GS_DENOMINATOR = 100000
-
 export function useFeeEstimate() {
   const [feeParams, setFeeParams] = useState<FeeParams | null>(null)
   const [protocolCosts, setProtocolCosts] = useState<ProtocolCosts | null>(null)
@@ -55,7 +53,6 @@ export function useFeeEstimate() {
   const estimate = useCallback(
     (
       depositTrust: number,
-      gsPercentage: number,
       opts?: {
         isNewTriple?: boolean
         newAtomCount?: number
@@ -64,13 +61,12 @@ export function useFeeEstimate() {
         contextTripleCount?: number
         needsContextPredicateAtom?: boolean
         ppPercentage?: number
+        platformCount?: number
       }
     ): CostEstimate | null => {
       if (!feeParams || !protocolCosts) return null
       return estimateCertificationCost(
         depositTrust,
-        gsPercentage,
-        GS_DENOMINATOR,
         feeParams,
         protocolCosts,
         opts

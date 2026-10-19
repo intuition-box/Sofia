@@ -47,9 +47,6 @@ export { discoveryScoreService } from './DiscoveryScoreService'
 export { UserCertificationsServiceClass, userCertificationsService } from './UserCertificationsService'
 export type { TripleDetail, CertificationEntry } from './UserCertificationsService'
 
-// Global Stake
-export { globalStakeService } from './GlobalStakeService'
-
 // Cart
 export { cartService } from './CartService'
 
@@ -57,7 +54,7 @@ export { cartService } from './CartService'
 export { topicPositionsService } from './TopicPositionsService'
 
 // Platform Pool
-export { platformPoolService } from './PlatformPoolService'
+export { platformPoolService, MAX_PLATFORM_PERCENTAGE } from './PlatformPoolService'
 
 // Browsing Nudge
 export { browsingNudgeService } from './BrowsingNudgeService'

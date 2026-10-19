@@ -748,6 +748,9 @@
 /* Redeem the season-pool position — routes through the cart → MultiVault.redeem
    (curve 1, all shares). */
 .sc2-pool-redeem {
+  display: block;
+  text-align: center;
+  text-decoration: none;
   margin-top: 2px;
   padding: 13px 18px;
   border: none;

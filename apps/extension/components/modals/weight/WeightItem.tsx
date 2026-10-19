@@ -31,12 +31,9 @@ export interface WeightItemProps {
   fixedDeposit?: number
   showRemoveButton: boolean
   canRemove: boolean
-  ppEnabled: boolean
   detectPlatformFromUrl: (
     url: string
   ) => { slug: string; termId: string; label: string } | null
-  getPpForSlug: (slug: string) => number
-  onPpChange: (slug: string, pct: number) => void
   onWeightSelect: (index: number, optionId: WeightOptionId) => void
   onRemove: () => void
 }
@@ -50,10 +47,7 @@ const WeightItem = ({
   fixedDeposit,
   showRemoveButton,
   canRemove,
-  ppEnabled,
   detectPlatformFromUrl,
-  getPpForSlug,
-  onPpChange,
   onWeightSelect,
   onRemove
 }: WeightItemProps) => {
@@ -138,33 +132,6 @@ const WeightItem = ({
         </div>
       )}
 
-      {isFormState && ppEnabled && detectedPlatform && (
-        <details className="weight-item__pp">
-          <summary>{detectedPlatform.label} Pool contribution</summary>
-          <div className="pp-item-slider">
-            <input
-              type="range"
-              min={0}
-              max={50000}
-              step={1000}
-              value={getPpForSlug(detectedPlatform.slug)}
-              onChange={(e) =>
-                onPpChange(detectedPlatform.slug, Number(e.target.value))
-              }
-              className="pp-item-slider__input"
-              style={
-                {
-                  "--pp-fill-pct": `${(getPpForSlug(detectedPlatform.slug) / 50000) * 100}%`
-                } as React.CSSProperties
-              }
-              disabled={isProcessing}
-            />
-            <span className="pp-item-slider__value">
-              {getPpForSlug(detectedPlatform.slug) / 1000}%
-            </span>
-          </div>
-        </details>
-      )}
     </div>
   )
 }

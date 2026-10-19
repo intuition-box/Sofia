@@ -86,7 +86,6 @@ export interface ProtocolCosts {
 export interface CostEstimate {
   depositAmount: number
   signalAmount: number
-  poolAmount: number
   creationCost: number        // tripleCost + atomCost×n (mandatory on CREATE, 0 on DEPOSIT)
   sofiaFixedFee: number
   sofiaPercentFee: number

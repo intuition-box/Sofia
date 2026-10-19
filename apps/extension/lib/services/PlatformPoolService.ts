@@ -23,6 +23,9 @@ const logger = createServiceLogger("PlatformPoolService")
 
 const FEE_DENOMINATOR = 100000n
 const DEFAULT_PERCENTAGE = 10000 // 10%
+/** Users choose 0–80% of their stake for the platform pool */
+export const MAX_PLATFORM_PERCENTAGE = 80000
+export const PLATFORM_PERCENTAGE_DENOMINATOR = Number(FEE_DENOMINATOR)
 const MIN_PLATFORM_DEPOSIT = 10000000000000000n // 0.01 TRUST
 
 export interface PlatformPoolState {
@@ -59,15 +62,24 @@ class PlatformPoolServiceClass {
 
   /** Load the wallet's % override without subscribing (service-worker path). */
   async ensureLoaded(wallet: string): Promise<void> {
-    await this.loadUserPreference(wallet.toLowerCase())
+    this.currentWallet = wallet.toLowerCase()
+    await this.loadUserPreference(this.currentWallet)
   }
 
   getUserPercentage(): number {
     return this.userPercentageOverride ?? DEFAULT_PERCENTAGE
   }
 
+  /** Push the effective percentage to useSyncExternalStore subscribers */
+  private notify() {
+    this.state = { ...this.state, percentage: this.getUserPercentage() }
+    for (const listener of this.listeners) listener()
+  }
+
   async setUserPercentage(pct: number): Promise<void> {
+    pct = Math.max(0, Math.min(MAX_PLATFORM_PERCENTAGE, Math.round(pct)))
     this.userPercentageOverride = pct
+    this.notify()
     if (this.currentWallet) {
       const key = getWalletKey("pp_user_percentage", this.currentWallet)
       await chrome.storage.local.set({ [key]: pct }).catch(() => {})
@@ -152,12 +164,15 @@ class PlatformPoolServiceClass {
     try {
       const key = getWalletKey("pp_user_percentage", wallet)
       const result = await chrome.storage.local.get(key)
-      if (result[key] != null) {
-        this.userPercentageOverride = result[key]
-        logger.debug("Loaded PP user preference", {
-          percentage: this.userPercentageOverride,
-        })
-      }
+      // Absent → back to the default (never keep another wallet's value)
+      this.userPercentageOverride =
+        result[key] != null
+          ? Math.min(MAX_PLATFORM_PERCENTAGE, Number(result[key]))
+          : null
+      this.notify()
+      logger.debug("Loaded PP user preference", {
+        percentage: this.userPercentageOverride,
+      })
     } catch {
       // Not in extension context
     }

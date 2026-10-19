@@ -1,6 +1,6 @@
 /**
  * usePlatformPool Hook
- * Thin wrapper over PlatformPoolService (mirrors useGlobalStake pattern).
+ * Thin wrapper over PlatformPoolService (useSyncExternalStore).
  */
 
 import { useCallback, useSyncExternalStore } from "react"
