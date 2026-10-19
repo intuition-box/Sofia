@@ -24,6 +24,7 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import PositionsHero from '@/components/profile/PositionsHero'
+import PortfolioChart from '@/components/positions/PortfolioChart'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
@@ -244,6 +245,8 @@ export default function PositionsPage() {
         isOwn={isOwn}
         background={pc.color}
       />
+
+      <PortfolioChart walletAddress={walletAddress} />
 
       <section className="mk-summary" aria-label="Positions summary">
         <div className="mk-summary-stat">

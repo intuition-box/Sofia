@@ -297,3 +297,46 @@ query GetUserMarketPositions(
     }
   }
 }
+
+# Positions chart — a wallet's daily position changes (shares and TRUST in/out
+# per vault and day), oldest first. Replayed client-side into cumulative
+# shares per vault. Pass the exact casings (checksummed + lowercase) with
+# `_in`: `_ilike` scans this view (12s vs 0.3s a page).
+query GetUserPositionHistory(
+  $addresses: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  position_change_daily(
+    where: { account_id: { _in: $addresses } }
+    order_by: [{ bucket: asc }, { term_id: asc }, { curve_id: asc }]
+    limit: $limit
+    offset: $offset
+  ) {
+    bucket
+    term_id
+    curve_id
+    assets_in_period
+    assets_out_period
+    shares_delta_period
+  }
+}
+
+# Positions chart — daily closing share price of a set of vaults. Only days
+# with a price change have a row: the caller carries the last price forward
+# (and uses a vault's first `first_share_price` before its first row).
+# The indexer keeps this history from 2026-02-16 on.
+query GetVaultPriceHistory($termIds: [String!]!, $limit: Int!, $offset: Int!) {
+  share_price_change_stats_daily(
+    where: { term_id: { _in: $termIds } }
+    order_by: [{ term_id: asc }, { curve_id: asc }, { bucket: asc }]
+    limit: $limit
+    offset: $offset
+  ) {
+    bucket
+    term_id
+    curve_id
+    first_share_price
+    last_share_price
+  }
+}

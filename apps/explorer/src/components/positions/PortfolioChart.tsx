@@ -1,0 +1,174 @@
+/**
+ * PortfolioChart — value of a wallet's positions over time, Trade Republic
+ * style: big headline value, performance for the period (deposits and exits
+ * left out), a clean area curve you can scrub, range chips underneath.
+ * Green when the period is up, red when it's down.
+ */
+import { useMemo, useState } from 'react'
+import {
+  Area,
+  AreaChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  YAxis,
+} from 'recharts'
+import SofiaLoader from '@/components/ui/SofiaLoader'
+import { usePortfolioHistory } from '@/hooks/usePortfolioHistory'
+import {
+  performance,
+  PORTFOLIO_RANGES,
+  sliceRange,
+  type PortfolioPoint,
+  type PortfolioRange,
+} from '@/services/portfolioHistoryService'
+
+const UP = '#22c55e'
+const DOWN = '#ef4444'
+
+function trust(n: number): string {
+  const abs = Math.abs(n)
+  const digits = abs >= 1000 ? 0 : abs >= 1 ? 2 : 4
+  return `${n.toLocaleString('en', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  })} T`
+}
+
+function signed(n: number): string {
+  return `${n >= 0 ? '+' : '−'}${trust(Math.abs(n))}`
+}
+
+const RANGE_LABEL: Record<PortfolioRange, string> = {
+  '1W': 'past week',
+  '1M': 'past month',
+  '3M': 'past 3 months',
+  '1Y': 'past year',
+  MAX: 'since the start',
+}
+
+function formatDay(t: number): string {
+  return new Date(t).toLocaleDateString('en', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+export default function PortfolioChart({
+  walletAddress,
+}: {
+  walletAddress?: string
+}) {
+  const { points, loading, error } = usePortfolioHistory(walletAddress)
+  const [range, setRange] = useState<PortfolioRange>('1M')
+  const [hover, setHover] = useState<number | null>(null)
+
+  const data = useMemo(() => sliceRange(points, range), [points, range])
+  const perf = useMemo(() => performance(data), [data])
+  // Scrubbing: the headline follows the finger / cursor
+  const shown: PortfolioPoint | undefined =
+    hover != null ? data[hover] : data[data.length - 1]
+  const shownPerf = useMemo(
+    () => (hover != null ? performance(data.slice(0, hover + 1)) : perf),
+    [hover, data, perf],
+  )
+  const color = perf.change >= 0 ? UP : DOWN
+
+  if (loading) {
+    return (
+      <section className="pf-chart pf-chart--loading">
+        <SofiaLoader size={40} />
+      </section>
+    )
+  }
+  if (error || points.length < 2) return null
+
+  return (
+    <section className="pf-chart" aria-label="Position value over time">
+      <div className="pf-head">
+        <span className="pf-value">{shown ? trust(shown.value) : '—'}</span>
+        <span className={`pf-perf ${shownPerf.change >= 0 ? 'up' : 'down'}`}>
+          {signed(shownPerf.change)}
+          {shownPerf.pct != null &&
+            ` (${shownPerf.pct >= 0 ? '+' : ''}${shownPerf.pct.toFixed(2)}%)`}
+          <span className="pf-perf-when">
+            {hover != null && shown ? formatDay(shown.t) : RANGE_LABEL[range]}
+          </span>
+        </span>
+      </div>
+
+      <div className="pf-plot">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={data}
+            margin={{ top: 8, right: 0, bottom: 0, left: 0 }}
+            onMouseMove={(s) =>
+              setHover(
+                typeof s?.activeTooltipIndex === 'number'
+                  ? s.activeTooltipIndex
+                  : null,
+              )
+            }
+            onMouseLeave={() => setHover(null)}
+          >
+            <defs>
+              <linearGradient id="pf-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={0.28} />
+                <stop offset="100%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <YAxis hide domain={['dataMin', 'dataMax']} />
+            <Tooltip
+              content={() => null}
+              cursor={{ stroke: 'var(--ds-muted)', strokeDasharray: '3 3' }}
+            />
+            <Line
+              type="monotone"
+              dataKey="invested"
+              stroke="var(--ds-muted)"
+              strokeWidth={1}
+              strokeDasharray="4 4"
+              dot={false}
+              activeDot={false}
+              isAnimationActive={false}
+            />
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={color}
+              strokeWidth={2.5}
+              fill="url(#pf-fill)"
+              activeDot={{ r: 4, fill: color, stroke: 'var(--ds-card)' }}
+              animationDuration={600}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="pf-foot">
+        <div className="pf-ranges" role="tablist" aria-label="Period">
+          {PORTFOLIO_RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              role="tab"
+              aria-selected={range === r.key}
+              className={`pf-range${range === r.key ? ' is-active' : ''}`}
+              onClick={() => {
+                setRange(r.key)
+                setHover(null)
+              }}
+            >
+              {r.key === 'MAX' ? 'Max' : r.key}
+            </button>
+          ))}
+        </div>
+        <span className="pf-legend">
+          <span className="pf-legend-dash" aria-hidden /> Net put in
+        </span>
+      </div>
+    </section>
+  )
+}
