@@ -1,6 +1,7 @@
 import { configureClient } from '@0xsofia/graphql'
 import { API_CONFIG } from '../config/chainConfig'
 import { createServiceLogger } from '../utils/logger'
+import { txEventBus } from '../services/TxEventBus'
 
 const logger = createServiceLogger('GraphQLClient')
 
@@ -150,13 +151,13 @@ export const intuitionGraphqlClient = {
     queryCache.clear()
   },
 
-  // Subscribe to TX events — clear cache on any TX
+  // Subscribe to TX events — clear cache on any TX. Static import: Parcel
+  // turns a dynamic import() of an already-bundled module into a sync
+  // require(), which has no .then() and crashed the side panel at load.
   _initTxSubscription: (() => {
-    import("../services/TxEventBus").then(({ txEventBus }) => {
-      txEventBus.on("*", () => {
-        queryCache.clear()
-        logger.debug("Cache cleared via TxEventBus")
-      })
+    txEventBus.on("*", () => {
+      queryCache.clear()
+      logger.debug("Cache cleared via TxEventBus")
     })
   })(),
 
