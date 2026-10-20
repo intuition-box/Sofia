@@ -7,33 +7,28 @@
  *   1. exit its legacy legs (both curves) — redeemBatch, chunked;
  *   2. prefill the cart with one Recommend for what was exited (progressive
  *      curve), the old intentions as tags. The user reviews, then confirms.
- * Only pages above a threshold move: every re-deposit pays Sofia's fixed fee
- * and, for a page without a market yet, the claim creation — not worth it
- * on dust. Support side only (no legacy `distrust` claims on mainnet).
+ * Only pages above a threshold move: every re-deposit pays Sofia's fee and,
+ * for a page without a market yet, the claim creation — not worth it on
+ * dust. Support side only (no legacy `distrust` claims on mainnet).
  *
- * Chain reads go through multicall in chunks: the public RPC rate-limits
- * bursts ("Bandwidth limit exceeded" at one call per page).
+ * No RPC read before signing: the public RPC has a per-IP bandwidth quota.
+ * Shares per curve come from the indexed positions, claim ids are computed
+ * locally (deterministic).
  */
-import { createPublicClient, http } from 'viem'
 import { CANONICAL_PREDICATE_IDS, SOFIA_I_ATOM_ID } from '@/config/atomIds'
 import {
   intentionTagForLegacyPredicate,
   isLegacyPagePredicate,
 } from '@0xsofia/taxonomy'
 import type { CartItem } from '@/hooks/useCart'
-import {
-  INTUITION_RPC_URL,
-  PROXY_ADDRESS,
-  SofiaFeeProxyAbi,
-  intuitionChain,
-} from '@/lib/contracts'
+import { calculateTripleId } from '@/lib/contracts'
 import { getFaviconUrl } from '@/utils/favicon'
 import { buildContextCartItem } from './contextCartService'
 import { getFeeParams, type WalletDescriptor } from './depositService'
 import {
-  findFundedLegs,
   redeemLegs,
   REDEEM_BATCH_SIZE,
+  type RedeemLeg,
   type RedeemResult,
 } from './redeemService'
 import { MIN_SIGNAL_TRUST } from './tripleCreationService'
@@ -45,14 +40,8 @@ export const EXIT_FEE_BPS = 75n
 export const MIGRATION_THRESHOLDS = [0, 0.5, 1, 5] as const
 export const DEFAULT_MIGRATION_THRESHOLD = 1
 
-const MULTICALL_CHUNK = 100
 const RECOMMEND_COLOR = '#22C55E'
 const WAD = 10n ** 18n
-
-const client = createPublicClient({
-  chain: intuitionChain,
-  transport: http(INTUITION_RPC_URL),
-})
 
 /** One page's legacy positions, grouped */
 export interface LegacyPage {
@@ -107,6 +96,21 @@ export const pagesAbove = (pages: readonly LegacyPage[], threshold: number) =>
 const afterExitFee = (value: bigint) =>
   (value * (10_000n - EXIT_FEE_BPS)) / 10_000n
 
+/** Every funded leg (vault × curve) of these pages, from the indexed data */
+function pageLegs(pages: readonly LegacyPage[]): RedeemLeg[] {
+  return pages.flatMap((p) =>
+    p.positions.flatMap((pos) =>
+      pos.legs
+        .filter((l) => BigInt(l.shares) > 0n)
+        .map((l) => ({
+          termId: pos.termId,
+          curveId: BigInt(l.curveId),
+          shares: BigInt(l.shares),
+        })),
+    ),
+  )
+}
+
 export interface MigrationEstimate {
   pages: number
   /** What comes back after the exit fee (wei) */
@@ -126,12 +130,14 @@ export async function estimateMigration(
   const fp = await getFeeParams()
   const perPage = fp.depositFixed + fp.creationFixed + fp.tripleCost
   const percent = fp.feeDenom > 0n ? (moved * fp.depositPct) / fp.feeDenom : 0n
-  const legs = pages.reduce((n, p) => n + p.positions.length, 0)
   return {
     pages: pages.length,
     moved,
     fees: total - moved + perPage * BigInt(pages.length) + percent,
-    signatures: Math.max(1, Math.ceil(legs / REDEEM_BATCH_SIZE)),
+    signatures: Math.max(
+      1,
+      Math.ceil(pageLegs(pages).length / REDEEM_BATCH_SIZE),
+    ),
   }
 }
 
@@ -141,10 +147,7 @@ export async function exitLegacyPages(
   pages: readonly LegacyPage[],
   onProgress?: (done: number, total: number) => void,
 ): Promise<RedeemResult> {
-  const legs = await findFundedLegs(
-    wallet.address,
-    pages.flatMap((p) => p.positions.map((pos) => pos.termId)),
-  )
+  const legs = pageLegs(pages)
   const chunks = Math.max(1, Math.ceil(legs.length / REDEEM_BATCH_SIZE))
   let last: RedeemResult = { success: true, noop: true }
   for (let i = 0; i < legs.length; i += REDEEM_BATCH_SIZE) {
@@ -156,38 +159,15 @@ export async function exitLegacyPages(
   return last
 }
 
-/** The page market claim id of each page (multicall, chunked) */
-async function marketClaimIds(objectIds: readonly string[]): Promise<string[]> {
-  const out: string[] = []
-  for (let i = 0; i < objectIds.length; i += MULTICALL_CHUNK) {
-    const chunk = objectIds.slice(i, i + MULTICALL_CHUNK)
-    const results = await client.multicall({
-      contracts: chunk.map((objectId) => ({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'calculateTripleId' as const,
-        args: [
-          SOFIA_I_ATOM_ID as `0x${string}`,
-          CANONICAL_PREDICATE_IDS.recommends as `0x${string}`,
-          objectId as `0x${string}`,
-        ],
-      })),
-      allowFailure: false,
-      authorizationList: undefined,
-    })
-    out.push(...results.map((r) => String(r)))
-  }
-  return out
-}
-
 /** Step 2 — the Recommends (and their tags) that put the TRUST back */
-export async function buildRecommendCart(
-  pages: readonly LegacyPage[],
-): Promise<CartItem[]> {
-  const claimIds = await marketClaimIds(pages.map((p) => p.objectTermId))
+export function buildRecommendCart(pages: readonly LegacyPage[]): CartItem[] {
   const items: CartItem[] = []
-  pages.forEach((page, i) => {
-    const claimId = claimIds[i]
+  for (const page of pages) {
+    const claimId = calculateTripleId(
+      SOFIA_I_ATOM_ID,
+      CANONICAL_PREDICATE_IDS.recommends,
+      page.objectTermId,
+    )
     const amount = Math.max(
       Number((afterExitFee(page.value) * 10_000n) / WAD) / 10_000,
       MIN_SIGNAL_TRUST,
@@ -222,6 +202,6 @@ export async function buildRecommendCart(
       // A tag only needs the minimum stake
       if (tag) items.push({ ...tag, presetAmount: MIN_SIGNAL_TRUST })
     }
-  })
+  }
   return items
 }

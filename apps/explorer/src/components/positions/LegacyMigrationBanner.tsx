@@ -89,7 +89,9 @@ export default function LegacyMigrationBanner({
         <span className="th-desc">
           {selectedCount > 0 && estimate
             ? `${selectedCount} page${selectedCount === 1 ? '' : 's'} · ${formatTrust(estimate.moved)} moved · up to ${formatTrust(estimate.fees)} in fees · ${estimate.signatures} signature${estimate.signatures === 1 ? '' : 's'} to exit`
-            : 'No page above this amount.'}
+            : selectedCount > 0
+              ? 'Estimating fees…'
+              : 'No page above this amount.'}
         </span>
         {error && <span className="lm-error">{error}</span>}
       </div>

@@ -25,6 +25,8 @@ export type MarketPositionKind = 'platform' | 'claim' | 'atom'
 export interface MarketPosition {
   /** Vault term_id the shares sit on (what an exit redeems). */
   termId: string
+  /** Shares per bonding curve (raw strings) — exits without an RPC read */
+  legs: { curveId: string; shares: string }[]
   kind: MarketPositionKind
   /** Claims only: support = the claim's vault, oppose = its counter vault. */
   side: 'support' | 'oppose' | null
@@ -116,6 +118,7 @@ export function aggregateUserPositions(
       staked: bigint
       supporters: number
       openedAt: string
+      legs: { curveId: string; shares: string }[]
     }
   > = {}
   // One leg per (term, curve) — offset pagination can repeat a row when a
@@ -137,7 +140,9 @@ export function aggregateUserPositions(
       staked: 0n,
       supporters: 0,
       openedAt: row.created_at,
+      legs: [],
     })
+    entry.legs.push({ curveId: String(row.curve_id), shares: String(shares) })
     entry.shares += shares
     entry.value += (shares * price) / WAD
     entry.deposited += netDeposited(row)
@@ -156,6 +161,7 @@ export function aggregateUserPositions(
     const change = e.value - e.deposited
     const base = {
       termId,
+      legs: e.legs,
       shares: String(e.shares),
       deposited: String(e.deposited),
       value: String(e.value),

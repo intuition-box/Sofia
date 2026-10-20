@@ -11,6 +11,8 @@ import {
   MULTI_VAULT_ADDRESS,
   MultiVaultAbi,
   explicitGasLimit,
+  paced,
+  pacedClient,
 } from '../lib/contracts'
 import type { WalletDescriptor } from './depositService'
 
@@ -325,11 +327,6 @@ const MULTICALL_CHUNK = 100
 /** Legs per redeemBatch transaction (large batches revert / hit gas) */
 export const REDEEM_BATCH_SIZE = 100
 
-const multicallClient = createPublicClient({
-  chain: intuitionChain,
-  transport: http(INTUITION_RPC_URL),
-})
-
 /** The wallet's funded legs on these vaults, both curves — multicall in
  *  chunks (one RPC call per 100 reads, not one per read). */
 export async function findFundedLegs(
@@ -342,15 +339,18 @@ export async function findFundedLegs(
   const legs: RedeemLeg[] = []
   for (let i = 0; i < pairs.length; i += MULTICALL_CHUNK) {
     const chunk = pairs.slice(i, i + MULTICALL_CHUNK)
-    const results = await multicallClient.multicall({
-      contracts: chunk.map(({ termId, curveId }) => ({
-        address: MULTI_VAULT_ADDRESS,
-        abi: MultiVaultAbi,
-        functionName: 'getShares' as const,
-        args: [account as `0x${string}`, termId as `0x${string}`, curveId],
-      })),
-      authorizationList: undefined,
-    })
+    const results = await paced(() =>
+      pacedClient.multicall({
+        contracts: chunk.map(({ termId, curveId }) => ({
+          address: MULTI_VAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'getShares' as const,
+          args: [account as `0x${string}`, termId as `0x${string}`, curveId],
+        })),
+        authorizationList: undefined,
+        batchSize: 0,
+      }),
+    )
     chunk.forEach((pair, j) => {
       const r = results[j]
       const shares = r.status === 'success' ? (r.result as bigint) : 0n

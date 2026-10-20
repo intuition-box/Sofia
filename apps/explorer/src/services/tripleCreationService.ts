@@ -19,6 +19,9 @@ import {
   SofiaFeeProxyAbi,
   intuitionChain,
   explicitGasLimit,
+  calculateTripleId,
+  paced,
+  pacedClient,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -37,11 +40,6 @@ const ZERO_ID =
 export const MIN_SIGNAL_TRUST = 0.01
 
 const publicClient = createPublicClient({
-  transport: http(INTUITION_RPC_URL),
-})
-// Same RPC with the chain set — multicall needs its multicall3 address
-const multicallClient = createPublicClient({
-  chain: intuitionChain,
   transport: http(INTUITION_RPC_URL),
 })
 
@@ -247,29 +245,22 @@ export async function executeCreateTriplesBatch(
     // RPC rate-limits one call per item on big carts).
     for (let i = 0; i < items.length; i += MULTICALL_CHUNK) {
       const chunk = items.slice(i, i + MULTICALL_CHUNK)
-      const ids = (await multicallClient.multicall({
-        contracts: chunk.map((item) => ({
-          address: PROXY_ADDRESS,
-          abi: SofiaFeeProxyAbi,
-          functionName: 'calculateTripleId' as const,
-          args: [
-            item.subjectId as `0x${string}`,
-            item.predicateId as `0x${string}`,
-            item.objectId as `0x${string}`,
-          ],
-        })),
-        allowFailure: false,
-        authorizationList: undefined,
-      })) as `0x${string}`[]
-      const triples = await multicallClient.multicall({
-        contracts: ids.map((id) => ({
-          address: PROXY_ADDRESS,
-          abi: SofiaFeeProxyAbi,
-          functionName: 'getTriple' as const,
-          args: [id],
-        })),
-        authorizationList: undefined,
-      })
+      // Triple ids are deterministic — computed locally, no RPC
+      const ids = chunk.map((item) =>
+        calculateTripleId(item.subjectId, item.predicateId, item.objectId),
+      )
+      const triples = await paced(() =>
+        pacedClient.multicall({
+          contracts: ids.map((id) => ({
+            address: PROXY_ADDRESS,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'getTriple' as const,
+            args: [id],
+          })),
+          authorizationList: undefined,
+          batchSize: 0,
+        }),
+      )
       chunk.forEach((item, j) => {
         const r = triples[j]
         const [s, , o] =
