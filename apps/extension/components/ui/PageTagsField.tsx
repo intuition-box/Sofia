@@ -20,6 +20,8 @@ interface PageTagsFieldProps {
   onChangeContexts: (slugs: string[]) => void
   /** Page metadata — drives "Suggested from this page" */
   hints: string
+  /** Show the "Why?" intention pills (the panel's expanded state) */
+  showWhy?: boolean
 }
 
 const PageTagsField = ({
@@ -27,7 +29,8 @@ const PageTagsField = ({
   onToggleIntention,
   contexts,
   onChangeContexts,
-  hints
+  hints,
+  showWhy = true
 }: PageTagsFieldProps) => {
   const selected: Context[] = contexts
     .map((slug) => taxonomyNodeById(slug))
@@ -36,17 +39,19 @@ const PageTagsField = ({
   return (
     <div className="ptf">
       <section className="sis-section">
-        <label className="sis-field-lab">Why? (optional)</label>
-        <IntentionPills selected={intentions} onToggle={onToggleIntention} />
-      </section>
-      <section className="sis-section">
-        <label className="sis-field-lab">Tags</label>
+        {showWhy && <label className="sis-field-lab">Tags</label>}
         <TagInput
           selected={selected}
           onChange={(next) => onChangeContexts(next.map((c) => c.id))}
           hints={hints}
         />
       </section>
+      {showWhy && (
+        <section className="sis-section">
+          <label className="sis-field-lab">Why? (optional)</label>
+          <IntentionPills selected={intentions} onToggle={onToggleIntention} />
+        </section>
+      )}
     </div>
   )
 }

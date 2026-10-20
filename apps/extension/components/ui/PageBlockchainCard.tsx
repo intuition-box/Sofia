@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { intentionTagBySlug, isIntentionTagSlug } from "@0xsofia/taxonomy"
+import { ChevronDown } from "lucide-react"
 
 import {
   getCertificationForUrl,
@@ -238,8 +239,10 @@ const PageBlockchainCard = () => {
     return () => clearTimeout(t)
   }, [isBursting])
 
-  // UI toggle
+  // UI toggles
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(true)
+  // Tags panel: collapsed = tag field + Save; expanded adds Why? + preview
+  const [tagsExpanded, setTagsExpanded] = useState(false)
 
   const isReady = status === "ready" || status === "refreshing"
   const isRefreshing = status === "refreshing"
@@ -313,7 +316,18 @@ const PageBlockchainCard = () => {
           {/* Actions panel — Intentions + Context grouped under one section */}
           {!isRestricted && (
             <div className="actions-panel">
-              <div className="actions-panel-title">Tags on this page</div>
+              <button
+                type="button"
+                className="actions-panel-title actions-panel-toggle"
+                aria-expanded={tagsExpanded}
+                onClick={() => setTagsExpanded((v) => !v)}>
+                Tags on this page
+                <ChevronDown
+                  size={14}
+                  className={`actions-panel-chevron${tagsExpanded ? " is-open" : ""}`}
+                  aria-hidden
+                />
+              </button>
               <div className="cert-section">
                 <PageTagsField
                   intentions={selectedIntentionTypes.map(
@@ -343,11 +357,14 @@ const PageBlockchainCard = () => {
                     }
                   }}
                   hints={pageHints}
+                  showWhy={tagsExpanded}
                 />
               </div>
 
               {/* Live-built sentence — reflects what will be committed */}
               <div className="cert-section live-sentence-section">
+                {tagsExpanded && (
+                <>
                 <div className="cert-section-title">Preview</div>
                 <div className="live-sentence">
                   {cartItemsForPage.length === 0 ? (
@@ -453,6 +470,8 @@ const PageBlockchainCard = () => {
                     })()
                   )}
                 </div>
+                </>
+                )}
                 <button
                   type="button"
                   className="validate-btn"
