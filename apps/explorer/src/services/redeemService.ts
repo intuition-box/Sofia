@@ -320,21 +320,44 @@ export interface RedeemLeg {
   shares: bigint
 }
 
-/** The wallet's funded legs on these vaults, both curves */
+/** Reads per multicall round trip — the public RPC rate-limits bursts */
+const MULTICALL_CHUNK = 100
+/** Legs per redeemBatch transaction (large batches revert / hit gas) */
+export const REDEEM_BATCH_SIZE = 100
+
+const multicallClient = createPublicClient({
+  chain: intuitionChain,
+  transport: http(INTUITION_RPC_URL),
+})
+
+/** The wallet's funded legs on these vaults, both curves — multicall in
+ *  chunks (one RPC call per 100 reads, not one per read). */
 export async function findFundedLegs(
   account: string,
   termIds: readonly string[],
 ): Promise<RedeemLeg[]> {
-  const unique = [...new Set(termIds)]
-  const funded = await Promise.all(
-    unique.map(async (termId) =>
-      (await findFundedCurves(account, termId)).map((c) => ({
-        termId,
-        ...c,
-      })),
-    ),
+  const pairs = [...new Set(termIds)].flatMap((termId) =>
+    REDEEM_CURVE_IDS.map((curveId) => ({ termId, curveId })),
   )
-  return funded.flat()
+  const legs: RedeemLeg[] = []
+  for (let i = 0; i < pairs.length; i += MULTICALL_CHUNK) {
+    const chunk = pairs.slice(i, i + MULTICALL_CHUNK)
+    const results = await multicallClient.multicall({
+      contracts: chunk.map(({ termId, curveId }) => ({
+        address: MULTI_VAULT_ADDRESS,
+        abi: MultiVaultAbi,
+        functionName: 'getShares' as const,
+        args: [account as `0x${string}`, termId as `0x${string}`, curveId],
+      })),
+      authorizationList: undefined,
+    })
+    chunk.forEach((pair, j) => {
+      const r = results[j]
+      const shares = r.status === 'success' ? (r.result as bigint) : 0n
+      if (shares > 0n) legs.push({ ...pair, shares })
+    })
+  }
+  return legs
 }
 
 /** Exit every leg in ONE transaction (redeem, or redeemBatch for several) */

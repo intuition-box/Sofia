@@ -253,9 +253,13 @@ export default function PositionsPage() {
 
       {isOwn && (
         <LegacyMigrationBanner
-          positionCount={migration.legacy.length}
           pageCount={migration.pageCount}
           value={migration.legacyValue}
+          selectedCount={migration.selectedCount}
+          threshold={migration.threshold}
+          onThreshold={migration.setThreshold}
+          estimate={migration.estimate}
+          progress={migration.progress}
           status={migration.status}
           error={migration.error}
           onMove={() => void migration.move()}

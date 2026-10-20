@@ -1262,3 +1262,24 @@
     align-items: stretch;
   }
 }
+.lm-thresholds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.lm-chip {
+  padding: 4px 11px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ds-ink-soft);
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+.lm-chip.is-active {
+  border-color: #22c55e;
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: var(--ds-ink);
+}
