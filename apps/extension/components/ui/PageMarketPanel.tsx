@@ -1,7 +1,7 @@
 /**
  * PageMarketPanel — the page's market in the Page tab (ONE_MARKET_PER_PAGE
  * _SPEC §4.2): Recommend / Distrust stake, momentum, where you'd land, your
- * position and P&L, the page's tags, and your legacy intention positions.
+ * position and P&L, and the page's tags.
  * Props only — PageBlockchainCard owns the data and the actions.
  */
 import { TrendingUp } from "lucide-react"
@@ -157,16 +157,6 @@ const PageMarketPanel = ({
         </div>
       )}
 
-      {(market?.legacy ?? []).length > 0 && (
-        <p className="pm-legacy">
-          You also hold {market!.legacy.length} legacy position
-          {market!.legacy.length === 1 ? "" : "s"} on this page (
-          {market!.legacy.map((l) => l.predicateLabel).join(", ")}). You can
-          move them to Recommend from My positions.
-        </p>
-      )}
-
-      <p className="pm-disclaimer">Position value can go down.</p>
     </section>
   )
 }

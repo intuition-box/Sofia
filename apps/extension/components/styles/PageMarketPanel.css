@@ -190,16 +190,3 @@
   color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
 }
-
-.pm-legacy {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.45;
-  color: var(--ds-muted);
-}
-
-.pm-disclaimer {
-  margin: 0;
-  font-size: 10px;
-  color: var(--ds-muted-soft);
-}
