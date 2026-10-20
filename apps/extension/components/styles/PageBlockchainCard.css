@@ -104,10 +104,17 @@
 
 .website-header-section {
   margin-bottom: 0;
+  /* The rise animation (fill: both) keeps a transform on each section, so
+     each one is its own stacking context and the later Stats section would
+     paint over the tag suggestions — keep the header section on top. */
+  position: relative;
+  z-index: 2;
 }
 
 .credibility-content {
   color: var(--color-text-secondary, var(--ds-ink));
+  position: relative;
+  z-index: 1;
 }
 
 .credibility-analysis {
