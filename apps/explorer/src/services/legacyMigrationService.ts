@@ -23,7 +23,11 @@ import {
   PAGE_MARKET_PREDICATE_LABEL,
 } from '@0xsofia/taxonomy'
 import type { CartItem } from '@/hooks/useCart'
-import { useGetUserRecentPageExitsQuery } from '@0xsofia/graphql'
+import {
+  useGetUserHeldPageClaimsQuery,
+  useGetUserRecentPageExitsQuery,
+  type GetUserRecentPageExitsQuery,
+} from '@0xsofia/graphql'
 import { calculateTripleId } from '@/lib/contracts'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
@@ -45,6 +49,11 @@ export const MIGRATION_THRESHOLDS = [0, 0.5, 1, 5] as const
 export const DEFAULT_MIGRATION_THRESHOLD = 1
 
 const RECOMMEND_COLOR = '#22C55E'
+/** The indexer caps a query at 100 rows */
+const PAGE_SIZE = 100
+const MAX_PAGES = 50
+
+type RecentExit = GetUserRecentPageExitsQuery['redemptions'][number]
 const WAD = 10n ** 18n
 
 /** One page's legacy positions, grouped */
@@ -196,26 +205,48 @@ export async function fetchExitedPages(
   sinceDays = 14,
 ): Promise<LegacyPage[]> {
   const since = new Date(Date.now() - sinceDays * 86_400_000).toISOString()
-  const data = await useGetUserRecentPageExitsQuery.fetcher({
-    addresses,
-    since,
-    predicateLabels: LEGACY_PAGE_PREDICATE_LABELS.filter(
-      (l) => l !== 'distrust',
-    ),
-  })()
-  const settled = new Set(
-    positions
-      .filter(
-        (p) =>
-          p.kind === 'claim' &&
-          !!p.objectTermId &&
-          (p.predicateLabel === PAGE_MARKET_PREDICATE_LABEL ||
-            isLegacyPagePredicate(p.predicateLabel ?? '')),
-      )
-      .map((p) => p.objectTermId!),
+  const exitLabels = LEGACY_PAGE_PREDICATE_LABELS.filter(
+    (l) => l !== 'distrust',
   )
+
+  // The indexer caps a query at 100 rows — page through both reads
+  const redemptions: RecentExit[] = []
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const data = await useGetUserRecentPageExitsQuery.fetcher({
+      addresses,
+      since,
+      predicateLabels: exitLabels,
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    })()
+    const rows = data.redemptions ?? []
+    redemptions.push(...rows)
+    if (rows.length < PAGE_SIZE) break
+  }
+  if (redemptions.length === 0) return []
+
+  // Pages still backed (a Recommend or a legacy claim) are settled
+  const settled = new Set<string>()
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const data = await useGetUserHeldPageClaimsQuery.fetcher({
+      addresses,
+      predicateLabels: [PAGE_MARKET_PREDICATE_LABEL, ...exitLabels],
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    })()
+    const rows = data.positions ?? []
+    for (const r of rows) {
+      const id = r.term?.triple?.object_id
+      if (id) settled.add(id)
+    }
+    if (rows.length < PAGE_SIZE) break
+  }
+  for (const p of positions) {
+    if (p.kind === 'claim' && p.objectTermId) settled.add(p.objectTermId)
+  }
+
   const pages = new Map<string, LegacyPage>()
-  for (const r of data.redemptions ?? []) {
+  for (const r of redemptions) {
     const triple = r.term?.triple
     // Support side only: the redeemed term is the claim itself
     if (!triple?.object || r.term_id !== triple.term_id) continue
