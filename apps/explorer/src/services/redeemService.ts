@@ -391,9 +391,10 @@ export async function redeemLegs(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  // Paced client: retries through the public RPC's rate limit
+  await paced(() => pacedClient.simulateContract(simConfig))
   const gas = await explicitGasLimit(
-    publicClient,
+    pacedClient,
     simConfig,
     BigInt(legs.length) * 500_000n + 1_000_000n,
   )
@@ -402,7 +403,10 @@ export async function redeemLegs(
     gas,
     chain: intuitionChain,
   })
-  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  const receipt = await pacedClient.waitForTransactionReceipt({
+    hash,
+    pollingInterval: 3_000,
+  })
   return receipt.status === 'success'
     ? { success: true, txHash: hash }
     : { success: false, error: 'Transaction reverted' }

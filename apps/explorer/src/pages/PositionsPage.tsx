@@ -93,7 +93,7 @@ export default function PositionsPage() {
     refresh,
   } = useUserPositions(rawAddress ? resolved.address : undefined)
   const { platformById } = usePlatformCatalog()
-  const migration = useLegacyMigration(positions)
+  const migration = useLegacyMigration(walletAddress, positions)
   const { redeemCert } = useRedeemCert()
 
   const ownAddress = authenticated ? user?.wallet?.address : undefined
@@ -263,6 +263,9 @@ export default function PositionsPage() {
           status={migration.status}
           error={migration.error}
           onMove={() => void migration.move()}
+          exitedCount={migration.exitedPages.length}
+          exitedValue={migration.exitedValue}
+          onRequeue={migration.requeueExited}
         />
       )}
 

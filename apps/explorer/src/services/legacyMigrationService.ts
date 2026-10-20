@@ -19,9 +19,13 @@ import { CANONICAL_PREDICATE_IDS, SOFIA_I_ATOM_ID } from '@/config/atomIds'
 import {
   intentionTagForLegacyPredicate,
   isLegacyPagePredicate,
+  LEGACY_PAGE_PREDICATE_LABELS,
+  PAGE_MARKET_PREDICATE_LABEL,
 } from '@0xsofia/taxonomy'
 import type { CartItem } from '@/hooks/useCart'
+import { useGetUserRecentPageExitsQuery } from '@0xsofia/graphql'
 import { calculateTripleId } from '@/lib/contracts'
+import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { buildContextCartItem } from './contextCartService'
 import { getFeeParams, type WalletDescriptor } from './depositService'
@@ -53,6 +57,8 @@ export interface LegacyPage {
   positions: MarketPosition[]
   /** `intent:work`… from the legacy predicates */
   tagSlugs: string[]
+  /** Already exited (resume): `value` is what came back, fees already out */
+  exited?: boolean
 }
 
 /** The wallet's legacy page positions, grouped by page, biggest first */
@@ -141,22 +147,97 @@ export async function estimateMigration(
   }
 }
 
-/** Step 1 — exit the pages' legacy legs, one redeemBatch per chunk */
+/** Step 1 — exit the pages' legacy legs, one redeemBatch per chunk of
+ *  about 100 legs. A page is never split across two transactions, and the
+ *  pages fully exited are reported even when a later chunk fails — so the
+ *  caller can still queue their Recommends. */
 export async function exitLegacyPages(
   wallet: WalletDescriptor,
   pages: readonly LegacyPage[],
   onProgress?: (done: number, total: number) => void,
-): Promise<RedeemResult> {
-  const legs = pageLegs(pages)
-  const chunks = Math.max(1, Math.ceil(legs.length / REDEEM_BATCH_SIZE))
-  let last: RedeemResult = { success: true, noop: true }
-  for (let i = 0; i < legs.length; i += REDEEM_BATCH_SIZE) {
-    onProgress?.(i / REDEEM_BATCH_SIZE, chunks)
-    last = await redeemLegs(wallet, legs.slice(i, i + REDEEM_BATCH_SIZE))
-    if (!last.success) return last
+): Promise<{ exited: LegacyPage[]; result: RedeemResult }> {
+  const chunks: LegacyPage[][] = []
+  let current: LegacyPage[] = []
+  let legCount = 0
+  for (const page of pages) {
+    const n = pageLegs([page]).length
+    if (current.length > 0 && legCount + n > REDEEM_BATCH_SIZE) {
+      chunks.push(current)
+      current = []
+      legCount = 0
+    }
+    current.push(page)
+    legCount += n
   }
-  onProgress?.(chunks, chunks)
-  return last
+  if (current.length > 0) chunks.push(current)
+
+  const exited: LegacyPage[] = []
+  let result: RedeemResult = { success: true, noop: true }
+  for (let i = 0; i < chunks.length; i++) {
+    onProgress?.(i, chunks.length)
+    result = await redeemLegs(wallet, pageLegs(chunks[i]))
+    if (!result.success) return { exited, result }
+    exited.push(...chunks[i])
+  }
+  onProgress?.(chunks.length, chunks.length)
+  return { exited, result }
+}
+
+/**
+ * Pages exited recently from legacy claims that aren't back on the market
+ * yet (a migration that stopped half-way, or the cart never confirmed).
+ * From the indexer only. Pages that still hold a legacy position (they'll
+ * move with the banner) or already a Recommend are left out.
+ */
+export async function fetchExitedPages(
+  addresses: string[],
+  positions: readonly MarketPosition[],
+  sinceDays = 14,
+): Promise<LegacyPage[]> {
+  const since = new Date(Date.now() - sinceDays * 86_400_000).toISOString()
+  const data = await useGetUserRecentPageExitsQuery.fetcher({
+    addresses,
+    since,
+    predicateLabels: LEGACY_PAGE_PREDICATE_LABELS.filter(
+      (l) => l !== 'distrust',
+    ),
+  })()
+  const settled = new Set(
+    positions
+      .filter(
+        (p) =>
+          p.kind === 'claim' &&
+          !!p.objectTermId &&
+          (p.predicateLabel === PAGE_MARKET_PREDICATE_LABEL ||
+            isLegacyPagePredicate(p.predicateLabel ?? '')),
+      )
+      .map((p) => p.objectTermId!),
+  )
+  const pages = new Map<string, LegacyPage>()
+  for (const r of data.redemptions ?? []) {
+    const triple = r.term?.triple
+    // Support side only: the redeemed term is the claim itself
+    if (!triple?.object || r.term_id !== triple.term_id) continue
+    const objectId = triple.object.term_id
+    if (settled.has(objectId)) continue
+    const url = triple.object.value?.thing?.url ?? ''
+    const page = pages.get(objectId) ?? {
+      objectTermId: objectId,
+      title: triple.object.value?.thing?.name || triple.object.label || 'Page',
+      domain: url ? extractDomain(url) : '',
+      value: 0n,
+      positions: [],
+      tagSlugs: [],
+      exited: true,
+    }
+    page.value += BigInt(r.assets ?? '0')
+    const tag = intentionTagForLegacyPredicate(triple.predicate?.label ?? '')
+    if (tag && !page.tagSlugs.includes(tag.slug)) page.tagSlugs.push(tag.slug)
+    pages.set(objectId, page)
+  }
+  return [...pages.values()].sort((a, b) =>
+    b.value > a.value ? 1 : b.value < a.value ? -1 : 0,
+  )
 }
 
 /** Step 2 — the Recommends (and their tags) that put the TRUST back */
@@ -168,8 +249,9 @@ export function buildRecommendCart(pages: readonly LegacyPage[]): CartItem[] {
       CANONICAL_PREDICATE_IDS.recommends,
       page.objectTermId,
     )
+    const back = page.exited ? page.value : afterExitFee(page.value)
     const amount = Math.max(
-      Number((afterExitFee(page.value) * 10_000n) / WAD) / 10_000,
+      Number((back * 10_000n) / WAD) / 10_000,
       MIN_SIGNAL_TRUST,
     )
     const favicon = page.domain ? getFaviconUrl(page.domain) : ''

@@ -437,3 +437,44 @@ query GetPageMarket(
     }
   }
 }
+
+# My positions — page claims the wallet exited recently (legacy migration
+# resume): if a migration stopped half-way, the exited pages can still be
+# queued as Recommends. `assets` is what the wallet received (fees out).
+query GetUserRecentPageExits(
+  $addresses: [String!]!
+  $since: timestamptz!
+  $predicateLabels: [String!]!
+) {
+  redemptions(
+    where: {
+      sender_id: { _in: $addresses }
+      created_at: { _gte: $since }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+    order_by: { created_at: desc }
+    limit: 1000
+  ) {
+    assets
+    created_at
+    term_id
+    term {
+      triple {
+        term_id
+        predicate {
+          label
+        }
+        object {
+          term_id
+          label
+          value {
+            thing {
+              url
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}

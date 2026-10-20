@@ -25,6 +25,11 @@ interface LegacyMigrationBannerProps {
   status: MigrationStatus
   error: string | null
   onMove: () => void
+  /** Pages exited earlier, not back on the market yet (resume) */
+  exitedCount: number
+  /** What those exits brought back (wei) */
+  exitedValue: bigint
+  onRequeue: () => void
 }
 
 export default function LegacyMigrationBanner({
@@ -38,79 +43,116 @@ export default function LegacyMigrationBanner({
   status,
   error,
   onMove,
+  exitedCount,
+  exitedValue,
+  onRequeue,
 }: LegacyMigrationBannerProps) {
-  if (pageCount === 0 && status !== 'done') return null
-  const busy = status === 'exiting' || status === 'queuing'
+  const busy = status === 'exiting'
+  const resume =
+    exitedCount > 0 ? (
+      <section className="lm-card" aria-label="Exited pages to re-recommend">
+        <div className="lm-text">
+          <span className="th-eyebrow">
+            Exited · {exitedCount} page{exitedCount === 1 ? '' : 's'} ·{' '}
+            {formatTrust(exitedValue)} in your wallet
+          </span>
+          <span className="th-card-title">Not back on the market yet</span>
+          <span className="th-desc">
+            These pages left their legacy claims but have no Recommend yet.
+            Queue them in the cart with their old intentions as tags.
+          </span>
+        </div>
+        <button
+          type="button"
+          className="pm-dex-invest"
+          style={{ background: 'var(--ds-accent)' }}
+          onClick={onRequeue}
+        >
+          <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
+          Queue {exitedCount} Recommend{exitedCount === 1 ? '' : 's'}
+        </button>
+      </section>
+    ) : null
+
+  if (pageCount === 0 && status !== 'done') return resume
 
   if (status === 'done') {
     return (
-      <section className="lm-card" aria-label="Move legacy positions">
-        <div className="lm-text">
-          <span className="th-eyebrow">Legacy positions exited</span>
-          <span className="th-card-title">
-            Confirm your Recommends in the cart
-          </span>
-          <span className="th-desc">
-            Each page is queued as one Recommend with your old intentions as
-            tags. Adjust the amounts, then confirm.
-          </span>
-        </div>
-      </section>
+      <>
+        {resume}
+        <section className="lm-card" aria-label="Move legacy positions">
+          <div className="lm-text">
+            <span className="th-eyebrow">Legacy positions exited</span>
+            <span className="th-card-title">
+              Confirm your Recommends in the cart
+            </span>
+            <span className="th-desc">
+              Each page is queued as one Recommend with your old intentions as
+              tags. Adjust the amounts, then confirm.
+            </span>
+          </div>
+        </section>
+      </>
     )
   }
 
   return (
-    <section className="lm-card" aria-label="Move legacy positions">
-      <div className="lm-text">
-        <span className="th-eyebrow">
-          Legacy claims · {pageCount} page{pageCount === 1 ? '' : 's'} ·{' '}
-          {formatTrust(value)}
-        </span>
-        <span className="th-card-title">Move them to Recommend</span>
-        <span className="th-desc">
-          Pages now have one market. Each move pays Sofia's fee and, for a new
-          market, its creation — only move pages worth it.
-        </span>
-        <div className="lm-chips" role="radiogroup" aria-label="Pages to move">
-          {MIGRATION_THRESHOLDS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="radio"
-              aria-checked={threshold === t}
-              className={`pm-chip${threshold === t ? ' active' : ''}`}
-              onClick={() => onThreshold(t)}
-              disabled={busy}
-            >
-              {t === 0 ? 'All' : `≥ ${t} T`}
-            </button>
-          ))}
+    <>
+      {resume}
+      <section className="lm-card" aria-label="Move legacy positions">
+        <div className="lm-text">
+          <span className="th-eyebrow">
+            Legacy claims · {pageCount} page{pageCount === 1 ? '' : 's'} ·{' '}
+            {formatTrust(value)}
+          </span>
+          <span className="th-card-title">Move them to Recommend</span>
+          <span className="th-desc">
+            Pages now have one market. Each move pays Sofia's fee and, for a new
+            market, its creation — only move pages worth it.
+          </span>
+          <div
+            className="lm-chips"
+            role="radiogroup"
+            aria-label="Pages to move"
+          >
+            {MIGRATION_THRESHOLDS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="radio"
+                aria-checked={threshold === t}
+                className={`pm-chip${threshold === t ? ' active' : ''}`}
+                onClick={() => onThreshold(t)}
+                disabled={busy}
+              >
+                {t === 0 ? 'All' : `≥ ${t} T`}
+              </button>
+            ))}
+          </div>
+          <span className="th-desc">
+            {selectedCount > 0 && estimate
+              ? `${selectedCount} page${selectedCount === 1 ? '' : 's'} · ${formatTrust(estimate.moved)} moved · up to ${formatTrust(estimate.fees)} in fees · ${estimate.signatures} signature${estimate.signatures === 1 ? '' : 's'} to exit`
+              : selectedCount > 0
+                ? 'Estimating fees…'
+                : 'No page above this amount.'}
+          </span>
+          {error && <span className="lm-error">{error}</span>}
         </div>
-        <span className="th-desc">
-          {selectedCount > 0 && estimate
-            ? `${selectedCount} page${selectedCount === 1 ? '' : 's'} · ${formatTrust(estimate.moved)} moved · up to ${formatTrust(estimate.fees)} in fees · ${estimate.signatures} signature${estimate.signatures === 1 ? '' : 's'} to exit`
-            : selectedCount > 0
-              ? 'Estimating fees…'
-              : 'No page above this amount.'}
-        </span>
-        {error && <span className="lm-error">{error}</span>}
-      </div>
-      <button
-        type="button"
-        className="pm-dex-invest"
-        style={{ background: 'var(--ds-accent)' }}
-        onClick={onMove}
-        disabled={busy || selectedCount === 0}
-      >
-        <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
-        {status === 'exiting'
-          ? progress && progress.total > 1
-            ? `Exiting ${Math.min(progress.done + 1, progress.total)}/${progress.total}…`
-            : 'Exiting…'
-          : status === 'queuing'
-            ? 'Preparing…'
+        <button
+          type="button"
+          className="pm-dex-invest"
+          style={{ background: 'var(--ds-accent)' }}
+          onClick={onMove}
+          disabled={busy || selectedCount === 0}
+        >
+          <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
+          {status === 'exiting'
+            ? progress && progress.total > 1
+              ? `Exiting ${Math.min(progress.done + 1, progress.total)}/${progress.total}…`
+              : 'Exiting…'
             : `Move ${selectedCount} page${selectedCount === 1 ? '' : 's'}`}
-      </button>
-    </section>
+        </button>
+      </section>
+    </>
   )
 }
