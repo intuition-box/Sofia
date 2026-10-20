@@ -40,6 +40,8 @@ export const TRUST_PREDICATE_IDS = [
 ].filter(Boolean)
 
 export const ALL_PREDICATE_IDS = [
+  // The page market (`I | recommends | page`) — Echoes, bookmarks, cache
+  ...[PREDICATE_IDS.RECOMMENDS].filter(Boolean),
   ...INTENTION_PREDICATE_IDS,
   ...OAUTH_PREDICATE_IDS,
   ...TRUST_PREDICATE_IDS
@@ -79,6 +81,7 @@ const TRUST_PREDICATE_LABELS = [
 ].filter(Boolean)
 
 export const ALL_PREDICATE_LABELS = [
+  PREDICATE_NAMES.RECOMMENDS,
   ...INTENTION_PREDICATE_LABELS_WITH_LEGACY,
   ...OAUTH_PREDICATE_LABELS,
   ...TRUST_PREDICATE_LABELS
@@ -119,6 +122,9 @@ export const TRUST_LABEL_TO_TYPE: Record<string, string> = {
 // ── Mappings: ID → Type ──
 
 export const PREDICATE_ID_TO_CERTIFICATION: Record<string, string> = buildMap([
+  // The page market — a Recommend is a backed page; its intention tags
+  // refine it (useOnChainIntentionGroups)
+  [PREDICATE_IDS.RECOMMENDS, "trusted"],
   // Intention predicates
   [PREDICATE_IDS.VISITS_FOR_WORK, "work"],
   [PREDICATE_IDS.VISITS_FOR_LEARNING, "learning"],

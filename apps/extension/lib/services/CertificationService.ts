@@ -170,13 +170,23 @@ class CertificationServiceClass {
       const objectVaultId =
         createdAtoms[objectData.url || objectData.name].vaultId
 
-      return tripleService.createTripleOnChain(
+      const result = await tripleService.createTripleOnChain(
         userAtom.vaultId,
         predicateVaultId,
         objectVaultId,
         wallet,
         customWeight
       )
+      // A legacy intention lands as a tag on the Recommend — best effort
+      if (market.intentionTagSlug && result.tripleVaultId) {
+        await this.createContextTriplesBatch(
+          wallet,
+          this.contextItemsFor(result.tripleVaultId, [market.intentionTagSlug])
+        ).catch((ctxError) =>
+          logger.warn("Intention tag failed (non-blocking)", ctxError)
+        )
+      }
+      return result
     } catch (error) {
       logger.error("Triple creation failed", error)
       const errorMessage =
