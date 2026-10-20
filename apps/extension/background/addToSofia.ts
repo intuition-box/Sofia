@@ -9,6 +9,7 @@
 // / CIRCLE_PRO_SHARE → workspace bookmarks). That broker is kept commented at the
 // bottom so the Pro version can revive it.
 import { computeDailyMissions, type MissionPosition } from "@0xsofia/quests"
+import { INTENTION_TAGS, type IntentionTag } from "@0xsofia/taxonomy"
 import { getAddress } from "viem"
 
 import type {
@@ -29,17 +30,13 @@ import { sessionStore } from "../lib/signer"
 import { getFaviconUrl, getProfileUrl } from "../lib/utils"
 import { createServiceLogger } from "../lib/utils/logger"
 import { getStoredWalletAddress } from "../lib/utils/walletStorage"
-import { INTENTION_PREDICATES } from "../types/discovery"
-import {
-  INTENTION_CONFIG,
-  type IntentionConfigEntry,
-  type IntentionType
-} from "../types/intentionCategories"
+import { PAGE_MARKET_PREDICATE } from "../lib/config/predicateConstants"
 
 const logger = createServiceLogger("AddToSofia")
 
 const ROOT_ID = "sofia-root"
 const MORE_ID = "sofia-more"
+const RECOMMEND_FOR_ID = "sofia-recommend-for"
 const PUBLISH_PREFIX = "sofia-pub:"
 const CONTEXTS: chrome.contextMenus.ContextType[] = [
   "page",
@@ -52,42 +49,61 @@ const DOCUMENT_PATTERNS = ["http://*/*", "https://*/*"]
 const QUICK_PUBLISH_WEIGHT = 500000000000000000n
 const QUICK_PUBLISH_LABEL = "0.5 TRUST"
 
-// Intentions (Work…Music), then Trust / Distrust — straight from the single
-// source of truth, no local list.
-const CONFIG_ENTRIES = Object.entries(INTENTION_CONFIG) as [
-  IntentionType,
-  IntentionConfigEntry
-][]
-const MENU_GROUPS = [
-  CONFIG_ENTRIES.filter(([, v]) => v.intentionPurpose !== null),
-  CONFIG_ENTRIES.filter(([, v]) => v.intentionPurpose === null)
-]
+/**
+ * One-click actions. A page has ONE market (`I | recommends | page`):
+ * Recommend = support, Distrust = oppose, "Recommend for…" = support plus
+ * an intention tag (feeds Echoes).
+ */
+interface QuickAction {
+  side: "support" | "oppose"
+  tag: IntentionTag | null
+  label: string
+}
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+const QUICK_ACTIONS: Record<string, QuickAction> = {
+  recommend: { side: "support", tag: null, label: "Recommended" },
+  distrust: { side: "oppose", tag: null, label: "Distrusted" },
+  ...Object.fromEntries(
+    INTENTION_TAGS.map((tag) => [
+      `for-${tag.key}`,
+      { side: "support", tag, label: `Recommended · ${capitalize(tag.key)}` }
+    ])
+  )
+}
 
 function buildMenu() {
   chrome.contextMenus.removeAll(() => {
     const base = { contexts: CONTEXTS, documentUrlPatterns: DOCUMENT_PATTERNS }
     const child = { ...base, parentId: ROOT_ID }
     chrome.contextMenus.create({ ...base, id: ROOT_ID, title: "Sofia" })
-    // The full qualification modal (categories, tags, title autocomplete)
-    // comes first; the one-click intentions follow.
+    // The full qualification modal (tags, title autocomplete, amount) first
+    chrome.contextMenus.create({ ...child, id: MORE_ID, title: "Add to Sofia…" })
+    chrome.contextMenus.create({ ...child, id: "sofia-sep-0", type: "separator" })
     chrome.contextMenus.create({
       ...child,
-      id: MORE_ID,
-      title: "Add to Sofia…"
+      id: `${PUBLISH_PREFIX}recommend`,
+      title: "Recommend"
     })
-    MENU_GROUPS.forEach((group, i) => {
+    chrome.contextMenus.create({
+      ...child,
+      id: RECOMMEND_FOR_ID,
+      title: "Recommend for…"
+    })
+    for (const tag of INTENTION_TAGS) {
       chrome.contextMenus.create({
-        ...child,
-        id: `sofia-sep-${i}`,
-        type: "separator"
+        ...base,
+        parentId: RECOMMEND_FOR_ID,
+        id: `${PUBLISH_PREFIX}for-${tag.key}`,
+        title: capitalize(tag.key)
       })
-      for (const [type, entry] of group) {
-        chrome.contextMenus.create({
-          ...child,
-          id: `${PUBLISH_PREFIX}${type}`,
-          title: entry.label
-        })
-      }
+    }
+    chrome.contextMenus.create({ ...child, id: "sofia-sep-1", type: "separator" })
+    chrome.contextMenus.create({
+      ...child,
+      id: `${PUBLISH_PREFIX}distrust`,
+      title: "Distrust"
     })
   })
 }
@@ -220,20 +236,21 @@ async function dailyMissionLabel(
 const inFlight = new Set<string>()
 
 /**
- * Right-click → intention. With an active "publish without popup" permission
- * it publishes right away (no panel, no popup); otherwise it queues the page
- * in the cart and tells the user how to enable one-click publishing.
+ * Right-click → recommend / distrust. With an active "publish without popup"
+ * permission it publishes right away (no panel, no popup); otherwise it
+ * queues the page in the cart and tells the user how to enable one-click
+ * publishing.
  */
 async function handleQuickPublish(
   tabId: number,
   url: string,
   title: string | null,
-  type: IntentionType
+  actionId: string
 ) {
-  const entry = INTENTION_CONFIG[type]
-  const predicateName = entry.predicateLabel
-  if (!predicateName) return
-  const toastId = `${type}:${url}`
+  const action = QUICK_ACTIONS[actionId]
+  if (!action) return
+  const toastId = `${actionId}:${url}`
+  const contextSlugs = action.tag ? [action.tag.slug] : []
 
   const wallet = await getStoredWalletAddress()
   if (!wallet) {
@@ -248,40 +265,52 @@ async function handleQuickPublish(
       wallet,
       url,
       title,
-      predicateName,
-      entry.intentionPurpose,
-      getFaviconUrl(url, 128)
+      PAGE_MARKET_PREDICATE,
+      null,
+      getFaviconUrl(url, 128),
+      contextSlugs,
+      null,
+      action.side
     )
     toast(
       tabId,
       toastId,
       added ? "success" : "error",
       added
-        ? `Added to your cart · ${entry.label} — enable "Publish without popup" in Settings to publish in one click`
+        ? `Added to your cart · ${action.label} — enable "Publish without popup" in Settings to publish in one click`
         : "Already in your cart"
     )
     return
   }
 
-  const key = `${predicateName}|${url}`
+  const key = `${action.side}|${url}`
   if (inFlight.has(key)) return
   inFlight.add(key)
-  toast(tabId, toastId, "pending", `Publishing · ${entry.label}…`)
+  toast(tabId, toastId, "pending", `Publishing · ${action.label}…`)
   try {
     const result = await withKeepAlive(() =>
       certificationService.publishNow(
         wallet,
-        { url, title, predicateName },
+        {
+          url,
+          title,
+          predicateName: PAGE_MARKET_PREDICATE,
+          side: action.side,
+          contextSlugs
+        },
         QUICK_PUBLISH_WEIGHT
       )
     )
     if (result.success) {
-      const mission = await dailyMissionLabel(wallet, result.objectId)
+      const mission =
+        action.side === "support"
+          ? await dailyMissionLabel(wallet, result.objectId)
+          : ""
       toast(
         tabId,
         toastId,
         "success",
-        `Published · ${entry.label} · ${QUICK_PUBLISH_LABEL}${mission}`,
+        `${action.label} · ${QUICK_PUBLISH_LABEL}${mission}`,
         { href: getProfileUrl(), label: "View" }
       )
     } else {
@@ -292,36 +321,31 @@ async function handleQuickPublish(
   }
 }
 
-// Queue the qualified page into the connected wallet's cart — ONE cart item per
-// chosen intention (the cart's compound key is wallet:url:predicate, so multiple
-// predicates on the same URL coexist). No wallet → the modal prompts a connect;
-// an unknown predicate / duplicate is rejected by CartService.addItem (returns
-// false). We report ok when at least one item was queued; all-duplicate → the
-// "already in your cart" toast.
+// Queue the qualified page into the connected wallet's cart — ONE item on the
+// page market (`recommends`); the chosen intentions ride along as optional
+// tags next to the topic tags. No wallet → the modal prompts a connect; a
+// duplicate with nothing new to add → "already in your cart".
 export async function handleAddToCart(
   msg: AddToCartMessage
 ): Promise<AddToCartResponse> {
   const wallet = await getStoredWalletAddress()
   if (!wallet) return { ok: false, reason: "no-wallet" }
   const intentions = msg.intentions ?? []
-  if (!intentions.length) return { ok: false, reason: "error" }
+  const intentionSlugs = intentions.map(
+    (purpose) => `intent:${purpose.replace(/^for_/, "")}`
+  )
   try {
-    const favicon = getFaviconUrl(msg.url, 128)
-    let anyAdded = false
-    for (const intention of intentions) {
-      const added = await cartService.addItem(
-        wallet,
-        msg.url,
-        msg.title || null,
-        INTENTION_PREDICATES[intention],
-        intention,
-        favicon,
-        msg.contextSlugs,
-        msg.objectTermId
-      )
-      anyAdded = anyAdded || added
-    }
-    return anyAdded ? { ok: true } : { ok: false, reason: "duplicate" }
+    const added = await cartService.addItem(
+      wallet,
+      msg.url,
+      msg.title || null,
+      PAGE_MARKET_PREDICATE,
+      intentions[0] ?? null,
+      getFaviconUrl(msg.url, 128),
+      [...(msg.contextSlugs ?? []), ...intentionSlugs],
+      msg.objectTermId
+    )
+    return added ? { ok: true } : { ok: false, reason: "duplicate" }
   } catch (e) {
     logger.warn("addItem failed", e)
     return { ok: false, reason: "error" }
@@ -386,13 +410,11 @@ export function initAddToSofia(): void {
     if (!url) return
 
     if (menuId.startsWith(PUBLISH_PREFIX)) {
-      const type = menuId.slice(PUBLISH_PREFIX.length) as IntentionType
-      if (!(type in INTENTION_CONFIG)) return
       void handleQuickPublish(
         tab.id,
         url,
         isLink ? null : tab.title || null,
-        type
+        menuId.slice(PUBLISH_PREFIX.length)
       )
       return
     }

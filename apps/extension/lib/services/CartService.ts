@@ -16,7 +16,13 @@ import { createServiceLogger } from "../utils/logger"
 import { normalizeUrl } from "../utils/normalizeUrl"
 import { CartDataService } from "../database"
 import { INTENTION_PREDICATES } from "../../types/discovery"
-import { getPredicateIdByName, isKnownPredicateName } from "../config/predicateConstants"
+import { isIntentionTagSlug } from "@0xsofia/taxonomy"
+
+import {
+  getPredicateIdByName,
+  isKnownPredicateName,
+  toPageMarketClaim
+} from "../config/predicateConstants"
 import { PREDICATE_NAMES } from "../config/chainConfig"
 import type { CartItemRecord } from "../../types/database"
 import type { IntentionPurpose } from "../../types/discovery"
@@ -154,8 +160,23 @@ class CartServiceClass {
     intention: IntentionPurpose | null,
     faviconUrl: string | null,
     interestContexts?: string[],
-    objectTermId?: string | null
+    objectTermId?: string | null,
+    side?: "support" | "oppose"
   ): Promise<boolean> {
+    // One market per page: legacy intentions / trusts / distrust land on
+    // `recommends` (support or oppose) with the intention as a tag.
+    const market = toPageMarketClaim(predicateName)
+    predicateName = market.predicateName
+    const finalSide = side ?? market.side
+    const contexts = [
+      ...new Set([
+        ...(interestContexts ?? []),
+        ...(market.intentionTagSlug && finalSide === "support"
+          ? [market.intentionTagSlug]
+          : [])
+      ])
+    ]
+
     // Reject free-form predicate strings to prevent silent on-chain creation
     // of attacker-shaped predicate atoms (lookalike trailing space, homograph,
     // double-space). Only names registered in PREDICATE_NAME_TO_ID are allowed.
@@ -165,12 +186,26 @@ class CartServiceClass {
     }
 
     const { label: normalizedLabel } = normalizeUrl(url)
-    const id = `${walletAddress.toLowerCase()}:${normalizedLabel}:${predicateName}`
+    const id = `${walletAddress.toLowerCase()}:${normalizedLabel}:${predicateName}${finalSide === "oppose" ? ":oppose" : ""}`
 
-    // Check for duplicate
-    if (this.state.items.some(item => item.id === id)) {
-      logger.debug("Item already in cart", { normalizedLabel, predicateName })
-      return false
+    // Same page again: merge the new tags into the queued item
+    const existing = this.state.items.find(item => item.id === id)
+    if (existing) {
+      const merged = [...new Set([...(existing.interestContexts ?? []), ...contexts])]
+      if (merged.length === (existing.interestContexts ?? []).length) {
+        logger.debug("Item already in cart", { normalizedLabel, predicateName })
+        return false
+      }
+      const updated: CartItemRecord = {
+        ...existing,
+        interestContext: merged[0] ?? null,
+        interestContexts: merged
+      }
+      await CartDataService.addItem(updated) // put = upsert
+      const items = this.state.items.map(item => (item.id === id ? updated : item))
+      this.updateState({ items, count: items.length })
+      this.pingCartChanged()
+      return true
     }
 
     const record: CartItemRecord = {
@@ -185,10 +220,10 @@ class CartServiceClass {
       addedAt: Date.now(),
       // Keep the first as the primary single-pill field; store the full set
       // so submit mints one `in context of` triple per context.
-      interestContext: interestContexts?.[0] ?? null,
-      interestContexts:
-        interestContexts && interestContexts.length ? interestContexts : undefined,
+      interestContext: contexts[0] ?? null,
+      interestContexts: contexts.length ? contexts : undefined,
       objectTermId: objectTermId ?? null,
+      side: finalSide === "oppose" ? "oppose" : undefined
     }
 
     try {
@@ -312,20 +347,28 @@ class CartServiceClass {
     )
     if (matching.length === 0) return
 
-    // Keep the first as the primary single-pill field; store the full set.
-    const patch = {
-      interestContext: interestContexts[0] ?? null,
-      interestContexts: interestContexts.length ? interestContexts : undefined
+    // Topic tags are replaced; intention tags (`intent:*`) are kept.
+    const patchFor = (item: CartItemRecord) => {
+      const slugs = [
+        ...new Set([
+          ...(item.interestContexts ?? []).filter(isIntentionTagSlug),
+          ...interestContexts
+        ])
+      ]
+      return {
+        interestContext: slugs[0] ?? null,
+        interestContexts: slugs.length ? slugs : undefined
+      }
     }
 
     try {
-      const updated = matching.map(item => ({ ...item, ...patch }))
+      const updated = matching.map(item => ({ ...item, ...patchFor(item) }))
       for (const item of updated) {
         await CartDataService.addItem(item) // put = upsert
       }
       const items = this.state.items.map(item =>
         item.walletAddress === wallet && item.normalizedUrl === normalizedLabel
-          ? { ...item, ...patch }
+          ? { ...item, ...patchFor(item) }
           : item
       )
       this.updateState({ items, count: items.length })
@@ -362,8 +405,14 @@ class CartServiceClass {
   }
 
   hasItem(normalizedUrl: string, predicateName: string): boolean {
+    const market = toPageMarketClaim(predicateName)
     return this.state.items.some(
-      item => item.normalizedUrl === normalizedUrl && item.predicateName === predicateName
+      item =>
+        item.normalizedUrl === normalizedUrl &&
+        item.predicateName === market.predicateName &&
+        (item.side ?? "support") === market.side &&
+        (!market.intentionTagSlug ||
+          !!item.interestContexts?.includes(market.intentionTagSlug))
     )
   }
 
@@ -381,7 +430,8 @@ class CartServiceClass {
       },
       // Reuse an existing atom when one was picked in the title search; else
       // the batch creates the object atom from objectData (URL) as usual.
-      objectTermId: item.objectTermId || undefined
+      objectTermId: item.objectTermId || undefined,
+      side: item.side
     }))
   }
 

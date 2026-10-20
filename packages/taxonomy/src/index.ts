@@ -10,6 +10,7 @@
  *   - labels       → canonical TOPIC_LABEL + TOPIC_META (icon/color)
  *   - attributes   → skills/tools taxonomy + endorsement predicates (from Atlas)
  *   - canonicalAtoms → canonical Intuition ontology atoms (predicates, `I`)
+ *   - intentionTags  → work/learning/… as optional `in context of` tags
  */
 export * from './types'
 export * from './taxonomy'
@@ -19,3 +20,4 @@ export * from './topicIcons'
 export * from './labels'
 export * from './attributes'
 export * from './canonicalAtoms'
+export * from './intentionTags'

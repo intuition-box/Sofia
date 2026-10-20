@@ -5,6 +5,8 @@
  * previously duplicated across 6+ files.
  */
 
+import { intentionTagForLegacyPredicate } from "@0xsofia/taxonomy"
+
 import type { IntentionPurpose } from "~/types/discovery"
 import { PREDICATE_IDS, PREDICATE_NAMES } from "~/lib/config/chainConfig"
 
@@ -149,6 +151,7 @@ export const PREDICATE_ID_TO_INTENTION: Record<string, IntentionPurpose> =
 
 export const PREDICATE_NAME_TO_ID: Record<string, string> = buildMap([
   [PREDICATE_NAMES.FOLLOW, PREDICATE_IDS.FOLLOW],
+  [PREDICATE_NAMES.RECOMMENDS, PREDICATE_IDS.RECOMMENDS],
   [PREDICATE_NAMES.TRUSTS, PREDICATE_IDS.TRUSTS],
   [PREDICATE_NAMES.DISTRUST, PREDICATE_IDS.DISTRUST],
   [PREDICATE_NAMES.VISITS_FOR_WORK, PREDICATE_IDS.VISITS_FOR_WORK],
@@ -177,3 +180,36 @@ export const getPredicateIdByName = (name: string): string | null =>
 export const isKnownPredicateName = (name: string): boolean =>
   name in PREDICATE_NAME_TO_ID
 
+
+// ── Page market (docs/plans/ONE_MARKET_PER_PAGE_SPEC.md) ──
+
+/** A page has ONE market: `I | recommends | page`. Distrust = its counter
+ *  vault; work/learning/… = optional `in context of` tags. */
+export const PAGE_MARKET_PREDICATE: string = PREDICATE_NAMES.RECOMMENDS
+
+export interface PageMarketClaim {
+  predicateName: string
+  side: "support" | "oppose"
+  /** Intention tag slug (`intent:work`) carried by a legacy intention */
+  intentionTagSlug: string | null
+}
+
+/**
+ * Where a page certification lands now. Legacy intention predicates
+ * (`visits for X`), `trusts` and `distrust` all become the page market; any
+ * other predicate (oauth, follow, custom…) is returned unchanged.
+ */
+export function toPageMarketClaim(predicateName: string): PageMarketClaim {
+  const name = predicateName.trim()
+  if (name === PREDICATE_NAMES.DISTRUST) {
+    return { predicateName: PAGE_MARKET_PREDICATE, side: "oppose", intentionTagSlug: null }
+  }
+  if (name === PREDICATE_NAMES.TRUSTS || name === PAGE_MARKET_PREDICATE) {
+    return { predicateName: PAGE_MARKET_PREDICATE, side: "support", intentionTagSlug: null }
+  }
+  const tag = intentionTagForLegacyPredicate(name)
+  if (tag) {
+    return { predicateName: PAGE_MARKET_PREDICATE, side: "support", intentionTagSlug: tag.slug }
+  }
+  return { predicateName, side: "support", intentionTagSlug: null }
+}

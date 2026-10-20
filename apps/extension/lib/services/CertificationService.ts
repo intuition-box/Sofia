@@ -23,6 +23,7 @@ import type {
 } from "../../types/blockchain"
 import type { CartItemRecord } from "../../types/database"
 import { getPublicClient } from "../clients/viemClients"
+import { toPageMarketClaim } from "../config/predicateConstants"
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from "../config/constants"
 import { getSigner } from "../signer"
 import { getFaviconUrl } from "../utils/formatters"
@@ -67,6 +68,9 @@ export interface QuickPublishTarget {
   url: string
   title: string | null
   predicateName: string
+  side?: "support" | "oppose"
+  /** Tags (topic / intention slugs) added to the claim after publishing */
+  contextSlugs?: string[]
 }
 
 export interface QuickPublishResult extends DepositResult {
@@ -94,6 +98,23 @@ class CertificationServiceClass {
     objectData: ObjectAtomData,
     customWeight?: bigint
   ): Promise<TripleOnChainResult> {
+    // One market per page: legacy intentions / trusts → recommends;
+    // distrust → oppose, which the batch path handles (counter vault).
+    const market = toPageMarketClaim(predicateName)
+    if (market.side === "oppose") {
+      const batch = await this.createTriplesBatch(wallet, [
+        {
+          predicateName: market.predicateName,
+          objectData,
+          customWeight,
+          side: "oppose"
+        }
+      ])
+      const result = batch.results.find((r) => r.side === "oppose")
+      if (!result) throw new Error(batch.error ?? "Oppose failed")
+      return result
+    }
+    predicateName = market.predicateName
     try {
       if (!wallet) {
         throw new Error("No wallet connected")
@@ -169,8 +190,17 @@ class CertificationServiceClass {
   /** Certify many objects at once: one atoms tx + batched triples/deposits. */
   async createTriplesBatch(
     wallet: string,
-    inputs: BatchTripleInput[]
+    rawInputs: BatchTripleInput[]
   ): Promise<BatchTripleResult> {
+    // One market per page (legacy intentions / trusts / distrust → recommends)
+    const inputs: BatchTripleInput[] = rawInputs.map((input) => {
+      const market = toPageMarketClaim(input.predicateName)
+      return {
+        ...input,
+        predicateName: market.predicateName,
+        side: input.side ?? market.side
+      }
+    })
     try {
       if (!wallet) {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
@@ -281,7 +311,8 @@ class CertificationServiceClass {
         objectId: atomResults.get(
           `object:${input.objectData.url || input.objectData.name}`
         )!,
-        customWeight: input.customWeight
+        customWeight: input.customWeight,
+        side: input.side
       }))
 
       const urls = inputs.map((i) => i.objectData.url).filter(Boolean)
@@ -489,11 +520,21 @@ class CertificationServiceClass {
             url: target.url,
             image: getFaviconUrl(target.url, 128) || undefined
           },
-          customWeight: weight
+          customWeight: weight,
+          side: target.side
         }
       ])
       if (!result.success) {
         return { success: false, error: result.error ?? "Publish failed" }
+      }
+      // Tags ride on the claim — best effort, the position is already taken
+      const claimId = result.results.find((r) => r.tripleVaultId)?.tripleVaultId
+      const slugs = target.side === "oppose" ? [] : (target.contextSlugs ?? [])
+      if (claimId && slugs.length > 0) {
+        const items = this.contextItemsFor(claimId, slugs)
+        await this.createContextTriplesBatch(wallet, items).catch((ctxError) =>
+          logger.warn("Quick publish tags failed (non-blocking)", ctxError)
+        )
       }
       const txHash = result.results[0]?.txHash as Hash | undefined
       txEventBus.emit("certification", txHash)
@@ -519,19 +560,29 @@ class CertificationServiceClass {
     batchResult: BatchTripleResult
   ): ContextTripleItem[] {
     return certItems.flatMap((item) => {
+      // Tags qualify the claim — an oppose position doesn't add any
+      if ((item.side ?? toPageMarketClaim(item.predicateName).side) === "oppose")
+        return []
       // All chosen contexts for this cert (topics and/or categories);
       // fall back to the legacy single field.
-      const slugs =
-        item.interestContexts && item.interestContexts.length
-          ? item.interestContexts
-          : item.interestContext
-            ? [item.interestContext]
-            : []
+      // Items queued before the page market carry a legacy predicate:
+      // resolve it the same way the batch did (and keep its intention tag).
+      const market = toPageMarketClaim(item.predicateName)
+      const slugs = [
+        ...new Set([
+          ...(item.interestContexts && item.interestContexts.length
+            ? item.interestContexts
+            : item.interestContext
+              ? [item.interestContext]
+              : []),
+          ...(market.intentionTagSlug ? [market.intentionTagSlug] : [])
+        ])
+      ]
       if (slugs.length === 0) return []
       // Look up the triple vault by stable input key. Indexing into
       // `batchResult.results` positionally is wrong: the service reorders
       // entries (created first, then deposits) after dedup.
-      const inputKey = `${item.predicateName}|${item.url}`
+      const inputKey = `${market.predicateName}|${item.url}`
       const tripleVaultId = batchResult.vaultIdByInputKey?.[inputKey]
       if (!tripleVaultId) {
         logger.warn("Skip context triples: no vaultId resolved", {
@@ -540,28 +591,38 @@ class CertificationServiceClass {
         })
         return []
       }
-      // A slug is a topic OR a category. Hybrid resolve: use the registered
-      // atom when known, else carry the canonical payload so the atom is
-      // minted (once, idempotently) at submit instead of silently dropped.
-      const items: ContextTripleItem[] = []
-      for (const slug of slugs) {
-        const ref = contextAtomRefForSlug(slug)
-        if (!ref) continue
-        items.push(
-          ref.kind === "known"
-            ? { certTripleVaultId: tripleVaultId, topicTermId: ref.termId }
-            : {
-                certTripleVaultId: tripleVaultId,
-                mintPayload: {
-                  name: ref.payload.name,
-                  description: ref.payload.description,
-                  url: ref.payload.url
-                }
-              }
-        )
-      }
-      return items
+      return this.contextItemsFor(tripleVaultId, slugs)
     })
+  }
+
+  /**
+   * `in context of` items for one claim. A slug is a topic, a category or an
+   * intention tag. Hybrid resolve: use the registered atom when known, else
+   * carry the canonical payload so the atom is minted (once, idempotently)
+   * at submit instead of silently dropped.
+   */
+  private contextItemsFor(
+    tripleVaultId: string,
+    slugs: string[]
+  ): ContextTripleItem[] {
+    const items: ContextTripleItem[] = []
+    for (const slug of slugs) {
+      const ref = contextAtomRefForSlug(slug)
+      if (!ref) continue
+      items.push(
+        ref.kind === "known"
+          ? { certTripleVaultId: tripleVaultId, topicTermId: ref.termId }
+          : {
+              certTripleVaultId: tripleVaultId,
+              mintPayload: {
+                name: ref.payload.name,
+                description: ref.payload.description,
+                url: ref.payload.url
+              }
+            }
+      )
+    }
+    return items
   }
 
   /** Votes via depositWithPool (curve 1n), only on triples that exist on-chain. */

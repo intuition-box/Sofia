@@ -92,6 +92,9 @@ export interface CartItemRecord {
    *  Add-to-Sofia title search) — the batch deposits on it instead of creating
    *  a new atom from the URL. */
   objectTermId?: string | null
+  /** Certification side — oppose = position on the claim's counter vault
+   *  (the old `distrust`). Absent = support. */
+  side?: "support" | "oppose"
   voteAction?: "support" | "oppose"  // If present, this is a vote item (not a certification)
   tripleTermId?: string              // Vault ID for direct deposit (votes only)
 }

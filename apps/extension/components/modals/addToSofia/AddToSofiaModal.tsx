@@ -179,7 +179,8 @@ export default function AddToSofiaModal() {
   const abs = target.url.startsWith("http")
     ? target.url
     : `https://${target.url}`
-  const canAdd = v.intentions.length > 0 && !saving
+  // Intentions are optional tags: recommending the page is enough
+  const canAdd = !saving
 
   // Open the side panel so the user can connect. Called SYNCHRONOUSLY from the
   // button's onClick (no await before) — chrome.sidePanel.open() requires an
@@ -194,7 +195,7 @@ export default function AddToSofiaModal() {
   }
 
   const add = async () => {
-    if (!v.intentions.length || saving) return
+    if (saving) return
     setSaving(true)
     try {
       const res = await askBackground<AddToCartResponse>({
@@ -301,7 +302,7 @@ export default function AddToSofiaModal() {
                 ? "✓ Added to my cart"
                 : saving
                   ? "Adding…"
-                  : "Add to my cart"}
+                  : "Recommend · add to my cart"}
             </button>
           )}
         </footer>

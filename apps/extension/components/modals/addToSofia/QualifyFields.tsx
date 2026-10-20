@@ -67,7 +67,7 @@ export function QualifyFields({ value, onChange, hints }: QualifyFieldsProps) {
       </section>
 
       <section className="sis-section">
-        <label className="sis-field-lab">Intentions</label>
+        <label className="sis-field-lab">Why? (optional tags)</label>
         <div className="sis-intentions">
           {INTENTION_ITEMS.map((it) => {
             const color = INTENTION_CONFIG[it.type].color
