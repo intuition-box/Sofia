@@ -213,6 +213,8 @@ export interface BatchCreateTripleItem {
   predicateId: string
   objectId: string
   signalTrust: number
+  /** Bonding curve — 1 (linear, default) or 2 (progressive: page market) */
+  curveId?: bigint
 }
 
 export async function executeCreateTriplesBatch(
@@ -256,14 +258,18 @@ export async function executeCreateTriplesBatch(
     let lastTxHash: string | undefined
     let alreadyExisted = false
 
-    // Path 1 — mint the new triples in one batched tx.
-    if (toCreate.length > 0) {
-      const subjectIds = toCreate.map((c) => c.item.subjectId as `0x${string}`)
-      const predicateIds = toCreate.map(
-        (c) => c.item.predicateId as `0x${string}`,
-      )
-      const objectIds = toCreate.map((c) => c.item.objectId as `0x${string}`)
-      const assets = toCreate.map((c) =>
+    // Path 1 — mint the new triples, one batched tx per bonding curve
+    // (createTriples takes a single curve for the whole batch).
+    const createGroups = new Map<bigint, typeof toCreate>()
+    for (const c of toCreate) {
+      const curve = c.item.curveId ?? CREATION_CURVE_ID
+      createGroups.set(curve, [...(createGroups.get(curve) ?? []), c])
+    }
+    for (const [curveId, group] of createGroups) {
+      const subjectIds = group.map((c) => c.item.subjectId as `0x${string}`)
+      const predicateIds = group.map((c) => c.item.predicateId as `0x${string}`)
+      const objectIds = group.map((c) => c.item.objectId as `0x${string}`)
+      const assets = group.map((c) =>
         BigInt(Math.floor(c.item.signalTrust * 1e18)),
       )
       const totalDeposit = assets.reduce((a, b) => a + b, 0n)
@@ -274,12 +280,12 @@ export async function executeCreateTriplesBatch(
         functionName: 'getTripleCost',
         authorizationList: undefined,
       })) as bigint
-      const multiVaultCost = tripleCost * BigInt(toCreate.length) + totalDeposit
+      const multiVaultCost = tripleCost * BigInt(group.length) + totalDeposit
       const totalCost = (await publicClient.readContract({
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'getTotalCreationCost',
-        args: [BigInt(toCreate.length), totalDeposit, multiVaultCost],
+        args: [BigInt(group.length), totalDeposit, multiVaultCost],
         authorizationList: undefined,
       })) as bigint
 
@@ -289,7 +295,7 @@ export async function executeCreateTriplesBatch(
         predicateIds,
         objectIds,
         assets,
-        CREATION_CURVE_ID,
+        curveId,
       ] as const
 
       const simConfig = {
@@ -306,7 +312,7 @@ export async function executeCreateTriplesBatch(
       const gas = await explicitGasLimit(
         publicClient,
         simConfig,
-        BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
+        BigInt(group.length) * 1_000_000n + 1_000_000n,
       )
 
       const hash = await client.writeContract({
@@ -327,7 +333,7 @@ export async function executeCreateTriplesBatch(
     if (toDeposit.length > 0) {
       alreadyExisted = true
       const termIds = toDeposit.map((c) => c.tripleId)
-      const curveIds = toDeposit.map(() => CREATION_CURVE_ID)
+      const curveIds = toDeposit.map((c) => c.item.curveId ?? CREATION_CURVE_ID)
       const assets = toDeposit.map((c) =>
         BigInt(Math.floor(c.item.signalTrust * 1e18)),
       )

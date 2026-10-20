@@ -65,6 +65,9 @@ export interface CartItem {
     | 'redeem'
     | 'create-skill'
     | 'create-context'
+  /** Bonding curve for 'deposit' / 'create-triple' — 2 (progressive) for the
+   *  page market (`I | recommends | page`), 1 (linear) by default. */
+  curveId?: 1 | 2
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string

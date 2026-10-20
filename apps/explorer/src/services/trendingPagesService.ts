@@ -31,6 +31,7 @@ import {
   type GetTrendingPagePositionsQuery,
   type GetTrendingPageDetailsQuery,
 } from '@0xsofia/graphql'
+import { PAGE_MARKET_PREDICATE_LABEL } from '@0xsofia/taxonomy'
 import {
   CANONICAL_PREDICATE_IDS,
   CANONICAL_SUPPORT_PREDICATE_LABELS,
@@ -155,8 +156,11 @@ export interface TrendingPage extends TrendingPageRank {
   atomCount: number
   /** Earliest positions across the page's claims, oldest first. */
   firstSupporters: FirstSupporter[]
-  /** The claim a "Take position" targets: most supporters, then most staked. */
+  /** The busiest claim: most supporters, then most staked. */
   mainClaim: TrendingPageClaim | null
+  /** The page market a "Take position" targets: Sofia's `I | recommends |
+   *  page` claim when it exists, else the atom to create it on. */
+  market: { claim: TrendingPageClaim | null; objectId: string }
   /** Sources present among the claims, Sofia first. */
   sources: ClaimSource[]
   /** Every claim behind the card, most supporters first. */
@@ -325,6 +329,11 @@ export function buildTrendingPages(
       )
       .map((s) => s.claim)
     const main = claimList[0]
+    const marketClaim = claimList.find(
+      (c) =>
+        c.predicateLabel === PAGE_MARKET_PREDICATE_LABEL &&
+        c.source === 'sofia',
+    )
     const mainObject =
       pageClaims.find((c) => c.term_id === main.termId)?.object ??
       pageClaims[0].object
@@ -358,6 +367,16 @@ export function buildTrendingPages(
         termId: main.termId,
         counterTermId: main.counterTermId,
         predicateLabel: main.predicateLabel,
+      },
+      market: {
+        claim: marketClaim
+          ? {
+              termId: marketClaim.termId,
+              counterTermId: marketClaim.counterTermId,
+              predicateLabel: marketClaim.predicateLabel,
+            }
+          : null,
+        objectId: mainObject.term_id,
       },
       sources,
       claims: claimList,

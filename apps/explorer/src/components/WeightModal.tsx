@@ -30,6 +30,7 @@ import {
   type CreateTripleResult,
 } from '../services/tripleCreationService'
 import { redeemAtom, type RedeemPercent } from '../services/redeemService'
+import type { BatchDepositItem } from '../services/depositService'
 import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
@@ -281,7 +282,7 @@ export default function WeightModal({
   //                        (the membership + has_tag triples reference the
   //                        atom ids returned by the atom batch)
   const handleSubmit = useCallback(async () => {
-    const depositItems: { termId: string; amountTrust: number }[] = []
+    const depositItems: BatchDepositItem[] = []
     const createItems: BatchCreateTripleItem[] = []
     const redeemItems: { termId: string; percent?: RedeemPercent }[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
@@ -310,6 +311,7 @@ export default function WeightModal({
           predicateId: item.predicateId,
           objectId: item.objectId,
           signalTrust: amount,
+          curveId: item.curveId ? BigInt(item.curveId) : undefined,
         })
       } else if (item.kind === 'create-circle' && item.circleDraft) {
         circleIndices.push(i)
@@ -318,7 +320,11 @@ export default function WeightModal({
       } else if (item.kind === 'create-context' && item.contextDraft) {
         contextIndices.push(i)
       } else {
-        depositItems.push({ termId: item.termId, amountTrust: amount })
+        depositItems.push({
+          termId: item.termId,
+          amountTrust: amount,
+          curveId: item.curveId ? BigInt(item.curveId) : undefined,
+        })
       }
     })
 
