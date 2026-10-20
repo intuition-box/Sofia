@@ -42,10 +42,9 @@ import "../styles/FilterDropdown.css"
 import "../styles/ContextPicker.css"
 import "../styles/CategorisationDropdown.css"
 
-// Trust verbs first, then the six purposes — same order as the old picker.
+// Why you recommend the page — optional intention tags. Recommend / Distrust
+// themselves are the page market's buttons (PageMarketPanel).
 const VERB_TYPES: IntentionType[] = [
-  "trusted",
-  "distrusted",
   "work",
   "learning",
   "fun",
@@ -318,7 +317,7 @@ export const CategorisationDropdown = memo(
           <div className="ext-cat-list ext-ctx-list">
             {verbRows.length > 0 && (
               <>
-                <p className="ext-cat-group-label">Verbs</p>
+                <p className="ext-cat-group-label">Why (optional)</p>
                 {verbRows.map(renderVerbRow)}
               </>
             )}

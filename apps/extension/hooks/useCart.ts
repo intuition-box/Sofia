@@ -58,6 +58,12 @@ export const useCart = () => {
     [walletAddress]
   )
 
+  const setItemContexts = useCallback(
+    (itemId: string, interestContexts: string[]) =>
+      cartService.setItemContexts(itemId, interestContexts),
+    []
+  )
+
   const clearCart = useCallback(() => {
     if (walletAddress) cartService.clearCart(walletAddress)
   }, [walletAddress])
@@ -136,6 +142,7 @@ export const useCart = () => {
     addVoteToCart,
     removeFromCart,
     updateContextForUrl,
+    setItemContexts,
     clearCart,
     isInCart,
     isVoteInCart,

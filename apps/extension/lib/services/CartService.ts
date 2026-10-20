@@ -381,6 +381,24 @@ class CartServiceClass {
     }
   }
 
+  /** Replace one queued item's tags (topics and intention tags) */
+  async setItemContexts(itemId: string, interestContexts: string[]): Promise<void> {
+    const item = this.state.items.find(i => i.id === itemId)
+    if (!item) return
+    const updated: CartItemRecord = {
+      ...item,
+      interestContext: interestContexts[0] ?? null,
+      interestContexts: interestContexts.length ? interestContexts : undefined
+    }
+    try {
+      await CartDataService.addItem(updated) // put = upsert
+      const items = this.state.items.map(i => (i.id === itemId ? updated : i))
+      this.updateState({ items, count: items.length })
+    } catch (error) {
+      logger.error("Failed to update item tags", { error })
+    }
+  }
+
   async removeItem(itemId: string): Promise<void> {
     try {
       await CartDataService.removeItem(itemId)

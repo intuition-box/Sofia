@@ -340,3 +340,100 @@ query GetVaultPriceHistory($termIds: [String!]!, $limit: Int!, $offset: Int!) {
     last_share_price
   }
 }
+
+# Extension Page tab — the page's market in one call (ONE_MARKET_PER_PAGE_SPEC
+# §4.2). `claims`: every page claim on the page's atoms (the `recommends`
+# market and legacy ones) with both sides' vaults, the ordered stakers (rank,
+# momentum) and the viewer's own legs (value / P&L). `tags`: the `in context
+# of` tags hanging off those claims, with how many hold each.
+query GetPageMarket(
+  $objectIds: [String!]!
+  $predicateLabels: [String!]!
+  $accounts: [String!]!
+) {
+  claims: triples(
+    where: {
+      object_id: { _in: $objectIds }
+      predicate: { label: { _in: $predicateLabels } }
+    }
+    limit: 50
+  ) {
+    term_id
+    counter_term_id
+    subject_id
+    predicate {
+      label
+    }
+    term {
+      vaults {
+        curve_id
+        total_assets
+        position_count
+        current_share_price
+      }
+    }
+    counter_term {
+      vaults {
+        curve_id
+        total_assets
+        position_count
+        current_share_price
+      }
+    }
+    supporters: positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 500
+    ) {
+      account_id
+      created_at
+    }
+    opposers: counter_positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 500
+    ) {
+      account_id
+      created_at
+    }
+    mySupport: positions(
+      where: { account_id: { _in: $accounts }, shares: { _gt: "0" } }
+    ) {
+      curve_id
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+    myOppose: counter_positions(
+      where: { account_id: { _in: $accounts }, shares: { _gt: "0" } }
+    ) {
+      curve_id
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+  tags: triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      subject_term: {
+        triple: {
+          object_id: { _in: $objectIds }
+          predicate: { label: { _in: $predicateLabels } }
+        }
+      }
+    }
+    limit: 100
+  ) {
+    subject_id
+    object {
+      term_id
+      label
+    }
+    positions_aggregate(where: { shares: { _gt: "0" } }) {
+      aggregate {
+        count
+      }
+    }
+  }
+}
