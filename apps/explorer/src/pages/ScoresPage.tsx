@@ -27,7 +27,7 @@ import { getTopicIcon } from '@/config/topicEmoji'
 import {
   INTENTION_CONFIG,
   type IntentionType,
-  predicateLabelToIntentionType,
+  certVerbs,
 } from '@/config/intentions'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
@@ -435,11 +435,10 @@ export default function ScoresPage() {
   const renderCertCard = (cert: (typeof profile.certs)[number]) => {
     const url = cert.objectUrl || ''
     const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
-    const intentType = predicateLabelToIntentionType(cert.intention)
-    const verb = VERBS.find((v) => v.id === intentType)
-    const cardVerbs: FeedCardVerb[] = verb
-      ? [{ label: verb.label, color: verb.color }]
-      : []
+    const cardVerbs: FeedCardVerb[] = certVerbs(cert)
+      .map((id) => VERBS.find((v) => v.id === id))
+      .filter((v): v is NonNullable<typeof v> => !!v)
+      .map((v) => ({ label: v.label, color: v.color }))
     const cardTopics: FeedCardTopic[] = [
       ...cert.topicSlugs
         .map((s) => {

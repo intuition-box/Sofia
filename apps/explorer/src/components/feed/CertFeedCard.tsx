@@ -7,10 +7,7 @@
  * the Explore / Circles feed cards — including topic tagging.
  */
 import type { UserCert } from '@/services/userOnChainProfileService'
-import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType,
-} from '@/config/intentions'
+import { INTENTION_CONFIG, certVerbs } from '@/config/intentions'
 import { INTENTION_ICONS } from '@/config/intentionIcons'
 import { extractDomain, cleanLabel, timeAgo } from '@/utils/formatting'
 import FeedCardView, {
@@ -49,7 +46,7 @@ export default function CertFeedCard({
   const { redeemCert } = useRedeemCert()
   const url = cert.objectUrl || ''
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
-  const intentType = predicateLabelToIntentionType(cert.intention)
+  const intentType = certVerbs(cert)[0] ?? null
   const verbCfg = intentType ? INTENTION_CONFIG[intentType] : undefined
   const VerbIcon = intentType ? INTENTION_ICONS[intentType] : null
   const verbs: FeedCardVerb[] = verbCfg

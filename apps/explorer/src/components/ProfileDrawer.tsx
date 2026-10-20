@@ -277,7 +277,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // Echoes cards. `cssClass` maps to the intent palette; an empty
       // class falls back to the neutral accent for unknown predicates.
       let verbLabel = 'Certified'
-      if (intentionLower === 'trusts') verbLabel = 'Trusted'
+      if (intentionLower === 'trusts' || intentionLower === 'recommends')
+        verbLabel = 'Recommended'
       else if (isOppose) verbLabel = 'Distrusted'
       else if (intentionLower.startsWith('visits for ')) {
         const tail = intentionLower.slice('visits for '.length).trim()

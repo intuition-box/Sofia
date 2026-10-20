@@ -3,6 +3,7 @@ import {
   LABEL_TO_INTENTION,
 } from '../config/intentions'
 import { useGetContextTriplesQuery } from '@0xsofia/graphql'
+import { intentionTagForAtom } from '@0xsofia/taxonomy'
 import { resolveContextAtom } from '../config/contextNodes'
 import { extractDomain, cleanLabel } from '../utils/formatting'
 import { getFaviconUrl } from '../utils/favicon'
@@ -103,9 +104,14 @@ export interface ContextTripleData {
 async function fetchContextTriples(
   certTermIds: string[],
   viewerIds: readonly string[] = [],
-): Promise<Map<string, ContextTripleData[]>> {
+): Promise<{
+  result: Map<string, ContextTripleData[]>
+  /** cert term_id → intention tag labels ('Work'…) on a Recommend */
+  intentTags: Map<string, string[]>
+}> {
   const result = new Map<string, ContextTripleData[]>()
-  if (certTermIds.length === 0) return result
+  const intentTags = new Map<string, string[]>()
+  if (certTermIds.length === 0) return { result, intentTags }
 
   try {
     const data = await useGetContextTriplesQuery.fetcher({
@@ -119,6 +125,16 @@ async function fetchContextTriples(
       const objectTermId = t.object?.term_id
       const termId = t.term_id
       if (!subjectId || !objectTermId || !termId) continue
+
+      // Intention tag (`for work`) on a Recommend → shown as its verb
+      const tag = t.object ? intentionTagForAtom(t.object) : undefined
+      if (tag) {
+        const label = tag.key.charAt(0).toUpperCase() + tag.key.slice(1)
+        const tags = intentTags.get(subjectId) ?? []
+        if (!tags.includes(label)) tags.push(label)
+        intentTags.set(subjectId, tags)
+        continue
+      }
 
       // Roll a category context up to its parent topic so the feed's
       // drill-by-topic + like/dislike grouping stays topic-keyed.
@@ -150,7 +166,7 @@ async function fetchContextTriples(
     // Non-blocking: context is bonus info
   }
 
-  return result
+  return { result, intentTags }
 }
 
 // ── Main processing ──
@@ -284,10 +300,24 @@ export async function enrichWithTopicContexts(
     }
   }
 
-  const contextMap = await fetchContextTriples(
+  const { result: contextMap, intentTags } = await fetchContextTriples(
     Array.from(termIdToItems.keys()),
     viewerWallets,
   )
+
+  // Intention tags read like the old intention verbs, on the Recommend vault
+  for (const [termId, labels] of intentTags) {
+    for (const item of termIdToItems.get(termId) ?? []) {
+      const vault = Object.values(item.intentionVaults).find(
+        (v) => v.termId === termId,
+      )
+      for (const label of labels) {
+        if (!item.intentions.includes(label)) item.intentions.push(label)
+        if (vault && !item.intentionVaults[label])
+          item.intentionVaults[label] = vault
+      }
+    }
+  }
 
   for (const [termId, contexts] of contextMap) {
     const linkedItems = termIdToItems.get(termId)

@@ -20,12 +20,20 @@ import { getAddress } from 'viem'
 import {
   useGetUserCertsAlltimeQuery,
   useGetCertTopicLinksQuery,
+  useGetContextTriplesQuery,
   useGetUserContextAdditionsQuery,
   type GetUserCertsAlltimeQuery,
 } from '@0xsofia/graphql'
 import { CONTEXT_TERM_IDS } from '@/config/atomIds'
 import { resolveContextAtom } from '@/config/contextNodes'
-import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
+import {
+  intentionTagForAtom,
+  PAGE_CLAIM_PREDICATE_LABELS,
+  PAGE_MARKET_PREDICATE_LABEL,
+} from '@0xsofia/taxonomy'
+
+/** Recommends per context-triples lookup (the query caps at 500 rows) */
+const INTENTION_TAG_CHUNK = 100
 
 type RawCertTriple = NonNullable<GetUserCertsAlltimeQuery['triples']>[number]
 
@@ -72,6 +80,9 @@ export interface UserCert {
    *  context, NOT the cert vault (the verb), so the public-profile vote
    *  mirrors the circle feed (CircleItem.contextTriples). */
   contextTriples: { topicSlug: string; termId: string; counterTermId: string }[]
+  /** Intention tags on a Recommend (`work`, `learning`…) — the verbs of the
+   *  page market. Empty on legacy claims (their verb is the predicate). */
+  intentionTags: string[]
 }
 
 /**
@@ -231,6 +242,25 @@ export async function fetchUserOnChainProfile(
     contextTriplesByCert.set(ca.certTermId, arr)
   }
 
+  // Intention tags (`for work`…) on the user's Recommends
+  const recommendIds = rawTriples
+    .filter((t) => t.predicate?.label === PAGE_MARKET_PREDICATE_LABEL)
+    .map((t) => t.term_id)
+    .filter((x): x is string => !!x)
+  const intentionTagsByCert = new Map<string, string[]>()
+  for (let i = 0; i < recommendIds.length; i += INTENTION_TAG_CHUNK) {
+    const ctx = await useGetContextTriplesQuery.fetcher({
+      subjectIds: recommendIds.slice(i, i + INTENTION_TAG_CHUNK),
+    })()
+    for (const row of ctx.triples ?? []) {
+      const tag = row.object ? intentionTagForAtom(row.object) : undefined
+      if (!tag || !row.subject_id) continue
+      const keys = intentionTagsByCert.get(row.subject_id) ?? []
+      if (!keys.includes(tag.key)) keys.push(tag.key)
+      intentionTagsByCert.set(row.subject_id, keys)
+    }
+  }
+
   // Normalise into UserCert.
   const certs: UserCert[] = rawTriples.map((t) => {
     const termId = t.term_id ?? ''
@@ -273,6 +303,7 @@ export async function fetchUserOnChainProfile(
       topicSlugs,
       contextSlugs,
       contextTriples: contextTriplesByCert.get(termId) ?? [],
+      intentionTags: intentionTagsByCert.get(termId) ?? [],
     }
   })
 

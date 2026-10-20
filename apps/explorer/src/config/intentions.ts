@@ -8,6 +8,7 @@
  */
 
 import { PREDICATE_IDS } from '../config'
+import { CANONICAL_PREDICATE_IDS } from '@0xsofia/taxonomy'
 import { INTENTION_HEX, type IntentionSlug } from '@0xsofia/design-system'
 
 // ── Canonical types ─────────────────────────────────────────────────────
@@ -32,8 +33,10 @@ export interface IntentionConfigEntry {
 
 /** The 8 canonical intentions. */
 export const INTENTION_CONFIG: Record<IntentionType, IntentionConfigEntry> = {
+  // The page market: a Recommend (`I | recommends | page`) — legacy `trusts`
+  // claims merged into it, so they read the same.
   trusted: {
-    label: 'Trusted',
+    label: 'Recommended',
     color: INTENTION_HEX.trusted,
     gradientEnd: '#4ADE80',
     cssClass: 'trusted',
@@ -214,7 +217,8 @@ export function intentionBadgeStyle(color: string): {
  *  NOTE: returns the label (not the slug) for back-compat with
  *  `feedProcessing.ts` which concatenates it into `CircleItem.intentions`. */
 export const PREDICATE_TO_INTENTION: Record<string, string> = {
-  [PREDICATE_IDS.TRUSTS]: 'Trusted',
+  [PREDICATE_IDS.TRUSTS]: 'Recommended',
+  [CANONICAL_PREDICATE_IDS.recommends]: 'Recommended',
   [PREDICATE_IDS.DISTRUST]: 'Distrusted',
   [PREDICATE_IDS.VISITS_FOR_WORK]: 'Work',
   [PREDICATE_IDS.VISITS_FOR_LEARNING]: 'Learning',
@@ -223,7 +227,8 @@ export const PREDICATE_TO_INTENTION: Record<string, string> = {
 }
 
 export const LABEL_TO_INTENTION: Record<string, string | undefined> = {
-  trusts: 'Trusted',
+  recommends: 'Recommended',
+  trusts: 'Recommended',
   distrust: 'Distrusted',
   'visits for work': 'Work',
   'visits for learning': 'Learning',
@@ -241,6 +246,7 @@ export function predicateLabelToIntentionType(
 ): IntentionType | null {
   const trimmed = label.trim().toLowerCase()
   switch (trimmed) {
+    case 'recommends':
     case 'trusts':
       return 'trusted'
     case 'distrust':
@@ -314,4 +320,21 @@ export const QUEST_BADGES: Record<string, QuestBadge> = {
   'twitch linked': { name: 'Twitch Linked', category: 'social' },
   'twitter linked': { name: 'Twitter Linked', category: 'social' },
   'social linked': { name: 'Social Linked', category: 'social' },
+}
+
+/**
+ * The verbs of a cert: a Recommend's intention tags (`work`, `learning`…),
+ * else the legacy predicate's verb (`visits for work` → work, trusts /
+ * recommends → trusted, distrust → distrusted).
+ */
+export function certVerbs(cert: {
+  intention: string
+  intentionTags?: readonly string[]
+}): IntentionType[] {
+  const tags = (cert.intentionTags ?? []).filter(
+    (t): t is IntentionType => t in INTENTION_CONFIG,
+  )
+  if (tags.length > 0) return tags
+  const verb = predicateLabelToIntentionType(cert.intention)
+  return verb ? [verb] : []
 }

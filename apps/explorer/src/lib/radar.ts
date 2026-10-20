@@ -12,7 +12,7 @@
  */
 import {
   INTENTION_CONFIG,
-  predicateLabelToIntentionType,
+  certVerbs,
   type IntentionType,
 } from '@/config/intentions'
 import type { UserCert } from '@/services/userOnChainProfileService'
@@ -127,13 +127,12 @@ export function bucketProfileByTopicAndVerb(
   const verbTotals = new Map<string, number>()
 
   for (const cert of certs) {
-    const verbId = predicateLabelToIntentionType(cert.intention)
-    const isRadarVerb = !!verbId && RADAR_VERB_IDS.has(verbId)
+    const verbIds = certVerbs(cert).filter((v) => RADAR_VERB_IDS.has(v))
 
     // Verb totals count EVERY cert with this verb regardless of topic
     // context. The user might have hundreds of `visits for work` certs
     // without a nested topic triple — they still belong on the verb axis.
-    if (isRadarVerb) {
+    for (const verbId of verbIds) {
       verbTotals.set(verbId, (verbTotals.get(verbId) ?? 0) + 1)
     }
 
@@ -147,14 +146,15 @@ export function bucketProfileByTopicAndVerb(
     }
 
     // (topic, verb) cells require both — only used inside topic polygons.
-    if (!isRadarVerb) continue
-    for (const topicId of cert.topicSlugs) {
-      let row = counts.get(topicId)
-      if (!row) {
-        row = new Map()
-        counts.set(topicId, row)
+    for (const verbId of verbIds) {
+      for (const topicId of cert.topicSlugs) {
+        let row = counts.get(topicId)
+        if (!row) {
+          row = new Map()
+          counts.set(topicId, row)
+        }
+        row.set(verbId, (row.get(verbId) ?? 0) + 1)
       }
-      row.set(verbId, (row.get(verbId) ?? 0) + 1)
     }
   }
 

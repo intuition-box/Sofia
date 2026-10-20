@@ -40,7 +40,11 @@ export default function CircleCard({
 }: CircleCardProps) {
   const shownName = isPrivate ? 'Someone' : displayName
   const isDirectVerb = item.intentions.every(
-    (i) => i === 'Trusted' || i === 'Distrusted' || i === 'is following',
+    (i) =>
+      i === 'Recommended' ||
+      i === 'Trusted' ||
+      i === 'Distrusted' ||
+      i === 'is following',
   )
 
   return (

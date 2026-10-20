@@ -30,7 +30,7 @@ export interface IntentionConfigEntry {
 // for ambient/track usage; the vivid values below are for pills/badges
 // injected as inline styles where high contrast is needed.
 export const INTENTION_CONFIG: Record<IntentionType, IntentionConfigEntry> = {
-  trusted:     { label: "Trusted",     color: "#22C55E", gradientEnd: "#4ADE80", cssClass: "trusted",     intentionPurpose: null,               predicateLabel: "trusts" },
+  trusted:     { label: "Recommended", color: "#22C55E", gradientEnd: "#4ADE80", cssClass: "trusted",     intentionPurpose: null,               predicateLabel: "trusts" },
   distrusted:  { label: "Distrusted",  color: "#EF4444", gradientEnd: "#F87171", cssClass: "distrusted",  intentionPurpose: null,               predicateLabel: "distrust" },
   work:        { label: "Work",        color: "#3B82F6", gradientEnd: "#60A5FA", cssClass: "work",        intentionPurpose: "for_work",         predicateLabel: "visits for work" },
   learning:    { label: "Learning",    color: "#06B6D4", gradientEnd: "#22D3EE", cssClass: "learning",    intentionPurpose: "for_learning",     predicateLabel: "visits for learning" },
