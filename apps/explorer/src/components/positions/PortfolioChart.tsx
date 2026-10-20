@@ -1,19 +1,19 @@
 /**
- * PortfolioChart — value of a wallet's positions over time, Trade Republic
- * style: big headline value, performance for the period (deposits and exits
- * left out), a clean area curve you can scrub, range chips underneath.
- * Green when the period is up, red when it's down.
+ * PortfolioChart — P&L of a wallet's positions over time: the headline total
+ * P&L, the change for the period (deposits and exits left out), a line you
+ * can scrub, period chips underneath. Green when up, red when down.
  */
 import { useMemo, useState } from 'react'
 import {
-  Area,
-  AreaChart,
+  Line,
+  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   YAxis,
 } from 'recharts'
 import SofiaLoader from '@/components/ui/SofiaLoader'
+import '@/components/styles/trend-hunter.css'
 import { usePortfolioHistory } from '@/hooks/usePortfolioHistory'
 import {
   performance,
@@ -97,7 +97,7 @@ export default function PortfolioChart({
   return (
     <section className="pf-chart" aria-label="Profit and loss over time">
       <div className="pf-head">
-        <span className="pf-kicker">Total P&amp;L</span>
+        <span className="th-eyebrow">Total P&amp;L</span>
         <span className={`pf-value ${shown && shown.pnl < 0 ? 'down' : 'up'}`}>
           {shown ? signed(shown.pnl) : '—'}
         </span>
@@ -113,7 +113,7 @@ export default function PortfolioChart({
 
       <div className="pf-plot">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
+          <LineChart
             data={data}
             margin={{ top: 8, right: 0, bottom: 0, left: 0 }}
             onMouseMove={(s) =>
@@ -125,12 +125,6 @@ export default function PortfolioChart({
             }
             onMouseLeave={() => setHover(null)}
           >
-            <defs>
-              <linearGradient id="pf-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-                <stop offset="100%" stopColor={color} stopOpacity={0} />
-              </linearGradient>
-            </defs>
             <YAxis
               hide
               domain={[
@@ -147,16 +141,16 @@ export default function PortfolioChart({
               stroke="var(--ds-border)"
               strokeDasharray="4 4"
             />
-            <Area
+            <Line
               type="monotone"
               dataKey="pnl"
               stroke={color}
-              strokeWidth={2.5}
-              fill="url(#pf-fill)"
+              strokeWidth={2}
+              dot={false}
               activeDot={{ r: 4, fill: color, stroke: 'var(--ds-card)' }}
               animationDuration={600}
             />
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
@@ -168,7 +162,7 @@ export default function PortfolioChart({
               type="button"
               role="tab"
               aria-selected={range === r.key}
-              className={`pf-range${range === r.key ? ' is-active' : ''}`}
+              className={`pm-chip${range === r.key ? ' active' : ''}`}
               onClick={() => {
                 setRange(r.key)
                 setHover(null)

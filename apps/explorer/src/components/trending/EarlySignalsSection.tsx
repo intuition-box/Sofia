@@ -6,12 +6,14 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import type { Address } from 'viem'
-import { Avatar } from '@0xsofia/design-system'
+import { Avatar, ModuleHead } from '@0xsofia/design-system'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { formatMonth, useEarlySignals } from '@/hooks/useTrendHunters'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
-import '@/components/styles/market-pages.css'
+import '@0xsofia/design-system/styles/module-head.css'
+import '@/components/styles/platform-market.css'
+import '@/components/styles/trend-hunter.css'
 
 function leadLabel(days: number): string {
   if (days < 1) return 'the same day as the next 5'
@@ -29,23 +31,24 @@ export default function EarlySignalsSection() {
   if (entries.length === 0 || !month) return null
 
   return (
-    <section className="mk-missions" aria-label="Early signals">
-      <header className="mk-missions-head">
-        <span className="mk-missions-label">
-          Early signals · {formatMonth(month)}
-        </span>
-        <Link to="/leaderboard?tab=trend-hunters" className="mk-signals-more">
-          Trend Hunters
-        </Link>
-      </header>
-      <ul className="mk-missions-list">
+    <section className="th-section" aria-label="Early signals">
+      <ModuleHead
+        title="Early signals"
+        desc={`Pages spotted early in ${formatMonth(month)}, before credible accounts followed.`}
+        right={
+          <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
+            Trend Hunters
+          </Link>
+        }
+      />
+      <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
         {entries.map((s) => {
           const addr = s.wallet as Address
           const domain = s.pageUrl ? extractDomain(s.pageUrl) : null
           const title = s.pageLabel || domain || 'A page'
           return (
-            <li key={s.claimId} className="mk-mission mk-signal">
-              <span className="mk-signal-page">
+            <li key={s.claimId} className="th-card">
+              <span className="th-card-title th-signal-page">
                 {domain && (
                   <img src={getFaviconUrl(domain, 32)} alt="" aria-hidden />
                 )}
@@ -57,19 +60,18 @@ export default function EarlySignalsSection() {
                   <span>{title}</span>
                 )}
               </span>
-              <Link to={`/profile/${s.wallet}`} className="mk-signal-by">
+              <Link to={`/profile/${s.wallet}`} className="th-signal-by">
                 <Avatar
                   label={getDisplay(addr)}
                   imageUrl={getAvatar(addr)}
                   size={20}
                 />
                 <span>
-                  Spotted by <strong>{getDisplay(addr)}</strong>,{' '}
-                  {leadLabel(s.leadDays)}
+                  Spotted by {getDisplay(addr)}, {leadLabel(s.leadDays)}
                 </span>
               </Link>
-              <span className="mk-mission-desc">
-                {s.followers} credible followers this month
+              <span className="th-eyebrow">
+                {s.followers} credible followers
               </span>
             </li>
           )

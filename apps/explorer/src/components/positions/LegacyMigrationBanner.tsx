@@ -4,13 +4,14 @@
  * threshold (fees are per page), see the cost, then: exit (one signature
  * per 100 positions) → the cart opens with the Recommends and their tags.
  */
-import { ArrowRightLeft, Check } from 'lucide-react'
+import { ArrowRightLeft } from 'lucide-react'
 import { formatTrust } from '@/utils/formatting'
 import type { MigrationStatus } from '@/hooks/useLegacyMigration'
 import {
   MIGRATION_THRESHOLDS,
   type MigrationEstimate,
 } from '@/services/legacyMigrationService'
+import '@/components/styles/trend-hunter.css'
 
 interface LegacyMigrationBannerProps {
   pageCount: number
@@ -43,13 +44,13 @@ export default function LegacyMigrationBanner({
 
   if (status === 'done') {
     return (
-      <section className="lm-banner" aria-label="Move legacy positions">
+      <section className="lm-card" aria-label="Move legacy positions">
         <div className="lm-text">
-          <span className="lm-title">
-            <Check className="h-4 w-4" aria-hidden /> Exited — confirm your
-            Recommends in the cart
+          <span className="th-eyebrow">Legacy positions exited</span>
+          <span className="th-card-title">
+            Confirm your Recommends in the cart
           </span>
-          <span className="lm-sub">
+          <span className="th-desc">
             Each page is queued as one Recommend with your old intentions as
             tags. Adjust the amounts, then confirm.
           </span>
@@ -59,24 +60,25 @@ export default function LegacyMigrationBanner({
   }
 
   return (
-    <section className="lm-banner" aria-label="Move legacy positions">
+    <section className="lm-card" aria-label="Move legacy positions">
       <div className="lm-text">
-        <span className="lm-title">
-          {pageCount} page{pageCount === 1 ? '' : 's'} on legacy claims ·{' '}
+        <span className="th-eyebrow">
+          Legacy claims · {pageCount} page{pageCount === 1 ? '' : 's'} ·{' '}
           {formatTrust(value)}
         </span>
-        <span className="lm-sub">
-          Pages now have one market (Recommend). Each move pays Sofia's fee and,
-          for a new market, its creation — only move pages worth it.
+        <span className="th-card-title">Move them to Recommend</span>
+        <span className="th-desc">
+          Pages now have one market. Each move pays Sofia's fee and, for a new
+          market, its creation — only move pages worth it.
         </span>
-        <div className="lm-thresholds" role="radiogroup" aria-label="Pages">
+        <div className="lm-chips" role="radiogroup" aria-label="Pages to move">
           {MIGRATION_THRESHOLDS.map((t) => (
             <button
               key={t}
               type="button"
               role="radio"
               aria-checked={threshold === t}
-              className={`lm-chip${threshold === t ? ' is-active' : ''}`}
+              className={`pm-chip${threshold === t ? ' active' : ''}`}
               onClick={() => onThreshold(t)}
               disabled={busy}
             >
@@ -84,21 +86,17 @@ export default function LegacyMigrationBanner({
             </button>
           ))}
         </div>
-        {selectedCount > 0 && estimate ? (
-          <span className="lm-sub">
-            {selectedCount} page{selectedCount === 1 ? '' : 's'} ·{' '}
-            {formatTrust(estimate.moved)} moved · up to{' '}
-            {formatTrust(estimate.fees)} in fees · {estimate.signatures}{' '}
-            signature{estimate.signatures === 1 ? '' : 's'} to exit
-          </span>
-        ) : (
-          <span className="lm-sub">No page above this amount.</span>
-        )}
+        <span className="th-desc">
+          {selectedCount > 0 && estimate
+            ? `${selectedCount} page${selectedCount === 1 ? '' : 's'} · ${formatTrust(estimate.moved)} moved · up to ${formatTrust(estimate.fees)} in fees · ${estimate.signatures} signature${estimate.signatures === 1 ? '' : 's'} to exit`
+            : 'No page above this amount.'}
+        </span>
         {error && <span className="lm-error">{error}</span>}
       </div>
       <button
         type="button"
-        className="lm-btn"
+        className="pm-dex-invest"
+        style={{ background: 'var(--ds-accent)' }}
         onClick={onMove}
         disabled={busy || selectedCount === 0}
       >
