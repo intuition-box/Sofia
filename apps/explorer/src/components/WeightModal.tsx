@@ -181,7 +181,11 @@ export default function WeightModal({
   useEffect(() => {
     if (isOpen && items.length > 0) {
       setWeights(new Array(items.length).fill(0.5))
-      setCustomValues(new Array(items.length).fill(''))
+      setCustomValues(
+        items.map((it) =>
+          it.presetAmount ? String(Number(it.presetAmount.toFixed(4))) : '',
+        ),
+      )
       reset()
       setCreateTripleResult(null)
       setCreateTripleProcessing(false)

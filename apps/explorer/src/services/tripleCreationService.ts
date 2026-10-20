@@ -265,7 +265,12 @@ export async function executeCreateTriplesBatch(
       const curve = c.item.curveId ?? CREATION_CURVE_ID
       createGroups.set(curve, [...(createGroups.get(curve) ?? []), c])
     }
-    for (const [curveId, group] of createGroups) {
+    // Progressive (page market) claims first: tags created in the same
+    // submit hang off them (nested triples need their subject to exist).
+    const orderedGroups = [...createGroups].sort((a, b) =>
+      a[0] === b[0] ? 0 : a[0] > b[0] ? -1 : 1,
+    )
+    for (const [curveId, group] of orderedGroups) {
       const subjectIds = group.map((c) => c.item.subjectId as `0x${string}`)
       const predicateIds = group.map((c) => c.item.predicateId as `0x${string}`)
       const objectIds = group.map((c) => c.item.objectId as `0x${string}`)

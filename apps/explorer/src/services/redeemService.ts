@@ -308,3 +308,79 @@ export async function redeemBatchAtoms(
     ? { success: true, txHash: hash }
     : { success: false, error: 'Transaction reverted' }
 }
+
+// ---------------------------------------------------------------------------
+// Batch redeem across curves (legacy-position migration)
+// ---------------------------------------------------------------------------
+
+/** One vault × curve where the wallet holds shares */
+export interface RedeemLeg {
+  termId: string
+  curveId: bigint
+  shares: bigint
+}
+
+/** The wallet's funded legs on these vaults, both curves */
+export async function findFundedLegs(
+  account: string,
+  termIds: readonly string[],
+): Promise<RedeemLeg[]> {
+  const unique = [...new Set(termIds)]
+  const funded = await Promise.all(
+    unique.map(async (termId) =>
+      (await findFundedCurves(account, termId)).map((c) => ({
+        termId,
+        ...c,
+      })),
+    ),
+  )
+  return funded.flat()
+}
+
+/** Exit every leg in ONE transaction (redeem, or redeemBatch for several) */
+export async function redeemLegs(
+  wallet: WalletDescriptor,
+  legs: readonly RedeemLeg[],
+): Promise<RedeemResult> {
+  if (legs.length === 0) return { success: true, noop: true }
+
+  await wallet.switchChain(intuitionChain.id)
+  const provider = await wallet.getEthereumProvider()
+  const address = wallet.address as `0x${string}`
+  const walletClient = createWalletClient({
+    account: address,
+    chain: intuitionChain,
+    transport: custom(provider),
+  })
+
+  const args = [
+    address,
+    legs.map((l) => l.termId as `0x${string}`),
+    legs.map((l) => l.curveId),
+    legs.map((l) => l.shares),
+    legs.map(() => 0n),
+  ] as const
+  const simConfig = {
+    address: MULTI_VAULT_ADDRESS,
+    abi: MultiVaultAbi,
+    functionName: 'redeemBatch',
+    args,
+    account: address,
+  } as const
+
+  await publicClient.simulateContract(simConfig)
+  const gas = await explicitGasLimit(
+    publicClient,
+    simConfig,
+    BigInt(legs.length) * 500_000n + 1_000_000n,
+  )
+  const hash = await walletClient.writeContract({
+    ...simConfig,
+    gas,
+    chain: intuitionChain,
+  })
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  return receipt.status === 'success'
+    ? { success: true, txHash: hash }
+    : { success: false, error: 'Transaction reverted' }
+}

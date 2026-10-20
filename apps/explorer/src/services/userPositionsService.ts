@@ -30,6 +30,8 @@ export interface MarketPosition {
   side: 'support' | 'oppose' | null
   /** Claims only: the claim (triple) term_id, whatever the side. */
   claimTermId: string | null
+  /** Claims only: the object atom (the page) the claim points to. */
+  objectTermId: string | null
   /** Page / platform / atom name. */
   title: string
   /** Claims only: the predicate label (e.g. "visits for learning"). */
@@ -172,6 +174,7 @@ export function aggregateUserPositions(
         kind: 'claim',
         side: termId === triple.term_id ? 'support' : 'oppose',
         claimTermId: triple.term_id,
+        objectTermId: triple.object?.term_id ?? null,
         title:
           triple.object?.value?.thing?.name || triple.object?.label || 'Claim',
         predicateLabel: triple.predicate?.label ?? null,
@@ -190,6 +193,7 @@ export function aggregateUserPositions(
       kind: platformTermIds.has(termId.toLowerCase()) ? 'platform' : 'atom',
       side: null,
       claimTermId: null,
+      objectTermId: null,
       // The Beta season ended — deposits no longer flow there, but existing
       // shares stay withdrawable from here (Exit).
       title:

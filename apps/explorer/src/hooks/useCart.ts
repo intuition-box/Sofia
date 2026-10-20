@@ -68,6 +68,9 @@ export interface CartItem {
   /** Bonding curve for 'deposit' / 'create-triple' — 2 (progressive) for the
    *  page market (`I | recommends | page`), 1 (linear) by default. */
   curveId?: 1 | 2
+  /** Amount (TRUST) the cart starts with for this row — e.g. what a
+   *  migration exited. The user can still change it. */
+  presetAmount?: number
   /** Required when `kind === 'create-triple'`. The atom term_ids that
    *  identify the new triple's subject / predicate / object. */
   subjectId?: string

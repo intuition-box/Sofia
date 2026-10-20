@@ -25,6 +25,8 @@ import { useRedeemCert } from '@/hooks/useRedeemCert'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import PositionsHero from '@/components/profile/PositionsHero'
 import PortfolioChart from '@/components/positions/PortfolioChart'
+import LegacyMigrationBanner from '@/components/positions/LegacyMigrationBanner'
+import { useLegacyMigration } from '@/hooks/useLegacyMigration'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
@@ -91,6 +93,7 @@ export default function PositionsPage() {
     refresh,
   } = useUserPositions(rawAddress ? resolved.address : undefined)
   const { platformById } = usePlatformCatalog()
+  const migration = useLegacyMigration(positions)
   const { redeemCert } = useRedeemCert()
 
   const ownAddress = authenticated ? user?.wallet?.address : undefined
@@ -247,6 +250,17 @@ export default function PositionsPage() {
       />
 
       <PortfolioChart walletAddress={walletAddress} />
+
+      {isOwn && (
+        <LegacyMigrationBanner
+          positionCount={migration.legacy.length}
+          pageCount={migration.pageCount}
+          value={migration.legacyValue}
+          status={migration.status}
+          error={migration.error}
+          onMove={() => void migration.move()}
+        />
+      )}
 
       <section className="mk-summary" aria-label="Positions summary">
         <div className="mk-summary-stat">
