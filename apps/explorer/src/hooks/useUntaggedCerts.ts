@@ -12,18 +12,14 @@
 import { useMemo } from 'react'
 import { useUserOnChainProfile } from './useUserOnChainProfile'
 import type { UserCert } from '@/services/userOnChainProfileService'
+import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 /** Predicate labels that count as a "tagable" certification — trust /
  *  distrust signals aren't URL claims, so we exclude them from the
  *  bulk-tag flow. Mirrors the perspective pipeline's scope. */
-const TAGGABLE_LABELS: ReadonlySet<string> = new Set([
-  'visits for work',
-  'visits for learning',
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-])
+const TAGGABLE_LABELS: ReadonlySet<string> = new Set(
+  TAGGABLE_PAGE_PREDICATE_LABELS,
+)
 
 export interface UseUntaggedCertsResult {
   /** Certs the user holds with `topicSlugs.length === 0`, sorted by

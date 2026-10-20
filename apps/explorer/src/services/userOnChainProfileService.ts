@@ -25,6 +25,7 @@ import {
 } from '@0xsofia/graphql'
 import { CONTEXT_TERM_IDS } from '@/config/atomIds'
 import { resolveContextAtom } from '@/config/contextNodes'
+import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 type RawCertTriple = NonNullable<GetUserCertsAlltimeQuery['triples']>[number]
 
@@ -34,17 +35,7 @@ const TOPIC_LINKS_LIMIT = 50_000
 
 // Predicate labels Sofia treats as "certifications" for the profile.
 // Includes the legacy trailing-space variant that still appears on old data.
-const CERT_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing space
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust',
-] as const
+const CERT_PREDICATE_LABELS = PAGE_CLAIM_PREDICATE_LABELS
 
 export interface UserCert {
   /** Cert triple term_id. */

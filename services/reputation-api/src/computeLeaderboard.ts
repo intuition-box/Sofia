@@ -21,6 +21,7 @@ import {
   type ClaimSupporters,
   type ReputationCert,
 } from '@0xsofia/reputation'
+import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 import { prisma } from './db'
 import { enumerateCandidates } from './graphql'
 import { fetchCandidateProfile, type ProfileCert } from './profile'
@@ -34,17 +35,12 @@ export const GENERAL = '__general__'
 export const TRUSTS = '__trusts__'
 export const DISTRUST = '__distrust__'
 
-// Taggable predicate labels — mirrors the explorer's useUserCertCounts scope.
-// Trust/distrust are excluded (their own buckets); the legacy trailing-space
-// variant collapses here because we trim before matching.
-const TAGGABLE_LABELS = new Set([
-  'visits for work',
-  'visits for learning',
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-])
+// Taggable predicate labels — the page market + legacy intentions (mirrors
+// the explorer's useUserCertCounts scope). Trust/distrust are excluded
+// (their own buckets); labels are trimmed before matching.
+const TAGGABLE_LABELS: ReadonlySet<string> = new Set(
+  TAGGABLE_PAGE_PREDICATE_LABELS.map((l) => l.trim()),
+)
 
 interface CertCounts {
   byTopic: Map<string, number>
@@ -114,7 +110,9 @@ async function gatherCandidateWork(
     certs: profile.certs,
     contextAdditions: profile.contextAdditions,
   })
-  const supportersByClaim = await fetchClaimSupporters(claims.map((c) => c.termId))
+  const supportersByClaim = await fetchClaimSupporters(
+    claims.map((c) => c.termId),
+  )
   const accounts = new Set([wallet.toLowerCase()])
   const counts = splitCertCounts(profile.certs)
 
@@ -134,7 +132,14 @@ async function gatherCandidateWork(
   }
   followerUnion.add(wallet.toLowerCase())
 
-  return { wallet: wallet.toLowerCase(), accounts, claims, supportersByClaim, counts, selectedTopics }
+  return {
+    wallet: wallet.toLowerCase(),
+    accounts,
+    claims,
+    supportersByClaim,
+    counts,
+    selectedTopics,
+  }
 }
 
 /** Per-bucket score rows for one candidate (topic rows + the reserved
@@ -162,16 +167,20 @@ function candidateRows(
   const rows: ScoreRow[] = []
   for (const topic of profile?.topics ?? []) {
     const score = topic.score + (derived.get(topic.topicId) ?? 0)
-    if (score > 0) rows.push({ wallet: w.wallet, topicId: topic.topicId, score })
+    if (score > 0)
+      rows.push({ wallet: w.wallet, topicId: topic.topicId, score })
   }
   // Non-topic cert points → reserved buckets (mirrors the profile total's
   // generalScore + trustDistrustScore terms).
   const general = w.counts.general * POINTS_PER_CERT
   const trusts = w.counts.trusted * POINTS_PER_CERT
   const distrust = w.counts.distrusted * POINTS_PER_CERT
-  if (general > 0) rows.push({ wallet: w.wallet, topicId: GENERAL, score: general })
-  if (trusts > 0) rows.push({ wallet: w.wallet, topicId: TRUSTS, score: trusts })
-  if (distrust > 0) rows.push({ wallet: w.wallet, topicId: DISTRUST, score: distrust })
+  if (general > 0)
+    rows.push({ wallet: w.wallet, topicId: GENERAL, score: general })
+  if (trusts > 0)
+    rows.push({ wallet: w.wallet, topicId: TRUSTS, score: trusts })
+  if (distrust > 0)
+    rows.push({ wallet: w.wallet, topicId: DISTRUST, score: distrust })
   return rows
 }
 
@@ -214,13 +223,21 @@ export async function computeLeaderboard(): Promise<LeaderboardRunStats> {
   for (const [, arr] of byBucket) {
     arr.sort((a, b) => b.score - a.score)
     arr.forEach((r, i) =>
-      data.push({ wallet: r.wallet, topicId: r.topicId, score: r.score, rank: i + 1, computedAt }),
+      data.push({
+        wallet: r.wallet,
+        topicId: r.topicId,
+        score: r.score,
+        rank: i + 1,
+        computedAt,
+      }),
     )
   }
 
   await prisma.$transaction([
     prisma.reputationSnapshot.deleteMany({}),
-    ...(data.length > 0 ? [prisma.reputationSnapshot.createMany({ data })] : []),
+    ...(data.length > 0
+      ? [prisma.reputationSnapshot.createMany({ data })]
+      : []),
   ])
 
   const stats: LeaderboardRunStats = {

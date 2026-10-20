@@ -17,19 +17,15 @@
  */
 import { useMemo } from 'react'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
+import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 const EMPTY: ReadonlyMap<string, number> = new Map()
 
 /** Predicate labels that can carry an `in context of <topic>` triple —
  *  same scope as `useUntaggedCerts`. Trust/distrust are excluded. */
-const TAGGABLE_LABELS: ReadonlySet<string> = new Set([
-  'visits for work',
-  'visits for learning',
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-])
+const TAGGABLE_LABELS: ReadonlySet<string> = new Set(
+  TAGGABLE_PAGE_PREDICATE_LABELS,
+)
 
 export interface UserCertCounts {
   /** topicSlug → number of certs the user holds in that topic context. */

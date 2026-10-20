@@ -234,6 +234,7 @@ export async function fetchPersonalizedTrust(
  * server scope the score to relations Sofia actually surfaces.
  */
 export const SOFIA_TRUST_PREDICATES: readonly string[] = [
+  'recommends',
   'trusts',
   'follow',
   'visits for work',

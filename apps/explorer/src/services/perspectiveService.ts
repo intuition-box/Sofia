@@ -23,6 +23,7 @@ import {
 import { LABEL_TO_INTENTION } from '@/config/intentions'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 /** Predicate labels that count as a "certification" for the Compose
  *  pipeline. Label-based filtering instead of id-based so Music and
@@ -32,13 +33,7 @@ import { getFaviconUrl } from '@/utils/favicon'
  *  Trust/distrust intentionally excluded — those are people-to-people
  *  signals, not URL claims. */
 const PERSPECTIVE_PREDICATE_LABELS: string[] = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing-space variant
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
+  ...TAGGABLE_PAGE_PREDICATE_LABELS,
 ]
 
 /** Page size for the alltime loop. Bumped from the legacy 500 cap so

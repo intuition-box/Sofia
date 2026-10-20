@@ -7,6 +7,7 @@
 // group-api's src/indexer.ts): a backend-only sweep the codegen consumers never
 // need.
 import { configureClient } from '@0xsofia/graphql'
+import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 import { env } from './env'
 
 let booted = false
@@ -18,20 +19,10 @@ export function ensureGraphqlConfigured(): void {
   booted = true
 }
 
-// Predicate labels Sofia treats as "certifications" — mirrors
-// userOnChainProfileService.CERT_PREDICATE_LABELS, including the legacy
-// trailing-space variant that still appears on old on-chain data.
-export const CERT_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing space
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust',
-] as const
+// Predicate labels Sofia treats as "certifications": the page market
+// (`recommends`) and the legacy page claims (intentions, incl. the
+// trailing-space variant, trusts, distrust) — one shared list.
+export const CERT_PREDICATE_LABELS = PAGE_CLAIM_PREDICATE_LABELS
 
 const ENUM_PAGE_SIZE = 500
 const ENUM_MAX_PAGES = 200 // 100k cert triples cap — far past the alpha set

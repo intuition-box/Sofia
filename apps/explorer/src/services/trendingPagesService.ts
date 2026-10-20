@@ -222,8 +222,11 @@ export function rankTrendingPages(
     )
 }
 
-/** Sofia claim: a Sofia page predicate, and `trusts` only from Sofia's `I`
- *  (other apps write `trusts` too). */
+/** Predicates other apps write too: Sofia's only from Sofia's `I` */
+const SHARED_PREDICATE_LABELS = ['trusts', 'recommends']
+
+/** Sofia claim: a Sofia page predicate, and `trusts` / `recommends` (the page
+ *  market) only from Sofia's `I` — other apps write them too. */
 export function claimSource(
   claim: Pick<ClaimRow, 'subject_id'> & {
     predicate?: { label?: string | null } | null
@@ -231,7 +234,10 @@ export function claimSource(
 ): ClaimSource {
   const label = claim.predicate?.label ?? ''
   if (!TRENDING_PREDICATE_LABELS.includes(label)) return 'ecosystem'
-  if (label === 'trusts' && claim.subject_id !== SOFIA_I_ATOM_ID) {
+  if (
+    SHARED_PREDICATE_LABELS.includes(label) &&
+    claim.subject_id !== SOFIA_I_ATOM_ID
+  ) {
     return 'ecosystem'
   }
   return 'sofia'
