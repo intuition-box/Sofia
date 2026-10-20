@@ -76,9 +76,14 @@ export interface PageMarket {
   totalStaked: string
   /** Positions opened in the last 7 days on any of the page's claims */
   positionsThisWeek: number
-  /** Viewer's rank among Recommend holders, or the rank they'd take */
+  /** Distinct wallets backing the page (market + legacy positive claims) */
+  pageHolders: number
+  /** Viewer's rank among the page's backers (earliest first, legacy claims
+   *  included), or the rank they'd take */
   rank: number
   inPosition: boolean
+  /** In position only through legacy claims */
+  legacyOnly: boolean
   mine: MyPosition[]
   tags: PageTag[]
   legacy: LegacyPosition[]
@@ -141,7 +146,21 @@ export function computePageMarket(
   }
   supporters.sort((a, b) => a.ts - b.ts)
   const order = [...new Set(supporters.map((s) => s.account))]
-  const myIndex = me ? order.indexOf(me) : -1
+
+  // Rank on the whole page: whoever backed it first, whatever the claim
+  // (a legacy `visits for work` / `trusts` position counts — `distrust`
+  // claims are against the page, so they don't)
+  const backers = claims
+    .filter((c) => c.predicate?.label !== "distrust")
+    .flatMap((c) =>
+      c.supporters.map((s) => ({
+        account: s.account_id.toLowerCase(),
+        ts: Date.parse(s.created_at)
+      }))
+    )
+    .sort((a, b) => a.ts - b.ts)
+  const pageOrder = [...new Set(backers.map((b) => b.account))]
+  const myIndex = me ? pageOrder.indexOf(me) : -1
 
   // Momentum + total over every page claim (legacy included)
   const since = now - WEEK_MS
@@ -228,8 +247,10 @@ export function computePageMarket(
     oppose: { staked: opposeStaked.toString(), holders: opposers.size },
     totalStaked: totalStaked.toString(),
     positionsThisWeek,
-    rank: myIndex >= 0 ? myIndex + 1 : order.length + 1,
+    pageHolders: pageOrder.length,
+    rank: myIndex >= 0 ? myIndex + 1 : pageOrder.length + 1,
     inPosition: myIndex >= 0,
+    legacyOnly: myIndex >= 0 && !(me && order.includes(me)),
     mine,
     tags: [...tagMap.values()].sort((a, b) => b.count - a.count),
     legacy

@@ -22,6 +22,10 @@ interface PageMarketPanelProps {
   exiting: boolean
 }
 
+/** "12.30 T", and a plain "0 T" for an empty side */
+const trust = (wei: string) =>
+  BigInt(wei || "0") === 0n ? "0 T" : `${formatTrust(wei)} T`
+
 function signedTrust(wei: string): string {
   const v = BigInt(wei || "0")
   if (v === 0n) return "0 T"
@@ -36,9 +40,12 @@ function pnlPct(position: MyPosition): string | null {
 }
 
 function rankLabel(market: PageMarket): string {
-  if (market.inPosition) return `You're #${market.rank}`
+  const of = market.pageHolders > 0 ? ` of ${market.pageHolders}` : ""
+  if (market.inPosition) {
+    return `You're #${market.rank}${of} on this page${market.legacyOnly ? " (legacy position)" : ""}`
+  }
   if (market.rank <= 3) return `You'd be #${market.rank} · Pioneer`
-  return `You'd be #${market.rank}`
+  return `You'd be #${market.rank} on this page`
 }
 
 const PageMarketPanel = ({
@@ -59,7 +66,7 @@ const PageMarketPanel = ({
       <div className="pm-stats">
         <div className="pm-stat">
           <span className="pm-stat-value">
-            {loading ? "—" : `${formatTrust(support?.staked ?? "0")} T`}
+            {loading ? "—" : trust(support?.staked ?? "0")}
           </span>
           <span className="pm-stat-label">
             Recommended · {support?.holders ?? 0}
@@ -67,7 +74,7 @@ const PageMarketPanel = ({
         </div>
         <div className="pm-stat">
           <span className="pm-stat-value pm-stat-value--oppose">
-            {loading ? "—" : `${formatTrust(oppose?.staked ?? "0")} T`}
+            {loading ? "—" : trust(oppose?.staked ?? "0")}
           </span>
           <span className="pm-stat-label">
             Distrusted · {oppose?.holders ?? 0}
@@ -84,7 +91,7 @@ const PageMarketPanel = ({
 
       {market && !loading && (
         <p
-          className={`pm-rank${!market.inPosition && market.rank <= 3 ? " pm-rank--pioneer" : ""}`}>
+          className={`pm-rank${market.rank <= 3 ? " pm-rank--pioneer" : ""}`}>
           {rankLabel(market)}
         </p>
       )}
