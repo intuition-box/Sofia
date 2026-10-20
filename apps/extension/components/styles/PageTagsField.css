@@ -1,0 +1,30 @@
+/* PageTagsField — the modal's tag field in the side panel. The `.sis-*` rules
+   come from contents/addToSofia.css; its tokens live on the modal overlay,
+   so they're mirrored here from the extension's DS tokens. */
+
+.ptf {
+  --sis-bg: var(--ds-bg);
+  --sis-card: var(--ds-card);
+  --sis-elev: var(--ds-bg-subtle);
+  --sis-line: var(--ds-border);
+  --sis-ink: var(--ds-ink);
+  --sis-muted: var(--ds-muted);
+  --sis-muted-soft: var(--ds-muted-soft);
+  --sis-accent: var(--ds-accent);
+  --sis-on-accent: var(--ds-on-accent);
+  --sis-ok: #22c55e;
+  --sis-error: #ef4444;
+  --sis-radius: 10px;
+  --sis-font: var(--ds-font-sans);
+  --sis-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--sis-font);
+}
+
+.ptf * {
+  box-sizing: border-box;
+}

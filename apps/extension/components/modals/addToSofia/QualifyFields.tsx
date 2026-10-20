@@ -1,26 +1,19 @@
-// The qualification fields for "Add to Sofia": an editable title, one or more
-// intentions (a cart predicate each) and taxonomy tags (the cart's contexts).
+// The qualification fields for "Add to Sofia": an editable title, optional
+// intention tags and taxonomy tags — all tags on the page's Recommend.
 // Controlled.
 //
 // PRO (later): the prototype also had a free-text `context` note. It's kept on
 // the value shape + commented in the UI below so the Pro bookmark flow can
 // revive it without re-deriving the component.
-import type { CSSProperties } from "react"
-
+import { IntentionPills } from "~components/modals/addToSofia/IntentionPills"
 import { TagInput } from "~components/modals/addToSofia/TagInput"
 import { TitleSearchInput } from "~components/modals/addToSofia/TitleSearchInput"
 import type { Context } from "~lib/addToSofia/types"
-import { INTENTION_ICONS } from "~lib/config/intentionIcons"
-import {
-  INTENTION_CONFIG,
-  INTENTION_ITEMS,
-  type IntentionPurpose
-} from "~types/intentionCategories"
+import type { IntentionPurpose } from "~types/intentionCategories"
 
 export interface QualifyValue {
   title: string
-  /** Chosen intentions → one cart item (predicate) per selection. At least one
-   *  is required to submit. */
+  /** Optional intention tags (`intent:work`…) on the page's Recommend */
   intentions: IntentionPurpose[]
   /** Taxonomy tags → the cart item's interestContexts. */
   contexts: Context[]
@@ -68,38 +61,18 @@ export function QualifyFields({ value, onChange, hints }: QualifyFieldsProps) {
 
       <section className="sis-section">
         <label className="sis-field-lab">Why? (optional tags)</label>
-        <div className="sis-intentions">
-          {INTENTION_ITEMS.map((it) => {
-            const color = INTENTION_CONFIG[it.type].color
-            const on = value.intentions.includes(it.key)
-            const Glyph = INTENTION_ICONS[it.type]
-            return (
-              <button
-                key={it.key}
-                type="button"
-                className={`sis-intention${on ? " on" : ""}`}
-                style={{ "--c": color } as CSSProperties}
-                // Multi-select: toggle this intention in/out of the set.
-                onClick={() =>
-                  set(
-                    "intentions",
-                    on
-                      ? value.intentions.filter((k) => k !== it.key)
-                      : [...value.intentions, it.key]
-                  )
-                }>
-                {Glyph ? (
-                  <Glyph
-                    className="sis-intention-glyph"
-                    size={14}
-                    style={{ color }}
-                  />
-                ) : null}
-                {INTENTION_CONFIG[it.type].label}
-              </button>
+        <IntentionPills
+          selected={value.intentions}
+          // Multi-select: toggle this intention in/out of the set.
+          onToggle={(key) =>
+            set(
+              "intentions",
+              value.intentions.includes(key)
+                ? value.intentions.filter((k) => k !== key)
+                : [...value.intentions, key]
             )
-          })}
-        </div>
+          }
+        />
       </section>
 
       {/* PRO (later): free-text editorial context. Revive for the Pro flow.

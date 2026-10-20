@@ -8,6 +8,7 @@ import {
   useCredibilityAnalysis,
   useFavicon,
   usePageBlockchainData,
+  usePageHints,
   usePageMarket,
   usePagePositions,
   useRedeemTriple,
@@ -23,8 +24,8 @@ import type { IntentionType } from "~/types/intentionCategories"
 
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import { CategorisationDropdown } from "./CategorisationDropdown"
 import PageMarketPanel from "./PageMarketPanel"
+import PageTagsField from "./PageTagsField"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageStatsSkeleton } from "./Skeleton"
@@ -78,15 +79,13 @@ const PageBlockchainCard = () => {
     NO_TRUST_CIRCLE
   )
 
-  const { certEntry, certifiedContexts } = useMemo(() => {
-    if (!currentUrl || certifications.size === 0)
-      return { certEntry: null, certifiedContexts: [] as string[] }
-    const entry = getCertificationForUrl(certifications, currentUrl)
-    return {
-      certEntry: entry,
-      certifiedContexts: entry?.interestContexts ?? []
-    }
-  }, [currentUrl, certifications])
+  const certEntry = useMemo(
+    () =>
+      currentUrl && certifications.size > 0
+        ? getCertificationForUrl(certifications, currentUrl)
+        : null,
+    [currentUrl, certifications]
+  )
 
   // The page's market (Recommend / Distrust, momentum, rank, P&L, tags)
   const { market, loading: marketLoading } = usePageMarket(
@@ -208,6 +207,30 @@ const PageBlockchainCard = () => {
     [recommendItem]
   )
 
+  // Topic tags shown in the field: the queued Recommend's, else the draft
+  const pageTopicTags = useMemo(
+    () =>
+      recommendItem
+        ? (recommendItem.interestContexts ?? []).filter(
+            (slug) => !isIntentionTagSlug(slug)
+          )
+        : selectedContexts,
+    [recommendItem, selectedContexts]
+  )
+
+  // Page metadata for "Suggested from this page" (title + host as fallback)
+  const tabHints = usePageHints(currentUrl)
+  const pageHints = useMemo(() => {
+    if (tabHints) return tabHints
+    let host = ""
+    try {
+      host = currentUrl ? new URL(currentUrl).hostname : ""
+    } catch {
+      // not a URL
+    }
+    return [pageTitle, host].filter(Boolean).join(" ")
+  }, [tabHints, pageTitle, currentUrl])
+
   // Reset cart-burst animation flag once the animation has played
   useEffect(() => {
     if (!isBursting) return
@@ -292,10 +315,16 @@ const PageBlockchainCard = () => {
             <div className="actions-panel">
               <div className="actions-panel-title">Tags on this page</div>
               <div className="cert-section">
-                <CategorisationDropdown
-                  selectedIntentions={selectedIntentionTypes}
-                  onToggleIntention={toggleIntentionInCart}
-                  selectedContexts={selectedContexts}
+                <PageTagsField
+                  intentions={selectedIntentionTypes.map(
+                    (type) => `for_${type}` as IntentionPurpose
+                  )}
+                  onToggleIntention={(purpose) =>
+                    toggleIntentionInCart(
+                      purpose.replace(/^for_/, "") as IntentionType
+                    )
+                  }
+                  contexts={pageTopicTags}
                   onChangeContexts={(slugs) => {
                     setSelectedContexts(slugs)
                     if (!currentUrl) return
@@ -313,7 +342,7 @@ const PageBlockchainCard = () => {
                       )
                     }
                   }}
-                  certifiedContexts={certifiedContexts}
+                  hints={pageHints}
                 />
               </div>
 

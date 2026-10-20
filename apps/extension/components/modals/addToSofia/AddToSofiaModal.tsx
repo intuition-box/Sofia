@@ -20,6 +20,7 @@ import type {
 } from "~lib/addToSofia/types"
 import { hostOf } from "~lib/addToSofia/url"
 import { getFaviconUrl } from "~lib/utils"
+import { collectPageMetadata } from "~lib/addToSofia/pageMetadata"
 
 // PRO (later): workspace picker + circle-pro session types.
 // import { CirclePicker } from "~components/modals/addToSofia/CirclePicker"
@@ -56,23 +57,6 @@ const TOAST_ICON: Record<PublishToast["kind"], string> = {
   error: "✕"
 }
 
-// Metadata blob for the current page — feeds the tag field's suggestions.
-function pageMetadata(): string {
-  const meta = (sel: string) =>
-    (document.querySelector(sel) as HTMLMetaElement | null)?.content ?? ""
-  return [
-    document.title,
-    meta("meta[name='description']"),
-    meta("meta[name='keywords']"),
-    meta("meta[property='og:title']"),
-    meta("meta[property='og:description']"),
-    meta("meta[property='og:site_name']"),
-    document.querySelector("h1")?.textContent ?? "",
-    location.hostname
-  ]
-    .filter(Boolean)
-    .join(" ")
-}
 
 export default function AddToSofiaModal() {
   const [target, setTarget] = useState<Target | null>(null)
@@ -129,7 +113,7 @@ export default function AddToSofiaModal() {
           : document.title || hostOf(url)
       // A link share can't read the linked page's DOM — fall back to its host.
       const isPage = !msg.isLink || url === location.href
-      setHints(isPage ? pageMetadata() : `${t} ${hostOf(url)}`)
+      setHints(isPage ? collectPageMetadata() : `${t} ${hostOf(url)}`)
       setV(emptyQualify(t))
       setShotOk(true)
       setDone(false)

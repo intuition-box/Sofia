@@ -46,6 +46,7 @@ export { useTrendingCertifications } from './useTrendingCertifications'
 export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTrendingCertifications'
 export { usePagePositions } from './usePagePositions'
 export { usePageMarket } from './usePageMarket'
+export { usePageHints } from './usePageHints'
 export type { UsePageMarketResult } from './usePageMarket'
 
 // Onboarding
