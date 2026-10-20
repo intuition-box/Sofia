@@ -70,6 +70,7 @@ export function legacyPages(
     if (
       p.kind !== 'claim' ||
       p.side !== 'support' ||
+      !p.legs?.length ||
       !p.objectTermId ||
       (p.predicateLabel ?? '').trim() === 'distrust' ||
       !isLegacyPagePredicate(p.predicateLabel ?? '')
@@ -106,7 +107,7 @@ const afterExitFee = (value: bigint) =>
 function pageLegs(pages: readonly LegacyPage[]): RedeemLeg[] {
   return pages.flatMap((p) =>
     p.positions.flatMap((pos) =>
-      pos.legs
+      (pos.legs ?? [])
         .filter((l) => BigInt(l.shares) > 0n)
         .map((l) => ({
           termId: pos.termId,
