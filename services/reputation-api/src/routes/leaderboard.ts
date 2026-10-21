@@ -27,7 +27,11 @@ leaderboard.get('/leaderboard', async (c) => {
     })
     return c.json({
       topic,
-      entries: rows.map((r) => ({ wallet: r.wallet, score: r.score, rank: r.rank })),
+      entries: rows.map((r) => ({
+        wallet: r.wallet,
+        score: r.score,
+        rank: r.rank,
+      })),
       computedAt: rows[0]?.computedAt ?? null,
     })
   }

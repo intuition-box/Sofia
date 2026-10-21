@@ -104,10 +104,18 @@ describe('buildReputationClaims', () => {
   test('merges cert + context triples by term_id, keeping the earliest timestamp', () => {
     const claims = buildReputationClaims({
       certs: [
-        { termId: 'c1', certifiedAt: '2024-02-01T00:00:00Z', topicSlugs: ['ai'] },
+        {
+          termId: 'c1',
+          certifiedAt: '2024-02-01T00:00:00Z',
+          topicSlugs: ['ai'],
+        },
       ],
       contextAdditions: [
-        { contextTermId: 'c1', addedAt: '2024-01-01T00:00:00Z', topicSlug: 'ai' },
+        {
+          contextTermId: 'c1',
+          addedAt: '2024-01-01T00:00:00Z',
+          topicSlug: 'ai',
+        },
         {
           contextTermId: 'c2',
           addedAt: '2024-03-01T00:00:00Z',
@@ -118,7 +126,9 @@ describe('buildReputationClaims', () => {
     const c1 = claims.find((c) => c.termId === 'c1')
     expect(c1?.certifiedAt).toBe('2024-01-01T00:00:00Z') // earliest wins
     expect(c1?.topicSlugs).toEqual(['ai'])
-    expect(claims.find((c) => c.termId === 'c2')?.topicSlugs).toEqual(['crypto'])
+    expect(claims.find((c) => c.termId === 'c2')?.topicSlugs).toEqual([
+      'crypto',
+    ])
   })
 })
 

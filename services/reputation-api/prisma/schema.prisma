@@ -7,6 +7,9 @@
 
 generator client {
   provider      = "prisma-client-js"
+  // Own output: group-api generates into the shared node_modules/.prisma
+  // client, and the last `prisma generate` would overwrite the other's.
+  output        = "../src/generated/prisma"
   // `native` for local dev, musl target for the alpine Docker runtime.
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }

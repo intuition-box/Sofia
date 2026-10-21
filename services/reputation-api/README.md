@@ -25,11 +25,11 @@ cheaper server-side than the per-viewer client computation.
 
 ## Endpoints
 
-| Method | Path | Auth | Purpose |
-|---|---|---|---|
-| `GET` | `/health` | — | Liveness |
-| `GET` | `/leaderboard?limit=50&offset=0` | public | Read the ranked `__overall__` snapshot + `computedAt` |
-| `POST` | `/internal/leaderboard/compute` | `x-compute-token` | Recompute the snapshot (cron trigger) |
+| Method | Path                             | Auth              | Purpose                                               |
+| ------ | -------------------------------- | ----------------- | ----------------------------------------------------- |
+| `GET`  | `/health`                        | —                 | Liveness                                              |
+| `GET`  | `/leaderboard?limit=50&offset=0` | public            | Read the ranked `__overall__` snapshot + `computedAt` |
+| `POST` | `/internal/leaderboard/compute`  | `x-compute-token` | Recompute the snapshot (cron trigger)                 |
 
 ## Run
 

@@ -1,7 +1,7 @@
 // Prisma client singleton. `--watch` (bun dev) re-evaluates modules on save,
 // so we cache the client on `globalThis` to avoid exhausting Postgres
 // connections with a new client per reload.
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from './generated/prisma'
 
 const g = globalThis as unknown as { prisma?: PrismaClient }
 
