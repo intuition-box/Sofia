@@ -1,8 +1,8 @@
 /**
  * LegacyMigrationBanner — on your own My positions: pages you backed through
  * the old claims (one per intention) can move to the page market. Pick a
- * threshold (fees are per page), see the cost, then: exit (one signature
- * per 100 positions) → the cart opens with the Recommends and their tags.
+ * threshold (fees are per page), see the cost, then preview the whole move
+ * in the cart (exit row + Recommends) before signing anything.
  */
 import { ArrowRightLeft } from 'lucide-react'
 import { formatTrust } from '@/utils/formatting'
@@ -21,7 +21,6 @@ interface LegacyMigrationBannerProps {
   threshold: number
   onThreshold: (threshold: number) => void
   estimate: MigrationEstimate | null
-  progress?: { done: number; total: number }
   status: MigrationStatus
   error: string | null
   onMove: () => void
@@ -39,7 +38,6 @@ export default function LegacyMigrationBanner({
   threshold,
   onThreshold,
   estimate,
-  progress,
   status,
   error,
   onMove,
@@ -47,7 +45,6 @@ export default function LegacyMigrationBanner({
   exitedValue,
   onRequeue,
 }: LegacyMigrationBannerProps) {
-  const busy = status === 'exiting'
   const resume =
     exitedCount > 0 ? (
       <section className="lm-card" aria-label="Exited pages to re-recommend">
@@ -82,13 +79,12 @@ export default function LegacyMigrationBanner({
         {resume}
         <section className="lm-card" aria-label="Move legacy positions">
           <div className="lm-text">
-            <span className="th-eyebrow">Legacy positions exited</span>
-            <span className="th-card-title">
-              Confirm your Recommends in the cart
-            </span>
+            <span className="th-eyebrow">Move ready in your cart</span>
+            <span className="th-card-title">Review it, then confirm</span>
             <span className="th-desc">
-              Each page is queued as one Recommend with your old intentions as
-              tags. Adjust the amounts, then confirm.
+              The exit row runs first, then each page is re-deposited as one
+              Recommend with your old intentions as tags. Nothing is signed
+              until you confirm the cart.
             </span>
           </div>
         </section>
@@ -123,9 +119,8 @@ export default function LegacyMigrationBanner({
                 aria-checked={threshold === t}
                 className={`pm-chip${threshold === t ? ' active' : ''}`}
                 onClick={() => onThreshold(t)}
-                disabled={busy}
               >
-                {t === 0 ? 'All' : `≥ ${t} T`}
+                {`≥ ${t} T`}
               </button>
             ))}
           </div>
@@ -143,14 +138,10 @@ export default function LegacyMigrationBanner({
           className="pm-dex-invest"
           style={{ background: 'var(--ds-accent)' }}
           onClick={onMove}
-          disabled={busy || selectedCount === 0}
+          disabled={selectedCount === 0}
         >
           <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
-          {status === 'exiting'
-            ? progress && progress.total > 1
-              ? `Exiting ${Math.min(progress.done + 1, progress.total)}/${progress.total}…`
-              : 'Exiting…'
-            : `Move ${selectedCount} page${selectedCount === 1 ? '' : 's'}`}
+          {`Preview ${selectedCount} page${selectedCount === 1 ? '' : 's'} in cart`}
         </button>
       </section>
     </>

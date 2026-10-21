@@ -63,6 +63,7 @@ export interface CartItem {
     | 'create-triple'
     | 'create-circle'
     | 'redeem'
+    | 'redeem-batch'
     | 'create-skill'
     | 'create-context'
   /** Bonding curve for 'deposit' / 'create-triple' — 2 (progressive) for the
@@ -76,6 +77,13 @@ export interface CartItem {
   subjectId?: string
   predicateId?: string
   objectId?: string
+  /** `kind === 'redeem-batch'` only: every leg to exit (vault × curve,
+   *  raw share strings) — sent as chunked redeemBatch txs, BEFORE the rest
+   *  of the cart (a migration's exit, re-deposited by the items after it). */
+  exitLegs?: { termId: string; curveId: string; shares: string }[]
+  /** `kind === 'redeem-batch'` only: what the exit brings back (TRUST),
+   *  for the row's preview. */
+  exitValue?: number
   /** `kind === 'redeem'` only: share of the position to exit (25/50/100).
    *  Defaults to 100 (full exit). */
   redeemPercent?: RedeemPercent

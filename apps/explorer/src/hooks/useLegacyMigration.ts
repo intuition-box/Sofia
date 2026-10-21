@@ -6,15 +6,14 @@
  * Facade over legacyMigrationService.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { usePrivy, useWallets } from '@privy-io/react-auth'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 import { useCart } from '@/hooks/useCart'
 import {
+  buildMigrationCart,
   buildRecommendCart,
   DEFAULT_MIGRATION_THRESHOLD,
   estimateMigration,
-  exitLegacyPages,
   fetchExitedPages,
   legacyPages,
   pagesAbove,
@@ -22,22 +21,18 @@ import {
 } from '@/services/legacyMigrationService'
 import type { MarketPosition } from '@/services/userPositionsService'
 
-export type MigrationStatus = 'idle' | 'exiting' | 'done' | 'error'
+export type MigrationStatus = 'idle' | 'done' | 'error'
 
 export function useLegacyMigration(
   walletAddress: string | undefined,
   positions: readonly MarketPosition[],
 ) {
-  const { user } = usePrivy()
-  const { wallets } = useWallets()
   const cart = useCart()
-  const qc = useQueryClient()
   const [status, setStatus] = useState<MigrationStatus>('idle')
   const [error, setError] = useState<string | null>(null)
   const [threshold, setThreshold] = useState<number>(
     DEFAULT_MIGRATION_THRESHOLD,
   )
-  const [progress, setProgress] = useState<{ done: number; total: number }>()
   const [estimate, setEstimate] = useState<MigrationEstimate | null>(null)
 
   const pages = useMemo(() => legacyPages(positions), [positions])
@@ -93,44 +88,15 @@ export function useLegacyMigration(
     }
   }, [selected])
 
-  const refresh = useCallback(() => {
-    void qc.invalidateQueries({ queryKey: ['user-market-positions'] })
-    void qc.invalidateQueries({ queryKey: ['legacy-exited-pages'] })
-  }, [qc])
-
-  const move = useCallback(async () => {
-    const primary = user?.wallet?.address?.toLowerCase()
-    const wallet =
-      wallets.find((w) => w.address.toLowerCase() === primary) ?? wallets[0]
-    if (!wallet || selected.length === 0) return
+  /** Preview the move in the cart: the exit row first, then the
+   *  Recommends — nothing is signed until the cart is confirmed */
+  const move = useCallback(() => {
+    if (selected.length === 0) return
     setError(null)
-    setStatus('exiting')
-    try {
-      const { exited, result } = await exitLegacyPages(
-        wallet,
-        selected,
-        (done, total) => setProgress({ done, total }),
-      )
-      // Whatever got out goes to the cart, even if a later chunk failed
-      if (exited.length > 0) {
-        cart.addItems(buildRecommendCart(exited))
-        cart.open()
-      }
-      if (!result.success) {
-        setStatus('error')
-        setError(
-          `${exited.length} of ${selected.length} pages exited${exited.length ? ' and queued in your cart' : ''}. The rest stopped (${result.error ?? 'network error'}) — try again in a few minutes.`,
-        )
-      } else {
-        setStatus('done')
-      }
-    } catch (err) {
-      setStatus('error')
-      setError(err instanceof Error ? err.message : String(err))
-    } finally {
-      refresh()
-    }
-  }, [user, wallets, selected, cart, refresh])
+    cart.addItems(buildMigrationCart(selected))
+    cart.open()
+    setStatus('done')
+  }, [selected, cart])
 
   /** Queue the Recommends of pages exited earlier */
   const requeueExited = useCallback(() => {
@@ -146,7 +112,6 @@ export function useLegacyMigration(
     threshold,
     setThreshold,
     estimate,
-    progress,
     status,
     error,
     move,

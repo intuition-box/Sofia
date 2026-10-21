@@ -32,20 +32,16 @@ import { calculateTripleId } from '@/lib/contracts'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { buildContextCartItem } from './contextCartService'
-import { getFeeParams, type WalletDescriptor } from './depositService'
-import {
-  redeemLegs,
-  REDEEM_BATCH_SIZE,
-  type RedeemLeg,
-  type RedeemResult,
-} from './redeemService'
+import { getFeeParams } from './depositService'
+import { REDEEM_BATCH_SIZE, type RedeemLeg } from './redeemService'
 import { MIN_SIGNAL_TRUST } from './tripleCreationService'
 import type { MarketPosition } from './userPositionsService'
 
 /** Exit fee kept by the vaults on redeem (0.75%) */
 export const EXIT_FEE_BPS = 75n
-/** Threshold presets (TRUST per page) — 0 = every page */
-export const MIGRATION_THRESHOLDS = [0, 0.5, 1, 5] as const
+/** Threshold presets (TRUST per page). No 'all': below 0.5 T the move's
+ *  fixed fees eat most of the value. */
+export const MIGRATION_THRESHOLDS = [0.5, 1, 5] as const
 export const DEFAULT_MIGRATION_THRESHOLD = 1
 
 const RECOMMEND_COLOR = '#22C55E'
@@ -157,42 +153,6 @@ export async function estimateMigration(
   }
 }
 
-/** Step 1 — exit the pages' legacy legs, one redeemBatch per chunk of
- *  about 100 legs. A page is never split across two transactions, and the
- *  pages fully exited are reported even when a later chunk fails — so the
- *  caller can still queue their Recommends. */
-export async function exitLegacyPages(
-  wallet: WalletDescriptor,
-  pages: readonly LegacyPage[],
-  onProgress?: (done: number, total: number) => void,
-): Promise<{ exited: LegacyPage[]; result: RedeemResult }> {
-  const chunks: LegacyPage[][] = []
-  let current: LegacyPage[] = []
-  let legCount = 0
-  for (const page of pages) {
-    const n = pageLegs([page]).length
-    if (current.length > 0 && legCount + n > REDEEM_BATCH_SIZE) {
-      chunks.push(current)
-      current = []
-      legCount = 0
-    }
-    current.push(page)
-    legCount += n
-  }
-  if (current.length > 0) chunks.push(current)
-
-  const exited: LegacyPage[] = []
-  let result: RedeemResult = { success: true, noop: true }
-  for (let i = 0; i < chunks.length; i++) {
-    onProgress?.(i, chunks.length)
-    result = await redeemLegs(wallet, pageLegs(chunks[i]))
-    if (!result.success) return { exited, result }
-    exited.push(...chunks[i])
-  }
-  onProgress?.(chunks.length, chunks.length)
-  return { exited, result }
-}
-
 /**
  * Pages exited recently from legacy claims that aren't back on the market
  * yet (a migration that stopped half-way, or the cart never confirmed).
@@ -270,6 +230,38 @@ export async function fetchExitedPages(
   return [...pages.values()].sort((a, b) =>
     b.value > a.value ? 1 : b.value < a.value ? -1 : 0,
   )
+}
+
+/**
+ * The whole move as cart items, previewed before anything is signed: one
+ * `redeem-batch` row (the exit, run first) followed by the Recommends and
+ * their tags that put the TRUST back.
+ */
+export function buildMigrationCart(pages: readonly LegacyPage[]): CartItem[] {
+  const legs = pageLegs(pages)
+  const back = pages.reduce((sum, p) => sum + afterExitFee(p.value), 0n)
+  return [
+    {
+      id: `migrate-exit:${pages
+        .map((p) => p.objectTermId)
+        .join(',')
+        .slice(0, 64)}`,
+      side: 'support',
+      kind: 'redeem-batch',
+      termId: 'migrate-exit',
+      intention: 'Exit legacy claims',
+      title: `Exit ${pages.length} page${pages.length === 1 ? '' : 's'} from legacy claims`,
+      favicon: '',
+      intentionColor: '#EF4444',
+      exitLegs: legs.map((l) => ({
+        termId: l.termId,
+        curveId: String(l.curveId),
+        shares: String(l.shares),
+      })),
+      exitValue: Number((back * 10_000n) / WAD) / 10_000,
+    },
+    ...buildRecommendCart(pages),
+  ]
 }
 
 /** Step 2 — the Recommends (and their tags) that put the TRUST back */

@@ -268,7 +268,6 @@ export default function PositionsPage() {
           threshold={migration.threshold}
           onThreshold={migration.setThreshold}
           estimate={migration.estimate}
-          progress={migration.progress}
           status={migration.status}
           error={migration.error}
           onMove={() => void migration.move()}
