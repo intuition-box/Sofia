@@ -31,7 +31,7 @@ const weightOptions: WeightOption[] = [
 ]
 
 const STEP_HINTS = [
-  "This is your first claim — a trust signal on the Intuition protocol.",
+  "This is your first claim — you recommend this page on the Intuition protocol.",
   "Choose how much TRUST to stake on this signal.",
   "Your stake goes to this page — it stays your position.",
   "Review the total cost before confirming.",
@@ -411,8 +411,8 @@ const OnboardingClaimModal = ({
                       </h2>
                       <p className="modal-success-subtitle">
                         {operationType === "deposit"
-                          ? "Your trust signal has been reinforced!"
-                          : "Your trust signal has been amplified!"}
+                          ? "Your Recommend has been reinforced!"
+                          : "Your Recommend has been amplified!"}
                       </p>
                       {transactionHash && (
                         <a

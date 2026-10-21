@@ -119,4 +119,6 @@ export interface ModalTriplet {
   interestContext?: string | null
   /** All context slugs (topics and/or categories) for multi-pill display. */
   interestContexts?: string[]
+  /** Page market side — oppose = Distrust */
+  side?: "support" | "oppose"
 }

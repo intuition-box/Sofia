@@ -16,6 +16,7 @@ import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import type { RankedPosition } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import {
+  INTENTION_CONFIG,
   predicateLabelToIntentionType,
   type IntentionType
 } from "~/types/intentionCategories"
@@ -152,7 +153,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
                           {intentSlug ? (
                             <VerbTag
                               intent={intentSlug}
-                              label={triplet.predicate.label}
+                              label={INTENTION_CONFIG[intentSlug].label}
                               icon={verbIcon(intentSlug)}
                               className="triplet-predicate-tag"
                             />

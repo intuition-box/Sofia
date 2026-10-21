@@ -47,6 +47,7 @@ export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTre
 export { usePagePositions } from './usePagePositions'
 export { usePageMarket } from './usePageMarket'
 export { usePageHints } from './usePageHints'
+export { usePageCartActions } from './usePageCartActions'
 export type { UsePageMarketResult } from './usePageMarket'
 
 // Onboarding

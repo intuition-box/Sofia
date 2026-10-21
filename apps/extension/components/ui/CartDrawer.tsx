@@ -119,7 +119,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     interestContext: item.interestContext,
     interestContexts:
       item.interestContexts ??
-      (item.interestContext ? [item.interestContext] : [])
+      (item.interestContext ? [item.interestContext] : []),
+    side: item.side
   }))
 
   if (!isOpen) return null

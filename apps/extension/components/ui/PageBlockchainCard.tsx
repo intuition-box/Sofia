@@ -5,10 +5,10 @@ import { ChevronDown } from "lucide-react"
 
 import {
   getCertificationForUrl,
-  useCart,
   useCredibilityAnalysis,
   useFavicon,
   usePageBlockchainData,
+  usePageCartActions,
   usePageHints,
   usePageMarket,
   usePagePositions,
@@ -17,11 +17,8 @@ import {
   useWalletFromStorage
 } from "~/hooks"
 import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
-import { PAGE_MARKET_PREDICATE } from "~/lib/config/predicateConstants"
 import type { MyPosition } from "~/lib/services"
-import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
-import type { IntentionPurpose } from "~/types/discovery"
-import type { IntentionType } from "~/types/intentionCategories"
+import { getTripleUrl } from "~/lib/utils"
 
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
@@ -32,9 +29,6 @@ import ShareCertificationButton from "./ShareCertificationButton"
 import { PageStatsSkeleton } from "./Skeleton"
 
 import "../styles/PageBlockchainCard.css"
-
-// Intention tag slug (`intent:work`) ↔ dropdown verb type (`work`)
-const tagSlugFor = (type: IntentionType) => `intent:${type}`
 
 // Trust-circle highlighting belongs to Circles (hidden) — stable empty list
 const NO_TRUST_CIRCLE: string[] = []
@@ -104,120 +98,20 @@ const PageBlockchainCard = () => {
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
 
-  // Context picker is always rendered: it draws from the 14 topics in
-  // topicConfig, not the user's staked positions. Topic positions are
-  // no longer needed here.
-  const [selectedContexts, setSelectedContexts] = useState<string[]>([])
-
-  // Cart
-  const cart = useCart()
+  // Cart: what's queued for this page on its market
   const [isBursting, setIsBursting] = useState(false)
-
-  // The page's queued Recommend (support) and Distrust (oppose) items
-  const recommendItem = useMemo(
-    () =>
-      cart.items.find(
-        (item) =>
-          item.url === currentUrl &&
-          item.predicateName === PAGE_MARKET_PREDICATE &&
-          item.side !== "oppose" &&
-          !item.voteAction
-      ) ?? null,
-    [cart.items, currentUrl]
-  )
-  const distrustItem = useMemo(
-    () =>
-      cart.items.find(
-        (item) =>
-          item.url === currentUrl &&
-          item.predicateName === PAGE_MARKET_PREDICATE &&
-          item.side === "oppose"
-      ) ?? null,
-    [cart.items, currentUrl]
-  )
-
-  // Cart items for the current page (used for the live sentence + validate)
-  const cartItemsForPage = useMemo(() => {
-    if (!currentUrl) return [] as typeof cart.items
-    return cart.items.filter((item) => item.url === currentUrl)
-  }, [cart.items, currentUrl])
-
-  /** Queue (or un-queue) Recommend, with the chosen tags */
-  const toggleRecommend = useCallback(
-    async (extraTags: string[] = []) => {
-      if (!currentUrl) return
-      if (recommendItem && extraTags.length === 0) {
-        await cart.removeFromCart(recommendItem.id)
-        return
-      }
-      const added = await cart.addToCart(
-        currentUrl,
-        pageTitle,
-        PAGE_MARKET_PREDICATE,
-        null,
-        getFaviconUrl(currentUrl, 128),
-        [...selectedContexts, ...extraTags]
-      )
-      if (added) setIsBursting(true)
-    },
-    [currentUrl, pageTitle, cart, selectedContexts, recommendItem]
-  )
-
-  /** Queue (or un-queue) Distrust — the oppose side of the same market */
-  const toggleDistrust = useCallback(async () => {
-    if (!currentUrl) return
-    if (distrustItem) {
-      await cart.removeFromCart(distrustItem.id)
-      return
-    }
-    const added = await cart.addToCart(
-      currentUrl,
-      pageTitle,
-      "distrust",
-      null,
-      getFaviconUrl(currentUrl, 128)
-    )
-    if (added) setIsBursting(true)
-  }, [currentUrl, pageTitle, cart, distrustItem])
-
-  // An intention is a tag on the Recommend item: toggle it there (queuing
-  // Recommend first when needed).
-  const toggleIntentionInCart = useCallback(
-    (type: IntentionType) => {
-      const slug = tagSlugFor(type)
-      if (!intentionTagBySlug(slug)) return
-      if (!recommendItem) {
-        void toggleRecommend([slug])
-        return
-      }
-      const tags = recommendItem.interestContexts ?? []
-      void cart.setItemContexts(
-        recommendItem.id,
-        tags.includes(slug) ? tags.filter((t) => t !== slug) : [...tags, slug]
-      )
-    },
-    [recommendItem, toggleRecommend, cart]
-  )
-
-  // Intention tags currently on the queued Recommend
-  const selectedIntentionTypes = useMemo<IntentionType[]>(
-    () =>
-      (recommendItem?.interestContexts ?? [])
-        .filter(isIntentionTagSlug)
-        .map((slug) => intentionTagBySlug(slug)!.key as IntentionType),
-    [recommendItem]
-  )
-
-  // Topic tags shown in the field: the queued Recommend's, else the draft
-  const pageTopicTags = useMemo(
-    () =>
-      recommendItem
-        ? (recommendItem.interestContexts ?? []).filter(
-            (slug) => !isIntentionTagSlug(slug)
-          )
-        : selectedContexts,
-    [recommendItem, selectedContexts]
-  )
+  const burst = useCallback(() => setIsBursting(true), [])
+  const {
+    recommendItem,
+    distrustItem,
+    pageItems: cartItemsForPage,
+    toggleRecommend,
+    toggleDistrust,
+    toggleIntention,
+    intentions,
+    topics: pageTopicTags,
+    setTopics
+  } = usePageCartActions(currentUrl, pageTitle, burst)
 
   // Page metadata for "Suggested from this page" (title + host as fallback)
   const tabHints = usePageHints(currentUrl)
@@ -330,32 +224,10 @@ const PageBlockchainCard = () => {
               </button>
               <div className="cert-section">
                 <PageTagsField
-                  intentions={selectedIntentionTypes.map(
-                    (type) => `for_${type}` as IntentionPurpose
-                  )}
-                  onToggleIntention={(purpose) =>
-                    toggleIntentionInCart(
-                      purpose.replace(/^for_/, "") as IntentionType
-                    )
-                  }
+                  intentions={intentions}
+                  onToggleIntention={toggleIntention}
                   contexts={pageTopicTags}
-                  onChangeContexts={(slugs) => {
-                    setSelectedContexts(slugs)
-                    if (!currentUrl) return
-                    cart.updateContextForUrl(currentUrl, slugs)
-                    // Tags ride on a Recommend: queue one when the page
-                    // isn't in the cart yet.
-                    if (slugs.length > 0 && !recommendItem) {
-                      void cart.addToCart(
-                        currentUrl,
-                        pageTitle,
-                        PAGE_MARKET_PREDICATE,
-                        null,
-                        getFaviconUrl(currentUrl, 128),
-                        slugs
-                      )
-                    }
-                  }}
+                  onChangeContexts={setTopics}
                   hints={pageHints}
                   showWhy={tagsExpanded}
                 />

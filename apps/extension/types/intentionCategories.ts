@@ -83,6 +83,8 @@ export function getIntentionBadge(intention?: string): { label: string; color: s
 /** Map a predicate label ("visits for work", "trusts") to IntentionType ("work", "trusted") */
 export function predicateLabelToIntentionType(label: string): IntentionType | null {
   const trimmed = label.trim().toLowerCase()
+  // The page market reads like the old `trusts` slot: "Recommended"
+  if (trimmed === "recommends") return "trusted"
   for (const [type, config] of Object.entries(INTENTION_CONFIG)) {
     if (config.predicateLabel && trimmed === config.predicateLabel.toLowerCase()) {
       return type as IntentionType
@@ -109,4 +111,24 @@ export interface IntentionCategory {
   color: string
   urls: CategoryUrl[]
   urlCount: number
+}
+
+/**
+ * The verb a cart / reward row shows. A page-market item reads Recommended
+ * (support) or Distrusted (oppose) — its intentions are tags, shown as pills.
+ * Legacy items keep their intention verb.
+ */
+export function cartItemVerb(item: {
+  predicateName: string
+  intention?: string | null
+  side?: "support" | "oppose"
+}): IntentionType | null {
+  if (item.predicateName.trim() === "recommends") {
+    return item.side === "oppose" ? "distrusted" : "trusted"
+  }
+  if (item.intention) {
+    const key = item.intention.replace(/^for_/, "")
+    if (key in INTENTION_CONFIG) return key as IntentionType
+  }
+  return predicateLabelToIntentionType(item.predicateName)
 }
