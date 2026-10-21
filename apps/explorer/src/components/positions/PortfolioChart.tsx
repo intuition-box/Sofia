@@ -22,6 +22,7 @@ import {
   type PortfolioPoint,
   type PortfolioRange,
 } from '@/services/portfolioHistoryService'
+import type { MarketPosition } from '@/services/userPositionsService'
 
 const UP = '#22c55e'
 const DOWN = '#ef4444'
@@ -58,10 +59,15 @@ function formatDay(t: number): string {
 
 export default function PortfolioChart({
   walletAddress,
+  positions,
 }: {
   walletAddress?: string
+  positions: readonly MarketPosition[]
 }) {
-  const { points, loading, error } = usePortfolioHistory(walletAddress)
+  const { points, loading, error } = usePortfolioHistory(
+    walletAddress,
+    positions,
+  )
   const [range, setRange] = useState<PortfolioRange>('1M')
   const [hover, setHover] = useState<number | null>(null)
 

@@ -128,3 +128,46 @@ describe('summarizePositions', () => {
     expect(summarizePositions([]).changePct).toBeNull()
   })
 })
+
+describe('position value', () => {
+  const withTotals = (
+    shares: bigint,
+    price: bigint,
+    totalShares: bigint,
+    totalAssets: bigint,
+  ) => {
+    const row = leg('0xpage', '2', shares, price, totalAssets, {
+      type: 'Triple',
+      atom: null,
+      triple: claim,
+    })
+    return {
+      ...row,
+      vault: {
+        ...row.vault,
+        total_shares: String(totalShares),
+        total_assets: String(totalAssets),
+      },
+    } as Parameters<typeof aggregateUserPositions>[0][number]
+  }
+
+  it('a sole holder is worth the vault, not shares × spot (no phantom gain)', () => {
+    // Own deposit lifted the progressive spot price: shares × spot = 12 T,
+    // but the vault only holds the 10 T that went in.
+    const [p] = aggregateUserPositions(
+      [withTotals(10n * WAD, (12n * WAD) / 10n, 10n * WAD, 10n * WAD)],
+      PLATFORMS,
+    )
+    expect(p.value).toBe(String(10n * WAD))
+    expect(p.change).toBe('0')
+  })
+
+  it('uses the exact exit value (previewRedeem) when known', () => {
+    const [p] = aggregateUserPositions(
+      [withTotals(10n * WAD, WAD, 10n * WAD, 10n * WAD)],
+      PLATFORMS,
+      { '0xpage:2': String(9n * WAD) },
+    )
+    expect(p.value).toBe(String(9n * WAD))
+  })
+})

@@ -99,6 +99,9 @@ async function fetchPrices(termIds: string[]) {
 
 export async function fetchPortfolioHistory(
   addresses: string[],
+  /** term_id → real value ÷ spot value today (the indexer only keeps spot
+   *  prices; on a bonding curve spot overstates what a position is worth) */
+  valueRatios: Readonly<Record<string, number>> = {},
   now: number = Date.now(),
 ): Promise<PortfolioPoint[]> {
   if (addresses.length === 0) return []
@@ -151,7 +154,11 @@ export async function fetchPortfolioHistory(
       cursor.set(key, i)
       // Before the vault's first price change: its opening price that day
       const p = price.get(key) ?? opening.get(key) ?? WAD
-      value += (held * p) / WAD
+      const ratio = valueRatios[key.split(':')[0]] ?? 1
+      value +=
+        ratio === 1
+          ? (held * p) / WAD
+          : BigInt(Math.round(Number((held * p) / WAD) * ratio))
     }
     points.push({ t, value: toTrust(value), invested: toTrust(invested) })
   }

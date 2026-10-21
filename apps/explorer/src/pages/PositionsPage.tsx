@@ -258,7 +258,7 @@ export default function PositionsPage() {
         background={pc.color}
       />
 
-      <PortfolioChart walletAddress={walletAddress} />
+      <PortfolioChart walletAddress={walletAddress} positions={positions} />
 
       {isOwn && (
         <LegacyMigrationBanner

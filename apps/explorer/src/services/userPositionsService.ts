@@ -17,6 +17,12 @@ import {
 import { SEASON_POOL_TERM_ID } from '@/config'
 import { extractDomain } from '@/utils/formatting'
 import { netDeposited } from './platformMarketService'
+import {
+  MULTI_VAULT_ADDRESS,
+  MultiVaultAbi,
+  paced,
+  pacedClient,
+} from '@/lib/contracts'
 
 type PositionRow = GetUserMarketPositionsQuery['positions'][number]
 
@@ -27,6 +33,8 @@ export interface MarketPosition {
   termId: string
   /** Shares per bonding curve (raw strings) — exits without an RPC read */
   legs: { curveId: string; shares: string }[]
+  /** shares × spot price (wei) — only to correct spot-priced history */
+  markValue: string
   kind: MarketPositionKind
   /** Claims only: support = the claim's vault, oppose = its counter vault. */
   side: 'support' | 'oppose' | null
@@ -96,6 +104,83 @@ function atomUrl(
   return /^https?:\/\//i.test(label) ? label : ''
 }
 
+// ── Valuation ──
+
+/**
+ * What a leg is worth: what exiting it returns (previewRedeem, fees out) when
+ * known; else the pro-rata share of the vault's assets. Never `shares × spot
+ * price` when the vault totals are known: on a bonding curve your own deposit
+ * lifts the spot price, so that shows gains nobody paid for (a sole holder
+ * would read +20% on day one). Spot only when nothing else is available.
+ */
+function legValue(
+  leg: string,
+  shares: bigint,
+  price: bigint,
+  row: PositionRow,
+  exitValues: Readonly<Record<string, string>>,
+): bigint {
+  const exit = exitValues[leg]
+  if (exit !== undefined) return BigInt(exit)
+  const totalShares = BigInt(row.vault?.total_shares || '0')
+  const totalAssets = BigInt(row.vault?.total_assets || '0')
+  if (totalShares > 0n && totalAssets > 0n) {
+    return (shares * totalAssets) / totalShares
+  }
+  return (shares * price) / WAD
+}
+
+/** Legs per previewRedeem multicall */
+const EXIT_VALUE_CHUNK = 100
+
+/** Exact exit values (previewRedeem) for every leg — best effort: a
+ *  rate-limited RPC leaves the pro-rata fallback in place. */
+async function fetchExitValues(
+  rows: readonly PositionRow[],
+): Promise<Record<string, string>> {
+  const legs = new Map<
+    string,
+    { termId: string; curveId: bigint; shares: bigint }
+  >()
+  for (const row of rows) {
+    const shares = BigInt(row.shares || '0')
+    if (shares === 0n) continue
+    legs.set(`${row.term_id}:${String(row.curve_id)}`, {
+      termId: row.term_id,
+      curveId: BigInt(row.curve_id),
+      shares,
+    })
+  }
+  const entries = [...legs.entries()]
+  const out: Record<string, string> = {}
+  try {
+    for (let i = 0; i < entries.length; i += EXIT_VALUE_CHUNK) {
+      const chunk = entries.slice(i, i + EXIT_VALUE_CHUNK)
+      const results = await paced(() =>
+        pacedClient.multicall({
+          contracts: chunk.map(([, l]) => ({
+            address: MULTI_VAULT_ADDRESS,
+            abi: MultiVaultAbi,
+            functionName: 'previewRedeem' as const,
+            args: [l.termId as `0x${string}`, l.curveId, l.shares],
+          })),
+          authorizationList: undefined,
+          batchSize: 0,
+        }),
+      )
+      chunk.forEach(([key], j) => {
+        const r = results[j]
+        if (r.status === 'success') {
+          out[key] = String((r.result as readonly [bigint, bigint])[0])
+        }
+      })
+    }
+  } catch {
+    // RPC unavailable — keep what we have, pro-rata covers the rest
+  }
+  return out
+}
+
 // ── Pure aggregation (exported for tests) ──
 
 /**
@@ -107,6 +192,8 @@ function atomUrl(
 export function aggregateUserPositions(
   rows: readonly PositionRow[],
   platformTermIds: ReadonlySet<string>,
+  /** Exact exit value per leg (`term:curve` → wei), from previewRedeem */
+  exitValues: Readonly<Record<string, string>> = {},
 ): MarketPosition[] {
   const byTerm: Record<
     string,
@@ -119,6 +206,7 @@ export function aggregateUserPositions(
       supporters: number
       openedAt: string
       legs: { curveId: string; shares: string }[]
+      mark: bigint
     }
   > = {}
   // One leg per (term, curve) — offset pagination can repeat a row when a
@@ -141,10 +229,12 @@ export function aggregateUserPositions(
       supporters: 0,
       openedAt: row.created_at,
       legs: [],
+      mark: 0n,
     })
+    entry.mark += (shares * price) / WAD
     entry.legs.push({ curveId: String(row.curve_id), shares: String(shares) })
     entry.shares += shares
-    entry.value += (shares * price) / WAD
+    entry.value += legValue(leg, shares, price, row, exitValues)
     entry.deposited += netDeposited(row)
     entry.staked += BigInt(row.vault?.market_cap || '0')
     entry.supporters = Math.max(
@@ -162,6 +252,7 @@ export function aggregateUserPositions(
     const base = {
       termId,
       legs: e.legs,
+      markValue: String(e.mark),
       shares: String(e.shares),
       deposited: String(e.deposited),
       value: String(e.value),
@@ -273,8 +364,9 @@ export async function fetchUserPositions(
     if (batch.length < POSITIONS_PAGE) break
     if (page === MAX_PAGES - 1) truncated = true
   }
+  const exitValues = await fetchExitValues(rows)
   return {
-    positions: aggregateUserPositions(rows, platformTermIds),
+    positions: aggregateUserPositions(rows, platformTermIds, exitValues),
     truncated,
   }
 }

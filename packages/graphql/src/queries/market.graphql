@@ -257,6 +257,8 @@ query GetUserMarketPositions(
       current_share_price
       market_cap
       position_count
+      total_shares
+      total_assets
     }
     term {
       type
@@ -368,6 +370,7 @@ query GetPageMarket(
       vaults {
         curve_id
         total_assets
+        total_shares
         position_count
         current_share_price
       }
@@ -376,6 +379,7 @@ query GetPageMarket(
       vaults {
         curve_id
         total_assets
+        total_shares
         position_count
         current_share_price
       }

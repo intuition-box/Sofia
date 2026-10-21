@@ -100,7 +100,12 @@ export interface PageMarket {
 const sumAssets = (vaults: readonly VaultRow[] | undefined) =>
   (vaults ?? []).reduce((sum, v) => sum + BigInt(v.total_assets ?? "0"), 0n)
 
-/** Value of the viewer's legs at each curve's current share price */
+/**
+ * Value of the viewer's legs: their pro-rata share of each vault's assets.
+ * Not `shares × spot price` — on a bonding curve your own deposit lifts the
+ * spot price, which would show a gain nobody paid for (a sole holder reads
+ * +20% on day one). Exact for a sole holder, never inflated otherwise.
+ */
 function legsValue(
   legs: readonly LegRow[],
   vaults: readonly VaultRow[] | undefined
@@ -108,11 +113,15 @@ function legsValue(
   let value = 0n
   let invested = 0n
   for (const leg of legs) {
-    const price = BigInt(
-      (vaults ?? []).find((v) => String(v.curve_id) === String(leg.curve_id))
-        ?.current_share_price ?? "0"
+    const vault = (vaults ?? []).find(
+      (v) => String(v.curve_id) === String(leg.curve_id)
     )
-    value += (BigInt(leg.shares) * price) / WAD
+    const shares = BigInt(leg.shares)
+    const totalShares = BigInt(vault?.total_shares ?? "0")
+    value +=
+      totalShares > 0n
+        ? (shares * BigInt(vault?.total_assets ?? "0")) / totalShares
+        : (shares * BigInt(vault?.current_share_price ?? "0")) / WAD
     invested +=
       BigInt(leg.total_deposit_assets_after_total_fees ?? "0") -
       BigInt(leg.total_redeem_assets_for_receiver ?? "0")

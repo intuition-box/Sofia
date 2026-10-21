@@ -22,6 +22,7 @@ const position = (
 ): MarketPosition => ({
   termId: claimTermId,
   legs: [{ curveId: '2', shares: '1' }],
+  markValue: '150',
   kind: 'claim',
   side: 'support',
   claimTermId,

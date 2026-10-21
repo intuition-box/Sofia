@@ -58,8 +58,8 @@ export function useUserPositions(
   }, [walletAddress])
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    // 'v2': positions carry per-curve legs — drop persisted entries without them
-    queryKey: ['user-market-positions', 'v2', walletAddress?.toLowerCase()],
+    // 'v3': per-curve legs + exit-value pricing — drop older persisted entries
+    queryKey: ['user-market-positions', 'v3', walletAddress?.toLowerCase()],
     queryFn: () =>
       fetchWithRetry(() => fetchUserPositions(addresses, PLATFORM_TERM_IDS)),
     enabled: addresses.length > 0,
