@@ -38,6 +38,9 @@ import { txEventBus } from "./TxEventBus"
 
 const logger = createServiceLogger("CertificationService")
 
+/** Tag triples (`claim | in context of | tag`) per tx: ~500k gas each */
+const CONTEXT_TX_SIZE = 40
+
 const DEFAULT_OBJECT_DESCRIPTION = "Contenu visité par l'utilisateur."
 const DEFAULT_VOTE_WEIGHT = BigInt(Math.floor(0.5 * 1e18))
 
@@ -441,7 +444,30 @@ class CertificationServiceClass {
         return { success: true, results: [], failedTriples: [] }
       }
 
-      return tripleService.createTriplesBatch(resolvedTriples, wallet)
+      // One tx per CONTEXT_TX_SIZE tags: the chain caps a tx at ~32M gas
+      const merged: BatchTripleResult = {
+        success: true,
+        results: [],
+        failedTriples: [],
+        createdCount: 0,
+        depositCount: 0
+      }
+      for (let k = 0; k < resolvedTriples.length; k += CONTEXT_TX_SIZE) {
+        const part = await tripleService.createTriplesBatch(
+          resolvedTriples.slice(k, k + CONTEXT_TX_SIZE),
+          wallet
+        )
+        merged.results.push(...part.results)
+        merged.failedTriples.push(...part.failedTriples)
+        merged.createdCount += part.createdCount ?? 0
+        merged.depositCount += part.depositCount ?? 0
+        if (!part.success) {
+          merged.success = false
+          merged.error = part.error
+          break
+        }
+      }
+      return merged
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error"

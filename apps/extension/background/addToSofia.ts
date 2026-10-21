@@ -25,7 +25,11 @@ import {
   SearchUrlAtomsDocument
 } from "../lib/clients/graphql-client"
 import { getAuthUrl } from "../lib/config/externalAuth"
-import { cartService, certificationService } from "../lib/services"
+import {
+  cartService,
+  certificationService,
+  MAX_CART_ITEMS
+} from "../lib/services"
 import { sessionStore } from "../lib/signer"
 import { getFaviconUrl, getProfileUrl } from "../lib/utils"
 import { createServiceLogger } from "../lib/utils/logger"
@@ -278,7 +282,9 @@ async function handleQuickPublish(
       added ? "success" : "error",
       added
         ? `Added to your cart · ${action.label} — enable "Publish without popup" in Settings to publish in one click`
-        : "Already in your cart"
+        : (await cartService.isFull(wallet))
+          ? `Cart full · ${MAX_CART_ITEMS} pages max — publish it to add more`
+          : "Already in your cart"
     )
     return
   }
@@ -345,7 +351,11 @@ export async function handleAddToCart(
       [...(msg.contextSlugs ?? []), ...intentionSlugs],
       msg.objectTermId
     )
-    return added ? { ok: true } : { ok: false, reason: "duplicate" }
+    if (added) return { ok: true }
+    return {
+      ok: false,
+      reason: (await cartService.isFull(wallet)) ? "full" : "duplicate"
+    }
   } catch (e) {
     logger.warn("addItem failed", e)
     return { ok: false, reason: "error" }

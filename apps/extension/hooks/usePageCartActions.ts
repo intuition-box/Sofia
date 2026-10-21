@@ -154,6 +154,8 @@ export function usePageCartActions(
   )
 
   return {
+    /** No new page fits — the queued ones can still be edited */
+    cartFull: cart.isFull,
     recommendItem,
     distrustItem,
     pageItems,

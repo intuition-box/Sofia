@@ -6,6 +6,7 @@
  */
 import { TrendingUp } from "lucide-react"
 
+import { MAX_CART_ITEMS } from "~/lib/services"
 import type { MyPosition, PageMarket } from "~/lib/services"
 import { formatTrust } from "~/lib/utils"
 
@@ -16,6 +17,8 @@ interface PageMarketPanelProps {
   loading: boolean
   recommendQueued: boolean
   distrustQueued: boolean
+  /** The cart holds MAX_CART_ITEMS pages: publish it before adding more */
+  cartFull: boolean
   onRecommend: () => void
   onDistrust: () => void
   onExit: (position: MyPosition) => void
@@ -62,6 +65,7 @@ const PageMarketPanel = ({
   loading,
   recommendQueued,
   distrustQueued,
+  cartFull,
   onRecommend,
   onDistrust,
   onExit,
@@ -114,6 +118,7 @@ const PageMarketPanel = ({
           type="button"
           className={`pm-btn pm-btn--support${recommendQueued ? " is-queued" : ""}`}
           aria-pressed={recommendQueued}
+          disabled={cartFull && !recommendQueued}
           onClick={onRecommend}>
           {recommendQueued ? "✓ Recommend" : "Recommend"}
         </button>
@@ -121,10 +126,16 @@ const PageMarketPanel = ({
           type="button"
           className={`pm-btn pm-btn--oppose${distrustQueued ? " is-queued" : ""}`}
           aria-pressed={distrustQueued}
+          disabled={cartFull && !distrustQueued}
           onClick={onDistrust}>
           {distrustQueued ? "✓ Distrust" : "Distrust"}
         </button>
       </div>
+      {cartFull && !recommendQueued && !distrustQueued && (
+        <p className="pm-discovered">
+          Cart full · {MAX_CART_ITEMS} pages max — publish it to add more
+        </p>
+      )}
 
       {(market?.mine ?? []).map((position) => {
         const up = BigInt(position.pnl) >= 0n

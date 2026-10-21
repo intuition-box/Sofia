@@ -40,6 +40,12 @@ export interface AtomsToCreateEstimate {
 
 const logger = createServiceLogger("CartService")
 
+/**
+ * Pages per cart. The chain caps a transaction at ~32M gas and creating a
+ * page claim costs up to ~680k, so one publish stays under 40 claims.
+ */
+export const MAX_CART_ITEMS = 40
+
 // Sanity check: every UI-visible intention predicate must resolve to a known
 // on-chain predicate. Catches drift between INTENTION_PREDICATES (UI) and
 // PREDICATE_NAME_TO_ID (canonical registry) at module load.
@@ -208,6 +214,12 @@ class CartServiceClass {
       return true
     }
 
+    // Read from IndexedDB: the service worker's in-memory state may be stale
+    if (await this.isFull(walletAddress)) {
+      logger.warn("Cart full", { max: MAX_CART_ITEMS })
+      return false
+    }
+
     const record: CartItemRecord = {
       id,
       walletAddress: walletAddress.toLowerCase(),
@@ -241,6 +253,14 @@ class CartServiceClass {
       logger.error("Failed to add item to cart", { error })
       return false
     }
+  }
+
+  /** True when a new page can't be queued until the cart is published */
+  async isFull(walletAddress: string): Promise<boolean> {
+    const queued = await CartDataService.getByWallet(
+      walletAddress.toLowerCase()
+    )
+    return queued.filter((item) => !item.voteAction).length >= MAX_CART_ITEMS
   }
 
   async addVoteItem(

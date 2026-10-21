@@ -215,7 +215,9 @@ export default function AddToSofiaModal() {
         const msg =
           res?.reason === "duplicate"
             ? "Already in your cart"
-            : "Couldn't add — try again"
+            : res?.reason === "full"
+              ? "Cart full — publish it to add more pages"
+              : "Couldn't add — try again"
         setToast(msg)
         setTimeout(() => setToast(null), 2600)
       }

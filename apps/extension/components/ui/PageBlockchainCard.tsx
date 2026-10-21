@@ -102,6 +102,7 @@ const PageBlockchainCard = () => {
   const [isBursting, setIsBursting] = useState(false)
   const burst = useCallback(() => setIsBursting(true), [])
   const {
+    cartFull,
     recommendItem,
     distrustItem,
     pageItems: cartItemsForPage,
@@ -200,6 +201,7 @@ const PageBlockchainCard = () => {
               loading={marketLoading}
               recommendQueued={!!recommendItem}
               distrustQueued={!!distrustItem}
+              cartFull={cartFull}
               onRecommend={() => void toggleRecommend()}
               onDistrust={() => void toggleDistrust()}
               onExit={(position) => void handleExit(position)}

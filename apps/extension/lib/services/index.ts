@@ -45,7 +45,7 @@ export { UserCertificationsServiceClass, userCertificationsService } from './Use
 export type { TripleDetail, CertificationEntry } from './UserCertificationsService'
 
 // Cart
-export { cartService } from './CartService'
+export { cartService, MAX_CART_ITEMS } from './CartService'
 
 // Topic Interests (from Sofia Explorer)
 
