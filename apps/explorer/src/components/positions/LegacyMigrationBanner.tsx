@@ -15,6 +15,8 @@ import '@/components/styles/trend-hunter.css'
 
 interface LegacyMigrationBannerProps {
   pageCount: number
+  /** Pages worth moving at the lowest threshold — 0 hides the move card */
+  movableCount: number
   /** Σ value of every legacy position (wei) */
   value: bigint
   selectedCount: number
@@ -22,7 +24,6 @@ interface LegacyMigrationBannerProps {
   onThreshold: (threshold: number) => void
   estimate: MigrationEstimate | null
   status: MigrationStatus
-  error: string | null
   onMove: () => void
   /** Pages exited earlier, not back on the market yet (resume) */
   exitedCount: number
@@ -33,13 +34,13 @@ interface LegacyMigrationBannerProps {
 
 export default function LegacyMigrationBanner({
   pageCount,
+  movableCount,
   value,
   selectedCount,
   threshold,
   onThreshold,
   estimate,
   status,
-  error,
   onMove,
   exitedCount,
   exitedValue,
@@ -71,9 +72,7 @@ export default function LegacyMigrationBanner({
       </section>
     ) : null
 
-  if (pageCount === 0 && status !== 'done') return resume
-
-  if (status === 'done') {
+  if (status === 'queued') {
     return (
       <>
         {resume}
@@ -91,6 +90,8 @@ export default function LegacyMigrationBanner({
       </>
     )
   }
+
+  if (movableCount === 0) return resume
 
   return (
     <>
@@ -131,7 +132,6 @@ export default function LegacyMigrationBanner({
                 ? 'Estimating fees…'
                 : 'No page above this amount.'}
           </span>
-          {error && <span className="lm-error">{error}</span>}
         </div>
         <button
           type="button"

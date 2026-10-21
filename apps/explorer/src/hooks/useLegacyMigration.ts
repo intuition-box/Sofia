@@ -13,6 +13,7 @@ import {
   buildMigrationCart,
   buildRecommendCart,
   DEFAULT_MIGRATION_THRESHOLD,
+  MIGRATION_THRESHOLDS,
   estimateMigration,
   fetchExitedPages,
   legacyPages,
@@ -21,15 +22,14 @@ import {
 } from '@/services/legacyMigrationService'
 import type { MarketPosition } from '@/services/userPositionsService'
 
-export type MigrationStatus = 'idle' | 'done' | 'error'
+/** 'queued': the move sits in the cart, waiting for confirmation */
+export type MigrationStatus = 'idle' | 'queued'
 
 export function useLegacyMigration(
   walletAddress: string | undefined,
   positions: readonly MarketPosition[],
 ) {
   const cart = useCart()
-  const [status, setStatus] = useState<MigrationStatus>('idle')
-  const [error, setError] = useState<string | null>(null)
   const [threshold, setThreshold] = useState<number>(
     DEFAULT_MIGRATION_THRESHOLD,
   )
@@ -40,6 +40,18 @@ export function useLegacyMigration(
     () => pagesAbove(pages, threshold),
     [pages, threshold],
   )
+  /** Pages worth moving at the lowest threshold — 0 hides the block */
+  const movableCount = useMemo(
+    () => pagesAbove(pages, Math.min(...MIGRATION_THRESHOLDS)).length,
+    [pages],
+  )
+  // Queued while the exit row is in the cart; once its tx is mined the
+  // exited positions leave the list (optimistic overlay)
+  const status: MigrationStatus = cart.items.some(
+    (it) => it.kind === 'redeem-batch' && it.termId === 'migrate-exit',
+  )
+    ? 'queued'
+    : 'idle'
   const legacyValue = useMemo(
     () => pages.reduce((sum, p) => sum + p.value, 0n),
     [pages],
@@ -101,10 +113,8 @@ export function useLegacyMigration(
    *  Recommends — nothing is signed until the cart is confirmed */
   const move = useCallback(() => {
     if (selected.length === 0) return
-    setError(null)
     cart.addItems(buildMigrationCart(selected))
     cart.open()
-    setStatus('done')
   }, [selected, cart])
 
   /** Queue the Recommends of pages exited earlier */
@@ -116,13 +126,13 @@ export function useLegacyMigration(
 
   return {
     pageCount: pages.length,
+    movableCount,
     legacyValue,
     selectedCount: selected.length,
     threshold,
     setThreshold,
     estimate,
     status,
-    error,
     move,
     exitedPages,
     exitedValue,
