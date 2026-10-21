@@ -17,12 +17,6 @@ import {
 import { SEASON_POOL_TERM_ID } from '@/config'
 import { extractDomain } from '@/utils/formatting'
 import { netDeposited } from './platformMarketService'
-import {
-  MULTI_VAULT_ADDRESS,
-  MultiVaultAbi,
-  paced,
-  pacedClient,
-} from '@/lib/contracts'
 
 type PositionRow = GetUserMarketPositionsQuery['positions'][number]
 
@@ -108,7 +102,7 @@ function atomUrl(
 
 /**
  * What a leg is worth: what exiting it returns (previewRedeem, fees out) when
- * known; else the pro-rata share of the vault's assets. Never `shares × spot
+ * the caller has it; else the pro-rata share of the vault's assets. Never `shares × spot
  * price` when the vault totals are known: on a bonding curve your own deposit
  * lifts the spot price, so that shows gains nobody paid for (a sole holder
  * would read +20% on day one). Spot only when nothing else is available.
@@ -128,57 +122,6 @@ function legValue(
     return (shares * totalAssets) / totalShares
   }
   return (shares * price) / WAD
-}
-
-/** Legs per previewRedeem multicall */
-const EXIT_VALUE_CHUNK = 100
-
-/** Exact exit values (previewRedeem) for every leg — best effort: a
- *  rate-limited RPC leaves the pro-rata fallback in place. */
-async function fetchExitValues(
-  rows: readonly PositionRow[],
-): Promise<Record<string, string>> {
-  const legs = new Map<
-    string,
-    { termId: string; curveId: bigint; shares: bigint }
-  >()
-  for (const row of rows) {
-    const shares = BigInt(row.shares || '0')
-    if (shares === 0n) continue
-    legs.set(`${row.term_id}:${String(row.curve_id)}`, {
-      termId: row.term_id,
-      curveId: BigInt(row.curve_id),
-      shares,
-    })
-  }
-  const entries = [...legs.entries()]
-  const out: Record<string, string> = {}
-  try {
-    for (let i = 0; i < entries.length; i += EXIT_VALUE_CHUNK) {
-      const chunk = entries.slice(i, i + EXIT_VALUE_CHUNK)
-      const results = await paced(() =>
-        pacedClient.multicall({
-          contracts: chunk.map(([, l]) => ({
-            address: MULTI_VAULT_ADDRESS,
-            abi: MultiVaultAbi,
-            functionName: 'previewRedeem' as const,
-            args: [l.termId as `0x${string}`, l.curveId, l.shares],
-          })),
-          authorizationList: undefined,
-          batchSize: 0,
-        }),
-      )
-      chunk.forEach(([key], j) => {
-        const r = results[j]
-        if (r.status === 'success') {
-          out[key] = String((r.result as readonly [bigint, bigint])[0])
-        }
-      })
-    }
-  } catch {
-    // RPC unavailable — keep what we have, pro-rata covers the rest
-  }
-  return out
 }
 
 // ── Pure aggregation (exported for tests) ──
@@ -364,9 +307,10 @@ export async function fetchUserPositions(
     if (batch.length < POSITIONS_PAGE) break
     if (page === MAX_PAGES - 1) truncated = true
   }
-  const exitValues = await fetchExitValues(rows)
+  // Pro-rata valuation from the indexer — no RPC read on page load (the
+  // public RPC's per-IP quota is shared with the wallet)
   return {
-    positions: aggregateUserPositions(rows, platformTermIds, exitValues),
+    positions: aggregateUserPositions(rows, platformTermIds),
     truncated,
   }
 }

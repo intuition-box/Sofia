@@ -34,3 +34,34 @@ export function paced<T>(read: () => Promise<T>): Promise<T> {
   queue = run.catch(() => undefined)
   return run
 }
+
+/**
+ * Fail-fast client for optional pre-flight reads (simulate, gas estimate):
+ * no retries, so a throttled RPC never stalls the wallet popup — callers
+ * fall back (heuristic gas, let the wallet run the tx).
+ */
+export const quickClient = createPublicClient({
+  chain: intuitionChain,
+  transport: http(INTUITION_RPC_URL, { retryCount: 0, timeout: 8_000 }),
+})
+
+/** The public RPC's throttle (429 / -31002 "Bandwidth limit exceeded") */
+export function isRateLimited(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return /bandwidth limit|429|rate limit|too many requests|timed out|fetch failed/i.test(
+    msg,
+  )
+}
+
+/**
+ * Optional pre-flight simulation: surfaces a revert before the wallet popup,
+ * but a throttled RPC just skips it — the wallet still runs the tx.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function preflight(config: any): Promise<void> {
+  try {
+    await quickClient.simulateContract(config)
+  } catch (err) {
+    if (!isRateLimited(err)) throw err
+  }
+}

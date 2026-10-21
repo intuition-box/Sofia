@@ -11,8 +11,11 @@ import {
   MULTI_VAULT_ADDRESS,
   MultiVaultAbi,
   explicitGasLimit,
+  isRateLimited,
   paced,
   pacedClient,
+  quickClient,
+  preflight,
 } from '../lib/contracts'
 import type { WalletDescriptor } from './depositService'
 
@@ -188,7 +191,7 @@ export async function redeemAtom(
     } as const
     await publicClient.simulateContract(batchConfig)
     const batchGas = await explicitGasLimit(
-      publicClient,
+      quickClient,
       batchConfig,
       2_000_000n,
     )
@@ -223,9 +226,9 @@ export async function redeemAtom(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
-  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+  const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
 
   const hash = await walletClient.writeContract({
     ...simConfig,
@@ -291,10 +294,10 @@ export async function redeemBatchAtoms(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
   const gas = await explicitGasLimit(
-    publicClient,
+    quickClient,
     simConfig,
     BigInt(valid.length) * 500_000n + 1_000_000n,
   )
@@ -391,10 +394,15 @@ export async function redeemLegs(
     account: address,
   } as const
 
-  // Paced client: retries through the public RPC's rate limit
-  await paced(() => pacedClient.simulateContract(simConfig))
+  // Pre-flight read: catches a revert before the popup, but never blocks it
+  // — a throttled public RPC skips straight to the wallet (heuristic gas).
+  try {
+    await quickClient.simulateContract(simConfig)
+  } catch (err) {
+    if (!isRateLimited(err)) throw err
+  }
   const gas = await explicitGasLimit(
-    pacedClient,
+    quickClient,
     simConfig,
     BigInt(legs.length) * 500_000n + 1_000_000n,
   )
@@ -405,7 +413,7 @@ export async function redeemLegs(
   })
   const receipt = await pacedClient.waitForTransactionReceipt({
     hash,
-    pollingInterval: 3_000,
+    pollingInterval: 4_000,
   })
   return receipt.status === 'success'
     ? { success: true, txHash: hash }

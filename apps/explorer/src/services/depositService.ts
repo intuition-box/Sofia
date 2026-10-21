@@ -11,6 +11,8 @@ import {
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
   explicitGasLimit,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 
 // ---------------------------------------------------------------------------
@@ -252,9 +254,9 @@ export async function executeSingleDeposit(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
-  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+  const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
 
   const hash = await client.writeContract({
     ...simConfig,
@@ -296,10 +298,10 @@ export async function executeBatchDeposit(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
   const gas = await explicitGasLimit(
-    publicClient,
+    quickClient,
     simConfig,
     BigInt(items.length) * 600_000n + 1_000_000n,
   )

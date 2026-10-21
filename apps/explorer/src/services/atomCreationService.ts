@@ -23,6 +23,8 @@ import {
   explicitGasLimit,
   paced,
   pacedClient,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -175,9 +177,9 @@ export async function executeCreateAtom(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
-    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
+    const gas = await explicitGasLimit(quickClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
       ...simConfig,
@@ -298,10 +300,10 @@ export async function executeCreateAtomsBatch(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
     const gas = await explicitGasLimit(
-      publicClient,
+      quickClient,
       simConfig,
       BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
     )

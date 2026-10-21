@@ -22,6 +22,8 @@ import {
   calculateTripleId,
   paced,
   pacedClient,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -137,8 +139,8 @@ export async function executeCreateTriple(
         value: totalCost,
         account: address,
       } as const
-      await publicClient.simulateContract(simConfig)
-      const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+      await preflight(simConfig)
+      const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
       const hash = await client.writeContract({
         ...simConfig,
         gas,
@@ -185,9 +187,9 @@ export async function executeCreateTriple(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
-    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
+    const gas = await explicitGasLimit(quickClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
       ...simConfig,
@@ -341,10 +343,10 @@ export async function executeCreateTriplesBatch(
           account: address,
         } as const
 
-        await publicClient.simulateContract(simConfig)
+        await preflight(simConfig)
 
         const gas = await explicitGasLimit(
-          publicClient,
+          quickClient,
           simConfig,
           BigInt(group.length) * 1_000_000n + 1_000_000n,
         )
@@ -396,10 +398,10 @@ export async function executeCreateTriplesBatch(
         account: address,
       } as const
 
-      await publicClient.simulateContract(simConfig)
+      await preflight(simConfig)
 
       const gas = await explicitGasLimit(
-        publicClient,
+        quickClient,
         simConfig,
         BigInt(batch.length) * 600_000n + 1_000_000n,
       )
