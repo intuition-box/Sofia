@@ -64,7 +64,16 @@ export function useLegacyMigration(
     enabled: addresses.length > 0,
     staleTime: 60_000,
   })
-  const exitedPages = useMemo(() => exitedQuery.data ?? [], [exitedQuery.data])
+  // Pages back on the market since the fetch (a just-mined Recommend in the
+  // optimistic overlay) are settled too
+  const exitedPages = useMemo(() => {
+    const held = new Set(
+      positions.flatMap((p) =>
+        p.kind === 'claim' && p.objectTermId ? [p.objectTermId] : [],
+      ),
+    )
+    return (exitedQuery.data ?? []).filter((p) => !held.has(p.objectTermId))
+  }, [exitedQuery.data, positions])
   const exitedValue = useMemo(
     () => exitedPages.reduce((sum, p) => sum + p.value, 0n),
     [exitedPages],

@@ -59,6 +59,9 @@ export interface CreateTripleResult {
    *  instead of minting a new one. UI surfaces this as "you backed an
    *  existing claim" rather than "you created a claim". */
   alreadyExisted?: boolean
+  /** Triples whose tx was mined — also on failure, when a later batch
+   *  failed: these must not be sent again. */
+  confirmedTermIds?: string[]
   error?: string
 }
 
@@ -238,6 +241,7 @@ export async function executeCreateTriplesBatch(
 ): Promise<CreateTripleResult> {
   if (items.length === 0) return { success: false, error: 'No items' }
 
+  const confirmed: string[] = []
   try {
     const { address, client } = await buildWalletClient(wallet)
 
@@ -366,7 +370,9 @@ export async function executeCreateTriplesBatch(
           return {
             success: false,
             error: 'createTriples batch reverted',
+            confirmedTermIds: confirmed,
           }
+        confirmed.push(...group.map((c) => c.tripleId))
         lastTxHash = hash
       }
     }
@@ -421,7 +427,9 @@ export async function executeCreateTriplesBatch(
         return {
           success: false,
           error: 'depositBatch on existing triples reverted',
+          confirmedTermIds: confirmed,
         }
+      confirmed.push(...termIds)
       lastTxHash = hash
     }
 
@@ -429,11 +437,13 @@ export async function executeCreateTriplesBatch(
       success: true,
       txHash: lastTxHash,
       alreadyExisted,
+      confirmedTermIds: confirmed,
     }
   } catch (err) {
     return {
       success: false,
       error: err instanceof Error ? err.message : String(err),
+      confirmedTermIds: confirmed,
     }
   }
 }
