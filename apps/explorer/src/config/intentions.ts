@@ -323,18 +323,18 @@ export const QUEST_BADGES: Record<string, QuestBadge> = {
 }
 
 /**
- * The verbs of a cert: a Recommend's intention tags (`work`, `learning`…),
- * else the legacy predicate's verb (`visits for work` → work, trusts /
- * recommends → trusted, distrust → distrusted).
+ * The verbs of a cert: its predicate's verb (`recommends` / `trusts` →
+ * Recommended, `visits for work` → work, distrust → distrusted), then a
+ * Recommend's intention tags (`work`, `learning`…).
  */
 export function certVerbs(cert: {
   intention: string
   intentionTags?: readonly string[]
 }): IntentionType[] {
-  const tags = (cert.intentionTags ?? []).filter(
-    (t): t is IntentionType => t in INTENTION_CONFIG,
-  )
-  if (tags.length > 0) return tags
   const verb = predicateLabelToIntentionType(cert.intention)
-  return verb ? [verb] : []
+  const tags = (cert.intentionTags ?? []).filter(
+    (t): t is IntentionType => t in INTENTION_CONFIG && t !== verb,
+  )
+  // A Recommend is always Recommended, its intention tags add to it
+  return verb ? [verb, ...tags] : tags
 }

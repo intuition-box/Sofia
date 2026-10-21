@@ -5,7 +5,7 @@
  * support/oppose thumbs + intent verb chips.
  */
 import type { CircleItem } from '@/services/circleService'
-import { INTENTION_COLORS } from '@/config/intentions'
+import { INTENTION_COLORS, INTENTION_CONFIG } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
 import FeedCardView, {
@@ -94,13 +94,16 @@ export default function FeedCard({
     ...categoryPills(item.categorySlugs ?? []),
   ]
 
-  // The "in context of" subject is a cert triple term_id; a cert can hold
-  // several (one per intention vault). Pick the first deterministically so the
-  // cart dedupe id is stable across re-renders.
-  const certTermId = Object.values(item.intentionVaults)
-    .map((v) => v.termId)
-    .filter(Boolean)
-    .sort()[0]
+  // The "in context of" subject is a cert triple term_id; a page can hold
+  // several (the Recommend + legacy claims). Tags go on the Recommend (the
+  // page market); else the first one, deterministically, so the cart dedupe
+  // id is stable across re-renders.
+  const certTermId =
+    item.intentionVaults[INTENTION_CONFIG.trusted.label]?.termId ||
+    Object.values(item.intentionVaults)
+      .map((v) => v.termId)
+      .filter(Boolean)
+      .sort()[0]
 
   return (
     <FeedCardView

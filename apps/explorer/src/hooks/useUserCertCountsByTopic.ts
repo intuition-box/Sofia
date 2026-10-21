@@ -63,7 +63,12 @@ export function useUserCertCounts(
       const label = cert.intention.trim().toLowerCase()
       // Trust/distrust are their own circle slices — never topic-scoped,
       // so handle them before the topic/no-context split.
-      if (label === 'trusts') {
+      // Recommended: legacy `trusts`, and a Recommend with no topic yet
+      // (a topic-tagged Recommend counts under its topic)
+      if (
+        label === 'trusts' ||
+        (label === 'recommends' && cert.topicSlugs.length === 0)
+      ) {
         trusted += 1
         continue
       }

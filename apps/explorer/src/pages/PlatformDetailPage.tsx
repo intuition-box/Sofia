@@ -45,6 +45,7 @@ import '@/components/styles/topic-search.css'
 // toolbar isn't flex, so the search goes full-width and the Invest button
 // wraps below instead of sharing the row.
 import '@/components/styles/profile-sections.css'
+import { certVerbs, INTENTION_CONFIG } from '@/config/intentions'
 
 /** Domain → catalog slug, mirroring `utils/favicon.ts` so a `/profile/platform/youtube.com`
  *  URL resolves to the same `youtube` slug used in PLATFORM_ATOM_IDS. */
@@ -202,7 +203,11 @@ export default function PlatformDetailPage() {
     return platformCerts.filter((c) => {
       const label = (c.objectLabel || '').toLowerCase()
       const url = (c.objectUrl || '').toLowerCase()
-      const verb = (c.intention || '').toLowerCase()
+      // Recommended + intention tags, as shown on the cards
+      const verb = certVerbs(c)
+        .map((t) => INTENTION_CONFIG[t].label)
+        .join(' ')
+        .toLowerCase()
       return label.includes(q) || url.includes(q) || verb.includes(q)
     })
   }, [platformCerts, query])

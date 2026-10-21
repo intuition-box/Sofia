@@ -46,6 +46,7 @@ import type {
 import '@/components/styles/pages.css'
 import '@/components/styles/platform-market.css'
 import '@/components/styles/market-pages.css'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
 
 const SECTIONS: { kind: MarketPositionKind; title: string }[] = [
   { kind: 'platform', title: 'Platforms' },
@@ -72,7 +73,12 @@ function describe(p: MarketPosition): string {
   const type = p.predicateLabel
     ? predicateLabelToIntentionType(p.predicateLabel)
     : null
-  const claim = type ? INTENTION_CONFIG[type].label : (p.predicateLabel ?? '')
+  const label = type ? INTENTION_CONFIG[type].label : (p.predicateLabel ?? '')
+  // Old one-claim-per-intention positions: still valid, flagged as legacy
+  const claim =
+    p.predicateLabel && isLegacyPagePredicate(p.predicateLabel)
+      ? `Legacy · ${label}`
+      : label
   return [p.subjectLabel, claim, p.domain].filter(Boolean).join(' · ')
 }
 

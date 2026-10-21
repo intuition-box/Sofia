@@ -21,7 +21,11 @@ import { getFaviconUrl } from '@/utils/favicon'
 import { cleanLabel } from '@/utils/formatting'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { VerbPill } from './profile/FeedPills'
-import { INTENTION_COLORS } from '@/config/intentions'
+import {
+  certVerbs,
+  INTENTION_COLORS,
+  INTENTION_CONFIG,
+} from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { TopicChip, Verb } from '@/types/profileChips'
 import type { Address } from 'viem'
@@ -276,19 +280,18 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
       // Verb chip per intention — same colored-pill language as the
       // Echoes cards. `cssClass` maps to the intent palette; an empty
       // class falls back to the neutral accent for unknown predicates.
-      let verbLabel = 'Certified'
-      if (intentionLower === 'trusts' || intentionLower === 'recommends')
-        verbLabel = 'Recommended'
-      else if (isOppose) verbLabel = 'Distrusted'
-      else if (intentionLower.startsWith('visits for ')) {
-        const tail = intentionLower.slice('visits for '.length).trim()
-        verbLabel = tail.charAt(0).toUpperCase() + tail.slice(1)
-      }
-      // Color from the DS intention palette (keyed by label); unknown
-      // labels (e.g. "Certified") fall through to the neutral pill.
+      // Recommended + its intention tags ("Recommended · Work"), or the
+      // legacy claim's verb
+      const verbTypes = certVerbs(c)
+      const verbLabel = verbTypes.length
+        ? verbTypes.map((t) => INTENTION_CONFIG[t].label).join(' · ')
+        : 'Certified'
+      // Color of the first verb; unknown predicates fall through to neutral.
       const verb: Verb = {
         label: verbLabel,
-        color: INTENTION_COLORS[verbLabel],
+        color: verbTypes.length
+          ? INTENTION_CONFIG[verbTypes[0]].color
+          : INTENTION_COLORS[verbLabel],
       }
       return {
         id: c.termId,

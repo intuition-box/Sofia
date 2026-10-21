@@ -16,13 +16,14 @@ import { INTENTION_ICONS } from '../../config/intentionIcons'
 import { TOPIC_META } from '../../config/topicMeta'
 import { TopicPill } from '../profile/FeedPills'
 
+// A page is Recommended; work, learning… are optional tags saying why
 const INTENTIONS: IntentionType[] = [
+  'trusted',
   'work',
   'learning',
   'fun',
   'inspiration',
   'buying',
-  'trusted',
 ]
 const TOPICS: { slug: string; label: string }[] = [
   { slug: 'web3-crypto', label: 'Web3' },
@@ -35,7 +36,7 @@ export default function FeedPillsDemo() {
   return (
     <>
       <div className="phint-group">
-        <p className="phint-group-title">Intentions</p>
+        <p className="phint-group-title">Recommended · why</p>
         <div className="phint-pills" aria-hidden="true">
           {INTENTIONS.map((type) => {
             const cfg = INTENTION_CONFIG[type]

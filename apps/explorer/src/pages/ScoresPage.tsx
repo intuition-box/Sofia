@@ -61,6 +61,7 @@ import { ScoresDonut, type Seg } from '@/components/scores/ScoresDonut'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/pages.css'
 import '@/components/styles/scores-constellation.css'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
 
 const VERBS: {
   id: IntentionType
@@ -484,11 +485,14 @@ export default function ScoresPage() {
           if (url) window.open(url, '_blank', 'noopener,noreferrer')
         }}
         addContextSlot={
-          <ContextPicker
-            certTermId={cert.termId}
-            certTitle={cleanLabel(cert.objectLabel || domain || '')}
-            existingTopics={cert.contextSlugs}
-          />
+          // Tags go on the page market — a legacy claim migrates instead
+          isLegacyPagePredicate(cert.intention) ? undefined : (
+            <ContextPicker
+              certTermId={cert.termId}
+              certTitle={cleanLabel(cert.objectLabel || domain || '')}
+              existingTopics={cert.contextSlugs}
+            />
+          )
         }
         isOwner
         onDelete={() =>

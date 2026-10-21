@@ -13,6 +13,7 @@ import { useMemo } from 'react'
 import { useUserOnChainProfile } from './useUserOnChainProfile'
 import type { UserCert } from '@/services/userOnChainProfileService'
 import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
 
 /** Predicate labels that count as a "tagable" certification — trust /
  *  distrust signals aren't URL claims, so we exclude them from the
@@ -38,8 +39,12 @@ export function useUntaggedCerts(
   const { profile, isLoading } = useUserOnChainProfile(addresses)
 
   return useMemo(() => {
-    const tagable = profile.certs.filter((c) =>
-      TAGGABLE_LABELS.has(c.intention.trim().toLowerCase()),
+    // Only the page market gets tags now — legacy claims are migrated,
+    // not tagged (a tag would land on the old claim)
+    const tagable = profile.certs.filter(
+      (c) =>
+        TAGGABLE_LABELS.has(c.intention.trim().toLowerCase()) &&
+        !isLegacyPagePredicate(c.intention),
     )
     const untagged = tagable
       .filter((c) => c.topicSlugs.length === 0)

@@ -201,7 +201,10 @@ export default function DashboardPage() {
       ? spaceFiltered.filter((item) => item.topicContexts.includes(drill.id))
       : spaceFiltered.filter((item) =>
           item.intentions.some(
-            (i) => i.toLowerCase() === drill.id.toLowerCase(),
+            // Labels ("Recommended", "Work") → their verb id ("trusted", …)
+            (i) =>
+              (displayLabelToIntentionType(i) ?? i.toLowerCase()) ===
+              drill.id.toLowerCase(),
           ),
         )
 

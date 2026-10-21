@@ -18,6 +18,7 @@ import ContextPicker from '@/components/ContextPicker'
 import { categoryPills } from '@/config/contextNodes'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import '@/components/styles/feed-card.css'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
 
 interface CertFeedCardProps {
   cert: UserCert
@@ -46,18 +47,16 @@ export default function CertFeedCard({
   const { redeemCert } = useRedeemCert()
   const url = cert.objectUrl || ''
   const domain = extractDomain(url) || extractDomain(cert.objectLabel) || ''
-  const intentType = certVerbs(cert)[0] ?? null
-  const verbCfg = intentType ? INTENTION_CONFIG[intentType] : undefined
-  const VerbIcon = intentType ? INTENTION_ICONS[intentType] : null
-  const verbs: FeedCardVerb[] = verbCfg
-    ? [
-        {
-          label: verbCfg.label,
-          color: verbCfg.color,
-          icon: VerbIcon ? <VerbIcon className="fc-verb-ic" /> : undefined,
-        },
-      ]
-    : []
+  // Recommended + its intention tags (or the legacy claim's verb)
+  const verbs: FeedCardVerb[] = certVerbs(cert).map((type) => {
+    const cfg = INTENTION_CONFIG[type]
+    const VerbIcon = INTENTION_ICONS[type]
+    return {
+      label: cfg.label,
+      color: cfg.color,
+      icon: VerbIcon ? <VerbIcon className="fc-verb-ic" /> : undefined,
+    }
+  })
   // Rolled-up topic pills + the precise category pills (parent topic glyph).
   const topics: FeedCardTopic[] = [
     ...cert.topicSlugs
@@ -96,7 +95,8 @@ export default function CertFeedCard({
         if (url) window.open(url, '_blank', 'noopener,noreferrer')
       }}
       addContextSlot={
-        isOwner ? (
+        // Tags go on the page market — a legacy claim migrates instead
+        isOwner && !isLegacyPagePredicate(cert.intention) ? (
           <ContextPicker
             certTermId={cert.termId}
             certTitle={title}
