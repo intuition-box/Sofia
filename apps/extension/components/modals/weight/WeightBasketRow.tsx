@@ -15,8 +15,8 @@ import type { ModalTriplet } from "~/hooks"
 import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { getFaviconUrl } from "~/lib/utils"
 import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType
+  cartItemVerb,
+  INTENTION_CONFIG
 } from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
@@ -72,13 +72,12 @@ export default function WeightBasketRow({
   onWeightSelect
 }: WeightBasketRowProps) {
   const name = triplet.description || triplet.triplet.object
-  const intentKey: IntentionType | null = triplet.intention
-    ? (((triplet.intention as string) in INTENTION_CONFIG
-        ? triplet.intention
-        : triplet.intention.replace(/^for_/, "")) as IntentionType)
-    : // Trust / distrust rows carry no `intention` —
-      // resolve the verb from the predicate label.
-      predicateLabelToIntentionType(triplet.triplet.predicate)
+  // Page market rows read Recommended / Distrusted; intentions are tags
+  const intentKey: IntentionType | null = cartItemVerb({
+    predicateName: triplet.triplet.predicate,
+    intention: triplet.intention,
+    side: triplet.side
+  })
   const intentEntry =
     intentKey && intentKey in INTENTION_CONFIG
       ? INTENTION_CONFIG[intentKey]

@@ -38,7 +38,10 @@ import "../../styles/CategoryStyles.css"
 import { TopicPill, VerbTag } from "@0xsofia/design-system"
 
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
-import { predicateLabelToIntentionType } from "~/types/intentionCategories"
+import {
+  INTENTION_CONFIG,
+  predicateLabelToIntentionType
+} from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
 const logger = createHookLogger("HistoryTab")
@@ -322,10 +325,18 @@ const HistoryTab = ({
             )
             const titleLabel =
               tripletItem.triplet.object || tripletItem.url || ""
-            const contexts = tripletItem.url
+            const entry = tripletItem.url
               ? getCertificationForUrl(certifications, tripletItem.url)
-                  ?.interestContexts ?? []
-              : []
+              : null
+            // Topic tags + the Recommend's intention tags ("For work")
+            const contexts = [
+              ...(entry?.interestContexts ?? []),
+              ...(tripletItem.triplet.predicate === "recommends"
+                ? (entry?.intentions ?? []).map(
+                    (p) => `intent:${p.replace(/^for_/, "")}`
+                  )
+                : [])
+            ]
 
             return (
               <div
@@ -359,7 +370,7 @@ const HistoryTab = ({
                           return (
                             <VerbTag
                               intent={intent}
-                              label={intent}
+                              label={INTENTION_CONFIG[intent].label}
                               icon={
                                 Icon ? (
                                   <Icon className="fc-verb-ic" />

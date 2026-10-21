@@ -11,6 +11,7 @@ import {
   type GetUserPositionsQuery,
 } from '@0xsofia/graphql'
 import { SUBJECT_IDS } from '../config'
+import { TAGGABLE_PAGE_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 // ── Types ──
 
@@ -58,7 +59,7 @@ export async function fetchSignalsCount(addresses: string[]): Promise<number> {
 /**
  * Fetch user's on-chain positions (vault shares), unioned across all linked
  * wallets. Each position = user has deposited into an atom or triple vault.
- * Triple positions with "visits for *" predicates = certifications.
+ * Triple positions on page claims = certifications.
  */
 export async function fetchUserProfile(
   addresses: string[],
@@ -103,9 +104,12 @@ export async function fetchUserProfile(
     (p: PositionRaw) => p.vault?.term?.atom && !p.vault?.term?.triple,
   )
 
-  // Certifications = triple positions with "visits for" predicates
+  // Certifications = triple positions on page claims (the `recommends`
+  // market + legacy intention claims)
   const certifications = triplePositions.filter((p: PositionRaw) =>
-    p.vault?.term?.triple?.predicate?.label?.startsWith('visits for'),
+    TAGGABLE_PAGE_PREDICATE_LABELS.includes(
+      p.vault?.term?.triple?.predicate?.label ?? '',
+    ),
   )
 
   // Verified platforms from social link triples

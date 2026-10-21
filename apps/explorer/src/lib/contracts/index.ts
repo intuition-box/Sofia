@@ -7,3 +7,11 @@ export {
 export { SofiaFeeProxyAbi } from './sofiaFeeProxy'
 export { MultiVaultAbi } from './multiVault'
 export { explicitGasLimit } from './gasLimit'
+export {
+  pacedClient,
+  paced,
+  preflight,
+  quickClient,
+  isRateLimited,
+} from './pacedClient'
+export { calculateTripleId, calculateCounterId } from './termIds'

@@ -159,6 +159,15 @@ describe('rankTrendingPages', () => {
 })
 
 describe('claimSource', () => {
+  it('marks the page market from Sofia I as Sofia', () => {
+    expect(
+      claimSource({
+        subject_id: SOFIA_I_ATOM_ID,
+        predicate: { label: 'recommends' },
+      }),
+    ).toBe('sofia')
+  })
+
   it('marks Sofia predicates as Sofia and canonical ones as ecosystem', () => {
     expect(
       claimSource({
@@ -413,11 +422,12 @@ describe('buildTrendingPages', () => {
 
 describe('predicate sets', () => {
   it('keeps the two ranking walks disjoint', () => {
-    // trusts is covered by the Sofia walk (by label) — not walked twice.
+    // trusts and recommends (the page market) are covered by the Sofia walk
+    // (by label) — not walked twice.
     expect(ECOSYSTEM_PREDICATE_IDS).not.toContain(
       CANONICAL_PREDICATE_IDS.trusts,
     )
-    expect(ECOSYSTEM_PREDICATE_IDS).toContain(
+    expect(ECOSYSTEM_PREDICATE_IDS).not.toContain(
       CANONICAL_PREDICATE_IDS.recommends,
     )
     expect(ECOSYSTEM_PREDICATE_IDS).toContain(CANONICAL_PREDICATE_IDS.follow)

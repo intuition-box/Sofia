@@ -45,6 +45,9 @@ export interface TripleOnChainResult extends BlockchainResult {
   objectVaultId: string
   source: 'created' | 'existing' | 'deposit'
   tripleHash: string
+  /** Set on oppose positions (the stake went to the counter vault) */
+  side?: 'support' | 'oppose'
+  counterVaultId?: string
 }
 
 // Batch operations
@@ -52,6 +55,8 @@ export interface BatchTripleInput {
   predicateName: string
   objectData: AtomIPFSData
   customWeight?: bigint
+  /** oppose = position on the claim's counter vault */
+  side?: 'support' | 'oppose'
   /** Existing object atom term_id to deposit on (from the Add-to-Sofia title
    *  search). When set, the batch skips creating an object atom from objectData. */
   objectTermId?: string
@@ -114,4 +119,6 @@ export interface ModalTriplet {
   interestContext?: string | null
   /** All context slugs (topics and/or categories) for multi-pill display. */
   interestContexts?: string[]
+  /** Page market side — oppose = Distrust */
+  side?: "support" | "oppose"
 }

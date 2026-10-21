@@ -35,7 +35,7 @@ export const VERB_FILTER_OPTIONS: FilterOptionConfig[] = (
   id,
   label: cfg.label,
   color: cfg.color,
-  // Same lucide glyph as the modal + IntentionSelector (shared source).
+  // Same lucide glyph as the modal + intention pills (shared source).
   node: createElement(INTENTION_ICONS[id], {
     size: 14,
     style: { color: cfg.color }

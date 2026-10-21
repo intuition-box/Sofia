@@ -45,6 +45,10 @@ export { useUserCertifications, getCertificationForUrl } from './useUserCertific
 export { useTrendingCertifications } from './useTrendingCertifications'
 export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTrendingCertifications'
 export { usePagePositions } from './usePagePositions'
+export { usePageMarket } from './usePageMarket'
+export { usePageHints } from './usePageHints'
+export { usePageCartActions } from './usePageCartActions'
+export type { UsePageMarketResult } from './usePageMarket'
 
 // Onboarding
 export { useOnboardingClaim } from './useOnboardingClaim'

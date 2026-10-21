@@ -24,6 +24,11 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import PositionsHero from '@/components/profile/PositionsHero'
+import PortfolioChart from '@/components/positions/PortfolioChart'
+import LegacyMigrationBanner from '@/components/positions/LegacyMigrationBanner'
+import DiscoveriesCard from '@/components/positions/DiscoveriesCard'
+import { useDiscoveries } from '@/hooks/useDiscoveries'
+import { useLegacyMigration } from '@/hooks/useLegacyMigration'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import {
@@ -41,6 +46,7 @@ import type {
 import '@/components/styles/pages.css'
 import '@/components/styles/platform-market.css'
 import '@/components/styles/market-pages.css'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
 
 const SECTIONS: { kind: MarketPositionKind; title: string }[] = [
   { kind: 'platform', title: 'Platforms' },
@@ -67,7 +73,12 @@ function describe(p: MarketPosition): string {
   const type = p.predicateLabel
     ? predicateLabelToIntentionType(p.predicateLabel)
     : null
-  const claim = type ? INTENTION_CONFIG[type].label : (p.predicateLabel ?? '')
+  const label = type ? INTENTION_CONFIG[type].label : (p.predicateLabel ?? '')
+  // Old one-claim-per-intention positions: still valid, flagged as legacy
+  const claim =
+    p.predicateLabel && isLegacyPagePredicate(p.predicateLabel)
+      ? `Legacy · ${label}`
+      : label
   return [p.subjectLabel, claim, p.domain].filter(Boolean).join(' · ')
 }
 
@@ -90,6 +101,8 @@ export default function PositionsPage() {
     refresh,
   } = useUserPositions(rawAddress ? resolved.address : undefined)
   const { platformById } = usePlatformCatalog()
+  const migration = useLegacyMigration(walletAddress, positions)
+  const discoveries = useDiscoveries(walletAddress, positions)
   const { redeemCert } = useRedeemCert()
 
   const ownAddress = authenticated ? user?.wallet?.address : undefined
@@ -245,6 +258,25 @@ export default function PositionsPage() {
         background={pc.color}
       />
 
+      <PortfolioChart walletAddress={walletAddress} positions={positions} />
+
+      {isOwn && (
+        <LegacyMigrationBanner
+          pageCount={migration.pageCount}
+          movableCount={migration.movableCount}
+          value={migration.legacyValue}
+          selectedCount={migration.selectedCount}
+          threshold={migration.threshold}
+          onThreshold={migration.setThreshold}
+          estimate={migration.estimate}
+          status={migration.status}
+          onMove={() => void migration.move()}
+          exitedCount={migration.exitedPages.length}
+          exitedValue={migration.exitedValue}
+          onRequeue={migration.requeueExited}
+        />
+      )}
+
       <section className="mk-summary" aria-label="Positions summary">
         <div className="mk-summary-stat">
           <span className="mk-summary-value">
@@ -283,6 +315,13 @@ export default function PositionsPage() {
           </span>
         </div>
       </section>
+
+      <DiscoveriesCard
+        isOwn={isOwn}
+        discoveries={discoveries.discoveries}
+        followers={discoveries.followers}
+        change={discoveries.change}
+      />
 
       <div className="mk-toolbar">
         <button

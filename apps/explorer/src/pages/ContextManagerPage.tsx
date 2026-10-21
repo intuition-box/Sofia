@@ -18,7 +18,7 @@ import { useUntaggedCerts } from '@/hooks/useUntaggedCerts'
 import { useCart } from '@/hooks/useCart'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
-import { LABEL_TO_INTENTION } from '@/config/intentions'
+import { certVerbs, INTENTION_CONFIG } from '@/config/intentions'
 import UntaggedCertCard from '@/components/profile/UntaggedCertCard'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/pages.css'
@@ -52,8 +52,11 @@ export default function ContextManagerPage() {
       const url = c.objectUrl || c.objectLabel || ''
       const domain = extractDomain(url) || 'other'
       const title = c.objectLabel || domain
-      const intentionLabel =
-        LABEL_TO_INTENTION[c.intention.trim().toLowerCase()] ?? c.intention
+      // Recommended + its intention tags ("Recommended · Work")
+      const verbs = certVerbs(c)
+      const intentionLabel = verbs.length
+        ? verbs.map((t) => INTENTION_CONFIG[t].label).join(' · ')
+        : c.intention
       const row = {
         termId: c.termId,
         title,

@@ -13,6 +13,7 @@
  * Host component owns the surrounding overlay and is responsible for calling onClose.
  */
 
+import { CATEGORY_TO_TOPIC, isIntentionTagSlug } from "@0xsofia/taxonomy"
 import { FeedCardView, UserBadge, VerbTag } from "@0xsofia/design-system"
 import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
 import { useGetTriplesWithPositionsQuery } from "@0xsofia/graphql"
@@ -34,8 +35,8 @@ import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
 import { createHookLogger, getFaviconUrl } from "~/lib/utils"
 import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType
+  cartItemVerb,
+  INTENTION_CONFIG
 } from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
@@ -471,18 +472,17 @@ const BatchRewardContent = ({
     const item = reward.item
     const tierLower = reward.tier.toLowerCase() as UserBadgeTier
     const title = item.pageTitle || item.normalizedUrl
-    const intentKey: IntentionType | null = item.intention
-      ? (((item.intention as string) in INTENTION_CONFIG
-          ? item.intention
-          : (item.intention as string).replace(/^for_/, "")) as IntentionType)
-      : predicateLabelToIntentionType(item.predicateName)
+    const intentKey: IntentionType | null = cartItemVerb(item)
     const intentEntry =
       intentKey && intentKey in INTENTION_CONFIG
         ? INTENTION_CONFIG[intentKey]
         : null
-    const topic = item.interestContext
-      ? TOPIC_LABELS[item.interestContext]
-      : null
+    // First real topic among the tags (intention tags aren't expertise)
+    const topicSlug = (item.interestContexts ?? [item.interestContext])
+      .filter((s): s is string => !!s && !isIntentionTagSlug(s))
+      .map((s) => (TOPIC_LABELS[s] ? s : CATEGORY_TO_TOPIC[s]))
+      .find((s) => !!s && !!TOPIC_LABELS[s])
+    const topic = topicSlug ? TOPIC_LABELS[topicSlug] : null
     const circleStack = circleAccounts.slice(0, 3)
     const circleOverflow = Math.max(
       0,
@@ -712,14 +712,7 @@ const BatchRewardContent = ({
             {rewards.slice(0, 8).map((reward) => {
               const item = reward.item
               const title = item.pageTitle || item.normalizedUrl
-              const intentKey: IntentionType | null = item.intention
-                ? (((item.intention as string) in INTENTION_CONFIG
-                    ? item.intention
-                    : (item.intention as string).replace(
-                        /^for_/,
-                        ""
-                      )) as IntentionType)
-                : predicateLabelToIntentionType(item.predicateName)
+              const intentKey: IntentionType | null = cartItemVerb(item)
               const intentEntry =
                 intentKey && intentKey in INTENTION_CONFIG
                   ? INTENTION_CONFIG[intentKey]

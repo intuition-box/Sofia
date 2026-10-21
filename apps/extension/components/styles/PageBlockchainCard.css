@@ -104,10 +104,17 @@
 
 .website-header-section {
   margin-bottom: 0;
+  /* The rise animation (fill: both) keeps a transform on each section, so
+     each one is its own stacking context and the later Stats section would
+     paint over the tag suggestions — keep the header section on top. */
+  position: relative;
+  z-index: 2;
 }
 
 .credibility-content {
   color: var(--color-text-secondary, var(--ds-ink));
+  position: relative;
+  z-index: 1;
 }
 
 .credibility-analysis {
@@ -190,6 +197,24 @@
   color: var(--ds-ink);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.actions-panel-toggle {
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.actions-panel-chevron {
+  color: var(--ds-muted);
+  transition: transform 0.2s ease;
+}
+
+.actions-panel-chevron.is-open {
+  transform: rotate(180deg);
 }
 
 /* Breathing space before the metrics panel below */

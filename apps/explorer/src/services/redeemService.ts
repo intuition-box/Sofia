@@ -11,6 +11,11 @@ import {
   MULTI_VAULT_ADDRESS,
   MultiVaultAbi,
   explicitGasLimit,
+  isRateLimited,
+  paced,
+  pacedClient,
+  quickClient,
+  preflight,
 } from '../lib/contracts'
 import type { WalletDescriptor } from './depositService'
 
@@ -186,7 +191,7 @@ export async function redeemAtom(
     } as const
     await publicClient.simulateContract(batchConfig)
     const batchGas = await explicitGasLimit(
-      publicClient,
+      quickClient,
       batchConfig,
       2_000_000n,
     )
@@ -221,9 +226,9 @@ export async function redeemAtom(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
-  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+  const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
 
   const hash = await walletClient.writeContract({
     ...simConfig,
@@ -289,10 +294,10 @@ export async function redeemBatchAtoms(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
   const gas = await explicitGasLimit(
-    publicClient,
+    quickClient,
     simConfig,
     BigInt(valid.length) * 500_000n + 1_000_000n,
   )
@@ -304,6 +309,112 @@ export async function redeemBatchAtoms(
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  return receipt.status === 'success'
+    ? { success: true, txHash: hash }
+    : { success: false, error: 'Transaction reverted' }
+}
+
+// ---------------------------------------------------------------------------
+// Batch redeem across curves (legacy-position migration)
+// ---------------------------------------------------------------------------
+
+/** One vault × curve where the wallet holds shares */
+export interface RedeemLeg {
+  termId: string
+  curveId: bigint
+  shares: bigint
+}
+
+/** Reads per multicall round trip — the public RPC rate-limits bursts */
+const MULTICALL_CHUNK = 100
+/** Legs per redeemBatch transaction (large batches revert / hit gas) */
+export const REDEEM_BATCH_SIZE = 100
+
+/** The wallet's funded legs on these vaults, both curves — multicall in
+ *  chunks (one RPC call per 100 reads, not one per read). */
+export async function findFundedLegs(
+  account: string,
+  termIds: readonly string[],
+): Promise<RedeemLeg[]> {
+  const pairs = [...new Set(termIds)].flatMap((termId) =>
+    REDEEM_CURVE_IDS.map((curveId) => ({ termId, curveId })),
+  )
+  const legs: RedeemLeg[] = []
+  for (let i = 0; i < pairs.length; i += MULTICALL_CHUNK) {
+    const chunk = pairs.slice(i, i + MULTICALL_CHUNK)
+    const results = await paced(() =>
+      pacedClient.multicall({
+        contracts: chunk.map(({ termId, curveId }) => ({
+          address: MULTI_VAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'getShares' as const,
+          args: [account as `0x${string}`, termId as `0x${string}`, curveId],
+        })),
+        authorizationList: undefined,
+        batchSize: 0,
+      }),
+    )
+    chunk.forEach((pair, j) => {
+      const r = results[j]
+      const shares = r.status === 'success' ? (r.result as bigint) : 0n
+      if (shares > 0n) legs.push({ ...pair, shares })
+    })
+  }
+  return legs
+}
+
+/** Exit every leg in ONE transaction (redeem, or redeemBatch for several) */
+export async function redeemLegs(
+  wallet: WalletDescriptor,
+  legs: readonly RedeemLeg[],
+): Promise<RedeemResult> {
+  if (legs.length === 0) return { success: true, noop: true }
+
+  await wallet.switchChain(intuitionChain.id)
+  const provider = await wallet.getEthereumProvider()
+  const address = wallet.address as `0x${string}`
+  const walletClient = createWalletClient({
+    account: address,
+    chain: intuitionChain,
+    transport: custom(provider),
+  })
+
+  const args = [
+    address,
+    legs.map((l) => l.termId as `0x${string}`),
+    legs.map((l) => l.curveId),
+    legs.map((l) => l.shares),
+    legs.map(() => 0n),
+  ] as const
+  const simConfig = {
+    address: MULTI_VAULT_ADDRESS,
+    abi: MultiVaultAbi,
+    functionName: 'redeemBatch',
+    args,
+    account: address,
+  } as const
+
+  // Pre-flight read: catches a revert before the popup, but never blocks it
+  // — a throttled public RPC skips straight to the wallet (heuristic gas).
+  try {
+    await quickClient.simulateContract(simConfig)
+  } catch (err) {
+    if (!isRateLimited(err)) throw err
+  }
+  const gas = await explicitGasLimit(
+    quickClient,
+    simConfig,
+    BigInt(legs.length) * 500_000n + 1_000_000n,
+  )
+  const hash = await walletClient.writeContract({
+    ...simConfig,
+    gas,
+    chain: intuitionChain,
+  })
+  const receipt = await pacedClient.waitForTransactionReceipt({
+    hash,
+    pollingInterval: 4_000,
+  })
   return receipt.status === 'success'
     ? { success: true, txHash: hash }
     : { success: false, error: 'Transaction reverted' }

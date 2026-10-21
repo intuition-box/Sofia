@@ -17,14 +17,12 @@ import {
   calculateLevel,
   calculateLevelProgress,
   getEffectiveCertStatus,
-  getFaviconUrl,
   intentionToCertification
 } from "~/lib/utils"
 import type { GroupUrlRecord } from "~types/database"
 
 import {
   getCertificationForUrl,
-  useCart,
   useGroupOnChainCertifications,
   useIntentionCertify,
   useRedeemTriple,
@@ -36,9 +34,7 @@ import { intuitionGraphqlClient } from "../../lib/clients/graphql-client"
 import { cleanTitle } from "../../lib/utils/cleanTitle"
 import { createHookLogger } from "../../lib/utils/logger"
 import type { IntentionPurpose } from "../../types/discovery"
-import { INTENTION_PREDICATES } from "../../types/discovery"
 import WeightModal from "../modals/WeightModal"
-import { CartToast } from "./CartDrawer"
 import FilterDropdown from "./FilterDropdown"
 import GroupDetailHeader from "./group-detail/GroupDetailHeader"
 import UrlRow from "./group-detail/UrlRow"
@@ -73,14 +69,8 @@ const GroupDetailView = ({
   const [topicFilter, setTopicFilter] = useState<string>("all")
   const [uncertifiedOnly, setUncertifiedOnly] = useState(false)
 
-  // Cart
-  const cart = useCart()
-  const [cartToast, setCartToast] = useState<string | null>(null)
-
-  // Per-URL certifications used to surface already-certified contexts
-  // in the InterestContextSelector. Topic options come from topicConfig
-  // (all 14 topics) so the selector no longer depends on the user
-  // having on-chain positions.
+  // Per-URL certifications used to surface already-certified contexts on
+  // each row's badges.
   const { walletAddress } = useWalletFromStorage()
   const { certifications } = useUserCertifications(walletAddress)
   const getCertifiedContexts = useCallback(
@@ -122,68 +112,6 @@ const GroupDetailView = ({
     title?: string // Page title for atom name
   } | null>(null)
 
-
-  // Cart: add intention to cart
-  const handleAddToCart = async (
-    url: string,
-    intention: IntentionPurpose,
-    title?: string,
-    contexts?: string[]
-  ) => {
-    const predicateName = INTENTION_PREDICATES[intention]
-    const favicon = getFaviconUrl(url, 128)
-    const added = await cart.addToCart(
-      url,
-      title || null,
-      predicateName,
-      intention,
-      favicon,
-      contexts ?? []
-    )
-    setCartToast(added ? "Added to cart" : "Already in cart")
-  }
-
-  // Cart: add trust/distrust to cart
-  const handleAddTrustToCart = async (
-    url: string,
-    predicateName: string,
-    title?: string,
-    contexts?: string[]
-  ) => {
-    const favicon = getFaviconUrl(url, 128)
-    const added = await cart.addToCart(
-      url,
-      title || null,
-      predicateName,
-      null,
-      favicon,
-      contexts ?? []
-    )
-    setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
-  }
-
-  // Cart: remove a queued predicate for a URL (used when the intention
-  // dropdown switches or clears its selection).
-  const handleRemoveFromCart = (url: string, predicateName: string) => {
-    const item = cart.items.find(
-      (i) => i.url === url && i.predicateName === predicateName
-    )
-    if (item) cart.removeFromCart(item.id)
-  }
-
-  // Get cart predicates for a specific URL
-  const getCartPredicatesForUrl = (url: string): string[] => {
-    return cart.items
-      .filter((item) => item.url === url)
-      .map((item) => item.predicateName)
-  }
-
-  // Auto-dismiss cart toast
-  useEffect(() => {
-    if (!cartToast) return
-    const timer = setTimeout(() => setCartToast(null), 1500)
-    return () => clearTimeout(timer)
-  }, [cartToast])
 
   // On-chain certification hook
   const {
@@ -450,37 +378,16 @@ const GroupDetailView = ({
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onAddToCart={(intention, title, contexts) =>
-                handleAddToCart(urlRecord.url, intention, title, contexts)
-              }
-              onAddTrustToCart={(predicateName, title, contexts) =>
-                handleAddTrustToCart(
-                  urlRecord.url,
-                  predicateName,
-                  title,
-                  contexts
-                )
-              }
-              onRemoveFromCart={(predicateName) =>
-                handleRemoveFromCart(urlRecord.url, predicateName)
-              }
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={
                 processingUrls.has(urlRecord.url) || intentionLoading
               }
-              cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
               certifiedContexts={getCertifiedContexts(urlRecord.url)}
-              onContextChange={(contexts) =>
-                cart.updateContextForUrl(urlRecord.url, contexts)
-              }
             />
           ))
         )}
       </div>
-
-      {/* Cart toast notification */}
-      <CartToast message={cartToast} />
 
       {/* Weight Modal for on-chain certification (trust/distrust/oauth) */}
       {showWeightModal &&

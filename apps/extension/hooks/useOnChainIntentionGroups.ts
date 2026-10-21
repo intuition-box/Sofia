@@ -14,7 +14,11 @@ import { ALL_PREDICATE_IDS, PREDICATE_ID_TO_CERTIFICATION } from '../lib/config/
 import { createHookLogger } from '../lib/utils/logger'
 import { calculateLevel } from '../lib/utils'
 import { extractDomain } from '../lib/utils/domainUtils'
-import { GetUserIntentionPositionsDocument } from '@0xsofia/graphql'
+import {
+  GetContextTriplesDocument,
+  GetUserIntentionPositionsDocument
+} from '@0xsofia/graphql'
+import { intentionTagForAtom } from '@0xsofia/taxonomy'
 
 const logger = createHookLogger('useOnChainIntentionGroups')
 
@@ -100,6 +104,26 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
       const triples = response?.triples || []
       logger.debug('Found intention + OAuth triples with user positions', { count: triples.length })
 
+      // A Recommend (the page market) counts once per intention tag —
+      // exactly like the old one-claim-per-intention — or as `trusted`
+      const recommendIds = triples
+        .filter((t: { predicate?: { term_id?: string } }) => t.predicate?.term_id === PREDICATE_IDS.RECOMMENDS)
+        .map((t: { term_id?: string }) => t.term_id)
+        .filter(Boolean) as string[]
+      const tagsByClaim = new Map<string, string[]>()
+      for (let i = 0; i < recommendIds.length; i += 200) {
+        const ctx = await intuitionGraphqlClient.request(GetContextTriplesDocument, {
+          subjectIds: recommendIds.slice(i, i + 200)
+        })
+        for (const row of ctx?.triples ?? []) {
+          const tag = row.object ? intentionTagForAtom(row.object) : undefined
+          if (!tag || !row.subject_id) continue
+          const keys = tagsByClaim.get(row.subject_id) ?? []
+          if (!keys.includes(tag.key)) keys.push(tag.key)
+          tagsByClaim.set(row.subject_id, keys)
+        }
+      }
+
       // Group by domain
       const domainMap = new Map<string, OnChainUrl[]>()
 
@@ -117,28 +141,32 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
         }
 
         const predicateId = triple.predicate?.term_id || ''
-        const certification = PREDICATE_ID_TO_CERTIFICATION[predicateId] || 'unknown'
         const position = triple.positions?.[0]
-
-        const urlRecord: OnChainUrl = {
-          url: urlSource.startsWith('http') ? urlSource : `https://${urlSource}`,
-          label,
-          certification,
-          predicateId,
-          shares: position?.shares || '0',
-          certifiedAt: position?.created_at || '',
-          termId: triple.term_id || ''
-        }
+        const tagKeys = tagsByClaim.get(triple.term_id || '')
+        const certifications = tagKeys?.length
+          ? tagKeys
+          : [PREDICATE_ID_TO_CERTIFICATION[predicateId] || 'unknown']
 
         if (!domainMap.has(domain)) {
           domainMap.set(domain, [])
         }
-
-        // Check for duplicates (same URL might have multiple certifications)
         const existingUrls = domainMap.get(domain)!
-        const existing = existingUrls.find(u => u.url === urlRecord.url && u.certification === urlRecord.certification)
-        if (!existing) {
-          existingUrls.push(urlRecord)
+
+        for (const certification of certifications) {
+          const urlRecord: OnChainUrl = {
+            url: urlSource.startsWith('http') ? urlSource : `https://${urlSource}`,
+            label,
+            certification,
+            predicateId,
+            shares: position?.shares || '0',
+            certifiedAt: position?.created_at || '',
+            termId: triple.term_id || ''
+          }
+          // Check for duplicates (same URL might have multiple certifications)
+          const existing = existingUrls.find(u => u.url === urlRecord.url && u.certification === urlRecord.certification)
+          if (!existing) {
+            existingUrls.push(urlRecord)
+          }
         }
       }
 

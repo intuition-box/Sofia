@@ -46,9 +46,7 @@
 /* Verb pills (`.fc-verb-tag`) + feed-card verb chips (`.fc-verb-tag--sm`) now
    use the canonical DS look (outlined — intent-colored text + border + icon,
    transparent fill) straight from verb-tag.css. The extension's old filled /
-   white-ink overrides were removed during the pill unification. The only
-   surface that keeps a filled chip is the Categorisation dropdown, which owns
-   its self-contained `.ext-cat-chip` (CategorisationDropdown.css). */
+   white-ink overrides were removed during the pill unification. */
 
 /* Reset CSS global */
 * {

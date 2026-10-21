@@ -41,16 +41,19 @@ function message(err: unknown): string | null {
   return err instanceof Error ? err.message : String(err)
 }
 
+/** Window ranking query — shared (same cache entry) with useMissions */
+export const trendingRankingQuery = (timeWindow: TrendingWindow) => ({
+  queryKey: ['trending-pages-ranking', CACHE_VERSION, timeWindow],
+  queryFn: () => fetchWithRetry(() => fetchTrendingRanking(timeWindow)),
+  staleTime: STALE,
+  gcTime: GC,
+  refetchOnWindowFocus: false,
+})
+
 export function useTrendingPages(
   timeWindow: TrendingWindow,
 ): UseTrendingPagesResult {
-  const ranking = useQuery({
-    queryKey: ['trending-pages-ranking', CACHE_VERSION, timeWindow],
-    queryFn: () => fetchWithRetry(() => fetchTrendingRanking(timeWindow)),
-    staleTime: STALE,
-    gcTime: GC,
-    refetchOnWindowFocus: false,
-  })
+  const ranking = useQuery(trendingRankingQuery(timeWindow))
   const ranks = useMemo(() => ranking.data?.ranks ?? [], [ranking.data])
 
   const firstSlice = useMemo(() => ranks.slice(0, BATCH_SIZE), [ranks])

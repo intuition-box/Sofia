@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePinThingMutation } from '@0xsofia/graphql'
@@ -18,9 +18,20 @@ import { EXPLORER_URL, PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from '../config'
 import { addOptimisticTrust } from '../lib/realtime/optimisticTrust'
 import {
   ATOM_ID_TO_TOPIC,
+  CANONICAL_PREDICATE_IDS,
   HAS_TAG_PREDICATE_ID,
   TOPIC_ATOM_IDS,
 } from '../config/atomIds'
+import {
+  markPositionsAdded,
+  markPositionsExited,
+  pendingPosition,
+  userPositionsKey,
+} from '../lib/realtime/optimisticPositions'
+import type {
+  MarketPosition,
+  UserPositionsResult,
+} from '../services/userPositionsService'
 import { SOFIA_TOPICS } from '../config/taxonomy'
 import { TopicPill, VerbPill } from './profile/FeedPills'
 import {
@@ -29,7 +40,14 @@ import {
   type BatchCreateTripleItem,
   type CreateTripleResult,
 } from '../services/tripleCreationService'
-import { redeemAtom, type RedeemPercent } from '../services/redeemService'
+import {
+  redeemAtom,
+  redeemLegs,
+  REDEEM_BATCH_SIZE,
+  type RedeemLeg,
+  type RedeemPercent,
+} from '../services/redeemService'
+import type { BatchDepositItem } from '../services/depositService'
 import { clearOptimisticPosition } from '../lib/realtime/derivations'
 import {
   executeCreateAtomsBatch,
@@ -109,6 +127,18 @@ interface WeightModalProps {
   onRemove?: (id: string) => void
 }
 
+/** Rows that take TRUST out instead of depositing */
+const isExitItem = (it: CartItem) =>
+  it.kind === 'redeem' || it.kind === 'redeem-batch'
+
+/** depositBatch items per tx — the chain caps a tx at ~32M gas */
+const DEPOSIT_TX_SIZE = 80
+
+const legKey = (l: { termId: string; curveId: bigint | string }) =>
+  `${l.termId.toLowerCase()}:${String(l.curveId)}`
+
+const toWei = (trust: number) => BigInt(Math.floor(trust * 1e18))
+
 export default function WeightModal({
   isOpen,
   items,
@@ -133,6 +163,12 @@ export default function WeightModal({
   const { authenticated } = usePrivy()
   const { wallets } = useWallets()
   const qc = useQueryClient()
+  /** What already went through in this cart (mined txs): skipped on a retry
+   *  so nothing is exited or deposited twice, dropped from the cart on close */
+  const settledRef = useRef({
+    items: new Set<string>(),
+    legs: new Set<string>(),
+  })
   // Resolve the wallet's Account atom term_id — required as the subject
   // of any membership triple we mint when items[].kind === 'create-circle'.
   const userAccountAtom = useUserAccountAtom(wallets[0]?.address)
@@ -145,7 +181,7 @@ export default function WeightModal({
         .filter(
           (it) =>
             (it.kind ?? 'deposit') === 'deposit' &&
-            it.kind !== 'redeem' &&
+            !isExitItem(it) &&
             // Platform atom vaults (platform positions) are atoms, not
             // triples — skip the triple-existence check or it always fails.
             it.intention !== 'Invest' &&
@@ -180,7 +216,11 @@ export default function WeightModal({
   useEffect(() => {
     if (isOpen && items.length > 0) {
       setWeights(new Array(items.length).fill(0.5))
-      setCustomValues(new Array(items.length).fill(''))
+      setCustomValues(
+        items.map((it) =>
+          it.presetAmount ? String(Number(it.presetAmount.toFixed(4))) : '',
+        ),
+      )
       reset()
       setCreateTripleResult(null)
       setCreateTripleProcessing(false)
@@ -198,7 +238,7 @@ export default function WeightModal({
   // phantom 0.5 default per redeem row.
   const totalDeposit = useMemo(() => {
     return items.reduce(
-      (sum, it, i) => (it.kind === 'redeem' ? sum : sum + getAmount(i)),
+      (sum, it, i) => (isExitItem(it) ? sum : sum + getAmount(i)),
       0,
     )
   }, [items, weights, customValues])
@@ -206,10 +246,7 @@ export default function WeightModal({
   // A redeem-only cart deposits nothing (totalDeposit === 0) yet is a valid,
   // signable action — it recovers TRUST. Track it so the submit button isn't
   // gated by the `totalDeposit <= 0` "nothing to do" guard below.
-  const hasRedeem = useMemo(
-    () => items.some((it) => it.kind === 'redeem'),
-    [items],
-  )
+  const hasRedeem = useMemo(() => items.some(isExitItem), [items])
 
   const balNum = balance ? parseFloat(balance) : 0
 
@@ -223,7 +260,7 @@ export default function WeightModal({
     let deposits = 0
     let creates = 0
     for (const item of items) {
-      if (item.kind === 'redeem') {
+      if (isExitItem(item)) {
         // Redeems don't deposit — skip from cost estimate.
       } else if (item.kind === 'create-circle' && item.circleDraft) {
         const validTopics = item.circleDraft.topicIds.filter(
@@ -281,9 +318,16 @@ export default function WeightModal({
   //                        (the membership + has_tag triples reference the
   //                        atom ids returned by the atom batch)
   const handleSubmit = useCallback(async () => {
-    const depositItems: { termId: string; amountTrust: number }[] = []
+    const settled = settledRef.current
+    const depositItems: BatchDepositItem[] = []
+    /** Cart row behind each deposit / create (null: derived triple) */
+    const depositSources: CartItem[] = []
+    const createSources: (CartItem | null)[] = []
     const createItems: BatchCreateTripleItem[] = []
     const redeemItems: { termId: string; percent?: RedeemPercent }[] = []
+    /** Batched exits (a migration) — run first, the rest re-deposits */
+    const exitLegs: RedeemLeg[] = []
+    const exitRowIds: string[] = []
     /** Indices of items[] that are 'create-circle', kept in order so
      *  we can map them back to their amounts after the atom batch. */
     const circleIndices: number[] = []
@@ -293,8 +337,19 @@ export default function WeightModal({
      *  missing) then the [cert → in_context_of → context] triple. */
     const contextIndices: number[] = []
     items.forEach((item, i) => {
+      if (settled.items.has(item.id)) return
       const amount = getAmount(i)
-      if (item.kind === 'redeem') {
+      if (item.kind === 'redeem-batch') {
+        exitRowIds.push(item.id)
+        for (const l of item.exitLegs ?? []) {
+          if (settled.legs.has(legKey(l))) continue
+          exitLegs.push({
+            termId: l.termId,
+            curveId: BigInt(l.curveId),
+            shares: BigInt(l.shares),
+          })
+        }
+      } else if (item.kind === 'redeem') {
         redeemItems.push({
           termId: item.termId,
           percent: item.redeemPercent,
@@ -310,7 +365,9 @@ export default function WeightModal({
           predicateId: item.predicateId,
           objectId: item.objectId,
           signalTrust: amount,
+          curveId: item.curveId ? BigInt(item.curveId) : undefined,
         })
+        createSources.push(item)
       } else if (item.kind === 'create-circle' && item.circleDraft) {
         circleIndices.push(i)
       } else if (item.kind === 'create-skill' && item.skillDraft) {
@@ -318,11 +375,129 @@ export default function WeightModal({
       } else if (item.kind === 'create-context' && item.contextDraft) {
         contextIndices.push(i)
       } else {
-        depositItems.push({ termId: item.termId, amountTrust: amount })
+        depositItems.push({
+          termId: item.termId,
+          amountTrust: amount,
+          curveId: item.curveId ? BigInt(item.curveId) : undefined,
+        })
+        depositSources.push(item)
       }
     })
 
+    const wallet0 = wallets[0]?.address
+    // My positions shows what a mined tx did right away (the indexer lags);
+    // the overlay reconciles once these refetches see the indexed rows
+    const scheduleReconcile = () => {
+      for (const delay of [5_000, 15_000, 45_000]) {
+        setTimeout(
+          () =>
+            void qc.invalidateQueries({
+              queryKey: ['user-market-positions'],
+            }),
+          delay,
+        )
+      }
+    }
+    /** Positions opened / topped up by mined deposits */
+    const showAdded = (
+      sources: readonly CartItem[],
+      amounts: readonly number[],
+    ) => {
+      if (!wallet0) return
+      const indexed = new Map(
+        (
+          qc.getQueryData<UserPositionsResult>(userPositionsKey(wallet0))
+            ?.positions ?? []
+        ).map((p) => [p.termId.toLowerCase(), p]),
+      )
+      const added: MarketPosition[] = []
+      sources.forEach((it, k) => {
+        const amount = String(toWei(amounts[k]))
+        const held = indexed.get(it.termId.toLowerCase())
+        if (held) {
+          // Top-up: the merge adds this on top of the indexed row
+          added.push({ ...held, value: amount, deposited: amount })
+          return
+        }
+        // New page-market position (tags and other claims show once indexed)
+        if (
+          it.predicateId !== CANONICAL_PREDICATE_IDS.recommends &&
+          it.curveId !== 2
+        )
+          return
+        added.push(
+          pendingPosition({
+            termId: it.termId,
+            amountWei: BigInt(amount),
+            title: it.title,
+            image: it.favicon || null,
+            objectTermId: it.objectId ?? null,
+            predicateLabel: 'recommends',
+            side: it.side,
+          }),
+        )
+      })
+      markPositionsAdded(qc, wallet0, added)
+      scheduleReconcile()
+    }
+
     let allOk = true
+
+    // Batched exits first (one redeemBatch per 100 legs). If one fails, stop:
+    // the Recommends after it were meant to re-deposit what came back.
+    if (exitLegs.length > 0) {
+      if (!authenticated || wallets.length === 0) {
+        setCreateTripleResult({ success: false, error: 'No wallet connected' })
+        return
+      }
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      let lastExitHash: string | undefined
+      try {
+        for (let i = 0; i < exitLegs.length; i += REDEEM_BATCH_SIZE) {
+          const chunk = exitLegs.slice(i, i + REDEEM_BATCH_SIZE)
+          const r = await redeemLegs(wallets[0], chunk)
+          if (r.success) {
+            for (const l of chunk) settled.legs.add(legKey(l))
+            if (wallet0) {
+              markPositionsExited(
+                qc,
+                wallet0,
+                chunk.map((l) => l.termId),
+              )
+              scheduleReconcile()
+            }
+          }
+          if (!r.success) {
+            setCreateTripleResult({
+              success: false,
+              error: `Exit stopped (${r.error ?? 'failed'}) — nothing was re-deposited.`,
+            })
+            return
+          }
+          if (r.txHash) lastExitHash = r.txHash
+        }
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: `Exit stopped (${err instanceof Error ? err.message : String(err)}) — nothing was re-deposited.`,
+        })
+        return
+      } finally {
+        setCreateTripleProcessing(false)
+      }
+      for (const id of exitRowIds) settled.items.add(id)
+      if (
+        redeemItems.length === 0 &&
+        depositItems.length === 0 &&
+        createItems.length === 0 &&
+        circleIndices.length === 0 &&
+        skillIndices.length === 0 &&
+        contextIndices.length === 0
+      ) {
+        setCreateTripleResult({ success: true, txHash: lastExitHash })
+      }
+    }
 
     // Redeem: recover TRUST from each cert vault one by one. `redeemAtom`
     // throws on wallet rejection / revert (it doesn't catch internally), so
@@ -359,9 +534,15 @@ export default function WeightModal({
           } else {
             if (r.txHash) lastRedeemHash = r.txHash
             redeemedOk.push(termId)
+            for (const it of items) {
+              if (it.kind === 'redeem' && it.termId === termId)
+                settled.items.add(it.id)
+            }
             if ((percent ?? 100) === 100) {
               clearOptimisticPosition(qc, wallet.address, termId)
               fullyExited.push(termId)
+              markPositionsExited(qc, wallet.address, [termId])
+              scheduleReconcile()
             }
           }
         }
@@ -410,9 +591,19 @@ export default function WeightModal({
       }
     }
 
-    if (depositItems.length > 0) {
-      const r = await depositBatch(depositItems)
-      if (!r.success) allOk = false
+    for (let k = 0; k < depositItems.length; k += DEPOSIT_TX_SIZE) {
+      const chunk = depositItems.slice(k, k + DEPOSIT_TX_SIZE)
+      const sources = depositSources.slice(k, k + DEPOSIT_TX_SIZE)
+      const r = await depositBatch(chunk)
+      if (!r.success) {
+        allOk = false
+        break
+      }
+      for (const it of sources) settled.items.add(it.id)
+      showAdded(
+        sources,
+        chunk.map((d) => d.amountTrust),
+      )
     }
 
     // Phase A — mint every queued circle atom in one tx, then derive
@@ -649,6 +840,19 @@ export default function WeightModal({
         try {
           const r = await executeCreateTriplesBatch(wallets[0], createItems)
           setCreateTripleResult(r)
+          // Mined batches count even when a later one failed
+          const mined = new Set(
+            (r.confirmedTermIds ?? []).map((id) => id.toLowerCase()),
+          )
+          const minedRows: CartItem[] = []
+          const minedAmounts: number[] = []
+          createSources.forEach((it, k) => {
+            if (!it || !mined.has(it.termId.toLowerCase())) return
+            settled.items.add(it.id)
+            minedRows.push(it)
+            minedAmounts.push(createItems[k].signalTrust)
+          })
+          showAdded(minedRows, minedAmounts)
           if (!r.success) {
             allOk = false
           } else {
@@ -765,8 +969,18 @@ export default function WeightModal({
     reset()
     setCreateTripleResult(null)
     setCreateTripleProcessing(false)
-    if (succeeded) onSuccess()
-    else onClose()
+    if (succeeded) {
+      settledRef.current = { items: new Set(), legs: new Set() }
+      onSuccess()
+      return
+    }
+    // Part of the cart went through before a failure: keep only the rest
+    const done = settledRef.current.items
+    if (onRemove && done.size > 0) {
+      for (const it of items) if (done.has(it.id)) onRemove(it.id)
+      done.clear()
+    }
+    onClose()
   }
 
   const formatTrust = (val: number): string => {
@@ -834,7 +1048,7 @@ export default function WeightModal({
                 {items.map((item, index) => {
                   const rowTrust = getAmount(index)
                   const topicMeta = resolveTopic(item)
-                  const isRedeem = item.kind === 'redeem'
+                  const isRedeem = isExitItem(item)
 
                   // Extract real domain from favicon URL — handles both the
                   // Google favicon service (?domain=example.com) and direct
@@ -935,9 +1149,11 @@ export default function WeightModal({
                       {isRedeem ? (
                         <div className="b3-row-trust b3-row-trust--redeem">
                           <span className="b3-row-trust-unit">
-                            {(item.redeemPercent ?? 100) < 100
-                              ? `EXIT ${item.redeemPercent}%`
-                              : 'EXIT'}
+                            {item.kind === 'redeem-batch'
+                              ? `EXIT · ~${(item.exitValue ?? 0).toFixed(2)} T BACK`
+                              : (item.redeemPercent ?? 100) < 100
+                                ? `EXIT ${item.redeemPercent}%`
+                                : 'EXIT'}
                           </span>
                         </div>
                       ) : (
@@ -952,9 +1168,11 @@ export default function WeightModal({
                       {isRedeem ? (
                         <div className="b3-tiers b3-tiers--redeem">
                           <span className="b3-tier-label">
-                            {(item.redeemPercent ?? 100) < 100
-                              ? `${item.redeemPercent}% of your shares returned`
-                              : 'All shares returned'}
+                            {item.kind === 'redeem-batch'
+                              ? `${item.exitLegs?.length ?? 0} legacy positions exited first, then re-deposited below`
+                              : (item.redeemPercent ?? 100) < 100
+                                ? `${item.redeemPercent}% of your shares returned`
+                                : 'All shares returned'}
                           </span>
                         </div>
                       ) : (

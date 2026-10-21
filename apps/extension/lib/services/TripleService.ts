@@ -34,8 +34,10 @@ const logger = createServiceLogger('TripleService')
 // Minimum deposit for triple creation (0.01 TRUST in wei)
 const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
 
-// Curve ID for creation deposits (1 = linear/upvote)
-const CREATION_CURVE_ID = 1n
+// Curve for creation AND deposits on page claims: progressive (2), so the
+// price rises as followers take a position — that's how early positions gain.
+const CREATION_CURVE_ID = 2n
+const MARKET_CURVE_ID = 2n
 
 /** Triple with already-resolved vault IDs */
 export interface ResolvedTriple {
@@ -43,6 +45,8 @@ export interface ResolvedTriple {
   predicateId: string
   objectId: string
   customWeight?: bigint
+  /** oppose = deposit on the claim's counter vault (created first if needed) */
+  side?: 'support' | 'oppose'
 }
 
 class TripleServiceClass {
@@ -219,8 +223,9 @@ class TripleServiceClass {
    * When the triple doesn't exist, creates it first, then does a separate
    * platform pool deposit (can't mix createTriples + depositBatch).
    *
-   * @param depositCurveId - Curve for deposits. Default 2n (progressive).
-   *   Votes use 1n (linear) via CREATION_CURVE_ID.
+   * @param depositCurveId - Curve for the creation deposit and later
+   *   deposits. Default 2n (progressive, the page market); the social graph
+   *   (follow / account trust) passes 1n.
    */
   async createTripleOnChain(
     subjectId: string,
@@ -352,7 +357,7 @@ class TripleServiceClass {
           address: contractAddress as Address,
           abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
-          args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [signalDeposit], CREATION_CURVE_ID],
+          args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [signalDeposit], depositCurveId],
           value: totalCost,
           account: signer.account
         })
@@ -367,7 +372,7 @@ class TripleServiceClass {
             [predicateId as Address],
             [objectId as Address],
             [signalDeposit],
-            CREATION_CURVE_ID
+            depositCurveId
           ],
           value: totalCost,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
@@ -421,10 +426,15 @@ class TripleServiceClass {
 
       // O(1) deduplication
       const tripleKeysSet = new Set<string>()
+      // A page opposed and supported in the same batch is created once
+      const baseKey = (t: ResolvedTriple) =>
+        `${t.subjectId}-${t.predicateId}-${t.objectId}`
+      const createKeys = new Set<string>()
+      const opposeTriples: (ResolvedTriple & { tripleVaultId: string | null })[] = []
 
       for (let i = 0; i < resolvedTriples.length; i++) {
         const triple = resolvedTriples[i]
-        const tripleKey = `${triple.subjectId}-${triple.predicateId}-${triple.objectId}`
+        const tripleKey = `${triple.subjectId}-${triple.predicateId}-${triple.objectId}-${triple.side ?? 'support'}`
 
         if (tripleKeysSet.has(tripleKey)) continue
         tripleKeysSet.add(tripleKey)
@@ -435,13 +445,29 @@ class TripleServiceClass {
           triple.objectId
         )
 
-        if (tripleCheck.exists) {
+        if (triple.side === 'oppose') {
+          // Oppose: the claim must exist (created with the protocol minimum
+          // on its support side), then the stake goes to its counter vault.
+          opposeTriples.push({
+            ...triple,
+            tripleVaultId: tripleCheck.exists ? tripleCheck.tripleVaultId! : null
+          })
+          if (!tripleCheck.exists && !createKeys.has(baseKey(triple))) {
+            createKeys.add(baseKey(triple))
+            triplesToCreate.push({
+              ...triple,
+              customWeight: MIN_TRIPLE_DEPOSIT,
+              index: i
+            })
+          }
+        } else if (tripleCheck.exists) {
           triplesToDeposit.push({
             ...triple,
             tripleVaultId: tripleCheck.tripleVaultId!,
             tripleHash: tripleCheck.tripleHash
           })
-        } else {
+        } else if (!createKeys.has(baseKey(triple))) {
+          createKeys.add(baseKey(triple))
           triplesToCreate.push({ ...triple, index: i })
         }
       }
@@ -603,7 +629,7 @@ class TripleServiceClass {
                 : MIN_TRIPLE_DEPOSIT
 
               fallbackTermIds.push(tripleId)
-              fallbackCurveIds.push(2n)
+              fallbackCurveIds.push(MARKET_CURVE_ID)
               fallbackAssets.push(depositAmount)
             }
 
@@ -654,7 +680,7 @@ class TripleServiceClass {
         })
 
         const termIds = triplesToDeposit.map(t => t.tripleVaultId)
-        const curveIds = triplesToDeposit.map(() => 2n)
+        const curveIds = triplesToDeposit.map(() => MARKET_CURVE_ID)
         const assets = triplesToDeposit.map(t =>
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
@@ -692,6 +718,61 @@ class TripleServiceClass {
         }
 
         logger.debug('Batch deposits completed', { count: triplesToDeposit.length })
+      }
+
+      // Oppose positions — one depositBatch on the counter vaults
+      if (opposeTriples.length > 0) {
+        const publicClient = getPublicClient()
+        const contractAddress: Address = BlockchainService.getContractAddress() as Address
+        const counterIds: string[] = []
+        for (const triple of opposeTriples) {
+          const tripleId =
+            triple.tripleVaultId ??
+            results.find(
+              r =>
+                r.subjectVaultId === triple.subjectId &&
+                r.predicateVaultId === triple.predicateId &&
+                r.objectVaultId === triple.objectId
+            )?.tripleVaultId
+          if (!tripleId) throw new Error('Oppose: claim was not created')
+          triple.tripleVaultId = tripleId
+          counterIds.push(
+            (await publicClient.readContract({
+              address: contractAddress,
+              abi: MultiVaultAbi,
+              functionName: 'getCounterIdFromTripleId',
+              args: [tripleId as Address],
+              authorizationList: undefined
+            })) as string
+          )
+        }
+        const termIds = [...counterIds]
+        const curveIds = opposeTriples.map(() => MARKET_CURVE_ID)
+        const assets = opposeTriples.map(t =>
+          t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
+        )
+        const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
+        this.appendPoolDeposits(termIds, curveIds, assets, totalDeposit, this.resolveUniquePlatformTermIds(urls))
+
+        const opposeHash = await this.executeDepositBatch(address, termIds, curveIds, assets)
+        const opposeReceipt = await publicClient.waitForTransactionReceipt({ hash: opposeHash })
+        if (opposeReceipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${opposeReceipt.status}`)
+        }
+        opposeTriples.forEach((triple, i) => {
+          results.push({
+            success: true,
+            tripleVaultId: triple.tripleVaultId!,
+            counterVaultId: counterIds[i],
+            side: 'oppose',
+            txHash: opposeHash,
+            subjectVaultId: triple.subjectId,
+            predicateVaultId: triple.predicateId,
+            objectVaultId: triple.objectId,
+            source: 'deposit',
+            tripleHash: triple.tripleVaultId!
+          })
+        })
       }
 
       const createdCount = results.filter(r => r.source === 'created').length

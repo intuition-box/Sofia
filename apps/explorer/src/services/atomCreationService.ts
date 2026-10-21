@@ -21,6 +21,10 @@ import {
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
   explicitGasLimit,
+  paced,
+  pacedClient,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
@@ -173,9 +177,9 @@ export async function executeCreateAtom(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
-    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
+    const gas = await explicitGasLimit(quickClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
       ...simConfig,
@@ -212,14 +216,21 @@ export async function executeCreateAtomsBatch(
   try {
     const { address, client } = await buildWalletClient(wallet)
 
-    // Pin every payload in parallel — pinning is the slowest step, so
-    // overlapping I/O matters more than for the on-chain reads below.
-    const pinned = await Promise.all(
-      payloads.map(async (payload) => {
-        const { encodedData } = await pinAtomToIPFS(payload, pinThing)
-        return { payload, encodedData }
-      }),
-    )
+    // Same atom asked several times (e.g. one intention tag on many pages):
+    // handle it once — createAtoms reverts on a duplicate, and each copy
+    // would cost a pin + 2 RPC reads.
+    const keyOf = (p: AtomIPFSPayload) => p.url || p.name
+    const uniquePayloads = [
+      ...new Map(payloads.map((p) => [keyOf(p), p])).values(),
+    ]
+
+    // One at a time: the public RPC rate-limits bursts
+    const pinned: { payload: AtomIPFSPayload; encodedData: `0x${string}` }[] =
+      []
+    for (const payload of uniquePayloads) {
+      const { encodedData } = await pinAtomToIPFS(payload, pinThing)
+      pinned.push({ payload, encodedData })
+    }
 
     const atomCost = (await publicClient.readContract({
       address: PROXY_ADDRESS,
@@ -231,29 +242,39 @@ export async function executeCreateAtomsBatch(
     // Pre-compute every atomId + existence flag. `calculateAtomId`
     // must hit MultiVault directly (see single-atom path above for the
     // proxy hash mismatch rationale).
-    const calculated = await Promise.all(
-      pinned.map(async ({ payload, encodedData }) => {
-        const atomId = (await publicClient.readContract({
+    const calculated: {
+      payload: AtomIPFSPayload
+      encodedData: `0x${string}`
+      atomId: `0x${string}`
+      exists: boolean
+    }[] = []
+    for (const { payload, encodedData } of pinned) {
+      const atomId = (await paced(() =>
+        pacedClient.readContract({
           address: MULTI_VAULT_ADDRESS as `0x${string}`,
           abi: MultiVaultAbi,
           functionName: 'calculateAtomId',
           args: [encodedData],
           authorizationList: undefined,
-        })) as `0x${string}`
-        const exists = await atomExistsOnChain(atomId)
-        return { payload, encodedData, atomId, exists }
-      }),
-    )
+        }),
+      )) as `0x${string}`
+      const exists = await paced(() => atomExistsOnChain(atomId))
+      calculated.push({ payload, encodedData, atomId, exists })
+    }
 
     const toCreate = calculated.filter((c) => !c.exists)
-    const results: CreateAtomResult[] = calculated.map((c) =>
-      c.exists
-        ? { success: true, atomId: c.atomId, alreadyExisted: true }
-        : { success: false, atomId: c.atomId, error: 'pending' },
-    )
+    // One result per REQUESTED payload, in the caller's order
+    const byKey = new Map(calculated.map((c) => [keyOf(c.payload), c]))
+    const resultsFor = (txHash?: string): CreateAtomResult[] =>
+      payloads.map((p) => {
+        const c = byKey.get(keyOf(p))!
+        return c.exists
+          ? { success: true, atomId: c.atomId, alreadyExisted: true }
+          : { success: true, atomId: c.atomId, txHash }
+      })
 
     if (toCreate.length === 0) {
-      return { success: true, results }
+      return { success: true, results: resultsFor() }
     }
 
     const dataArray = toCreate.map((c) => c.encodedData)
@@ -279,10 +300,10 @@ export async function executeCreateAtomsBatch(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
     const gas = await explicitGasLimit(
-      publicClient,
+      quickClient,
       simConfig,
       BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
     )
@@ -293,27 +314,19 @@ export async function executeCreateAtomsBatch(
       chain: undefined,
     })
 
-    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    const receipt = await pacedClient.waitForTransactionReceipt({
+      hash,
+      pollingInterval: 3_000,
+    })
     if (receipt.status !== 'success') {
       return {
         success: false,
-        results,
+        results: [],
         error: 'createAtoms batch reverted',
       }
     }
 
-    // Promote every "pending" entry to success in the original order.
-    for (let i = 0; i < calculated.length; i++) {
-      if (!calculated[i].exists) {
-        results[i] = {
-          success: true,
-          atomId: calculated[i].atomId,
-          txHash: hash,
-        }
-      }
-    }
-
-    return { success: true, results, txHash: hash }
+    return { success: true, results: resultsFor(hash), txHash: hash }
   } catch (err) {
     return {
       success: false,

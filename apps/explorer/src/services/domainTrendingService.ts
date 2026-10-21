@@ -27,7 +27,7 @@ const ALL_CATEGORIES: { type: IntentCategory; label: string }[] = [
 ]
 
 const CATEGORY_DISPLAY: Record<IntentCategory, string> = {
-  trusted: 'Trusted',
+  trusted: 'Recommended',
   distrusted: 'Distrusted',
   work: 'Work',
   learning: 'Learning',

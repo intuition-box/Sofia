@@ -55,6 +55,7 @@ COPY packages/graphql/ ./packages/graphql/
 COPY packages/design-system/ ./packages/design-system/
 COPY packages/taxonomy/ ./packages/taxonomy/
 COPY packages/quests/ ./packages/quests/
+COPY packages/reputation/ ./packages/reputation/
 COPY apps/explorer/ ./apps/explorer/
 
 # Vite emits to apps/explorer/dist/. The `prebuild` hook runs the

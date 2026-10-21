@@ -61,3 +61,9 @@ export function searchTaxonomy(
   }
   return out
 }
+
+const BY_ID = new Map(TAXONOMY_INDEX.map((node) => [node.id, node]))
+
+/** A taxonomy node by slug (topic, category or niche) */
+export const taxonomyNodeById = (id: string): TaxoNode | undefined =>
+  BY_ID.get(id)

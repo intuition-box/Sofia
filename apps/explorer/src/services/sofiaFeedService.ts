@@ -36,20 +36,12 @@ import {
   type CertifierInfo,
 } from './feedProcessing'
 import type { CircleItem } from './circleService'
+import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 /** Sofia's canonical predicate labels — kept in sync with
  *  `userOnChainProfileService` and `circleService`. */
-export const SOFIA_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing-space variant
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust',
-] as const
+export const SOFIA_PREDICATE_LABELS: readonly string[] =
+  PAGE_CLAIM_PREDICATE_LABELS
 
 export interface SofiaFeedParams {
   /** When non-empty, scope the feed to positions held by any of these

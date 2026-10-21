@@ -1,13 +1,6 @@
 /**
- * Signal Fetcher types — metrics returned by sofia-mastra signalFetcherWorkflow
+ * Re-export of the shared @0xsofia/reputation package — the signal types now
+ * live in packages/reputation so the explorer and other apps share one source
+ * of truth. Existing "@/types/signals" import sites are unchanged.
  */
-
-export interface SignalResult {
-  success: boolean
-  platformId: string
-  fetchedAt?: number
-  metrics?: Record<string, number>
-  error?: SignalError
-}
-
-export type SignalError = 'no_token' | 'no_fetcher' | 'token_expired' | string
+export * from '@0xsofia/reputation'

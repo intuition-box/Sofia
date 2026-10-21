@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 import { useGetSofiaCircleListStatsQuery } from '@0xsofia/graphql'
 import type { CircleStats } from '@/services/circleStats'
+import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 export interface CircleListStats {
   stats: CircleStats
@@ -26,17 +27,7 @@ export interface CircleListStats {
 
 // Same canonical predicate set as `circleService` + `userOnChain
 // ProfileService` — keep in sync.
-const CERT_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing-space variant
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust',
-] as const
+const CERT_PREDICATE_LABELS = PAGE_CLAIM_PREDICATE_LABELS
 
 const EMPTY_STATS: CircleStats = {
   postCount: 0,

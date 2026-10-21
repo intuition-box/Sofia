@@ -257,6 +257,8 @@ query GetUserMarketPositions(
       current_share_price
       market_cap
       position_count
+      total_shares
+      total_assets
     }
     term {
       type
@@ -293,6 +295,219 @@ query GetUserMarketPositions(
             }
           }
         }
+      }
+    }
+  }
+}
+
+# Positions chart — a wallet's daily position changes (shares and TRUST in/out
+# per vault and day), oldest first. Replayed client-side into cumulative
+# shares per vault. Pass the exact casings (checksummed + lowercase) with
+# `_in`: `_ilike` scans this view (12s vs 0.3s a page).
+query GetUserPositionHistory(
+  $addresses: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  position_change_daily(
+    where: { account_id: { _in: $addresses } }
+    order_by: [{ bucket: asc }, { term_id: asc }, { curve_id: asc }]
+    limit: $limit
+    offset: $offset
+  ) {
+    bucket
+    term_id
+    curve_id
+    assets_in_period
+    assets_out_period
+    shares_delta_period
+  }
+}
+
+# Positions chart — daily closing share price of a set of vaults. Only days
+# with a price change have a row: the caller carries the last price forward
+# (and uses a vault's first `first_share_price` before its first row).
+# The indexer keeps this history from 2026-02-16 on.
+query GetVaultPriceHistory($termIds: [String!]!, $limit: Int!, $offset: Int!) {
+  share_price_change_stats_daily(
+    where: { term_id: { _in: $termIds } }
+    order_by: [{ term_id: asc }, { curve_id: asc }, { bucket: asc }]
+    limit: $limit
+    offset: $offset
+  ) {
+    bucket
+    term_id
+    curve_id
+    first_share_price
+    last_share_price
+  }
+}
+
+# Extension Page tab — the page's market in one call (ONE_MARKET_PER_PAGE_SPEC
+# §4.2). `claims`: every page claim on the page's atoms (the `recommends`
+# market and legacy ones) with both sides' vaults, the ordered stakers (rank,
+# momentum) and the viewer's own legs (value / P&L). `tags`: the `in context
+# of` tags hanging off those claims, with how many hold each.
+query GetPageMarket(
+  $objectIds: [String!]!
+  $predicateLabels: [String!]!
+  $accounts: [String!]!
+) {
+  claims: triples(
+    where: {
+      object_id: { _in: $objectIds }
+      predicate: { label: { _in: $predicateLabels } }
+    }
+    limit: 50
+  ) {
+    term_id
+    counter_term_id
+    subject_id
+    predicate {
+      label
+    }
+    term {
+      vaults {
+        curve_id
+        total_assets
+        total_shares
+        position_count
+        current_share_price
+      }
+    }
+    counter_term {
+      vaults {
+        curve_id
+        total_assets
+        total_shares
+        position_count
+        current_share_price
+      }
+    }
+    supporters: positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 500
+    ) {
+      account_id
+      created_at
+    }
+    opposers: counter_positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 500
+    ) {
+      account_id
+      created_at
+    }
+    mySupport: positions(
+      where: { account_id: { _in: $accounts }, shares: { _gt: "0" } }
+    ) {
+      curve_id
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+    myOppose: counter_positions(
+      where: { account_id: { _in: $accounts }, shares: { _gt: "0" } }
+    ) {
+      curve_id
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+  tags: triples(
+    where: {
+      predicate: { label: { _eq: "in context of" } }
+      subject_term: {
+        triple: {
+          object_id: { _in: $objectIds }
+          predicate: { label: { _in: $predicateLabels } }
+        }
+      }
+    }
+    limit: 100
+  ) {
+    subject_id
+    object {
+      term_id
+      label
+    }
+    positions_aggregate(where: { shares: { _gt: "0" } }) {
+      aggregate {
+        count
+      }
+    }
+  }
+}
+
+# My positions — page claims the wallet exited recently (legacy migration
+# resume): if a migration stopped half-way, the exited pages can still be
+# queued as Recommends. `assets` is what the wallet received (fees out).
+# The indexer caps a page at 100 rows: callers page with $offset.
+query GetUserRecentPageExits(
+  $addresses: [String!]!
+  $since: timestamptz!
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  redemptions(
+    where: {
+      sender_id: { _in: $addresses }
+      created_at: { _gte: $since }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    assets
+    created_at
+    term_id
+    term {
+      triple {
+        term_id
+        predicate {
+          label
+        }
+        object {
+          term_id
+          label
+          value {
+            thing {
+              url
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Pages the wallet still backs through the given page claims (a Recommend or
+# a legacy claim), paged — the resume card never re-queues them.
+query GetUserHeldPageClaims(
+  $addresses: [String!]!
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  positions(
+    where: {
+      account_id: { _in: $addresses }
+      shares: { _gt: "0" }
+      term: { triple: { predicate: { label: { _in: $predicateLabels } } } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term {
+      triple {
+        object_id
       }
     }
   }

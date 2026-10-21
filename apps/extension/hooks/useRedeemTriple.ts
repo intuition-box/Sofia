@@ -1,253 +1,68 @@
 /**
- * useRedeemTriple Hook
- * Reusable hook for redeeming positions from triples.
- * Calls MultiVault directly (not via proxy) and sends funds to user wallet.
+ * useRedeemTriple — exits positions on claims (and their counter vaults).
+ * Thin facade over RedeemService, which covers both bonding curves in one
+ * transaction from the user's own wallet.
  *
  * Usage:
  *   const { redeemPosition, redeemAllPositions, loading } = useRedeemTriple()
- *   await redeemPosition(tripleVaultId)           // redeem all shares from one triple
- *   await redeemAllPositions([id1, id2, id3])     // batch redeem from multiple triples
+ *   await redeemPosition(tripleVaultId)           // every share, all curves
+ *   await redeemAllPositions([id1, id2, id3])     // one batch transaction
  */
 
-import { useState } from 'react'
-import { getClients, getPublicClient } from '../lib/clients/viemClients'
-import { MultiVaultAbi } from '../ABI/MultiVault'
-import { SELECTED_CHAIN } from '../lib/config/chainConfig'
-import { useWalletFromStorage } from '~/hooks'
-import { BlockchainService, txEventBus } from '~/lib/services'
-import { createHookLogger } from '~/lib/utils'
-import { ERROR_MESSAGES } from '~/lib/config/constants'
-import type { Address, Hash } from 'viem'
+import { useCallback, useState } from "react"
 
-const logger = createHookLogger('useRedeemTriple')
+import { useWalletFromStorage } from "~/hooks"
+import { redeemService, type RedeemResult } from "~/lib/services"
+import { ERROR_MESSAGES } from "~/lib/config/constants"
 
-const TRIPLE_CURVE_ID = 1 // triples use curveId 1
-
-export interface RedeemResult {
-  success: boolean
-  txHash?: Hash
-  error?: string
-}
+export type { RedeemResult }
 
 export const useRedeemTriple = () => {
   const { walletAddress: address } = useWalletFromStorage()
   const [loading, setLoading] = useState(false)
 
-  /**
-   * Read user shares for a triple using public client (no wallet interaction needed).
-   */
-  const getUserShares = async (
-    tripleVaultId: string
-  ): Promise<bigint> => {
-    if (!address) return 0n
+  /** The wallet's shares on a vault, summed over both curves */
+  const getUserShares = useCallback(
+    async (termId: string): Promise<bigint> => {
+      if (!address) return 0n
+      const legs = await redeemService.findLegs(address, [termId])
+      return legs.reduce((sum, leg) => sum + leg.shares, 0n)
+    },
+    [address]
+  )
 
-    const publicClient = getPublicClient()
-    const contractAddress = BlockchainService.getMultiVaultAddress()
-
-    return await publicClient.readContract({
-      address: contractAddress,
-      abi: MultiVaultAbi,
-      functionName: 'getShares',
-      args: [address as Address, tripleVaultId as `0x${string}`, TRIPLE_CURVE_ID],
-      authorizationList: undefined
-    }) as bigint
-  }
-
-  /**
-   * Redeem a single triple position (all user shares).
-   * Optionally pass sharesToRedeem to redeem a partial amount.
-   */
-  const redeemPosition = async (
-    tripleVaultId: string,
-    sharesToRedeem?: bigint
-  ): Promise<RedeemResult> => {
-    try {
+  const run = useCallback(
+    async (termIds: string[], fraction = 1): Promise<RedeemResult> => {
       if (!address) {
-        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
+        return { success: false, error: ERROR_MESSAGES.WALLET_NOT_CONNECTED }
       }
-
       setLoading(true)
-      const contractAddress = BlockchainService.getMultiVaultAddress()
-
-      // 1. Read shares using public client (fast, no wallet popup)
-      const userShares = await getUserShares(tripleVaultId)
-
-      if (userShares === 0n) {
-        logger.debug('No shares to redeem', { tripleVaultId })
-        return { success: true }
+      try {
+        return await redeemService.redeem(address, termIds, fraction)
+      } finally {
+        setLoading(false)
       }
+    },
+    [address]
+  )
 
-      const shares = sharesToRedeem && sharesToRedeem < userShares
-        ? sharesToRedeem
-        : userShares
+  /** Exit one position — all of it, or `sharesToRedeem` of it */
+  const redeemPosition = useCallback(
+    async (termId: string, sharesToRedeem?: bigint): Promise<RedeemResult> => {
+      if (!sharesToRedeem) return run([termId])
+      const total = await getUserShares(termId)
+      if (total === 0n) return { success: true }
+      const fraction = Number((sharesToRedeem * 10_000n) / total) / 10_000
+      return run([termId], Math.min(1, fraction))
+    },
+    [run, getUserShares]
+  )
 
-      logger.debug('Redeeming position', {
-        tripleVaultId,
-        shares: shares.toString(),
-        userShares: userShares.toString()
-      })
-
-      // 2. Get wallet client right before write (minimize timeout window)
-      const { walletClient, publicClient } = await getClients()
-
-      const minAssets = await BlockchainService.previewRedeemMinAssets(
-        tripleVaultId,
-        BigInt(TRIPLE_CURVE_ID),
-        shares
-      )
-
-      const txArgs = [
-        address as Address,
-        tripleVaultId as `0x${string}`,
-        TRIPLE_CURVE_ID,
-        shares,
-        minAssets
-      ] as const
-
-      // 3. Simulate first for better error messages
-      await publicClient.simulateContract({
-        address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'redeem',
-        args: txArgs,
-        account: address as Address
-      })
-
-      // 4. Send transaction (gas estimated automatically by wallet)
-      const hash = await walletClient.writeContract({
-        address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'redeem',
-        args: txArgs,
-        chain: SELECTED_CHAIN,
-        account: address as Address
-      })
-
-      logger.debug('Redeem transaction sent', { hash })
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash })
-
-      if (receipt.status !== 'success') {
-        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-      }
-
-      logger.info('Redeem successful', { hash, tripleVaultId })
-      txEventBus.emit("redeem_triple", hash)
-
-      return { success: true, txHash: hash }
-    } catch (error) {
-      logger.error('Redeem failed', error)
-      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
-      return { success: false, error: errorMessage }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  /**
-   * Redeem ALL positions from multiple triples in one batch transaction.
-   * Falls back to single redeem if only one triple has shares.
-   */
-  const redeemAllPositions = async (
-    tripleVaultIds: string[]
-  ): Promise<RedeemResult> => {
-    try {
-      if (!address) {
-        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
-      }
-
-      if (tripleVaultIds.length === 0) {
-        return { success: true }
-      }
-
-      setLoading(true)
-
-      const contractAddress = BlockchainService.getMultiVaultAddress()
-
-      // 1. Read all shares in parallel (no wallet interaction, public RPC)
-      const sharesResults = await Promise.all(
-        tripleVaultIds.map(async (termId) => ({
-          termId,
-          shares: await getUserShares(termId)
-        }))
-      )
-      const validEntries = sharesResults.filter((r) => r.shares > 0n)
-      const validTermIds = validEntries.map((r) => r.termId)
-      const sharesPerTriple = validEntries.map((r) => r.shares)
-
-      if (validTermIds.length === 0) {
-        logger.debug('No shares to redeem in any triple')
-        return { success: true }
-      }
-
-      logger.debug('Redeeming positions', {
-        count: validTermIds.length,
-        shares: sharesPerTriple.map(s => s.toString())
-      })
-
-      // 2. Single triple → delegate to redeemPosition
-      if (validTermIds.length === 1) {
-        return await redeemPosition(validTermIds[0], sharesPerTriple[0])
-      }
-
-      // 3. Multiple triples → batch redeem
-      // Get wallet client right before write (minimize timeout window)
-      const { walletClient, publicClient } = await getClients()
-
-      const curveIds = validTermIds.map(() => BigInt(TRIPLE_CURVE_ID))
-      const minAssets = await BlockchainService.previewRedeemMinAssetsBatch(
-        validTermIds,
-        curveIds,
-        sharesPerTriple
-      )
-
-      const batchArgs = [
-        address as Address,
-        validTermIds.map(id => id as `0x${string}`),
-        curveIds,
-        sharesPerTriple,
-        minAssets
-      ] as const
-
-      // Simulate first
-      await publicClient.simulateContract({
-        address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'redeemBatch',
-        args: batchArgs,
-        account: address as Address
-      })
-
-      // Send batch transaction (gas estimated automatically)
-      const hash = await walletClient.writeContract({
-        address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'redeemBatch',
-        args: batchArgs,
-        chain: SELECTED_CHAIN,
-        account: address as Address
-      })
-
-      logger.debug('Batch redeem transaction sent', { hash })
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash })
-
-      if (receipt.status !== 'success') {
-        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-      }
-
-      logger.info('Batch redeem successful', { hash, count: validTermIds.length })
-      txEventBus.emit("redeem_triple", hash)
-
-      return { success: true, txHash: hash }
-    } catch (error) {
-      logger.error('Batch redeem failed', error)
-      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
-      return { success: false, error: errorMessage }
-    } finally {
-      setLoading(false)
-    }
-  }
+  /** Exit every position on these vaults in one transaction */
+  const redeemAllPositions = useCallback(
+    (termIds: string[]) => run(termIds),
+    [run]
+  )
 
   return {
     redeemPosition,
