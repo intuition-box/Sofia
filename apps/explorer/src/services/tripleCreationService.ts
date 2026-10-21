@@ -28,8 +28,13 @@ import {
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
 const CREATION_CURVE_ID = 1n
-/** Triples per createTriples / depositBatch tx (the proxy reverts past 150) */
-const TX_BATCH_SIZE = 100
+/**
+ * Items per tx. The chain caps a transaction at ~32M gas (it reverts with no
+ * reason past it): createTriples costs up to ~680k per triple on curve 2,
+ * depositBatch ~270k per deposit — measured on mainnet, 2026-10.
+ */
+const CREATE_BATCH_SIZE = 35
+const DEPOSIT_BATCH_SIZE = 80
 const MULTICALL_CHUNK = 100
 const ZERO_ID =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -298,8 +303,8 @@ export async function executeCreateTriplesBatch(
     )
     for (const [curveId, curveGroup] of orderedGroups) {
       // Bounded batches: large createTriples revert / exhaust gas
-      for (let k = 0; k < curveGroup.length; k += TX_BATCH_SIZE) {
-        const group = curveGroup.slice(k, k + TX_BATCH_SIZE)
+      for (let k = 0; k < curveGroup.length; k += CREATE_BATCH_SIZE) {
+        const group = curveGroup.slice(k, k + CREATE_BATCH_SIZE)
         const subjectIds = group.map((c) => c.item.subjectId as `0x${string}`)
         const predicateIds = group.map(
           (c) => c.item.predicateId as `0x${string}`,
@@ -368,8 +373,8 @@ export async function executeCreateTriplesBatch(
 
     // Path 2 — depositBatch on the triples that already exist.
     if (toDeposit.length > 0) alreadyExisted = true
-    for (let k = 0; k < toDeposit.length; k += TX_BATCH_SIZE) {
-      const batch = toDeposit.slice(k, k + TX_BATCH_SIZE)
+    for (let k = 0; k < toDeposit.length; k += DEPOSIT_BATCH_SIZE) {
+      const batch = toDeposit.slice(k, k + DEPOSIT_BATCH_SIZE)
       const termIds = batch.map((c) => c.tripleId)
       const curveIds = batch.map((c) => c.item.curveId ?? CREATION_CURVE_ID)
       const assets = batch.map((c) =>
