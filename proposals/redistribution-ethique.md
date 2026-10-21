@@ -33,10 +33,26 @@ L'engagement social de Sofia est assumé et peut être mis en avant, avec un ton
 
 Un avis d'avocat ou d'expert comptable est à prévoir avant toute implémentation.
 
+## Gouvernance : choix des associations par vote communautaire
+
+Le choix des bénéficiaires (et éventuellement du pourcentage) pourrait être décidé par la communauté, sur le modèle d'une DAO, en s'appuyant sur le framework de délégation par domaine [intuition-box/liquid-voting](https://github.com/intuition-box/liquid-voting).
+
+Ce framework permet de déléguer son vote par domaine (délégations ERC-7710 avec un caveat `GraphDomainScope`), le périmètre d'un domaine étant défini par le graphe Intuition. Concrètement :
+
+1. On crée un domaine dédié, par exemple `redistribution`, rattaché au domaine `treasury` dans le graphe.
+2. Chaque membre peut voter lui-même, ou déléguer sa voix uniquement sur ce domaine à des personnes compétentes (acteurs associatifs, juristes, spécialistes de l'économie sociale et solidaire), sans leur céder sa voix sur le reste.
+3. Chaque voix exprimée au nom d'un délégant est journalisée on-chain : un délégant peut vérifier ce qui a été voté en son nom et reprendre sa délégation. La traçabilité couvre donc aussi la décision, pas seulement le versement.
+
+Points d'attention :
+
+1. Pondération et résistance aux sybilles : définir qui vote et avec quel poids (token, preuve d'humanité type Circles, ancienneté sur Sofia) pour éviter qu'un acteur hostile n'achète le vote.
+2. Concentration des délégations : surveiller qu'un petit nombre de délégués ne capte pas l'essentiel des voix.
+3. Garde-fou juridique : le vote choisit parmi une liste d'associations éligibles vérifiée en amont (associations à but non lucratif, jamais de partis), la structure juridique de Sofia restant responsable de l'exécution du don.
+
 ## Questions ouvertes
 
 1. Quel pourcentage des revenus reverser ?
-2. Quelles deux associations ? Liste fixe, ou vote de la communauté parmi une sélection curatée ?
+2. Quelles associations figurent dans la liste éligible soumise au vote, et qui la constitue ?
 3. Implémentation : smart contract dédié, ou reversement périodique manuel avec preuves publiées ?
 
 ## Limites
