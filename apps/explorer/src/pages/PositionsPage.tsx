@@ -26,6 +26,8 @@ import SofiaLoader from '@/components/ui/SofiaLoader'
 import PositionsHero from '@/components/profile/PositionsHero'
 import PortfolioChart from '@/components/positions/PortfolioChart'
 import LegacyMigrationBanner from '@/components/positions/LegacyMigrationBanner'
+import DiscoveriesCard from '@/components/positions/DiscoveriesCard'
+import { useDiscoveries } from '@/hooks/useDiscoveries'
 import { useLegacyMigration } from '@/hooks/useLegacyMigration'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
@@ -94,6 +96,7 @@ export default function PositionsPage() {
   } = useUserPositions(rawAddress ? resolved.address : undefined)
   const { platformById } = usePlatformCatalog()
   const migration = useLegacyMigration(walletAddress, positions)
+  const discoveries = useDiscoveries(walletAddress, positions)
   const { redeemCert } = useRedeemCert()
 
   const ownAddress = authenticated ? user?.wallet?.address : undefined
@@ -307,6 +310,13 @@ export default function PositionsPage() {
           </span>
         </div>
       </section>
+
+      <DiscoveriesCard
+        isOwn={isOwn}
+        discoveries={discoveries.discoveries}
+        followers={discoveries.followers}
+        change={discoveries.change}
+      />
 
       <div className="mk-toolbar">
         <button

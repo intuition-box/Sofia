@@ -31,7 +31,8 @@ type VaultRow = NonNullable<ClaimRow["term"]>["vaults"][number]
 type LegRow = ClaimRow["mySupport"][number]
 
 const WAD = 10n ** 18n
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+const DAY_MS = 24 * 60 * 60 * 1000
+const WEEK_MS = 7 * DAY_MS
 
 export interface MarketSide {
   /** TRUST in the vaults, both curves (wei) */
@@ -84,6 +85,13 @@ export interface PageMarket {
   inPosition: boolean
   /** In position only through legacy claims */
   legacyOnly: boolean
+  /** Who recommended the page first, and how early */
+  discoverer: {
+    account: string
+    isYou: boolean
+    /** Days before the next Recommend, null while nobody followed */
+    leadDays: number | null
+  } | null
   mine: MyPosition[]
   tags: PageTag[]
   legacy: LegacyPosition[]
@@ -146,6 +154,18 @@ export function computePageMarket(
   }
   supporters.sort((a, b) => a.ts - b.ts)
   const order = [...new Set(supporters.map((s) => s.account))]
+  const firstTs = (account: string) =>
+    supporters.find((s) => s.account === account)!.ts
+  const discoverer = order[0]
+    ? {
+        account: order[0],
+        isYou: order[0] === me,
+        leadDays:
+          order.length > 1
+            ? Math.floor((firstTs(order[1]) - firstTs(order[0])) / DAY_MS)
+            : null
+      }
+    : null
 
   // Rank on the whole page: whoever backed it first, whatever the claim
   // (a legacy `visits for work` / `trusts` position counts — `distrust`
@@ -251,6 +271,7 @@ export function computePageMarket(
     rank: myIndex >= 0 ? myIndex + 1 : pageOrder.length + 1,
     inPosition: myIndex >= 0,
     legacyOnly: myIndex >= 0 && !(me && order.includes(me)),
+    discoverer,
     mine,
     tags: [...tagMap.values()].sort((a, b) => b.count - a.count),
     legacy

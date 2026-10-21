@@ -39,6 +39,15 @@ function pnlPct(position: MyPosition): string | null {
   return `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`
 }
 
+function discoveredLabel(market: PageMarket): string | null {
+  const d = market.discoverer
+  if (!d) return null
+  const who = d.isYou ? "you" : `${d.account.slice(0, 6)}…${d.account.slice(-4)}`
+  if (d.leadDays === null) return `Discovered by ${who}`
+  if (d.leadDays < 1) return `Discovered by ${who} · followed the same day`
+  return `Discovered by ${who} · ${d.leadDays} day${d.leadDays === 1 ? "" : "s"} before the next`
+}
+
 function rankLabel(market: PageMarket): string {
   const of = market.pageHolders > 0 ? ` of ${market.pageHolders}` : ""
   if (market.inPosition) {
@@ -94,6 +103,10 @@ const PageMarketPanel = ({
           className={`pm-rank${market.rank <= 3 ? " pm-rank--pioneer" : ""}`}>
           {rankLabel(market)}
         </p>
+      )}
+
+      {market && !loading && discoveredLabel(market) && (
+        <p className="pm-discovered">{discoveredLabel(market)}</p>
       )}
 
       <div className="pm-actions">
