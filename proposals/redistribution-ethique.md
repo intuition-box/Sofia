@@ -14,6 +14,10 @@ Tous les utilisateurs paient les mêmes frais, sans distinction. Une personne qu
 
 Les causes choisies sont non partisanes : elles ne visent aucune sensibilité politique légitime, seulement les idéologies incompatibles avec le respect d'autrui. L'objectif est un modèle éthique, et pas seulement capitaliste.
 
+## Positionnement
+
+L'engagement social de Sofia est assumé et peut être mis en avant, avec un ton sobre et factuel : ni provocation, ni promesse exagérée. La démarche sera publique et traçable, et cette transparence fait partie de la communication du projet : chacun pourra vérifier ce qui a été reversé, et à qui.
+
 ## Principes
 
 1. Aucun don à un parti politique, une campagne ou un mandataire financier. C'est interdit pour une personne morale en France (art. 11-4 de la loi n° 88-227 du 11 mars 1988), et ce n'est de toute façon pas l'objectif.
