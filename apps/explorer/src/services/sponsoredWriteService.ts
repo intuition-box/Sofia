@@ -1,5 +1,5 @@
 /**
- * sponsoredWriteService — free Recommends for email / Google accounts.
+ * sponsoredWriteService — free Recommends for every signed-in account.
  *
  * The write-relayer (services/write-relayer) publishes a page's Recommend and
  * its tags from Sofia's treasury, with `receiver` = the user's own wallet: the
@@ -140,11 +140,13 @@ async function call<T>(path: string, token: string, body?: unknown) {
 export const fetchSponsorQuota = (token: string) =>
   call<SponsorQuota>('/sponsor/quota', token)
 
-/** Gas for the wallet's one-time proxy approval (it holds no TRUST) */
-export const requestApprovalGas = (token: string) =>
-  call<{ funded: boolean }>('/sponsor/gas', token, {})
+/** Gas for the wallet's one-time proxy approval (it may hold no TRUST) */
+export const requestApprovalGas = (token: string, wallet: string) =>
+  call<{ funded: boolean }>('/sponsor/gas', token, { wallet })
 
+/** `wallet`: the account's wallet that receives the positions */
 export const requestSponsoredRecommends = (
   token: string,
+  wallet: string,
   pages: readonly SponsoredPage[],
-) => call<SponsorResult>('/sponsor/recommend', token, { pages })
+) => call<SponsorResult>('/sponsor/recommend', token, { wallet, pages })

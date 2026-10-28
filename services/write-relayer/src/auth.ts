@@ -1,6 +1,6 @@
-// Who may be sponsored: a Privy user who signed in with a verified email or
-// Google AND has a Privy embedded wallet (it receives the positions). Users
-// with their own crypto wallet only are not sponsored — they hold TRUST.
+// Who may be sponsored: any Privy user with a wallet — a Privy embedded wallet
+// (email / Google sign-in) or their own crypto wallet. That wallet receives
+// the positions.
 import { PrivyClient } from '@privy-io/server-auth'
 import type { MiddlewareHandler } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -8,9 +8,16 @@ import { env } from './env'
 
 export interface Sponsee {
   privyUserId: string
-  /** Embedded wallet, lowercase — the receiver of every position */
-  wallet: string
+  /** The account's wallets, lowercase, embedded first — positions go to one */
+  wallets: string[]
 }
+
+/** The wallet the user writes with when it's theirs, else their first one */
+export const receiverOf = (sponsee: Sponsee, requested?: unknown): string =>
+  typeof requested === 'string' &&
+  sponsee.wallets.includes(requested.toLowerCase())
+    ? requested.toLowerCase()
+    : sponsee.wallets[0]
 
 export type AppEnv = { Variables: { sponsee: Sponsee | null; reason: string } }
 
@@ -29,29 +36,21 @@ async function resolve(
   const hit = cache.get(userId)
   if (hit && Date.now() - hit.at < TTL_MS) return hit
   const user = await privy.getUser(userId)
-  const verified = user.linkedAccounts.some(
-    (a) => a.type === 'email' || a.type === 'google_oauth',
-  )
-  const embedded = user.linkedAccounts.find(
-    (a): a is typeof a & { address: string; walletClientType: string } =>
-      a.type === 'wallet' &&
-      'walletClientType' in a &&
-      a.walletClientType === 'privy',
-  )
-  const out = !verified
-    ? {
-        sponsee: null,
-        reason: 'Sign in with email or Google to get free Recommends',
-      }
-    : !embedded
-      ? { sponsee: null, reason: 'No Sofia wallet on this account' }
-      : {
-          sponsee: {
-            privyUserId: userId,
-            wallet: embedded.address.toLowerCase(),
-          },
-          reason: '',
-        }
+  const wallets = user.linkedAccounts
+    .filter(
+      (a): a is typeof a & { address: string; walletClientType?: string } =>
+        a.type === 'wallet' && 'address' in a,
+    )
+    .sort(
+      (a, b) =>
+        Number(b.walletClientType === 'privy') -
+        Number(a.walletClientType === 'privy'),
+    )
+    .map((a) => a.address.toLowerCase())
+  const out =
+    wallets.length === 0
+      ? { sponsee: null, reason: 'Connect a wallet to get free Recommends' }
+      : { sponsee: { privyUserId: userId, wallets }, reason: '' }
   cache.set(userId, { ...out, at: Date.now() })
   return out
 }

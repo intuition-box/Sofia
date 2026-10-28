@@ -127,6 +127,13 @@ export interface Limits {
   quotaMonthly: number
   quotaDaily: number
   budgetMonthlyWei: bigint
+  budgetDailyWei: bigint
+}
+
+/** What the relayer spent, this month / today (wei) */
+export interface Spent {
+  month: bigint
+  day: bigint
 }
 
 /** Recommends this account may still get today */
@@ -142,7 +149,7 @@ export function refusal(
   recommendCount: number,
   used: Usage,
   limits: Limits,
-  spentWei: bigint,
+  spent: Spent,
   reserveWei: bigint,
 ): string | null {
   if (limits.quotaDaily - used.day < recommendCount)
@@ -153,8 +160,10 @@ export function refusal(
     return used.month >= limits.quotaMonthly
       ? 'Monthly free Recommends used'
       : `Only ${limits.quotaMonthly - used.month} free Recommends left this month`
-  if (spentWei + reserveWei > limits.budgetMonthlyWei)
+  if (spent.month + reserveWei > limits.budgetMonthlyWei)
     return 'Free Recommends are paused for this month'
+  if (spent.day + reserveWei > limits.budgetDailyWei)
+    return 'Free Recommends are paused until tomorrow'
   return null
 }
 

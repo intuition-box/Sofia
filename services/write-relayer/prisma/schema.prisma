@@ -1,6 +1,5 @@
-// write-relayer — sponsored writes: Sofia pays for the Recommends of users
-// who signed in without a crypto wallet (email / Google → Privy embedded
-// wallet). One row per request; quota and budget are sums over these rows.
+// write-relayer — sponsored writes: Sofia pays for the Recommends of every
+// signed-in user (email / Google embedded wallet or their own wallet). One row per request; quota and budget are sums over these rows.
 
 datasource db {
   provider = "postgresql"
@@ -24,7 +23,7 @@ enum WriteStatus {
 model SponsoredWrite {
   id             String      @id @default(cuid())
   privyUserId    String
-  /// Receiver of the positions (the user's embedded wallet, lowercase)
+  /// Receiver of the positions (one of the user's wallets, lowercase)
   wallet         String
   /// Page atoms recommended
   objectIds      String[]

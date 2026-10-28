@@ -1,18 +1,20 @@
 /**
  * write-relayer — sponsored writes.
  *
- * Users who signed in with email or Google (Privy embedded wallet, no TRUST)
- * get free Recommends: Sofia's treasury account sends them through
+ * Every signed-in user (email / Google embedded wallet or their own crypto
+ * wallet) gets free Recommends: Sofia's treasury account sends them through
  * SofiaFeeProxy with `receiver` = the user's wallet, so every position is the
- * user's — and withdrawable. Quota per account (month / day) and a hard
- * monthly budget for the whole relayer; plan in
+ * user's — and withdrawable. Quota per account (month / day) and hard
+ * monthly + daily budgets for the whole relayer; plan in
  * docs/plans/SPONSORED_WRITES_PLAN.md.
  *
  *   GET  /health
  *   GET  /sponsor/quota       (Privy bearer) → eligibility + Recommends left
- *   POST /sponsor/recommend   (Privy bearer) { pages: [{ objectId, tags? }] }
+ *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId, tags? }] }
  *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
- *   POST /sponsor/gas         (Privy bearer) → gas for that one approval
+ *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
+ * `wallet`: the account's wallet that receives the positions (default: its
+ * embedded wallet, else its first one).
  */
 import { useAtomsByTermIdsQuery } from '@0xsofia/graphql'
 import { configureClient } from '@0xsofia/graphql'
@@ -20,7 +22,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import type { Hex } from 'viem'
-import { authMiddleware, type AppEnv, type Sponsee } from './auth'
+import { authMiddleware, receiverOf, type AppEnv, type Sponsee } from './auth'
 import { account, execute, fundApprovalGas, treasuryBalance } from './chain'
 import { prisma } from './db'
 import { env } from './env'
@@ -33,6 +35,7 @@ import {
   trustToWei,
   windowStarts,
   type Limits,
+  type Spent,
   type Usage,
 } from './policy'
 
@@ -42,6 +45,7 @@ const limits: Limits = {
   quotaMonthly: env.quotaMonthly,
   quotaDaily: env.quotaDaily,
   budgetMonthlyWei: trustToWei(env.budgetMonthlyTrust),
+  budgetDailyWei: trustToWei(env.budgetDailyTrust),
 }
 const depositWei = trustToWei(env.depositTrust)
 const COUNTED = ['reserved', 'sent'] as const
@@ -62,15 +66,16 @@ async function usageOf(privyUserId: string, now = new Date()): Promise<Usage> {
   return { month: await sum(month), day: await sum(day) }
 }
 
-async function spentThisMonth(now = new Date()): Promise<bigint> {
-  const agg = await prisma.sponsoredWrite.aggregate({
-    where: {
-      status: { in: [...COUNTED] },
-      createdAt: { gte: windowStarts(now).month },
-    },
-    _sum: { costWei: true },
-  })
-  return BigInt(agg._sum.costWei?.toFixed(0) ?? '0')
+async function spent(now = new Date()): Promise<Spent> {
+  const { month, day } = windowStarts(now)
+  const sum = async (since: Date) => {
+    const agg = await prisma.sponsoredWrite.aggregate({
+      where: { status: { in: [...COUNTED] }, createdAt: { gte: since } },
+      _sum: { costWei: true },
+    })
+    return BigInt(agg._sum.costWei?.toFixed(0) ?? '0')
+  }
+  return { month: await sum(month), day: await sum(day) }
 }
 
 /** Every page must be an atom the indexer knows — no sponsoring junk ids */
@@ -118,23 +123,24 @@ app.use('/sponsor/*', authMiddleware)
 app.get('/sponsor/quota', async (c) => {
   const sponsee = c.get('sponsee')
   if (!sponsee) return c.json({ eligible: false, reason: c.get('reason') })
-  const [used, spent] = await Promise.all([
-    usageOf(sponsee.privyUserId),
-    spentThisMonth(),
-  ])
+  const [used, out] = await Promise.all([usageOf(sponsee.privyUserId), spent()])
   return c.json({
     eligible: true,
     left: quotaLeft(used, limits),
     used,
     limits: { monthly: limits.quotaMonthly, daily: limits.quotaDaily },
-    paused: spent + RESERVE_PER_TRIPLE_WEI > limits.budgetMonthlyWei,
+    paused:
+      out.month + RESERVE_PER_TRIPLE_WEI > limits.budgetMonthlyWei ||
+      out.day + RESERVE_PER_TRIPLE_WEI > limits.budgetDailyWei,
   })
 })
 
 app.post('/sponsor/recommend', async (c) => {
   const sponsee = requireSponsee(c)
-  const parsed = parseRequest(await c.req.json().catch(() => null))
+  const body = await c.req.json().catch(() => null)
+  const parsed = parseRequest(body)
   if ('error' in parsed) return c.json({ error: parsed.error }, 400)
+  const wallet = receiverOf(sponsee, (body as { wallet?: unknown }).wallet)
 
   const missing = await unknownPages(parsed.pages.map((p) => p.objectId))
   if (missing.length > 0)
@@ -147,16 +153,16 @@ app.post('/sponsor/recommend', async (c) => {
   // Check + reserve atomically (vs. this account's other requests and the
   // relayer-wide budget)
   const reserved = await exclusive(async () => {
-    const [used, spent] = await Promise.all([
+    const [used, out] = await Promise.all([
       usageOf(sponsee.privyUserId),
-      spentThisMonth(),
+      spent(),
     ])
-    const why = refusal(plan.claims.length, used, limits, spent, reserve)
+    const why = refusal(plan.claims.length, used, limits, out, reserve)
     if (why) return { why }
     const row = await prisma.sponsoredWrite.create({
       data: {
         privyUserId: sponsee.privyUserId,
-        wallet: sponsee.wallet,
+        wallet,
         objectIds: parsed.pages.map((p) => p.objectId),
         recommendCount: plan.claims.length,
         tagCount: plan.tags.length,
@@ -167,7 +173,7 @@ app.post('/sponsor/recommend', async (c) => {
   })
   if ('why' in reserved) return c.json({ error: reserved.why }, 429)
 
-  const result = await execute(plan, sponsee.wallet as Hex, depositWei)
+  const result = await execute(plan, wallet as Hex, depositWei)
   const nothingSent = result.txHashes.length === 0
   await prisma.sponsoredWrite.update({
     where: { id: reserved.row.id },
@@ -217,10 +223,12 @@ const DRIP_COOLDOWN_MS = 60 * 60_000
 
 app.post('/sponsor/gas', async (c) => {
   const sponsee = requireSponsee(c)
+  const body = await c.req.json().catch(() => null)
+  const wallet = receiverOf(sponsee, (body as { wallet?: unknown })?.wallet)
   const last = lastDrip.get(sponsee.privyUserId) ?? 0
   if (Date.now() - last < DRIP_COOLDOWN_MS) return c.json({ funded: false })
   lastDrip.set(sponsee.privyUserId, Date.now())
-  const txHash = await fundApprovalGas(sponsee.wallet as Hex)
+  const txHash = await fundApprovalGas(wallet as Hex)
   return c.json({ funded: !!txHash, txHash, dryRun: env.dryRun })
 })
 

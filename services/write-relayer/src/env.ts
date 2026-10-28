@@ -33,6 +33,12 @@ export const env = {
   quotaDaily: int('SPONSOR_QUOTA_DAILY', 5),
   /** Hard monthly stop for the whole relayer (TRUST) */
   budgetMonthlyTrust: int('SPONSOR_BUDGET_MONTHLY_TRUST', 500),
+  /** Hard daily stop (TRUST) — a burst of fake accounts burns a day, not the
+   *  month. Defaults to a 30th of the monthly budget. */
+  budgetDailyTrust: int(
+    'SPONSOR_BUDGET_DAILY_TRUST',
+    Math.ceil(int('SPONSOR_BUDGET_MONTHLY_TRUST', 500) / 30),
+  ),
   /** Deposit per Recommend / tag (TRUST) — the protocol minimum */
   depositTrust: Number(process.env.SPONSOR_DEPOSIT_TRUST ?? '0.01'),
   /** true: simulate every tx, send nothing (local testing) */

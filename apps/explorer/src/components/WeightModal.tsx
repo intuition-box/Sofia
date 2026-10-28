@@ -164,7 +164,7 @@ export default function WeightModal({
   const { estimate } = useFeeEstimate()
   const { authenticated } = usePrivy()
   const { wallets } = useWallets()
-  // Email / Google accounts: a Recommend-only cart is free (write-relayer)
+  // Every account: a Recommend-only cart is free (write-relayer)
   const sponsored = useSponsoredWrite(items)
   const qc = useQueryClient()
   /** What already went through in this cart (mined txs): skipped on a retry

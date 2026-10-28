@@ -265,7 +265,7 @@ export function execute(
 
 /**
  * Gas for the user's one-time MultiVault.approve(proxy): an email / Google
- * wallet holds no TRUST. Only when it can't already pay; null if nothing sent.
+ * wallet — or a brand-new crypto wallet — holds no TRUST. Only when it can't already pay; null if nothing sent.
  */
 export function fundApprovalGas(wallet: Hex): Promise<Hex | null> {
   const run = queue.then(async () => {

@@ -20,7 +20,9 @@ const limits = {
   quotaMonthly: 20,
   quotaDaily: 5,
   budgetMonthlyWei: trustToWei(500),
+  budgetDailyWei: trustToWei(17),
 }
+const none = { month: 0n, day: 0n }
 
 describe('calculateTripleId', () => {
   it('matches an indexed mainnet triple', () => {
@@ -90,9 +92,11 @@ describe('quota and budget', () => {
   })
 
   it('refuses past the quota or the budget', () => {
-    expect(refusal(2, { month: 0, day: 0 }, limits, 0n, 0n)).toBeNull()
-    expect(refusal(1, { month: 0, day: 5 }, limits, 0n, 0n)).toMatch(/tomorrow/)
-    expect(refusal(3, { month: 18, day: 0 }, limits, 0n, 0n)).toMatch(
+    expect(refusal(2, { month: 0, day: 0 }, limits, none, 0n)).toBeNull()
+    expect(refusal(1, { month: 0, day: 5 }, limits, none, 0n)).toMatch(
+      /tomorrow/,
+    )
+    expect(refusal(3, { month: 18, day: 0 }, limits, none, 0n)).toMatch(
       /2 free Recommends left this month/,
     )
     expect(
@@ -100,10 +104,19 @@ describe('quota and budget', () => {
         1,
         { month: 0, day: 0 },
         limits,
-        trustToWei(499.9),
+        { month: trustToWei(499.9), day: 0n },
         trustToWei(0.25),
       ),
-    ).toMatch(/paused/)
+    ).toMatch(/paused for this month/)
+    expect(
+      refusal(
+        1,
+        { month: 0, day: 0 },
+        limits,
+        { month: trustToWei(20), day: trustToWei(16.9) },
+        trustToWei(0.25),
+      ),
+    ).toMatch(/until tomorrow/)
   })
 
   it('opens windows at UTC midnight and the 1st', () => {

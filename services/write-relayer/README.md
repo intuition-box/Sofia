@@ -1,7 +1,8 @@
 # Sofia write-relayer
 
-Sponsored writes: users who signed in with **email or Google** (Privy
-embedded wallet, no TRUST, no gas) get free Recommends. Sofia's treasury
+Sponsored writes: every signed-in user — **email / Google** (Privy embedded
+wallet, no TRUST, no gas) or their **own crypto wallet** — gets free
+Recommends. Sofia's treasury
 account sends them through `SofiaFeeProxy` with `receiver` = the user's
 wallet — every position belongs to the user and can be withdrawn.
 
@@ -12,8 +13,9 @@ Plan and decisions: `docs/plans/SPONSORED_WRITES_PLAN.md` (local).
 ```
 GET  /health                          -> { ok, relayer }
 GET  /sponsor/quota        (Privy)    -> { eligible, left, used, limits, paused } | { eligible: false, reason }
-POST /sponsor/recommend    (Privy)    { pages: [{ objectId, tags? }] }
+POST /sponsor/recommend    (Privy)    { wallet?, pages: [{ objectId, tags? }] }
                                       -> { txHashes, recommended, tagged, left, partial }
+POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy approval
 ```
 
 `Authorization: Bearer <Privy access token>` — the explorer's
@@ -21,14 +23,16 @@ POST /sponsor/recommend    (Privy)    { pages: [{ objectId, tags? }] }
 
 ## Rules
 
-- Eligible: a Privy account with a verified **email or Google** login AND a
-  Privy **embedded wallet** (it receives the positions). Accounts with only an
-  external wallet are not sponsored.
+- Eligible: any Privy account with a wallet. The positions go to `wallet`
+  when it is one of the account's wallets, else to its embedded wallet, else
+  to its first linked wallet.
 - Per request: ≤ 5 pages, ≤ 2 tags per page. Pages must be atoms the indexer
   knows; tags must be existing taxonomy atoms (v1 mints none).
 - Per account: `SPONSOR_QUOTA_MONTHLY` (20) and `SPONSOR_QUOTA_DAILY` (5)
   Recommends. Tags don't count against the quota, only against the budget.
-- Relayer-wide: `SPONSOR_BUDGET_MONTHLY_TRUST` (500) — a hard stop. Each
+- Relayer-wide: `SPONSOR_BUDGET_MONTHLY_TRUST` (500) and
+  `SPONSOR_BUDGET_DAILY_TRUST` (a 30th of it, 17) — hard stops; the daily one
+  keeps a burst of fake accounts from burning the whole month. Each
   request reserves 0.25 TRUST per triple before sending, then records the
   real cost (value + gas).
 - Each Recommend / tag deposits `SPONSOR_DEPOSIT_TRUST` (0.01, the protocol
@@ -49,6 +53,7 @@ POST /sponsor/recommend    (Privy)    { pages: [{ objectId, tags? }] }
 | `INTUITION_GRAPHQL_URL`                         | mainnet indexer         |                                            |
 | `SPONSOR_QUOTA_MONTHLY` / `SPONSOR_QUOTA_DAILY` | 20 / 5                  |                                            |
 | `SPONSOR_BUDGET_MONTHLY_TRUST`                  | 500                     |                                            |
+| `SPONSOR_BUDGET_DAILY_TRUST`                    | monthly / 30            |                                            |
 | `SPONSOR_DEPOSIT_TRUST`                         | 0.01                    |                                            |
 | `SPONSOR_DRY_RUN`                               | —                       | `1`: simulate every tx, send nothing       |
 | `CORS_ORIGINS`                                  | `http://localhost:5173` | CSV                                        |

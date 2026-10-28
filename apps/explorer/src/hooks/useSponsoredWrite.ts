@@ -27,19 +27,16 @@ export interface SponsoredWriteResult {
 }
 
 /**
- * Free Recommends for email / Google accounts (Privy embedded wallet). Only
- * when the wallet in use is that embedded wallet: a crypto-wallet account
- * keeps signing and paying itself. The relayer decides eligibility.
+ * Free Recommends for every signed-in account — email / Google (Privy
+ * embedded wallet) or a crypto wallet alike. The positions go to the wallet
+ * in use; the relayer decides eligibility.
  */
 export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
   const { authenticated, user, getAccessToken } = usePrivy()
   const { wallets } = useWallets()
   const qc = useQueryClient()
-  const enabled =
-    !!WRITE_RELAYER_URL &&
-    authenticated &&
-    !!(user?.email || user?.google) &&
-    wallets[0]?.walletClientType === 'privy'
+  const wallet = wallets[0]
+  const enabled = !!WRITE_RELAYER_URL && authenticated && !!wallet
   const userId = user?.id
 
   const { data: quota } = useQuery({
@@ -73,23 +70,25 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     if (!request) throw new Error('Nothing to recommend')
     const token = await getAccessToken()
     if (!token) throw new Error('Not signed in')
-    const send = () => requestSponsoredRecommends(token, request.pages)
+    if (!wallet) throw new Error('No wallet connected')
+    const send = () =>
+      requestSponsoredRecommends(token, wallet.address, request.pages)
     let result: SponsorResult
     try {
       result = await send()
     } catch (err) {
-      if (!(err instanceof RelayerError && err.needsApproval) || !wallets[0])
-        throw err
-      // First free Recommend: the wallet approves Sofia once (gas from us)
-      await requestApprovalGas(token)
-      await approveSofiaProxy(wallets[0])
+      if (!(err instanceof RelayerError && err.needsApproval)) throw err
+      // First free Recommend: the wallet approves Sofia once (gas from us
+      // when it holds none)
+      await requestApprovalGas(token, wallet.address)
+      await approveSofiaProxy(wallet)
       result = await send()
     }
     qc.setQueryData<SponsorQuota>(['sponsor-quota', userId], (q) =>
       q ? { ...q, left: result.left } : q,
     )
     return result
-  }, [request, getAccessToken, qc, userId, wallets])
+  }, [request, getAccessToken, qc, userId, wallet])
 
   return { active, left, hint, request, submit }
 }
