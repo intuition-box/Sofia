@@ -1,31 +1,31 @@
 /**
  * MissionsPanel — today's three missions + the topic of the week
  * (TREND_HUNTER_SPEC §3), computed from the wallet's on-chain positions.
- * Part of "Your month" on /trend-hunters. Each one done earns free
- * Recommends: the write-relayer checks the chain on its own, no claim step.
+ * A side card of /trend-hunters, one row per mission. Each one done earns
+ * free Recommends: the write-relayer checks the chain on its own.
  */
-import { AnimatedNumber, ModuleHead, StatePill } from '@0xsofia/design-system'
+import { AnimatedNumber } from '@0xsofia/design-system'
 import type { MissionProgress } from '@0xsofia/quests'
 import { useMissions } from '@/hooks/useMissions'
 import { nextUtcDay, useMinuteClock } from '@/hooks/useMinuteClock'
 import { countdown } from '@/utils/formatting'
-import '@0xsofia/design-system/styles/module-head.css'
-import '@0xsofia/design-system/styles/state-pill.css'
 import '@/components/styles/trend-hunter.css'
 
-function MissionCard({ mission }: { mission: MissionProgress }) {
+function MissionRow({ mission }: { mission: MissionProgress }) {
   const pct = Math.round((mission.progress / mission.target) * 100)
   return (
-    <li className="th-card">
-      <div className="th-card-top">
-        <span className="th-card-title">{mission.title}</span>
-        {mission.done ? (
-          <StatePill state="aligned" label="Done" />
-        ) : (
-          <span className="th-value">
-            <AnimatedNumber value={mission.progress} />/{mission.target}
-          </span>
-        )}
+    <li className={`th-mission${mission.done ? ' is-done' : ''}`}>
+      <div className="th-mission-top">
+        <span className="th-mission-title">{mission.title}</span>
+        <span className="th-mission-count">
+          {mission.done ? (
+            'Done'
+          ) : (
+            <>
+              <AnimatedNumber value={mission.progress} />/{mission.target}
+            </>
+          )}
+        </span>
       </div>
       <span className="th-desc">{mission.description}</span>
       <span className="th-bar" aria-hidden>
@@ -44,23 +44,21 @@ export default function MissionsPanel({
   const now = useMinuteClock()
 
   return (
-    <section className="th-section" aria-label="Missions">
-      <ModuleHead
-        title="Today's missions"
-        right={
-          <span className="th-desc">
-            Reset in {countdown(nextUtcDay(now), now)}
-          </span>
-        }
-      />
+    <section className="th-panel" aria-label="Today's missions">
+      <div className="th-panel-head">
+        <h2 className="th-panel-title">Today's missions</h2>
+        <span className="th-desc">
+          Reset in {countdown(nextUtcDay(now), now)}
+        </span>
+      </div>
       {loading || !missions ? (
         <p className="th-desc">Loading your missions…</p>
       ) : (
-        <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
+        <ul className="th-missions">
           {missions.daily.map((m) => (
-            <MissionCard key={m.id} mission={m} />
+            <MissionRow key={m.id} mission={m} />
           ))}
-          <MissionCard mission={missions.weekly} />
+          <MissionRow mission={missions.weekly} />
         </ul>
       )}
     </section>
