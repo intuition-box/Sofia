@@ -5,6 +5,7 @@
  * stream) and chunked under the chain's ~32M gas-per-tx cap.
  */
 import {
+  BaseError,
   createPublicClient,
   createWalletClient,
   defineChain,
@@ -22,6 +23,10 @@ const ZERO_ID = `0x${'0'.repeat(64)}`
 /** createTriples costs up to ~680k gas per triple, depositBatch ~270k */
 const CREATE_TX_SIZE = 35
 const DEPOSIT_TX_SIZE = 80
+/** MultiVault_SenderNotApproved: the receiver never approved the proxy */
+const SENDER_NOT_APPROVED = '0xd76f6ff8'
+/** Approving the proxy is one ~62k-gas tx — this covers it many times over */
+const GAS_DRIP_WEI = 100_000_000_000_000n // 0.0001 TRUST
 
 const intuition = defineChain({
   id: 1155,
@@ -79,6 +84,17 @@ interface Sent {
   costWei: bigint
 }
 
+/** The receiver must approve SofiaFeeProxy once (MultiVault.approve) */
+class NotApprovedError extends Error {}
+
+function revertSelector(err: unknown): string | null {
+  if (!(err instanceof BaseError)) return null
+  const found = err.walk(
+    (e) => typeof (e as { data?: unknown }).data === 'string',
+  ) as { data?: string } | null
+  return found?.data?.slice(0, 10) ?? null
+}
+
 /** Simulate (throws on a revert: nothing sent), then send with an explicit
  *  gas limit — never let a node fall back to the block limit — and wait */
 async function send(
@@ -87,7 +103,13 @@ async function send(
   fallbackGas: bigint,
 ): Promise<Sent | null> {
   const tx = { account, to: PROXY, data, value } as const
-  await publicClient.call(tx)
+  try {
+    await publicClient.call(tx)
+  } catch (err) {
+    if (revertSelector(err) === SENDER_NOT_APPROVED)
+      throw new NotApprovedError('Receiver has not approved SofiaFeeProxy')
+    throw err
+  }
   if (env.dryRun) return null
   let gas = fallbackGas
   try {
@@ -175,6 +197,8 @@ export interface Execution {
   costWei: bigint
   /** Set when a tx failed — the hashes before it did go through */
   error?: string
+  /** The receiver never approved the proxy — nothing can land on it yet */
+  notApproved?: boolean
 }
 
 const chunks = <T>(items: readonly T[], size: number): T[][] =>
@@ -223,8 +247,28 @@ export function execute(
     } catch (err) {
       out.error =
         err instanceof Error ? err.message.split('\n')[0] : String(err)
+      out.notApproved = err instanceof NotApprovedError
     }
     return out
+  })
+  queue = run.catch(() => undefined)
+  return run
+}
+
+/**
+ * Gas for the user's one-time MultiVault.approve(proxy): an email / Google
+ * wallet holds no TRUST. Only when it can't already pay; null if nothing sent.
+ */
+export function fundApprovalGas(wallet: Hex): Promise<Hex | null> {
+  const run = queue.then(async () => {
+    const balance = await publicClient.getBalance({ address: wallet })
+    if (env.dryRun || balance >= GAS_DRIP_WEI / 2n) return null
+    const hash = await walletClient.sendTransaction({
+      to: wallet,
+      value: GAS_DRIP_WEI,
+    })
+    await publicClient.waitForTransactionReceipt({ hash })
+    return hash
   })
   queue = run.catch(() => undefined)
   return run

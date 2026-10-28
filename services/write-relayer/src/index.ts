@@ -11,6 +11,8 @@
  *   GET  /health
  *   GET  /sponsor/quota       (Privy bearer) → eligibility + Recommends left
  *   POST /sponsor/recommend   (Privy bearer) { pages: [{ objectId, tags? }] }
+ *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
+ *   POST /sponsor/gas         (Privy bearer) → gas for that one approval
  */
 import { useAtomsByTermIdsQuery } from '@0xsofia/graphql'
 import { configureClient } from '@0xsofia/graphql'
@@ -19,7 +21,7 @@ import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import type { Hex } from 'viem'
 import { authMiddleware, type AppEnv, type Sponsee } from './auth'
-import { account, execute, treasuryBalance } from './chain'
+import { account, execute, fundApprovalGas, treasuryBalance } from './chain'
 import { prisma } from './db'
 import { env } from './env'
 import {
@@ -178,6 +180,14 @@ app.post('/sponsor/recommend', async (c) => {
       error: result.error ?? null,
     },
   })
+  if (result.notApproved && nothingSent)
+    return c.json(
+      {
+        error: 'Approve Sofia once to receive free Recommends',
+        needsApproval: true,
+      },
+      409,
+    )
   if (result.error && nothingSent)
     return c.json({ error: 'Could not publish — try again' }, 502)
 
@@ -191,6 +201,20 @@ app.post('/sponsor/recommend', async (c) => {
     dryRun: env.dryRun,
     deposit: env.depositTrust,
   })
+})
+
+// One gas drip per account per hour (the drip itself only goes to a wallet
+// that can't pay the approval already)
+const lastDrip = new Map<string, number>()
+const DRIP_COOLDOWN_MS = 60 * 60_000
+
+app.post('/sponsor/gas', async (c) => {
+  const sponsee = requireSponsee(c)
+  const last = lastDrip.get(sponsee.privyUserId) ?? 0
+  if (Date.now() - last < DRIP_COOLDOWN_MS) return c.json({ funded: false })
+  lastDrip.set(sponsee.privyUserId, Date.now())
+  const txHash = await fundApprovalGas(sponsee.wallet as Hex)
+  return c.json({ funded: !!txHash, txHash, dryRun: env.dryRun })
 })
 
 app.onError((err, c) => {

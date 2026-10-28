@@ -106,6 +106,16 @@ export interface SponsorResult {
   deposit: number
 }
 
+export class RelayerError extends Error {
+  constructor(
+    message: string,
+    /** The wallet must approve SofiaFeeProxy once before anything lands */
+    readonly needsApproval = false,
+  ) {
+    super(message)
+  }
+}
+
 async function call<T>(path: string, token: string, body?: unknown) {
   const res = await fetch(`${WRITE_RELAYER_URL}${path}`, {
     method: body ? 'POST' : 'GET',
@@ -115,13 +125,24 @@ async function call<T>(path: string, token: string, body?: unknown) {
     },
     body: body ? JSON.stringify(body) : undefined,
   })
-  const json = (await res.json().catch(() => ({}))) as T & { error?: string }
-  if (!res.ok) throw new Error(json.error ?? `Relayer error ${res.status}`)
+  const json = (await res.json().catch(() => ({}))) as T & {
+    error?: string
+    needsApproval?: boolean
+  }
+  if (!res.ok)
+    throw new RelayerError(
+      json.error ?? `Relayer error ${res.status}`,
+      !!json.needsApproval,
+    )
   return json
 }
 
 export const fetchSponsorQuota = (token: string) =>
   call<SponsorQuota>('/sponsor/quota', token)
+
+/** Gas for the wallet's one-time proxy approval (it holds no TRUST) */
+export const requestApprovalGas = (token: string) =>
+  call<{ funded: boolean }>('/sponsor/gas', token, {})
 
 export const requestSponsoredRecommends = (
   token: string,

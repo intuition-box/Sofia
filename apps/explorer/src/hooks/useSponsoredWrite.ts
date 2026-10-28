@@ -3,9 +3,12 @@ import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { WRITE_RELAYER_URL } from '../config'
 import type { CartItem } from './useCart'
+import { approveSofiaProxy } from '../services/proxyApprovalService'
 import {
   buildSponsoredRequest,
   fetchSponsorQuota,
+  RelayerError,
+  requestApprovalGas,
   requestSponsoredRecommends,
   type SponsorQuota,
   type SponsorResult,
@@ -70,12 +73,23 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     if (!request) throw new Error('Nothing to recommend')
     const token = await getAccessToken()
     if (!token) throw new Error('Not signed in')
-    const result = await requestSponsoredRecommends(token, request.pages)
+    const send = () => requestSponsoredRecommends(token, request.pages)
+    let result: SponsorResult
+    try {
+      result = await send()
+    } catch (err) {
+      if (!(err instanceof RelayerError && err.needsApproval) || !wallets[0])
+        throw err
+      // First free Recommend: the wallet approves Sofia once (gas from us)
+      await requestApprovalGas(token)
+      await approveSofiaProxy(wallets[0])
+      result = await send()
+    }
     qc.setQueryData<SponsorQuota>(['sponsor-quota', userId], (q) =>
       q ? { ...q, left: result.left } : q,
     )
     return result
-  }, [request, getAccessToken, qc, userId])
+  }, [request, getAccessToken, qc, userId, wallets])
 
   return { active, left, hint, request, submit }
 }
