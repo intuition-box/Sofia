@@ -31,6 +31,7 @@ function item(opts: {
 }): CircleItem {
   return {
     id: opts.id,
+    objectTermId: '',
     title: opts.id,
     url: '',
     domain: '',

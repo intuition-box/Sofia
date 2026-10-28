@@ -8,7 +8,7 @@
  */
 import { useNavigate } from 'react-router-dom'
 import type { CircleItem } from '@/services/circleService'
-import { INTENTION_COLORS } from '@/config/intentions'
+import { INTENTION_COLORS, INTENTION_CONFIG } from '@/config/intentions'
 import { getIntentionIconByLabel } from '@/config/intentionIcons'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { extractDomain, timeAgo } from '@/utils/formatting'
@@ -79,27 +79,19 @@ export default function CircleFeedCard({
     ...categoryPills(item.categorySlugs ?? []),
   ]
 
-  // A like/dislike stakes the cert's "in context of <topic>" nested triples
-  // (one click = one position on the topic context, no verb picker), so the
-  // counts + lit state aggregate across those — not the per-verb vaults.
-  // User state is the UNION of the feed-payload snapshot and the live
-  // realtime positions set so a fresh deposit lights the thumb immediately.
-  let supports = 0
-  let opposes = 0
-  let userSupported = false
-  let userOpposed = false
-  for (const c of item.contextTriples) {
-    supports += c.supportCount
-    opposes += c.opposeCount
-    if (c.userSupported || livePositionTermIds?.has(c.termId)) {
-      userSupported = true
-    }
-    if (c.userOpposed || livePositionTermIds?.has(c.counterTermId)) {
-      userOpposed = true
-    }
-  }
-  const canSupport = item.contextTriples.some((c) => c.termId)
-  const canOppose = item.contextTriples.some((c) => c.counterTermId)
+  // 👍 / 👎 = the page's one market (its Recommend claim) — see
+  // pageMarketCartService. User state is the UNION of the feed snapshot and
+  // the live realtime positions, so a fresh deposit lights the thumb at once.
+  const market = item.intentionVaults[INTENTION_CONFIG.trusted.label]
+  const supports = market?.supportCount ?? 0
+  const opposes = market?.opposeCount ?? 0
+  const userSupported =
+    !!market?.userSupported || !!livePositionTermIds?.has(market?.termId ?? '')
+  const userOpposed =
+    !!market?.userOpposed ||
+    !!livePositionTermIds?.has(market?.counterTermId ?? '')
+  const canSupport = !!item.objectTermId
+  const canOppose = !!market?.counterTermId
 
   // Subject for a new "in context of" triple — the cert triple term_id. A
   // cert can hold several (one per intention vault); pick the first

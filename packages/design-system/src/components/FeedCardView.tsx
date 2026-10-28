@@ -293,7 +293,7 @@ export function FeedCardView({
   canDown = true,
   hideVoteCounts = false,
   onVote,
-  voteDisabledReason = 'No topic to endorse yet — this URL has no "in context of" tag.',
+  voteDisabledReason = 'Nobody recommends this page yet — recommend it first.',
   onOpen,
   handleSlot,
   addContextSlot,

@@ -69,12 +69,12 @@ export default function CertFeedCard({
   ]
   const title = cleanLabel(cert.objectLabel || domain || '')
 
-  // A like/dislike endorses the cert "in context of <topic>" — it stakes the
-  // topic-context vault, NOT the cert vault (the verb). With no stakable
-  // context the thumbs disable + show the tooltip, matching the circle feed
-  // (CircleFeedCard.canSupport / canOppose).
-  const canSupport = cert.contextTriples.some((c) => c.termId)
-  const canOppose = cert.contextTriples.some((c) => c.counterTermId)
+  // 👍 / 👎 = the page's one market (its Recommend claim) — see
+  // pageMarketCartService. Opposing needs the claim on-chain: a Recommend
+  // cert is that claim, a legacy one isn't.
+  const canSupport = !!cert.objectTermId
+  const canOppose =
+    !isLegacyPagePredicate(cert.intention) && !!cert.counterTermId
 
   return (
     <FeedCardView

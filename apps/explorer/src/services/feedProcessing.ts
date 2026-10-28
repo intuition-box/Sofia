@@ -21,6 +21,7 @@ export interface FeedEvent {
     term_id?: string | null
     counter_term_id?: string | null
     object?: {
+      term_id?: string | null
       label?: string | null
       value?: {
         thing?: { url?: string | null; name?: string | null } | null
@@ -259,6 +260,7 @@ export function processEvents(
       }
       groupedMap.set(key, {
         id: evt.id,
+        objectTermId: triple.object?.term_id ?? '',
         title,
         url,
         domain,

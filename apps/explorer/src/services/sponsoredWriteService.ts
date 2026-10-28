@@ -15,8 +15,8 @@ import {
 } from '@/config/atomIds'
 import { WRITE_RELAYER_URL } from '@/config'
 import type { CartItem } from '@/hooks/useCart'
-import { calculateTripleId } from '@/lib/contracts/termIds'
 import { contextSlugFromCartId } from './contextCartService'
+import { recommendClaimId } from './pageMarketCartService'
 
 /** Mirrors the relayer's MAX_PAGES_PER_REQUEST / MAX_TAGS_PER_PAGE */
 export const MAX_SPONSORED_PAGES = 5
@@ -32,13 +32,6 @@ export interface SponsoredRequest {
   /** The Recommend rows, in `pages` order */
   recommendRows: CartItem[]
 }
-
-const recommendClaimId = (objectId: string) =>
-  calculateTripleId(
-    SOFIA_I_ATOM_ID,
-    CANONICAL_PREDICATE_IDS.recommends,
-    objectId,
-  ).toLowerCase()
 
 /** The page a cart row recommends, or null when the row is anything else */
 export function recommendedPage(item: CartItem): string | null {
