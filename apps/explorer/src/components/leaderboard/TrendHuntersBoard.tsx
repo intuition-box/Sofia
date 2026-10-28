@@ -1,6 +1,6 @@
 /**
  * TrendHuntersBoard — the month's Flair ranking (TREND_HUNTER_SPEC §4, §5.4):
- * header, summary stats, how to climb, the month's early
+ * the account's progress (HunterProgress), the month's summary, its early
  * signals, then the ranking.
  *
  * Flair = Σ credibility of the accounts that took a position after you on a
@@ -21,34 +21,13 @@ import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import HunterProgress from './HunterProgress'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import {
-  CREDITS_PER_CALL,
   formatMonth,
   TREND_HUNTER_BADGE_RANK,
   useTrendHunters,
-  type TrendHunterPool,
 } from '@/hooks/useTrendHunters'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@0xsofia/design-system/styles/state-pill.css'
 import '@/components/styles/trend-hunter.css'
-
-function steps(pool: TrendHunterPool | null) {
-  return [
-    {
-      title: 'Be early',
-      text: 'Take a position on a page while it is still unknown: be among the first 3.',
-    },
-    {
-      title: 'Get followed',
-      text: `Every credible account that follows adds to your Flair. Five of them make a call: +${CREDITS_PER_CALL} free Recommends.`,
-    },
-    {
-      title: `Make the Top ${TREND_HUNTER_BADGE_RANK}`,
-      text: pool
-        ? `The Top ${pool.size} share ${pool.trust} TRUST each month, by Flair, and earn the badge.`
-        : 'The best Trend Hunters of the month earn the badge on their profile.',
-    },
-  ]
-}
 
 const flair = (n: number) => Math.round(n).toLocaleString()
 
@@ -69,6 +48,8 @@ export default function TrendHuntersBoard({
 
   return (
     <div>
+      <HunterProgress wallet={connectedAddress} />
+
       <section className="th-section">
         <ModuleHead
           title={`Trend Hunters${monthLabel ? ` · ${monthLabel}` : ''}`}
@@ -96,19 +77,6 @@ export default function TrendHuntersBoard({
             </span>
           </div>
         </div>
-      </section>
-
-      {connectedAddress && <HunterProgress wallet={connectedAddress} />}
-
-      <section className="th-section" aria-label="How to climb">
-        <ol className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
-          {steps(pool).map((step) => (
-            <li key={step.title} className="th-card">
-              <span className="th-card-title">{step.title}</span>
-              <span className="th-desc">{step.text}</span>
-            </li>
-          ))}
-        </ol>
       </section>
 
       <EarlySignalsSection />

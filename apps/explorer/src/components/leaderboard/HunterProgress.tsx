@@ -1,11 +1,12 @@
 /**
- * HunterProgress — the connected account's month as a Trend Hunter, in one
- * place: calls, Flair and rank, the way to the Top 10 and its share of the
- * pool, free Recommends (credits from calls included) and when today's
- * reset.
+ * HunterProgress — the account's month as a Trend Hunter, at the top of the
+ * board: free Recommends first (what it owns, credits from calls included),
+ * then what grows them — calls, Flair, rank and the way to the Top 10 — and
+ * how to earn, in one line. Logged out: what signing in gives.
  */
 import { useEffect, useState } from 'react'
-import { AnimatedNumber, ModuleHead } from '@0xsofia/design-system'
+import { useLogin } from '@privy-io/react-auth'
+import { AnimatedNumber } from '@0xsofia/design-system'
 import { useSponsorQuota } from '@/hooks/useSponsoredWrite'
 import {
   CREDITS_PER_CALL,
@@ -13,8 +14,6 @@ import {
   useTrendHunters,
 } from '@/hooks/useTrendHunters'
 import { countdown } from '@/utils/formatting'
-import '@0xsofia/design-system/styles/module-head.css'
-import '@/components/styles/market-pages.css'
 import '@/components/styles/trend-hunter.css'
 
 const flair = (n: number) => Math.round(n).toLocaleString()
@@ -29,16 +28,57 @@ function useMinuteClock(): number {
   return now
 }
 
-export default function HunterProgress({ wallet }: { wallet: string }) {
+function HowToEarn({ topSize, pool }: { topSize: number; pool?: number }) {
+  return (
+    <ol className="th-steps">
+      <li>
+        <b>1</b> Be among the first 3 on a page
+      </li>
+      <li>
+        <b>2</b> 5 credible accounts follow: a call
+      </li>
+      <li>
+        <b>3</b> +{CREDITS_PER_CALL} free Recommends per call
+        {pool ? ` · Top ${topSize} share ${pool.toLocaleString()} TRUST` : ''}
+      </li>
+    </ol>
+  )
+}
+
+export default function HunterProgress({ wallet }: { wallet?: string | null }) {
   const { entries, pool } = useTrendHunters(50)
   const { quota } = useSponsorQuota()
+  const { login } = useLogin()
   const now = useMinuteClock()
 
-  const me = wallet.toLowerCase()
-  const mine = entries.find((e) => e.wallet === me)
+  const me = wallet?.toLowerCase()
+  const mine = me ? entries.find((e) => e.wallet === me) : undefined
   const topSize = pool?.size ?? TREND_HUNTER_BADGE_RANK
   const last = entries[topSize - 1]
   const inTop = !!mine && mine.rank <= topSize
+
+  if (!wallet) {
+    return (
+      <section className="th-section" aria-label="Your progress">
+        <div className="th-hero">
+          <span className="th-hero-value">Free Recommends</span>
+          <span className="th-desc">
+            Sign in to get free Recommends every month — and earn more by
+            spotting pages early.
+          </span>
+          <button
+            type="button"
+            className="pm-dex-invest th-hero-cta"
+            style={{ background: 'var(--ds-accent)' }}
+            onClick={() => login()}
+          >
+            Sign in
+          </button>
+        </div>
+        <HowToEarn topSize={topSize} pool={pool?.trust} />
+      </section>
+    )
+  }
 
   const d = new Date(now)
   const dayEnd = Date.UTC(
@@ -46,83 +86,73 @@ export default function HunterProgress({ wallet }: { wallet: string }) {
     d.getUTCMonth(),
     d.getUTCDate() + 1,
   )
+  const monthly = quota?.limits?.monthly ?? 0
+  const usedMonth = quota?.used?.month ?? 0
+  const leftMonth = Math.max(0, monthly - usedMonth)
+  const leftToday = quota?.left ?? 0
+  // Credits are summed over the account's wallets
+  const calls = Math.round((quota?.credits ?? 0) / CREDITS_PER_CALL)
+  const usedPct = monthly ? Math.round((usedMonth / monthly) * 100) : 0
 
-  // Share of the way to the Top N (full once in it)
-  const towardTop = inTop
-    ? 100
-    : mine && last?.flair
-      ? Math.min(99, Math.round((mine.flair / last.flair) * 100))
-      : 0
-
-  const standing = inTop
-    ? `You're #${mine!.rank} — in the Top ${topSize}.`
+  const toTop = inTop
+    ? mine?.reward
+      ? `≈ ${mine.reward.toFixed(2)} TRUST`
+      : `In the Top ${topSize}`
     : mine && last
-      ? `#${mine.rank}: ${flair(last.flair - mine.flair + 1)} more Flair to enter the Top ${topSize}.`
-      : 'Not ranked yet: be among the first 3 on a page others will follow.'
+      ? `${flair(last.flair - mine.flair + 1)} Flair to Top ${topSize}`
+      : 'Not ranked yet'
 
   return (
     <section className="th-section" aria-label="Your progress">
-      <ModuleHead title="Your progress" />
-      <div className="mk-summary">
-        <div className="mk-summary-stat">
-          <span className="mk-summary-value">
+      <div className="th-hero">
+        {quota?.eligible ? (
+          <>
+            <span className="th-hero-value">
+              <AnimatedNumber value={leftMonth} flash /> free Recommends left
+            </span>
+            <span className="th-bar th-bar--hero" aria-hidden>
+              <span style={{ width: `${usedPct}%` }} />
+            </span>
+            <span className="th-desc">
+              {usedMonth}/{monthly} used this month · {leftToday} left today
+              (resets in {countdown(dayEnd, now)})
+            </span>
+            <span className="th-hero-credits">
+              {calls
+                ? `+${quota.credits} earned from your ${calls} call${calls === 1 ? '' : 's'}`
+                : `Each call earns +${CREDITS_PER_CALL} free Recommends`}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="th-hero-value">Free Recommends</span>
+            <span className="th-desc">
+              {quota?.reason ?? 'Unavailable right now.'}
+            </span>
+          </>
+        )}
+      </div>
+
+      <div className="th-tiles">
+        <div className="th-tile">
+          <span className="th-value">
             <AnimatedNumber value={mine?.calls ?? 0} />
           </span>
-          <span className="mk-summary-label">
-            Calls · +{CREDITS_PER_CALL} free Recommends each
-          </span>
+          <span className="th-desc">calls</span>
         </div>
-        <div className="mk-summary-stat">
-          <span className="mk-summary-value">
+        <div className="th-tile">
+          <span className="th-value">
             <AnimatedNumber value={mine?.flair ?? 0} format={flair} flash />
           </span>
-          <span className="mk-summary-label">
-            Flair{mine ? ` · #${mine.rank}` : ''}
-          </span>
+          <span className="th-desc">Flair</span>
         </div>
-        <div className="mk-summary-stat">
-          <span className="mk-summary-value">
-            {mine?.reward ? (
-              <AnimatedNumber
-                value={mine.reward}
-                format={(n) => `${n.toFixed(2)} TRUST`}
-                flash
-              />
-            ) : (
-              '—'
-            )}
-          </span>
-          <span className="mk-summary-label">
-            {pool
-              ? `Your share of ${pool.trust.toLocaleString()} TRUST`
-              : 'Monthly pool'}
-          </span>
-        </div>
-        <div className="mk-summary-stat">
-          <span className="mk-summary-value">
-            {quota?.eligible ? <AnimatedNumber value={quota.left ?? 0} /> : '—'}
-          </span>
-          <span className="mk-summary-label">Free Recommends left today</span>
+        <div className="th-tile">
+          <span className="th-value">{mine ? `#${mine.rank}` : '—'}</span>
+          <span className="th-desc">{toTop}</span>
         </div>
       </div>
 
-      <div className="th-progress">
-        <div className="th-progress-line">
-          <span className="th-desc">{standing}</span>
-          <span className="th-value">{towardTop}%</span>
-        </div>
-        <span className="th-bar" aria-hidden>
-          <span style={{ width: `${towardTop}%` }} />
-        </span>
-        {quota?.eligible && quota.used && quota.limits && (
-          <span className="th-desc">
-            Free Recommends: {quota.used.month}/{quota.limits.monthly} used this
-            month
-            {quota.credits ? ` (+${quota.credits} earned from calls)` : ''}.
-            Today's resets in {countdown(dayEnd, now)}.
-          </span>
-        )}
-      </div>
+      <HowToEarn topSize={topSize} pool={pool?.trust} />
     </section>
   )
 }

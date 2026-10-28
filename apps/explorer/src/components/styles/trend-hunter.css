@@ -398,17 +398,82 @@ a.th-row:hover {
   }
 }
 
-/* Your progress (HunterProgress) */
-.th-progress {
+/* Your progress (HunterProgress): free Recommends first */
+.th-hero {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 14px;
+  padding: 22px 24px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 16px;
 }
 
-.th-progress-line {
+.th-hero-value {
+  font-family: var(--ds-font-display);
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ds-ink);
+}
+
+.th-bar--hero {
+  height: 8px;
+}
+
+.th-hero-credits {
+  font-weight: 600;
+  color: var(--ds-accent);
+}
+
+.th-hero-cta {
+  align-self: flex-start;
+}
+
+.th-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.th-tile {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 14px 18px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 12px;
+}
+
+.th-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ds-ink-soft);
+}
+
+.th-steps b {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  color: #fff;
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .th-tiles {
+    grid-template-columns: 1fr;
+  }
 }
