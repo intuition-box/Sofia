@@ -16,7 +16,12 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useLogin, usePrivy } from '@privy-io/react-auth'
-import { PageHero, FaviconWrapper, SectionH2 } from '@0xsofia/design-system'
+import {
+  AnimatedNumber,
+  PageHero,
+  FaviconWrapper,
+  SectionH2,
+} from '@0xsofia/design-system'
 import { RefreshCw, Wallet } from 'lucide-react'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useResolvedAddress } from '@/hooks/useResolvedAddress'
@@ -36,7 +41,11 @@ import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType,
 } from '@/config/intentions'
-import { formatTrust, formatTrustChange } from '@/utils/formatting'
+import {
+  formatTrustAmount,
+  formatTrustChangeAmount,
+  trustAmount,
+} from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import { resolvePlatformImage } from '@/services/platformMarketService'
 import type { RedeemPercent } from '@/services/redeemService'
@@ -173,16 +182,26 @@ export default function PositionsPage() {
           </span>
         </span>
         <span className="mk-num" role="cell">
-          {formatTrust(BigInt(p.deposited))}
+          <AnimatedNumber
+            value={trustAmount(p.deposited)}
+            format={formatTrustAmount}
+          />
         </span>
         <span className="mk-num" role="cell">
-          {formatTrust(BigInt(p.value))}
+          <AnimatedNumber
+            value={trustAmount(p.value)}
+            format={formatTrustAmount}
+            flash
+          />
         </span>
         <span
           className={`mk-num mk-change ${changeClass(p.change)}`}
           role="cell"
         >
-          {formatTrustChange(p.change)}
+          <AnimatedNumber
+            value={trustAmount(p.change)}
+            format={formatTrustChangeAmount}
+          />
           {p.changePct != null && (
             <span className="mk-change-pct">{formatPct(p.changePct)}</span>
           )}
@@ -283,7 +302,15 @@ export default function PositionsPage() {
       <section className="mk-summary" aria-label="Positions summary">
         <div className="mk-summary-stat">
           <span className="mk-summary-value">
-            {loading ? '—' : formatTrust(BigInt(summary.totalValue))}
+            {loading ? (
+              '—'
+            ) : (
+              <AnimatedNumber
+                value={trustAmount(summary.totalValue)}
+                format={formatTrustAmount}
+                flash
+              />
+            )}
           </span>
           <span className="mk-summary-label">Position value</span>
         </div>
@@ -291,7 +318,14 @@ export default function PositionsPage() {
           <span
             className={`mk-summary-value mk-change ${changeClass(summary.totalChange)}`}
           >
-            {loading ? '—' : formatTrustChange(summary.totalChange)}
+            {loading ? (
+              '—'
+            ) : (
+              <AnimatedNumber
+                value={trustAmount(summary.totalChange)}
+                format={formatTrustChangeAmount}
+              />
+            )}
             {!loading && summary.changePct != null && (
               <span className="mk-change-pct">
                 {formatPct(summary.changePct)}
@@ -302,13 +336,20 @@ export default function PositionsPage() {
         </div>
         <div className="mk-summary-stat">
           <span className="mk-summary-value">
-            {loading ? '—' : summary.count}
+            {loading ? '—' : <AnimatedNumber value={summary.count} />}
           </span>
           <span className="mk-summary-label">Positions</span>
         </div>
         <div className="mk-summary-stat">
           <span className="mk-summary-value">
-            {loading ? '—' : formatTrust(BigInt(summary.broughtToPlatforms))}
+            {loading ? (
+              '—'
+            ) : (
+              <AnimatedNumber
+                value={trustAmount(summary.broughtToPlatforms)}
+                format={formatTrustAmount}
+              />
+            )}
           </span>
           <span className="mk-summary-label">
             Brought to platforms

@@ -13,7 +13,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrivy, useLogin } from '@privy-io/react-auth'
-import { PageHero, FaviconWrapper } from '@0xsofia/design-system'
+import {
+  AnimatedNumber,
+  PageHero,
+  FaviconWrapper,
+} from '@0xsofia/design-system'
 import { TrendingUp, Users } from 'lucide-react'
 import { useTrendingPages } from '@/hooks/useTrendingPages'
 import { useCart } from '@/hooks/useCart'
@@ -30,7 +34,12 @@ import {
   INTENTION_CONFIG,
   predicateLabelToIntentionType,
 } from '@/config/intentions'
-import { formatTrust, timeAgo } from '@/utils/formatting'
+import {
+  formatTrust,
+  formatTrustAmount,
+  timeAgo,
+  trustAmount,
+} from '@/utils/formatting'
 import { avatarColor } from '@/utils/avatarColor'
 import { getAvatarUrl } from '@/services/ensService'
 import {
@@ -138,7 +147,7 @@ function TrendingRow({
             className="mk-stat-value"
             title={`${page.windowPositions} position${page.windowPositions === 1 ? '' : 's'} opened`}
           >
-            +{page.windowSupporters}
+            +<AnimatedNumber value={page.windowSupporters} flash />
           </span>
           <span className="mk-stat-label">
             {page.windowSupporters === 1 ? 'Person' : 'People'} · {timeWindow}
@@ -146,14 +155,19 @@ function TrendingRow({
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
-            <Users className="h-3 w-3" aria-hidden /> {page.supporters}
+            <Users className="h-3 w-3" aria-hidden />{' '}
+            <AnimatedNumber value={page.supporters} flash />
             {page.supportersCapped ? '+' : ''}
           </span>
           <span className="mk-stat-label">Supporters</span>
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
-            {formatTrust(BigInt(page.totalStaked))}
+            <AnimatedNumber
+              value={trustAmount(page.totalStaked)}
+              format={formatTrustAmount}
+              flash
+            />
           </span>
           <span className="mk-stat-label">Staked</span>
         </span>

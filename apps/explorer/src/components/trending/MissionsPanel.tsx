@@ -7,7 +7,7 @@
 import { Link } from 'react-router-dom'
 import { useLogin } from '@privy-io/react-auth'
 import { CircleHelp, Wallet } from 'lucide-react'
-import { ModuleHead, StatePill } from '@0xsofia/design-system'
+import { AnimatedNumber, ModuleHead, StatePill } from '@0xsofia/design-system'
 import type { MissionProgress } from '@0xsofia/quests'
 import {
   Tooltip,
@@ -46,7 +46,7 @@ function MissionCard({ mission }: { mission: MissionProgress }) {
           <StatePill state="aligned" label="Done" />
         ) : (
           <span className="th-value">
-            {mission.progress}/{mission.target}
+            <AnimatedNumber value={mission.progress} />/{mission.target}
           </span>
         )}
       </div>

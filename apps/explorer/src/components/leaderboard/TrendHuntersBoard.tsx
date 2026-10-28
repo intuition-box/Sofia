@@ -9,7 +9,12 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import type { Address } from 'viem'
-import { Avatar, ModuleHead, StatePill } from '@0xsofia/design-system'
+import {
+  AnimatedNumber,
+  Avatar,
+  ModuleHead,
+  StatePill,
+} from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import { useEnsNames } from '@/hooks/useEnsNames'
@@ -76,22 +81,37 @@ export default function TrendHuntersBoard({
         />
         <div className="mk-summary">
           <div className="mk-summary-stat">
-            <span className="mk-summary-value">{entries.length}</span>
+            <span className="mk-summary-value">
+              <AnimatedNumber value={entries.length} />
+            </span>
             <span className="mk-summary-label">Hunters ranked</span>
           </div>
           <div className="mk-summary-stat">
-            <span className="mk-summary-value">{totalCalls}</span>
+            <span className="mk-summary-value">
+              <AnimatedNumber value={totalCalls} />
+            </span>
             <span className="mk-summary-label">Calls this month</span>
           </div>
           <div className="mk-summary-stat">
             <span className="mk-summary-value">
-              {mine ? `#${mine.rank}` : '—'}
+              {mine ? (
+                <AnimatedNumber
+                  value={mine.rank}
+                  format={(n) => `#${Math.round(n)}`}
+                />
+              ) : (
+                '—'
+              )}
             </span>
             <span className="mk-summary-label">Your rank</span>
           </div>
           <div className="mk-summary-stat">
             <span className="mk-summary-value">
-              {mine ? flair(mine.flair) : '—'}
+              {mine ? (
+                <AnimatedNumber value={mine.flair} format={flair} flash />
+              ) : (
+                '—'
+              )}
             </span>
             <span className="mk-summary-label">Your Flair</span>
           </div>
@@ -160,7 +180,9 @@ export default function TrendHuntersBoard({
                     )}
                   </span>
                   <span className="th-rank">{e.calls || '—'}</span>
-                  <span className="th-num">{flair(e.flair)}</span>
+                  <span className="th-num">
+                    <AnimatedNumber value={e.flair} format={flair} />
+                  </span>
                 </Link>
               )
             })}

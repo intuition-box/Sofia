@@ -3,7 +3,8 @@ import { useEnsNames } from '../hooks/useEnsNames'
 import { EXPLORER_URL } from '../config'
 import type { LeaderboardProps, AlphaTester } from '../types'
 import { Card } from './ui/card'
-import { formatTrust } from '../utils/formatting'
+import { AnimatedNumber } from '@0xsofia/design-system'
+import { formatTrustAmount, trustAmount } from '../utils/formatting'
 import './styles/leaderboard.css'
 
 function RankCell({ rank }: { rank: number }) {
@@ -159,13 +160,20 @@ export default function Leaderboard({
                       </a>
                     </td>
                     <td className="lb-cell-num">
-                      {user.intentions.toLocaleString()}
+                      <AnimatedNumber value={user.intentions} />
                     </td>
-                    <td className="lb-cell-num">{user.pioneer}</td>
                     <td className="lb-cell-num">
-                      {formatTrust(user.trustVolume)}
+                      <AnimatedNumber value={user.pioneer} />
                     </td>
-                    <td className="lb-cell-num">{user.tx.toLocaleString()}</td>
+                    <td className="lb-cell-num">
+                      <AnimatedNumber
+                        value={trustAmount(user.trustVolume)}
+                        format={formatTrustAmount}
+                      />
+                    </td>
+                    <td className="lb-cell-num">
+                      <AnimatedNumber value={user.tx} />
+                    </td>
                   </tr>
                 )
               })}

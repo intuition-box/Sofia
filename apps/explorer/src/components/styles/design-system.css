@@ -8,6 +8,7 @@
 
 @import '@0xsofia/design-system/theme.css';
 @import '@0xsofia/design-system/styles/favicon.css';
+@import '@0xsofia/design-system/styles/animated-number.css';
 @import '@0xsofia/design-system/styles/verb-tag.css';
 @import '@0xsofia/design-system/styles/topic-pill.css';
 @import '@0xsofia/design-system/styles/user-badge.css';
