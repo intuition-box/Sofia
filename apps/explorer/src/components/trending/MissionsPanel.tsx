@@ -5,7 +5,7 @@
  * Recommends: the write-relayer checks the chain on its own, no claim step.
  */
 import { AnimatedNumber, ModuleHead, StatePill } from '@0xsofia/design-system'
-import { MISSION_CREDITS, type MissionProgress } from '@0xsofia/quests'
+import type { MissionProgress } from '@0xsofia/quests'
 import { useMissions } from '@/hooks/useMissions'
 import { nextUtcDay, useMinuteClock } from '@/hooks/useMinuteClock'
 import { countdown } from '@/utils/formatting'
@@ -15,25 +15,19 @@ import '@/components/styles/trend-hunter.css'
 
 function MissionCard({ mission }: { mission: MissionProgress }) {
   const pct = Math.round((mission.progress / mission.target) * 100)
-  const reward = MISSION_CREDITS[mission.period]
   return (
     <li className="th-card">
       <div className="th-card-top">
         <span className="th-card-title">{mission.title}</span>
         {mission.done ? (
-          <StatePill state="aligned" label={`Done · +${reward}`} />
+          <StatePill state="aligned" label="Done" />
         ) : (
           <span className="th-value">
             <AnimatedNumber value={mission.progress} />/{mission.target}
           </span>
         )}
       </div>
-      <span className="th-desc">
-        {mission.description}{' '}
-        <b className="th-reward">
-          +{reward} free Recommend{reward === 1 ? '' : 's'}
-        </b>
-      </span>
+      <span className="th-desc">{mission.description}</span>
       <span className="th-bar" aria-hidden>
         <span style={{ width: `${pct}%` }} />
       </span>

@@ -461,23 +461,3 @@ a.th-row:hover {
   outline-offset: 2px;
   border-radius: 4px;
 }
-
-.th-earned {
-  margin: 12px 0 0;
-  font-size: 14px;
-  color: var(--ds-ink-soft);
-}
-
-.th-earned b {
-  color: var(--ds-ink);
-}
-
-.th-earned-link {
-  margin-left: 4px;
-}
-
-.th-reward {
-  font-weight: 600;
-  color: var(--ds-accent);
-  white-space: nowrap;
-}
