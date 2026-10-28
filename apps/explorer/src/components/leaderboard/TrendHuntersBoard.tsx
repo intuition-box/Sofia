@@ -53,7 +53,7 @@ function HowItWorks({
     },
     {
       title: 'Get followed',
-      text: `When 5 credible accounts recommend it after you, it becomes a spotted page: +${CREDITS_PER_CALL} free Recommends. Each follower also adds to your Influence.`,
+      text: `When 5 credible accounts recommend it after you, it becomes a spotted page: +${CREDITS_PER_CALL} free Recommends. Each follower also adds to your Influence, and each mission you complete earns free Recommends too.`,
     },
     {
       title: `Make the Top ${topSize}`,
