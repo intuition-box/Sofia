@@ -182,6 +182,8 @@ export default function WeightModal({
           (it) =>
             (it.kind ?? 'deposit') === 'deposit' &&
             !isExitItem(it) &&
+            // Oppose deposits target the counter vault, not a triple id
+            it.side !== 'oppose' &&
             // Platform atom vaults (platform positions) are atoms, not
             // triples — skip the triple-existence check or it always fails.
             it.intention !== 'Invest' &&
@@ -196,7 +198,7 @@ export default function WeightModal({
   const missingTripleIds = useMemo(() => {
     if (!verifiedTriples) return []
     return depositTermIds.filter(
-      (id) => !verifiedTriples.get(id.toLowerCase())?.exists,
+      (id) => verifiedTriples.get(id.toLowerCase())?.exists === false,
     )
   }, [verifiedTriples, depositTermIds])
   // Static fetcher exposed alongside the React Query mutation hook —
