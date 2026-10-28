@@ -487,7 +487,8 @@ a.th-row:hover {
 .th-dial {
   position: relative;
   width: min(100%, 340px);
-  margin: 4px auto 0;
+  /* Centered in the space the card's height leaves */
+  margin: auto;
 }
 
 .th-dial-arc {
@@ -544,7 +545,7 @@ a.th-row:hover {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin: auto 0 0;
+  margin: 0;
   padding-top: 14px;
   border-top: 1px solid var(--ds-border-soft);
 }

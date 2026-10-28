@@ -28,12 +28,15 @@ function Dial({ value, label }: { value: number; label: string }) {
         pathLength={100}
         className="th-dial-track"
       />
-      <path
-        d="M 12 100 A 88 88 0 0 1 188 100"
-        pathLength={100}
-        className="th-dial-fill"
-        style={{ strokeDashoffset: 100 - pct }}
-      />
+      {/* At 0 a round cap would still paint a dot */}
+      {pct > 0 && (
+        <path
+          d="M 12 100 A 88 88 0 0 1 188 100"
+          pathLength={100}
+          className="th-dial-fill"
+          style={{ strokeDashoffset: 100 - pct }}
+        />
+      )}
     </svg>
   )
 }
