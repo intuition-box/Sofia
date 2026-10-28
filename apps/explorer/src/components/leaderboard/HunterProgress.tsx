@@ -1,5 +1,5 @@
 /**
- * HunterProgress — "Your month", the large card of /trend-hunters for a
+ * HunterProgress — "Your month", the large card of /spotters for a
  * signed-in account: a dial of the way to the Top N (full once in it) with
  * the rank at its center, then pages spotted, Influence and the share of the
  * pool. Free Recommends are spent on Trending, so their counter lives there.

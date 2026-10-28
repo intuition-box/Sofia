@@ -1,7 +1,7 @@
 /**
  * MissionsPanel — today's three missions + the topic of the week
  * (TREND_HUNTER_SPEC §3), computed from the wallet's on-chain positions.
- * A side card of /trend-hunters, one row per mission. Each one done earns
+ * A side card of /spotters, one row per mission. Each one done earns
  * free Recommends: the write-relayer checks the chain on its own.
  */
 import { AnimatedNumber } from '@0xsofia/design-system'

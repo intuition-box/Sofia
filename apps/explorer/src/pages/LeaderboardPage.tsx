@@ -22,9 +22,9 @@ export default function LeaderboardPage() {
 
   const pc = PAGE_COLORS['/leaderboard']
   const [params] = useSearchParams()
-  // Trend Hunters moved to its own page
+  // Trend Hunters moved to its own page, /spotters
   if (params.get('tab') === 'trend-hunters')
-    return <Navigate to="/trend-hunters" replace />
+    return <Navigate to="/spotters" replace />
 
   return (
     <div>
@@ -36,9 +36,9 @@ export default function LeaderboardPage() {
       <div className="space-y-6 page-content page-enter">
         {/* Season hub (nav "Season") — streaks live on their own page. */}
         <div className="mk-season-links">
-          <Link to="/trend-hunters" className="pm-chip mk-season-link">
+          <Link to="/spotters" className="pm-chip mk-season-link">
             <Crosshair className="h-3 w-3" aria-hidden />
-            Trend Hunters
+            Spotters
           </Link>
           <Link to="/streaks" className="pm-chip mk-season-link">
             <Flame className="h-3 w-3" aria-hidden />

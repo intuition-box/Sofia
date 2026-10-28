@@ -127,9 +127,9 @@ export function NavSidebar({
     { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
     { to: '/trending', icon: Flame, label: 'Trending', public: true },
     {
-      to: '/trend-hunters',
+      to: '/spotters',
       icon: Crosshair,
-      label: 'Trend Hunters',
+      label: 'Spotters',
       public: true,
     },
     { to: '/positions', icon: PieChart, label: 'My positions', public: true },

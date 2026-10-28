@@ -1,5 +1,5 @@
 /**
- * TrendHuntersPage — `/trend-hunters`. Public: a newcomer (often from a
+ * TrendHuntersPage — `/spotters` (Trend Hunters in the code and the API). Public: a newcomer (often from a
  * shared link) reads how it works first; a signed-in hunter sees their month.
  */
 import { PageHero } from '@0xsofia/design-system'
@@ -12,7 +12,7 @@ import '@/components/styles/platform-market.css'
 
 export default function TrendHuntersPage() {
   const address = useAccountWallet().address as Address | undefined
-  const pc = PAGE_COLORS['/trend-hunters']
+  const pc = PAGE_COLORS['/spotters']
 
   return (
     <div className="page-content page-enter">

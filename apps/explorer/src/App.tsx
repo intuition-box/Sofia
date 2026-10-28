@@ -116,7 +116,7 @@ export default function App() {
     location.pathname.startsWith('/circles') ||
     location.pathname.startsWith('/explore') ||
     location.pathname.startsWith('/trending') ||
-    location.pathname.startsWith('/trend-hunters') ||
+    location.pathname.startsWith('/spotters') ||
     location.pathname.startsWith('/positions') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
@@ -404,7 +404,12 @@ export default function App() {
                 />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/trending" element={<TrendingPage />} />
-                <Route path="/trend-hunters" element={<TrendHuntersPage />} />
+                <Route path="/spotters" element={<TrendHuntersPage />} />
+                {/* Former name of the page */}
+                <Route
+                  path="/trend-hunters"
+                  element={<Navigate to="/spotters" replace />}
+                />
                 {/* Public route: the page itself prompts a logged-out
                     visitor to connect instead of redirecting away. */}
                 <Route path="/positions" element={<PositionsPage />} />

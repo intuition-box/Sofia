@@ -37,11 +37,11 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
     subtitle: 'See the top Sofia users this season and where you stand.',
     glow: 'rgba(245,213,138,0.4)',
   },
-  '/trend-hunters': {
+  '/spotters': {
     color: '#BDB2FF',
-    title: 'Trend Hunters',
+    title: 'Spotters',
     subtitle:
-      'Recommend pages before everyone else. When credible accounts follow you, you earn free Recommends and a share of the monthly TRUST pool.',
+      'Spot pages before everyone else. When credible accounts follow you, you earn free Recommends and a share of the monthly TRUST pool.',
     glow: 'rgba(189,178,255,0.4)',
   },
   '/streaks': {

@@ -1,8 +1,8 @@
 /**
  * EarlySignalsSection — the month's best spotted pages (TREND_HUNTER_SPEC
  * §5.2): "Spotted by @x, N days before 5 credible accounts followed". On
- * Explore (the showcase, linking to /trend-hunters) and at the end of
- * /trend-hunters, as a band that scrolls on its own (pauses on hover / focus,
+ * Explore (the showcase, linking to /spotters) and at the end of
+ * /spotters, as a band that scrolls on its own (pauses on hover / focus,
  * still when the system asks for reduced motion). Hidden until the month has
  * one.
  */
@@ -26,7 +26,7 @@ function leadLabel(days: number): string {
 export default function EarlySignalsSection({
   linkToBoard = true,
 }: {
-  /** Off on /trend-hunters itself */
+  /** Off on /spotters itself */
   linkToBoard?: boolean
 }) {
   const { entries, month } = useEarlySignals(6)
@@ -44,8 +44,8 @@ export default function EarlySignalsSection({
         title="Spotted this month"
         right={
           linkToBoard ? (
-            <Link to="/trend-hunters" className="pm-chip">
-              Trend Hunters
+            <Link to="/spotters" className="pm-chip">
+              Spotters
             </Link>
           ) : undefined
         }

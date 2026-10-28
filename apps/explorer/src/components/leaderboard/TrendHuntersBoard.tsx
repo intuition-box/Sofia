@@ -1,5 +1,5 @@
 /**
- * TrendHuntersBoard — the body of /trend-hunters (TREND_HUNTER_SPEC §4, §5).
+ * TrendHuntersBoard — the body of /spotters (TREND_HUNTER_SPEC §4, §5).
  * Order follows what the visitor needs first:
  *   signed in:  Your month → today's missions → how it works → ranking →
  *               pages spotted this month
@@ -107,7 +107,7 @@ function HowItWorks({
           style={{ background: 'var(--ds-accent)', marginTop: 14 }}
           onClick={onSignIn}
         >
-          Sign in to start hunting
+          Sign in to start spotting
         </button>
       )}
     </section>
@@ -168,7 +168,7 @@ export default function TrendHuntersBoard({
           <div className="th-table" role="table">
             <div className="th-row th-row--head" role="row">
               <span role="columnheader">#</span>
-              <span role="columnheader">Hunter</span>
+              <span role="columnheader">Spotter</span>
               <span role="columnheader">Spotted</span>
               <span role="columnheader" className="th-num">
                 Influence
