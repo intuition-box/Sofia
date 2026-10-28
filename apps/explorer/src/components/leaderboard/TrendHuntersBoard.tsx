@@ -1,8 +1,8 @@
 /**
  * TrendHuntersBoard — the body of /spotters (TREND_HUNTER_SPEC §4, §5).
  * Order follows what the visitor needs first:
- *   signed in:  Your month → today's missions → how it works → ranking →
- *               pages spotted this month
+ *   signed in:  Your month | pages to sort + today's missions, then how it
+ *               works → ranking → pages spotted this month
  *   signed out: how it works (+ sign in) → ranking → pages spotted
  * Free Recommends are spent on Trending, so their counter lives there.
  *
@@ -24,6 +24,7 @@ import SofiaLoader from '@/components/ui/SofiaLoader'
 import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import MissionsPanel from '@/components/trending/MissionsPanel'
 import HunterProgress from './HunterProgress'
+import SortQueuePanel from './SortQueuePanel'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import {
   CREDITS_PER_CALL,
@@ -41,54 +42,27 @@ const influence = (n: number) => Math.round(n).toLocaleString()
 function HowItWorks({
   pool,
   onSignIn,
-  compact = false,
 }: {
   pool: TrendHunterPool | null
   onSignIn?: () => void
-  /** The side card of the signed-in layout: one line per step */
-  compact?: boolean
 }) {
   const topSize = pool?.size ?? TREND_HUNTER_BADGE_RANK
   const steps = [
     {
       title: 'Be early',
       text: 'Recommend a page while it is still unknown: be among its first 3.',
-      short: 'Recommend a page among its first 3.',
     },
     {
       title: 'Get followed',
       text: `When 5 credible accounts recommend it after you, it becomes a spotted page: +${CREDITS_PER_CALL} free Recommends. Each follower also adds to your Influence, and each mission you complete earns free Recommends too.`,
-      short: `5 credible accounts follow: +${CREDITS_PER_CALL} free Recommends. Missions earn more.`,
     },
     {
       title: `Make the Top ${topSize}`,
       text: pool
         ? `The Top ${topSize} by Influence share ${pool.trust.toLocaleString()} TRUST at the end of each month.`
         : `The Top ${topSize} by Influence earn the badge on their profile.`,
-      short: pool
-        ? `The Top ${topSize} by Influence share ${pool.trust.toLocaleString()} TRUST each month.`
-        : `The Top ${topSize} by Influence earn a badge.`,
     },
   ]
-  if (compact) {
-    return (
-      <section className="th-panel" aria-label="How it works">
-        <h2 className="th-panel-title">How it works</h2>
-        <ol className="th-steps">
-          {steps.map((step, i) => (
-            <li key={step.title}>
-              <span className="th-step-num" aria-hidden>
-                {i + 1}
-              </span>
-              <span>
-                <b>{step.title}.</b> {step.short}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
-    )
-  }
   return (
     <section className="th-section" aria-label="How it works">
       <ModuleHead title="How it works" />
@@ -133,13 +107,16 @@ export default function TrendHuntersBoard({
   return (
     <div>
       {connectedAddress ? (
-        <div className="th-bento">
-          <HunterProgress wallet={connectedAddress} />
-          <div className="th-bento-side">
-            <MissionsPanel walletAddress={connectedAddress} />
-            <HowItWorks pool={pool} compact />
+        <>
+          <div className="th-bento">
+            <HunterProgress wallet={connectedAddress} />
+            <div className="th-bento-side">
+              <SortQueuePanel walletAddress={connectedAddress} />
+              <MissionsPanel walletAddress={connectedAddress} />
+            </div>
           </div>
-        </div>
+          <HowItWorks pool={pool} />
+        </>
       ) : (
         <HowItWorks pool={pool} onSignIn={() => login()} />
       )}

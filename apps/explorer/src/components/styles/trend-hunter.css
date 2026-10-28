@@ -608,38 +608,124 @@ a.th-row:hover {
   color: var(--ds-ink);
 }
 
-/* How it works side card: a real 3-step sequence */
-.th-steps {
+/* Pages to sort: one row per page, three actions */
+.th-sort-intro {
+  margin: -6px 0 0;
+}
+
+.th-sort {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--ds-ink-soft);
 }
 
-.th-steps li {
+.th-sort-row {
   display: flex;
+  align-items: center;
   gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--ds-border-soft);
 }
 
-.th-steps b {
+.th-sort-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.th-sort-favicon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--ds-border-soft);
+}
+
+.th-sort-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.th-sort-title {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+a.th-sort-title:hover {
+  text-decoration: underline;
+}
+
+.th-sort-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+.th-sort-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: none;
+  color: var(--ds-ink);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.th-sort-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.th-sort-btn:hover:not(:disabled) {
+  border-color: var(--ds-ink-soft);
+}
+
+.th-sort-btn.is-up:hover:not(:disabled) {
+  background: var(--ds-ink);
+  border-color: var(--ds-ink);
+  color: var(--ds-card);
+}
+
+.th-sort-skip {
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--ds-muted);
+  cursor: pointer;
+}
+
+.th-sort-skip:hover:not(:disabled) {
   color: var(--ds-ink);
 }
 
-.th-step-num {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--ds-border);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 600;
+.th-sort-btn:focus-visible,
+.th-sort-skip:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.th-sort-btn:disabled,
+.th-sort-skip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.th-sort-error {
   color: var(--ds-ink);
 }
 

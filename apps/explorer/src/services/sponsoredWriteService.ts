@@ -16,6 +16,8 @@ import {
 import { WRITE_RELAYER_URL } from '@/config'
 import type { CartItem } from '@/hooks/useCart'
 import { contextSlugFromCartId } from './contextCartService'
+import type { WalletDescriptor } from './depositService'
+import { approveSofiaProxy } from './proxyApprovalService'
 import { recommendClaimId } from './pageMarketCartService'
 
 /** Mirrors the relayer's MAX_PAGES_PER_REQUEST / MAX_TAGS_PER_PAGE */
@@ -99,6 +101,8 @@ export interface SponsorQuota {
   limits?: { monthly: number; daily: number }
   /** Relayer-wide monthly budget reached */
   paused?: boolean
+  /** Free second opinions left today (sorting queue), outside `left` */
+  opinionsLeft?: number
 }
 
 export interface SponsorResult {
@@ -154,6 +158,37 @@ export const fetchSponsorQuota = (token: string) =>
 /** Gas for the wallet's one-time proxy approval (it may hold no TRUST) */
 export const requestApprovalGas = (token: string, wallet: string) =>
   call<{ funded: boolean }>('/sponsor/gas', token, { wallet })
+
+/** Free opposes on pages one other person recommended (sorting queue) */
+export const requestSponsoredOpposes = (
+  token: string,
+  wallet: string,
+  objectIds: readonly string[],
+) =>
+  call<{ opposed: number; opinionsLeft: number; txHashes: string[] }>(
+    '/sponsor/oppose',
+    token,
+    { wallet, objectIds },
+  )
+
+/**
+ * Sends a sponsored write; on a wallet's very first one, it approves Sofia
+ * once (gas from the relayer when it holds none) and sends again
+ */
+export async function sendWithApproval<T>(
+  token: string,
+  wallet: WalletDescriptor,
+  send: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await send()
+  } catch (err) {
+    if (!(err instanceof RelayerError && err.needsApproval)) throw err
+    await requestApprovalGas(token, wallet.address)
+    await approveSofiaProxy(wallet)
+    return send()
+  }
+}
 
 /** `wallet`: the account's wallet that receives the positions */
 export const requestSponsoredRecommends = (

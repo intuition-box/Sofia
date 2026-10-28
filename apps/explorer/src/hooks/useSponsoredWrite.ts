@@ -3,13 +3,11 @@ import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { WRITE_RELAYER_URL } from '../config'
 import type { CartItem } from './useCart'
-import { approveSofiaProxy } from '../services/proxyApprovalService'
 import {
   buildSponsoredRequest,
   fetchSponsorQuota,
-  RelayerError,
-  requestApprovalGas,
   requestSponsoredRecommends,
+  sendWithApproval,
   type SponsorQuota,
   type SponsorResult,
   type SponsoredRequest,
@@ -83,19 +81,9 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     const token = await getAccessToken()
     if (!token) throw new Error('Not signed in')
     if (!wallet) throw new Error('No wallet connected')
-    const send = () =>
-      requestSponsoredRecommends(token, wallet.address, request.pages)
-    let result: SponsorResult
-    try {
-      result = await send()
-    } catch (err) {
-      if (!(err instanceof RelayerError && err.needsApproval)) throw err
-      // First free Recommend: the wallet approves Sofia once (gas from us
-      // when it holds none)
-      await requestApprovalGas(token, wallet.address)
-      await approveSofiaProxy(wallet)
-      result = await send()
-    }
+    const result = await sendWithApproval(token, wallet, () =>
+      requestSponsoredRecommends(token, wallet.address, request.pages),
+    )
     qc.setQueryData<SponsorQuota>(['sponsor-quota', userId], (q) =>
       q ? { ...q, left: result.left } : q,
     )
