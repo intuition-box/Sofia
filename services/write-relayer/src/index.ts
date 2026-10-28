@@ -189,7 +189,14 @@ app.post('/sponsor/recommend', async (c) => {
       409,
     )
   if (result.error && nothingSent)
-    return c.json({ error: 'Could not publish — try again' }, 502)
+    return c.json(
+      {
+        error: /RPC Request failed|Bandwidth limit/i.test(result.error)
+          ? 'The network is busy — try again in a minute'
+          : 'Could not publish — try again',
+      },
+      502,
+    )
 
   const used = await usageOf(sponsee.privyUserId)
   return c.json({

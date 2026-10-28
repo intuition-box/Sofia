@@ -6,6 +6,7 @@
  */
 import {
   BaseError,
+  ContractFunctionRevertedError,
   createPublicClient,
   createWalletClient,
   defineChain,
@@ -57,6 +58,8 @@ const walletClient = createWalletClient({
 export const treasuryBalance = () =>
   publicClient.getBalance({ address: account.address })
 
+const isRevert = (e: unknown) => e instanceof ContractFunctionRevertedError
+
 /** Triples among `ids` already on-chain (one multicall) */
 async function existingTriples(ids: readonly Hex[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set()
@@ -72,7 +75,12 @@ async function existingTriples(ids: readonly Hex[]): Promise<Set<string>> {
   })
   const out = new Set<string>()
   res.forEach((r, i) => {
-    if (r.status !== 'success') return
+    // A revert means "no such triple"; anything else (a throttled RPC) must
+    // not pass for it, or an existing claim gets created again
+    if (r.status !== 'success') {
+      if (r.error instanceof BaseError && r.error.walk(isRevert)) return
+      throw r.error
+    }
     const [s, , o] = r.result as readonly [string, string, string]
     if (s !== ZERO_ID && o !== ZERO_ID) out.add(ids[i].toLowerCase())
   })
