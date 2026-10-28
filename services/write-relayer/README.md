@@ -35,6 +35,11 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
   followed) adds `SPONSOR_CREDITS_PER_CALL` (3) Recommends to both quotas.
   The relayer-wide budgets still apply; if the reputation-api is down, the
   account keeps its base quota.
+- Second opinions: a recommend or an oppose on a page exactly one other
+  account recommended (the 1→2 step where pages stall) doesn't count
+  against the quota; `SPONSOR_OPINIONS_DAILY` (5) a day instead.
+  `POST /sponsor/oppose` only takes such pages (the explorer's sorting
+  queue): a deposit on the claim's counter vault.
 - Mission credits: every Trend Hunter mission completed this month adds
   `MISSION_CREDITS` (`@0xsofia/quests`: 1 per daily mission, 3 per weekly
   one) to both quotas. Checked on-chain with the explorer's own rules (page
@@ -65,6 +70,7 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 | `SPONSOR_BUDGET_MONTHLY_TRUST`                  | 500                     |                                            |
 | `SPONSOR_BUDGET_DAILY_TRUST`                    | monthly / 30            |                                            |
 | `SPONSOR_DEPOSIT_TRUST`                         | 0.01                    |                                            |
+| `SPONSOR_OPINIONS_DAILY`                        | 5                       | second opinions a day, outside the quota   |
 | `REPUTATION_API_URL`                            | —                       | Trend Hunter calls; empty ⇒ no credits     |
 | `SPONSOR_CREDITS_PER_CALL`                      | 3                       | free Recommends per call this month        |
 | `SPONSOR_DRY_RUN`                               | —                       | `1`: simulate every tx, send nothing       |

@@ -14,24 +14,43 @@
  *        month add some)
  *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId, tags? }] }
  *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
+ *   POST /sponsor/oppose      (Privy bearer) { wallet?, objectIds } → free
+ *        opposes on pages one other person recommended (sorting queue)
  *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
+ * Second opinions (a recommend or an oppose on a page exactly one other
+ * account recommended) don't count against the quota: their own daily cap.
  * `wallet`: the account's wallet that receives the positions (default: its
  * embedded wallet, else its first one).
  */
-import { useAtomsByTermIdsQuery } from '@0xsofia/graphql'
-import { configureClient } from '@0xsofia/graphql'
+import {
+  configureClient,
+  useAtomsByTermIdsQuery,
+  useClaimSupportersQuery,
+} from '@0xsofia/graphql'
+import { needsSecondOpinion } from '@0xsofia/quests'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import type { Hex } from 'viem'
 import { authMiddleware, receiverOf, type AppEnv, type Sponsee } from './auth'
-import { account, execute, fundApprovalGas, treasuryBalance } from './chain'
+import {
+  account,
+  execute,
+  fundApprovalGas,
+  treasuryBalance,
+  type Execution,
+} from './chain'
 import { creditsOf } from './credits'
 import { prisma } from './db'
 import { env } from './env'
 import {
+  buildOpposePlan,
   buildPlan,
+  MAX_PAGES_PER_REQUEST,
+  opinionsLeft,
   parseRequest,
+  recommendClaimId,
+  splitOpinions,
   quotaLeft,
   refusal,
   RESERVE_PER_TRIPLE_WEI,
@@ -50,24 +69,28 @@ const limits: Limits = {
   quotaDaily: env.quotaDaily,
   budgetMonthlyWei: trustToWei(env.budgetMonthlyTrust),
   budgetDailyWei: trustToWei(env.budgetDailyTrust),
+  opinionsDaily: env.opinionsDaily,
 }
 const depositWei = trustToWei(env.depositTrust)
 const COUNTED = ['reserved', 'sent'] as const
 
 async function usageOf(privyUserId: string, now = new Date()): Promise<Usage> {
   const { month, day } = windowStarts(now)
-  const sum = async (since: Date) =>
-    (
-      await prisma.sponsoredWrite.aggregate({
-        where: {
-          privyUserId,
-          status: { in: [...COUNTED] },
-          createdAt: { gte: since },
-        },
-        _sum: { recommendCount: true },
-      })
-    )._sum.recommendCount ?? 0
-  return { month: await sum(month), day: await sum(day) }
+  const sum = (since: Date) =>
+    prisma.sponsoredWrite.aggregate({
+      where: {
+        privyUserId,
+        status: { in: [...COUNTED] },
+        createdAt: { gte: since },
+      },
+      _sum: { recommendCount: true, opinionCount: true },
+    })
+  const [m, d] = await Promise.all([sum(month), sum(day)])
+  return {
+    month: m._sum.recommendCount ?? 0,
+    day: d._sum.recommendCount ?? 0,
+    opinionsDay: d._sum.opinionCount ?? 0,
+  }
 }
 
 async function spent(now = new Date()): Promise<Spent> {
@@ -89,6 +112,40 @@ async function unknownPages(objectIds: readonly string[]): Promise<string[]> {
   })()
   const known = new Set(data.atoms.map((a) => a.term_id.toLowerCase()))
   return objectIds.filter((id) => !known.has(id.toLowerCase()))
+}
+
+/**
+ * Pages waiting for a second opinion right now: exactly one other account
+ * recommended them (shared rule with the "Sort your pages" mission)
+ */
+async function openForOpinion(
+  objectIds: readonly string[],
+  wallets: readonly string[],
+): Promise<Set<string>> {
+  const claimOf = new Map<string, string>(
+    objectIds.map((id) => [recommendClaimId(id).toLowerCase(), id]),
+  )
+  const data = await useClaimSupportersQuery.fetcher({
+    claimTermIds: [...claimOf.keys()],
+  })()
+  const own = new Set(wallets.map((w) => w.toLowerCase()))
+  const now = Date.now()
+  const open = new Set<string>()
+  for (const t of data.triples ?? []) {
+    const backers = new Map([
+      [
+        t.term_id,
+        (t.support ?? []).map((p) => ({
+          account: p.account_id,
+          createdAt: Date.parse(p.created_at),
+        })),
+      ],
+    ])
+    const objectId = claimOf.get(t.term_id.toLowerCase())
+    if (objectId && needsSecondOpinion(t.term_id, now, backers, own))
+      open.add(objectId)
+  }
+  return open
 }
 
 // One request at a time between the quota check and its reservation, so two
@@ -136,6 +193,7 @@ app.get('/sponsor/quota', async (c) => {
   return c.json({
     eligible: true,
     left: quotaLeft(used, mine),
+    opinionsLeft: opinionsLeft(used, mine),
     used,
     credits: credits.total,
     creditsFrom: { spotted: credits.spotted, missions: credits.missions },
@@ -146,49 +204,13 @@ app.get('/sponsor/quota', async (c) => {
   })
 })
 
-app.post('/sponsor/recommend', async (c) => {
-  const sponsee = requireSponsee(c)
-  const body = await c.req.json().catch(() => null)
-  const parsed = parseRequest(body)
-  if ('error' in parsed) return c.json({ error: parsed.error }, 400)
-  const wallet = receiverOf(sponsee, (body as { wallet?: unknown }).wallet)
+type Reserved = Awaited<ReturnType<typeof prisma.sponsoredWrite.create>>
 
-  const missing = await unknownPages(parsed.pages.map((p) => p.objectId))
-  if (missing.length > 0)
-    return c.json({ error: 'Unknown page', pages: missing }, 400)
-
-  const plan = buildPlan(parsed.pages)
-  const reserve =
-    RESERVE_PER_TRIPLE_WEI * BigInt(plan.claims.length + plan.tags.length)
-  const mine = withCredits(limits, (await creditsOf(sponsee.wallets)).total)
-
-  // Check + reserve atomically (vs. this account's other requests and the
-  // relayer-wide budget)
-  const reserved = await exclusive(async () => {
-    const [used, out] = await Promise.all([
-      usageOf(sponsee.privyUserId),
-      spent(),
-    ])
-    const why = refusal(plan.claims.length, used, mine, out, reserve)
-    if (why) return { why }
-    const row = await prisma.sponsoredWrite.create({
-      data: {
-        privyUserId: sponsee.privyUserId,
-        wallet,
-        objectIds: parsed.pages.map((p) => p.objectId),
-        recommendCount: plan.claims.length,
-        tagCount: plan.tags.length,
-        costWei: reserve.toString(),
-      },
-    })
-    return { row }
-  })
-  if ('why' in reserved) return c.json({ error: reserved.why }, 429)
-
-  const result = await execute(plan, wallet as Hex, depositWei)
+/** Records what landed and maps a failure to its response, or null */
+async function settle(row: Reserved, result: Execution) {
   const nothingSent = result.txHashes.length === 0
   await prisma.sponsoredWrite.update({
-    where: { id: reserved.row.id },
+    where: { id: row.id },
     data: {
       // A failure before any tx releases the quota; after one, the mined
       // part stays counted at its real cost
@@ -199,22 +221,78 @@ app.post('/sponsor/recommend', async (c) => {
     },
   })
   if (result.notApproved && nothingSent)
-    return c.json(
-      {
+    return {
+      body: {
         error: 'Approve Sofia once to receive free Recommends',
         needsApproval: true,
       },
-      409,
-    )
+      status: 409 as const,
+    }
   if (result.error && nothingSent)
-    return c.json(
-      {
+    return {
+      body: {
         error: /RPC Request failed|Bandwidth limit/i.test(result.error)
           ? 'The network is busy — try again in a minute'
           : 'Could not publish — try again',
       },
-      502,
+      status: 502 as const,
+    }
+  return null
+}
+
+app.post('/sponsor/recommend', async (c) => {
+  const sponsee = requireSponsee(c)
+  const body = await c.req.json().catch(() => null)
+  const parsed = parseRequest(body)
+  if ('error' in parsed) return c.json({ error: parsed.error }, 400)
+  const wallet = receiverOf(sponsee, (body as { wallet?: unknown }).wallet)
+
+  const objectIds = parsed.pages.map((p) => p.objectId)
+  const missing = await unknownPages(objectIds)
+  if (missing.length > 0)
+    return c.json({ error: 'Unknown page', pages: missing }, 400)
+
+  const plan = buildPlan(parsed.pages)
+  const reserve =
+    RESERVE_PER_TRIPLE_WEI * BigInt(plan.claims.length + plan.tags.length)
+  const [credits, open] = await Promise.all([
+    creditsOf(sponsee.wallets),
+    openForOpinion(objectIds, sponsee.wallets),
+  ])
+  const mine = withCredits(limits, credits.total)
+
+  // Check + reserve atomically (vs. this account's other requests and the
+  // relayer-wide budget). Second opinions go outside the quota first.
+  const reserved = await exclusive(async () => {
+    const [used, out] = await Promise.all([
+      usageOf(sponsee.privyUserId),
+      spent(),
+    ])
+    const { opinions, quota } = splitOpinions(
+      objectIds,
+      (id) => open.has(id),
+      opinionsLeft(used, mine),
     )
+    const why = refusal(quota.length, used, mine, out, reserve, opinions.length)
+    if (why) return { why }
+    const row = await prisma.sponsoredWrite.create({
+      data: {
+        privyUserId: sponsee.privyUserId,
+        wallet,
+        objectIds,
+        recommendCount: quota.length,
+        opinionCount: opinions.length,
+        tagCount: plan.tags.length,
+        costWei: reserve.toString(),
+      },
+    })
+    return { row }
+  })
+  if ('why' in reserved) return c.json({ error: reserved.why }, 429)
+
+  const result = await execute(plan, wallet as Hex, depositWei)
+  const failed = await settle(reserved.row, result)
+  if (failed) return c.json(failed.body, failed.status)
 
   const used = await usageOf(sponsee.privyUserId)
   return c.json({
@@ -222,9 +300,83 @@ app.post('/sponsor/recommend', async (c) => {
     recommended: plan.claims.length,
     tagged: plan.tags.length,
     left: quotaLeft(used, mine),
+    opinionsLeft: opinionsLeft(used, mine),
     partial: !!result.error,
     dryRun: env.dryRun,
     deposit: env.depositTrust,
+  })
+})
+
+/**
+ * POST /sponsor/oppose { wallet?, objectIds } — free opposes, only on pages
+ * waiting for a second opinion (one other recommender): the sorting queue.
+ */
+app.post('/sponsor/oppose', async (c) => {
+  const sponsee = requireSponsee(c)
+  const body = (await c.req.json().catch(() => null)) as {
+    wallet?: unknown
+    objectIds?: unknown
+  } | null
+  const raw = body?.objectIds
+  if (
+    !Array.isArray(raw) ||
+    raw.length === 0 ||
+    raw.length > MAX_PAGES_PER_REQUEST ||
+    !raw.every((id) => typeof id === 'string' && /^0x[0-9a-fA-F]{64}$/.test(id))
+  )
+    return c.json({ error: 'Invalid pages' }, 400)
+  const objectIds = [
+    ...new Set((raw as string[]).map((id) => id.toLowerCase())),
+  ]
+  const wallet = receiverOf(sponsee, body?.wallet)
+
+  const open = await openForOpinion(objectIds, sponsee.wallets)
+  if (objectIds.some((id) => !open.has(id)))
+    return c.json(
+      { error: 'Only pages one person recommended can be opposed for free' },
+      400,
+    )
+
+  const opposes = buildOpposePlan(objectIds)
+  const reserve = RESERVE_PER_TRIPLE_WEI * BigInt(opposes.length)
+  const reserved = await exclusive(async () => {
+    const [used, out] = await Promise.all([
+      usageOf(sponsee.privyUserId),
+      spent(),
+    ])
+    const why = refusal(0, used, limits, out, reserve, opposes.length)
+    if (why) return { why }
+    const row = await prisma.sponsoredWrite.create({
+      data: {
+        privyUserId: sponsee.privyUserId,
+        wallet,
+        kind: 'oppose',
+        objectIds,
+        recommendCount: 0,
+        opinionCount: opposes.length,
+        tagCount: 0,
+        costWei: reserve.toString(),
+      },
+    })
+    return { row }
+  })
+  if ('why' in reserved) return c.json({ error: reserved.why }, 429)
+
+  const result = await execute(
+    { claims: [], tags: [], opposes },
+    wallet as Hex,
+    depositWei,
+  )
+  const failed = await settle(reserved.row, result)
+  if (failed) return c.json(failed.body, failed.status)
+
+  const used = await usageOf(sponsee.privyUserId)
+  return c.json({
+    txHashes: result.txHashes,
+    opposed: opposes.length,
+    opinionsLeft: opinionsLeft(used, limits),
+    partial: !!result.error,
+    dryRun: env.dryRun,
   })
 })
 

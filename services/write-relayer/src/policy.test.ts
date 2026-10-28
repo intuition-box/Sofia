@@ -5,13 +5,17 @@ import {
   SOFIA_I_ATOM_ID,
 } from '@0xsofia/taxonomy'
 import {
+  buildOpposePlan,
   buildPlan,
+  calculateCounterId,
   calculateTripleId,
   MAX_PAGES_PER_REQUEST,
   parseRequest,
   quotaLeft,
   refusal,
   trustToWei,
+  recommendClaimId,
+  splitOpinions,
   windowStarts,
   withCredits,
 } from './policy'
@@ -148,5 +152,35 @@ describe('withCredits', () => {
   it('ignores negative or fractional credits', () => {
     expect(withCredits(limits, -3).quotaMonthly).toBe(20)
     expect(withCredits(limits, 2.9).quotaDaily).toBe(7)
+  })
+})
+
+describe('second opinions', () => {
+  it('the counter vault id matches an indexed mainnet triple', () => {
+    expect(
+      calculateCounterId(
+        '0x01028f2cbc0922dd57bbc0a236d4c79a4b6a9f89a731043f3aebfa192bed84a4',
+      ),
+    ).toBe('0xf3be996f9f1ad5a8c98a1168fd3e3d148326abc0a2a512530c63f9f02a6d4758')
+  })
+
+  it('an oppose deposits on the page claim counter vault, curve 2', () => {
+    const [oppose] = buildOpposePlan([PAGE])
+    expect(oppose.tripleId).toBe(calculateCounterId(recommendClaimId(PAGE)))
+    expect(oppose.curveId).toBe(2n)
+  })
+
+  it('opinions go first within their allowance, the rest to the quota', () => {
+    const split = splitOpinions(['a', 'b', 'c'], (x) => x !== 'b', 1)
+    expect(split).toEqual({ opinions: ['a'], quota: ['b', 'c'] })
+  })
+
+  it('opinions have their own daily cap, outside the quota', () => {
+    const mine = { ...limits, opinionsDaily: 5 }
+    // Quota used up for the day: an opinion still goes through
+    expect(refusal(0, { month: 5, day: 5 }, mine, none, 0n, 2)).toBeNull()
+    expect(
+      refusal(0, { month: 0, day: 0, opinionsDay: 4 }, mine, none, 0n, 2),
+    ).toBe('Daily free opinions used — come back tomorrow')
   })
 })

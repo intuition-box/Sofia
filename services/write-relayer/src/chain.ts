@@ -218,10 +218,16 @@ let queue: Promise<unknown> = Promise.resolve()
 
 /**
  * Creates the missing triples and deposits on the existing ones — claims
- * first (tags are nested under them), one serialized nonce stream.
+ * first (tags are nested under them), then the opposes; one serialized
+ * nonce stream.
  */
 export function execute(
-  plan: { claims: PlannedTriple[]; tags: PlannedTriple[] },
+  plan: {
+    claims: PlannedTriple[]
+    tags: PlannedTriple[]
+    /** Counter-vault deposits on claims that exist (checked by the caller) */
+    opposes?: PlannedTriple[]
+  },
   receiver: Hex,
   depositWei: bigint,
 ): Promise<Execution> {
@@ -250,6 +256,13 @@ export function execute(
             out.txHashes.push(sent.hash)
             out.costWei += sent.costWei
           }
+        }
+      }
+      for (const part of chunks(plan.opposes ?? [], DEPOSIT_TX_SIZE)) {
+        const sent = await depositBatch(part, receiver, depositWei)
+        if (sent) {
+          out.txHashes.push(sent.hash)
+          out.costWei += sent.costWei
         }
       }
     } catch (err) {

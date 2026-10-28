@@ -43,6 +43,9 @@ export const env = {
   reputationApiUrl: (process.env.REPUTATION_API_URL ?? '').replace(/\/$/, ''),
   /** Extra free Recommends per call this month */
   creditsPerCall: int('SPONSOR_CREDITS_PER_CALL', 3),
+  /** Second opinions a day (recommends / opposes on pages one other person
+   *  recommended), outside the quota */
+  opinionsDaily: int('SPONSOR_OPINIONS_DAILY', 5),
   /** Deposit per Recommend / tag (TRUST) — the protocol minimum */
   depositTrust: Number(process.env.SPONSOR_DEPOSIT_TRUST ?? '0.01'),
   /** true: simulate every tx, send nothing (local testing) */

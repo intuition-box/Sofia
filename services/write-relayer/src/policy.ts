@@ -23,6 +23,7 @@ const WEI = 10n ** 18n
 const BYTES32 = /^0x[0-9a-fA-F]{64}$/
 
 const TRIPLE_SALT = keccak256(toHex('TRIPLE_SALT'))
+const COUNTER_SALT = keccak256(toHex('COUNTER_SALT'))
 
 /** Same id as MultiVault.calculateTripleId, computed locally */
 export function calculateTripleId(
@@ -37,6 +38,21 @@ export function calculateTripleId(
     ),
   )
 }
+
+/** Same id as MultiVault.getCounterIdFromTripleId: the claim's oppose vault */
+export function calculateCounterId(tripleId: string): Hex {
+  return keccak256(
+    encodePacked(['bytes32', 'bytes32'], [COUNTER_SALT, tripleId as Hex]),
+  )
+}
+
+/** The page's Recommend claim: I | recommends | page */
+export const recommendClaimId = (objectId: string): Hex =>
+  calculateTripleId(
+    SOFIA_I_ATOM_ID,
+    CANONICAL_PREDICATE_IDS.recommends as Hex,
+    objectId,
+  )
 
 export interface PageRequest {
   objectId: Hex
@@ -82,6 +98,18 @@ export interface PlannedTriple {
   curveId: 1n | 2n
 }
 
+/** Opposes: a deposit on each page claim's counter vault (curve 2) */
+export function buildOpposePlan(objectIds: readonly string[]): PlannedTriple[] {
+  const recommends = CANONICAL_PREDICATE_IDS.recommends as Hex
+  return objectIds.map((objectId) => ({
+    subjectId: SOFIA_I_ATOM_ID as Hex,
+    predicateId: recommends,
+    objectId: objectId as Hex,
+    tripleId: calculateCounterId(recommendClaimId(objectId)),
+    curveId: 2n,
+  }))
+}
+
 /** Recommend claims first (tags hang off them), then the tags */
 export function buildPlan(pages: readonly PageRequest[]): {
   claims: PlannedTriple[]
@@ -91,11 +119,7 @@ export function buildPlan(pages: readonly PageRequest[]): {
   const tags: PlannedTriple[] = []
   const recommends = CANONICAL_PREDICATE_IDS.recommends as Hex
   for (const page of pages) {
-    const claimId = calculateTripleId(
-      SOFIA_I_ATOM_ID,
-      recommends,
-      page.objectId,
-    )
+    const claimId = recommendClaimId(page.objectId)
     claims.push({
       subjectId: SOFIA_I_ATOM_ID as Hex,
       predicateId: recommends,
@@ -121,6 +145,8 @@ export function buildPlan(pages: readonly PageRequest[]): {
 export interface Usage {
   month: number
   day: number
+  /** Second opinions today (their own cap) */
+  opinionsDay?: number
 }
 
 export interface Limits {
@@ -128,6 +154,8 @@ export interface Limits {
   quotaDaily: number
   budgetMonthlyWei: bigint
   budgetDailyWei: bigint
+  /** Second opinions a day, outside the Recommend quota */
+  opinionsDaily?: number
 }
 
 /** What the relayer spent, this month / today (wei) */
@@ -157,6 +185,28 @@ export function quotaLeft(used: Usage, limits: Limits): number {
   )
 }
 
+/** Second opinions this account may still get today */
+export const opinionsLeft = (used: Usage, limits: Limits): number =>
+  Math.max(0, (limits.opinionsDaily ?? 0) - (used.opinionsDay ?? 0))
+
+/**
+ * Second opinions first, within today's allowance; the rest counts against
+ * the Recommend quota
+ */
+export function splitOpinions<T>(
+  items: readonly T[],
+  isOpinion: (item: T) => boolean,
+  left: number,
+): { opinions: T[]; quota: T[] } {
+  const opinions: T[] = []
+  const quota: T[] = []
+  for (const item of items) {
+    if (isOpinion(item) && opinions.length < left) opinions.push(item)
+    else quota.push(item)
+  }
+  return { opinions, quota }
+}
+
 /** Why a request can't be sponsored, or null */
 export function refusal(
   recommendCount: number,
@@ -164,12 +214,15 @@ export function refusal(
   limits: Limits,
   spent: Spent,
   reserveWei: bigint,
+  opinionCount = 0,
 ): string | null {
-  if (limits.quotaDaily - used.day < recommendCount)
+  if (opinionCount > opinionsLeft(used, limits))
+    return 'Daily free opinions used — come back tomorrow'
+  if (recommendCount > 0 && limits.quotaDaily - used.day < recommendCount)
     return used.day >= limits.quotaDaily
       ? 'Daily free Recommends used — come back tomorrow'
       : `Only ${limits.quotaDaily - used.day} free Recommends left today`
-  if (limits.quotaMonthly - used.month < recommendCount)
+  if (recommendCount > 0 && limits.quotaMonthly - used.month < recommendCount)
     return used.month >= limits.quotaMonthly
       ? 'Monthly free Recommends used'
       : `Only ${limits.quotaMonthly - used.month} free Recommends left this month`
