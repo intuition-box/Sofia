@@ -148,13 +148,13 @@ function TrendingRow({
             <Users className="h-3 w-3" aria-hidden /> {page.supporters}
             {page.supportersCapped ? '+' : ''}
           </span>
-          <span className="mk-stat-label">Supporters · all claims</span>
+          <span className="mk-stat-label">Supporters</span>
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
             {formatTrust(BigInt(page.totalStaked))}
           </span>
-          <span className="mk-stat-label">Staked · all claims</span>
+          <span className="mk-stat-label">Staked</span>
         </span>
       </div>
 
