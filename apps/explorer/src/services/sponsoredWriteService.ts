@@ -92,6 +92,10 @@ export interface SponsorQuota {
   left?: number
   /** Extra Recommends earned by this month's Trend Hunter calls */
   credits?: number
+  /** Free Recommends used this month / today */
+  used?: { month: number; day: number }
+  /** Quotas, credits included */
+  limits?: { monthly: number; daily: number }
   /** Relayer-wide monthly budget reached */
   paused?: boolean
 }

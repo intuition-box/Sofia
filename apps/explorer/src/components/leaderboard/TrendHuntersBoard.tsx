@@ -18,6 +18,7 @@ import {
 } from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
+import HunterProgress from './HunterProgress'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import {
   CREDITS_PER_CALL,
@@ -63,21 +64,8 @@ export default function TrendHuntersBoard({
   )
   const { getDisplay, getAvatar } = useEnsNames(wallets)
   const me = connectedAddress?.toLowerCase()
-  const mine = entries.find((e) => e.wallet === me)
-  const tenth = entries[TREND_HUNTER_BADGE_RANK - 1]
   const totalCalls = entries.reduce((sum, e) => sum + e.calls, 0)
   const monthLabel = month ? formatMonth(month) : ''
-
-  const standing = (() => {
-    if (!me) return null
-    if (mine && mine.rank <= TREND_HUNTER_BADGE_RANK) {
-      return `You're #${mine.rank} with ${flair(mine.flair)} Flair — in the Top ${TREND_HUNTER_BADGE_RANK}${mine.reward ? `, on track for ${mine.reward} TRUST` : ''}.`
-    }
-    if (mine && tenth) {
-      return `You're #${mine.rank}. ${flair(tenth.flair - mine.flair + 1)} more Flair to enter the Top ${TREND_HUNTER_BADGE_RANK}.`
-    }
-    return "You're not ranked yet. Be first on a page others will follow."
-  })()
 
   return (
     <div>
@@ -101,30 +89,16 @@ export default function TrendHuntersBoard({
           </div>
           <div className="mk-summary-stat">
             <span className="mk-summary-value">
-              {mine ? (
-                <AnimatedNumber
-                  value={mine.rank}
-                  format={(n) => `#${Math.round(n)}`}
-                />
-              ) : (
-                '—'
-              )}
+              {pool ? `${pool.trust.toLocaleString()} TRUST` : '—'}
             </span>
-            <span className="mk-summary-label">Your rank</span>
-          </div>
-          <div className="mk-summary-stat">
-            <span className="mk-summary-value">
-              {mine ? (
-                <AnimatedNumber value={mine.flair} format={flair} flash />
-              ) : (
-                '—'
-              )}
+            <span className="mk-summary-label">
+              Pool for the Top {pool?.size ?? TREND_HUNTER_BADGE_RANK}
             </span>
-            <span className="mk-summary-label">Your Flair</span>
           </div>
         </div>
-        {standing && <p className="th-desc">{standing}</p>}
       </section>
+
+      {connectedAddress && <HunterProgress wallet={connectedAddress} />}
 
       <section className="th-section" aria-label="How to climb">
         <ol className="th-cards" style={{ listStyle: 'none', padding: 0 }}>

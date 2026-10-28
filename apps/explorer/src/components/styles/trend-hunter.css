@@ -397,3 +397,18 @@ a.th-row:hover {
     display: none;
   }
 }
+
+/* Your progress (HunterProgress) */
+.th-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.th-progress-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}

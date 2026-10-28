@@ -27,20 +27,15 @@ export interface SponsoredWriteResult {
 }
 
 /**
- * Free Recommends for every signed-in account — email / Google (Privy
- * embedded wallet) or a crypto wallet alike. The positions go to the wallet
- * in use; the relayer decides eligibility.
+ * The account's free Recommends (relayer quota, Trend Hunter credits
+ * included). Shared by the cart and the Trend Hunter progress.
  */
-export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
+export function useSponsorQuota() {
   const { authenticated, user, getAccessToken } = usePrivy()
   const { wallets } = useWallets()
-  const qc = useQueryClient()
-  const wallet = wallets[0]
-  const enabled = !!WRITE_RELAYER_URL && authenticated && !!wallet
-  const userId = user?.id
-
-  const { data: quota } = useQuery({
-    queryKey: ['sponsor-quota', userId],
+  const enabled = !!WRITE_RELAYER_URL && authenticated && wallets.length > 0
+  const { data } = useQuery({
+    queryKey: ['sponsor-quota', user?.id],
     queryFn: async () => {
       const token = await getAccessToken()
       if (!token) throw new Error('Not signed in')
@@ -49,6 +44,21 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     enabled,
     staleTime: 60_000,
   })
+  return { quota: enabled ? data : undefined, enabled }
+}
+
+/**
+ * Free Recommends for every signed-in account — email / Google (Privy
+ * embedded wallet) or a crypto wallet alike. The positions go to the wallet
+ * in use; the relayer decides eligibility.
+ */
+export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
+  const { user, getAccessToken } = usePrivy()
+  const { wallets } = useWallets()
+  const qc = useQueryClient()
+  const wallet = wallets[0]
+  const userId = user?.id
+  const { quota, enabled } = useSponsorQuota()
 
   const request = useMemo(() => buildSponsoredRequest(items), [items])
   const left = quota?.left ?? 0

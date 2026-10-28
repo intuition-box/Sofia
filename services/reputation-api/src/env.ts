@@ -31,7 +31,7 @@ export const env = {
   // Trend Hunter monthly pool: the Top N share this much TRUST pro rata of
   // their Flair (paid by hand once the month is frozen). 0 ⇒ no pool.
   trendHunterPool: {
-    trust: Number(process.env.TREND_HUNTER_POOL_TRUST ?? 100) || 0,
+    trust: Number(process.env.TREND_HUNTER_POOL_TRUST ?? 1000) || 0,
     size: Number(process.env.TREND_HUNTER_POOL_SIZE ?? 10) || 10,
   },
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
