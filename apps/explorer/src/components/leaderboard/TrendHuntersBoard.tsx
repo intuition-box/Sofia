@@ -1,6 +1,6 @@
 /**
  * TrendHuntersBoard — the month's Flair ranking (TREND_HUNTER_SPEC §4, §5.4):
- * header with the countdown, summary stats, how to climb, the month's early
+ * header, summary stats, how to climb, the month's early
  * signals, then the ranking.
  *
  * Flair = Σ credibility of the accounts that took a position after you on a
@@ -18,7 +18,6 @@ import {
   TREND_HUNTER_BADGE_RANK,
   useTrendHunters,
 } from '@/hooks/useTrendHunters'
-import { timeAgo } from '@/utils/formatting'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@0xsofia/design-system/styles/state-pill.css'
 import '@/components/styles/trend-hunter.css'
@@ -38,17 +37,6 @@ const STEPS = [
   },
 ]
 
-/** "Ends in 12 days" — months close at 00:00 UTC on the 1st */
-function endsIn(month: string | null): string | null {
-  if (!month) return null
-  const [y, m] = month.split('-').map(Number)
-  const ms = Date.UTC(y, m, 1) - Date.now()
-  if (ms <= 0) return 'Final ranking'
-  const days = Math.floor(ms / 86_400_000)
-  if (days >= 1) return `Ends in ${days} day${days === 1 ? '' : 's'}`
-  return `Ends in ${Math.max(1, Math.round(ms / 3_600_000))}h`
-}
-
 const flair = (n: number) => Math.round(n).toLocaleString()
 
 export default function TrendHuntersBoard({
@@ -56,7 +44,7 @@ export default function TrendHuntersBoard({
 }: {
   connectedAddress?: string | null
 }) {
-  const { entries, month, computedAt, loading, error } = useTrendHunters(50)
+  const { entries, month, loading, error } = useTrendHunters(50)
   const wallets = useMemo(
     () => entries.map((e) => e.wallet as Address),
     [entries],
@@ -85,9 +73,6 @@ export default function TrendHuntersBoard({
         <ModuleHead
           title={`Trend Hunters${monthLabel ? ` · ${monthLabel}` : ''}`}
           desc="Flair grows when credible accounts take a position after you on a page where you were among the first 3."
-          right={
-            month ? <span className="th-eyebrow">{endsIn(month)}</span> : null
-          }
         />
         <div className="mk-summary">
           <div className="mk-summary-stat">
@@ -118,7 +103,6 @@ export default function TrendHuntersBoard({
         <ol className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
           {STEPS.map((step, i) => (
             <li key={step.title} className="th-card">
-              <span className="th-eyebrow">Step {i + 1}</span>
               <span className="th-card-title">{step.title}</span>
               <span className="th-desc">{step.text}</span>
             </li>
@@ -129,14 +113,7 @@ export default function TrendHuntersBoard({
       <EarlySignalsSection />
 
       <section className="th-section" aria-label="Ranking">
-        <ModuleHead
-          title="Ranking"
-          right={
-            computedAt ? (
-              <span className="th-eyebrow">Updated {timeAgo(computedAt)}</span>
-            ) : null
-          }
-        />
+        <ModuleHead title="Ranking" />
         {loading ? (
           <div className="pm-loader">
             <SofiaLoader size={48} />

@@ -50,14 +50,14 @@ export default function LegacyMigrationBanner({
     exitedCount > 0 ? (
       <section className="lm-card" aria-label="Exited pages to re-recommend">
         <div className="lm-text">
-          <span className="th-eyebrow">
-            Exited · {exitedCount} page{exitedCount === 1 ? '' : 's'} ·{' '}
-            {formatTrust(exitedValue)} in your wallet
+          <span className="th-card-title">
+            {exitedCount} exited page{exitedCount === 1 ? '' : 's'} not back on
+            the market yet
           </span>
-          <span className="th-card-title">Not back on the market yet</span>
           <span className="th-desc">
-            These pages left their legacy claims but have no Recommend yet.
-            Queue them in the cart with their old intentions as tags.
+            These pages left their legacy claims ({formatTrust(exitedValue)} is
+            back in your wallet) but have no Recommend yet. Queue them in the
+            cart with their old intentions as tags.
           </span>
         </div>
         <button
@@ -78,8 +78,9 @@ export default function LegacyMigrationBanner({
         {resume}
         <section className="lm-card" aria-label="Move legacy positions">
           <div className="lm-text">
-            <span className="th-eyebrow">Move ready in your cart</span>
-            <span className="th-card-title">Review it, then confirm</span>
+            <span className="th-card-title">
+              Move ready in your cart — review it, then confirm
+            </span>
             <span className="th-desc">
               The exit row runs first, then each page is re-deposited as one
               Recommend with your old intentions as tags. Nothing is signed
@@ -98,11 +99,10 @@ export default function LegacyMigrationBanner({
       {resume}
       <section className="lm-card" aria-label="Move legacy positions">
         <div className="lm-text">
-          <span className="th-eyebrow">
-            Legacy claims · {pageCount} page{pageCount === 1 ? '' : 's'} ·{' '}
-            {formatTrust(value)}
+          <span className="th-card-title">
+            Move {pageCount} legacy page{pageCount === 1 ? '' : 's'} (
+            {formatTrust(value)}) to Recommend
           </span>
-          <span className="th-card-title">Move them to Recommend</span>
           <span className="th-desc">
             Pages now have one market. Each move pays Sofia's fee and, for a new
             market, its creation — only move pages worth it.

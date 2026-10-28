@@ -1,6 +1,6 @@
 /* ── Trend Hunter (missions, early signals, board) + My positions chart &
    migration — house style: DS tokens, card = border + card surface, mono
-   eyebrows, display numbers. No gradients, glows or tinted fills; green /
+   labels, display numbers. No gradients, glows or tinted fills; green /
    red only for gains and losses. ───────────────────────────────────── */
 
 .th-section {
@@ -124,6 +124,60 @@ a.th-card:hover {
   font-size: 12px;
   color: var(--ds-ink-soft);
   text-decoration: none;
+}
+
+/* Early signals band: one track holding two copies, slid by half its width */
+.th-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 32px,
+    #000 calc(100% - 32px),
+    transparent
+  );
+}
+
+.th-marquee-track {
+  display: flex;
+  gap: 10px;
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  animation: th-marquee linear infinite;
+}
+
+.th-marquee:hover .th-marquee-track,
+.th-marquee:focus-within .th-marquee-track {
+  animation-play-state: paused;
+}
+
+.th-marquee-card {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+@keyframes th-marquee {
+  to {
+    /* half the track = one copy + its share of the gaps */
+    transform: translateX(calc(-50% - 5px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .th-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .th-marquee-track {
+    animation: none;
+  }
+
+  .th-marquee-track > [aria-hidden='true'] {
+    display: none;
+  }
 }
 
 /* Board ranking table — mk-table look */

@@ -1,7 +1,8 @@
 /**
  * EarlySignalsSection — the month's best calls (TREND_HUNTER_SPEC §5.2):
- * "Spotted by @x, N days before the next 5". On Explore and atop Trending.
- * Hidden until the month has at least one signal.
+ * "Spotted by @x, N days before the next 5". On Explore and atop Trending,
+ * as a band that scrolls on its own (pauses on hover / focus, still when the
+ * system asks for reduced motion). Hidden until the month has one signal.
  */
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -41,42 +42,61 @@ export default function EarlySignalsSection() {
           </Link>
         }
       />
-      <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
-        {entries.map((s) => {
-          const addr = s.wallet as Address
-          const domain = s.pageUrl ? extractDomain(s.pageUrl) : null
-          const title = s.pageLabel || domain || 'A page'
-          return (
-            <li key={s.claimId} className="th-card">
-              <span className="th-card-title th-signal-page">
-                {domain && (
-                  <img src={getFaviconUrl(domain, 32)} alt="" aria-hidden />
-                )}
-                {s.pageUrl ? (
-                  <a href={s.pageUrl} target="_blank" rel="noreferrer">
-                    {title}
-                  </a>
-                ) : (
-                  <span>{title}</span>
-                )}
-              </span>
-              <Link to={`/profile/${s.wallet}`} className="th-signal-by">
-                <Avatar
-                  label={getDisplay(addr)}
-                  imageUrl={getAvatar(addr)}
-                  size={20}
-                />
-                <span>
-                  Spotted by {getDisplay(addr)}, {leadLabel(s.leadDays)}
-                </span>
-              </Link>
-              <span className="th-eyebrow">
-                {s.followers} credible followers
-              </span>
-            </li>
-          )
-        })}
-      </ul>
+      <div className="th-marquee">
+        {/* Two copies so the loop is seamless; the second is decorative */}
+        <ul
+          className="th-marquee-track"
+          style={{ animationDuration: `${entries.length * 6}s` }}
+        >
+          {[0, 1].flatMap((copy) =>
+            entries.map((s) => {
+              const addr = s.wallet as Address
+              const domain = s.pageUrl ? extractDomain(s.pageUrl) : null
+              const title = s.pageLabel || domain || 'A page'
+              const hidden = copy === 1
+              return (
+                <li
+                  key={`${copy}-${s.claimId}`}
+                  className="th-card th-marquee-card"
+                  aria-hidden={hidden || undefined}
+                >
+                  <span className="th-card-title th-signal-page">
+                    {domain && (
+                      <img src={getFaviconUrl(domain, 32)} alt="" aria-hidden />
+                    )}
+                    {s.pageUrl ? (
+                      <a
+                        href={s.pageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        tabIndex={hidden ? -1 : undefined}
+                      >
+                        {title}
+                      </a>
+                    ) : (
+                      <span>{title}</span>
+                    )}
+                  </span>
+                  <Link
+                    to={`/profile/${s.wallet}`}
+                    className="th-signal-by"
+                    tabIndex={hidden ? -1 : undefined}
+                  >
+                    <Avatar
+                      label={getDisplay(addr)}
+                      imageUrl={getAvatar(addr)}
+                      size={20}
+                    />
+                    <span>
+                      Spotted by {getDisplay(addr)}, {leadLabel(s.leadDays)}
+                    </span>
+                  </Link>
+                </li>
+              )
+            }),
+          )}
+        </ul>
+      </div>
     </section>
   )
 }

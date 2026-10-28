@@ -36,9 +36,7 @@ function MissionCard({ mission }: { mission: MissionProgress }) {
   return (
     <li className="th-card">
       <div className="th-card-top">
-        <span className="th-eyebrow">
-          {mission.period === 'week' ? 'This week' : 'Today'}
-        </span>
+        <span className="th-card-title">{mission.title}</span>
         {mission.done ? (
           <StatePill state="aligned" label="Done" />
         ) : (
@@ -47,7 +45,6 @@ function MissionCard({ mission }: { mission: MissionProgress }) {
           </span>
         )}
       </div>
-      <span className="th-card-title">{mission.title}</span>
       <span className="th-desc">{mission.description}</span>
       <span className="th-bar" aria-hidden>
         <span style={{ width: `${pct}%` }} />
