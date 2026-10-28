@@ -13,15 +13,10 @@ export const MISSION_MIN_DEPOSIT = 9_000_000_000_000_000n
 /** Free Recommends a completed mission earns (write-relayer credits) */
 export const MISSION_CREDITS = { day: 1, week: 3 } as const
 
-/** "Back a pick": others who recommended the page in the week before you */
-export const PICK_BACKERS = 3
-const PICK_WINDOW_MS = 7 * 86_400_000
+/** "Sort your pages": opinions a day on pages only one person recommended */
+export const SORT_TARGET = 5
 
-export type MissionId =
-  | 'express-3'
-  | 'back-a-pick'
-  | 'pioneer'
-  | 'topic-of-week'
+export type MissionId = 'express-3' | 'sort-pages' | 'pioneer' | 'topic-of-week'
 
 export interface MissionProgress {
   id: MissionId
@@ -41,6 +36,8 @@ export interface MissionPosition {
   createdAt: number
   /** Total deposited (wei) */
   deposit: bigint
+  /** Against the claim (its counter vault) — default: for it */
+  side?: 'support' | 'oppose'
 }
 
 export interface WeeklyTopic {
@@ -144,8 +141,12 @@ function isPioneer(
   return !!first && own.has(first.account.toLowerCase())
 }
 
-/** ≥ PICK_BACKERS other accounts backed the claim in the week before `at` */
-function isPick(
+/**
+ * A page waiting for a second opinion: exactly one other account recommended
+ * it before `at`. Recommending or opposing it then is what "Sort your pages"
+ * counts — and what the write-relayer sponsors outside the quota.
+ */
+export function needsSecondOpinion(
   claimId: string,
   at: number,
   backers: DailyMissionsInput['backers'],
@@ -153,15 +154,10 @@ function isPick(
 ): boolean {
   const others = new Set(
     (backers.get(claimId) ?? [])
-      .filter(
-        (b) =>
-          b.createdAt < at &&
-          b.createdAt >= at - PICK_WINDOW_MS &&
-          !own.has(b.account.toLowerCase()),
-      )
+      .filter((b) => b.createdAt < at && !own.has(b.account.toLowerCase()))
       .map((b) => b.account.toLowerCase()),
   )
-  return others.size >= PICK_BACKERS
+  return others.size === 1
 }
 
 export function computeDailyMissions({
@@ -171,9 +167,22 @@ export function computeDailyMissions({
   now = Date.now(),
 }: DailyMissionsInput): MissionProgress[] {
   const start = startOfUtcDay(now)
+  const before = positions.filter((p) => p.createdAt < start + DAY_MS)
+  // Recommends and opposes are two lists: a page can be in both
   const today = positionsSince(
-    positions.filter((p) => p.createdAt < start + DAY_MS),
+    before.filter((p) => p.side !== 'oppose'),
     start,
+  )
+  const opposed = positionsSince(
+    before.filter((p) => p.side === 'oppose'),
+    start,
+  )
+  const sorted = new Set(
+    [...today, ...opposed]
+      .filter((p) =>
+        needsSecondOpinion(p.claimTermId, p.createdAt, backers, own),
+      )
+      .map((p) => p.pageKey),
   )
   return [
     mission(
@@ -185,13 +194,12 @@ export function computeDailyMissions({
       3,
     ),
     mission(
-      'back-a-pick',
+      'sort-pages',
       'day',
-      'Back a pick',
-      `Recommend a page ${PICK_BACKERS} other people recommended this week.`,
-      today.filter((p) => isPick(p.claimTermId, p.createdAt, backers, own))
-        .length,
-      1,
+      'Sort your pages',
+      `Recommend or oppose ${SORT_TARGET} pages only one person recommended.`,
+      sorted.size,
+      SORT_TARGET,
     ),
     mission(
       'pioneer',

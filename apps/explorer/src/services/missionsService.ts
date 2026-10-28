@@ -67,6 +67,11 @@ async function fetchRecentPositions(
         pageKey,
         createdAt,
         deposit: BigInt(row.total_deposit_assets_after_total_fees ?? '0'),
+        // An oppose row is the claim's counter vault
+        side:
+          row.term_id.toLowerCase() === triple.term_id.toLowerCase()
+            ? 'support'
+            : 'oppose',
       })
     }
     const oldest = rows[rows.length - 1]
@@ -80,7 +85,7 @@ async function fetchRecentPositions(
   return out
 }
 
-/** Support positions per claim — Pioneer and "Back a pick" read them */
+/** Support positions per claim — Pioneer and "Sort your pages" read them */
 async function fetchBackers(
   claimIds: string[],
 ): Promise<Map<string, ClaimBacker[]>> {

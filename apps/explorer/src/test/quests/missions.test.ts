@@ -53,38 +53,21 @@ describe('computeDailyMissions', () => {
     ).toBe(0)
   })
 
-  it('Back a pick: 3 others recommended the page in the week before you', () => {
+  it('Sort your pages: an opinion on a page one other person recommended', () => {
     const backers = new Map([
-      [
-        'pick',
-        [
-          backer('0xa', NOW - 2 * DAY),
-          backer('0xb', NOW - 3 * DAY),
-          backer('0xc', NOW - 6 * DAY),
-          backer(ME, NOW),
-        ],
-      ],
-      [
-        'stale',
-        [
-          backer('0xa', NOW - 9 * DAY),
-          backer('0xb', NOW - 8 * DAY),
-          backer('0xc', NOW - 2 * DAY),
-          backer(ME, NOW),
-        ],
-      ],
+      ['single', [backer('0xa', NOW - DAY), backer(ME, NOW)]],
+      ['crowded', [backer('0xa', NOW - DAY), backer('0xb', NOW - 1)]],
+      ['empty', [backer(ME, NOW)]],
     ])
-    const done = (claim: string) =>
-      byId(
-        computeDailyMissions({
-          positions: [pos(claim, NOW)],
-          backers,
-          own,
-          now: NOW,
-        }),
-      )['back-a-pick'].done
-    expect(done('pick')).toBe(true)
-    expect(done('stale')).toBe(false)
+    const progress = (positions: MissionPosition[]) =>
+      byId(computeDailyMissions({ positions, backers, own, now: NOW }))[
+        'sort-pages'
+      ].progress
+    expect(progress([pos('single', NOW)])).toBe(1)
+    // Opposing counts too
+    expect(progress([{ ...pos('single', NOW), side: 'oppose' }])).toBe(1)
+    expect(progress([pos('crowded', NOW)])).toBe(0)
+    expect(progress([pos('empty', NOW)])).toBe(0)
   })
 
   it('Pioneer: the earliest position on the claim is yours', () => {

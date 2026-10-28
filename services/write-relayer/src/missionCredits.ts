@@ -60,6 +60,11 @@ async function positionsSince(
         pageKey,
         createdAt: Date.parse(row.created_at),
         deposit: BigInt(row.total_deposit_assets_after_total_fees ?? '0'),
+        // An oppose row is the claim's counter vault
+        side:
+          row.term_id.toLowerCase() === triple.term_id.toLowerCase()
+            ? 'support'
+            : 'oppose',
       })
     }
     const oldest = rows[rows.length - 1]
