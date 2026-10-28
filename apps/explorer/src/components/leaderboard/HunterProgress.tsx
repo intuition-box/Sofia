@@ -1,8 +1,8 @@
 /**
  * HunterProgress — the connected account's month as a Trend Hunter, in one
  * place: calls, Flair and rank, the way to the Top 10 and its share of the
- * pool, free Recommends (credits from calls included), and the countdowns to
- * the daily reset and the month's end (when the pool is shared).
+ * pool, free Recommends (credits from calls included) and when today's
+ * reset.
  */
 import { useEffect, useState } from 'react'
 import { AnimatedNumber, ModuleHead } from '@0xsofia/design-system'
@@ -19,7 +19,7 @@ import '@/components/styles/trend-hunter.css'
 
 const flair = (n: number) => Math.round(n).toLocaleString()
 
-/** Re-renders every minute for the countdowns */
+/** Re-renders every minute for the countdown */
 function useMinuteClock(): number {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -41,7 +41,6 @@ export default function HunterProgress({ wallet }: { wallet: string }) {
   const inTop = !!mine && mine.rank <= topSize
 
   const d = new Date(now)
-  const monthEnd = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)
   const dayEnd = Date.UTC(
     d.getUTCFullYear(),
     d.getUTCMonth(),
@@ -63,14 +62,7 @@ export default function HunterProgress({ wallet }: { wallet: string }) {
 
   return (
     <section className="th-section" aria-label="Your progress">
-      <ModuleHead
-        title="Your progress"
-        right={
-          <span className="pm-chip">
-            Month ends in {countdown(monthEnd, now)}
-          </span>
-        }
-      />
+      <ModuleHead title="Your progress" />
       <div className="mk-summary">
         <div className="mk-summary-stat">
           <span className="mk-summary-value">
@@ -122,12 +114,6 @@ export default function HunterProgress({ wallet }: { wallet: string }) {
         <span className="th-bar" aria-hidden>
           <span style={{ width: `${towardTop}%` }} />
         </span>
-        {pool && (
-          <span className="th-desc">
-            The Top {pool.size} share {pool.trust.toLocaleString()} TRUST by
-            Flair when the month ends, in {countdown(monthEnd, now)}.
-          </span>
-        )}
         {quota?.eligible && quota.used && quota.limits && (
           <span className="th-desc">
             Free Recommends: {quota.used.month}/{quota.limits.monthly} used this
