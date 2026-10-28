@@ -1,5 +1,8 @@
-import { QueryClient } from '@tanstack/react-query'
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { QueryClient, useIsRestoring } from '@tanstack/react-query'
+import {
+  PersistQueryClientProvider,
+  removeOldestQuery,
+} from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { BrowserRouter } from 'react-router-dom'
@@ -83,8 +86,20 @@ const persister =
         key: 'sofia-rq-cache',
         serialize: (client) => JSON.stringify(client, replacer),
         deserialize: (raw) => JSON.parse(raw, reviver),
+        // localStorage full (~5MB): drop the oldest queries and retry,
+        // instead of silently never saving again
+        retry: removeOldestQuery,
       })
     : undefined
+
+/**
+ * Renders the app once the persisted cache is back (a few ms, read from
+ * localStorage). During the restore every query reads as empty and idle,
+ * so pages would flash their empty state ("0", "No activity yet") first.
+ */
+function RestoreGate({ children }: { children: React.ReactNode }) {
+  return useIsRestoring() ? null : <>{children}</>
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -129,11 +144,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
             : { persister: undefined as any, maxAge: CACHE_MAX_AGE }
         }
       >
-        <CartProvider>
-          <ViewAsProvider>
-            <BrowserRouter>{children}</BrowserRouter>
-          </ViewAsProvider>
-        </CartProvider>
+        <RestoreGate>
+          <CartProvider>
+            <ViewAsProvider>
+              <BrowserRouter>{children}</BrowserRouter>
+            </ViewAsProvider>
+          </CartProvider>
+        </RestoreGate>
       </PersistQueryClientProvider>
     </PrivyProvider>
   )

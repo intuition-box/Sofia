@@ -8,6 +8,7 @@ import {
   type DiscoveriesResult,
 } from '@/services/discoveriesService'
 import type { MarketPosition } from '@/services/userPositionsService'
+import { keepPreviousIfSame } from '@/utils/keepPrevious'
 
 const EMPTY: DiscoveriesResult = { discoveries: [], followers: 0, change: '0' }
 
@@ -20,6 +21,8 @@ export function useDiscoveries(
     queryFn: () => fetchDiscoveries(walletAddress!, positions),
     enabled: !!walletAddress && positions.length > 0,
     staleTime: 5 * 60_000,
+    // A new position moves the key: keep this wallet's card up
+    placeholderData: keepPreviousIfSame(1, walletAddress?.toLowerCase()),
   })
   return { ...(data ?? EMPTY), loading: isLoading && !!walletAddress }
 }

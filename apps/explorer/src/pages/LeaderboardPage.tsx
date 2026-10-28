@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom'
-import { usePrivy } from '@privy-io/react-auth'
+import { useAccountWallet } from '../hooks/useAccountWallet'
 import { Crosshair, Flame } from 'lucide-react'
 import type { Address } from 'viem'
 import { useAlphaTesters } from '../hooks/useAlphaTesters'
@@ -12,8 +12,7 @@ import '@/components/styles/platform-market.css'
 import '@/components/styles/market-pages.css'
 
 export default function LeaderboardPage() {
-  const { user } = usePrivy()
-  const walletAddress = user?.wallet?.address as Address | undefined
+  const walletAddress = useAccountWallet().address as Address | undefined
 
   const {
     leaderboard: alphaData,

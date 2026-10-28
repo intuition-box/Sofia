@@ -8,7 +8,7 @@
  * reset whenever the first page changes (new window, refetch).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   fetchTrendingRanking,
   fetchTrendingPageDetails,
@@ -34,6 +34,8 @@ export interface UseTrendingPagesResult {
   error: string | null
   /** The ranking walk stopped before the window cutoff. */
   truncated: boolean
+  /** The list shown is the previous one while a fresher one loads */
+  refreshing: boolean
 }
 
 function message(err: unknown): string | null {
@@ -48,6 +50,8 @@ export const trendingRankingQuery = (timeWindow: TrendingWindow) => ({
   staleTime: STALE,
   gcTime: GC,
   refetchOnWindowFocus: false,
+  // Switching window keeps the current list up while the new one loads
+  placeholderData: keepPreviousData,
 })
 
 export function useTrendingPages(
@@ -69,6 +73,8 @@ export function useTrendingPages(
     staleTime: STALE,
     gcTime: GC,
     refetchOnWindowFocus: false,
+    // The key moves with the ranking's counts: keep the list in place
+    placeholderData: keepPreviousData,
   })
 
   const [extra, setExtra] = useState<TrendingPage[]>([])
@@ -123,5 +129,6 @@ export function useTrendingPages(
     refresh,
     error: message(ranking.error) ?? message(firstPage.error) ?? moreError,
     truncated: ranking.data?.truncated ?? false,
+    refreshing: ranking.isPlaceholderData || firstPage.isPlaceholderData,
   }
 }

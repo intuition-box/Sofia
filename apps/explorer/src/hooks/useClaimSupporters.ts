@@ -6,7 +6,7 @@
  * "credibility" lens. See docs/reputation-curation.md.
  */
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   fetchClaimSupporters,
   type ClaimSupporters,
@@ -28,6 +28,9 @@ export function useClaimSupporters(claimTermIds: readonly string[]) {
     // reputation chain survives reloads/navigation instead of being GC'd at 30m.
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
+    // New certs move the key: keep the previous map (looked up by claim
+    // id, so it never misattributes) instead of dropping the scores to 0
+    placeholderData: keepPreviousData,
   })
 
   // The query caches a plain object (survives localStorage persistence); the

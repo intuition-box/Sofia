@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 import { fetchPortfolioHistory } from '@/services/portfolioHistoryService'
 import { fetchWithRetry } from '@/utils/fetchRetry'
+import { keepPreviousIfSame } from '@/utils/keepPrevious'
 import type { MarketPosition } from '@/services/userPositionsService'
 
 export function usePortfolioHistory(
@@ -51,6 +52,8 @@ export function usePortfolioHistory(
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
+    // Fresh positions move the ratio key: keep this wallet's chart up
+    placeholderData: keepPreviousIfSame(1, walletAddress?.toLowerCase()),
   })
 
   return {

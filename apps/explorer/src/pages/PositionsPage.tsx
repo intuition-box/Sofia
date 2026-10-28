@@ -20,6 +20,7 @@ import { PageHero, FaviconWrapper, SectionH2 } from '@0xsofia/design-system'
 import { RefreshCw, Wallet } from 'lucide-react'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useResolvedAddress } from '@/hooks/useResolvedAddress'
+import { useAccountWallet } from '@/hooks/useAccountWallet'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useRedeemCert } from '@/hooks/useRedeemCert'
 import SofiaLoader from '@/components/ui/SofiaLoader'
@@ -85,7 +86,8 @@ function describe(p: MarketPosition): string {
 export default function PositionsPage() {
   const pc = PAGE_COLORS['/positions']
   const { address: rawAddress } = useParams<{ address: string }>()
-  const { ready, authenticated, user } = usePrivy()
+  const { authenticated, user } = usePrivy()
+  const account = useAccountWallet()
   const { login } = useLogin()
   const resolved = useResolvedAddress(rawAddress)
   // `/positions` → active wallet (undefined); `/positions/:address` → the
@@ -212,7 +214,8 @@ export default function PositionsPage() {
     />
   )
 
-  if (!ready) return null
+  // Privy restoring with nobody signed in last time — nothing to show yet
+  if (!rawAddress && account.provisional && !account.signedIn) return null
 
   // `/positions/:address` — resolving (or about to) / unresolvable.
   if (rawAddress && !walletAddress) {
@@ -230,7 +233,7 @@ export default function PositionsPage() {
     )
   }
 
-  if (!walletAddress || (!rawAddress && !authenticated)) {
+  if (!walletAddress || (!rawAddress && !account.signedIn)) {
     return (
       <div className="page-content page-enter">
         {hero}

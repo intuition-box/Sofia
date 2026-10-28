@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { getAddress, type Address } from 'viem'
+import { rememberedAccount } from '@/services/lastAccountService'
 
 /** One wallet attached to the user's account, for the manage UI. */
 export interface LinkedWallet {
@@ -25,12 +26,30 @@ export interface LinkedWallet {
  *
  * The Intuition indexer stores account IDs in EIP-55 mixed case, so the returned
  * addresses are safe to pass directly to queries that filter with `_in`.
+ *
+ * While Privy restores the session after a reload, `addresses` are the ones
+ * remembered from last time (cached reads render at once); nothing acts.
  */
 export function useLinkedWallets() {
-  const { authenticated, user } = usePrivy()
+  const { ready, authenticated, user } = usePrivy()
   const { wallets } = useWallets()
 
   return useMemo(() => {
+    if (!ready) {
+      const addresses: Address[] = []
+      for (const a of rememberedAccount()?.addresses ?? []) {
+        try {
+          addresses.push(getAddress(a))
+        } catch {
+          // skip
+        }
+      }
+      return {
+        addresses,
+        primary: undefined as Address | undefined,
+        wallets: [] as LinkedWallet[],
+      }
+    }
     if (!authenticated) {
       return {
         addresses: [] as Address[],
@@ -104,5 +123,5 @@ export function useLinkedWallets() {
     }))
 
     return { addresses, primary, wallets: list }
-  }, [authenticated, user, wallets])
+  }, [ready, authenticated, user, wallets])
 }

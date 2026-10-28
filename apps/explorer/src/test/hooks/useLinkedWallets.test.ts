@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import { rememberAccount } from '@/services/lastAccountService'
 
 // ── Mocks ─────────────────────────────────────────────────────────
 // Privy hooks are fully mocked. The mock module exposes two setters to let
 // each test control `authenticated` and `wallets` independently.
 
+let mockReady = true
 let mockAuthenticated = true
 let mockWallets: Array<{ address: string }> = []
 let mockUser: {
@@ -14,7 +16,11 @@ let mockUser: {
 } | null = null
 
 vi.mock('@privy-io/react-auth', () => ({
-  usePrivy: () => ({ authenticated: mockAuthenticated, user: mockUser }),
+  usePrivy: () => ({
+    ready: mockReady,
+    authenticated: mockAuthenticated,
+    user: mockUser,
+  }),
   useWallets: () => ({ wallets: mockWallets }),
 }))
 
@@ -22,6 +28,8 @@ vi.mock('@privy-io/react-auth', () => ({
 
 describe('useLinkedWallets', () => {
   beforeEach(() => {
+    mockReady = true
+    localStorage.clear()
     mockAuthenticated = true
     mockWallets = []
     mockUser = null
@@ -39,6 +47,20 @@ describe('useLinkedWallets', () => {
     mockWallets = [{ address: '0x8ba1f109551bd432803012645ac136ddd64dba72' }]
     const { result } = renderHook(() => useLinkedWallets())
     expect(result.current.addresses).toEqual([])
+    expect(result.current.primary).toBeUndefined()
+  })
+
+  it('reads the account remembered last time while Privy restores', () => {
+    mockReady = false
+    rememberAccount({
+      primary: '0x8ba1f109551bd432803012645ac136ddd64dba72',
+      addresses: ['0x8ba1f109551bd432803012645ac136ddd64dba72'],
+    })
+    const { result } = renderHook(() => useLinkedWallets())
+    expect(result.current.addresses).toEqual([
+      '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+    ])
+    // Nothing acts before Privy confirms
     expect(result.current.primary).toBeUndefined()
   })
 

@@ -5,7 +5,8 @@
  *
  * Not a paginated feed: the summary (total value, change, "brought to
  * platforms") must cover every position, so the service walks all pages
- * up front. Defaults to the active Privy wallet — the one an exit redeems
+ * up front. Defaults to the signed-in wallet (remembered while Privy
+ * restores the session) — the one an exit redeems
  * from; pass `address` to read any other wallet (read-only), or `null`
  * while that address is still unknown (e.g. ENS resolving) to stay idle.
  * What mined txs did but the indexer doesn't show yet is merged in (see
@@ -13,7 +14,6 @@
  */
 import { useEffect, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { usePrivy } from '@privy-io/react-auth'
 import { getAddress } from 'viem'
 import {
   fetchUserPositions,
@@ -23,6 +23,7 @@ import {
 } from '@/services/userPositionsService'
 import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { fetchWithRetry } from '@/utils/fetchRetry'
+import { useAccountWallet } from './useAccountWallet'
 import {
   EMPTY_OPTIMISTIC,
   mergeOptimisticPositions,
@@ -51,10 +52,10 @@ export interface UseUserPositionsResult {
 export function useUserPositions(
   address?: string | null,
 ): UseUserPositionsResult {
-  const { user } = usePrivy()
+  const account = useAccountWallet()
   const qc = useQueryClient()
   const walletAddress =
-    address === undefined ? user?.wallet?.address : address || undefined
+    address === undefined ? account.address : address || undefined
 
   // The indexer stores account_id in mixed casings — query both.
   const addresses = useMemo(() => {

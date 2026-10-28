@@ -15,6 +15,7 @@ import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import { useCart } from './hooks/useCart'
 import { useNavCollapse } from './hooks/useNavCollapse'
+import { useAccountWallet, useRememberAccount } from './hooks/useAccountWallet'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
@@ -78,10 +79,12 @@ function RouteFallback() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated } = usePrivy()
+  // While Privy restores the session, the account signed in last renders
+  // from cache; Privy's answer then confirms it or redirects
+  const { signedIn, provisional } = useAccountWallet()
   const { isViewingAs } = useViewAs()
-  if (!ready) return null
-  if (!authenticated && !isViewingAs) return <Navigate to="/explore" replace />
+  if (provisional && !signedIn) return null
+  if (!signedIn && !isViewingAs) return <Navigate to="/explore" replace />
   return <>{children}</>
 }
 
@@ -98,6 +101,7 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
+  useRememberAccount()
   const { ready: privyReady, authenticated } = usePrivy()
   const { login } = useLogin()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =

@@ -8,6 +8,7 @@ import { getAddress } from 'viem'
 import { startOfUtcDay } from '@0xsofia/quests'
 import { trendingRankingQuery } from '@/hooks/useTrendingPages'
 import { fetchMissions, type MissionsResult } from '@/services/missionsService'
+import { keepPreviousIfSame } from '@/utils/keepPrevious'
 
 /** "Back a trend" counts pages in the top of the 7-day Trending */
 const TRENDING_TOP = 50
@@ -51,6 +52,8 @@ export function useMissions(walletAddress?: string | null): UseMissionsResult {
     queryFn: () => fetchMissions(addresses, trendingKeys),
     enabled: addresses.length > 0 && !ranking.isLoading,
     staleTime: 5 * 60 * 1000,
+    // Fresher Trending moves the key: keep this wallet's missions up
+    placeholderData: keepPreviousIfSame(1, addresses[0]),
   })
 
   return {

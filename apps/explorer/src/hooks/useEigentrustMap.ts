@@ -7,7 +7,7 @@
  * See docs/reputation-curation.md.
  */
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { fetchEigentrustMap } from '@/services/eigentrustService'
 
 export function useEigentrustMap(addresses: readonly string[]) {
@@ -26,6 +26,9 @@ export function useEigentrustMap(addresses: readonly string[]) {
     // reloads/navigation for the full persist window, not get GC'd after 1h.
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
+    // New certs move the key: keep the previous map (looked up by address
+    // id, so it never misattributes) instead of dropping the scores to 0
+    placeholderData: keepPreviousData,
   })
 
   // The query caches a plain object (survives localStorage persistence); the
