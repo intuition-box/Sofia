@@ -189,6 +189,7 @@ app.post('/sponsor/recommend', async (c) => {
     left: quotaLeft(used, limits),
     partial: !!result.error,
     dryRun: env.dryRun,
+    deposit: env.depositTrust,
   })
 })
 

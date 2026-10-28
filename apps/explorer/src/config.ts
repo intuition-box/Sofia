@@ -22,6 +22,10 @@ export const GRAPHQL_WS_URL =
 // through the backend pin-proxy (services/pin-proxy) which holds the key
 // server-side, so it never ships in this public bundle. URL only, no secret.
 export const PIN_PROXY_URL = import.meta.env.VITE_PIN_PROXY_URL as string
+// Sponsored writes (services/write-relayer): free Recommends for email /
+// Google accounts. Unset → every account signs and pays as before.
+export const WRITE_RELAYER_URL =
+  (import.meta.env.VITE_WRITE_RELAYER_URL as string) || ''
 export const EXPLORER_URL = 'https://explorer.intuition.systems'
 
 // ── Sofia Proxy Contract ──

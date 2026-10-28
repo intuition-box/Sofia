@@ -6,6 +6,7 @@ import { useDeposit } from '../hooks/useDeposit'
 import { useFeeEstimate } from '../hooks/useFeeEstimate'
 import { useUserAccountAtom } from '../hooks/useUserAccountAtom'
 import { useTripleVerification } from '../hooks/useTripleVerification'
+import { useSponsoredWrite } from '../hooks/useSponsoredWrite'
 import { removeCertsFromProfileCache } from '../hooks/useUserOnChainProfile'
 import {
   removeAttributesFromCache,
@@ -162,6 +163,8 @@ export default function WeightModal({
   const { estimate } = useFeeEstimate()
   const { authenticated } = usePrivy()
   const { wallets } = useWallets()
+  // Email / Google accounts: a Recommend-only cart is free (write-relayer)
+  const sponsored = useSponsoredWrite(items)
   const qc = useQueryClient()
   /** What already went through in this cart (mined txs): skipped on a retry
    *  so nothing is exited or deposited twice, dropped from the cart on close */
@@ -441,6 +444,39 @@ export default function WeightModal({
       })
       markPositionsAdded(qc, wallet0, added)
       scheduleReconcile()
+    }
+
+    // Free Recommends: the relayer publishes them, positions on this wallet
+    if (sponsored.active && sponsored.request) {
+      const rows = sponsored.request.recommendRows
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        const r = await sponsored.submit()
+        if (r.partial) {
+          setCreateTripleResult({
+            success: false,
+            error:
+              'Only part of it was published — check My positions before retrying.',
+          })
+          return
+        }
+        if (!r.dryRun)
+          showAdded(
+            rows,
+            rows.map(() => r.deposit),
+          )
+        for (const it of items) settled.items.add(it.id)
+        setCreateTripleResult({ success: true, txHash: r.txHashes.at(-1) })
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      } finally {
+        setCreateTripleProcessing(false)
+      }
+      return
     }
 
     let allOk = true
@@ -961,6 +997,7 @@ export default function WeightModal({
     userAccountAtom.exists,
     userAccountAtom.termId,
     pinThing,
+    sponsored,
   ])
 
   const handleClose = () => {
@@ -1029,7 +1066,7 @@ export default function WeightModal({
                 <h1 className="b3-h1">mplify.</h1>
               </div>
 
-              {items.length > 1 && (
+              {items.length > 1 && !sponsored.active && (
                 <div className="b3-presets">
                   <span className="b3-presets-k">QUICK</span>
                   {WEIGHT_TIERS.map((t) => (
@@ -1158,6 +1195,10 @@ export default function WeightModal({
                                 : 'EXIT'}
                           </span>
                         </div>
+                      ) : sponsored.active ? (
+                        <div className="b3-row-trust">
+                          <span className="b3-row-trust-unit">FREE</span>
+                        </div>
                       ) : (
                         <div className="b3-row-trust">
                           <span className="b3-row-trust-val">
@@ -1177,7 +1218,7 @@ export default function WeightModal({
                                 : 'All shares returned'}
                           </span>
                         </div>
-                      ) : (
+                      ) : sponsored.active ? null : (
                         <div className="b3-tiers" role="radiogroup">
                           {WEIGHT_TIERS.map((t) => (
                             <button
@@ -1224,48 +1265,66 @@ export default function WeightModal({
                 </div>
               )}
 
-              {/* Ledger — deposit + fees + total + balance + signing target */}
-              <div className="b3-ledger">
-                <div className="b3-ledger-row">
-                  <span>Subtotal</span>
-                  <span>{formatTrust(breakdown.deposit)} TRUST</span>
-                </div>
-                {breakdown.totalFees > 0 && (
-                  <div className="b3-ledger-row">
-                    <span>Fees</span>
-                    <span>{formatTrust(breakdown.totalFees)} TRUST</span>
+              {/* Free Recommends — Sofia pays, the position is the user's */}
+              {sponsored.active ? (
+                <div className="b3-ledger">
+                  <div className="b3-ledger-row b3-ledger-total">
+                    <span>Free Recommend{items.length > 1 ? 's' : ''}</span>
+                    <span>0 TRUST</span>
                   </div>
-                )}
-                <div className="b3-ledger-row b3-ledger-total">
-                  <span>Total deposit</span>
-                  <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                  <div className="b3-ledger-row b3-ledger-row--muted">
+                    <span>Sofia pays · the position is yours</span>
+                    <span>{sponsored.left} left</span>
+                  </div>
                 </div>
-                <div
-                  className={`b3-ledger-row b3-ledger-row--muted${balNum < breakdown.totalEstimate ? ' wm-cost-insufficient' : ''}`}
-                >
-                  <span>Your balance</span>
-                  <span>
-                    {balance
-                      ? `${formatTrust(parseFloat(balance))} TRUST`
-                      : '…'}
-                  </span>
-                </div>
-                {/* Surface the contract the wallet popup will sign against,
+              ) : (
+                <div className="b3-ledger">
+                  <div className="b3-ledger-row">
+                    <span>Subtotal</span>
+                    <span>{formatTrust(breakdown.deposit)} TRUST</span>
+                  </div>
+                  {breakdown.totalFees > 0 && (
+                    <div className="b3-ledger-row">
+                      <span>Fees</span>
+                      <span>{formatTrust(breakdown.totalFees)} TRUST</span>
+                    </div>
+                  )}
+                  <div className="b3-ledger-row b3-ledger-total">
+                    <span>Total deposit</span>
+                    <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                  </div>
+                  <div
+                    className={`b3-ledger-row b3-ledger-row--muted${balNum < breakdown.totalEstimate ? ' wm-cost-insufficient' : ''}`}
+                  >
+                    <span>Your balance</span>
+                    <span>
+                      {balance
+                        ? `${formatTrust(parseFloat(balance))} TRUST`
+                        : '…'}
+                    </span>
+                  </div>
+                  {/* Surface the contract the wallet popup will sign against,
                     so a compromised bundle that swaps SOFIA_PROXY_ADDRESS can
                     be caught by reading the address against a known ref. */}
-                <div className="b3-ledger-row b3-ledger-row--muted">
-                  <span>Signing against</span>
-                  <a
-                    href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'inherit' }}
-                  >
-                    {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
-                    {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
-                  </a>
+                  <div className="b3-ledger-row b3-ledger-row--muted">
+                    <span>Signing against</span>
+                    <a
+                      href={`${EXPLORER_URL}/address/${SOFIA_PROXY_ADDRESS}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'inherit' }}
+                    >
+                      {SOFIA_PROXY_ADDRESS.slice(0, 6)}…
+                      {SOFIA_PROXY_ADDRESS.slice(-4)} ↗
+                    </a>
+                  </div>
+                  {sponsored.hint && (
+                    <div className="b3-ledger-row b3-ledger-row--muted">
+                      <span>{sponsored.hint}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </>
           )}
 
@@ -1359,18 +1418,31 @@ export default function WeightModal({
                 onClick={handleSubmit}
                 disabled={
                   processing ||
-                  verifying ||
-                  missingTripleIds.length > 0 ||
-                  (totalDeposit <= 0 && !hasRedeem) ||
-                  balNum < breakdown.totalEstimate
+                  (sponsored.active
+                    ? false
+                    : verifying ||
+                      missingTripleIds.length > 0 ||
+                      (totalDeposit <= 0 && !hasRedeem) ||
+                      balNum < breakdown.totalEstimate)
                 }
               >
-                {processing ? 'Signing…' : verifying ? 'Verifying…' : 'Sign'}
-                {!processing && !verifying && breakdown.totalEstimate > 0 && (
-                  <span className="b3-btn-amt">
-                    {formatTrust(breakdown.totalEstimate)} T
-                  </span>
-                )}
+                {sponsored.active
+                  ? processing
+                    ? 'Publishing…'
+                    : 'Recommend for free'
+                  : processing
+                    ? 'Signing…'
+                    : verifying
+                      ? 'Verifying…'
+                      : 'Sign'}
+                {!sponsored.active &&
+                  !processing &&
+                  !verifying &&
+                  breakdown.totalEstimate > 0 && (
+                    <span className="b3-btn-amt">
+                      {formatTrust(breakdown.totalEstimate)} T
+                    </span>
+                  )}
               </button>
             )}
             {txResult && !txResult.success && !processing && (

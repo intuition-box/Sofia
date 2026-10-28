@@ -249,6 +249,7 @@ export default function TrendingPage() {
             id: `${claim.termId}-support`,
             side: 'support',
             termId: claim.termId,
+            objectId: page.market.objectId,
             intention: RECOMMEND_LABEL,
             title: page.title,
             favicon: page.favicon,
