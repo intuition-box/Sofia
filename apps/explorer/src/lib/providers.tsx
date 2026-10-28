@@ -91,7 +91,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ['wallet', 'google'],
+        // Email / Google first: no crypto wallet needed to join. Those
+        // accounts get a Privy embedded wallet (their positions' owner);
+        // writes for them go through the sponsored relayer
+        // (docs/plans/SPONSORED_WRITES_PLAN.md). Wallet users are unchanged.
+        loginMethods: ['email', 'google', 'wallet'],
+        embeddedWallets: {
+          ethereum: { createOnLogin: 'users-without-wallets' },
+        },
         /* Intuition mainnet (chain ID 1155) is the only chain the
            explorer ever transactions against — RPC + indexer in
            ../config.ts both point at mainnet.intuition. Without this
@@ -110,7 +117,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           theme: '#02000e',
           accentColor: '#ffc6b0',
           logo: '/logo.png',
-          showWalletLoginFirst: true,
+          showWalletLoginFirst: false,
         },
       }}
     >
