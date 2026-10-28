@@ -21,12 +21,10 @@ import {
 import { TrendingUp, Users } from 'lucide-react'
 import { useTrendingPages } from '@/hooks/useTrendingPages'
 import { useCart } from '@/hooks/useCart'
-import { useAccountWallet } from '@/hooks/useAccountWallet'
 import { CANONICAL_PREDICATE_IDS, SOFIA_I_ATOM_ID } from '@/config/atomIds'
 import { PAGE_MARKET_PREDICATE_LABEL } from '@0xsofia/taxonomy'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
-import MissionsPanel from '@/components/trending/MissionsPanel'
-import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
+import FreeRecommendsStrip from '@/components/trending/FreeRecommendsStrip'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -247,7 +245,6 @@ export default function TrendingPage() {
     refreshing,
   } = useTrendingPages(timeWindow)
   const { authenticated, user } = usePrivy()
-  const account = useAccountWallet()
   const { login } = useLogin()
   const cart = useCart()
   const [boardPage, setBoardPage] = useState<TrendingPageItem | null>(null)
@@ -302,8 +299,7 @@ export default function TrendingPage() {
         description={pc.subtitle}
       />
 
-      <MissionsPanel walletAddress={account.address} />
-      <EarlySignalsSection />
+      <FreeRecommendsStrip />
 
       <div className="pm-filters">
         <div className="pm-filter-group">

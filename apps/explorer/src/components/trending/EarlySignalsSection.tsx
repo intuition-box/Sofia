@@ -1,8 +1,10 @@
 /**
- * EarlySignalsSection — the month's best calls (TREND_HUNTER_SPEC §5.2):
- * "Spotted by @x, N days before the next 5". On Explore and atop Trending,
- * as a band that scrolls on its own (pauses on hover / focus, still when the
- * system asks for reduced motion). Hidden until the month has one signal.
+ * EarlySignalsSection — the month's best spotted pages (TREND_HUNTER_SPEC
+ * §5.2): "Spotted by @x, N days before 5 credible accounts followed". On
+ * Explore (the showcase, linking to /trend-hunters) and at the end of
+ * /trend-hunters, as a band that scrolls on its own (pauses on hover / focus,
+ * still when the system asks for reduced motion). Hidden until the month has
+ * one.
  */
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -17,11 +19,16 @@ import '@/components/styles/platform-market.css'
 import '@/components/styles/trend-hunter.css'
 
 function leadLabel(days: number): string {
-  if (days < 1) return 'the same day as the next 5'
-  return `${days} day${days === 1 ? '' : 's'} before the next 5`
+  if (days < 1) return 'the same day 5 credible accounts followed'
+  return `${days} day${days === 1 ? '' : 's'} before 5 credible accounts followed`
 }
 
-export default function EarlySignalsSection() {
+export default function EarlySignalsSection({
+  linkToBoard = true,
+}: {
+  /** Off on /trend-hunters itself */
+  linkToBoard?: boolean
+}) {
   const { entries, month } = useEarlySignals(6)
   const wallets = useMemo(
     () => entries.map((e) => e.wallet as Address),
@@ -32,13 +39,15 @@ export default function EarlySignalsSection() {
   if (entries.length === 0 || !month) return null
 
   return (
-    <section className="th-section" aria-label="Early signals">
+    <section className="th-section" aria-label="Spotted this month">
       <ModuleHead
-        title="Early signals"
+        title="Spotted this month"
         right={
-          <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
-            Trend Hunters
-          </Link>
+          linkToBoard ? (
+            <Link to="/trend-hunters" className="pm-chip">
+              Trend Hunters
+            </Link>
+          ) : undefined
         }
       />
       <div className="th-marquee">

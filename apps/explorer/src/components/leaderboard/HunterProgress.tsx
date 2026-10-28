@@ -1,170 +1,79 @@
 /**
- * HunterProgress — the account's month as a Trend Hunter, at the top of the
- * board: free Recommends first (what it owns, credits from calls included),
- * then what grows them — calls, Flair, rank and the way to the Top 10 — and
- * how to earn, in three cards. Logged out: what signing in gives.
+ * HunterProgress — "Your month", first on /trend-hunters for a signed-in
+ * account: pages spotted, Influence and rank, the way to the Top N and the
+ * share of the pool, and what the spotted pages already earned (free
+ * Recommends are spent on Trending, so the counter itself lives there).
  */
-import { useEffect, useState } from 'react'
-import { useLogin } from '@privy-io/react-auth'
-import { AnimatedNumber } from '@0xsofia/design-system'
-import { useSponsorQuota } from '@/hooks/useSponsoredWrite'
+import { Link } from 'react-router-dom'
+import { AnimatedNumber, ModuleHead } from '@0xsofia/design-system'
 import {
   CREDITS_PER_CALL,
   TREND_HUNTER_BADGE_RANK,
   useTrendHunters,
 } from '@/hooks/useTrendHunters'
-import { countdown } from '@/utils/formatting'
+import '@0xsofia/design-system/styles/module-head.css'
 import '@/components/styles/trend-hunter.css'
 
-const flair = (n: number) => Math.round(n).toLocaleString()
+const influence = (n: number) => Math.round(n).toLocaleString()
 
-/** Re-renders every minute for the countdown */
-function useMinuteClock(): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000)
-    return () => clearInterval(id)
-  }, [])
-  return now
-}
-
-function HowToEarn({ topSize, pool }: { topSize: number; pool?: number }) {
-  const steps = [
-    {
-      title: 'Be early',
-      text: 'Take a position on a page while it is still unknown: be among the first 3.',
-    },
-    {
-      title: 'Get followed',
-      text: `Every credible account that follows adds to your Flair. Five of them make a call: +${CREDITS_PER_CALL} free Recommends.`,
-    },
-    {
-      title: `Make the Top ${topSize}`,
-      text: pool
-        ? `The Top ${topSize} share ${pool.toLocaleString()} TRUST each month, by Flair, and earn the badge.`
-        : 'The best Trend Hunters of the month earn the badge on their profile.',
-    },
-  ]
-  return (
-    <ol className="th-cards th-how" style={{ listStyle: 'none', padding: 0 }}>
-      {steps.map((step) => (
-        <li key={step.title} className="th-card">
-          <span className="th-card-title">{step.title}</span>
-          <span className="th-desc">{step.text}</span>
-        </li>
-      ))}
-    </ol>
-  )
-}
-
-export default function HunterProgress({ wallet }: { wallet?: string | null }) {
+export default function HunterProgress({ wallet }: { wallet: string }) {
   const { entries, pool } = useTrendHunters(50)
-  const { quota } = useSponsorQuota()
-  const { login } = useLogin()
-  const now = useMinuteClock()
 
-  const me = wallet?.toLowerCase()
-  const mine = me ? entries.find((e) => e.wallet === me) : undefined
+  const me = wallet.toLowerCase()
+  const mine = entries.find((e) => e.wallet === me)
   const topSize = pool?.size ?? TREND_HUNTER_BADGE_RANK
   const last = entries[topSize - 1]
   const inTop = !!mine && mine.rank <= topSize
+  const spotted = mine?.calls ?? 0
 
-  if (!wallet) {
-    return (
-      <section className="th-section" aria-label="Your progress">
-        <div className="th-hero">
-          <span className="th-hero-value">Free Recommends</span>
-          <span className="th-desc">
-            Sign in to get free Recommends every month — and earn more by
-            spotting pages early.
-          </span>
-          <button
-            type="button"
-            className="pm-dex-invest th-hero-cta"
-            style={{ background: 'var(--ds-accent)' }}
-            onClick={() => login()}
-          >
-            Sign in
-          </button>
-        </div>
-        <HowToEarn topSize={topSize} pool={pool?.trust} />
-      </section>
-    )
-  }
-
-  const d = new Date(now)
-  const dayEnd = Date.UTC(
-    d.getUTCFullYear(),
-    d.getUTCMonth(),
-    d.getUTCDate() + 1,
-  )
-  const monthly = quota?.limits?.monthly ?? 0
-  const usedMonth = quota?.used?.month ?? 0
-  const leftMonth = Math.max(0, monthly - usedMonth)
-  const leftToday = quota?.left ?? 0
-  // Credits are summed over the account's wallets
-  const calls = Math.round((quota?.credits ?? 0) / CREDITS_PER_CALL)
-  const usedPct = monthly ? Math.round((usedMonth / monthly) * 100) : 0
-
-  const toTop = inTop
+  const rankNote = inTop
     ? mine?.reward
-      ? `≈ ${mine.reward.toFixed(2)} TRUST`
+      ? `≈ ${mine.reward.toFixed(2)} TRUST if the month ended now`
       : `In the Top ${topSize}`
     : mine && last
-      ? `${flair(last.flair - mine.flair + 1)} Flair to Top ${topSize}`
+      ? `${influence(last.flair - mine.flair + 1)} Influence to the Top ${topSize}`
       : 'Not ranked yet'
 
   return (
-    <section className="th-section" aria-label="Your progress">
-      <div className="th-hero">
-        {quota?.eligible ? (
-          <>
-            <span className="th-hero-value">
-              <AnimatedNumber value={leftMonth} flash /> free Recommends left
-            </span>
-            <span className="th-bar th-bar--hero" aria-hidden>
-              <span style={{ width: `${usedPct}%` }} />
-            </span>
-            <span className="th-desc">
-              {usedMonth}/{monthly} used this month · {leftToday} left today
-              (resets in {countdown(dayEnd, now)})
-            </span>
-            <span className="th-hero-credits">
-              {calls
-                ? `+${quota.credits} earned from your ${calls} call${calls === 1 ? '' : 's'}`
-                : `Each call earns +${CREDITS_PER_CALL} free Recommends`}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="th-hero-value">Free Recommends</span>
-            <span className="th-desc">
-              {quota?.reason ?? 'Unavailable right now.'}
-            </span>
-          </>
-        )}
-      </div>
-
+    <section className="th-section" aria-label="Your month">
+      <ModuleHead title="Your month" />
       <div className="th-tiles">
         <div className="th-tile">
           <span className="th-value">
-            <AnimatedNumber value={mine?.calls ?? 0} />
+            <AnimatedNumber value={spotted} />
           </span>
-          <span className="th-desc">calls</span>
+          <span className="th-desc">
+            spotted page{spotted === 1 ? '' : 's'}
+          </span>
         </div>
         <div className="th-tile">
           <span className="th-value">
-            <AnimatedNumber value={mine?.flair ?? 0} format={flair} flash />
+            <AnimatedNumber value={mine?.flair ?? 0} format={influence} flash />
           </span>
-          <span className="th-desc">Flair</span>
+          <span className="th-desc">Influence</span>
         </div>
         <div className="th-tile">
           <span className="th-value">{mine ? `#${mine.rank}` : '—'}</span>
-          <span className="th-desc">{toTop}</span>
+          <span className="th-desc">{rankNote}</span>
         </div>
       </div>
-
-      <HowToEarn topSize={topSize} pool={pool?.trust} />
+      <p className="th-earned">
+        {spotted > 0 ? (
+          <>
+            Your spotted pages earned{' '}
+            <b>+{spotted * CREDITS_PER_CALL} free Recommends</b> this
+            month.{' '}
+          </>
+        ) : (
+          <>
+            Each spotted page earns <b>+{CREDITS_PER_CALL} free Recommends</b>
+            .{' '}
+          </>
+        )}
+        <Link to="/trending" className="th-strip-link th-earned-link">
+          Find pages on Trending
+        </Link>
+      </p>
     </section>
   )
 }

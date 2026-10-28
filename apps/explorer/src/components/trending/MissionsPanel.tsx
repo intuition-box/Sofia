@@ -1,58 +1,16 @@
 /**
- * MissionsPanel — Trend Hunter on /trending (TREND_HUNTER_SPEC §5): today's
- * three missions + the topic of the week, computed from the wallet's
- * on-chain positions, and what hunting earns — free Recommends per call, a
- * share of the monthly pool for the Top 10. Logged out: the pitch and a
- * connect button.
+ * MissionsPanel — today's three missions + the topic of the week
+ * (TREND_HUNTER_SPEC §3), computed from the wallet's on-chain positions.
+ * Part of "Your month" on /trend-hunters.
  */
-import { Link } from 'react-router-dom'
-import { useLogin } from '@privy-io/react-auth'
-import { CircleHelp, Wallet } from 'lucide-react'
 import { AnimatedNumber, ModuleHead, StatePill } from '@0xsofia/design-system'
 import type { MissionProgress } from '@0xsofia/quests'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { useMissions } from '@/hooks/useMissions'
-import {
-  CREDITS_PER_CALL,
-  useTrendHunters,
-  type TrendHunterEntry,
-  type TrendHunterPool,
-} from '@/hooks/useTrendHunters'
+import { nextUtcDay, useMinuteClock } from '@/hooks/useMinuteClock'
+import { countdown } from '@/utils/formatting'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@0xsofia/design-system/styles/state-pill.css'
-import '@/components/styles/platform-market.css'
 import '@/components/styles/trend-hunter.css'
-
-/** "Resets in 5h" — days end at 00:00 UTC */
-function resetsIn(): string {
-  const now = new Date()
-  const next = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-  )
-  const hours = Math.max(1, Math.round((next - now.getTime()) / 3_600_000))
-  return `Daily missions reset in ${hours}h`
-}
-
-/** What the wallet earned this month, else what hunting can earn */
-function rewardLabel(
-  mine: TrendHunterEntry | undefined,
-  pool: TrendHunterPool | null,
-): string {
-  const parts: string[] = []
-  if (mine?.calls)
-    parts.push(`+${mine.calls * CREDITS_PER_CALL} free Recommends`)
-  if (mine?.reward) parts.push(`${mine.reward.toFixed(2)} TRUST`)
-  if (parts.length > 0) return `Earned: ${parts.join(' · ')}`
-  return pool
-    ? `Top ${pool.size} share ${pool.trust} TRUST`
-    : `+${CREDITS_PER_CALL} free Recommends per call`
-}
 
 function MissionCard({ mission }: { mission: MissionProgress }) {
   const pct = Math.round((mission.progress / mission.target) * 100)
@@ -79,69 +37,22 @@ function MissionCard({ mission }: { mission: MissionProgress }) {
 export default function MissionsPanel({
   walletAddress,
 }: {
-  walletAddress?: string | null
+  walletAddress: string
 }) {
   const { missions, loading } = useMissions(walletAddress)
-  const { entries, pool } = useTrendHunters(50)
-  const { login } = useLogin()
-
-  const me = walletAddress?.toLowerCase()
-  const mine = me ? entries.find((e) => e.wallet === me) : undefined
+  const now = useMinuteClock()
 
   return (
-    <section className="th-section" aria-label="Trend Hunter missions">
+    <section className="th-section" aria-label="Missions">
       <ModuleHead
-        title={
-          <span className="th-title-hint">
-            Missions
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="th-hint"
-                  aria-label="How Trend Hunter works"
-                >
-                  <CircleHelp aria-hidden />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="th-hint-content">
-                Be early on pages others will follow. When 5 credible accounts
-                follow you on a page, that call earns +{CREDITS_PER_CALL} free
-                Recommends.
-                {pool && (
-                  <>
-                    {' '}
-                    The Top {pool.size} of the month share {pool.trust} TRUST,
-                    by Flair.
-                  </>
-                )}
-                {walletAddress && (
-                  <>
-                    <br />
-                    {resetsIn()}.
-                  </>
-                )}
-              </TooltipContent>
-            </Tooltip>
+        title="Today's missions"
+        right={
+          <span className="th-desc">
+            Reset in {countdown(nextUtcDay(now), now)}
           </span>
         }
-        right={
-          <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
-            {rewardLabel(mine, pool)}
-          </Link>
-        }
       />
-      {!walletAddress ? (
-        <button
-          type="button"
-          className="pm-dex-invest"
-          style={{ background: 'var(--ds-accent)' }}
-          onClick={() => login()}
-        >
-          <Wallet className="h-3.5 w-3.5" aria-hidden />
-          Connect to start hunting
-        </button>
-      ) : loading || !missions ? (
+      {loading || !missions ? (
         <p className="th-desc">Loading your missions…</p>
       ) : (
         <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>

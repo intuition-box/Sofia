@@ -89,37 +89,6 @@ a.th-card:hover {
   color: var(--ds-muted);
 }
 
-/* Section title with a "?" hint (tooltip on hover / focus) */
-.th-title-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.th-hint {
-  display: inline-flex;
-  padding: 2px;
-  border: none;
-  background: none;
-  color: var(--ds-muted);
-  cursor: help;
-}
-
-.th-hint:hover,
-.th-hint:focus-visible {
-  color: var(--ds-ink);
-}
-
-.th-hint svg {
-  width: 15px;
-  height: 15px;
-}
-
-.th-hint-content {
-  max-width: 260px;
-  line-height: 1.45;
-}
-
 /* Early signals: page + spotter lines */
 .th-signal-page {
   display: flex;
@@ -398,35 +367,7 @@ a.th-row:hover {
   }
 }
 
-/* Your progress (HunterProgress): free Recommends first */
-.th-hero {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px 24px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border-soft);
-  border-radius: 16px;
-}
-
-.th-hero-value {
-  font-family: var(--ds-font-display);
-  font-size: clamp(26px, 5vw, 38px);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--ds-ink);
-}
-
-.th-bar--hero {
-  height: 8px;
-}
-
-.th-hero-credits {
-  font-weight: 600;
-  color: var(--ds-accent);
-}
-
+/* Your month (HunterProgress) */
 .th-hero-cta {
   align-self: flex-start;
 }
@@ -457,4 +398,80 @@ a.th-row:hover {
   .th-tiles {
     grid-template-columns: 1fr;
   }
+}
+
+/* FreeRecommendsStrip: one line atop /trending */
+.th-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+}
+
+.th-strip-main {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.th-strip-main b {
+  font-family: var(--ds-font-display);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.th-strip-meta {
+  font-size: 13px;
+  color: var(--ds-ink-soft);
+}
+
+.th-strip-link,
+.th-strip-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-accent);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.th-strip-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.th-strip-link:hover,
+.th-strip-cta:hover {
+  text-decoration: underline;
+}
+
+.th-strip-link:focus-visible,
+.th-strip-cta:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.th-earned {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--ds-ink-soft);
+}
+
+.th-earned b {
+  color: var(--ds-ink);
+}
+
+.th-earned-link {
+  margin-left: 4px;
 }

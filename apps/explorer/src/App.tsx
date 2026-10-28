@@ -42,6 +42,7 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const TrendingPage = lazy(() => import('./pages/TrendingPage'))
+const TrendHuntersPage = lazy(() => import('./pages/TrendHuntersPage'))
 const PositionsPage = lazy(() => import('./pages/PositionsPage'))
 // Vote tab hidden behind FEATURES.vote (kept for a future update).
 const VotePage = lazy(() => import('./pages/VotePage'))
@@ -115,6 +116,7 @@ export default function App() {
     location.pathname.startsWith('/circles') ||
     location.pathname.startsWith('/explore') ||
     location.pathname.startsWith('/trending') ||
+    location.pathname.startsWith('/trend-hunters') ||
     location.pathname.startsWith('/positions') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
@@ -402,6 +404,7 @@ export default function App() {
                 />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/trending" element={<TrendingPage />} />
+                <Route path="/trend-hunters" element={<TrendHuntersPage />} />
                 {/* Public route: the page itself prompts a logged-out
                     visitor to connect instead of redirecting away. */}
                 <Route path="/positions" element={<PositionsPage />} />
