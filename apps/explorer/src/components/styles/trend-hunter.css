@@ -449,27 +449,8 @@ a.th-row:hover {
   border-radius: 12px;
 }
 
-.th-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 13px;
-  color: var(--ds-ink-soft);
-}
-
-.th-steps b {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: var(--ds-accent);
-  color: #fff;
-  font-size: 11px;
+.th-how {
+  margin-top: 10px;
 }
 
 @media (max-width: 640px) {

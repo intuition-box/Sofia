@@ -2,7 +2,7 @@
  * HunterProgress — the account's month as a Trend Hunter, at the top of the
  * board: free Recommends first (what it owns, credits from calls included),
  * then what grows them — calls, Flair, rank and the way to the Top 10 — and
- * how to earn, in one line. Logged out: what signing in gives.
+ * how to earn, in three cards. Logged out: what signing in gives.
  */
 import { useEffect, useState } from 'react'
 import { useLogin } from '@privy-io/react-auth'
@@ -29,18 +29,30 @@ function useMinuteClock(): number {
 }
 
 function HowToEarn({ topSize, pool }: { topSize: number; pool?: number }) {
+  const steps = [
+    {
+      title: 'Be early',
+      text: 'Take a position on a page while it is still unknown: be among the first 3.',
+    },
+    {
+      title: 'Get followed',
+      text: `Every credible account that follows adds to your Flair. Five of them make a call: +${CREDITS_PER_CALL} free Recommends.`,
+    },
+    {
+      title: `Make the Top ${topSize}`,
+      text: pool
+        ? `The Top ${topSize} share ${pool.toLocaleString()} TRUST each month, by Flair, and earn the badge.`
+        : 'The best Trend Hunters of the month earn the badge on their profile.',
+    },
+  ]
   return (
-    <ol className="th-steps">
-      <li>
-        <b>1</b> Be among the first 3 on a page
-      </li>
-      <li>
-        <b>2</b> 5 credible accounts follow: a call
-      </li>
-      <li>
-        <b>3</b> +{CREDITS_PER_CALL} free Recommends per call
-        {pool ? ` · Top ${topSize} share ${pool.toLocaleString()} TRUST` : ''}
-      </li>
+    <ol className="th-cards th-how" style={{ listStyle: 'none', padding: 0 }}>
+      {steps.map((step) => (
+        <li key={step.title} className="th-card">
+          <span className="th-card-title">{step.title}</span>
+          <span className="th-desc">{step.text}</span>
+        </li>
+      ))}
     </ol>
   )
 }
