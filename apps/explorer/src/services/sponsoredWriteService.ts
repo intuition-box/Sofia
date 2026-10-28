@@ -90,6 +90,8 @@ export interface SponsorQuota {
   reason?: string
   /** Free Recommends left (min of today's and this month's) */
   left?: number
+  /** Extra Recommends earned by this month's Trend Hunter calls */
+  credits?: number
   /** Relayer-wide monthly budget reached */
   paused?: boolean
 }

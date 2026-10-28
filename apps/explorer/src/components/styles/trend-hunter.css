@@ -223,7 +223,7 @@ a.th-card:hover {
 
 .th-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto 80px;
+  grid-template-columns: 40px minmax(0, 1fr) auto 80px 110px;
   align-items: center;
   gap: 14px;
   padding: 12px 18px;
@@ -391,7 +391,7 @@ a.th-row:hover {
     align-items: stretch;
   }
   .th-row {
-    grid-template-columns: 32px minmax(0, 1fr) 64px;
+    grid-template-columns: 32px minmax(0, 1fr) 64px 90px;
   }
   .th-row > :nth-child(3) {
     display: none;

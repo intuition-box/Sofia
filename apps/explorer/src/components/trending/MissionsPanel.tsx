@@ -1,8 +1,9 @@
 /**
  * MissionsPanel — Trend Hunter on /trending (TREND_HUNTER_SPEC §5): today's
  * three missions + the topic of the week, computed from the wallet's
- * on-chain positions, and a way into the monthly ranking. Logged out: the
- * pitch and a connect button.
+ * on-chain positions, and what hunting earns — free Recommends per call, a
+ * share of the monthly pool for the Top 10. Logged out: the pitch and a
+ * connect button.
  */
 import { Link } from 'react-router-dom'
 import { useLogin } from '@privy-io/react-auth'
@@ -16,8 +17,10 @@ import {
 } from '@/components/ui/tooltip'
 import { useMissions } from '@/hooks/useMissions'
 import {
-  TREND_HUNTER_BADGE_RANK,
+  CREDITS_PER_CALL,
   useTrendHunters,
+  type TrendHunterEntry,
+  type TrendHunterPool,
 } from '@/hooks/useTrendHunters'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@0xsofia/design-system/styles/state-pill.css'
@@ -34,6 +37,21 @@ function resetsIn(): string {
   )
   const hours = Math.max(1, Math.round((next - now.getTime()) / 3_600_000))
   return `Daily missions reset in ${hours}h`
+}
+
+/** What the wallet earned this month, else what hunting can earn */
+function rewardLabel(
+  mine: TrendHunterEntry | undefined,
+  pool: TrendHunterPool | null,
+): string {
+  const parts: string[] = []
+  if (mine?.calls)
+    parts.push(`+${mine.calls * CREDITS_PER_CALL} free Recommends`)
+  if (mine?.reward) parts.push(`${mine.reward.toFixed(2)} TRUST`)
+  if (parts.length > 0) return `Earned: ${parts.join(' · ')}`
+  return pool
+    ? `Top ${pool.size} share ${pool.trust} TRUST`
+    : `+${CREDITS_PER_CALL} free Recommends per call`
 }
 
 function MissionCard({ mission }: { mission: MissionProgress }) {
@@ -64,7 +82,7 @@ export default function MissionsPanel({
   walletAddress?: string | null
 }) {
   const { missions, loading } = useMissions(walletAddress)
-  const { entries } = useTrendHunters(50)
+  const { entries, pool } = useTrendHunters(50)
   const { login } = useLogin()
 
   const me = walletAddress?.toLowerCase()
@@ -75,7 +93,7 @@ export default function MissionsPanel({
       <ModuleHead
         title={
           <span className="th-title-hint">
-            Trend Hunter
+            Missions
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -87,9 +105,16 @@ export default function MissionsPanel({
                 </button>
               </TooltipTrigger>
               <TooltipContent className="th-hint-content">
-                Be early on pages others will follow. The Top{' '}
-                {TREND_HUNTER_BADGE_RANK} of the month earn the Trend Hunter
-                badge.
+                Be early on pages others will follow. When 5 credible accounts
+                follow you on a page, that call earns +{CREDITS_PER_CALL} free
+                Recommends.
+                {pool && (
+                  <>
+                    {' '}
+                    The Top {pool.size} of the month share {pool.trust} TRUST,
+                    by Flair.
+                  </>
+                )}
                 {walletAddress && (
                   <>
                     <br />
@@ -102,7 +127,7 @@ export default function MissionsPanel({
         }
         right={
           <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
-            {mine ? `#${mine.rank} this month` : 'Ranking'}
+            {rewardLabel(mine, pool)}
           </Link>
         }
       />

@@ -4,7 +4,8 @@
  * signals, then the ranking.
  *
  * Flair = Σ credibility of the accounts that took a position after you on a
- * page where you were among the first 3. The Top 10 earns the month's badge.
+ * page where you were among the first 3. Each call earns free Recommends; the
+ * Top 10 earn the month's badge and share the monthly TRUST pool.
  */
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -19,28 +20,34 @@ import SofiaLoader from '@/components/ui/SofiaLoader'
 import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import {
+  CREDITS_PER_CALL,
   formatMonth,
   TREND_HUNTER_BADGE_RANK,
   useTrendHunters,
+  type TrendHunterPool,
 } from '@/hooks/useTrendHunters'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@0xsofia/design-system/styles/state-pill.css'
 import '@/components/styles/trend-hunter.css'
 
-const STEPS = [
-  {
-    title: 'Be early',
-    text: 'Take a position on a page while it is still unknown: be among the first 3.',
-  },
-  {
-    title: 'Get followed',
-    text: 'Every credible account that takes a position after you this month adds to your Flair.',
-  },
-  {
-    title: `Make the Top ${TREND_HUNTER_BADGE_RANK}`,
-    text: 'The best Trend Hunters of the month earn the badge on their profile.',
-  },
-]
+function steps(pool: TrendHunterPool | null) {
+  return [
+    {
+      title: 'Be early',
+      text: 'Take a position on a page while it is still unknown: be among the first 3.',
+    },
+    {
+      title: 'Get followed',
+      text: `Every credible account that follows adds to your Flair. Five of them make a call: +${CREDITS_PER_CALL} free Recommends.`,
+    },
+    {
+      title: `Make the Top ${TREND_HUNTER_BADGE_RANK}`,
+      text: pool
+        ? `The Top ${pool.size} share ${pool.trust} TRUST each month, by Flair, and earn the badge.`
+        : 'The best Trend Hunters of the month earn the badge on their profile.',
+    },
+  ]
+}
 
 const flair = (n: number) => Math.round(n).toLocaleString()
 
@@ -49,7 +56,7 @@ export default function TrendHuntersBoard({
 }: {
   connectedAddress?: string | null
 }) {
-  const { entries, month, loading, error } = useTrendHunters(50)
+  const { entries, month, pool, loading, error } = useTrendHunters(50)
   const wallets = useMemo(
     () => entries.map((e) => e.wallet as Address),
     [entries],
@@ -64,7 +71,7 @@ export default function TrendHuntersBoard({
   const standing = (() => {
     if (!me) return null
     if (mine && mine.rank <= TREND_HUNTER_BADGE_RANK) {
-      return `You're #${mine.rank} with ${flair(mine.flair)} Flair — in the Top ${TREND_HUNTER_BADGE_RANK}.`
+      return `You're #${mine.rank} with ${flair(mine.flair)} Flair — in the Top ${TREND_HUNTER_BADGE_RANK}${mine.reward ? `, on track for ${mine.reward} TRUST` : ''}.`
     }
     if (mine && tenth) {
       return `You're #${mine.rank}. ${flair(tenth.flair - mine.flair + 1)} more Flair to enter the Top ${TREND_HUNTER_BADGE_RANK}.`
@@ -121,7 +128,7 @@ export default function TrendHuntersBoard({
 
       <section className="th-section" aria-label="How to climb">
         <ol className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
-          {STEPS.map((step, i) => (
+          {steps(pool).map((step) => (
             <li key={step.title} className="th-card">
               <span className="th-card-title">{step.title}</span>
               <span className="th-desc">{step.text}</span>
@@ -154,6 +161,9 @@ export default function TrendHuntersBoard({
               <span role="columnheader" className="th-num">
                 Flair
               </span>
+              <span role="columnheader" className="th-num">
+                Reward
+              </span>
             </div>
             {entries.map((e) => {
               const addr = e.wallet as Address
@@ -182,6 +192,16 @@ export default function TrendHuntersBoard({
                   <span className="th-rank">{e.calls || '—'}</span>
                   <span className="th-num">
                     <AnimatedNumber value={e.flair} format={flair} />
+                  </span>
+                  <span className="th-num">
+                    {e.reward ? (
+                      <AnimatedNumber
+                        value={e.reward}
+                        format={(n) => `${n.toFixed(2)} TRUST`}
+                      />
+                    ) : (
+                      '—'
+                    )}
                   </span>
                 </Link>
               )
