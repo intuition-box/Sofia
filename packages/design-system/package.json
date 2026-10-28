@@ -37,6 +37,7 @@
     "./styles/icon.css": "./src/styles/icon.css",
     "./styles/avatar.css": "./src/styles/avatar.css",
     "./styles/state-pill.css": "./src/styles/state-pill.css",
+    "./styles/animated-number.css": "./src/styles/animated-number.css",
     "./styles/avail.css": "./src/styles/avail.css",
     "./styles/module-head.css": "./src/styles/module-head.css",
     "./styles/toast.css": "./src/styles/toast.css",
