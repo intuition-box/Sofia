@@ -6,6 +6,7 @@
  */
 import { Link } from 'react-router-dom'
 import { AnimatedNumber, ModuleHead } from '@0xsofia/design-system'
+import { useSponsorQuota } from '@/hooks/useSponsoredWrite'
 import {
   CREDITS_PER_CALL,
   TREND_HUNTER_BADGE_RANK,
@@ -18,6 +19,7 @@ const influence = (n: number) => Math.round(n).toLocaleString()
 
 export default function HunterProgress({ wallet }: { wallet: string }) {
   const { entries, pool } = useTrendHunters(50)
+  const { quota } = useSponsorQuota()
 
   const me = wallet.toLowerCase()
   const mine = entries.find((e) => e.wallet === me)
@@ -58,16 +60,17 @@ export default function HunterProgress({ wallet }: { wallet: string }) {
         </div>
       </div>
       <p className="th-earned">
-        {spotted > 0 ? (
+        {quota?.credits ? (
           <>
-            Your spotted pages earned{' '}
-            <b>+{spotted * CREDITS_PER_CALL} free Recommends</b> this
-            month.{' '}
+            Earned this month: <b>+{quota.credits} free Recommends</b>
+            {quota.creditsFrom &&
+              ` (${quota.creditsFrom.spotted} from spotted pages, ${quota.creditsFrom.missions} from missions)`}
+            .{' '}
           </>
         ) : (
           <>
-            Each spotted page earns <b>+{CREDITS_PER_CALL} free Recommends</b>
-            .{' '}
+            Each spotted page earns <b>+{CREDITS_PER_CALL} free Recommends</b>,
+            each mission done earns more.{' '}
           </>
         )}
         <Link to="/trending" className="th-strip-link th-earned-link">

@@ -475,3 +475,9 @@ a.th-row:hover {
 .th-earned-link {
   margin-left: 4px;
 }
+
+.th-reward {
+  font-weight: 600;
+  color: var(--ds-accent);
+  white-space: nowrap;
+}

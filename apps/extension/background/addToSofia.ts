@@ -225,8 +225,8 @@ async function dailyMissionLabel(
     }
     const [express] = computeDailyMissions({
       positions,
-      trendingKeys: new Set(),
-      pioneerClaimIds: new Set()
+      backers: new Map(),
+      own: new Set([wallet.toLowerCase()])
     })
     return express.done
       ? " · Daily mission ✓"

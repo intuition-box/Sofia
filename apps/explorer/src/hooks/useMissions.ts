@@ -1,17 +1,12 @@
 /**
  * useMissions — the connected wallet's Trend Hunter missions (day + week).
- * Trending keys come from the shared 7-day ranking cache entry.
  */
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 import { startOfUtcDay } from '@0xsofia/quests'
-import { trendingRankingQuery } from '@/hooks/useTrendingPages'
 import { fetchMissions, type MissionsResult } from '@/services/missionsService'
 import { keepPreviousIfSame } from '@/utils/keepPrevious'
-
-/** "Back a trend" counts pages in the top of the 7-day Trending */
-const TRENDING_TOP = 50
 
 export interface UseMissionsResult {
   missions: MissionsResult | null
@@ -20,15 +15,6 @@ export interface UseMissionsResult {
 }
 
 export function useMissions(walletAddress?: string | null): UseMissionsResult {
-  const ranking = useQuery(trendingRankingQuery('7d'))
-  const trendingKeys = useMemo(
-    () =>
-      new Set(
-        (ranking.data?.ranks ?? []).slice(0, TRENDING_TOP).map((r) => r.key),
-      ),
-    [ranking.data],
-  )
-
   // The indexer stores account_id in mixed casings — query both.
   const addresses = useMemo(() => {
     if (!walletAddress) return []
@@ -42,17 +28,12 @@ export function useMissions(walletAddress?: string | null): UseMissionsResult {
   }, [walletAddress])
 
   const { data, isLoading, refetch } = useQuery({
-    // New UTC day or fresher Trending → recompute
-    queryKey: [
-      'missions',
-      addresses[0],
-      startOfUtcDay(),
-      ranking.dataUpdatedAt,
-    ],
-    queryFn: () => fetchMissions(addresses, trendingKeys),
-    enabled: addresses.length > 0 && !ranking.isLoading,
+    // New UTC day → recompute
+    queryKey: ['missions', addresses[0], startOfUtcDay()],
+    queryFn: () => fetchMissions(addresses),
+    enabled: addresses.length > 0,
     staleTime: 5 * 60 * 1000,
-    // Fresher Trending moves the key: keep this wallet's missions up
+    // The day rolls the key: keep this wallet's missions up meanwhile
     placeholderData: keepPreviousIfSame(1, addresses[0]),
   })
 

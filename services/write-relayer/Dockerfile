@@ -16,6 +16,7 @@ RUN bun install --frozen-lockfile
 # Sources for the service + the workspace packages it imports.
 COPY packages/graphql/ ./packages/graphql/
 COPY packages/taxonomy/ ./packages/taxonomy/
+COPY packages/quests/ ./packages/quests/
 COPY services/write-relayer/ ./services/write-relayer/
 # Generate the Prisma client (incl. the musl query engine) into node_modules.
 RUN cd services/write-relayer && bunx prisma generate

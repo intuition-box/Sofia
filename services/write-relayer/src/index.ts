@@ -10,7 +10,8 @@
  *
  *   GET  /health
  *   GET  /sponsor/quota       (Privy bearer) → eligibility + Recommends left
- *        (Trend Hunter credits included: each call this month adds some)
+ *        (Trend Hunter credits included: spotted pages and missions this
+ *        month add some)
  *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId, tags? }] }
  *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
  *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
@@ -131,12 +132,13 @@ app.get('/sponsor/quota', async (c) => {
     spent(),
     creditsOf(sponsee.wallets),
   ])
-  const mine = withCredits(limits, credits)
+  const mine = withCredits(limits, credits.total)
   return c.json({
     eligible: true,
     left: quotaLeft(used, mine),
     used,
-    credits,
+    credits: credits.total,
+    creditsFrom: { spotted: credits.spotted, missions: credits.missions },
     limits: { monthly: mine.quotaMonthly, daily: mine.quotaDaily },
     paused:
       out.month + RESERVE_PER_TRIPLE_WEI > limits.budgetMonthlyWei ||
@@ -158,7 +160,7 @@ app.post('/sponsor/recommend', async (c) => {
   const plan = buildPlan(parsed.pages)
   const reserve =
     RESERVE_PER_TRIPLE_WEI * BigInt(plan.claims.length + plan.tags.length)
-  const mine = withCredits(limits, await creditsOf(sponsee.wallets))
+  const mine = withCredits(limits, (await creditsOf(sponsee.wallets)).total)
 
   // Check + reserve atomically (vs. this account's other requests and the
   // relayer-wide budget)

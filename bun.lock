@@ -417,6 +417,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/quests": "workspace:*",
         "@0xsofia/taxonomy": "workspace:*",
         "@prisma/client": "^6.2.0",
         "@privy-io/server-auth": "^1.18.0",

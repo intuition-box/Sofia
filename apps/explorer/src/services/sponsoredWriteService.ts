@@ -90,8 +90,9 @@ export interface SponsorQuota {
   reason?: string
   /** Free Recommends left (min of today's and this month's) */
   left?: number
-  /** Extra Recommends earned by this month's Trend Hunter calls */
+  /** Extra Recommends earned this month (spotted pages + missions) */
   credits?: number
+  creditsFrom?: { spotted: number; missions: number }
   /** Free Recommends used this month / today */
   used?: { month: number; day: number }
   /** Quotas, credits included */
@@ -130,6 +131,10 @@ async function call<T>(path: string, token: string, body?: unknown) {
       ...(body ? { 'content-type': 'application/json' } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
+  }).catch(() => {
+    throw new RelayerError(
+      'Free Recommends are unavailable right now. Try again in a minute.',
+    )
   })
   const json = (await res.json().catch(() => ({}))) as T & {
     error?: string

@@ -34,7 +34,7 @@ export function useSponsorQuota() {
   const { authenticated, user, getAccessToken } = usePrivy()
   const { wallets } = useWallets()
   const enabled = !!WRITE_RELAYER_URL && authenticated && wallets.length > 0
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ['sponsor-quota', user?.id],
     queryFn: async () => {
       const token = await getAccessToken()
@@ -44,7 +44,9 @@ export function useSponsorQuota() {
     enabled,
     staleTime: 60_000,
   })
-  return { quota: enabled ? data : undefined, enabled }
+  // A cached quota from an earlier visit says nothing once the relayer is
+  // unreachable: the cart goes back through the wallet
+  return { quota: enabled && !isError ? data : undefined, enabled }
 }
 
 /**
