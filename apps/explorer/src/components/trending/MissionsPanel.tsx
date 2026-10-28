@@ -6,9 +6,14 @@
  */
 import { Link } from 'react-router-dom'
 import { useLogin } from '@privy-io/react-auth'
-import { Wallet } from 'lucide-react'
+import { CircleHelp, Wallet } from 'lucide-react'
 import { ModuleHead, StatePill } from '@0xsofia/design-system'
 import type { MissionProgress } from '@0xsofia/quests'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useMissions } from '@/hooks/useMissions'
 import {
   TREND_HUNTER_BADGE_RANK,
@@ -68,8 +73,33 @@ export default function MissionsPanel({
   return (
     <section className="th-section" aria-label="Trend Hunter missions">
       <ModuleHead
-        title="Trend Hunter"
-        desc={`Be early on pages others will follow. The Top ${TREND_HUNTER_BADGE_RANK} of the month earn the Trend Hunter badge.`}
+        title={
+          <span className="th-title-hint">
+            Trend Hunter
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="th-hint"
+                  aria-label="How Trend Hunter works"
+                >
+                  <CircleHelp aria-hidden />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="th-hint-content">
+                Be early on pages others will follow. The Top{' '}
+                {TREND_HUNTER_BADGE_RANK} of the month earn the Trend Hunter
+                badge.
+                {walletAddress && (
+                  <>
+                    <br />
+                    {resetsIn()}.
+                  </>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </span>
+        }
         right={
           <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
             {mine ? `#${mine.rank} this month` : 'Ranking'}
@@ -89,15 +119,12 @@ export default function MissionsPanel({
       ) : loading || !missions ? (
         <p className="th-desc">Loading your missions…</p>
       ) : (
-        <>
-          <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
-            {missions.daily.map((m) => (
-              <MissionCard key={m.id} mission={m} />
-            ))}
-            <MissionCard mission={missions.weekly} />
-          </ul>
-          <p className="th-foot">{resetsIn()}</p>
-        </>
+        <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
+          {missions.daily.map((m) => (
+            <MissionCard key={m.id} mission={m} />
+          ))}
+          <MissionCard mission={missions.weekly} />
+        </ul>
       )}
     </section>
   )

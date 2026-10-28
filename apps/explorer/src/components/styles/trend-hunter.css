@@ -89,6 +89,37 @@ a.th-card:hover {
   color: var(--ds-muted);
 }
 
+/* Section title with a "?" hint (tooltip on hover / focus) */
+.th-title-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.th-hint {
+  display: inline-flex;
+  padding: 2px;
+  border: none;
+  background: none;
+  color: var(--ds-muted);
+  cursor: help;
+}
+
+.th-hint:hover,
+.th-hint:focus-visible {
+  color: var(--ds-ink);
+}
+
+.th-hint svg {
+  width: 15px;
+  height: 15px;
+}
+
+.th-hint-content {
+  max-width: 260px;
+  line-height: 1.45;
+}
+
 /* Early signals: page + spotter lines */
 .th-signal-page {
   display: flex;

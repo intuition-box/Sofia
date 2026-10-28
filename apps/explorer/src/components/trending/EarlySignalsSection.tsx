@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import type { Address } from 'viem'
 import { Avatar, ModuleHead } from '@0xsofia/design-system'
 import { useEnsNames } from '@/hooks/useEnsNames'
-import { formatMonth, useEarlySignals } from '@/hooks/useTrendHunters'
+import { useEarlySignals } from '@/hooks/useTrendHunters'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import '@0xsofia/design-system/styles/module-head.css'
@@ -35,7 +35,6 @@ export default function EarlySignalsSection() {
     <section className="th-section" aria-label="Early signals">
       <ModuleHead
         title="Early signals"
-        desc={`Pages spotted early in ${formatMonth(month)}, before credible accounts followed.`}
         right={
           <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
             Trend Hunters
