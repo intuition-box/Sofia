@@ -1,7 +1,13 @@
 import type { Address } from 'viem'
 
 // ── Network ──
-export const RPC_URL = 'https://rpc.intuition.systems'
+/** Intuition's public RPC — what wallets get in the chain definition */
+export const PUBLIC_RPC_URL = 'https://rpc.intuition.systems'
+/** Our own reads and writes: the Sofia RPC proxy (services/rpc-proxy) when
+ *  VITE_INTUITION_RPC_URL is set at build time, else the public RPC. Never a
+ *  URL carrying a key — the proxy holds it. */
+export const RPC_URL =
+  (import.meta.env.VITE_INTUITION_RPC_URL as string) || PUBLIC_RPC_URL
 export const GRAPHQL_URL = import.meta.env.DEV
   ? '/v1/graphql'
   : 'https://mainnet.intuition.sh/v1/graphql'
