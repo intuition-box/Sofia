@@ -1,0 +1,43 @@
+// write-relayer — sponsored writes: Sofia pays for the Recommends of users
+// who signed in without a crypto wallet (email / Google → Privy embedded
+// wallet). One row per request; quota and budget are sums over these rows.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  // Own output: other services generate into the shared node_modules client
+  output        = "../src/generated/prisma"
+  // `native` for local dev, musl target for the alpine Docker runtime.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+enum WriteStatus {
+  reserved // quota + budget held, txs not sent yet
+  sent // every tx mined
+  failed // nothing counted (released)
+}
+
+model SponsoredWrite {
+  id             String      @id @default(cuid())
+  privyUserId    String
+  /// Receiver of the positions (the user's embedded wallet, lowercase)
+  wallet         String
+  /// Page atoms recommended
+  objectIds      String[]
+  recommendCount Int
+  tagCount       Int
+  /// What the relayer paid (wei): creation costs + deposits + fees
+  costWei        Decimal     @db.Decimal(78, 0)
+  txHashes       String[]
+  status         WriteStatus @default(reserved)
+  error          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([privyUserId, createdAt])
+  @@index([createdAt, status])
+}
