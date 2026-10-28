@@ -89,6 +89,10 @@ const POSITIONS_PAGE = 100
 const MAX_POSITION_PAGES = 20
 /** Safety cap on the details pages of one slice (1 000 claims). */
 const MAX_DETAIL_PAGES = 10
+/** Rows the indexer returns per nested list — a claim's supporter list
+ *  stops there, so a page reaching it has at least that many. */
+const INDEXER_ROW_CAP = 100
+
 /** How many earliest supporters a card shows. */
 const FIRST_SUPPORTERS = 3
 
@@ -151,6 +155,8 @@ export interface TrendingPage extends TrendingPageRank {
   totalStaked: string
   /** Distinct wallets in position (shares > 0) on any of the claims. */
   supporters: number
+  /** A claim hit the indexer's row cap: `supporters` is a lower bound */
+  supportersCapped: boolean
   claimCount: number
   /** Distinct atoms the claims point to (same page, several atoms). */
   atomCount: number
@@ -280,6 +286,7 @@ export function buildTrendingPages(
 
     let totalStaked = 0n
     const wallets: Record<string, true> = {}
+    let supportersCapped = false
     const atoms: Record<string, true> = {}
     const earliest: Record<string, FirstSupporter> = {}
     const summaries: { claim: TrendingClaimSummary; staked: bigint }[] = []
@@ -289,6 +296,7 @@ export function buildTrendingPages(
       totalStaked += staked
       atoms[c.object_id] = true
       const claimWallets: Record<string, true> = {}
+      if (c.supporters.length >= INDEXER_ROW_CAP) supportersCapped = true
       for (const p of c.supporters) {
         const w = p.account_id.toLowerCase()
         wallets[w] = true
@@ -358,6 +366,7 @@ export function buildTrendingPages(
       favicon: getFaviconUrl(domain),
       totalStaked: String(totalStaked),
       supporters: Object.keys(wallets).length,
+      supportersCapped,
       claimCount: pageClaims.length,
       atomCount: Object.keys(atoms).length,
       firstSupporters: Object.values(earliest)

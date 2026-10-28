@@ -293,6 +293,34 @@ describe('buildTrendingPages', () => {
     expect(page.firstSupporters[0].createdAt).toBe(iso(9 * DAY))
   })
 
+  it('flags supporters as a lower bound when a claim hits the indexer cap', () => {
+    const wallets = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ account_id: `0x${i}` }))
+    const claim = (term_id: string, n: number) => ({
+      term_id,
+      counter_term_id: `${term_id}-c`,
+      object_id: object.term_id,
+      subject_id: SOFIA_I_ATOM_ID,
+      subject: { term_id: SOFIA_I_ATOM_ID, label: 'I' },
+      predicate: { term_id: 'pred', label: 'recommends' },
+      object,
+      term: { vaults: [{ curve_id: '2', market_cap: '1', position_count: n }] },
+      supporters: wallets(n),
+      firstPositions: [],
+    })
+    const [capped] = buildTrendingPages(
+      [rank('example.com/post', ['p1'])],
+      [claim('a', 100)],
+    )
+    expect(capped.supporters).toBe(100)
+    expect(capped.supportersCapped).toBe(true)
+    const [exact] = buildTrendingPages(
+      [rank('example.com/post', ['p1'])],
+      [claim('b', 99)],
+    )
+    expect(exact.supportersCapped).toBe(false)
+  })
+
   it('merges duplicate atoms across apps: distinct wallets, summed stake, earliest signal, busiest claim', () => {
     const otherAtom = {
       ...object,

@@ -61,6 +61,16 @@ function claimMeta(predicateLabel: string): { label: string; color: string } {
 
 /** The page market (`I | recommends | page`) in the cart */
 const RECOMMEND_LABEL = 'Recommend'
+
+/** Under the board's title: the market is one claim of the page */
+function boardContext(page: TrendingPageItem): string {
+  const people = `${page.supporters}${page.supportersCapped ? '+' : ''} supporter${page.supporters === 1 && !page.supportersCapped ? '' : 's'}`
+  const claims = `${page.claimCount} claim${page.claimCount === 1 ? '' : 's'}`
+  const whole = `${people} and ${formatTrust(BigInt(page.totalStaked))} across ${claims}`
+  return page.market.claim
+    ? `The page's market. The whole page: ${whole}.`
+    : `No market yet — this is the busiest claim. The whole page: ${whole}.`
+}
 const RECOMMEND_COLOR = '#22C55E'
 
 const SOURCE_TEXT: Record<ClaimSource, string> = {
@@ -123,22 +133,28 @@ function TrendingRow({
 
       <div className="mk-stats">
         <span className="mk-stat mk-stat--accent">
-          <span className="mk-stat-value">+{page.windowPositions}</span>
+          <span
+            className="mk-stat-value"
+            title={`${page.windowPositions} position${page.windowPositions === 1 ? '' : 's'} opened`}
+          >
+            +{page.windowSupporters}
+          </span>
           <span className="mk-stat-label">
-            Position{page.windowPositions === 1 ? '' : 's'} · {timeWindow}
+            {page.windowSupporters === 1 ? 'Person' : 'People'} · {timeWindow}
           </span>
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
             <Users className="h-3 w-3" aria-hidden /> {page.supporters}
+            {page.supportersCapped ? '+' : ''}
           </span>
-          <span className="mk-stat-label">Supporters</span>
+          <span className="mk-stat-label">Supporters · all claims</span>
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
             {formatTrust(BigInt(page.totalStaked))}
           </span>
-          <span className="mk-stat-label">Total staked</span>
+          <span className="mk-stat-label">Staked · all claims</span>
         </span>
       </div>
 
@@ -382,6 +398,7 @@ export default function TrendingPage() {
           }
           walletAddress={user?.wallet?.address}
           curveId={boardPage.market.claim ? 2 : undefined}
+          context={boardContext(boardPage)}
         />
       )}
     </div>

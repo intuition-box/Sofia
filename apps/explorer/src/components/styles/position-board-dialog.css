@@ -59,6 +59,12 @@
   font-size: 11px;
 }
 
+.pbd-context {
+  margin: -4px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
 .pbd-metric-label {
   font-weight: 600;
   color: var(--muted-foreground);
