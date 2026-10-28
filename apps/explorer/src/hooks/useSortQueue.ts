@@ -22,6 +22,7 @@ import {
   sendWithApproval,
 } from '@/services/sponsoredWriteService'
 import { getFaviconUrl } from '@/utils/favicon'
+import { refreshAfterIndexing } from '@/utils/refreshAfterIndexing'
 
 /** Pages shown at once */
 export const SORT_QUEUE_SIZE = 5
@@ -119,7 +120,7 @@ export function useSortQueue(walletAddress?: string | null) {
         )
         setDone((prev) => new Set(prev).add(item.objectId))
         void qc.invalidateQueries({ queryKey: ['sponsor-quota'] })
-        void qc.invalidateQueries({ queryKey: ['missions'] })
+        refreshAfterIndexing(qc, [['missions']])
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
       } finally {

@@ -3,6 +3,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { WRITE_RELAYER_URL } from '../config'
 import type { CartItem } from './useCart'
+import { refreshAfterIndexing } from '../utils/refreshAfterIndexing'
 import {
   buildSponsoredRequest,
   fetchSponsorQuota,
@@ -87,6 +88,7 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     qc.setQueryData<SponsorQuota>(['sponsor-quota', userId], (q) =>
       q ? { ...q, left: result.left } : q,
     )
+    refreshAfterIndexing(qc, [['missions'], ['sort-queue']])
     return result
   }, [request, getAccessToken, qc, userId, wallet])
 
