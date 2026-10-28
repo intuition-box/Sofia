@@ -136,6 +136,19 @@ export interface Spent {
   day: bigint
 }
 
+/**
+ * Limits once a Trend Hunter's credits are added: earned Recommends raise the
+ * month's and the day's quota alike (the relayer-wide budgets stay hard)
+ */
+export function withCredits(limits: Limits, credits: number): Limits {
+  const extra = Math.max(0, Math.floor(credits))
+  return {
+    ...limits,
+    quotaMonthly: limits.quotaMonthly + extra,
+    quotaDaily: limits.quotaDaily + extra,
+  }
+}
+
 /** Recommends this account may still get today */
 export function quotaLeft(used: Usage, limits: Limits): number {
   return Math.max(

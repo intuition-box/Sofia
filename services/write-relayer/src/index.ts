@@ -10,6 +10,7 @@
  *
  *   GET  /health
  *   GET  /sponsor/quota       (Privy bearer) → eligibility + Recommends left
+ *        (Trend Hunter credits included: each call this month adds some)
  *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId, tags? }] }
  *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
  *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
@@ -24,6 +25,7 @@ import { HTTPException } from 'hono/http-exception'
 import type { Hex } from 'viem'
 import { authMiddleware, receiverOf, type AppEnv, type Sponsee } from './auth'
 import { account, execute, fundApprovalGas, treasuryBalance } from './chain'
+import { creditsOf } from './credits'
 import { prisma } from './db'
 import { env } from './env'
 import {
@@ -37,6 +39,7 @@ import {
   type Limits,
   type Spent,
   type Usage,
+  withCredits,
 } from './policy'
 
 configureClient({ apiUrl: env.indexerUrl })
@@ -123,12 +126,18 @@ app.use('/sponsor/*', authMiddleware)
 app.get('/sponsor/quota', async (c) => {
   const sponsee = c.get('sponsee')
   if (!sponsee) return c.json({ eligible: false, reason: c.get('reason') })
-  const [used, out] = await Promise.all([usageOf(sponsee.privyUserId), spent()])
+  const [used, out, credits] = await Promise.all([
+    usageOf(sponsee.privyUserId),
+    spent(),
+    creditsOf(sponsee.wallets),
+  ])
+  const mine = withCredits(limits, credits)
   return c.json({
     eligible: true,
-    left: quotaLeft(used, limits),
+    left: quotaLeft(used, mine),
     used,
-    limits: { monthly: limits.quotaMonthly, daily: limits.quotaDaily },
+    credits,
+    limits: { monthly: mine.quotaMonthly, daily: mine.quotaDaily },
     paused:
       out.month + RESERVE_PER_TRIPLE_WEI > limits.budgetMonthlyWei ||
       out.day + RESERVE_PER_TRIPLE_WEI > limits.budgetDailyWei,
@@ -149,6 +158,7 @@ app.post('/sponsor/recommend', async (c) => {
   const plan = buildPlan(parsed.pages)
   const reserve =
     RESERVE_PER_TRIPLE_WEI * BigInt(plan.claims.length + plan.tags.length)
+  const mine = withCredits(limits, await creditsOf(sponsee.wallets))
 
   // Check + reserve atomically (vs. this account's other requests and the
   // relayer-wide budget)
@@ -157,7 +167,7 @@ app.post('/sponsor/recommend', async (c) => {
       usageOf(sponsee.privyUserId),
       spent(),
     ])
-    const why = refusal(plan.claims.length, used, limits, out, reserve)
+    const why = refusal(plan.claims.length, used, mine, out, reserve)
     if (why) return { why }
     const row = await prisma.sponsoredWrite.create({
       data: {
@@ -209,7 +219,7 @@ app.post('/sponsor/recommend', async (c) => {
     txHashes: result.txHashes,
     recommended: plan.claims.length,
     tagged: plan.tags.length,
-    left: quotaLeft(used, limits),
+    left: quotaLeft(used, mine),
     partial: !!result.error,
     dryRun: env.dryRun,
     deposit: env.depositTrust,

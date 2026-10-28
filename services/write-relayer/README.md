@@ -30,6 +30,11 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
   knows; tags must be existing taxonomy atoms (v1 mints none).
 - Per account: `SPONSOR_QUOTA_MONTHLY` (20) and `SPONSOR_QUOTA_DAILY` (5)
   Recommends. Tags don't count against the quota, only against the budget.
+- Trend Hunter credits: each call the account's wallets made this month
+  (reputation-api: a page where it was early and ≥ 5 credible accounts
+  followed) adds `SPONSOR_CREDITS_PER_CALL` (3) Recommends to both quotas.
+  The relayer-wide budgets still apply; if the reputation-api is down, the
+  account keeps its base quota.
 - Relayer-wide: `SPONSOR_BUDGET_MONTHLY_TRUST` (500) and
   `SPONSOR_BUDGET_DAILY_TRUST` (a 30th of it, 17) — hard stops; the daily one
   keeps a burst of fake accounts from burning the whole month. Each
@@ -55,6 +60,8 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 | `SPONSOR_BUDGET_MONTHLY_TRUST`                  | 500                     |                                            |
 | `SPONSOR_BUDGET_DAILY_TRUST`                    | monthly / 30            |                                            |
 | `SPONSOR_DEPOSIT_TRUST`                         | 0.01                    |                                            |
+| `REPUTATION_API_URL`                            | —                       | Trend Hunter calls; empty ⇒ no credits     |
+| `SPONSOR_CREDITS_PER_CALL`                      | 3                       | free Recommends per call this month        |
 | `SPONSOR_DRY_RUN`                               | —                       | `1`: simulate every tx, send nothing       |
 | `CORS_ORIGINS`                                  | `http://localhost:5173` | CSV                                        |
 | `PORT`                                          | 8792                    |                                            |

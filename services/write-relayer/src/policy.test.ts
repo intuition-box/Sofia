@@ -13,6 +13,7 @@ import {
   refusal,
   trustToWei,
   windowStarts,
+  withCredits,
 } from './policy'
 
 const PAGE: `0x${string}` = `0x${'ab'.repeat(32)}`
@@ -123,5 +124,29 @@ describe('quota and budget', () => {
     const w = windowStarts(new Date('2026-10-28T15:00:00Z'))
     expect(w.month.toISOString()).toBe('2026-10-01T00:00:00.000Z')
     expect(w.day.toISOString()).toBe('2026-10-28T00:00:00.000Z')
+  })
+})
+
+describe('withCredits', () => {
+  it('a Trend Hunter call raises the month and the day alike', () => {
+    const mine = withCredits(limits, 6)
+    expect(mine.quotaMonthly).toBe(26)
+    expect(mine.quotaDaily).toBe(11)
+    expect(mine.budgetDailyWei).toBe(limits.budgetDailyWei)
+    // Daily quota used up: credits still let them through
+    expect(refusal(3, { month: 5, day: 5 }, mine, none, 0n)).toBeNull()
+    expect(quotaLeft({ month: 20, day: 0 }, mine)).toBe(6)
+  })
+
+  it('the relayer budget still caps an account with credits', () => {
+    const spent = { month: 0n, day: trustToWei(17) }
+    expect(
+      refusal(1, { month: 0, day: 0 }, withCredits(limits, 30), spent, 1n),
+    ).toBe('Free Recommends are paused until tomorrow')
+  })
+
+  it('ignores negative or fractional credits', () => {
+    expect(withCredits(limits, -3).quotaMonthly).toBe(20)
+    expect(withCredits(limits, 2.9).quotaDaily).toBe(7)
   })
 })

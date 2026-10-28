@@ -39,6 +39,10 @@ export const env = {
     'SPONSOR_BUDGET_DAILY_TRUST',
     Math.ceil(int('SPONSOR_BUDGET_MONTHLY_TRUST', 500) / 30),
   ),
+  /** reputation-api base URL — Trend Hunter calls earn credits. Empty ⇒ none */
+  reputationApiUrl: (process.env.REPUTATION_API_URL ?? '').replace(/\/$/, ''),
+  /** Extra free Recommends per call this month */
+  creditsPerCall: int('SPONSOR_CREDITS_PER_CALL', 3),
   /** Deposit per Recommend / tag (TRUST) — the protocol minimum */
   depositTrust: Number(process.env.SPONSOR_DEPOSIT_TRUST ?? '0.01'),
   /** true: simulate every tx, send nothing (local testing) */
