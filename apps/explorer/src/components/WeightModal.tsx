@@ -55,6 +55,7 @@ import {
   type AtomIPFSPayload,
   type PinThingFn,
 } from '../services/atomCreationService'
+import { ensureProxyApproved } from '../services/proxyApprovalService'
 import SofiaLoader from './ui/SofiaLoader'
 import FeedCardView from './feed/FeedCardView'
 import './styles/weight-modal.css'
@@ -477,6 +478,32 @@ export default function WeightModal({
         setCreateTripleProcessing(false)
       }
       return
+    }
+
+    // Deposits land on this wallet through the proxy: a wallet that never
+    // approved it (first time, explorer only) does so once, before anything —
+    // exits included — goes through
+    const writesThroughProxy =
+      depositItems.length +
+        createItems.length +
+        circleIndices.length +
+        skillIndices.length +
+        contextIndices.length >
+      0
+    if (writesThroughProxy && wallets[0]) {
+      setCreateTripleProcessing(true)
+      setCreateTripleResult(null)
+      try {
+        await ensureProxyApproved(wallets[0])
+      } catch (err) {
+        setCreateTripleResult({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        return
+      } finally {
+        setCreateTripleProcessing(false)
+      }
     }
 
     let allOk = true
