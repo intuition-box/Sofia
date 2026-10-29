@@ -9,6 +9,7 @@ import {
   buildPlan,
   calculateCounterId,
   calculateTripleId,
+  parseThing,
   MAX_PAGES_PER_REQUEST,
   parseRequest,
   quotaLeft,
@@ -182,5 +183,32 @@ describe('second opinions', () => {
     expect(
       refusal(0, { month: 0, day: 0, opinionsDay: 4 }, mine, none, 0n, 2),
     ).toBe('Daily free opinions used — come back tomorrow')
+  })
+})
+
+describe('new pages (extension)', () => {
+  const thing = {
+    name: 'A page',
+    description: 'Page: example.com/a',
+    url: 'https://example.com/a',
+    image: 'https://www.google.com/s2/favicons?domain=example.com&sz=128',
+  }
+
+  it('takes a page with no atom yet, deduped by url', () => {
+    const r = parseRequest({ pages: [{ thing }, { thing, tags: ['x'] }] })
+    expect('pages' in r && r.pages).toEqual([{ thing, tags: ['x'] }])
+  })
+
+  it('refuses a page that is not a web page', () => {
+    expect(parseThing({ ...thing, url: 'javascript:alert(1)' })).toBeNull()
+    expect(parseThing({ ...thing, name: '' })).toBeNull()
+    expect(
+      parseThing({ ...thing, image: 'data:image/png;base64,x' }),
+    ).toBeNull()
+    expect(parseThing({ ...thing, image: undefined })).toEqual({
+      name: thing.name,
+      description: thing.description,
+      url: thing.url,
+    })
   })
 })

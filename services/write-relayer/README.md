@@ -26,8 +26,16 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 - Eligible: any Privy account with a wallet. The positions go to `wallet`
   when it is one of the account's wallets, else to its embedded wallet, else
   to its first linked wallet.
-- Per request: ≤ 5 pages, ≤ 2 tags per page. Pages must be atoms the indexer
-  knows; tags must be existing taxonomy atoms (v1 mints none).
+- Per request: ≤ 5 pages, ≤ 2 tags per page. A page is an atom the indexer
+  knows, or (extension right-click) `thing`: the page fields the extension
+  pins — the relayer pins them (`INTUITION_PIN_API_KEY`), reuses the atom
+  when it exists, else mints it (curve 1, no deposit) before the Recommend.
+  A new page counts as one Recommend of the quota. Tags must be existing
+  taxonomy atoms (none are minted).
+- The extension calls with `Authorization: Extension <token>`: a 90-day
+  session the landing's /auth gets from `POST /sponsor/extension-session`
+  (Privy bearer) and hands over. Only its sha256 is stored; `DELETE`
+  revokes it.
 - Per account: `SPONSOR_QUOTA_MONTHLY` (20) and `SPONSOR_QUOTA_DAILY` (5)
   Recommends. Tags don't count against the quota, only against the budget.
 - Trend Hunter credits: each call the account's wallets made this month
@@ -71,6 +79,8 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 | `SPONSOR_BUDGET_DAILY_TRUST`                    | monthly / 30            |                                            |
 | `SPONSOR_DEPOSIT_TRUST`                         | 0.01                    |                                            |
 | `SPONSOR_OPINIONS_DAILY`                        | 5                       | second opinions a day, outside the quota   |
+| `INTUITION_PIN_API_KEY`                         | —                       | pins new pages; unset ⇒ known pages only   |
+| `INTUITION_PIN_URL`                             | Intuition pin service   |                                            |
 | `REPUTATION_API_URL`                            | —                       | Trend Hunter calls; empty ⇒ no credits     |
 | `SPONSOR_CREDITS_PER_CALL`                      | 3                       | free Recommends per call this month        |
 | `SPONSOR_DRY_RUN`                               | —                       | `1`: simulate every tx, send nothing       |

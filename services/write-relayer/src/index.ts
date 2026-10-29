@@ -12,7 +12,8 @@
  *   GET  /sponsor/quota       (Privy bearer) → eligibility + Recommends left
  *        (Trend Hunter credits included: spotted pages and missions this
  *        month add some)
- *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId, tags? }] }
+ *   POST /sponsor/recommend   (Privy bearer) { wallet?, pages: [{ objectId | thing, tags? }] }
+ *        `thing` (extension): a page with no atom yet — pinned, then minted
  *        409 { needsApproval } until the wallet approved SofiaFeeProxy once
  *   POST /sponsor/oppose      (Privy bearer) { wallet?, objectIds } → free
  *        opposes on pages one other person recommended (sorting queue)
@@ -47,9 +48,11 @@ import {
   account,
   execute,
   fundApprovalGas,
+  pageAtomOf,
   treasuryBalance,
   type Execution,
 } from './chain'
+import { pinPage } from './pin'
 import { creditsOf } from './credits'
 import { prisma } from './db'
 import { env } from './env'
@@ -67,12 +70,17 @@ import {
   trustToWei,
   windowStarts,
   type Limits,
+  type PageRequest,
   type Spent,
   type Usage,
   withCredits,
 } from './policy'
 
-configureClient({ apiUrl: env.indexerUrl })
+configureClient({
+  apiUrl: env.indexerUrl,
+  pinApiUrl: env.pinApiKey ? env.pinUrl : undefined,
+  pinApiKey: env.pinApiKey || undefined,
+})
 
 const limits: Limits = {
   quotaMonthly: env.quotaMonthly,
@@ -257,14 +265,39 @@ app.post('/sponsor/recommend', async (c) => {
   if ('error' in parsed) return c.json({ error: parsed.error }, 400)
   const wallet = receiverOf(sponsee, (body as { wallet?: unknown }).wallet)
 
-  const objectIds = parsed.pages.map((p) => p.objectId)
-  const missing = await unknownPages(objectIds)
+  // New pages (extension): pin their fields, then reuse the atom when it
+  // already exists — same fields, same atom — or mint it first
+  const newPages = parsed.pages.filter((p) => p.thing)
+  if (newPages.length > 0 && !env.pinApiKey)
+    return c.json({ error: 'New pages are not free right now' }, 400)
+  let atoms: Awaited<ReturnType<typeof pageAtomOf>>[]
+  try {
+    atoms = await Promise.all(
+      newPages.map(async (p) => pageAtomOf(await pinPage(p.thing!))),
+    )
+  } catch (err) {
+    console.error('[write-relayer] new page', err)
+    return c.json({ error: 'Could not prepare the page — try again' }, 502)
+  }
+  const atomOf = new Map(newPages.map((p, i) => [p, atoms[i]]))
+  const pages: PageRequest[] = parsed.pages.map((p) => ({
+    objectId: p.objectId ?? atomOf.get(p)!.id,
+    tags: p.tags,
+  }))
+  const toMint = [
+    ...new Map(atoms.filter((a) => !a.exists).map((a) => [a.id, a.data])),
+  ].map(([, data]) => data)
+
+  const objectIds = pages.map((p) => p.objectId)
+  const minted = new Set(atoms.filter((a) => !a.exists).map((a) => a.id))
+  const missing = await unknownPages(objectIds.filter((id) => !minted.has(id)))
   if (missing.length > 0)
     return c.json({ error: 'Unknown page', pages: missing }, 400)
 
-  const plan = buildPlan(parsed.pages)
+  const plan = buildPlan(pages)
   const reserve =
-    RESERVE_PER_TRIPLE_WEI * BigInt(plan.claims.length + plan.tags.length)
+    RESERVE_PER_TRIPLE_WEI *
+    BigInt(toMint.length + plan.claims.length + plan.tags.length)
   const [credits, open] = await Promise.all([
     creditsOf(sponsee.wallets),
     openForOpinion(objectIds, sponsee.wallets),
@@ -300,13 +333,19 @@ app.post('/sponsor/recommend', async (c) => {
   })
   if ('why' in reserved) return c.json({ error: reserved.why }, 429)
 
-  const result = await execute(plan, wallet as Hex, depositWei)
+  const result = await execute(
+    { atoms: toMint, ...plan },
+    wallet as Hex,
+    depositWei,
+  )
   const failed = await settle(reserved.row, result)
   if (failed) return c.json(failed.body, failed.status)
 
   const used = await usageOf(sponsee.privyUserId)
   return c.json({
     txHashes: result.txHashes,
+    objectIds,
+    minted: toMint.length,
     recommended: plan.claims.length,
     tagged: plan.tags.length,
     left: quotaLeft(used, mine),

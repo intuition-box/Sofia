@@ -59,25 +59,75 @@ export interface PageRequest {
   tags: string[]
 }
 
+/**
+ * A page with no atom yet (extension right-click): the fields the extension
+ * pins for a page atom — same shape, so the same atom when it already exists
+ */
+export interface PageThing {
+  name: string
+  description: string
+  url: string
+  image?: string
+}
+
+/** A requested page: an existing atom, or a page to mint first */
+export type PageInput =
+  | (PageRequest & { thing?: undefined })
+  | { objectId?: undefined; thing: PageThing; tags: string[] }
+
+const text = (v: unknown, max: number): string | null =>
+  typeof v === 'string' && v.trim().length > 0 && v.length <= max ? v : null
+
+const httpUrl = (v: unknown, max: number): string | null => {
+  const s = text(v, max)
+  if (!s) return null
+  try {
+    const u = new URL(s)
+    return u.protocol === 'https:' || u.protocol === 'http:' ? s : null
+  } catch {
+    return null
+  }
+}
+
+/** The extension's page fields, validated — or null */
+export function parseThing(raw: unknown): PageThing | null {
+  const t = raw as Partial<Record<keyof PageThing, unknown>> | null
+  const name = text(t?.name, 200)
+  const description = text(t?.description, 300)
+  const url = httpUrl(t?.url, 2048)
+  if (!name || !description || !url) return null
+  if (t?.image === undefined) return { name, description, url }
+  const image = httpUrl(t.image, 512)
+  return image ? { name, description, url, image } : null
+}
+
 /** The request body, validated — or why it's refused */
 export function parseRequest(
   body: unknown,
-): { pages: PageRequest[] } | { error: string } {
+): { pages: PageInput[] } | { error: string } {
   const raw = (body as { pages?: unknown })?.pages
   if (!Array.isArray(raw) || raw.length === 0) return { error: 'No pages' }
   if (raw.length > MAX_PAGES_PER_REQUEST)
     return { error: `At most ${MAX_PAGES_PER_REQUEST} pages per request` }
-  const pages = new Map<string, PageRequest>()
+  const pages = new Map<string, PageInput>()
   for (const p of raw) {
     const objectId = (p as { objectId?: unknown })?.objectId
-    const tags = (p as { tags?: unknown })?.tags ?? []
+    const rawThing = (p as { thing?: unknown })?.thing
+    const rawTags = (p as { tags?: unknown })?.tags ?? []
+    if (!Array.isArray(rawTags) || !rawTags.every((t) => typeof t === 'string'))
+      return { error: 'Invalid tags' }
+    const tags = [...new Set(rawTags as string[])].slice(0, MAX_TAGS_PER_PAGE)
+    if (rawThing !== undefined) {
+      const thing = parseThing(rawThing)
+      if (!thing) return { error: 'Invalid page' }
+      pages.set(`url:${thing.url}`, { thing, tags })
+      continue
+    }
     if (typeof objectId !== 'string' || !BYTES32.test(objectId))
       return { error: 'Invalid page id' }
-    if (!Array.isArray(tags) || !tags.every((t) => typeof t === 'string'))
-      return { error: 'Invalid tags' }
     pages.set(objectId.toLowerCase(), {
       objectId: objectId.toLowerCase() as Hex,
-      tags: [...new Set(tags as string[])].slice(0, MAX_TAGS_PER_PAGE),
+      tags,
     })
   }
   return { pages: [...pages.values()] }

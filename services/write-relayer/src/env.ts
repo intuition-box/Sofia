@@ -39,6 +39,11 @@ export const env = {
     'SPONSOR_BUDGET_DAILY_TRUST',
     Math.ceil(int('SPONSOR_BUDGET_MONTHLY_TRUST', 500) / 30),
   ),
+  /** Intuition pin service: new pages (no atom yet) are pinned here before
+   *  being minted. No key ⇒ only pages that already have an atom are free. */
+  pinUrl:
+    process.env.INTUITION_PIN_URL ?? 'https://pin.intuition.systems/v1/graphql',
+  pinApiKey: process.env.INTUITION_PIN_API_KEY ?? '',
   /** reputation-api base URL — Trend Hunter calls earn credits. Empty ⇒ none */
   reputationApiUrl: (process.env.REPUTATION_API_URL ?? '').replace(/\/$/, ''),
   /** Extra free Recommends per call this month */
