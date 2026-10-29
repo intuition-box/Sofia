@@ -21,13 +21,14 @@ Sofia is a community-curated map of the web, built on the [Intuition](https://in
 
 Start with the **[handbook](handbook/README.md)**:
 
-| I want to…                           | Read                                                                                               |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Run Sofia on my machine              | [local development](handbook/getting-started/local-development.md)                                 |
-| Know what runs where (prod, staging) | [environments](handbook/operations/environments.md)                                                |
-| Configure an app in Coolify          | [deployment variables](handbook/operations/deployment.md)                                          |
-| Fix something in production          | [runbooks](handbook/operations/runbooks.md)                                                        |
-| Understand a system                  | [free Recommends](handbook/features/free-recommends.md), [Spotters](handbook/features/spotters.md) |
+| I want to…                           | Read                                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run Sofia on my machine              | [local development](handbook/getting-started/local-development.md)                                                                                                                                                                        |
+| Know what runs where (prod, staging) | [environments](handbook/operations/environments.md)                                                                                                                                                                                       |
+| Configure an app in Coolify          | [deployment variables](handbook/operations/deployment.md)                                                                                                                                                                                 |
+| Fix something in production          | [runbooks](handbook/operations/runbooks.md)                                                                                                                                                                                               |
+| Learn the vocabulary                 | [glossary](handbook/concepts/glossary.md), [data model](handbook/concepts/data-model.md)                                                                                                                                                  |
+| Understand a system                  | [explorer](handbook/features/explorer.md), [extension](handbook/features/extension.md), [free Recommends](handbook/features/free-recommends.md), [Spotters](handbook/features/spotters.md), [reputation](handbook/features/reputation.md) |
 
 ## Repository layout
 

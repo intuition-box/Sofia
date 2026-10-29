@@ -10,16 +10,22 @@ Team documentation for the `core` monorepo: how to run it, how it's deployed, an
 | Know what runs where (prod, staging, branches, domains)         | [operations/environments.md](operations/environments.md)                     |
 | Configure or create an app in Coolify                           | [operations/deployment.md](operations/deployment.md)                         |
 | Fix something in production                                     | [operations/runbooks.md](operations/runbooks.md)                             |
+| Learn the vocabulary (Recommend, page market, Influence…)       | [concepts/glossary.md](concepts/glossary.md)                                 |
+| Know what Sofia writes on-chain                                 | [concepts/data-model.md](concepts/data-model.md)                             |
+| Understand the explorer's pages                                 | [features/explorer.md](features/explorer.md)                                 |
+| Understand the extension (right-click, publish without popup)   | [features/extension.md](features/extension.md)                               |
 | Understand free Recommends (relayer, extension sessions, costs) | [features/free-recommends.md](features/free-recommends.md)                   |
 | Understand Spotters (spotted pages, Influence, missions, pool)  | [features/spotters.md](features/spotters.md)                                 |
+| Understand reputation, Top Voices, Circles                      | [features/reputation.md](features/reputation.md)                             |
 
 ## Layout
 
 ```
 handbook/
 ├── getting-started/   local setup
+├── concepts/          vocabulary and the on-chain data model
 ├── operations/        environments, Coolify configuration, runbooks
-└── features/          how a product system works end to end
+└── features/          how each product system works end to end
 ```
 
 ## Elsewhere in the repo
