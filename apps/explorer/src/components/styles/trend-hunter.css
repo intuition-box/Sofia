@@ -735,3 +735,9 @@ a.th-sort-title:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* How it works: a step's way out (Install Sofia) */
+.th-card-link {
+  align-self: flex-start;
+  margin: 4px 0 0;
+}

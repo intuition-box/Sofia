@@ -20,12 +20,14 @@ import {
   ModuleHead,
   StatePill,
 } from '@0xsofia/design-system'
+import { ArrowUpRight } from 'lucide-react'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import MissionsPanel from '@/components/trending/MissionsPanel'
 import HunterProgress from './HunterProgress'
 import SortQueuePanel from './SortQueuePanel'
 import { useEnsNames } from '@/hooks/useEnsNames'
+import { CHROME_STORE_URL } from '@/utils/sofiaDetect'
 import {
   CREDITS_PER_CALL,
   formatMonth,
@@ -50,7 +52,8 @@ function HowItWorks({
   const steps = [
     {
       title: 'Be early',
-      text: 'Recommend a page while it is still unknown: be among its first 3.',
+      text: 'Recommend a page while it is still unknown: be among its first 3. The Sofia extension does it in one click from any page.',
+      link: { href: CHROME_STORE_URL, label: 'Install Sofia' },
     },
     {
       title: 'Get followed',
@@ -71,6 +74,17 @@ function HowItWorks({
           <li key={step.title} className="th-card">
             <span className="th-card-title">{step.title}</span>
             <span className="th-desc">{step.text}</span>
+            {'link' in step && step.link && (
+              <a
+                href={step.link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="th-strip-link th-card-link"
+              >
+                {step.link.label}
+                <ArrowUpRight aria-hidden />
+              </a>
+            )}
           </li>
         ))}
       </ol>
