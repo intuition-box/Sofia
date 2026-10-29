@@ -64,6 +64,17 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 - Sends are serialized (one nonce stream) and chunked under the chain's ~32M
   gas-per-tx cap (35 creations / 80 deposits per tx).
 
+## Treasury (refill here)
+
+|                                          | Address                                      | Network                                      |
+| ---------------------------------------- | -------------------------------------------- | -------------------------------------------- |
+| **Prod** (`relayer.sofia.intuition.box`) | `0x3CED7E2b7db82d623Da15C548f74b5742b081f77` | Intuition mainnet (chain 1155), native TRUST |
+
+- Explorer: https://explorer.intuition.systems/address/0x3CED7E2b7db82d623Da15C548f74b5742b081f77
+- Live check: `GET https://relayer.sofia.intuition.box/health` returns the address; the boot log prints the balance.
+- Send plain TRUST to it (no contract call). Keep a small float: a Recommend costs Sofia ~0.11–0.25 TRUST, the monthly budget caps spending at `SPONSOR_BUDGET_MONTHLY_TRUST`.
+- Same address as the local dev relayer for now; a dedicated prod key is cleaner later.
+
 ## Env
 
 | Var                                             | Default                 |                                            |
