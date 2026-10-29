@@ -1,160 +1,114 @@
 ![Sofia Banner](apps/extension/assets/banner.png)
 
-**Transform your browsing into certified knowledge on the blockchain.**
+**The web, recommended by people.**
 
 ![bun](https://img.shields.io/badge/bun-1.3+-fbf0df?logo=bun&logoColor=black)
 ![node](https://img.shields.io/badge/node-22.13+-339933?logo=node.js&logoColor=white)
 ![typescript](https://img.shields.io/badge/typescript-5.x-3178c6?logo=typescript&logoColor=white)
-![react](https://img.shields.io/badge/react-18.2-61dafb?logo=react&logoColor=black)
+![react](https://img.shields.io/badge/react-18%20%7C%2019-61dafb?logo=react&logoColor=black)
 ![monorepo](https://img.shields.io/badge/monorepo-bun%20workspaces-000)
 ![intuition](https://img.shields.io/badge/powered%20by-intuition-8b5cf6)
 
 ---
 
-Sofia is a full-stack knowledge graph product on the [Intuition](https://intuition.systems) protocol. A Chrome extension captures your browsing, an explorer surfaces your on-chain reputation and circles, a gated group-join backend powers membership, and shared packages keep the taxonomy, quests, and GraphQL client in sync across every surface.
+Sofia is a community-curated map of the web, built on the [Intuition](https://intuition.systems) protocol. People **recommend** web pages by taking an on-chain position on them; every recommendation is public, dated and owned by the person who made it. Sofia shows which pages people back, who spotted them first, and which pages credible accounts follow.
 
-This repository is a **bun workspaces monorepo** containing all surfaces: extension, explorer, landing, OG image generator, docs/blog, plus the backend services (group-join API, OG proxy, AI workflows) and shared packages.
+- **Extension** — recommend any page with a right-click, often for free.
+- **Explorer** — what the community recommends, what's trending, your positions, and **Spotters**: a monthly game of finding pages before everyone else.
+- **Free Recommends** — signed-in users (email, Google or a wallet) recommend without signing or holding TRUST; Sofia's relayer pays, the position stays theirs.
+
+## Documentation
+
+Start with the **[handbook](handbook/README.md)**:
+
+| I want to…                           | Read                                                                                               |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Run Sofia on my machine              | [local development](handbook/getting-started/local-development.md)                                 |
+| Know what runs where (prod, staging) | [environments](handbook/operations/environments.md)                                                |
+| Configure an app in Coolify          | [deployment variables](handbook/operations/deployment.md)                                          |
+| Fix something in production          | [runbooks](handbook/operations/runbooks.md)                                                        |
+| Understand a system                  | [free Recommends](handbook/features/free-recommends.md), [Spotters](handbook/features/spotters.md) |
 
 ## Repository layout
 
 ```
 core/
 ├── apps/
-│   ├── explorer/         Vite + React 18 — on-chain reputation, circles & discovery
-│   ├── extension/        Plasmo Chrome extension (MV3) — browsing certification
-│   ├── landing/          Vite + React 19 — marketing landing page
-│   ├── og/               Next.js 14 — OG image generator for shared certifications
+│   ├── explorer/         Vite + React 18 — the web app (explore, trending, positions, Spotters)
+│   ├── extension/        Plasmo Chrome extension (MV3) — recommend from any page
+│   ├── landing/          Vite + React 19 — sofia.intuition.box, extension sign-in (/auth, /activate)
+│   ├── og/               Next.js 14 — share cards for X (signed links, no storage)
 │   ├── doc/              Vite + React + MDX — documentation site
-│   └── blog/             Vite + React + MDX — project blog / logbook
+│   └── blog/             Vite + React + MDX — project blog
 ├── packages/
-│   ├── graphql/          @0xsofia/graphql — shared GraphQL client + codegen (Intuition indexer)
-│   ├── design-system/    @0xsofia/design-system — shared components, hooks, theme tokens, styles
-│   ├── taxonomy/         @0xsofia/taxonomy — topics, categories, niches + on-chain atom registry
-│   └── quests/           @0xsofia/quests — quest catalogue + XP rewards (minted by ext, read by explorer)
+│   ├── graphql/          @0xsofia/graphql — Intuition indexer client + codegen
+│   ├── taxonomy/         @0xsofia/taxonomy — topics, page claims, on-chain atom registry
+│   ├── quests/           @0xsofia/quests — missions (shared by explorer, extension, relayer)
+│   ├── reputation/       @0xsofia/reputation — reputation scoring compute
+│   └── design-system/    @0xsofia/design-system — components, tokens, styles
 ├── services/
 │   ├── write-relayer/    Hono + Bun + Prisma — free Recommends, paid by Sofia's treasury
 │   ├── reputation-api/   Hono + Bun + Prisma — precomputed rankings (Top Voices, Spotters)
 │   ├── rpc-proxy/        Hono + Bun — cached, rate-limited relay to the Intuition RPC
 │   ├── pin-proxy/        Hono + Bun — IPFS pinning with the server-side key
-│   ├── group-api/        Hono + Bun + Prisma/Postgres — gated group-join backend (paused)
-│   ├── og-proxy/         Hono + Bun — OG image proxy
+│   ├── og-proxy/         Hono + Bun — link preview images
+│   ├── group-api/        Hono + Bun + Prisma — Circles membership (paused)
 │   └── mastra/           Mastra — AI workflows (decommissioned)
-└── handbook/             team documentation — start here
+└── handbook/             team documentation
 ```
 
-## Documentation
+## Quick start
 
-The **[handbook](handbook/README.md)** has the team docs: [local development](handbook/getting-started/local-development.md), [environments](handbook/operations/environments.md), [deployment variables](handbook/operations/deployment.md), [runbooks](handbook/operations/runbooks.md), and how [free Recommends](handbook/features/free-recommends.md) and [Spotters](handbook/features/spotters.md) work.
-
-## Stack per surface
-
-| Surface                  | Framework                                        | Key libs                                     |
-| ------------------------ | ------------------------------------------------ | -------------------------------------------- |
-| `apps/extension`         | [Plasmo](https://docs.plasmo.com/) (Manifest V3) | Privy, Viem, Wagmi, React Query, Tailwind    |
-| `apps/explorer`          | [Vite](https://vitejs.dev/) + React 18           | Privy, Viem, React Router, Radix UI, Ably    |
-| `apps/landing`           | [Vite](https://vitejs.dev/) + React 19           | Privy, Viem, React Router, GSAP              |
-| `apps/og`                | [Next.js](https://nextjs.org/) 14                | `@vercel/og`, `@vercel/kv`                   |
-| `apps/doc`               | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                    |
-| `apps/blog`              | [Vite](https://vitejs.dev/) + React + MDX        | `@mdx-js/*`, React Router                    |
-| `packages/graphql`       | tsup + `graphql-codegen`                         | `graphql-request`, `graphql-ws`, React Query |
-| `packages/design-system` | TS source workspace                              | shared theme tokens, components, hooks       |
-| `packages/taxonomy`      | TS source workspace                              | topics/categories/niches + atom registry     |
-| `packages/quests`        | TS source workspace                              | quest definitions + XP math                  |
-| `services/group-api`     | [Hono](https://hono.dev/) + Bun                  | Prisma/Postgres, Privy server-auth, Ably     |
-| `services/og-proxy`      | [Hono](https://hono.dev/) + Bun                  | OG image proxy                               |
-| `services/mastra`        | [Mastra](https://mastra.ai/)                     | `@mastra/core`, Viem                         |
-
-## Requirements
-
-- **Node.js** `>= 22.13.0`
-- **Bun** `>= 1.3.0` — `curl -fsSL https://bun.sh/install | bash`
-- **git**, and a wallet (MetaMask / Rabby) to test the extension
-- **PostgreSQL** (or a Neon connection string) for `services/group-api`
-
-## Setup
+Requirements: **Bun ≥ 1.3**, **Node.js ≥ 22.13**.
 
 ```bash
 git clone git@github.com:intuition-box/Sofia.git
 cd Sofia
 bun install
+bun run dev:explorer        # http://localhost:5173
 ```
 
-`bun install` resolves all workspace deps and wires symlinks across `apps/*`, `packages/*`, and `services/*`. **After pulling a branch that adds a new workspace package, re-run `bun install`** so the new symlink is created (otherwise Vite fails to resolve `@0xsofia/*` imports).
+`bun install` links every workspace. **Re-run it after pulling a branch that adds or changes a workspace package**, or imports of `@0xsofia/*` fail to resolve.
 
-Copy the per-app `.env` files (they are **gitignored**):
+The explorer runs against the public Intuition indexer with only `VITE_PRIVY_APP_ID` set. Free Recommends, Spotters rankings and the RPC proxy need their services running: env files, databases and start order are in [local development](handbook/getting-started/local-development.md).
 
-| Target                                                | Variables                                                                                                   |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `apps/explorer/.env`                                  | `VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID`, `VITE_OG_BASE_URL`, `VITE_MCP_TRUST_URL`, `VITE_GROUP_API_URL` |
-| `apps/extension/.env.development` / `.env.production` | `PLASMO_PUBLIC_*` vars (network, server URL, Privy, etc.)                                                   |
-| `apps/og/.env.local`                                  | `@vercel/kv` connection string                                                                              |
-| `services/group-api/.env`                             | `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ABLY_API_KEY`, `CORS_ORIGINS`                          |
-| `services/mastra/.env`                                | `GAIANET_*`, `DATABASE_URL`, `MCP_SERVER_URL`                                                               |
+| Command                                  | Runs                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| `bun run dev:explorer`                   | explorer on `localhost:5173`                                           |
+| `bun run dev:extension`                  | extension dev build in `apps/extension/build/chrome-mv3-dev/`          |
+| `bun run dev:landing`                    | landing                                                                |
+| `cd services/<name> && bun run dev`      | a service (write-relayer :8792, reputation-api :8790, rpc-proxy :8791) |
+| `cd packages/graphql && bun run codegen` | regenerate GraphQL types after editing a `.graphql` file               |
+| `bun run typecheck`                      | typecheck every workspace                                              |
 
-Build the GraphQL package once (codegen regenerates `src/generated/index.ts`):
+**Loading the extension**: `chrome://extensions/` → Developer mode → Load unpacked → `apps/extension/build/chrome-mv3-dev/`.
 
-```bash
-bun run --filter @0xsofia/graphql codegen
-```
+## How it fits together
 
-For `services/group-api`, generate the Prisma client + apply migrations:
+- **One market per page.** A page has one claim, `I | recommends | <page>` (bonding curve 2). Recommending = taking a position for it; opposing = a position on its counter vault. Why people recommend it (for work, for learning…) and its topics are tags on that claim.
+- **Writes** go through **SofiaFeeProxy**, a contract wrapping Intuition's MultiVault (fixed fee + 5%), from the user's wallet — or from Sofia's **write-relayer** with the user's wallet as receiver (free Recommends).
+- **Reads** come from Intuition's GraphQL indexer (`@0xsofia/graphql`, live via WebSocket) and, for chain calls, the **rpc-proxy**. Rankings that are expensive to compute (credibility from the MCP trust engine) are precomputed daily by the **reputation-api**.
+- **Shared rules** live in packages so every surface agrees: page claims and taxonomy (`@0xsofia/taxonomy`), missions (`@0xsofia/quests`, used by the explorer to display them and by the relayer to pay credits).
 
-```bash
-bun run --filter group-api db:generate
-bun run --filter group-api db:deploy
-```
+Per-surface docs: [extension architecture](apps/extension/docs/ARCHITECTURE.md), [explorer](apps/explorer/README.md), services READMEs in `services/*/README.md`.
 
-## Dev commands
+## Intuition — key concepts
 
-Root shortcuts (defined in the top-level `package.json`):
-
-| Command                                     | What it runs                                                 |
-| ------------------------------------------- | ------------------------------------------------------------ |
-| `bun run dev:explorer`                      | Vite on `localhost:5173`                                     |
-| `bun run dev:extension`                     | Plasmo dev, output to `apps/extension/build/chrome-mv3-dev/` |
-| `bun run dev:landing`                       | Vite landing page                                            |
-| `bun run dev:og`                            | OG proxy (Hono + Bun)                                        |
-| `bun run dev:doc`                           | Docs site (Vite)                                             |
-| `bun run dev:blog`                          | Blog (Vite)                                                  |
-| `bun run dev:group-api`                     | group-join API (Hono + Bun) on `localhost:8788`              |
-| `bun run dev:mastra`                        | Mastra AI workflows                                          |
-| `bun run --filter @0xsofia/graphql codegen` | Regenerate GraphQL types                                     |
-
-**Loading the extension in Chrome**: after `bun run dev:extension`, open `chrome://extensions/` → enable Developer mode → "Load unpacked" → pick `apps/extension/build/chrome-mv3-dev/`.
-
-## Architecture
-
-The **extension** is the primary Sofia surface. It reads the browser history, proposes intentions (learning, work, fun, buying, inspiration, music, trust, distrust), pins URLs to IPFS, then creates atoms and triples on Intuition via the Sofia fee proxy (fixed fee + 5%).
-
-The **explorer** consumes the same GraphQL indexer to surface a user's reputation, streaks, circles, and discovery ranking. WebSocket subscriptions on the shared `@0xsofia/graphql` package keep UI data live; it also queries a remote MCP trust engine (`VITE_MCP_TRUST_URL`) for reputation scoring.
-
-**Circles** (gated groups) are backed by `services/group-api`: a Hono + Prisma/Postgres backend handling join requests, admin review, membership/roles, and notifications (REST history + Ably realtime push). The on-chain `MEMBER_OF` triple is minted by the user via the explorer cart after an admin approves — the backend only gates access.
-
-Shared logic lives in **packages**: `@0xsofia/taxonomy` (topics/atom registry), `@0xsofia/quests` (quest catalogue + XP), `@0xsofia/design-system` (components/theme), and `@0xsofia/graphql` (indexer client).
-
-Detailed docs per surface:
-
-- [Extension architecture](apps/extension/ARCHITECTURE.md)
-- [Explorer realtime](apps/explorer/docs/plan-realtime-architecture.md)
-- [group-api security](services/group-api/SECURITY.md)
-
-## Intuition protocol — key concepts
-
-| Concept             | Description                                                                       |
-| ------------------- | --------------------------------------------------------------------------------- |
-| **Atom**            | Basic on-chain entity (URL, account, concept). Created via IPFS pin + MultiVault. |
-| **Triple**          | `Subject / Predicate / Object` relationship between atoms.                        |
-| **Vault**           | Staking vault on each atom/triple, TRUST token bonding curve.                     |
-| **term_id**         | Unique atom identifier (bytes32 hash).                                            |
-| **Sofia Fee Proxy** | Smart contract wrapping MultiVault with fixed + 5% fees.                          |
+| Concept           | Description                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| **Atom**          | An on-chain entity (a page, an account, a topic). Created from data pinned to IPFS.   |
+| **Triple**        | A `subject / predicate / object` claim between atoms, e.g. `I / recommends / <page>`. |
+| **Vault**         | Each atom and triple has one; positions are shares on a bonding curve, in TRUST.      |
+| **Counter vault** | The "against" side of a triple (an Oppose).                                           |
+| **term_id**       | The bytes32 id of an atom or triple (`atoms` have no `id` field).                     |
 
 ## Contributing
 
-- Branches off `dev`. PRs target `dev`, then `dev` → `main` for releases.
-- After merging `dev` or adding a workspace, re-run `bun install`.
-- TypeScript is non-strict (matches existing style).
-- Prettier is configured per package (`bun run format`).
-- Barrel imports: always `import { X } from "~/lib/services"`, never from individual files (extension specifically — see [extension CLAUDE.md](apps/extension/.claude/CLAUDE.md)).
+- Branch off `dev`; PRs target `dev`. `dev` deploys to staging, `main` to production ([environments](handbook/operations/environments.md)).
+- Explorer and core files follow the root Prettier config (single quotes, trailing commas); the extension has its own. Run `bun run format:check` before pushing.
+- GraphQL: declare queries in `packages/graphql/src/queries/*.graphql` and run codegen — no inline queries.
+- Extension: barrel imports only (`~/lib/services`, `~/hooks`, `~/lib/utils`), see [.claude/CLAUDE.md](.claude/CLAUDE.md).
+- Team docs go in the [handbook](handbook/README.md); never commit a secret.
 
 ## License
 
