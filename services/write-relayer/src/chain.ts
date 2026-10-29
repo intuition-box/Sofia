@@ -18,6 +18,7 @@ import {
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { env } from './env'
+import { SOFIA_I_ATOM_ID } from '@0xsofia/taxonomy'
 import type { PlannedTriple } from './policy'
 import { SofiaFeeProxyAbi } from './sofiaFeeProxyAbi'
 
@@ -207,6 +208,39 @@ async function depositBatch(
     ],
   })
   return send(data, total + fee, count * 600_000n + 1_000_000n)
+}
+
+const PROBE_DEPOSIT = 10n ** 16n
+
+/**
+ * Whether `wallet` approved SofiaFeeProxy on MultiVault (needed once before
+ * anything lands on it): simulates a tiny deposit from it on Sofia's `I`
+ * atom with its balance overridden — no funds needed. null when the RPC
+ * couldn't tell.
+ */
+export async function isProxyApproved(wallet: Hex): Promise<boolean | null> {
+  try {
+    const fee = (await publicClient.readContract({
+      address: PROXY,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'calculateDepositFee',
+      args: [1n, PROBE_DEPOSIT],
+    })) as bigint
+    await publicClient.call({
+      account: wallet,
+      to: PROXY,
+      data: encodeFunctionData({
+        abi: SofiaFeeProxyAbi,
+        functionName: 'depositBatch',
+        args: [wallet, [SOFIA_I_ATOM_ID as Hex], [1n], [PROBE_DEPOSIT], [0n]],
+      }),
+      value: PROBE_DEPOSIT + fee,
+      stateOverride: [{ address: wallet, balance: 10n ** 20n }],
+    })
+    return true
+  } catch (err) {
+    return revertSelector(err) === SENDER_NOT_APPROVED ? false : null
+  }
 }
 
 /** A pinned page atom: its data (the IPFS uri) and its id */

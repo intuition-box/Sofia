@@ -18,6 +18,7 @@
  *   POST /sponsor/oppose      (Privy bearer) { wallet?, objectIds } → free
  *        opposes on pages one other person recommended (sorting queue)
  *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
+ *   GET  /sponsor/approval?wallet= → { approved }: Sofia approved once?
  *   POST   /sponsor/extension-session (Privy bearer) → { token, expiresAt }
  *   DELETE /sponsor/extension-session (extension token) → revoke it
  * Every /sponsor/* route also takes `Authorization: Extension <token>`.
@@ -48,6 +49,7 @@ import {
   account,
   execute,
   fundApprovalGas,
+  isProxyApproved,
   pageAtomOf,
   treasuryBalance,
   type Execution,
@@ -427,6 +429,16 @@ app.post('/sponsor/oppose', async (c) => {
     partial: !!result.error,
     dryRun: env.dryRun,
   })
+})
+
+/**
+ * GET /sponsor/approval?wallet= → { approved }: did this wallet of the
+ * account approve Sofia once? (null: the RPC couldn't tell)
+ */
+app.get('/sponsor/approval', async (c) => {
+  const sponsee = requireSponsee(c)
+  const wallet = receiverOf(sponsee, c.req.query('wallet'))
+  return c.json({ wallet, approved: await isProxyApproved(wallet as Hex) })
 })
 
 /**
