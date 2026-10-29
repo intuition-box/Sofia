@@ -12,7 +12,9 @@ import {
   useLogout,
 } from '@privy-io/react-auth'
 
-// Aligned on the Explorer Privy app — same allowlist (localhost + prod).
+// MUST be the explorer's Privy app (sofia-dashboard): same users, same
+// embedded wallets, and the write-relayer only accepts that app's tokens.
+// Its allowlist needs this origin (localhost + sofia.intuition.box).
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID
 const PRIVY_CLIENT_ID = import.meta.env.VITE_PRIVY_CLIENT_ID
 
@@ -151,7 +153,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       clientId={PRIVY_CLIENT_ID}
       config={{
         appearance: { theme: 'dark', accentColor: '#ffffff' },
-        loginMethods: ['wallet'],
+        // Same app and methods as the explorer: an email / Google account
+        // gets the same Privy embedded wallet on both, so its positions stay
+        // on one wallet. A wallet login is unchanged.
+        loginMethods: ['email', 'google', 'wallet'],
+        embeddedWallets: {
+          ethereum: { createOnLogin: 'users-without-wallets' },
+        },
       }}
     >
       <InnerProvider>{children}</InnerProvider>
