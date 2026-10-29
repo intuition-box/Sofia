@@ -1,5 +1,7 @@
 # Spotters
 
+> **Services:** [reputation-api](../../services/reputation-api/README.md) (rankings, pool) and [write-relayer](../../services/write-relayer/README.md) (credits). Missions: `packages/quests`.
+
 The game of finding pages before everyone else. Page: `/spotters` in the explorer (`/trend-hunters` and the old leaderboard tab redirect there).
 
 Code: [services/reputation-api](../../services/reputation-api/) (`computeTrendHunters.ts`, `trendHunterPool.ts`) · [packages/quests](../../packages/quests/src/missions.ts) · explorer `pages/TrendHuntersPage.tsx`, `components/leaderboard/*`, `components/trending/*`. Code and API use the old names (`trendHunter`, `calls`, `flair`).

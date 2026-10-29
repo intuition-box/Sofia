@@ -1,5 +1,7 @@
 # Extension
 
+> **Calls:** [write-relayer](../../services/write-relayer/README.md) (free right-click), [pin-proxy](../../services/pin-proxy/), the landing (`/auth`, `/activate`), the Intuition indexer and RPC.
+
 The Chrome extension at `apps/extension` (Plasmo, Manifest V3, side panel). Terms: [glossary](../concepts/glossary.md). **`apps/extension/docs/ARCHITECTURE.md` is out of date** (Gold, XP, quests, Mastra, 10 IndexedDB stores are gone); this page reflects the code.
 
 ## Side panel

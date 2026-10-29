@@ -1,5 +1,7 @@
 # Sofia write-relayer
 
+> **How it is used, end to end:** [handbook/features/free-recommends.md](../../handbook/features/free-recommends.md) and the credits in [spotters.md](../../handbook/features/spotters.md). Deployment: [handbook/operations](../../handbook/operations/).
+
 Sponsored writes: every signed-in user — **email / Google** (Privy embedded
 wallet, no TRUST, no gas) or their **own crypto wallet** — gets free
 Recommends. Sofia's treasury

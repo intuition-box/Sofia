@@ -1,5 +1,7 @@
 # Free Recommends
 
+> **Service:** [write-relayer](../../services/write-relayer/README.md) (endpoints, env, treasury). Also involved: explorer cart, landing `/auth`, extension right-click.
+
 Signed-in users recommend pages without signing a transaction or holding TRUST. Sofia's **write-relayer** sends the transaction from a treasury wallet through SofiaFeeProxy, with `receiver` = the user's wallet: **the position, its shares and its withdrawal belong to the user**. The relayer pays and holds nothing (verified on-chain: the treasury has no position).
 
 Code: [services/write-relayer](../../services/write-relayer/) · explorer `hooks/useSponsoredWrite.ts`, `services/sponsoredWriteService.ts` · extension `lib/services/FreeRecommendService.ts` · landing `src/auth/freeRecommends.ts`.

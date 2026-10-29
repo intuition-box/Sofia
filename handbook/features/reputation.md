@@ -1,5 +1,7 @@
 # Reputation and Circles
 
+> **Services:** [reputation-api](../../services/reputation-api/README.md) (snapshots) and [group-api](../../services/group-api/README.md) (Circles, paused). Scoring: `packages/reputation`.
+
 Code: [packages/reputation](../../packages/reputation/src/) · [services/reputation-api](../../services/reputation-api/) · explorer `services/derivedReputationService.ts`, `claimSupportersService.ts`, `mcpTrustService.ts`, `hooks/useReputationLeaderboard.ts`, `components/home/TopVoicesSection.tsx`, `components/profile/*`. Terms: [glossary](../concepts/glossary.md).
 
 ## The idea

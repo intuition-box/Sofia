@@ -1,5 +1,7 @@
 # reputation-api
 
+> **How it is used, end to end:** [handbook/features/reputation.md](../../handbook/features/reputation.md) (Top Voices) and [spotters.md](../../handbook/features/spotters.md). Deployment: [handbook/operations](../../handbook/operations/). Note: the leaderboard section below predates the current API; the handbook reflects the code.
+
 Precomputed **reputation leaderboard** for the Explorer's Explore page. A cron
 triggers a job that scores every account by its public reputation and writes a
 ranked snapshot; the read path serves that snapshot with zero scoring.
