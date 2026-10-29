@@ -4,14 +4,15 @@ What you need to run this branch locally: new services, new dependencies, env va
 
 ## What's new on this branch
 
-| Area                         | What it does                                                                                                          | Where                                    |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| One market per page          | A page has one claim, `I \| recommends \| page` (curve 2). Intentions become tags; distrust becomes an oppose.        | `packages/taxonomy`, explorer, extension |
-| Free Recommends              | Sofia's treasury publishes Recommends for signed-in users. The position stays the user's (`receiver` = their wallet). | `services/write-relayer` (new)           |
-| Spotters (ex "Trend Hunter") | `/spotters` page: spotted pages, Influence, ranking, missions, "Pages to sort" queue, monthly TRUST pool              | explorer + `services/reputation-api`     |
-| Credits                      | Spotted pages and missions earn extra free Recommends, checked on-chain by the relayer                                | `write-relayer` + `packages/quests`      |
-| Second opinions              | Recommend or oppose a page only one person recommended: free, outside the quota                                       | `write-relayer` + explorer queue         |
-| RPC proxy                    | Relays JSON-RPC to Intuition (public RPC throttles per IP)                                                            | `services/rpc-proxy` (new)               |
+| Area                         | What it does                                                                                                          | Where                                            |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| One market per page          | A page has one claim, `I \| recommends \| page` (curve 2). Intentions become tags; distrust becomes an oppose.        | `packages/taxonomy`, explorer, extension         |
+| Free Recommends              | Sofia's treasury publishes Recommends for signed-in users. The position stays the user's (`receiver` = their wallet). | `services/write-relayer` (new)                   |
+| Spotters (ex "Trend Hunter") | `/spotters` page: spotted pages, Influence, ranking, missions, "Pages to sort" queue, monthly TRUST pool              | explorer + `services/reputation-api`             |
+| Credits                      | Spotted pages and missions earn extra free Recommends, checked on-chain by the relayer                                | `write-relayer` + `packages/quests`              |
+| Second opinions              | Recommend or oppose a page only one person recommended: free, outside the quota                                       | `write-relayer` + explorer queue                 |
+| Free right-click             | The extension's Recommend goes through the relayer (new pages minted), email / Google accounts included               | `write-relayer`, `apps/landing` /auth, extension |
+| RPC proxy                    | Relays JSON-RPC to Intuition (public RPC throttles per IP)                                                            | `services/rpc-proxy` (new)                       |
 
 UI wording: a "call" is shown as a **spotted page**, "Flair" as **Influence**. API fields and code keep `calls` / `flair` / `trendHunter`.
 
@@ -62,25 +63,41 @@ Copy each `.env.example` to `.env` and fill it in. **Never commit a `.env`, and 
 
 ### `services/write-relayer/.env`
 
-| Var                                             | Dev value                                                       |
-| ----------------------------------------------- | --------------------------------------------------------------- |
-| `DATABASE_URL`                                  | Neon `sofia-reputation` / `write_relayer`                       |
-| `PRIVY_APP_ID`, `PRIVY_APP_SECRET`              | the **explorer's** Privy app                                    |
-| `RELAYER_PRIVATE_KEY`                           | your dev treasury key (0x…)                                     |
-| `INTUITION_RPC_URL`                             | `http://localhost:8791/rpc` if the rpc-proxy runs, else default |
-| `RPC_PROXY_SERVER_KEY`                          | same value as the rpc-proxy's, if used                          |
-| `SPONSOR_QUOTA_MONTHLY` / `_DAILY`              | `20` / `5`                                                      |
-| `SPONSOR_BUDGET_MONTHLY_TRUST` / `_DAILY_TRUST` | `500` / `17`                                                    |
-| `SPONSOR_OPINIONS_DAILY`                        | `5` (second opinions, outside the quota)                        |
-| `SPONSOR_DEPOSIT_TRUST`                         | `0.01`                                                          |
-| `REPUTATION_API_URL`                            | `http://localhost:8790` (empty: no spotted-page credits)        |
-| `SPONSOR_CREDITS_PER_CALL`                      | `3`                                                             |
-| `SPONSOR_DRY_RUN`                               | `1` simulates every tx and sends nothing: **start with this**   |
-| `CORS_ORIGINS`                                  | `http://localhost:5173`                                         |
+| Var                                             | Dev value                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| `DATABASE_URL`                                  | Neon `sofia-reputation` / `write_relayer`                                      |
+| `PRIVY_APP_ID`, `PRIVY_APP_SECRET`              | the **explorer's** Privy app                                                   |
+| `RELAYER_PRIVATE_KEY`                           | your dev treasury key (0x…)                                                    |
+| `INTUITION_RPC_URL`                             | `http://localhost:8791/rpc` if the rpc-proxy runs, else default                |
+| `RPC_PROXY_SERVER_KEY`                          | same value as the rpc-proxy's, if used                                         |
+| `SPONSOR_QUOTA_MONTHLY` / `_DAILY`              | `20` / `5`                                                                     |
+| `SPONSOR_BUDGET_MONTHLY_TRUST` / `_DAILY_TRUST` | `500` / `17`                                                                   |
+| `SPONSOR_OPINIONS_DAILY`                        | `5` (second opinions, outside the quota)                                       |
+| `SPONSOR_DEPOSIT_TRUST`                         | `0.01`                                                                         |
+| `REPUTATION_API_URL`                            | `http://localhost:8790` (empty: no spotted-page credits)                       |
+| `SPONSOR_CREDITS_PER_CALL`                      | `3`                                                                            |
+| `SPONSOR_DRY_RUN`                               | `1` simulates every tx and sends nothing: **start with this**                  |
+| `INTUITION_PIN_API_KEY`                         | Intuition pin key: pins new pages from the extension (unset: known pages only) |
+| `CORS_ORIGINS`                                  | `http://localhost:5173` + the landing's dev origin                             |
 
 ### `services/rpc-proxy/.env` (optional)
 
 `PORT=8791`, `INTUITION_RPC_UPSTREAM` (default public RPC), `RPC_PROXY_SERVER_KEY`, `RPC_ALLOWED_ORIGINS`. See `services/rpc-proxy/README.md`.
+
+### `apps/landing/.env`
+
+| Var                                         | Dev value                                                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID` | **the explorer's** Privy app (same users and embedded wallets; the relayer only accepts that app) |
+| `VITE_WRITE_RELAYER_URL`                    | `http://localhost:8792`                                                                           |
+
+The explorer's Privy app must allow the landing's origin (dashboard → allowed domains).
+
+### `apps/extension/.env.development`
+
+| Var                               | Dev value                                                  |
+| --------------------------------- | ---------------------------------------------------------- |
+| `PLASMO_PUBLIC_WRITE_RELAYER_URL` | `http://localhost:8792` (unset: right-click is never free) |
 
 ### `apps/explorer/.env.local`
 
@@ -101,7 +118,7 @@ cd services/reputation-api && bun run db:generate && bun run db:deploy
 cd services/write-relayer && bun run db:generate && bun run db:deploy
 ```
 
-The relayer migration `20261029100000_opinions` adds `kind` and `opinionCount`. Without it the relayer fails on its first request.
+The relayer migrations `20261029100000_opinions` (`kind`, `opinionCount`) and `20261029140000_extension_sessions` (`ExtensionSession`) must be applied, or the relayer fails on its first request.
 
 The Neon databases are shared with prod. Apply migrations, but **never** run `db:migrate` (dev) or reset against them.
 
@@ -155,6 +172,7 @@ bunx prettier --write <files>
 2. Recommend a page from the cart: no signature, the position lands on your wallet. The very first time, the wallet approves Sofia once (the relayer sends the gas).
 3. `/spotters`: "Pages to sort" lists pages with one recommender. 👍 / 👎 lowers "N free today" but not the monthly quota.
 4. "Today's missions" moves a few seconds later (indexer lag). The credit shows in "+N earned this month" on `/trending` within 2 minutes.
+5. Extension: sign in on the landing's `/auth` (email works) → "Free Recommends are on". Right-click a page → Recommend → toast "Recommend · free"; the position is on the account's wallet, even for a page that had no atom.
 
 ## Gotchas
 
