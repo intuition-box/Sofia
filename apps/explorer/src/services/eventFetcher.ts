@@ -1,11 +1,12 @@
 import { parseAbiItem } from 'viem'
-import type { Address } from 'viem'
+import type { Address, Hash } from 'viem'
 import { rpcClient } from './rpcClient'
 import {
   SOFIA_PROXY_ADDRESS,
   BLOCK_CHUNK,
   INDEX_START_BLOCK,
   DELEGATION_MANAGER_ADDRESS,
+  MULTIVAULT_ADDRESS,
 } from '../config'
 import type { TransactionForwardedEvent } from '../types'
 
@@ -22,6 +23,15 @@ const TX_FORWARDED_EVENT = parseAbiItem(
  */
 const REDEEMED_DELEGATION_EVENT = parseAbiItem(
   'event RedeemedDelegation(address indexed rootDelegator, address indexed redeemer, (address delegate, address delegator, bytes32 authority, (address enforcer, bytes terms, bytes args)[] caveats, uint256 salt, bytes signature) delegation)',
+)
+
+/**
+ * MultiVault's deposit event (ABI/MultiVault.ts). `receiver` owns the shares:
+ * the user, whoever sent the call — the write-relayer (free Recommends), a
+ * session key or a Sofia smart account (publish without popup).
+ */
+const DEPOSITED_EVENT = parseAbiItem(
+  'event Deposited(address indexed sender, address indexed receiver, bytes32 indexed termId, uint256 curveId, uint256 assets, uint256 assetsAfterFees, uint256 shares, uint256 totalShares, uint8 vaultType)',
 )
 
 export class EventFetcher {
@@ -76,7 +86,7 @@ export class EventFetcher {
           ? toBlock
           : cursor + BLOCK_CHUNK - 1n
 
-      const [logs, redeemed] = await Promise.all([
+      const [logs, redeemed, deposited] = await Promise.all([
         rpcClient.getLogs({
           address: SOFIA_PROXY_ADDRESS,
           event: TX_FORWARDED_EVENT,
@@ -89,7 +99,20 @@ export class EventFetcher {
           fromBlock: cursor,
           toBlock: end,
         }),
+        rpcClient.getLogs({
+          address: MULTIVAULT_ADDRESS,
+          event: DEPOSITED_EVENT,
+          args: { sender: SOFIA_PROXY_ADDRESS },
+          fromBlock: cursor,
+          toBlock: end,
+        }),
       ])
+      // The shares' owner per proxy tx (one receiver per Sofia call)
+      const receivers = new Map<Hash, Address>()
+      for (const log of deposited) {
+        if (log.args.receiver && !receivers.has(log.transactionHash))
+          receivers.set(log.transactionHash, log.args.receiver)
+      }
       for (const log of redeemed) {
         const { redeemer, rootDelegator } = log.args
         if (redeemer && rootDelegator) {
@@ -100,7 +123,11 @@ export class EventFetcher {
       if (logs.length > 0) {
         const newEvents: TransactionForwardedEvent[] = logs.map((log) => ({
           operation: log.args.operation ?? 'unknown',
-          user: this.ownerOf((log.args.user ?? '0x') as Address),
+          // Who owns the shares, not who sent the call; a tx without a
+          // deposit falls back to the sender (or the wallet behind its key)
+          user:
+            receivers.get(log.transactionHash) ??
+            this.ownerOf((log.args.user ?? '0x') as Address),
           sofiaFee: log.args.sofiaFee ?? 0n,
           multiVaultValue: log.args.multiVaultValue ?? 0n,
           totalReceived: log.args.totalReceived ?? 0n,
