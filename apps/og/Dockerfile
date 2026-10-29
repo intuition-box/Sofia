@@ -2,11 +2,8 @@
 # Sofia OG — Coolify deployment.
 #
 # Next.js app (server runtime, not static). Renders OG images via
-# @vercel/og and serves shared link pages.
-#
-# ⚠️ The /s/:id, /c/:id, and /api/share/* routes use @vercel/kv
-# (Upstash Redis). Set KV_REST_API_URL + KV_REST_API_TOKEN as runtime
-# env vars in Coolify or those routes will fail.
+# next/og and serves shared link pages. Share links are signed
+# (OG_SHARE_SECRET, runtime env), no store needed: see README.
 #
 # Build context : mono-repo root (core/).
 # Build command (local):

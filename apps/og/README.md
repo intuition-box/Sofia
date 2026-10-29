@@ -48,7 +48,7 @@ the extension and the explorer, and can be overridden via `VITE_OG_BASE_URL`
 1. User clicks "Share on X" in the extension
 2. Extension opens Twitter Intent with a link to `/profile?wallet=...&level=...&signals=...&interests=...`
 3. Twitter bot visits the URL, reads `og:image` meta tag
-4. `og:image` points to `/api/og?...` which generates a PNG via `@vercel/og`
+4. `og:image` points to `/api/og?...` which generates a PNG via `next/og`
 5. Twitter displays the image as a card in the tweet
 
 ## Share links
@@ -60,5 +60,3 @@ host. The payload is signed so nobody can forge a card.
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `OG_SHARE_SECRET` | **required** to create share links (any long random string; changing it breaks existing links). Unset ⇒ `/api/share*` answer 503.  |
 | `OG_PUBLIC_URL`   | where this app is served, for links and `og:image` URLs (default `https://og.sofia.intuition.box`; `http://localhost:3000` in dev) |
-
-`@vercel/kv` is no longer used and can be removed from `package.json`.

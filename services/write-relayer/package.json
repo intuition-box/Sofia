@@ -19,7 +19,7 @@
     "@0xsofia/taxonomy": "workspace:*",
     "@prisma/client": "^6.2.0",
     "@privy-io/server-auth": "^1.18.0",
-    "hono": "^4.6.0",
+    "hono": "^4.13.14",
     "viem": "^2.21.0"
   },
   "devDependencies": {

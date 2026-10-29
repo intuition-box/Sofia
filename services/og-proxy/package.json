@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.13.14"
   },
   "devDependencies": {
     "@types/bun": "^1.1.0",

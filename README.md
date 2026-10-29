@@ -54,7 +54,6 @@ core/
 │   ├── pin-proxy/        Hono + Bun — IPFS pinning with the server-side key
 │   ├── og-proxy/         Hono + Bun — link preview images
 │   ├── group-api/        Hono + Bun + Prisma — Circles membership (paused)
-│   └── mastra/           Mastra — AI workflows (decommissioned)
 └── handbook/             team documentation
 ```
 
