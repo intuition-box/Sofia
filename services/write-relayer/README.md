@@ -66,14 +66,16 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
 
 ## Treasury (refill here)
 
-|                                          | Address                                      | Network                                      |
-| ---------------------------------------- | -------------------------------------------- | -------------------------------------------- |
-| **Prod** (`relayer.sofia.intuition.box`) | `0x3CED7E2b7db82d623Da15C548f74b5742b081f77` | Intuition mainnet (chain 1155), native TRUST |
+|                                                     | Address                                      | Network                                      |
+| --------------------------------------------------- | -------------------------------------------- | -------------------------------------------- |
+| **Prod** (`relayer.sofia.intuition.box`)            | `0x3CED7E2b7db82d623Da15C548f74b5742b081f77` | Intuition mainnet (chain 1155), native TRUST |
+| **Staging** (`staging-relayer.sofia.intuition.box`) | `0xd561dD8Fa81Ca2D7217649F42d8277B07534Fe5c` | same network — keep a few TRUST only         |
 
 - Explorer: https://explorer.intuition.systems/address/0x3CED7E2b7db82d623Da15C548f74b5742b081f77
 - Live check: `GET https://relayer.sofia.intuition.box/health` returns the address; the boot log prints the balance.
 - Send plain TRUST to it (no contract call). Keep a small float: a Recommend costs Sofia ~0.11–0.25 TRUST, the monthly budget caps spending at `SPONSOR_BUDGET_MONTHLY_TRUST`.
-- Same address as the local dev relayer for now; a dedicated prod key is cleaner later.
+- Prod: same address as the local dev relayer for now; a dedicated prod key is cleaner later.
+- Staging: a key generated for it, stored only in Coolify (no copy anywhere): if it is ever lost, generate a new one and move the few TRUST left.
 
 ## Env
 

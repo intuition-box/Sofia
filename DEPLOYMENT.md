@@ -42,16 +42,16 @@ Legend: **B** = Build Variable, **R** = runtime only (Available at Buildtime unc
 
 ### Explorer
 
-| Variable                  |     | Prod                                                                    | Staging                                              |
-| ------------------------- | --- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| `VITE_PRIVY_APP_ID`       | B   | `cmmey7hlx01110clgylcc1ulc` (Privy app _sofia-dashboard_)               | same                                                 |
-| `VITE_WRITE_RELAYER_URL`  | B   | `https://relayer.sofia.intuition.box`                                   | `https://staging-relayer.sofia.intuition.box`        |
-| `VITE_REPUTATION_API_URL` | B   | `https://reputation-api.sofia.intuition.box`                            | `https://staging-reputation-api.sofia.intuition.box` |
-| `VITE_INTUITION_RPC_URL`  | B   | `https://rpc.sofia.intuition.box/rpc`                                   | `https://staging-rpc.sofia.intuition.box/rpc`        |
+| Variable                  |     | Prod                                                                                     | Staging                                              |
+| ------------------------- | --- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `VITE_PRIVY_APP_ID`       | B   | `cmmey7hlx01110clgylcc1ulc` (Privy app _sofia-dashboard_)                                | same                                                 |
+| `VITE_WRITE_RELAYER_URL`  | B   | `https://relayer.sofia.intuition.box`                                                    | `https://staging-relayer.sofia.intuition.box`        |
+| `VITE_REPUTATION_API_URL` | B   | `https://reputation-api.sofia.intuition.box`                                             | `https://staging-reputation-api.sofia.intuition.box` |
+| `VITE_INTUITION_RPC_URL`  | B   | `https://rpc.sofia.intuition.box/rpc`                                                    | `https://staging-rpc.sofia.intuition.box/rpc`        |
 | `VITE_PIN_PROXY_URL`      | B   | `https://pin.sofia.intuition.box/pin` (with `/pin`; minting a new atom fails without it) | same                                                 |
-| `VITE_OG_BASE_URL`        | B   | `https://og.sofia.intuition.box`                                        | `https://staging-og.sofia.intuition.box`             |
-| `VITE_OG_PROXY_URL`       | B   | `https://preview.sofia.intuition.box`                                   | same                                                 |
-| `VITE_MASTRA_URL`         | B   | unused (AI decommissioned), can be removed                              | —                                                    |
+| `VITE_OG_BASE_URL`        | B   | `https://og.sofia.intuition.box`                                                         | `https://staging-og.sofia.intuition.box`             |
+| `VITE_OG_PROXY_URL`       | B   | `https://preview.sofia.intuition.box`                                                    | same                                                 |
+| `VITE_MASTRA_URL`         | B   | unused (AI decommissioned), can be removed                                               | —                                                    |
 
 ### Landing (`/auth` hands the wallet and the free-Recommends session to the extension)
 
