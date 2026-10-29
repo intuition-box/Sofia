@@ -1,53 +1,32 @@
 /**
- * MissionsPanel — Trend Hunter on /trending (TREND_HUNTER_SPEC §5): today's
- * three missions + the topic of the week, computed from the wallet's
- * on-chain positions, and a way into the monthly ranking. Logged out: the
- * pitch and a connect button.
+ * MissionsPanel — today's three missions + the topic of the week
+ * (TREND_HUNTER_SPEC §3), computed from the wallet's on-chain positions.
+ * A side card of /spotters, one row per mission. Each one done earns
+ * free Recommends: the write-relayer checks the chain on its own.
  */
-import { Link } from 'react-router-dom'
-import { useLogin } from '@privy-io/react-auth'
-import { Wallet } from 'lucide-react'
-import { ModuleHead, StatePill } from '@0xsofia/design-system'
+import { AnimatedNumber } from '@0xsofia/design-system'
 import type { MissionProgress } from '@0xsofia/quests'
 import { useMissions } from '@/hooks/useMissions'
-import {
-  TREND_HUNTER_BADGE_RANK,
-  useTrendHunters,
-} from '@/hooks/useTrendHunters'
-import '@0xsofia/design-system/styles/module-head.css'
-import '@0xsofia/design-system/styles/state-pill.css'
-import '@/components/styles/platform-market.css'
+import { nextUtcDay, useMinuteClock } from '@/hooks/useMinuteClock'
+import { countdown } from '@/utils/formatting'
 import '@/components/styles/trend-hunter.css'
 
-/** "Resets in 5h" — days end at 00:00 UTC */
-function resetsIn(): string {
-  const now = new Date()
-  const next = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-  )
-  const hours = Math.max(1, Math.round((next - now.getTime()) / 3_600_000))
-  return `Daily missions reset in ${hours}h`
-}
-
-function MissionCard({ mission }: { mission: MissionProgress }) {
+function MissionRow({ mission }: { mission: MissionProgress }) {
   const pct = Math.round((mission.progress / mission.target) * 100)
   return (
-    <li className="th-card">
-      <div className="th-card-top">
-        <span className="th-eyebrow">
-          {mission.period === 'week' ? 'This week' : 'Today'}
+    <li className={`th-mission${mission.done ? ' is-done' : ''}`}>
+      <div className="th-mission-top">
+        <span className="th-mission-title">{mission.title}</span>
+        <span className="th-mission-count">
+          {mission.done ? (
+            'Done'
+          ) : (
+            <>
+              <AnimatedNumber value={mission.progress} />/{mission.target}
+            </>
+          )}
         </span>
-        {mission.done ? (
-          <StatePill state="aligned" label="Done" />
-        ) : (
-          <span className="th-value">
-            {mission.progress}/{mission.target}
-          </span>
-        )}
       </div>
-      <span className="th-card-title">{mission.title}</span>
       <span className="th-desc">{mission.description}</span>
       <span className="th-bar" aria-hidden>
         <span style={{ width: `${pct}%` }} />
@@ -59,48 +38,28 @@ function MissionCard({ mission }: { mission: MissionProgress }) {
 export default function MissionsPanel({
   walletAddress,
 }: {
-  walletAddress?: string | null
+  walletAddress: string
 }) {
   const { missions, loading } = useMissions(walletAddress)
-  const { entries } = useTrendHunters(50)
-  const { login } = useLogin()
-
-  const me = walletAddress?.toLowerCase()
-  const mine = me ? entries.find((e) => e.wallet === me) : undefined
+  const now = useMinuteClock()
 
   return (
-    <section className="th-section" aria-label="Trend Hunter missions">
-      <ModuleHead
-        title="Trend Hunter"
-        desc={`Be early on pages others will follow. The Top ${TREND_HUNTER_BADGE_RANK} of the month earn the Trend Hunter badge.`}
-        right={
-          <Link to="/leaderboard?tab=trend-hunters" className="pm-chip">
-            {mine ? `#${mine.rank} this month` : 'Ranking'}
-          </Link>
-        }
-      />
-      {!walletAddress ? (
-        <button
-          type="button"
-          className="pm-dex-invest"
-          style={{ background: 'var(--ds-accent)' }}
-          onClick={() => login()}
-        >
-          <Wallet className="h-3.5 w-3.5" aria-hidden />
-          Connect to start hunting
-        </button>
-      ) : loading || !missions ? (
+    <section className="th-panel" aria-label="Today's missions">
+      <div className="th-panel-head">
+        <h2 className="th-panel-title">Today's missions</h2>
+        <span className="th-desc">
+          Reset in {countdown(nextUtcDay(now), now)}
+        </span>
+      </div>
+      {loading || !missions ? (
         <p className="th-desc">Loading your missions…</p>
       ) : (
-        <>
-          <ul className="th-cards" style={{ listStyle: 'none', padding: 0 }}>
-            {missions.daily.map((m) => (
-              <MissionCard key={m.id} mission={m} />
-            ))}
-            <MissionCard mission={missions.weekly} />
-          </ul>
-          <p className="th-foot">{resetsIn()}</p>
-        </>
+        <ul className="th-missions">
+          {missions.daily.map((m) => (
+            <MissionRow key={m.id} mission={m} />
+          ))}
+          <MissionRow mission={missions.weekly} />
+        </ul>
       )}
     </section>
   )

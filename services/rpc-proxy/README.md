@@ -1,5 +1,7 @@
 # Sofia RPC proxy
 
+> **Where it sits:** [handbook/operations/environments.md](../../handbook/operations/environments.md). Deployment variables: [deployment.md](../../handbook/operations/deployment.md#rpc-proxy).
+
 Bun + Hono service that relays JSON-RPC to the Intuition RPC, holding the
 upstream URL / API key **server-side**.
 

@@ -3,6 +3,7 @@ import { HTTPException } from 'hono/http-exception'
 import { prisma } from '../db'
 import { env } from '../env'
 import { computeTrendHunters, monthOf, MONTH_RE } from '../computeTrendHunters'
+import { poolShares } from '../trendHunterPool'
 
 export const trendHunters = new Hono()
 
@@ -19,22 +20,35 @@ function limitParam(raw: string | undefined, fallback: number): number {
   return Math.min(Number(raw ?? fallback) || fallback, 100)
 }
 
-/** GET /trend-hunters?month=2026-10&limit=10 → the month's Flair ranking */
+/**
+ * GET /trend-hunters?month=2026-10&limit=10 → the month's Flair ranking, with
+ * each Top N wallet's share of the monthly pool (`reward`, TRUST)
+ */
 trendHunters.get('/trend-hunters', async (c) => {
   const month = monthParam(c.req.query('month'))
+  // "YYYY-MM" compares in calendar order
+  const pool =
+    month >= env.trendHunterPool.startMonth
+      ? env.trendHunterPool
+      : { ...env.trendHunterPool, trust: 0 }
+  const limit = limitParam(c.req.query('limit'), 10)
+  // The shares need the whole Top N, whatever the limit
   const rows = await prisma.trendHunterMonth.findMany({
     where: { month },
     orderBy: { rank: 'asc' },
-    take: limitParam(c.req.query('limit'), 10),
+    take: Math.max(limit, pool.size),
   })
+  const shares = poolShares(rows, pool)
   return c.json({
     month,
-    entries: rows.map((r) => ({
+    entries: rows.slice(0, limit).map((r) => ({
       wallet: r.wallet,
       flair: r.flair,
       rank: r.rank,
       calls: r.calls,
+      reward: shares.get(r.wallet) ?? null,
     })),
+    pool: { trust: pool.trust, size: pool.size },
     computedAt: rows[0]?.computedAt ?? null,
   })
 })

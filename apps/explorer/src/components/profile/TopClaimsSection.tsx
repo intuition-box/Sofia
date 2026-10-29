@@ -105,7 +105,7 @@ function TopClaimCard({
             className="ac-btn-icon"
             onClick={(e) => {
               e.stopPropagation()
-              const text = `${claim.objectLabel} — ${intention}`
+              const text = `I'd recommend ${claim.objectLabel} to anyone. Backed it on @0xSofia, tell me if I'm wrong.`
               const url = claim.objectUrl || ''
               const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
               window.open(tweetUrl, '_blank', 'noopener,noreferrer')

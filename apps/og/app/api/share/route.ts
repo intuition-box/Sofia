@@ -1,14 +1,5 @@
-import { kv } from '@vercel/kv'
 import { NextRequest, NextResponse } from 'next/server'
-
-function generateId(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  let id = ''
-  for (let i = 0; i < 6; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return id
-}
+import { encodeShare, PUBLIC_URL, shareLinksEnabled } from '@/lib/shareLink'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +8,11 @@ const CORS_HEADERS = {
 }
 
 export async function POST(req: NextRequest) {
+  if (!shareLinksEnabled())
+    return NextResponse.json(
+      { error: 'Share links are not configured' },
+      { status: 503, headers: CORS_HEADERS },
+    )
   try {
     const data = await req.json()
 
@@ -38,31 +34,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const id = generateId()
-
-    await kv.set(
-      `profile:${id}`,
-      {
-        wallet,
-        level: level || '1',
-        trustCircle: trustCircle || '0',
-        pioneer: pioneer || '0',
-        explorer: explorer || '0',
-        signals: signals || '0',
-        interests: interests || '',
-        name: name || '',
-      },
-      { ex: 60 * 60 * 24 * 30 },
-    ) // expires in 30 days
-
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000'
+    const id = encodeShare('profile', {
+      wallet,
+      level: level || '1',
+      trustCircle: trustCircle || '0',
+      pioneer: pioneer || '0',
+      explorer: explorer || '0',
+      signals: signals || '0',
+      interests: interests || '',
+      name: name || '',
+    })
 
     return NextResponse.json(
-      { url: `${baseUrl}/s/${id}` },
+      { url: `${PUBLIC_URL}/s/${id}` },
       { headers: CORS_HEADERS },
     )
   } catch (error) {

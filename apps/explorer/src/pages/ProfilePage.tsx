@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
+import { useLogin, useLinkAccount } from '@privy-io/react-auth'
+import { useAccountWallet } from '@/hooks/useAccountWallet'
 import { useViewAs } from '@/hooks/useViewAs'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSync } from '../hooks/useTopicSync'
@@ -28,14 +29,14 @@ import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
 
 export default function ProfilePage() {
-  const { authenticated, user } = usePrivy()
+  const { address: accountAddress, signedIn } = useAccountWallet()
   const { login } = useLogin()
   const { linkWallet } = useLinkAccount({
     onSuccess: () => window.location.reload(),
   })
   const { viewAsAddress, isViewingAs, clearViewAs } = useViewAs()
   const { addresses: myAddresses } = useLinkedWallets()
-  const address = viewAsAddress || user?.wallet?.address || ''
+  const address = viewAsAddress || accountAddress || ''
   // When viewing yourself, aggregate across all linked wallets. When viewing
   // someone else (isViewingAs), use only their address.
   const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
@@ -87,8 +88,9 @@ export default function ProfilePage() {
   const { certs: untaggedCerts } = useUntaggedCerts(
     activityAddresses.length > 0 ? activityAddresses : undefined,
   )
+  const [echoesSearch, setEchoesSearch] = useState('')
 
-  if (!authenticated && !isViewingAs) {
+  if (!signedIn && !isViewingAs) {
     return (
       <Card className="p-8 text-center">
         <Wallet className="h-10 w-10 mx-auto text-muted-foreground/40" />
@@ -109,7 +111,6 @@ export default function ProfilePage() {
   const shortAddr = address
     ? address.slice(0, 6) + '...' + address.slice(-4)
     : ''
-  const [echoesSearch, setEchoesSearch] = useState('')
   const heroDescription = isViewingAs
     ? 'Exploring this wallet — pick an interest to dive in.'
     : address

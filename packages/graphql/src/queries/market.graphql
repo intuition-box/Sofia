@@ -512,3 +512,42 @@ query GetUserHeldPageClaims(
     }
   }
 }
+
+# Sofia page claims (`I | recommends | page`), newest first, with their first
+# two support positions and who opposed them — the explorer's sorting queue
+# keeps those exactly one account recommended (pages waiting for a second
+# opinion).
+query GetFreshPageClaims(
+  $subjectId: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      subject_id: { _eq: $subjectId }
+      predicate: { label: { _eq: "recommends" } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    created_at
+    object {
+      ...TrendingObjectKey
+    }
+    positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+      limit: 2
+    ) {
+      account_id
+      created_at
+    }
+    counter_term {
+      positions(where: { shares: { _gt: "0" } }, limit: 50) {
+        account_id
+      }
+    }
+  }
+}

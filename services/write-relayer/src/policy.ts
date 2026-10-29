@@ -23,6 +23,7 @@ const WEI = 10n ** 18n
 const BYTES32 = /^0x[0-9a-fA-F]{64}$/
 
 const TRIPLE_SALT = keccak256(toHex('TRIPLE_SALT'))
+const COUNTER_SALT = keccak256(toHex('COUNTER_SALT'))
 
 /** Same id as MultiVault.calculateTripleId, computed locally */
 export function calculateTripleId(
@@ -38,30 +39,95 @@ export function calculateTripleId(
   )
 }
 
+/** Same id as MultiVault.getCounterIdFromTripleId: the claim's oppose vault */
+export function calculateCounterId(tripleId: string): Hex {
+  return keccak256(
+    encodePacked(['bytes32', 'bytes32'], [COUNTER_SALT, tripleId as Hex]),
+  )
+}
+
+/** The page's Recommend claim: I | recommends | page */
+export const recommendClaimId = (objectId: string): Hex =>
+  calculateTripleId(
+    SOFIA_I_ATOM_ID,
+    CANONICAL_PREDICATE_IDS.recommends as Hex,
+    objectId,
+  )
+
 export interface PageRequest {
   objectId: Hex
   tags: string[]
 }
 
+/**
+ * A page with no atom yet (extension right-click): the fields the extension
+ * pins for a page atom — same shape, so the same atom when it already exists
+ */
+export interface PageThing {
+  name: string
+  description: string
+  url: string
+  image?: string
+}
+
+/** A requested page: an existing atom, or a page to mint first */
+export type PageInput =
+  | (PageRequest & { thing?: undefined })
+  | { objectId?: undefined; thing: PageThing; tags: string[] }
+
+const text = (v: unknown, max: number): string | null =>
+  typeof v === 'string' && v.trim().length > 0 && v.length <= max ? v : null
+
+const httpUrl = (v: unknown, max: number): string | null => {
+  const s = text(v, max)
+  if (!s) return null
+  try {
+    const u = new URL(s)
+    return u.protocol === 'https:' || u.protocol === 'http:' ? s : null
+  } catch {
+    return null
+  }
+}
+
+/** The extension's page fields, validated — or null */
+export function parseThing(raw: unknown): PageThing | null {
+  const t = raw as Partial<Record<keyof PageThing, unknown>> | null
+  const name = text(t?.name, 200)
+  const description = text(t?.description, 300)
+  const url = httpUrl(t?.url, 2048)
+  if (!name || !description || !url) return null
+  if (t?.image === undefined) return { name, description, url }
+  const image = httpUrl(t.image, 512)
+  return image ? { name, description, url, image } : null
+}
+
 /** The request body, validated — or why it's refused */
 export function parseRequest(
   body: unknown,
-): { pages: PageRequest[] } | { error: string } {
+): { pages: PageInput[] } | { error: string } {
   const raw = (body as { pages?: unknown })?.pages
   if (!Array.isArray(raw) || raw.length === 0) return { error: 'No pages' }
   if (raw.length > MAX_PAGES_PER_REQUEST)
     return { error: `At most ${MAX_PAGES_PER_REQUEST} pages per request` }
-  const pages = new Map<string, PageRequest>()
+  const pages = new Map<string, PageInput>()
   for (const p of raw) {
     const objectId = (p as { objectId?: unknown })?.objectId
-    const tags = (p as { tags?: unknown })?.tags ?? []
+    const rawThing = (p as { thing?: unknown })?.thing
+    const rawTags = (p as { tags?: unknown })?.tags ?? []
+    if (!Array.isArray(rawTags) || !rawTags.every((t) => typeof t === 'string'))
+      return { error: 'Invalid tags' }
+    const tags = [...new Set(rawTags as string[])].slice(0, MAX_TAGS_PER_PAGE)
+    if (rawThing !== undefined) {
+      const thing = parseThing(rawThing)
+      if (!thing) return { error: 'Invalid page' }
+      pages.set(`url:${thing.url}`, { thing, tags })
+      continue
+    }
     if (typeof objectId !== 'string' || !BYTES32.test(objectId))
       return { error: 'Invalid page id' }
-    if (!Array.isArray(tags) || !tags.every((t) => typeof t === 'string'))
-      return { error: 'Invalid tags' }
     pages.set(objectId.toLowerCase(), {
       objectId: objectId.toLowerCase() as Hex,
-      tags: [...new Set(tags as string[])].slice(0, MAX_TAGS_PER_PAGE),
+      tags,
     })
   }
   return { pages: [...pages.values()] }
@@ -82,6 +148,18 @@ export interface PlannedTriple {
   curveId: 1n | 2n
 }
 
+/** Opposes: a deposit on each page claim's counter vault (curve 2) */
+export function buildOpposePlan(objectIds: readonly string[]): PlannedTriple[] {
+  const recommends = CANONICAL_PREDICATE_IDS.recommends as Hex
+  return objectIds.map((objectId) => ({
+    subjectId: SOFIA_I_ATOM_ID as Hex,
+    predicateId: recommends,
+    objectId: objectId as Hex,
+    tripleId: calculateCounterId(recommendClaimId(objectId)),
+    curveId: 2n,
+  }))
+}
+
 /** Recommend claims first (tags hang off them), then the tags */
 export function buildPlan(pages: readonly PageRequest[]): {
   claims: PlannedTriple[]
@@ -91,11 +169,7 @@ export function buildPlan(pages: readonly PageRequest[]): {
   const tags: PlannedTriple[] = []
   const recommends = CANONICAL_PREDICATE_IDS.recommends as Hex
   for (const page of pages) {
-    const claimId = calculateTripleId(
-      SOFIA_I_ATOM_ID,
-      recommends,
-      page.objectId,
-    )
+    const claimId = recommendClaimId(page.objectId)
     claims.push({
       subjectId: SOFIA_I_ATOM_ID as Hex,
       predicateId: recommends,
@@ -121,12 +195,36 @@ export function buildPlan(pages: readonly PageRequest[]): {
 export interface Usage {
   month: number
   day: number
+  /** Second opinions today (their own cap) */
+  opinionsDay?: number
 }
 
 export interface Limits {
   quotaMonthly: number
   quotaDaily: number
   budgetMonthlyWei: bigint
+  budgetDailyWei: bigint
+  /** Second opinions a day, outside the Recommend quota */
+  opinionsDaily?: number
+}
+
+/** What the relayer spent, this month / today (wei) */
+export interface Spent {
+  month: bigint
+  day: bigint
+}
+
+/**
+ * Limits once a Trend Hunter's credits are added: earned Recommends raise the
+ * month's and the day's quota alike (the relayer-wide budgets stay hard)
+ */
+export function withCredits(limits: Limits, credits: number): Limits {
+  const extra = Math.max(0, Math.floor(credits))
+  return {
+    ...limits,
+    quotaMonthly: limits.quotaMonthly + extra,
+    quotaDaily: limits.quotaDaily + extra,
+  }
 }
 
 /** Recommends this account may still get today */
@@ -137,24 +235,51 @@ export function quotaLeft(used: Usage, limits: Limits): number {
   )
 }
 
+/** Second opinions this account may still get today */
+export const opinionsLeft = (used: Usage, limits: Limits): number =>
+  Math.max(0, (limits.opinionsDaily ?? 0) - (used.opinionsDay ?? 0))
+
+/**
+ * Second opinions first, within today's allowance; the rest counts against
+ * the Recommend quota
+ */
+export function splitOpinions<T>(
+  items: readonly T[],
+  isOpinion: (item: T) => boolean,
+  left: number,
+): { opinions: T[]; quota: T[] } {
+  const opinions: T[] = []
+  const quota: T[] = []
+  for (const item of items) {
+    if (isOpinion(item) && opinions.length < left) opinions.push(item)
+    else quota.push(item)
+  }
+  return { opinions, quota }
+}
+
 /** Why a request can't be sponsored, or null */
 export function refusal(
   recommendCount: number,
   used: Usage,
   limits: Limits,
-  spentWei: bigint,
+  spent: Spent,
   reserveWei: bigint,
+  opinionCount = 0,
 ): string | null {
-  if (limits.quotaDaily - used.day < recommendCount)
+  if (opinionCount > opinionsLeft(used, limits))
+    return 'Daily free opinions used — come back tomorrow'
+  if (recommendCount > 0 && limits.quotaDaily - used.day < recommendCount)
     return used.day >= limits.quotaDaily
       ? 'Daily free Recommends used — come back tomorrow'
       : `Only ${limits.quotaDaily - used.day} free Recommends left today`
-  if (limits.quotaMonthly - used.month < recommendCount)
+  if (recommendCount > 0 && limits.quotaMonthly - used.month < recommendCount)
     return used.month >= limits.quotaMonthly
       ? 'Monthly free Recommends used'
       : `Only ${limits.quotaMonthly - used.month} free Recommends left this month`
-  if (spentWei + reserveWei > limits.budgetMonthlyWei)
+  if (spent.month + reserveWei > limits.budgetMonthlyWei)
     return 'Free Recommends are paused for this month'
+  if (spent.day + reserveWei > limits.budgetDailyWei)
+    return 'Free Recommends are paused until tomorrow'
   return null
 }
 

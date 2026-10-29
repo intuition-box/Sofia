@@ -15,6 +15,7 @@ import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import { useCart } from './hooks/useCart'
 import { useNavCollapse } from './hooks/useNavCollapse'
+import { useAccountWallet, useRememberAccount } from './hooks/useAccountWallet'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
@@ -41,6 +42,7 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const PerspectivePage = lazy(() => import('./pages/PerspectivePage'))
 const StreaksPage = lazy(() => import('./pages/StreaksPage'))
 const TrendingPage = lazy(() => import('./pages/TrendingPage'))
+const TrendHuntersPage = lazy(() => import('./pages/TrendHuntersPage'))
 const PositionsPage = lazy(() => import('./pages/PositionsPage'))
 // Vote tab hidden behind FEATURES.vote (kept for a future update).
 const VotePage = lazy(() => import('./pages/VotePage'))
@@ -78,10 +80,12 @@ function RouteFallback() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated } = usePrivy()
+  // While Privy restores the session, the account signed in last renders
+  // from cache; Privy's answer then confirms it or redirects
+  const { signedIn, provisional } = useAccountWallet()
   const { isViewingAs } = useViewAs()
-  if (!ready) return null
-  if (!authenticated && !isViewingAs) return <Navigate to="/explore" replace />
+  if (provisional && !signedIn) return null
+  if (!signedIn && !isViewingAs) return <Navigate to="/explore" replace />
   return <>{children}</>
 }
 
@@ -98,6 +102,7 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
+  useRememberAccount()
   const { ready: privyReady, authenticated } = usePrivy()
   const { login } = useLogin()
   const { collapsed: navCollapsed, toggle: toggleNavCollapsed } =
@@ -111,6 +116,7 @@ export default function App() {
     location.pathname.startsWith('/circles') ||
     location.pathname.startsWith('/explore') ||
     location.pathname.startsWith('/trending') ||
+    location.pathname.startsWith('/spotters') ||
     location.pathname.startsWith('/positions') ||
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
@@ -398,6 +404,12 @@ export default function App() {
                 />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/trending" element={<TrendingPage />} />
+                <Route path="/spotters" element={<TrendHuntersPage />} />
+                {/* Former name of the page */}
+                <Route
+                  path="/trend-hunters"
+                  element={<Navigate to="/spotters" replace />}
+                />
                 {/* Public route: the page itself prompts a logged-out
                     visitor to connect instead of redirecting away. */}
                 <Route path="/positions" element={<PositionsPage />} />

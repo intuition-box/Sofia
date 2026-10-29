@@ -5,7 +5,7 @@
  * links to the profile.
  */
 import { Link } from 'react-router-dom'
-import { Avatar } from '@0xsofia/design-system'
+import { AnimatedNumber, Avatar } from '@0xsofia/design-system'
 import SocialLinks from '@/components/profile/SocialLinks'
 import type { SocialLink } from '@/services/socialsService'
 
@@ -48,7 +48,7 @@ export default function VoiceCard({
           </span>
         </span>
         <span className="hm-vcard-score" title="Reputation score">
-          {Math.round(score).toLocaleString()}
+          <AnimatedNumber value={score} />
         </span>
       </div>
 

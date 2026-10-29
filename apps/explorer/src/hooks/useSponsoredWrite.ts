@@ -3,13 +3,12 @@ import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { WRITE_RELAYER_URL } from '../config'
 import type { CartItem } from './useCart'
-import { approveSofiaProxy } from '../services/proxyApprovalService'
+import { refreshAfterIndexing } from '../utils/refreshAfterIndexing'
 import {
   buildSponsoredRequest,
   fetchSponsorQuota,
-  RelayerError,
-  requestApprovalGas,
   requestSponsoredRecommends,
+  sendWithApproval,
   type SponsorQuota,
   type SponsorResult,
   type SponsoredRequest,
@@ -27,23 +26,15 @@ export interface SponsoredWriteResult {
 }
 
 /**
- * Free Recommends for email / Google accounts (Privy embedded wallet). Only
- * when the wallet in use is that embedded wallet: a crypto-wallet account
- * keeps signing and paying itself. The relayer decides eligibility.
+ * The account's free Recommends (relayer quota, Trend Hunter credits
+ * included). Shared by the cart and the Trend Hunter progress.
  */
-export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
+export function useSponsorQuota() {
   const { authenticated, user, getAccessToken } = usePrivy()
   const { wallets } = useWallets()
-  const qc = useQueryClient()
-  const enabled =
-    !!WRITE_RELAYER_URL &&
-    authenticated &&
-    !!(user?.email || user?.google) &&
-    wallets[0]?.walletClientType === 'privy'
-  const userId = user?.id
-
-  const { data: quota } = useQuery({
-    queryKey: ['sponsor-quota', userId],
+  const enabled = !!WRITE_RELAYER_URL && authenticated && wallets.length > 0
+  const { data, isError } = useQuery({
+    queryKey: ['sponsor-quota', user?.id],
     queryFn: async () => {
       const token = await getAccessToken()
       if (!token) throw new Error('Not signed in')
@@ -52,6 +43,23 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     enabled,
     staleTime: 60_000,
   })
+  // A cached quota from an earlier visit says nothing once the relayer is
+  // unreachable: the cart goes back through the wallet
+  return { quota: enabled && !isError ? data : undefined, enabled }
+}
+
+/**
+ * Free Recommends for every signed-in account — email / Google (Privy
+ * embedded wallet) or a crypto wallet alike. The positions go to the wallet
+ * in use; the relayer decides eligibility.
+ */
+export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
+  const { user, getAccessToken } = usePrivy()
+  const { wallets } = useWallets()
+  const qc = useQueryClient()
+  const wallet = wallets[0]
+  const userId = user?.id
+  const { quota, enabled } = useSponsorQuota()
 
   const request = useMemo(() => buildSponsoredRequest(items), [items])
   const left = quota?.left ?? 0
@@ -73,23 +81,16 @@ export function useSponsoredWrite(items: CartItem[]): SponsoredWriteResult {
     if (!request) throw new Error('Nothing to recommend')
     const token = await getAccessToken()
     if (!token) throw new Error('Not signed in')
-    const send = () => requestSponsoredRecommends(token, request.pages)
-    let result: SponsorResult
-    try {
-      result = await send()
-    } catch (err) {
-      if (!(err instanceof RelayerError && err.needsApproval) || !wallets[0])
-        throw err
-      // First free Recommend: the wallet approves Sofia once (gas from us)
-      await requestApprovalGas(token)
-      await approveSofiaProxy(wallets[0])
-      result = await send()
-    }
+    if (!wallet) throw new Error('No wallet connected')
+    const result = await sendWithApproval(token, wallet, () =>
+      requestSponsoredRecommends(token, wallet.address, request.pages),
+    )
     qc.setQueryData<SponsorQuota>(['sponsor-quota', userId], (q) =>
       q ? { ...q, left: result.left } : q,
     )
+    refreshAfterIndexing(qc, [['missions'], ['sort-queue']])
     return result
-  }, [request, getAccessToken, qc, userId, wallets])
+  }, [request, getAccessToken, qc, userId, wallet])
 
   return { active, left, hint, request, submit }
 }

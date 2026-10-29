@@ -1,9 +1,10 @@
-import { useState, useCallback } from "react"
+import { useCallback, useState } from "react"
+
+import { buildPageShareText, createHookLogger, OG_BASE_URL } from "~/lib/utils"
+
 import xIcon from "../ui/social/x.svg"
-import { createHookLogger } from "~/lib/utils"
 
 const logger = createHookLogger("ShareCertificationButton")
-const OG_BASE_URL = "https://og.sofia.intuition.box"
 
 interface ShareCertificationButtonProps {
   pageUrl: string
@@ -31,27 +32,23 @@ const ShareCertificationButton = ({
 
     setIsSharing(true)
     try {
-      const res = await fetch(
-        `${OG_BASE_URL}/api/share/certification`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pageUrl,
-            pageTitle: pageTitle || pageUrl,
-            status: userStatus,
-            rank: userRank,
-            totalCertifiers: totalPositions
-          })
-        }
-      )
+      const res = await fetch(`${OG_BASE_URL}/api/share/certification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pageUrl,
+          pageTitle: pageTitle || pageUrl,
+          status: userStatus,
+          rank: userRank,
+          totalCertifiers: totalPositions
+        })
+      })
 
-      const { url: shareUrl } = await res.json()
+      const json = (await res.json().catch(() => ({}))) as { url?: string }
+      // No card (og down): share the page itself, never "undefined"
+      const shareUrl = res.ok && json.url ? json.url : pageUrl
 
-      const title = pageTitle || pageUrl
-      const tweetText =
-        `I just Marked "${title}" as ${userStatus}` +
-        ` #${userRank} on @0xSofia`
+      const tweetText = buildPageShareText(pageTitle || pageUrl, userRank)
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +
@@ -83,13 +80,8 @@ const ShareCertificationButton = ({
     <button
       className="share-certification-btn"
       onClick={handleShare}
-      disabled={disabled || isSharing || !userStatus}
-    >
-      <img
-        src={xIcon}
-        alt="X"
-        className="share-certification-btn__icon"
-      />
+      disabled={disabled || isSharing || !userStatus}>
+      <img src={xIcon} alt="X" className="share-certification-btn__icon" />
       {isSharing ? "Sharing..." : "Share"}
     </button>
   )

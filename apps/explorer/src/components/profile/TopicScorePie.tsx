@@ -11,6 +11,7 @@
  * and the activity heatmap all cross-highlight off the same topic id.
  */
 import { useState } from 'react'
+import { AnimatedNumber } from '@0xsofia/design-system'
 import '../styles/topic-score-pie.css'
 
 export interface TopicPieSlice {
@@ -172,7 +173,7 @@ export default function TopicScorePie({
         ) : (
           <>
             <span className="donut-num">
-              {Math.round(total).toLocaleString()}
+              <AnimatedNumber value={total} />
             </span>
             <span className={`donut-cap${refining ? ' refining' : ''}`}>
               {refining

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PUBLIC_URL } from '@/lib/shareLink'
 
 interface ProfilePageProps {
   searchParams: Promise<{
@@ -41,11 +42,7 @@ export async function generateMetadata({
   if (params.interests) ogParams.set('interests', params.interests)
   if (params.name) ogParams.set('name', params.name)
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+  const baseUrl = PUBLIC_URL
   const ogImageUrl = `${baseUrl}/api/og?${ogParams.toString()}`
 
   return {

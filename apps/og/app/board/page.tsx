@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PUBLIC_URL } from '@/lib/shareLink'
 
 interface BoardPageProps {
   searchParams: Promise<{
@@ -51,11 +52,7 @@ export async function generateMetadata({
   if (params.pnl) ogParams.set('pnl', params.pnl)
   if (params.pnlPercent) ogParams.set('pnlPercent', params.pnlPercent)
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+  const baseUrl = PUBLIC_URL
   const ogImageUrl = `${baseUrl}/api/og/board?${ogParams.toString()}`
 
   return {

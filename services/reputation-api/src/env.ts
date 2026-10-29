@@ -28,6 +28,14 @@ export const env = {
   // Guards `POST /internal/leaderboard/compute` (the cron trigger). Unset ⇒ the
   // compute endpoint 404s; the public `GET /leaderboard` read path is always on.
   computeToken: process.env.LEADERBOARD_COMPUTE_TOKEN ?? '',
+  // Trend Hunter monthly pool: the Top N share this much TRUST pro rata of
+  // their Flair (paid by hand once the month is frozen). 0 ⇒ no pool.
+  trendHunterPool: {
+    trust: Number(process.env.TREND_HUNTER_POOL_TRUST ?? 1000) || 0,
+    size: Number(process.env.TREND_HUNTER_POOL_SIZE ?? 10) || 10,
+    /** First month with a pool ("YYYY-MM") — none before it */
+    startMonth: process.env.TREND_HUNTER_POOL_START ?? '2026-11',
+  },
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')
     .map((s) => s.trim())

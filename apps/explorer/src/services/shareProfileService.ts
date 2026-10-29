@@ -113,7 +113,7 @@ export async function copyToClipboard(text: string): Promise<void> {
 
 export function buildTwitterShareUrl(shareUrl: string): string {
   const text = encodeURIComponent(
-    'Check out my behavioral reputation profile on Sofia!',
+    '@0xSofia scores your taste by who ends up following your picks. Here is mine.',
   )
   return `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(shareUrl)}`
 }

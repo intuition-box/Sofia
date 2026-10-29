@@ -33,6 +33,24 @@ export const env = {
   quotaDaily: int('SPONSOR_QUOTA_DAILY', 5),
   /** Hard monthly stop for the whole relayer (TRUST) */
   budgetMonthlyTrust: int('SPONSOR_BUDGET_MONTHLY_TRUST', 500),
+  /** Hard daily stop (TRUST) — a burst of fake accounts burns a day, not the
+   *  month. Defaults to a 30th of the monthly budget. */
+  budgetDailyTrust: int(
+    'SPONSOR_BUDGET_DAILY_TRUST',
+    Math.ceil(int('SPONSOR_BUDGET_MONTHLY_TRUST', 500) / 30),
+  ),
+  /** Intuition pin service: new pages (no atom yet) are pinned here before
+   *  being minted. No key ⇒ only pages that already have an atom are free. */
+  pinUrl:
+    process.env.INTUITION_PIN_URL ?? 'https://pin.intuition.systems/v1/graphql',
+  pinApiKey: process.env.INTUITION_PIN_API_KEY ?? '',
+  /** reputation-api base URL — Trend Hunter calls earn credits. Empty ⇒ none */
+  reputationApiUrl: (process.env.REPUTATION_API_URL ?? '').replace(/\/$/, ''),
+  /** Extra free Recommends per call this month */
+  creditsPerCall: int('SPONSOR_CREDITS_PER_CALL', 3),
+  /** Second opinions a day (recommends / opposes on pages one other person
+   *  recommended), outside the quota */
+  opinionsDaily: int('SPONSOR_OPINIONS_DAILY', 5),
   /** Deposit per Recommend / tag (TRUST) — the protocol minimum */
   depositTrust: Number(process.env.SPONSOR_DEPOSIT_TRUST ?? '0.01'),
   /** true: simulate every tx, send nothing (local testing) */

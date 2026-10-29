@@ -6,14 +6,17 @@
  * UTC, aligned with the chain; the UI shows local time.
  */
 
-/** A position only counts from this deposit (0.1 TRUST) — anti-dust */
-export const MISSION_MIN_DEPOSIT = 100_000_000_000_000_000n
+/** A position counts from a free Recommend's deposit: 0.01 TRUST lands as
+ *  ~0.0097–0.0099 after fees, so the floor sits at 0.009 */
+export const MISSION_MIN_DEPOSIT = 9_000_000_000_000_000n
 
-export type MissionId =
-  | 'express-3'
-  | 'back-a-trend'
-  | 'pioneer'
-  | 'topic-of-week'
+/** Free Recommends a completed mission earns (write-relayer credits) */
+export const MISSION_CREDITS = { day: 1, week: 3 } as const
+
+/** "Sort your pages": opinions a day on pages only one person recommended */
+export const SORT_TARGET = 5
+
+export type MissionId = 'express-3' | 'sort-pages' | 'pioneer' | 'topic-of-week'
 
 export interface MissionProgress {
   id: MissionId
@@ -33,6 +36,8 @@ export interface MissionPosition {
   createdAt: number
   /** Total deposited (wei) */
   deposit: bigint
+  /** Against the claim (its counter vault) — default: for it */
+  side?: 'support' | 'oppose'
 }
 
 export interface WeeklyTopic {
@@ -41,6 +46,8 @@ export interface WeeklyTopic {
 }
 
 const DAY_MS = 86_400_000
+/** Pages to tag with the topic of the week */
+const WEEKLY_TARGET = 5
 
 export const startOfUtcDay = (now: number = Date.now()): number =>
   Math.floor(now / DAY_MS) * DAY_MS
@@ -105,55 +112,101 @@ const mission = (
   done: progress >= target,
 })
 
+/** Someone holding a position on a claim, opened at `createdAt` (ms) */
+export interface ClaimBacker {
+  account: string
+  createdAt: number
+}
+
 export interface DailyMissionsInput {
   positions: readonly MissionPosition[]
-  /** Page keys currently in Trending (7 days, top 50) */
-  trendingKeys: ReadonlySet<string>
-  /** Claims the user opened today where nobody else held a position before */
-  pioneerClaimIds: ReadonlySet<string>
+  /** Support positions per claim (any order); claims missing count as none */
+  backers: ReadonlyMap<string, readonly ClaimBacker[]>
+  /** The user's own addresses, lowercased */
+  own: ReadonlySet<string>
   now?: number
+}
+
+/** The user opened the claim's earliest position */
+function isPioneer(
+  claimId: string,
+  backers: DailyMissionsInput['backers'],
+  own: ReadonlySet<string>,
+): boolean {
+  const list = backers.get(claimId) ?? []
+  const first = list.reduce<ClaimBacker | null>(
+    (a, b) => (!a || b.createdAt < a.createdAt ? b : a),
+    null,
+  )
+  return !!first && own.has(first.account.toLowerCase())
+}
+
+/**
+ * A page waiting for a second opinion: exactly one other account recommended
+ * it before `at`. Recommending or opposing it then is what "Sort your pages"
+ * counts — and what the write-relayer sponsors outside the quota.
+ */
+export function needsSecondOpinion(
+  claimId: string,
+  at: number,
+  backers: DailyMissionsInput['backers'],
+  own: ReadonlySet<string>,
+): boolean {
+  const others = new Set(
+    (backers.get(claimId) ?? [])
+      .filter((b) => b.createdAt < at && !own.has(b.account.toLowerCase()))
+      .map((b) => b.account.toLowerCase()),
+  )
+  return others.size === 1
 }
 
 export function computeDailyMissions({
   positions,
-  trendingKeys,
-  pioneerClaimIds,
+  backers,
+  own,
   now = Date.now(),
 }: DailyMissionsInput): MissionProgress[] {
-  const today = positionsSince(positions, startOfUtcDay(now))
+  const start = startOfUtcDay(now)
+  const before = positions.filter((p) => p.createdAt < start + DAY_MS)
+  // Recommends and opposes are two lists: a page can be in both
+  const today = positionsSince(
+    before.filter((p) => p.side !== 'oppose'),
+    start,
+  )
+  const opposed = positionsSince(
+    before.filter((p) => p.side === 'oppose'),
+    start,
+  )
+  const sorted = new Set(
+    [...today, ...opposed]
+      .filter((p) =>
+        needsSecondOpinion(p.claimTermId, p.createdAt, backers, own),
+      )
+      .map((p) => p.pageKey),
+  )
   return [
     mission(
       'express-3',
       'day',
       'Express 3 interests',
-      'Take a position on 3 pages today.',
+      'Recommend 3 pages today.',
       today.length,
       3,
     ),
     mission(
-      'back-a-trend',
+      'sort-pages',
       'day',
-      'Back a trend',
-      'Take a position on a page from Trending (7 days).',
-      today.filter((p) => trendingKeys.has(p.pageKey)).length,
-      1,
+      'Sort your pages',
+      `Recommend or oppose ${SORT_TARGET} pages only one person recommended.`,
+      sorted.size,
+      SORT_TARGET,
     ),
     mission(
       'pioneer',
       'day',
       'Pioneer',
-      'Be the first to take a position on a page.',
-      // Any claim of a page counts (a page can carry several claims)
-      new Set(
-        positions
-          .filter(
-            (p) =>
-              p.createdAt >= startOfUtcDay(now) &&
-              p.deposit >= MISSION_MIN_DEPOSIT &&
-              pioneerClaimIds.has(p.claimTermId),
-          )
-          .map((p) => p.pageKey),
-      ).size,
+      'Be the first to recommend a page.',
+      today.filter((p) => isPioneer(p.claimTermId, backers, own)).length,
       1,
     ),
   ]
@@ -163,6 +216,8 @@ export function computeDailyMissions({
 export interface TaggedPage {
   pageKey: string
   createdAt: number
+  /** The topic the tag belongs to (its own id, or its category's topic) */
+  topicId?: string
 }
 
 export function computeWeeklyMission(
@@ -178,8 +233,60 @@ export function computeWeeklyMission(
     'topic-of-week',
     'week',
     `Topic of the week: ${topic.label}`,
-    `Tag 5 pages with ${topic.label} this week.`,
+    `Tag ${WEEKLY_TARGET} pages with ${topic.label} this week.`,
     pages.size,
-    5,
+    WEEKLY_TARGET,
   )
+}
+
+export interface MonthCreditsInput {
+  positions: readonly MissionPosition[]
+  backers: DailyMissionsInput['backers']
+  own: ReadonlySet<string>
+  /** Tags since the first ISO week touching the month, with their topic */
+  taggedPages: readonly TaggedPage[]
+  /** Topic of the week containing `at` */
+  topicAt: (at: number) => WeeklyTopic
+  now?: number
+}
+
+/**
+ * Free Recommends the missions earned this UTC month: MISSION_CREDITS.day per
+ * daily mission done on each day so far, MISSION_CREDITS.week per weekly
+ * mission completed (5th tag) inside the month.
+ */
+export function monthMissionCredits({
+  positions,
+  backers,
+  own,
+  taggedPages,
+  topicAt,
+  now = Date.now(),
+}: MonthCreditsInput): number {
+  const d = new Date(now)
+  const monthStart = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)
+  let credits = 0
+  for (let day = monthStart; day <= now; day += DAY_MS) {
+    const done = computeDailyMissions({ positions, backers, own, now: day })
+    credits += done.filter((m) => m.done).length * MISSION_CREDITS.day
+  }
+  for (let week = startOfUtcWeek(monthStart); week <= now; week += 7 * DAY_MS) {
+    const topic = topicAt(week)
+    const tags = taggedPages
+      .filter(
+        (t) =>
+          t.topicId === topic.id &&
+          t.createdAt >= week &&
+          t.createdAt < week + 7 * DAY_MS,
+      )
+      .sort((a, b) => a.createdAt - b.createdAt)
+    const pages: TaggedPage[] = []
+    for (const t of tags) {
+      if (!pages.some((p) => p.pageKey === t.pageKey)) pages.push(t)
+    }
+    const fifth = pages[WEEKLY_TARGET - 1]
+    if (fifth && fifth.createdAt >= monthStart && fifth.createdAt <= now)
+      credits += MISSION_CREDITS.week
+  }
+  return credits
 }

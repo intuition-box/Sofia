@@ -20,6 +20,7 @@ import {
   Vote,
   Sun,
   Moon,
+  Crosshair,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useMemo, useState } from 'react'
@@ -125,6 +126,12 @@ export function NavSidebar({
     // Market refocus order: Platforms, Trending, Positions, Explore, Season.
     { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
     { to: '/trending', icon: Flame, label: 'Trending', public: true },
+    {
+      to: '/spotters',
+      icon: Crosshair,
+      label: 'Spotters',
+      public: true,
+    },
     { to: '/positions', icon: PieChart, label: 'My positions', public: true },
     {
       to: '/explore',

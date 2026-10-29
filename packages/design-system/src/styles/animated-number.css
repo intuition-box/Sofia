@@ -1,0 +1,13 @@
+/* <AnimatedNumber> — steady width while counting; optional rise / fall tint */
+.ds-animated-number {
+  font-variant-numeric: tabular-nums;
+  transition: color 0.4s ease;
+}
+
+.ds-animated-number--up {
+  color: #22c55e;
+}
+
+.ds-animated-number--down {
+  color: #ef4444;
+}

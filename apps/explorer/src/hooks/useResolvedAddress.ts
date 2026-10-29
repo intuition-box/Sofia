@@ -5,11 +5,15 @@
  * so both accept the same inputs and show the same errors.
  *
  * `address` stays null until resolution succeeds, so downstream hooks only
- * ever see a stable canonical address.
+ * ever see a stable canonical address. A `0x` address is canonical at once;
+ * an ENS name resolves through React Query, so a reload reads it from the
+ * persisted cache instead of resolving again.
  */
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { isAddress } from 'viem'
 import { resolveEnsToAddress } from '@/services/ensService'
+
+const DAY = 24 * 60 * 60 * 1000
 
 export interface UseResolvedAddressResult {
   address: string | null
@@ -17,36 +21,38 @@ export interface UseResolvedAddressResult {
   error: string | null
 }
 
+const isEnsName = (raw: string) => raw.endsWith('.eth') || raw.endsWith('.box')
+
 export function useResolvedAddress(
   raw: string | undefined,
 ): UseResolvedAddressResult {
-  const [address, setAddress] = useState<string | null>(null)
-  const [resolving, setResolving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const direct = !!raw && isAddress(raw)
+  const ens = !!raw && !direct && isEnsName(raw)
 
-  useEffect(() => {
-    if (!raw) return
-    setAddress(null)
-    setError(null)
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['ens-resolve', raw?.toLowerCase()],
+    queryFn: async () => {
+      const addr = await resolveEnsToAddress(raw!)
+      if (!addr) throw new Error('unresolved')
+      return addr
+    },
+    enabled: ens,
+    staleTime: DAY,
+    gcTime: DAY,
+    retry: false,
+  })
 
-    if (isAddress(raw)) {
-      setAddress(raw)
-      return
+  if (!raw) return { address: null, resolving: false, error: null }
+  if (direct) return { address: raw, resolving: false, error: null }
+  if (!ens)
+    return {
+      address: null,
+      resolving: false,
+      error: 'Invalid address or ENS name',
     }
-
-    if (raw.endsWith('.eth') || raw.endsWith('.box')) {
-      setResolving(true)
-      resolveEnsToAddress(raw)
-        .then((addr) => {
-          if (addr) setAddress(addr)
-          else setError(`Could not resolve "${raw}"`)
-        })
-        .catch(() => setError(`Could not resolve "${raw}"`))
-        .finally(() => setResolving(false))
-    } else {
-      setError('Invalid address or ENS name')
-    }
-  }, [raw])
-
-  return { address, resolving, error }
+  return {
+    address: data ?? null,
+    resolving: isLoading,
+    error: isError ? `Could not resolve "${raw}"` : null,
+  }
 }

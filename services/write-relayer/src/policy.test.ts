@@ -5,14 +5,20 @@ import {
   SOFIA_I_ATOM_ID,
 } from '@0xsofia/taxonomy'
 import {
+  buildOpposePlan,
   buildPlan,
+  calculateCounterId,
   calculateTripleId,
+  parseThing,
   MAX_PAGES_PER_REQUEST,
   parseRequest,
   quotaLeft,
   refusal,
   trustToWei,
+  recommendClaimId,
+  splitOpinions,
   windowStarts,
+  withCredits,
 } from './policy'
 
 const PAGE: `0x${string}` = `0x${'ab'.repeat(32)}`
@@ -20,7 +26,9 @@ const limits = {
   quotaMonthly: 20,
   quotaDaily: 5,
   budgetMonthlyWei: trustToWei(500),
+  budgetDailyWei: trustToWei(17),
 }
+const none = { month: 0n, day: 0n }
 
 describe('calculateTripleId', () => {
   it('matches an indexed mainnet triple', () => {
@@ -90,9 +98,11 @@ describe('quota and budget', () => {
   })
 
   it('refuses past the quota or the budget', () => {
-    expect(refusal(2, { month: 0, day: 0 }, limits, 0n, 0n)).toBeNull()
-    expect(refusal(1, { month: 0, day: 5 }, limits, 0n, 0n)).toMatch(/tomorrow/)
-    expect(refusal(3, { month: 18, day: 0 }, limits, 0n, 0n)).toMatch(
+    expect(refusal(2, { month: 0, day: 0 }, limits, none, 0n)).toBeNull()
+    expect(refusal(1, { month: 0, day: 5 }, limits, none, 0n)).toMatch(
+      /tomorrow/,
+    )
+    expect(refusal(3, { month: 18, day: 0 }, limits, none, 0n)).toMatch(
       /2 free Recommends left this month/,
     )
     expect(
@@ -100,15 +110,105 @@ describe('quota and budget', () => {
         1,
         { month: 0, day: 0 },
         limits,
-        trustToWei(499.9),
+        { month: trustToWei(499.9), day: 0n },
         trustToWei(0.25),
       ),
-    ).toMatch(/paused/)
+    ).toMatch(/paused for this month/)
+    expect(
+      refusal(
+        1,
+        { month: 0, day: 0 },
+        limits,
+        { month: trustToWei(20), day: trustToWei(16.9) },
+        trustToWei(0.25),
+      ),
+    ).toMatch(/until tomorrow/)
   })
 
   it('opens windows at UTC midnight and the 1st', () => {
     const w = windowStarts(new Date('2026-10-28T15:00:00Z'))
     expect(w.month.toISOString()).toBe('2026-10-01T00:00:00.000Z')
     expect(w.day.toISOString()).toBe('2026-10-28T00:00:00.000Z')
+  })
+})
+
+describe('withCredits', () => {
+  it('a Trend Hunter call raises the month and the day alike', () => {
+    const mine = withCredits(limits, 6)
+    expect(mine.quotaMonthly).toBe(26)
+    expect(mine.quotaDaily).toBe(11)
+    expect(mine.budgetDailyWei).toBe(limits.budgetDailyWei)
+    // Daily quota used up: credits still let them through
+    expect(refusal(3, { month: 5, day: 5 }, mine, none, 0n)).toBeNull()
+    expect(quotaLeft({ month: 20, day: 0 }, mine)).toBe(6)
+  })
+
+  it('the relayer budget still caps an account with credits', () => {
+    const spent = { month: 0n, day: trustToWei(17) }
+    expect(
+      refusal(1, { month: 0, day: 0 }, withCredits(limits, 30), spent, 1n),
+    ).toBe('Free Recommends are paused until tomorrow')
+  })
+
+  it('ignores negative or fractional credits', () => {
+    expect(withCredits(limits, -3).quotaMonthly).toBe(20)
+    expect(withCredits(limits, 2.9).quotaDaily).toBe(7)
+  })
+})
+
+describe('second opinions', () => {
+  it('the counter vault id matches an indexed mainnet triple', () => {
+    expect(
+      calculateCounterId(
+        '0x01028f2cbc0922dd57bbc0a236d4c79a4b6a9f89a731043f3aebfa192bed84a4',
+      ),
+    ).toBe('0xf3be996f9f1ad5a8c98a1168fd3e3d148326abc0a2a512530c63f9f02a6d4758')
+  })
+
+  it('an oppose deposits on the page claim counter vault, curve 2', () => {
+    const [oppose] = buildOpposePlan([PAGE])
+    expect(oppose.tripleId).toBe(calculateCounterId(recommendClaimId(PAGE)))
+    expect(oppose.curveId).toBe(2n)
+  })
+
+  it('opinions go first within their allowance, the rest to the quota', () => {
+    const split = splitOpinions(['a', 'b', 'c'], (x) => x !== 'b', 1)
+    expect(split).toEqual({ opinions: ['a'], quota: ['b', 'c'] })
+  })
+
+  it('opinions have their own daily cap, outside the quota', () => {
+    const mine = { ...limits, opinionsDaily: 5 }
+    // Quota used up for the day: an opinion still goes through
+    expect(refusal(0, { month: 5, day: 5 }, mine, none, 0n, 2)).toBeNull()
+    expect(
+      refusal(0, { month: 0, day: 0, opinionsDay: 4 }, mine, none, 0n, 2),
+    ).toBe('Daily free opinions used — come back tomorrow')
+  })
+})
+
+describe('new pages (extension)', () => {
+  const thing = {
+    name: 'A page',
+    description: 'Page: example.com/a',
+    url: 'https://example.com/a',
+    image: 'https://www.google.com/s2/favicons?domain=example.com&sz=128',
+  }
+
+  it('takes a page with no atom yet, deduped by url', () => {
+    const r = parseRequest({ pages: [{ thing }, { thing, tags: ['x'] }] })
+    expect('pages' in r && r.pages).toEqual([{ thing, tags: ['x'] }])
+  })
+
+  it('refuses a page that is not a web page', () => {
+    expect(parseThing({ ...thing, url: 'javascript:alert(1)' })).toBeNull()
+    expect(parseThing({ ...thing, name: '' })).toBeNull()
+    expect(
+      parseThing({ ...thing, image: 'data:image/png;base64,x' }),
+    ).toBeNull()
+    expect(parseThing({ ...thing, image: undefined })).toEqual({
+      name: thing.name,
+      description: thing.description,
+      url: thing.url,
+    })
   })
 })

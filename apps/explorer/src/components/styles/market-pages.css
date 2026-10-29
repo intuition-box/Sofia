@@ -7,6 +7,12 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: opacity 0.2s ease;
+}
+
+/* The previous list stays up, dimmed, while a fresher one loads */
+.mk-list.is-refreshing {
+  opacity: 0.6;
 }
 
 /* ── Trending card ─────────────────────────────────────────────── */

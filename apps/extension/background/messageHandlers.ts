@@ -12,6 +12,7 @@ import {
   badgeService,
   browsingNudgeService,
   delegationService,
+  freeRecommendService,
   groupManager,
   pageDataService,
   sessionTracker,
@@ -170,6 +171,8 @@ let handlersRegistered = false
 const ALLOWED_EXTERNAL_ORIGINS = (() => {
   const origins = [
     "https://sofia.intuition.box",
+    // Staging landing (branch dev): /auth for test builds
+    "https://staging.sofia.intuition.box",
     "http://localhost:3000",
     "http://localhost:5174"
   ]
@@ -312,7 +315,35 @@ export function setupMessageHandlers(): void {
         return true
       }
 
+      // Free Recommends: the landing's /auth hands over a write-relayer
+      // session for the wallet it just connected (SIWE-verified above)
+      if (message.type === "RELAYER_SESSION") {
+        ;(async () => {
+          const { walletAddress } =
+            await chrome.storage.session.get("walletAddress")
+          const wallet = String(message.walletAddress ?? "")
+          if (
+            !walletAddress ||
+            wallet.toLowerCase() !== String(walletAddress).toLowerCase() ||
+            typeof message.token !== "string" ||
+            typeof message.expiresAt !== "string"
+          ) {
+            sendResponse({ success: false, error: "Wallet mismatch" })
+            return
+          }
+          await freeRecommendService.saveSession({
+            token: message.token,
+            expiresAt: message.expiresAt,
+            wallet
+          })
+          logger.info("Free Recommends on", { wallet })
+          sendResponse({ success: true })
+        })()
+        return true
+      }
+
       if (message.type === "WALLET_DISCONNECTED") {
+        void freeRecommendService.clearSession()
         chrome.storage.session
           .remove(["walletAddress", "walletType"])
           .then(() => {

@@ -103,15 +103,6 @@ export interface Reward {
 
 // ── Component Props ──
 
-export interface Stat {
-  label: string
-  value: string
-}
-
-export interface StatsRibbonProps {
-  stats?: Stat[]
-}
-
 export interface LeaderboardProps {
   alphaData?: AlphaTester[]
   alphaLoading?: boolean

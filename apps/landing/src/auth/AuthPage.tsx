@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useWallets } from '@privy-io/react-auth'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useWalletConnection } from '../lib/services/WalletProvider'
+import { connectFreeRecommends } from './freeRecommends'
 import { sendToExtension, DEFAULT_EXTENSION_ID } from './oauthConfig'
 import styles from './auth.module.css'
 
@@ -54,7 +55,13 @@ export function AuthPage() {
   // found for address" when signing for an external wallet (MetaMask et al.)
   // because it expects a Privy-managed embedded wallet by default.
   const { wallets } = useWallets()
+  const { getAccessToken } = usePrivy()
   const [hasSent, setHasSent] = useState(false)
+  /** Free Recommends handed to the extension (write-relayer session) */
+  const [freeStatus, setFreeStatus] = useState<
+    'idle' | 'working' | 'on' | 'off' | 'error'
+  >('idle')
+  const freeStarted = useRef(false)
   const [siweError, setSiweError] = useState<string | null>(null)
   // hasSentRef persists across renders and useEffect cleanups, unlike the
   // hasSent state which is gated by React batching. Without it, when Privy
@@ -147,6 +154,42 @@ export function AuthPage() {
     })()
   }, [isConnected, address, walletType, extensionId, siweError, wallets])
 
+  // Once the extension knows the wallet: give it free Recommends (a relayer
+  // session + the one-time approval). Never blocks the connection itself.
+  useEffect(() => {
+    if (!hasSent || !address || freeStarted.current) return
+    const wallet = wallets.find(
+      (w) => w.address?.toLowerCase() === address.toLowerCase(),
+    )
+    if (!wallet) return
+    freeStarted.current = true
+    setFreeStatus('working')
+    ;(async () => {
+      try {
+        const token = await getAccessToken()
+        const session = token
+          ? await connectFreeRecommends(token, wallet)
+          : null
+        if (!session) {
+          setFreeStatus('off')
+          return
+        }
+        sendToExtension(
+          {
+            type: 'RELAYER_SESSION',
+            token: session.token,
+            expiresAt: session.expiresAt,
+            walletAddress: address,
+          },
+          extensionId,
+        )
+        setFreeStatus('on')
+      } catch {
+        setFreeStatus('error')
+      }
+    })()
+  }, [hasSent, address, wallets, getAccessToken, extensionId])
+
   useEffect(() => {
     if (autoLoginTriggered.current) return
     const autoLogin = new URLSearchParams(window.location.search).get(
@@ -216,12 +259,12 @@ export function AuthPage() {
 
         {status === 'connect' && (
           <>
-            <p className={styles.text}>Connect your wallet</p>
+            <p className={styles.text}>Sign in to Sofia</p>
             <p className={styles.subtext}>
-              Connect with MetaMask or another Web3 wallet
+              With your email, Google, or a crypto wallet
             </p>
             <button className={styles.btn} onClick={connect}>
-              Connect Wallet
+              Sign in
             </button>
           </>
         )}
@@ -261,7 +304,7 @@ export function AuthPage() {
         {status === 'success' && address && hasSent && (
           <>
             <p className={styles.successHeading}>
-              <span className={styles.checkmark}>✓</span> Wallet Connected
+              <span className={styles.checkmark}>✓</span> Connected
             </p>
             <div className={styles.walletRow}>
               <div className={styles.walletAddress}>
@@ -274,6 +317,18 @@ export function AuthPage() {
                 Disconnect
               </button>
             </div>
+
+            {freeStatus !== 'idle' && (
+              <p className={styles.subtext} role="status">
+                {freeStatus === 'working'
+                  ? 'Setting up your free Recommends…'
+                  : freeStatus === 'on'
+                    ? 'Free Recommends are on: right-click any page to recommend it.'
+                    : freeStatus === 'error'
+                      ? 'Free Recommends could not be set up. Reload this page to try again.'
+                      : 'Free Recommends are not available for this account yet.'}
+              </p>
+            )}
 
             {claimStatus === 'idle' && (
               <>

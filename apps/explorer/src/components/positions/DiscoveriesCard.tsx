@@ -3,9 +3,13 @@
  * (CREATOR_REWARDS_SPEC §A). Count, followers who came after, and the P&L of
  * those early positions — the reward the page market already pays.
  */
-import { ModuleHead } from '@0xsofia/design-system'
+import { AnimatedNumber, ModuleHead } from '@0xsofia/design-system'
 import type { Discovery } from '@/services/discoveriesService'
-import { formatTrustChange } from '@/utils/formatting'
+import {
+  formatTrustChange,
+  formatTrustChangeAmount,
+  trustAmount,
+} from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
 import '@0xsofia/design-system/styles/module-head.css'
 import '@/components/styles/trend-hunter.css'
@@ -45,16 +49,23 @@ export default function DiscoveriesCard({
       />
       <div className="mk-summary">
         <div className="mk-summary-stat">
-          <span className="mk-summary-value">{discoveries.length}</span>
+          <span className="mk-summary-value">
+            <AnimatedNumber value={discoveries.length} />
+          </span>
           <span className="mk-summary-label">Pages discovered</span>
         </div>
         <div className="mk-summary-stat">
-          <span className="mk-summary-value">{followers}</span>
+          <span className="mk-summary-value">
+            <AnimatedNumber value={followers} flash />
+          </span>
           <span className="mk-summary-label">Followers after you</span>
         </div>
         <div className="mk-summary-stat">
           <span className={`mk-summary-value mk-change ${changeClass(change)}`}>
-            {formatTrustChange(change)}
+            <AnimatedNumber
+              value={trustAmount(change)}
+              format={formatTrustChangeAmount}
+            />
           </span>
           <span className="mk-summary-label">P&amp;L on discoveries</span>
         </div>

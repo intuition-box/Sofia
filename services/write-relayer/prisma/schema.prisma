@@ -1,6 +1,5 @@
-// write-relayer — sponsored writes: Sofia pays for the Recommends of users
-// who signed in without a crypto wallet (email / Google → Privy embedded
-// wallet). One row per request; quota and budget are sums over these rows.
+// write-relayer — sponsored writes: Sofia pays for the Recommends of every
+// signed-in user (email / Google embedded wallet or their own wallet). One row per request; quota and budget are sums over these rows.
 
 datasource db {
   provider = "postgresql"
@@ -15,6 +14,11 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
+enum WriteKind {
+  recommend // Recommend claims (+ their tags)
+  oppose // deposits on a claim's counter vault
+}
+
 enum WriteStatus {
   reserved // quota + budget held, txs not sent yet
   sent // every tx mined
@@ -24,11 +28,15 @@ enum WriteStatus {
 model SponsoredWrite {
   id             String      @id @default(cuid())
   privyUserId    String
-  /// Receiver of the positions (the user's embedded wallet, lowercase)
+  /// Receiver of the positions (one of the user's wallets, lowercase)
   wallet         String
   /// Page atoms recommended
   objectIds      String[]
+  kind           WriteKind   @default(recommend)
+  /// Recommends counted against the quota
   recommendCount Int
+  /// Second opinions (pages one other person recommended): their own cap
+  opinionCount   Int         @default(0)
   tagCount       Int
   /// What the relayer paid (wei): creation costs + deposits + fees
   costWei        Decimal     @db.Decimal(78, 0)
@@ -40,4 +48,18 @@ model SponsoredWrite {
 
   @@index([privyUserId, createdAt])
   @@index([createdAt, status])
+}
+
+/// The Sofia extension's access: a long-lived token issued to a signed-in
+/// Privy account on the landing's /auth. Only the token's sha256 is stored.
+model ExtensionSession {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  privyUserId String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+
+  @@index([privyUserId])
 }

@@ -12,14 +12,24 @@ import {
   defineChain,
   encodeFunctionData,
   http,
+  parseAbi,
+  stringToHex,
   type Hex,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { env } from './env'
+import { SOFIA_I_ATOM_ID } from '@0xsofia/taxonomy'
 import type { PlannedTriple } from './policy'
 import { SofiaFeeProxyAbi } from './sofiaFeeProxyAbi'
 
 const PROXY = '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c' as const
+const MULTIVAULT = '0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e' as const
+/** From the MultiVault ABI (apps/extension/ABI/MultiVault.ts) */
+const MultiVaultReadAbi = parseAbi([
+  'function isTermCreated(bytes32 id) view returns (bool)',
+])
+/** Atoms are created on curve 1 with no deposit, as the extension does */
+const ATOM_CURVE_ID = 1n
 const ZERO_ID = `0x${'0'.repeat(64)}`
 /** createTriples costs up to ~680k gas per triple, depositBatch ~270k */
 const CREATE_TX_SIZE = 35
@@ -200,6 +210,89 @@ async function depositBatch(
   return send(data, total + fee, count * 600_000n + 1_000_000n)
 }
 
+const PROBE_DEPOSIT = 10n ** 16n
+
+/**
+ * Whether `wallet` approved SofiaFeeProxy on MultiVault (needed once before
+ * anything lands on it): simulates a tiny deposit from it on Sofia's `I`
+ * atom with its balance overridden — no funds needed. null when the RPC
+ * couldn't tell.
+ */
+export async function isProxyApproved(wallet: Hex): Promise<boolean | null> {
+  try {
+    const fee = (await publicClient.readContract({
+      address: PROXY,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'calculateDepositFee',
+      args: [1n, PROBE_DEPOSIT],
+    })) as bigint
+    await publicClient.call({
+      account: wallet,
+      to: PROXY,
+      data: encodeFunctionData({
+        abi: SofiaFeeProxyAbi,
+        functionName: 'depositBatch',
+        args: [wallet, [SOFIA_I_ATOM_ID as Hex], [1n], [PROBE_DEPOSIT], [0n]],
+      }),
+      value: PROBE_DEPOSIT + fee,
+      stateOverride: [{ address: wallet, balance: 10n ** 20n }],
+    })
+    return true
+  } catch (err) {
+    return revertSelector(err) === SENDER_NOT_APPROVED ? false : null
+  }
+}
+
+/** A pinned page atom: its data (the IPFS uri) and its id */
+export interface PageAtom {
+  data: Hex
+  id: Hex
+  exists: boolean
+}
+
+/** Same id and existence check as the extension (AtomService) */
+export async function pageAtomOf(uri: string): Promise<PageAtom> {
+  const data = stringToHex(uri)
+  const id = (await publicClient.readContract({
+    address: PROXY,
+    abi: SofiaFeeProxyAbi,
+    functionName: 'calculateAtomId',
+    args: [data],
+  })) as Hex
+  const exists = await publicClient.readContract({
+    address: MULTIVAULT,
+    abi: MultiVaultReadAbi,
+    functionName: 'isTermCreated',
+    args: [id],
+  })
+  return { data, id: id.toLowerCase() as Hex, exists }
+}
+
+async function createAtoms(
+  datas: readonly Hex[],
+  receiver: Hex,
+): Promise<Sent | null> {
+  const count = BigInt(datas.length)
+  const atomCost = (await publicClient.readContract({
+    address: PROXY,
+    abi: SofiaFeeProxyAbi,
+    functionName: 'getAtomCost',
+  })) as bigint
+  const value = await publicClient.readContract({
+    address: PROXY,
+    abi: SofiaFeeProxyAbi,
+    functionName: 'getTotalCreationCost',
+    args: [0n, 0n, atomCost * count],
+  })
+  const data = encodeFunctionData({
+    abi: SofiaFeeProxyAbi,
+    functionName: 'createAtoms',
+    args: [receiver, [...datas], datas.map(() => 0n), ATOM_CURVE_ID],
+  })
+  // ~146k gas per atom measured by the extension
+  return send(data, value, count * 300_000n + 1_000_000n)
+}
+
 export interface Execution {
   txHashes: Hex[]
   costWei: bigint
@@ -217,17 +310,32 @@ const chunks = <T>(items: readonly T[], size: number): T[][] =>
 let queue: Promise<unknown> = Promise.resolve()
 
 /**
- * Creates the missing triples and deposits on the existing ones — claims
- * first (tags are nested under them), one serialized nonce stream.
+ * Creates the missing page atoms, then the missing triples and deposits on
+ * the existing ones — claims first (tags are nested under them), then the
+ * opposes; one serialized nonce stream.
  */
 export function execute(
-  plan: { claims: PlannedTriple[]; tags: PlannedTriple[] },
+  plan: {
+    /** Page atoms to create first (data of the ones not on-chain yet) */
+    atoms?: Hex[]
+    claims: PlannedTriple[]
+    tags: PlannedTriple[]
+    /** Counter-vault deposits on claims that exist (checked by the caller) */
+    opposes?: PlannedTriple[]
+  },
   receiver: Hex,
   depositWei: bigint,
 ): Promise<Execution> {
   const run = queue.then(async (): Promise<Execution> => {
     const out: Execution = { txHashes: [], costWei: 0n }
     try {
+      for (const part of chunks(plan.atoms ?? [], CREATE_TX_SIZE)) {
+        const sent = await createAtoms(part, receiver)
+        if (sent) {
+          out.txHashes.push(sent.hash)
+          out.costWei += sent.costWei
+        }
+      }
       for (const group of [plan.claims, plan.tags]) {
         if (group.length === 0) continue
         const onChain = await existingTriples(group.map((t) => t.tripleId))
@@ -252,6 +360,13 @@ export function execute(
           }
         }
       }
+      for (const part of chunks(plan.opposes ?? [], DEPOSIT_TX_SIZE)) {
+        const sent = await depositBatch(part, receiver, depositWei)
+        if (sent) {
+          out.txHashes.push(sent.hash)
+          out.costWei += sent.costWei
+        }
+      }
     } catch (err) {
       out.error =
         err instanceof Error ? err.message.split('\n')[0] : String(err)
@@ -265,7 +380,7 @@ export function execute(
 
 /**
  * Gas for the user's one-time MultiVault.approve(proxy): an email / Google
- * wallet holds no TRUST. Only when it can't already pay; null if nothing sent.
+ * wallet — or a brand-new crypto wallet — holds no TRUST. Only when it can't already pay; null if nothing sent.
  */
 export function fundApprovalGas(wallet: Hex): Promise<Hex | null> {
   const run = queue.then(async () => {

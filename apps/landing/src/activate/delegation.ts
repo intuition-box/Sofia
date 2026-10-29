@@ -245,6 +245,22 @@ const approveCall = (net: NetworkConfig): BatchCall => ({
   }),
 })
 
+/** Approves SofiaFeeProxy on MultiVault (once per wallet) and waits for it */
+export async function approveSofia(clients: Clients, net: NetworkConfig) {
+  const hash = await clients.walletClient.writeContract({
+    address: net.multiVault,
+    abi: multiVaultApproveAbi,
+    functionName: 'approve',
+    args: [net.proxy, APPROVAL_DEPOSIT],
+    chain: net.chain,
+    account: clients.walletClient.account!,
+  })
+  const receipt = await clients.publicClient.waitForTransactionReceipt({
+    hash,
+  })
+  if (receipt.status !== 'success') throw new Error('Approval failed')
+}
+
 /**
  * ONE confirmation: approve the proxy on MultiVault + fund the session key's
  * gas, as an atomic batch — MetaMask offers the smart-account upgrade here.

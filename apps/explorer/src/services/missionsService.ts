@@ -12,17 +12,20 @@ import {
   computeWeeklyMission,
   startOfUtcDay,
   topicOfWeek,
+  type ClaimBacker,
   type MissionPosition,
   type MissionProgress,
   type TaggedPage,
 } from '@0xsofia/quests'
 import {
   CATEGORY_ATOM_IDS,
+  PAGE_SUPPORT_PREDICATE_LABELS,
   SOFIA_TOPICS,
   TOPIC_ATOM_IDS,
 } from '@/config/taxonomy'
-import { resolveWebKey } from '@/utils/webAtom'
 import { fetchClaimSupporters } from './claimSupportersService'
+
+const PAGE_PREDICATES = new Set(PAGE_SUPPORT_PREDICATE_LABELS)
 
 const PAGE = 100
 /** Positions come newest first — today's always fit well within this */
@@ -50,13 +53,25 @@ async function fetchRecentPositions(
     for (const row of rows) {
       const createdAt = Date.parse(row.created_at)
       const triple = row.term?.triple
-      const pageKey = triple ? resolveWebKey(triple.object) : null
-      if (!triple || !pageKey) continue
+      // Page claims only, keyed by the page atom — as the write-relayer
+      // counts them for credits
+      const pageKey = triple?.object?.term_id
+      if (
+        !triple ||
+        !pageKey ||
+        !PAGE_PREDICATES.has(triple.predicate?.label ?? '')
+      )
+        continue
       out.push({
         claimTermId: triple.term_id,
         pageKey,
         createdAt,
         deposit: BigInt(row.total_deposit_assets_after_total_fees ?? '0'),
+        // An oppose row is the claim's counter vault
+        side:
+          row.term_id.toLowerCase() === triple.term_id.toLowerCase()
+            ? 'support'
+            : 'oppose',
       })
     }
     const oldest = rows[rows.length - 1]
@@ -70,19 +85,19 @@ async function fetchRecentPositions(
   return out
 }
 
-/** Claims where the user holds the earliest open position */
-async function fetchPioneerClaims(
-  addresses: string[],
+/** Support positions per claim — Pioneer and "Sort your pages" read them */
+async function fetchBackers(
   claimIds: string[],
-): Promise<Set<string>> {
-  if (claimIds.length === 0) return new Set()
-  const own = new Set(addresses.map((a) => a.toLowerCase()))
+): Promise<Map<string, ClaimBacker[]>> {
   const supporters = await fetchClaimSupporters(claimIds)
-  return new Set(
-    claimIds.filter((id) => {
-      const first = supporters[id]?.support[0]
-      return !!first && own.has(first.account.toLowerCase())
-    }),
+  return new Map(
+    Object.entries(supporters).map(([id, s]) => [
+      id,
+      s.support.map((b) => ({
+        account: b.account,
+        createdAt: Date.parse(b.createdAt),
+      })),
+    ]),
   )
 }
 
@@ -103,7 +118,7 @@ async function fetchTaggedPages(
   })()
   const pages: TaggedPage[] = []
   for (const row of data.triples ?? []) {
-    const pageKey = resolveWebKey(row.subject?.term?.triple?.object)
+    const pageKey = row.subject?.term?.triple?.object?.term_id
     const createdAt = row.positions?.[0]?.created_at
     if (pageKey && createdAt) {
       pages.push({ pageKey, createdAt: Date.parse(createdAt) })
@@ -114,7 +129,6 @@ async function fetchTaggedPages(
 
 export async function fetchMissions(
   addresses: string[],
-  trendingKeys: ReadonlySet<string>,
   now: number = Date.now(),
 ): Promise<MissionsResult> {
   const topic = topicOfWeek(SOFIA_TOPICS, now)
@@ -131,13 +145,13 @@ export async function fetchMissions(
         .map((p) => p.claimTermId),
     ),
   ]
-  const pioneerClaimIds = await fetchPioneerClaims(addresses, todayClaims)
+  const backers = await fetchBackers(todayClaims)
 
   return {
     daily: computeDailyMissions({
       positions,
-      trendingKeys,
-      pioneerClaimIds,
+      backers,
+      own: new Set(addresses.map((a) => a.toLowerCase())),
       now,
     }),
     weekly: computeWeeklyMission(topic, taggedPages, now),

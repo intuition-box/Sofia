@@ -26,10 +26,9 @@ export function useAlphaTesters() {
   const { data, isLoading, error, refetch } = useQuery<AlphaTestersData>({
     queryKey: ['alphaTesters'],
     queryFn: loadAlphaTesters,
-    initialData: INITIAL_DATA,
-    // initialDataUpdatedAt: 0 marks the placeholder as infinitely stale so
-    // RQ triggers a real fetch on mount even though initialData is set.
-    initialDataUpdatedAt: 0,
+    // Placeholder (not initialData): the first scan reads as loading, so the
+    // table shows its skeleton instead of "No activity yet"
+    placeholderData: INITIAL_DATA,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -42,8 +41,8 @@ export function useAlphaTesters() {
   })
 
   return {
-    ...data,
-    loading: isLoading && data === INITIAL_DATA,
+    ...(data ?? INITIAL_DATA),
+    loading: isLoading,
     error: error
       ? error instanceof Error
         ? error.message

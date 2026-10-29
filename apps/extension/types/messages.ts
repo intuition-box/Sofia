@@ -17,6 +17,7 @@ export type MessageType =
   | "URL_CHANGED"
   | "WALLET_CONNECTED"
   | "WALLET_DISCONNECTED"
+  | "RELAYER_SESSION"
   // Intention Groups messages
   | "GET_INTENTION_GROUPS"
   | "GET_GROUP_DETAILS"

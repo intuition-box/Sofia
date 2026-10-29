@@ -12,6 +12,8 @@ export interface TrendHunterEntry {
   rank: number
   /** Claims called this month (≥ 5 credible followers) */
   calls: number
+  /** Share of the monthly pool (TRUST) — Top N only, else null */
+  reward: number | null
 }
 
 export interface EarlySignalEntry {
@@ -39,8 +41,18 @@ interface MonthResponse<T> {
   computedAt: string | null
 }
 
+/** The monthly pool: the Top `size` share `trust` TRUST pro rata of Flair */
+export interface TrendHunterPool {
+  trust: number
+  size: number
+}
+
 /** Accounts ranked in the Top 10 earn the month's badge */
 export const TREND_HUNTER_BADGE_RANK = 10
+
+/** Free Recommends each call earns (mirrors the write-relayer's
+ *  SPONSOR_CREDITS_PER_CALL) */
+export const CREDITS_PER_CALL = 3
 
 const STALE = 15 * 60 * 1000
 
@@ -66,7 +78,9 @@ export function useTrendHunters(limit = 10, month?: string) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['trendHunters', limit, month ?? 'current'],
     queryFn: () =>
-      getJson<MonthResponse<TrendHunterEntry>>(`/trend-hunters?${query}`),
+      getJson<MonthResponse<TrendHunterEntry> & { pool?: TrendHunterPool }>(
+        `/trend-hunters?${query}`,
+      ),
     staleTime: STALE,
     refetchOnWindowFocus: false,
     retry: 1,
@@ -74,6 +88,7 @@ export function useTrendHunters(limit = 10, month?: string) {
   return {
     entries: data?.entries ?? [],
     month: data?.month ?? null,
+    pool: data?.pool?.trust ? data.pool : null,
     computedAt: data?.computedAt ?? null,
     loading: isLoading,
     error: error ? String(error) : null,

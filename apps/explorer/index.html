@@ -3,8 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sofia Explorer</title>
+    <title>Sofia Explorer · The web, recommended by people</title>
+    <meta
+      name="description"
+      content="See which web pages people recommend, who spotted them first, and what is trending. Every recommendation on Sofia is public, dated and on-chain."
+    />
     <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="theme-color" content="#02000e" />
+
+    <!-- Link previews (X, Discord, Slack, iMessage…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sofia" />
+    <meta
+      property="og:title"
+      content="Sofia Explorer · The web, recommended by people"
+    />
+    <meta
+      property="og:description"
+      content="See which web pages people recommend, who spotted them first, and what is trending."
+    />
+    <meta property="og:url" content="https://explorer.sofia.intuition.box/" />
+    <meta
+      property="og:image"
+      content="https://explorer.sofia.intuition.box/og-default.png"
+    />
+    <meta property="og:image:width" content="1460" />
+    <meta property="og:image:height" content="560" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@0xsofia3" />
+
+    <!-- Who Sofia is, for search engines and AI assistants -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sofia.intuition.box/#org",
+            "name": "Sofia",
+            "url": "https://sofia.intuition.box",
+            "logo": "https://explorer.sofia.intuition.box/logo.png",
+            "description": "A community-curated map of the web, built on the Intuition protocol.",
+            "sameAs": [
+              "https://x.com/0xsofia3",
+              "https://discord.gg/sofia3",
+              "https://chromewebstore.google.com/detail/sofia/ldohfencfbbelhgfppgdmgmghodhjodb",
+              "https://doc.sofia.intuition.box"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "name": "Sofia Explorer",
+            "url": "https://explorer.sofia.intuition.box",
+            "publisher": { "@id": "https://sofia.intuition.box/#org" }
+          }
+        ]
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

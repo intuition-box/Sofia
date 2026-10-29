@@ -14,6 +14,7 @@ export type { PageMarket, PageTag, MyPosition, LegacyPosition, MarketSide } from
 export type { RedeemLeg, RedeemResult } from './RedeemService'
 export type { ContextTripleItem, ObjectAtomData, QuickPublishResult, QuickPublishTarget, SubmitCartResult } from './CertificationService'
 export { delegationService } from './DelegationService'
+export { freeRecommendService } from './FreeRecommendService'
 export type { DelegationGrant, DelegationState, DelegationStatus } from './DelegationService'
 
 // Wallet

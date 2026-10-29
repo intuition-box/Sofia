@@ -3,9 +3,60 @@ import { createAvatar } from '@dicebear/core'
 import { glass } from '@dicebear/collection'
 import { useGetAccountLabelsQuery } from '@0xsofia/graphql'
 
-// Global caches persist as module-level singletons
-const labelCache = new Map<string, string | null>()
-const avatarCache = new Map<string, string | null>()
+// Global caches: module-level singletons, saved to localStorage for a day so
+// names and avatars show at once after a reload instead of popping in.
+const CACHE_KEY = 'sofia:ens-cache'
+const CACHE_MAX_AGE = 24 * 60 * 60 * 1000
+
+interface SavedEnsCache {
+  createdAt: number
+  labels: [string, string | null][]
+  avatars: [string, string | null][]
+}
+
+function loadSaved(): SavedEnsCache | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const saved = JSON.parse(raw) as SavedEnsCache
+    return Date.now() - saved.createdAt < CACHE_MAX_AGE ? saved : null
+  } catch {
+    return null
+  }
+}
+
+const saved = loadSaved()
+const cacheCreatedAt = saved?.createdAt ?? Date.now()
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+/** A Map that schedules a save of both caches on every write */
+class SavedMap extends Map<string, string | null> {
+  set(key: string, value: string | null) {
+    super.set(key, value)
+    scheduleSave()
+    return this
+  }
+}
+
+const labelCache = new SavedMap(saved?.labels ?? [])
+const avatarCache = new SavedMap(saved?.avatars ?? [])
+
+function scheduleSave() {
+  if (saveTimer) return
+  saveTimer = setTimeout(() => {
+    saveTimer = null
+    try {
+      const data: SavedEnsCache = {
+        createdAt: cacheCreatedAt,
+        labels: [...labelCache],
+        avatars: [...avatarCache],
+      }
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+    } catch {
+      // storage full / unavailable — memory cache only
+    }
+  }, 1000)
+}
 
 const ENS_BATCH_SIZE = 5
 

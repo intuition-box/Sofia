@@ -13,31 +13,24 @@
  * Host component owns the surrounding overlay and is responsible for calling onClose.
  */
 
-import { CATEGORY_TO_TOPIC, isIntentionTagSlug } from "@0xsofia/taxonomy"
 import { FeedCardView, UserBadge, VerbTag } from "@0xsofia/design-system"
 import type { IntentionSlug, UserBadgeTier } from "@0xsofia/design-system"
 import { useGetTriplesWithPositionsQuery } from "@0xsofia/graphql"
-import {
-  Fragment,
-  useEffect,
-  useState,
-  type CSSProperties
-} from "react"
+import { CATEGORY_TO_TOPIC, isIntentionTagSlug } from "@0xsofia/taxonomy"
+import { Fragment, useEffect, useState, type CSSProperties } from "react"
 
-import {
-  useBatchRewards,
-  useTrustCircle,
-  useWalletFromStorage
-} from "~/hooks"
+import { useBatchRewards, useTrustCircle, useWalletFromStorage } from "~/hooks"
 import { FEATURES } from "~/lib/config/features"
 import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
-import { createHookLogger, getFaviconUrl } from "~/lib/utils"
 import {
-  cartItemVerb,
-  INTENTION_CONFIG
-} from "~/types/intentionCategories"
+  buildBatchShareText,
+  createHookLogger,
+  getFaviconUrl,
+  OG_BASE_URL
+} from "~/lib/utils"
+import { cartItemVerb, INTENTION_CONFIG } from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
 import contributorBadge from "../../ui/img/badges/contributor.png"
@@ -52,7 +45,6 @@ const BADGE_IMAGES: Record<UserBadgeTier, string> = {
 }
 
 const logger = createHookLogger("BatchRewardContent")
-const OG_BASE_URL = "https://sofia-og.vercel.app"
 
 /** Leading intention glyph for a feed verb chip — same helper used by the
  *  Trust Circle feed so every verb reads the same across the side panel. */
@@ -155,10 +147,6 @@ const BatchRewardContent = ({
   }, [loading, phase])
 
   const pioneerCount = rewards.filter((r) => r.tier === "Pioneer").length
-  const explorerCount = rewards.filter((r) => r.tier === "Explorer").length
-  const contributorCount = rewards.filter(
-    (r) => r.tier === "Contributor"
-  ).length
 
   const tierCount = (tier: (typeof TIER_ORDER)[number]): number =>
     rewards.filter((r) => r.tier.toLowerCase() === tier).length
@@ -197,23 +185,12 @@ const BatchRewardContent = ({
           totalCertifiers: rewards.length
         })
       })
-      const { url: shareUrl } = await res.json()
+      const json = (await res.json().catch(() => ({}))) as { url?: string }
+      // No card (og down): share Sofia's page, never "undefined"
+      const shareUrl =
+        res.ok && json.url ? json.url : rewards[0]?.item.url || OG_BASE_URL
 
-      const tierParts: string[] = []
-      if (pioneerCount > 0)
-        tierParts.push(`${pioneerCount} Pioneer${pioneerCount > 1 ? "s" : ""}`)
-      if (explorerCount > 0)
-        tierParts.push(
-          `${explorerCount} Explorer${explorerCount > 1 ? "s" : ""}`
-        )
-      if (contributorCount > 0)
-        tierParts.push(
-          `${contributorCount} Contributor${contributorCount > 1 ? "s" : ""}`
-        )
-
-      const tweetText =
-        `I just Marked ${rewards.length} page${rewards.length > 1 ? "s" : ""} on @0xSofia ` +
-        `(${tierParts.join(", ")})`
+      const tweetText = buildBatchShareText(rewards.length, pioneerCount)
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +
