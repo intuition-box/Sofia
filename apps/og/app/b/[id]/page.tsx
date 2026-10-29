@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { kv } from '@vercel/kv'
 import { notFound } from 'next/navigation'
+import { decodeShare, PUBLIC_URL } from '@/lib/shareLink'
 
 interface BoardData {
   wallet: string
@@ -27,7 +27,7 @@ function truncateWallet(wallet: string): string {
 }
 
 async function getBoardData(id: string): Promise<BoardData | null> {
-  return kv.get<BoardData>(`board:${id}`)
+  return decodeShare<BoardData>('board', id)
 }
 
 export async function generateMetadata({
@@ -40,11 +40,7 @@ export async function generateMetadata({
   const displayName = data.name || truncateWallet(data.wallet)
   const description = `Alpha Rank #${data.alphaRank} of ${data.totalAlpha} | ${data.tx} TX | ${data.intentions} Intentions | ${data.pioneer} Pioneer | ${data.trustVolume} Trust Volume`
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+  const baseUrl = PUBLIC_URL
 
   const ogParams = new URLSearchParams()
   ogParams.set('wallet', data.wallet)

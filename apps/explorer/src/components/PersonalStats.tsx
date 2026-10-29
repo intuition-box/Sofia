@@ -56,7 +56,12 @@ export default function PersonalStats({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      const { url } = await res.json()
+      const json = (await res.json().catch(() => ({}))) as { url?: string }
+      // No card (og down): share the profile, never "undefined"
+      const url =
+        res.ok && json.url
+          ? json.url
+          : `${window.location.origin}/profile/${walletAddress}`
       const tweetText = encodeURIComponent(
         `Check out my Sofia Season stats! Alpha Rank #${alphaRank} of ${totalAlphaTesters}`,
       )

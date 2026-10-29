@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { kv } from '@vercel/kv'
 import { notFound } from 'next/navigation'
+import { decodeShare, PUBLIC_URL } from '@/lib/shareLink'
 
 interface ProfileData {
   wallet: string
@@ -23,7 +23,7 @@ function truncateWallet(wallet: string): string {
 }
 
 async function getProfileData(id: string): Promise<ProfileData | null> {
-  return kv.get<ProfileData>(`profile:${id}`)
+  return decodeShare<ProfileData>('profile', id)
 }
 
 export async function generateMetadata({
@@ -36,11 +36,7 @@ export async function generateMetadata({
   const displayName = data.name || truncateWallet(data.wallet)
   const description = `Level ${data.level} | ${data.signals || '0'} Signals | ${data.trustCircle} Trust Circle | ${data.pioneer} Pioneer | ${data.explorer} Explorer`
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+  const baseUrl = PUBLIC_URL
 
   // OG image still uses query params (only the crawler fetches this, not the user)
   const ogParams = new URLSearchParams()

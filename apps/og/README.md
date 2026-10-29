@@ -50,3 +50,15 @@ the extension and the explorer, and can be overridden via `VITE_OG_BASE_URL`
 3. Twitter bot visits the URL, reads `og:image` meta tag
 4. `og:image` points to `/api/og?...` which generates a PNG via `@vercel/og`
 5. Twitter displays the image as a card in the tweet
+
+## Share links
+
+Share links carry their own card data (`lib/shareLink.ts`): no store to
+host. The payload is signed so nobody can forge a card.
+
+| Env               |                                                                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `OG_SHARE_SECRET` | **required** to create share links (any long random string; changing it breaks existing links). Unset ⇒ `/api/share*` answer 503.  |
+| `OG_PUBLIC_URL`   | where this app is served, for links and `og:image` URLs (default `https://og.sofia.intuition.box`; `http://localhost:3000` in dev) |
+
+`@vercel/kv` is no longer used and can be removed from `package.json`.

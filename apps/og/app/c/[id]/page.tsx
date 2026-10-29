@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { kv } from '@vercel/kv'
 import { notFound } from 'next/navigation'
+import { decodeShare, PUBLIC_URL } from '@/lib/shareLink'
 
 interface CertificationData {
   pageUrl: string
@@ -27,7 +27,7 @@ function truncateUrl(url: string): string {
 }
 
 async function getCertData(id: string): Promise<CertificationData | null> {
-  return kv.get<CertificationData>(`cert:${id}`)
+  return decodeShare<CertificationData>('cert', id)
 }
 
 export async function generateMetadata({
@@ -40,11 +40,7 @@ export async function generateMetadata({
   const title = `${data.status} #${data.rank} — ${data.pageTitle}`
   const description = `Certified "${data.pageTitle}" as ${data.status} #${data.rank} among ${data.totalCertifiers} certifiers on Sofia`
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+  const baseUrl = PUBLIC_URL
 
   const ogParams = new URLSearchParams()
   ogParams.set('pageUrl', data.pageUrl)
