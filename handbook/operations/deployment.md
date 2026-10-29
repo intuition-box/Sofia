@@ -1,15 +1,10 @@
 # Deployment (Coolify)
 
-Every variable each deployed app needs, per environment. **No secret values here**: secrets live in Coolify (and in the team's password manager). For local development, see [DEV_SETUP.md](DEV_SETUP.md).
+Every variable each deployed app needs, per environment, and how each app is built. **No secret values here**: secrets live in Coolify (and in the team's password manager).
 
-## Environments
-
-| Coolify environment | Git branch | Deploys                                       |
-| ------------------- | ---------- | --------------------------------------------- |
-| **production**      | `main`     | automatically on push to `main`               |
-| **staging**         | `dev`      | automatically on push to `dev` (being set up) |
-
-Coolify project **Sofia**, server **Sofia-Apps**, source **host-intuition-box** (GitHub App), repository **`intuition-box/Sofia`**. Every `*.sofia.intuition.box` name already resolves to the server: no DNS work for a new subdomain.
+- Which environment runs which branch, and how a change reaches production: [environments.md](environments.md)
+- When something breaks: [runbooks.md](runbooks.md)
+- Running it all on your machine: [../getting-started/local-development.md](../getting-started/local-development.md)
 
 ## Rules that bit us
 
@@ -105,7 +100,7 @@ Scheduled tasks (in the app): daily `0 3 * * *` POST `/internal/leaderboard/comp
 | `SPONSOR_BUDGET_MONTHLY_TRUST` / `_DAILY_TRUST`                                                                   | R   | defaults `500` / `17`                                                        | `50` / `5`                                                                         |
 | `SPONSOR_QUOTA_MONTHLY` / `_DAILY`, `SPONSOR_OPINIONS_DAILY`, `SPONSOR_CREDITS_PER_CALL`, `SPONSOR_DEPOSIT_TRUST` | R   | defaults (20 / 5, 5, 3, 0.01)                                                | same                                                                               |
 
-Treasury to refill: see [services/write-relayer/README.md](services/write-relayer/README.md#treasury-refill-here).
+Treasury to refill: see [services/write-relayer/README.md](../../services/write-relayer/README.md#treasury-refill-here).
 
 ### pin-proxy
 
@@ -122,9 +117,3 @@ Treasury to refill: see [services/write-relayer/README.md](services/write-relaye
 
 `.env.production`: `PLASMO_PUBLIC_WRITE_RELAYER_URL=https://relayer.sofia.intuition.box`.
 `.env.development` (test builds against staging): `PLASMO_PUBLIC_WRITE_RELAYER_URL=https://staging-relayer.sofia.intuition.box`, `PLASMO_PUBLIC_AUTH_URL=https://staging.sofia.intuition.box/auth`.
-
-## Releasing
-
-1. Merge into `dev` → staging rebuilds; test (smoke test in DEV_SETUP.md).
-2. Merge `dev` into `main` → production rebuilds.
-3. New migrations apply at boot (reputation-api, write-relayer).

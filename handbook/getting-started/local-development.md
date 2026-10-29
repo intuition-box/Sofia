@@ -1,20 +1,8 @@
-# Dev setup: `feat/sponsored-writes`
+# Local development
 
-What you need to run this branch locally: new services, new dependencies, env vars, migrations, and the order to start things in.
+Everything needed to run the explorer, the extension and the backend services on your machine: dependencies, env vars, databases, start order, checks and a smoke test.
 
-## What's new on this branch
-
-| Area                         | What it does                                                                                                          | Where                                            |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| One market per page          | A page has one claim, `I \| recommends \| page` (curve 2). Intentions become tags; distrust becomes an oppose.        | `packages/taxonomy`, explorer, extension         |
-| Free Recommends              | Sofia's treasury publishes Recommends for signed-in users. The position stays the user's (`receiver` = their wallet). | `services/write-relayer` (new)                   |
-| Spotters (ex "Trend Hunter") | `/spotters` page: spotted pages, Influence, ranking, missions, "Pages to sort" queue, monthly TRUST pool              | explorer + `services/reputation-api`             |
-| Credits                      | Spotted pages and missions earn extra free Recommends, checked on-chain by the relayer                                | `write-relayer` + `packages/quests`              |
-| Second opinions              | Recommend or oppose a page only one person recommended: free, outside the quota                                       | `write-relayer` + explorer queue                 |
-| Free right-click             | The extension's Recommend goes through the relayer (new pages minted), email / Google accounts included               | `write-relayer`, `apps/landing` /auth, extension |
-| RPC proxy                    | Relays JSON-RPC to Intuition (public RPC throttles per IP)                                                            | `services/rpc-proxy` (new)                       |
-
-UI wording: a "call" is shown as a **spotted page**, "Flair" as **Influence**. API fields and code keep `calls` / `flair` / `trendHunter`.
+What the services do is explained in [../features/](../features/) (free Recommends, Spotters). Deployed environments are in [../operations/](../operations/).
 
 ## Prerequisites
 
@@ -82,7 +70,7 @@ Copy each `.env.example` to `.env` and fill it in. **Never commit a `.env`, and 
 
 ### `services/rpc-proxy/.env` (optional)
 
-`PORT=8791`, `INTUITION_RPC_UPSTREAM` (default public RPC), `RPC_PROXY_SERVER_KEY`, `RPC_ALLOWED_ORIGINS`. See `services/rpc-proxy/README.md`.
+`PORT=8791`, `INTUITION_RPC_UPSTREAM` (default public RPC), `RPC_PROXY_SERVER_KEY`, `RPC_ALLOWED_ORIGINS`. See [services/rpc-proxy/README.md](../../services/rpc-proxy/README.md).
 
 ### `apps/landing/.env`
 

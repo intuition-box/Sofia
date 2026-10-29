@@ -31,11 +31,20 @@ core/
 │   ├── design-system/    @0xsofia/design-system — shared components, hooks, theme tokens, styles
 │   ├── taxonomy/         @0xsofia/taxonomy — topics, categories, niches + on-chain atom registry
 │   └── quests/           @0xsofia/quests — quest catalogue + XP rewards (minted by ext, read by explorer)
-└── services/
-    ├── group-api/        Hono + Bun + Prisma/Postgres — gated group-join backend
-    ├── og-proxy/         Hono + Bun — OG image proxy
-    └── mastra/           Mastra — AI workflows (theme/predicate classification, recommendations)
+├── services/
+│   ├── write-relayer/    Hono + Bun + Prisma — free Recommends, paid by Sofia's treasury
+│   ├── reputation-api/   Hono + Bun + Prisma — precomputed rankings (Top Voices, Spotters)
+│   ├── rpc-proxy/        Hono + Bun — cached, rate-limited relay to the Intuition RPC
+│   ├── pin-proxy/        Hono + Bun — IPFS pinning with the server-side key
+│   ├── group-api/        Hono + Bun + Prisma/Postgres — gated group-join backend (paused)
+│   ├── og-proxy/         Hono + Bun — OG image proxy
+│   └── mastra/           Mastra — AI workflows (decommissioned)
+└── handbook/             team documentation — start here
 ```
+
+## Documentation
+
+The **[handbook](handbook/README.md)** has the team docs: [local development](handbook/getting-started/local-development.md), [environments](handbook/operations/environments.md), [deployment variables](handbook/operations/deployment.md), [runbooks](handbook/operations/runbooks.md), and how [free Recommends](handbook/features/free-recommends.md) and [Spotters](handbook/features/spotters.md) work.
 
 ## Stack per surface
 
