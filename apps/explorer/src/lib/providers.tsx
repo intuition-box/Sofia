@@ -15,7 +15,6 @@ import {
 } from '../config'
 import { intuitionChain } from './contracts/chainConfig'
 import { CartProvider } from '../hooks/useCart'
-import { ViewAsProvider } from '../hooks/useViewAs'
 
 // HTTP proxy (/v1/graphql) in dev for CORS, direct WSS for subscriptions.
 // `pinApiUrl` routes pin mutations through the backend pin-proxy (the key
@@ -146,9 +145,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <RestoreGate>
           <CartProvider>
-            <ViewAsProvider>
-              <BrowserRouter>{children}</BrowserRouter>
-            </ViewAsProvider>
+            <BrowserRouter>{children}</BrowserRouter>
           </CartProvider>
         </RestoreGate>
       </PersistQueryClientProvider>

@@ -101,21 +101,12 @@ function atomUrl(
 // ── Valuation ──
 
 /**
- * What a leg is worth: what exiting it returns (previewRedeem, fees out) when
- * the caller has it; else the pro-rata share of the vault's assets. Never `shares × spot
+ * What a leg is worth: the pro-rata share of the vault's assets. Never `shares × spot
  * price` when the vault totals are known: on a bonding curve your own deposit
  * lifts the spot price, so that shows gains nobody paid for (a sole holder
  * would read +20% on day one). Spot only when nothing else is available.
  */
-function legValue(
-  leg: string,
-  shares: bigint,
-  price: bigint,
-  row: PositionRow,
-  exitValues: Readonly<Record<string, string>>,
-): bigint {
-  const exit = exitValues[leg]
-  if (exit !== undefined) return BigInt(exit)
+function legValue(shares: bigint, price: bigint, row: PositionRow): bigint {
   const totalShares = BigInt(row.vault?.total_shares || '0')
   const totalAssets = BigInt(row.vault?.total_assets || '0')
   if (totalShares > 0n && totalAssets > 0n) {
@@ -135,8 +126,6 @@ function legValue(
 export function aggregateUserPositions(
   rows: readonly PositionRow[],
   platformTermIds: ReadonlySet<string>,
-  /** Exact exit value per leg (`term:curve` → wei), from previewRedeem */
-  exitValues: Readonly<Record<string, string>> = {},
 ): MarketPosition[] {
   const byTerm: Record<
     string,
@@ -177,7 +166,7 @@ export function aggregateUserPositions(
     entry.mark += (shares * price) / WAD
     entry.legs.push({ curveId: String(row.curve_id), shares: String(shares) })
     entry.shares += shares
-    entry.value += legValue(leg, shares, price, row, exitValues)
+    entry.value += legValue(shares, price, row)
     entry.deposited += netDeposited(row)
     entry.staked += BigInt(row.vault?.market_cap || '0')
     entry.supporters = Math.max(

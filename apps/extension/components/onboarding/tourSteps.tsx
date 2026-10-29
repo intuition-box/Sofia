@@ -431,7 +431,7 @@ const ALL_TOUR_STEPS: TourStep[] = [
     title: "Weigh in on what's credible",
     body: "On their marks you can Support or Oppose. The balance is what makes a signal trustworthy.",
     cta: "Support a mark",
-    learn: "Your votes shape consensus — and earn you Gold.",
+    learn: "Your votes shape consensus.",
     complete: { kind: "cartVoteAdd" },
     onEnter: openCircleFeed
   },
@@ -452,7 +452,7 @@ const ALL_TOUR_STEPS: TourStep[] = [
     title: "Sign your vote",
     body: "Press <b>Amplify</b> to put your vote on-chain. That's the whole loop.",
     cta: "Press Amplify",
-    learn: "Your stake makes the vote count — and earns you Gold.",
+    learn: "Your stake is what makes the vote count.",
     // A vote-only cart emits "vote" (not "batch_certification").
     complete: { kind: "tx", event: "vote" },
     layer: "modal",

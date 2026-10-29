@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useAccountWallet } from '@/hooks/useAccountWallet'
-import { useViewAs } from '@/hooks/useViewAs'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSync } from '../hooks/useTopicSync'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
@@ -21,7 +20,7 @@ import { useExtensionGold } from '../hooks/useExtensionGold'
 import { useUntaggedCerts } from '../hooks/useUntaggedCerts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Wallet, User, Tags, ArrowUpRight, X, PieChart } from 'lucide-react'
+import { Wallet, Tags, ArrowUpRight, X, PieChart } from 'lucide-react'
 import MagnifierIcon from '@/components/icons/MagnifierIcon'
 import { PageHero, SectionH2 } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
@@ -34,16 +33,12 @@ export default function ProfilePage() {
   const { linkWallet } = useLinkAccount({
     onSuccess: () => window.location.reload(),
   })
-  const { viewAsAddress, isViewingAs, clearViewAs } = useViewAs()
   const { addresses: myAddresses } = useLinkedWallets()
-  const address = viewAsAddress || accountAddress || ''
-  // When viewing yourself, aggregate across all linked wallets. When viewing
-  // someone else (isViewingAs), use only their address.
-  const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
-  // Achievements (on-chain level/XP/badges) for the profile being viewed;
-  // Gold is private + extension-local, so only fetched for your own profile.
+  const address = accountAddress || ''
+  // Your own profile aggregates across all linked wallets.
+  const activityAddresses = myAddresses
   const achievements = useAchievements(address)
-  const { gold } = useExtensionGold(isViewingAs ? undefined : address)
+  const { gold } = useExtensionGold(address)
   const { selectedTopics, selectedCategories } = useTopicSync()
   const navigate = useNavigate()
   const { getStatus } = usePlatformConnections()
@@ -90,7 +85,7 @@ export default function ProfilePage() {
   )
   const [echoesSearch, setEchoesSearch] = useState('')
 
-  if (!signedIn && !isViewingAs) {
+  if (!signedIn) {
     return (
       <Card className="p-8 text-center">
         <Wallet className="h-10 w-10 mx-auto text-muted-foreground/40" />
@@ -111,51 +106,25 @@ export default function ProfilePage() {
   const shortAddr = address
     ? address.slice(0, 6) + '...' + address.slice(-4)
     : ''
-  const heroDescription = isViewingAs
-    ? 'Exploring this wallet — pick an interest to dive in.'
-    : address
-      ? `Your reputation across every interest, from ${shortAddr}.`
-      : pc.subtitle
+  const heroDescription = address
+    ? `Your reputation across every interest, from ${shortAddr}.`
+    : pc.subtitle
 
   return (
     <div className="pf-view pf-home page-enter">
       <PageHero
-        title={isViewingAs ? shortAddr : pc.title}
+        title={pc.title}
         description={heroDescription}
         background={pc.color}
       >
-        {/* Positions of the wallet on display — your own (with exits) or,
-            in view-as mode, the viewed wallet's read-only page. */}
-        <Link
-          to={isViewingAs ? `/positions/${viewAsAddress}` : '/positions'}
-          className="pp-hero-link pp-hero-link--below"
-        >
+        <Link to="/positions" className="pp-hero-link pp-hero-link--below">
           <PieChart className="h-3.5 w-3.5" aria-hidden />
           Positions
         </Link>
       </PageHero>
 
-      {/* View-as banner */}
-      {isViewingAs && (
-        <Card
-          className="pp-wallet-banner"
-          style={{ borderColor: '#627EEA40', background: '#627EEA08' }}
-        >
-          <User className="h-5 w-5" style={{ color: '#627EEA' }} />
-          <div className="pp-wallet-banner-text">
-            <p className="text-sm font-semibold">Viewing as {shortAddr}</p>
-            <p className="text-xs text-muted-foreground">
-              Read-only mode — you are viewing another user's profile.
-            </p>
-          </div>
-          <Button size="sm" variant="outline" onClick={clearViewAs}>
-            Back to my profile
-          </Button>
-        </Card>
-      )}
-
       {/* Link wallet banner */}
-      {!isViewingAs && !address && (
+      {!address && (
         <Card className="pp-wallet-banner">
           <Wallet className="h-5 w-5 text-muted-foreground" />
           <div className="pp-wallet-banner-text">
@@ -173,9 +142,8 @@ export default function ProfilePage() {
       )}
 
       {/* Context Manager CTA — only surfaces when the user has tagable
-          certs without an `in context of` link. Hidden on view-as so a
-          visitor doesn't see a CTA they can't fulfil. */}
-      {!isViewingAs && untaggedCerts.length > 0 && (
+          certs without an `in context of` link. */}
+      {untaggedCerts.length > 0 && (
         <button
           type="button"
           className="pp-context-banner"
@@ -205,13 +173,9 @@ export default function ProfilePage() {
           selectedTopics={selectedTopics}
           topicScores={topicScores}
           addresses={myAddresses}
-          onViewScores={isViewingAs ? undefined : () => navigate('/scores')}
+          onViewScores={() => navigate('/scores')}
           refining={boostLoading}
-          onSelectTopic={
-            isViewingAs
-              ? undefined
-              : (id) => navigate(`/profile/interest/${id}`)
-          }
+          onSelectTopic={(id) => navigate(`/profile/interest/${id}`)}
         />
 
         {/* Achievements — Level/XP + badges (on-chain), Gold (private,
@@ -221,7 +185,7 @@ export default function ProfilePage() {
           loading={achievements.loading}
           hasAccount={achievements.hasAccount}
           gold={gold}
-          self={!isViewingAs}
+          self
         />
 
         {/* Echoes */}

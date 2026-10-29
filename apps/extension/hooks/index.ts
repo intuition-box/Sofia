@@ -52,7 +52,6 @@ export {
   default as useGroupOnChainCertifications,
   type UrlCertificationStatus
 } from "./useGroupOnChainCertifications"
-export { default as useGroupAmplify } from "./useGroupAmplify"
 export { default as useIntentionCategories } from "./useIntentionCategories"
 
 // Certifications & Discovery

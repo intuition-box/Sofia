@@ -20,28 +20,7 @@ export const INTENTION_PREDICATES: Record<IntentionPurpose, string> =
       .map(([, v]) => [v.intentionPurpose!, v.predicateLabel!])
   ) as Record<IntentionPurpose, string>
 
-// User's global discovery statistics
-export interface UserDiscoveryStats {
-  pioneerCount: number
-  explorerCount: number
-  contributorCount: number
-  totalCertifications: number
-  intentionBreakdown: Record<IntentionPurpose, number>
-  trustBreakdown: { trusted: number; distrusted: number }
-  discoveryGold: {
-    fromPioneer: number
-    fromExplorer: number
-    fromContributor: number
-    total: number
-  }
-}
 
-// Gold rewards for discovery
-export const DISCOVERY_GOLD_REWARDS = {
-  PIONEER: 50,    // First to certify
-  EXPLORER: 20,   // 2nd to 10th
-  CONTRIBUTOR: 10  // 11th+
-} as const
 
 // Thresholds for discovery status
 export const DISCOVERY_THRESHOLDS = {

@@ -708,7 +708,6 @@ export function setupMessageHandlers(): void {
               )
               sendResponse({
                 success: certResult.success,
-                goldGained: certResult.goldGained,
                 error: certResult.error
               })
             } catch (error) {

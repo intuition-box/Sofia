@@ -54,55 +54,10 @@
   font-family: var(--ds-font-display);
 }
 
-/* ── Gold Header (top corner total) ── */
 
-.batch-reward__gold-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 36px 24px 20px;
-  position: relative;
-}
 
-.batch-reward__gold-amount {
-  font-size: 64px;
-  font-weight: 700;
-  font-family: var(--ds-font-display);
-  letter-spacing: -0.03em;
-  background: linear-gradient(
-    180deg,
-    #fef3c7 0%,
-    #fcd34d 25%,
-    #f59e0b 60%,
-    #d97706 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-  animation: goldCountUp 0.6s ease-out;
-}
 
-@keyframes goldCountUp {
-  from {
-    opacity: 0;
-    transform: scale(0.8) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
 
-.batch-reward__gold-label {
-  font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ds-muted);
-}
 
 .batch-reward__tier-summary {
   display: flex;
@@ -236,17 +191,6 @@
   border: none;
 }
 
-.batch-reward__item-gold {
-  font-size: 16px;
-  font-weight: 700;
-  font-family: var(--ds-font-display);
-  letter-spacing: -0.01em;
-  background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  flex-shrink: 0;
-}
 
 /* ── Footer ── */
 
@@ -393,12 +337,6 @@
   border: none;
 }
 
-.batch-receipt__gold-line {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(212, 175, 55, 0.6);
-  font-family: var(--ds-font-display);
-}
 
 /* Share on X — same pattern as explorer .pd-share-btn (ProfileDrawer).
    Transparent / white text / muted border default → inverts on hover. */
@@ -562,11 +500,6 @@
   background: linear-gradient(135deg, #9aa3ad, #6c7480);
 }
 
-.mark-claim-card__gold {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffd86b;
-}
 
 .mark-claim-card--more {
   justify-content: center;

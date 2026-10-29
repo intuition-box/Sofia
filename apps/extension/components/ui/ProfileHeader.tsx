@@ -6,7 +6,6 @@
  */
 
 import Avatar from "./Avatar"
-import goldCoin from "./img/gold/goldcoin.png"
 import socialLinkedBg from "./img/badges/sociallinkedpp.png"
 import "../styles/ProfileHeader.css"
 
@@ -21,7 +20,6 @@ interface ProfileHeaderProps {
   size?: "small" | "medium" | "large"
   verified?: boolean
   verifiedLabel?: string
-  totalGold?: number
   signalsCreated?: number
   currentStreak?: number
 }
@@ -37,7 +35,6 @@ const ProfileHeader = ({
   size = "large",
   verified = false,
   verifiedLabel = "Social Linked",
-  totalGold,
   signalsCreated,
   currentStreak
 }: ProfileHeaderProps) => {
@@ -118,16 +115,6 @@ const ProfileHeader = ({
                   />
                 </svg>
                 {signalsCreated} Signals
-              </span>
-            )}
-            {totalGold !== undefined && (
-              <span className="profile-meta-gold">
-                <img
-                  src={goldCoin}
-                  alt=""
-                  className="profile-meta-gold-icon"
-                />
-                {totalGold}
               </span>
             )}
             {currentStreak !== undefined && currentStreak > 0 && (
