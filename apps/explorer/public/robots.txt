@@ -1,0 +1,16 @@
+# Sofia Explorer — every crawler welcome, search and AI alike.
+# Private, per-account app screens are left out.
+User-agent: *
+Allow: /
+Disallow: /positions
+Disallow: /profile
+Disallow: /notifications
+Disallow: /scores
+Disallow: /compose
+Disallow: /circles
+Disallow: /vote
+Disallow: /perspective
+Disallow: /auth/
+Disallow: /mcp-trust/
+
+Sitemap: https://explorer.sofia.intuition.box/sitemap.xml

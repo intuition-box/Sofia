@@ -1,0 +1,33 @@
+# Sofia
+
+> Sofia is a community-curated map of the web, built on the Intuition protocol. People recommend web pages by taking an on-chain position on them; every recommendation is public, dated and owned by the person who made it. Sofia shows which pages people back, who spotted them first, and which pages credible accounts follow.
+
+Sofia has three parts: a Chrome extension (recommend any page with a right-click), the Explorer (browse what the community recommends), and Spotters (a monthly ranking of the people who find pages early).
+
+## Key concepts
+
+- **Recommend**: a position on the claim "I recommends <page>" on the Intuition protocol (TRUST token). Signed-in users get free Recommends every month; the position belongs to them and can be withdrawn.
+- **Oppose**: a position against a page's recommendation.
+- **Tags**: why a page is recommended (for work, for learning, for fun, for inspiration, for buying, for music) and its topics.
+- **Spotted page**: a page where an account was among its first 3 recommenders, then at least 5 credible accounts followed.
+- **Influence**: the summed credibility of the accounts that followed someone onto pages they spotted. The monthly Top 10 by Influence shares a TRUST pool.
+- **Credible account**: an account with a positive trust score in Intuition's trust graph.
+
+## Explorer
+
+- [Explore](https://explorer.sofia.intuition.box/explore): the community feed and top voices by topic
+- [Trending](https://explorer.sofia.intuition.box/trending): pages gaining recommendations in the last 24 hours, 7 days or 30 days
+- [Spotters](https://explorer.sofia.intuition.box/spotters): how spotting works, the monthly ranking and the pages spotted this month
+
+## Get started
+
+- [Sofia extension (Chrome Web Store)](https://chromewebstore.google.com/detail/sofia/ldohfencfbbelhgfppgdmgmghodhjodb)
+- [Sofia website](https://sofia.intuition.box)
+- [Documentation](https://doc.sofia.intuition.box)
+
+## Optional
+
+- [Intuition protocol](https://intuition.systems): the open knowledge graph Sofia writes to
+- [X / Twitter](https://x.com/0xsofia3)
+- [Discord](https://discord.gg/sofia3)
+- [GitHub (Intuition)](https://github.com/intuition-box)
