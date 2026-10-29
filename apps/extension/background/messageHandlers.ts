@@ -171,6 +171,8 @@ let handlersRegistered = false
 const ALLOWED_EXTERNAL_ORIGINS = (() => {
   const origins = [
     "https://sofia.intuition.box",
+    // Staging landing (branch dev): /auth for test builds
+    "https://staging.sofia.intuition.box",
     "http://localhost:3000",
     "http://localhost:5174"
   ]
