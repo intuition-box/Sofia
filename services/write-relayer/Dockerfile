@@ -6,7 +6,7 @@
 # apps/explorer uses. On Coolify set the build context to the repo root and the
 # Dockerfile path to services/write-relayer/Dockerfile.
 
-FROM oven/bun:1.1-alpine AS deps
+FROM oven/bun:1.3-alpine AS deps
 WORKDIR /repo
 RUN apk add --no-cache openssl
 # Manifests first so the install layer caches. `--parents` preserves paths; the
@@ -21,7 +21,7 @@ COPY services/write-relayer/ ./services/write-relayer/
 # Generate the Prisma client (incl. the musl query engine) into node_modules.
 RUN cd services/write-relayer && bunx prisma generate
 
-FROM oven/bun:1.1-alpine AS runner
+FROM oven/bun:1.3-alpine AS runner
 WORKDIR /repo
 ENV NODE_ENV=production
 ENV PORT=8792
