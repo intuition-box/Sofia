@@ -26,9 +26,8 @@ import { getPublicClient } from "../clients/viemClients"
 import { toPageMarketClaim } from "../config/predicateConstants"
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from "../config/constants"
 import { getSigner } from "../signer"
-import { getFaviconUrl } from "../utils/formatters"
 import { createServiceLogger } from "../utils/logger"
-import { normalizeUrl } from "../utils/normalizeUrl"
+import { pageAtomData } from "../utils/pageAtomData"
 import { atomService } from "./AtomService"
 import { BlockchainService } from "./blockchainService"
 import { cartService } from "./CartService"
@@ -545,17 +544,11 @@ class CertificationServiceClass {
     weight: bigint
   ): Promise<QuickPublishResult> {
     try {
-      const { label } = normalizeUrl(target.url)
       // Same object atom shape as cartService.toBatchInputs → same atom
       const result = await this.createTriplesBatch(wallet, [
         {
           predicateName: target.predicateName,
-          objectData: {
-            name: target.title || label,
-            description: `Page: ${label}`,
-            url: target.url,
-            image: getFaviconUrl(target.url, 128) || undefined
-          },
+          objectData: pageAtomData(target.url, target.title),
           customWeight: weight,
           side: target.side
         }

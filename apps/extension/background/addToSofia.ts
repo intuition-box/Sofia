@@ -25,16 +25,17 @@ import {
   SearchUrlAtomsDocument
 } from "../lib/clients/graphql-client"
 import { getAuthUrl } from "../lib/config/externalAuth"
+import { PAGE_MARKET_PREDICATE } from "../lib/config/predicateConstants"
 import {
   cartService,
   certificationService,
+  freeRecommendService,
   MAX_CART_ITEMS
 } from "../lib/services"
 import { sessionStore } from "../lib/signer"
-import { getFaviconUrl, getProfileUrl } from "../lib/utils"
+import { getFaviconUrl, getProfileUrl, pageAtomData } from "../lib/utils"
 import { createServiceLogger } from "../lib/utils/logger"
 import { getStoredWalletAddress } from "../lib/utils/walletStorage"
-import { PAGE_MARKET_PREDICATE } from "../lib/config/predicateConstants"
 
 const logger = createServiceLogger("AddToSofia")
 
@@ -83,8 +84,16 @@ function buildMenu() {
     const child = { ...base, parentId: ROOT_ID }
     chrome.contextMenus.create({ ...base, id: ROOT_ID, title: "Sofia" })
     // The full qualification modal (tags, title autocomplete, amount) first
-    chrome.contextMenus.create({ ...child, id: MORE_ID, title: "Add to Sofia…" })
-    chrome.contextMenus.create({ ...child, id: "sofia-sep-0", type: "separator" })
+    chrome.contextMenus.create({
+      ...child,
+      id: MORE_ID,
+      title: "Add to Sofia…"
+    })
+    chrome.contextMenus.create({
+      ...child,
+      id: "sofia-sep-0",
+      type: "separator"
+    })
     chrome.contextMenus.create({
       ...child,
       id: `${PUBLISH_PREFIX}recommend`,
@@ -103,7 +112,11 @@ function buildMenu() {
         title: capitalize(tag.key)
       })
     }
-    chrome.contextMenus.create({ ...child, id: "sofia-sep-1", type: "separator" })
+    chrome.contextMenus.create({
+      ...child,
+      id: "sofia-sep-1",
+      type: "separator"
+    })
     chrome.contextMenus.create({
       ...child,
       id: `${PUBLISH_PREFIX}distrust`,
@@ -261,6 +274,40 @@ async function handleQuickPublish(
     toast(tabId, toastId, "error", "Connect your wallet to Sofia first")
     chrome.tabs.create({ url: getAuthUrl({ autoLogin: true }) })
     return
+  }
+
+  // Free first: a Recommend through Sofia's relayer (no signature, no TRUST)
+  if (
+    action.side === "support" &&
+    (await freeRecommendService.getSession(wallet))
+  ) {
+    const key = `free|${url}`
+    if (inFlight.has(key)) return
+    inFlight.add(key)
+    toast(tabId, toastId, "pending", `Publishing · ${action.label}…`)
+    try {
+      const free = await withKeepAlive(() =>
+        freeRecommendService.recommend(
+          wallet,
+          pageAtomData(url, title),
+          contextSlugs
+        )
+      )
+      if (free.status === "done") {
+        const mission = await dailyMissionLabel(
+          wallet,
+          free.objectId ?? undefined
+        )
+        toast(tabId, toastId, "success", `${action.label} · free${mission}`, {
+          href: getProfileUrl(),
+          label: "View"
+        })
+        return
+      }
+      // Quota used, relayer down…: the usual paths below
+    } finally {
+      inFlight.delete(key)
+    }
   }
 
   const session = await sessionStore.getActive(wallet)

@@ -11,6 +11,7 @@ export { explicitGasLimit } from "./gasLimit"
 
 // URL & Content
 export { normalizeUrl } from "./normalizeUrl"
+export { pageAtomData } from "./pageAtomData"
 export { cleanTitle, getDisplayTitle } from "./cleanTitle"
 export { isRestrictedUrl } from "./pageRestriction"
 export type { RestrictionInfo } from "./pageRestriction"
