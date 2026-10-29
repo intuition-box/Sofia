@@ -170,4 +170,4 @@ bunx prettier --write <files>
 - **Vite errors in the middle of edits** ("X is not defined", "No routes matched", hook order): hot reload caught a half-saved file. Reload the page.
 - **Doubled transactions**: check you don't have both the dev and the store build of the extension loaded.
 - **The ranking counts every Intuition account**, not only Sofia users. The rule for who can be paid from the pool is still open (the first payout is for November).
-- **Mastra / AI and Circles (group-api)** are paused: you don't need them for this branch.
+- **Circles (group-api)** is paused: you don't need them for this branch.

@@ -71,6 +71,6 @@
     "@types/three": ">=0.180.0",
     "lucide-react": "^0.525.0",
     "typescript": "^5.9.3",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.7"
   }
 }
