@@ -34,10 +34,11 @@ const logger = createServiceLogger('TripleService')
 // Minimum deposit for triple creation (0.01 TRUST in wei)
 const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
 
-// Curve for creation AND deposits on page claims: progressive (2), so the
+// Page claims are created AND deposited on the progressive curve (2), so the
 // price rises as followers take a position — that's how early positions gain.
-const CREATION_CURVE_ID = 2n
+// Tags (`in context of`) stay on the linear curve (1), like the explorer.
 const MARKET_CURVE_ID = 2n
+export const TAG_CURVE_ID = 1n
 
 /** Triple with already-resolved vault IDs */
 export interface ResolvedTriple {
@@ -409,11 +410,15 @@ class TripleServiceClass {
    *
    * Existing triples are combined into a single depositBatch() call
    * (+ global stake if enabled) = 1 MetaMask popup instead of N.
+   *
+   * @param curveId creation + deposit curve: the page market by default,
+   *   `TAG_CURVE_ID` for tags.
    */
   async createTriplesBatch(
     resolvedTriples: ResolvedTriple[],
     address: string,
-    urls?: string[]
+    urls?: string[],
+    curveId: bigint = MARKET_CURVE_ID
   ): Promise<BatchTripleResult> {
     try {
       if (!address) {
@@ -504,7 +509,7 @@ class TripleServiceClass {
         const multiVaultCost = (tripleCost * BigInt(triplesToCreate.length)) + totalDeposit
         const totalValue = await BlockchainService.getTotalCreationCost(depositCount, totalDeposit, multiVaultCost)
 
-        const createArgs = [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID] as const
+        const createArgs = [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, curveId] as const
 
         try {
           const simulation = await publicClient.simulateContract({
@@ -629,7 +634,7 @@ class TripleServiceClass {
                 : MIN_TRIPLE_DEPOSIT
 
               fallbackTermIds.push(tripleId)
-              fallbackCurveIds.push(MARKET_CURVE_ID)
+              fallbackCurveIds.push(curveId)
               fallbackAssets.push(depositAmount)
             }
 
@@ -680,7 +685,7 @@ class TripleServiceClass {
         })
 
         const termIds = triplesToDeposit.map(t => t.tripleVaultId)
-        const curveIds = triplesToDeposit.map(() => MARKET_CURVE_ID)
+        const curveIds = triplesToDeposit.map(() => curveId)
         const assets = triplesToDeposit.map(t =>
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
@@ -747,7 +752,7 @@ class TripleServiceClass {
           )
         }
         const termIds = [...counterIds]
-        const curveIds = opposeTriples.map(() => MARKET_CURVE_ID)
+        const curveIds = opposeTriples.map(() => curveId)
         const assets = opposeTriples.map(t =>
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
