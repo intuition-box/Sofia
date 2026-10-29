@@ -17,6 +17,9 @@
  *   POST /sponsor/oppose      (Privy bearer) { wallet?, objectIds } → free
  *        opposes on pages one other person recommended (sorting queue)
  *   POST /sponsor/gas         (Privy bearer) { wallet? } → gas for that one approval
+ *   POST   /sponsor/extension-session (Privy bearer) → { token, expiresAt }
+ *   DELETE /sponsor/extension-session (extension token) → revoke it
+ * Every /sponsor/* route also takes `Authorization: Extension <token>`.
  * Second opinions (a recommend or an oppose on a page exactly one other
  * account recommended) don't count against the quota: their own daily cap.
  * `wallet`: the account's wallet that receives the positions (default: its
@@ -32,7 +35,14 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import type { Hex } from 'viem'
-import { authMiddleware, receiverOf, type AppEnv, type Sponsee } from './auth'
+import {
+  authMiddleware,
+  createExtensionSession,
+  receiverOf,
+  revokeExtensionSession,
+  type AppEnv,
+  type Sponsee,
+} from './auth'
 import {
   account,
   execute,
@@ -172,7 +182,7 @@ app.use(
   '*',
   cors({
     origin: env.corsOrigins,
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowHeaders: ['content-type', 'authorization'],
   }),
 )
@@ -378,6 +388,26 @@ app.post('/sponsor/oppose', async (c) => {
     partial: !!result.error,
     dryRun: env.dryRun,
   })
+})
+
+/**
+ * POST /sponsor/extension-session (Privy bearer only) → { token, expiresAt }:
+ * the landing's /auth hands it to the extension, which then calls the relayer
+ * with `Authorization: Extension <token>` (no Privy SDK in the extension).
+ */
+app.post('/sponsor/extension-session', async (c) => {
+  if (c.get('via') !== 'privy')
+    return c.json({ error: 'Sign in on Sofia to connect the extension' }, 403)
+  requireSponsee(c)
+  return c.json(await createExtensionSession(c.get('privyUserId')))
+})
+
+/** DELETE /sponsor/extension-session — the extension signs out */
+app.delete('/sponsor/extension-session', async (c) => {
+  const header = c.req.header('Authorization') ?? ''
+  if (c.get('via') === 'extension')
+    await revokeExtensionSession(header.slice(10))
+  return c.json({ ok: true })
 })
 
 // One gas drip per account per hour (the drip itself only goes to a wallet

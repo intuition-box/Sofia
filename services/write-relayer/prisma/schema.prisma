@@ -49,3 +49,17 @@ model SponsoredWrite {
   @@index([privyUserId, createdAt])
   @@index([createdAt, status])
 }
+
+/// The Sofia extension's access: a long-lived token issued to a signed-in
+/// Privy account on the landing's /auth. Only the token's sha256 is stored.
+model ExtensionSession {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  privyUserId String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+
+  @@index([privyUserId])
+}
